@@ -6,9 +6,7 @@ from rest_framework.test import APITestCase, APITransactionTestCase
 
 
 class ValidatePlanningAreaTest(APITestCase):
-
     def setUp(self):
-
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
         self.user.save()
@@ -45,6 +43,14 @@ class ValidatePlanningAreaTest(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertIn("area_acres", response.json())
+
+    def test_validate_planning_area_returns_invalid_pa_returns_400(self):
+        self.client.force_authenticate(self.user)
+        payload = {"geometry": self.invalid_pa}
+        response = self.client.post(
+            reverse("planning:validate_planning_area"), data=payload, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 class CreateSharedLinkTest(APITransactionTestCase):

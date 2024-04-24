@@ -4,7 +4,6 @@ from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 
 
 def coerce_geojson(geojson: Dict[str, Any]) -> GEOSGeometry:
-
     features = geojson.get("features", [])
     if len(features) > 1 or len(features) == 0:
         raise ValueError("Must send exactly one feature.")
