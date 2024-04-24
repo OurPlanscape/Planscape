@@ -58,7 +58,6 @@ logger = logging.getLogger(__name__)
 
 @api_view(["POST"])
 def validate_planning_area(request: Request) -> Response:
-
     serializer = ValidatePlanningAreaSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     geometry = coerce_geometry(serializer.validated_data.get("geometry"))
