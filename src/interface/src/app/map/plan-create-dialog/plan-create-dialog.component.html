@@ -5,7 +5,7 @@
       <mat-icon>info</mat-icon>
       <span>Boundaries cannot be modified after the plan is saved.</span>
     </div>
-    <div class="info">
+    <div class="info" *ngIf="showAreaError">
       <mat-icon>info</mat-icon>
       <span
         >Your planning area is less than 100 acres. You will not be able to run

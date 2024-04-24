@@ -9,10 +9,10 @@ import { firstValueFrom } from 'rxjs';
 import { SNACK_ERROR_CONFIG } from '../../../app/shared/constants';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { Region } from '../../types';
-import { calculateAcres } from '../../plan/plan-helpers';
 
 export interface PlanCreateDialogData {
   shape: GeoJSON.GeoJSON;
+  area: number;
 }
 
 @Component({
@@ -36,9 +36,10 @@ export class PlanCreateDialogComponent implements OnInit {
     @Inject(MAT_DIALOG_DATA) public data: PlanCreateDialogData
   ) {}
 
-  ngOnInit() {
-    console.log(this.data.shape);
-    console.log(calculateAcres(this.data.shape));
+  ngOnInit() {}
+
+  get showAreaError() {
+    return this.data.area < 100;
   }
 
   async submit() {

@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.vectorgrid';
-import { BehaviorSubject, EMPTY, Observable, take, of, tap } from 'rxjs';
+import { BehaviorSubject, EMPTY, map, Observable, of, take, tap } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { SessionService } from '@services';
@@ -172,5 +172,15 @@ export class MapService {
       });
     });
     this.conditionNameToDisplayNameMap$.next(nameMap);
+  }
+
+  getArea(shape: any) {
+    // remove and use the real thing
+    return this.http
+      .post<{ area_acres: number }>(
+        BackendConstants.END_POINT.concat(`/planning/validate_planning_area/`),
+        { geometry: shape }
+      )
+      .pipe(map((result) => Math.round(result.area_acres)));
   }
 }

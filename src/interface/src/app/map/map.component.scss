@@ -157,6 +157,7 @@
   font-size: 13px;
   font-weight: 500;
   margin: 8px 0px 0px 20px;
+  white-space: nowrap;
 }
 
 .draw-area-button,
@@ -235,6 +236,7 @@
 .config-summary {
   display: none;
 }
+
 
 @media print {
   .config-summary {

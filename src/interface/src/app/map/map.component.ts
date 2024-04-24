@@ -19,7 +19,16 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Feature, FeatureCollection, Geometry } from 'geojson';
-import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+} from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
@@ -478,7 +487,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   /** If the user is signed in, configures and opens the Create Plan dialog.
    *  If the user is signed out, configure and open the Sign In dialog.
    */
-  openCreatePlanDialog() {
+  async openCreatePlanDialog() {
     if (!this.authService.loggedInStatus$.value) {
       this.openSignInDialog();
       return;
@@ -497,7 +506,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       }
     }
 
-    this.openPlanCreateDialog()
+    const area = (await firstValueFrom(this.acres$)) || 0;
+
+    this.openPlanCreateDialog(area)
       .afterClosed()
       .subscribe((id) => {
         if (id) {
@@ -512,11 +523,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
   }
 
-  private openPlanCreateDialog() {
+  private openPlanCreateDialog(area: number) {
     return this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
       data: {
         shape: this.mapManager.convertToPlanningArea(),
+        area: area,
       },
     });
   }
@@ -755,4 +767,21 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   backHome() {
     this.router.navigate(['home']);
   }
+
+  acres$ = this.showConfirmAreaButton$.asObservable().pipe(
+    switchMap((show) => {
+      return this.mapManager.edits$.asObservable().pipe(map(() => show));
+    }),
+    switchMap((show) => {
+      console.log(show);
+      if (!show) {
+        return of(null);
+      }
+      const shape = this.mapManager.convertToPlanningArea();
+
+      return this.mapService.getArea(
+        (shape as GeoJSON.FeatureCollection).features[0].geometry
+      );
+    })
+  );
 }
