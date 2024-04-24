@@ -18,6 +18,11 @@ export class ProjectAreasMetricsComponent {
     map((planState) => planState.mapConditionLayer)
   );
 
+  dropdownGroups = [
+    { label: 'Primary Metrics', primary: true },
+    { label: 'Secondary Metrics', primary: false },
+  ];
+
   constructor(private planStateService: PlanStateService) {}
 
   selectDataPoint(e: MatSelectChange, i: number) {
@@ -45,8 +50,13 @@ export class ProjectAreasMetricsComponent {
   filterData(
     data: ChartData[],
     dataToFilter: ChartData[],
-    currentChart: ChartData
+    currentChart: ChartData,
+    isPrimary: boolean
   ): ChartData[] {
     return data.filter((d) => d === currentChart || !dataToFilter.includes(d));
+  }
+
+  myFilter(data: ChartData[], showPrimary: boolean) {
+    return data.filter((d) => d.is_primary === showPrimary);
   }
 }

@@ -4,4 +4,5 @@ export interface ChartData {
   key: string;
   values: number[];
   metric_layer: string;
+  is_primary: boolean;
 }

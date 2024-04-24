@@ -11,7 +11,7 @@
               "long_question_text": "What areas have the highest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
               "description": [
-                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer “Probability of Fire Severity High”.",
+                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of Fire Severity High\".",
                 "The threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore."
               ],
               "scenario_priorities": [
@@ -58,8 +58,8 @@
               "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface?",
               "short_question_text": "Reduce WUI Fire Risk",
               "description": [
-                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers “Structure Exposure Score” and “Damage Potential”.",
-                "There are multiple thresholds for this question, creating more constrained output. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to “Small”"
+                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Structure Exposure Score\" and \"Damage Potential\".",
+                "There are multiple thresholds for this question, creating more constrained output. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\""
               ],
               "scenario_priorities": [
                 "structure_exposure",
@@ -116,7 +116,7 @@
               "long_question_text": "Where are the optimal areas to treat to reduce overall fuel loads?",
               "short_question_text": "Fuel-load Reduction Opportunities",
               "description": [
-                "The output of this treatment goal shows the optimal areas to reduce overall fuel load, and  is derived from the data from the Explore map layers “Total Fuel Exposed to FIre” and “Probability of Fire Severity High”",
+                "The output of this treatment goal shows the optimal areas to reduce overall fuel load, and  is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Probability of Fire Severity High\"",
                 "The thresholds for this question have both those layers set to be greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape by reviewing them under your planning area in Explore."
               ],
               "scenario_priorities": [
@@ -163,8 +163,8 @@
               "long_question_text": "What areas are both needed and are suitable for prescribed burning?",
               "short_question_text": "Areas for Prescribed Burns",
               "description": [
-                "The output of this treatment goal shows areas that are both needed and most suitable for prescribed burning, and is derived from the data from the Explore map layers “Total Fuel Exposed to FIre” and “Standing Dead and Ladder Fuels”.",
-                "The thresholds for this question have “Probability of Fire Severity - High” set to between zero and 0.2, and Mean FRID Condition Class equal to 1, meaning that it is 0-33% departed. Review your planning layer with all of these map layers in Explore before running this query, and ensure that there is coverage. This is a constrained question, so we recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to “Small”."
+                "The output of this treatment goal shows areas that are both needed and most suitable for prescribed burning, and is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Standing Dead and Ladder Fuels\".",
+                "The thresholds for this question have \"Probability of Fire Severity - High\" set to between zero and 0.2, and Mean FRID Condition Class equal to 1, meaning that it is 0-33% departed. Review your planning layer with all of these map layers in Explore before running this query, and ensure that there is coverage. This is a constrained question, so we recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
               ],
               "scenario_priorities": [
                 "total_fuel_exposed_to_fire",
@@ -225,8 +225,8 @@
               "long_question_text": "Where are the priority opportunities to effectively reduce high severity fire risk to riparian habitats?",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
               "description": [
-                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layers “Total Fuel Exposed to FIre” and “Probability of Fire Severity High”.",
-                "The thresholds for this question have both those layers set to be greater than zero, as well as CWHR - Vegetation Types associated with Riparian Habitat set to “0” so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary.</a>"
+                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this question have both those layers set to be greater than zero, as well as CWHR - Vegetation Types associated with Riparian Habitat set to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary.</a>"
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -282,7 +282,7 @@
               "long_question_text": "Where are the best opportunities to effectively reduce moderate and high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk in Owl Habitat",
               "description": [
-                "This treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output is derived from the data from the Explore map layers “Total Fuel Exposed to FIre” and “Probability of Fire Severity High”.",
+                "This treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output is derived from the data from the Explore map layers \"Total Fuel Exposed to Fire\" and \"Probability of Fire Severity High\".",
                 "The thresholds have both those layers set to be greater than zero, as well as California Spotted Owl Habitat equal to zero.  The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment.  Ensure that your planning area has a high concentration of high severity fire landscape and/or a large amount of fuel on the landscape, and review the CSO Habitat layer as well."
               ],
               "scenario_priorities": [
@@ -336,8 +336,8 @@
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "description": [
-                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers “Wildlife Species Richness” and “Probability of Fire Severity - High”.",
-                "The thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape. "
+                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species Richness\" and \"Probability of Fire Severity - High\".",
+                "The thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape."
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -385,7 +385,7 @@
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "description": [
-                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this question is derived from the data from the Explore map layers “Threatened/Endangered Vertebrate Species Richness” and “Probability of Fire Severity - High”. ",
+                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this question is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species Richness\" and \"Probability of Fire Severity - High\".",
                 "The thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape. "
               ],
               "scenario_output_fields_paths": {
@@ -436,7 +436,7 @@
               "long_question_text": "What areas should be managed to maximize existing long-term above ground carbon accumulation and storage?",
               "short_question_text": "Areas with Long-term Carbon Storage",
               "description": [
-                "This treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layer “Aboveground Live Tree Carbon”.",
+                "This treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layer \"Aboveground Live Tree Carbon\".",
                 "The threshold for this question has Aboveground Live Tree Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of Aboveground Live Tree Carbon on the landscape by reviewing it under the map in Explore."
               ],
               "scenario_priorities": [
@@ -485,7 +485,7 @@
               "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
               "short_question_text": "Reduce Fire Risk in Carbon Sinks",
               "description": [
-                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers “Aboveground Live Tree Carbon” and “Probability of Fire Severity - High”.",
+                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers \"Aboveground Live Tree Carbon\" and \"Probability of Fire Severity - High\".",
                 "The thresholds for this question have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -543,7 +543,7 @@
               "long_question_text": "What areas have the greatest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
               "description": [
-                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer “Probability of High Severity Fire”.",
+                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\".",
                 "The threshold for this goal is that same layer, Probability of High Severity Fire, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -602,8 +602,8 @@
               "long_question_text": "Where are the best opportunities to reduce fire risk within the Wildland Urban Interface?",
               "short_question_text": "Reduce WUI Fire Risk",
               "description": [
-                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers “Probability of High Severity Fire”,  “Structure Exposure Score” and “WUI Damage Potential”.",
-                "There are multiple thresholds for this goal, and additional Wildland Urban Interface layer constraints, creating more constrained output. Make sure that your planning area has a high concentration of at-risk structures by reviewing High Severity Fire, WUI Damage Potential and SES layers in Explore under your planning area.  We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to “Small”"
+                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Probability of High Severity Fire\",  \"Structure Exposure Score\" and \"WUI Damage Potential\".",
+                "There are multiple thresholds for this goal, and additional Wildland Urban Interface layer constraints, creating more constrained output. Make sure that your planning area has a high concentration of at-risk structures by reviewing High Severity Fire, WUI Damage Potential and SES layers in Explore under your planning area.  We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\""
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -672,8 +672,8 @@
               "long_question_text": "Where are the best opportunities to reduce high severity fire risk to riparian habitats?",
               "short_question_text": "Reduce Fire Risk to Riparian Habitat",
               "description": [
-                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer “Probability of High Severity Fire”.",
-                "The thresholds for this goal have that layer set to be greater than zero, and includes CWHR - Vegetation Types associated with Riparian Habitat set to “0” so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape by viewing it in Explore, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary</a>"
+                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\".",
+                "The thresholds for this goal have that layer set to be greater than zero, and includes CWHR - Vegetation Types associated with Riparian Habitat set to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire landscape by viewing it in Explore, and review the CWHR data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary</a>"
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -733,8 +733,8 @@
               "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to California Spotted Owl habitat?",
               "short_question_text": "Reduce Fire Risk to Owl Habitat",
               "description": [
-                "This treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output of this goal is derived from the data from the Explore map layer “Probability of High Severity Fire”. The thresholds for this goal have both Probability of High Severity Fire and  California Spotted Owl Habitat equal to zero.",
-                "The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment.  Ensure that your planning area has a high concentration of high severity fire landscape, and review the CSO Habitat layer as well."
+                "This treatment goal is designed to identify treatment areas to reduce moderate and high severity fire risk to CSO habitat, and specifically are NOT in CSO habitat. The output of this goal is derived from the data from the Explore map layer \"Probability of High Severity Fire\". The thresholds for this goal have both Probability of High Severity Fire and California Spotted Owl Habitat equal to zero.",
+                "The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment. Ensure that your planning area has a high concentration of high severity fire landscape, and review the CSO Habitat layer as well."
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
@@ -793,7 +793,7 @@
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "description": [
-                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers “Wildlife Species Richness” and “Probability of Fire Severity High”.",
+                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species Richness\" and \"Probability of Fire Severity High\".",
                 "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape by reviewing the data under your planning area in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -854,7 +854,7 @@
               "long_question_text": "What areas support high threatened and endangered species richness and are exposed to to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "description": [
-                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers “Threatened/Endangered Vertebrate Species Richness” and “Probability of Fire Severity High”.",
+                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are on land at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species Richness\" and \"Probability of Fire Severity High\".",
                 "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape."
               ],
               "scenario_output_fields_paths": {
@@ -920,7 +920,7 @@
               "long_question_text": "What areas could be managed for long-term above ground carbon accumulation and storage?",
               "short_question_text": "Areas with Long-term Carbon Storage",
               "description": [
-                "This treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layers “Probability of FIre Severity High” and “Aboveground Live Tree Carbon”.",
+                "This treatment goal identifies areas with relatively elevated tree biomass carbon. The output of this goal is derived from the data from the Explore map layers \"Probability of FIre Severity High\" and \"Aboveground Live Tree Carbon\".",
                 "The threshold for this goal has Aboveground Live Tree Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing them in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -980,7 +980,7 @@
               "long_question_text": " What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
               "short_question_text": "Reduce Fire Risk in Carbon Sinks",
               "description": [
-                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers “Aboveground Live Tree Carbon” and “Probability of Fire Severity High”.",
+                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from the data from the Explore map layers \"Aboveground Live Tree Carbon\" and \"Probability of Fire Severity High\".",
                 "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Aboveground Live Tree Carbon on the landscape by reviewing in Explore."
               ],
               "scenario_output_fields_paths": {
@@ -1052,613 +1052,58 @@
               "short_question_text": "High-severity Fire Areas",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
+                  "fire_dynamics"
                 ],
                 "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
+                  "severity"
                 ],
                 "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red-legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
                   "probability_of_fire_severity_high"
                 ]
               },
               "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "annual_burn_probability",
-                "predicted_ignition_probability_human_caused",
-                "predicted_ignition_probability_lightening_caused"
+                "probability_of_fire_severity_high"
               ],
               "weights": [],
               "stand_thresholds": [
-                "probability_of_fire_severity_high > 0",
-                "predicted_ignition_probability_human_caused > 0",
-                "predicted_ignition_probability_lightening_caused > 0",
-                "(mean_fri_departure_condition_class == 2 | mean_fri_departure_condition_class == 3)"
+                "probability_of_fire_severity_high > 0"
               ],
               "global_thresholds": []
             },
             {
               "id": 19,
-              "long_question_text": "Where are the best opportunities to effectively reduce fire risk within  the Wildland Urban Interface? ",
+              "long_question_text": "Where are the best opportunities to reduce fire risk within the Wildland Urban Interface?",
               "short_question_text": "Reduce WUI Fire Risk",
               "scenario_output_fields_paths": {
                 "pillars": [
                   "fire_adapted_communities",
                   "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter",
-                  "fire_return_interval_departure"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red-legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high",
-                  "mean_fri_departure_condition_class"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "structure_exposure_score",
-                "wui_damage_potential",
-                "mean_fri_departure_condition_class"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "structure_exposure_score != 1",
-                "wui_damage_potential != 0",
-                "(mean_fri_departure_condition_class == 2 | mean_fri_departure_condition_class == 3)"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 20,
-              "long_question_text": "What areas need and are suitable for prescribed burning?",
-              "short_question_text": "Areas for Prescribed Burns",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality",
-                  "forest_and_shrubland_resilience",
                   "forsys"
                 ],
                 "elements": [
                   "hazard",
                   "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter",
-                  "fire_return_interval_departure",
                   "Forsys"
                 ],
                 "metrics": [
                   "structure_exposure_score",
-                  "ember_load_index",
                   "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red-legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high",
-                  "mean_fri_departure_condition_class",
-                  "tree_cover",
-                  "herbaceous_cover",
-                  "distance_to_roads",
-                  "shrub_cover"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "mean_fri_departure_condition_class",
-                "tree_cover",
-                "herbaceous_cover"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "mean_fri_departure_condition_class == 1",
-                "probability_of_fire_severity_high < 0.2",
-                "distance_to_roads < 800",
-                "structure_exposure_score == 1",
-                "annual_burn_probability > 0",
-                "shrub_cover <= 0.1",
-                "herbaceous_cover > 0",
-                "tree_cover > 0"
-              ],
-              "global_thresholds": []
-            }
-          ]
-        },
-        {
-          "category_name": "Biodiversity",
-          "questions": [
-            {
-              "id": 21,
-              "long_question_text": "Where are the best opportunities to effectively reduce high severity fire risk to terrestrial habitat associated with special status (focal) species?",
-              "short_question_text": "Reduce Fire Risk in Terrestrial Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red-legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0",
-                "california_spotted_owl == 0",
-                "loggerhead_shrike_habitat == 0",
-                "nuttails_woodpecker_habitat == 0",
-                "ringtail_cat_habitat == 0",
-                "least_bells_virio_habitat == 0"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 22,
-              "long_question_text": "Where are the best opportunities to effectively reduce high severity fire risk to riparian habitats?",
-              "short_question_text": "Reduce Fire Risk to Riparian Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red-legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 23,
-              "long_question_text": "Where are the best/priority opportunities to effectively reduce high severity fire risk to California Spotted Owl habitat?",
-              "short_question_text": "Reduce Fire Risk in Owl Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red-legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "california_spotted_owl == 0"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 24,
-              "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
-              "short_question_text": "Wildlife Richness Exposure to Fire",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_dynamics"
-                ],
-                "elements": [
-                  "severity"
-                ],
-                "metrics": [
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [],
-              "global_thresholds": []
-            },
-            {
-              "id": 25,
-              "long_question_text": "What areas support high threatened/endangered species richness and what is their exposure to high severity fire risk?",
-              "short_question_text": "Threatened/Endangered Species Exposure to Fire",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_dynamics"
-                ],
-                "elements": [
-                  "severity"
-                ],
-                "metrics": [
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [],
-              "global_thresholds": []
-            }
-          ]
-        },
-        {
-          "category_name": "Carbon/Biomass",
-          "questions": [
-            {
-              "id": 26,
-              "long_question_text": "What areas support high above ground carbon and are exposed to high severity fire potential?",
-              "short_question_text": "Areas with Long-term Carbon Storage",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics",
-                  "biodiversity",
-                  "economic_diversity",
-                  "wetland_integrity",
-                  "carbon_sequestration",
-                  "air_quality"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity",
-                  "functional_fire",
-                  "species_diversity",
-                  "focal_species",
-                  "wood_product_industry",
-                  "composition",
-                  "carbon_storage",
-                  "particulate_matter"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "ember_load_index",
-                  "wui_damage_potential",
-                  "annual_burn_probability",
-                  "predicted_ignition_probability_human_caused",
-                  "predicted_ignition_probability_lightening_caused",
-                  "wildlife_species_richness",
-                  "threatened_endangered_vertebrate_species_richness",
-                  "open_habitat_raptors_species_richness",
-                  "hummingbirds_species_richness",
-                  "california_spotted_owl",
-                  "mountain_lion",
-                  "california_red-legged_frog",
-                  "loggerhead_shrike_habitat",
-                  "nuttails_woodpecker_habitat",
-                  "ringtail_cat_habitat",
-                  "least_bells_virio_habitat",
-                  "cost_of_potential_treatments",
-                  "aquatic_species_richness",
-                  "total_aboveground_carbon",
-                  "potential_smoke_emissions_high_severity_fire",
-                  "wetland_diversity",
-                  "riparian_habitat",
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "total_aboveground_carbon"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0.1"
-              ],
-              "global_thresholds": []
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "region_name": "northern-california",
-      "treatment_goals": [
-        {
-          "category_name": "Fire Dynamics",
-          "questions": [
-            {
-              "id": 27,
-              "long_question_text": "What areas have the greatest probability of high severity fire?",
-              "short_question_text": "High-severity Fire Areas",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_dynamics"
-                ],
-                "elements": [
-                  "severity"
-                ],
-                "metrics": [
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 28,
-              "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface (WUI)?",
-              "short_question_text": "Reduce WUI Fire Risk",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_adapted_communities",
-                  "fire_dynamics"
-                ],
-                "elements": [
-                  "hazard",
-                  "severity"
-                ],
-                "metrics": [
-                  "structure_exposure_score",
-                  "wui_damage_potential",
-                  "probability_of_fire_severity_high"
-                ]
-              },
-              "scenario_priorities": [
-                "structure_exposure_score",
-                "wui_damage_potential"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "structure_exposure_score > 0",
-                "wui_damage_potential > 1",
-                "probability_of_fire_severity_high > 0"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 30,
-              "long_question_text": "What areas need and are suitable for prescribed burning?",
-              "short_question_text": "Areas for Prescribed Burns",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_dynamics",
-                  "forsys"
-                ],
-                "elements": [
-                  "fire_return_interval_departure",
-                  "severity",
-                  "Forsys"
-                ],
-                "metrics": [
-                  "mean_fri_departure_condition_class",
                   "probability_of_fire_severity_high",
                   "wildland_urban_interface"
                 ]
               },
               "scenario_priorities": [
-                "mean_fri_departure_condition_class"
+                "structure_exposure_score",
+                "wui_damage_potential",
+                "probability_of_fire_severity_high"
               ],
               "weights": [],
               "stand_thresholds": [
-                "mean_fri_departure_condition_class == 1",
                 "probability_of_fire_severity_high > 0",
-                "probability_of_fire_severity_high < 0.2",
-                "wildland_urban_interface == 0"
+                "structure_exposure_score != 1",
+                "wui_damage_potential > 0",
+                "wui_damage_potential < 6",
+                "wildland_urban_interface == 1 | wildland_urban_interface == 2"
               ],
               "global_thresholds": []
             }
@@ -1668,101 +1113,7 @@
           "category_name": "Biodiversity",
           "questions": [
             {
-              "id": 31,
-              "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to Pacific Fisher habitat?",
-              "short_question_text": "Reduce Fire Risk to Pacific Fisher Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_dynamics",
-                  "biodiversity"
-                ],
-                "elements": [
-                  "severity",
-                  "focal_species"
-                ],
-                "metrics": [
-                  "probability_of_fire_severity_high",
-                  "pacific_fisher"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0",
-                "pacific_fisher > 0",
-                "pacific_fisher < 0.25"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 32,
-              "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to riparian habitats?",
-              "short_question_text": "Reduce Fire Risk to Riparian Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_dynamics",
-                  "fire_adapted_communities",
-                  "wetland_integrity"
-                ],
-                "elements": [
-                  "severity",
-                  "hazard",
-                  "composition"
-                ],
-                "metrics": [
-                  "probability_of_fire_severity_high",
-                  "wildfire_hazard_potential",
-                  "riparian_habitat"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "wildfire_hazard_potential"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0",
-                "wildfire_hazard_potential > 0",
-                "riparian_habitat == 0"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 33,
-              "long_question_text": "Where are opportunities to reduce high severity fire risk to Northern Spotted Owl (NSPO) nesting/roosting habitat?",
-              "short_question_text": "Reduce Fire Risk to Northern Spotted Owl Habitat",
-              "scenario_output_fields_paths": {
-                "pillars": [
-                  "fire_dynamics",
-                  "biodiversity",
-                  "forsys"
-                ],
-                "elements": [
-                  "severity",
-                  "focal_species",
-                  "Forsys"
-                ],
-                "metrics": [
-                  "probability_of_fire_severity_high",
-                  "north_spotted_owl_nesting_suitablity_index",
-                  "inverse_nso_nest_roost_suitability"
-                ]
-              },
-              "scenario_priorities": [
-                "probability_of_fire_severity_high",
-                "inverse_nso_nest_roost_suitability"
-              ],
-              "weights": [],
-              "stand_thresholds": [
-                "probability_of_fire_severity_high > 0",
-                "north_spotted_owl_nesting_suitablity_index <= 800"
-              ],
-              "global_thresholds": []
-            },
-            {
-              "id": 34,
+              "id": 24,
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "scenario_output_fields_paths": {
@@ -1791,21 +1142,689 @@
               "global_thresholds": []
             },
             {
-              "id": 35,
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "biodiversity",
-                  "fire_dynamics"
+                  "fire_dynamics",
+                  "biodiversity"
                 ],
                 "elements": [
-                  "species_diversity",
-                  "severity"
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
+                  "probability_of_fire_severity_high",
+                  "threatened_endangered_vertebrate_species_richness"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "threatened_endangered_vertebrate_species_richness"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "threatened_endangered_vertebrate_species_richness > 0"
+              ],
+              "global_thresholds": []
+            }
+          ]
+        },
+        {
+          "category_name": "Carbon/Biomass",
+          "questions": [
+            {
+              "id": 26,
+              "long_question_text": "What areas could be managed for long-term above ground carbon accumulation and storage?",
+              "short_question_text": "Areas with Long-term Carbon Storage",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "carbon_sequestration"
+                ],
+                "elements": [
+                  "carbon_storage"
+                ],
+                "metrics": [
+                  "total_aboveground_carbon"
+                ]
+              },
+              "scenario_priorities": [
+                "total_aboveground_carbon"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "total_aboveground_carbon > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 38,
+              "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
+              "short_question_text": "Fire Risk in Carbon Sinks",
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "fire_dynamics",
+                  "carbon_sequestration"
+                ],
+                "elements": [
+                  "severity",
+                  "carbon_storage",
+                  "carbon_stability"
+                ],
+                "metrics": [
+                  "probability_of_fire_severity_high",
+                  "total_aboveground_carbon",
+                  "aboveground_carbon_turnover_time"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "total_aboveground_carbon",
+                "aboveground_carbon_turnover_time"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "total_aboveground_carbon > 0",
+                "aboveground_carbon_turnover_time > 0"
+              ],
+              "global_thresholds": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "region_name": "northern-california",
+      "treatment_goals": [
+        {
+          "category_name": "Fire Dynamics",
+          "questions": [
+            {
+              "id": 27,
+              "long_question_text": "What areas have the greatest probability of high severity fire?",
+              "short_question_text": "High-severity Fire Areas",
+              "description": [
+                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of Fire Severity High\".",
+                "The threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore."
+              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity"
+                ],
+                "elements": [
+                  "carbon_stability",
+                  "carbon_storage",
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity"
+                ],
+                "metrics": [
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
                   "threatened_endangered_vertebrate_species_richness",
-                  "probability_of_fire_severity_high"
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 28,
+              "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface (WUI)?",
+              "short_question_text": "Reduce WUI Fire Risk",
+              "description": [
+                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Structure Exposure Score\" and \"Damage Potential\".",
+                "There are multiple thresholds for this question, creating more constrained output. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
+              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity",
+                  "forsys"
+                ],
+                "elements": [
+                  "carbon_stability",
+                  "carbon_storage",
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity",
+                  "Forsys"
+                ],
+                "metrics": [
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
+                ]
+              },
+              "scenario_priorities": [
+                "structure_exposure_score",
+                "wui_damage_potential"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "structure_exposure_score > 0",
+                "wui_damage_potential > 1",
+                "probability_of_fire_severity_high > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 30,
+              "long_question_text": "What areas need and are suitable for prescribed burning?",
+              "short_question_text": "Areas for Prescribed Burns",
+              "description": [
+                "The output of this treatment goal shows areas that are both needed and most suitable for prescribed burning, and is derived from the data from the Explore map layer \"FRID Condition Class for Departure\".",
+                "It will identify where existing conditions would allow for prescribed burning with minimal pre-treatment of vegetation. The thresholds for this question have \"Probability of Fire Severity - High\" set to between zero and 0.2, FRID Condition Class equal to 1, meaning that it is 0-33% departed, and Wildland Urban Interface is not = 0.. Review your planning layer in this map layer in Explore before running this query, especially the FRID CC layer, and ensure that there is coverage.",
+                "This is a constrained question, so we recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
+              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity",
+                  "forsys"
+                ],
+                "elements": [
+                  "carbon_stability",
+                  "carbon_storage",
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity",
+                  "Forsys",
+                  "fire_return_interval_departure"
+                ],
+                "metrics": [
+                  "mean_fri_departure_condition_class",
+                  "wildland_urban_interface",
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
+                ]
+              },
+              "scenario_priorities": [
+                "mean_fri_departure_condition_class"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "mean_fri_departure_condition_class == 1",
+                "probability_of_fire_severity_high > 0",
+                "probability_of_fire_severity_high < 0.2",
+                "wildland_urban_interface == 0"
+              ],
+              "global_thresholds": []
+            }
+          ]
+        },
+        {
+          "category_name": "Biodiversity",
+          "questions": [
+            {
+              "id": 31,
+              "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to Pacific Fisher habitat?",
+              "short_question_text": "Reduce Fire Risk to Pacific Fisher Habitat",
+              "description": [
+                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from the data from the Explore map layer \"Probability of High Severity Fire\". ",
+                "The thresholds for this question has \"Probability of High Severity Fire\" set to be greater than zero, and Pacific Fisher Predicted Habitat between >0 and <.25. The goal is to not plan treatments on areas where there is a large amount of Pacific Fisher habitat and instead to treat around that area. Ensure that your planning area has a high concentration of high severity fire landscape and understand the amount of Pacific Fisher habitat as well."
+              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity"
+                ],
+                "elements": [
+                  "carbon_stability",
+                  "carbon_storage",
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity"
+                ],
+                "metrics": [
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential",
+                  "pacific_fisher"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "pacific_fisher > 0",
+                "pacific_fisher < 0.25"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 32,
+              "long_question_text": "Where are the priority opportunities to reduce high severity fire risk to riparian habitats?",
+              "short_question_text": "Reduce Fire Risk to Riparian Habitat",
+              "description": [
+                "The output of this treatment goal identifies the priority opportunities to reduce fire risk to riparian habitat, and is derived from equal weighting of the data from the Explore map layers \"Probability of High Severity Fire\" and \"Wildfire Hazard Potential\". ",
+                "The thresholds for this goal set both of those layers to be greater than zero, and include Riparian Habitat equal to \"0\" so that treatment areas in Riparian Habitat are not selected. Ensure that your planning area has a high concentration of high severity fire and wildfire hazard potential landscape by viewing it in Explore, and review the Riparian Habitat data in the <a href='https://rrk.sdsc.edu/sierra/p/SN_RRK_Metric%20Dictionary_v2023Oct18.pdf' target='_blank'>metrics dictionary</a>."
+              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity"
+                ],
+                "elements": [
+                  "carbon_stability",
+                  "carbon_storage",
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity"
+                ],
+                "metrics": [
+                  "riparian_habitat",
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wildfire_hazard_potential",
+                  "wui_damage_potential"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "wildfire_hazard_potential"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "wildfire_hazard_potential > 0",
+                "riparian_habitat == 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 33,
+              "long_question_text": "Where are opportunities to reduce high severity fire risk to Northern Spotted Owl (NSPO) nesting/roosting habitat?",
+              "short_question_text": "Reduce Fire Risk to Northern Spotted Owl Habitat",
+              "description": [
+                "This treatment goal is designed to identify treatment areas to reduce high severity fire risk to NSPO habitat, and specifically are NOT in NSPO habitat. The output is derived from the data from the Explore map layers \"Probability of Fire Severity High\" and NSPO Nesting/Roosting Forest Cover Type.",
+                "The thresholds have Probability of High Severity Fire set to be greater than zero, and NSPO Nesting/Roosting Forest Cover Type Suitability Index greater than zero and less than 800. The output identifies areas not in owl habitat, and prioritizes stands closest to habitat for treatment. Ensure that your planning area has a high concentration of high severity fire landscape, and review the NSPO Nesting/Roosting Forest Cover Type layer as well."
+              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity",
+                  "forsys"
+                ],
+                "elements": [
+                  "carbon_stability",
+                  "carbon_storage",
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity",
+                  "Forsys"
+                ],
+                "metrics": [
+                  "north_spotted_owl_nesting_suitablity_index",
+                  "inverse_nso_nest_roost_suitability",
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "inverse_nso_nest_roost_suitability"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "north_spotted_owl_nesting_suitablity_index <= 800"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 34,
+              "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
+              "short_question_text": "Wildlife Richness Exposure to Fire",
+              "description": [
+                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of  high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species RIchness\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape by reviewing the data under your planning area in Explore."
+              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity"
+                ],
+                "elements": [
+                  "carbon_stability",
+                  "carbon_storage",
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity"
+                ],
+                "metrics": [
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
+                ]
+              },
+              "scenario_priorities": [
+                "probability_of_fire_severity_high",
+                "wildlife_species_richness"
+              ],
+              "weights": [],
+              "stand_thresholds": [
+                "probability_of_fire_severity_high > 0",
+                "wildlife_species_richness > 0"
+              ],
+              "global_thresholds": []
+            },
+            {
+              "id": 35,
+              "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
+              "short_question_text": "Threatened/Endangered Species Exposure to Fire",
+              "description": [
+                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species RIchness\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape."
+              ],
+              "scenario_output_fields_paths": {
+                "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity"
+                ],
+                "elements": [
+                  "carbon_stability",
+                  "carbon_storage",
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity"
+                ],
+                "metrics": [
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -1827,18 +1846,62 @@
             {
               "id": 36,
               "long_question_text": "What areas support elevated levels if aboveground carbon?",
-              "short_question_text": "Areas supporting elevated aboveground carbon",
+              "short_question_text": "Areas Supporting Elevated Aboveground Carbon",
+              "description": [
+                "This treatment goal identifies areas with relatively elevated aboveground live tree carbon. The output of this goal is derived from the data from the Explore map layers \"Aboveground Carbon Turnover Time\" and \"Total Aboveground Carbon\".",
+                "The threshold for this goal has Total Aboveground Carbon greater than 0 mg C/ha, and Aboveground Carbon Turnover Time greater than 0 years. Ensure that your planning area has a high concentration of Total Aboveground Carbon and Aboveground Carbon Turnover Time on the landscape by reviewing them in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "carbon_sequestration"
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity"
                 ],
                 "elements": [
+                  "carbon_stability",
                   "carbon_storage",
-                  "carbon_stability"
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
                   "total_aboveground_carbon",
-                  "aboveground_carbon_turnover_time"
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -1856,20 +1919,62 @@
               "id": 37,
               "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
               "short_question_text": "Fire Risk in Carbon Sinks",
+              "description": [
+                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from equal weighting of the data from the Explore map layers \"Total Aboveground Carbon\", \"Aboveground Carbon Turnover Time\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this goal have Probability of High Severity fire greater than zero, Total Aboveground Carbon greater than 0 mg C/ha, and Aboveground Carbon Turnover Time greater than zero years.. Ensure that your planning area has a high concentration of High Severity Fire and Total Aboveground Carbon on the landscape, as well as Aboveground Carbon Turnover greater than zero, by reviewing them in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
                   "fire_dynamics",
-                  "carbon_sequestration"
+                  "social_and_cultural_wellbeing",
+                  "water_security",
+                  "wetland_integrity"
                 ],
                 "elements": [
-                  "severity",
+                  "Forsys",
+                  "carbon_stability",
                   "carbon_storage",
-                  "carbon_stability"
+                  "composition",
+                  "equitable_opportunity",
+                  "focal_species",
+                  "hazard",
+                  "quality",
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
+                  "aboveground_carbon_turnover_time",
+                  "american_indian_alaska_native_concentration",
+                  "american_indian_lands",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "asian_concentration",
+                  "black_african_concentration",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "chinook_salmon_critical_habitat",
+                  "coho_salmon_critical_habitat",
+                  "hispanic_black_indigenous_concentration",
+                  "hispano_latino_concentration",
+                  "housing_burden_percentile",
+                  "low_income_population",
+                  "mountain_lion",
+                  "northern_goshawk_habitat",
+                  "pacific_fisher",
+                  "percent_impervious_surface",
+                  "poverty_percentile",
                   "probability_of_fire_severity_high",
+                  "riparian_habitat",
+                  "steelhead_critical_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
                   "total_aboveground_carbon",
-                  "aboveground_carbon_turnover_time"
+                  "unemployment_percentile",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
