@@ -30,10 +30,10 @@ from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     PlanningAreaSerializer,
-    PlanningAreaValidationSerializer,
     ScenarioSerializer,
     SharedLinkSerializer,
     PlanningAreaNoteSerializer,
+    ValidatePlanningAreaOutputSerializer,
     ValidatePlanningAreaSerializer,
 )
 from planning.services import (
@@ -62,7 +62,7 @@ def validate_planning_area(request: Request) -> Response:
     serializer.is_valid(raise_exception=True)
     geometry = coerce_geometry(serializer.validated_data.get("geometry"))
     data = {"area_acres": get_acreage(geometry)}
-    out_serializer = PlanningAreaValidationSerializer(instance=data)
+    out_serializer = ValidatePlanningAreaOutputSerializer(instance=data)
     return Response(out_serializer.data)
 
 
