@@ -85,4 +85,4 @@ jobs:
           SECRET_KEY: c25df907e3b95b0138b24f2bba3621f697d38196b0afe7a50c
         run: |
           cd src/planscape
-          python manage.py test -p "*test*.py"
+          poetry run python manage.py test .
