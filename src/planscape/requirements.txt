@@ -97,6 +97,7 @@ pycodestyle==2.11.1
 pycparser==2.22
 pyflakes==3.1.0
 PyJWT==2.8.0
+pyOpenSSL==24.1.0
 pyparsing==3.1.2
 pyproject_hooks==1.0.0
 pytest==7.1.2
