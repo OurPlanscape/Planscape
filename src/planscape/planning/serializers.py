@@ -91,7 +91,6 @@ class PlanningAreaSerializer(
 
 
 class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
-
     geometry = gis_serializers.GeometryField()
 
     def validate_geometry(self, geometry):
@@ -118,7 +117,6 @@ class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
 
 
 class PlanningAreaValidationSerializer(serializers.Serializer):
-
     area_acres = serializers.FloatField()
 
 
