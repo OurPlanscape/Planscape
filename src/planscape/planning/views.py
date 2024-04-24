@@ -392,9 +392,7 @@ def list_planning_areas(request: Request) -> Response:
 
 ## TODO: move this to a class under v2/
 @api_view(["GET"])
-def get_planning_areas(request: Request) -> Response:
-    filter_backends = [DjangoFilterBackend]
-    ordering_fields = ["name", "scenario_count"]
+def get_planningareas(request: Request) -> Response:
     try:
         # Check that the user is logged in.
         user = request.user

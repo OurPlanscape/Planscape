@@ -7,19 +7,19 @@ from planning.views import (
     download_csv,
     download_shapefile,
     list_planning_areas,
-    get_planning_areas,
     update_planning_area,
     create_scenario,
     delete_scenario,
     get_scenario_by_id,
     list_scenarios_for_planning_area,
-    get_planningarea_scenarios,
     treatment_goals_config,
     update_scenario,
     update_scenario_result,
     create_shared_link,
     get_shared_link,
     PlanningAreaNotes,
+    get_planningareas,
+    get_planningarea_scenarios,
 )
 
 app_name = "planning"
@@ -42,8 +42,6 @@ urlpatterns = [
         name="get_planning_area_by_id",
     ),
     path("list_planning_areas/", list_planning_areas, name="list_planning_areas"),
-    # TODO: change to a V2 API
-    path("get_planning_areas/", get_planning_areas, name="get_planning_areas"),
     path("update_planning_area/", update_planning_area, name="update_planning_area"),
     # Scenarios
     path("create_scenario/", create_scenario, name="create_scenario"),
@@ -64,12 +62,6 @@ urlpatterns = [
         "list_scenarios_for_planning_area/",
         list_scenarios_for_planning_area,
         name="list_scenarios_for_planning_area",
-    ),
-    # TODO: move to a V2 API
-    path(
-        "planning_area/<int:planningarea_pk>/scenarios",
-        get_planningarea_scenarios,
-        name="get_planningarea_scenarios",
     ),
     path(
         "update_scenario/",
@@ -110,5 +102,12 @@ urlpatterns = [
         "planning_area/<int:planningarea_pk>/note/<int:planningareanote_pk>",
         PlanningAreaNotes.as_view(),
         name="delete_planningareanote",
+    ),
+    # v2 API endpoints
+    path("v2/planning_area", get_planningareas, name="get_planningareas"),
+    path(
+        "v2/planning_area/<int:planningarea_pk>/scenario",
+        get_planningarea_scenarios,
+        name="get_planningarea_scenarios",
     ),
 ]
