@@ -116,7 +116,7 @@ class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
         fields = ("geometry",)
 
 
-class PlanningAreaValidationSerializer(serializers.Serializer):
+class ValidatePlanningAreaOutputSerializer(serializers.Serializer):
     area_acres = serializers.FloatField()
 
 
