@@ -67,7 +67,10 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     notes = models.TextField(null=True)
 
-    geometry = models.MultiPolygonField(srid=4269, null=True)
+    geometry = models.MultiPolygonField(
+        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        null=True,
+    )
 
     def creator_name(self):
         return self.user.get_full_name()

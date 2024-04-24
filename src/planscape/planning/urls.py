@@ -1,6 +1,7 @@
 from django.conf.urls import include
 from django.urls import path
 from planning.views import (
+    validate_planning_area,
     create_planning_area,
     delete_planning_area,
     get_planning_area_by_id,
@@ -33,6 +34,9 @@ urlpatterns = [
         "treatment_goals_config/", treatment_goals_config, name="treatment_goals_config"
     ),
     # Plans / Planning Areas
+    path(
+        "validate_planning_area/", validate_planning_area, name="validate_planning_area"
+    ),
     path("create_planning_area/", create_planning_area, name="create_planning_area"),
     path("delete_planning_area/", delete_planning_area, name="delete_planning_area"),
     path(

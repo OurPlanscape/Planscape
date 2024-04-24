@@ -59,7 +59,8 @@ export class ScenarioService {
       .pipe(
         catchError((error) => {
           const message =
-            error.error.reason || 'Please change your settings and try again.';
+            error.error?.global?.[0] ||
+            'Please change your settings and try again.';
           throw new CreateScenarioError(
             'Your scenario config is invalid. ' + message
           );

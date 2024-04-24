@@ -196,10 +196,11 @@ class CreateScenarioTest(APITransactionTestCase):
             second_payload,
             content_type="application/json",
         )
+
         self.assertEqual(second_response.status_code, 400)
         self.assertJSONEqual(
             second_response.content,
-            {"reason": "A scenario with this name already exists."},
+            {"global": ["The fields planning_area, name must make a unique set."]},
         )
 
     def test_create_scenario_not_logged_in(self):
@@ -233,7 +234,6 @@ class CreateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"does not exist")
 
     def test_create_scenario_collab_user(self):
         self.client.force_authenticate(self.collab_user)

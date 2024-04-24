@@ -3,7 +3,7 @@ import logging
 import os
 from base.region_name import display_name_to_region
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from planning.geometry import coerce_geojson, coerce_geometry
 from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
@@ -33,9 +33,12 @@ from planning.serializers import (
     ScenarioSerializer,
     SharedLinkSerializer,
     PlanningAreaNoteSerializer,
+    ValidatePlanningAreaOutputSerializer,
+    ValidatePlanningAreaSerializer,
 )
 from planning.services import (
     export_to_shapefile,
+    get_acreage,
     validate_scenario_treatment_ratio,
     zip_directory,
 )
@@ -51,25 +54,16 @@ logger = logging.getLogger(__name__)
 
 # We always need to store multipolygons, so coerce a single polygon to
 # a multigolygon if needed.
-def _convert_polygon_to_multipolygon(geometry: dict):
-    features = geometry.get("features", [])
-    if len(features) > 1 or len(features) == 0:
-        raise ValueError("Must send exactly one feature.")
-    feature = features[0]
-    geom = feature["geometry"]
-    if geom["type"] == "Polygon":
-        geom["type"] = "MultiPolygon"
-        geom["coordinates"] = [feature["geometry"]["coordinates"]]
 
-    actual_geometry = MultiPolygon(
-        [GEOSGeometry(json.dumps(geom)).buffer(0).unary_union]
-    )
 
-    if not actual_geometry.valid:
-        raise ValueError("Geometry is invalid and cannot be used.")
-    if actual_geometry.geom_type != "MultiPolygon":
-        raise ValueError("Could not parse geometry")
-    return actual_geometry
+@api_view(["POST"])
+def validate_planning_area(request: Request) -> Response:
+    serializer = ValidatePlanningAreaSerializer(data=request.data)
+    serializer.is_valid(raise_exception=True)
+    geometry = coerce_geometry(serializer.validated_data.get("geometry"))
+    data = {"area_acres": get_acreage(geometry)}
+    out_serializer = ValidatePlanningAreaOutputSerializer(instance=data)
+    return Response(out_serializer.data)
 
 
 #### PLAN(NING AREA) Handlers ####
@@ -122,13 +116,13 @@ def create_planning_area(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
         # Get the geometry of the planning area.
-        geometry = body.get("geometry")
-        if geometry is None:
+        geojson = body.get("geometry")
+        if geojson is None:
             return Response(
                 {"message": "Must specify the planning area geometry."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        geometry = _convert_polygon_to_multipolygon(geometry)
+        geometry = coerce_geojson(geojson)
         planning_area = PlanningArea.objects.create(
             user=user,
             name=name,
@@ -564,13 +558,13 @@ def create_scenario(request: Request) -> Response:
                 {"error": "Authentication Required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        body = json.loads(request.body)
 
         # Check for all needed fields
-        serializer = ScenarioSerializer(data=body, context={"user": user})
+        serializer = ScenarioSerializer(data=request.data, context={"user": user})
         serializer.is_valid(raise_exception=True)
 
-        planning_area = PlanningArea.objects.get(id=body["planning_area"])
+        # no need to convert this anymore, serializer resolves it.
+        planning_area = serializer.validated_data.get("planning_area")
         if not PlanningAreaPermission.can_add_scenario(user, planning_area):
             return Response(
                 {
