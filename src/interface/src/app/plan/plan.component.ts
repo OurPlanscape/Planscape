@@ -23,7 +23,7 @@ import {
 import { Plan, User } from '../types';
 import { AuthService, PlanStateService, ScenarioService } from '@services';
 import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
-import { calculateAcres, getPlanPath } from './plan-helpers';
+import { getPlanPath } from './plan-helpers';
 
 @Component({
   selector: 'app-plan',
@@ -98,10 +98,6 @@ export class PlanComponent implements OnInit, OnDestroy {
 
     plan$.subscribe({
       next: (plan) => {
-        if (plan.geometry) {
-          console.log(calculateAcres(plan.geometry));
-        }
-
         this.currentPlan$.next(plan);
       },
       error: (error) => {

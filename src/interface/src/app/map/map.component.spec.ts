@@ -108,6 +108,7 @@ describe('MapComponent', () => {
       {
         getRegionBoundary: of(fakeGeoJson),
         getBoundaryShapes: of(fakeLayer),
+        getArea: of(0),
       },
       {
         boundaryConfig$: new BehaviorSubject<BoundaryConfig[] | null>([
@@ -670,6 +671,7 @@ describe('MapComponent', () => {
           maxWidth: '560px',
           data: {
             shape: { type: 'FeatureCollection', features: [] },
+            area: 0,
           },
         }
       );

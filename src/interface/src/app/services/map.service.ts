@@ -175,7 +175,6 @@ export class MapService {
   }
 
   getArea(shape: any) {
-    // remove and use the real thing
     return this.http
       .post<{ area_acres: number }>(
         BackendConstants.END_POINT.concat(`/planning/validate_planning_area/`),

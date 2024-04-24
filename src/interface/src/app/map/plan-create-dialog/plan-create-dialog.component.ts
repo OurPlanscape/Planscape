@@ -3,7 +3,7 @@ import {
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Component, Inject, OnInit } from '@angular/core';
+import { Component, Inject } from '@angular/core';
 import { PlanService, SessionService } from '@services';
 import { firstValueFrom } from 'rxjs';
 import { SNACK_ERROR_CONFIG } from '../../../app/shared/constants';
@@ -20,7 +20,7 @@ export interface PlanCreateDialogData {
   templateUrl: './plan-create-dialog.component.html',
   styleUrls: ['./plan-create-dialog.component.scss'],
 })
-export class PlanCreateDialogComponent implements OnInit {
+export class PlanCreateDialogComponent {
   planForm = new FormGroup({
     planName: new FormControl('', Validators.required),
   });
@@ -35,8 +35,6 @@ export class PlanCreateDialogComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     @Inject(MAT_DIALOG_DATA) public data: PlanCreateDialogData
   ) {}
-
-  ngOnInit() {}
 
   get showAreaError() {
     return this.data.area < 100;

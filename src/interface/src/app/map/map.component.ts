@@ -773,14 +773,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       return this.mapManager.edits$.asObservable().pipe(map(() => show));
     }),
     switchMap((show) => {
-      console.log(show);
-      if (!show) {
+      const shape = this.mapManager.convertToPlanningArea();
+      if (!show || !shape) {
         return of(null);
       }
-      const shape = this.mapManager.convertToPlanningArea();
 
       return this.mapService.getArea(
-        (shape as GeoJSON.FeatureCollection).features[0].geometry
+        (shape as GeoJSON.FeatureCollection).features?.[0]?.geometry
       );
     })
   );
