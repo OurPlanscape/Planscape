@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from collaboration.services import get_role, get_permissions
 from planning.geometry import coerce_geometry
 from planning.models import (
@@ -90,34 +90,31 @@ class PlanningAreaSerializer(
         geo_field = "geometry"
 
 
-class ValidatePlanningAreaSerializer(serializers.ModelSerializer):
+class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
 
-    def validate_geometry(self, value):
+    geometry = gis_serializers.GeometryField()
 
-        geometry = GEOSGeometry(
-            value,
-            srid=settings.CRS_INTERNAL_REPRESENTATION,
-        )
-        if geometry.valid():
-            return value
+    def validate_geometry(self, geometry):
+        if not isinstance(geometry, GEOSGeometry):
+            geometry = GEOSGeometry(
+                geometry,
+                srid=settings.CRS_INTERNAL_REPRESENTATION,
+            )
 
-        geojson = {
-            "features": [
-                {
-                    "type": "Feature",
-                    "properties": {},
-                    "geometry": value,
-                },
-            ]
-        }
+        if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
+            geometry = geometry.transform(
+                settings.CRS_INTERNAL_REPRESENTATION, clone=True
+            )
+
         try:
-            _ = coerce_geometry(geojson)
+            geometry = coerce_geometry(geometry)
         except ValueError as valEx:
             raise serializers.ValidationError(str(valEx))
-        return value
+        return geometry
 
     class Meta:
         model = PlanningArea
+        fields = ("geometry",)
 
 
 class PlanningAreaValidationSerializer(serializers.Serializer):

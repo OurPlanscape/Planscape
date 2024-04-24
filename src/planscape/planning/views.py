@@ -61,7 +61,7 @@ def validate_planning_area(request: Request) -> Response:
 
     serializer = ValidatePlanningAreaSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    geometry = coerce_geometry(serializer.validated_data.geometry)
+    geometry = coerce_geometry(serializer.validated_data.get("geometry"))
     data = {"area_acres": get_acreage(geometry)}
     out_serializer = PlanningAreaValidationSerializer(instance=data)
     return Response(out_serializer.data)
