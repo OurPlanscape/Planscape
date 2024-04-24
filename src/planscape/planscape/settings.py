@@ -199,6 +199,9 @@ REST_FRAMEWORK = {
         "dj_rest_auth.jwt_auth.JWTCookieAuthentication",
     ),
     "NON_FIELD_ERRORS_KEY": "global",
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "PAGE_SIZE": 20,
 }
 
 REST_AUTH = {
@@ -299,9 +302,13 @@ LOGGING = {
     "handlers": {
         "console": {
             "level": LOGLEVEL,
-            "class": "logging.StreamHandler",
             "formatter": "verbose",
+            "class": "logging.StreamHandler",
         },
+    },
+    "root": {
+        "handlers": ["console"],
+        "level": LOGLEVEL,
     },
 }
 

@@ -20,6 +20,7 @@ from planning.views import (
     get_shared_link,
     PlanningAreaNotes,
 )
+from planning.views_v2 import PlanningAreaViewSet
 
 app_name = "planning"
 
@@ -105,4 +106,6 @@ urlpatterns = [
         PlanningAreaNotes.as_view(),
         name="delete_planningareanote",
     ),
+    # v2 URLS
+    path("v2/planning_area", PlanningAreaViewSet.as_view({"get": "list"})),
 ]
