@@ -107,5 +107,10 @@ urlpatterns = [
         name="delete_planningareanote",
     ),
     # v2 URLS
-    path("v2/planning_area", PlanningAreaViewSet.as_view({"get": "list"})),
+    # TODO: probably don't use this name here
+    path(
+        "v2/planning_area",
+        PlanningAreaViewSet.as_view({"get": "list"}),
+        name="get_planningareas",
+    ),
 ]

@@ -19,9 +19,14 @@ logger = logging.getLogger(__name__)
 
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     queryset = PlanningArea.objects.all()
-    serializer_class = PlanningAreaSerializer
     permission_classes = [PlanningUserPermission]
-    ordering_fields = ["name", "created_at"]
+    ordering_fields = ["name", "created_at", "scenario_count"]
+    filterset_class = PlanningAreaFilter
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return ListPlanningAreaSerializer
+        return PlanningAreaSerializer
 
     def get_queryset(self):
         user = self.request.user

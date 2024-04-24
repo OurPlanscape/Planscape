@@ -30,6 +30,27 @@ def _create_planning_area(
     return planning_area
 
 
+def _create_multiple_planningareas(
+    count: int,
+    user: User,
+    name_prefix: str,
+    geometry: GEOSGeometry | None = None,
+    notes: str | None = None,
+):
+    created_planningareas = []
+
+    for s in range(0, count):
+        created_planningareas.append(
+            _create_planning_area(
+                user=user,
+                name=f"{name_prefix} {s}",
+                geometry=geometry,
+                notes=notes,
+            )
+        )
+    return created_planningareas
+
+
 # Blindly create a scenario and a scenario result in its default (pending) state.
 # Note that this does no deduplication, which our APIs may eventually do.
 def _create_scenario(
@@ -52,6 +73,28 @@ def _create_scenario(
     scenario_result.save()
 
     return scenario
+
+
+def _create_multiple_scenarios(
+    count: int,
+    planning_area: PlanningArea,
+    name_prefix: str,
+    configuration: str,
+    user: User,
+):
+    created_scenarios = []
+
+    for s in range(0, count):
+        created_scenarios.append(
+            _create_scenario(
+                planning_area=planning_area,
+                scenario_name=f"{name_prefix} {s}",
+                configuration=configuration,
+                user=user,
+                notes="",
+            )
+        )
+    return created_scenarios
 
 
 def _create_test_user_set():
