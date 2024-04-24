@@ -52,6 +52,7 @@ class ValidatePlanningAreaTest(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
 
+
 from planning.models import UserPrefs
 
 
