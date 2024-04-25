@@ -12,7 +12,6 @@ class Organization(
     DeletedAtMixin,
     models.Model,
 ):
-
     created_by = models.ForeignKey(
         User,
         on_delete=models.RESTRICT,
@@ -21,6 +20,5 @@ class Organization(
     name = models.CharField(max_length=128)
 
     class Meta:
-
         verbose_name = "Organization"
         verbose_name_plural = "Organizations"
