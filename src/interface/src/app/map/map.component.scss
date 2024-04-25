@@ -207,6 +207,11 @@
   }
 }
 
+.total-area {
+  margin-left: auto;
+}
+
+
 .done-button {
   background-color: #3367d6;
   box-shadow: 0px 1px 5px rgba(0, 0, 0, 0.12),
@@ -227,8 +232,7 @@
 .cancel-button {
   color: #ffffff;
   font-size: 13px;
-  margin: 10px 20px 0px 20px;
-  margin-left: auto;
+  margin: 10px 20px 0 20px;
   pointer-events: auto;
   width: fit-content;
 }
