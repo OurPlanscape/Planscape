@@ -9,7 +9,6 @@ User = get_user_model()
 
 
 class ProjectVisibility(models.TextChoices):
-
     PUBLIC = (
         "PUBLIC",
         "Public",
@@ -21,7 +20,6 @@ class ProjectVisibility(models.TextChoices):
 
 
 class ProjectCapabilities(models.TextChoices):
-
     EXPLORE = (
         "EXPLORE",
         "Explore",
@@ -91,6 +89,5 @@ class Project(
     )
 
     class Meta:
-
         verbose_name = "Project"
         verbose_name_plural = "Projects"
