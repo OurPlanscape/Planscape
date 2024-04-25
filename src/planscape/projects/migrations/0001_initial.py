@@ -1,3 +1,4 @@
+from django.conf import settings
 import django.contrib.gis.db.models.fields
 import django.contrib.postgres.fields
 from django.db import migrations, models
@@ -11,6 +12,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("organizations", "0001_initial"),
+        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
     operations = [
@@ -63,6 +65,13 @@ class Migration(migrations.Migration):
                 (
                     "geometry",
                     django.contrib.gis.db.models.fields.PolygonField(srid=4269),
+                ),
+                (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.RESTRICT,
+                        to=settings.AUTH_USER_MODEL,
+                    ),
                 ),
                 (
                     "organization",

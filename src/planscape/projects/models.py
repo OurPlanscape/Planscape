@@ -1,9 +1,11 @@
 from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
-
+from django.contrib.auth import get_user_model
 from core.models import CreatedAtMixin, UUIDMixin, UpdatedAtMixin, DeletedAtMixin
 from organizations.models import Organization
+
+User = get_user_model()
 
 
 class ProjectVisibility(models.TextChoices):
@@ -53,6 +55,11 @@ class Project(
 
     organization = models.ForeignKey(
         Organization,
+        on_delete=models.RESTRICT,
+    )
+
+    created_by = models.ForeignKey(
+        User,
         on_delete=models.RESTRICT,
     )
 
