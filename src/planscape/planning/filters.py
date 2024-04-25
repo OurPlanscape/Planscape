@@ -7,18 +7,10 @@ class PlanningAreaFilter(filters.FilterSet):
     region_name = filters.MultipleChoiceFilter(
         choices=RegionChoices.choices,
     )
-    sortby = filters.CharFilter(method="filter_by_sortby")
 
     class Meta:
         model = PlanningArea
-        fields = ["sortby", "name", "region_name"]
-
-    def filter_by_sortby(self, queryset, field, value):
-        if value == "scenario_count":
-            queryset = queryset.order_by("scenario_count")
-        if value == "name":
-            queryset = queryset.order_by("name")
-        return queryset
+        fields = ["name", "region_name"]
 
 
 class ScenarioFilter(filters.FilterSet):

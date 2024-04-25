@@ -21,6 +21,11 @@ from planning.views import (
     PlanningAreaNotes,
 )
 from planning.views_v2 import PlanningAreaViewSet
+from rest_framework import routers
+
+router = routers.SimpleRouter()
+router.register(r"planningareas", PlanningAreaViewSet, basename="planningareas")
+urlpatterns = router.urls
 
 app_name = "planning"
 
@@ -107,10 +112,5 @@ urlpatterns = [
         name="delete_planningareanote",
     ),
     # v2 URLS
-    # TODO: probably don't use this name here
-    path(
-        "v2/planning_area",
-        PlanningAreaViewSet.as_view({"get": "list"}),
-        name="get_planningareas",
-    ),
+    path("v2/", include(router.urls)),
 ]

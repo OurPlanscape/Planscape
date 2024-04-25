@@ -87,7 +87,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
     def test_list_planning_areas(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(
-            reverse("planning:get_planningareas"), {}, content_type="application/json"
+            reverse("planning:planningareas-list"), {}, content_type="application/json"
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -101,7 +101,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"page": "3"}
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -118,7 +118,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"name": "10"}
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -130,97 +130,11 @@ class GetPlanningAreaTest(APITransactionTestCase):
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
 
-    def test_list_planning_areas_ordered(self):
-        ## This tests the logic for ordering areas by most recent scenario date,
-        #   or by the plan's most recent update, if it has no scenario
-
-        ## Results follow this logic:
-        # plan4 - 2010-12-01 00:01:01-05 -- from most recent scenario
-        # plan5 - 2010-11-01 00:01:01-05 -- no scenarios
-        # plan3 - 2010-10-01 00:01:01-05 -- from most recent scenario
-        # plan1 - 2010-09-01 00:01:01-05 -- from most recent scenario
-        # plan2 - 2010-02-01 00:01:01-05 -- no scenarios
-
-        scenario_update_overrides = [
-            ["2010-07-01 00:01:01-05", self.scenario1_1.id],
-            ["2010-08-01 00:01:01-05", self.scenario1_2.id],
-            ["2010-09-01 00:01:01-05", self.scenario1_3.id],
-            ["2010-10-01 00:01:01-05", self.scenario3_1.id],
-            ["2010-11-01 00:01:01-05", self.scenario4_1.id],
-            ["2010-12-01 00:01:01-05", self.scenario4_2.id],
-            ["2010-04-03 00:01:01-05", self.scenario4_3.id],
-        ]
-        # using raw updates here, to override django's autoupdate of updated_at field
-        with connection.cursor() as cursor:
-            for so in scenario_update_overrides:
-                cursor.execute(
-                    "UPDATE planning_scenario SET updated_at = %s WHERE id = %s", so
-                )
-
-        # change all updated_at to be uniform, for all test records
-        with connection.cursor() as cursor:
-            for p in self.test_planningareas:
-                cursor.execute(
-                    f"UPDATE planning_planningarea SET updated_at = '2009-01-01' WHERE id = {p.id}"
-                )
-
-        # then change a few to be specific
-        planning_area_update_overrides = [
-            ["2010-01-01 00:01:01-05", self.planning_area1.id],
-            ["2010-02-01 00:01:01-05", self.planning_area2.id],
-            ["2010-03-01 00:01:01-05", self.planning_area3.id],
-            ["2010-04-01 00:01:01-05", self.planning_area4.id],
-            ["2010-11-01 00:01:01-05", self.planning_area5.id],
-            ["2010-06-01 00:01:01-05", self.planning_area6.id],
-        ]
-        # using raw updates here, to override django's autoupdate of updated_at field
-        with connection.cursor() as cursor:
-            for p in planning_area_update_overrides:
-                cursor.execute(
-                    "UPDATE planning_planningarea SET updated_at = %s WHERE id = %s", p
-                )
-
-        self.client.force_authenticate(self.user)
-        response = self.client.get(
-            reverse("planning:get_planningareas"), {}, content_type="application/json"
-        )
-        planning_areas = json.loads(response.content)
-        updates_list = [
-            (pa["name"], pa["latest_updated"]) for pa in planning_areas["results"][:5]
-        ]
-        self.assertEqual(
-            updates_list,
-            [
-                ("test plan 3", "2010-12-01T05:01:01Z"),
-                ("test plan 4", "2010-11-01T05:01:01Z"),
-                ("test plan 2", "2010-10-01T05:01:01Z"),
-                ("test plan 0", "2010-09-01T05:01:01Z"),
-                ("test plan 1", "2010-02-01T05:01:01Z"),
-            ],
-        )
-
-    def test_list_planning_areas_sort_by_scenario_count(self):
-        self.client.force_authenticate(self.user)
-        query_params = {"sortby": "scenario_count", "page": 3}
-        response = self.client.get(
-            reverse("planning:get_planningareas"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        self.assertEqual(len(planning_areas["results"]), 10)
-
-        result_scenario_counts = []
-        for item in planning_areas["results"]:
-            result_scenario_counts.append(item["scenario_count"])
-        expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
-        self.assertListEqual(result_scenario_counts, expected_scenario_counts)
-
     def test_list_planning_areas_sort_by_name(self):
         self.client.force_authenticate(self.user)
         query_params = {"sortby": "name"}
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -258,7 +172,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"region_name": "sierra-nevada"}
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -274,7 +188,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"region_name": "central-coast"}
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -290,7 +204,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"region_name": "central-coast,sierra-nevada"}
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -304,7 +218,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(
-            reverse("planning:get_planningareas"), {}, content_type="application/json"
+            reverse("planning:planningareas-list"), {}, content_type="application/json"
         )
         self.assertEqual(response.status_code, 401)
         self.assertJSONEqual(
@@ -315,7 +229,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
     def test_list_planning_areas_empty_user(self):
         self.client.force_authenticate(self.emptyuser)
         response = self.client.get(
-            reverse("planning:get_planningareas"), {}, content_type="application/json"
+            reverse("planning:planningareas-list"), {}, content_type="application/json"
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -326,6 +240,8 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def setUp(self):
         if Permissions.objects.count() == 0:
             reset_permissions()
+
+        self.planningareas_list_url = ""
 
         self.creator_user = User.objects.create(
             username="makerofthings",
@@ -385,7 +301,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def test_planningareas_list_for_creator(self):
         self.client.force_authenticate(self.creator_user)
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             {},
             content_type="application/json",
         )
@@ -418,7 +334,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def test_planningareas_list_for_collaborator(self):
         self.client.force_authenticate(self.collab_user)
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             {},
             content_type="application/json",
         )
@@ -434,7 +350,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def test_planningareas_list_for_viewer(self):
         self.client.force_authenticate(self.viewer_user)
         response = self.client.get(
-            reverse("planning:get_planningareas"),
+            reverse("planning:planningareas-list"),
             {},
             content_type="application/json",
         )
