@@ -25,7 +25,6 @@ from rest_framework import routers
 
 router = routers.SimpleRouter()
 router.register(r"planningareas", PlanningAreaViewSet, basename="planningareas")
-urlpatterns = router.urls
 
 app_name = "planning"
 
