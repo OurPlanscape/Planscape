@@ -33,13 +33,16 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 planscape_apps = [
     "attributes",
     "boundary",
+    "collaboration",
     "conditions",
+    "core",
+    "organizations",
     "planning",
+    "projects",
+    "restrictions",
     "stands",
     "users",
-    "restrictions",
     "utils",
-    "collaboration",
 ]
 INSTALLED_APPS = [
     "allauth",
