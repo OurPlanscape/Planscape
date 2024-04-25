@@ -108,7 +108,6 @@ describe('MapComponent', () => {
       {
         getRegionBoundary: of(fakeGeoJson),
         getBoundaryShapes: of(fakeLayer),
-        getArea: of(0),
       },
       {
         boundaryConfig$: new BehaviorSubject<BoundaryConfig[] | null>([
@@ -139,7 +138,7 @@ describe('MapComponent', () => {
       }
     );
     const fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
-      'PlanService',
+      'PlanStateService',
       { createPlan: of(fakePlan) },
       {
         planState$: new BehaviorSubject<PlanState>({
@@ -192,8 +191,12 @@ describe('MapComponent', () => {
         { provide: AuthService, useValue: fakeAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
-        { provide: PlanService, useValue: fakePlanStateService },
+        { provide: PlanStateService, useValue: fakePlanStateService },
+        MockProvider(PlanService, {
+          getTotalArea: () => of(1000),
+        }),
         { provide: SessionService, useValue: fakeSessionService },
+
         { provide: Router, useFactory: routerStub },
         {
           provide: ActivatedRoute,
@@ -671,7 +674,7 @@ describe('MapComponent', () => {
           maxWidth: '560px',
           data: {
             shape: { type: 'FeatureCollection', features: [] },
-            area: 0,
+            totalArea: 0,
           },
         }
       );

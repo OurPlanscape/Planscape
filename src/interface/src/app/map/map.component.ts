@@ -35,6 +35,7 @@ import * as shp from 'shpjs';
 import {
   AuthService,
   MapService,
+  PlanService,
   PlanStateService,
   PopupService,
   RegionService,
@@ -143,6 +144,22 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   drawRegionEnabled$ = this.regionService.drawRegionEnabled$;
 
+  totalArea$ = this.showConfirmAreaButton$.asObservable().pipe(
+    switchMap((show) => {
+      return this.mapManager.edits$.asObservable().pipe(map(() => show));
+    }),
+    switchMap((show) => {
+      const shape = this.mapManager.convertToPlanningArea();
+      if (!show || !shape) {
+        return of(null);
+      }
+
+      return this.planService.getTotalArea(
+        (shape as GeoJSON.FeatureCollection).features?.[0]?.geometry
+      );
+    })
+  );
+
   @HostListener('window:beforeunload')
   beforeUnload(): Observable<boolean> | boolean {
     // save map state before leaving page
@@ -161,6 +178,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private popupService: PopupService,
     private sessionService: SessionService,
     private planStateService: PlanStateService,
+    private planService: PlanService,
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -506,7 +524,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       }
     }
 
-    const area = (await firstValueFrom(this.acres$)) || 0;
+    const area = (await firstValueFrom(this.totalArea$)) || 0;
 
     this.openPlanCreateDialog(area)
       .afterClosed()
@@ -528,7 +546,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       maxWidth: '560px',
       data: {
         shape: this.mapManager.convertToPlanningArea(),
-        area: area,
+        totalArea: area,
       },
     });
   }
@@ -767,20 +785,4 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   backHome() {
     this.router.navigate(['home']);
   }
-
-  acres$ = this.showConfirmAreaButton$.asObservable().pipe(
-    switchMap((show) => {
-      return this.mapManager.edits$.asObservable().pipe(map(() => show));
-    }),
-    switchMap((show) => {
-      const shape = this.mapManager.convertToPlanningArea();
-      if (!show || !shape) {
-        return of(null);
-      }
-
-      return this.mapService.getArea(
-        (shape as GeoJSON.FeatureCollection).features?.[0]?.geometry
-      );
-    })
-  );
 }

@@ -90,4 +90,13 @@ export class PlanService {
       )
       .pipe(take(1));
   }
+
+  getTotalArea(shape: any) {
+    return this.http
+      .post<{ area_acres: number }>(
+        BackendConstants.END_POINT.concat(`/planning/validate_planning_area/`),
+        { geometry: shape }
+      )
+      .pipe(map((result) => Math.round(result.area_acres)));
+  }
 }
