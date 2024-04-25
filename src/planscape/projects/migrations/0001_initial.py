@@ -11,8 +11,8 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("organizations", "0001_initial"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ("organizations", "0002_auto_20240425_1716"),
     ]
 
     operations = [
@@ -64,7 +64,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "geometry",
-                    django.contrib.gis.db.models.fields.PolygonField(srid=4269),
+                    django.contrib.gis.db.models.fields.MultiPolygonField(srid=4269),
                 ),
                 (
                     "created_by",

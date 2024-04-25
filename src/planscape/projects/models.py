@@ -86,7 +86,7 @@ class Project(
         help_text="Models our per project feature flags",
     )
 
-    geometry = models.PolygonField(
+    geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
     )
 
