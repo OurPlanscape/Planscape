@@ -23,7 +23,6 @@ class AliveObjectsManager(models.Manager):
 
 
 class DeletedAtMixin(models.Model):
-
     objects = AliveObjectsManager()
     dead_or_alive = models.Manager()
 
