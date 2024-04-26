@@ -91,6 +91,7 @@ export function getMapNameplateWidth(map: Map): number | null {
   return nameplateWidth;
 }
 
+// TODO this should ideally return just geometry and not a feature collection
 export function createMultiPolygonFeatureCollection(
   featureCollection: FeatureCollection
 ) {

@@ -55,6 +55,7 @@ export class MapManager {
   isInDrawingMode: boolean = false;
   defaultOpacity: number = FrontendConstants.MAP_DATA_LAYER_OPACITY;
   selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
+  edits$ = new BehaviorSubject(false);
 
   constructor(
     private matSnackBar: MatSnackBar,
@@ -269,6 +270,7 @@ export class MapManager {
 
   /** Handles a polygon edit event. */
   private editHandler(layer: L.Layer) {
+    this.edits$.next(true);
     const editedLayer = layer as L.Polygon;
 
     // Check if polygon overlaps another

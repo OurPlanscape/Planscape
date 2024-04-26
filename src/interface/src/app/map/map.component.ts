@@ -19,13 +19,23 @@ import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Feature, FeatureCollection, Geometry } from 'geojson';
-import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  firstValueFrom,
+  map,
+  Observable,
+  of,
+  switchMap,
+  take,
+} from 'rxjs';
 import { filter } from 'rxjs/operators';
 import * as shp from 'shpjs';
 
 import {
   AuthService,
   MapService,
+  PlanService,
   PlanStateService,
   PopupService,
   RegionService,
@@ -134,6 +144,22 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   drawRegionEnabled$ = this.regionService.drawRegionEnabled$;
 
+  totalArea$ = this.showConfirmAreaButton$.asObservable().pipe(
+    switchMap((show) => {
+      return this.mapManager.edits$.asObservable().pipe(map(() => show));
+    }),
+    switchMap((show) => {
+      const shape = this.mapManager.convertToPlanningArea();
+      if (!show || !shape) {
+        return of(null);
+      }
+
+      return this.planService.getTotalArea(
+        (shape as GeoJSON.FeatureCollection).features?.[0]?.geometry
+      );
+    })
+  );
+
   @HostListener('window:beforeunload')
   beforeUnload(): Observable<boolean> | boolean {
     // save map state before leaving page
@@ -152,6 +178,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private popupService: PopupService,
     private sessionService: SessionService,
     private planStateService: PlanStateService,
+    private planService: PlanService,
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
@@ -478,7 +505,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   /** If the user is signed in, configures and opens the Create Plan dialog.
    *  If the user is signed out, configure and open the Sign In dialog.
    */
-  openCreatePlanDialog() {
+  async openCreatePlanDialog() {
     if (!this.authService.loggedInStatus$.value) {
       this.openSignInDialog();
       return;
@@ -497,7 +524,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       }
     }
 
-    this.openPlanCreateDialog()
+    const area = (await firstValueFrom(this.totalArea$)) || 0;
+
+    this.openPlanCreateDialog(area)
       .afterClosed()
       .subscribe((id) => {
         if (id) {
@@ -512,11 +541,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     });
   }
 
-  private openPlanCreateDialog() {
+  private openPlanCreateDialog(area: number) {
     return this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
       data: {
         shape: this.mapManager.convertToPlanningArea(),
+        totalArea: area,
       },
     });
   }
