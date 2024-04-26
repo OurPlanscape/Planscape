@@ -365,7 +365,9 @@ export class AuthService {
 /** An AuthGuard used to prevent access to pages that require sign-in. If the user is not signed
  *  in, redirect to the sign-in page.
  */
-@Injectable()
+@Injectable({
+  providedIn: 'root',
+})
 export class AuthGuard {
   constructor(
     private authService: AuthService,
