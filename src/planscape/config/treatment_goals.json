@@ -1316,8 +1316,8 @@
               "long_question_text": "Where are the best opportunities to effectively reduce fire risk to the Wildland Urban Interface (WUI)?",
               "short_question_text": "Reduce WUI Fire Risk",
               "description": [
-                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Structure Exposure Score\" and \"Damage Potential\".",
-                "There are multiple thresholds for this question, creating more constrained output. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
+                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Structure Exposure Score\" and \"Damage Potential\". ",
+                "There are multiple thresholds for this question, creating more constrained output, including the WUI operational layer being equal to 1 or 2 in the metrics dictionary. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
