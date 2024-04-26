@@ -1,21 +1,15 @@
 import json
 import os
-from unittest import mock
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
-from django.db import connection
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
-from planning.models import Scenario, ScenarioResult, ScenarioResultStatus
 from planning.tests.helpers import (
     _create_planning_area,
     _create_multiple_planningareas,
     _create_scenario,
-    _create_test_user_set,
-    _create_multiple_scenarios,
     reset_permissions,
 )
 
@@ -33,7 +27,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
         self.test_planningareas = _create_multiple_planningareas(
-            50, self.user, "test plan", stored_geometry
+            120, self.user, "test plan", stored_geometry
         )
 
         self.planning_area1 = self.test_planningareas[0]
@@ -94,12 +88,12 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
-        self.assertEqual(planning_areas["count"], 50)
-        self.assertEqual(len(planning_areas["results"]), 20)
+        self.assertEqual(planning_areas["count"], 120)
+        self.assertEqual(len(planning_areas["results"]), 50)
 
-    def test_list_planning_areas_page3(self):
+    def test_list_planning_areas_offset(self):
         self.client.force_authenticate(self.user)
-        query_params = {"page": "3"}
+        query_params = {"offset": "100"}
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
@@ -110,13 +104,16 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
-        self.assertEqual(planning_areas["count"], 50)
-        # last page should have 10 items
-        self.assertEqual(len(planning_areas["results"]), 10)
+        self.assertEqual(planning_areas["count"], 120)
+        self.assertEqual(len(planning_areas["results"]), 20)
 
-    def test_filter_planning_areas_by_name(self):
+    def test_filter_planning_areas_by_partial_name(self):
+        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
+        _create_multiple_planningareas(10, self.user, "invented name", stored_geometry)
+        _create_multiple_planningareas(10, self.user, "created name", stored_geometry)
+
         self.client.force_authenticate(self.user)
-        query_params = {"name": "10"}
+        query_params = {"name": "ted"}
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
@@ -124,15 +121,24 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 1)  # total results
-        self.assertEqual(len(planning_areas["results"]), 1)
+        self.assertEqual(planning_areas["count"], 20)  # total results
+        self.assertEqual(len(planning_areas["results"]), 20)
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
 
     def test_list_planning_areas_sort_by_name(self):
+        geo = GEOSGeometry(json.dumps(self.geometry))
+
+        _create_planning_area(self.user, "Area D", geo)
+        _create_planning_area(self.user, "Area E", geo)
+        _create_planning_area(self.user, "Area C", geo)
+        _create_planning_area(self.user, "Area F", geo)
+        _create_planning_area(self.user, "Area B", geo)
+        _create_planning_area(self.user, "Area A", geo)
+
         self.client.force_authenticate(self.user)
-        query_params = {"ordering": "name"}
+        query_params = {"ordering": "name", "limit": 6}
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
@@ -142,29 +148,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         area_names = []
         for item in planning_areas["results"]:
             area_names.append(item["name"])
-        expected_names = [
-            "test plan 0",
-            "test plan 1",
-            "test plan 10",
-            "test plan 11",
-            "test plan 12",
-            "test plan 13",
-            "test plan 14",
-            "test plan 15",
-            "test plan 16",
-            "test plan 17",
-            "test plan 18",
-            "test plan 19",
-            "test plan 2",
-            "test plan 20",
-            "test plan 21",
-            "test plan 22",
-            "test plan 23",
-            "test plan 24",
-            "test plan 25",
-            "test plan 26",
-        ]
-        self.assertEqual(len(planning_areas["results"]), 20)
+        expected_names = ["Area A", "Area B", "Area C", "Area D", "Area E", "Area F"]
         self.assertListEqual(area_names, expected_names)
 
     def test_filter_planning_areas_by_region1(self):
@@ -177,8 +161,8 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 49)  # total results
-        self.assertEqual(len(planning_areas["results"]), 20)
+        self.assertEqual(planning_areas["count"], 119)  # total results
+        self.assertEqual(len(planning_areas["results"]), 50)
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
@@ -209,8 +193,8 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 50)  # total results
-        self.assertEqual(len(planning_areas["results"]), 20)
+        self.assertEqual(planning_areas["count"], 120)  # total results
+        self.assertEqual(len(planning_areas["results"]), 50)
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
