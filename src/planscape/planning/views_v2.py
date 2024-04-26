@@ -8,7 +8,6 @@ from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     ScenarioSerializer,
-    ScenarioResultSerializer,
 )
 from planning.filters import PlanningAreaFilter, ScenarioFilter
 from planning.permission import UserPermission
@@ -36,7 +35,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.all()
     permission_classes = [UserPermission]
-    ordering_fields = ["name", "created_at", "scenario_count"]
+    ordering_fields = ["name", "created_at"]
     filterset_class = ScenarioFilter
 
     def get_serializer_class(self):
@@ -45,7 +44,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         return ScenarioSerializer
 
     def get_queryset(self):
-        user = self.request.user
         planningarea_pk = self.kwargs.get("planningarea_pk")
         if planningarea_pk:
             try:
