@@ -121,6 +121,13 @@ TEST=.
 APP_LABEL=
 DOCKER_BUILDKIT=1
 
+docker-clean:
+	docker compose down --volumes
+	docker container prune -f
+
+docker-hard-clean: docker-clean
+	docker image prune -f
+
 docker-build:
 	docker compose build
 
