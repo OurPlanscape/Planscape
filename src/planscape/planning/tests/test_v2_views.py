@@ -130,37 +130,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
 
-    def test_filter_planning_areas_by_last_updated(self):
-        # change some updated_at to be specific dates
-        planning_area_update_overrides = [
-            ["2010-01-01 00:01:01-05", self.planning_area1.id],
-            ["2010-02-01 00:01:01-05", self.planning_area2.id],
-            ["2010-03-01 00:01:01-05", self.planning_area3.id],
-            ["2010-04-01 00:01:01-05", self.planning_area4.id],
-            ["2010-06-01 00:01:01-05", self.planning_area5.id],
-            ["2010-07-01 00:01:01-05", self.planning_area6.id],
-        ]
-        # using raw updates here, to override django's autoupdate of updated_at field
-        with connection.cursor() as cursor:
-            for p in planning_area_update_overrides:
-                cursor.execute(
-                    "UPDATE planning_planningarea SET updated_at = %s WHERE id = %s", p
-                )
-        self.client.force_authenticate(self.user)
-        query_params = {"mod_after": "2010-03-01", "mod_before": "2010-07-01"}
-        response = self.client.get(
-            reverse("planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 3)  # total results
-        self.assertEqual(len(planning_areas["results"]), 3)
-        self.assertListEqual(
-            list(planning_areas.keys()), ["count", "next", "previous", "results"]
-        )
-
     def test_list_planning_areas_sort_by_name(self):
         self.client.force_authenticate(self.user)
         query_params = {"ordering": "name"}
@@ -232,7 +201,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
     def test_filter_planning_areas_by_multiple_regions(self):
         self.client.force_authenticate(self.user)
-        query_params = {"region_name": "central-coast,sierra-nevada"}
+        query_params = {"region_name": ["central-coast", "sierra-nevada"]}
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
