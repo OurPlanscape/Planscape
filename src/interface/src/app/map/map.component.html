@@ -75,8 +75,8 @@
         </div>
       </div>
 
-      <div *ngIf="totalArea$ | async" class="actions-bar-text total-area">
-        Total: {{ totalArea$ | async | number }} acres
+      <div *ngIf="totalArea$ | async; let totalArea" class="actions-bar-text">
+        Total: {{ totalArea | number }} acres
       </div>
       <!-- Cancel button -->
       <button
