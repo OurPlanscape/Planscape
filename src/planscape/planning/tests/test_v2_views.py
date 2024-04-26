@@ -163,7 +163,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
     def test_list_planning_areas_sort_by_name(self):
         self.client.force_authenticate(self.user)
-        query_params = {"sortby": "name"}
+        query_params = {"ordering": "name"}
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
@@ -195,7 +195,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
             "test plan 25",
             "test plan 26",
         ]
-
         self.assertEqual(len(planning_areas["results"]), 20)
         self.assertListEqual(area_names, expected_names)
 
