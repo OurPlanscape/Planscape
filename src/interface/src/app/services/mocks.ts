@@ -1,4 +1,5 @@
 import { Plan, Region } from '../types';
+import { GeoJSON } from 'geojson';
 
 export const MOCK_PLAN: Plan = {
   id: 1,
@@ -17,4 +18,28 @@ export const MOCK_PLAN: Plan = {
   permissions: [],
   scenario_count: 0,
   role: 'Creator',
+};
+
+export const MOCK_FEATURE_COLLECTION: GeoJSON = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      geometry: {
+        type: 'MultiPolygon',
+        coordinates: [
+          [
+            [
+              [10, 20],
+              [10, 30],
+              [15, 15],
+            ],
+          ],
+        ],
+      },
+      properties: {
+        shape_name: 'Test',
+      },
+    },
+  ],
 };

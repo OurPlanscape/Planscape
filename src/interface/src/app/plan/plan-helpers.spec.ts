@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import {
   findQuestionOnTreatmentGoalsConfig,
   getColorForProjectPosition,
+  isValidTotalArea,
 } from './plan-helpers';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '../shared/constants';
 import { TreatmentGoalConfig, TreatmentQuestionConfig } from '../types';
@@ -77,6 +78,14 @@ describe('Plan Helpers', () => {
       expect(
         findQuestionOnTreatmentGoalsConfig(tr, almostDefaultQuestion)
       ).not.toBe(almostDefaultQuestion);
+    });
+  });
+
+  describe('isValidTotalArea', () => {
+    it('should validate that area is more than 100 acres', () => {
+      expect(isValidTotalArea(99)).toBe(false);
+      expect(isValidTotalArea(100)).toBe(true);
+      expect(isValidTotalArea(1000)).toBe(true);
     });
   });
 });
