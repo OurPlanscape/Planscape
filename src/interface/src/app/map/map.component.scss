@@ -199,6 +199,7 @@
 
 .upload-wrapper {
   position: relative;
+  margin-right: auto;
 
   .file-uploader {
     left: 0;
@@ -206,11 +207,6 @@
     top: 50px;
   }
 }
-
-.total-area {
-  margin-left: auto;
-}
-
 
 .done-button {
   background-color: #3367d6;
