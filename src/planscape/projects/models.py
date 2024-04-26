@@ -54,11 +54,13 @@ class Project(
     organization = models.ForeignKey(
         Organization,
         on_delete=models.RESTRICT,
+        related_name="projects",
     )
 
-    created_by = models.ForeignKey(
+    owner = models.ForeignKey(
         User,
         on_delete=models.RESTRICT,
+        related_name="owned_projects",
     )
 
     name = models.CharField(

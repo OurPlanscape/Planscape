@@ -12,9 +12,10 @@ class Organization(
     DeletedAtMixin,
     models.Model,
 ):
-    created_by = models.ForeignKey(
+    owner = models.ForeignKey(
         User,
         on_delete=models.RESTRICT,
+        related_name="owned_organizations",
     )
 
     name = models.CharField(max_length=128)
