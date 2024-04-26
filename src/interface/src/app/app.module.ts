@@ -53,22 +53,14 @@ import { ConfirmationDialogComponent } from './password-reset/confirmation-dialo
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { MapModule } from './map/map.module';
 import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
-import { AccountPageComponent } from './account/account-page/account-page.component';
-import { DetailsComponent } from './account/details/details.component';
-import { CredentialsComponent } from './account/credentials/credentials.component';
-import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
-import { MenuComponent } from './account/menu/menu.component';
 import { NgxMaskModule } from 'ngx-mask';
 import { ThankYouComponent } from './signup/thank-you/thank-you.component';
 import { LearnMoreComponent } from './home/learn-more/learn-more.component';
 import { HorizonalCardComponent } from './home/horizonal-card/horizonal-card.component';
-import { EditUserFieldComponent } from './account/edit-user-field/edit-user-field.component';
 import { InfoCardComponent } from './signup/info-card/info-card.component';
-import { ChangePasswordComponent } from './account/change-password/change-password.component';
-import { DeleteAccountDialogComponent } from './account/delete-account-dialog/delete-account-dialog.component';
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
-import { JwtInterceptor } from './services/jwt-interceptor.service';
+import { JwtInterceptor } from '@services/jwt-interceptor.service';
 
 @NgModule({
   declarations: [
@@ -79,7 +71,6 @@ import { JwtInterceptor } from './services/jwt-interceptor.service';
     TopBarComponent,
     HomeComponent,
     PlanTableComponent,
-    DeleteAccountDialogComponent,
     WelcomeComponent,
     PlanningAreasComponent,
     ResetPasswordDialogComponent,
@@ -89,17 +80,10 @@ import { JwtInterceptor } from './services/jwt-interceptor.service';
     ConfirmationDialogComponent,
     AccountValidationComponent,
     DeleteDialogComponent,
-    AccountPageComponent,
-    DetailsComponent,
-    CredentialsComponent,
-    DeleteAccountComponent,
-    MenuComponent,
     ThankYouComponent,
     LearnMoreComponent,
     HorizonalCardComponent,
-    EditUserFieldComponent,
     InfoCardComponent,
-    ChangePasswordComponent,
     SharePlanDialogComponent,
     ChipInputComponent,
   ],
