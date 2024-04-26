@@ -33,7 +33,11 @@ class DeletedAtMixin(models.Model):
     )
 
     def delete(self, *args, **kwargs):
-        """Soft delete an entity."""
+        """
+        Overrides delete method to support soft-deletes
+        and hard-deletes.
+        The default mode is soft-delete.
+        """
         hard_delete = kwargs.get("hard_delete", False)
         if hard_delete:
             super().delete()
