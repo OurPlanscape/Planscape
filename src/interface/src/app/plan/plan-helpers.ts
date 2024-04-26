@@ -134,3 +134,7 @@ export function conditionsConfigToPriorityData(
 export function getPlanPath(planId: number) {
   return '/plan/' + planId;
 }
+
+export function isValidTotalArea(area: number) {
+  return area >= 100;
+}
