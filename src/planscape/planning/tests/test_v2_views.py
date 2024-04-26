@@ -131,7 +131,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
 
     def test_filter_planning_areas_by_last_updated(self):
-
         # change some updated_at to be specific dates
         planning_area_update_overrides = [
             ["2010-01-01 00:01:01-05", self.planning_area1.id],
