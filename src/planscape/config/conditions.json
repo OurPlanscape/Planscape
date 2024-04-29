@@ -2168,7 +2168,7 @@
                   "metric_name": "total_aboveground_carbon",
                   "min_value": 9,
                   "raw_data_download_path": "central-coast/carbonSeq/Tier1/CStocks_Total_Above_202009.tif",
-                  "raw_layer": ":carbonSeq_Tier1_ CStocks_Total_Above_202009",
+                  "raw_layer": ":carbonSeq_Tier1_CStocks_Total_Above_202009",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=53",
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
