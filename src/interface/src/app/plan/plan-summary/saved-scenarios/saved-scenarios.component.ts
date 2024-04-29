@@ -5,7 +5,7 @@ import { AuthService } from '../../../services';
 import { interval, take } from 'rxjs';
 import { Plan, Scenario } from 'src/app/types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { POLLING_INTERVAL } from '../../plan-helpers';
+import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
 import {
   MatLegacyDialog as MatDialog,
   MatLegacyDialogRef as MatDialogRef,
@@ -198,5 +198,12 @@ export class SavedScenariosComponent implements OnInit {
     this.selectedTabIndex = data.index;
     // reset selected row when changing tabs.
     this.highlightedScenarioRow = null;
+  }
+
+  get isValidPlanningArea() {
+    if (!this.plan) {
+      return false;
+    }
+    return isValidTotalArea(this.plan.area_acres);
   }
 }

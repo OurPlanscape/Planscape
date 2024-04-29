@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.vectorgrid';
-import { BehaviorSubject, EMPTY, Observable, take, of, tap } from 'rxjs';
+import { BehaviorSubject, EMPTY, Observable, of, take, tap } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
 import { SessionService } from '@services';
