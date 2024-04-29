@@ -11,8 +11,6 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
-import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
-import { PlanComponent } from './plan/plan.component';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { AuthGuard } from './services';
 import { passwordResetTokenResolver } from './services/password-reset.resolver';
@@ -72,6 +70,12 @@ const routes: Routes = [
         component: MapComponent,
       },
       {
+        path: 'explore/:id',
+        title: 'Explore Plan',
+        component: ExploreComponent,
+        canActivate: [AuthGuard],
+      },
+      {
         path: 'feedback',
         canActivate: [RedirectGuard],
         component: RedirectGuard,
@@ -89,33 +93,9 @@ const routes: Routes = [
         },
       },
       {
-        path: 'plan/:id',
-        title: 'Plan Details',
-        component: PlanComponent,
-        canActivate: [AuthGuard],
-        children: [
-          {
-            path: 'config',
-            title: 'Scenario Configuration',
-            component: CreateScenariosComponent,
-          },
-          {
-            path: 'config/:id',
-            title: 'Scenario Configuration',
-            component: CreateScenariosComponent,
-          },
-          {
-            path: 'explore',
-            title: 'Explore',
-            component: ExploreComponent,
-          },
-        ],
-      },
-      {
-        path: 'explore/:id',
-        title: 'Explore Plan',
-        component: ExploreComponent,
-        canActivate: [AuthGuard],
+        path: 'plan',
+        loadChildren: () =>
+          import('./plan/plan.module').then((m) => m.PlanModule),
       },
       {
         path: 'account',

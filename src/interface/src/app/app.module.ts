@@ -10,7 +10,6 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterModule } from '@angular/router';
-import { CookieService } from 'ngx-cookie-service';
 import {
   NgxGoogleAnalyticsModule,
   NgxGoogleAnalyticsRouterModule,
@@ -24,16 +23,6 @@ import { LoginComponent } from './login/login.component';
 
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
-import { PlanModule } from './plan/plan.module';
-
-import {
-  AuthGuard,
-  AuthService,
-  MapService,
-  PlanService,
-  PopupService,
-  SessionService,
-} from './services';
 import { SharedModule } from './shared/shared.module';
 import { AboutComponent } from './home/about/about.component';
 import { SignupComponent } from './signup/signup.component';
@@ -47,7 +36,6 @@ import { WINDOW_PROVIDERS } from './services/window.service';
 import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
 import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { NgChartsModule } from 'ng2-charts';
-import { RedirectGuard } from './services/redirect.guard';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { ConfirmationDialogComponent } from './password-reset/confirmation-dialog/confirmation-dialog.component';
 import { AccountValidationComponent } from './account-validation/account-validation.component';
@@ -103,7 +91,6 @@ import { JwtInterceptor } from '@services/jwt-interceptor.service';
     MaterialModule,
     NgxGoogleAnalyticsModule.forRoot(environment.google_analytics_id),
     NgxGoogleAnalyticsRouterModule,
-    PlanModule,
     RouterModule,
     SharedModule,
     ReactiveFormsModule,
@@ -113,14 +100,6 @@ import { JwtInterceptor } from '@services/jwt-interceptor.service';
     NgxMaskModule.forRoot(),
   ],
   providers: [
-    AuthService,
-    AuthGuard,
-    PopupService,
-    MapService,
-    PlanService,
-    CookieService,
-    SessionService,
-    RedirectGuard,
     WINDOW_PROVIDERS,
     CurrencyPipe,
     {
