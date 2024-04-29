@@ -20,6 +20,7 @@ from planning.views import (
     get_shared_link,
     PlanningAreaNotes,
 )
+from planning.views_userprefs import UserPreferencesView
 
 app_name = "planning"
 
@@ -105,4 +106,12 @@ urlpatterns = [
         PlanningAreaNotes.as_view(),
         name="delete_planningareanote",
     ),
+    # UserPrefs
+    path(
+        "user_prefs/<str:preference_key>/",
+        UserPreferencesView.as_view(),
+        name="delete_userprefs",
+    ),
+    path("user_prefs/", UserPreferencesView.as_view(), name="get_userprefs"),
+    path("user_prefs/", UserPreferencesView.as_view(), name="patch_userprefs"),
 ]
