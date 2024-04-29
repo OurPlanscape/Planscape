@@ -3,6 +3,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django.conf import settings
 from core.models import CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin
+from organizations.models import Organization
 
 
 User = get_user_model()
