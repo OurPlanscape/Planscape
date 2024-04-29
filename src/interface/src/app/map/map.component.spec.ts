@@ -56,7 +56,7 @@ import {
 } from './map.helper';
 import * as esri from 'esri-leaflet';
 import { MockProvider } from 'ng-mocks';
-import { MOCK_PLAN } from '@services/mocks';
+import { MOCK_FEATURE_COLLECTION, MOCK_PLAN } from '@services/mocks';
 
 describe('MapComponent', () => {
   let component: MapComponent;
@@ -72,29 +72,7 @@ describe('MapComponent', () => {
       'https://dev-geo.planscape.org/geoserver/gwc/service/tms/1.0.0/sierra-nevada:vector_huc12@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
       {}
     );
-    const fakeGeoJson: GeoJSON.GeoJSON = {
-      type: 'FeatureCollection',
-      features: [
-        {
-          type: 'Feature',
-          geometry: {
-            type: 'MultiPolygon',
-            coordinates: [
-              [
-                [
-                  [10, 20],
-                  [10, 30],
-                  [15, 15],
-                ],
-              ],
-            ],
-          },
-          properties: {
-            shape_name: 'Test',
-          },
-        },
-      ],
-    };
+    const fakeGeoJson = MOCK_FEATURE_COLLECTION;
     const fakePlan: Plan = MOCK_PLAN;
     const fakeAuthService = jasmine.createSpyObj<AuthService>(
       'AuthService',
@@ -138,7 +116,7 @@ describe('MapComponent', () => {
       }
     );
     const fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
-      'PlanService',
+      'PlanStateService',
       { createPlan: of(fakePlan) },
       {
         planState$: new BehaviorSubject<PlanState>({
@@ -191,8 +169,12 @@ describe('MapComponent', () => {
         { provide: AuthService, useValue: fakeAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
-        { provide: PlanService, useValue: fakePlanStateService },
+        { provide: PlanStateService, useValue: fakePlanStateService },
+        MockProvider(PlanService, {
+          getTotalArea: () => of(1000),
+        }),
         { provide: SessionService, useValue: fakeSessionService },
+
         { provide: Router, useFactory: routerStub },
         {
           provide: ActivatedRoute,
@@ -670,6 +652,7 @@ describe('MapComponent', () => {
           maxWidth: '560px',
           data: {
             shape: { type: 'FeatureCollection', features: [] },
+            totalArea: 0,
           },
         }
       );

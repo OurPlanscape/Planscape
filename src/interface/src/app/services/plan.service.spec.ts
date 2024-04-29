@@ -8,7 +8,7 @@ import { BackendConstants } from '../backend-constants';
 import { Plan } from '../types';
 import { PlanService } from './plan.service';
 import { MapService } from './map.service';
-import { MOCK_PLAN } from './mocks';
+import { MOCK_FEATURE_COLLECTION, MOCK_PLAN } from './mocks';
 
 // TODO Make test for getting scenario results
 // TODO Make test for call to create project area
@@ -96,53 +96,19 @@ describe('PlanService', () => {
     });
   });
 
-  // TODO Update once Project/Scenario types are updated
-  // describe('getScenariosForPlan', () => {
-  //   it('should make HTTP request to backend', (done) => {
-  //     const projectConfig: ProjectConfig = {
-  //       id: 1,
-  //       est_cost: 200,
-  //       max_budget: 200,
-  //       min_distance_from_road: undefined,
-  //       max_slope: undefined,
-  //       max_treatment_area_ratio: undefined,
-  //       priorities: undefined,
-  //       createdTimestamp: undefined,
-  //       weights: undefined,
-  //     };
-  //     service.getScenariosForPlan('1').subscribe((res) => {
-  //       expect(res).toEqual([
-  //         {
-  //           id: '1',
-  //           createdTimestamp: 5000,
-  //           name: 'name',
-  //           plan_id: undefined,
-  //           projectId: undefined,
-  //           config: projectConfig,
-  //           priorities: [],
-  //           projectAreas: [],
-  //           notes: undefined,
-  //           owner: undefined,
-  //           favorited: undefined,
-  //         },
-  //       ]);
-  //       done();
-  //     });
+  describe('getTotalArea', () => {
+    it('should call the endpoint with parameters', () => {
+      service.getTotalArea(MOCK_FEATURE_COLLECTION).subscribe((res) => {
+        expect(res).toEqual(1000);
+      });
 
-  //     const req = httpTestingController.expectOne(
-  //       BackendConstants.END_POINT.concat(
-  //         '/planning/list_scenarios_for_planning_area/?planning_area=1'
-  //       )
-  //     );
-  //     expect(req.request.method).toEqual('GET');
-  //     req.flush([
-  //       {
-  //         id: '1',
-  //         creation_timestamp: 5,
-  //         config: projectConfig,
-  //       },
-  //     ]);
-  //     httpTestingController.verify();
-  //   });
-  // });
+      const req = httpTestingController.expectOne(
+        BackendConstants.END_POINT.concat('/planning/validate_planning_area/')
+      );
+      req.flush({ area_acres: 1000 });
+
+      expect(req.request.body).toEqual({ geometry: MOCK_FEATURE_COLLECTION });
+      httpTestingController.verify();
+    });
+  });
 });

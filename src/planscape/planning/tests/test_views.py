@@ -53,6 +53,9 @@ class ValidatePlanningAreaTest(APITestCase):
         self.assertEqual(response.status_code, 200)
 
 
+from planning.models import UserPrefs
+
+
 class CreateSharedLinkTest(APITransactionTestCase):
     def setUp(self):
         self.user = User.objects.create(username="testuser")
@@ -186,3 +189,235 @@ class CreateSharedLinkTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(shared_link_response.status_code, 404)
+
+
+class UserPrefsViewTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="12345")
+        self.userpref = UserPrefs.objects.create(
+            user=self.user,
+            preferences={
+                "hello": "is it me you're looking for",
+                "what": "what is this",
+            },
+        )
+
+    def test_getting_user_prefs(self):
+        self.client.force_authenticate(self.user)
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+        response_data = json.loads(user_prefs_response.content)
+        self.assertEqual(
+            "is it me you're looking for",
+            response_data["preferences"]["hello"],
+        )
+        self.assertEqual(
+            "what is this",
+            response_data["preferences"]["what"],
+        )
+
+    def test_adding_a_value_ignoring_others(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"show_delete_note_warning": False})
+        user_prefs_response = self.client.patch(
+            reverse("planning:get_userprefs"),
+            payload,
+            content_type="application/json",
+        )
+
+        self.assertEqual(200, user_prefs_response.status_code)
+
+        # and now we get the user prefs again
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+        response_data = json.loads(user_prefs_response.content)
+        self.assertEqual(
+            "is it me you're looking for",
+            response_data["preferences"]["hello"],
+        )
+        self.assertEqual(
+            "what is this",
+            response_data["preferences"]["what"],
+        )
+        self.assertEqual(
+            False,
+            response_data["preferences"]["show_delete_note_warning"],
+        )
+
+    def test_updating_an_existing_value(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"hello": "I just called to say...hello"})
+        user_prefs_response = self.client.patch(
+            reverse("planning:get_userprefs"),
+            payload,
+            content_type="application/json",
+        )
+
+        self.assertEqual(200, user_prefs_response.status_code)
+
+        # and now we get the user prefs again
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+        response_data = json.loads(user_prefs_response.content)
+        self.assertEqual(
+            "I just called to say...hello",
+            response_data["preferences"]["hello"],
+        )
+        self.assertEqual(
+            "what is this",
+            response_data["preferences"]["what"],
+        )
+
+    def test_updating_one_value_and_adding_another(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {
+                "hello": "Is a friendly greeting",
+                "goodbye": "Goodbye is not hello.",
+            }
+        )
+        user_prefs_response = self.client.patch(
+            reverse("planning:get_userprefs"),
+            payload,
+            content_type="application/json",
+        )
+
+        self.assertEqual(200, user_prefs_response.status_code)
+
+        # and now we get the user prefs again
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+        response_data = json.loads(user_prefs_response.content)
+        self.assertEqual(
+            "Is a friendly greeting",
+            response_data["preferences"]["hello"],
+        )
+        self.assertEqual(
+            "what is this",
+            response_data["preferences"]["what"],
+        )
+        self.assertEqual(
+            "Goodbye is not hello.",
+            response_data["preferences"]["goodbye"],
+        )
+
+    def test_deleting_an_attribute(self):
+        self.client.force_authenticate(self.user)
+        user_prefs_response = self.client.delete(
+            reverse(
+                "planning:delete_userprefs",
+                kwargs={"preference_key": "hello"},
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(200, user_prefs_response.status_code)
+
+        # and now we get the user prefs again
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+        response_data = json.loads(user_prefs_response.content)
+        self.assertNotIn("hello", response_data["preferences"])
+        self.assertEqual(
+            "what is this",
+            response_data["preferences"]["what"],
+        )
+
+    def test_deleting_nonexistent_attribute(self):
+        self.client.force_authenticate(self.user)
+        user_prefs_response = self.client.delete(
+            reverse(
+                "planning:delete_userprefs",
+                kwargs={"preference_key": "this_doesnt_exist"},
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(200, user_prefs_response.status_code)
+
+        # and now we get the user prefs again
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+        response_data = json.loads(user_prefs_response.content)
+        self.assertNotIn("this_doesnt_exist", response_data["preferences"])
+        self.assertEqual(
+            "what is this",
+            response_data["preferences"]["what"],
+        )
+        self.assertEqual(
+            "is it me you're looking for",
+            response_data["preferences"]["hello"],
+        )
+
+
+class EmptyUserPrefsAPIViewTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="testuser", password="12345")
+
+    def test_getting_empty_user_prefs(self):
+        self.client.force_authenticate(self.user)
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+
+        response_data = json.loads(user_prefs_response.content)
+        self.assertIsNone(
+            response_data["preferences"],
+        )
+
+    def test_updating_an_empty_userpref(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps({"hello": "I just called to say...hello"})
+        user_prefs_response = self.client.patch(
+            reverse("planning:get_userprefs"),
+            payload,
+            content_type="application/json",
+        )
+
+        self.assertEqual(200, user_prefs_response.status_code)
+
+        # and now we get the user prefs again
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+        response_data = json.loads(user_prefs_response.content)
+        self.assertEqual(
+            "I just called to say...hello",
+            response_data["preferences"]["hello"],
+        )
+
+    def test_deleting_from_empty_userpref(self):
+        self.client.force_authenticate(self.user)
+        user_prefs_response = self.client.delete(
+            reverse(
+                "planning:delete_userprefs",
+                kwargs={"preference_key": "hello"},
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(200, user_prefs_response.status_code)
+
+        # and now we get the user prefs again
+        user_prefs_response = self.client.get(
+            reverse("planning:get_userprefs"),
+            content_type="application/json",
+        )
+        response_data = json.loads(user_prefs_response.content)
+        self.assertIsNone(
+            response_data["preferences"],
+        )
