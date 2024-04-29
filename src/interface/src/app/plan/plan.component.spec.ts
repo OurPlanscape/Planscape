@@ -14,6 +14,7 @@ import { PlanModule } from './plan.module';
 import { MockComponent } from 'ng-mocks';
 import { NavBarComponent } from '../shared/nav-bar/nav-bar.component';
 import { MOCK_PLAN } from '@services/mocks';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
@@ -81,6 +82,7 @@ describe('PlanComponent', () => {
         MaterialModule,
         PlanModule,
         RouterTestingModule.withRoutes([]),
+        NoopAnimationsModule,
       ],
       declarations: [
         PlanComponent,
