@@ -20,10 +20,6 @@ import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './services/redirect.guard';
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
-import { AccountPageComponent } from './account/account-page/account-page.component';
-import { DetailsComponent } from './account/details/details.component';
-import { CredentialsComponent } from './account/credentials/credentials.component';
-import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
 import { ThankYouComponent } from './signup/thank-you/thank-you.component';
 import { redirectResolver } from './services/redirect.resolver';
 
@@ -123,31 +119,8 @@ const routes: Routes = [
       },
       {
         path: 'account',
-        title: 'Account Details',
-        component: AccountPageComponent,
-        canActivate: [AuthGuard],
-        children: [
-          {
-            path: '',
-            redirectTo: 'information',
-            pathMatch: 'full',
-          },
-          {
-            path: 'information',
-            title: 'Edit Personal information',
-            component: DetailsComponent,
-          },
-          {
-            path: 'credentials',
-            title: 'Edit Credentials',
-            component: CredentialsComponent,
-          },
-          {
-            path: 'delete-account',
-            title: 'Deactivate Account',
-            component: DeleteAccountComponent,
-          },
-        ],
+        loadChildren: () =>
+          import('./account/account.module').then((m) => m.AccountModule),
       },
     ],
   },
