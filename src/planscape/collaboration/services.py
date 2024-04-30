@@ -1,5 +1,4 @@
 from typing import List
-from collaboration.exceptions import InvalidOwnership
 from collaboration.models import Permissions, Role, UserObjectRole
 from django.db import transaction
 from django.db.models import Model
@@ -9,6 +8,8 @@ from collaboration.permissions import CollaboratorPermission
 from collaboration.tasks import send_invitation
 from planning.models import PlanningArea
 import logging
+
+from planscape.exceptions import InvalidOwnership
 
 logger = logging.getLogger(__name__)
 
