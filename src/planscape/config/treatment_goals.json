@@ -1050,6 +1050,10 @@
               "id": 18,
               "long_question_text": "What areas have the greatest probability of high severity fire?",
               "short_question_text": "High-severity Fire Areas",
+              "description": [
+                "The output of this treatment goal identifies the areas that are at highest risk for high severity fire, and is derived from the data from the Explore map layer \"Probability of Fire Severity High\".",
+                "The threshold set for this goal is that same layer, set as greater than zero. Ensure that your planning area has a high concentration of high severity fire landscape by reviewing it under your planning area in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1110,6 +1114,10 @@
               "id": 19,
               "long_question_text": "Where are the best opportunities to reduce fire risk within the Wildland Urban Interface?",
               "short_question_text": "Reduce WUI Fire Risk",
+              "description": [
+                "This treatment goal identifies where there are the best opportunities to reduce fire risk to the WUI, and is derived from the data from the Explore map layers \"Probability of High Severity Fire\", \"Structure Exposure Score\" and \"Damage Potential\".",
+                "There are multiple thresholds for this question, creating more constrained output, and it includes the operational layer in the <a href='https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf' target='_blank'>metrics dictionary</a> Wildland Urban Interface equal to 1 and 2. Make sure that your planning area has a high concentration of structures by reviewing both the layers in Explore. We recommend minimizing other constraints such as roads, slope or landscapes, and running this query with stand size set to \"Small\"."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1184,6 +1192,10 @@
               "id": 24,
               "long_question_text": "What areas support high native wildlife species richness (fauna) and are exposed to high severity fire risk?",
               "short_question_text": "Wildlife Richness Exposure to Fire",
+              "description": [
+                "This treatment goal identifies areas with relatively high wildlife species richness that are on land at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Wildlife Species Richness\" and \"Probability of Fire Severity High\".",
+                "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Wildlife Species Richness on the landscape by reviewing the data under your planning area in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1245,6 +1257,10 @@
             {
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
+              "description": [
+                "This treatment goal identifies areas with relatively high threatened/endangered species richness that are at risk of high severity fire. The output of this goal is derived from the data from the Explore map layers \"Threatened/Endangered Vertebrate Species Richness\" and \"Probability of Fire Severity High\". ",
+                "The thresholds for this goal have both these layers set to be greater than zero. Ensure that your planning area has a high concentration of High Severity Fire and Threatened/Endangered Vertebrate Species Richness on the landscape. "
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1312,6 +1328,10 @@
               "id": 26,
               "long_question_text": "What areas could be managed for long-term above ground carbon accumulation and storage?",
               "short_question_text": "Areas with Long-term Carbon Storage",
+              "description": [
+                "This treatment goal identifies areas with relatively elevated aboveground live tree carbon. The output of this goal is derived from the data from the Explore map layer \"Total Aboveground Carbon\".",
+                "The threshold for this goal has Total Aboveground Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of Total Aboveground Carbon on the landscape by reviewing them in Explore. "
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
@@ -1372,6 +1392,10 @@
               "id": 38,
               "long_question_text": "What areas support elevated above ground carbon and could be managed to reduce exposure to high severity fire events?",
               "short_question_text": "Fire Risk in Carbon Sinks",
+              "description": [
+                "This treatment goal identifies areas that can support elevated above ground carbon and could be managed to reduce exposure to high severity fire events. The output of this goal is derived from equal weighting of the data from the Explore map layers \"Total Aboveground Carbon\", \"Aboveground Carbon Turnover Time\" and \"Probability of Fire Severity High\". ",
+                "The thresholds for this goal have Probability of High Severity fire greater than zero, Total Aboveground Carbon greater than 0 mg C/ha and Aboveground Carbon Turnover Time > 0 years.. Ensure that your planning area has a high concentration of High Severity Fire and Total Aboveground Carbon on the landscape, and the correct metric for Aboveground Carbon Turnover Time by reviewing them in Explore."
+              ],
               "scenario_output_fields_paths": {
                 "pillars": [
                   "air_quality",
