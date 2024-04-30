@@ -35,7 +35,6 @@ def to_multipolygon(geometry: GEOSGeometry) -> GEOSGeometry:
 
 
 def from_geojson(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeometry:
-
     if isinstance(geometry, GEOSGeometry):
         return geometry
 
