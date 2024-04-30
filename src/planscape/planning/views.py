@@ -49,6 +49,8 @@ from rest_framework.response import Response
 from rest_framework.request import Request
 from rest_framework import status
 
+from planscape.exceptions import InvalidGeometry
+
 logger = logging.getLogger(__name__)
 
 
@@ -134,20 +136,18 @@ def create_planning_area(request: Request) -> Response:
             instance=planning_area, context={"request": request}
         )
         return Response(serializer.data)
-
-    except ValueError as ve:  # potentially from _convert_polygon_to_multipolygon
-        logger.error(f"ValueError creating planning area: {ve}")
+    except ValueError as ve:
+        logger.error("Invalid geometry while creating a new planning area. Payload has more than one feature.")
         return Response(
             {"message": f"Error creating planning area: {str(ve)}"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    except KeyError as ke:  # potentially from _convert_polygon_to_multipolygon
-        logger.error(f"Error creating planning area: {ke}")
+    except InvalidGeometry as ve:
+        logger.error("Invalid geometry while creating a new planning area. Geometry is invalid for some reason.")
         return Response(
-            {"message": f"Error creating planning area: {str(ke)}"},
+            {"message": f"Error creating planning area: {str(ve)}"},
             status=status.HTTP_400_BAD_REQUEST,
         )
-
     except Exception as e:
         logger.error(f"Error creating planning area: {e}")
         raise
