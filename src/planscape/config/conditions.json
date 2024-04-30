@@ -3003,7 +3003,8 @@
                   "raw_layer": ":wetlandInteg_Tier1_RiparianAreas10m_2019",
                   "reference_link": "https://rrk.sdsc.edu/centralcal/p/Central_Coast_RRK_Metric%20Dictionary_v20230509.pdf#page=60",
                   "source": "Central Coast Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2"
+                  "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2",
+                  "output_units": "Acres of Riparian Area"
                 }
               ]
             }
