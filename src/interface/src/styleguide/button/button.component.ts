@@ -11,7 +11,7 @@ export type ButtonVariant =
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
-  selector: 'button[sg-button]',
+  selector: 'button[sg-button], a[sg-button]',
   standalone: true,
   imports: [CommonModule, MatIconModule],
   templateUrl: './button.component.html',
