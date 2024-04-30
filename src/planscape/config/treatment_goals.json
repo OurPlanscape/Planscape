@@ -1330,7 +1330,7 @@
               "short_question_text": "Areas with Long-term Carbon Storage",
               "description": [
                 "This treatment goal identifies areas with relatively elevated aboveground live tree carbon. The output of this goal is derived from the data from the Explore map layer \"Total Aboveground Carbon\".",
-                "The threshold for this goal has Total Aboveground Carbon greater than 0 mg C/ha.. Ensure that your planning area has a high concentration of Total Aboveground Carbon on the landscape by reviewing them in Explore. "
+                "The threshold for this goal has Total Aboveground Carbon greater than 0 mg C/ha. Ensure that your planning area has a high concentration of Total Aboveground Carbon on the landscape by reviewing them in Explore. "
               ],
               "scenario_output_fields_paths": {
                 "pillars": [
