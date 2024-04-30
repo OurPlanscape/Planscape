@@ -137,13 +137,17 @@ def create_planning_area(request: Request) -> Response:
         )
         return Response(serializer.data)
     except ValueError as ve:
-        logger.error("Invalid geometry while creating a new planning area. Payload has more than one feature.")
+        logger.error(
+            "Invalid geometry while creating a new planning area. Payload has more than one feature."
+        )
         return Response(
             {"message": f"Error creating planning area: {str(ve)}"},
             status=status.HTTP_400_BAD_REQUEST,
         )
     except InvalidGeometry as ve:
-        logger.error("Invalid geometry while creating a new planning area. Geometry is invalid for some reason.")
+        logger.error(
+            "Invalid geometry while creating a new planning area. Geometry is invalid for some reason."
+        )
         return Response(
             {"message": f"Error creating planning area: {str(ve)}"},
             status=status.HTTP_400_BAD_REQUEST,
