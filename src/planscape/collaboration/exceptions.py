@@ -1,2 +1,0 @@
-class InvalidOwnership(Exception):
-    pass
