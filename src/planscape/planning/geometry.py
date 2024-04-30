@@ -29,6 +29,11 @@ def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeome
     if geometry.geom_type == "Polygon":
         geometry = MultiPolygon([geometry], srid=geometry.srid)
 
+    if geometry.hasz:
+        ogr_geometry = geometry.ogr.clone()
+        ogr_geometry.coord_dim = 2
+        geometry = GEOSGeometry(ogr_geometry.wkt)
+
     if not geometry.valid:
         raise ValueError("Geometry is invalid and cannot be used.")
     if geometry.geom_type != "MultiPolygon":
