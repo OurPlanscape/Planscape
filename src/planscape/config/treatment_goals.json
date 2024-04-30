@@ -1052,13 +1052,49 @@
               "short_question_text": "High-severity Fire Areas",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "fire_dynamics"
+                  "air_quality",
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity"
                 ],
                 "elements": [
-                  "severity"
+                  "carbon_storage",
+                  "composition",
+                  "environmental_justice",
+                  "focal_species",
+                  "hazard",
+                  "particulate_matter",
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
-                  "probability_of_fire_severity_high"
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "ember_load_index",
+                  "housing_burden_percentile",
+                  "hummingbirds_species_richness",
+                  "least_bells_virio_habitat",
+                  "loggerhead_shrike_habitat",
+                  "mountain_lion",
+                  "nuttails_woodpecker_habitat",
+                  "open_habitat_raptors_species_richness",
+                  "potential_total_smoke",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "ringtail_cat_habitat",
+                  "riparian_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wetland_diversity",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -1076,20 +1112,52 @@
               "short_question_text": "Reduce WUI Fire Risk",
               "scenario_output_fields_paths": {
                 "pillars": [
+                  "air_quality",
+                  "biodiversity",
+                  "carbon_sequestration",
                   "fire_adapted_communities",
                   "fire_dynamics",
-                  "forsys"
+                  "forsys",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity"
                 ],
                 "elements": [
+                  "carbon_storage",
+                  "composition",
+                  "environmental_justice",
+                  "focal_species",
                   "hazard",
+                  "particulate_matter",
                   "severity",
+                  "species_diversity",
                   "Forsys"
                 ],
                 "metrics": [
-                  "structure_exposure_score",
-                  "wui_damage_potential",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "ember_load_index",
+                  "housing_burden_percentile",
+                  "hummingbirds_species_richness",
+                  "least_bells_virio_habitat",
+                  "loggerhead_shrike_habitat",
+                  "mountain_lion",
+                  "nuttails_woodpecker_habitat",
+                  "open_habitat_raptors_species_richness",
+                  "potential_total_smoke",
+                  "poverty_percentile",
                   "probability_of_fire_severity_high",
-                  "wildland_urban_interface"
+                  "ringtail_cat_habitat",
+                  "riparian_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wetland_diversity",
+                  "wildlife_species_richness",
+                  "wildland_urban_interface",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -1118,16 +1186,49 @@
               "short_question_text": "Wildlife Richness Exposure to Fire",
               "scenario_output_fields_paths": {
                 "pillars": [
+                  "air_quality",
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
                   "fire_dynamics",
-                  "biodiversity"
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity"
                 ],
                 "elements": [
+                  "carbon_storage",
+                  "composition",
+                  "environmental_justice",
+                  "focal_species",
+                  "hazard",
+                  "particulate_matter",
                   "severity",
                   "species_diversity"
                 ],
                 "metrics": [
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "ember_load_index",
+                  "housing_burden_percentile",
+                  "hummingbirds_species_richness",
+                  "least_bells_virio_habitat",
+                  "loggerhead_shrike_habitat",
+                  "mountain_lion",
+                  "nuttails_woodpecker_habitat",
+                  "open_habitat_raptors_species_richness",
+                  "potential_total_smoke",
+                  "poverty_percentile",
                   "probability_of_fire_severity_high",
-                  "wildlife_species_richness"
+                  "ringtail_cat_habitat",
+                  "riparian_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wetland_diversity",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -1146,16 +1247,49 @@
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "scenario_output_fields_paths": {
                 "pillars": [
+                  "air_quality",
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
                   "fire_dynamics",
-                  "biodiversity"
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity"
                 ],
                 "elements": [
+                  "carbon_storage",
+                  "composition",
+                  "environmental_justice",
+                  "focal_species",
+                  "hazard",
+                  "particulate_matter",
                   "severity",
                   "species_diversity"
                 ],
                 "metrics": [
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "ember_load_index",
+                  "housing_burden_percentile",
+                  "hummingbirds_species_richness",
+                  "least_bells_virio_habitat",
+                  "loggerhead_shrike_habitat",
+                  "mountain_lion",
+                  "nuttails_woodpecker_habitat",
+                  "open_habitat_raptors_species_richness",
+                  "potential_total_smoke",
+                  "poverty_percentile",
                   "probability_of_fire_severity_high",
-                  "threatened_endangered_vertebrate_species_richness"
+                  "ringtail_cat_habitat",
+                  "riparian_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "total_aboveground_carbon",
+                  "unemployment_percentile",
+                  "wetland_diversity",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -1180,13 +1314,49 @@
               "short_question_text": "Areas with Long-term Carbon Storage",
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "carbon_sequestration"
+                  "air_quality",
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
+                  "fire_dynamics",
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity"
                 ],
                 "elements": [
-                  "carbon_storage"
+                  "carbon_storage",
+                  "composition",
+                  "environmental_justice",
+                  "focal_species",
+                  "hazard",
+                  "particulate_matter",
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
-                  "total_aboveground_carbon"
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "ember_load_index",
+                  "housing_burden_percentile",
+                  "hummingbirds_species_richness",
+                  "least_bells_virio_habitat",
+                  "loggerhead_shrike_habitat",
+                  "mountain_lion",
+                  "nuttails_woodpecker_habitat",
+                  "open_habitat_raptors_species_richness",
+                  "potential_total_smoke",
+                  "poverty_percentile",
+                  "probability_of_fire_severity_high",
+                  "ringtail_cat_habitat",
+                  "riparian_habitat",
+                  "structure_exposure_score",
+                  "total_aboveground_carbon",
+                  "threatened_endangered_vertebrate_species_richness",
+                  "unemployment_percentile",
+                  "wetland_diversity",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
@@ -1204,18 +1374,51 @@
               "short_question_text": "Fire Risk in Carbon Sinks",
               "scenario_output_fields_paths": {
                 "pillars": [
+                  "air_quality",
+                  "biodiversity",
+                  "carbon_sequestration",
+                  "fire_adapted_communities",
                   "fire_dynamics",
-                  "carbon_sequestration"
+                  "social_and_cultural_wellbeing",
+                  "wetland_integrity"
                 ],
                 "elements": [
-                  "severity",
                   "carbon_storage",
-                  "carbon_stability"
+                  "carbon_stability",
+                  "composition",
+                  "environmental_justice",
+                  "focal_species",
+                  "hazard",
+                  "particulate_matter",
+                  "severity",
+                  "species_diversity"
                 ],
                 "metrics": [
+                  "aboveground_carbon_turnover_time",
+                  "annual_burn_probability",
+                  "aquatic_species_richness",
+                  "california_red_legged_frog",
+                  "california_spotted_owl",
+                  "ember_load_index",
+                  "housing_burden_percentile",
+                  "hummingbirds_species_richness",
+                  "least_bells_virio_habitat",
+                  "loggerhead_shrike_habitat",
+                  "mountain_lion",
+                  "nuttails_woodpecker_habitat",
+                  "open_habitat_raptors_species_richness",
+                  "potential_total_smoke",
+                  "poverty_percentile",
                   "probability_of_fire_severity_high",
+                  "ringtail_cat_habitat",
+                  "riparian_habitat",
+                  "structure_exposure_score",
+                  "threatened_endangered_vertebrate_species_richness",
                   "total_aboveground_carbon",
-                  "aboveground_carbon_turnover_time"
+                  "unemployment_percentile",
+                  "wetland_diversity",
+                  "wildlife_species_richness",
+                  "wui_damage_potential"
                 ]
               },
               "scenario_priorities": [
