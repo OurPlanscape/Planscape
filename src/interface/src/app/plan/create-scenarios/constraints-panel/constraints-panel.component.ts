@@ -305,8 +305,9 @@ export class ConstraintsPanelComponent implements OnChanges {
   }
 
   calculateMinBudget() {
-    const estCostPerAcre = this.constraintsForm.get('budgetForm.estimatedCost')
-      ?.value;
+    const estCostPerAcre = this.constraintsForm.get(
+      'budgetForm.estimatedCost'
+    )?.value;
     return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
   }
 }
