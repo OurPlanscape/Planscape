@@ -9,7 +9,7 @@
     "components": [
         {
             "name": "ButtonComponent",
-            "id": "component-ButtonComponent-3d63adb89da2e846450bbed6d8975588d29abc61c9c1a5e3a6a5398a66c7a18dfa2d2d8e620e2b994b86dda2ce4fbf0c963587db90f7066bd0242d8e792c753c",
+            "id": "component-ButtonComponent-b4d3535063c428225fe0be9bbb80b5bfcf3cee1553c1fa5b81ec36aef3a9dc278ede51796a5bdd3e14b5122ec723aedc9dcd55b04378befcda7e1641e0ddb4b0",
             "file": "src/styleguide/button/button.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -73,6 +73,14 @@
                     "decorators": []
                 },
                 {
+                    "name": "class.positive-button",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 53,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
                     "name": "class.primary-button",
                     "deprecated": false,
                     "deprecationMessage": "",
@@ -104,11 +112,11 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, HostBinding, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { MatIconModule } from '@angular/material/icon';\n\nexport type ButtonVariant =\n  | 'primary'\n  | 'ghost'\n  | 'text'\n  | 'negative'\n  | 'positive';\n\n@Component({\n  // eslint-disable-next-line @angular-eslint/component-selector\n  selector: 'button[sg-button], a[sg-button]',\n  standalone: true,\n  imports: [CommonModule, MatIconModule],\n  templateUrl: './button.component.html',\n  styleUrls: ['./button.component.scss'],\n})\nexport class ButtonComponent {\n  /**\n   * The variant used for the button.\n   *\n   */\n  @Input() variant: ButtonVariant = 'ghost';\n  /**\n   * The optional icon used in the button.\n   * If blank the button will not have an icon\n   */\n  @Input() icon: string = '';\n\n  @HostBinding('class.ghost-button')\n  get isVariantGhost() {\n    return this.variant === 'ghost';\n  }\n\n  @HostBinding('class.primary-button')\n  get isVariantPrimary() {\n    return this.variant === 'primary';\n  }\n\n  @HostBinding('class.negative-button')\n  get isVariantNegative() {\n    return this.variant === 'negative';\n  }\n\n  @HostBinding('class.text-button')\n  get isVariantText() {\n    return this.variant === 'text';\n  }\n}\n",
+            "sourceCode": "import { Component, HostBinding, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { MatIconModule } from '@angular/material/icon';\n\nexport type ButtonVariant =\n  | 'primary'\n  | 'ghost'\n  | 'text'\n  | 'negative'\n  | 'positive';\n\n@Component({\n  // eslint-disable-next-line @angular-eslint/component-selector\n  selector: 'button[sg-button], a[sg-button]',\n  standalone: true,\n  imports: [CommonModule, MatIconModule],\n  templateUrl: './button.component.html',\n  styleUrls: ['./button.component.scss'],\n})\nexport class ButtonComponent {\n  /**\n   * The variant used for the button.\n   *\n   */\n  @Input() variant: ButtonVariant = 'ghost';\n  /**\n   * The optional icon used in the button.\n   * If blank the button will not have an icon\n   */\n  @Input() icon: string = '';\n\n  @HostBinding('class.ghost-button')\n  get isVariantGhost() {\n    return this.variant === 'ghost';\n  }\n\n  @HostBinding('class.primary-button')\n  get isVariantPrimary() {\n    return this.variant === 'primary';\n  }\n\n  @HostBinding('class.negative-button')\n  get isVariantNegative() {\n    return this.variant === 'negative';\n  }\n\n  @HostBinding('class.text-button')\n  get isVariantText() {\n    return this.variant === 'text';\n  }\n\n  @HostBinding('class.positive-button')\n  get isVariantPositive() {\n    return this.variant === 'positive';\n  }\n}\n",
             "assetsDirs": [],
             "styleUrlsData": [
                 {
-                    "data": "@import \"../../styles/colors\";\n@import \"../../styles/mixins\";\n\n\n:host {\n  box-sizing: border-box;\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  font-weight: 500;\n  line-height: 20px;\n  border-radius: 4px;\n  padding: 12px 12px;\n  cursor: pointer;\n  gap: 8px;\n  text-decoration: none;\n  height: 40px;\n  border: 1px solid transparent;\n  background-color: transparent;\n\n  &.primary-button {\n    color: $color-white;\n    background-color: $color-standard-blue;\n    border-color: $color-standard-blue;\n\n    &:active, &:hover {\n      background-color: $color-main-blue;\n      border-color: $color-main-blue;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n      border-color: $color-soft-gray;\n      background-color: $color-soft-gray;\n    }\n  }\n\n  &.ghost-button {\n    color: $color-standard-blue;\n    border-color: $color-standard-blue;\n    background-color: $color-white;\n\n\n    &:active, &:hover {\n      color: $color-white;\n      background-color: $color-main-blue;\n      border-color: $color-main-blue;\n    }\n\n\n    &:disabled {\n      color: $color-text-gray;\n      border-color: $color-soft-gray;\n      background-color: $color-soft-gray;\n    }\n  }\n\n  &.negative-button {\n    border-color: #D50000;\n    background-color: #D50000;\n    color: $color-white;\n\n    &:active, &:hover {\n      background: #B40000;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n      background-color: $color-soft-gray;\n      border-color: $color-soft-gray;\n    }\n  }\n\n  &.text-button {\n    background-color: transparent;\n    border-color: transparent;\n    color: $color-standard-blue;\n\n    &:active, &:hover {\n      background-color: $color-soft-gray;\n      border-color: $color-soft-gray;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n    }\n  }\n\n}\n\n\n",
+                    "data": "@import \"../../styles/colors\";\n@import \"../../styles/mixins\";\n\n\n:host {\n  box-sizing: border-box;\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  font-weight: 500;\n  line-height: 20px;\n  border-radius: 4px;\n  padding: 12px 12px;\n  cursor: pointer;\n  gap: 8px;\n  text-decoration: none;\n  height: 40px;\n  border: 1px solid transparent;\n  background-color: transparent;\n\n  &.primary-button {\n    color: $color-white;\n    background-color: $color-standard-blue;\n    border-color: $color-standard-blue;\n\n    &:active, &:hover {\n      background-color: $color-main-blue;\n      border-color: $color-main-blue;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n      border-color: $color-soft-gray;\n      background-color: $color-soft-gray;\n    }\n  }\n\n  &.ghost-button {\n    color: $color-standard-blue;\n    border-color: $color-standard-blue;\n    background-color: $color-white;\n\n\n    &:active, &:hover {\n      color: $color-white;\n      background-color: $color-main-blue;\n      border-color: $color-main-blue;\n    }\n\n\n    &:disabled {\n      color: $color-text-gray;\n      border-color: $color-soft-gray;\n      background-color: $color-soft-gray;\n    }\n  }\n\n  &.negative-button {\n    border-color: #D50000;\n    background-color: #D50000;\n    color: $color-white;\n\n    &:active, &:hover {\n      background: #B40000;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n      background-color: $color-soft-gray;\n      border-color: $color-soft-gray;\n    }\n  }\n\n  &.text-button {\n    background-color: transparent;\n    border-color: transparent;\n    color: $color-standard-blue;\n\n    &:active, &:hover {\n      background-color: $color-soft-gray;\n      border-color: $color-soft-gray;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n    }\n  }\n\n  &.positive-button {\n    border-color: $color-brand-teal;\n    background-color: $color-brand-teal;\n    color: $color-white;\n\n    &:active, &:hover {\n      background: $color-brand-green;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n      background-color: $color-soft-gray;\n      border-color: $color-soft-gray;\n    }\n  }\n\n\n}\n\n\n",
                     "styleUrl": "./button.component.scss"
                 }
             ],
@@ -149,6 +157,15 @@
                         "type": "",
                         "returnType": "",
                         "line": 48
+                    }
+                },
+                "isVariantPositive": {
+                    "name": "isVariantPositive",
+                    "getSignature": {
+                        "name": "isVariantPositive",
+                        "type": "",
+                        "returnType": "",
+                        "line": 53
                     }
                 }
             },
@@ -194,17 +211,17 @@
     },
     "routes": [],
     "coverage": {
-        "count": 28,
-        "status": "medium",
+        "count": 25,
+        "status": "low",
         "files": [
             {
                 "filePath": "src/styleguide/button/button.component.ts",
                 "type": "component",
                 "linktype": "component",
                 "name": "ButtonComponent",
-                "coveragePercent": 28,
-                "coverageCount": "2/7",
-                "status": "medium"
+                "coveragePercent": 25,
+                "coverageCount": "2/8",
+                "status": "low"
             }
         ]
     }

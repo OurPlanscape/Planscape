@@ -48,4 +48,9 @@ export class ButtonComponent {
   get isVariantText() {
     return this.variant === 'text';
   }
+
+  @HostBinding('class.positive-button')
+  get isVariantPositive() {
+    return this.variant === 'positive';
+  }
 }

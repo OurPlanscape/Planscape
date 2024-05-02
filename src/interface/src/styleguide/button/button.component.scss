@@ -86,6 +86,23 @@
     }
   }
 
+  &.positive-button {
+    border-color: $color-brand-teal;
+    background-color: $color-brand-teal;
+    color: $color-white;
+
+    &:active, &:hover {
+      background: $color-brand-green;
+    }
+
+    &:disabled {
+      color: $color-text-gray;
+      background-color: $color-soft-gray;
+      border-color: $color-soft-gray;
+    }
+  }
+
+
 }
 
 
