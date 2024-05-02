@@ -9,15 +9,16 @@ from planning.serializers import (
     ListScenarioSerializer,
     ScenarioSerializer,
 )
+from collaboration.permissions import PlanningAreaPermission
 from planning.filters import PlanningAreaFilter, ScenarioFilter
-from planning.permission import UserPermission
+from planning.permission import PlanningAreaViewPermission, ScenarioViewPermission
 
 logger = logging.getLogger(__name__)
 
 
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     queryset = PlanningArea.objects.all()
-    permission_classes = [UserPermission]
+    permission_classes = [PlanningAreaViewPermission]
     ordering_fields = ["name", "created_at", "scenario_count"]
     filterset_class = PlanningAreaFilter
 
@@ -34,9 +35,16 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.all()
-    permission_classes = [UserPermission]
+    permission_classes = [ScenarioViewPermission]
     ordering_fields = ["name", "created_at"]
     filterset_class = ScenarioFilter
+
+    def perform_create(self, serializer):
+        planningarea_pk = self.kwargs.get("planningarea_pk")
+        user = self.request.user
+        planning_area = PlanningArea.objects.get(pk=planningarea_pk)
+        if PlanningAreaPermission.can_add_scenario(user, planning_area):
+            serializer.save(planningarea_pk=planning_area.pk)
 
     def get_serializer_class(self):
         if self.action == "list":
