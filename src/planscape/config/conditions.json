@@ -2054,7 +2054,7 @@
                   "output_units": "Acres of Suitable Habitat"
                 },
                 {
-                  "display_name": "Least Bell's Virio Habitat",
+                  "display_name": "Least Bell's Vireo Habitat",
                   "data_provider": "Conservation Science and Data Visualization",
                   "data_units": "Binary",
                   "max_value": 1,
@@ -3400,7 +3400,7 @@
               "display_name": "Focal Species",
               "metrics": [
                 {
-                  "display_name": "Least Bell's Virio Habitat",
+                  "display_name": "Least Bell's Vireo Habitat",
                   "data_provider": "Conservation Science and Data Visualization",
                   "data_units": "Binary",
                   "max_value": 1,
