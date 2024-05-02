@@ -37,7 +37,7 @@ import { WINDOW_PROVIDERS } from '@services/window.service';
 import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overlay.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
-import { ButtonComponent } from '../../styleguide/button/button.component';
+import { ButtonComponent } from '@styleguide';
 
 /** Components used in the plan flow. */
 @NgModule({

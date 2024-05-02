@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
 
-import { ButtonComponent } from './button/button.component';
+import { ButtonComponent } from './button.component';
 
 type PagePropsAndCustomArgs = ButtonComponent & { content?: string };
 

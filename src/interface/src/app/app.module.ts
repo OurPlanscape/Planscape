@@ -49,7 +49,7 @@ import { InfoCardComponent } from './signup/info-card/info-card.component';
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
 import { JwtInterceptor } from '@services/jwt-interceptor.service';
-import { ButtonComponent } from '../styleguide/button/button.component';
+import { ButtonComponent } from '@styleguide';
 
 @NgModule({
   declarations: [
