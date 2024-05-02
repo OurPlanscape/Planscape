@@ -94,7 +94,9 @@ export class PlanService {
 
   getTotalArea(shape: GeoJSON) {
     return this.http
-      .post<{ area_acres: number }>(
+      .post<{
+        area_acres: number;
+      }>(
         BackendConstants.END_POINT.concat(`/planning/validate_planning_area/`),
         { geometry: shape }
       )
