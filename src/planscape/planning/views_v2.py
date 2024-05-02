@@ -39,10 +39,12 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     ordering_fields = ["name", "created_at"]
     filterset_class = ScenarioFilter
 
-    def perform_create(self, serializer):
-        planningarea_pk = self.kwargs.get("planningarea_pk")
-        planningarea = PlanningArea.objects.get(pk=planningarea_pk)
-        serializer.save(planning_area=planningarea)
+    def create(self, request, planningarea_pk):
+        request_data = request.data
+        request_data["planning_area"] = planningarea_pk
+        serializer = self.get_serializer(data=request_data)
+        serializer.is_valid(raise_exception=True)
+        return super().create(request)
 
     def get_serializer_class(self):
         if self.action == "list":

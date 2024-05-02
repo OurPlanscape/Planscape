@@ -251,7 +251,6 @@ class ScenarioSerializer(
 
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user or self.request.user
-
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
