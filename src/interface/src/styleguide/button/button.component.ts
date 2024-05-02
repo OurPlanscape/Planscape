@@ -29,6 +29,8 @@ export class ButtonComponent {
    */
   @Input() icon: string = '';
 
+  @Input() hasError = false;
+
   @HostBinding('class.ghost-button')
   get isVariantGhost() {
     return this.variant === 'ghost';
@@ -52,5 +54,10 @@ export class ButtonComponent {
   @HostBinding('class.positive-button')
   get isVariantPositive() {
     return this.variant === 'positive';
+  }
+
+  @HostBinding('class.has-error')
+  get itHasError() {
+    return this.hasError;
   }
 }

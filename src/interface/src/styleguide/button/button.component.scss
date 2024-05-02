@@ -56,8 +56,8 @@
   }
 
   &.negative-button {
-    border-color: #D50000;
-    background-color: #D50000;
+    border-color: $color-error;
+    background-color: $color-error;
     color: $color-white;
 
     &:active, &:hover {
@@ -73,12 +73,11 @@
 
   &.text-button {
     background-color: transparent;
-    border-color: transparent;
+    border: none;
     color: $color-standard-blue;
 
     &:active, &:hover {
       background-color: $color-soft-gray;
-      border-color: $color-soft-gray;
     }
 
     &:disabled {
@@ -102,6 +101,12 @@
     }
   }
 
+
+  &.has-error:not(:disabled) {
+    background-color: white;
+    color: $color-error;
+    border-color: $color-error;
+  }
 
 }
 
