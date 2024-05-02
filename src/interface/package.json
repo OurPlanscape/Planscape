@@ -11,7 +11,9 @@
     "lint:fix": "ng lint --fix",
     "format:styles": "prettier --write \"**/*.scss\"",
     "build:prod": "ng build --configuration production",
-    "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage"
+    "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage",
+    "storybook": "ng run interface:storybook",
+    "build-storybook": "ng run interface:build-storybook"
   },
   "private": true,
   "dependencies": {
@@ -62,7 +64,16 @@
     "@angular-eslint/template-parser": "17.3.0",
     "@angular/cli": "~17.3.1",
     "@angular/compiler-cli": "^17.3.1",
+    "@chromatic-com/storybook": "^1.2.25",
+    "@compodoc/compodoc": "^1.1.23",
     "@mapbox/vector-tile": "^1.3.1",
+    "@storybook/addon-docs": "^8.0.5",
+    "@storybook/addon-essentials": "^8.0.5",
+    "@storybook/addon-interactions": "^8.0.5",
+    "@storybook/addon-links": "^8.0.5",
+    "@storybook/angular": "^8.0.5",
+    "@storybook/blocks": "^8.0.5",
+    "@storybook/test": "^8.0.5",
     "@types/esri-leaflet": "^3.0.3",
     "@types/geojson": "^7946.0.10",
     "@types/jasmine": "~4.0.0",
@@ -74,6 +85,7 @@
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
+    "eslint-plugin-storybook": "^0.8.0",
     "jasmine-core": "~4.3.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.1.0",
@@ -82,6 +94,7 @@
     "karma-jasmine-html-reporter": "~2.0.0",
     "prettier": "^3.0.2",
     "prettier-eslint": "^15.0.1",
+    "storybook": "^8.0.5",
     "typescript": "~5.4.3"
   }
 }
