@@ -16,6 +16,19 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - .:/usr/src/app
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    ports:
+      - "4200:4200"
+    env_file:
+      - .env
+    depends_on:
+      - web
+    working_dir: /usr/src/app/src/interface
+    volumes:
+      - .:/usr/src/app
   redis:
     image: redis:6.2-alpine
     restart: always
