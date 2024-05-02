@@ -41,10 +41,8 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         planningarea_pk = self.kwargs.get("planningarea_pk")
-        user = self.request.user
-        planning_area = PlanningArea.objects.get(pk=planningarea_pk)
-        if PlanningAreaPermission.can_add_scenario(user, planning_area):
-            serializer.save(planningarea_pk=planning_area.pk)
+        planningarea = PlanningArea.objects.get(pk=planningarea_pk)
+        serializer.save(planning_area=planningarea)
 
     def get_serializer_class(self):
         if self.action == "list":

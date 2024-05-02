@@ -4,6 +4,7 @@ from collaboration.permissions import (
     ScenarioPermission,
     CheckPermissionMixin,
 )
+from planning.models import PlanningArea
 
 
 class PlanscapePermission(BasePermission):
@@ -32,16 +33,21 @@ class ScenarioViewPermission(PlanscapePermission):
     parent_set = PlanningAreaPermission
 
     def has_permission(self, request, view):
-        print("what about here? What are we checking? {view}")
-        print("can I get a permission from here? {request}")
+        planningarea_pk = view.kwargs.get("planningarea_pk")
+        if view.action == "create" and planningarea_pk:
+            planningarea = PlanningArea.objects.get(id=planningarea_pk)
+            return PlanningAreaPermission.can_add_scenario(request.user, planningarea)
+        if view.action == "list" and planningarea_pk:
+            planningarea = PlanningArea.objects.get(id=planningarea_pk)
+            return PlanningAreaPermission.can_view(request.user, planningarea)
+
         return super().has_permission(request, view)
 
     def has_object_permission(self, request, view, object):
-        print(f"Do we have a planning area for this? {object.planning_area}")
         if view.action == "update":
             perm = self.permission_set.can_change(request.user, object)
             return perm
         if view.action == "destroy":
             return self.permission_set.can_delete(request.user, object)
-        if view.action == "create":
-            return self.parent_set.can_add_scenario(request.user, object.planning_area)
+        if view.action == "partial_update" or view.action == "update":
+            return self.parent_set.can_change(request.user, object)
