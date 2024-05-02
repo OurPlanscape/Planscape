@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework.permissions import BasePermission
 from collaboration.permissions import (
     PlanningAreaPermission,
@@ -9,7 +10,7 @@ from planning.models import PlanningArea
 
 class PlanscapePermission(BasePermission):
 
-    model = CheckPermissionMixin
+    model = None
 
     def has_permission(self, request, view):
         return self.is_authenticated(request)
@@ -33,7 +34,7 @@ class ScenarioViewPermission(PlanscapePermission):
 
     def has_permission(self, request, view):
         planningarea_pk = view.kwargs.get("planningarea_pk")
-        planningarea = PlanningArea.objects.get(id=planningarea_pk)
+        planningarea = get_object_or_404(PlanningArea, id=planningarea_pk)
         if view.action == "create" and planningarea_pk:
             return PlanningAreaPermission.can_add_scenario(request.user, planningarea)
         if view.action == "list" and planningarea_pk:

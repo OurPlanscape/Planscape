@@ -208,6 +208,4 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertJSONEqual(
-            response.content, {"detail": "No PlanningArea matches the given query."}
-        )
+        self.assertJSONEqual(response.content, {"detail": "Not found."})
