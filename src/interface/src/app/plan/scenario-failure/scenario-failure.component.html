@@ -1,18 +1,18 @@
 <button
-  (click)='downloadCsv()'
-  data-id='downloadCsv'
+  (click)="downloadCsv()"
+  data-id="downloadCsv"
   sg-button
-  variant='ghost'
-  class='button-left'
+  variant="ghost"
+  class="button-left"
   [disabled]="scenarioState !== 'FAILURE'">
-  <mat-icon class='material-symbols-outlined'>download</mat-icon>
+  <mat-icon class="material-symbols-outlined">download</mat-icon>
   DOWNLOAD CSV DATA
 </button>
 
 <section>
   <ng-container *ngIf="scenarioState === 'FAILURE'; else generic">
     <h4>
-      <mat-icon class='material-symbols-filled warning'>warning</mat-icon>
+      <mat-icon class="material-symbols-filled warning">warning</mat-icon>
       No optimal project areas for treatment were found
     </h4>
     <p>
@@ -31,17 +31,21 @@
 
   <ng-template #generic>
     <h4>
-      <mat-icon class='material-symbols-filled error'>error</mat-icon>
+      <mat-icon class="material-symbols-filled error">error</mat-icon>
       There was an error generating your scenario
     </h4>
     <p>Sorry, we were unable to generate your scenario. Please try again.</p>
   </ng-template>
 
-  <div class='actions'>
-    <a (click)='goBack.emit()' data-id='downloadCsv' sg-button variant='ghost'>
+  <div class="actions">
+    <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
       RETURN TO PLAN OVERVIEW
     </a>
-    <a (click)='tryAgain.emit()' data-id='downloadCsv' sg-button variant='primary'>
+    <a
+      (click)="tryAgain.emit()"
+      data-id="downloadCsv"
+      sg-button
+      variant="primary">
       TRY AGAIN
     </a>
   </div>
