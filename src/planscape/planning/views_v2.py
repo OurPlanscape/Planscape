@@ -10,14 +10,14 @@ from planning.serializers import (
     ScenarioSerializer,
 )
 from planning.filters import PlanningAreaFilter, ScenarioFilter
-from planning.permission import UserPermission
+from planning.permission import PlanningAreaViewPermission, ScenarioViewPermission
 
 logger = logging.getLogger(__name__)
 
 
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     queryset = PlanningArea.objects.all()
-    permission_classes = [UserPermission]
+    permission_classes = [PlanningAreaViewPermission]
     ordering_fields = ["name", "created_at", "scenario_count"]
     filterset_class = PlanningAreaFilter
 
@@ -34,7 +34,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.all()
-    permission_classes = [UserPermission]
+    permission_classes = [ScenarioViewPermission]
     ordering_fields = ["name", "created_at"]
     filterset_class = ScenarioFilter
 
