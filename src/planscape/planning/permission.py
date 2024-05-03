@@ -8,7 +8,6 @@ from planning.models import PlanningArea
 
 
 class PlanscapePermission(BasePermission):
-
     permission_set = None
 
     def has_permission(self, request, view):
