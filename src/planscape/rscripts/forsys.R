@@ -57,16 +57,30 @@ STAND_AREAS_ACRES <- list(
   LARGE = 494.2
 )
 
-average_per_stand <- function(value, stand_count, stand_size = NA) {
+average_per_stand <- function(value, stand_count, stand_size = NA, metric = NA) {
   return(round(value / stand_count, digits = 2))
 }
-average_ses <- function(value, stand_count, stand_size = NA) {
+average_ses <- function(value, stand_count, stand_size = NA, metric = NA) {
   return(round(value / stand_count, digits = 0))
 }
-total_acres_per_project <- function(value, stand_count, stand_size) {
+
+average_and_clamp <- function(value, stand_count, stand_size = NA, metric = NA) {
+  categories <- CATEGORIES_PER_METRIC[[metric]]
+  average <- value / stand_count
+  result <- abs(categories - average) %>%
+    which.min() %>%
+    categories[.]
+  return(result)
+}
+
+total_acres_per_project <- function(value, stand_count, stand_size, metric = NA) {
   stand_size_in_acres <- STAND_AREAS_ACRES[[stand_size]]
   return(round(value * stand_size_in_acres, digits = 2))
 }
+
+CATEGORIES_PER_METRIC <- list(
+  potential_total_smoke = c(0.12, 0.25, 0.35)
+)
 
 POSTPROCESSING_FUNCTIONS <- list(
   aboveground_carbon_turnover_time = average_per_stand,
@@ -115,7 +129,7 @@ POSTPROCESSING_FUNCTIONS <- list(
   open_habitat_raptors_species_richness = average_per_stand,
   pacific_fisher = total_acres_per_project,
   percent_impervious_surface = average_per_stand,
-  potential_total_smoke = average_ses,
+  potential_total_smoke = average_and_clamp,
   poverty_percentile = average_per_stand,
   predicted_ignition_probability_human_caused = average_per_stand,
   predicted_ignition_probability_lightning_caused = average_per_stand,
@@ -413,7 +427,7 @@ to_properties <- function(
       log_info("Post processing {column} to {new_column}.")
       project_data <- project_data %>%
         mutate(
-          !!treat_string_as_col(new_column) := postprocess_fn(!!treat_string_as_col(column), project_stand_count, stand_size)
+          !!treat_string_as_col(new_column) := postprocess_fn(!!treat_string_as_col(column), project_stand_count, stand_size, column)
         )
     }
   }
