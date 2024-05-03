@@ -14,8 +14,11 @@ import { BackendConstants } from '../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PlanStateService } from '@services';
 import { regionMapCenters } from '../../map/map.helper';
-import { Feature } from 'geojson';
+import { Feature, MultiPolygon, Position } from 'geojson';
 import { getColorForProjectPosition } from '../plan-helpers';
+import polylabel from 'polylabel';
+import area from '@turf/area';
+import { polygon } from '@turf/helpers';
 
 // Needed to keep reference to legend div element to remove
 export interface MapRef {
@@ -273,18 +276,39 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         fillOpacity: 0.4,
         weight: 1.5,
       }),
-      onEachFeature: function (feature, layer) {
-        // TODO Find a better way to center this — could see if it's possible to add an actual center coordinate to the properties and use that to set tooltip location
-        // This currently is a bit off if the centroid of the project area isn't within it (https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc)
-        layer
-          .bindTooltip(String(feature.properties.proj_id), {
-            permanent: true,
-            direction: 'center',
-            className: 'project-area-label',
-          })
-          .openTooltip();
+      onEachFeature: (feature, layer) => {
+        let center: number[] = [];
+        if (feature.geometry.type === 'Polygon') {
+          center = polylabel(feature.geometry.coordinates, 0.005);
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          center = polylabel(getBiggestArea(feature.geometry), 0.005);
+        }
+
+        let tooltip = L.tooltip({
+          permanent: true,
+          direction: 'center',
+          className: 'project-area-label',
+        })
+          .setLatLng([center[1], center[0]])
+          .setContent(feature.properties.proj_id.toString());
+
+        tooltip.addTo(this.map);
       },
     });
     this.projectAreasLayer.addTo(this.map);
   }
+}
+
+function getBiggestArea(multi: MultiPolygon) {
+  let biggest: Position[][] = [];
+  let biggestArea = 0;
+  let currentArea = 0;
+  multi.coordinates.forEach((positions) => {
+    currentArea = area(polygon(positions));
+    if (currentArea > biggestArea) {
+      biggest = positions;
+      biggestArea = currentArea;
+    }
+  });
+  return biggest;
 }
