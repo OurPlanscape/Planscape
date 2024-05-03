@@ -224,3 +224,8 @@ class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     class Meta:
         ordering = ["-created_at", "user"]
+
+
+class UserPrefs(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    user = models.OneToOneField("auth.User", on_delete=models.CASCADE)
+    preferences = models.JSONField(blank=True, null=True)

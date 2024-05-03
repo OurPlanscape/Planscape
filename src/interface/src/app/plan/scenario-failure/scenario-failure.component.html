@@ -1,7 +1,9 @@
 <button
   (click)="downloadCsv()"
   data-id="downloadCsv"
-  class="ghost-button button-left"
+  sg-button
+  variant="ghost"
+  class="button-left"
   [disabled]="scenarioState !== 'FAILURE'">
   <mat-icon class="material-symbols-outlined">download</mat-icon>
   DOWNLOAD CSV DATA
@@ -36,10 +38,14 @@
   </ng-template>
 
   <div class="actions">
-    <a (click)="goBack.emit()" data-id="downloadCsv" class="ghost-button">
+    <a (click)="goBack.emit()" data-id="downloadCsv" sg-button variant="ghost">
       RETURN TO PLAN OVERVIEW
     </a>
-    <a (click)="tryAgain.emit()" data-id="downloadCsv" class="primary-button">
+    <a
+      (click)="tryAgain.emit()"
+      data-id="downloadCsv"
+      sg-button
+      variant="primary">
       TRY AGAIN
     </a>
   </div>
