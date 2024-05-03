@@ -9,3 +9,17 @@ describe('Login', () => {
     cy.contains('Planning areas');
   });
 });
+
+// smoke tests:
+
+// accounts
+
+// create account
+
+// login
+
+// logout
+
+// core operations:
+
+// run
