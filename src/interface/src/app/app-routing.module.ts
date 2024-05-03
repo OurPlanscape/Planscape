@@ -6,12 +6,8 @@ import {
   Routes,
   TitleStrategy,
 } from '@angular/router';
-
-import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { HomeComponent } from './home/home.component';
-import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
-import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { AuthGuard } from './services';
 import { passwordResetTokenResolver } from './services/password-reset.resolver';
 import { SignupComponent } from './signup/signup.component';
@@ -30,18 +26,25 @@ const routes: Routes = [
       {
         path: 'login',
         title: 'Login',
-        component: LoginComponent,
+        loadComponent: () =>
+          import('./login/login.component').then((m) => m.LoginComponent),
       },
       {
         path: 'reset/:userId/:token',
         title: 'Password reset',
         resolve: { passwordResetToken: passwordResetTokenResolver },
-        component: PasswordResetComponent,
+        loadComponent: () =>
+          import('./password-reset/password-reset.component').then(
+            (m) => m.PasswordResetComponent
+          ),
       },
       {
         path: 'reset',
         title: 'Forget password',
-        component: ForgetPasswordComponent,
+        loadComponent: () =>
+          import('./forget-password/forget-password.component').then(
+            (m) => m.ForgetPasswordComponent
+          ),
       },
       {
         path: 'home',

@@ -19,12 +19,10 @@ import { AppComponent } from './app.component';
 import { FeaturesModule } from './features/features.module';
 import { HomeComponent } from './home/home.component';
 import { PlanTableComponent } from './home/plan-table/plan-table.component';
-import { LoginComponent } from './login/login.component';
 
 import { MaterialModule } from './material/material.module';
 import { NavigationComponent } from './navigation/navigation.component';
 import { SharedModule } from './shared/shared.module';
-import { AboutComponent } from './home/about/about.component';
 import { SignupComponent } from './signup/signup.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
 
@@ -32,11 +30,8 @@ import { environment } from 'src/environments/environment';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
-import { WINDOW_PROVIDERS } from './services/window.service';
-import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
-import { ForgetPasswordComponent } from './forget-password/forget-password.component';
+import { WINDOW_PROVIDERS } from '@services/window.service';
 import { NgChartsModule } from 'ng2-charts';
-import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { ConfirmationDialogComponent } from './password-reset/confirmation-dialog/confirmation-dialog.component';
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { MapModule } from './map/map.module';
@@ -50,11 +45,11 @@ import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-di
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
 import { JwtInterceptor } from '@services/jwt-interceptor.service';
 import { ButtonComponent } from '@styleguide';
+import { AboutComponent } from './home/about/about.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
     SignupComponent,
     NavigationComponent,
     TopBarComponent,
@@ -62,10 +57,6 @@ import { ButtonComponent } from '@styleguide';
     PlanTableComponent,
     WelcomeComponent,
     PlanningAreasComponent,
-    ResetPasswordDialogComponent,
-    ForgetPasswordComponent,
-    AboutComponent,
-    PasswordResetComponent,
     ConfirmationDialogComponent,
     AccountValidationComponent,
     DeleteDialogComponent,
@@ -77,6 +68,7 @@ import { ButtonComponent } from '@styleguide';
     ChipInputComponent,
   ],
   imports: [
+    AboutComponent, // remove
     AppRoutingModule,
     BrowserAnimationsModule,
     BrowserModule,

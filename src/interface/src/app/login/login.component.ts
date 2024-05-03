@@ -1,6 +1,11 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
+import { Router, RouterModule } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { AuthService } from '@services';
 import { FormMessageType } from '../types/data.types';
@@ -10,11 +15,26 @@ import {
   SNACK_ERROR_CONFIG,
   SNACK_NOTICE_CONFIG,
 } from '../../app/shared/constants';
+import { SharedModule } from '../shared/shared.module';
+import { MatCardModule } from '@angular/material/card';
+import { AboutComponent } from '../home/about/about.component';
+import { CommonModule } from '@angular/common';
+import { MaterialModule } from '../material/material.module';
 
 @Component({
   selector: 'app-login',
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
+  standalone: true,
+  imports: [
+    ReactiveFormsModule,
+    MaterialModule,
+    SharedModule,
+    RouterModule,
+    MatCardModule,
+    AboutComponent,
+    CommonModule,
+  ],
 })
 export class LoginComponent {
   protected offerReverify: boolean = false;

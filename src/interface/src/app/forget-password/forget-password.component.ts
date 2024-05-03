@@ -1,18 +1,35 @@
 import { Component } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormGroup,
+  ReactiveFormsModule,
+  Validators,
+} from '@angular/forms';
 import { Router } from '@angular/router';
 
 import { AuthService } from '@services';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ResetPasswordDialogComponent } from './reset-password-dialog/reset_password_dialog.component';
 import * as signInMessages from '../shared/constants';
-import { EMAIL_VALIDATION_REGEX } from '../../app/shared/constants';
-import { FormMessageType } from '../types/data.types';
+import { EMAIL_VALIDATION_REGEX } from '../shared/constants';
+import { FormMessageType } from '../types';
+import { CommonModule } from '@angular/common';
+import { SharedModule } from '../shared/shared.module';
+import { AboutComponent } from '../home/about/about.component';
+import { MaterialModule } from '../material/material.module';
 
 @Component({
   selector: 'app-forget-password',
   templateUrl: './forget-password.component.html',
   styleUrls: ['./forget-password.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    MaterialModule,
+    SharedModule,
+    AboutComponent,
+  ],
 })
 export class ForgetPasswordComponent {
   readonly resetText: string = `
@@ -43,6 +60,7 @@ export class ForgetPasswordComponent {
       this.emailError = 'Email must be in a proper format.';
     }
   }
+
   clearEmailErrors() {
     if (this.emailError !== '') {
       this.emailError = '';
