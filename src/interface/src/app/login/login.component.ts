@@ -8,14 +8,14 @@ import {
 import { Router, RouterModule } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { AuthService } from '@services';
-import { FormMessageType } from '../types/data.types';
+import { FormMessageType } from '@types';
 
 import {
   EMAIL_VALIDATION_REGEX,
+  SharedModule,
   SNACK_ERROR_CONFIG,
   SNACK_NOTICE_CONFIG,
-} from '../../app/shared/constants';
-import { SharedModule } from '../shared/shared.module';
+} from '@shared';
 import { MatCardModule } from '@angular/material/card';
 import { AboutComponent } from '../home/about/about.component';
 import { CommonModule } from '@angular/common';

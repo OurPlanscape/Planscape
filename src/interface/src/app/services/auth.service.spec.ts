@@ -9,7 +9,7 @@ import { CookieService } from 'ngx-cookie-service';
 import { of, throwError } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { User } from '../types';
+import { User } from '@types';
 import { AuthGuard, AuthService } from './auth.service';
 import { RedirectService } from './redirect.service';
 import { MockProvider } from 'ng-mocks';

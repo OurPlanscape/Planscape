@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BackendConstants } from '../backend-constants';
-import { Invite, INVITE_ROLE } from '../types/invite.types';
+import { Invite, INVITE_ROLE } from '@types';
 
 @Injectable({
   providedIn: 'root',

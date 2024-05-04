@@ -6,7 +6,7 @@ import {
   ConditionsConfig,
   Map,
   MapViewOptions,
-} from '../../types';
+} from '@types';
 import { Observable } from 'rxjs';
 
 @Component({

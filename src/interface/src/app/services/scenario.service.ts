@@ -7,7 +7,7 @@ import {
   Scenario,
   SCENARIO_STATUS,
   ScenarioConfig,
-} from '../types';
+} from '@types';
 import { BackendConstants } from '../backend-constants';
 import { CreateScenarioError } from './errors';
 

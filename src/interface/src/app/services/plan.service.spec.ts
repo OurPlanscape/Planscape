@@ -5,7 +5,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 
 import { BackendConstants } from '../backend-constants';
-import { Plan } from '../types';
+import { Plan } from '@types';
 import { PlanService } from './plan.service';
 import { MapService } from './map.service';
 import { MOCK_FEATURE_COLLECTION, MOCK_PLAN } from './mocks';

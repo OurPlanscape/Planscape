@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenarioFailureComponent } from './scenario-failure.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MockProvider } from 'ng-mocks';
-import { ScenarioService } from '@services/scenario.service';
+import { ScenarioService } from '@services';
 
 describe('ScenarioFailureComponent', () => {
   let component: ScenarioFailureComponent;

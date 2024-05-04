@@ -2,7 +2,7 @@ import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { ScenarioService } from './scenario.service';
 import { BackendConstants } from '../backend-constants';
-import { Scenario, ScenarioConfig, TreatmentQuestionConfig } from '../types';
+import { Scenario, ScenarioConfig, TreatmentQuestionConfig } from '@types';
 import {
   HttpClientTestingModule,
   HttpTestingController,

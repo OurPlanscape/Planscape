@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ThankYouComponent } from './thank-you.component';
 import { MockComponent } from 'ng-mocks';
-import { CreditsBlurbComponent } from '../../shared/credits-blurb/credits-blurb.component';
+import { CreditsBlurbComponent } from '@shared';
 import { LearnMoreComponent } from '../../home/learn-more/learn-more.component';
 
 describe('ThankYouComponent', () => {

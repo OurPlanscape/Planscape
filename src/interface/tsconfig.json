@@ -12,6 +12,12 @@
       ],
       "@styleguide": [
         "src/styleguide/"
+      ],
+      "@shared": [
+        "src/app/shared/"
+      ],
+      "@types": [
+        "src/app/types/"
       ]
     },
     "outDir": "./dist/out-tsc",

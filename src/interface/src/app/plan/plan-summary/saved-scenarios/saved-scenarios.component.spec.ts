@@ -18,7 +18,11 @@ import {
 } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
-import { CurrencyInKPipe } from '../../../pipes/currency-in-k.pipe';
+import {
+  CurrencyInKPipe,
+  SectionLoaderComponent,
+  TypeSafeMatCellDef,
+} from '@shared';
 import { CurrencyPipe } from '@angular/common';
 import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
 import {
@@ -26,10 +30,8 @@ import {
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
-import { TypeSafeMatCellDef } from '../../../shared/type-safe-mat-cell/type-safe-mat-cell-def.directive';
 import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
-import { SectionLoaderComponent } from '../../../shared/section-loader/section-loader.component';
 import { FeaturesModule } from '../../../features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
 import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';

@@ -1,9 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService } from '../../../services';
+import { AuthService, ScenarioService } from '@services';
 import { interval, take } from 'rxjs';
-import { Plan, Scenario } from 'src/app/types';
+import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
 import {
@@ -11,14 +11,12 @@ import {
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
 import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
-import { canAddScenario } from '../../../plan/permissions';
+import { canAddScenario } from '../../permissions';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,
   SNACK_ERROR_CONFIG,
   SNACK_NOTICE_CONFIG,
-} from '../../../shared/constants';
-
-import { ScenarioService } from '@services';
+} from '@shared';
 import { MatTab } from '@angular/material/tabs';
 
 export interface ScenarioRow extends Scenario {

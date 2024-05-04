@@ -5,7 +5,7 @@ import {
 import { TestBed } from '@angular/core/testing';
 import { BackendConstants } from '../backend-constants';
 import { MapService } from './map.service';
-import { ColormapConfig, ConditionsConfig } from '../types';
+import { ColormapConfig, ConditionsConfig } from '@types';
 import 'leaflet.vectorgrid';
 
 // TODO Make more robust for new boundary vector tile

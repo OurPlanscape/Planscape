@@ -12,7 +12,7 @@ import {
   ConditionsConfig,
   Region,
   regionToString,
-} from '../types';
+} from '@types';
 
 /** A map of Region to static assets for that region. */
 const regionToGeojsonMap: Record<Region, Record<string, string>> = {

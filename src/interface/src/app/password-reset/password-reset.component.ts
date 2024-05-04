@@ -9,7 +9,7 @@ import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { FormMessageType } from '../types';
+import { FormMessageType } from '@types';
 import { AuthService, PasswordResetToken } from '@services';
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
 import { PasswordStateMatcher } from '../validators/error-matchers';
@@ -17,7 +17,7 @@ import { passwordsMustMatchValidator } from '../validators/passwords';
 import { CommonModule } from '@angular/common';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { SharedModule } from '../shared/shared.module';
+import { SharedModule } from '@shared';
 import { AboutComponent } from '../home/about/about.component';
 
 @UntilDestroy()

@@ -4,15 +4,15 @@ import {
   MatTreeFlatDataSource,
   MatTreeFlattener,
 } from '@angular/material/tree';
-import { filter, Observable, map } from 'rxjs';
+import { filter, map, Observable } from 'rxjs';
 import {
+  ConditionsConfig,
+  ConditionTreeType,
   DataLayerConfig,
   Map,
   NONE_DATA_LAYER_CONFIG,
-  ConditionsConfig,
-  ConditionTreeType,
-} from 'src/app/types';
-import { BackendConstants } from './../../../backend-constants';
+} from '@types';
+import { BackendConstants } from '../../../backend-constants';
 
 export interface ConditionsNode extends DataLayerConfig {
   children?: ConditionsNode[];

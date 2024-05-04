@@ -3,7 +3,7 @@ import { map, Observable } from 'rxjs';
 import { BackendConstants } from '../backend-constants';
 import { HttpClient } from '@angular/common/http';
 import { WINDOW } from './window.service';
-import { MapConfig, MapViewOptions, Region } from '../types';
+import { MapConfig, MapViewOptions, Region } from '@types';
 
 interface ViewState {
   mapViewOptions: MapViewOptions | null;

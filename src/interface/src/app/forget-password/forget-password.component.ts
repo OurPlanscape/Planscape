@@ -10,11 +10,14 @@ import { Router } from '@angular/router';
 import { AuthService } from '@services';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ResetPasswordDialogComponent } from './reset-password-dialog/reset_password_dialog.component';
-import * as signInMessages from '../shared/constants';
-import { EMAIL_VALIDATION_REGEX } from '../shared/constants';
-import { FormMessageType } from '../types';
+
+import {
+  EMAIL_VALIDATION_REGEX,
+  MSG_RESET_PASSWORD_ERROR,
+  SharedModule,
+} from '@shared';
+import { FormMessageType } from '@types';
 import { CommonModule } from '@angular/common';
-import { SharedModule } from '../shared/shared.module';
 import { AboutComponent } from '../home/about/about.component';
 import { MaterialModule } from '../material/material.module';
 
@@ -35,7 +38,7 @@ export class ForgetPasswordComponent {
   readonly resetText: string = `
     Enter the email address associated with your account, and we'll email you a link to reset your password.
   `;
-  protected readonly RESET_ERROR = signInMessages.MSG_RESET_PASSWORD_ERROR;
+  protected readonly RESET_ERROR = MSG_RESET_PASSWORD_ERROR;
   protected accountError = '';
   protected emailError: string = '';
   form: FormGroup;

@@ -8,7 +8,7 @@ import {
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { FrontendConstants, Plan, Region, regionToString } from 'src/app/types';
+import { FrontendConstants, Plan, Region, regionToString } from '@types';
 
 import { BackendConstants } from '../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';

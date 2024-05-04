@@ -1,4 +1,4 @@
-import { Plan, Region } from '../types';
+import { Plan, Region } from '@types';
 import { GeoJSON } from 'geojson';
 
 export const MOCK_PLAN: Plan = {

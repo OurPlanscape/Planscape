@@ -1,11 +1,10 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AuthService } from '@services';
+import { AuthService, PlanNotesService } from '@services';
 import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
 
 import { AreaNotesComponent } from './area-notes.component';
 import { MockProvider } from 'ng-mocks';
-import { PlanNotesService } from '@services/plan-notes.service';
 import { of } from 'rxjs';
 
 describe('AreaNotesComponent', () => {

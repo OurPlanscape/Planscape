@@ -7,7 +7,7 @@ import {
   RouterStateSnapshot,
 } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { SNACK_NOTICE_CONFIG } from '../../app/shared/constants';
+import { SNACK_NOTICE_CONFIG } from '@shared';
 import {
   BehaviorSubject,
   catchError,
@@ -21,7 +21,7 @@ import {
 } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { User } from '../types';
+import { User } from '@types';
 import { RedirectService } from './redirect.service';
 
 interface LogoutResponse {

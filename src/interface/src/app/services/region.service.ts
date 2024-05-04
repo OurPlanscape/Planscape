@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { FeatureService } from '../features/feature.service';
-import { Region, RegionOption, regions } from '../types';
+import { Region, RegionOption, regions } from '@types';
 import { SessionService } from './session.service';
 import { map } from 'rxjs';
 

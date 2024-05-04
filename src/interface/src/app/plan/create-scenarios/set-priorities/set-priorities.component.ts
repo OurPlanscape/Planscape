@@ -9,7 +9,7 @@ import {
   ScenarioConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
-} from '../../../types';
+} from '@types';
 import {
   conditionsConfigToPriorityData,
   findQuestionOnTreatmentGoalsConfig,

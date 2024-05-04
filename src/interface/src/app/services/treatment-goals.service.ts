@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Region, regionToString, TreatmentGoalConfig } from '../types';
+import { Region, regionToString, TreatmentGoalConfig } from '@types';
 import { BackendConstants } from '../backend-constants';
 import { HttpClient } from '@angular/common/http';
 

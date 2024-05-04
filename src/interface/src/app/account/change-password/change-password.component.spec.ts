@@ -4,7 +4,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 import { BehaviorSubject } from 'rxjs';
-import { User } from '../../types';
+import { User } from '@types';
 
 describe('ChangePasswordComponent', () => {
   let component: ChangePasswordComponent;

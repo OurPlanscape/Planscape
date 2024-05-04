@@ -6,7 +6,7 @@ import {
   passwordMustBeNewValidator,
   passwordsMustMatchValidator,
 } from '../../validators/passwords';
-import { FormMessageType } from '../../types';
+import { FormMessageType } from '@types';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
 
 type State = 'view' | 'editing' | 'saving';

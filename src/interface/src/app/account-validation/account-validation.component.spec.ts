@@ -7,7 +7,7 @@ import { of } from 'rxjs';
 import { By } from '@angular/platform-browser';
 import { MockComponent } from 'ng-mocks';
 import { AboutComponent } from '../home/about/about.component';
-import { CreditsBlurbComponent } from '../shared/credits-blurb/credits-blurb.component';
+import { CreditsBlurbComponent } from '@shared';
 
 describe('AccountValidationComponent', () => {
   let component: AccountValidationComponent;

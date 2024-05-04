@@ -18,9 +18,9 @@ import {
   Map,
   MapViewOptions,
   Region,
-} from '../types';
+} from '@types';
 
-import { SNACK_ERROR_CONFIG } from '../shared/constants';
+import { SNACK_ERROR_CONFIG } from '@shared';
 import {
   BOUNDARY_LAYER_HOVER_STYLES,
   BOUNDARY_LAYER_NORMAL_STYLES,

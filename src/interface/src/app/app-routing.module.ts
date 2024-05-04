@@ -8,14 +8,17 @@ import {
 } from '@angular/router';
 import { HomeComponent } from './home/home.component';
 import { MapComponent } from './map/map.component';
-import { AuthGuard } from './services';
-import { passwordResetTokenResolver } from './services/password-reset.resolver';
+import {
+  AuthGuard,
+  passwordResetTokenResolver,
+  RedirectGuard,
+  redirectResolver,
+} from '@services';
+
 import { SignupComponent } from './signup/signup.component';
-import { RedirectGuard } from './services/redirect.guard';
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
 import { ThankYouComponent } from './signup/thank-you/thank-you.component';
-import { redirectResolver } from './services/redirect.resolver';
 
 const routes: Routes = [
   {

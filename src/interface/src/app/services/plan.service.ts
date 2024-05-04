@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { map, Observable, take } from 'rxjs';
 
 import { BackendConstants } from '../backend-constants';
-import { CreatePlanPayload, Plan, PreviewPlan } from '../types';
+import { CreatePlanPayload, Plan, PreviewPlan } from '@types';
 import { GeoJSON } from 'geojson';
 
 @Injectable({

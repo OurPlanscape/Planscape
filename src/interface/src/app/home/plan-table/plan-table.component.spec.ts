@@ -5,13 +5,13 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { Router } from '@angular/router';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { Plan } from 'src/app/types';
+import { Plan } from '@types';
 
 import { AuthService, PlanService } from '@services';
 import { PlanTableComponent } from './plan-table.component';
 import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
 import { MockComponent } from 'ng-mocks';
-import { SectionLoaderComponent } from '../../shared/section-loader/section-loader.component';
+import { SectionLoaderComponent } from '@shared';
 import { FeaturesModule } from '../../features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
 
