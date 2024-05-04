@@ -38,6 +38,7 @@
     "@types/file-saver": "^2.0.5",
     "chart.js": "^3.6.0",
     "cypress": "^13.8.1",
+    "cypress-dotenv": "^2.0.0",
     "esri-leaflet": "^3.0.12",
     "esri-leaflet-vector": "^4.2.3",
     "file-saver": "^2.0.5",
@@ -76,6 +77,7 @@
     "@types/shpjs": "^3.4.2",
     "@typescript-eslint/eslint-plugin": "7.2.0",
     "@typescript-eslint/parser": "7.2.0",
+    "cypress": "latest",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.0",
@@ -87,7 +89,6 @@
     "karma-jasmine-html-reporter": "~2.0.0",
     "prettier": "^3.0.2",
     "prettier-eslint": "^15.0.1",
-    "typescript": "~5.4.3",
-    "cypress": "latest"
+    "typescript": "~5.4.3"
   }
 }
