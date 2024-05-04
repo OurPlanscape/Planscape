@@ -175,3 +175,5 @@ node_modules/
 pyrightconfig.json
 
 Session.vim
+
+src/interface/cypress/screenshots/
