@@ -30,6 +30,11 @@ router.register(
     ScenarioViewSet,
     basename="scenarios",
 )
+from planscape import settings
+
+print(
+    f"what is settings ACCOUNT_EMAIL_VERIFICATION? {settings.ACCOUNT_EMAIL_VERIFICATION}"
+)
 
 app_name = "planning"
 

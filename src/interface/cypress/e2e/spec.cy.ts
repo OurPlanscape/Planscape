@@ -1,22 +1,14 @@
-import * as dotenv from 'dotenv';
-import * as path from 'path';
+import { randString } from 'cypress/support/util';
 
-const test_email1 = 'hi@whatever.example';
-const test_pass1 = 'sureABCdef123';
-const test_firstname = 'FromCode';
-const test_lastname = 'FromCodeAgain';
+const randText = randString(10);
+const randPass = randString(20);
 
-describe('Login', () => {
-  it('Visits the initial project page', () => {
-    cy.visit('/login');
-    cy.contains('Sign in to Planscape');
-    cy.get('[formControlName="email"]').type('test_email1');
-    cy.get('[formControlName="password"]').type('test_pass1');
-    cy.get('button[type="submit"]').click();
-    // wait
-    cy.contains('Planning areas');
-  });
-});
+const test_email1 = 'testuser+' + randText + '@whatever.example';
+const test_pass1 = 'test' + randPass;
+const test_firstname = 'Larry';
+const test_lastname = 'Larrington';
+
+// TODO: set this in test env ACCOUNT_EMAIL_VERIFICATION = "none"
 
 // smoke tests:
 describe('Create an account with unmatching password', () => {
@@ -34,7 +26,7 @@ describe('Create an account with unmatching password', () => {
 });
 
 // accounts
-describe('Create an account', () => {
+describe('Successfully create an account', () => {
   it('Visits the initial project page', () => {
     cy.visit('/signup');
     cy.contains('Create your account');
@@ -50,7 +42,19 @@ describe('Create an account', () => {
     // wait
   });
 });
+
+describe('Login', () => {
+  it('Visits the initial project page', () => {
+    cy.visit('/login');
+    cy.contains('Sign in to Planscape');
+    cy.get('[formControlName="email"]').type(test_email1);
+    cy.get('[formControlName="password"]').type(test_pass1);
+    cy.get('button[type="submit"]').click();
+    // wait
+    cy.contains('Planning areas');
+  });
+});
+
 // login
 // logout
 // core operations:
-run;
