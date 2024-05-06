@@ -21,7 +21,7 @@ describe('DeleteDialogComponent', () => {
         { provide: MatDialogRef, useValue: fakeDialogRef },
       ],
 
-      declarations: [DeleteDialogComponent],
+      imports: [DeleteDialogComponent],
     }).compileComponents();
 
     fixture = TestBed.createComponent(DeleteDialogComponent);

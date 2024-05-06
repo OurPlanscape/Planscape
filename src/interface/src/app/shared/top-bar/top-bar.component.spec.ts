@@ -3,7 +3,6 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { MaterialModule } from '../material/material.module';
 import { AuthService } from '@services';
 import { User } from '@types';
 import { TopBarComponent } from './top-bar.component';
@@ -14,6 +13,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatLegacyMenuHarness as MatMenuHarness } from '@angular/material/legacy-menu/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MaterialModule } from '../../material/material.module';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;

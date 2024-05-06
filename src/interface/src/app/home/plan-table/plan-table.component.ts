@@ -10,7 +10,7 @@ import { take } from 'rxjs';
 
 import { AuthService, PlanService } from '@services';
 import { Router } from '@angular/router';
-import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
+
 import { SNACK_NOTICE_CONFIG } from '@shared';
 import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
 import { FeatureService } from '../../features/feature.service';
@@ -19,6 +19,7 @@ import {
   canViewCollaborators,
 } from '../../plan/permissions';
 import { Plan, PreviewPlan } from '@types';
+import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
 
 @Component({
   selector: 'app-plan-table',

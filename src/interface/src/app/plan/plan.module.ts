@@ -38,6 +38,7 @@ import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overl
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
 import { ButtonComponent } from '@styleguide';
+import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -87,6 +88,7 @@ import { ButtonComponent } from '@styleguide';
     RouterModule,
     SharedModule,
     ButtonComponent,
+    DeleteDialogComponent,
   ],
 })
 export class PlanModule {}

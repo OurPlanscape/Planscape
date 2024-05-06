@@ -14,6 +14,7 @@ import { CreditsBlurbComponent } from './credits-blurb/credits-blurb.component';
 import { FormMessageBoxComponent } from './form-message-box/form-message-box.component';
 import { ShareExploreDialogComponent } from './share-explore-dialog/share-explore-dialog.component';
 import { SectionLoaderComponent } from './section-loader/section-loader.component';
+import { TopBarComponent } from './top-bar/top-bar.component';
 
 @NgModule({
   declarations: [
@@ -27,6 +28,7 @@ import { SectionLoaderComponent } from './section-loader/section-loader.componen
     FormMessageBoxComponent,
     ShareExploreDialogComponent,
     SectionLoaderComponent,
+    TopBarComponent,
   ],
   exports: [
     FileUploaderComponent,
@@ -38,6 +40,7 @@ import { SectionLoaderComponent } from './section-loader/section-loader.componen
     CreditsBlurbComponent,
     FormMessageBoxComponent,
     SectionLoaderComponent,
+    TopBarComponent,
   ],
   imports: [
     CommonModule,

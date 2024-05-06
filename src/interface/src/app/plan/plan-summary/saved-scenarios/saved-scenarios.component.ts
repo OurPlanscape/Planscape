@@ -10,7 +10,7 @@ import {
   MatLegacyDialog as MatDialog,
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
-import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
+
 import { canAddScenario } from '../../permissions';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,
@@ -18,6 +18,7 @@ import {
   SNACK_NOTICE_CONFIG,
 } from '@shared';
 import { MatTab } from '@angular/material/tabs';
+import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;

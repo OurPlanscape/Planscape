@@ -1,19 +1,18 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { Router } from '@angular/router';
-import { BehaviorSubject, of } from 'rxjs';
-import { MaterialModule } from 'src/app/material/material.module';
-import { Plan } from '@types';
-
 import { AuthService, PlanService } from '@services';
-import { PlanTableComponent } from './plan-table.component';
-import { DeleteDialogComponent } from '../../delete-dialog/delete-dialog.component';
-import { MockComponent } from 'ng-mocks';
-import { SectionLoaderComponent } from '@shared';
+import { BehaviorSubject, of } from 'rxjs';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
 import { FeaturesModule } from '../../features/features.module';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MOCK_PLAN } from '@services/mocks';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { MaterialModule } from 'src/app/material/material.module';
+import { MockComponent } from 'ng-mocks';
+import { Plan } from '@types';
+import { PlanTableComponent } from './plan-table.component';
+import { Router } from '@angular/router';
+import { SectionLoaderComponent } from '@shared';
 
 describe('PlanTableComponent', () => {
   const fakePlan1: Plan = MOCK_PLAN;

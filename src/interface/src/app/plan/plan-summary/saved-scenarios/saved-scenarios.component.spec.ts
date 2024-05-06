@@ -29,12 +29,13 @@ import {
   MatLegacyDialog as MatDialog,
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
-import { DeleteDialogComponent } from '../../../delete-dialog/delete-dialog.component';
+
 import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { FeaturesModule } from '../../../features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
 import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';
+import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
 
 const SCENARIO_ROW: ScenarioRow = {
   id: '1',

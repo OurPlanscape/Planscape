@@ -16,41 +16,33 @@ import {
 } from 'ngx-google-analytics';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ButtonComponent } from '@styleguide';
+import { ChipInputComponent } from './home/chip-input/chip-input.component';
+
 import { FeaturesModule } from './features/features.module';
 import { HomeComponent } from './home/home.component';
-import { PlanTableComponent } from './home/plan-table/plan-table.component';
-
-import { MaterialModule } from './material/material.module';
-import { NavigationComponent } from './navigation/navigation.component';
-import { SharedModule } from '@shared';
-
-import { TopBarComponent } from './top-bar/top-bar.component';
-
-import { environment } from 'src/environments/environment';
-import { WelcomeComponent } from './home/welcome/welcome.component';
-import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
-import { NgChartsModule } from 'ng2-charts';
 import { MapModule } from './map/map.module';
-import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import { MaterialModule } from './material/material.module';
+import { NgChartsModule } from 'ng2-charts';
 import { NgxMaskModule } from 'ngx-mask';
-
+import { PlanTableComponent } from './home/plan-table/plan-table.component';
+import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
-import { ChipInputComponent } from './home/chip-input/chip-input.component';
-import { ButtonComponent } from '@styleguide';
+import { SharedModule } from '@shared';
+import { WelcomeComponent } from './home/welcome/welcome.component';
+import { environment } from 'src/environments/environment';
+import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     ChipInputComponent,
-    DeleteDialogComponent,
     HomeComponent,
-    NavigationComponent,
     PlanTableComponent,
     PlanningAreasComponent,
     SharePlanDialogComponent,
-    TopBarComponent,
     WelcomeComponent,
   ],
   imports: [
@@ -77,6 +69,7 @@ import { ButtonComponent } from '@styleguide';
     MapModule,
     NgxMaskModule.forRoot(),
     ButtonComponent,
+    DeleteDialogComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,
