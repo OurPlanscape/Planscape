@@ -1,4 +1,5 @@
-from django.db import models, functions
+from django.db import models
+from django.db.models import functions
 from django.contrib.postgres.fields import ArrayField
 from treebeard.mp_tree import MP_Node
 from core.models import UUIDMixin, CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin
@@ -69,15 +70,14 @@ class Category(
 
         constraints = [
             models.UniqueConstraint(
-                functions.Lower("name").asc(),
-                fields=["organization", "project"],
+                fields=["organization", "project", "name"],
                 include=["path"],
                 name="category_organization_project_unique_constraint",
             )
         ]
 
         verbose_name = "Category"
-        verbose_plural = "Categories"
+        verbose_name_plural = "Categories"
 
 
 class Metric(models.Model):
@@ -153,8 +153,7 @@ class Metric(models.Model):
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                functions.Lower("name").asc(),
-                fields=["project"],
+                fields=["project", "name"],
                 name="metric_project_unique_constraint",
             )
         ]

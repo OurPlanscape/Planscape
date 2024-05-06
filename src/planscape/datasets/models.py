@@ -21,6 +21,7 @@ class DatasetBlobStatus(models.TextChoices):
     This is about the life-cycle of the dataset.
     """
 
+    FAILED = "FAILED", "Failed"
     PENDING_UPLOAD = "PENDING_UPLOAD", "Pending Upload"
     READY = "READY", "Ready"
 
