@@ -16,6 +16,7 @@ import { PlanStateService } from '@services';
 import { regionMapCenters } from '../../map/map.helper';
 import { Feature } from 'geojson';
 import { getColorForProjectPosition } from '../plan-helpers';
+import polylabel from 'polylabel';
 
 // Needed to keep reference to legend div element to remove
 export interface MapRef {
@@ -273,18 +274,39 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         fillOpacity: 0.4,
         weight: 1.5,
       }),
-      onEachFeature: function (feature, layer) {
-        // TODO Find a better way to center this — could see if it's possible to add an actual center coordinate to the properties and use that to set tooltip location
-        // This currently is a bit off if the centroid of the project area isn't within it (https://blog.mapbox.com/a-new-algorithm-for-finding-a-visual-center-of-a-polygon-7c77e6492fbc)
-        layer
-          .bindTooltip(String(feature.properties.proj_id), {
-            permanent: true,
-            direction: 'center',
-            className: 'project-area-label',
-          })
-          .openTooltip();
+      onEachFeature: (feature, layer) => {
+        let center: number[] = [];
+        if (feature.geometry.type === 'Polygon') {
+          center = polylabel(feature.geometry.coordinates, 0.0005);
+          addTooltipAtCenter(
+            feature.properties.proj_id.toString(),
+            center,
+            this.map
+          );
+        } else if (feature.geometry.type === 'MultiPolygon') {
+          feature.geometry.coordinates.forEach((positions) => {
+            center = polylabel(positions, 0.005);
+            addTooltipAtCenter(
+              feature.properties.proj_id.toString(),
+              center,
+              this.map
+            );
+          });
+        }
       },
     });
     this.projectAreasLayer.addTo(this.map);
   }
+}
+
+function addTooltipAtCenter(content: string, center: number[], map: L.Map) {
+  let tooltip = L.tooltip({
+    permanent: true,
+    direction: 'center',
+    className: 'project-area-label',
+  })
+    .setLatLng([center[1], center[0]])
+    .setContent(content);
+
+  tooltip.addTo(map);
 }
