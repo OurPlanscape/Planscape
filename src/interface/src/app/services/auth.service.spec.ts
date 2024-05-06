@@ -94,7 +94,7 @@ describe('AuthService', () => {
         expect(redirectService.removeRedirect).toHaveBeenCalled();
       });
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/login/'
+        environment.backend_endpoint + '/dj-rest-auth/login/'
       );
       req.flush('');
     });
@@ -110,7 +110,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/login/'
+        environment.backend_endpoint + '/dj-rest-auth/login/'
       );
       req.flush(mockResponse);
     });
@@ -125,7 +125,7 @@ describe('AuthService', () => {
       );
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/login/'
+        environment.backend_endpoint + '/dj-rest-auth/login/'
       );
       req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
     });
@@ -144,12 +144,12 @@ describe('AuthService', () => {
       });
 
       const req1 = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/login/'
+        environment.backend_endpoint + '/dj-rest-auth/login/'
       );
       req1.flush(mockResponse);
 
       const req2 = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/user/'
+        environment.backend_endpoint + '/dj-rest-auth/user/'
       );
       req2.flush(mockUser);
     });
@@ -167,7 +167,7 @@ describe('AuthService', () => {
       );
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/login/'
+        environment.backend_endpoint + '/dj-rest-auth/login/'
       );
       req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
       httpTestingController.verify();
@@ -188,7 +188,7 @@ describe('AuthService', () => {
         });
 
       const req1 = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/registration/'
+        environment.backend_endpoint + '/dj-rest-auth/registration/'
       );
       req1.flush(mockResponse);
     });
@@ -210,7 +210,7 @@ describe('AuthService', () => {
         });
 
       const req1 = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/registration/'
+        environment.backend_endpoint + '/dj-rest-auth/registration/'
       );
       req1.flush(mockResponse);
     });
@@ -225,7 +225,7 @@ describe('AuthService', () => {
       );
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/registration/'
+        environment.backend_endpoint + '/dj-rest-auth/registration/'
       );
       req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
       httpTestingController.verify();
@@ -244,7 +244,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/logout/'
+        environment.backend_endpoint + '/dj-rest-auth/logout/'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(mockResponse);
@@ -263,7 +263,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/logout/'
+        environment.backend_endpoint + '/dj-rest-auth/logout/'
       );
       req.flush(mockResponse);
     });
@@ -294,14 +294,14 @@ describe('AuthService', () => {
       });
 
       const req1 = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/token/refresh/'
+        environment.backend_endpoint + '/dj-rest-auth/token/refresh/'
       );
       expect(req1.request.method).toEqual('POST');
       expect(cookieServiceStub.get).toHaveBeenCalled();
       req1.flush(mockResponse);
 
       const req2 = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/user/'
+        environment.backend_endpoint + '/dj-rest-auth/user/'
       );
       expect(req2.request.method).toEqual('GET');
       req2.flush(mockUser);
@@ -369,7 +369,7 @@ describe('AuthService', () => {
       service.changePassword('password', 'testpass', 'testpass').subscribe();
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/password/change/'
+        environment.backend_endpoint + '/dj-rest-auth/password/change/'
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
@@ -403,7 +403,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/dj-rest-auth/user/'
+        environment.backend_endpoint + '/dj-rest-auth/user/'
       );
       expect(req.request.method).toEqual('PATCH');
       expect(req.request.body).toEqual({
@@ -453,7 +453,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint.concat('/users/get_user_by_id/?id=1')
+        environment.backend_endpoint.concat('/users/get_user_by_id/?id=1')
       );
       expect(req.request.method).toEqual('GET');
       req.flush(user);
@@ -477,7 +477,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        environment.download_endpoint + '/users/deactivate/'
+        environment.backend_endpoint + '/users/deactivate/'
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
