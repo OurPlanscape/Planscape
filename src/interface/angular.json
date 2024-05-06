@@ -140,7 +140,6 @@
           "builder": "@storybook/angular:start-storybook",
           "options": {
             "configDir": ".storybook",
-            "browserTarget": "interface:build",
             "compodoc": true,
             "compodocArgs": [
               "-e",
@@ -160,7 +159,6 @@
           "builder": "@storybook/angular:build-storybook",
           "options": {
             "configDir": ".storybook",
-            "browserTarget": "interface:build",
             "compodoc": true,
             "compodocArgs": [
               "-e",
