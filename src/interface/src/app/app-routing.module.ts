@@ -14,11 +14,7 @@ import {
   RedirectGuard,
   redirectResolver,
 } from '@services';
-
-import { SignupComponent } from './signup/signup.component';
-import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
-import { ThankYouComponent } from './signup/thank-you/thank-you.component';
 
 const routes: Routes = [
   {
@@ -30,14 +26,16 @@ const routes: Routes = [
         path: 'login',
         title: 'Login',
         loadComponent: () =>
-          import('./login/login.component').then((m) => m.LoginComponent),
+          import('./standalone/login/login.component').then(
+            (m) => m.LoginComponent
+          ),
       },
       {
         path: 'reset/:userId/:token',
         title: 'Password reset',
         resolve: { passwordResetToken: passwordResetTokenResolver },
         loadComponent: () =>
-          import('./password-reset/password-reset.component').then(
+          import('./standalone/password-reset/password-reset.component').then(
             (m) => m.PasswordResetComponent
           ),
       },
@@ -45,7 +43,7 @@ const routes: Routes = [
         path: 'reset',
         title: 'Forget password',
         loadComponent: () =>
-          import('./forget-password/forget-password.component').then(
+          import('./standalone/forget-password/forget-password.component').then(
             (m) => m.ForgetPasswordComponent
           ),
       },
@@ -57,18 +55,27 @@ const routes: Routes = [
       {
         path: 'signup',
         title: 'Signup',
-        component: SignupComponent,
         resolve: { redirectUrl: redirectResolver },
+        loadComponent: () =>
+          import('./standalone/signup/signup.component').then(
+            (m) => m.SignupComponent
+          ),
       },
       {
         path: 'thankyou',
         title: 'Thank You',
-        component: ThankYouComponent,
+        loadComponent: () =>
+          import('./standalone/thank-you/thank-you.component').then(
+            (m) => m.ThankYouComponent
+          ),
       },
       {
         path: 'validate/:token',
         title: 'Account E-mail Validation',
-        component: AccountValidationComponent,
+        loadComponent: () =>
+          import(
+            './standalone/account-validation/account-validation.component'
+          ).then((m) => m.AccountValidationComponent),
       },
       {
         path: 'map',

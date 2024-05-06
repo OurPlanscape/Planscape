@@ -1,0 +1,171 @@
+@import '../../../styles/colors';
+@import '../../../styles/mixins';
+
+:host {
+  display: flex;
+  height: 100%;
+
+  ::ng-deep .mat-form-field-outline {
+    background-color: $color-light-gray;
+  }
+}
+
+.signin-card-container {
+  background-image: url('/assets/jpg/planscape-background.jpg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  display: flex;
+  width: 50%;
+  position: relative;
+}
+
+.signin-subcontainer {
+  flex-direction: column;
+  margin: auto;
+  margin-top: 6%;
+}
+
+.signin-card-logo {
+  display: flex;
+  padding: 1em;
+}
+
+.planscape-white-logo {
+  margin: auto;
+  height: 42px;
+  width: 246px;
+}
+
+.signin-card {
+  margin: auto;
+  max-width: 300px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  padding: 40px 60px;
+  background-color: white;
+  border: 1px solid rgba(72, 84, 192, 0.5);
+}
+
+h1 {
+  &.signin-title {
+    @include h1();
+    margin-bottom: 6%;
+    text-align: center;
+    vertical-align: middle;
+    color: $color-text-dark;
+  }
+}
+
+.forget-link {
+  text-align: center;
+}
+
+mat-label {
+  text-align: left;
+  vertical-align: middle;
+  padding-bottom: 1em;
+  padding-right: 1em;
+}
+
+.standard-label {
+  @include standard-input-label();
+}
+
+.required-blurb {
+  @include italic-sm();
+  color: $color-text-gray;
+}
+
+button {
+  width: 100%;
+}
+
+mat-divider {
+  margin: 28px 0px;
+}
+
+mat-form-field {
+  width: 100%;
+}
+
+.forget-password {
+  text-align: center;
+  vertical-align: middle;
+  margin-top: 20px;
+}
+
+.forget-password-link {
+  @include standard-link();
+  text-decoration: underline;
+  color: $color-standard-blue;
+  padding-top: 26px;
+}
+
+.info-text-container {
+  background-color: $color-soft-purple;
+  width: 50%;
+}
+
+.login-form-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.login-form-button {
+  width: 80px;
+  height: 36px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.guest-button {
+  width: 160px;
+}
+
+.mat-error {
+  margin-top: 10px;
+  text-align: center;
+}
+
+.post-error-option {
+  padding: 1em;
+  text-align: center;
+}
+
+@media screen and (max-width: 840px) {
+  :host {
+    gap: 10%;
+    flex-direction: column;
+    height: fit-content;
+  }
+
+  .signin-card-container {
+    width: 100%;
+    height: 100%;
+    min-height: calc(100vh - 48px);
+  }
+
+  .info-text-container {
+    position: relative;
+    width: 100%;
+  }
+
+  .credits-blurb {
+    width: 100%;
+  }
+}
+
+@media screen and (max-height: 700px) {
+  .signin-subcontainer {
+    margin-top: 1%;
+  }
+
+  .planscape-white-logo {
+    display: none;
+  }
+
+}
