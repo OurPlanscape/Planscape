@@ -11,8 +11,6 @@ import { ForgetPasswordComponent } from './forget-password/forget-password.compo
 import { HomeComponent } from './home/home.component';
 import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
-import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
-import { PlanComponent } from './plan/plan.component';
 import { PasswordResetComponent } from './password-reset/password-reset.component';
 import { AuthGuard } from './services';
 import { passwordResetTokenResolver } from './services/password-reset.resolver';
@@ -20,10 +18,6 @@ import { SignupComponent } from './signup/signup.component';
 import { RedirectGuard } from './services/redirect.guard';
 import { AccountValidationComponent } from './account-validation/account-validation.component';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
-import { AccountPageComponent } from './account/account-page/account-page.component';
-import { DetailsComponent } from './account/details/details.component';
-import { CredentialsComponent } from './account/credentials/credentials.component';
-import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
 import { ThankYouComponent } from './signup/thank-you/thank-you.component';
 import { redirectResolver } from './services/redirect.resolver';
 
@@ -76,6 +70,12 @@ const routes: Routes = [
         component: MapComponent,
       },
       {
+        path: 'explore/:id',
+        title: 'Explore Plan',
+        component: ExploreComponent,
+        canActivate: [AuthGuard],
+      },
+      {
         path: 'feedback',
         canActivate: [RedirectGuard],
         component: RedirectGuard,
@@ -93,61 +93,14 @@ const routes: Routes = [
         },
       },
       {
-        path: 'plan/:id',
-        title: 'Plan Details',
-        component: PlanComponent,
-        canActivate: [AuthGuard],
-        children: [
-          {
-            path: 'config',
-            title: 'Scenario Configuration',
-            component: CreateScenariosComponent,
-          },
-          {
-            path: 'config/:id',
-            title: 'Scenario Configuration',
-            component: CreateScenariosComponent,
-          },
-          {
-            path: 'explore',
-            title: 'Explore',
-            component: ExploreComponent,
-          },
-        ],
-      },
-      {
-        path: 'explore/:id',
-        title: 'Explore Plan',
-        component: ExploreComponent,
-        canActivate: [AuthGuard],
+        path: 'plan',
+        loadChildren: () =>
+          import('./plan/plan.module').then((m) => m.PlanModule),
       },
       {
         path: 'account',
-        title: 'Account Details',
-        component: AccountPageComponent,
-        canActivate: [AuthGuard],
-        children: [
-          {
-            path: '',
-            redirectTo: 'information',
-            pathMatch: 'full',
-          },
-          {
-            path: 'information',
-            title: 'Edit Personal information',
-            component: DetailsComponent,
-          },
-          {
-            path: 'credentials',
-            title: 'Edit Credentials',
-            component: CredentialsComponent,
-          },
-          {
-            path: 'delete-account',
-            title: 'Deactivate Account',
-            component: DeleteAccountComponent,
-          },
-        ],
+        loadChildren: () =>
+          import('./account/account.module').then((m) => m.AccountModule),
       },
     ],
   },

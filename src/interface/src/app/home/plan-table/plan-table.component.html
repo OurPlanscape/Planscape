@@ -82,28 +82,23 @@
 
     <div class="button-row">
       <button
+        sg-button
+        variant="negative"
         (click)="deletePlan()"
-        [disabled]="!canDeletePlanningArea"
-        class="negative">
+        [disabled]="!canDeletePlanningArea">
         Delete
       </button>
       <button
+        sg-button
         (click)="sharePlan()"
         [disabled]="!shareEnabled()"
-        *appFeatureFlag="'show_share_modal'"
-        class="ghost-button">
+        *appFeatureFlag="'show_share_modal'">
         Share
       </button>
-      <button
-        (click)="viewMap()"
-        [disabled]="!selectedPlan"
-        class="ghost-button">
+      <button sg-button (click)="viewMap()" [disabled]="!selectedPlan">
         View map
       </button>
-      <button
-        class="ghost-button"
-        (click)="goToScenario()"
-        [disabled]="!selectedPlan">
+      <button sg-button (click)="goToScenario()" [disabled]="!selectedPlan">
         Scenarios
       </button>
     </div>

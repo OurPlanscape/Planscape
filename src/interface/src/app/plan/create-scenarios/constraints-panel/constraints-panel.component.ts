@@ -42,6 +42,8 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   budgetStateMatcher = new NotEnoughBudgetStateMatcher();
 
+  focusedSelection = ''; // string to identify which selection is focused
+
   constructor(private fb: FormBuilder) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -279,8 +281,9 @@ export class ConstraintsPanelComponent implements OnChanges {
   private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
     return (constraintsForm: AbstractControl): ValidationErrors | null => {
       const maxCost = constraintsForm.get('budgetForm.maxCost')?.value;
-      const estCostPerAcre = constraintsForm.get('budgetForm.estimatedCost')
-        ?.value;
+      const estCostPerAcre = constraintsForm.get(
+        'budgetForm.estimatedCost'
+      )?.value;
       if (!!maxCost) {
         const hasBudget = hasEnoughBudget(
           planningAreaAcres,
@@ -299,6 +302,13 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
       return null;
     };
+  }
+
+  calculateMinBudget() {
+    const estCostPerAcre = this.constraintsForm.get(
+      'budgetForm.estimatedCost'
+    )?.value;
+    return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
   }
 }
 

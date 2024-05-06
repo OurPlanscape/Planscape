@@ -1,6 +1,5 @@
 import { AreaDetailsComponent } from './area-details/area-details.component';
 import { AreaNotesComponent } from './area-notes/area-notes.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
@@ -37,6 +36,8 @@ import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-pane
 import { WINDOW_PROVIDERS } from '@services/window.service';
 import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overlay.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
+import { PlanRoutingModule } from './plan-routing.module';
+import { ButtonComponent } from '@styleguide';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -45,7 +46,9 @@ import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dial
     AreaNotesComponent,
     ConstraintsPanelComponent,
     CreateScenariosComponent,
+    DeleteNoteDialogComponent,
     ExploreComponent,
+    GoalOverlayComponent,
     IdentifyProjectAreasComponent,
     PlanComponent,
     PlanMapComponent,
@@ -64,12 +67,9 @@ import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dial
     ScenariosTableListComponent,
     SetPrioritiesComponent,
     SummaryPanelComponent,
-    GoalOverlayComponent,
-    DeleteNoteDialogComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
-    BrowserAnimationsModule,
     CommonModule,
     FormsModule,
     FeaturesModule,
@@ -83,8 +83,10 @@ import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dial
     NgChartsModule,
     NgxMaskModule.forRoot(),
     ReactiveFormsModule,
+    PlanRoutingModule,
     RouterModule,
     SharedModule,
+    ButtonComponent,
   ],
 })
 export class PlanModule {}
