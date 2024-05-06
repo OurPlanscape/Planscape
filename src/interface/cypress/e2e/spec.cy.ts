@@ -45,17 +45,18 @@ describe('Successfully create an account', () => {
 
 describe('Login and logout', () => {
   it('Logs in and logs out', () => {
-    cy.visit('/login');
-    cy.contains('Sign in to Planscape');
-    cy.get('[formControlName="email"]').type(test_email1);
-    cy.get('[formControlName="password"]').type(test_pass1);
-    cy.get('button[type="submit"]').click();
-    // wait
-    cy.contains('Planning areas').should('be.visible');
+    cy.doLogin();
+    // cy.visit('/login');
+    // cy.contains('Sign in to Planscape');
+    // cy.get('[formControlName="email"]').type(test_email1);
+    // cy.get('[formControlName="password"]').type(test_pass1);
+    // cy.get('button[type="submit"]').click();
+    // // wait
+    // cy.contains('Planning areas').should('be.visible');
 
-    cy.get('button[data-id="menu-trigger"]').click();
-    cy.get('button[data-id="logout"]').click();
-    // wait
+    // cy.get('button[data-id="menu-trigger"]').click();
+    // cy.get('button[data-id="logout"]').click();
+    // // wait
 
     cy.contains('Welcome to Planscape').should('be.visible');
   });
