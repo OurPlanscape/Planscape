@@ -11,6 +11,9 @@ CELERY_DEFAULT=celery-default-worker
 # Directory which NGINX serves up for planscape
 PUBLIC_WWW_DIR=/var/www/html/planscape/
 
+# Directory which NGINX serves up for storybook
+STORYBOOK_WWW_DIR=/var/www/html/storybook/
+
 # Systemd User Control
 SYS_CTL=systemctl --user
 TAG=main
@@ -46,8 +49,14 @@ install-dependencies-frontend:
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out
 
+build-storybook:
+	cd src/interface && npm run build-storybook
+
 deploy-frontend: install-dependencies-frontend compile-angular
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
+
+deploy-storybook: install-dependencies-frontend build-storybook
+	cp -r ./src/interface/storybook-static/** ${STORYBOOK_WWW_DIR}
 
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
