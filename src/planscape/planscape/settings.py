@@ -36,6 +36,8 @@ planscape_apps = [
     "collaboration",
     "conditions",
     "core",
+    "datasets",
+    "metrics",
     "organizations",
     "planning",
     "projects",
