@@ -10,7 +10,6 @@ User = get_user_model()
 
 
 class DatasetType(models.TextChoices):
-
     VECTOR = "VECTOR", "Vector"
     RASTER = "RASTER", "Raster"
 
@@ -93,6 +92,5 @@ class Dataset(
     reference_url = models.URLField(max_length=512, null=True)
 
     class Meta:
-
         verbose_name = "Dataset"
         verbose_name_plural = "Datasets"

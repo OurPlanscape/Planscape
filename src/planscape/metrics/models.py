@@ -13,7 +13,6 @@ User = get_user_model()
 
 
 class MetricCapabilities(models.TextChoices):
-
     MAP_VIEW = "MAP_VIEW", "Map View"
     OPTIMIZATION = "OPTIMIZATION", "Optimization"
 
@@ -32,7 +31,6 @@ class Category(
     DeletedAtMixin,
     MP_Node,
 ):
-
     owner = models.ForeignKey(
         User,
         related_name="owned_categories",
@@ -67,7 +65,6 @@ class Category(
     ]
 
     class Meta:
-
         constraints = [
             models.UniqueConstraint(
                 fields=["organization", "project", "name"],
