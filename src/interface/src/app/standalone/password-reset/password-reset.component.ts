@@ -28,13 +28,13 @@ import { PasswordConfirmationDialogComponent } from '../password-confirmation-di
   styleUrls: ['./password-reset.component.scss'],
   standalone: true,
   imports: [
+    AboutComponent,
     CommonModule,
-    ReactiveFormsModule,
     MatFormFieldModule,
     MatInputModule,
-    SharedModule,
-    AboutComponent,
+    ReactiveFormsModule,
     RouterModule,
+    SharedModule,
   ],
 })
 export class PasswordResetComponent implements OnInit {

@@ -27,11 +27,11 @@ import { AboutComponent } from '../about/about.component';
   styleUrls: ['./forget-password.component.scss'],
   standalone: true,
   imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MaterialModule,
-    SharedModule,
     AboutComponent,
+    CommonModule,
+    MaterialModule,
+    ReactiveFormsModule,
+    SharedModule,
   ],
 })
 export class ForgetPasswordComponent {

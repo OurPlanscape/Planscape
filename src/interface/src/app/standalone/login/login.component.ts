@@ -28,13 +28,13 @@ import { AboutComponent } from '../about/about.component';
   styleUrls: ['./login.component.scss'],
   standalone: true,
   imports: [
-    ReactiveFormsModule,
-    MaterialModule,
-    SharedModule,
-    RouterModule,
-    MatCardModule,
     AboutComponent,
     CommonModule,
+    MatCardModule,
+    MaterialModule,
+    ReactiveFormsModule,
+    RouterModule,
+    SharedModule,
   ],
 })
 export class LoginComponent {

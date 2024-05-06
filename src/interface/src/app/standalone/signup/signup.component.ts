@@ -15,6 +15,7 @@ import { PasswordStateMatcher } from '../../validators/error-matchers';
 import { passwordsMustMatchValidator } from '../../validators/passwords';
 import { MaterialModule } from '../../material/material.module';
 import { InfoCardComponent } from '../info-card/info-card.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-signup',
@@ -22,10 +23,11 @@ import { InfoCardComponent } from '../info-card/info-card.component';
   styleUrls: ['./signup.component.scss'],
   standalone: true,
   imports: [
-    SharedModule,
+    CommonModule,
+    InfoCardComponent,
     MaterialModule,
     ReactiveFormsModule,
-    InfoCardComponent,
+    SharedModule,
   ],
 })
 export class SignupComponent {
