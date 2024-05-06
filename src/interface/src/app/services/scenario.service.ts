@@ -8,8 +8,8 @@ import {
   SCENARIO_STATUS,
   ScenarioConfig,
 } from '@types';
-import { BackendConstants } from '../backend-constants';
 import { CreateScenarioError } from './errors';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -20,7 +20,7 @@ export class ScenarioService {
   /** Fetches the scenarios for a plan from the backend. */
   getScenariosForPlan(planId: number): Observable<Scenario[]> {
     return this.http.get<Scenario[]>(
-      BackendConstants.END_POINT.concat(
+      environment.backend_endpoint.concat(
         `/planning/list_scenarios_for_planning_area/?planning_area=${planId}`
       ),
       {
@@ -32,7 +32,7 @@ export class ScenarioService {
   // TODO Add boolean parameter to control if show_results flag is true or false
   /** Fetches a scenario by its id from the backend. */
   getScenario(scenarioId: string): Observable<Scenario> {
-    const url = BackendConstants.END_POINT.concat(
+    const url = environment.backend_endpoint.concat(
       '/planning/get_scenario_by_id/?id=',
       scenarioId
     );
@@ -50,7 +50,7 @@ export class ScenarioService {
       .post<{
         id: number;
       }>(
-        BackendConstants.END_POINT + '/planning/create_scenario/',
+        environment.backend_endpoint + '/planning/create_scenario/',
         scenarioParameters,
         {
           withCredentials: true,
@@ -71,7 +71,7 @@ export class ScenarioService {
   /** Deletes one or more scenarios from the backend. Returns IDs of deleted scenarios. */
   deleteScenarios(scenarioIds: string[]): Observable<string[]> {
     return this.http.post<string[]>(
-      BackendConstants.END_POINT.concat('/planning/delete_scenario/'),
+      environment.backend_endpoint.concat('/planning/delete_scenario/'),
       {
         scenario_id: scenarioIds,
       },
@@ -89,7 +89,9 @@ export class ScenarioService {
   }
 
   private changeScenarioStatus(scenarioId: number, status: SCENARIO_STATUS) {
-    const url = BackendConstants.END_POINT.concat('/planning/update_scenario/');
+    const url = environment.backend_endpoint.concat(
+      '/planning/update_scenario/'
+    );
     return this.http.patch<number>(
       url,
       {
@@ -104,7 +106,9 @@ export class ScenarioService {
 
   /** Updates a scenario with new notes. */
   updateScenarioNotes(scenario: Scenario): Observable<number> {
-    const url = BackendConstants.END_POINT.concat('/planning/update_scenario/');
+    const url = environment.backend_endpoint.concat(
+      '/planning/update_scenario/'
+    );
     return this.http
       .patch<number>(
         url,
@@ -121,7 +125,7 @@ export class ScenarioService {
 
   downloadCsvData(scenarioId: string): Observable<any> {
     return this.http.get(
-      BackendConstants.END_POINT +
+      environment.backend_endpoint +
         `/planning/get_scenario_download_by_id?id=${scenarioId}`,
       {
         withCredentials: true,
@@ -132,7 +136,7 @@ export class ScenarioService {
 
   downloadShapeFiles(scenarioId: string): Observable<any> {
     return this.http.get(
-      BackendConstants.END_POINT +
+      environment.backend_endpoint +
         `/planning/download_shapefile?id=${scenarioId}`,
       {
         withCredentials: true,
@@ -143,7 +147,7 @@ export class ScenarioService {
 
   /** Gets Metric Data For Scenario Output Fields */
   getMetricData(metric_paths: any, region: Region): Observable<any> {
-    const url = BackendConstants.END_POINT.concat(
+    const url = environment.backend_endpoint.concat(
       '/conditions/metrics/?region_name=' +
         `${regionToString(region)}` +
         '&metric_paths=' +

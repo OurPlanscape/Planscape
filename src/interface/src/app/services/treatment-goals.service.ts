@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Region, regionToString, TreatmentGoalConfig } from '@types';
-import { BackendConstants } from '../backend-constants';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +11,7 @@ export class TreatmentGoalsService {
 
   getTreatmentGoalsForArea(region: Region) {
     return this.http.get<TreatmentGoalConfig[]>(
-      BackendConstants.END_POINT +
+      environment.backend_endpoint +
         '/planning/treatment_goals_config/?region_name=' +
         `${regionToString(region)}`
     );

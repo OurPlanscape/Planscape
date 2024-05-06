@@ -3,8 +3,6 @@ import { Injectable } from '@angular/core';
 import * as L from 'leaflet';
 import 'leaflet.vectorgrid';
 import { BehaviorSubject, EMPTY, Observable, of, take, tap } from 'rxjs';
-
-import { BackendConstants } from '../backend-constants';
 import { SessionService } from '@services';
 import {
   BoundaryConfig,
@@ -13,6 +11,7 @@ import {
   Region,
   regionToString,
 } from '@types';
+import { environment } from '../../environments/environment';
 
 /** A map of Region to static assets for that region. */
 const regionToGeojsonMap: Record<Region, Record<string, string>> = {
@@ -52,7 +51,7 @@ export class MapService {
   ) {
     this.http
       .get<BoundaryConfig[]>(
-        BackendConstants.END_POINT +
+        environment.backend_endpoint +
           '/boundary/config/?region_name=' +
           `${regionToString(this.selectedRegion$.getValue())}`
       )
@@ -62,7 +61,7 @@ export class MapService {
       });
     this.http
       .get<ConditionsConfig>(
-        BackendConstants.END_POINT +
+        environment.backend_endpoint +
           '/conditions/config/?region_name=' +
           `${regionToString(this.selectedRegion$.getValue())}`
       )
@@ -92,7 +91,7 @@ export class MapService {
   setConfigs() {
     this.http
       .get<BoundaryConfig[]>(
-        BackendConstants.END_POINT +
+        environment.backend_endpoint +
           '/boundary/config/?region_name=' +
           `${regionToString(this.selectedRegion$.getValue())}`
       )
@@ -102,7 +101,7 @@ export class MapService {
       });
     this.http
       .get<ConditionsConfig>(
-        BackendConstants.END_POINT +
+        environment.backend_endpoint +
           '/conditions/config/?region_name=' +
           `${regionToString(this.selectedRegion$.getValue())}`
       )
@@ -118,7 +117,7 @@ export class MapService {
   getBoundaryShapes(vectorName: string): Observable<L.Layer> {
     var vector: Observable<L.Layer> = of(
       L.vectorGrid.protobuf(
-        BackendConstants.TILES_END_POINT +
+        environment.tile_endpoint +
           'gwc/service/tms/1.0.0/' +
           `${vectorName}` +
           '@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
@@ -148,7 +147,7 @@ export class MapService {
   /** Get colormap values from the REST server. */
   getColormap(colormap: string): Observable<ColormapConfig> {
     return this.http.get<ColormapConfig>(
-      BackendConstants.END_POINT.concat(
+      environment.backend_endpoint.concat(
         `/conditions/colormap/?colormap=${colormap}`
       )
     );

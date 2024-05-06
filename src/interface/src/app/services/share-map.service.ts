@@ -1,9 +1,9 @@
 import { Inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
-import { BackendConstants } from '../backend-constants';
 import { HttpClient } from '@angular/common/http';
 import { WINDOW } from './window.service';
 import { MapConfig, MapViewOptions, Region } from '@types';
+import { environment } from '../../environments/environment';
 
 interface ViewState {
   mapViewOptions: MapViewOptions | null;
@@ -37,7 +37,7 @@ export class ShareMapService {
 
   createShareLink(mapData: ViewState): Observable<CreatedLink> {
     return this.http.post<CreatedLink>(
-      BackendConstants.END_POINT + '/planning/create_link/',
+      environment.backend_endpoint + '/planning/create_link/',
       {
         view_state: mapData,
       },
@@ -51,7 +51,7 @@ export class ShareMapService {
 
   loadSharedLink(link: string) {
     return this.http.get<CreatedLink>(
-      BackendConstants.END_POINT.concat('/planning/shared_link/', link),
+      environment.backend_endpoint.concat('/planning/shared_link/', link),
       { withCredentials: true }
     );
   }

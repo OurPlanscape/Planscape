@@ -8,8 +8,6 @@ import * as L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import 'leaflet.sync';
 import { BehaviorSubject, Observable, take } from 'rxjs';
-
-import { BackendConstants } from '../backend-constants';
 import { PopupService, SessionService } from '@services';
 import {
   BaseLayerType,
@@ -40,6 +38,7 @@ import { satelliteTiles, stadiaAlidadeTiles, terrainTiles } from './map.tiles';
 import { createAndAddLegend } from './map.legends';
 import { addClonedLayerToMap, removeClonedLayer } from './map.layers';
 import * as esri from 'esri-leaflet';
+import { environment } from '../../environments/environment';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
@@ -551,7 +550,7 @@ export class MapManager {
     }
 
     map.dataLayerRef = L.tileLayer.wms(
-      BackendConstants.TILES_END_POINT + region + '/wms?',
+      environment.tile_endpoint + region + '/wms?',
       {
         layers: region + layer,
         minZoom: 7,
@@ -569,7 +568,7 @@ export class MapManager {
 
     // Map legend request
     var dataUnit = map.config.dataLayerConfig.data_units;
-    const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
+    const legendUrl = environment.tile_endpoint + 'wms';
     let queryParams = new HttpParams();
     queryParams = queryParams.append('request', 'GetLegendGraphic');
     queryParams = queryParams.append('layer', region + layer);

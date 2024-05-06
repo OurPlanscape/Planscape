@@ -7,12 +7,11 @@ import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack
 import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
 import { of, throwError } from 'rxjs';
-
-import { BackendConstants } from '../backend-constants';
 import { User } from '@types';
 import { AuthGuard, AuthService } from './auth.service';
 import { RedirectService } from './redirect.service';
 import { MockProvider } from 'ng-mocks';
+import { environment } from 'src/environments/environment';
 
 describe('AuthService', () => {
   let httpTestingController: HttpTestingController;
@@ -63,12 +62,12 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+        environment.backend_endpoint + '/dj-rest-auth/login/'
       );
       expect(req.request.method).toEqual('POST');
       req.flush(mockResponse);
       httpTestingController
-        .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/')
+        .expectOne(environment.backend_endpoint + '/dj-rest-auth/user/')
         .flush({ email: 'test@test.com' });
       httpTestingController.verify();
     });
@@ -81,7 +80,7 @@ describe('AuthService', () => {
         expect(res).toEqual(url);
       });
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+        environment.backend_endpoint + '/dj-rest-auth/login/'
       );
       req.flush('');
     });
@@ -95,7 +94,7 @@ describe('AuthService', () => {
         expect(redirectService.removeRedirect).toHaveBeenCalled();
       });
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+        environment.download_endpoint + '/dj-rest-auth/login/'
       );
       req.flush('');
     });
@@ -111,7 +110,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+        environment.download_endpoint + '/dj-rest-auth/login/'
       );
       req.flush(mockResponse);
     });
@@ -126,7 +125,7 @@ describe('AuthService', () => {
       );
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+        environment.download_endpoint + '/dj-rest-auth/login/'
       );
       req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
     });
@@ -145,12 +144,12 @@ describe('AuthService', () => {
       });
 
       const req1 = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+        environment.download_endpoint + '/dj-rest-auth/login/'
       );
       req1.flush(mockResponse);
 
       const req2 = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/user/'
+        environment.download_endpoint + '/dj-rest-auth/user/'
       );
       req2.flush(mockUser);
     });
@@ -168,7 +167,7 @@ describe('AuthService', () => {
       );
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/login/'
+        environment.download_endpoint + '/dj-rest-auth/login/'
       );
       req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
       httpTestingController.verify();
@@ -189,7 +188,7 @@ describe('AuthService', () => {
         });
 
       const req1 = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/registration/'
+        environment.download_endpoint + '/dj-rest-auth/registration/'
       );
       req1.flush(mockResponse);
     });
@@ -211,7 +210,7 @@ describe('AuthService', () => {
         });
 
       const req1 = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/registration/'
+        environment.download_endpoint + '/dj-rest-auth/registration/'
       );
       req1.flush(mockResponse);
     });
@@ -226,7 +225,7 @@ describe('AuthService', () => {
       );
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/registration/'
+        environment.download_endpoint + '/dj-rest-auth/registration/'
       );
       req.flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
       httpTestingController.verify();
@@ -245,7 +244,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/logout/'
+        environment.download_endpoint + '/dj-rest-auth/logout/'
       );
       expect(req.request.method).toEqual('GET');
       req.flush(mockResponse);
@@ -264,7 +263,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/logout/'
+        environment.download_endpoint + '/dj-rest-auth/logout/'
       );
       req.flush(mockResponse);
     });
@@ -295,14 +294,14 @@ describe('AuthService', () => {
       });
 
       const req1 = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/token/refresh/'
+        environment.download_endpoint + '/dj-rest-auth/token/refresh/'
       );
       expect(req1.request.method).toEqual('POST');
       expect(cookieServiceStub.get).toHaveBeenCalled();
       req1.flush(mockResponse);
 
       const req2 = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/user/'
+        environment.download_endpoint + '/dj-rest-auth/user/'
       );
       expect(req2.request.method).toEqual('GET');
       req2.flush(mockUser);
@@ -333,10 +332,12 @@ describe('AuthService', () => {
       });
 
       httpTestingController
-        .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/token/refresh/')
+        .expectOne(
+          environment.backend_endpoint + '/dj-rest-auth/token/refresh/'
+        )
         .flush(mockResponse);
       httpTestingController
-        .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/')
+        .expectOne(environment.backend_endpoint + '/dj-rest-auth/user/')
         .flush(mockUser);
     });
 
@@ -355,7 +356,9 @@ describe('AuthService', () => {
       );
 
       httpTestingController
-        .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/token/refresh/')
+        .expectOne(
+          environment.backend_endpoint + '/dj-rest-auth/token/refresh/'
+        )
         .flush('Unsuccessful', { status: 400, statusText: 'Bad request' });
       httpTestingController.verify();
     });
@@ -366,7 +369,7 @@ describe('AuthService', () => {
       service.changePassword('password', 'testpass', 'testpass').subscribe();
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/password/change/'
+        environment.download_endpoint + '/dj-rest-auth/password/change/'
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
@@ -400,7 +403,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/dj-rest-auth/user/'
+        environment.download_endpoint + '/dj-rest-auth/user/'
       );
       expect(req.request.method).toEqual('PATCH');
       expect(req.request.body).toEqual({
@@ -431,7 +434,7 @@ describe('AuthService', () => {
       });
 
       httpTestingController
-        .expectOne(BackendConstants.END_POINT + '/dj-rest-auth/user/')
+        .expectOne(environment.backend_endpoint + '/dj-rest-auth/user/')
         .flush(backendUser);
     });
   });
@@ -450,7 +453,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/users/get_user_by_id/?id=1')
+        environment.download_endpoint.concat('/users/get_user_by_id/?id=1')
       );
       expect(req.request.method).toEqual('GET');
       req.flush(user);
@@ -474,7 +477,7 @@ describe('AuthService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT + '/users/deactivate/'
+        environment.download_endpoint + '/users/deactivate/'
       );
       expect(req.request.method).toEqual('POST');
       expect(req.request.body).toEqual({
@@ -501,7 +504,7 @@ describe('AuthService', () => {
     });
 
     httpTestingController
-      .expectOne(BackendConstants.END_POINT + '/users/deactivate/')
+      .expectOne(environment.backend_endpoint + '/users/deactivate/')
       .flush({ deleted: true });
   });
 });

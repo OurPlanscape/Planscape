@@ -9,14 +9,13 @@ import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { FrontendConstants, Plan, Region, regionToString } from '@types';
-
-import { BackendConstants } from '../../backend-constants';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PlanStateService } from '@services';
 import { regionMapCenters } from '../../map/map.helper';
 import { Feature } from 'geojson';
 import { getColorForProjectPosition } from '../plan-helpers';
 import polylabel from 'polylabel';
+import { environment } from '../../../environments/environment';
 
 // Needed to keep reference to legend div element to remove
 export interface MapRef {
@@ -160,7 +159,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     var region = regionToString(this.planStateService.planRegion$.getValue());
     this.tileLayer = L.tileLayer.wms(
-      BackendConstants.TILES_END_POINT + region + '/wms?',
+      environment.tile_endpoint + region + '/wms?',
       {
         layers: region + filepath,
         minZoom: 7,
@@ -180,7 +179,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         dataUnit = state.legendUnits;
       }
     });
-    const legendUrl = BackendConstants.TILES_END_POINT + 'wms';
+    const legendUrl = environment.tile_endpoint + 'wms';
     let queryParams = new HttpParams();
     queryParams = queryParams.append('request', 'GetLegendGraphic');
     queryParams = queryParams.append('layer', filepath);
