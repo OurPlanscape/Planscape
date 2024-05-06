@@ -20,7 +20,7 @@ def create_admin_user_and_org(apps, schema_editor):
     admin.save()
     _ = Organization.objects.create(
         uuid=settings.ADMIN_ORG_UUID,
-        created_by=admin,
+        owner=admin,
         name="SIG-GIS",
     )
 
