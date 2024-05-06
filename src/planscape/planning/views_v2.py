@@ -9,6 +9,7 @@ from planning.serializers import (
     ListScenarioSerializer,
     ScenarioSerializer,
 )
+from collaboration.permissions import PlanningAreaPermission
 from planning.filters import PlanningAreaFilter, ScenarioFilter
 from planning.permission import PlanningAreaViewPermission, ScenarioViewPermission
 

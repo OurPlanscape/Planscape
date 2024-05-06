@@ -3,6 +3,7 @@ from rest_framework.permissions import BasePermission
 from collaboration.permissions import (
     PlanningAreaPermission,
     ScenarioPermission,
+    CheckPermissionMixin,
 )
 from planning.models import PlanningArea
 

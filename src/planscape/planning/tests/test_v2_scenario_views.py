@@ -1,7 +1,5 @@
 import json
-import os
 from unittest import mock
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
