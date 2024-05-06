@@ -56,7 +56,7 @@ deploy-frontend: install-dependencies-frontend compile-angular
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 
 deploy-storybook: install-dependencies-frontend build-storybook
-	cp -r ./src/interface/storybook-static/** ${PUBLIC_STORYBOOK_WWW_DIR}
+	cp -r ./src/interface/storybook-static/** ${STORYBOOK_WWW_DIR}
 
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
