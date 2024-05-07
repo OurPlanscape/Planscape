@@ -25,7 +25,7 @@ import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
 import { MapModule } from './map/map.module';
 import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { MaterialModule } from './material/material.module';
-import { NgChartsModule } from 'ng2-charts';
+
 import { NgxMaskModule } from 'ngx-mask';
 import { PlanTableComponent } from './home/plan-table/plan-table.component';
 import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
@@ -65,7 +65,6 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
     SharedModule,
     ReactiveFormsModule,
     MatDialogModule,
-    NgChartsModule,
     MapModule,
     NgxMaskModule.forRoot(),
     ButtonComponent,
