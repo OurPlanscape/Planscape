@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { TreatmentQuestionConfig } from '../../../types';
+import { TreatmentQuestionConfig } from '@types';
 import { map, Subject } from 'rxjs';
 
 @Injectable({

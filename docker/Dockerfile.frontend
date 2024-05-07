@@ -1,0 +1,14 @@
+FROM node:18.20.2-bullseye
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+RUN npm install -g @angular/cli
+
+COPY src/interface/package.json src/interface/package-lock.json /usr/src/app/
+
+RUN npm install
+
+COPY . /usr/src/app
+
+CMD ["ng", "serve", "--host", "0.0.0.0"]

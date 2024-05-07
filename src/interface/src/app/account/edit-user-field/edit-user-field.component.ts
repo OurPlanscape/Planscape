@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { User } from '../../types';
+import { User } from '@types';
 import { take } from 'rxjs';
 import { AuthService } from '@services';
 

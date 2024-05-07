@@ -4,12 +4,12 @@ import {
   ScenarioResult,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
-} from '../types';
+} from '@types';
 import {
   ProjectAreaReport,
   ProjectTotalReport,
 } from './project-areas/project-areas.component';
-import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '../shared/constants';
+import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 
 export const NOTE_SAVE_INTERVAL = 5000;
 

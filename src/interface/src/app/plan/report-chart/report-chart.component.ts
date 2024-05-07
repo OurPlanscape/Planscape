@@ -1,6 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
-import { PROJECT_AREA_COLORS } from '../../shared/constants';
+import { PROJECT_AREA_COLORS } from '@shared';
 
 @Component({
   selector: 'app-report-chart',

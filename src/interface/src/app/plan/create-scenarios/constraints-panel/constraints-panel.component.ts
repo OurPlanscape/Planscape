@@ -11,8 +11,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
-import { EXCLUDED_AREAS } from '../../../shared/constants';
-import { ScenarioConfig } from '../../../types';
+import { EXCLUDED_AREAS } from '@shared';
+import { ScenarioConfig } from '@types';
 import { ErrorStateMatcher } from '@angular/material/core';
 import {
   calculateMaxArea,
@@ -41,6 +41,8 @@ export class ConstraintsPanelComponent implements OnChanges {
   @Input() planningAreaAcres = 0;
 
   budgetStateMatcher = new NotEnoughBudgetStateMatcher();
+
+  focusedSelection = ''; // string to identify which selection is focused
 
   constructor(private fb: FormBuilder) {}
 
@@ -279,8 +281,9 @@ export class ConstraintsPanelComponent implements OnChanges {
   private totalBudgetedValidator(planningAreaAcres: number): ValidatorFn {
     return (constraintsForm: AbstractControl): ValidationErrors | null => {
       const maxCost = constraintsForm.get('budgetForm.maxCost')?.value;
-      const estCostPerAcre = constraintsForm.get('budgetForm.estimatedCost')
-        ?.value;
+      const estCostPerAcre = constraintsForm.get(
+        'budgetForm.estimatedCost'
+      )?.value;
       if (!!maxCost) {
         const hasBudget = hasEnoughBudget(
           planningAreaAcres,
@@ -299,6 +302,13 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
       return null;
     };
+  }
+
+  calculateMinBudget() {
+    const estCostPerAcre = this.constraintsForm.get(
+      'budgetForm.estimatedCost'
+    )?.value;
+    return calculateMinBudget(this.planningAreaAcres, estCostPerAcre);
   }
 }
 

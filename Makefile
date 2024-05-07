@@ -2,6 +2,8 @@
 # - RJ Sheperd (rsheperd@sig-gis.com)
 # - George Silva (gsilva@sig-gis.com)
 
+USER_ID = $(shell id -u)
+
 # User Systemd Service (see: ~/.config/systemd/user/planscape.service)
 SERVICE=planscape
 FORSYS_QUEUE=forsys-queue
@@ -10,6 +12,9 @@ CELERY_DEFAULT=celery-default-worker
 
 # Directory which NGINX serves up for planscape
 PUBLIC_WWW_DIR=/var/www/html/planscape/
+
+# Directory which NGINX serves up for storybook
+STORYBOOK_WWW_DIR=/var/www/html/storybook/
 
 # Systemd User Control
 SYS_CTL=systemctl --user
@@ -46,8 +51,14 @@ install-dependencies-frontend:
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out
 
+build-storybook:
+	cd src/interface && npm run build-storybook
+
 deploy-frontend: install-dependencies-frontend compile-angular
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
+
+deploy-storybook: install-dependencies-frontend build-storybook
+	cp -r ./src/interface/storybook-static/** ${STORYBOOK_WWW_DIR}
 
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
@@ -121,6 +132,13 @@ TEST=.
 APP_LABEL=
 DOCKER_BUILDKIT=1
 
+docker-clean:
+	docker compose down --volumes
+	docker container prune -f
+
+docker-hard-clean: docker-clean
+	docker image prune -f
+
 docker-build:
 	docker compose build
 
@@ -134,8 +152,8 @@ docker-shell:
 	./src/planscape/bin/run.sh bash
 
 docker-makemigrations:
-	./src/planscape/bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL)  $(OPTIONS)
-	sudo chown -R $(USER): **/migrations/
+	./src/planscape/bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL) $(OPTIONS)
+	sudo chown -R $(USER): ./**/migrations
 
 docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate

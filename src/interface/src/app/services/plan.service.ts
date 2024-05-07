@@ -1,10 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable, take } from 'rxjs';
-
-import { BackendConstants } from '../backend-constants';
-import { CreatePlanPayload, Plan, PreviewPlan } from '../types';
+import { CreatePlanPayload, Plan, PreviewPlan } from '@types';
 import { GeoJSON } from 'geojson';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -21,7 +20,7 @@ export class PlanService {
   /** Makes a request to the backend to create a plan and updates state. */
   createPlan(payload: CreatePlanPayload): Observable<Plan> {
     return this.http.post<Plan>(
-      BackendConstants.END_POINT + '/planning/create_planning_area/',
+      environment.backend_endpoint + '/planning/create_planning_area/',
       payload,
       {
         withCredentials: true,
@@ -32,7 +31,7 @@ export class PlanService {
   /** Makes a request to the backend to delete a plan with the given ID. */
   deletePlan(planIds: string[]): Observable<string> {
     return this.http.post<string>(
-      BackendConstants.END_POINT.concat(
+      environment.backend_endpoint.concat(
         '/planning/delete_planning_area/?id=',
         planIds.toString()
       ),
@@ -48,7 +47,7 @@ export class PlanService {
   /** Makes a request to the backend to fetch a plan with the given ID. */
   getPlan(planId: string): Observable<Plan> {
     return this.http.get<Plan>(
-      BackendConstants.END_POINT.concat(
+      environment.backend_endpoint.concat(
         '/planning/get_planning_area_by_id/?id=',
         planId
       ),
@@ -62,7 +61,7 @@ export class PlanService {
    *  If the user is not provided, return all plans with owner=null.
    */
   listPlansByUser(): Observable<PreviewPlan[]> {
-    let url = BackendConstants.END_POINT.concat(
+    let url = environment.backend_endpoint.concat(
       '/planning/list_planning_areas'
     );
     return this.http.get<Plan[]>(url, {
@@ -75,7 +74,7 @@ export class PlanService {
     planningAreaConfig: Plan,
     planId: number
   ): Observable<number> {
-    const url = BackendConstants.END_POINT.concat(
+    const url = environment.backend_endpoint.concat(
       '/planning/update_planning_area/'
     );
     return this.http
@@ -94,8 +93,12 @@ export class PlanService {
 
   getTotalArea(shape: GeoJSON) {
     return this.http
-      .post<{ area_acres: number }>(
-        BackendConstants.END_POINT.concat(`/planning/validate_planning_area/`),
+      .post<{
+        area_acres: number;
+      }>(
+        environment.backend_endpoint.concat(
+          `/planning/validate_planning_area/`
+        ),
         { geometry: shape }
       )
       .pipe(map((result) => Math.round(result.area_acres)));

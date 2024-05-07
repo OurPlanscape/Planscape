@@ -6,26 +6,15 @@ import {
   Routes,
   TitleStrategy,
 } from '@angular/router';
-
-import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { HomeComponent } from './home/home.component';
-import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
-import { CreateScenariosComponent } from './plan/create-scenarios/create-scenarios.component';
-import { PlanComponent } from './plan/plan.component';
-import { PasswordResetComponent } from './password-reset/password-reset.component';
-import { AuthGuard } from './services';
-import { passwordResetTokenResolver } from './services/password-reset.resolver';
-import { SignupComponent } from './signup/signup.component';
-import { RedirectGuard } from './services/redirect.guard';
-import { AccountValidationComponent } from './account-validation/account-validation.component';
+import {
+  AuthGuard,
+  passwordResetTokenResolver,
+  RedirectGuard,
+  redirectResolver,
+} from '@services';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
-import { AccountPageComponent } from './account/account-page/account-page.component';
-import { DetailsComponent } from './account/details/details.component';
-import { CredentialsComponent } from './account/credentials/credentials.component';
-import { DeleteAccountComponent } from './account/delete-account/delete-account.component';
-import { ThankYouComponent } from './signup/thank-you/thank-you.component';
-import { redirectResolver } from './services/redirect.resolver';
 
 const routes: Routes = [
   {
@@ -36,18 +25,27 @@ const routes: Routes = [
       {
         path: 'login',
         title: 'Login',
-        component: LoginComponent,
+        loadComponent: () =>
+          import('./standalone/login/login.component').then(
+            (m) => m.LoginComponent
+          ),
       },
       {
         path: 'reset/:userId/:token',
         title: 'Password reset',
         resolve: { passwordResetToken: passwordResetTokenResolver },
-        component: PasswordResetComponent,
+        loadComponent: () =>
+          import('./standalone/password-reset/password-reset.component').then(
+            (m) => m.PasswordResetComponent
+          ),
       },
       {
         path: 'reset',
         title: 'Forget password',
-        component: ForgetPasswordComponent,
+        loadComponent: () =>
+          import('./standalone/forget-password/forget-password.component').then(
+            (m) => m.ForgetPasswordComponent
+          ),
       },
       {
         path: 'home',
@@ -57,23 +55,38 @@ const routes: Routes = [
       {
         path: 'signup',
         title: 'Signup',
-        component: SignupComponent,
         resolve: { redirectUrl: redirectResolver },
+        loadComponent: () =>
+          import('./standalone/signup/signup.component').then(
+            (m) => m.SignupComponent
+          ),
       },
       {
         path: 'thankyou',
         title: 'Thank You',
-        component: ThankYouComponent,
+        loadComponent: () =>
+          import('./standalone/thank-you/thank-you.component').then(
+            (m) => m.ThankYouComponent
+          ),
       },
       {
         path: 'validate/:token',
         title: 'Account E-mail Validation',
-        component: AccountValidationComponent,
+        loadComponent: () =>
+          import(
+            './standalone/account-validation/account-validation.component'
+          ).then((m) => m.AccountValidationComponent),
       },
       {
         path: 'map',
         title: 'Explore',
         component: MapComponent,
+      },
+      {
+        path: 'explore/:id',
+        title: 'Explore Plan',
+        component: ExploreComponent,
+        canActivate: [AuthGuard],
       },
       {
         path: 'feedback',
@@ -93,61 +106,14 @@ const routes: Routes = [
         },
       },
       {
-        path: 'plan/:id',
-        title: 'Plan Details',
-        component: PlanComponent,
-        canActivate: [AuthGuard],
-        children: [
-          {
-            path: 'config',
-            title: 'Scenario Configuration',
-            component: CreateScenariosComponent,
-          },
-          {
-            path: 'config/:id',
-            title: 'Scenario Configuration',
-            component: CreateScenariosComponent,
-          },
-          {
-            path: 'explore',
-            title: 'Explore',
-            component: ExploreComponent,
-          },
-        ],
-      },
-      {
-        path: 'explore/:id',
-        title: 'Explore Plan',
-        component: ExploreComponent,
-        canActivate: [AuthGuard],
+        path: 'plan',
+        loadChildren: () =>
+          import('./plan/plan.module').then((m) => m.PlanModule),
       },
       {
         path: 'account',
-        title: 'Account Details',
-        component: AccountPageComponent,
-        canActivate: [AuthGuard],
-        children: [
-          {
-            path: '',
-            redirectTo: 'information',
-            pathMatch: 'full',
-          },
-          {
-            path: 'information',
-            title: 'Edit Personal information',
-            component: DetailsComponent,
-          },
-          {
-            path: 'credentials',
-            title: 'Edit Credentials',
-            component: CredentialsComponent,
-          },
-          {
-            path: 'delete-account',
-            title: 'Deactivate Account',
-            component: DeleteAccountComponent,
-          },
-        ],
+        loadChildren: () =>
+          import('./account/account.module').then((m) => m.AccountModule),
       },
     ],
   },

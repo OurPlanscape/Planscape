@@ -3,12 +3,11 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-
-import { BackendConstants } from '../backend-constants';
-import { Plan } from '../types';
+import { Plan } from '@types';
 import { PlanService } from './plan.service';
 import { MapService } from './map.service';
 import { MOCK_FEATURE_COLLECTION, MOCK_PLAN } from './mocks';
+import { environment } from '../../environments/environment';
 
 // TODO Make test for getting scenario results
 // TODO Make test for call to create project area
@@ -36,7 +35,7 @@ describe('PlanService', () => {
         expect(res).toEqual('1');
       });
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat(
+        environment.backend_endpoint.concat(
           '/planning/delete_planning_area/?id=1'
         )
       );
@@ -53,7 +52,7 @@ describe('PlanService', () => {
         expect(res).toEqual('[1,2,3]');
       });
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat(
+        environment.backend_endpoint.concat(
           '/planning/delete_planning_area/?id=1,2,3'
         )
       );
@@ -73,7 +72,7 @@ describe('PlanService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat(
+        environment.backend_endpoint.concat(
           '/planning/get_planning_area_by_id/?id=1'
         )
       );
@@ -89,7 +88,7 @@ describe('PlanService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/list_planning_areas')
+        environment.backend_endpoint.concat('/planning/list_planning_areas')
       );
       req.flush([mockPlan]);
       httpTestingController.verify();
@@ -103,7 +102,7 @@ describe('PlanService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/validate_planning_area/')
+        environment.backend_endpoint.concat('/planning/validate_planning_area/')
       );
       req.flush({ area_acres: 1000 });
 

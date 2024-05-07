@@ -6,9 +6,9 @@ import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Component, Inject } from '@angular/core';
 import { PlanService, SessionService } from '@services';
 import { firstValueFrom } from 'rxjs';
-import { SNACK_ERROR_CONFIG } from '../../../app/shared/constants';
+import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { Region } from '../../types';
+import { Region } from '@types';
 import { isValidTotalArea } from '../../plan/plan-helpers';
 
 export interface PlanCreateDialogData {

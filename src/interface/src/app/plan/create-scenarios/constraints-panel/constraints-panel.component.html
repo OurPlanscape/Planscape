@@ -19,11 +19,15 @@
                 type="text"
                 mask="separator"
                 thousandSeparator=","
+                (focus)="focusedSelection = 'maxAcres'"
                 matInput
                 (input)="togglMaxAreaAndMaxCost()" />
             </mat-form-field>
           </div>
-          <div class="error-text" *ngIf="maxArea?.invalid && maxArea?.touched">
+          <div
+            class="help-text"
+            *ngIf="focusedSelection === 'maxAcres'"
+            [ngClass]="{ error: maxArea?.invalid && maxArea?.touched }">
             Max acres needs to be between
             {{ minMaxAreaValue | number: '1.0-0' }} and
             {{ maxMaxAreaValue | number: '1.0-0' }}
@@ -46,20 +50,20 @@
                 mask="separator"
                 thousandSeparator=","
                 [errorStateMatcher]="budgetStateMatcher"
+                (focus)="focusedSelection = 'maxCost'"
                 (input)="togglMaxAreaAndMaxCost()" />
               <span matPrefix>$&nbsp;</span>
             </mat-form-field>
           </div>
           <div
-            class="error-text"
-            *ngIf="
-              constraintsForm.hasError('notEnoughBudget') && maxCost?.touched
-            ">
+            class="help-text"
+            *ngIf="focusedSelection === 'maxCost'"
+            [ngClass]="{
+              error:
+                constraintsForm.hasError('notEnoughBudget') && maxCost?.touched
+            }">
             Budget needs to be at least
-            {{
-              constraintsForm.getError('notEnoughBudget')
-                | currency: 'USD' : 'symbol' : '1.0-0'
-            }}
+            {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}
           </div>
         </div>
       </div>

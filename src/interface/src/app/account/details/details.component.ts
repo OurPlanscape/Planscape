@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AuthService } from '@services';
-import { FormMessageType } from '../../types';
+import { FormMessageType } from '@types';
 
 @Component({
   selector: 'app-details',

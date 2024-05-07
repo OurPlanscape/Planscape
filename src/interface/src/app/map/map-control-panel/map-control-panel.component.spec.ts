@@ -8,9 +8,7 @@ import { MatLegacyRadioGroupHarness as MatRadioGroupHarness } from '@angular/mat
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { BaseLayerType } from 'src/app/types';
-
-import { NONE_BOUNDARY_CONFIG } from '../../types';
+import { BaseLayerType, NONE_BOUNDARY_CONFIG } from '@types';
 import { LayerInfoCardComponent } from '../layer-info-card/layer-info-card.component';
 import { ConditionTreeComponent } from './condition-tree/condition-tree.component';
 import { MapControlPanelComponent } from './map-control-panel.component';

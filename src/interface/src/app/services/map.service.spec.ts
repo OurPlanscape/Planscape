@@ -3,10 +3,10 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { BackendConstants } from '../backend-constants';
 import { MapService } from './map.service';
-import { ColormapConfig, ConditionsConfig } from '../types';
+import { ColormapConfig, ConditionsConfig } from '@types';
 import 'leaflet.vectorgrid';
+import { environment } from '../../environments/environment';
 
 // TODO Make more robust for new boundary vector tile
 describe('MapService', () => {
@@ -56,11 +56,12 @@ describe('MapService', () => {
     // Must flush the requests in the constructor for httpTestingController.verify()
     // to pass in other tests.
     const req1 = httpTestingController.expectOne(
-      BackendConstants.END_POINT + '/boundary/config/?region_name=sierra-nevada'
+      environment.backend_endpoint +
+        '/boundary/config/?region_name=sierra-nevada'
     );
     req1.flush(conditionsConfig);
     const req2 = httpTestingController.expectOne(
-      BackendConstants.END_POINT +
+      environment.backend_endpoint +
         '/conditions/config/?region_name=sierra-nevada'
     );
     req2.flush(conditionsConfig);
@@ -147,7 +148,7 @@ describe('MapService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat(
+        environment.backend_endpoint.concat(
           '/conditions/colormap/?colormap=fakecolormap'
         )
       );

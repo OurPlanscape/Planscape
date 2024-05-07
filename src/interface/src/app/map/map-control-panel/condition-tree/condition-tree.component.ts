@@ -4,15 +4,15 @@ import {
   MatTreeFlatDataSource,
   MatTreeFlattener,
 } from '@angular/material/tree';
-import { filter, Observable, map } from 'rxjs';
+import { filter, map, Observable } from 'rxjs';
 import {
+  ConditionsConfig,
+  ConditionTreeType,
   DataLayerConfig,
   Map,
   NONE_DATA_LAYER_CONFIG,
-  ConditionsConfig,
-  ConditionTreeType,
-} from 'src/app/types';
-import { BackendConstants } from './../../../backend-constants';
+} from '@types';
+import { environment } from '../../../../environments/environment';
 
 export interface ConditionsNode extends DataLayerConfig {
   children?: ConditionsNode[];
@@ -224,7 +224,7 @@ export class ConditionTreeComponent implements OnInit {
                         legend_name: CURRENT_CONDITIONS_RAW_LEGEND,
                         normalized: false,
                         data_download_link: metric.raw_data_download_path
-                          ? BackendConstants.DOWNLOAD_END_POINT +
+                          ? environment.download_endpoint +
                             '/' +
                             metric.raw_data_download_path
                           : metric.data_download_link,
@@ -251,7 +251,7 @@ export class ConditionTreeComponent implements OnInit {
               layer: pillar.normalized_layer,
               region_geoserver_name: config.region_geoserver_name,
               data_download_link: pillar.normalized_data_download_path
-                ? BackendConstants.DOWNLOAD_END_POINT +
+                ? environment.download_endpoint +
                   '/' +
                   pillar.normalized_data_download_path
                 : undefined,
@@ -263,7 +263,7 @@ export class ConditionTreeComponent implements OnInit {
                   layer: element.normalized_layer,
                   region_geoserver_name: config.region_geoserver_name,
                   data_download_link: element.normalized_data_download_path
-                    ? BackendConstants.DOWNLOAD_END_POINT +
+                    ? environment.download_endpoint +
                       '/' +
                       element.normalized_data_download_path
                     : undefined,
@@ -277,7 +277,7 @@ export class ConditionTreeComponent implements OnInit {
                       layer: metric.normalized_layer,
                       region_geoserver_name: config.region_geoserver_name,
                       data_download_link: metric.normalized_data_download_path
-                        ? BackendConstants.DOWNLOAD_END_POINT +
+                        ? environment.download_endpoint +
                           '/' +
                           metric.normalized_data_download_path
                         : metric.data_download_link,
@@ -306,7 +306,7 @@ export class ConditionTreeComponent implements OnInit {
             return {
               ...pillar,
               data_download_link: pillar.future_data_download_path
-                ? BackendConstants.DOWNLOAD_END_POINT +
+                ? environment.download_endpoint +
                   '/' +
                   pillar.future_data_download_path
                 : pillar.data_download_link,

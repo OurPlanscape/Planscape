@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of } from 'rxjs';
-import { Plan, Region } from 'src/app/types';
+import { Plan, Region } from '@types';
 
 import { MaterialModule } from '../material/material.module';
 import { AuthService, PlanStateService } from '@services';
@@ -12,8 +12,9 @@ import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overvie
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
 import { MockComponent } from 'ng-mocks';
-import { NavBarComponent } from '../shared/nav-bar/nav-bar.component';
+import { NavBarComponent } from '@shared';
 import { MOCK_PLAN } from '@services/mocks';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
@@ -81,6 +82,7 @@ describe('PlanComponent', () => {
         MaterialModule,
         PlanModule,
         RouterTestingModule.withRoutes([]),
+        NoopAnimationsModule,
       ],
       declarations: [
         PlanComponent,

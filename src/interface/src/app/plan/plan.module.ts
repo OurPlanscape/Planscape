@@ -1,6 +1,5 @@
 import { AreaDetailsComponent } from './area-details/area-details.component';
 import { AreaNotesComponent } from './area-notes/area-notes.component';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
@@ -32,11 +31,14 @@ import { ScenarioResultsComponent } from './scenario-results/scenario-results.co
 import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-tooltip.component';
 import { ScenariosTableListComponent } from './plan-summary/scenarios-table-list/scenarios-table-list.component';
 import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-priorities.component';
-import { SharedModule } from '../shared/shared.module';
+import { SharedModule } from '@shared';
 import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
-import { WINDOW_PROVIDERS } from '@services/window.service';
+import { WINDOW_PROVIDERS } from '@services';
 import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overlay.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
+import { PlanRoutingModule } from './plan-routing.module';
+import { ButtonComponent } from '@styleguide';
+import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -45,7 +47,9 @@ import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dial
     AreaNotesComponent,
     ConstraintsPanelComponent,
     CreateScenariosComponent,
+    DeleteNoteDialogComponent,
     ExploreComponent,
+    GoalOverlayComponent,
     IdentifyProjectAreasComponent,
     PlanComponent,
     PlanMapComponent,
@@ -64,12 +68,9 @@ import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dial
     ScenariosTableListComponent,
     SetPrioritiesComponent,
     SummaryPanelComponent,
-    GoalOverlayComponent,
-    DeleteNoteDialogComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
-    BrowserAnimationsModule,
     CommonModule,
     FormsModule,
     FeaturesModule,
@@ -83,8 +84,11 @@ import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dial
     NgChartsModule,
     NgxMaskModule.forRoot(),
     ReactiveFormsModule,
+    PlanRoutingModule,
     RouterModule,
     SharedModule,
+    ButtonComponent,
+    DeleteDialogComponent,
   ],
 })
 export class PlanModule {}
