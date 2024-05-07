@@ -1,5 +1,5 @@
 import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
-import { BaseLayerType, MapConfig } from './types';
+import { BaseLayerType, MapConfig } from '@types';
 
 describe('StringifyMapConfigPipe', () => {
   let pipe: StringifyMapConfigPipe;

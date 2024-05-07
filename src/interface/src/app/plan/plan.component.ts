@@ -20,9 +20,9 @@ import {
   takeUntil,
 } from 'rxjs';
 
-import { Plan, User } from '../types';
+import { Plan, User } from '@types';
 import { AuthService, PlanStateService, ScenarioService } from '@services';
-import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
+import { Breadcrumb } from '@shared';
 import { getPlanPath } from './plan-helpers';
 
 @Component({

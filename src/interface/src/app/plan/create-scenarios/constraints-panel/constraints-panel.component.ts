@@ -11,8 +11,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
-import { EXCLUDED_AREAS } from '../../../shared/constants';
-import { ScenarioConfig } from '../../../types';
+import { EXCLUDED_AREAS } from '@shared';
+import { ScenarioConfig } from '@types';
 import { ErrorStateMatcher } from '@angular/material/core';
 import {
   calculateMaxArea,

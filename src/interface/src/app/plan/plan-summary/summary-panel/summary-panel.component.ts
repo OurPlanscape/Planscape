@@ -1,8 +1,8 @@
 import { Component, Input, OnChanges, OnInit } from '@angular/core';
-import { Plan, Region, User } from '../../../types';
+import { Plan, Region, User } from '@types';
 import { NOTE_SAVE_INTERVAL } from '../../plan-helpers';
 import { filter, interval, switchMap, tap } from 'rxjs';
-import { PlanService } from 'src/app/services';
+import { PlanService } from '@services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 export interface SummaryInput {

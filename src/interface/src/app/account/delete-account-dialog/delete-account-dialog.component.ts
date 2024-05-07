@@ -4,8 +4,8 @@ import {
   MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
-import { AuthService } from 'src/app/services';
-import { User } from 'src/app/types';
+import { AuthService } from '@services';
+import { User } from '@types';
 
 @Component({
   selector: 'app-delete-account-dialog',

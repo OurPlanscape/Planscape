@@ -42,7 +42,7 @@ import {
   MapViewOptions,
   Plan,
   Region,
-} from '../types';
+} from '@types';
 import { MapManager } from './map-manager';
 import { MapComponent } from './map.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
