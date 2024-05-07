@@ -64,7 +64,7 @@ def create_projects(apps, schema_editor):
         geometry = get_geometry(name)
         _ = Project.objects.create(
             organization=organization,
-            owner=user,
+            created_by=user,
             name=name,
             display_name=display_name,
             visibility=vis,

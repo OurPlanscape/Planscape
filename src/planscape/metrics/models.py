@@ -31,9 +31,9 @@ class Category(
     DeletedAtMixin,
     MP_Node,
 ):
-    owner = models.ForeignKey(
+    created_by = models.ForeignKey(
         User,
-        related_name="owned_categories",
+        related_name="created_categories",
         on_delete=models.RESTRICT,
     )
 
@@ -108,10 +108,10 @@ class Metric(models.Model):
     * "invert_raw": true
     """
 
-    owner = models.ForeignKey(
+    created_by = models.ForeignKey(
         User,
         on_delete=models.RESTRICT,
-        related_name="owned_metrics",
+        related_name="created_metrics",
     )
 
     project = models.ForeignKey(

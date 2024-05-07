@@ -57,10 +57,10 @@ class Project(
         related_name="projects",
     )
 
-    owner = models.ForeignKey(
+    created_by = models.ForeignKey(
         User,
         on_delete=models.RESTRICT,
-        related_name="owned_projects",
+        related_name="created_projects",
         null=True,
     )
 

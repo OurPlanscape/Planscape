@@ -11,9 +11,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("datasets", "0001_initial"),
+        ("organizations", "0003_alter_organization_created_by"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("projects", "0003_remove_project_created_by_project_owner_and_more"),
-        ("organizations", "0003_remove_organization_created_by_organization_owner"),
+        ("projects", "0003_alter_project_created_by_alter_project_organization"),
     ]
 
     operations = [
@@ -45,19 +45,19 @@ class Migration(migrations.Migration):
                 ("name", models.CharField(max_length=128)),
                 ("path", models.CharField(max_length=512)),
                 (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.RESTRICT,
+                        related_name="created_categories",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
                     "organization",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.RESTRICT,
                         related_name="categories",
                         to="organizations.organization",
-                    ),
-                ),
-                (
-                    "owner",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.RESTRICT,
-                        related_name="owned_categories",
-                        to=settings.AUTH_USER_MODEL,
                     ),
                 ),
                 (
@@ -112,19 +112,19 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.RESTRICT,
+                        related_name="created_metrics",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
                     "dataset",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.RESTRICT,
                         related_name="metrics",
                         to="datasets.dataset",
-                    ),
-                ),
-                (
-                    "owner",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.RESTRICT,
-                        related_name="owned_metrics",
-                        to=settings.AUTH_USER_MODEL,
                     ),
                 ),
                 (
