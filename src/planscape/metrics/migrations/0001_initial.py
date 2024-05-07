@@ -11,9 +11,9 @@ class Migration(migrations.Migration):
 
     dependencies = [
         ("datasets", "0001_initial"),
-        ("projects", "0003_auto_20240506_1920"),
-        ("organizations", "0004_alter_organization_owner"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ("projects", "0003_remove_project_created_by_project_owner_and_more"),
+        ("organizations", "0003_remove_organization_created_by_organization_owner"),
     ]
 
     operations = [

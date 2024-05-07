@@ -6,14 +6,19 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("organizations", "0003_auto_20240506_1913"),
+        ("organizations", "0002_auto_20240425_1716"),
     ]
 
     operations = [
-        migrations.AlterField(
+        migrations.RemoveField(
+            model_name="organization",
+            name="created_by",
+        ),
+        migrations.AddField(
             model_name="organization",
             name="owner",
             field=models.ForeignKey(
+                null=True,
                 on_delete=django.db.models.deletion.RESTRICT,
                 related_name="owned_organizations",
                 to=settings.AUTH_USER_MODEL,

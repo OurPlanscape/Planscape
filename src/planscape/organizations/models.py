@@ -16,6 +16,7 @@ class Organization(
         User,
         on_delete=models.RESTRICT,
         related_name="owned_organizations",
+        null=True,
     )
 
     name = models.CharField(max_length=128)
