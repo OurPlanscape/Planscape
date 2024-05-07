@@ -7,16 +7,16 @@ import { MaterialModule } from 'src/app/material/material.module';
 import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import {
   FormBuilder,
-  Validators,
   FormsModule,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import * as shp from 'shpjs';
 
 import { IdentifyProjectAreasComponent } from './identify-project-areas.component';
-import { SharedModule } from 'src/app/shared/shared.module';
+import { SharedModule } from '@shared';
 
 describe('IdentifyProjectAreasComponent', () => {
   let component: IdentifyProjectAreasComponent;

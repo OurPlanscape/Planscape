@@ -1,5 +1,5 @@
 import * as L from 'leaflet';
-import { DEFAULT_COLORMAP, Map, NONE_COLORMAP } from '../types';
+import { DEFAULT_COLORMAP, Map, NONE_COLORMAP } from '@types';
 
 export function createLegendHtmlElement(
   colormap: any,

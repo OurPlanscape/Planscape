@@ -1,6 +1,6 @@
 import { BehaviorSubject, interval, Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { MapConfig, MapViewOptions, Region } from '../types';
+import { MapConfig, MapViewOptions, Region } from '@types';
 import {
   defaultMapConfig,
   defaultMapConfigsDictionary,

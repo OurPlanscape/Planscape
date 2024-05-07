@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
-import { Plan } from '../../../types';
+import { Plan } from '@types';
 
 @Component({
   selector: 'app-plan-overview',

@@ -3,7 +3,7 @@ import {
   getColorForProjectPosition,
   parseResultsToTotals,
 } from '../plan-helpers';
-import { PROJECT_AREA_COLORS } from '../../shared/constants';
+import { PROJECT_AREA_COLORS } from '@shared';
 
 export interface ProjectAreaReport {
   id: number;

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatLegacyChipInputEvent as MatChipInputEvent } from '@angular/material/legacy-chips';
-import { EMAIL_VALIDATION_REGEX } from '../../shared/constants';
+import { EMAIL_VALIDATION_REGEX } from '@shared';
 
 @Component({
   selector: 'app-chip-input',

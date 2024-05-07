@@ -1,7 +1,7 @@
 import { AfterViewInit, Component, Input } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { Map } from 'src/app/types';
+import { Map } from '@types';
 
 export const NAMEPLATE_RIGHT_MARGIN = 16;
 

@@ -7,20 +7,18 @@ import {
   QueryList,
   ViewChildren,
 } from '@angular/core';
-import { Subject, Observable, takeUntil } from 'rxjs';
+import { Observable, Subject, takeUntil } from 'rxjs';
 import {
   BaseLayerType,
   BoundaryConfig,
   ConditionsConfig,
-  NONE_BOUNDARY_CONFIG,
-} from 'src/app/types';
-import * as L from 'leaflet';
-
-import {
-  NONE_DATA_LAYER_CONFIG,
   ConditionTreeType,
-} from './../../types/data.types';
-import { Map, MapViewOptions } from './../../types/map.types';
+  Map,
+  MapViewOptions,
+  NONE_BOUNDARY_CONFIG,
+  NONE_DATA_LAYER_CONFIG,
+} from '@types';
+import * as L from 'leaflet';
 import { ConditionTreeComponent } from './condition-tree/condition-tree.component';
 import features from '../../features/features.json';
 

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { DataLayerConfig, MetricConfig } from 'src/app/types';
+import { DataLayerConfig, MetricConfig } from '@types';
 
 @Component({
   selector: 'app-layer-info-card',

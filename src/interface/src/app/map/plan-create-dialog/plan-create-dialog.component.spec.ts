@@ -21,7 +21,7 @@ import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from '../../material/material.module';
 import { DialogModule } from '@angular/cdk/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { Region } from '../../types';
+import { Region } from '@types';
 
 describe('PlanCreateDialogComponent', () => {
   let component: PlanCreateDialogComponent;

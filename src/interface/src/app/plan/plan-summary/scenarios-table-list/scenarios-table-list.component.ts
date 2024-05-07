@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { ScenarioRow } from '../saved-scenarios/saved-scenarios.component';
-import { Scenario, ScenarioResult, ScenarioResultStatus } from '../../../types';
+import { Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
@@ -17,6 +17,7 @@ export class ScenariosTableListComponent {
   @Input() highlightedScenarioRow: ScenarioRow | null = null;
   @Output() viewScenario = new EventEmitter();
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
+
   constructor(private featureService: FeatureService) {}
 
   statusLabels: Record<ScenarioResultStatus, string> = {

@@ -1,6 +1,6 @@
 import * as L from 'leaflet';
 
-import { BaseLayerType, BoundaryConfig, DataLayerConfig } from '../types';
+import { BaseLayerType, BoundaryConfig, DataLayerConfig } from '@types';
 import * as esri from 'esri-leaflet';
 
 export interface Map {

@@ -1,6 +1,6 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-import { MapConfig } from './types';
+import { MapConfig } from '@types';
 
 /*
  *  Transforms a MapConfig object into a human-readable string

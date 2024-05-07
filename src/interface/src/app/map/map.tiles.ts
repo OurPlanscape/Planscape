@@ -1,5 +1,5 @@
 import * as L from 'leaflet';
-import { BaseLayerType, Map } from '../types';
+import { BaseLayerType, Map } from '@types';
 
 /** Creates a basemap layer using the Esri.WorldTerrain tiles. */
 export function terrainTiles() {
