@@ -1,7 +1,7 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
-@import '../../../../styles/mixins';
-@import '../../../../styles/colors';
+@import 'mixins';
+@import 'colors';
 
 .saved-scenarios-wrapper {
   position: relative;
