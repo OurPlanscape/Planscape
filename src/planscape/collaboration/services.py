@@ -35,13 +35,12 @@ def get_role(user, instance):
         return "Creator"
     else:
         content_type = ContentType.objects.get_for_model(instance)
-        return (
-            UserObjectRole.objects.filter(
-                collaborator=user, content_type=content_type, object_pk=instance.pk
-            )
-            .first()
-            .role
+        roles = UserObjectRole.objects.filter(
+            collaborator=user, content_type=content_type, object_pk=instance.pk
         )
+        if not roles:
+            return False
+        return roles.first().role
 
 
 def get_permissions(user, instance):

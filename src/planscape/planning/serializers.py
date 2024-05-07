@@ -42,11 +42,11 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
         )
 
     def get_role(self, instance):
-        user = self.context["request"].user
+        user = self.context["request"].user or self.request.user
         return get_role(user, instance)
 
     def get_permissions(self, instance):
-        user = self.context["request"].user
+        user = self.context["request"].user or self.request.user
         return list(get_permissions(user, instance))
 
     class Meta:
