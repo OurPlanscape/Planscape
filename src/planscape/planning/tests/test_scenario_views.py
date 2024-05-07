@@ -200,7 +200,7 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(second_response.status_code, 400)
         self.assertJSONEqual(
             second_response.content,
-            {"reason": "A scenario with this name already exists."},
+            {'global': ['The fields planning_area, name must make a unique set.']},
         )
 
     def test_create_scenario_not_logged_in(self):
