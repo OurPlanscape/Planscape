@@ -6,11 +6,15 @@ import { MatLegacyRadioGroupHarness as MatRadioGroupHarness } from '@angular/mat
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { SharedModule } from 'src/app/shared/shared.module';
-import { TreatmentGoalConfig, TreatmentQuestionConfig } from 'src/app/types';
+import { SharedModule } from '@shared';
+import {
+  ColormapConfig,
+  ConditionsConfig,
+  TreatmentGoalConfig,
+  TreatmentQuestionConfig,
+} from '@types';
 
 import { MapService, PlanStateService } from '@services';
-import { ColormapConfig, ConditionsConfig } from '../../../types';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';

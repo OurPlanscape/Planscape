@@ -1,10 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectAreasComponent } from './project-areas.component';
-import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { CurrencyInKPipe } from '../../pipes/currency-in-k.pipe';
+import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { CurrencyInKPipe } from '@shared';
 import { CurrencyPipe } from '@angular/common';
 import { By } from '@angular/platform-browser';
-import { Component } from '@angular/core';
 import { MaterialModule } from '../../material/material.module';
 
 @Component({

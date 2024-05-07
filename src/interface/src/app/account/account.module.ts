@@ -12,7 +12,7 @@ import { FeaturesModule } from '../features/features.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MaterialModule } from '../material/material.module';
 import { MenuComponent } from './menu/menu.component';
-import { SharedModule } from '../shared/shared.module';
+import { SharedModule } from '@shared';
 
 @NgModule({
   declarations: [

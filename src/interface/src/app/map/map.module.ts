@@ -7,7 +7,7 @@ import { MapNameplateComponent } from './map-nameplate/map-nameplate.component';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
-import { SharedModule } from '../shared/shared.module';
+import { SharedModule } from '@shared';
 import { MaterialModule } from '../material/material.module';
 import { StringifyMapConfigPipe } from '../stringify-map-config.pipe';
 import { RegionDropdownComponent } from './region-dropdown/region-dropdown.component';

@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-
-import { BackendConstants } from '../backend-constants';
 import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 export interface Note {
   id: number;
@@ -19,7 +18,7 @@ export class PlanNotesService {
 
   getNotes(planningAreaId: number) {
     return this.http.get<Note[]>(
-      BackendConstants.END_POINT.concat(
+      environment.backend_endpoint.concat(
         `/planning/planning_area/${planningAreaId}/note`
       ),
       {
@@ -30,7 +29,7 @@ export class PlanNotesService {
 
   addNote(planningAreaId: number, note: string) {
     return this.http.post<Note>(
-      BackendConstants.END_POINT.concat(
+      environment.backend_endpoint.concat(
         `/planning/planning_area/${planningAreaId}/note`
       ),
       { content: note },
@@ -42,7 +41,7 @@ export class PlanNotesService {
 
   deleteNote(planningAreaId: number, noteId: number) {
     return this.http.delete<Note>(
-      BackendConstants.END_POINT.concat(
+      environment.backend_endpoint.concat(
         `/planning/planning_area/${planningAreaId}/note/${noteId}`
       ),
       {

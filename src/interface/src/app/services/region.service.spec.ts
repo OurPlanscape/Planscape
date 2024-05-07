@@ -3,7 +3,7 @@ import { RegionService } from './region.service';
 import { FeaturesModule } from '../features/features.module';
 import { FEATURES_JSON } from '../features/features-config';
 import { firstValueFrom } from 'rxjs';
-import { Region } from '../types';
+import { Region } from '@types';
 import { SessionService } from './session.service';
 
 describe('RegionService', () => {

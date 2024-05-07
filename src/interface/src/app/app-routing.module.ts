@@ -6,20 +6,15 @@ import {
   Routes,
   TitleStrategy,
 } from '@angular/router';
-
-import { ForgetPasswordComponent } from './forget-password/forget-password.component';
 import { HomeComponent } from './home/home.component';
-import { LoginComponent } from './login/login.component';
 import { MapComponent } from './map/map.component';
-import { PasswordResetComponent } from './password-reset/password-reset.component';
-import { AuthGuard } from './services';
-import { passwordResetTokenResolver } from './services/password-reset.resolver';
-import { SignupComponent } from './signup/signup.component';
-import { RedirectGuard } from './services/redirect.guard';
-import { AccountValidationComponent } from './account-validation/account-validation.component';
+import {
+  AuthGuard,
+  passwordResetTokenResolver,
+  RedirectGuard,
+  redirectResolver,
+} from '@services';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
-import { ThankYouComponent } from './signup/thank-you/thank-you.component';
-import { redirectResolver } from './services/redirect.resolver';
 
 const routes: Routes = [
   {
@@ -30,18 +25,27 @@ const routes: Routes = [
       {
         path: 'login',
         title: 'Login',
-        component: LoginComponent,
+        loadComponent: () =>
+          import('./standalone/login/login.component').then(
+            (m) => m.LoginComponent
+          ),
       },
       {
         path: 'reset/:userId/:token',
         title: 'Password reset',
         resolve: { passwordResetToken: passwordResetTokenResolver },
-        component: PasswordResetComponent,
+        loadComponent: () =>
+          import('./standalone/password-reset/password-reset.component').then(
+            (m) => m.PasswordResetComponent
+          ),
       },
       {
         path: 'reset',
         title: 'Forget password',
-        component: ForgetPasswordComponent,
+        loadComponent: () =>
+          import('./standalone/forget-password/forget-password.component').then(
+            (m) => m.ForgetPasswordComponent
+          ),
       },
       {
         path: 'home',
@@ -51,18 +55,27 @@ const routes: Routes = [
       {
         path: 'signup',
         title: 'Signup',
-        component: SignupComponent,
         resolve: { redirectUrl: redirectResolver },
+        loadComponent: () =>
+          import('./standalone/signup/signup.component').then(
+            (m) => m.SignupComponent
+          ),
       },
       {
         path: 'thankyou',
         title: 'Thank You',
-        component: ThankYouComponent,
+        loadComponent: () =>
+          import('./standalone/thank-you/thank-you.component').then(
+            (m) => m.ThankYouComponent
+          ),
       },
       {
         path: 'validate/:token',
         title: 'Account E-mail Validation',
-        component: AccountValidationComponent,
+        loadComponent: () =>
+          import(
+            './standalone/account-validation/account-validation.component'
+          ).then((m) => m.AccountValidationComponent),
       },
       {
         path: 'map',

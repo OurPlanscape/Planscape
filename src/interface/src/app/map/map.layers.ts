@@ -1,4 +1,4 @@
-import { Map } from '../types';
+import { Map } from '@types';
 import * as L from 'leaflet';
 import { DRAWING_STYLES } from './map.constants';
 

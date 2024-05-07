@@ -4,7 +4,7 @@ import { ShareMapService } from './share-map.service';
 import { firstValueFrom, of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { WINDOW } from './window.service';
-import { Region } from '../types';
+import { Region } from '@types';
 
 describe('ShareMapService', () => {
   let service: ShareMapService;

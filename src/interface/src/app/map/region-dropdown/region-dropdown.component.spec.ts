@@ -7,7 +7,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { BehaviorSubject } from 'rxjs';
 import { AuthService, SessionService } from '@services';
-import { Region, User } from '../../types';
+import { Region, User } from '@types';
 import { MaterialModule } from '../../material/material.module';
 import { FeaturesModule } from '../../features/features.module';
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { BackendConstants } from '../backend-constants';
-import { Invite, INVITE_ROLE } from '../types/invite.types';
+import { Invite, INVITE_ROLE } from '@types';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root',
@@ -16,7 +16,7 @@ export class InvitesService {
     message?: string
   ) {
     return this.http.post<Invite>(
-      BackendConstants.END_POINT.concat('/invites/create_invite/'),
+      environment.backend_endpoint.concat('/invites/create_invite/'),
       {
         emails,
         role,
@@ -31,7 +31,7 @@ export class InvitesService {
 
   getInvites(planningAreaId: number) {
     return this.http.get<Invite[]>(
-      BackendConstants.END_POINT.concat(
+      environment.backend_endpoint.concat(
         `/invites/invitations/planningarea/${planningAreaId}`
       ),
       {
@@ -42,7 +42,7 @@ export class InvitesService {
 
   changeRole(inviteId: number, newRole: INVITE_ROLE) {
     return this.http.patch<Invite>(
-      BackendConstants.END_POINT.concat(`/invites/invitations/${inviteId}`),
+      environment.backend_endpoint.concat(`/invites/invitations/${inviteId}`),
       {
         role: newRole,
       },
@@ -54,7 +54,7 @@ export class InvitesService {
 
   deleteInvite(inviteId: number) {
     return this.http.delete<Invite[]>(
-      BackendConstants.END_POINT.concat(`/invites/invitations/${inviteId}`),
+      environment.backend_endpoint.concat(`/invites/invitations/${inviteId}`),
       {
         withCredentials: true,
       }

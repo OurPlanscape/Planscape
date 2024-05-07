@@ -8,18 +8,13 @@ import {
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
-import {
-  Plan,
-  Scenario,
-  ScenarioResult,
-  ScenarioResultStatus,
-} from 'src/app/types';
+import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { PlanStateService, ScenarioService } from '@services';
-import { SNACK_ERROR_CONFIG } from '../../shared/constants';
+import { SNACK_ERROR_CONFIG } from '@shared';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 import { FeatureService } from '../../features/feature.service';

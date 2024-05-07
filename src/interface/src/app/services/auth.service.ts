@@ -7,7 +7,7 @@ import {
   RouterStateSnapshot,
 } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { SNACK_NOTICE_CONFIG } from '../../app/shared/constants';
+import { SNACK_NOTICE_CONFIG } from '@shared';
 import {
   BehaviorSubject,
   catchError,
@@ -19,10 +19,9 @@ import {
   tap,
   throwError,
 } from 'rxjs';
-
-import { BackendConstants } from '../backend-constants';
-import { User } from '../types';
+import { User } from '@types';
 import { RedirectService } from './redirect.service';
+import { environment } from '../../environments/environment';
 
 interface LogoutResponse {
   detail: string;
@@ -41,7 +40,7 @@ export class AuthService {
   isLoggedIn$: Observable<boolean | null> = this.loggedInStatus$;
   loggedInUser$ = new BehaviorSubject<User | null | undefined>(undefined);
 
-  private readonly API_ROOT = BackendConstants.END_POINT + '/dj-rest-auth/';
+  private readonly API_ROOT = environment.backend_endpoint + '/dj-rest-auth/';
 
   constructor(
     private http: HttpClient,
@@ -243,7 +242,7 @@ export class AuthService {
 
   /** Gets a user given the id. */
   getUser(userId: number): Observable<User> {
-    const url = BackendConstants.END_POINT.concat(
+    const url = environment.backend_endpoint.concat(
       `/users/get_user_by_id/?id=${userId}`
     );
     return this.http
@@ -331,7 +330,7 @@ export class AuthService {
   deactivateUser(user: User, password: string): Observable<boolean> {
     return this.http
       .post(
-        BackendConstants.END_POINT.concat('/users/deactivate/'),
+        environment.backend_endpoint.concat('/users/deactivate/'),
         {
           password: password,
           email: user.email,

@@ -11,7 +11,7 @@ import {
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { AuthService } from 'src/app/services';
+import { AuthService } from '@services';
 
 import { DeleteAccountDialogComponent } from './delete-account-dialog.component';
 

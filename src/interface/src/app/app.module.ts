@@ -16,65 +16,34 @@ import {
 } from 'ngx-google-analytics';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
+import { ButtonComponent } from '@styleguide';
+import { ChipInputComponent } from './home/chip-input/chip-input.component';
+
 import { FeaturesModule } from './features/features.module';
 import { HomeComponent } from './home/home.component';
-import { PlanTableComponent } from './home/plan-table/plan-table.component';
-import { LoginComponent } from './login/login.component';
-
-import { MaterialModule } from './material/material.module';
-import { NavigationComponent } from './navigation/navigation.component';
-import { SharedModule } from './shared/shared.module';
-import { AboutComponent } from './home/about/about.component';
-import { SignupComponent } from './signup/signup.component';
-import { TopBarComponent } from './top-bar/top-bar.component';
-
-import { environment } from 'src/environments/environment';
-import { WelcomeComponent } from './home/welcome/welcome.component';
-import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
-import { WINDOW_PROVIDERS } from './services/window.service';
-import { ResetPasswordDialogComponent } from './forget-password/reset-password-dialog/reset_password_dialog.component';
-import { ForgetPasswordComponent } from './forget-password/forget-password.component';
-import { NgChartsModule } from 'ng2-charts';
-import { PasswordResetComponent } from './password-reset/password-reset.component';
-import { ConfirmationDialogComponent } from './password-reset/confirmation-dialog/confirmation-dialog.component';
-import { AccountValidationComponent } from './account-validation/account-validation.component';
+import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
 import { MapModule } from './map/map.module';
-import { DeleteDialogComponent } from './delete-dialog/delete-dialog.component';
+import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+import { MaterialModule } from './material/material.module';
+import { NgChartsModule } from 'ng2-charts';
 import { NgxMaskModule } from 'ngx-mask';
-import { ThankYouComponent } from './signup/thank-you/thank-you.component';
-import { LearnMoreComponent } from './home/learn-more/learn-more.component';
-import { HorizonalCardComponent } from './home/horizonal-card/horizonal-card.component';
-import { InfoCardComponent } from './signup/info-card/info-card.component';
+import { PlanTableComponent } from './home/plan-table/plan-table.component';
+import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
-import { ChipInputComponent } from './home/chip-input/chip-input.component';
-import { JwtInterceptor } from '@services/jwt-interceptor.service';
-import { ButtonComponent } from '@styleguide';
+import { SharedModule } from '@shared';
+import { WelcomeComponent } from './home/welcome/welcome.component';
+import { environment } from 'src/environments/environment';
+import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    LoginComponent,
-    SignupComponent,
-    NavigationComponent,
-    TopBarComponent,
+    ChipInputComponent,
     HomeComponent,
     PlanTableComponent,
-    WelcomeComponent,
     PlanningAreasComponent,
-    ResetPasswordDialogComponent,
-    ForgetPasswordComponent,
-    AboutComponent,
-    PasswordResetComponent,
-    ConfirmationDialogComponent,
-    AccountValidationComponent,
-    DeleteDialogComponent,
-    ThankYouComponent,
-    LearnMoreComponent,
-    HorizonalCardComponent,
-    InfoCardComponent,
     SharePlanDialogComponent,
-    ChipInputComponent,
+    WelcomeComponent,
   ],
   imports: [
     AppRoutingModule,
@@ -100,6 +69,7 @@ import { ButtonComponent } from '@styleguide';
     MapModule,
     NgxMaskModule.forRoot(),
     ButtonComponent,
+    DeleteDialogComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,

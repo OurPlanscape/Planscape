@@ -16,7 +16,7 @@ import {
   NONE_BOUNDARY_CONFIG,
   NONE_DATA_LAYER_CONFIG,
   Region,
-} from '../types';
+} from '@types';
 
 export function checkIfAreaInBoundaries(
   area: FeatureCollection,

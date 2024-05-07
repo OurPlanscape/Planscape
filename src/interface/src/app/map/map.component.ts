@@ -50,13 +50,13 @@ import {
   NONE_BOUNDARY_CONFIG,
   Plan,
   Region,
-} from '../types';
+} from '@types';
 import { MapManager } from './map-manager';
 import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dialog.component';
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { AreaCreationAction, LEGEND } from './map.constants';
-import { SNACK_ERROR_CONFIG } from '../../app/shared/constants';
+import { Breadcrumb, SNACK_ERROR_CONFIG } from '@shared';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   addGeoJSONToMap,
@@ -74,7 +74,6 @@ import {
   hideRegionLayer,
   showRegionLayer,
 } from './map.layers';
-import { Breadcrumb } from '../shared/nav-bar/nav-bar.component';
 import { getPlanPath } from '../plan/plan-helpers';
 import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
 import { Location } from '@angular/common';

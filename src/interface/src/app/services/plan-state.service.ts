@@ -3,16 +3,16 @@ import { PlanService } from './plan.service';
 import { ScenarioService } from './scenario.service';
 import { TreatmentGoalsService } from './treatment-goals.service';
 import {
-  Plan,
   BackendProjectArea,
   CreatePlanPayload,
+  Plan,
   ProjectArea,
   Region,
   Scenario,
   ScenarioConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
-} from '../types';
+} from '@types';
 import { BehaviorSubject, map, switchMap, take, tap } from 'rxjs';
 import { Feature } from 'geojson';
 
