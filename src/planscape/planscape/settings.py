@@ -28,8 +28,6 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
     ","
 )
 
-print(config("LOCAL_ACCOUNT_EMAIL_VERIFICATION"))
-
 # Application definition
 planscape_apps = [
     "attributes",
@@ -240,7 +238,7 @@ SITE_ID = 1
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = str(
-    config("LOCAL_ACCOUNT_EMAIL_VERIFICATION", default="mandatory")
+    config("ACCOUNT_EMAIL_VERIFICATION", default="mandatory")
 )
 ACCOUNT_EMAIL_SUBJECT_PREFIX = "[Planscape] "
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
