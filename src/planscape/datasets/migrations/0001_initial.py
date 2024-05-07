@@ -10,8 +10,8 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ("organizations", "0003_alter_organization_created_by"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("organizations", "0003_remove_organization_created_by_organization_owner"),
     ]
 
     operations = [
@@ -91,19 +91,19 @@ class Migration(migrations.Migration):
                 ("source_url", models.URLField(max_length=512, null=True)),
                 ("reference_url", models.URLField(max_length=512, null=True)),
                 (
+                    "created_by",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.RESTRICT,
+                        related_name="created_datasets",
+                        to=settings.AUTH_USER_MODEL,
+                    ),
+                ),
+                (
                     "organization",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.RESTRICT,
                         related_name="datasets",
                         to="organizations.organization",
-                    ),
-                ),
-                (
-                    "owner",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.RESTRICT,
-                        related_name="owned_datasets",
-                        to=settings.AUTH_USER_MODEL,
                     ),
                 ),
             ],

@@ -10,17 +10,13 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
+        migrations.AlterField(
             model_name="organization",
             name="created_by",
-        ),
-        migrations.AddField(
-            model_name="organization",
-            name="owner",
             field=models.ForeignKey(
                 null=True,
                 on_delete=django.db.models.deletion.RESTRICT,
-                related_name="owned_organizations",
+                related_name="created_organizations",
                 to=settings.AUTH_USER_MODEL,
             ),
         ),
