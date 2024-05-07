@@ -31,7 +31,6 @@ router.register(
     ScenarioViewSet,
     basename="scenarios",
 )
-from planning.views_userprefs import UserPreferencesView
 
 app_name = "planning"
 
