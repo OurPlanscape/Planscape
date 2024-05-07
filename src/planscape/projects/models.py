@@ -61,6 +61,7 @@ class Project(
         User,
         on_delete=models.RESTRICT,
         related_name="owned_projects",
+        null=True,
     )
 
     name = models.CharField(

@@ -11,7 +11,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("organizations", "0004_alter_organization_owner"),
+        ("organizations", "0003_remove_organization_created_by_organization_owner"),
     ]
 
     operations = [
