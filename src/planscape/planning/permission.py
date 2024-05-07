@@ -17,6 +17,8 @@ class PlanscapePermission(BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, object):
+        if not self.permission_set:
+            return False
         if view.action == "update" or view.action == "partial_update":
             return self.permission_set.can_change(request.user, object)
         if view.action == "destroy":
