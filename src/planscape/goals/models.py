@@ -1,0 +1,197 @@
+from django.db import models
+from django.contrib.auth import get_user_model
+from core.models import CreatedAtMixin, DeletedAtMixin, UUIDMixin, UpdatedAtMixin
+from metrics.models import Metric
+from organizations.models import Organization
+from projects.models import Project
+from treebeard.mp_tree import MP_Node
+
+User = get_user_model()
+
+
+class TreatmentGoalCategory(
+    UUIDMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    DeletedAtMixin,
+    MP_Node,
+):
+    created_by = models.ForeignKey(
+        User,
+        related_name="created_treatment_goal_categories",
+        on_delete=models.RESTRICT,
+    )
+
+    project = models.ForeignKey(
+        Project,
+        related_name="treatment_goal_categories",
+        on_delete=models.RESTRICT,
+    )
+    name = models.CharField(max_length=128)
+
+    path = models.CharField(max_length=512)
+    node_order_by = [
+        "name",
+    ]
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["project", "name"],
+                include=["path"],
+                name="treatment_goal_category_project_unique_constraint",
+            )
+        ]
+
+        verbose_name = "Treatment Goal Category"
+        verbose_name_plural = "Treatment Goal Categories"
+
+
+class TreatmentGoalExecutor(models.TextChoices):
+    FORSYS = "FORSYS", "ForSys"
+
+
+def get_forsys_defaults():
+    return {
+        "patchmax_SDW": 0.5,
+        "patchmax_EPW": 0.5,
+        "patchmax_exclusion_limit": 0.5,
+        "patchmax_sample_frac": 0.1,
+    }
+
+
+class TreatmentGoal(
+    UUIDMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    DeletedAtMixin,
+    models.Model,
+):
+    created_by = models.ForeignKey(
+        User,
+        related_name="created_treatment_goals",
+        on_delete=models.RESTRICT,
+    )
+
+    project = models.ForeignKey(
+        Project,
+        related_name="treatment_goals",
+        on_delete=models.RESTRICT,
+    )
+
+    name = models.CharField(
+        max_length=128,
+        help_text="Name of the treatment goal. Equivalent to short_question_text.",
+    )
+
+    long_question_text = models.CharField(
+        max_length=512,
+        null=True,
+        help_text="this is a legacy field required to keep compatibility. most likely will be deprecated soon.",
+    )
+
+    description = models.TextField(
+        null=True,
+        help_text="This field should contain the help text displayed as the box on the right, after you select the treatment goal.",
+    )
+
+    metrics = models.ManyToManyField(
+        to=Metric,
+        related_name="treatment_goals",
+        through="MetricUsage",
+        through_fields=("treatment_goal", "metric"),
+    )
+
+    executor = models.CharField(
+        choices=TreatmentGoalExecutor.choices,
+        default=TreatmentGoalExecutor.FORSYS,
+        max_length=64,
+    )
+
+    execution_options = models.JSONField(
+        default=get_forsys_defaults,
+        help_text="Stores a map of downstream configurations to be passed to the executor. Right now only FORSYS is our executor.",
+    )
+
+
+class MetricUsageType(models.TextChoices):
+    PRIORITY = "PRIORITY", "Priority"
+    REPORTING = "REPORTING", "Reporting"
+
+
+class MetricAttribute(models.TextChoices):
+    """Determines the types of attributes
+    we have available for each metric.
+    """
+
+    MIN = "min", "Min"
+    MAX = "max", "Max"
+    MEAN = "mean", "Mean"
+    SUM = "sum", "Sum"
+    MAJORITY = "majority", "Majority"
+    MINORITY = "minority", "Minority"
+    COUNT = "count", "COUNT"
+
+
+class PostProcessingFunction(models.TextChoices):
+    NONE = "NONE", "None"
+    PROJECT_AVERAGE = "PROJECT_AVERAGE", "Project Average"
+    PROJECT_AREA_SUM = "PROJECT_AREA_SUM", "Project Area Sum"
+    PROJECT_AVERAGE_WITH_CATEGORIES = (
+        "PROJECT_AVERAGE_WITH_CATEGORIES",
+        "Project Average with Categories",
+    )
+
+
+class MetricUsage(models.Model):
+    """
+    Determines how treatment goals uses metrics.
+    Right now this does not support repeated metrics
+    in the same treatment goal.
+
+    Until today, we never saw that use case. Where this
+    can be possible is if the user wants to use one attribute
+    as PRIORITY and another for REPORTING (or wants to report more than
+    one attribute).
+    """
+
+    treatment_goal = models.ForeignKey(
+        TreatmentGoal,
+        related_name="metric_usages",
+        on_delete=models.CASCADE,
+    )
+
+    metric = models.ForeignKey(
+        Metric,
+        related_name="metric_usages",
+        on_delete=models.CASCADE,
+    )
+
+    type = models.CharField(
+        choices=MetricUsageType.choices,
+        default=MetricUsageType.PRIORITY,
+        max_length=64,
+    )
+
+    attribute = models.CharField(
+        choices=MetricAttribute.choices,
+        default=MetricAttribute.MEAN,
+        max_length=64,
+    )
+
+    post_processing = models.CharField(
+        choices=PostProcessingFunction.choices,
+        default=PostProcessingFunction.PROJECT_AVERAGE,
+        max_length=64,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "treatment_goal",
+                    "metric",
+                ],
+                name="metric_usage_unique_constraint",
+            )
+        ]
