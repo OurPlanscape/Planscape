@@ -2,6 +2,8 @@
 # - RJ Sheperd (rsheperd@sig-gis.com)
 # - George Silva (gsilva@sig-gis.com)
 
+USER_ID = $(shell id -u)
+
 # User Systemd Service (see: ~/.config/systemd/user/planscape.service)
 SERVICE=planscape
 FORSYS_QUEUE=forsys-queue
@@ -150,8 +152,8 @@ docker-shell:
 	./src/planscape/bin/run.sh bash
 
 docker-makemigrations:
-	./src/planscape/bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL)  $(OPTIONS)
-	sudo chown -R $(USER): **/migrations/
+	./src/planscape/bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL) $(OPTIONS)
+	sudo chown -R $(USER): ./**/migrations
 
 docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
