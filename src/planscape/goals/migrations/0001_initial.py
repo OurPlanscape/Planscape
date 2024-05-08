@@ -9,9 +9,9 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ("metrics", "0002_metric_created_at_metric_deleted_at_and_more"),
         ("projects", "0003_alter_project_created_by_alter_project_organization"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("metrics", "0002_metric_created_at_metric_deleted_at_and_more"),
     ]
 
     operations = [
@@ -75,7 +75,7 @@ class Migration(migrations.Migration):
                                 "Project Average with Categories",
                             ),
                         ],
-                        default="PROJECT_AVERAGE",
+                        default="NONE",
                         max_length=64,
                     ),
                 ),
@@ -169,9 +169,9 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "long_question_text",
+                    "summary",
                     models.CharField(
-                        help_text="this is a legacy field required to keep compatibility. most likely will be deprecated soon.",
+                        help_text="Summary of the question. Equivalent to long_question_text.",
                         max_length=512,
                         null=True,
                     ),
@@ -179,7 +179,7 @@ class Migration(migrations.Migration):
                 (
                     "description",
                     models.TextField(
-                        help_text="This field should contain the help text displayed as the box on the right, after you select the treatment goal.",
+                        help_text="Describes to the user how the goal is set up, how it identifies the areas and the set of thresholds, as well as notes on usage.",
                         null=True,
                     ),
                 ),
