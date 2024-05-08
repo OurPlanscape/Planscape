@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 import { ProjectCardComponent } from './project-card.component';
 
@@ -10,7 +10,7 @@ describe('ProjectCardComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CommonModule, MaterialModule],
+      imports: [CommonModule, LegacyMaterialModule],
       declarations: [ProjectCardComponent],
     }).compileComponents();
 

@@ -198,6 +198,150 @@
             "templateData": "<mat-icon *ngIf=\"icon\">{{ icon }}</mat-icon>\n<ng-content></ng-content>\n"
         },
         {
+            "name": "InputComponent",
+            "id": "component-InputComponent-1794508ef2e6ae4cdfa26b3fcb24b75ea1bd7a64b4d3d7b06de82a1bdb6d797268d3581bb94b257cb134ce1e9a9d32c60c3ac474a68e7d8953bdb49f5d8c2799",
+            "file": "src/styleguide/input/input.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "sg-input",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./input.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "disabled",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nDetermines if the input field is disabled. Affects the styles of the whole component.\n",
+                    "description": "<p>Determines if the input field is disabled. Affects the styles of the whole component.</p>\n",
+                    "line": 40,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "error",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nDetermines if the input field has errors. Affects the styles of the whole component.\n",
+                    "description": "<p>Determines if the input field has errors. Affects the styles of the whole component.</p>\n",
+                    "line": 45,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "leadingIcon",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nIcon displayed on the left side of the input field.\nIf not provided the icon is hidden.\n",
+                    "description": "<p>Icon displayed on the left side of the input field.\nIf not provided the icon is hidden.</p>\n",
+                    "line": 29,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "placeholder",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nThe placeholder displayed on the input field\n",
+                    "description": "<p>The placeholder displayed on the input field</p>\n",
+                    "line": 50,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "suffix",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nText to be shown on the right side of the input field.\n",
+                    "description": "<p>Text to be shown on the right side of the input field.</p>\n",
+                    "line": 55,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "supportMessage",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nThe help/error message to be displayed below the input field.\n",
+                    "description": "<p>The help/error message to be displayed below the input field.</p>\n",
+                    "line": 23,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "trailingIcon",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nIcon displayed on the right side of the input field.\nIf not provided the icon is hidden.\n",
+                    "description": "<p>Icon displayed on the right side of the input field.\nIf not provided the icon is hidden.</p>\n",
+                    "line": 35,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "value",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nthe value of the input field\n",
+                    "description": "<p>the value of the input field</p>\n",
+                    "line": 18,
+                    "type": "string",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "MatIconModule",
+                    "type": "module"
+                },
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "MatInputModule",
+                    "type": "module"
+                },
+                {
+                    "name": "MatFormFieldModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { MatIconModule } from '@angular/material/icon';\nimport { CommonModule } from '@angular/common';\nimport { MatInputModule } from '@angular/material/input';\nimport { MatFormFieldModule } from '@angular/material/form-field';\n\n@Component({\n  selector: 'sg-input',\n  standalone: true,\n  imports: [MatIconModule, CommonModule, MatInputModule, MatFormFieldModule],\n  templateUrl: './input.component.html',\n  styleUrl: './input.component.scss',\n})\nexport class InputComponent {\n  /**\n   * the value of the input field\n   */\n  @Input() value = '';\n\n  /**\n   * The help/error message to be displayed below the input field.\n   */\n  @Input() supportMessage = '';\n\n  /**\n   * Icon displayed on the left side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() leadingIcon = '';\n\n  /**\n   * Icon displayed on the right side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() trailingIcon = '';\n\n  /**\n   * Determines if the input field is disabled. Affects the styles of the whole component.\n   */\n  @Input() disabled = false;\n\n  /**\n   * Determines if the input field has errors. Affects the styles of the whole component.\n   */\n  @Input() error = false;\n\n  /**\n   * The placeholder displayed on the input field\n   */\n  @Input() placeholder = '';\n\n  /**\n   * Text to be shown on the right side of the input field.\n   */\n  @Input() suffix = '';\n}\n",
+            "styleUrl": "./input.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<mat-form-field appearance=\"outline\">\n  <mat-icon matTextPrefix *ngIf=\"leadingIcon\">{{ leadingIcon }}</mat-icon>\n  <input\n    matInput\n    type=\"text\"\n    [value]=\"value\"\n    [disabled]=\"disabled\"\n    [placeholder]=\"placeholder\" />\n  <span matTextSuffix *ngIf=\"suffix && !trailingIcon\">{{ suffix }}</span>\n  <mat-icon matTextSuffix *ngIf=\"trailingIcon\">{{ trailingIcon }}</mat-icon>\n</mat-form-field>\n<div class=\"support-msg\">{{ supportMessage }}</div>\n"
+        },
+        {
             "name": "StatusChipComponent",
             "id": "component-StatusChipComponent-2b86b4ec02ea586989a688f308c425033d867782f2d7a548a8d410071345f96b04847a74cd077844dc90b6a480f8169359da251fc8236e2f9d2e067b91b4ca13",
             "file": "src/styleguide/status-chip/status-chip.component.ts",
@@ -400,7 +544,7 @@
     },
     "routes": [],
     "coverage": {
-        "count": 31,
+        "count": 50,
         "status": "medium",
         "files": [
             {
@@ -411,6 +555,15 @@
                 "coveragePercent": 20,
                 "coverageCount": "2/10",
                 "status": "low"
+            },
+            {
+                "filePath": "src/styleguide/input/input.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "InputComponent",
+                "coveragePercent": 88,
+                "coverageCount": "8/9",
+                "status": "very-good"
             },
             {
                 "filePath": "src/styleguide/status-chip/status-chip.component.ts",

@@ -1,0 +1,12 @@
+<mat-form-field appearance="outline">
+  <mat-icon matTextPrefix *ngIf="leadingIcon">{{ leadingIcon }}</mat-icon>
+  <input
+    matInput
+    type="text"
+    [value]="value"
+    [disabled]="disabled"
+    [placeholder]="placeholder" />
+  <span matTextSuffix *ngIf="suffix && !trailingIcon">{{ suffix }}</span>
+  <mat-icon matTextSuffix *ngIf="trailingIcon">{{ trailingIcon }}</mat-icon>
+</mat-form-field>
+<div class="support-msg">{{ supportMessage }}</div>

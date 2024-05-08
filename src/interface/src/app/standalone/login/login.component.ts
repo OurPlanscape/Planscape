@@ -19,7 +19,7 @@ import {
 import { MatCardModule } from '@angular/material/card';
 
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AboutComponent } from '../about/about.component';
 
 @Component({
@@ -31,7 +31,7 @@ import { AboutComponent } from '../about/about.component';
     AboutComponent,
     CommonModule,
     MatCardModule,
-    MaterialModule,
+    LegacyMaterialModule,
     ReactiveFormsModule,
     RouterModule,
     SharedModule,

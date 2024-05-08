@@ -5,7 +5,7 @@ import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatLegacyRadioGroupHarness as MatRadioGroupHarness } from '@angular/material/legacy-radio/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { SharedModule } from '@shared';
 import {
   ColormapConfig,
@@ -97,7 +97,7 @@ describe('SetPrioritiesComponent', () => {
       imports: [
         BrowserAnimationsModule,
         FormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         ReactiveFormsModule,
         SharedModule,
       ],
