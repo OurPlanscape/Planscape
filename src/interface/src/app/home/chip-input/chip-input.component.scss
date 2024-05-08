@@ -1,5 +1,5 @@
-@import "../../../styles/mixins";
-@import "../../../styles/colors";
+@import "mixins";
+@import "colors";
 
 :host {
   display: block;
@@ -9,9 +9,11 @@
     mat-form-field {
       display: block;
     }
+
     .mat-chip-list-wrapper {
       margin: 0;
       gap: 4px;
+
       .mat-input-element {
         padding: 3px 0;
         line-height: 28px;
@@ -19,8 +21,8 @@
       }
     }
 
-    .mat-form-field-appearance-outline .mat-form-field-outline  {
-      top:0;
+    .mat-form-field-appearance-outline .mat-form-field-outline {
+      top: 0;
     }
 
     .mat-chip {
@@ -32,7 +34,8 @@
       border-top-width: 4px;
       padding: 0;
     }
-    .mat-select-arrow-wrapper{
+
+    .mat-select-arrow-wrapper {
       transform: none;
     }
 
@@ -49,11 +52,12 @@
       }
     }
 
-    &.mat-form-field-appearance-outline  {
+    &.mat-form-field-appearance-outline {
       .mat-form-field-wrapper {
         padding: 0;
         margin: 0;
       }
+
       .mat-form-field-flex {
         padding: 3px 8px;
         margin-top: 0;
