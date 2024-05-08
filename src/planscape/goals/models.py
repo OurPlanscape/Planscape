@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 from core.models import CreatedAtMixin, DeletedAtMixin, UUIDMixin, UpdatedAtMixin
 from metrics.models import Metric
@@ -57,6 +58,9 @@ def get_forsys_defaults():
         "patchmax_EPW": 0.5,
         "patchmax_exclusion_limit": 0.5,
         "patchmax_sample_frac": 0.1,
+        "run_with_patchmax": True,
+        "stand_threshold": [],
+        "global_threshold": [],
     }
 
 
@@ -143,6 +147,12 @@ class PostProcessingFunction(models.TextChoices):
     )
 
 
+class PreProcessingFunction(models.TextChoices):
+    NONE = "NONE", "None"
+    SHORT_TONS_ACRE_TO_SHORT_TONS_CELL = "PROJECT_AVERAGE", "Project Average"
+    MGC_HA_TO_SHORT_MGC_CELL = "PROJECT_AREA_SUM", "Project Area Sum"
+
+
 class MetricUsage(models.Model):
     """
     Determines how treatment goals uses metrics.
@@ -176,6 +186,12 @@ class MetricUsage(models.Model):
     attribute = models.CharField(
         choices=MetricAttribute.choices,
         default=MetricAttribute.MEAN,
+        max_length=64,
+    )
+
+    pre_processing = models.CharField(
+        choices=PreProcessingFunction.choices,
+        default=PreProcessingFunction.NONE,
         max_length=64,
     )
 
