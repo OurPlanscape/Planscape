@@ -9,9 +9,9 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+        ("projects", "0003_alter_project_created_by_alter_project_organization"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
         ("metrics", "0002_metric_created_at_metric_deleted_at_and_more"),
-        ("projects", "0003_alter_project_created_by_alter_project_organization"),
     ]
 
     operations = [
@@ -48,6 +48,18 @@ class Migration(migrations.Migration):
                             ("count", "COUNT"),
                         ],
                         default="mean",
+                        max_length=64,
+                    ),
+                ),
+                (
+                    "pre_processing",
+                    models.CharField(
+                        choices=[
+                            ("NONE", "None"),
+                            ("PROJECT_AVERAGE", "Project Average"),
+                            ("PROJECT_AREA_SUM", "Project Area Sum"),
+                        ],
+                        default="NONE",
                         max_length=64,
                     ),
                 ),
