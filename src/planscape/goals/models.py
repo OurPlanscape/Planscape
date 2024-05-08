@@ -88,15 +88,15 @@ class TreatmentGoal(
         help_text="Name of the treatment goal. Equivalent to short_question_text.",
     )
 
-    long_question_text = models.CharField(
+    summary = models.CharField(
         max_length=512,
         null=True,
-        help_text="this is a legacy field required to keep compatibility. most likely will be deprecated soon.",
+        help_text="Summary of the question. Equivalent to long_question_text.",
     )
 
     description = models.TextField(
         null=True,
-        help_text="This field should contain the help text displayed as the box on the right, after you select the treatment goal.",
+        help_text="Describes to the user how the goal is set up, how it identifies the areas and the set of thresholds, as well as notes on usage.",
     )
 
     metrics = models.ManyToManyField(
@@ -197,7 +197,7 @@ class MetricUsage(models.Model):
 
     post_processing = models.CharField(
         choices=PostProcessingFunction.choices,
-        default=PostProcessingFunction.PROJECT_AVERAGE,
+        default=PostProcessingFunction.NONE,
         max_length=64,
     )
 
