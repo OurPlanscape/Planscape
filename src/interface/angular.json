@@ -45,7 +45,9 @@
             "allowedCommonJsDependencies": [
               "leaflet",
               "shpjs",
-              "geojson-rbush"
+              "geojson-rbush",
+              "polylabel",
+              "file-saver"
             ]
           },
           "configurations": {
