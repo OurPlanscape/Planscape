@@ -19,6 +19,7 @@ STORYBOOK_WWW_DIR=/var/www/html/storybook/
 # Systemd User Control
 SYS_CTL=systemctl --user
 TAG=main
+VERSION="$$(date '+%Y.%m.%d')-$$(git log --abbrev=10 --format=%h | head -1)"
 
 help:
 	@echo 'Available commands:'
@@ -41,7 +42,7 @@ taggit:
 	set -e; \
 	git checkout main; \
 	git pull origin main; \
-	git tag -a $(VERSION); \
+	git tag -a $(VERSION) -m $(VERSION); \
 	git push origin --tags; \
 	echo "Completed taggit"
 
