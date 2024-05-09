@@ -1255,6 +1255,7 @@
               "global_thresholds": []
             },
             {
+              "id": 25,
               "long_question_text": "What areas support high threatened/endangered species richness and are exposed to high severity fire risk?",
               "short_question_text": "Threatened/Endangered Species Exposure to Fire",
               "description": [
