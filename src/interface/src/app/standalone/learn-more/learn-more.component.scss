@@ -1,5 +1,5 @@
-@import '../../../styles/colors';
-@import '../../../styles/mixins';
+@import "colors";
+@import "mixins";
 
 :host {
   width: 100%;
@@ -18,8 +18,8 @@
 
 .logo-container {
 
-    display: flex;
-    justify-content: center;
+  display: flex;
+  justify-content: center;
 }
 
 .learn-more-title {
