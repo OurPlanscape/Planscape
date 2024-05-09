@@ -9,7 +9,7 @@ import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { SharedModule } from '@shared';
 import { MaterialModule } from '../material/material.module';
-import { StringifyMapConfigPipe } from '../stringify-map-config.pipe';
+import { StringifyMapConfigPipe } from './stringify-map-config.pipe';
 import { RegionDropdownComponent } from './region-dropdown/region-dropdown.component';
 import { MapConfigSummaryComponent } from './map-config-summary/map-config-summary.component';
 import { ConditionTreeComponent } from './map-control-panel/condition-tree/condition-tree.component';
