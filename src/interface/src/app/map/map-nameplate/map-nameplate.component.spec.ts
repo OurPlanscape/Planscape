@@ -2,11 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MatLegacyTooltipModule as MatTooltipModule } from '@angular/material/legacy-tooltip';
 import { BehaviorSubject } from 'rxjs';
 
-import { StringifyMapConfigPipe } from './../../stringify-map-config.pipe';
 import {
   MapNameplateComponent,
   NAMEPLATE_RIGHT_MARGIN,
 } from './map-nameplate.component';
+import { StringifyMapConfigPipe } from '../stringify-map-config.pipe';
 
 describe('MapNameplateComponent', () => {
   let component: MapNameplateComponent;

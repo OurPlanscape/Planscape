@@ -164,6 +164,11 @@
               "src/styles.scss",
               "src/styleguide/styles/index.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/styles"
+              ]
+            },
             "port": 6006
           }
         },
@@ -183,6 +188,11 @@
               "src/styles.scss",
               "src/styleguide/styles/index.scss"
             ],
+            "stylePreprocessorOptions": {
+              "includePaths": [
+                "src/styles"
+              ]
+            },
             "outputDir": "storybook-static"
           }
         }
