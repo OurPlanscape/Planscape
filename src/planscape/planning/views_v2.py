@@ -9,6 +9,7 @@ from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     ScenarioSerializer,
+    CreatePlanningAreaSerializer,
 )
 from planning.geometry import coerce_geojson, coerce_geometry
 
@@ -30,7 +31,9 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         request_data = request.data
         request_data["user"] = request.user.pk
         request_data["geometry"] = coerce_geojson(body.get("geometry"))
-        request_data["region_name"] = display_name_to_region(body.get("region_name"))
+        request_data["region_name"] = display_name_to_region(
+            body.get("region_name")
+        ).value
         serializer = self.get_serializer(data=request_data)
         print(f"What is the request_data? {request_data}")
         serializer.is_valid(raise_exception=True)
@@ -38,13 +41,21 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         # serializer = PlanningAreaSerializer(
         #     instance=planning_area, context={"request": request}
         # )
-        self.perform_create(serializer)
+        print(f"What does the serializer contain now BEFORE the save?: {serializer}")
+        # self.perform_create(serializer)
+
+        serializer.save()
+        print(
+            f"What does the serializer contain now, after the save?: {serializer.data}"
+        )
 
         return Response(serializer.data)
 
     def get_serializer_class(self):
         if self.action == "list":
             return ListPlanningAreaSerializer
+        if self.action == "create":
+            return CreatePlanningAreaSerializer
         return PlanningAreaSerializer
 
     def get_queryset(self):

@@ -31,6 +31,9 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
 
     def get_region_name(self, instance):
+        print(
+            f"from the list serializer, here is the instance value of region_name {instance.region_name}"
+        )
         return instance.get_region_name_display()
 
     def get_area_acres(self, instance):
@@ -73,6 +76,15 @@ class PlanningAreaSerializer(
 ):
     creator = serializers.CharField(source="user", read_only=True)
 
+    def get_region_name(self, instance):
+        print(
+            f"we are calling the subclass method for get_region_name, which is instance.region_name {dir(instance)}"
+        )
+        print(
+            f"from the other serializer, here is the instance value of region_name {instance.region_name}"
+        )
+        return instance.region_name
+
     class Meta:
         fields = (
             "id",
@@ -85,6 +97,62 @@ class PlanningAreaSerializer(
             "created_at",
             "area_acres",
             "creator",
+            "role",
+            "permissions",
+            "geometry",
+        )
+        model = PlanningArea
+        geo_field = "geometry"
+
+
+class CreatePlanningAreaSerializer(
+    gis_serializers.GeoModelSerializer,
+):
+    scenario_count = serializers.IntegerField(read_only=True, required=False)
+    latest_updated = serializers.SerializerMethodField()
+    notes = serializers.CharField(required=False)
+    created_at = serializers.DateTimeField(required=False)
+
+    area_acres = serializers.SerializerMethodField()
+    permissions = serializers.SerializerMethodField()
+    role = serializers.SerializerMethodField()
+
+    def get_area_acres(self, instance):
+        return get_acreage(instance.geometry)
+
+    def get_latest_updated(self, instance):
+        return (
+            getattr(instance, "scenario_latest_updated_at", None) or instance.updated_at
+        )
+
+    def get_role(self, instance):
+        user = self.context["request"].user or self.request.user
+        return get_role(user, instance)
+
+    def get_permissions(self, instance):
+        user = self.context["request"].user or self.request.user
+        return list(get_permissions(user, instance))
+
+    def get_region_name(self, instance):
+        print(
+            f"we are calling the subclass method for get_region_name, which is instance.region_name {dir(instance)}"
+        )
+        print(
+            f"from the other serializer, here is the instance value of region_name {instance.region_name}"
+        )
+        return instance.region_name
+
+    class Meta:
+        fields = (
+            "id",
+            "user",
+            "name",
+            "notes",
+            "region_name",
+            "scenario_count",
+            "latest_updated",
+            "created_at",
+            "area_acres",
             "role",
             "permissions",
             "geometry",
