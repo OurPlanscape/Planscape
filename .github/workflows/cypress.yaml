@@ -1,8 +1,8 @@
 name: Cypress Tests
 
 on:
-  push:
-    branches: [main]
+  workflow_dispatch: # manual triggering
+
 env:
   CYPRESS_TEST_BASE_URL: ${{ vars.CYPRESS_TEST_BASE_URL }}
   CYPRESS_TEST_USER1: ${{ secrets.CYPRESS_TEST_USER1 }}
@@ -21,5 +21,5 @@ jobs:
       - name: Cypress run
         uses: cypress-io/github-action@v6
         with:
-          working-directory: random-angular-proj/
+          working-directory: src/interface
           record: false # Enable video recording (optional)

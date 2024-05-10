@@ -1,7 +1,8 @@
+import { testPass, testUser } from '../support/util';
 // TODO: use config'd user
 describe('Draws a map', () => {
   it('Logs in and draws a map', () => {
-    cy.doLogin();
+    cy.doLogin(testUser, testPass);
     cy.contains('Planning areas').should('be.visible');
 
     // go to Explore
