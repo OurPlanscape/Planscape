@@ -1,0 +1,254 @@
+{
+    "pipes": [],
+    "interfaces": [],
+    "injectables": [],
+    "guards": [],
+    "interceptors": [],
+    "classes": [],
+    "directives": [],
+    "components": [
+        {
+            "name": "ButtonComponent",
+            "id": "component-ButtonComponent-967d68fb72a4a9f4470e94c8643421289f18849ff3207b31624817d0b4cdc527eb7c5c9e67a192cf02dd763e881588aa598f4f9fa629e6baa9c4bc4749bb3aa6",
+            "file": "src/styleguide/button/button.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "button[sg-button], a[sg-button]",
+            "styleUrls": [
+                "./button.component.scss"
+            ],
+            "styles": [],
+            "templateUrl": [
+                "./button.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "hasError",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 32,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "icon",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nThe optional icon used in the button.\nIf blank the button will not have an icon\n",
+                    "description": "<p>The optional icon used in the button.\nIf blank the button will not have an icon</p>\n",
+                    "line": 30,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "variant",
+                    "defaultValue": "'ghost'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nThe variant used for the button.\n\n",
+                    "description": "<p>The variant used for the button.</p>\n",
+                    "line": 25,
+                    "type": "ButtonVariant",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [
+                {
+                    "name": "class.ghost-button",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 35,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.has-error",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 60,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.negative-button",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 45,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.positive-button",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 55,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.primary-button",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 40,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.text-button",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 50,
+                    "type": "boolean",
+                    "decorators": []
+                }
+            ],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "MatIconModule",
+                    "type": "module"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import { Component, HostBinding, Input } from '@angular/core';\nimport { CommonModule } from '@angular/common';\nimport { MatIconModule } from '@angular/material/icon';\n\nexport type ButtonVariant =\n  | 'primary'\n  | 'ghost'\n  | 'text'\n  | 'negative'\n  | 'positive';\n\n@Component({\n  // eslint-disable-next-line @angular-eslint/component-selector\n  selector: 'button[sg-button], a[sg-button]',\n  standalone: true,\n  imports: [CommonModule, MatIconModule],\n  templateUrl: './button.component.html',\n  styleUrls: ['./button.component.scss'],\n})\nexport class ButtonComponent {\n  /**\n   * The variant used for the button.\n   *\n   */\n  @Input() variant: ButtonVariant = 'ghost';\n  /**\n   * The optional icon used in the button.\n   * If blank the button will not have an icon\n   */\n  @Input() icon: string = '';\n\n  @Input() hasError = false;\n\n  @HostBinding('class.ghost-button')\n  get isVariantGhost() {\n    return this.variant === 'ghost';\n  }\n\n  @HostBinding('class.primary-button')\n  get isVariantPrimary() {\n    return this.variant === 'primary';\n  }\n\n  @HostBinding('class.negative-button')\n  get isVariantNegative() {\n    return this.variant === 'negative';\n  }\n\n  @HostBinding('class.text-button')\n  get isVariantText() {\n    return this.variant === 'text';\n  }\n\n  @HostBinding('class.positive-button')\n  get isVariantPositive() {\n    return this.variant === 'positive';\n  }\n\n  @HostBinding('class.has-error')\n  get itHasError() {\n    return this.hasError;\n  }\n}\n",
+            "assetsDirs": [],
+            "styleUrlsData": [
+                {
+                    "data": "@import \"colors\";\n@import \"mixins\";\n\n\n:host {\n  box-sizing: border-box;\n  display: flex;\n  align-items: center;\n  font-size: 14px;\n  font-weight: 500;\n  line-height: 20px;\n  border-radius: 4px;\n  padding: 12px 12px;\n  cursor: pointer;\n  gap: 8px;\n  text-decoration: none;\n  height: 40px;\n  border: 1px solid transparent;\n  background-color: transparent;\n\n  &.primary-button {\n    color: $color-white;\n    background-color: $color-standard-blue;\n    border-color: $color-standard-blue;\n\n    &:active, &:hover {\n      background-color: $color-main-blue;\n      border-color: $color-main-blue;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n      border-color: $color-soft-gray;\n      background-color: $color-soft-gray;\n    }\n  }\n\n  &.ghost-button {\n    color: $color-standard-blue;\n    border-color: $color-standard-blue;\n    background-color: $color-white;\n\n\n    &:active, &:hover {\n      color: $color-white;\n      background-color: $color-main-blue;\n      border-color: $color-main-blue;\n    }\n\n\n    &:disabled {\n      color: $color-text-gray;\n      border-color: $color-soft-gray;\n      background-color: $color-soft-gray;\n    }\n  }\n\n  &.negative-button {\n    border-color: $color-error;\n    background-color: $color-error;\n    color: $color-white;\n\n    &:active, &:hover {\n      background: #B40000;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n      background-color: $color-soft-gray;\n      border-color: $color-soft-gray;\n    }\n  }\n\n  &.text-button {\n    background-color: transparent;\n    border: none;\n    color: $color-standard-blue;\n\n    &:active, &:hover {\n      background-color: $color-soft-gray;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n    }\n  }\n\n  &.positive-button {\n    border-color: $color-brand-teal;\n    background-color: $color-brand-teal;\n    color: $color-white;\n\n    &:active, &:hover {\n      background: $color-brand-green;\n    }\n\n    &:disabled {\n      color: $color-text-gray;\n      background-color: $color-soft-gray;\n      border-color: $color-soft-gray;\n    }\n  }\n\n\n  &.has-error:not(:disabled) {\n    background-color: white;\n    color: $color-error;\n    border-color: $color-error;\n  }\n\n}\n\n\n",
+                    "styleUrl": "./button.component.scss"
+                }
+            ],
+            "stylesData": "",
+            "extends": [],
+            "accessors": {
+                "isVariantGhost": {
+                    "name": "isVariantGhost",
+                    "getSignature": {
+                        "name": "isVariantGhost",
+                        "type": "",
+                        "returnType": "",
+                        "line": 35
+                    }
+                },
+                "isVariantPrimary": {
+                    "name": "isVariantPrimary",
+                    "getSignature": {
+                        "name": "isVariantPrimary",
+                        "type": "",
+                        "returnType": "",
+                        "line": 40
+                    }
+                },
+                "isVariantNegative": {
+                    "name": "isVariantNegative",
+                    "getSignature": {
+                        "name": "isVariantNegative",
+                        "type": "",
+                        "returnType": "",
+                        "line": 45
+                    }
+                },
+                "isVariantText": {
+                    "name": "isVariantText",
+                    "getSignature": {
+                        "name": "isVariantText",
+                        "type": "",
+                        "returnType": "",
+                        "line": 50
+                    }
+                },
+                "isVariantPositive": {
+                    "name": "isVariantPositive",
+                    "getSignature": {
+                        "name": "isVariantPositive",
+                        "type": "",
+                        "returnType": "",
+                        "line": 55
+                    }
+                },
+                "itHasError": {
+                    "name": "itHasError",
+                    "getSignature": {
+                        "name": "itHasError",
+                        "type": "",
+                        "returnType": "",
+                        "line": 60
+                    }
+                }
+            },
+            "templateData": "<mat-icon *ngIf=\"icon\">{{ icon }}</mat-icon>\n<ng-content></ng-content>\n"
+        }
+    ],
+    "modules": [],
+    "miscellaneous": {
+        "variables": [],
+        "functions": [],
+        "typealiases": [
+            {
+                "name": "ButtonVariant",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "\"primary\" | \"ghost\" | \"text\" | \"negative\" | \"positive\"",
+                "file": "src/styleguide/button/button.component.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 192
+            }
+        ],
+        "enumerations": [],
+        "groupedVariables": {},
+        "groupedFunctions": {},
+        "groupedEnumerations": {},
+        "groupedTypeAliases": {
+            "src/styleguide/button/button.component.ts": [
+                {
+                    "name": "ButtonVariant",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "\"primary\" | \"ghost\" | \"text\" | \"negative\" | \"positive\"",
+                    "file": "src/styleguide/button/button.component.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 192
+                }
+            ]
+        }
+    },
+    "routes": [],
+    "coverage": {
+        "count": 20,
+        "status": "low",
+        "files": [
+            {
+                "filePath": "src/styleguide/button/button.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "ButtonComponent",
+                "coveragePercent": 20,
+                "coverageCount": "2/10",
+                "status": "low"
+            }
+        ]
+    }
+}

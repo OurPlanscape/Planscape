@@ -1,10 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
-import { SessionService } from '@services';
+import { SessionService, ShareMapService } from '@services';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '../constants';
+import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { firstValueFrom } from 'rxjs';
-import { ShareMapService } from '@services/share-map.service';
 
 @Component({
   selector: 'app-share-explore-dialog',

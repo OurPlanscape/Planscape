@@ -1,0 +1,113 @@
+@import "colors";
+@import "mixins";
+
+
+:host {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 20px;
+  border-radius: 4px;
+  padding: 12px 12px;
+  cursor: pointer;
+  gap: 8px;
+  text-decoration: none;
+  height: 40px;
+  border: 1px solid transparent;
+  background-color: transparent;
+
+  &.primary-button {
+    color: $color-white;
+    background-color: $color-standard-blue;
+    border-color: $color-standard-blue;
+
+    &:active, &:hover {
+      background-color: $color-main-blue;
+      border-color: $color-main-blue;
+    }
+
+    &:disabled {
+      color: $color-text-gray;
+      border-color: $color-soft-gray;
+      background-color: $color-soft-gray;
+    }
+  }
+
+  &.ghost-button {
+    color: $color-standard-blue;
+    border-color: $color-standard-blue;
+    background-color: $color-white;
+
+
+    &:active, &:hover {
+      color: $color-white;
+      background-color: $color-main-blue;
+      border-color: $color-main-blue;
+    }
+
+
+    &:disabled {
+      color: $color-text-gray;
+      border-color: $color-soft-gray;
+      background-color: $color-soft-gray;
+    }
+  }
+
+  &.negative-button {
+    border-color: $color-error;
+    background-color: $color-error;
+    color: $color-white;
+
+    &:active, &:hover {
+      background: #B40000;
+    }
+
+    &:disabled {
+      color: $color-text-gray;
+      background-color: $color-soft-gray;
+      border-color: $color-soft-gray;
+    }
+  }
+
+  &.text-button {
+    background-color: transparent;
+    border: none;
+    color: $color-standard-blue;
+
+    &:active, &:hover {
+      background-color: $color-soft-gray;
+    }
+
+    &:disabled {
+      color: $color-text-gray;
+    }
+  }
+
+  &.positive-button {
+    border-color: $color-brand-teal;
+    background-color: $color-brand-teal;
+    color: $color-white;
+
+    &:active, &:hover {
+      background: $color-brand-green;
+    }
+
+    &:disabled {
+      color: $color-text-gray;
+      background-color: $color-soft-gray;
+      border-color: $color-soft-gray;
+    }
+  }
+
+
+  &.has-error:not(:disabled) {
+    background-color: white;
+    color: $color-error;
+    border-color: $color-error;
+  }
+
+}
+
+

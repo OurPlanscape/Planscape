@@ -10,9 +10,9 @@ import {
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthService, InvitesService, PlanStateService } from '@services';
 import { BehaviorSubject, NEVER, of } from 'rxjs';
-import { User } from '../../types';
+import { User } from '@types';
 import { ChipInputComponent } from '../chip-input/chip-input.component';
-import { SectionLoaderComponent } from '../../shared/section-loader/section-loader.component';
+import { SectionLoaderComponent } from '@shared';
 
 describe('SharePlanDialogComponent', () => {
   let component: SharePlanDialogComponent;

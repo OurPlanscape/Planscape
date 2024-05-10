@@ -1,0 +1,29 @@
+@import "colors";
+@import "mixins";
+
+:host {
+  width: 100%;
+  gap: 40px;
+  padding: 40px 0px 40px 0px;
+}
+
+.learn-more-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 500px;
+  padding: 0px 20px 40px 20px;
+  gap: 30px;
+}
+
+.logo-container {
+
+  display: flex;
+  justify-content: center;
+}
+
+.learn-more-title {
+  @include h3();
+  text-align: center;
+}
+

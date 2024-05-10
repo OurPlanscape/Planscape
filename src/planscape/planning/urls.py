@@ -22,6 +22,7 @@ from planning.views import (
 )
 from planning.views_v2 import PlanningAreaViewSet, ScenarioViewSet
 from rest_framework import routers
+from planning.views_userprefs import UserPreferencesView
 
 router = routers.SimpleRouter()
 router.register(r"planningareas", PlanningAreaViewSet, basename="planningareas")
@@ -29,11 +30,6 @@ router.register(
     r"planningareas/(?P<planningarea_pk>\d+)/scenarios",
     ScenarioViewSet,
     basename="scenarios",
-)
-from planscape import settings
-
-print(
-    f"what is settings ACCOUNT_EMAIL_VERIFICATION? {settings.ACCOUNT_EMAIL_VERIFICATION}"
 )
 
 app_name = "planning"
@@ -120,6 +116,14 @@ urlpatterns = [
         PlanningAreaNotes.as_view(),
         name="delete_planningareanote",
     ),
+    # UserPrefs
+    path(
+        "user_prefs/<str:preference_key>/",
+        UserPreferencesView.as_view(),
+        name="delete_userprefs",
+    ),
+    path("user_prefs/", UserPreferencesView.as_view(), name="get_userprefs"),
+    path("user_prefs/", UserPreferencesView.as_view(), name="patch_userprefs"),
     # v2 URLS
     path("v2/", include(router.urls)),
 ]

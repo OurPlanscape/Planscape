@@ -1,14 +1,14 @@
 import { fakeAsync, TestBed, tick } from '@angular/core/testing';
 
 import { ScenarioService } from './scenario.service';
-import { BackendConstants } from '../backend-constants';
-import { Scenario, ScenarioConfig, TreatmentQuestionConfig } from '../types';
+import { Scenario, ScenarioConfig, TreatmentQuestionConfig } from '@types';
 import {
   HttpClientTestingModule,
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { PlanService } from './plan.service';
 import { of } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 describe('ScenarioService', () => {
   let service: ScenarioService;
@@ -69,7 +69,9 @@ describe('ScenarioService', () => {
       });
       tick();
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/get_scenario_by_id/?id=1')
+        environment.backend_endpoint.concat(
+          '/planning/get_scenario_by_id/?id=1'
+        )
       );
       expect(req.request.method).toEqual('GET');
       req.flush(scenario);
@@ -127,7 +129,7 @@ describe('ScenarioService', () => {
 
       tick();
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/create_scenario/')
+        environment.backend_endpoint.concat('/planning/create_scenario/')
       );
       expect(req.request.method).toEqual('POST');
 
@@ -167,7 +169,7 @@ describe('ScenarioService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/update_scenario/')
+        environment.backend_endpoint.concat('/planning/update_scenario/')
       );
       expect(req.request.body).toEqual({
         id: scenario.id,
@@ -187,7 +189,7 @@ describe('ScenarioService', () => {
       });
 
       const req = httpTestingController.expectOne(
-        BackendConstants.END_POINT.concat('/planning/delete_scenario/')
+        environment.backend_endpoint.concat('/planning/delete_scenario/')
       );
       expect(req.request.method).toEqual('POST');
       req.flush(['1']);

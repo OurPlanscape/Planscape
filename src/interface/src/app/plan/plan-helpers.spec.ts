@@ -4,8 +4,8 @@ import {
   getColorForProjectPosition,
   isValidTotalArea,
 } from './plan-helpers';
-import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '../shared/constants';
-import { TreatmentGoalConfig, TreatmentQuestionConfig } from '../types';
+import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
+import { TreatmentGoalConfig, TreatmentQuestionConfig } from '@types';
 
 const questions = [
   {

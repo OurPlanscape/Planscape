@@ -10,6 +10,7 @@ from planning.models import (
     ScenarioResult,
     SharedLink,
     PlanningAreaNote,
+    UserPrefs,
 )
 from planning.services import get_acreage
 from stands.models import StandSizeChoices
@@ -287,3 +288,9 @@ class SharedLinkSerializer(serializers.ModelSerializer):
     class Meta:
         model = SharedLink
         fields = ("updated_at", "created_at", "link_code", "view_state", "user_id")
+
+
+class UserPrefsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserPrefs
+        fields = ("updated_at", "created_at", "preferences", "user_id")

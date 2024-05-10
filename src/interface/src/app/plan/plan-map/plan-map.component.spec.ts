@@ -4,7 +4,7 @@ import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
 import { BehaviorSubject } from 'rxjs';
 import { MaterialModule } from 'src/app/material/material.module';
-import { Plan, Region } from 'src/app/types';
+import { Plan, Region } from '@types';
 
 import { PlanMapComponent } from './plan-map.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';

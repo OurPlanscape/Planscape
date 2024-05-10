@@ -1,14 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavBarComponent } from './nav-bar.component';
-import { WINDOW } from '@services/window.service';
+import { PlanStateService, WINDOW } from '@services';
 import { By } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { MaterialModule } from '../../material/material.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FeaturesModule } from '../../features/features.module';
 import { MockProvider } from 'ng-mocks';
-import { PlanStateService } from '@services';
 import { NEVER } from 'rxjs';
 
 describe('NavBarComponent', () => {

@@ -1,0 +1,13 @@
+@import "mixins";
+
+.regular-paragraph {
+  @include regular-paragraph();
+}
+
+.small-paragraph {
+  @include small-paragraph();
+}
+
+.important-paragraph {
+  @include important-paragraph();
+}

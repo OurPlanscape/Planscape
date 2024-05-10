@@ -1,0 +1,60 @@
+@import "colors";
+@import "mixins";
+
+.about-container {
+  gap: 30px;
+  display: flex;
+  flex-direction: column;
+  margin: 15% 10% 4% 10%;
+}
+
+h3 {
+  color: $color-text-dark;
+  text-align: center;
+}
+
+p.important {
+  @include important-paragraph();
+  color: $color-dark-gray;
+  margin: auto;
+  text-align: left;
+}
+
+.list-area {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+p.regular {
+  @include regular-paragraph();
+  color: $color-dark-gray;
+  float: left;
+  text-align: left;
+}
+
+.dot-icon {
+  float: left;
+  margin-right: 4px;
+}
+
+.data-info-box {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  padding: 20px 30px 20px 30px;
+  border-radius: 8px;
+  background-color: white;
+  gap: 20px;
+}
+
+p.small {
+  text-align: left;
+}
+
+@media screen and (max-width: 840px) {
+  ::root {
+    gap: 10%;
+  }
+
+}

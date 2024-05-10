@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { ScenarioService } from '@services';
-import { FileSaverService } from '@services/file-saver.service';
-import { FormMessageType, ScenarioResultStatus } from '../../types';
+import { FileSaverService, ScenarioService } from '@services';
+import { FormMessageType, ScenarioResultStatus } from '@types';
 
 @Component({
   selector: 'app-scenario-failure',

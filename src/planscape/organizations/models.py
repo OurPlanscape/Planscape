@@ -15,6 +15,8 @@ class Organization(
     created_by = models.ForeignKey(
         User,
         on_delete=models.RESTRICT,
+        related_name="created_organizations",
+        null=True,
     )
 
     name = models.CharField(max_length=128)

@@ -1,6 +1,6 @@
 @use '@angular/material' as mat;
-@import "../../../styles/mixins";
-@import "../../../styles/colors";
+@import "mixins";
+@import "colors";
 
 :host {
   display: block;

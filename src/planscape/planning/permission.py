@@ -3,14 +3,12 @@ from rest_framework.permissions import BasePermission
 from collaboration.permissions import (
     PlanningAreaPermission,
     ScenarioPermission,
-    CheckPermissionMixin,
 )
 from planning.models import PlanningArea
 
 
 class PlanscapePermission(BasePermission):
-
-    model = None
+    permission_set = None
 
     def has_permission(self, request, view):
         return self.is_authenticated(request)
@@ -19,6 +17,8 @@ class PlanscapePermission(BasePermission):
         return request.user.is_authenticated
 
     def has_object_permission(self, request, view, object):
+        if not self.permission_set:
+            return False
         if view.action == "update" or view.action == "partial_update":
             return self.permission_set.can_change(request.user, object)
         if view.action == "destroy":

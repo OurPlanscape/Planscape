@@ -1,5 +1,7 @@
 import json
+import os
 from unittest import mock
+from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
@@ -206,93 +208,6 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 404)
-        self.assertJSONEqual(response.content, {"detail": "Not found."})
-
-
-class CreateScenarioTest(APITransactionTestCase):
-    def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unprivileged_user = self.test_users["unprivileged"]
-
-        self.geometry = {
-            "type": "MultiPolygon",
-            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
-        }
-        self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.stored_geometry
+        self.assertJSONEqual(
+            response.content, {"detail": "No PlanningArea matches the given query."}
         )
-
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan 2", self.stored_geometry
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
-        )
-        self.configuration = {
-            "question_id": 1,
-            "weights": [],
-            "est_cost": 2000,
-            "max_budget": None,
-            "max_slope": None,
-            "min_distance_from_road": None,
-            "stand_size": "LARGE",
-            "excluded_areas": [],
-            "stand_thresholds": [],
-            "global_thresholds": [],
-            "scenario_priorities": ["prio1"],
-            "scenario_output_fields": ["out1"],
-            "max_treatment_area_ratio": 40000,
-        }
-
-    @mock.patch(
-        "planning.views.validate_scenario_treatment_ratio",
-        return_value=(True, "all good"),
-    )
-    def test_create_scenario(self, validation):
-        self.client.force_authenticate(self.owner_user)
-        create_url = f"/planscape-backend/planning/v2/planningareas/{self.planning_area.pk}/scenarios/"
-        payload = json.dumps(
-            {
-                "configuration": self.configuration,
-                "name": "test scenario",
-                "notes": "test notes",
-                # "planning_area": self.planning_area.pk,
-            }
-        )
-        response = self.client.post(
-            path=create_url,
-            data=payload,
-            content_type="application/json",
-        )
-        print(f"response: {response}")
-        print(f"output: {response.json()}")
-
-        self.assertEqual(response.status_code, 201)
-        output = response.json()
-        scenario_id = output["id"]
-        self.assertEqual(Scenario.objects.count(), 1)
-        self.assertEqual(ScenarioResult.objects.count(), 1)
-        scenario = Scenario.objects.get(pk=scenario_id)
-        self.assertEqual(scenario.planning_area.pk, self.planning_area.pk)
-        self.assertEqual(scenario.configuration, self.configuration)
-        self.assertEqual(scenario.name, "test scenario")
-        self.assertEqual(scenario.notes, "test notes")
-        self.assertEqual(scenario.user, self.owner_user)
-
-    @mock.patch(
-        "planning.views.validate_scenario_treatment_ratio",
-        return_value=(True, "all good"),
-    )

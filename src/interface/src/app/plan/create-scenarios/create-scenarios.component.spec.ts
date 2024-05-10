@@ -15,7 +15,7 @@ import {
   ScenarioResult,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
-} from 'src/app/types';
+} from '@types';
 
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';

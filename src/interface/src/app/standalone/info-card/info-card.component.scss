@@ -1,0 +1,61 @@
+@import "colors";
+@import "mixins";
+
+:host {
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 16%;
+}
+
+.info-card {
+  background-color: white;
+  border-radius: 8px;
+  border: 1px $color-original-purple solid;
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  justify-content: center;
+  padding: 40px 40px 30px 40px;
+  gap: 8px;
+}
+
+.list-icon {
+  height: 20px;
+  width: 20px;
+  padding-right: 4px;
+  float: left;
+}
+
+h3 {
+  @include h3();
+  color: $color-dark-gray;
+}
+
+/* regular paragraph */
+.listed-text {
+  @include regular-paragraph();
+  float: left;
+  color: $color-dark-gray;
+}
+
+.caveat {
+  font-size: 16px;
+  line-height: 26px;
+  font-weight: 400;
+  color: $color-md-gray;
+}
+
+.conditions-link {
+  @include standard-link();
+  color: $color-standard-blue;
+}
+
+@media screen and (max-width: 840px) {
+  :host {
+    margin-top: 0;
+  }
+
+  .info-card {
+    margin: 10%;
+  }
+}
