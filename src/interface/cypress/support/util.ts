@@ -1,3 +1,12 @@
+export const baseURL = Cypress.env('TEST_BASE_URL');
+export const testUser = Cypress.env('TEST_USER1');
+export const testPass = Cypress.env('TEST_PASS1');
+
+export const urls = {
+  LOGIN: '/login',
+  SIGNUP: '/signup',
+};
+
 export function randString(strlen: number) {
   let random_string = '';
   for (let i = 0; i < strlen; i++) {

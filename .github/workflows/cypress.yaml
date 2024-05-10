@@ -2,102 +2,24 @@ name: Cypress Tests
 
 on:
   push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
+    branches: [main]
+env:
+  CYPRESS_TEST_BASE_URL: ${{ vars.CYPRESS_TEST_BASE_URL }}
+  CYPRESS_TEST_USER1: ${{ secrets.CYPRESS_TEST_USER1 }}
+  CYPRESS_TEST_PASS1: ${{ secrets.CYPRESS_TEST_PASS1 }}
 
 jobs:
-  build-backend:
+  cypress-run:
     runs-on: ubuntu-latest
-    needs: lint
-    strategy:
-      max-parallel: 4
-      matrix:
-        python-version: [3.10.8]
-
-    services:
-      postgres:
-        image: postgis/postgis:14-3.3
-        env:
-          # must specify password for PG Docker container image
-          # see: https://registry.hub.docker.com/_/postgres?tab=description&page=1&name=10
-          POSTGRES_PASSWORD: password
-          POSTGRES_DB: planscape
-        ports:
-          - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
-        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
-
     steps:
-      - name: Update Apt Cache
-        run: sudo apt-get update
-      - name: Install Apt Dependencies
-        run: sudo apt-get install libcurl4-openssl-dev libssl-dev gcc gdal-bin libgdal-dev r-base-core -y
-      - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Get Python Version
-        id: full-python-version
-        run: echo version=$(python -c "import sys; print('-'.join(str(v) for v in sys.version_info))")  >> $GITHUB_OUTPUT
-      - name: Install Poetry
-        run: |
-          curl -sL https://install.python-poetry.org | python - -y ${{ matrix.bootstrap-args }}
-
-      - name: Update PATH
-        run: echo "$HOME/.local/bin" >> $GITHUB_PATH
-
-      - name: Configure Poetry
-        run: poetry config virtualenvs.in-project true
-
-      - name: Configure cache
-        uses: actions/cache@v3
-        id: cache
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-${{ steps.full-python-version.outputs.version }}-${{ hashFiles('**/poetry.lock') }}
-
-      - name: Cache is healthy?
-        if: steps.cache.outputs.cache-hit == 'true'
-        run: timeout 10s poetry run pip --version || rm -rf .venv
-
-      - name: Install Python Dependencies
-        run: poetry install
-
-      - name: Set up PostGIS
-        env:
-          PGPASSWORD: password
-        run: |
-          psql -d postgresql://postgres@localhost/template1 -f src/planscape/testing/postgis_setup.sql
-      - name: Run Tests
-        env:
-          SECRET_KEY: c25df907e3b95b0138b24f2bba3621f697d38196b0afe7a50c
-        run: |
-          cd src/planscape
-          poetry run python manage.py test .
-
-  test-frontend:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: src/interface
-
-    strategy:
-      matrix:
-        node-version: [18.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
-
-    steps:
-      - uses: actions/checkout@v3
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v3
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-      - run: npm ci
-
-      - name: Run Cypress tests
-        run: npm run cypress:run # Replace with your npm script to run Cypress tests
+          working-directory: random-angular-proj/
+          record: false # Enable video recording (optional)

@@ -14,7 +14,7 @@
     "test:prod": "ng test --browsers=ChromeHeadless --watch=false --code-coverage",
     "e2e": "ng e2e",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
     "storybook": "ng run interface:storybook",
     "build-storybook": "ng run interface:build-storybook"
   },
@@ -71,9 +71,9 @@
     "@angular-eslint/template-parser": "17.3.0",
     "@angular/cli": "~17.3.1",
     "@angular/compiler-cli": "^17.3.1",
-    "@cypress/schematic": "^2.5.1",
     "@chromatic-com/storybook": "^1.2.25",
     "@compodoc/compodoc": "^1.1.23",
+    "@cypress/schematic": "^2.5.1",
     "@mapbox/vector-tile": "^1.3.1",
     "@storybook/addon-docs": "^8.0.5",
     "@storybook/addon-essentials": "^8.0.5",
@@ -82,6 +82,7 @@
     "@storybook/angular": "^8.0.5",
     "@storybook/blocks": "^8.0.5",
     "@storybook/test": "^8.0.5",
+    "@types/cypress": "^1.1.3",
     "@types/esri-leaflet": "^3.0.3",
     "@types/geojson": "^7946.0.10",
     "@types/jasmine": "~4.0.0",
