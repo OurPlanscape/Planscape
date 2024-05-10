@@ -1,6 +1,7 @@
 import logging
-
+import json
 from rest_framework import viewsets
+from rest_framework.response import Response
 
 from planning.models import PlanningArea, Scenario
 from planning.serializers import (
@@ -9,8 +10,11 @@ from planning.serializers import (
     ListScenarioSerializer,
     ScenarioSerializer,
 )
+from planning.geometry import coerce_geojson, coerce_geometry
+
 from planning.filters import PlanningAreaFilter, ScenarioFilter
 from planning.permission import PlanningAreaViewPermission, ScenarioViewPermission
+from base.region_name import display_name_to_region
 
 logger = logging.getLogger(__name__)
 
@@ -20,6 +24,23 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     permission_classes = [PlanningAreaViewPermission]
     ordering_fields = ["name", "created_at", "scenario_count"]
     filterset_class = PlanningAreaFilter
+
+    def create(self, request):
+        body = json.loads(request.body)
+        request_data = request.data
+        request_data["user"] = request.user.pk
+        request_data["geometry"] = coerce_geojson(body.get("geometry"))
+        request_data["region_name"] = display_name_to_region(body.get("region_name"))
+        serializer = self.get_serializer(data=request_data)
+        print(f"What is the request_data? {request_data}")
+        serializer.is_valid(raise_exception=True)
+        # planning_area = PlanningArea.objects.create(serializer)
+        # serializer = PlanningAreaSerializer(
+        #     instance=planning_area, context={"request": request}
+        # )
+        self.perform_create(serializer)
+
+        return Response(serializer.data)
 
     def get_serializer_class(self):
         if self.action == "list":
