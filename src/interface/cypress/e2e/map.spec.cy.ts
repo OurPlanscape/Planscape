@@ -6,7 +6,7 @@ describe('Map', () => {
     cy.contains('Planning Areas');
   });
   it('Switches number of maps', () => {
-    cy.visit('/map');
+    cy.visit(urls.MAP);
     cy.get('.map').should('be.visible');
     cy.get('[aria-label="Show 1 map"]').click();
     let maps = cy.get('.map:visible');

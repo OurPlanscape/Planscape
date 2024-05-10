@@ -4,9 +4,9 @@ export const testUser = Cypress.env('TEST_USER1');
 export const testPass = Cypress.env('TEST_PASS1');
 
 export const urls = {
-  LOGIN: '/login',
-  SIGNUP: '/signup',
-  MAP: '/map',
+  LOGIN: baseURL + '/login',
+  SIGNUP: baseURL + '/signup',
+  MAP: baseURL + '/map',
 };
 
 export function randString(strlen: number) {
