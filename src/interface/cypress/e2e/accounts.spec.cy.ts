@@ -8,7 +8,7 @@ const test_lastname = 'Larrington';
 // TODO: set this in test env ACCOUNT_EMAIL_VERIFICATION = "none" ?
 
 describe('Create an account with unmatching password', () => {
-  it('Visits the initial project page', () => {
+  it('Attempts to create an account with bad password', () => {
     cy.visit(baseURL + urls.SIGNUP);
     cy.contains('Create your account');
     cy.get('[formControlName="firstName"]').type(test_firstname);
@@ -19,10 +19,8 @@ describe('Create an account with unmatching password', () => {
     cy.contains('Given passwords must match.');
     cy.get('button[type="submit"]').should('be.disabled');
   });
-});
 
-describe('Successfully create an account', () => {
-  it('Visits the initial project page', () => {
+  it('Attempts to create an account', () => {
     cy.visit(baseURL + urls.SIGNUP);
     cy.contains('Create your account');
     cy.get('[formControlName="firstName"]').type(test_firstname);
