@@ -5,8 +5,6 @@ const test_pass1 = 'ABCdef123#$%';
 const test_firstname = 'Larry';
 const test_lastname = 'Larrington';
 
-// TODO: set this in test env ACCOUNT_EMAIL_VERIFICATION = "none" ?
-
 describe('Create an account with unmatching password', () => {
   it('Attempts to create an account with bad password', () => {
     cy.visit(baseURL + urls.SIGNUP);
