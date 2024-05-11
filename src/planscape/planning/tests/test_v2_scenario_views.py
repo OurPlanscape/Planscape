@@ -364,6 +364,21 @@ class UpdateScenarioTest(APITransactionTestCase):
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
+        self.configuration = {
+            "question_id": 1,
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.old_notes = "Truly, you have a dizzying intellect."
         self.old_name = "Man in black"
@@ -371,7 +386,7 @@ class UpdateScenarioTest(APITransactionTestCase):
             self.owner_user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, self.old_name, "{}", self.owner_user, self.old_notes
+            self.planning_area, self.old_name, self.configuration, self.owner_user, self.old_notes
         )
 
         self.owner_user2 = User.objects.create(username="testuser2")
@@ -381,7 +396,7 @@ class UpdateScenarioTest(APITransactionTestCase):
             self.owner_user2, "test plan2", self.storable_geometry
         )
         self.owner_user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
+            self.planning_area2, "test user2scenario", self.configuration, user=self.owner_user2
         )
 
         create_collaborator_record(
@@ -454,6 +469,7 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
+        print(f"Response in test_update_name_only: {response.content}")
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
@@ -474,6 +490,7 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
+        print(f"Response in test_update_status_only_by_owner: {response.content}")
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
@@ -493,15 +510,12 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
+        print(f"Response in test_update_status_bad_value: {response.content}")
+
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(
             response.content,
-            {
-                "configuration": ["This field is required."],
-                "name": ["This field is required."],
-                "planning_area": ["This field is required."],
-                "status": ['"UNKNOWN_STATUS" is not a valid choice.'],
-            },
+            {"error": "Status is not valid."},
         )
         # Ensure status is unchanged
         scenario = Scenario.objects.get(pk=self.scenario.pk)
@@ -715,11 +729,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(
             response.content,
-            {
-                "configuration": ["This field is required."],
-                "name": ["This field may not be null."],
-                "planning_area": ["This field is required."],
-            },
+            {"configuration": ["This field is required."]},
         )
 
     def test_update_empty_string_name(self):
@@ -739,11 +749,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(
             response.content,
-            {
-                "configuration": ["This field is required."],
-                "name": ["This field may not be null."],
-                "planning_area": ["This field is required."],
-            },
+            {"configuration": ["This field is required."]},
         )
 
 

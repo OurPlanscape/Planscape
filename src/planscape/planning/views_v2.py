@@ -4,7 +4,7 @@ from django.conf import settings
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from planning.models import PlanningArea, Scenario, ScenarioResult
+from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioStatus
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
@@ -68,11 +68,45 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     filterset_class = ScenarioFilter
 
     def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
         request_data = request.data
         request_data["user"] = request.user.pk
-        serializer = self.get_serializer(data=request_data)
+        # instance = self.get_object()
+        print(f"KWARGS!: {kwargs}")
+        request_data["planning_area"] = kwargs.pop("planningarea_pk")
+        is_dirty = False
+
+        # TODO: can we put these validations in a Serializer
+        if "notes" in request.data:
+            request_data["notes"] = request.data.get("notes")
+            is_dirty = True
+
+        if "name" in request.data:
+            # This must be always defined
+            new_name = request.data.get("notes")
+            if (new_name is None) or (len(new_name) == 0):
+                return Response(
+                    {"error": "Name must be defined."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            request_data["name"] = new_name
+            is_dirty = True
+
+        if "status" in request.data:
+            new_status = request.data.get("status").upper()
+            if (new_status is None) or (new_status not in dict(ScenarioStatus.choices)):
+                return Response(
+                    {"error": "Status is not valid."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            request_data["name"] = new_status
+            is_dirty = True
+
+        serializer = self.get_serializer(data=request_data, partial=partial)
         serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if is_dirty:
+            serializer.save()
+
         headers = self.get_success_headers(serializer.data)
         return Response(
             serializer.data, status=status.HTTP_201_CREATED, headers=headers
