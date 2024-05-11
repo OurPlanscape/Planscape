@@ -494,7 +494,15 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content, {"error": "Status is not valid."})
+        self.assertJSONEqual(
+            response.content,
+            {
+                "configuration": ["This field is required."],
+                "name": ["This field is required."],
+                "planning_area": ["This field is required."],
+                "status": ['"UNKNOWN_STATUS" is not a valid choice.'],
+            },
+        )
         # Ensure status is unchanged
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.status, "ACTIVE")
@@ -536,6 +544,7 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
+
         self.assertEqual(response.status_code, 200)
         self.assertJSONEqual(response.content, {"id": self.scenario.pk})
         scenario = Scenario.objects.get(pk=self.scenario.pk)
@@ -704,7 +713,14 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content, {"error": "Name must be defined."})
+        self.assertJSONEqual(
+            response.content,
+            {
+                "configuration": ["This field is required."],
+                "name": ["This field may not be null."],
+                "planning_area": ["This field is required."],
+            },
+        )
 
     def test_update_empty_string_name(self):
         self.client.force_authenticate(self.owner_user)
@@ -721,7 +737,14 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertJSONEqual(response.content, {"error": "Name must be defined."})
+        self.assertJSONEqual(
+            response.content,
+            {
+                "configuration": ["This field is required."],
+                "name": ["This field may not be null."],
+                "planning_area": ["This field is required."],
+            },
+        )
 
 
 class ListScenariosForPlanningAreaTest(APITransactionTestCase):
@@ -918,3 +941,638 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertJSONEqual(
             response.content, {"detail": "No PlanningArea matches the given query."}
         )
+
+
+class GetScenarioTest(APITransactionTestCase):
+    def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+        self.unprivileged_user = self.test_users["unprivileged"]
+
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        self.configuration = {
+            "question_id": 1,
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.planning_area = _create_planning_area(
+            self.owner_user, "test plan", self.storable_geometry
+        )
+        self.scenario = _create_scenario(
+            self.planning_area,
+            "test scenario",
+            self.configuration,
+            user=self.owner_user,
+        )
+
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
+        self.planning_area2 = _create_planning_area(
+            self.owner_user2, "test plan2", self.storable_geometry
+        )
+        self.scenario2 = _create_scenario(
+            self.planning_area2,
+            "test scenario2",
+            self.configuration,
+            user=self.owner_user2,
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+        )
+        self.assertEqual(Scenario.objects.count(), 2)
+        self.assertEqual(ScenarioResult.objects.count(), 2)
+
+    def test_get_scenario(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertIsNotNone(response_json["created_at"])
+        self.assertIsNotNone(response_json["updated_at"])
+
+    def test_get_scenario_as_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertIsNotNone(response_json["created_at"])
+        self.assertIsNotNone(response_json["updated_at"])
+
+    def test_get_scenario_not_logged_in(self):
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
+
+    def test_get_scenario_wrong_user(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario2.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"message": "You do not have permission to view this scenario"},
+        )
+
+    def test_get_scenario_nonexistent_scenario(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": 99999},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content, {"error": "Scenario matching query does not exist."}
+        )
+
+    def test_get_scenario_with_results(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk, "show_results": True},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["name"], "test scenario")
+        self.assertEqual(result["user"], self.owner_user.pk)
+        self.assertEqual(
+            result["scenario_result"]["status"], ScenarioResultStatus.PENDING
+        )
+
+
+class GetScenarioTest(APITransactionTestCase):
+    def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+        self.unprivileged_user = self.test_users["unprivileged"]
+
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        self.configuration = {
+            "question_id": 1,
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.planning_area = _create_planning_area(
+            self.owner_user, "test plan", self.storable_geometry
+        )
+        self.scenario = _create_scenario(
+            self.planning_area,
+            "test scenario",
+            self.configuration,
+            user=self.owner_user,
+        )
+
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
+        self.planning_area2 = _create_planning_area(
+            self.owner_user2, "test plan2", self.storable_geometry
+        )
+        self.scenario2 = _create_scenario(
+            self.planning_area2,
+            "test scenario2",
+            self.configuration,
+            user=self.owner_user2,
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+        )
+        self.assertEqual(Scenario.objects.count(), 2)
+        self.assertEqual(ScenarioResult.objects.count(), 2)
+
+    def test_get_scenario(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertIsNotNone(response_json["created_at"])
+        self.assertIsNotNone(response_json["updated_at"])
+
+    def test_get_scenario_as_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertIsNotNone(response_json["created_at"])
+        self.assertIsNotNone(response_json["updated_at"])
+
+    def test_get_scenario_not_logged_in(self):
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
+
+    def test_get_scenario_wrong_user(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario2.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"message": "You do not have permission to view this scenario"},
+        )
+
+    def test_get_scenario_nonexistent_scenario(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": 99999},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 404)
+        self.assertJSONEqual(
+            response.content, {"error": "Scenario matching query does not exist."}
+        )
+
+    def test_get_scenario_with_results(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse("planning:get_scenario_by_id"),
+            {"id": self.scenario.pk, "show_results": True},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        result = response.json()
+        self.assertEqual(result["name"], "test scenario")
+        self.assertEqual(result["user"], self.owner_user.pk)
+        self.assertEqual(
+            result["scenario_result"]["status"], ScenarioResultStatus.PENDING
+        )
+
+
+# class GetScenarioDownloadTest(APITransactionTestCase):
+#     def setUp(self):
+#         super().setUp()
+#         self.set_verbose = True
+#         if Permissions.objects.count() == 0:
+#             reset_permissions()
+
+#         self.test_users = _create_test_user_set()
+#         self.owner_user = self.test_users["owner"]
+#         self.owner_user2 = self.test_users["owner2"]
+#         self.collab_user = self.test_users["collaborator"]
+#         self.viewer_user = self.test_users["viewer"]
+#         self.unprivileged_user = self.test_users["unprivileged"]
+
+#         self.geometry = {
+#             "type": "MultiPolygon",
+#             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+#         }
+#         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+#         self.planning_area = _create_planning_area(
+#             self.owner_user, "test plan", self.storable_geometry
+#         )
+#         self.scenario = _create_scenario(
+#             self.planning_area, "test scenario", "{}", user=self.owner_user
+#         )
+
+#         # set scenario result status to success
+#         self.scenario_result = ScenarioResult.objects.get(scenario__id=self.scenario.pk)
+#         self.scenario_result.status = ScenarioResultStatus.SUCCESS
+#         self.scenario_result.save()
+
+#         # generate fake data in a directory that corresponds to this scenario name
+#         self.mock_project_path = (
+#             str(settings.OUTPUT_DIR) + "/" + str(self.scenario.uuid)
+#         )
+
+#         # this will also make the output directory that we currently don't commit
+#         os.makedirs(self.mock_project_path, exist_ok=True)
+#         self.mock_project_file = os.path.join(self.mock_project_path, "fake_data.txt")
+#         with open(self.mock_project_file, "w") as handle:
+#             print("Just test data", file=handle)
+
+#         # create a second scenario with a different user
+#         self.planning_area2 = _create_planning_area(
+#             self.owner_user2, "test plan2", self.storable_geometry
+#         )
+#         self.scenario2 = _create_scenario(
+#             self.planning_area2, "test scenario2", "{}", user=self.owner_user2
+#         )
+#         # set scenario result status to success
+#         self.scenario2_result = ScenarioResult.objects.get(
+#             scenario__id=self.scenario2.pk
+#         )
+#         self.scenario2_result.status = ScenarioResultStatus.SUCCESS
+#         self.scenario2_result.save()
+#         create_collaborator_record(
+#             self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+#         )
+#         create_collaborator_record(
+#             self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+#         )
+#         self.assertEqual(Scenario.objects.count(), 2)
+#         self.assertEqual(ScenarioResult.objects.count(), 2)
+
+#     def tearDown(self):
+#         os.remove(self.mock_project_file)
+#         os.rmdir(self.mock_project_path)
+#         return super().tearDown()
+
+#     def test_get_scenario_with_zip(self):
+#         self.client.force_authenticate(self.owner_user)
+#         response = self.client.get(
+#             reverse("planning:download_csv"), {"id": self.scenario.pk}
+#         )
+#         self.assertEqual(response.status_code, 200)
+#         self.assertEqual(response.headers["Content-Type"], "application/zip")
+#         self.assertIsInstance(response.content, bytes)
+
+#     def test_download_csv_not_logged_in(self):
+#         response = self.client.get(
+#             reverse("planning:download_csv"),
+#             {"id": self.scenario.pk},
+#             content_type="application/json",
+#         )
+#         self.assertEqual(response.status_code, 401)
+#         self.assertJSONEqual(response.content, {"error": "Authentication Required"})
+
+#     def test_get_scenario_wrong_user(self):
+#         self.client.force_authenticate(self.owner_user)
+#         response = self.client.get(
+#             reverse("planning:download_csv"),
+#             {"id": self.scenario2.pk},
+#             content_type="application/json",
+#         )
+#         self.assertEqual(response.status_code, 403)
+#         self.assertRegex(str(response.content), r"does not exist")
+
+#     def test_get_scenario_collab_user(self):
+#         self.client.force_authenticate(self.collab_user)
+#         response = self.client.get(
+#             reverse("planning:download_csv"),
+#             {"id": self.scenario.pk},
+#             content_type="application/json",
+#         )
+#         self.assertEqual(response.status_code, 200)
+#         self.assertEqual(response.headers["Content-Type"], "application/zip")
+#         self.assertIsInstance(response.content, bytes)
+
+#     def test_get_scenario_viewer_user(self):
+#         self.client.force_authenticate(self.viewer_user)
+#         response = self.client.get(
+#             reverse("planning:download_csv"),
+#             {"id": self.scenario.pk},
+#             content_type="application/json",
+#         )
+#         self.assertEqual(response.status_code, 200)
+#         self.assertEqual(response.headers["Content-Type"], "application/zip")
+#         self.assertIsInstance(response.content, bytes)
+
+#     def test_get_scenario_unprivileged_user(self):
+#         self.client.force_authenticate(self.unprivileged_user)
+#         response = self.client.get(
+#             reverse("planning:download_csv"),
+#             {"id": self.scenario.pk},
+#             content_type="application/json",
+#         )
+#         self.assertEqual(response.status_code, 403)
+#         self.assertRegex(str(response.content), r"does not exist")
+
+#     def test_get_scenario_without_project_data(self):
+#         self.client.force_authenticate(self.owner_user2)
+#         self.scenario2_result.status = ScenarioResultStatus.SUCCESS
+#         self.scenario2_result.save()
+
+#         self.client.force_authenticate(self.owner_user2)
+#         response = self.client.get(
+#             reverse("planning:download_csv"),
+#             {"id": self.scenario2.pk},
+#             content_type="application/json",
+#         )
+#         self.assertEqual(response.status_code, 400)
+#         self.assertRegex(str(response.content), r"Scenario files cannot be read")
+
+#     def test_get_scenario_without_success_status_still_returns_data(self):
+#         self.client.force_authenticate(self.owner_user)
+#         self.scenario_result.status = ScenarioResultStatus.FAILURE
+#         self.scenario_result.save()
+
+#         response = self.client.get(
+#             reverse("planning:download_csv"),
+#             {"id": self.scenario.pk},
+#             content_type="application/json",
+#         )
+#         self.assertEqual(response.status_code, 200)
+
+#     def test_get_scenario_nonexistent_scenario(self):
+#         self.client.force_authenticate(self.owner_user)
+#         response = self.client.get(
+#             reverse("planning:download_csv"),
+#             {"id": 99999},
+#             content_type="application/json",
+#         )
+#         self.assertEqual(response.status_code, 404)
+#         self.assertRegex(str(response.content), r"does not exist")
+
+
+class DeleteScenarioTest(APITransactionTestCase):
+    def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+        self.unprivileged_user = self.test_users["unprivileged"]
+
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.planning_area = _create_planning_area(
+            self.owner_user, "test plan", self.storable_geometry
+        )
+        self.scenario = _create_scenario(
+            self.planning_area, "test scenario", "{}", user=self.owner_user
+        )
+        self.scenario2 = _create_scenario(
+            self.planning_area, "test scenario2", "{}", user=self.owner_user
+        )
+        self.scenario3 = _create_scenario(
+            self.planning_area, "test scenario3", "{}", user=self.owner_user
+        )
+
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
+        self.planning_area2 = _create_planning_area(
+            self.owner_user2, "test plan2", self.storable_geometry
+        )
+        self.owner_user2scenario = _create_scenario(
+            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+        )
+
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_delete_scenario(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.delete(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                    "planningarea_pk": self.planning_area.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 204)
+        self.assertEqual(Scenario.objects.count(), 3)
+        self.assertEqual(ScenarioResult.objects.count(), 3)
+
+    # TODO: no endpoint for multiple scenario deletions yet
+    # def test_delete_scenario_multiple_owned(self):
+    #     self.client.force_authenticate(self.owner_user)
+    #     scenario_ids = [self.scenario.pk, self.scenario2.pk]
+    #     payload = json.dumps({"scenario_id": scenario_ids})
+    #     response = self.client.post(
+    #         reverse("planning:delete_scenario"),
+    #         payload,
+    #         content_type="application/json",
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(Scenario.objects.count(), 2)
+    #     self.assertEqual(ScenarioResult.objects.count(), 2)
+
+    # Silently does nothing for the non-owned scenario.
+    # def test_delete_scenario_multiple_partially_owned(self):
+    #     self.client.force_authenticate(self.owner_user)
+    #     scenario_ids = [
+    #         self.scenario.pk,
+    #         self.scenario2.pk,
+    #         self.owner_user2scenario.pk,
+    #     ]
+    #     payload = json.dumps({"scenario_id": scenario_ids})
+    #     response = self.client.delete(
+    #         reverse("planning:scenarios-detail"),
+    #         payload,
+    #         content_type="application/json",
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(Scenario.objects.count(), 2)
+    #     self.assertEqual(ScenarioResult.objects.count(), 2)
+
+    def test_delete_scenario_not_logged_in(self):
+        response = self.client.delete(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                    "planningarea_pk": self.planning_area.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+        self.assertJSONEqual(
+            response.content,
+            {"detail": "Authentication credentials were not provided."},
+        )
+
+    # Silently does nothing.
+    def test_delete_scenario_wrong_user(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.delete(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "pk": self.owner_user2scenario.pk,
+                    "planningarea_pk": self.planning_area2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    # # Silently does nothing.
+    # def test_delete_scenario_nonexistent_id(self):
+    #     self.client.force_authenticate(self.owner_user)
+    #     payload = json.dumps({"scenario_id": 99999})
+    #     response = self.client.delete(
+    #         reverse("planning:scenarios-detail"),
+    #         payload,
+    #         content_type="application/json",
+    #     )
+    #     self.assertEqual(response.status_code, 200)
+    #     self.assertEqual(Scenario.objects.count(), 4)
+    #     self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_delete_scenario_as_collaborator(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.delete(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "pk": self.owner_user2scenario.pk,
+                    "planningarea_pk": self.planning_area2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_delete_scenario_as_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.delete(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "pk": self.owner_user2scenario.pk,
+                    "planningarea_pk": self.planning_area2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(Scenario.objects.count(), 4)
+        self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    # def test_delete_scenario_missing_id(self):
+    #     self.client.force_authenticate(self.owner_user)
+    #     payload = json.dumps({})
+    #     response = self.client.delete(
+    #         reverse("planning:scenarios-detail"),
+    #         payload,
+    #         content_type="application/json",
+    #     )
+    #     self.assertEqual(response.status_code, 400)
+    #     self.assertEqual(Scenario.objects.count(), 4)
+    #     self.assertEqual(ScenarioResult.objects.count(), 4)
+    #     self.assertRegex(str(response.content), r"Must specify scenario id")
