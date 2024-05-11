@@ -303,11 +303,13 @@ class ScenarioSerializer(
     configuration = ConfigurationSerializer()
 
     def create(self, validated_data):
-        validated_data["user"] = self.context["user"] or None
+        if validated_data["user"] is None:
+            validated_data["user"] = self.context["user"] or None
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        validated_data["user"] = self.context["user"] or None
+        if validated_data["user"] is None:
+            validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
 
     class Meta:

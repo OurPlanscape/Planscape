@@ -69,6 +69,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     def create(self, request, planningarea_pk):
         request_data = request.data
         request_data["planning_area"] = planningarea_pk
+        request_data["user"] = request.user.pk
         serializer = self.get_serializer(data=request_data)
         serializer.is_valid(raise_exception=True)
         return super().create(request)
