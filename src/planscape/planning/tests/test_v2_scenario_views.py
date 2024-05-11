@@ -131,21 +131,23 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(scenario.notes, None)
         self.assertEqual(scenario.user, self.owner_user)
 
-    def test_create_scenario_missing_planning_area(self):
-        self.client.force_authenticate(self.owner_user)
-        payload = json.dumps(
-            {"configuration": self.configuration, "name": "test scenario"}
-        )
-        response = self.client.post(
-            reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
-            ),
-            payload,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertRegex(str(response.content), r"This field is required")
+    # TODO: remove this test or replace with equivalent?
+    # - the path requires a planning area pk
+    # def test_create_scenario_missing_planning_area(self):
+    #     self.client.force_authenticate(self.owner_user)
+    #     payload = json.dumps(
+    #         {"configuration": self.configuration, "name": "test scenario"}
+    #     )
+    #     response = self.client.post(
+    #         reverse(
+    #             "planning:scenarios-list",
+    #             kwargs={"planningarea_pk": None},
+    #         ),
+    #         payload,
+    #         content_type="application/json",
+    #     )
+    #     self.assertEqual(response.status_code, 400)
+    #     self.assertRegex(str(response.content), r"This field is required")
 
     def test_create_scenario_missing_configuration(self):
         self.client.force_authenticate(self.owner_user)
@@ -345,6 +347,381 @@ class CreateScenarioTest(APITransactionTestCase):
             response.content,
             {"detail": "You do not have permission to perform this action."},
         )
+
+
+class UpdateScenarioTest(APITransactionTestCase):
+    def setUp(self):
+        if Permissions.objects.count() == 0:
+            reset_permissions()
+
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+        self.collab_user = self.test_users["collaborator"]
+        self.viewer_user = self.test_users["viewer"]
+
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.old_notes = "Truly, you have a dizzying intellect."
+        self.old_name = "Man in black"
+        self.planning_area = _create_planning_area(
+            self.owner_user, "test plan", self.storable_geometry
+        )
+        self.scenario = _create_scenario(
+            self.planning_area, self.old_name, "{}", self.owner_user, self.old_notes
+        )
+
+        self.owner_user2 = User.objects.create(username="testuser2")
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
+        self.planning_area2 = _create_planning_area(
+            self.owner_user2, "test plan2", self.storable_geometry
+        )
+        self.owner_user2scenario = _create_scenario(
+            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+        )
+
+        self.assertEqual(Scenario.objects.count(), 2)
+        self.assertEqual(ScenarioResult.objects.count(), 2)
+
+        self.new_notes = "Wait till I get going!"
+        self.new_name = "Vizzini"
+
+    def test_update_notes_and_name(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.name, self.new_name)
+        self.assertEqual(scenario.notes, self.new_notes)
+        self.assertEqual(scenario.user, self.owner_user)
+
+    def test_update_notes_only(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"notes": self.new_notes})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.name, self.old_name)
+        self.assertEqual(scenario.notes, self.new_notes)
+        self.assertEqual(scenario.user, self.owner_user)
+
+    def test_update_name_only(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"name": self.new_name})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.name, self.new_name)
+        self.assertEqual(scenario.notes, self.old_notes)
+
+    def test_update_status_only_by_owner(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"status": "ARCHIVED"})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.status, "ARCHIVED")
+
+    def test_update_status_bad_value(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"status": "UNKNOWN_STATUS"})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {"error": "Status is not valid."})
+        # Ensure status is unchanged
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.status, "ACTIVE")
+
+    def test_update_status_only_by_viewer(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload = json.dumps({"status": "ARCHIVED"})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"detail": "You do not have permission to perform this action."},
+        )
+        # Ensure status is unchanged
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.status, "ACTIVE")
+
+    def test_update_clear_notes(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"notes": None})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.name, self.old_name)
+        self.assertEqual(scenario.notes, None)
+
+    def test_update_empty_string_notes(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"notes": ""})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.name, self.old_name)
+        self.assertEqual(scenario.notes, "")
+
+    def test_update_nothing_to_update(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps(
+            {},
+        )
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        scenario = Scenario.objects.get(pk=self.scenario.pk)
+        self.assertEqual(scenario.name, self.old_name)
+        self.assertEqual(scenario.notes, self.old_notes)
+        self.assertEqual(scenario.user, self.owner_user)
+
+    def test_update_not_logged_in(self):
+        payload = json.dumps(
+            {"name": self.new_name, "notes": self.new_notes},
+        )
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(
+            response.content,
+            {"detail": "Authentication credentials were not provided."},
+        )
+
+    # def test_update_missing_id(self):
+    #     self.client.force_authenticate(self.owner_user)
+    #     payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
+    #     response = self.client.patch(
+    #         reverse("planning:scenarios-detail"),
+    #         payload,
+    #         content_type="application/json",
+    #     )
+    #     self.assertEqual(response.status_code, 400)
+    #     self.assertRegex(str(response.content), r"Scenario ID is required")
+
+    def test_update_collab_user(self):
+        self.client.force_authenticate(self.collab_user)
+        payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"detail": "You do not have permission to perform this action."},
+        )
+
+    def test_update_viewer_user(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload = json.dumps(
+            {
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"detail": "You do not have permission to perform this action."},
+        )
+
+    def test_update_wrong_user(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps(
+            {
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area2.pk,
+                    "pk": self.owner_user2scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"detail": "You do not have permission to perform this action."},
+        )
+
+    def test_update_blank_name(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps(
+            {"id": self.scenario.pk, "name": None, "notes": self.new_notes}
+        )
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {"error": "Name must be defined."})
+
+    def test_update_empty_string_name(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"name": None, "notes": self.new_notes})
+        response = self.client.patch(
+            reverse(
+                "planning:scenarios-detail",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {"error": "Name must be defined."})
 
 
 class ListScenariosForPlanningAreaTest(APITransactionTestCase):

@@ -1,9 +1,10 @@
 import logging
 import json
-from rest_framework import viewsets
+from django.conf import settings
+from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from planning.models import PlanningArea, Scenario
+from planning.models import PlanningArea, Scenario, ScenarioResult
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
@@ -11,8 +12,8 @@ from planning.serializers import (
     ScenarioSerializer,
     CreatePlanningAreaSerializer,
 )
+from planning.tasks import async_forsys_run
 from planning.geometry import coerce_geojson, coerce_geometry
-
 from planning.filters import PlanningAreaFilter, ScenarioFilter
 from planning.permission import PlanningAreaViewPermission, ScenarioViewPermission
 from base.region_name import display_name_to_region
@@ -66,13 +67,37 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     ordering_fields = ["name", "created_at"]
     filterset_class = ScenarioFilter
 
+    def update(self, request, *args, **kwargs):
+        request_data = request.data
+        request_data["user"] = request.user.pk
+        serializer = self.get_serializer(data=request_data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
     def create(self, request, planningarea_pk):
         request_data = request.data
         request_data["planning_area"] = planningarea_pk
         request_data["user"] = request.user.pk
         serializer = self.get_serializer(data=request_data)
         serializer.is_valid(raise_exception=True)
-        return super().create(request)
+        serializer.save()
+
+        # TODO: taken from old views...
+        # add more tests for scenarioresult content to be sure this is working
+        scenario_result = ScenarioResult.objects.create(scenario=serializer.instance)
+        scenario_result.save()
+
+        if settings.USE_CELERY_FOR_FORSYS:
+            async_forsys_run.delay(serializer.instance.pk)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def get_serializer_class(self):
         if self.action == "list":

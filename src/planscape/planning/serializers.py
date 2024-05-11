@@ -303,12 +303,12 @@ class ScenarioSerializer(
     configuration = ConfigurationSerializer()
 
     def create(self, validated_data):
-        if validated_data["user"] is None:
+        if not hasattr(validated_data, "user"):
             validated_data["user"] = self.context["user"] or None
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
-        if validated_data["user"] is None:
+        if not hasattr(validated_data, "user"):
             validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
 
