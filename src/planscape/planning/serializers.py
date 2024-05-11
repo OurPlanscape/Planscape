@@ -31,9 +31,6 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField()
 
     def get_region_name(self, instance):
-        print(
-            f"from the list serializer, here is the instance value of region_name {instance.region_name}"
-        )
         return instance.get_region_name_display()
 
     def get_area_acres(self, instance):
@@ -75,15 +72,6 @@ class PlanningAreaSerializer(
     gis_serializers.GeoModelSerializer,
 ):
     creator = serializers.CharField(source="user", read_only=True)
-
-    def get_region_name(self, instance):
-        print(
-            f"we are calling the subclass method for get_region_name, which is instance.region_name {dir(instance)}"
-        )
-        print(
-            f"from the other serializer, here is the instance value of region_name {instance.region_name}"
-        )
-        return instance.region_name
 
     class Meta:
         fields = (
@@ -134,12 +122,6 @@ class CreatePlanningAreaSerializer(
         return list(get_permissions(user, instance))
 
     def get_region_name(self, instance):
-        print(
-            f"we are calling the subclass method for get_region_name, which is instance.region_name {dir(instance)}"
-        )
-        print(
-            f"from the other serializer, here is the instance value of region_name {instance.region_name}"
-        )
         return instance.region_name
 
     class Meta:

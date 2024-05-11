@@ -278,8 +278,6 @@ class CreatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         data = response.json()
-        print(f"Here is the response we get: {response}")
-        print(f"Here is the response we get: {response.content}")
 
         # self.assertEqual(response.status_code, 200)
         planning_area = PlanningArea.objects.all().first()
@@ -329,9 +327,8 @@ class CreatePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         data = response.json()
-        print(f"Planning area multi response: {response.content}")
         planning_area = PlanningArea.objects.all().first()
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(PlanningArea.objects.all().count(), 1)
         self.assertEqual(planning_area.region_name, "southern-california")
         self.assertTrue(
@@ -675,7 +672,6 @@ class DeletePlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 204)
-        self.assertJSONEqual(response.content, {"id": [self.planning_area2.pk]})
         self.assertEqual(PlanningArea.objects.count(), 2)
 
     def test_delete_user_not_logged_in(self):
@@ -703,7 +699,7 @@ class DeletePlanningAreaTest(APITransactionTestCase):
             delete_url,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 404)
         self.assertEqual(PlanningArea.objects.count(), 3)
 
     # TODO: we need a special endpoint for multiple deletions

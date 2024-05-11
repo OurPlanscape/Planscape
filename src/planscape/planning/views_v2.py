@@ -36,21 +36,12 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
                 body.get("region_name")
             ).value
             serializer = self.get_serializer(data=request_data)
-            print(f"What is the request_data? {request_data}")
             serializer.is_valid(raise_exception=True)
-            # planning_area = PlanningArea.objects.create(serializer)
-            # serializer = PlanningAreaSerializer(
-            #     instance=planning_area, context={"request": request}
-            # )
-            print(
-                f"What does the serializer contain now BEFORE the save?: {serializer}"
-            )
-            # self.perform_create(serializer)
 
-            serializer.save()
-            print(
-                f"What does the serializer contain now, after the save?: {serializer.data}"
-            )
+            self.perform_create(serializer)
+
+            # serializer.save()
+
             return Response(serializer.data)
         except Exception as e:
             logger.exception(e)
