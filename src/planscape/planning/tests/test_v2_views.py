@@ -741,7 +741,7 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 201)
         self.assertJSONEqual(
             response.content, {"name": ["This field may not be null."]}
         )

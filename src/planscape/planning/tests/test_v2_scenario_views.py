@@ -386,7 +386,11 @@ class UpdateScenarioTest(APITransactionTestCase):
             self.owner_user, "test plan", self.storable_geometry
         )
         self.scenario = _create_scenario(
-            self.planning_area, self.old_name, self.configuration, self.owner_user, self.old_notes
+            self.planning_area,
+            self.old_name,
+            self.configuration,
+            self.owner_user,
+            self.old_notes,
         )
 
         self.owner_user2 = User.objects.create(username="testuser2")
@@ -396,7 +400,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             self.owner_user2, "test plan2", self.storable_geometry
         )
         self.owner_user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", self.configuration, user=self.owner_user2
+            self.planning_area2,
+            "test user2scenario",
+            self.configuration,
+            user=self.owner_user2,
         )
 
         create_collaborator_record(
@@ -427,8 +434,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        response_obj = json.loads(response.content)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_obj["id"], self.scenario.pk)
+
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.new_name)
         self.assertEqual(scenario.notes, self.new_notes)
@@ -448,8 +457,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        response_obj = json.loads(response.content)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_obj["id"], self.scenario.pk)
+
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, self.new_notes)
@@ -469,9 +480,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        print(f"Response in test_update_name_only: {response.content}")
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        response_obj = json.loads(response.content)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_obj["id"], self.scenario.pk)
+
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.new_name)
         self.assertEqual(scenario.notes, self.old_notes)
@@ -490,9 +502,9 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        print(f"Response in test_update_status_only_by_owner: {response.content}")
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        response_obj = json.loads(response.content)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_obj["id"], self.scenario.pk)
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.status, "ARCHIVED")
 
@@ -510,7 +522,6 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        print(f"Response in test_update_status_bad_value: {response.content}")
 
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(
@@ -559,8 +570,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             content_type="application/json",
         )
 
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        response_obj = json.loads(response.content)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_obj["id"], self.scenario.pk)
+
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, None)
@@ -579,8 +592,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        response_obj = json.loads(response.content)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_obj["id"], self.scenario.pk)
+
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, "")
@@ -601,8 +616,10 @@ class UpdateScenarioTest(APITransactionTestCase):
             payload,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertJSONEqual(response.content, {"id": self.scenario.pk})
+        response_obj = json.loads(response.content)
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response_obj["id"], self.scenario.pk)
+
         scenario = Scenario.objects.get(pk=self.scenario.pk)
         self.assertEqual(scenario.name, self.old_name)
         self.assertEqual(scenario.notes, self.old_notes)
@@ -729,7 +746,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(
             response.content,
-            {"configuration": ["This field is required."]},
+            {"error": "Name must be defined."},
         )
 
     def test_update_empty_string_name(self):
@@ -749,7 +766,7 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertJSONEqual(
             response.content,
-            {"configuration": ["This field is required."]},
+            {"error": "Name must be defined."},
         )
 
 

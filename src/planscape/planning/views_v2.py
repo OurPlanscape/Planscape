@@ -71,19 +71,18 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         partial = kwargs.pop("partial", False)
         request_data = request.data
         request_data["user"] = request.user.pk
-        # instance = self.get_object()
-        print(f"KWARGS!: {kwargs}")
+        instance = self.get_object()
         request_data["planning_area"] = kwargs.pop("planningarea_pk")
         is_dirty = False
 
-        # TODO: can we put these validations in a Serializer
+        # TODO: can we rely on Serializers to determine what can/cant be here?
         if "notes" in request.data:
             request_data["notes"] = request.data.get("notes")
             is_dirty = True
 
         if "name" in request.data:
             # This must be always defined
-            new_name = request.data.get("notes")
+            new_name = request.data.get("name")
             if (new_name is None) or (len(new_name) == 0):
                 return Response(
                     {"error": "Name must be defined."},
@@ -102,7 +101,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             request_data["name"] = new_status
             is_dirty = True
 
-        serializer = self.get_serializer(data=request_data, partial=partial)
+        serializer = self.get_serializer(instance, data=request_data, partial=partial)
         serializer.is_valid(raise_exception=True)
         if is_dirty:
             serializer.save()

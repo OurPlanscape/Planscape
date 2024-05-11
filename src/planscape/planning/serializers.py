@@ -270,7 +270,7 @@ class ConfigurationSerializer(serializers.Serializer):
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):
-    notes = serializers.CharField(required=False)
+    notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     updated_at = serializers.DateTimeField(required=False)
     created_at = serializers.DateTimeField(required=False)
     creator = serializers.CharField(source="creator_name", read_only=True)
@@ -300,6 +300,7 @@ class ScenarioSerializer(
     ListScenarioSerializer,
     serializers.ModelSerializer,
 ):
+    notes = serializers.CharField(required=False, allow_blank=True, allow_null=True)
     configuration = ConfigurationSerializer()
 
     def create(self, validated_data):
