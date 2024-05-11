@@ -765,3 +765,318 @@ class DeletePlanningAreaTest(APITransactionTestCase):
     #     self.assertJSONEqual(response.content, {"id": planning_area_ids})
     #     # Viewer has no permission to delete, so all records should still exist
     #     self.assertEqual(PlanningArea.objects.count(), 3)
+
+
+class UpdatePlanningAreaTest(APITransactionTestCase):
+    def setUp(self):
+        self.owner_user = User.objects.create(
+            username="area_owner",
+            first_name="Oliver",
+            last_name="Owner",
+            email="owner1@test.test",
+        )
+        self.owner_user.set_password("12345")
+        self.owner_user.save()
+
+        self.owner_user2 = User.objects.create(
+            username="area2_owner",
+            first_name="Olga",
+            last_name="Owner",
+            email="owner2@test.test",
+        )
+        self.owner_user2.set_password("12345")
+        self.owner_user2.save()
+
+        self.collab_user = User.objects.create(
+            username="area_collab",
+            first_name="Chris",
+            last_name="Collab",
+            email="collab@test.test",
+        )
+        self.collab_user.set_password("12345")
+        self.collab_user.save()
+
+        self.viewer_user = User.objects.create(
+            username="area_viewer",
+            first_name="Veronica",
+            last_name="Viewer",
+            email="viewer@test.test",
+        )
+        self.viewer_user.set_password("12345")
+        self.viewer_user.save()
+
+        self.unprivileged_user = User.objects.create(
+            username="justauser",
+            first_name="Ned",
+            last_name="Nobody",
+            email="user@test.test",
+        )
+        self.unprivileged_user.set_password("12345")
+        self.unprivileged_user.save()
+
+        self.geometry = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        storable_geometry = GEOSGeometry(json.dumps(self.geometry))
+        self.old_name = "Westley"
+        self.old_notes = "I know something you don't know."
+        self.planning_area = _create_planning_area(
+            self.owner_user, self.old_name, storable_geometry, self.old_notes
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+        )
+
+        self.planning_area2 = _create_planning_area(
+            self.owner_user2, "Owned By Owner 2 plan", storable_geometry
+        )
+        create_collaborator_record(
+            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
+        )
+        create_collaborator_record(
+            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
+        )
+        self.new_name = "Inigo"
+        self.new_notes = "I am not left handed."
+
+    def test_update_notes_and_name(self):
+        self.client.force_authenticate(self.owner_user)
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        payload = json.dumps(
+            {
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
+        planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
+        self.assertEqual(planning_area.name, self.new_name)
+        self.assertEqual(planning_area.notes, self.new_notes)
+
+    def test_update_notes_only(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"notes": self.new_notes})
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
+        planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
+        self.assertEqual(planning_area.name, self.old_name)
+        self.assertEqual(planning_area.notes, self.new_notes)
+
+    def test_update_name_only(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"name": self.new_name})
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
+        planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
+        self.assertEqual(planning_area.name, self.new_name)
+        self.assertEqual(planning_area.notes, self.old_notes)
+
+    def test_update_clear_notes(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"notes": None})
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
+        planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
+        self.assertEqual(planning_area.name, self.old_name)
+        self.assertEqual(planning_area.notes, None)
+
+    def test_update_empty_string_notes(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps(
+            {"notes": ""},
+        )
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
+        planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
+        self.assertEqual(planning_area.name, self.old_name)
+        self.assertEqual(planning_area.notes, "")
+
+    def test_update_nothing_to_update(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps(
+            {},
+        )
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertJSONEqual(response.content, {"id": self.planning_area.pk})
+        planning_area = PlanningArea.objects.get(pk=self.planning_area.pk)
+        self.assertEqual(planning_area.name, self.old_name)
+        self.assertEqual(planning_area.notes, self.old_notes)
+
+    def test_update_not_logged_in(self):
+        payload = json.dumps(
+            {
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 401)
+        self.assertJSONEqual(response.content, {"error": "Authentication Required"})
+
+    def test_update_missing_id(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"name": self.new_name, "notes": self.new_notes})
+        update_url = reverse("planning:planningareas-detail", kwargs={})
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(
+            response.content, {"error": "No planning area ID provided"}
+        )
+
+    def test_update_wrong_user(self):
+        self.client.force_authenticate(self.owner_user2)
+        payload = json.dumps(
+            {
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"message": "User does not have permission to update this planning area"},
+        )
+
+    def test_update_collaborator_user(self):
+        self.client.force_authenticate(self.collab_user)
+        payload = json.dumps(
+            {
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area2.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {"message": "User does not have permission to update this planning area"},
+        )
+
+    def test_update_viewer_user(self):
+        self.client.force_authenticate(self.viewer_user)
+        payload = json.dumps(
+            {
+                "name": self.new_name,
+                "notes": self.new_notes,
+            }
+        )
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area2.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+        self.assertJSONEqual(
+            response.content,
+            {"message": "User does not have permission to update this planning area"},
+        )
+
+    def test_update_blank_name(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"name": None, "notes": self.new_notes})
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {"message": "Name must be defined"})
+
+    def test_update_empty_string_name(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps({"name": "", "notes": self.new_notes})
+        update_url = reverse(
+            "planning:planningareas-detail", kwargs={"pk": self.planning_area.pk}
+        )
+        response = self.client.patch(
+            update_url,
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertJSONEqual(response.content, {"message": "Name must be defined"})
