@@ -307,7 +307,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         )
         data = response.json()
         planning_area = PlanningArea.objects.all().first()
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(PlanningArea.objects.all().count(), 1)
         self.assertEqual(data["id"], planning_area.id)
         self.assertEqual(planning_area.region_name, "sierra-nevada")

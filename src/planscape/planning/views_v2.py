@@ -27,29 +27,34 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     filterset_class = PlanningAreaFilter
 
     def create(self, request):
-        body = json.loads(request.body)
-        request_data = request.data
-        request_data["user"] = request.user.pk
-        request_data["geometry"] = coerce_geojson(body.get("geometry"))
-        request_data["region_name"] = display_name_to_region(
-            body.get("region_name")
-        ).value
-        serializer = self.get_serializer(data=request_data)
-        print(f"What is the request_data? {request_data}")
-        serializer.is_valid(raise_exception=True)
-        # planning_area = PlanningArea.objects.create(serializer)
-        # serializer = PlanningAreaSerializer(
-        #     instance=planning_area, context={"request": request}
-        # )
-        print(f"What does the serializer contain now BEFORE the save?: {serializer}")
-        # self.perform_create(serializer)
+        try:
+            body = json.loads(request.body)
+            request_data = request.data
+            request_data["user"] = request.user.pk
+            request_data["geometry"] = coerce_geojson(body.get("geometry"))
+            request_data["region_name"] = display_name_to_region(
+                body.get("region_name")
+            ).value
+            serializer = self.get_serializer(data=request_data)
+            print(f"What is the request_data? {request_data}")
+            serializer.is_valid(raise_exception=True)
+            # planning_area = PlanningArea.objects.create(serializer)
+            # serializer = PlanningAreaSerializer(
+            #     instance=planning_area, context={"request": request}
+            # )
+            print(
+                f"What does the serializer contain now BEFORE the save?: {serializer}"
+            )
+            # self.perform_create(serializer)
 
-        serializer.save()
-        print(
-            f"What does the serializer contain now, after the save?: {serializer.data}"
-        )
-
-        return Response(serializer.data)
+            serializer.save()
+            print(
+                f"What does the serializer contain now, after the save?: {serializer.data}"
+            )
+            return Response(serializer.data)
+        except Exception as e:
+            logger.exception(e)
+            return Response(status=400)
 
     def get_serializer_class(self):
         if self.action == "list":
