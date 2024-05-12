@@ -64,7 +64,7 @@ export class PasswordResetComponent implements OnInit {
         password2: this.formBuilder.control('', Validators.required),
       },
       {
-        validator: passwordsMustMatchValidator('password1', 'password2'),
+        validators: [passwordsMustMatchValidator('password1', 'password2')],
         updateOn: 'blur',
       }
     );
