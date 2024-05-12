@@ -13,8 +13,7 @@ import { FormMessageType } from '@types';
 import { AuthService, PasswordResetToken } from '@services';
 
 import { CommonModule } from '@angular/common';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+import { MaterialModule } from '../../material/material.module';
 import { SharedModule } from '@shared';
 import { AboutComponent } from '../about/about.component';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
@@ -30,8 +29,7 @@ import { PasswordConfirmationDialogComponent } from '../password-confirmation-di
   imports: [
     AboutComponent,
     CommonModule,
-    MatFormFieldModule,
-    MatInputModule,
+    MaterialModule,
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
