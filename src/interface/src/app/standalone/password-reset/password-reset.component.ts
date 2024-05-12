@@ -65,6 +65,7 @@ export class PasswordResetComponent implements OnInit {
       },
       {
         validator: passwordsMustMatchValidator('password1', 'password2'),
+        updateOn: 'blur',
       }
     );
   }
