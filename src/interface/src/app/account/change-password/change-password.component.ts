@@ -63,6 +63,7 @@ export class ChangePasswordComponent {
           passwordMustBeNewValidator('current', 'newPassword'),
           passwordsMustMatchValidator('newPassword', 'passwordConfirm'),
         ],
+        updateOn: 'blur',
       }
     );
   }
