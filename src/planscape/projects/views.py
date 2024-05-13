@@ -3,12 +3,14 @@ from rest_framework.viewsets import GenericViewSet
 
 from projects.filters import ProjectFilterSet
 from projects.models import Project, ProjectVisibility
+from projects.serializers import ProjectSerializer
 
 
 class ProjectViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = Project.objects.filter(visibility=ProjectVisibility.PUBLIC)
     ordering_fields = ["name", "display_name", "created_at"]
     filterset_class = ProjectFilterSet
+    serializer_class = ProjectSerializer
 
     def get_queryset(self):
         # TODO: we need to customize
