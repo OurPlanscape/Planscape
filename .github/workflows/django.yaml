@@ -15,7 +15,7 @@ jobs:
         with:
           options: "--check"
           src: "src/planscape"
-          use_pyproject: true
+          version: "23.7.0"
 
   build:
     runs-on: ubuntu-latest
