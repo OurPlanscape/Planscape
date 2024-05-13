@@ -199,7 +199,7 @@
         },
         {
             "name": "InputComponent",
-            "id": "component-InputComponent-1794508ef2e6ae4cdfa26b3fcb24b75ea1bd7a64b4d3d7b06de82a1bdb6d797268d3581bb94b257cb134ce1e9a9d32c60c3ac474a68e7d8953bdb49f5d8c2799",
+            "id": "component-InputComponent-1772e83c0cd4bf6f79676e0717fd160730a4af31130947b8c3794dcf94fc2d0b62d749612b442d8837d70ef3ec5aefb7fe168dba843c1656a34de7e8e67d79ae",
             "file": "src/styleguide/input/input.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -222,7 +222,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nDetermines if the input field is disabled. Affects the styles of the whole component.\n",
                     "description": "<p>Determines if the input field is disabled. Affects the styles of the whole component.</p>\n",
-                    "line": 40,
+                    "line": 44,
                     "type": "boolean",
                     "decorators": []
                 },
@@ -233,8 +233,19 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nDetermines if the input field has errors. Affects the styles of the whole component.\n",
                     "description": "<p>Determines if the input field has errors. Affects the styles of the whole component.</p>\n",
-                    "line": 45,
+                    "line": 49,
                     "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "formControlName",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\noptional form control name to be used with reactive forms\n",
+                    "description": "<p>optional form control name to be used with reactive forms</p>\n",
+                    "line": 64,
+                    "type": "string",
                     "decorators": []
                 },
                 {
@@ -244,7 +255,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nIcon displayed on the left side of the input field.\nIf not provided the icon is hidden.\n",
                     "description": "<p>Icon displayed on the left side of the input field.\nIf not provided the icon is hidden.</p>\n",
-                    "line": 29,
+                    "line": 33,
                     "type": "string",
                     "decorators": []
                 },
@@ -255,7 +266,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nThe placeholder displayed on the input field\n",
                     "description": "<p>The placeholder displayed on the input field</p>\n",
-                    "line": 50,
+                    "line": 54,
                     "type": "string",
                     "decorators": []
                 },
@@ -266,7 +277,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nText to be shown on the right side of the input field.\n",
                     "description": "<p>Text to be shown on the right side of the input field.</p>\n",
-                    "line": 55,
+                    "line": 59,
                     "type": "string",
                     "decorators": []
                 },
@@ -277,7 +288,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nThe help/error message to be displayed below the input field.\n",
                     "description": "<p>The help/error message to be displayed below the input field.</p>\n",
-                    "line": 23,
+                    "line": 27,
                     "type": "string",
                     "decorators": []
                 },
@@ -288,7 +299,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nIcon displayed on the right side of the input field.\nIf not provided the icon is hidden.\n",
                     "description": "<p>Icon displayed on the right side of the input field.\nIf not provided the icon is hidden.</p>\n",
-                    "line": 35,
+                    "line": 39,
                     "type": "string",
                     "decorators": []
                 },
@@ -299,13 +310,32 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nthe value of the input field\n",
                     "description": "<p>the value of the input field</p>\n",
-                    "line": 18,
+                    "line": 22,
                     "type": "string",
                     "decorators": []
                 }
             ],
             "outputsClass": [],
-            "propertiesClass": [],
+            "propertiesClass": [
+                {
+                    "name": "matInput",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "MatInput",
+                    "optional": true,
+                    "description": "",
+                    "line": 17,
+                    "decorators": [
+                        {
+                            "name": "ContentChild",
+                            "stringifiedArguments": "MatInput, {static: false}"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ]
+                }
+            ],
             "methodsClass": [],
             "deprecated": false,
             "deprecationMessage": "",
@@ -333,7 +363,7 @@
             "description": "",
             "rawdescription": "\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { MatIconModule } from '@angular/material/icon';\nimport { CommonModule } from '@angular/common';\nimport { MatInputModule } from '@angular/material/input';\nimport { MatFormFieldModule } from '@angular/material/form-field';\n\n@Component({\n  selector: 'sg-input',\n  standalone: true,\n  imports: [MatIconModule, CommonModule, MatInputModule, MatFormFieldModule],\n  templateUrl: './input.component.html',\n  styleUrl: './input.component.scss',\n})\nexport class InputComponent {\n  /**\n   * the value of the input field\n   */\n  @Input() value = '';\n\n  /**\n   * The help/error message to be displayed below the input field.\n   */\n  @Input() supportMessage = '';\n\n  /**\n   * Icon displayed on the left side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() leadingIcon = '';\n\n  /**\n   * Icon displayed on the right side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() trailingIcon = '';\n\n  /**\n   * Determines if the input field is disabled. Affects the styles of the whole component.\n   */\n  @Input() disabled = false;\n\n  /**\n   * Determines if the input field has errors. Affects the styles of the whole component.\n   */\n  @Input() error = false;\n\n  /**\n   * The placeholder displayed on the input field\n   */\n  @Input() placeholder = '';\n\n  /**\n   * Text to be shown on the right side of the input field.\n   */\n  @Input() suffix = '';\n}\n",
+            "sourceCode": "import { Component, ContentChild, Input } from '@angular/core';\nimport { MatIconModule } from '@angular/material/icon';\nimport { CommonModule } from '@angular/common';\nimport { MatInput, MatInputModule } from '@angular/material/input';\nimport { MatFormFieldModule } from '@angular/material/form-field';\n\n// TODO add required\n\n@Component({\n  selector: 'sg-input',\n  standalone: true,\n  imports: [MatIconModule, CommonModule, MatInputModule, MatFormFieldModule],\n  templateUrl: './input.component.html',\n  styleUrl: './input.component.scss',\n})\nexport class InputComponent {\n  @ContentChild(MatInput, { static: false }) matInput?: MatInput;\n\n  /**\n   * the value of the input field\n   */\n  @Input() value = '';\n\n  /**\n   * The help/error message to be displayed below the input field.\n   */\n  @Input() supportMessage = '';\n\n  /**\n   * Icon displayed on the left side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() leadingIcon = '';\n\n  /**\n   * Icon displayed on the right side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() trailingIcon = '';\n\n  /**\n   * Determines if the input field is disabled. Affects the styles of the whole component.\n   */\n  @Input() disabled = false;\n\n  /**\n   * Determines if the input field has errors. Affects the styles of the whole component.\n   */\n  @Input() error = false;\n\n  /**\n   * The placeholder displayed on the input field\n   */\n  @Input() placeholder = '';\n\n  /**\n   * Text to be shown on the right side of the input field.\n   */\n  @Input() suffix = '';\n\n  /**\n   * optional form control name to be used with reactive forms\n   */\n  @Input() formControlName? = '';\n}\n",
             "styleUrl": "./input.component.scss",
             "assetsDirs": [],
             "styleUrlsData": "",
@@ -544,7 +574,7 @@
     },
     "routes": [],
     "coverage": {
-        "count": 50,
+        "count": 47,
         "status": "medium",
         "files": [
             {
@@ -561,8 +591,8 @@
                 "type": "component",
                 "linktype": "component",
                 "name": "InputComponent",
-                "coveragePercent": 88,
-                "coverageCount": "8/9",
+                "coveragePercent": 81,
+                "coverageCount": "9/11",
                 "status": "very-good"
             },
             {

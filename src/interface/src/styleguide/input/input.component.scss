@@ -1,0 +1,16 @@
+
+:host {
+  // material overrides
+  ::ng-deep {
+    .mdc-text-field--outlined {
+      padding: 0;
+
+      .mat-mdc-form-field-infix {
+        min-height: 50px;
+        padding: 13px;
+      }
+    }
+  }
+}
+
+

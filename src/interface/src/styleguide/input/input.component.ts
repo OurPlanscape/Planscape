@@ -1,8 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, ContentChild, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
-import { MatInputModule } from '@angular/material/input';
+import { MatInput, MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
+
+// TODO add required
 
 @Component({
   selector: 'sg-input',
@@ -12,6 +14,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
   styleUrl: './input.component.scss',
 })
 export class InputComponent {
+  @ContentChild(MatInput, { static: false }) matInput?: MatInput;
+
   /**
    * the value of the input field
    */
@@ -53,4 +57,9 @@ export class InputComponent {
    * Text to be shown on the right side of the input field.
    */
   @Input() suffix = '';
+
+  /**
+   * optional form control name to be used with reactive forms
+   */
+  @Input() formControlName? = '';
 }
