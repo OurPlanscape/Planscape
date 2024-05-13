@@ -201,6 +201,12 @@ class MetricUsage(models.Model):
         max_length=64,
     )
 
+    output_units = models.CharField(
+        max_length=128,
+        null=True,
+        help_text="Allows the user to override dataset.data_units, in the forsys reporting pages.",
+    )
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
