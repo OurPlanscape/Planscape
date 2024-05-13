@@ -18,6 +18,7 @@ from django.contrib import admin
 from django.urls import path, include, register_converter
 from dj_rest_auth.registration.views import VerifyEmailView
 from planscape.url_converters import ContentTypeURLConverter
+from projects.routers import router as projects_router
 from users import views as user_views
 
 register_converter(ContentTypeURLConverter, "ctype")
@@ -46,5 +47,12 @@ urlpatterns = [
     path(
         "planscape-backend/dj-rest-auth/registration/account-confirm-email/",
         VerifyEmailView.as_view(),
+    ),
+    path(
+        "planscape-backend/v2/",
+        include(
+            (projects_router.urls, "projects"),
+            namespace="projects",
+        ),
     ),
 ]
