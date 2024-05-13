@@ -10,7 +10,7 @@ from planning.serializers import (
     ScenarioSerializer,
 )
 from planning.filters import PlanningAreaFilter, ScenarioFilter
-from planning.permission import PlanningAreaViewPermission, ScenarioViewPermission
+from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 
 logger = logging.getLogger(__name__)
 
