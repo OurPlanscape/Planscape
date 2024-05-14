@@ -1,0 +1,31 @@
+@import "mixins";
+@import "colors";
+
+:host {
+  @include xs-label();
+  display: inline-flex;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+
+  &.in-progress {
+    color: $color-main-blue;
+    background-color: $color-soft-light-blue;
+  }
+
+  &.success {
+    color: $color-brand-green;
+    background-color: $color-brand-soft-green;
+  }
+
+  &.failed {
+    color: $color-dark-red;
+    background-color: $color-light-red
+  }
+
+  &.running {
+    color: $color-dark-yellow;
+    background-color: $color-brand-soft-yellow;
+  }
+}
