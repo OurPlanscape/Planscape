@@ -29,7 +29,7 @@ export type ShowSupportMessage = 'always' | 'on-error' | false;
 })
 export class InputFieldComponent implements AfterContentInit {
   /**
-   * Reference to the projected  sgInput input element
+   * Reference to the projected sgInput input element
    */
   @ContentChild(InputDirective, { static: false })
   inputDirective?: InputDirective;
@@ -45,6 +45,9 @@ export class InputFieldComponent implements AfterContentInit {
     }
   }
 
+  /**
+   * @ignore
+   */
   focusInput(): void {
     this.inputDirective?.focus();
   }
@@ -91,5 +94,8 @@ export class InputFieldComponent implements AfterContentInit {
     return this.error;
   }
 
-  protected readonly focus = focus;
+  @HostBinding('class.disabled')
+  get isDisabled() {
+    return this.disabled;
+  }
 }

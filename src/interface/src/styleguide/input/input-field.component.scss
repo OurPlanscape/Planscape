@@ -8,6 +8,7 @@
   display: inline-flex;
   padding: 13px;
   align-items: center;
+  gap: 8px;
 
   border-radius: 4px;
   background-color: $color-white;
@@ -51,9 +52,14 @@
       background: none;
       border: none;
       color: $color-black;
+      padding: 2px 0 0;
 
       &::placeholder {
         color: $color-md-gray;
+      }
+
+      &:disabled {
+        color: $color-text-gray;
       }
     }
   }
@@ -72,6 +78,15 @@
       color: $color-error;
     }
 
+  }
+
+  &.disabled {
+    .input-wrapper {
+      cursor: default;
+      padding: 13px;
+      background-color: $color-soft-gray;
+      color: $color-text-gray;
+    }
   }
 }
 
