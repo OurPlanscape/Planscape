@@ -1,7 +1,6 @@
 name: Cypress Full Tests
 
-on:
-  workflow_dispatch: # manual triggering
+on: workflow_dispatch
 
 env:
   CYPRESS_TEST_BASE_URL: ${{ vars.CYPRESS_TEST_BASE_URL }}
