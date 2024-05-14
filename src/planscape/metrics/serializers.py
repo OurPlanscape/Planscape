@@ -2,6 +2,7 @@ from rest_framework import serializers
 
 from base.condition_types import Metric
 from datasets.serializers import DatasetSerializer
+from projects.models import Project
 
 
 class MetricSerializer(serializers.ModelSerializer):
@@ -9,7 +10,10 @@ class MetricSerializer(serializers.ModelSerializer):
         source="project.organization.uuid", read_only=True
     )
 
-    project = serializers.PrimaryKeyRelatedField(pk_field="uuid")
+    project = serializers.PrimaryKeyRelatedField(
+        pk_field="uuid",
+        queryset=Project.objects.all(),
+    )
 
     dataset = DatasetSerializer()
 

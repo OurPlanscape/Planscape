@@ -1,10 +1,14 @@
 from rest_framework import serializers
 
 from datasets.models import Dataset
+from organizations.models import Organization
 
 
 class DatasetSerializer(serializers.ModelSerializer):
-    organization = serializers.PrimaryKeyRelatedField(pk_field="uuid")
+    organization = serializers.PrimaryKeyRelatedField(
+        pk_field="uuid",
+        queryset=Organization.objects.all(),
+    )
 
     class Meta:
         model = Dataset
