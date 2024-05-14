@@ -2,11 +2,14 @@ import {
   AfterContentInit,
   Component,
   ContentChild,
+  HostBinding,
   Input,
 } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { InputDirective } from './input.directive';
+
+export type ShowSupportMessage = 'always' | 'on-error' | false;
 
 /**
  * Wrapper component for input fields.
@@ -26,7 +29,7 @@ import { InputDirective } from './input.directive';
 })
 export class InputFieldComponent implements AfterContentInit {
   /**
-   * Reference to the projected <input sgInput> element
+   * Reference to the projected  sgInput input element
    */
   @ContentChild(InputDirective, { static: false })
   inputDirective?: InputDirective;
@@ -40,6 +43,10 @@ export class InputFieldComponent implements AfterContentInit {
         'The projected content must include an <input> element with the sgInput directive.'
       );
     }
+  }
+
+  focusInput(): void {
+    this.inputDirective?.focus();
   }
 
   /**
@@ -73,4 +80,16 @@ export class InputFieldComponent implements AfterContentInit {
    * Text to be shown on the right side of the input field.
    */
   @Input() suffix = '';
+
+  /**
+   * when to show support message
+   */
+  @Input() showSupportMessage: ShowSupportMessage = 'always';
+
+  @HostBinding('class.error')
+  get hasError() {
+    return this.error;
+  }
+
+  protected readonly focus = focus;
 }

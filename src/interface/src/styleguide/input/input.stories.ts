@@ -39,7 +39,7 @@ export const Default: Story = {
   args: {
     disabled: false,
     error: false,
-    leadingIcon: 'add_box',
+    leadingIcon: 'attach_money',
     suffix: '',
     supportMessage: 'Enter whatever you like',
     trailingIcon: '',

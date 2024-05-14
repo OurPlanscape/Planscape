@@ -1,7 +1,7 @@
-<div class="input-wrapper">
+<div class="input-wrapper" (click)="focusInput()">
   <mat-icon *ngIf="leadingIcon">{{ leadingIcon }}</mat-icon>
   <ng-content></ng-content>
-  <span *ngIf="suffix && !trailingIcon">{{ suffix }}</span>
+  <span *ngIf="suffix && !trailingIcon" class="suffix">{{ suffix }}</span>
   <mat-icon *ngIf="trailingIcon">{{ trailingIcon }}</mat-icon>
 </div>
 <div class="support-msg">{{ supportMessage }}</div>
