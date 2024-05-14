@@ -196,6 +196,145 @@
                 }
             },
             "templateData": "<mat-icon *ngIf=\"icon\">{{ icon }}</mat-icon>\n<ng-content></ng-content>\n"
+        },
+        {
+            "name": "StatusChipComponent",
+            "id": "component-StatusChipComponent-2b86b4ec02ea586989a688f308c425033d867782f2d7a548a8d410071345f96b04847a74cd077844dc90b6a480f8169359da251fc8236e2f9d2e067b91b4ca13",
+            "file": "src/styleguide/status-chip/status-chip.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "sg-status-chip",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./status-chip.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "label",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nOptional label\n",
+                    "description": "<p>Optional label</p>\n",
+                    "line": 25,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "status",
+                    "defaultValue": "'inProgress'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nThe status\n",
+                    "description": "<p>The status</p>\n",
+                    "line": 21,
+                    "type": "StatusChipStatus",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [
+                {
+                    "name": "class.failed",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 48,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.in-progress",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 38,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.running",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 53,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.success",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 43,
+                    "type": "boolean",
+                    "decorators": []
+                }
+            ],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "NgIf"
+                },
+                {
+                    "name": "NgSwitch"
+                }
+            ],
+            "description": "<p>Status chip to display status inline.\nTakes optional label or displays the status styled accordingly.</p>\n",
+            "rawdescription": "\n\nStatus chip to display status inline.\nTakes optional label or displays the status styled accordingly.\n",
+            "type": "component",
+            "sourceCode": "import { Component, HostBinding, Input } from '@angular/core';\nimport { NgIf, NgSwitch } from '@angular/common';\n\nexport type StatusChipStatus = 'inProgress' | 'success' | 'failed' | 'running';\n\n/**\n * Status chip to display status inline.\n * Takes optional label or displays the status styled accordingly.\n */\n@Component({\n  selector: 'sg-status-chip',\n  standalone: true,\n  imports: [NgIf, NgSwitch],\n  templateUrl: './status-chip.component.html',\n  styleUrl: './status-chip.component.scss',\n})\nexport class StatusChipComponent {\n  /**\n   * The status\n   */\n  @Input() status: StatusChipStatus = 'inProgress';\n  /**\n   * Optional label\n   */\n  @Input() label? = '';\n\n  /**\n   * @ignore\n   */\n  readonly defaultTextByStatus: Record<StatusChipStatus, string> = {\n    inProgress: 'In Progress',\n    success: 'Success',\n    failed: 'Failed',\n    running: 'Running',\n  };\n\n  @HostBinding('class.in-progress')\n  get isInProgress() {\n    return this.status === 'inProgress';\n  }\n\n  @HostBinding('class.success')\n  get isSuccess() {\n    return this.status === 'success';\n  }\n\n  @HostBinding('class.failed')\n  get isFailed() {\n    return this.status === 'failed';\n  }\n\n  @HostBinding('class.running')\n  get isRunning() {\n    return this.status === 'running';\n  }\n}\n",
+            "styleUrl": "./status-chip.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "accessors": {
+                "isInProgress": {
+                    "name": "isInProgress",
+                    "getSignature": {
+                        "name": "isInProgress",
+                        "type": "",
+                        "returnType": "",
+                        "line": 38
+                    }
+                },
+                "isSuccess": {
+                    "name": "isSuccess",
+                    "getSignature": {
+                        "name": "isSuccess",
+                        "type": "",
+                        "returnType": "",
+                        "line": 43
+                    }
+                },
+                "isFailed": {
+                    "name": "isFailed",
+                    "getSignature": {
+                        "name": "isFailed",
+                        "type": "",
+                        "returnType": "",
+                        "line": 48
+                    }
+                },
+                "isRunning": {
+                    "name": "isRunning",
+                    "getSignature": {
+                        "name": "isRunning",
+                        "type": "",
+                        "returnType": "",
+                        "line": 53
+                    }
+                }
+            },
+            "templateData": "<ng-container *ngIf=\"label; else defaultByStatus\">\n  {{ label }}\n</ng-container>\n<ng-template #defaultByStatus>{{ defaultTextByStatus[status] }}</ng-template>\n"
         }
     ],
     "modules": [],
@@ -209,6 +348,17 @@
                 "subtype": "typealias",
                 "rawtype": "\"primary\" | \"ghost\" | \"text\" | \"negative\" | \"positive\"",
                 "file": "src/styleguide/button/button.component.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 192
+            },
+            {
+                "name": "StatusChipStatus",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "\"inProgress\" | \"success\" | \"failed\" | \"running\"",
+                "file": "src/styleguide/status-chip/status-chip.component.ts",
                 "deprecated": false,
                 "deprecationMessage": "",
                 "description": "",
@@ -232,13 +382,26 @@
                     "description": "",
                     "kind": 192
                 }
+            ],
+            "src/styleguide/status-chip/status-chip.component.ts": [
+                {
+                    "name": "StatusChipStatus",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "\"inProgress\" | \"success\" | \"failed\" | \"running\"",
+                    "file": "src/styleguide/status-chip/status-chip.component.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 192
+                }
             ]
         }
     },
     "routes": [],
     "coverage": {
-        "count": 20,
-        "status": "low",
+        "count": 31,
+        "status": "medium",
         "files": [
             {
                 "filePath": "src/styleguide/button/button.component.ts",
@@ -248,6 +411,15 @@
                 "coveragePercent": 20,
                 "coverageCount": "2/10",
                 "status": "low"
+            },
+            {
+                "filePath": "src/styleguide/status-chip/status-chip.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "StatusChipComponent",
+                "coveragePercent": 42,
+                "coverageCount": "3/7",
+                "status": "medium"
             }
         ]
     }
