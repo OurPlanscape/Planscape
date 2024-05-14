@@ -5,7 +5,30 @@
     "guards": [],
     "interceptors": [],
     "classes": [],
-    "directives": [],
+    "directives": [
+        {
+            "name": "InputDirective",
+            "id": "directive-InputDirective-fc395b7eee3e5ce0493aaf29ebfc36d3f546866a4cc053b225b90f137a648efd8989dfb25dc995083d23c73e98bc5826d4b463432f5243a6b9d3e0fcfe2d7579",
+            "file": "src/styleguide/input/input.directive.ts",
+            "type": "directive",
+            "description": "",
+            "rawdescription": "\n",
+            "sourceCode": "import { Directive } from '@angular/core';\n\n@Directive({\n  selector: 'input[sgInput]',\n  standalone: true,\n})\nexport class InputDirective {}\n",
+            "selector": "input[sgInput]",
+            "providers": [],
+            "hostDirectives": [],
+            "standalone": true,
+            "inputsClass": [],
+            "outputsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "extends": []
+        }
+    ],
     "components": [
         {
             "name": "ButtonComponent",
@@ -198,19 +221,19 @@
             "templateData": "<mat-icon *ngIf=\"icon\">{{ icon }}</mat-icon>\n<ng-content></ng-content>\n"
         },
         {
-            "name": "InputComponent",
-            "id": "component-InputComponent-1772e83c0cd4bf6f79676e0717fd160730a4af31130947b8c3794dcf94fc2d0b62d749612b442d8837d70ef3ec5aefb7fe168dba843c1656a34de7e8e67d79ae",
-            "file": "src/styleguide/input/input.component.ts",
+            "name": "InputFieldComponent",
+            "id": "component-InputFieldComponent-da347ea81f157d77c66187668a20415faa3580c9b75b364610b6a265f74f2c5d30e7e83dc68bcdc40fa795af54d370d1cd55ce219966bfa2cc9d958aa598266b",
+            "file": "src/styleguide/input/input-field.component.ts",
             "encapsulation": [],
             "entryComponents": [],
             "inputs": [],
             "outputs": [],
             "providers": [],
-            "selector": "sg-input",
+            "selector": "sg-input-field",
             "styleUrls": [],
             "styles": [],
             "templateUrl": [
-                "./input.component.html"
+                "./input-field.component.html"
             ],
             "viewProviders": [],
             "hostDirectives": [],
@@ -222,7 +245,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nDetermines if the input field is disabled. Affects the styles of the whole component.\n",
                     "description": "<p>Determines if the input field is disabled. Affects the styles of the whole component.</p>\n",
-                    "line": 44,
+                    "line": 65,
                     "type": "boolean",
                     "decorators": []
                 },
@@ -233,19 +256,8 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nDetermines if the input field has errors. Affects the styles of the whole component.\n",
                     "description": "<p>Determines if the input field has errors. Affects the styles of the whole component.</p>\n",
-                    "line": 49,
+                    "line": 70,
                     "type": "boolean",
-                    "decorators": []
-                },
-                {
-                    "name": "formControlName",
-                    "defaultValue": "''",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "rawdescription": "\n\noptional form control name to be used with reactive forms\n",
-                    "description": "<p>optional form control name to be used with reactive forms</p>\n",
-                    "line": 64,
-                    "type": "string",
                     "decorators": []
                 },
                 {
@@ -255,17 +267,6 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nIcon displayed on the left side of the input field.\nIf not provided the icon is hidden.\n",
                     "description": "<p>Icon displayed on the left side of the input field.\nIf not provided the icon is hidden.</p>\n",
-                    "line": 33,
-                    "type": "string",
-                    "decorators": []
-                },
-                {
-                    "name": "placeholder",
-                    "defaultValue": "''",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "rawdescription": "\n\nThe placeholder displayed on the input field\n",
-                    "description": "<p>The placeholder displayed on the input field</p>\n",
                     "line": 54,
                     "type": "string",
                     "decorators": []
@@ -277,7 +278,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nText to be shown on the right side of the input field.\n",
                     "description": "<p>Text to be shown on the right side of the input field.</p>\n",
-                    "line": 59,
+                    "line": 75,
                     "type": "string",
                     "decorators": []
                 },
@@ -288,7 +289,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nThe help/error message to be displayed below the input field.\n",
                     "description": "<p>The help/error message to be displayed below the input field.</p>\n",
-                    "line": 27,
+                    "line": 48,
                     "type": "string",
                     "decorators": []
                 },
@@ -299,18 +300,7 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nIcon displayed on the right side of the input field.\nIf not provided the icon is hidden.\n",
                     "description": "<p>Icon displayed on the right side of the input field.\nIf not provided the icon is hidden.</p>\n",
-                    "line": 39,
-                    "type": "string",
-                    "decorators": []
-                },
-                {
-                    "name": "value",
-                    "defaultValue": "''",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "rawdescription": "\n\nthe value of the input field\n",
-                    "description": "<p>the value of the input field</p>\n",
-                    "line": 22,
+                    "line": 60,
                     "type": "string",
                     "decorators": []
                 }
@@ -318,17 +308,18 @@
             "outputsClass": [],
             "propertiesClass": [
                 {
-                    "name": "matInput",
+                    "name": "inputDirective",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "type": "MatInput",
+                    "type": "InputDirective",
                     "optional": true,
-                    "description": "",
-                    "line": 17,
+                    "description": "<p>Reference to the projected <input sgInput> element</p>\n",
+                    "line": 32,
+                    "rawdescription": "\n\nReference to the projected <input sgInput> element\n",
                     "decorators": [
                         {
                             "name": "ContentChild",
-                            "stringifiedArguments": "MatInput, {static: false}"
+                            "stringifiedArguments": "InputDirective, {static: false}"
                         }
                     ],
                     "modifierKind": [
@@ -352,24 +343,23 @@
                     "type": "module"
                 },
                 {
-                    "name": "MatInputModule",
-                    "type": "module"
-                },
-                {
-                    "name": "MatFormFieldModule",
-                    "type": "module"
+                    "name": "InputDirective",
+                    "type": "directive"
                 }
             ],
-            "description": "",
-            "rawdescription": "\n",
+            "description": "<p>Wrapper component for input fields.\nExpects an input[sgInput] element via content projection</p>\n<p>Usage:\n<sg-input-field>\n  &lt;input sgInput ...&gt;\n</sg-input-field></p>\n",
+            "rawdescription": "\n\nWrapper component for input fields.\nExpects an input[sgInput] element via content projection\n\nUsage:\n<sg-input-field>\n  <input sgInput ...>\n</sg-input-field>\n",
             "type": "component",
-            "sourceCode": "import { Component, ContentChild, Input } from '@angular/core';\nimport { MatIconModule } from '@angular/material/icon';\nimport { CommonModule } from '@angular/common';\nimport { MatInput, MatInputModule } from '@angular/material/input';\nimport { MatFormFieldModule } from '@angular/material/form-field';\n\n// TODO add required\n\n@Component({\n  selector: 'sg-input',\n  standalone: true,\n  imports: [MatIconModule, CommonModule, MatInputModule, MatFormFieldModule],\n  templateUrl: './input.component.html',\n  styleUrl: './input.component.scss',\n})\nexport class InputComponent {\n  @ContentChild(MatInput, { static: false }) matInput?: MatInput;\n\n  /**\n   * the value of the input field\n   */\n  @Input() value = '';\n\n  /**\n   * The help/error message to be displayed below the input field.\n   */\n  @Input() supportMessage = '';\n\n  /**\n   * Icon displayed on the left side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() leadingIcon = '';\n\n  /**\n   * Icon displayed on the right side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() trailingIcon = '';\n\n  /**\n   * Determines if the input field is disabled. Affects the styles of the whole component.\n   */\n  @Input() disabled = false;\n\n  /**\n   * Determines if the input field has errors. Affects the styles of the whole component.\n   */\n  @Input() error = false;\n\n  /**\n   * The placeholder displayed on the input field\n   */\n  @Input() placeholder = '';\n\n  /**\n   * Text to be shown on the right side of the input field.\n   */\n  @Input() suffix = '';\n\n  /**\n   * optional form control name to be used with reactive forms\n   */\n  @Input() formControlName? = '';\n}\n",
-            "styleUrl": "./input.component.scss",
+            "sourceCode": "import {\n  AfterContentInit,\n  Component,\n  ContentChild,\n  Input,\n} from '@angular/core';\nimport { MatIconModule } from '@angular/material/icon';\nimport { CommonModule } from '@angular/common';\nimport { InputDirective } from './input.directive';\n\n/**\n * Wrapper component for input fields.\n * Expects an input[sgInput] element via content projection\n *\n * Usage:\n * <sg-input-field>\n *   <input sgInput ...>\n * </sg-input-field>\n */\n@Component({\n  selector: 'sg-input-field',\n  standalone: true,\n  imports: [MatIconModule, CommonModule, InputDirective],\n  templateUrl: './input-field.component.html',\n  styleUrl: './input-field.component.scss',\n})\nexport class InputFieldComponent implements AfterContentInit {\n  /**\n   * Reference to the projected <input sgInput> element\n   */\n  @ContentChild(InputDirective, { static: false })\n  inputDirective?: InputDirective;\n\n  /**\n   * @ignore\n   */\n  ngAfterContentInit() {\n    if (!this.inputDirective) {\n      throw new Error(\n        'The projected content must include an <input> element with the sgInput directive.'\n      );\n    }\n  }\n\n  /**\n   * The help/error message to be displayed below the input field.\n   */\n  @Input() supportMessage = '';\n\n  /**\n   * Icon displayed on the left side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() leadingIcon = '';\n\n  /**\n   * Icon displayed on the right side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() trailingIcon = '';\n\n  /**\n   * Determines if the input field is disabled. Affects the styles of the whole component.\n   */\n  @Input() disabled = false;\n\n  /**\n   * Determines if the input field has errors. Affects the styles of the whole component.\n   */\n  @Input() error = false;\n\n  /**\n   * Text to be shown on the right side of the input field.\n   */\n  @Input() suffix = '';\n}\n",
+            "styleUrl": "./input-field.component.scss",
             "assetsDirs": [],
             "styleUrlsData": "",
             "stylesData": "",
             "extends": [],
-            "templateData": "<mat-form-field appearance=\"outline\">\n  <mat-icon matTextPrefix *ngIf=\"leadingIcon\">{{ leadingIcon }}</mat-icon>\n  <input\n    matInput\n    type=\"text\"\n    [value]=\"value\"\n    [disabled]=\"disabled\"\n    [placeholder]=\"placeholder\" />\n  <span matTextSuffix *ngIf=\"suffix && !trailingIcon\">{{ suffix }}</span>\n  <mat-icon matTextSuffix *ngIf=\"trailingIcon\">{{ trailingIcon }}</mat-icon>\n</mat-form-field>\n<div class=\"support-msg\">{{ supportMessage }}</div>\n"
+            "implements": [
+                "AfterContentInit"
+            ],
+            "templateData": "<div class=\"input-wrapper\">\n  <mat-icon *ngIf=\"leadingIcon\">{{ leadingIcon }}</mat-icon>\n  <ng-content></ng-content>\n  <span *ngIf=\"suffix && !trailingIcon\">{{ suffix }}</span>\n  <mat-icon *ngIf=\"trailingIcon\">{{ trailingIcon }}</mat-icon>\n</div>\n<div class=\"support-msg\">{{ supportMessage }}</div>\n"
         },
         {
             "name": "StatusChipComponent",
@@ -574,7 +564,7 @@
     },
     "routes": [],
     "coverage": {
-        "count": 47,
+        "count": 40,
         "status": "medium",
         "files": [
             {
@@ -587,13 +577,22 @@
                 "status": "low"
             },
             {
-                "filePath": "src/styleguide/input/input.component.ts",
+                "filePath": "src/styleguide/input/input-field.component.ts",
                 "type": "component",
                 "linktype": "component",
-                "name": "InputComponent",
-                "coveragePercent": 81,
-                "coverageCount": "9/11",
+                "name": "InputFieldComponent",
+                "coveragePercent": 100,
+                "coverageCount": "8/8",
                 "status": "very-good"
+            },
+            {
+                "filePath": "src/styleguide/input/input.directive.ts",
+                "type": "directive",
+                "linktype": "directive",
+                "name": "InputDirective",
+                "coveragePercent": 0,
+                "coverageCount": "0/1",
+                "status": "low"
             },
             {
                 "filePath": "src/styleguide/status-chip/status-chip.component.ts",
