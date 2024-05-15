@@ -35,24 +35,6 @@ export class InputFieldComponent implements AfterContentInit {
   inputDirective?: InputDirective;
 
   /**
-   * @ignore
-   */
-  ngAfterContentInit() {
-    if (!this.inputDirective) {
-      throw new Error(
-        'The projected content must include an <input> element with the sgInput directive.'
-      );
-    }
-  }
-
-  /**
-   * @ignore
-   */
-  focusInput(): void {
-    this.inputDirective?.focus();
-  }
-
-  /**
    * The help/error message to be displayed below the input field.
    */
   @Input() supportMessage = '';
@@ -80,6 +62,11 @@ export class InputFieldComponent implements AfterContentInit {
   @Input() error = false;
 
   /**
+   * Determines if the input field is highlighted. Affects the styles of the whole component.
+   */
+  @Input() highlighted = false;
+
+  /**
    * Text to be shown on the right side of the input field.
    */
   @Input() suffix = '';
@@ -97,5 +84,36 @@ export class InputFieldComponent implements AfterContentInit {
   @HostBinding('class.disabled')
   get isDisabled() {
     return this.disabled;
+  }
+
+  @HostBinding('class.highlighted')
+  get isHighlighted() {
+    return this.highlighted;
+  }
+
+  /**
+   * @ignore
+   * This checks that when using this component we have an input with sgInput via ngContent
+   */
+  ngAfterContentInit() {
+    if (!this.inputDirective) {
+      throw new Error(
+        'The projected content must include an <input> element with the sgInput directive.'
+      );
+    }
+  }
+
+  get displaysSupportMessage() {
+    return (
+      this.showSupportMessage === 'always' ||
+      (this.showSupportMessage === 'on-error' && this.error)
+    );
+  }
+
+  /**
+   * @ignore
+   */
+  focusInput(): void {
+    this.inputDirective?.focus();
   }
 }

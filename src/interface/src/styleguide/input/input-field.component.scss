@@ -88,6 +88,19 @@
       color: $color-text-gray;
     }
   }
+
+  &.highlighted:not(.disabled) {
+    .input-wrapper {
+      background-color: $color-soft-highlight;
+    }
+  }
+
+  &.highlighted.error {
+    .input-wrapper, .suffix {
+      color: $color-error;
+    }
+  }
+
 }
 
 

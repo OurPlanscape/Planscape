@@ -4,4 +4,6 @@
   <span *ngIf="suffix && !trailingIcon" class="suffix">{{ suffix }}</span>
   <mat-icon *ngIf="trailingIcon">{{ trailingIcon }}</mat-icon>
 </div>
-<div class="support-msg">{{ supportMessage }}</div>
+<div class="support-msg" *ngIf="displaysSupportMessage">
+  {{ supportMessage }}
+</div>
