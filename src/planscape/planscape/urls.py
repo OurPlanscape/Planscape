@@ -58,7 +58,9 @@ urlpatterns = [
     ),
     path(
         "planscape-backend/v2/",
-        include(metrics_router.urls, "metrics"),
-        namespace="metrics",
+        include(
+            (metrics_router.urls, "metrics"),
+            namespace="metrics",
+        ),
     ),
 ]

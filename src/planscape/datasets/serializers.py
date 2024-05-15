@@ -1,12 +1,13 @@
 from rest_framework import serializers
 
+from core.fields import UUIDRelatedField
 from datasets.models import Dataset
 from organizations.models import Organization
 
 
 class DatasetSerializer(serializers.ModelSerializer):
-    organization = serializers.PrimaryKeyRelatedField(
-        pk_field="uuid",
+    organization = UUIDRelatedField(
+        uuid_field="uuid",
         queryset=Organization.objects.all(),
     )
 

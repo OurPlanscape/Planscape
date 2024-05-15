@@ -1,4 +1,5 @@
 from django_filters import rest_framework as filters
+from planscape.filters import CharArrayFilter
 from projects.models import Project, ProjectCapabilities, ProjectVisibility
 
 
@@ -8,8 +9,8 @@ class ProjectFilterSet(filters.FilterSet):
     visibility = filters.MultipleChoiceFilter(
         choices=ProjectVisibility.choices,
     )
-    capabilities = filters.MultipleChoiceFilter(
-        choices=ProjectCapabilities.choices,
+    capabilities = CharArrayFilter(
+        choices=ProjectCapabilities.choices, lookup_expr="contains"
     )
 
     class Meta:

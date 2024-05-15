@@ -1,17 +1,18 @@
 from rest_framework import serializers
 
-from base.condition_types import Metric
-from datasets.serializers import DatasetSerializer
+from core.fields import UUIDRelatedField
+from metrics.models import Metric
 from projects.models import Project
+from datasets.serializers import DatasetSerializer
 
 
 class MetricSerializer(serializers.ModelSerializer):
-    organization = serializers.CharField(
-        source="project.organization.uuid", read_only=True
+    organization = serializers.UUIDField(
+        source="project.organization.uuid", read_only=True, default=None
     )
 
-    project = serializers.PrimaryKeyRelatedField(
-        pk_field="uuid",
+    project = UUIDRelatedField(
+        uuid_field="uuid",
         queryset=Project.objects.all(),
     )
 
