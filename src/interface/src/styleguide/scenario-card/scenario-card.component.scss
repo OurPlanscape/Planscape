@@ -3,26 +3,65 @@
 
 :host {
   @include xs-label();
+  box-sizing: border-box;
+  height: 140px;
+  left: 0px;
+  right: 0px;
+  top: 40px;
+  background: #ffffff;
+  border: 1px solid #e1e1e1;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
   display: inline-flex;
   padding: 8px 12px;
   justify-content: center;
   align-items: center;
   width: 100%;
   background-color: white;
-  border-radius: 4px;
-  border: 1px lightgrey solid;
-  border-bottom: 2px lightgrey solid;
+  flex-direction: column;
+  gap: 1em;
 
-  .scenario-content {
-    display: flex;
-    flex-direction: column;
-  }
-  .top-row {
+  .title-row {
     display: flex;
     flex-direction: row;
+    width: 100%;
+    justify-content: space-between;
   }
+  .title-section {
+    display: flex;
+    flex-direction: row;
+    gap: 1em;
+  }
+
+  .name-header {
+    @include h4();
+  }
+
   .detail-row {
     display: flex;
     flex-direction: row;
+    width: 100%;
+    gap: 2em;
+  }
+
+  .detail-header {
+    @include top-level-label();
+    color: $color-md-gray;
+    text-transform: uppercase;
+    font-family: Public Sans;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 14px;
+    text-align: left;
+  }
+
+  .detail-column {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5em;
+  }
+
+  .detail-info {
+    @include xs-label();
   }
 }

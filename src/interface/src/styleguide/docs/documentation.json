@@ -251,7 +251,7 @@
             "styleUrlsData": "",
             "stylesData": "",
             "extends": [],
-            "templateData": "<ng-container>\n  <div class=\"topRow\">\n    <div>name: {{ scenario.name }}</div>\n    <div>thing: {{ scenario.name }}</div>\n    <div>status: {{ scenario.name }}</div>\n    <div>idk: {{ scenario.name }}</div>\n  </div>\n  <div>WHAT</div>\n  <div class=\"detailRow\"></div>\n</ng-container>\n"
+            "templateData": "<ng-container class=\"scenario-content\">\n  <div class=\"title-row\">\n    <div class=\"name-header\">{{ scenario.name }}</div>\n  </div>\n\n  <div class=\"detail-row\">\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Creator</div>\n      <div class=\"detail-info\">{{ scenario.creator }}</div>\n    </div>\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Areas</div>\n      <div class=\"detail-info\">{{ scenario.area_count }}</div>\n    </div>\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Est Budget</div>\n      <div class=\"detail-info\">{{ scenario.est_budget }}</div>\n    </div>\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Treatment Plans</div>\n      <div class=\"detail-info\">{{ scenario.treatment_plans_count }}</div>\n    </div>\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Created</div>\n      <div class=\"detail-info\">{{ scenario.created_at }}</div>\n    </div>\n  </div>\n</ng-container>\n"
         },
         {
             "name": "StatusChipComponent",

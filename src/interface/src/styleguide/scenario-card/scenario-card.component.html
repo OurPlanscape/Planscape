@@ -1,17 +1,40 @@
-<ng-container>
-  <div class="scenario-content">
-    <div class="top-row">
-      <div>name: {{ scenario.name }}</div>
-      <div>thing: {{ scenario.name }}</div>
-      <div>status: {{ scenario.name }}</div>
-      <div>idk: {{ scenario.name }}</div>
+<ng-container class="scenario-content">
+  <div class="title-row">
+    <div class="title-section">
+      <div class="name-header">{{ scenario.name }}</div>
+      <div><sg-status-chip></sg-status-chip></div>
     </div>
-    <div>WHAT</div>
-    <div class="detail-row">
-      <div>idkwhat goes here</div>
-      <div>idkwhat goes here</div>
-      <div>idkwhat goes here</div>
-      <div>idkwhat goes here</div>
+    <div class="controls-section">
+      <button sg-button icon="add">New Treatment Plan</button>
+      <button
+        mat-icon-button
+        aria-label="more note options"
+        style="float: right; position: absolute; right: 4px">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <div class="detail-row">
+    <div class="detail-column">
+      <div class="detail-header">Creator</div>
+      <div class="detail-info">{{ scenario.creator }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Areas</div>
+      <div class="detail-info">{{ scenario.area_count }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Est Budget</div>
+      <div class="detail-info">{{ scenario.est_budget }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Treatment Plans</div>
+      <div class="detail-info">{{ scenario.treatment_plans_count }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Created</div>
+      <div class="detail-info">{{ scenario.created_at }}</div>
     </div>
   </div>
 </ng-container>
