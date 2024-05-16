@@ -198,6 +198,62 @@
             "templateData": "<mat-icon *ngIf=\"icon\">{{ icon }}</mat-icon>\n<ng-content></ng-content>\n"
         },
         {
+            "name": "ScenarioCardComponent",
+            "id": "component-ScenarioCardComponent-4fc5eb1620e5893452368dda0022fda5b958182aae3737978cc6a48d5a6e9b2d63d56afdf18f5557d171d2c5938e0bdfc03037ece26bf1debcdb50ad4b7484cd",
+            "file": "src/styleguide/scenario-card/scenario-card.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "sg-scenario-card",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./scenario-card.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "scenario",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nThe status\n",
+                    "description": "<p>The status</p>\n",
+                    "line": 18,
+                    "type": "any",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "NgIf"
+                },
+                {
+                    "name": "NgSwitch"
+                }
+            ],
+            "description": "<p>Scenario Card for displaying scenario data in a results list</p>\n",
+            "rawdescription": "\n\nScenario Card for displaying scenario data in a results list\n",
+            "type": "component",
+            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { NgIf, NgSwitch } from '@angular/common';\n\n/**\n * Scenario Card for displaying scenario data in a results list\n */\n@Component({\n  selector: 'sg-scenario-card',\n  standalone: true,\n  imports: [NgIf, NgSwitch],\n  templateUrl: './scenario-card.component.html',\n  styleUrl: './scenario-card.component.scss',\n})\nexport class ScenarioCardComponent {\n  /**\n   * The status\n   */\n  @Input() scenario: any;\n}\n",
+            "styleUrl": "./scenario-card.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "templateData": "<ng-container>\n  <div class=\"topRow\">\n    <div>name: {{ scenario.name }}</div>\n    <div>thing: {{ scenario.name }}</div>\n    <div>status: {{ scenario.name }}</div>\n    <div>idk: {{ scenario.name }}</div>\n  </div>\n  <div>WHAT</div>\n  <div class=\"detailRow\"></div>\n</ng-container>\n"
+        },
+        {
             "name": "StatusChipComponent",
             "id": "component-StatusChipComponent-2b86b4ec02ea586989a688f308c425033d867782f2d7a548a8d410071345f96b04847a74cd077844dc90b6a480f8169359da251fc8236e2f9d2e067b91b4ca13",
             "file": "src/styleguide/status-chip/status-chip.component.ts",
@@ -400,8 +456,8 @@
     },
     "routes": [],
     "coverage": {
-        "count": 31,
-        "status": "medium",
+        "count": 54,
+        "status": "good",
         "files": [
             {
                 "filePath": "src/styleguide/button/button.component.ts",
@@ -411,6 +467,15 @@
                 "coveragePercent": 20,
                 "coverageCount": "2/10",
                 "status": "low"
+            },
+            {
+                "filePath": "src/styleguide/scenario-card/scenario-card.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "ScenarioCardComponent",
+                "coveragePercent": 100,
+                "coverageCount": "2/2",
+                "status": "very-good"
             },
             {
                 "filePath": "src/styleguide/status-chip/status-chip.component.ts",

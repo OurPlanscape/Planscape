@@ -1,0 +1,28 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  @include xs-label();
+  display: inline-flex;
+  padding: 8px 12px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  background-color: white;
+  border-radius: 4px;
+  border: 1px lightgrey solid;
+  border-bottom: 2px lightgrey solid;
+
+  .scenario-content {
+    display: flex;
+    flex-direction: column;
+  }
+  .top-row {
+    display: flex;
+    flex-direction: row;
+  }
+  .detail-row {
+    display: flex;
+    flex-direction: row;
+  }
+}
