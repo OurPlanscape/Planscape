@@ -32,9 +32,19 @@
     flex-direction: row;
     gap: 1em;
   }
+  .controls-section {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+  }
 
   .name-header {
     @include h4();
+  }
+
+  .more-button {
+    border: none;
+    background-color: white;
   }
 
   .detail-row {
