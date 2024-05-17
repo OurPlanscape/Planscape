@@ -41,12 +41,14 @@ export class InputFieldComponent implements AfterContentInit {
 
   /**
    * Icon displayed on the left side of the input field.
+   * Uses `mat-icon` library internally
    * If not provided the icon is hidden.
    */
   @Input() leadingIcon = '';
 
   /**
    * Icon displayed on the right side of the input field.
+   * Uses `mat-icon` library internally
    * If not provided the icon is hidden.
    */
   @Input() trailingIcon = '';
