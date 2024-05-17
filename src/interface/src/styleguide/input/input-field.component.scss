@@ -1,0 +1,107 @@
+@import "mixins";
+@import "colors";
+
+.input-wrapper {
+  @include standard-input-label();
+  cursor: text;
+  font-size: 16px;
+  display: inline-flex;
+  padding: 13px;
+  align-items: center;
+  gap: 8px;
+
+  border-radius: 4px;
+  background-color: $color-white;
+  border: 1px solid $color-soft-gray;
+  color: $color-md-gray;
+
+  &:hover {
+    background-color: $color-light-gray;
+    color: $color-black;
+  }
+
+  &:focus-within {
+    color: $color-black;
+    border-inline: none;
+    background-color: $color-white;
+    border-bottom-width: 2px;
+    padding: 13px 14px 12px;
+    border-color: transparent transparent $color-main-blue transparent;
+  }
+}
+
+.support-msg {
+  margin-top: 4px;
+  @include small-paragraph();
+}
+
+.suffix {
+  color: $color-md-gray;
+}
+
+:host {
+  mat-icon {
+    color: currentColor;
+  }
+
+  // input field
+  ::ng-deep {
+    input {
+      @include standard-input-label();
+      font-size: 16px;
+      background: none;
+      border: none;
+      color: $color-black;
+      padding: 2px 0 0;
+
+      &::placeholder {
+        color: $color-md-gray;
+      }
+
+      &:disabled {
+        color: $color-text-gray;
+      }
+    }
+  }
+
+
+  /// variants
+
+  &.error {
+    .input-wrapper {
+      border: 1px solid $color-error;
+      padding: 13px;
+      color: $color-black;
+    }
+
+    .support-msg {
+      color: $color-error;
+    }
+
+  }
+
+  &.disabled {
+    .input-wrapper {
+      cursor: default;
+      padding: 13px;
+      background-color: $color-soft-gray;
+      color: $color-text-gray;
+    }
+  }
+
+  &.highlighted:not(.disabled) {
+    .input-wrapper {
+      background-color: $color-soft-highlight;
+    }
+  }
+
+  &.highlighted.error {
+    .input-wrapper, .suffix {
+      color: $color-error;
+    }
+  }
+
+}
+
+
+

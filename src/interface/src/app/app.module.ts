@@ -24,7 +24,8 @@ import { HomeComponent } from './home/home.component';
 import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
 import { MapModule } from './map/map.module';
 import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
-import { MaterialModule } from './material/material.module';
+
+import { LegacyMaterialModule } from './material/legacy-material.module';
 
 import { NgxMaskModule } from 'ngx-mask';
 import { PlanTableComponent } from './home/plan-table/plan-table.component';
@@ -58,7 +59,7 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
       headerName: 'X-CSRFTOKEN',
     }),
     LayoutModule,
-    MaterialModule,
+    LegacyMaterialModule,
     NgxGoogleAnalyticsModule.forRoot(environment.google_analytics_id),
     NgxGoogleAnalyticsRouterModule,
     RouterModule,

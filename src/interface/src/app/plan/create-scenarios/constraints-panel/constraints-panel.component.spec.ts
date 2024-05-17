@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormBuilder, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { ConstraintsPanelComponent } from './constraints-panel.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FeaturesModule } from '../../../features/features.module';
@@ -20,7 +20,7 @@ describe('ConstraintsPanelComponent', () => {
       imports: [
         FormsModule,
         ReactiveFormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         NoopAnimationsModule,
         MatButtonToggleModule,
         FeaturesModule,

@@ -8,7 +8,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import { of } from 'rxjs';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('EditFieldComponent', () => {
@@ -20,7 +20,11 @@ describe('EditFieldComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [EditUserFieldComponent],
       providers: [MockProvider(AuthService)],
-      imports: [ReactiveFormsModule, MaterialModule, NoopAnimationsModule],
+      imports: [
+        ReactiveFormsModule,
+        LegacyMaterialModule,
+        NoopAnimationsModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(EditUserFieldComponent);

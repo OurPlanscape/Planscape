@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { LayerInfoCardComponent } from './../../layer-info-card/layer-info-card.component';
 import { ConditionTreeComponent } from './condition-tree.component';
 import { defaultMapConfig } from '../../map.helper';
@@ -13,7 +13,7 @@ describe('ConditionTreeComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [FormsModule, MaterialModule, NoopAnimationsModule],
+      imports: [FormsModule, LegacyMaterialModule, NoopAnimationsModule],
       declarations: [ConditionTreeComponent, LayerInfoCardComponent],
     }).compileComponents();
 

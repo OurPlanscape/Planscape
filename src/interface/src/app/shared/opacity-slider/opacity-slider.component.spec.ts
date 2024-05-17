@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 import { OpacitySliderComponent } from './opacity-slider.component';
 
@@ -9,7 +9,7 @@ describe('OpacitySliderComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [LegacyMaterialModule],
       declarations: [OpacitySliderComponent],
     }).compileComponents();
 
