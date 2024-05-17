@@ -15,12 +15,12 @@ class DatasetSerializerTest(APITestCase):
         )
         self.dataset_data = {
             "uuid": "123e4567-e89b-12d3-a456-426614174000",
-            "organization": self.organization.id,
+            "organization": self.organization,
             "name": "Test Dataset",
             "type": "VECTOR",
             "blob_status": "READY",
             "url": "http://example.com/dataset",
-            "created_by": self.user.id,
+            "created_by": self.user,
         }
         self.dataset = Dataset.objects.create(**self.dataset_data)
 
@@ -28,7 +28,7 @@ class DatasetSerializerTest(APITestCase):
         serializer = DatasetSerializer(instance=self.dataset)
         data = serializer.data
         self.assertEqual(data["uuid"], str(self.dataset.uuid))
-        self.assertEqual(data["organization"], self.dataset.organization.id)
+        self.assertEqual(data["organization"], str(self.dataset.organization.uuid))
         self.assertEqual(data["name"], self.dataset.name)
         self.assertEqual(data["type"], self.dataset.type)
         self.assertEqual(data["blob_status"], self.dataset.blob_status)
@@ -38,7 +38,7 @@ class DatasetSerializerTest(APITestCase):
         serializer = DatasetDetailSerializer(instance=self.dataset)
         data = serializer.data
         self.assertEqual(data["uuid"], str(self.dataset.uuid))
-        self.assertEqual(data["organization"], self.dataset.organization.id)
+        self.assertEqual(data["organization"], str(self.dataset.organization.uuid))
         self.assertEqual(data["name"], self.dataset.name)
         self.assertEqual(data["type"], self.dataset.type)
         self.assertEqual(data["blob_status"], self.dataset.blob_status)

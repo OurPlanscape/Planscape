@@ -9,9 +9,7 @@ class ProjectFilterSet(filters.FilterSet):
     visibility = filters.MultipleChoiceFilter(
         choices=ProjectVisibility.choices,
     )
-    capabilities = CharArrayFilter(
-        choices=ProjectCapabilities.choices, lookup_expr="contains"
-    )
+    capabilities = CharArrayFilter(lookup_expr="contains")
 
     class Meta:
         model = Project

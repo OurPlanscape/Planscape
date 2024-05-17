@@ -3,7 +3,7 @@ from rest_framework import status
 from django.urls import reverse
 from django.contrib.gis.geos import MultiPolygon, Polygon
 from metrics.models import Metric, Category, MetricCapabilities
-from projects.models import Project
+from projects.models import Project, ProjectVisibility
 from datasets.models import Dataset
 from organizations.models import Organization
 from django.contrib.auth import get_user_model
@@ -21,6 +21,7 @@ class MetricsViewSetTest(APITransactionTestCase):
             name="Test Project",
             organization=self.organization,
             geometry=MultiPolygon(Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)))),
+            visibility=ProjectVisibility.PUBLIC,
         )
         self.category = Category.add_root(
             name="Test Category",
@@ -66,7 +67,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         url = reverse("metrics:metrics-list")
         response = self.client.get(
             url,
-            {"organization": self.organization.uuid},
+            {"organization": self.organization.id},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
@@ -74,7 +75,7 @@ class MetricsViewSetTest(APITransactionTestCase):
 
     def test_filter_by_project(self):
         url = reverse("metrics:metrics-list")
-        response = self.client.get(url, {"project": self.project.uuid})
+        response = self.client.get(url, {"project": self.project.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
         self.assertEqual(response.data["results"][0]["name"], self.metric.name)
