@@ -4,14 +4,14 @@ import {
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 @Component({
   selector: 'app-delete-dialog',
   templateUrl: './delete-dialog.component.html',
   styleUrls: ['./delete-dialog.component.scss'],
   standalone: true,
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, LegacyMaterialModule],
 })
 export class DeleteDialogComponent {
   constructor(

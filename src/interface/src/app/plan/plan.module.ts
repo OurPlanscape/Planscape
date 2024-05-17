@@ -10,7 +10,7 @@ import { HttpClientXsrfModule } from '@angular/common/http';
 import { IdentifyProjectAreasComponent } from './create-scenarios/identify-project-areas/identify-project-areas.component';
 import { MapModule } from '../map/map.module';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../material/legacy-material.module';
 import { NgChartsModule } from 'ng2-charts';
 import { NgModule } from '@angular/core';
 import { NgxMaskModule } from 'ngx-mask';
@@ -80,7 +80,7 @@ import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog
     }),
     MapModule,
     MatButtonToggleModule,
-    MaterialModule,
+    LegacyMaterialModule,
     NgChartsModule,
     NgxMaskModule.forRoot(),
     ReactiveFormsModule,

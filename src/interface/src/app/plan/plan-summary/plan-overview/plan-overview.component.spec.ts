@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { PlanOverviewComponent } from './plan-overview.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
@@ -13,7 +13,11 @@ describe('PlanOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MaterialModule, RouterTestingModule],
+      imports: [
+        HttpClientTestingModule,
+        LegacyMaterialModule,
+        RouterTestingModule,
+      ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [PlanOverviewComponent],
     }).compileComponents();

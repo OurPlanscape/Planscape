@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../material/legacy-material.module';
 import { FileUploaderComponent } from './file-uploader/file-uploader.component';
 import { OpacitySliderComponent } from './opacity-slider/opacity-slider.component';
 import { NavBarComponent } from './nav-bar/nav-bar.component';
@@ -45,7 +45,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
   imports: [
     CommonModule,
     FormsModule,
-    MaterialModule,
+    LegacyMaterialModule,
     ReactiveFormsModule,
     FeaturesModule,
     RouterLink,

@@ -9,7 +9,7 @@ import { SignupComponent } from './signup.component';
 
 import { MockComponent } from 'ng-mocks';
 import { InfoCardComponent } from '../info-card/info-card.component';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 describe('SignupComponent', () => {
   let component: SignupComponent;
@@ -26,7 +26,7 @@ describe('SignupComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         FormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         NoopAnimationsModule,
         ReactiveFormsModule,
       ],

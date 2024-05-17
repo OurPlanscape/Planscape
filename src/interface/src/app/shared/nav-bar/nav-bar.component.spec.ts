@@ -4,7 +4,7 @@ import { NavBarComponent } from './nav-bar.component';
 import { PlanStateService, WINDOW } from '@services';
 import { By } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FeaturesModule } from '../../features/features.module';
 import { MockProvider } from 'ng-mocks';
@@ -16,7 +16,7 @@ describe('NavBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MaterialModule, RouterTestingModule, FeaturesModule],
+      imports: [LegacyMaterialModule, RouterTestingModule, FeaturesModule],
       declarations: [NavBarComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [

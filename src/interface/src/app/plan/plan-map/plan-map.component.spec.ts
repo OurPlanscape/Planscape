@@ -3,7 +3,7 @@ import { Router } from '@angular/router';
 import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
 import { BehaviorSubject } from 'rxjs';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { Plan, Region } from '@types';
 
 import { PlanMapComponent } from './plan-map.component';
@@ -56,7 +56,7 @@ describe('PlanMapComponent', () => {
     const routerStub = () => ({ navigate: (array: string[]) => ({}) });
 
     await TestBed.configureTestingModule({
-      imports: [MaterialModule, HttpClientTestingModule],
+      imports: [LegacyMaterialModule, HttpClientTestingModule],
       declarations: [PlanMapComponent],
       providers: [
         {

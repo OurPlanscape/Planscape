@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { OutsideRegionDialogComponent } from './outside-region-dialog.component';
 import { ReactiveFormsModule } from '@angular/forms';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { DialogModule } from '@angular/cdk/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
@@ -15,7 +15,7 @@ describe('OutsideRegionDialogComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         ReactiveFormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         DialogModule,
         NoopAnimationsModule,
       ],
