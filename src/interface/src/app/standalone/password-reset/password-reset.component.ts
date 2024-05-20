@@ -13,12 +13,13 @@ import { FormMessageType } from '@types';
 import { AuthService, PasswordResetToken } from '@services';
 
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../material/material.module';
+
 import { SharedModule } from '@shared';
 import { AboutComponent } from '../about/about.component';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
 import { passwordsMustMatchValidator } from '../../validators/passwords';
 import { PasswordConfirmationDialogComponent } from '../password-confirmation-dialog/password-confirmation-dialog.component';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 @UntilDestroy()
 @Component({
@@ -29,7 +30,7 @@ import { PasswordConfirmationDialogComponent } from '../password-confirmation-di
   imports: [
     AboutComponent,
     CommonModule,
-    MaterialModule,
+    LegacyMaterialModule,
     ReactiveFormsModule,
     RouterModule,
     SharedModule,

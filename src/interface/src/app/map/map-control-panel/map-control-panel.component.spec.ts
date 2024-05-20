@@ -7,7 +7,7 @@ import { MatLegacyCheckboxHarness as MatCheckboxHarness } from '@angular/materia
 import { MatLegacyRadioGroupHarness as MatRadioGroupHarness } from '@angular/material/legacy-radio/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { BaseLayerType, NONE_BOUNDARY_CONFIG } from '@types';
 import { LayerInfoCardComponent } from '../layer-info-card/layer-info-card.component';
 import { ConditionTreeComponent } from './condition-tree/condition-tree.component';
@@ -25,7 +25,7 @@ describe('MapControlPanelComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         NoopAnimationsModule,
         FeaturesModule,
       ],

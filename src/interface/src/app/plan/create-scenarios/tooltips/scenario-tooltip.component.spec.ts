@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ScenarioTooltipComponent } from './scenario-tooltip.component';
-import { MaterialModule } from '../../../material/material.module';
+import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 
 describe('TooltipsComponent', () => {
   let component: ScenarioTooltipComponent;
@@ -10,7 +10,7 @@ describe('TooltipsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ScenarioTooltipComponent],
-      imports: [MaterialModule],
+      imports: [LegacyMaterialModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenarioTooltipComponent);

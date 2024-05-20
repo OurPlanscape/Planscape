@@ -3,7 +3,7 @@ import { MatLegacyRadioGroupHarness as MatRadioGroupHarness } from '@angular/mat
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import {
   FormBuilder,
@@ -28,7 +28,7 @@ describe('IdentifyProjectAreasComponent', () => {
       imports: [
         FormsModule,
         ReactiveFormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         NoopAnimationsModule,
         SharedModule,
       ],

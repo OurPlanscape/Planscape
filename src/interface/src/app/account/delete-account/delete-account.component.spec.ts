@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DeleteAccountComponent } from './delete-account.component';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 import { MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
@@ -14,7 +14,7 @@ describe('DeleteAccountComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [DeleteAccountComponent],
-      imports: [MaterialModule, MatDialogModule],
+      imports: [LegacyMaterialModule, MatDialogModule],
       providers: [MockProvider(AuthService), MockProvider(Router)],
     }).compileComponents();
 

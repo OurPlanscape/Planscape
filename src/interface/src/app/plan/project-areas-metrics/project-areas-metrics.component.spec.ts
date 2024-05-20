@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ProjectAreasMetricsComponent } from './project-areas-metrics.component';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ProjectAreasMetricsComponent', () => {
@@ -10,7 +10,7 @@ describe('ProjectAreasMetricsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [ProjectAreasMetricsComponent],
-      imports: [MaterialModule, HttpClientTestingModule],
+      imports: [LegacyMaterialModule, HttpClientTestingModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProjectAreasMetricsComponent);

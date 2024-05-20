@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { SharePlanDialogComponent } from './share-plan-dialog.component';
 import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MockComponents, MockProvider } from 'ng-mocks';
 import {
   MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
@@ -32,7 +32,7 @@ describe('SharePlanDialogComponent', () => {
         SharePlanDialogComponent,
         MockComponents(ChipInputComponent, SectionLoaderComponent),
       ],
-      imports: [MaterialModule, MatSnackBarModule, NoopAnimationsModule],
+      imports: [LegacyMaterialModule, MatSnackBarModule, NoopAnimationsModule],
       providers: [
         MockProvider(PlanStateService, {
           getPlan: () => NEVER,

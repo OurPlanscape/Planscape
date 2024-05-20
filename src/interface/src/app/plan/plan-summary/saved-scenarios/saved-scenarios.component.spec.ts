@@ -11,7 +11,7 @@ import {
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import {
   SavedScenariosComponent,
   ScenarioRow,
@@ -88,7 +88,7 @@ describe('SavedScenariosComponent', () => {
       imports: [
         FormsModule,
         HttpClientTestingModule,
-        MaterialModule,
+        LegacyMaterialModule,
         MatTableModule,
         NoopAnimationsModule,
         FeaturesModule,

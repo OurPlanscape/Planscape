@@ -2,14 +2,14 @@ import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 /**  Component for reset password confirmation dialog. */
 @Component({
   selector: 'app-reset-password-dialog',
   templateUrl: './reset_password_dialog.component.html',
   standalone: true,
-  imports: [CommonModule, MaterialModule],
+  imports: [CommonModule, LegacyMaterialModule],
 })
 export class ResetPasswordDialogComponent {
   protected readonly checkUrl = '/assets/png/gm_done_gm_grey_24dp.png';
