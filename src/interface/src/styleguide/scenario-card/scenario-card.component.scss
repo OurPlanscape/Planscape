@@ -38,6 +38,9 @@
     flex-direction: row;
     gap: 0;
   }
+  .disabled-content {
+    color: grey;
+  }
 
   .name-header {
     @include h4();
