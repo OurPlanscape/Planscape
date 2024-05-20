@@ -18,7 +18,7 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { By } from '@angular/platform-browser';
 import { PlanService, SessionService } from '@services';
 import { BehaviorSubject, of } from 'rxjs';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { DialogModule } from '@angular/cdk/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Region } from '@types';
@@ -54,7 +54,7 @@ describe('PlanCreateDialogComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         ReactiveFormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         DialogModule,
         NoopAnimationsModule,
       ],

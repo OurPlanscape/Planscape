@@ -18,7 +18,7 @@ import {
 } from '@shared';
 import { FormMessageType } from '@types';
 import { CommonModule } from '@angular/common';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AboutComponent } from '../about/about.component';
 
 @Component({
@@ -29,7 +29,7 @@ import { AboutComponent } from '../about/about.component';
   imports: [
     AboutComponent,
     CommonModule,
-    MaterialModule,
+    LegacyMaterialModule,
     ReactiveFormsModule,
     SharedModule,
   ],

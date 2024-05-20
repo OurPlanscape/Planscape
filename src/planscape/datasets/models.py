@@ -73,6 +73,7 @@ class Dataset(
     geometry = models.PolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
         help_text="Bounding Box of the dataset",
+        null=True,
     )
 
     operations = ArrayField(

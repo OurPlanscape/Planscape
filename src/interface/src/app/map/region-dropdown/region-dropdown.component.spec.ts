@@ -8,7 +8,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BehaviorSubject } from 'rxjs';
 import { AuthService, SessionService } from '@services';
 import { Region, User } from '@types';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { FeaturesModule } from '../../features/features.module';
 
 describe('RegionDropdownComponent', () => {
@@ -26,7 +26,7 @@ describe('RegionDropdownComponent', () => {
       setRegion: () => {},
     };
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MaterialModule, FeaturesModule],
+      imports: [HttpClientTestingModule, LegacyMaterialModule, FeaturesModule],
       declarations: [RegionDropdownComponent],
       providers: [
         { provide: AuthService, useValue: mockAuthService },

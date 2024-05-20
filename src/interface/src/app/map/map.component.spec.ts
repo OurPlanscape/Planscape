@@ -23,7 +23,7 @@ import 'leaflet.vectorgrid';
 import { BehaviorSubject, of } from 'rxjs';
 import * as shp from 'shpjs';
 
-import { MaterialModule } from '../material/material.module';
+import { LegacyMaterialModule } from '../material/legacy-material.module';
 import {
   AuthService,
   MapService,
@@ -154,7 +154,7 @@ describe('MapComponent', () => {
     TestBed.configureTestingModule({
       imports: [
         FormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         BrowserAnimationsModule,
         HttpClientTestingModule,
         FeaturesModule,

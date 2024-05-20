@@ -60,4 +60,4 @@ import { MatTreeModule } from '@angular/material/tree';
     MatTreeModule,
   ],
 })
-export class MaterialModule {}
+export class LegacyMaterialModule {}

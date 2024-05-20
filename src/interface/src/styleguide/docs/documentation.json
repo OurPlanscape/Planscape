@@ -5,7 +5,80 @@
     "guards": [],
     "interceptors": [],
     "classes": [],
-    "directives": [],
+    "directives": [
+        {
+            "name": "InputDirective",
+            "id": "directive-InputDirective-5d7c263d73f0b06d6975210e477166588c25ccd3785c8f25bb67a8ab7a2a9882c36279c47090405fcf7e00375dbb4c43198bc79b148017a523e55609f80cd18f",
+            "file": "src/styleguide/input/input.directive.ts",
+            "type": "directive",
+            "description": "",
+            "rawdescription": "\n",
+            "sourceCode": "import { Directive, ElementRef } from '@angular/core';\n\n@Directive({\n  selector: 'input[sgInput]',\n  standalone: true,\n})\nexport class InputDirective {\n  private el: ElementRef<HTMLInputElement>;\n\n  constructor(private elementRef: ElementRef<HTMLInputElement>) {\n    this.el = this.elementRef;\n  }\n\n  focus() {\n    this.el.nativeElement.focus();\n  }\n}\n",
+            "selector": "input[sgInput]",
+            "providers": [],
+            "hostDirectives": [],
+            "standalone": true,
+            "inputsClass": [],
+            "outputsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [],
+            "hostListeners": [],
+            "propertiesClass": [
+                {
+                    "name": "el",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "ElementRef<HTMLInputElement>",
+                    "optional": false,
+                    "description": "",
+                    "line": 8,
+                    "modifierKind": [
+                        123
+                    ]
+                }
+            ],
+            "methodsClass": [
+                {
+                    "name": "focus",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "void",
+                    "typeParameters": [],
+                    "line": 14,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                }
+            ],
+            "extends": [],
+            "constructorObj": {
+                "name": "constructor",
+                "description": "",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "args": [
+                    {
+                        "name": "elementRef",
+                        "type": "ElementRef<HTMLInputElement>",
+                        "deprecated": false,
+                        "deprecationMessage": ""
+                    }
+                ],
+                "line": 8,
+                "jsdoctags": [
+                    {
+                        "name": "elementRef",
+                        "type": "ElementRef<HTMLInputElement>",
+                        "deprecated": false,
+                        "deprecationMessage": "",
+                        "tagName": {
+                            "text": "param"
+                        }
+                    }
+                ]
+            }
+        }
+    ],
     "components": [
         {
             "name": "ButtonComponent",
@@ -198,60 +271,230 @@
             "templateData": "<mat-icon *ngIf=\"icon\">{{ icon }}</mat-icon>\n<ng-content></ng-content>\n"
         },
         {
-            "name": "ScenarioCardComponent",
-            "id": "component-ScenarioCardComponent-4fc5eb1620e5893452368dda0022fda5b958182aae3737978cc6a48d5a6e9b2d63d56afdf18f5557d171d2c5938e0bdfc03037ece26bf1debcdb50ad4b7484cd",
-            "file": "src/styleguide/scenario-card/scenario-card.component.ts",
+            "name": "InputFieldComponent",
+            "id": "component-InputFieldComponent-143f86c0dab0ea502c9b23d0ed22bb92ba0a0912125197273619c27fc89632a0730c5bf81d9769418af8e1f87c1ba2cc3874646e40574e6333dae8de16a029a0",
+            "file": "src/styleguide/input/input-field.component.ts",
             "encapsulation": [],
             "entryComponents": [],
             "inputs": [],
             "outputs": [],
             "providers": [],
-            "selector": "sg-scenario-card",
+            "selector": "sg-input-field",
             "styleUrls": [],
             "styles": [],
             "templateUrl": [
-                "./scenario-card.component.html"
+                "./input-field.component.html"
             ],
             "viewProviders": [],
             "hostDirectives": [],
             "inputsClass": [
                 {
-                    "name": "scenario",
+                    "name": "disabled",
+                    "defaultValue": "false",
                     "deprecated": false,
                     "deprecationMessage": "",
-                    "rawdescription": "\n\nThe status\n",
-                    "description": "<p>The status</p>\n",
-                    "line": 18,
-                    "type": "any",
+                    "rawdescription": "\n\nDetermines if the input field is disabled. Affects the styles of the whole component.\n",
+                    "description": "<p>Determines if the input field is disabled. Affects the styles of the whole component.</p>\n",
+                    "line": 57,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "error",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nDetermines if the input field has errors. Affects the styles of the whole component.\n",
+                    "description": "<p>Determines if the input field has errors. Affects the styles of the whole component.</p>\n",
+                    "line": 62,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "highlighted",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nDetermines if the input field is highlighted. Affects the styles of the whole component.\n",
+                    "description": "<p>Determines if the input field is highlighted. Affects the styles of the whole component.</p>\n",
+                    "line": 67,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "leadingIcon",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nIcon displayed on the left side of the input field.\nIf not provided the icon is hidden.\n",
+                    "description": "<p>Icon displayed on the left side of the input field.\nIf not provided the icon is hidden.</p>\n",
+                    "line": 46,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "showSupportMessage",
+                    "defaultValue": "'always'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nwhen to show support message\n",
+                    "description": "<p>when to show support message</p>\n",
+                    "line": 77,
+                    "type": "ShowSupportMessage",
+                    "decorators": []
+                },
+                {
+                    "name": "suffix",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nText to be shown on the right side of the input field.\n",
+                    "description": "<p>Text to be shown on the right side of the input field.</p>\n",
+                    "line": 72,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "supportMessage",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nThe help/error message to be displayed below the input field.\n",
+                    "description": "<p>The help/error message to be displayed below the input field.</p>\n",
+                    "line": 40,
+                    "type": "string",
+                    "decorators": []
+                },
+                {
+                    "name": "trailingIcon",
+                    "defaultValue": "''",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nIcon displayed on the right side of the input field.\nIf not provided the icon is hidden.\n",
+                    "description": "<p>Icon displayed on the right side of the input field.\nIf not provided the icon is hidden.</p>\n",
+                    "line": 52,
+                    "type": "string",
                     "decorators": []
                 }
             ],
             "outputsClass": [],
-            "propertiesClass": [],
+            "propertiesClass": [
+                {
+                    "name": "inputDirective",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "type": "InputDirective",
+                    "optional": true,
+                    "description": "<p>Reference to the projected sgInput input element</p>\n",
+                    "line": 35,
+                    "rawdescription": "\n\nReference to the projected sgInput input element\n",
+                    "decorators": [
+                        {
+                            "name": "ContentChild",
+                            "stringifiedArguments": "InputDirective, {static: false}"
+                        }
+                    ],
+                    "modifierKind": [
+                        170
+                    ]
+                }
+            ],
             "methodsClass": [],
             "deprecated": false,
             "deprecationMessage": "",
-            "hostBindings": [],
+            "hostBindings": [
+                {
+                    "name": "class.disabled",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 85,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.error",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 80,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.highlighted",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 90,
+                    "type": "boolean",
+                    "decorators": []
+                }
+            ],
             "hostListeners": [],
             "standalone": true,
             "imports": [
                 {
-                    "name": "NgIf"
+                    "name": "MatIconModule",
+                    "type": "module"
                 },
                 {
-                    "name": "NgSwitch"
+                    "name": "CommonModule",
+                    "type": "module"
+                },
+                {
+                    "name": "InputDirective",
+                    "type": "directive"
                 }
             ],
-            "description": "<p>Scenario Card for displaying scenario data in a results list</p>\n",
-            "rawdescription": "\n\nScenario Card for displaying scenario data in a results list\n",
+            "description": "<p>Wrapper component for input fields.\nExpects an input[sgInput] element via content projection</p>\n<p>Usage:\n<sg-input-field>\n  &lt;input sgInput ...&gt;\n</sg-input-field></p>\n",
+            "rawdescription": "\n\nWrapper component for input fields.\nExpects an input[sgInput] element via content projection\n\nUsage:\n<sg-input-field>\n  <input sgInput ...>\n</sg-input-field>\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { NgIf, NgSwitch } from '@angular/common';\n\n/**\n * Scenario Card for displaying scenario data in a results list\n */\n@Component({\n  selector: 'sg-scenario-card',\n  standalone: true,\n  imports: [NgIf, NgSwitch],\n  templateUrl: './scenario-card.component.html',\n  styleUrl: './scenario-card.component.scss',\n})\nexport class ScenarioCardComponent {\n  /**\n   * The status\n   */\n  @Input() scenario: any;\n}\n",
-            "styleUrl": "./scenario-card.component.scss",
+            "sourceCode": "import {\n  AfterContentInit,\n  Component,\n  ContentChild,\n  HostBinding,\n  Input,\n} from '@angular/core';\nimport { MatIconModule } from '@angular/material/icon';\nimport { CommonModule } from '@angular/common';\nimport { InputDirective } from './input.directive';\n\nexport type ShowSupportMessage = 'always' | 'on-error' | false;\n\n/**\n * Wrapper component for input fields.\n * Expects an input[sgInput] element via content projection\n *\n * Usage:\n * <sg-input-field>\n *   <input sgInput ...>\n * </sg-input-field>\n */\n@Component({\n  selector: 'sg-input-field',\n  standalone: true,\n  imports: [MatIconModule, CommonModule, InputDirective],\n  templateUrl: './input-field.component.html',\n  styleUrl: './input-field.component.scss',\n})\nexport class InputFieldComponent implements AfterContentInit {\n  /**\n   * Reference to the projected sgInput input element\n   */\n  @ContentChild(InputDirective, { static: false })\n  inputDirective?: InputDirective;\n\n  /**\n   * The help/error message to be displayed below the input field.\n   */\n  @Input() supportMessage = '';\n\n  /**\n   * Icon displayed on the left side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() leadingIcon = '';\n\n  /**\n   * Icon displayed on the right side of the input field.\n   * If not provided the icon is hidden.\n   */\n  @Input() trailingIcon = '';\n\n  /**\n   * Determines if the input field is disabled. Affects the styles of the whole component.\n   */\n  @Input() disabled = false;\n\n  /**\n   * Determines if the input field has errors. Affects the styles of the whole component.\n   */\n  @Input() error = false;\n\n  /**\n   * Determines if the input field is highlighted. Affects the styles of the whole component.\n   */\n  @Input() highlighted = false;\n\n  /**\n   * Text to be shown on the right side of the input field.\n   */\n  @Input() suffix = '';\n\n  /**\n   * when to show support message\n   */\n  @Input() showSupportMessage: ShowSupportMessage = 'always';\n\n  @HostBinding('class.error')\n  get hasError() {\n    return this.error;\n  }\n\n  @HostBinding('class.disabled')\n  get isDisabled() {\n    return this.disabled;\n  }\n\n  @HostBinding('class.highlighted')\n  get isHighlighted() {\n    return this.highlighted;\n  }\n\n  /**\n   * @ignore\n   * This checks that when using this component we have an input with sgInput via ngContent\n   */\n  ngAfterContentInit() {\n    if (!this.inputDirective) {\n      throw new Error(\n        'The projected content must include an <input> element with the sgInput directive.'\n      );\n    }\n  }\n\n  get displaysSupportMessage() {\n    return (\n      this.showSupportMessage === 'always' ||\n      (this.showSupportMessage === 'on-error' && this.error)\n    );\n  }\n\n  /**\n   * @ignore\n   */\n  focusInput(): void {\n    this.inputDirective?.focus();\n  }\n}\n",
+            "styleUrl": "./input-field.component.scss",
             "assetsDirs": [],
             "styleUrlsData": "",
             "stylesData": "",
             "extends": [],
-            "templateData": "<ng-container class=\"scenario-content\">\n  <div class=\"title-row\">\n    <div class=\"name-header\">{{ scenario.name }}</div>\n  </div>\n\n  <div class=\"detail-row\">\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Creator</div>\n      <div class=\"detail-info\">{{ scenario.creator }}</div>\n    </div>\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Areas</div>\n      <div class=\"detail-info\">{{ scenario.area_count }}</div>\n    </div>\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Est Budget</div>\n      <div class=\"detail-info\">{{ scenario.est_budget }}</div>\n    </div>\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Treatment Plans</div>\n      <div class=\"detail-info\">{{ scenario.treatment_plans_count }}</div>\n    </div>\n    <div class=\"detail-column\">\n      <div class=\"detail-header\">Created</div>\n      <div class=\"detail-info\">{{ scenario.created_at }}</div>\n    </div>\n  </div>\n</ng-container>\n"
+            "implements": [
+                "AfterContentInit"
+            ],
+            "accessors": {
+                "hasError": {
+                    "name": "hasError",
+                    "getSignature": {
+                        "name": "hasError",
+                        "type": "",
+                        "returnType": "",
+                        "line": 80
+                    }
+                },
+                "isDisabled": {
+                    "name": "isDisabled",
+                    "getSignature": {
+                        "name": "isDisabled",
+                        "type": "",
+                        "returnType": "",
+                        "line": 85
+                    }
+                },
+                "isHighlighted": {
+                    "name": "isHighlighted",
+                    "getSignature": {
+                        "name": "isHighlighted",
+                        "type": "",
+                        "returnType": "",
+                        "line": 90
+                    }
+                },
+                "displaysSupportMessage": {
+                    "name": "displaysSupportMessage",
+                    "getSignature": {
+                        "name": "displaysSupportMessage",
+                        "type": "",
+                        "returnType": "",
+                        "line": 106
+                    }
+                }
+            },
+            "templateData": "<div class=\"input-wrapper\" (click)=\"focusInput()\">\n  <mat-icon *ngIf=\"leadingIcon\">{{ leadingIcon }}</mat-icon>\n  <ng-content></ng-content>\n  <span *ngIf=\"suffix && !trailingIcon\" class=\"suffix\">{{ suffix }}</span>\n  <mat-icon *ngIf=\"trailingIcon\">{{ trailingIcon }}</mat-icon>\n</div>\n<div class=\"support-msg\" *ngIf=\"displaysSupportMessage\">\n  {{ supportMessage }}\n</div>\n"
         },
         {
             "name": "StatusChipComponent",
@@ -410,6 +653,17 @@
                 "kind": 192
             },
             {
+                "name": "ShowSupportMessage",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "\"always\" | \"on-error\" | ",
+                "file": "src/styleguide/input/input-field.component.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 192
+            },
+            {
                 "name": "StatusChipStatus",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
@@ -439,6 +693,19 @@
                     "kind": 192
                 }
             ],
+            "src/styleguide/input/input-field.component.ts": [
+                {
+                    "name": "ShowSupportMessage",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "\"always\" | \"on-error\" | ",
+                    "file": "src/styleguide/input/input-field.component.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 192
+                }
+            ],
             "src/styleguide/status-chip/status-chip.component.ts": [
                 {
                     "name": "StatusChipStatus",
@@ -456,8 +723,8 @@
     },
     "routes": [],
     "coverage": {
-        "count": 54,
-        "status": "good",
+        "count": 34,
+        "status": "medium",
         "files": [
             {
                 "filePath": "src/styleguide/button/button.component.ts",
@@ -469,13 +736,22 @@
                 "status": "low"
             },
             {
-                "filePath": "src/styleguide/scenario-card/scenario-card.component.ts",
+                "filePath": "src/styleguide/input/input-field.component.ts",
                 "type": "component",
                 "linktype": "component",
-                "name": "ScenarioCardComponent",
-                "coveragePercent": 100,
-                "coverageCount": "2/2",
+                "name": "InputFieldComponent",
+                "coveragePercent": 76,
+                "coverageCount": "10/13",
                 "status": "very-good"
+            },
+            {
+                "filePath": "src/styleguide/input/input.directive.ts",
+                "type": "directive",
+                "linktype": "directive",
+                "name": "InputDirective",
+                "coveragePercent": 0,
+                "coverageCount": "0/4",
+                "status": "low"
             },
             {
                 "filePath": "src/styleguide/status-chip/status-chip.component.ts",
