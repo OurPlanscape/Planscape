@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { DatePipe, CurrencyPipe } from '@angular/common';
 import { NgIf, NgSwitch } from '@angular/common';
 import {
   StatusChipComponent,
@@ -15,7 +16,9 @@ import { MatMenuModule } from '@angular/material/menu';
   selector: 'sg-scenario-card',
   standalone: true,
   imports: [
+    DatePipe,
     NgIf,
+    CurrencyPipe,
     NgSwitch,
     StatusChipComponent,
     ButtonComponent,

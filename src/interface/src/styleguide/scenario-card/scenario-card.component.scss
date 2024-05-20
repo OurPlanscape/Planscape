@@ -42,6 +42,20 @@
     @include h4();
   }
 
+  .title-chip {
+    height: 2em;
+  }
+
+  .error-icon {
+    color: $color-error;
+    font-size: 18px;
+    line-height: 32px;
+  }
+  
+  .failed-message {
+    @include small-paragraph();
+  }
+
   .more-button {
     border: none;
     background-color: white;

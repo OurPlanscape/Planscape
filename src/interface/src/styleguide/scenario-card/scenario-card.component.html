@@ -1,15 +1,20 @@
 <div class="title-row">
   <div class="title-section">
     <div class="name-header">{{ scenario.name }}</div>
-    <div>
-      <sg-status-chip [status]="getChipStatus()"></sg-status-chip>
-    </div>
-    <div *ngIf="scenario.status === 'FAILED'">
+
+    <sg-status-chip
+      [status]="getChipStatus()"
+      class="title-chip"></sg-status-chip>
+
+    <div *ngIf="scenario.status === 'FAILED'" class="failed-message">
+      <mat-icon class="error-icon">error</mat-icon>
       Create a new scenario to proceed to treatment plan
     </div>
   </div>
-  <div class="controls-section">
-    <button sg-button icon="add">New Treatment Plan</button>
+  <div class="controls-section" *ngIf="scenario.status !== 'FAILED'">
+    <button sg-button icon="add" [disabled]="scenario.status !== 'DONE'">
+      New Treatment Plan
+    </button>
     <button
       mat-icon-button
       [matMenuTriggerFor]="menu"
@@ -31,20 +36,22 @@
     <div class="detail-header">Creator</div>
     <div class="detail-info">{{ scenario.creator }}</div>
   </div>
-  <div class="detail-column">
+  <div *ngIf="scenario.status !== 'RUNNING'" class="detail-column">
     <div class="detail-header">Areas</div>
     <div class="detail-info">{{ scenario.area_count }}</div>
   </div>
-  <div class="detail-column">
+  <div *ngIf="scenario.status !== 'RUNNING'" class="detail-column">
     <div class="detail-header">Est Budget</div>
-    <div class="detail-info">{{ scenario.est_budget }}</div>
+    <div class="detail-info">{{ scenario.est_budget | currency }}</div>
   </div>
-  <div class="detail-column">
+  <div *ngIf="scenario.status !== 'RUNNING'" class="detail-column">
     <div class="detail-header">Treatment Plans</div>
     <div class="detail-info">{{ scenario.treatment_plans_count }}</div>
   </div>
-  <div class="detail-column">
+  <div *ngIf="scenario.status !== 'RUNNING'" class="detail-column">
     <div class="detail-header">Created</div>
-    <div class="detail-info">{{ scenario.created_at }}</div>
+    <div class="detail-info">
+      {{ scenario.created_at | date: 'MMM d, y, h:mm:ss a ' }}
+    </div>
   </div>
 </div>
