@@ -1,37 +1,50 @@
-<ng-container class="scenario-content">
-  <div class="title-row">
-    <div class="title-section">
-      <div class="name-header">{{ scenario.name }}</div>
-      <div><sg-status-chip></sg-status-chip></div>
+<div class="title-row">
+  <div class="title-section">
+    <div class="name-header">{{ scenario.name }}</div>
+    <div>
+      <sg-status-chip [status]="getChipStatus()"></sg-status-chip>
     </div>
-    <div class="controls-section">
-      <button sg-button icon="add">New Treatment Plan</button>
-      <button mat-icon-button aria-label="Scenario options" class="more-button">
-        <mat-icon>more_vert</mat-icon>
+    <div *ngIf="scenario.status === 'FAILED'">
+      Create a new scenario to proceed to treatment plan
+    </div>
+  </div>
+  <div class="controls-section">
+    <button sg-button icon="add">New Treatment Plan</button>
+    <button
+      mat-icon-button
+      [matMenuTriggerFor]="menu"
+      aria-label="more scenario Options"
+      class="more-menu-button">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item class="delete-note-button">
+        <mat-icon class="delete-icon">delete_outline</mat-icon>
+        <span>Delete</span>
       </button>
-    </div>
+    </mat-menu>
   </div>
+</div>
 
-  <div class="detail-row">
-    <div class="detail-column">
-      <div class="detail-header">Creator</div>
-      <div class="detail-info">{{ scenario.creator }}</div>
-    </div>
-    <div class="detail-column">
-      <div class="detail-header">Areas</div>
-      <div class="detail-info">{{ scenario.area_count }}</div>
-    </div>
-    <div class="detail-column">
-      <div class="detail-header">Est Budget</div>
-      <div class="detail-info">{{ scenario.est_budget }}</div>
-    </div>
-    <div class="detail-column">
-      <div class="detail-header">Treatment Plans</div>
-      <div class="detail-info">{{ scenario.treatment_plans_count }}</div>
-    </div>
-    <div class="detail-column">
-      <div class="detail-header">Created</div>
-      <div class="detail-info">{{ scenario.created_at }}</div>
-    </div>
+<div class="detail-row">
+  <div class="detail-column">
+    <div class="detail-header">Creator</div>
+    <div class="detail-info">{{ scenario.creator }}</div>
   </div>
-</ng-container>
+  <div class="detail-column">
+    <div class="detail-header">Areas</div>
+    <div class="detail-info">{{ scenario.area_count }}</div>
+  </div>
+  <div class="detail-column">
+    <div class="detail-header">Est Budget</div>
+    <div class="detail-info">{{ scenario.est_budget }}</div>
+  </div>
+  <div class="detail-column">
+    <div class="detail-header">Treatment Plans</div>
+    <div class="detail-info">{{ scenario.treatment_plans_count }}</div>
+  </div>
+  <div class="detail-column">
+    <div class="detail-header">Created</div>
+    <div class="detail-info">{{ scenario.created_at }}</div>
+  </div>
+</div>

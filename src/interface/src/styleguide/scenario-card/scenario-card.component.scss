@@ -58,10 +58,6 @@
     @include top-level-label();
     color: $color-md-gray;
     text-transform: uppercase;
-    font-family: Public Sans;
-    font-size: 14px;
-    font-weight: 700;
-    line-height: 14px;
     text-align: left;
   }
 
@@ -73,5 +69,10 @@
 
   .detail-info {
     @include xs-label();
+  }
+
+  .more-menu-button {
+    border: none;
+    background-color: inherit;
   }
 }
