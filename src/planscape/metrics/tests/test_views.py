@@ -55,7 +55,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         response = self.client.get(reverse("metrics:metrics-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(
             response.data.get("results")[0]["name"],
             self.metric.name,
@@ -76,19 +76,22 @@ class MetricsViewSetTest(APITransactionTestCase):
         url = reverse("metrics:metrics-list")
         response = self.client.get(
             url,
-            {"organization": self.organization.id},
+            {"organization": self.organization.uuid},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(response.data["results"][0]["name"], self.metric.name)
 
     def test_filter_by_project(self):
         url = reverse("metrics:metrics-list")
-        response = self.client.get(url, {"project": self.project.id})
+        response = self.client.get(
+            url,
+            {"project": str(self.project.uuid)},
+        )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(response.data["results"][0]["name"], self.metric.name)
 
     def test_filter_by_category(self):
@@ -96,7 +99,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         response = self.client.get(url, {"category": self.category.id})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(response.data["results"][0]["name"], self.metric.name)
 
     def test_filter_by_capabilities(self):
@@ -107,7 +110,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(response.data["results"][0]["name"], self.metric.name)
 
     def test_filter_by_name_exact(self):
@@ -115,7 +118,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         response = self.client.get(url, {"name": "Test Metric"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(response.data["results"][0]["name"], self.metric.name)
 
     def test_filter_by_name_contains(self):
@@ -123,7 +126,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         response = self.client.get(url, {"name__contains": "Test"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(response.data["results"][0]["name"], self.metric.name)
 
     def test_filter_by_display_name_exact(self):
@@ -134,7 +137,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(
             response.data["results"][0]["display_name"],
             self.metric.display_name,
@@ -145,7 +148,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         response = self.client.get(url, {"display_name__contains": "Metric"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
-        self.assertEqual(len(response.data.get("count")), 1)
+        self.assertEqual(response.data.get("count"), 1)
         self.assertEqual(
             response.data["results"][0]["display_name"],
             self.metric.display_name,
