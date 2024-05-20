@@ -172,6 +172,11 @@ node_modules/
 # pycharm
 .idea/
 
+# Cypress artifacts
+src/interface/cypress/screenshots/
+
+
 pyrightconfig.json
 
 Session.vim
+
