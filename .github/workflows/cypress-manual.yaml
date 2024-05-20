@@ -1,0 +1,24 @@
+name: Cypress Full Tests
+
+on: workflow_dispatch
+
+env:
+  CYPRESS_TEST_BASE_URL: ${{ vars.CYPRESS_TEST_BASE_URL }}
+  CYPRESS_TEST_USER1: ${{ secrets.CYPRESS_TEST_USER1 }}
+  CYPRESS_TEST_PASS1: ${{ secrets.CYPRESS_TEST_PASS1 }}
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: src/interface # runs every cypress test under this dir
+          record: false

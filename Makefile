@@ -61,6 +61,9 @@ deploy-frontend: install-dependencies-frontend compile-angular
 deploy-storybook: install-dependencies-frontend build-storybook
 	cp -r ./src/interface/storybook-static/** ${STORYBOOK_WWW_DIR}
 
+cypress-test:
+	cd src/interface && npm run cypress:run
+
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
 
