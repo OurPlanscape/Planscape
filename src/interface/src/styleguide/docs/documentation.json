@@ -498,7 +498,7 @@
         },
         {
             "name": "ScenarioCardComponent",
-            "id": "component-ScenarioCardComponent-a144301782f1f27ac379529490c09b8c978ec58cb3c866e5f31b3fa0d0c63479a88a07c43b987a409c820ec1d2b30a8a86b2b4c796dd753fa7e3119af370ab00",
+            "id": "component-ScenarioCardComponent-9e34e43eea2da2401e7d59f90909d23b62af34636eaeaf45d886e1ed831792314a805313b49cfa6ae7e76960b99d9f21d4ccbccb5e2dde4a91c7febef7a3f986",
             "file": "src/styleguide/scenario-card/scenario-card.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -520,23 +520,13 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nThe status\n",
                     "description": "<p>The status</p>\n",
-                    "line": 32,
+                    "line": 35,
                     "type": "any",
                     "decorators": []
                 }
             ],
             "outputsClass": [],
             "propertiesClass": [
-                {
-                    "name": "chipStatus",
-                    "defaultValue": "'inProgress'",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "StatusChipStatus",
-                    "optional": false,
-                    "description": "",
-                    "line": 34
-                },
                 {
                     "name": "failureMessage",
                     "defaultValue": "'failureMessage'",
@@ -545,7 +535,7 @@
                     "type": "string",
                     "optional": false,
                     "description": "",
-                    "line": 33
+                    "line": 36
                 }
             ],
             "methodsClass": [
@@ -555,7 +545,7 @@
                     "optional": false,
                     "returnType": "StatusChipStatus",
                     "typeParameters": [],
-                    "line": 36,
+                    "line": 38,
                     "deprecated": false,
                     "deprecationMessage": ""
                 }
@@ -567,7 +557,15 @@
             "standalone": true,
             "imports": [
                 {
+                    "name": "DatePipe",
+                    "type": "pipe"
+                },
+                {
                     "name": "NgIf"
+                },
+                {
+                    "name": "CurrencyPipe",
+                    "type": "pipe"
                 },
                 {
                     "name": "NgSwitch"
@@ -592,13 +590,13 @@
             "description": "<p>Scenario Card for displaying scenario data in a results list</p>\n",
             "rawdescription": "\n\nScenario Card for displaying scenario data in a results list\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { NgIf, NgSwitch } from '@angular/common';\nimport {\n  StatusChipComponent,\n  StatusChipStatus,\n} from '../status-chip/status-chip.component';\nimport { ButtonComponent } from '../button/button.component';\nimport { MatIconModule } from '@angular/material/icon';\nimport { MatMenuModule } from '@angular/material/menu';\n\n/**\n * Scenario Card for displaying scenario data in a results list\n */\n@Component({\n  selector: 'sg-scenario-card',\n  standalone: true,\n  imports: [\n    NgIf,\n    NgSwitch,\n    StatusChipComponent,\n    ButtonComponent,\n    MatIconModule,\n    MatMenuModule,\n  ],\n  templateUrl: './scenario-card.component.html',\n  styleUrl: './scenario-card.component.scss',\n})\nexport class ScenarioCardComponent {\n  /**\n   * The status\n   */\n  @Input() scenario: any;\n  failureMessage: string = 'failureMessage';\n  chipStatus: StatusChipStatus = 'inProgress';\n\n  getChipStatus(): StatusChipStatus {\n    switch (this.scenario.status) {\n      case 'In Progress':\n        return 'inProgress';\n      case 'Running':\n        return 'running';\n      case 'Success':\n        return 'success';\n      case 'Failed':\n        return 'failed';\n      default:\n        return 'inProgress';\n    }\n  }\n}\n",
+            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { DatePipe, CurrencyPipe } from '@angular/common';\nimport { NgIf, NgSwitch } from '@angular/common';\nimport {\n  StatusChipComponent,\n  StatusChipStatus,\n} from '../status-chip/status-chip.component';\nimport { ButtonComponent } from '../button/button.component';\nimport { MatIconModule } from '@angular/material/icon';\nimport { MatMenuModule } from '@angular/material/menu';\n\n/**\n * Scenario Card for displaying scenario data in a results list\n */\n@Component({\n  selector: 'sg-scenario-card',\n  standalone: true,\n  imports: [\n    DatePipe,\n    NgIf,\n    CurrencyPipe,\n    NgSwitch,\n    StatusChipComponent,\n    ButtonComponent,\n    MatIconModule,\n    MatMenuModule,\n  ],\n  templateUrl: './scenario-card.component.html',\n  styleUrl: './scenario-card.component.scss',\n})\nexport class ScenarioCardComponent {\n  /**\n   * The status\n   */\n  @Input() scenario: any;\n  failureMessage: string = 'failureMessage';\n\n  getChipStatus(): StatusChipStatus {\n    switch (this.scenario.status) {\n      case 'ACTIVE':\n        return 'inProgress';\n      case 'RUNNING':\n        return 'running';\n      case 'DONE':\n        return 'success';\n      case 'FAILED':\n        return 'failed';\n      default:\n        return 'inProgress';\n    }\n  }\n}\n",
             "styleUrl": "./scenario-card.component.scss",
             "assetsDirs": [],
             "styleUrlsData": "",
             "stylesData": "",
             "extends": [],
-            "templateData": "<div class=\"title-row\">\n  <div class=\"title-section\">\n    <div class=\"name-header\">{{ scenario.name }}</div>\n    <div>\n      <sg-status-chip [status]=\"getChipStatus()\"></sg-status-chip>\n    </div>\n    <div *ngIf=\"scenario.status === 'FAILED'\">\n      Create a new scenario to proceed to treatment plan\n    </div>\n  </div>\n  <div class=\"controls-section\">\n    <button sg-button icon=\"add\">New Treatment Plan</button>\n    <button\n      mat-icon-button\n      [matMenuTriggerFor]=\"menu\"\n      aria-label=\"more scenario Options\"\n      class=\"more-menu-button\">\n      <mat-icon>more_vert</mat-icon>\n    </button>\n    <mat-menu #menu=\"matMenu\">\n      <button mat-menu-item class=\"delete-note-button\">\n        <mat-icon class=\"delete-icon\">delete_outline</mat-icon>\n        <span>Delete</span>\n      </button>\n    </mat-menu>\n  </div>\n</div>\n\n<div class=\"detail-row\">\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Creator</div>\n    <div class=\"detail-info\">{{ scenario.creator }}</div>\n  </div>\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Areas</div>\n    <div class=\"detail-info\">{{ scenario.area_count }}</div>\n  </div>\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Est Budget</div>\n    <div class=\"detail-info\">{{ scenario.est_budget }}</div>\n  </div>\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Treatment Plans</div>\n    <div class=\"detail-info\">{{ scenario.treatment_plans_count }}</div>\n  </div>\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Created</div>\n    <div class=\"detail-info\">{{ scenario.created_at }}</div>\n  </div>\n</div>\n"
+            "templateData": "<div class=\"title-row\">\n  <div class=\"title-section\">\n    <div class=\"name-header\">{{ scenario.name }}</div>\n\n    <sg-status-chip\n      [status]=\"getChipStatus()\"\n      class=\"title-chip\"></sg-status-chip>\n\n    <div *ngIf=\"scenario.status === 'FAILED'\" class=\"failed-message\">\n      <mat-icon class=\"error-icon\">error</mat-icon>\n      Create a new scenario to proceed to treatment plan\n    </div>\n  </div>\n  <div class=\"controls-section\" *ngIf=\"scenario.status !== 'FAILED'\">\n    <button sg-button icon=\"add\" [disabled]=\"scenario.status !== 'DONE'\">\n      New Treatment Plan\n    </button>\n    <button\n      mat-icon-button\n      [matMenuTriggerFor]=\"menu\"\n      aria-label=\"more scenario Options\"\n      class=\"more-menu-button\">\n      <mat-icon>more_vert</mat-icon>\n    </button>\n    <mat-menu #menu=\"matMenu\">\n      <button mat-menu-item class=\"delete-note-button\">\n        <mat-icon class=\"delete-icon\">delete_outline</mat-icon>\n        <span>Delete</span>\n      </button>\n    </mat-menu>\n  </div>\n</div>\n\n<div class=\"detail-row\">\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Creator</div>\n    <div class=\"detail-info\">{{ scenario.creator }}</div>\n  </div>\n  <div *ngIf=\"scenario.status !== 'RUNNING'\" class=\"detail-column\">\n    <div class=\"detail-header\">Areas</div>\n    <div class=\"detail-info\">{{ scenario.area_count }}</div>\n  </div>\n  <div *ngIf=\"scenario.status !== 'RUNNING'\" class=\"detail-column\">\n    <div class=\"detail-header\">Est Budget</div>\n    <div class=\"detail-info\">{{ scenario.est_budget | currency }}</div>\n  </div>\n  <div *ngIf=\"scenario.status !== 'RUNNING'\" class=\"detail-column\">\n    <div class=\"detail-header\">Treatment Plans</div>\n    <div class=\"detail-info\">{{ scenario.treatment_plans_count }}</div>\n  </div>\n  <div *ngIf=\"scenario.status !== 'RUNNING'\" class=\"detail-column\">\n    <div class=\"detail-header\">Created</div>\n    <div class=\"detail-info\">\n      {{ scenario.created_at | date: 'MMM d, y, h:mm:ss a ' }}\n    </div>\n  </div>\n</div>\n"
         },
         {
             "name": "StatusChipComponent",
@@ -827,7 +825,7 @@
     },
     "routes": [],
     "coverage": {
-        "count": 35,
+        "count": 37,
         "status": "medium",
         "files": [
             {
@@ -862,8 +860,8 @@
                 "type": "component",
                 "linktype": "component",
                 "name": "ScenarioCardComponent",
-                "coveragePercent": 40,
-                "coverageCount": "2/5",
+                "coveragePercent": 50,
+                "coverageCount": "2/4",
                 "status": "medium"
             },
             {
