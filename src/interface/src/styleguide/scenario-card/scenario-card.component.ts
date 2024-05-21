@@ -69,7 +69,7 @@ export class ScenarioCardComponent {
   isDone(): boolean {
     const resultStatus = this.scenario.scenario_result?.status;
     if (typeof resultStatus === 'string') {
-      return resultStatus in ['SUCCESS'];
+      return resultStatus === 'SUCCESS';
     }
     return false;
   }

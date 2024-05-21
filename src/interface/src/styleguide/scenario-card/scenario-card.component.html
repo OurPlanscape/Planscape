@@ -13,7 +13,7 @@
     </div>
   </div>
   <div class="controls-section" *ngIf="!hasFailed()">
-    <button sg-button icon="add" [disabled]="isDone()">
+    <button sg-button icon="add" [disabled]="!isDone()">
       New Treatment Plan
     </button>
     <button

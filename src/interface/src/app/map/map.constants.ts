@@ -29,7 +29,7 @@ export const LEGEND = {
   ],
 };
 
-export const GEOMAN_DRAW_OPTIONS: L.PM.ToolbarOptions = {
+export const GEOMAN_DRAW_OPTIONS = {
   cutPolygon: false,
   drawCircle: false,
   drawMarker: false,
