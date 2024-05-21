@@ -2,7 +2,7 @@ import { defineConfig } from 'cypress';
 
 export default defineConfig({
   e2e: {
-    baseUrl: 'http://localhost:4200',
+    baseUrl: process.env['CYPRESS_TEST_BASE_URL'] ?? 'http://localhost:4200',
   },
 
   component: {

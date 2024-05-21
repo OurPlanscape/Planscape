@@ -81,6 +81,157 @@
     ],
     "components": [
         {
+            "name": "BannerComponent",
+            "id": "component-BannerComponent-d0e44b52540be5814c69cff3c82e41e23e2eb9aee40484da6c38da11983cecac4d221c45abc972b94d9ad305665742ef3d45153a9f25573e14b202d00bc75c4c",
+            "file": "src/styleguide/banner/banner.component.ts",
+            "encapsulation": [],
+            "entryComponents": [],
+            "inputs": [],
+            "outputs": [],
+            "providers": [],
+            "selector": "sg-banner",
+            "styleUrls": [],
+            "styles": [],
+            "templateUrl": [
+                "./banner.component.html"
+            ],
+            "viewProviders": [],
+            "hostDirectives": [],
+            "inputsClass": [
+                {
+                    "name": "dismissible",
+                    "defaultValue": "false",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nIf the banner shows an icon to dismiss\n",
+                    "description": "<p>If the banner shows an icon to dismiss</p>\n",
+                    "line": 29,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "type",
+                    "defaultValue": "'info'",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nthe type of banner\n",
+                    "description": "<p>the type of banner</p>\n",
+                    "line": 24,
+                    "type": "BannerType",
+                    "decorators": []
+                }
+            ],
+            "outputsClass": [
+                {
+                    "name": "dismiss",
+                    "defaultValue": "new EventEmitter()",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "rawdescription": "\n\nthe emitter of the dismiss action\n",
+                    "description": "<p>the emitter of the dismiss action</p>\n",
+                    "line": 34,
+                    "type": "EventEmitter"
+                }
+            ],
+            "propertiesClass": [],
+            "methodsClass": [],
+            "deprecated": false,
+            "deprecationMessage": "",
+            "hostBindings": [
+                {
+                    "name": "class.error",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 57,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.info",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 47,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.success",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 62,
+                    "type": "boolean",
+                    "decorators": []
+                },
+                {
+                    "name": "class.warning",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "line": 52,
+                    "type": "boolean",
+                    "decorators": []
+                }
+            ],
+            "hostListeners": [],
+            "standalone": true,
+            "imports": [
+                {
+                    "name": "MatIconModule",
+                    "type": "module"
+                },
+                {
+                    "name": "NgIf"
+                }
+            ],
+            "description": "",
+            "rawdescription": "\n",
+            "type": "component",
+            "sourceCode": "import {\n  Component,\n  EventEmitter,\n  HostBinding,\n  Input,\n  Output,\n} from '@angular/core';\nimport { MatIconModule } from '@angular/material/icon';\nimport { NgIf } from '@angular/common';\n\nexport type BannerType = 'info' | 'warning' | 'error' | 'success';\n\n@Component({\n  selector: 'sg-banner',\n  standalone: true,\n  imports: [MatIconModule, NgIf],\n  templateUrl: './banner.component.html',\n  styleUrl: './banner.component.scss',\n})\nexport class BannerComponent {\n  /**\n   * the type of banner\n   */\n  @Input() type: BannerType = 'info';\n\n  /**\n   * If the banner shows an icon to dismiss\n   */\n  @Input() dismissible = false;\n\n  /**\n   * the emitter of the dismiss action\n   */\n  @Output() dismiss = new EventEmitter();\n\n  /**\n   * @ignore\n   */\n  readonly icon: Record<BannerType, string> = {\n    info: 'info_filled',\n    warning: 'warning_filled',\n    error: 'error_filled',\n    success: 'error_filled',\n  };\n\n  @HostBinding('class.info')\n  get isPrimary() {\n    return this.type === 'info';\n  }\n\n  @HostBinding('class.warning')\n  get isWarning() {\n    return this.type === 'warning';\n  }\n\n  @HostBinding('class.error')\n  get isError() {\n    return this.type === 'error';\n  }\n\n  @HostBinding('class.success')\n  get isSuccess() {\n    return this.type === 'success';\n  }\n}\n",
+            "styleUrl": "./banner.component.scss",
+            "assetsDirs": [],
+            "styleUrlsData": "",
+            "stylesData": "",
+            "extends": [],
+            "accessors": {
+                "isPrimary": {
+                    "name": "isPrimary",
+                    "getSignature": {
+                        "name": "isPrimary",
+                        "type": "",
+                        "returnType": "",
+                        "line": 47
+                    }
+                },
+                "isWarning": {
+                    "name": "isWarning",
+                    "getSignature": {
+                        "name": "isWarning",
+                        "type": "",
+                        "returnType": "",
+                        "line": 52
+                    }
+                },
+                "isError": {
+                    "name": "isError",
+                    "getSignature": {
+                        "name": "isError",
+                        "type": "",
+                        "returnType": "",
+                        "line": 57
+                    }
+                },
+                "isSuccess": {
+                    "name": "isSuccess",
+                    "getSignature": {
+                        "name": "isSuccess",
+                        "type": "",
+                        "returnType": "",
+                        "line": 62
+                    }
+                }
+            },
+            "templateData": "<mat-icon>{{ icon[type] }}</mat-icon>\n<ng-content></ng-content>\n<mat-icon *ngIf=\"dismissible\" class=\"close\" (click)=\"dismiss.emit()\"\n  >close\n</mat-icon>\n"
+        },
+        {
             "name": "ButtonComponent",
             "id": "component-ButtonComponent-967d68fb72a4a9f4470e94c8643421289f18849ff3207b31624817d0b4cdc527eb7c5c9e67a192cf02dd763e881588aa598f4f9fa629e6baa9c4bc4749bb3aa6",
             "file": "src/styleguide/button/button.component.ts",
@@ -850,6 +1001,17 @@
         "functions": [],
         "typealiases": [
             {
+                "name": "BannerType",
+                "ctype": "miscellaneous",
+                "subtype": "typealias",
+                "rawtype": "\"info\" | \"warning\" | \"error\" | \"success\"",
+                "file": "src/styleguide/banner/banner.component.ts",
+                "deprecated": false,
+                "deprecationMessage": "",
+                "description": "",
+                "kind": 192
+            },
+            {
                 "name": "ButtonVariant",
                 "ctype": "miscellaneous",
                 "subtype": "typealias",
@@ -899,6 +1061,19 @@
         "groupedFunctions": {},
         "groupedEnumerations": {},
         "groupedTypeAliases": {
+            "src/styleguide/banner/banner.component.ts": [
+                {
+                    "name": "BannerType",
+                    "ctype": "miscellaneous",
+                    "subtype": "typealias",
+                    "rawtype": "\"info\" | \"warning\" | \"error\" | \"success\"",
+                    "file": "src/styleguide/banner/banner.component.ts",
+                    "deprecated": false,
+                    "deprecationMessage": "",
+                    "description": "",
+                    "kind": 192
+                }
+            ],
             "src/styleguide/button/button.component.ts": [
                 {
                     "name": "ButtonVariant",
@@ -958,6 +1133,15 @@
         "count": 27,
         "status": "medium",
         "files": [
+            {
+                "filePath": "src/styleguide/banner/banner.component.ts",
+                "type": "component",
+                "linktype": "component",
+                "name": "BannerComponent",
+                "coveragePercent": 37,
+                "coverageCount": "3/8",
+                "status": "medium"
+            },
             {
                 "filePath": "src/styleguide/button/button.component.ts",
                 "type": "component",

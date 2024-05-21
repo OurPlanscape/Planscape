@@ -4,7 +4,7 @@ import {
   argsToTemplate,
   moduleMetadata,
 } from '@storybook/angular';
-import { InputFieldComponent } from './input-field.component';
+import { InputFieldComponent } from '@styleguide';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { InputDirective } from './input.directive';
 
