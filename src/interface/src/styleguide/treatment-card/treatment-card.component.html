@@ -1,0 +1,16 @@
+<div class="top">
+  <h4>{{ name }}</h4>
+  <sg-status-chip
+    [status]="chipsStatus[status]"
+    [label]="status"></sg-status-chip>
+</div>
+<div class="bottom">
+  <div>
+    <div class="label">Creator</div>
+    <div class="value">{{ creator }}</div>
+  </div>
+  <div>
+    <div class="label">Created</div>
+    <div class="value">{{ createdAt | date: "MMMM d, y 'at' h:mm a" }}</div>
+  </div>
+</div>
