@@ -1,12 +1,10 @@
 <div class="title-row" [ngClass]="{ 'disabled-content': isRunning() }">
   <div class="title-section">
     <div class="name-header">
-      {{ scenario.name }}
+      {{ name }}
     </div>
 
-    <sg-status-chip
-      [status]="getChipStatus()"
-      class="title-chip"></sg-status-chip>
+    <sg-status-chip [status]="status" class="title-chip"></sg-status-chip>
     <div *ngIf="hasFailed()" class="failed-message">
       <mat-icon class="error-icon">error</mat-icon>
       Create a new scenario to proceed to treatment plan
@@ -37,7 +35,7 @@
   <div class="detail-column">
     <div class="detail-header">Creator</div>
     <div class="detail-info">
-      {{ scenario.creator }}
+      {{ creator }}
     </div>
   </div>
   <div *ngIf="!isRunning()" class="detail-column">
@@ -55,7 +53,7 @@
   <div *ngIf="!isRunning()" class="detail-column">
     <div class="detail-header">Created</div>
     <div class="detail-info">
-      {{ scenario.created_at | date: 'MMM d, y, h:mm:ss a ' }}
+      {{ created_at | date: 'MMM d, y, h:mm:ss a ' }}
     </div>
   </div>
 </div>

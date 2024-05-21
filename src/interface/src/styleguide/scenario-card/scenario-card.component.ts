@@ -8,16 +8,15 @@ import {
 } from '@angular/common';
 import {
   StatusChipComponent,
-  StatusChipStatus,
 } from '../status-chip/status-chip.component';
 import { ButtonComponent } from '../button/button.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { Scenario, ScenarioResultStatus } from '@types';
 
 /**
  * Scenario Card for displaying scenario data in a results list
  */
+export type ScenarioStatus = 'inProgress' | 'success' | 'failed' | 'running';
 @Component({
   selector: 'sg-scenario-card',
   standalone: true,
@@ -35,82 +34,43 @@ import { Scenario, ScenarioResultStatus } from '@types';
   templateUrl: './scenario-card.component.html',
   styleUrl: './scenario-card.component.scss',
 })
+  
 export class ScenarioCardComponent {
-  /**
-   * The status
-   */
-  @Input() scenario!: Scenario;
-  failureMessage: string = 'failureMessage';
+  @Input() status: ScenarioStatus = 'inProgress';
+  @Input() name: string = '';
+  @Input() areas: number = 0;
+  @Input() budget: number = 0;
+  @Input() treatmentPlansCount: number = 0;
+  @Input() creator: string = '';
+  @Input() created_at: string = '';
 
-  getResultStatus(): ScenarioResultStatus | undefined {
-    return this.scenario.scenario_result?.status;
-  }
+  failureMessage: string = 'failureMessage';
+  // const chipStatusForScenarioStatus : Record<ScenarioStatus, StatusChipStatus> = {....} 
+
 
   hasFailed(): boolean {
-    const resultStatus = this.scenario.scenario_result?.status;
-    if (typeof resultStatus === 'string') {
-      return (
-        resultStatus === 'FAILURE' ||
-        resultStatus === 'PANIC' ||
-        resultStatus === 'TIMED_OUT'
-      );
-    }
-    return false;
+    return this.status === 'failed';
   }
 
   isRunning(): boolean {
-    const resultStatus = this.scenario.scenario_result?.status;
-    if (typeof resultStatus === 'string') {
-      return resultStatus === 'PENDING' || resultStatus === 'RUNNING';
-    }
-    return false;
+    return this.status === 'running';
+
   }
 
   isDone(): boolean {
-    const resultStatus = this.scenario.scenario_result?.status;
-    if (typeof resultStatus === 'string') {
-      return resultStatus === 'SUCCESS';
-    }
-    return false;
+    return this.status === 'success';
   }
 
   getTreatmentPlansCount(): number {
-    return 0;
+    return this.treatmentPlansCount;
   }
 
   getBudget(): number {
-    if (this.scenario.configuration.est_cost)
-      return this.scenario.configuration.est_cost;
-    return 0;
+    return this.budget;
   }
 
   getAreasCount(): number {
-    if (this.scenario.configuration.project_areas)
-      return this.scenario.configuration.project_areas.length;
-    return 0;
+    return this.areas;
   }
 
-  //TODO: should we coerce this to match the existing chip options
-  getChipStatus(): StatusChipStatus {
-    switch (this.scenario.scenario_result?.status) {
-      case 'LOADING':
-        return 'inProgress';
-      case 'NOT_STARTED':
-        return 'inProgress';
-      case 'PENDING':
-        return 'running';
-      case 'RUNNING':
-        return 'running';
-      case 'SUCCESS':
-        return 'success';
-      case 'FAILURE':
-        return 'failed';
-      case 'PANIC':
-        return 'failed';
-      case 'TIMED_OUT':
-        return 'failed';
-      default:
-        return 'inProgress';
-    }
-  }
 }
