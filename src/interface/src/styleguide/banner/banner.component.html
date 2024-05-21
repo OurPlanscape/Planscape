@@ -1,0 +1,5 @@
+<mat-icon>{{ icon[type] }}</mat-icon>
+<ng-content></ng-content>
+<mat-icon *ngIf="dismissible" class="close" (click)="dismiss.emit()"
+  >close
+</mat-icon>
