@@ -1,0 +1,42 @@
+@import "colors";
+@import "mixins";
+
+:host {
+  display: flex;
+  border-radius: 4px;
+
+  padding: 14px;
+  gap: 8px;
+  align-items: center;
+  box-sizing: border-box;
+
+  &.info {
+    background-color: $color-soft-light-blue;
+    color: $color-main-blue;
+  }
+
+  &.warning {
+    background-color: $color-brand-soft-yellow;
+    color: $color-dark-yellow;
+  }
+
+  &.error {
+    background-color: $color-light-red;
+    color: $color-dark-red;
+  }
+
+  &.success {
+    background-color: $color-brand-soft-green;
+    color: $color-brand-green;
+  }
+}
+
+.close {
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0 0 0 auto;
+  color: $color-black;
+  cursor: pointer;
+}
+
