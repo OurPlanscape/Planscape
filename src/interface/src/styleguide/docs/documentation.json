@@ -498,7 +498,7 @@
         },
         {
             "name": "ScenarioCardComponent",
-            "id": "component-ScenarioCardComponent-a144301782f1f27ac379529490c09b8c978ec58cb3c866e5f31b3fa0d0c63479a88a07c43b987a409c820ec1d2b30a8a86b2b4c796dd753fa7e3119af370ab00",
+            "id": "component-ScenarioCardComponent-2da8a55c79c598f9826df27f0190d27d54445b44033e4d3311a381c278b7dc34bf0407a5756fe4392bc2de03402a2a4120d1060bed7af4bfbe450180c348f614",
             "file": "src/styleguide/scenario-card/scenario-card.component.ts",
             "encapsulation": [],
             "entryComponents": [],
@@ -520,23 +520,13 @@
                     "deprecationMessage": "",
                     "rawdescription": "\n\nThe status\n",
                     "description": "<p>The status</p>\n",
-                    "line": 32,
-                    "type": "any",
+                    "line": 36,
+                    "type": "Scenario",
                     "decorators": []
                 }
             ],
             "outputsClass": [],
             "propertiesClass": [
-                {
-                    "name": "chipStatus",
-                    "defaultValue": "'inProgress'",
-                    "deprecated": false,
-                    "deprecationMessage": "",
-                    "type": "StatusChipStatus",
-                    "optional": false,
-                    "description": "",
-                    "line": 34
-                },
                 {
                     "name": "failureMessage",
                     "defaultValue": "'failureMessage'",
@@ -545,17 +535,87 @@
                     "type": "string",
                     "optional": false,
                     "description": "",
-                    "line": 33
+                    "line": 37
                 }
             ],
             "methodsClass": [
+                {
+                    "name": "getAreasCount",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "number",
+                    "typeParameters": [],
+                    "line": 77,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "getBudget",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "number",
+                    "typeParameters": [],
+                    "line": 71,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
                 {
                     "name": "getChipStatus",
                     "args": [],
                     "optional": false,
                     "returnType": "StatusChipStatus",
                     "typeParameters": [],
-                    "line": 36,
+                    "line": 83,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "getResultStatus",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "ScenarioResultStatus | undefined",
+                    "typeParameters": [],
+                    "line": 39,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "getTreatmentPlansCount",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "number",
+                    "typeParameters": [],
+                    "line": 67,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "hasFailed",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 43,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "isDone",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 59,
+                    "deprecated": false,
+                    "deprecationMessage": ""
+                },
+                {
+                    "name": "isRunning",
+                    "args": [],
+                    "optional": false,
+                    "returnType": "boolean",
+                    "typeParameters": [],
+                    "line": 51,
                     "deprecated": false,
                     "deprecationMessage": ""
                 }
@@ -567,7 +627,15 @@
             "standalone": true,
             "imports": [
                 {
+                    "name": "DatePipe",
+                    "type": "pipe"
+                },
+                {
                     "name": "NgIf"
+                },
+                {
+                    "name": "CurrencyPipe",
+                    "type": "pipe"
                 },
                 {
                     "name": "NgSwitch"
@@ -592,13 +660,13 @@
             "description": "<p>Scenario Card for displaying scenario data in a results list</p>\n",
             "rawdescription": "\n\nScenario Card for displaying scenario data in a results list\n",
             "type": "component",
-            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { NgIf, NgSwitch } from '@angular/common';\nimport {\n  StatusChipComponent,\n  StatusChipStatus,\n} from '../status-chip/status-chip.component';\nimport { ButtonComponent } from '../button/button.component';\nimport { MatIconModule } from '@angular/material/icon';\nimport { MatMenuModule } from '@angular/material/menu';\n\n/**\n * Scenario Card for displaying scenario data in a results list\n */\n@Component({\n  selector: 'sg-scenario-card',\n  standalone: true,\n  imports: [\n    NgIf,\n    NgSwitch,\n    StatusChipComponent,\n    ButtonComponent,\n    MatIconModule,\n    MatMenuModule,\n  ],\n  templateUrl: './scenario-card.component.html',\n  styleUrl: './scenario-card.component.scss',\n})\nexport class ScenarioCardComponent {\n  /**\n   * The status\n   */\n  @Input() scenario: any;\n  failureMessage: string = 'failureMessage';\n  chipStatus: StatusChipStatus = 'inProgress';\n\n  getChipStatus(): StatusChipStatus {\n    switch (this.scenario.status) {\n      case 'In Progress':\n        return 'inProgress';\n      case 'Running':\n        return 'running';\n      case 'Success':\n        return 'success';\n      case 'Failed':\n        return 'failed';\n      default:\n        return 'inProgress';\n    }\n  }\n}\n",
+            "sourceCode": "import { Component, Input } from '@angular/core';\nimport { DatePipe, CurrencyPipe } from '@angular/common';\nimport { NgIf, NgSwitch } from '@angular/common';\nimport {\n  StatusChipComponent,\n  StatusChipStatus,\n} from '../status-chip/status-chip.component';\nimport { ButtonComponent } from '../button/button.component';\nimport { MatIconModule } from '@angular/material/icon';\nimport { MatMenuModule } from '@angular/material/menu';\nimport { Scenario, ScenarioResultStatus } from '@types';\n\n/**\n * Scenario Card for displaying scenario data in a results list\n */\n@Component({\n  selector: 'sg-scenario-card',\n  standalone: true,\n  imports: [\n    DatePipe,\n    NgIf,\n    CurrencyPipe,\n    NgSwitch,\n    StatusChipComponent,\n    ButtonComponent,\n    MatIconModule,\n    MatMenuModule,\n  ],\n  templateUrl: './scenario-card.component.html',\n  styleUrl: './scenario-card.component.scss',\n})\nexport class ScenarioCardComponent {\n  /**\n   * The status\n   */\n  @Input() scenario!: Scenario;\n  failureMessage: string = 'failureMessage';\n\n  getResultStatus(): ScenarioResultStatus | undefined {\n    return this.scenario.scenario_result?.status;\n  }\n\n  hasFailed(): boolean {\n    const resultStatus = this.scenario.scenario_result?.status;\n    if (typeof resultStatus === 'string') {\n      return resultStatus in ['FAILURE', 'PANIC', 'TIMED_OUT'];\n    }\n    return false;\n  }\n\n  isRunning(): boolean {\n    const resultStatus = this.scenario.scenario_result?.status;\n    if (typeof resultStatus === 'string') {\n      return resultStatus in ['PENDING', 'RUNNING'];\n    }\n    return false;\n  }\n\n  isDone(): boolean {\n    const resultStatus = this.scenario.scenario_result?.status;\n    if (typeof resultStatus === 'string') {\n      return resultStatus in ['SUCCESS'];\n    }\n    return false;\n  }\n\n  getTreatmentPlansCount(): number {\n    return 0;\n  }\n\n  getBudget(): number {\n    if (this.scenario.configuration.est_cost)\n      return this.scenario.configuration.est_cost;\n    return 0;\n  }\n\n  getAreasCount(): number {\n    if (this.scenario.configuration.project_areas)\n      return this.scenario.configuration.project_areas.length;\n    return 0;\n  }\n\n  getChipStatus(): StatusChipStatus {\n    switch (this.scenario.scenario_result?.status) {\n      case 'LOADING':\n        return 'inProgress';\n      case 'NOT_STARTED':\n        return 'inProgress';\n      case 'PENDING':\n        return 'running';\n      case 'RUNNING':\n        return 'running';\n      case 'SUCCESS':\n        return 'success';\n      case 'FAILURE':\n        return 'failed';\n      case 'PANIC':\n        return 'failed';\n      case 'TIMED_OUT':\n        return 'failed';\n      default:\n        return 'inProgress';\n    }\n  }\n}\n",
             "styleUrl": "./scenario-card.component.scss",
             "assetsDirs": [],
             "styleUrlsData": "",
             "stylesData": "",
             "extends": [],
-            "templateData": "<div class=\"title-row\">\n  <div class=\"title-section\">\n    <div class=\"name-header\">{{ scenario.name }}</div>\n    <div>\n      <sg-status-chip [status]=\"getChipStatus()\"></sg-status-chip>\n    </div>\n    <div *ngIf=\"scenario.status === 'FAILED'\">\n      Create a new scenario to proceed to treatment plan\n    </div>\n  </div>\n  <div class=\"controls-section\">\n    <button sg-button icon=\"add\">New Treatment Plan</button>\n    <button\n      mat-icon-button\n      [matMenuTriggerFor]=\"menu\"\n      aria-label=\"more scenario Options\"\n      class=\"more-menu-button\">\n      <mat-icon>more_vert</mat-icon>\n    </button>\n    <mat-menu #menu=\"matMenu\">\n      <button mat-menu-item class=\"delete-note-button\">\n        <mat-icon class=\"delete-icon\">delete_outline</mat-icon>\n        <span>Delete</span>\n      </button>\n    </mat-menu>\n  </div>\n</div>\n\n<div class=\"detail-row\">\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Creator</div>\n    <div class=\"detail-info\">{{ scenario.creator }}</div>\n  </div>\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Areas</div>\n    <div class=\"detail-info\">{{ scenario.area_count }}</div>\n  </div>\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Est Budget</div>\n    <div class=\"detail-info\">{{ scenario.est_budget }}</div>\n  </div>\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Treatment Plans</div>\n    <div class=\"detail-info\">{{ scenario.treatment_plans_count }}</div>\n  </div>\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Created</div>\n    <div class=\"detail-info\">{{ scenario.created_at }}</div>\n  </div>\n</div>\n"
+            "templateData": "<div class=\"title-row\">\n  <div class=\"title-section\">\n    <div class=\"name-header\">{{ scenario?.name }}</div>\n\n    <sg-status-chip\n      [status]=\"getChipStatus()\"\n      class=\"title-chip\"></sg-status-chip>\n\n    <div *ngIf=\"hasFailed()\" class=\"failed-message\">\n      <mat-icon class=\"error-icon\">error</mat-icon>\n      Create a new scenario to proceed to treatment plan\n    </div>\n  </div>\n  <div class=\"controls-section\" *ngIf=\"hasFailed()\">\n    <button sg-button icon=\"add\" [disabled]=\"!isDone()\">\n      New Treatment Plan\n    </button>\n    <button\n      mat-icon-button\n      [matMenuTriggerFor]=\"menu\"\n      aria-label=\"more scenario Options\"\n      class=\"more-menu-button\">\n      <mat-icon>more_vert</mat-icon>\n    </button>\n    <mat-menu #menu=\"matMenu\">\n      <button mat-menu-item class=\"delete-note-button\">\n        <mat-icon class=\"delete-icon\">delete_outline</mat-icon>\n        <span>Delete</span>\n      </button>\n    </mat-menu>\n  </div>\n</div>\n\n<div class=\"detail-row\">\n  <div class=\"detail-column\">\n    <div class=\"detail-header\">Creator</div>\n    <div class=\"detail-info\">{{ scenario.creator }}</div>\n  </div>\n  <div *ngIf=\"!isRunning()\" class=\"detail-column\">\n    <div class=\"detail-header\">Areas</div>\n    <div class=\"detail-info\">{{ getAreasCount() }}</div>\n  </div>\n  <div *ngIf=\"!isRunning()\" class=\"detail-column\">\n    <div class=\"detail-header\">Est Budget</div>\n    <div class=\"detail-info\">{{ getBudget() | currency }}</div>\n  </div>\n  <div *ngIf=\"!isRunning()\" class=\"detail-column\">\n    <div class=\"detail-header\">Treatment Plans</div>\n    <div class=\"detail-info\">{{ getTreatmentPlansCount() }}</div>\n  </div>\n  <div *ngIf=\"!isRunning()\" class=\"detail-column\">\n    <div class=\"detail-header\">Created</div>\n    <div class=\"detail-info\">\n      {{ scenario.created_at | date: 'MMM d, y, h:mm:ss a ' }}\n    </div>\n  </div>\n</div>\n"
         },
         {
             "name": "StatusChipComponent",
@@ -827,7 +895,7 @@
     },
     "routes": [],
     "coverage": {
-        "count": 35,
+        "count": 31,
         "status": "medium",
         "files": [
             {
@@ -862,9 +930,9 @@
                 "type": "component",
                 "linktype": "component",
                 "name": "ScenarioCardComponent",
-                "coveragePercent": 40,
-                "coverageCount": "2/5",
-                "status": "medium"
+                "coveragePercent": 18,
+                "coverageCount": "2/11",
+                "status": "low"
             },
             {
                 "filePath": "src/styleguide/status-chip/status-chip.component.ts",

@@ -10,6 +10,7 @@ export interface Scenario {
   scenario_result?: ScenarioResult;
   status: SCENARIO_STATUS;
   user?: number;
+  created_at?: string;
 }
 
 /**
