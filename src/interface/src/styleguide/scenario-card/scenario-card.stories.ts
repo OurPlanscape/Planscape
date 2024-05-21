@@ -19,7 +19,7 @@ export const Default: Story = {
   args: {
     name: 'Test Scenario',
     areas: 5,
-    status: 'inProgress',
+    status: 'Done',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
     budget: 1234567,
@@ -27,23 +27,30 @@ export const Default: Story = {
   },
 };
 
+export const InProgress: Story = {
+  args: {
+    ...Default.args,
+    status: 'InProgress',
+  },
+};
+
 export const Running: Story = {
   args: {
     ...Default.args,
-    status: 'running',
+    status: 'Running',
   },
 };
 
 export const Done: Story = {
   args: {
     ...Default.args,
-    status: 'success',
+    status: 'Done',
   },
 };
 
 export const Failed: Story = {
   args: {
     ...Default.args,
-    status: 'failed',
+    status: 'Failed',
   },
 };

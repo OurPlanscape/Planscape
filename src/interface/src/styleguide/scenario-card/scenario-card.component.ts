@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, HostBinding } from '@angular/core';
 import {
   DatePipe,
   CurrencyPipe,
@@ -6,15 +6,18 @@ import {
   NgSwitch,
   NgClass,
 } from '@angular/common';
-import { StatusChipComponent } from '../status-chip/status-chip.component';
+import {
+  StatusChipComponent,
+  StatusChipStatus,
+} from '../status-chip/status-chip.component';
 import { ButtonComponent } from '../button/button.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 
+export type ScenarioStatus = 'InProgress' | 'Running' | 'Done' | 'Failed';
 /**
  * Scenario Card for displaying scenario data in a results list
  */
-export type ScenarioStatus = 'inProgress' | 'success' | 'failed' | 'running';
 @Component({
   selector: 'sg-scenario-card',
   standalone: true,
@@ -33,7 +36,7 @@ export type ScenarioStatus = 'inProgress' | 'success' | 'failed' | 'running';
   styleUrl: './scenario-card.component.scss',
 })
 export class ScenarioCardComponent {
-  @Input() status: ScenarioStatus = 'inProgress';
+  @Input() status: ScenarioStatus = 'Running';
   @Input() name: string = '';
   @Input() areas: number = 0;
   @Input() budget: number = 0;
@@ -43,16 +46,23 @@ export class ScenarioCardComponent {
 
   failureMessage: string = 'failureMessage';
 
+  readonly chipsStatus: Record<ScenarioStatus, StatusChipStatus> = {
+    InProgress: 'inProgress',
+    Done: 'success',
+    Running: 'running',
+    Failed: 'failed',
+  };
+
   hasFailed(): boolean {
-    return this.status === 'failed';
+    return this.status === 'Failed';
   }
 
   isRunning(): boolean {
-    return this.status === 'running';
+    return this.status === 'Running';
   }
 
   isDone(): boolean {
-    return this.status === 'success';
+    return this.status === 'Done';
   }
 
   getTreatmentPlansCount(): number {
@@ -65,5 +75,14 @@ export class ScenarioCardComponent {
 
   getAreasCount(): number {
     return this.areas;
+  }
+
+  @HostBinding('class.disabled-content')
+  get disabledContent() {
+    return this.isRunning() || this.hasFailed();
+  }
+
+  getChipStatus(): StatusChipStatus {
+    return this.chipsStatus[this.status];
   }
 }

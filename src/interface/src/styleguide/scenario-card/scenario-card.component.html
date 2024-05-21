@@ -1,10 +1,13 @@
-<div class="title-row" [ngClass]="{ 'disabled-content': isRunning() }">
+<div class="title-row">
   <div class="title-section">
     <div class="name-header">
       {{ name }}
     </div>
 
-    <sg-status-chip [status]="status" class="title-chip"></sg-status-chip>
+    <sg-status-chip
+      *ngIf="status"
+      [status]="getChipStatus()"
+      class="title-chip"></sg-status-chip>
     <div *ngIf="hasFailed()" class="failed-message">
       <mat-icon class="error-icon">error</mat-icon>
       Create a new scenario to proceed to treatment plan
@@ -31,7 +34,7 @@
   </div>
 </div>
 
-<div class="detail-row" [ngClass]="{ 'disabled-content': isRunning() }">
+<div class="detail-row">
   <div class="detail-column">
     <div class="detail-header">Creator</div>
     <div class="detail-info">

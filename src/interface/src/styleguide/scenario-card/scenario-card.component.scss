@@ -21,6 +21,10 @@
   flex-direction: column;
   gap: 1em;
 
+  &.disabled-content {
+      color: $color-text-gray;
+  }
+
   .title-row {
     display: flex;
     flex-direction: row;
@@ -37,9 +41,6 @@
     display: flex;
     flex-direction: row;
     gap: 0;
-  }
-  .disabled-content {
-    color: grey;
   }
 
   .name-header {
