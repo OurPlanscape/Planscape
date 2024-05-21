@@ -28,10 +28,11 @@ export class SetPrioritiesComponent implements OnInit {
     tap((s) => {
       this._treatmentGoals = s;
       // if we got new treatment goals we'll need to find the item again and set it as selected
-      const value = this.goalsForm.get('selectedQuestion')?.value;
-      if (value) {
-        this.setFormData(value);
-      }
+      // TODO fix or remove
+      // const value = this.goalsForm.get('selectedQuestion')?.value;
+      // if (value) {
+      //   this.setFormData(value);
+      // }
     })
   );
 
@@ -68,16 +69,16 @@ export class SetPrioritiesComponent implements OnInit {
       });
   }
 
-  getFormData(): Pick<ScenarioConfig, 'treatment_question'> {
+  getFormData(): Pick<ScenarioConfig, 'question_id'> {
     const selectedQuestion = this.goalsForm.get('selectedQuestion');
-    if (selectedQuestion?.valid) {
-      return { treatment_question: selectedQuestion.value };
+    if (selectedQuestion?.valid && selectedQuestion.value?.id) {
+      return { question_id: selectedQuestion.value?.id };
     } else {
-      return {};
+      return { question_id: 0 }; // TODO this is wrong
     }
   }
 
-  setFormData(question: TreatmentQuestionConfig) {
+  setFormData(question_id: number) {
     if (this._treatmentGoals) {
       // We are losing the object reference somewhere (probably on this.planStateService.treatmentGoalsConfig$)
       // so when we simply `setValue` with `this.selectedTreatmentQuestion`, the object is
@@ -85,7 +86,7 @@ export class SetPrioritiesComponent implements OnInit {
       // The workaround is to look for it, however we should look into the underlying issue
       let selectedQuestion = findQuestionOnTreatmentGoalsConfig(
         this._treatmentGoals,
-        question
+        question_id
       );
       if (selectedQuestion) {
         this.goalsForm.get('selectedQuestion')?.setValue(selectedQuestion);

@@ -1,13 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, take } from 'rxjs';
-import {
-  Region,
-  regionToString,
-  Scenario,
-  SCENARIO_STATUS,
-  ScenarioConfig,
-} from '@types';
+import { Region, regionToString, Scenario, SCENARIO_STATUS } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
 
@@ -43,9 +37,6 @@ export class ScenarioService {
 
   /** Creates a scenario in the backend. Returns scenario ID. */
   createScenario(scenarioParameters: any): Observable<any> {
-    scenarioParameters['configuration'] = this.convertConfigToScenario(
-      scenarioParameters['configuration']
-    );
     return this.http
       .post<{
         id: number;
@@ -154,24 +145,5 @@ export class ScenarioService {
         JSON.stringify(metric_paths)
     );
     return this.http.get<any>(url).pipe(take(1));
-  }
-
-  private convertConfigToScenario(config: ScenarioConfig): any {
-    return {
-      question_id: config.treatment_question!.id,
-      est_cost: config.est_cost,
-      max_budget: config.max_budget,
-      min_distance_from_road: config.min_distance_from_road,
-      max_slope: config.max_slope,
-      max_treatment_area_ratio: config.max_treatment_area_ratio,
-      scenario_priorities: config.treatment_question!['scenario_priorities'],
-      scenario_output_fields:
-        config.treatment_question!['scenario_output_fields_paths']!['metrics'],
-      stand_thresholds: config.treatment_question!['stand_thresholds'],
-      global_thresholds: config.treatment_question!['global_thresholds'],
-      weights: config.treatment_question!['weights'],
-      excluded_areas: config.excluded_areas,
-      stand_size: config.stand_size,
-    };
   }
 }

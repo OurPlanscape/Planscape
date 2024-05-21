@@ -160,7 +160,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   loadConfig(): void {
-    this.planStateService.getScenario(this.scenarioId!).subscribe({
+    this.scenarioService.getScenario(this.scenarioId!).subscribe({
       next: (scenario) => {
         // if we have the same state do nothing.
         if (this.scenarioState === scenario.scenario_result?.status) {
@@ -171,9 +171,7 @@ export class CreateScenariosComponent implements OnInit {
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
           this.scenarioState = scenario.scenario_result?.status;
-          this.priorities =
-            scenario.configuration.treatment_question?.scenario_priorities ||
-            [];
+          this.priorities = scenario.configuration.scenario_priorities || [];
 
           this.selectedTab = ScenarioTabs.RESULTS;
           if (this.scenarioState == 'SUCCESS') {
@@ -188,9 +186,9 @@ export class CreateScenariosComponent implements OnInit {
           this.scenarioNameFormField?.setValue(scenario.name);
         }
         // setting treatment question
-        if (scenario.configuration.treatment_question) {
+        if (scenario.configuration.question_id) {
           this.prioritiesComponent.setFormData(
-            scenario.configuration.treatment_question
+            scenario.configuration.question_id
           );
         }
         // setting constraints
@@ -252,10 +250,9 @@ export class CreateScenariosComponent implements OnInit {
    */
   processScenarioResults(scenario: Scenario) {
     let scenario_output_fields_paths =
-      scenario?.configuration.treatment_question?.scenario_output_fields_paths!;
+      scenario?.configuration?.scenario_output_fields!;
     let labels: string[][] = [];
-    let priorities =
-      scenario.configuration.treatment_question?.scenario_priorities;
+    let priorities = scenario.configuration?.scenario_priorities;
     if (scenario && this.scenarioResults) {
       this.planStateService
         .getMetricData(scenario_output_fields_paths)

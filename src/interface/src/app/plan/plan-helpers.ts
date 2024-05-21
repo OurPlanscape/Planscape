@@ -68,12 +68,12 @@ export function getColorForProjectPosition(position: number) {
 
 export function findQuestionOnTreatmentGoalsConfig(
   treatmentGoalConfigs: TreatmentGoalConfig[],
-  treatmentQuestion: TreatmentQuestionConfig
+  question_id: number
 ) {
   let selectedQuestion: TreatmentQuestionConfig | undefined;
   treatmentGoalConfigs.some((goal) => {
     selectedQuestion = goal.questions.find(
-      (question) => question.id === treatmentQuestion?.id
+      (question) => question.id === question_id
     );
     return !!selectedQuestion;
   });

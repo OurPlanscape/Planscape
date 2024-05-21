@@ -170,7 +170,7 @@ export class ConstraintsPanelComponent implements OnChanges {
   }
 
   getFormData(): Partial<ScenarioConfig> {
-    let scenarioConfig: ScenarioConfig = {};
+    let scenarioConfig: Partial<ScenarioConfig> = {};
 
     const estimatedCost = this.constraintsForm.get('budgetForm.estimatedCost');
     const maxCost = this.constraintsForm.get('budgetForm.maxCost');
