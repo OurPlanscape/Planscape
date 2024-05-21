@@ -6,9 +6,9 @@ import { filter } from 'rxjs/operators';
 import { MapService, PlanStateService } from '@services';
 import {
   PriorityRow,
-  ScenarioConfig,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
+  TreatmentQuestionConfigForScenario,
 } from '@types';
 import {
   conditionsConfigToPriorityData,
@@ -69,12 +69,19 @@ export class SetPrioritiesComponent implements OnInit {
       });
   }
 
-  getFormData(): Pick<ScenarioConfig, 'question_id'> {
+  getFormData(): TreatmentQuestionConfigForScenario {
     const selectedQuestion = this.goalsForm.get('selectedQuestion');
-    if (selectedQuestion?.valid && selectedQuestion.value?.id) {
-      return { question_id: selectedQuestion.value?.id };
+
+    // TODO THIS HAS WAY MORE STUFF THAN WE NEED
+    if (selectedQuestion?.valid && selectedQuestion.value) {
+      const t = selectedQuestion.value;
+      return {
+        ...t,
+        // @ts-ignore
+        scenario_output_fields: t?.scenario_output_fields_paths['metrics'],
+      };
     } else {
-      return { question_id: 0 }; // TODO this is wrong
+      return {};
     }
   }
 

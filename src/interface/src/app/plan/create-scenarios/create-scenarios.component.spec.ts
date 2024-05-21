@@ -43,7 +43,7 @@ describe('CreateScenariosComponent', () => {
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
-    scenario_output_fields_paths: {},
+    scenario_output_fields: {},
     scenario_priorities: [''],
     stand_thresholds: [''],
     global_thresholds: [''],
@@ -128,7 +128,7 @@ describe('CreateScenariosComponent', () => {
             questions: [
               {
                 short_question_text: 'test_question',
-                scenario_output_fields_paths: {},
+                scenario_output_fields: {},
                 scenario_priorities: [''],
                 stand_thresholds: [''],
                 global_thresholds: [''],

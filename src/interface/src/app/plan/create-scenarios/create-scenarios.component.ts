@@ -38,6 +38,7 @@ export class CreateScenariosComponent implements OnInit {
   generatingScenario: boolean = false;
   scenarioId?: string | null;
   planId?: number | null;
+  region: any;
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   existingScenarioNames: string[] = [];
@@ -252,6 +253,10 @@ export class CreateScenariosComponent implements OnInit {
     let scenario_output_fields_paths =
       scenario?.configuration?.scenario_output_fields!;
     let labels: string[][] = [];
+    let region = this.planStateService.planRegion$.value;
+    console.log(region);
+
+    // TODO here I need to update this and instead of use `getMetricData` lookup on the conditions (with fla
     let priorities = scenario.configuration?.scenario_priorities;
     if (scenario && this.scenarioResults) {
       this.planStateService

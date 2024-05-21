@@ -22,7 +22,7 @@ const questions = [
 const defaultQuestion: TreatmentQuestionConfig = {
   id: 2,
   short_question_text: 'this is the question',
-  scenario_output_fields_paths: {},
+  scenario_output_fields: {},
   scenario_priorities: [''],
   stand_thresholds: [''],
   global_thresholds: [''],

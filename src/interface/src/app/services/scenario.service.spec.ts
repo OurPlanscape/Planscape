@@ -82,7 +82,7 @@ describe('ScenarioService', () => {
     let defaultSelectedQuestion: TreatmentQuestionConfig = {
       short_question_text: '',
       long_question_text: '',
-      scenario_output_fields_paths: { metrics: [''] },
+      scenario_output_fields: { metrics: [''] },
       scenario_priorities: [''],
       stand_thresholds: [''],
       global_thresholds: [''],
