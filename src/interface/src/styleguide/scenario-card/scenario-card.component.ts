@@ -42,7 +42,6 @@ export class ScenarioCardComponent {
   @Input() created_at: string = '';
 
   failureMessage: string = 'failureMessage';
-  // const chipStatusForScenarioStatus : Record<ScenarioStatus, StatusChipStatus> = {....}
 
   hasFailed(): boolean {
     return this.status === 'failed';
