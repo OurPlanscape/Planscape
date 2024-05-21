@@ -49,7 +49,11 @@ export class ScenarioCardComponent {
   hasFailed(): boolean {
     const resultStatus = this.scenario.scenario_result?.status;
     if (typeof resultStatus === 'string') {
-      return resultStatus in ['FAILURE', 'PANIC', 'TIMED_OUT'];
+      return (
+        resultStatus === 'FAILURE' ||
+        resultStatus === 'PANIC' ||
+        resultStatus === 'TIMED_OUT'
+      );
     }
     return false;
   }
@@ -57,7 +61,7 @@ export class ScenarioCardComponent {
   isRunning(): boolean {
     const resultStatus = this.scenario.scenario_result?.status;
     if (typeof resultStatus === 'string') {
-      return resultStatus in ['PENDING', 'RUNNING'];
+      return resultStatus === 'PENDING' || resultStatus === 'RUNNING';
     }
     return false;
   }
@@ -86,6 +90,7 @@ export class ScenarioCardComponent {
     return 0;
   }
 
+  //TODO: should we coerce this to match the existing chip options
   getChipStatus(): StatusChipStatus {
     switch (this.scenario.scenario_result?.status) {
       case 'LOADING':

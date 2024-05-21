@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate } from '@storybook/angular';
 import { ScenarioCardComponent } from './scenario-card.component';
+import { ProjectArea } from 'src/app/types';
 
 const meta: Meta<ScenarioCardComponent> = {
   title: 'Components/Scenario Card',
@@ -15,11 +16,29 @@ const meta: Meta<ScenarioCardComponent> = {
 export default meta;
 type Story = StoryObj<ScenarioCardComponent>;
 
+const sampleProjectArea1: ProjectArea = {
+  id: '1',
+  projectId: '1',
+  projectArea: {
+    type: 'Feature',
+    geometry: {
+      type: 'Point',
+      coordinates: [123.456, -78.901],
+    },
+    properties: {},
+  },
+  owner: '',
+  estimatedAreaTreated: 1,
+  actualAcresTreated: 1,
+};
+const sampleProjectArea2: ProjectArea = { ...sampleProjectArea1 };
+const sampleProjectArea3: ProjectArea = { ...sampleProjectArea1 };
+
 export const Default: Story = {
   args: {
     scenario: {
       id: '0',
-      name: 'Scenario Name',
+      name: 'Test Scenario',
       planning_area: 'Planning Area',
       notes: 'notes!',
       status: 'ACTIVE',
@@ -32,12 +51,16 @@ export const Default: Story = {
         result: { features: [], type: 'ok' },
       },
       configuration: {
-        est_cost: 1,
-        max_budget: 1,
+        est_cost: 1234567,
+        max_budget: 1234567,
         max_slope: 1,
         max_treatment_area_ratio: 1,
         min_distance_from_road: 1,
-        project_areas: [],
+        project_areas: [
+          sampleProjectArea1,
+          sampleProjectArea2,
+          sampleProjectArea3,
+        ],
         treatment_question: null,
         excluded_areas: [],
         stand_size: 'SMALL',
@@ -52,31 +75,16 @@ export const Running: Story = {
   args: {
     scenario: {
       ...Default.args?.scenario,
-      id: '0',
-      name: 'Scenario Name',
-      planning_area: 'Planning Area',
-      notes: 'notes!',
+      name: 'Test Scenario',
+      planning_area: 'ok',
       status: 'ACTIVE',
-      user: 1,
-      creator: 'Larry Larrington',
       scenario_result: {
+        ...Default.args?.scenario?.scenario_result,
         status: 'RUNNING',
-        completed_at: '2020-01-01',
-        result: { features: [], type: 'ok' },
+        completed_at: '2021-01-01',
+        result: { type: '', features: [] },
       },
-      configuration: {
-        est_cost: 1,
-        max_budget: 1,
-        max_slope: 1,
-        max_treatment_area_ratio: 1,
-        min_distance_from_road: 1,
-        project_areas: [],
-        treatment_question: null,
-        excluded_areas: [],
-        stand_size: 'SMALL',
-        scenario_priorities: [],
-        question_id: 5,
-      },
+      configuration: { ...Default.args?.scenario?.configuration },
     },
   },
 };
@@ -84,31 +92,17 @@ export const Running: Story = {
 export const Done: Story = {
   args: {
     scenario: {
-      id: '0',
-      name: 'Scenario Name',
-      planning_area: 'Planning Area',
-      notes: 'notes!',
-      scenario_result: {
-        status: 'SUCCESS',
-        completed_at: '2020-01-01',
-        result: { features: [], type: 'ok' },
-      },
+      ...Default.args?.scenario,
+      name: 'Test Scenario',
+      planning_area: 'ok',
       status: 'ACTIVE',
-      user: 1,
-      creator: 'Larry Larrington',
-      configuration: {
-        est_cost: 1,
-        max_budget: 1,
-        max_slope: 1,
-        max_treatment_area_ratio: 1,
-        min_distance_from_road: 1,
-        project_areas: [],
-        treatment_question: null,
-        excluded_areas: [],
-        stand_size: 'SMALL',
-        scenario_priorities: [],
-        question_id: 5,
+      scenario_result: {
+        ...Default.args?.scenario?.scenario_result,
+        status: 'SUCCESS',
+        completed_at: '2021-01-01',
+        result: { type: '', features: [] },
       },
+      configuration: { ...Default.args?.scenario?.configuration },
     },
   },
 };
@@ -116,31 +110,17 @@ export const Done: Story = {
 export const Failed: Story = {
   args: {
     scenario: {
-      id: '0',
-      name: 'Scenario Name',
-      planning_area: 'Planning Area',
-      notes: 'notes!',
+      ...Default.args?.scenario,
+      name: 'Test Scenario',
+      planning_area: 'ok',
       status: 'ACTIVE',
-      user: 1,
-      creator: 'Larry Larrington',
       scenario_result: {
+        ...Default.args?.scenario?.scenario_result,
         status: 'FAILURE',
-        completed_at: '2020-01-01',
-        result: { features: [], type: 'ok' },
+        completed_at: '2021-01-01',
+        result: { type: '', features: [] },
       },
-      configuration: {
-        est_cost: 1,
-        max_budget: 1,
-        max_slope: 1,
-        max_treatment_area_ratio: 1,
-        min_distance_from_road: 1,
-        project_areas: [],
-        treatment_question: null,
-        excluded_areas: [],
-        stand_size: 'SMALL',
-        scenario_priorities: [],
-        question_id: 5,
-      },
+      configuration: { ...Default.args?.scenario?.configuration },
     },
   },
 };

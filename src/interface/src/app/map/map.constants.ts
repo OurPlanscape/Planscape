@@ -29,17 +29,17 @@ export const LEGEND = {
   ],
 };
 
-// export const GEOMAN_DRAW_OPTIONS: L.PM.ToolbarOptions = {
-//   cutPolygon: false,
-//   drawCircle: false,
-//   drawMarker: false,
-//   drawCircleMarker: false,
-//   drawPolyline: false,
-//   drawRectangle: false,
-//   drawText: false,
-//   rotateMode: false,
-//   position: 'bottomright',
-// };
+export const GEOMAN_DRAW_OPTIONS: L.PM.ToolbarOptions = {
+  cutPolygon: false,
+  drawCircle: false,
+  drawMarker: false,
+  drawCircleMarker: false,
+  drawPolyline: false,
+  drawRectangle: false,
+  drawText: false,
+  rotateMode: false,
+  position: 'bottomright',
+};
 
 export const NORMAL_STYLES: L.PathOptions = {
   color: '#000000',
