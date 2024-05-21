@@ -641,6 +641,9 @@
                     "name": "NgSwitch"
                 },
                 {
+                    "name": "NgClass"
+                },
+                {
                     "name": "StatusChipComponent",
                     "type": "component"
                 },

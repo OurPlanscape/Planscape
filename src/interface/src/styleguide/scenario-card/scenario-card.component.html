@@ -1,6 +1,10 @@
-<div class="title-row">
+<div
+  class="title-row"
+  [ngClass]="{ 'disabled-content': scenario?.status === 'RUNNING' }">
   <div class="title-section">
-    <div class="name-header">{{ scenario.name }}</div>
+    <div class="name-header">
+      {{ scenario.name }}
+    </div>
 
     <sg-status-chip
       [status]="getChipStatus()"
@@ -17,6 +21,7 @@
     </button>
     <button
       mat-icon-button
+      [disabled]="scenario.status === 'RUNNING'"
       [matMenuTriggerFor]="menu"
       aria-label="more scenario Options"
       class="more-menu-button">
@@ -31,10 +36,14 @@
   </div>
 </div>
 
-<div class="detail-row">
+<div
+  class="detail-row"
+  [ngClass]="{ 'disabled-content': scenario?.status === 'RUNNING' }">
   <div class="detail-column">
     <div class="detail-header">Creator</div>
-    <div class="detail-info">{{ scenario.creator }}</div>
+    <div class="detail-info">
+      {{ scenario.creator }}
+    </div>
   </div>
   <div *ngIf="!isRunning()" class="detail-column">
     <div class="detail-header">Areas</div>

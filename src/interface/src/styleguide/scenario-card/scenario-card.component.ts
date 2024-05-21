@@ -1,6 +1,11 @@
 import { Component, Input } from '@angular/core';
-import { DatePipe, CurrencyPipe } from '@angular/common';
-import { NgIf, NgSwitch } from '@angular/common';
+import {
+  DatePipe,
+  CurrencyPipe,
+  NgIf,
+  NgSwitch,
+  NgClass,
+} from '@angular/common';
 import {
   StatusChipComponent,
   StatusChipStatus,
@@ -21,6 +26,7 @@ import { Scenario, ScenarioResultStatus } from '@types';
     NgIf,
     CurrencyPipe,
     NgSwitch,
+    NgClass,
     StatusChipComponent,
     ButtonComponent,
     MatIconModule,
