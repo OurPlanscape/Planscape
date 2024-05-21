@@ -4,6 +4,6 @@ from . import views
 app_name = "conditions"
 
 urlpatterns = [
-    path("config/", views.config),
-    path("metrics/", views.metrics),
+    path("config/", views.config, name="legacy_conditions"),
+    path("metrics/", views.metrics, name="legacy_metrics"),
 ]

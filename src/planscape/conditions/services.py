@@ -7,7 +7,7 @@ def flatten_region(region: Dict[str, Any]) -> Dict[str, Any]:
     pillars = flatten_inner(regions, "pillars")
     elements = flatten_inner(pillars, "elements")
     metrics = flatten_inner(elements, "metrics")
-    return metrics
+    return list(metrics)
 
 
 def flatten_inner(parents, key):
