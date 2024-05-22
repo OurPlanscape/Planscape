@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { ConditionsConfig, Region, regionToString } from '@types';
+import { MetricConfig, Region, regionToString } from '@types';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { of, tap } from 'rxjs';
@@ -11,7 +11,7 @@ export class MetricsService {
   // has a record of conditions for each region.
   // if no value on the record, go fetch.
 
-  conditions: Record<Region, ConditionsConfig | null> = {
+  conditions: Record<Region, MetricConfig[] | null> = {
     [Region.CENTRAL_COAST]: null,
     [Region.NORTHERN_CALIFORNIA]: null,
     [Region.SIERRA_NEVADA]: null,
@@ -22,14 +22,12 @@ export class MetricsService {
 
   public getMetricsForRegion(region: Region) {
     if (this.conditions[region] !== null) {
-      return of(this.conditions[region] as ConditionsConfig);
+      return of(this.conditions[region] as MetricConfig[]);
     }
     return this.http
-      .get<ConditionsConfig>(
-        environment.backend_endpoint +
-          '/conditions/config/?region_name=' +
-          `${regionToString(region)}`
-      )
+      .get<
+        MetricConfig[]
+      >(environment.backend_endpoint + '/conditions/config/?flat=true&region_name=' + `${regionToString(region)}`)
       .pipe(
         tap((conditionsConfig) => (this.conditions[region] = conditionsConfig))
       );
