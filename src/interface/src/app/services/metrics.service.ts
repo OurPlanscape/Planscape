@@ -8,10 +8,10 @@ import { of, tap } from 'rxjs';
   providedIn: 'root',
 })
 export class MetricsService {
-  // has a record of conditions for each region.
-  // if no value on the record, go fetch.
-
-  conditions: Record<Region, MetricConfig[] | null> = {
+  /**
+   * Stores a record of metrics for each region.
+   */
+  private conditions: Record<Region, MetricConfig[] | null> = {
     [Region.CENTRAL_COAST]: null,
     [Region.NORTHERN_CALIFORNIA]: null,
     [Region.SIERRA_NEVADA]: null,
@@ -20,6 +20,11 @@ export class MetricsService {
 
   constructor(private http: HttpClient) {}
 
+  /**
+   * Gets a flat list of metrics for a given region.
+   * Only fetches the metrics if we dont have a record already
+   * @param region
+   */
   public getMetricsForRegion(region: Region) {
     if (this.conditions[region] !== null) {
       return of(this.conditions[region] as MetricConfig[]);

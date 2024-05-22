@@ -27,7 +27,7 @@ describe('MetricsService', () => {
 
   it('should return cached conditions if they exist', () => {
     const mockConditions: MetricConfig[] = [];
-    service.conditions[Region.CENTRAL_COAST] = mockConditions;
+    service['conditions'][Region.CENTRAL_COAST] = mockConditions;
 
     service
       .getMetricsForRegion(Region.CENTRAL_COAST)
@@ -45,13 +45,13 @@ describe('MetricsService', () => {
 
   it('should fetch conditions from the backend if not cached', () => {
     const mockConditions: MetricConfig[] = [];
-    service.conditions[Region.CENTRAL_COAST] = null;
+    service['conditions'][Region.CENTRAL_COAST] = null;
 
     service
       .getMetricsForRegion(Region.CENTRAL_COAST)
       .subscribe((conditions) => {
         expect(conditions).toEqual(mockConditions);
-        expect(service.conditions[Region.CENTRAL_COAST]).toEqual(
+        expect(service['conditions'][Region.CENTRAL_COAST]).toEqual(
           mockConditions
         );
       });

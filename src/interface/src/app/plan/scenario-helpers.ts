@@ -8,12 +8,12 @@ export function processScenarioResultsToChartData(
 ): ChartData[] {
   const {
     scenario_priorities: priorities = [],
-    scenario_output_fields: outputFields = [],
+    scenario_output_fields: secondary = [],
   } = scenarioConfig;
-  const relevantFields = new Set([...outputFields, ...priorities]);
+  const outputFields = new Set([...secondary, ...priorities]);
 
   return metrics.reduce((acc: ChartData[], metric) => {
-    if (relevantFields.has(metric.metric_name)) {
+    if (outputFields.has(metric.metric_name)) {
       const metricData = scenarioResults.result.features.map(
         (featureCollection) => featureCollection.properties[metric.metric_name]
       );
