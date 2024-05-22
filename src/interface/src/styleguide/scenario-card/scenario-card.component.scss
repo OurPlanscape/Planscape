@@ -9,7 +9,7 @@
   right: 0px;
   top: 40px;
   background: #ffffff;
-  border: 1px solid #e1e1e1;
+  border: 1px solid $color-soft-gray;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
   border-radius: 4px;
   display: inline-flex;
@@ -43,9 +43,9 @@
     gap: 0;
   }
 
-  .name-header {
+  h4 {
     @include h4();
-    line-height: 40px;
+    line-height: 0;
   }
 
   .title-chip {

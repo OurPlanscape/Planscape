@@ -1,8 +1,8 @@
 <div class="title-row">
   <div class="title-section">
-    <div class="name-header">
+    <h4>
       {{ name }}
-    </div>
+    </h4>
 
     <sg-status-chip
       *ngIf="status"
@@ -41,22 +41,24 @@
       {{ creator }}
     </div>
   </div>
-  <div *ngIf="!isRunning()" class="detail-column">
-    <div class="detail-header">Areas</div>
-    <div class="detail-info">{{ getAreasCount() }}</div>
-  </div>
-  <div *ngIf="!isRunning()" class="detail-column">
-    <div class="detail-header">Est Budget</div>
-    <div class="detail-info">{{ getBudget() | currency }}</div>
-  </div>
-  <div *ngIf="!isRunning()" class="detail-column">
-    <div class="detail-header">Treatment Plans</div>
-    <div class="detail-info">{{ getTreatmentPlansCount() }}</div>
-  </div>
-  <div *ngIf="!isRunning()" class="detail-column">
-    <div class="detail-header">Created</div>
-    <div class="detail-info">
-      {{ created_at | date: 'MMM d, y, h:mm:ss a ' }}
+  <ng-container *ngIf="!isRunning()">
+    <div class="detail-column">
+      <div class="detail-header">Areas</div>
+      <div class="detail-info">{{ getAreasCount() }}</div>
     </div>
-  </div>
+    <div class="detail-column">
+      <div class="detail-header">Est Budget</div>
+      <div class="detail-info">{{ getBudget() | currency }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Treatment Plans</div>
+      <div class="detail-info">{{ getTreatmentPlansCount() }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Created</div>
+      <div class="detail-info">
+        {{ created_at | date: 'MMM d, y, h:mm:ss a ' }}
+      </div>
+    </div>
+  </ng-container>
 </div>

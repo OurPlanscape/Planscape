@@ -37,12 +37,12 @@ export type ScenarioStatus = 'InProgress' | 'Running' | 'Done' | 'Failed';
 })
 export class ScenarioCardComponent {
   @Input() status: ScenarioStatus = 'Running';
-  @Input() name: string = '';
-  @Input() areas: number = 0;
-  @Input() budget: number = 0;
-  @Input() treatmentPlansCount: number = 0;
-  @Input() creator: string = '';
-  @Input() created_at: string = '';
+  @Input() name = '';
+  @Input() areas = 0;
+  @Input() budget = 0;
+  @Input() treatmentPlansCount = 0;
+  @Input() creator = '';
+  @Input() created_at = '';
 
   failureMessage: string = 'failureMessage';
 
