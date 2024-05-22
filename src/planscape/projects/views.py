@@ -7,7 +7,11 @@ from projects.serializers import ProjectSerializer
 
 
 class ProjectViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
-    queryset = Project.objects.filter(visibility=ProjectVisibility.PUBLIC)
+    queryset = Project.objects.filter(
+        visibility=ProjectVisibility.PUBLIC
+    ).select_related(
+        "organization",
+    )
     ordering_fields = ["name", "display_name", "created_at"]
     filterset_class = ProjectFilterSet
     serializer_class = ProjectSerializer
