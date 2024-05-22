@@ -1,11 +1,17 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { argsToTemplate } from '@storybook/angular';
+import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { TreatmentCardComponent } from './treatment-card.component';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<TreatmentCardComponent> = {
   title: 'Components/Treatment Card',
   component: TreatmentCardComponent,
   tags: ['autodocs'],
+  decorators: [
+    applicationConfig({
+      providers: [provideAnimations()],
+    }),
+  ],
   render: (args) => ({
     props: args,
     template: `<sg-treatment-card ${argsToTemplate(args)}></sg-treatment-card>`,

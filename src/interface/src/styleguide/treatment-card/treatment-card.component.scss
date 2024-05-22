@@ -30,6 +30,7 @@
   display: flex;
   gap: 16px;
   align-items: center;
+  width: 100%;
 }
 
 .label {
@@ -56,4 +57,23 @@ h4 {
   color: $color-black;
   margin: 0;
   padding: 0;
+}
+
+.more-menu-button {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0 0 0 auto;
+  line-height: 0;
+  cursor: pointer;
+  display: block;
+}
+
+
+.delete {
+  color: $color-error;
+
+  mat-icon {
+    color: $color-error;
+  }
 }

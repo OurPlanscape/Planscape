@@ -3,6 +3,26 @@
   <sg-status-chip
     [status]="chipsStatus[status]"
     [label]="status"></sg-status-chip>
+  <button
+    [matMenuTriggerFor]="menu"
+    aria-label="more options"
+    class="more-menu-button">
+    <mat-icon>more_vert</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu" class="more-treatment-menu">
+    <button mat-menu-item>
+      <mat-icon class="material-symbols-outlined">file_open_outlined</mat-icon>
+      <span>Open</span>
+    </button>
+    <button mat-menu-item>
+      <mat-icon class="material-symbols-outlined">file_copy_outlined</mat-icon>
+      <span>Duplicate</span>
+    </button>
+    <button mat-menu-item class="delete">
+      <mat-icon class="material-symbols-outlined">delete_outlined</mat-icon>
+      <span>Delete</span>
+    </button>
+  </mat-menu>
 </div>
 <div class="bottom">
   <div>
