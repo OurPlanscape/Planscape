@@ -63,7 +63,7 @@ class MetricsViewSetTest(APITransactionTestCase):
 
     def test_retrieve_metric(self):
         response = self.client.get(
-            reverse("metrics:metrics-detail", kwargs={"pk": self.metric.pk})
+            reverse("metrics:metrics-detail", args=[self.metric.uuid])
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.metric.name)
