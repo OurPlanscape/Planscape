@@ -26,9 +26,16 @@
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
-      <button mat-menu-item class="delete-note-button">
-        <mat-icon class="delete-icon">delete_outline</mat-icon>
-        <span>Delete</span>
+      <button mat-menu-item (click)="openScenario()">
+        <mat-icon class="folder_open-icon">folder_open</mat-icon>
+        <span>Open</span></button
+      ><button mat-menu-item (click)="openPlanningProgress()">
+        <mat-icon class="more_horiz-icon">more_horiz</mat-icon>
+        <span>Planning progress</span>
+      </button>
+      <button mat-menu-item (click)="archiveScenario()">
+        <mat-icon class="archive-icon">archive</mat-icon>
+        <span>Archive</span>
       </button>
     </mat-menu>
   </div>
@@ -44,15 +51,15 @@
   <ng-container *ngIf="!isRunning()">
     <div class="detail-column">
       <div class="detail-header">Areas</div>
-      <div class="detail-info">{{ getAreasCount() }}</div>
+      <div class="detail-info">{{ areas }}</div>
     </div>
     <div class="detail-column">
       <div class="detail-header">Est Budget</div>
-      <div class="detail-info">{{ getBudget() | currency }}</div>
+      <div class="detail-info">{{ budget | currency }}</div>
     </div>
     <div class="detail-column">
       <div class="detail-header">Treatment Plans</div>
-      <div class="detail-info">{{ getTreatmentPlansCount() }}</div>
+      <div class="detail-info">{{ treatmentPlansCount }}</div>
     </div>
     <div class="detail-column">
       <div class="detail-header">Created</div>

@@ -65,17 +65,11 @@ export class ScenarioCardComponent {
     return this.status === 'Done';
   }
 
-  getTreatmentPlansCount(): number {
-    return this.treatmentPlansCount;
-  }
+  openScenario() {}
 
-  getBudget(): number {
-    return this.budget;
-  }
+  openPlanningProgress() {}
 
-  getAreasCount(): number {
-    return this.areas;
-  }
+  archiveScenario() {}
 
   @HostBinding('class.disabled-content')
   get disabledContent() {
