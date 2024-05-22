@@ -4,7 +4,7 @@ import {
   HttpTestingController,
 } from '@angular/common/http/testing';
 import { MetricsService } from './metrics.service';
-import { ConditionsConfig, Region, regionToString } from '@types';
+import { MetricConfig, Region, regionToString } from '@types';
 import { environment } from '../../environments/environment';
 
 describe('MetricsService', () => {
@@ -26,9 +26,7 @@ describe('MetricsService', () => {
   });
 
   it('should return cached conditions if they exist', () => {
-    const mockConditions: ConditionsConfig = {
-      /* mock data here */
-    };
+    const mockConditions: MetricConfig[] = [];
     service.conditions[Region.CENTRAL_COAST] = mockConditions;
 
     service
@@ -40,15 +38,13 @@ describe('MetricsService', () => {
     // Ensure no HTTP requests are made
     httpMock.expectNone(
       environment.backend_endpoint +
-        '/conditions/config/?region_name=' +
+        '/conditions/config/?flat=true&region_name=' +
         regionToString(Region.CENTRAL_COAST)
     );
   });
 
   it('should fetch conditions from the backend if not cached', () => {
-    const mockConditions: ConditionsConfig = {
-      /* mock data here */
-    };
+    const mockConditions: MetricConfig[] = [];
     service.conditions[Region.CENTRAL_COAST] = null;
 
     service
@@ -62,7 +58,7 @@ describe('MetricsService', () => {
 
     const req = httpMock.expectOne(
       environment.backend_endpoint +
-        '/conditions/config/?region_name=' +
+        '/conditions/config/?flat=true&region_name=' +
         regionToString(Region.CENTRAL_COAST)
     );
     expect(req.request.method).toBe('GET');

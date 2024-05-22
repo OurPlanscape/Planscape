@@ -6,27 +6,27 @@ export function processScenarioResultsToChartData(
   scenarioConfig: ScenarioConfig,
   scenarioResults: ScenarioResult
 ): ChartData[] {
-  const priorities = scenarioConfig.scenario_priorities;
-  const outputFields = new Set([
-    ...(scenarioConfig.scenario_output_fields || []),
-    ...(priorities || []),
-  ]);
+  const {
+    scenario_priorities: priorities = [],
+    scenario_output_fields: outputFields = [],
+  } = scenarioConfig;
+  const relevantFields = new Set([...outputFields, ...priorities]);
 
-  return metrics
-    .filter((metric) => outputFields?.has(metric.metric_name))
-    .map((metric) => {
-      let metricData: number[] = [];
-      scenarioResults.result.features.map((featureCollection) => {
-        metricData.push(featureCollection.properties[metric.metric_name]);
-      });
+  return metrics.reduce((acc: ChartData[], metric) => {
+    if (relevantFields.has(metric.metric_name)) {
+      const metricData = scenarioResults.result.features.map(
+        (featureCollection) => featureCollection.properties[metric.metric_name]
+      );
 
-      return <ChartData>{
+      acc.push({
         label: metric.display_name,
         measurement: metric.data_units,
         key: metric.metric_name,
         values: metricData,
         metric_layer: metric.raw_layer,
-        is_primary: priorities?.includes(metric.metric_name) || false,
-      };
-    });
+        is_primary: priorities.includes(metric.metric_name),
+      } as ChartData);
+    }
+    return acc;
+  }, []);
 }
