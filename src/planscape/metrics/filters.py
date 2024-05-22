@@ -25,6 +25,6 @@ class MetricFilterSet(filters.FilterSet):
     class Meta:
         model = Metric
         fields = {
-            "name": ["exact", "contains"],
-            "display_name": ["exact", "contains"],
+            "name": ["exact", "icontains"],
+            "display_name": ["exact", "icontains"],
         }
