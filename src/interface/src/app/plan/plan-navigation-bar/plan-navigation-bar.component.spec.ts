@@ -1,4 +1,4 @@
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlanNavigationBarComponent } from './plan-navigation-bar.component';
@@ -9,7 +9,7 @@ describe('BottomBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MaterialModule],
+      imports: [LegacyMaterialModule],
       declarations: [PlanNavigationBarComponent],
     }).compileComponents();
 

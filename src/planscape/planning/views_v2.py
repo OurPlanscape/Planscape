@@ -15,8 +15,8 @@ from planning.serializers import (
 from planning.tasks import async_forsys_run
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.filters import PlanningAreaFilter, ScenarioFilter
-from planning.permission import PlanningAreaViewPermission, ScenarioViewPermission
 from base.region_name import display_name_to_region
+from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from '@types';
 
-import { MaterialModule } from '../material/material.module';
+import { LegacyMaterialModule } from '../material/legacy-material.module';
 import { AuthService, PlanStateService } from '@services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
@@ -79,7 +79,7 @@ describe('PlanComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
-        MaterialModule,
+        LegacyMaterialModule,
         PlanModule,
         RouterTestingModule.withRoutes([]),
         NoopAnimationsModule,

@@ -7,7 +7,7 @@ import { FeaturesModule } from '../../features/features.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MOCK_PLAN } from '@services/mocks';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MockComponent } from 'ng-mocks';
 import { Plan } from '@types';
 import { PlanTableComponent } from './plan-table.component';
@@ -43,7 +43,7 @@ describe('PlanTableComponent', () => {
       imports: [
         BrowserAnimationsModule,
         FormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         ReactiveFormsModule,
         FeaturesModule,
       ],

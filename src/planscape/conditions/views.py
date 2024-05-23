@@ -35,7 +35,7 @@ def get_config(params: QueryDict):
 
 def config(request: HttpRequest) -> HttpResponse:
     region = get_config(request.GET)
-    return JsonResponse(region)
+    return JsonResponse(region, safe=False)
 
 
 def metrics(request: HttpRequest) -> HttpResponse:

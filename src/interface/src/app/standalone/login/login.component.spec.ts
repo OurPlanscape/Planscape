@@ -9,7 +9,7 @@ import { LoginComponent } from './login.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { Location } from '@angular/common';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 @Component({
@@ -31,7 +31,7 @@ describe('LoginComponent', () => {
         LoginComponent,
         FormsModule,
         ReactiveFormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         BrowserAnimationsModule,
         RouterTestingModule.withRoutes([
           { path: 'home', component: DummyComponent },

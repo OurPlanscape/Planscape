@@ -13,7 +13,7 @@ import { timeout, TimeoutError } from 'rxjs';
 import { EMAIL_VALIDATION_REGEX, SharedModule } from '@shared';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
 import { passwordsMustMatchValidator } from '../../validators/passwords';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { InfoCardComponent } from '../info-card/info-card.component';
 import { CommonModule } from '@angular/common';
 
@@ -25,7 +25,7 @@ import { CommonModule } from '@angular/common';
   imports: [
     CommonModule,
     InfoCardComponent,
-    MaterialModule,
+    LegacyMaterialModule,
     ReactiveFormsModule,
     SharedModule,
   ],
@@ -61,6 +61,7 @@ export class SignupComponent {
       },
       {
         validators: [passwordsMustMatchValidator('password1', 'password2')],
+        updateOn: 'blur',
       }
     );
   }

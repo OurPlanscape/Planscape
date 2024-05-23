@@ -44,6 +44,10 @@ Declare mixins based on styleguide and apply to classes
   @include defToStyles(map.get($styleguide, 'standard-label-sm'))
 }
 
+@mixin xs-label {
+  @include defToStyles(map.get($styleguide, 'xs-label'))
+}
+
 @mixin standard-input-label {
   @include defToStyles(map.get($styleguide, 'standard-input-label'))
 }

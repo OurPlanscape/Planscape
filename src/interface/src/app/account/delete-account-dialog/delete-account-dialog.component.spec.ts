@@ -10,7 +10,7 @@ import {
 } from '@angular/material/legacy-dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
-import { MaterialModule } from 'src/app/material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AuthService } from '@services';
 
 import { DeleteAccountDialogComponent } from './delete-account-dialog.component';
@@ -51,7 +51,7 @@ describe('DeleteAccountDialogComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         FormsModule,
-        MaterialModule,
+        LegacyMaterialModule,
         ReactiveFormsModule,
         NoopAnimationsModule,
       ],

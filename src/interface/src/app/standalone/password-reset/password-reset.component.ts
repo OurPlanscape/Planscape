@@ -13,13 +13,13 @@ import { FormMessageType } from '@types';
 import { AuthService, PasswordResetToken } from '@services';
 
 import { CommonModule } from '@angular/common';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
+
 import { SharedModule } from '@shared';
 import { AboutComponent } from '../about/about.component';
 import { PasswordStateMatcher } from '../../validators/error-matchers';
 import { passwordsMustMatchValidator } from '../../validators/passwords';
 import { PasswordConfirmationDialogComponent } from '../password-confirmation-dialog/password-confirmation-dialog.component';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 @UntilDestroy()
 @Component({
@@ -30,8 +30,7 @@ import { PasswordConfirmationDialogComponent } from '../password-confirmation-di
   imports: [
     AboutComponent,
     CommonModule,
-    MatFormFieldModule,
-    MatInputModule,
+    LegacyMaterialModule,
     ReactiveFormsModule,
     RouterModule,
     SharedModule,
@@ -64,7 +63,8 @@ export class PasswordResetComponent implements OnInit {
         password2: this.formBuilder.control('', Validators.required),
       },
       {
-        validator: passwordsMustMatchValidator('password1', 'password2'),
+        validators: [passwordsMustMatchValidator('password1', 'password2')],
+        updateOn: 'blur',
       }
     );
   }

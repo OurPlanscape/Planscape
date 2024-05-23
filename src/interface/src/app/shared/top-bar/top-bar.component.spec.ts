@@ -13,7 +13,7 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { MatLegacyMenuHarness as MatMenuHarness } from '@angular/material/legacy-menu/testing';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 describe('TopBarComponent', () => {
   let component: TopBarComponent;
@@ -35,7 +35,7 @@ describe('TopBarComponent', () => {
     await TestBed.configureTestingModule({
       imports: [
         HttpClientTestingModule,
-        MaterialModule,
+        LegacyMaterialModule,
         RouterTestingModule,
         NoopAnimationsModule,
       ],

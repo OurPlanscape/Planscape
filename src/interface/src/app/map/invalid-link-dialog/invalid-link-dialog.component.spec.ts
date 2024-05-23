@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvalidLinkDialogComponent } from './invalid-link-dialog.component';
 import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 
 describe('InvalidLinkDialogComponent', () => {
   let component: InvalidLinkDialogComponent;
@@ -11,7 +11,7 @@ describe('InvalidLinkDialogComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [InvalidLinkDialogComponent],
-      imports: [MaterialModule],
+      imports: [LegacyMaterialModule],
       providers: [
         {
           provide: MatDialogRef,

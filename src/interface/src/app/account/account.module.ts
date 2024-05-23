@@ -10,7 +10,7 @@ import { DetailsComponent } from './details/details.component';
 import { EditUserFieldComponent } from './edit-user-field/edit-user-field.component';
 import { FeaturesModule } from '../features/features.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MaterialModule } from '../material/material.module';
+import { LegacyMaterialModule } from '../material/legacy-material.module';
 import { MenuComponent } from './menu/menu.component';
 import { SharedModule } from '@shared';
 
@@ -29,7 +29,7 @@ import { SharedModule } from '@shared';
     CommonModule,
     FeaturesModule,
     FormsModule,
-    MaterialModule,
+    LegacyMaterialModule,
     ReactiveFormsModule,
     SharedModule,
   ],

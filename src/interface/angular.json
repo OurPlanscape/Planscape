@@ -157,7 +157,7 @@
               "-e",
               "json",
               "-d",
-              "./src/styleguide/docs/"
+              "./src/styleguide/generated/"
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",
@@ -181,7 +181,7 @@
               "-e",
               "json",
               "-d",
-              "./src/styleguide/docs/"
+              "./src/styleguide/generated/"
             ],
             "styles": [
               "./node_modules/@angular/material/prebuilt-themes/indigo-pink.css",

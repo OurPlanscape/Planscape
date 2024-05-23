@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PlanningAreasComponent } from './planning-areas.component';
-import { MaterialModule } from '../../material/material.module';
+import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
 describe('PlanningAreasComponent', () => {
@@ -11,7 +11,7 @@ describe('PlanningAreasComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [PlanningAreasComponent],
-      imports: [MaterialModule],
+      imports: [LegacyMaterialModule],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
 
