@@ -20,6 +20,7 @@ from dj_rest_auth.registration.views import VerifyEmailView
 from planscape.url_converters import ContentTypeURLConverter
 from projects.routers import router as projects_router
 from metrics.routers import router as metrics_router
+from goals.routers import router as goals_router
 from users import views as user_views
 
 register_converter(ContentTypeURLConverter, "ctype")
@@ -61,6 +62,13 @@ urlpatterns = [
         include(
             (metrics_router.urls, "metrics"),
             namespace="metrics",
+        ),
+    ),
+    path(
+        "planscape-backend/v2/",
+        include(
+            (goals_router.urls, "goals"),
+            namespace="goals",
         ),
     ),
 ]
