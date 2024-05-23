@@ -52,10 +52,9 @@ export class ScenarioCardComponent {
   @Input() creator = '';
   @Input() created_at = '';
 
-  @Output() openScenarioEvent = new EventEmitter<number>();
-  @Output() openPlanningProgressEvent = new EventEmitter<number>();
-  @Output() archiveScenarioEvent = new EventEmitter<number>();
-  failureMessage: string = 'failureMessage';
+  @Output() openScenario = new EventEmitter();
+  @Output() openPlanningProgress = new EventEmitter();
+  @Output() archiveScenario = new EventEmitter();
 
   readonly chipsStatus: Record<ScenarioStatus, StatusChipStatus> = {
     InProgress: 'inProgress',
@@ -74,18 +73,6 @@ export class ScenarioCardComponent {
 
   isDone(): boolean {
     return this.status === 'Done';
-  }
-
-  openScenario() {
-    this.openScenarioEvent.emit();
-  }
-
-  openPlanningProgress() {
-    this.openPlanningProgressEvent.emit();
-  }
-
-  archiveScenario() {
-    this.archiveScenarioEvent.emit();
   }
 
   @HostBinding('class.disabled-content')

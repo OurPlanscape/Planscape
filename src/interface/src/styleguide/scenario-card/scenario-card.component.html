@@ -25,14 +25,14 @@
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="openScenario()">
+      <button mat-menu-item (click)="openScenario.emit()">
         <mat-icon class="folder_open-icon">folder_open</mat-icon>
         <span>Open</span></button
-      ><button mat-menu-item (click)="openPlanningProgress()">
+      ><button mat-menu-item (click)="openPlanningProgress.emit()">
         <mat-icon class="more_horiz-icon">more_horiz</mat-icon>
         <span>Planning progress</span>
       </button>
-      <button mat-menu-item (click)="archiveScenario()">
+      <button mat-menu-item (click)="archiveScenario.emit()">
         <mat-icon class="archive-icon">archive</mat-icon>
         <span>Archive</span>
       </button>
