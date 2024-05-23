@@ -1,4 +1,10 @@
-import { Component, Input, HostBinding } from '@angular/core';
+import {
+  Component,
+  Input,
+  HostBinding,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import {
   DatePipe,
   CurrencyPipe,
@@ -13,7 +19,7 @@ import {
 import { ButtonComponent } from '../button/button.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-
+import { MatButtonModule } from '@angular/material/button';
 export type ScenarioStatus = 'InProgress' | 'Running' | 'Done' | 'Failed';
 /**
  * Scenario Card for displaying scenario data in a results list
@@ -31,11 +37,13 @@ export type ScenarioStatus = 'InProgress' | 'Running' | 'Done' | 'Failed';
     ButtonComponent,
     MatIconModule,
     MatMenuModule,
+    MatButtonModule,
   ],
   templateUrl: './scenario-card.component.html',
   styleUrl: './scenario-card.component.scss',
 })
 export class ScenarioCardComponent {
+  //TODO: maybe we need to accept the ID here, so we can emit events for these scenarios?
   @Input() status: ScenarioStatus = 'Running';
   @Input() name = '';
   @Input() areas = 0;
@@ -44,6 +52,9 @@ export class ScenarioCardComponent {
   @Input() creator = '';
   @Input() created_at = '';
 
+  @Output() openScenarioEvent = new EventEmitter<number>();
+  @Output() openPlanningProgressEvent = new EventEmitter<number>();
+  @Output() archiveScenarioEvent = new EventEmitter<number>();
   failureMessage: string = 'failureMessage';
 
   readonly chipsStatus: Record<ScenarioStatus, StatusChipStatus> = {
@@ -65,11 +76,17 @@ export class ScenarioCardComponent {
     return this.status === 'Done';
   }
 
-  openScenario() {}
+  openScenario() {
+    this.openScenarioEvent.emit();
+  }
 
-  openPlanningProgress() {}
+  openPlanningProgress() {
+    this.openPlanningProgressEvent.emit();
+  }
 
-  archiveScenario() {}
+  archiveScenario() {
+    this.archiveScenarioEvent.emit();
+  }
 
   @HostBinding('class.disabled-content')
   get disabledContent() {

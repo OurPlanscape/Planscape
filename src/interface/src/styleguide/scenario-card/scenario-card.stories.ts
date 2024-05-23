@@ -1,10 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { argsToTemplate } from '@storybook/angular';
+import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { ScenarioCardComponent } from './scenario-card.component';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 const meta: Meta<ScenarioCardComponent> = {
   title: 'Components/Scenario Card',
   component: ScenarioCardComponent,
+  decorators: [
+    applicationConfig({
+      providers: [provideAnimations()],
+    }),
+  ],
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
