@@ -77,7 +77,7 @@ export class ScenarioCardComponent {
 
   @HostBinding('class.disabled-content')
   get disabledContent() {
-    return this.isRunning() || this.hasFailed();
+    return this.isRunning();
   }
 
   getChipStatus(): StatusChipStatus {
