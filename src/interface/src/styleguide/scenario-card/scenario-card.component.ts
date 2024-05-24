@@ -20,7 +20,7 @@ import { ButtonComponent } from '../button/button.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
-export type ScenarioStatus = 'InProgress' | 'Running' | 'Done' | 'Failed';
+export type ScenarioStatus = 'Running' | 'Done' | 'Failed';
 /**
  * Scenario Card for displaying scenario data in a results list
  */
@@ -43,7 +43,6 @@ export type ScenarioStatus = 'InProgress' | 'Running' | 'Done' | 'Failed';
   styleUrl: './scenario-card.component.scss',
 })
 export class ScenarioCardComponent {
-  //TODO: maybe we need to accept the ID here, so we can emit events for these scenarios?
   @Input() status: ScenarioStatus = 'Running';
   @Input() name = '';
   @Input() areas = 0;
@@ -57,7 +56,6 @@ export class ScenarioCardComponent {
   @Output() archiveScenario = new EventEmitter();
 
   readonly chipsStatus: Record<ScenarioStatus, StatusChipStatus> = {
-    InProgress: 'inProgress',
     Done: 'success',
     Running: 'running',
     Failed: 'failed',

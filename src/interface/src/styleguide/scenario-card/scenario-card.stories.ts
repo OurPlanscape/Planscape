@@ -33,13 +33,6 @@ export const Default: Story = {
   },
 };
 
-export const InProgress: Story = {
-  args: {
-    ...Default.args,
-    status: 'InProgress',
-  },
-};
-
 export const Running: Story = {
   args: {
     ...Default.args,
