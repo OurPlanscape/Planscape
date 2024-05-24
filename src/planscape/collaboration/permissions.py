@@ -139,3 +139,7 @@ class ScenarioPermission(CheckPermissionMixin):
     @staticmethod
     def can_delete(user: User, scenario: Scenario):
         return is_creator(user, scenario.planning_area) or scenario.user.pk == user.pk
+
+    @staticmethod
+    def can_remove(user: User, scenario: Scenario):
+        return is_creator(user, scenario.planning_area) or scenario.user.pk == user.pk

@@ -1,15 +1,21 @@
 import logging
+import json
+from django.conf import settings
+from rest_framework import viewsets, status
+from rest_framework.response import Response
 
-from rest_framework import viewsets
-
-from planning.models import PlanningArea, Scenario
+from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioStatus
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     ScenarioSerializer,
+    CreatePlanningAreaSerializer,
 )
+from planning.tasks import async_forsys_run
+from planning.geometry import coerce_geojson, coerce_geometry
 from planning.filters import PlanningAreaFilter, ScenarioFilter
+from base.region_name import display_name_to_region
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 
 logger = logging.getLogger(__name__)
@@ -21,9 +27,32 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     ordering_fields = ["name", "created_at", "scenario_count"]
     filterset_class = PlanningAreaFilter
 
+    def create(self, request):
+        try:
+            body = json.loads(request.body)
+            request_data = request.data
+            request_data["user"] = request.user.pk
+            request_data["geometry"] = coerce_geojson(body.get("geometry"))
+            request_data["region_name"] = display_name_to_region(
+                body.get("region_name")
+            ).value
+            serializer = self.get_serializer(data=request_data)
+            serializer.is_valid(raise_exception=True)
+
+            self.perform_create(serializer)
+
+            # serializer.save()
+
+            return Response(serializer.data)
+        except Exception as e:
+            logger.exception(e)
+            return Response(status=400)
+
     def get_serializer_class(self):
         if self.action == "list":
             return ListPlanningAreaSerializer
+        if self.action == "create":
+            return CreatePlanningAreaSerializer
         return PlanningAreaSerializer
 
     def get_queryset(self):
@@ -38,12 +67,70 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     ordering_fields = ["name", "created_at"]
     filterset_class = ScenarioFilter
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop("partial", False)
+        request_data = request.data
+        request_data["user"] = request.user.pk
+        instance = self.get_object()
+        request_data["planning_area"] = kwargs.pop("planningarea_pk")
+        is_dirty = False
+
+        # TODO: can we rely on Serializers to determine what can/cant be here?
+        if "notes" in request.data:
+            request_data["notes"] = request.data.get("notes")
+            is_dirty = True
+
+        if "name" in request.data:
+            # This must be always defined
+            new_name = request.data.get("name")
+            if (new_name is None) or (len(new_name) == 0):
+                return Response(
+                    {"error": "Name must be defined."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            request_data["name"] = new_name
+            is_dirty = True
+
+        if "status" in request.data:
+            new_status = request.data.get("status").upper()
+            if (new_status is None) or (new_status not in dict(ScenarioStatus.choices)):
+                return Response(
+                    {"error": "Status is not valid."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            request_data["name"] = new_status
+            is_dirty = True
+
+        serializer = self.get_serializer(instance, data=request_data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        if is_dirty:
+            serializer.save()
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
     def create(self, request, planningarea_pk):
         request_data = request.data
         request_data["planning_area"] = planningarea_pk
+        request_data["user"] = request.user.pk
         serializer = self.get_serializer(data=request_data)
         serializer.is_valid(raise_exception=True)
-        return super().create(request)
+        serializer.save()
+
+        # TODO: taken from old views...
+        # add more tests for scenarioresult content to be sure this is working
+        scenario_result = ScenarioResult.objects.create(scenario=serializer.instance)
+        scenario_result.save()
+
+        if settings.USE_CELERY_FOR_FORSYS:
+            async_forsys_run.delay(serializer.instance.pk)
+
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
 
     def get_serializer_class(self):
         if self.action == "list":
