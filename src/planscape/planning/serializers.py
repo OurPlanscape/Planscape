@@ -71,7 +71,7 @@ class PlanningAreaSerializer(
     ListPlanningAreaSerializer,
     gis_serializers.GeoModelSerializer,
 ):
-    creator = serializers.CharField(source="user", read_only=True)
+    # creator = serializers.CharField(source="user", read_only=True)
 
     class Meta:
         fields = (
