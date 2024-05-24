@@ -1,1 +1,16 @@
-<>
+<div>
+  <button
+    [matMenuTriggerFor]="menu"
+    aria-label="more scenario Options"
+    class="dropdown-button">
+    <div class="dropdown-label">Here is some text</div>
+    <mat-icon>keyboard_arrow_down</mat-icon>
+  </button>
+  <mat-menu #menu="matMenu">
+    <ng-content> </ng-content>
+    <button mat-menu-item class="checkbox-item">
+      <div>Open</div>
+      <input type="checkbox" />
+    </button>
+  </mat-menu>
+</div>

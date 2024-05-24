@@ -1,0 +1,25 @@
+@import "mixins";
+@import "colors";
+
+.dropdown-button {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-content: center;
+    background-color: $color-white;
+    border: 1px $color-text-gray solid;
+    border-radius: 4px;
+    padding: 8px 12px;
+    height: 40px;
+}
+
+.dropdown-label {
+   @include standard-input-label();
+   color: $color-black;
+}
+
+.checkbox-item {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
