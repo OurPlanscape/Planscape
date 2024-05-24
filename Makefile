@@ -157,7 +157,7 @@ docker-shell:
 
 docker-makemigrations:
 	./src/planscape/bin/run.sh python manage.py makemigrations --no-header $(APP_LABEL) $(OPTIONS)
-	sudo chown -R $(USER): **/migrations
+	find . -type d -name migrations -exec sudo chown -R $(USER): {} +
 
 docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
