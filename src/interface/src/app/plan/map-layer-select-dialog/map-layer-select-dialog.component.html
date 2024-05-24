@@ -5,7 +5,8 @@
   </button>
 </section>
 <section class="radio-row">
-  <h3>Base Map</h3>
+  <div class="radio-group-label">Base Map</div>
+
   <mat-radio-group
     name="dialog-select"
     aria-label="Select an option"
@@ -16,6 +17,7 @@
       class="layer-control-container"
       *ngFor="let baseLayerType of baseLayerTypes">
       <mat-radio-button
+        aria-label="baseLayerType"
         [value]="baseLayerType"
         checked="{{ baseLayerType === currentLayer }}">
         {{ BaseLayerType[baseLayerType] }}
