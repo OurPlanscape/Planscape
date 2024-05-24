@@ -1,10 +1,17 @@
 from uuid import uuid4
-from django.test import TransactionTestCase
-from rest_framework.test import APIClient
-from django.urls import reverse
-from projects.models import Project, Organization, ProjectVisibility
-from django.contrib.gis.geos import MultiPolygon, Polygon
+
 from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.test import TransactionTestCase
+from django.urls import reverse
+from projects.models import (
+    Organization,
+    Project,
+    ProjectCapabilities,
+    ProjectVisibility,
+)
+from rest_framework import status
+from rest_framework.test import APIClient
 
 User = get_user_model()
 
@@ -12,7 +19,9 @@ User = get_user_model()
 class ProjectViewSetTest(TransactionTestCase):
     def setUp(self):
         self.client = APIClient()
-        self.organization = Organization.objects.create(name="Test Organization")
+        self.organization = Organization.objects.create(
+            name="Test Organization",
+        )
         self.user = User.objects.create(username="testuser")
         self.public_project = Project.objects.create(
             uuid=uuid4(),
@@ -20,8 +29,24 @@ class ProjectViewSetTest(TransactionTestCase):
             created_by=self.user,
             name="Public Project",
             display_name="Public Project Display",
+            capabilities=[ProjectCapabilities.EXPLORE],
             visibility=ProjectVisibility.PUBLIC,
             geometry=MultiPolygon(Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)))),
+        )
+        self.public_project2 = Project.objects.create(
+            uuid=uuid4(),
+            organization=self.organization,
+            created_by=self.user,
+            name="foobarbaz",
+            display_name="Foo Bar Baz",
+            capabilities=[
+                ProjectCapabilities.EXPLORE,
+                ProjectCapabilities.PLAN,
+            ],
+            visibility=ProjectVisibility.PUBLIC,
+            geometry=MultiPolygon(
+                Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0))),
+            ),
         )
         self.private_project = Project.objects.create(
             uuid=uuid4(),
@@ -30,7 +55,9 @@ class ProjectViewSetTest(TransactionTestCase):
             name="Private Project",
             display_name="Private Project Display",
             visibility=ProjectVisibility.PRIVATE,
-            geometry=MultiPolygon(Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0)))),
+            geometry=MultiPolygon(
+                Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0))),
+            ),
         )
 
     def test_list_projects(self):
@@ -58,3 +85,86 @@ class ProjectViewSetTest(TransactionTestCase):
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
+
+    def test_filter_by_name_exact(self):
+        url = reverse("projects:projects-list")
+        response = self.client.get(url, {"name": self.public_project.name})
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 1)
+        self.assertEqual(response.data.get("count"), 1)
+        self.assertEqual(
+            response.data["results"][0]["name"],
+            self.public_project.name,
+        )
+
+    def test_filter_by_name_contains(self):
+        url = reverse("projects:projects-list")
+        response = self.client.get(
+            url,
+            {"name__icontains": "project"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 1)
+        self.assertEqual(response.data.get("count"), 1)
+        self.assertEqual(
+            response.data["results"][0]["name"],
+            self.public_project.name,
+        )
+
+    def test_filter_by_display_name_exact(self):
+        url = reverse("projects:projects-list")
+        response = self.client.get(
+            url,
+            {"display_name": self.public_project.display_name},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 1)
+        self.assertEqual(response.data.get("count"), 1)
+        self.assertEqual(
+            response.data["results"][0]["display_name"],
+            self.public_project.display_name,
+        )
+
+    def test_filter_by_display_name_contains(self):
+        url = reverse("projects:projects-list")
+        response = self.client.get(
+            url,
+            {"display_name__icontains": "Display"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 1)
+        self.assertEqual(response.data.get("count"), 1)
+        self.assertEqual(
+            response.data["results"][0]["display_name"],
+            self.public_project.display_name,
+        )
+
+    def test_filter_by_capabilities_explore(self):
+        url = reverse("projects:projects-list")
+        response = self.client.get(
+            url,
+            {"capabilities": "EXPLORE"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 2)
+        self.assertEqual(response.data.get("count"), 2)
+
+    def test_filter_by_capabilities_plan(self):
+        url = reverse("projects:projects-list")
+        response = self.client.get(
+            url,
+            {"capabilities": "PLAN"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 1)
+        self.assertEqual(response.data.get("count"), 1)
+
+    def test_filter_by_capabilities_both_plan(self):
+        url = reverse("projects:projects-list")
+        response = self.client.get(
+            url,
+            {"capabilities": "EXPLORE,PLAN"},
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data.get("results")), 1)
+        self.assertEqual(response.data.get("count"), 1)

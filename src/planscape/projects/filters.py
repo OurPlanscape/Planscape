@@ -1,16 +1,14 @@
 from django_filters import rest_framework as filters
 from planscape.filters import CharArrayFilter
-from projects.models import Project, ProjectCapabilities, ProjectVisibility
+from projects.models import Project
 
 
 class ProjectFilterSet(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")
-    display_name = filters.CharFilter(lookup_expr="icontains")
-    visibility = filters.MultipleChoiceFilter(
-        choices=ProjectVisibility.choices,
-    )
     capabilities = CharArrayFilter(lookup_expr="contains")
 
     class Meta:
         model = Project
-        fields = ["name", "display_name"]
+        fields = {
+            "name": ["exact", "icontains"],
+            "display_name": ["exact", "icontains"],
+        }
