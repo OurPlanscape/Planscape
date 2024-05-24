@@ -34,6 +34,7 @@ export interface ScenarioConfig {
   stand_size?: string;
   scenario_priorities?: string[];
   question_id?: number;
+  scenario_output_fields?: string[]; // this value comes from saved scenarios
 }
 
 export interface ScenarioResult {
