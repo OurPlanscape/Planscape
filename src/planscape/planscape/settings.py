@@ -210,6 +210,11 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": 50,
+    "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 format without microseconds
+    "DATETIME_INPUT_FORMATS": [
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%dT%H:%M:%SZ",  # Optional: to accept inputs with 'Z' indicating UTC time
+    ],
 }
 
 REST_AUTH = {

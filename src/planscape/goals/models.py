@@ -134,7 +134,8 @@ class MetricAttribute(models.TextChoices):
     SUM = "sum", "Sum"
     MAJORITY = "majority", "Majority"
     MINORITY = "minority", "Minority"
-    COUNT = "count", "COUNT"
+    COUNT = "COUNT", "Count"
+    FIELD = "FIELD", "Field"
 
 
 class PostProcessingFunction(models.TextChoices):
