@@ -36,6 +36,7 @@ import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-pane
 import { WINDOW_PROVIDERS } from '@services';
 import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overlay.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
+import { MapLayerSelectDialogComponent } from './map-layer-select-dialog/map-layer-select-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
 import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
@@ -51,6 +52,7 @@ import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog
     ExploreComponent,
     GoalOverlayComponent,
     IdentifyProjectAreasComponent,
+    MapLayerSelectDialogComponent,
     PlanComponent,
     PlanMapComponent,
     PlanNavigationBarComponent,
