@@ -264,9 +264,6 @@ class ProjectArea(
         default=ProjectAreaOrigin.OPTIMIZATION,
         help_text="Determines where this project area came from.",
     )
-
-    name = models.CharField(max_length=128, null=False)
-
     data = models.JSONField(null=True)
 
     geometry = models.MultiPolygonField(
