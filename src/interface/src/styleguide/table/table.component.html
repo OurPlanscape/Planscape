@@ -1,7 +1,9 @@
-<table mat-table matSort [dataSource]="dataSource" class="mat-elevation-z0">
-  <!--- Note that these columns can be defined in any order.
-        The actual rendered columns are set as a property on the row definition" -->
-
+<table
+  mat-table
+  matSort
+  [dataSource]="dataSource"
+  class="mat-elevation-z0"
+  (matSortChange)="sortData.emit($event)">
   <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
     <th mat-header-cell *matHeaderCellDef [mat-sort-header]="column">
       {{ column }}
