@@ -253,6 +253,8 @@ class ProjectArea(
         on_delete=models.RESTRICT,
     )
 
+    name = models.CharField(max_length=128)
+
     origin = models.CharField(
         choices=ProjectAreaOrigin.choices,
         default=ProjectAreaOrigin.OPTIMIZATION,

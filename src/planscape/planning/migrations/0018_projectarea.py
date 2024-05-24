@@ -35,6 +35,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("uuid", models.UUIDField(db_index=True, default=uuid.uuid4)),
+                ("name", models.CharField(max_length=128)),
                 (
                     "origin",
                     models.CharField(
