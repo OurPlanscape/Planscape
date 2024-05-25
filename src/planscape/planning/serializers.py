@@ -96,33 +96,10 @@ class PlanningAreaSerializer(
 class CreatePlanningAreaSerializer(
     gis_serializers.GeoModelSerializer,
 ):
-    scenario_count = serializers.IntegerField(read_only=True, required=False)
-    latest_updated = serializers.SerializerMethodField()
     notes = serializers.CharField(required=False)
-    created_at = serializers.DateTimeField(required=False)
-
     area_acres = serializers.SerializerMethodField()
     permissions = serializers.SerializerMethodField()
     role = serializers.SerializerMethodField()
-
-    def get_area_acres(self, instance):
-        return get_acreage(instance.geometry)
-
-    def get_latest_updated(self, instance):
-        return (
-            getattr(instance, "scenario_latest_updated_at", None) or instance.updated_at
-        )
-
-    def get_role(self, instance):
-        user = self.context["request"].user or self.request.user
-        return get_role(user, instance)
-
-    def get_permissions(self, instance):
-        user = self.context["request"].user or self.request.user
-        return list(get_permissions(user, instance))
-
-    def get_region_name(self, instance):
-        return instance.region_name
 
     class Meta:
         fields = (
