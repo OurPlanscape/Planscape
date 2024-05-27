@@ -11,8 +11,7 @@
       <mat-tab-group
         mat-align-tabs="start"
         mat-stretch-tabs
-        disablePagination="true"
-        *appFeatureFlag="'show_share_modal'">
+        disablePagination="true">
         <mat-tab label="ABOUT">
           <app-area-details [plan]="plan"></app-area-details>
         </mat-tab>
@@ -20,11 +19,6 @@
           <app-area-notes [plan]="plan"></app-area-notes>
         </mat-tab>
       </mat-tab-group>
-
-      <app-summary-panel
-        *appFeatureFlag="'show_share_modal'; hide: true"
-        [plan]="currentPlan$ | async"
-        [owner]="planOwner$ | async"></app-summary-panel>
     </div>
     <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>
     <div

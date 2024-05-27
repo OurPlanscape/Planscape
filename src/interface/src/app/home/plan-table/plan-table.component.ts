@@ -13,7 +13,6 @@ import { Router } from '@angular/router';
 
 import { SNACK_NOTICE_CONFIG } from '@shared';
 import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
-import { FeatureService } from '../../features/feature.service';
 import {
   canDeletePlanningArea,
   canViewCollaborators,
@@ -36,18 +35,20 @@ export class PlanTableComponent implements OnInit {
   loading = true;
   error = false;
 
-  displayedColumns: string[] = this.featureService.isFeatureEnabled(
-    'show_share_modal'
-  )
-    ? ['name', 'creator', 'lastUpdated', 'totalAcres', 'scenarios', 'region']
-    : ['name', 'lastUpdated', 'totalAcres', 'scenarios', 'region'];
+  displayedColumns: string[] = [
+    'name',
+    'creator',
+    'lastUpdated',
+    'totalAcres',
+    'scenarios',
+    'region',
+  ];
 
   constructor(
     private dialog: MatDialog,
     private planService: PlanService,
     private router: Router,
     private snackbar: MatSnackBar,
-    private featureService: FeatureService,
     private authService: AuthService
   ) {}
 

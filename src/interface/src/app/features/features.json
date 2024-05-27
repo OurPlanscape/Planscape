@@ -13,6 +13,5 @@
   "use_its": false,
   "draw_northcal": false,
   "draw_socal": false,
-  "draw_centralcoast": false,
-  "show_share_modal": false
+  "draw_centralcoast": false
 }

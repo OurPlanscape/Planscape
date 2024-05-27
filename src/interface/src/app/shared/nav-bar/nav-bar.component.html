@@ -89,11 +89,7 @@
       class="action-button"
       (click)="sharePlan()"
       data-id="share"
-      *ngIf="
-        area === 'SCENARIOS' &&
-        hasSharePlanFeatureFlag &&
-        (canSharePlan$ | async)
-      ">
+      *ngIf="area === 'SCENARIOS' && (canSharePlan$ | async)">
       Share
     </button>
 
