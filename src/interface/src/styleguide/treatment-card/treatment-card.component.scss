@@ -77,3 +77,18 @@ h4 {
     color: $color-error;
   }
 }
+
+::ng-deep .more-treatment-menu {
+  mat-icon {
+    height: 20px;
+    width: 20px;
+    font-size: 20px;
+    line-height: 20px;
+  }
+
+  .mat-mdc-menu-content .mat-mdc-menu-item .mat-mdc-menu-item-text {
+    @include small-paragraph();
+  }
+
+}
+
