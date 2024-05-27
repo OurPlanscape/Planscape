@@ -61,11 +61,6 @@ fixture.detectChanges();
 
 This flag will display the Max slope, Distance from roads, and Stand size inputs on the Scenario configuration page.
 
-### show_centralcoast
-
-This flag will display the option to switch to the Central Coast region,
-and therefore allow for the display of Central Coast data.
-
 ### show_future_control_panel
 
 This flag will enable future condition options in the map control panel for all regions. A region-specific flag, "future_data", can be found for each

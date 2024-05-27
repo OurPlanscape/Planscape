@@ -1,10 +1,7 @@
 {
   "scenario_constraints": false,
-  "show_centralcoast": true,
   "show_future_control_panel": false,
   "show_translated_control_panel": false,
-  "testFalseFeature": false,
-  "testTrueFeature": true,
   "top_percent_slider": true,
   "unlaunched_layers": false,
   "upload_project_area": false,
