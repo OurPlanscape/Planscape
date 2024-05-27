@@ -38,7 +38,6 @@ import {
   PlanService,
   PlanStateService,
   PopupService,
-  RegionService,
   SessionService,
   ShareMapService,
 } from '@services';
@@ -141,8 +140,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   showConfirmAreaButton$ = new BehaviorSubject(false);
   breadcrumbs$ = new BehaviorSubject<Breadcrumb[]>([{ name: 'New Plan' }]);
 
-  drawRegionEnabled$ = this.regionService.drawRegionEnabled$;
-
   totalArea$ = this.showConfirmAreaButton$.asObservable().pipe(
     switchMap((show) => {
       return this.mapManager.edits$.asObservable().pipe(map(() => show));
@@ -181,7 +178,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private router: Router,
     private http: HttpClient,
     private cdr: ChangeDetectorRef,
-    private regionService: RegionService,
     private route: ActivatedRoute,
     private shareMapService: ShareMapService,
     private location: Location

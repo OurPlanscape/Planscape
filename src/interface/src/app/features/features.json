@@ -2,16 +2,11 @@
   "scenario_constraints": false,
   "show_centralcoast": true,
   "show_future_control_panel": false,
-  "show_socal": true,
-  "show_north_cal": false,
   "show_translated_control_panel": false,
   "testFalseFeature": false,
   "testTrueFeature": true,
   "top_percent_slider": true,
   "unlaunched_layers": false,
   "upload_project_area": false,
-  "use_its": false,
-  "draw_northcal": false,
-  "draw_socal": false,
-  "draw_centralcoast": false
+  "use_its": false
 }

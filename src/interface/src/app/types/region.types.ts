@@ -5,12 +5,6 @@ export enum Region {
   NORTHERN_CALIFORNIA = 'Northern California',
 }
 
-export interface RegionOption {
-  type: Region;
-  name: string;
-  available: boolean;
-}
-
 export const regions: Region[] = [
   Region.SIERRA_NEVADA,
   Region.SOUTHERN_CALIFORNIA,
