@@ -239,7 +239,11 @@ class ProjectAreaOrigin(models.TextChoices):
 
 
 class ProjectArea(
-    UUIDMixin, CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
+    UUIDMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    DeletedAtMixin,
+    models.Model,
 ):
     created_by = models.ForeignKey(
         User,
@@ -260,7 +264,6 @@ class ProjectArea(
         default=ProjectAreaOrigin.OPTIMIZATION,
         help_text="Determines where this project area came from.",
     )
-
     data = models.JSONField(null=True)
 
     geometry = models.MultiPolygonField(

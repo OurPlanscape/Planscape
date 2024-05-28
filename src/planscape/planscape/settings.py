@@ -37,6 +37,7 @@ planscape_apps = [
     "core",
     "datasets",
     "goals",
+    "impacts",
     "metrics",
     "organizations",
     "planning",
