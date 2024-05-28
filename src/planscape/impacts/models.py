@@ -37,6 +37,7 @@ class TreatmentPlan(
         choices=TreatmentPlanStatus.choices,
         default=TreatmentPlanStatus.PENDING,
     )
+    name = models.CharField(max_length=256)
 
     class Meta:
         verbose_name = "Treatment Plan"

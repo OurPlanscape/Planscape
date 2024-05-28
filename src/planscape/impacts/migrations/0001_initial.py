@@ -9,8 +9,8 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ("stands", "0007_alter_stand_created_at_alter_standmetric_created_at"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
+        ("stands", "0007_alter_stand_created_at_alter_standmetric_created_at"),
         ("planning", "0018_projectarea"),
     ]
 
@@ -180,6 +180,7 @@ class Migration(migrations.Migration):
                         default="PENDING",
                     ),
                 ),
+                ("name", models.CharField(max_length=256)),
                 (
                     "created_by",
                     models.ForeignKey(
