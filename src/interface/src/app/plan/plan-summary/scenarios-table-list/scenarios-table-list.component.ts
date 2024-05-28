@@ -5,7 +5,6 @@ import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
 } from '../../plan-helpers';
-import { FeatureService } from '../../../features/feature.service';
 
 @Component({
   selector: 'app-scenarios-table-list',
@@ -18,7 +17,7 @@ export class ScenariosTableListComponent {
   @Output() viewScenario = new EventEmitter();
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
 
-  constructor(private featureService: FeatureService) {}
+  constructor() {}
 
   statusLabels: Record<ScenarioResultStatus, string> = {
     LOADING: 'Loading',
@@ -31,26 +30,15 @@ export class ScenariosTableListComponent {
     TIMED_OUT: 'Failed',
   };
 
-  displayedColumns: string[] = this.featureService.isFeatureEnabled(
-    'show_share_modal'
-  )
-    ? [
-        'name',
-        'creator',
-        'projectAreas',
-        'acresTreated',
-        'estimatedCost',
-        'status',
-        'completedTimestamp',
-      ]
-    : [
-        'name',
-        'projectAreas',
-        'acresTreated',
-        'estimatedCost',
-        'status',
-        'completedTimestamp',
-      ];
+  displayedColumns: string[] = [
+    'name',
+    'creator',
+    'projectAreas',
+    'acresTreated',
+    'estimatedCost',
+    'status',
+    'completedTimestamp',
+  ];
 
   hasResults(scenario: Scenario) {
     return (
