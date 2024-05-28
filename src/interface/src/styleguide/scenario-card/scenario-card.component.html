@@ -7,8 +7,7 @@
     <sg-status-chip
       *ngIf="status"
       [status]="getChipStatus()"
-      [label]="status"
-      class="title-chip"></sg-status-chip>
+      [label]="status"></sg-status-chip>
     <div *ngIf="hasFailed()" class="failed-message">
       <mat-icon class="error-icon">error</mat-icon>
       Create a new scenario to proceed to treatment plan
