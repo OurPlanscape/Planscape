@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { Region } from '@types';
-import { MapService, RegionService, SessionService } from '@services';
+import { MapService, SessionService } from '@services';
 
 @Component({
   selector: 'app-region-dropdown',
@@ -8,14 +8,16 @@ import { MapService, RegionService, SessionService } from '@services';
   styleUrls: ['./region-dropdown.component.scss'],
 })
 export class RegionDropdownComponent {
-  readonly regionOptions = this.region.regionOptions;
+  readonly regions = Object.entries(Region).map(([text, region]) => ({
+    text,
+    region: region as Region,
+  }));
   readonly selectedRegion$ = this.sessionService.region$;
   @Input() disabled = false;
 
   constructor(
     private sessionService: SessionService,
-    private mapService: MapService,
-    private region: RegionService
+    private mapService: MapService
   ) {}
 
   /** Sets the region from the dropdown and goes to the map. */
