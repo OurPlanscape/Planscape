@@ -32,12 +32,9 @@
       <div class="actions-bar-text">START PLANNING:</div>
 
       <!-- Draw a planning area -->
-      <div
-        matTooltip="This feature is not available at this time."
-        [matTooltipDisabled]="(drawRegionEnabled$ | async) || false">
+      <div>
         <button
           mat-button
-          [disabled]="(drawRegionEnabled$ | async) === false || false"
           class="draw-area-button"
           [ngClass]="{
             selected: selectedAreaCreationAction === AreaCreationAction.DRAW,
@@ -51,12 +48,9 @@
 
       <!-- Upload a planning area -->
       <div class="upload-wrapper">
-        <div
-          matTooltip="This feature is not available at this time."
-          [matTooltipDisabled]="(drawRegionEnabled$ | async) || false">
+        <div>
           <button
             mat-button
-            [disabled]="(drawRegionEnabled$ | async) === false || false"
             class="upload-area-button"
             [ngClass]="{
               selected:

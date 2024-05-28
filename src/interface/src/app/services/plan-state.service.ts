@@ -157,13 +157,6 @@ export class PlanStateService {
     );
   }
 
-  getMetricData(metric_paths: any) {
-    return this.scenarioService.getMetricData(
-      metric_paths,
-      this.planRegion$.value
-    );
-  }
-
   /**
    * Updates planRegion and treatmentGoalsConfig if value is a valid Region
    */

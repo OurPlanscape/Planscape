@@ -5,7 +5,6 @@ export * from './popup.service';
 export * from './session.service';
 export * from './plan-state.service';
 export * from './scenario.service';
-export * from './region.service';
 export * from './invites.service';
 export * from './redirect.service';
 export * from './share-map.service';

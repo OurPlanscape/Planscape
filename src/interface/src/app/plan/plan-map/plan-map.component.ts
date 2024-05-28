@@ -16,8 +16,12 @@ import { Feature } from 'geojson';
 import { getColorForProjectPosition } from '../plan-helpers';
 import polylabel from 'polylabel';
 import { environment } from '../../../environments/environment';
-
-// Needed to keep reference to legend div element to remove
+import { MapLayerSelectDialogComponent } from '../map-layer-select-dialog/map-layer-select-dialog.component';
+import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+import { BaseLayerType } from '@types';
+import { satelliteTiles, terrainTiles } from 'src/app/map/map.tiles';
+import { MapLayerControlComponent } from './map-layer-control/map-layer-control-component';
+// Needed to keep references to div elements to remove
 export interface MapRef {
   legend?: HTMLElement | undefined;
 }
@@ -34,8 +38,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   /** The amount of padding in the top left corner when the map fits the plan boundaries. */
   @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
   @Input() showAttributionAndZoom: boolean = false;
-
+  @Input() showLayerSwitcher: boolean = false;
   private readonly destroy$ = new Subject<void>();
+
   map!: L.Map;
   drawingLayer: L.GeoJSON | undefined;
   projectAreasLayer: L.GeoJSON | undefined;
@@ -49,10 +54,12 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private layer: string = '';
   private shapes: any | null = null;
-
+  private layerControl = new MapLayerControlComponent();
+  private currentBaseLayer: BaseLayerType = BaseLayerType.Road;
   constructor(
     private planStateService: PlanStateService,
-    private http: HttpClient
+    private http: HttpClient,
+    private dialog: MatDialog
   ) {
     this.selectedRegion$ = this.planStateService.planRegion$;
   }
@@ -68,6 +75,24 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         if (state.mapShapes !== this.shapes) {
           this.shapes = state.mapShapes;
           this.drawShapes(state.mapShapes);
+        }
+      });
+  }
+
+  openLayerDialog() {
+    const layerPickerDialogRef = this.dialog.open(
+      MapLayerSelectDialogComponent,
+      {
+        data: { selectedLayer: this.currentBaseLayer },
+        panelClass: 'no-padding-dialog',
+      }
+    );
+    layerPickerDialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((selected) => {
+        if (selected !== undefined) {
+          this.setCurrentBaseLayer(selected);
         }
       });
   }
@@ -95,6 +120,11 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         position: 'bottomright',
       });
       zoomControl.addTo(this.map);
+    }
+
+    if (this.showLayerSwitcher) {
+      this.layerControl.layerClicked.subscribe(() => this.openLayerDialog());
+      this.map.addControl(this.layerControl);
     }
 
     if (this.plan) {
@@ -143,6 +173,22 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
+  setCurrentBaseLayer(selectedLayer: BaseLayerType) {
+    this.map.eachLayer((ly) => {
+      if (ly instanceof L.TileLayer) {
+        this.map.removeLayer(ly);
+      }
+    });
+    let layerTiles = terrainTiles();
+    if (selectedLayer === BaseLayerType.Road) {
+      layerTiles = this.stadiaAlidadeTiles();
+    } else if (selectedLayer === BaseLayerType.Satellite) {
+      layerTiles = satelliteTiles();
+    }
+    this.currentBaseLayer = selectedLayer;
+    this.map.addLayer(layerTiles);
+  }
+
   ngOnDestroy(): void {
     this.map.remove();
     this.destroy$.next();
@@ -169,7 +215,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         opacity: 0.7,
       }
     );
-
     this.map.addLayer(this.tileLayer);
 
     // Map legend request

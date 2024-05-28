@@ -114,7 +114,6 @@ describe('CreateScenariosComponent', () => {
       'PlanStateService',
       {
         getScenario: fakeGetScenario,
-        getMetricData: of(null),
         updateStateWithShapes: undefined,
       },
       {

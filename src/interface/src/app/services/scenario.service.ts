@@ -1,13 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, Observable, take } from 'rxjs';
-import {
-  Region,
-  regionToString,
-  Scenario,
-  SCENARIO_STATUS,
-  ScenarioConfig,
-} from '@types';
+import { Scenario, SCENARIO_STATUS, ScenarioConfig } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
 
@@ -143,17 +137,6 @@ export class ScenarioService {
         responseType: 'arraybuffer',
       }
     );
-  }
-
-  /** Gets Metric Data For Scenario Output Fields */
-  getMetricData(metric_paths: any, region: Region): Observable<any> {
-    const url = environment.backend_endpoint.concat(
-      '/conditions/metrics/?region_name=' +
-        `${regionToString(region)}` +
-        '&metric_paths=' +
-        JSON.stringify(metric_paths)
-    );
-    return this.http.get<any>(url).pipe(take(1));
   }
 
   private convertConfigToScenario(config: ScenarioConfig): any {

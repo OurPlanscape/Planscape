@@ -5,12 +5,11 @@
       Select a region
     </option>
     <option
-      *ngFor="let region of regionOptions"
-      [value]="region.type"
-      [disabled]="!region.available"
-      [selected]="(selectedRegion$ | async) === region.type"
+      *ngFor="let region of regions"
+      [value]="region.region"
+      [selected]="(selectedRegion$ | async) === region.region"
       routerLink="/map">
-      {{ region.name }}
+      {{ region.text }}
     </option>
   </select>
 </div>
