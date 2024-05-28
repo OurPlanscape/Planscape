@@ -1,0 +1,70 @@
+<div class="title-row">
+  <div class="title-section">
+    <h4>
+      {{ name }}
+    </h4>
+
+    <sg-status-chip
+      *ngIf="status"
+      [status]="getChipStatus()"
+      [label]="status"></sg-status-chip>
+    <div *ngIf="hasFailed()" class="failed-message">
+      <mat-icon class="error-icon">error</mat-icon>
+      Create a new scenario to proceed to treatment plan
+    </div>
+  </div>
+  <div class="controls-section" *ngIf="!hasFailed()">
+    <button sg-button icon="add" [disabled]="!isDone()">
+      New Treatment Plan
+    </button>
+    <button
+      [disabled]="!isDone()"
+      [matMenuTriggerFor]="menu"
+      aria-label="more scenario Options"
+      class="more-menu-button">
+      <mat-icon>more_vert</mat-icon>
+    </button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="openScenario.emit()">
+        <mat-icon class="folder_open-icon">folder_open</mat-icon>
+        <span>Open</span></button
+      ><button mat-menu-item (click)="openPlanningProgress.emit()">
+        <mat-icon class="more_horiz-icon">more_horiz</mat-icon>
+        <span>Planning progress</span>
+      </button>
+      <button mat-menu-item (click)="archiveScenario.emit()">
+        <mat-icon class="archive-icon">archive</mat-icon>
+        <span>Archive</span>
+      </button>
+    </mat-menu>
+  </div>
+</div>
+
+<div class="detail-row">
+  <div class="detail-column">
+    <div class="detail-header">Creator</div>
+    <div class="detail-info">
+      {{ creator }}
+    </div>
+  </div>
+  <ng-container *ngIf="!isRunning()">
+    <div class="detail-column">
+      <div class="detail-header">Areas</div>
+      <div class="detail-info">{{ areas }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Est Budget</div>
+      <div class="detail-info">{{ budget | currency }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Treatment Plans</div>
+      <div class="detail-info">{{ treatmentPlansCount }}</div>
+    </div>
+    <div class="detail-column">
+      <div class="detail-header">Created</div>
+      <div class="detail-info">
+        {{ created_at | date: 'MMM d, y, h:mm:ss a ' }}
+      </div>
+    </div>
+  </ng-container>
+</div>
