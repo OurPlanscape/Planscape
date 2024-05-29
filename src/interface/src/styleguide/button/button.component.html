@@ -1,2 +1,4 @@
-<mat-icon *ngIf="icon">{{ icon }}</mat-icon>
+<mat-icon *ngIf="icon" [ngClass]="{ 'material-symbols-outlined': outlined }">{{
+  icon
+}}</mat-icon>
 <ng-content></ng-content>

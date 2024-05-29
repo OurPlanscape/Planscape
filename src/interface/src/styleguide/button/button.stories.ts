@@ -67,7 +67,16 @@ export const Negative: Story = {
 export const Text: Story = {
   args: {
     variant: 'text',
-    icon: 'help_outline',
+    icon: 'help',
     content: 'A text-only button',
+  },
+};
+
+export const Outline: Story = {
+  args: {
+    variant: 'ghost',
+    icon: 'explore',
+    outlined: true,
+    content: 'A button with outline icon',
   },
 };
