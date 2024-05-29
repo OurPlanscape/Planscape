@@ -788,6 +788,50 @@ call_forsys <- function(
   return(out)
 }
 
+upsert_project_area <- function(
+  connection,
+  timestamp,
+  scenario,
+  project
+)  {
+  query <- glue_sql("INSERT INTO planning_projectarea (
+    uuid,
+    created_at,
+    updated_at,
+    created_by,
+    scenario_id,
+    name,
+    origin,
+    geometry) VALUES (
+      {uuid},
+      {created_at},
+      {updated_at},
+      {created_by},
+      {name},
+      {origin},
+      {data},
+      {geometry},
+    )
+    ON CONFLICT (scenario_id, name) DO UPDATE
+    SET
+      created_at = EXCLUDED.created_at,
+      updated_at = EXCLUDED.updated_at,
+      created_by_id = EXCLUDED.created_by_id,
+      data = EXCLUDED.data,
+      geometry = EXCLUDED.geometry;
+    ", 
+    created_at = timestamp, 
+    updated_at = timestamp,
+    created_by_id=scenario$created_by_id,
+    name=project$name,
+    origin='OPTIMIZATION',
+    data=toJSON(project$properties),
+    geometry=project$geometry,
+    .con = connection)
+    log_info(query)
+    dbExecute(connection, query, immediate = TRUE)
+}
+
 upsert_scenario_result <- function(
     connection,
     timestamp,
@@ -885,6 +929,10 @@ main <- function(scenario_id) {
         "SUCCESS",
         result
       )
+      project_areas <- lapply(result$features, function(project)  {
+        return(upsert_project_area(con, now, scenario, project))
+      })
+      
       log_info(paste("[OK] Forsys succeeeded for scenario", scenario_id))
     },
     error = function(e) {
@@ -899,6 +947,7 @@ main <- function(scenario_id) {
         "FAILURE",
         list(type = "FeatureCollection", features = list())
       )
+      
     },
     finally = {
       log_info(paste("[DONE] Forsys execution finished."))

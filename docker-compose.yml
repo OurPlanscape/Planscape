@@ -1,12 +1,19 @@
 version: "3.9"
 
 services:
-  web:
+  _planscape:
+    image: planscape
+    command: ["echo", "build done"]
     build:
       context: .
       dockerfile: docker/Dockerfile
+  web:
+    image: planscape
+    extends:
+      service: _planscape
     ports:
       - "8000:8000"
+    network_mode: "host"
     env_file:
       - .env
     depends_on:
@@ -38,9 +45,9 @@ services:
     volumes:
       - cache:/data/redis
   celery_worker:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile
+    image: planscape
+    extends:
+      service: _planscape
     working_dir: /usr/src/app/src/planscape
     command: celery -A planscape worker -E --loglevel INFO --concurrency 3
     deploy:
@@ -48,6 +55,7 @@ services:
     env_file:
       - .env
     depends_on:
+      - web
       - db
       - redis
     volumes:
