@@ -52,6 +52,7 @@ export interface ElementConfig extends DataLayerConfig {
 export interface MetricConfig extends DataLayerConfig {
   metric_name: string;
   data_units?: string;
+  output_units?: string;
   raw_data_download_path?: string;
 }
 
