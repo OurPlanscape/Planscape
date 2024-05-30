@@ -1,3 +1,4 @@
+repos <- "http://cran.us.r-project.org"
 packages <- c(
   "dplyr",
   "textshaping",
@@ -17,10 +18,12 @@ packages <- c(
   "purrr",
   "logger",
   "tidyr",
-  "checkmate"
+  "checkmate",
+  "uuid"
 )
-
-install.packages(packages, repos = "http://cran.us.r-project.org")
+install.packages(
+  packages,
+  repos = repos)
 
 library("devtools")
 
