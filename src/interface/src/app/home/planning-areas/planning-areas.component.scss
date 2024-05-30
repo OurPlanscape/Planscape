@@ -18,15 +18,120 @@
   display: flex;
   align-items: center;
   gap: 8px;
+  margin-bottom: 16px;
 
   h3 {
     margin: 0 auto 0 0;
   }
 }
 
+.filter-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+
+// placeholders, remove once the components are ready.
+
 .search-bar-placeholder {
   border: 1px solid $color-text-gray;
   padding: 8px;
   border-radius: 4px;
   width: 213px;
+}
+
+.filter-placeholder {
+  border: 1px solid $color-text-gray;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+table.planning-areas {
+
+  --mat-table-header-headline-font: "Public Sans", sans-serif;
+  --mat-table-row-item-label-text-font: "Public Sans", sans-serif;
+  --mat-table-footer-supporting-text-font: "Public Sans", sans-serif;
+  --mat-table-header-container-height: 61px;
+  --mat-table-footer-container-height: 61px;
+  --mat-table-row-item-container-height: 61px;
+  --mat-table-row-item-outline-color: #E1E1E1;
+
+
+  //html {
+  //  --mat-table-header-headline-font: Roboto, sans-serif;
+  //  --mat-table-header-headline-line-height: 22px;
+  //  --mat-table-header-headline-size: 14px;
+  //  --mat-table-header-headline-weight: 500;
+  //  --mat-table-header-headline-tracking: 0.0071428571em;
+  //  --mat-table-row-item-label-text-font: Roboto, sans-serif;
+  //  --mat-table-row-item-label-text-line-height: 20px;
+  //  --mat-table-row-item-label-text-size: 14px;
+  //  --mat-table-row-item-label-text-weight: 400;
+  //  --mat-table-row-item-label-text-tracking: 0.0178571429em;
+  //  --mat-table-footer-supporting-text-font: Roboto, sans-serif;
+  //  --mat-table-footer-supporting-text-line-height: 20px;
+  //  --mat-table-footer-supporting-text-size: 14px;
+  //  --mat-table-footer-supporting-text-weight: 400;
+  //  --mat-table-footer-supporting-text-tracking: 0.0178571429em;
+  //}
+  //
+  //html {
+  //  --mat-table-header-container-height: 56px;
+  //  --mat-table-footer-container-height: 52px;
+  //  --mat-table-row-item-container-height: 52px;
+  //}
+  //
+  //html {
+  //  --mat-table-background-color: white;
+  //  --mat-table-header-headline-color: rgba(0, 0, 0, 0.87);
+  //  --mat-table-row-item-label-text-color: rgba(0, 0, 0, 0.87);
+  //  --mat-table-row-item-outline-color: rgba(0, 0, 0, 0.12);
+  //}
+
+
+  border: 1px solid #E1E1E1;
+  border-radius: 4px;
+  margin: 16px 0;
+
+  .mat-column-name, .mat-column-creator {
+    width: 25%;
+  }
+
+  .mat-column-region_name, .mat-column-area_acres, .mat-column-scenario_count {
+    width: 12%;
+  }
+
+  .mat-column-latest_updated {
+
+  }
+
+  .mat-mdc-header-cell {
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+
+  .mat-column-menu {
+    padding: 0;
+    width: 62px;
+    text-align: center;
+  }
+
+
+}
+
+.pagination-placeholder {
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 16px;
+
+  div {
+    border: 1px solid black;
+    padding: 5px 10px;
+    aspect-ratio: 1;
+    text-align: center;
+  }
 }
