@@ -3,7 +3,8 @@ import logging
 import os
 from base.region_name import display_name_to_region
 from django.conf import settings
-from planning.geometry import coerce_geojson, coerce_geometry
+from planning.geometry import coerce_geometry
+from django.db import transaction
 from django.db import IntegrityError
 from django.db.models import Count, Max
 from django.db.models.functions import Coalesce
@@ -41,6 +42,10 @@ from planning.services import (
     get_acreage,
     validate_scenario_treatment_ratio,
     zip_directory,
+    create_planning_area as create_planning_area_service,
+    create_scenario as create_scenario_service,
+    delete_planning_area as delete_planning_area_service,
+    delete_scenario as delete_scenario_service,
 )
 from planning.tasks import async_forsys_run
 from rest_framework.views import APIView
@@ -52,10 +57,6 @@ from rest_framework import status
 from planscape.exceptions import InvalidGeometry
 
 logger = logging.getLogger(__name__)
-
-
-# We always need to store multipolygons, so coerce a single polygon to
-# a multigolygon if needed.
 
 
 @api_view(["POST"])
@@ -124,13 +125,13 @@ def create_planning_area(request: Request) -> Response:
                 {"message": "Must specify the planning area geometry."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        geometry = coerce_geojson(geojson)
-        planning_area = PlanningArea.objects.create(
+        notes = body.get("notes", None) or None
+        planning_area = create_planning_area_service(
             user=user,
             name=name,
             region_name=region_name,
-            geometry=geometry,
-            notes=body.get("notes", None),
+            geojson=geojson,
+            notes=notes,
         )
         serializer = PlanningAreaSerializer(
             instance=planning_area, context={"request": request}
@@ -201,11 +202,11 @@ def delete_planning_area(request: Request) -> Response:
         planning_areas = PlanningArea.objects.get_for_user(user).filter(
             pk__in=planning_area_ids
         )
-        for p in planning_areas:
-            if PlanningAreaPermission.can_remove(user, p):
-                p.delete()
-            else:
-                logger.error(f"User {user} has no permission to delete {p.id}")
+
+        # opens up a transaction.
+        # any calls to the delete method will open a new checkpoint
+        with transaction.atomic():
+            results = [delete_planning_area_service(user, pa) for pa in planning_areas]
 
         # We still report that the full set of planning area IDs requested were deleted,
         # since from the user's perspective, there are no planning areas with that ID.
@@ -591,13 +592,9 @@ def create_scenario(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        scenario = serializer.save()
-
-        # Create a default scenario result.
-        # Note that if this fails, we will have still written the Scenario without
-        # a corresponding ScenarioResult.
-        scenario_result = ScenarioResult.objects.create(scenario=scenario)
-        scenario_result.save()
+        scenario = create_scenario_service(
+            user=request.user, **serializer.validated_data
+        )
 
         if settings.USE_CELERY_FOR_FORSYS:
             async_forsys_run.delay(scenario.pk)
@@ -875,10 +872,9 @@ def delete_scenario(request: Request) -> Response:
         scenarios = Scenario.objects.filter(pk__in=scenario_ids).filter(
             planning_area__user=user.pk
         )
-        # This automatically deletes ScenarioResult entries for the deleted Scenarios.
-        for s in scenarios:
-            if ScenarioPermission.can_delete(user, s):
-                s.delete()
+
+        with transaction.atomic():
+            [delete_scenario_service(user, s) for s in scenarios]
 
         # We still report that the full set of scenario IDs requested were deleted,
         # since from the user's perspective, there are no scenarios with that ID after this

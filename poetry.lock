@@ -762,6 +762,23 @@ argon2 = ["argon2-cffi (>=19.1.0)"]
 bcrypt = ["bcrypt"]
 
 [[package]]
+name = "django-activity-stream"
+version = "2.0.0"
+description = "Generate generic activity streams from the actions on your site. Users can follow any actors' activities for personalized streams."
+optional = false
+python-versions = "*"
+files = [
+    {file = "django-activity-stream-2.0.0.tar.gz", hash = "sha256:33a467ba9b9a9969cbed76b2fd65e94a19928e48f0ec2b2e5bb1855177036ed2"},
+    {file = "django_activity_stream-2.0.0-py3-none-any.whl", hash = "sha256:e7b86e637e419d068d9a5b4f3bacfec5ae231f412c2bda0ad686a1e47d4424ef"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+
+[package.extras]
+drf = ["django-rest-framework", "rest-framework-generic-relations"]
+
+[[package]]
 name = "django-allauth"
 version = "0.57.2"
 description = "Integrated set of Django applications addressing authentication, registration, account management as well as 3rd party (social) account authentication."
@@ -3537,4 +3554,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10"
-content-hash = "b3fcdd57b658c1a82fbe5e7060320bb81c1b764701084ee73d39411a06c5e7c9"
+content-hash = "67218b8b321977759258de2a8fb23ad00bedc7a7c727c18e7f5ccfc6f47fc4d1"

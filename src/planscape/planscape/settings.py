@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_extensions",
+    "actstream",
     "password_policies",
     "rest_framework",
     "rest_framework_gis",
@@ -404,3 +405,9 @@ REPORT_RECIPIENT_EMAIL = config("REPORT_RECIPIENT_EMAIL", default=DEFAULT_FROM_E
 AREA_SRID = 5070
 CONVERSION_SQM_ACRES = 4046.8564213562374
 ADMIN_ORG_UUID = "6eb11079-e007-4776-98e8-29af9167241a"
+
+ACTSTREAM_SETTINGS = {
+    "USE_JSONFIELD": True,
+    "FETCH_RELATIONS": True,
+    "GFK_FETCH_DEPTH": 1,
+}
