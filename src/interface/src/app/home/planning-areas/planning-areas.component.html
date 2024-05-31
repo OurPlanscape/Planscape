@@ -47,9 +47,12 @@
   <div class="filter-placeholder">Filter placeholder</div>
 </div>
 <!--Initial load spinner-->
-<div *ngIf="initialLoad$ | async">
-  <mat-spinner></mat-spinner>
-</div>
+
+<mat-spinner
+  *ngIf="initialLoad$ | async"
+  class="main-loader"
+  diameter="48"></mat-spinner>
+
 <!--Planning area table and pagination-->
 <div [hidden]="initialLoad$ | async">
   <table
