@@ -596,9 +596,6 @@ def create_scenario(request: Request) -> Response:
             user=request.user, **serializer.validated_data
         )
 
-        if settings.USE_CELERY_FOR_FORSYS:
-            async_forsys_run.delay(scenario.pk)
-
         return Response({"id": scenario.pk}, content_type="application/json")
     except PlanningArea.DoesNotExist:
         return Response(

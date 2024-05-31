@@ -13,6 +13,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from planning.geometry import coerce_geojson
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
+from planning.tasks import async_forsys_run
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 from django.contrib.auth.models import AbstractUser
@@ -72,6 +73,7 @@ def create_scenario(user: Type[AbstractUser], **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
+    async_forsys_run.delay(scenario.pk)
     return scenario
 
 
