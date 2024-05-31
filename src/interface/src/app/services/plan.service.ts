@@ -87,6 +87,8 @@ export class PlanService {
       '/planning/v2/planningareas/'
     );
 
+    params = { ...params, limit: 13 };
+
     return this.http
       .get<PlanResults>(url, {
         withCredentials: true,

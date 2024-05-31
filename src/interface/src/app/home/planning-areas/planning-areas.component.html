@@ -51,7 +51,10 @@
   class="planning-areas mat-elevation-z0"
   mat-table
   matSort
+  [matSortActive]="sortOptions.active"
+  [matSortDirection]="sortOptions.direction"
   [dataSource]="dataSource"
+  [matSortDisableClear]="true"
   (matSortChange)="changeSort($event)">
   <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
     <th mat-header-cell *matHeaderCellDef [mat-sort-header]="column">
@@ -118,4 +121,7 @@
   <div>6</div>
   <div>7</div>
   <div>></div>
+</div>
+<div>
+  {{ dataSource | async | json }}
 </div>
