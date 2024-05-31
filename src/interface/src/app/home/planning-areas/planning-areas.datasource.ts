@@ -1,32 +1,38 @@
 import { PreviewPlan } from '@types';
-import { Observable, Subject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
 
 export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
+  // TODO pagination, just setting limit for now.
   readonly limit = 15;
   offset = 0;
   private _dataStream = new Subject<PreviewPlan[]>();
+  private _loading = new BehaviorSubject(false);
+  public loading$ = this._loading.asObservable();
 
-  constructor(
-    private planService: PlanService,
-    private sortOptions: Sort
-  ) {
+  public initialLoad = new BehaviorSubject(true);
+
+  public sortOptions: Sort = { active: 'name', direction: 'asc' };
+
+  constructor(private planService: PlanService) {
     super();
   }
 
   connect(): Observable<PreviewPlan[]> {
-    this.loadData();
     return this._dataStream.asObservable();
   }
 
   loadData() {
-    console.log('load data ');
-    this.planService.getPlanPreviews(this.sortOptions).subscribe((data) => {
-      console.log('setting data');
-      this.setData(data);
-    });
+    this._loading.next(true);
+    this.planService
+      .getPlanPreviews(this.getSortOptions())
+      .subscribe((data) => {
+        this.setData(data);
+        this._loading.next(false);
+        this.initialLoad.next(false);
+      });
   }
 
   disconnect() {
@@ -39,7 +45,15 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   changeSort(sortOptions: Sort) {
     this.sortOptions = sortOptions;
-    console.log('change sort');
     this.loadData();
+  }
+
+  private getSortOptions() {
+    return {
+      ordering:
+        this.sortOptions.direction === 'desc'
+          ? '-' + this.sortOptions.active
+          : this.sortOptions.active,
+    };
   }
 }

@@ -12,13 +12,15 @@ import {
   DecimalPipe,
   JsonPipe,
   NgForOf,
+  NgIf,
   NgSwitch,
   NgSwitchCase,
   NgSwitchDefault,
 } from '@angular/common';
 import { PlanService } from '@services';
 import { PreviewPlan } from '@types';
-import { async, Subject } from 'rxjs';
+import { PlanningAreasDataSource } from './planning-areas.datasource';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-planning-areas',
@@ -39,6 +41,8 @@ import { async, Subject } from 'rxjs';
     DecimalPipe,
     JsonPipe,
     AsyncPipe,
+    NgIf,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -70,52 +74,17 @@ export class PlanningAreasComponent implements OnInit {
     private router: Router
   ) {}
 
-  sortOptions: Sort = { active: 'name', direction: 'asc' };
-
-  _dataSource = new Subject<PreviewPlan[]>();
-  dataSource = this._dataSource.asObservable();
-  //dataSource = new PlanningAreasDataSource(this.planService, this.sortOptions);
-  //
-  // dataSource = this.route.queryParams.pipe(
-  //   switchMap((params) => this.planService.getPlanPreviews(params))
-  // );
-
-  loadData() {
-    return this.planService
-      .getPlanPreviews(this.getSortOptions())
-      .subscribe((d) => {
-        console.log(d);
-        this._dataSource.next(d);
-      });
-  }
-
-  private getSortOptions() {
-    return {
-      ordering:
-        this.sortOptions.direction === 'desc'
-          ? '-' + this.sortOptions.active
-          : this.sortOptions.active,
-    };
-  }
+  dataSource = new PlanningAreasDataSource(this.planService);
+  sortOptions: Sort = this.dataSource.sortOptions;
+  loading$ = this.dataSource.loading$;
+  initialLoad$ = this.dataSource.initialLoad;
 
   ngOnInit() {
-    //  this.dataSource.loadData();
-    this.loadData();
+    this.dataSource.loadData();
   }
 
   changeSort(e: { active: string; direction: SortDirection }) {
-    this.sortOptions.active = e.active;
-    this.sortOptions.direction = e.direction;
-    // this.dataSource.changeSort(e);
-    this.loadData();
-    // const queryParmams = {
-    //   ordering: e.direction === 'desc' ? '-' + e.active : e.active,
-    // };
-    // this.router.navigate([], {
-    //   relativeTo: this.route,
-    //   queryParams: queryParmams,
-    //   queryParamsHandling: 'merge', // merge with existing query params
-    // });
+    this.dataSource.changeSort(e);
   }
 
   viewPlan(plan: PreviewPlan, event: MouseEvent) {
@@ -128,6 +97,4 @@ export class PlanningAreasComponent implements OnInit {
     this.router.navigate(['plan', plan.id]);
     return;
   }
-
-  protected readonly async = async;
 }

@@ -98,12 +98,12 @@ table.planning-areas {
     width: 25%;
   }
 
-  .mat-column-region_name, .mat-column-area_acres, .mat-column-scenario_count {
-    width: 12%;
+  .mat-column-region_name {
+    width: 15%;
   }
 
   .mat-column-latest_updated {
-
+    white-space: nowrap;
   }
 
   .mat-mdc-header-cell {
