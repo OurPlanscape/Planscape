@@ -80,4 +80,15 @@ export class PlanningAreasComponent {
       queryParamsHandling: 'merge', // merge with existing query params
     });
   }
+
+  viewPlan(plan: PreviewPlan, event: MouseEvent) {
+    const { target } = event;
+    if (target instanceof HTMLElement) {
+      if (target.classList.contains('mat-mdc-button-touch-target')) {
+        return false;
+      }
+    }
+    this.router.navigate(['plan', plan.id]);
+    return;
+  }
 }

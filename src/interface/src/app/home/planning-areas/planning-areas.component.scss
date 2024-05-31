@@ -118,6 +118,13 @@ table.planning-areas {
     text-align: center;
   }
 
+  .mdc-data-table__row {
+    cursor: pointer;
+  }
+
+  .mdc-data-table__row:hover {
+    background-color: #E1E1E1;
+  }
 
 }
 
