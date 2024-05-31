@@ -187,13 +187,8 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     }
     this.currentBaseLayer = selectedLayer;
     this.map.addLayer(layerTiles);
-
-    //redraw current layer and shapes...
-
-    // TODO: not sure if we should instead
-    // force redraw by updating planstate$...
+    // redraw the condition layer
     this.setCondition(this.layer);
-    this.drawShapes(this.shapes);
   }
 
   ngOnDestroy(): void {
