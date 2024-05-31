@@ -28,7 +28,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = PlanningArea.objects.get_for_user(user)
+        qs = PlanningArea.objects.get_list_for_user(user)
         return qs
 
 
