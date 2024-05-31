@@ -4,6 +4,19 @@ import { map, Observable, take } from 'rxjs';
 import { CreatePlanPayload, Plan, PreviewPlan } from '@types';
 import { GeoJSON } from 'geojson';
 import { environment } from '../../environments/environment';
+import { Params } from '@angular/router';
+
+export interface PlanQueryParams {
+  field: string;
+  ascending: boolean;
+}
+
+export interface PlanResults {
+  count: number;
+  next: boolean;
+  previous: boolean;
+  results: PreviewPlan[];
+}
 
 @Injectable({
   providedIn: 'root',
@@ -67,6 +80,19 @@ export class PlanService {
     return this.http.get<Plan[]>(url, {
       withCredentials: true,
     });
+  }
+
+  getPlanPreviews(params: Params): Observable<PreviewPlan[]> {
+    let url = environment.backend_endpoint.concat(
+      '/planning/v2/planningareas/'
+    );
+
+    return this.http
+      .get<PlanResults>(url, {
+        withCredentials: true,
+        params: params,
+      })
+      .pipe(map((data) => data.results));
   }
 
   /** Updates a planning area with new parameters. */
