@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,6 +11,7 @@ import {
   DatePipe,
   DecimalPipe,
   JsonPipe,
+  Location,
   NgForOf,
   NgIf,
   NgSwitch,
@@ -70,8 +71,9 @@ export class PlanningAreasComponent implements OnInit {
 
   constructor(
     private planService: PlanService,
-    // private route: ActivatedRoute,
-    private router: Router
+    private route: ActivatedRoute,
+    private router: Router,
+    private location: Location
   ) {}
 
   dataSource = new PlanningAreasDataSource(this.planService);
@@ -86,6 +88,16 @@ export class PlanningAreasComponent implements OnInit {
 
   changeSort(e: { active: string; direction: SortDirection }) {
     this.dataSource.changeSort(e);
+
+    const currentUrl = this.router
+      .createUrlTree([], {
+        relativeTo: this.route,
+        queryParams: e,
+        queryParamsHandling: 'merge', // Merge with existing query parameters
+      })
+      .toString();
+
+    this.location.go(currentUrl);
   }
 
   viewPlan(plan: PreviewPlan, event: MouseEvent) {

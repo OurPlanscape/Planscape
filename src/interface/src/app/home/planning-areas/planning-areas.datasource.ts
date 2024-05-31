@@ -23,6 +23,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   connect(): Observable<PreviewPlan[]> {
+    console.log('connect');
     return this._dataStream.asObservable();
   }
 
