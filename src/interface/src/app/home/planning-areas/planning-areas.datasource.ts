@@ -1,5 +1,5 @@
 import { PreviewPlan } from '@types';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
@@ -15,6 +15,8 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public initialLoad = new BehaviorSubject(true);
 
   public sortOptions: Sort = { active: 'name', direction: 'asc' };
+
+  public noEntries = this._dataStream.pipe(map((d) => d.length === 0));
 
   constructor(private planService: PlanService) {
     super();

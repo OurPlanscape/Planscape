@@ -1,14 +1,11 @@
 @import "colors";
+@import "mixins";
 
 :host {
   width: 100%;
   height: 100%;
   padding: 24px;
   box-sizing: border-box;
-
-  .mat-icon {
-    line-height: 22px;
-  }
 }
 
 
@@ -20,6 +17,10 @@
 
   h3 {
     margin: 0 auto 0 0;
+  }
+
+  .mat-icon {
+    line-height: 22px;
   }
 }
 
@@ -42,7 +43,7 @@ table.planning-areas {
   --mat-table-row-item-label-text-line-height: 22px;
 
 
-  border: 1px solid #E1E1E1;
+  border: 1px solid $color-soft-gray;
   border-radius: 4px;
   margin: 16px 0;
   overflow: hidden;
@@ -76,7 +77,7 @@ table.planning-areas {
   }
 
   .mdc-data-table__row:hover {
-    background-color: #E1E1E1;
+    background-color: $color-soft-gray;
   }
 
 }
@@ -119,6 +120,25 @@ table.planning-areas {
   margin: 32px auto;
   text-align: center;
   display: block;
+}
+
+.empty-state {
+  color: $color-md-gray;
+  text-align: center;
+
+  mat-icon {
+    color: $color-text-gray;
+    width: 48px;
+    height: 48px;
+    font-size: 48px;
+    line-height: 48px;
+  }
+
+  .empty-state__title {
+    @include standard-input-label();
+    color: $color-black;
+    margin-bottom: 4px;
+  }
 }
 
 // placeholders, remove once the components are ready.

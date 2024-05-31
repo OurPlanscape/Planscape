@@ -47,14 +47,15 @@
   <div class="filter-placeholder">Filter placeholder</div>
 </div>
 <!--Initial load spinner-->
-
 <mat-spinner
   *ngIf="initialLoad$ | async"
   class="main-loader"
   diameter="48"></mat-spinner>
 
 <!--Planning area table and pagination-->
-<div [hidden]="initialLoad$ | async">
+<section
+  [hidden]="initialLoad$ | async"
+  *ngIf="(noEntries | async) !== true; else emptyState">
   <table
     class="planning-areas mat-elevation-z0"
     mat-table
@@ -132,4 +133,19 @@
     <div>7</div>
     <div>></div>
   </div>
-</div>
+</section>
+
+<!--Empty state-->
+<ng-template #emptyState>
+  <section class="empty-state">
+    <mat-icon class="material-symbols-outlined">create_new_folder</mat-icon>
+    <div class="empty-state__title">No Planning Areas Yet</div>
+    <div>
+      Click "Explore" to start creating your planning areas. Not ready to create
+      new plans?
+    </div>
+    <div>
+      You can explore the mapping tool without creating a planning area.
+    </div>
+  </section>
+</ng-template>

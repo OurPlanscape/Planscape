@@ -78,6 +78,7 @@ export class PlanningAreasComponent implements OnInit {
   sortOptions: Sort = this.dataSource.sortOptions;
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad;
+  noEntries = this.dataSource.noEntries;
 
   ngOnInit() {
     this.dataSource.loadData();
