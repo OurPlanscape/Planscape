@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,7 +11,7 @@ import {
   DatePipe,
   DecimalPipe,
   JsonPipe,
-  Location,
+  KeyValuePipe,
   NgForOf,
   NgIf,
   NgSwitch,
@@ -22,6 +22,8 @@ import { PlanService } from '@services';
 import { PreviewPlan } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { QueryParamsService } from './query-params.service';
+import { KeyPipe } from '../../standalone/key.pipe';
 
 @Component({
   selector: 'app-planning-areas',
@@ -44,39 +46,34 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     AsyncPipe,
     NgIf,
     MatProgressSpinnerModule,
+    KeyValuePipe,
+    KeyPipe,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
+  providers: [QueryParamsService],
 })
 export class PlanningAreasComponent implements OnInit {
-  displayedColumns: (keyof PreviewPlan | 'menu')[] = [
-    'name',
-    'creator',
-    'region_name',
-    'area_acres',
-    'scenario_count',
-    'latest_updated',
-    'menu',
+  readonly columns: { key: keyof PreviewPlan | 'menu'; label: string }[] = [
+    { key: 'name', label: 'Name' },
+    { key: 'creator', label: 'Creator' },
+    { key: 'region_name', label: 'Region' },
+    { key: 'area_acres', label: 'Total Acres' },
+    { key: 'scenario_count', label: '# of Scenarios' },
+    { key: 'latest_updated', label: 'Date last modified' },
+    { key: 'menu', label: '' },
   ];
-
-  columnLabels: Partial<Record<keyof PreviewPlan | 'menu', string>> = {
-    name: 'Name',
-    creator: 'Creator',
-    region_name: 'Region',
-    area_acres: 'Total Acres',
-    scenario_count: '# of Scenarios',
-    latest_updated: 'Date last modified',
-    menu: '',
-  };
 
   constructor(
     private planService: PlanService,
-    private route: ActivatedRoute,
     private router: Router,
-    private location: Location
+    private queryParamsService: QueryParamsService
   ) {}
 
-  dataSource = new PlanningAreasDataSource(this.planService);
+  dataSource = new PlanningAreasDataSource(
+    this.planService,
+    this.queryParamsService
+  );
   sortOptions: Sort = this.dataSource.sortOptions;
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad;
@@ -88,16 +85,6 @@ export class PlanningAreasComponent implements OnInit {
 
   changeSort(e: { active: string; direction: SortDirection }) {
     this.dataSource.changeSort(e);
-
-    const currentUrl = this.router
-      .createUrlTree([], {
-        relativeTo: this.route,
-        queryParams: e,
-        queryParamsHandling: 'merge', // Merge with existing query parameters
-      })
-      .toString();
-
-    this.location.go(currentUrl);
   }
 
   viewPlan(plan: PreviewPlan, event: MouseEvent) {

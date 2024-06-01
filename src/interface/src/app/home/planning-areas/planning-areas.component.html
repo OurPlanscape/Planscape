@@ -67,15 +67,26 @@
     [dataSource]="dataSource"
     [matSortDisableClear]="true"
     (matSortChange)="changeSort($event)">
-    <ng-container
-      *ngFor="let column of displayedColumns"
-      [matColumnDef]="column">
-      <th mat-header-cell *matHeaderCellDef [mat-sort-header]="column">
-        {{ columnLabels[column] }}
+    <ng-container *ngFor="let column of columns" [matColumnDef]="column.key">
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        [mat-sort-header]="column.key"
+        [disabled]="column.key === 'menu'">
+        {{ column.label }}
       </th>
 
       <td mat-cell *matCellDef="let element">
-        <ng-container [ngSwitch]="column">
+        <ng-container [ngSwitch]="column.key">
+          <ng-container *ngSwitchDefault>
+            {{ element[column.key] }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'latest_updated'">
+            {{ element[column.key] | date: 'medium' }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'area_acres'">
+            {{ element[column.key] | number: '1.0-0' }}
+          </ng-container>
           <ng-container *ngSwitchCase="'menu'">
             <button
               [matMenuTriggerFor]="menu"
@@ -105,23 +116,14 @@
               </button>
             </mat-menu>
           </ng-container>
-          <ng-container *ngSwitchCase="'latest_updated'">
-            {{ element[column] | date: 'medium' }}
-          </ng-container>
-          <ng-container *ngSwitchCase="'area_acres'">
-            {{ element[column] | number: '1.0-0' }}
-          </ng-container>
-          <ng-container *ngSwitchDefault>
-            {{ element[column] }}
-          </ng-container>
         </ng-container>
       </td>
     </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+    <tr mat-header-row *matHeaderRowDef="columns | keyPipe"></tr>
     <tr
       mat-row
-      *matRowDef="let row; columns: displayedColumns"
+      *matRowDef="let row; columns: columns | keyPipe"
       (click)="viewPlan(row, $event)"></tr>
   </table>
 
