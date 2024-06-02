@@ -82,17 +82,15 @@ export class PlanService {
     });
   }
 
-  getPlanPreviews(params: Params): Observable<PreviewPlan[]> {
+  getPlanPreviews(params: Params): Observable<PlanResults> {
     let url = environment.backend_endpoint.concat(
       '/planning/v2/planningareas/'
     );
 
-    return this.http
-      .get<PlanResults>(url, {
-        withCredentials: true,
-        params: params,
-      })
-      .pipe(map((data) => data.results));
+    return this.http.get<PlanResults>(url, {
+      withCredentials: true,
+      params: params,
+    });
   }
 
   /** Updates a planning area with new parameters. */

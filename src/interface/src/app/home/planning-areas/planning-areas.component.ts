@@ -22,7 +22,10 @@ import { PlanService } from '@services';
 import { PreviewPlan } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { QueryParamsService } from './query-params.service';
+import {
+  DEFAULT_SORT_OPTIONS,
+  QueryParamsService,
+} from './query-params.service';
 import { KeyPipe } from '../../standalone/key.pipe';
 
 @Component({
@@ -51,7 +54,13 @@ import { KeyPipe } from '../../standalone/key.pipe';
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
-  providers: [QueryParamsService],
+  providers: [
+    QueryParamsService,
+    {
+      provide: DEFAULT_SORT_OPTIONS,
+      useValue: { active: 'name', direction: 'asc' },
+    },
+  ],
 })
 export class PlanningAreasComponent implements OnInit {
   readonly columns: { key: keyof PreviewPlan | 'menu'; label: string }[] = [
@@ -76,8 +85,8 @@ export class PlanningAreasComponent implements OnInit {
   );
   sortOptions: Sort = this.dataSource.sortOptions;
   loading$ = this.dataSource.loading$;
-  initialLoad$ = this.dataSource.initialLoad;
-  noEntries = this.dataSource.noEntries;
+  initialLoad$ = this.dataSource.initialLoad$;
+  noEntries = this.dataSource.noEntries$;
 
   ngOnInit() {
     this.dataSource.loadData();

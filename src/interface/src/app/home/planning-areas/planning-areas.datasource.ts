@@ -6,23 +6,20 @@ import { Sort } from '@angular/material/sort';
 import { QueryParamsService } from './query-params.service';
 
 export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
-  // TODO pagination, just setting limit for now.
-  private pageOptions = {
-    limit: 13,
-    offset: 0,
-  };
-
   private _dataStream = new Subject<PreviewPlan[]>();
   private _loading = new BehaviorSubject(false);
+
+  private count = 0;
+
   public loading$ = this._loading.asObservable();
-
-  public initialLoad = new BehaviorSubject(true);
-
-  public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
-
-  public noEntries = this._dataStream.pipe(
+  public initialLoad$ = new BehaviorSubject(true);
+  public noEntries$ = this._dataStream.pipe(
     map((results) => results.length === 0)
   );
+
+  public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
+  // TODO pagination, just setting limit for now.
+  public pageOptions = this.queryParamsService.getInitialPageParams();
 
   constructor(
     private planService: PlanService,
@@ -36,22 +33,23 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   disconnect() {
-    this._dataStream.complete(); // Complete the data stream
+    this._dataStream.complete();
+    this._loading.complete();
   }
 
   loadData() {
     const params = { ...this.getPageOptions(), ...this.getSortOptions() };
     this._loading.next(true);
     this.planService.getPlanPreviews(params).subscribe((data) => {
-      this.setData(data);
+      this.count = data.count;
+      this.setData(data.results);
       this._loading.next(false);
-      this.initialLoad.next(false);
+      this.initialLoad$.next(false);
     });
   }
 
   setData(data: PreviewPlan[]) {
     this._dataStream.next(data);
-    this._loading.complete();
   }
 
   changeSort(sortOptions: Sort) {
@@ -69,7 +67,13 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     };
   }
 
+  /**
+   * need to change backend to use pages instead of limitoffsetpagination
+   * https://www.django-rest-framework.org/api-guide/pagination/
+   * @private
+   */
   private getPageOptions() {
+    console.log(this.count);
     return {
       limit: this.pageOptions.limit,
       offset: this.pageOptions.offset,
