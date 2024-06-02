@@ -60,6 +60,16 @@ import { KeyPipe } from '../../standalone/key.pipe';
       provide: DEFAULT_SORT_OPTIONS,
       useValue: { active: 'name', direction: 'asc' },
     },
+    {
+      provide: PlanningAreasDataSource,
+      useFactory: (
+        planService: PlanService,
+        queryParamsService: QueryParamsService
+      ) => {
+        return new PlanningAreasDataSource(planService, queryParamsService);
+      },
+      deps: [PlanService, QueryParamsService],
+    },
   ],
 })
 export class PlanningAreasComponent implements OnInit {
@@ -74,15 +84,10 @@ export class PlanningAreasComponent implements OnInit {
   ];
 
   constructor(
-    private planService: PlanService,
     private router: Router,
-    private queryParamsService: QueryParamsService
+    public dataSource: PlanningAreasDataSource
   ) {}
 
-  dataSource = new PlanningAreasDataSource(
-    this.planService,
-    this.queryParamsService
-  );
   sortOptions: Sort = this.dataSource.sortOptions;
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad$;

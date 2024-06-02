@@ -6,11 +6,6 @@ import { GeoJSON } from 'geojson';
 import { environment } from '../../environments/environment';
 import { Params } from '@angular/router';
 
-export interface PlanQueryParams {
-  field: string;
-  ascending: boolean;
-}
-
 export interface PlanResults {
   count: number;
   next: boolean;
