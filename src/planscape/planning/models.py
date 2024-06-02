@@ -9,7 +9,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Q
 from utils.uuid_utils import generate_short_uuid
 from collaboration.models import UserObjectRole
-from core.models import CreatedAtMixin, UpdatedAtMixin
+from core.models import CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin
 import uuid
 
 User = get_user_model()
@@ -229,3 +229,53 @@ class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
 class UserPrefs(CreatedAtMixin, UpdatedAtMixin, models.Model):
     user = models.OneToOneField("auth.User", on_delete=models.CASCADE)
     preferences = models.JSONField(blank=True, null=True)
+
+
+class ProjectAreaOrigin(models.TextChoices):
+    # project comes from optimization algorithm, such as forsys
+    OPTIMIZATION = "OPTIMIZATION", "Optimization"
+    # project comes from direct user creation / import
+    USER_CREATED = "USER_CREATED", "User Created"
+
+
+class ProjectArea(
+    UUIDMixin,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    DeletedAtMixin,
+    models.Model,
+):
+    created_by = models.ForeignKey(
+        User,
+        related_name="project_areas",
+        on_delete=models.RESTRICT,
+    )
+
+    scenario = models.ForeignKey(
+        Scenario,
+        related_name="project_areas",
+        on_delete=models.RESTRICT,
+    )
+
+    name = models.CharField(max_length=128)
+
+    origin = models.CharField(
+        choices=ProjectAreaOrigin.choices,
+        default=ProjectAreaOrigin.OPTIMIZATION,
+        help_text="Determines where this project area came from.",
+    )
+    data = models.JSONField(null=True)
+
+    geometry = models.MultiPolygonField(
+        srid=settings.CRS_INTERNAL_REPRESENTATION,
+    )
+
+    class Meta:
+        verbose_name = "Project Area"
+        verbose_name_plural = "Project Areas"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["scenario", "name"],
+                name="scenario_name_unique_constraint",
+            )
+        ]

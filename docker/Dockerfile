@@ -1,26 +1,28 @@
-FROM ghcr.io/osgeo/gdal:ubuntu-small-3.8.5
+FROM python:3.10-bullseye
 
 ENV DEBIAN_FRONTEND=noninteractive
-ENV UBUNTU=jammy
 ENV PYTHONUNBUFFERED=1
 
 RUN apt-get update && \
     apt-get install -y \
     git curl wget software-properties-common && \
-    wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc && \
-    add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu jammy-cran40/"
+    gpg --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7' && \
+    gpg --armor --export '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7' | tee /etc/apt/trusted.gpg.d/cran_debian_key.asc && \
+    add-apt-repository "deb http://cloud.r-project.org/bin/linux/debian bullseye-cran40/"
 
 RUN apt-get update && \
     apt-get -y install \
-    dirmngr \
+    g++ binutils \
     openssh-client \
+    libc6-dev libsqlite3-dev \
     libpng-dev libtiff-dev libjpeg-dev \
+    libgdal-dev libproj-dev libgeos-dev gdal-bin \
     libpq-dev libfreetype-dev libfontconfig1-dev libxml2-dev  \
     libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
     libcurl4-openssl-dev libssl-dev \
     postgresql-client \
     python3-pip \
-    r-base
+    r-base r-base-dev
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app

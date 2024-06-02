@@ -20,6 +20,8 @@ import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel
 import { FeatureService } from '../../features/feature.service';
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { ChartData } from '../project-areas-metrics/chart-data';
+import { MetricsService } from '@services/metrics.service';
+import { processScenarioResultsToChartData } from '../scenario-helpers';
 
 enum ScenarioTabs {
   CONFIG,
@@ -74,7 +76,8 @@ export class CreateScenariosComponent implements OnInit {
     private router: Router,
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService,
-    private goalOverlayService: GoalOverlayService
+    private goalOverlayService: GoalOverlayService,
+    private metricsService: MetricsService
   ) {}
 
   createForms() {
@@ -251,48 +254,20 @@ export class CreateScenariosComponent implements OnInit {
    * Processes Scenario Results into ChartData format and updates PlanService State with Project Area shapes
    */
   processScenarioResults(scenario: Scenario) {
-    let scenario_output_fields_paths =
-      scenario?.configuration.treatment_question?.scenario_output_fields_paths!;
-    let labels: string[][] = [];
-    let priorities =
-      scenario.configuration.treatment_question?.scenario_priorities;
-    if (scenario && this.scenarioResults) {
-      this.planStateService
-        .getMetricData(scenario_output_fields_paths)
-        .pipe(take(1))
-        .subscribe((metric_data) => {
-          for (let metric in metric_data) {
-            let displayName = metric_data[metric]['display_name'];
-            let dataUnits =
-              metric_data[metric]['output_units'] ||
-              metric_data[metric]['data_units'];
-            let metricLayer = metric_data[metric]['raw_layer'];
-            let metricName = metric_data[metric]['metric_name'];
-            let metricData: string[] = [];
-            if (!metric_data[metric]['hide_chart']) {
-              this.scenarioResults?.result.features.map((featureCollection) => {
-                const props = featureCollection.properties;
-
-                metricData.push(props[metric]);
-              });
-              labels.push([
-                displayName,
-                dataUnits,
-                metricLayer,
-                metricData,
-                metricName,
-              ]);
-            }
+    let plan = this.plan$.getValue();
+    if (scenario && this.scenarioResults && plan) {
+      this.metricsService
+        .getMetricsForRegion(plan.region_name)
+        .subscribe((metrics) => {
+          if (this.scenarioResults) {
+            this.scenarioChartData = processScenarioResultsToChartData(
+              metrics,
+              scenario.configuration,
+              this.scenarioResults
+            );
           }
-          this.scenarioChartData = labels.map((label, _) => ({
-            label: label[0],
-            measurement: label[1],
-            metric_layer: label[2],
-            values: label[3] as unknown as number[],
-            key: label[4],
-            is_primary: priorities?.includes(label[4]) || false,
-          }));
         });
+
       this.planStateService.updateStateWithShapes(
         this.scenarioResults?.result.features
       );

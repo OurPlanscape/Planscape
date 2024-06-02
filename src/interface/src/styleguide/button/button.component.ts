@@ -29,6 +29,11 @@ export class ButtonComponent {
    */
   @Input() icon: string = '';
 
+  /**
+   * If the icon uses the outline version
+   */
+  @Input() outlined = false;
+
   @Input() hasError = false;
 
   @HostBinding('class.ghost-button')

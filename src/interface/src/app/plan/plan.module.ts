@@ -32,10 +32,11 @@ import { ScenarioTooltipComponent } from './create-scenarios/tooltips/scenario-t
 import { ScenariosTableListComponent } from './plan-summary/scenarios-table-list/scenarios-table-list.component';
 import { SetPrioritiesComponent } from './create-scenarios/set-priorities/set-priorities.component';
 import { SharedModule } from '@shared';
-import { SummaryPanelComponent } from './plan-summary/summary-panel/summary-panel.component';
+
 import { WINDOW_PROVIDERS } from '@services';
 import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overlay.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
+import { MapLayerSelectDialogComponent } from './map-layer-select-dialog/map-layer-select-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
 import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
@@ -51,6 +52,7 @@ import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog
     ExploreComponent,
     GoalOverlayComponent,
     IdentifyProjectAreasComponent,
+    MapLayerSelectDialogComponent,
     PlanComponent,
     PlanMapComponent,
     PlanNavigationBarComponent,
@@ -67,7 +69,6 @@ import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog
     ScenarioTooltipComponent,
     ScenariosTableListComponent,
     SetPrioritiesComponent,
-    SummaryPanelComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [

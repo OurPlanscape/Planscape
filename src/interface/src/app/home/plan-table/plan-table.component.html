@@ -88,11 +88,7 @@
         [disabled]="!canDeletePlanningArea">
         Delete
       </button>
-      <button
-        sg-button
-        (click)="sharePlan()"
-        [disabled]="!shareEnabled()"
-        *appFeatureFlag="'show_share_modal'">
+      <button sg-button (click)="sharePlan()" [disabled]="!shareEnabled()">
         Share
       </button>
       <button sg-button (click)="viewMap()" [disabled]="!selectedPlan">

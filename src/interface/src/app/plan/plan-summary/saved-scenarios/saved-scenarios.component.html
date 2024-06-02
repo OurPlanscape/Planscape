@@ -34,13 +34,11 @@
         color="primary"
         class="slide-toggle-my-scenarios"
         [(ngModel)]="showOnlyMyScenarios"
-        (change)="fetchScenarios()"
-        *appFeatureFlag="'show_share_modal'">
+        (change)="fetchScenarios()">
         Show only my scenarios
       </mat-slide-toggle>
       <mat-tab-group
         mat-align-tabs="start"
-        *appFeatureFlag="'show_share_modal'"
         (selectedTabChange)="tabChange($event)">
         <mat-tab label="ACTIVE">
           <mat-card-content>
@@ -75,34 +73,7 @@
         </mat-tab>
       </mat-tab-group>
 
-      <mat-card-content *appFeatureFlag="'show_share_modal'; hide: true">
-        <app-scenarios-table-list
-          [scenarios]="activeScenarios"
-          [highlightedScenarioRow]="highlightedScenarioRow"
-          (viewScenario)="viewScenario()"
-          (selectScenario)="
-            highlightScenario($event)
-          "></app-scenarios-table-list>
-      </mat-card-content>
-      <mat-card-actions
-        align="end"
-        *appFeatureFlag="'show_share_modal'; hide: true">
-        <button
-          mat-button
-          [disabled]="highlightedScenarioRow === null"
-          (click)="confirmDeleteScenario()">
-          <mat-icon>delete</mat-icon>
-          DELETE
-        </button>
-        <button
-          mat-raised-button
-          [disabled]="highlightedScenarioRow === null"
-          color="primary"
-          (click)="viewScenario()">
-          VIEW
-        </button>
-      </mat-card-actions>
-      <mat-card-actions align="end" *appFeatureFlag="'show_share_modal'">
+      <mat-card-actions align="end">
         <button
           sg-button
           *ngIf="showArchiveScenario"
