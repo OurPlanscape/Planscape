@@ -47,7 +47,11 @@ taggit:
 	echo "Completed taggit"
 
 install-dependencies-frontend:
-	cd src/interface && npm install
+	ifneq ($(ENV),development)
+		cd src/interface && npm install --omit=dev
+	else
+		cd src/interface && npm install
+	endif
 
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out
@@ -163,3 +167,11 @@ docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
 
 .PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
+
+what-env:
+	ifneq ($(ENV),dev)
+		cd src/interface && npm install --omit=dev
+	else
+		cd src/interface && npm install
+	endif
+
