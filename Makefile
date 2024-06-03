@@ -47,10 +47,12 @@ taggit:
 	echo "Completed taggit"
 
 install-dependencies-frontend:
-	ifneq ($(ENV),development)
-		cd src/interface && npm install --omit=dev
-	else
+	@if [ "$(ENV)" = "development" ]; then \
+		echo 'Installing NPM with dev dependencies'; \
 		cd src/interface && npm install
+	else
+		echo 'Installing NPM without dev dependencies'; \
+		cd src/interface && npm install --omit=dev
 	endif
 
 compile-angular:
@@ -166,4 +168,4 @@ docker-makemigrations:
 docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
 
-.PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
+.PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate test-things
