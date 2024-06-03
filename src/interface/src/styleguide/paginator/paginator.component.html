@@ -1,0 +1,45 @@
+<div class="pages-container">
+  <div class="nav-controls">
+    <button
+      sg-button
+      class="first-page-button page-button"
+      (click)="handlePrevious()"
+      [disabled]="isCurrentPage(1)">
+      <mat-icon>arrow_back_ios</mat-icon>
+    </button>
+    <div class="nav-controls">
+      <div *ngFor="let pageNum of getPageNumbers()">
+        <button
+          sg-button
+          [ngClass]="{ 'active-button': isCurrentPage(pageNum) }"
+          class="page-button"
+          (click)="setPage(pageNum)">
+          {{ pageNum }}
+        </button>
+      </div>
+    </div>
+
+    <button
+      sg-button
+      class="page-button last-page-button"
+      (click)="handleNext()"
+      [disabled]="isCurrentPage(getTotalPages())">
+      <mat-icon>arrow_forward_ios</mat-icon>
+    </button>
+  </div>
+</div>
+
+<div class="per-page-picker">
+  <div class="picker-label">Results Per Page:</div>
+  <mat-form-field class="picker-field" appearance="outline">
+    <mat-select
+      [(ngModel)]="recordsPerPage"
+      (selectionChange)="perPageChanged()"
+      class="records-select"
+      panelClass="records-select-panel">
+      <mat-option [value]="10">10</mat-option>
+      <mat-option [value]="20">20</mat-option>
+      <mat-option [value]="40">40</mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>

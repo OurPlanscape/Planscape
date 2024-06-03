@@ -1,0 +1,79 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+
+  ::ng-deep {
+    .what {
+      color: blue;
+    }
+
+    .mat-form-field {
+      display: block;
+      text-align: left;
+      line-height: 1em;
+      padding-top: 20px;
+    }
+  }
+
+  .page-button {
+    @include h5();
+    color: #475569; /* TODO: this isnt in our colors? */
+    background-color: white;
+    border: 1px #e2e8f0 solid; /* TODO: this isnt in our colors? */
+    padding: 8px;
+    height: 40px;
+    width: 40px;
+    font-size: 20px;
+  }
+
+  .active-button {
+    background-color: grey;
+    color: white;
+  }
+
+  .first-page-button {
+    border-top-left-radius: 10%;
+    border-bottom-left-radius: 10%;
+  }
+
+  .last-page-button {
+    border-top-right-radius: 10%;
+    border-bottom-right-radius: 10%;
+  }
+
+  .page-button:disabled {
+    background-color: lightgrey;
+    color: #333333;
+  }
+
+  .nav-controls {
+    display: flex;
+    flex-direction: row;
+  }
+
+  .per-page-picker {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+    align-items: center;
+  }
+
+  .picker-field {
+    width: 100px;
+    padding-top: 4px;
+    border: black;
+
+    &.disabled {
+      opacity: 0.6;
+    }
+  }
+
+  .picker-label {
+    margin: 20px;
+  }
+}
