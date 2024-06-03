@@ -70,7 +70,8 @@ class CreateScenarioTest(APITransactionTestCase):
         "planning.views.validate_scenario_treatment_ratio",
         return_value=(True, "all good"),
     )
-    def test_create_scenario(self, validation):
+    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
+    def test_create_scenario(self, validation, _forsys_run):
         self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
@@ -101,7 +102,8 @@ class CreateScenarioTest(APITransactionTestCase):
         "planning.views.validate_scenario_treatment_ratio",
         return_value=(True, "all good"),
     )
-    def test_create_scenario_no_notes(self, validation):
+    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
+    def test_create_scenario_no_notes(self, validation, _forsys_run):
         self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
@@ -169,7 +171,8 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"This field is required")
 
-    def test_create_scenario_duplicate_name(self):
+    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
+    def test_create_scenario_duplicate_name(self, _forsys_run):
         self.client.force_authenticate(self.owner_user)
         first_payload = json.dumps(
             {
@@ -235,7 +238,8 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    def test_create_scenario_collab_user(self):
+    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
+    def test_create_scenario_collab_user(self, _forsys_run):
         self.client.force_authenticate(self.collab_user)
         payload = json.dumps(
             {
