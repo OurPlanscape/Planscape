@@ -1,0 +1,96 @@
+@import "colors";
+@import "mixins";
+
+:host {
+  display: flex;
+  padding: 16px 16px 24px 16px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 16px;
+
+  border-radius: 4px;
+  border: 1px solid $color-soft-gray;
+  background-color: $color-white;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.20);
+
+  cursor: pointer;
+
+  &:hover:not(.disabled) {
+    background-color: $color-light-gray;
+  }
+
+  &.disabled {
+    box-shadow: none;
+
+    h4 {
+      color: $color-text-gray;
+    }
+  }
+}
+
+.top {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  width: 100%;
+}
+
+.label {
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 14px;
+  text-transform: uppercase;
+  color: $color-md-gray;
+  margin-bottom: 8px;
+}
+
+.value {
+  @include xs-label();
+  color: $color-black;
+}
+
+.bottom {
+  display: flex;
+  gap: 36px;
+}
+
+h4 {
+  @include h4();
+  color: $color-black;
+  margin: 0;
+  padding: 0;
+}
+
+.more-menu-button {
+  border: none;
+  background: none;
+  padding: 0;
+  margin: 0 0 0 auto;
+  line-height: 0;
+  cursor: pointer;
+  display: block;
+}
+
+
+.delete {
+  color: $color-error;
+
+  mat-icon {
+    color: $color-error;
+  }
+}
+
+::ng-deep .more-treatment-menu {
+  mat-icon {
+    height: 20px;
+    width: 20px;
+    font-size: 20px;
+    line-height: 20px;
+  }
+
+  .mat-mdc-menu-content .mat-mdc-menu-item .mat-mdc-menu-item-text {
+    @include small-paragraph();
+  }
+
+}
+
