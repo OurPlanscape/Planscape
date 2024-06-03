@@ -47,13 +47,7 @@ taggit:
 	echo "Completed taggit"
 
 install-dependencies-frontend:
-	@if [ "$(ENV)" == "development" ]; then \
-		echo 'Running npm install with dev dependencies.'; \
-		cd src/interface && npm install; \
-	else \
-		echo 'Running npm install and omitting dev dependencies.'; \
-		cd src/interface && npm install --omit=dev; \
-	fi
+	cd src/interface && npm install
 
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out
