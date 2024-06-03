@@ -3,7 +3,7 @@
     [matMenuTriggerFor]="menu"
     aria-label="more scenario Options"
     class="dropdown-button">
-    <div class="dropdown-label">Here is some text</div>
+    <div class="dropdown-label">{{ getSelections() }}</div>
     <mat-icon>keyboard_arrow_down</mat-icon>
   </button>
   <mat-menu #menu="matMenu">

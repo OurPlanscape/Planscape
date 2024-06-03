@@ -26,4 +26,10 @@ const meta: Meta<PagePropsAndCustomArgs> = {
 export default meta;
 type Story = StoryObj<PagePropsAndCustomArgs>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  args: {},
+};
+
+export const WithSelections: Story = {
+  args: { selections: ['Blah', 'blah'] },
+};

@@ -15,5 +15,13 @@ export class FilterDropdownComponent {
   selections: string[] = [];
 
   @Input() menuName: string = '';
+  @Input() menuLabel: string = 'Filter';
   @Output() updateSelection = new EventEmitter();
+
+  getSelections() {
+    if (this.selections.length > 0) {
+      return this.selections.join(', ');
+    }
+    return this.menuLabel;
+  }
 }
