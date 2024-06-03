@@ -13,10 +13,6 @@ import { MatIconModule } from '@angular/material/icon';
 
 export type TreatmentCardStatus = 'In Progress' | 'Done' | 'Running' | 'Failed';
 
-// TODO
-// Action on click on the whole thing, or just the treatment name
-// menu hover?
-
 @Component({
   selector: 'sg-treatment-card',
   standalone: true,
