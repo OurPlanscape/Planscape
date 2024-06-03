@@ -4,22 +4,13 @@
   "compilerOptions": {
     "baseUrl": "./",
     "paths": {
-      "@services": [
-        "src/app/services"
-      ],
-      "@services/*": [
-        "src/app/services/*"
-      ],
-      "@styleguide": [
-        "src/styleguide/"
-      ],
-      "@shared": [
-        "src/app/shared/"
-      ],
-      "@types": [
-        "src/app/types/"
-      ]
+      "@services": ["src/app/services"],
+      "@services/*": ["src/app/services/*"],
+      "@styleguide": ["src/styleguide/"],
+      "@shared": ["src/app/shared/"],
+      "@types": ["src/app/types/"]
     },
+
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
@@ -38,12 +29,10 @@
     "noUnusedLocals": true,
     "target": "ES2022",
     "module": "es2020",
-    "lib": [
-      "es2020",
-      "dom"
-    ],
+    "lib": ["es2020", "dom"],
     "useDefineForClassFields": false
   },
+  "exclude": ["cypress/**/*.ts", "cypress.config.ts"],
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
     "strictInjectionParameters": true,
