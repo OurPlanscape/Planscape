@@ -20,7 +20,7 @@ export function processScenarioResultsToChartData(
 
       acc.push({
         label: metric.display_name,
-        measurement: metric.data_units,
+        measurement: metric.output_units || metric.data_units,
         key: metric.metric_name,
         values: metricData,
         metric_layer: metric.raw_layer,

@@ -273,3 +273,9 @@ class ProjectArea(
     class Meta:
         verbose_name = "Project Area"
         verbose_name_plural = "Project Areas"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["scenario", "name"],
+                name="scenario_name_unique_constraint",
+            )
+        ]
