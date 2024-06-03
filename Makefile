@@ -48,12 +48,12 @@ taggit:
 
 install-dependencies-frontend:
 	@if [ "$(ENV)" == "development" ]; then \
-		echo 'Installing NPM with dev dependencies'; \
-		cd src/interface && npm install
-	else
-		echo 'Installing NPM without dev dependencies'; \
-		cd src/interface && npm install --omit=dev
-	endif
+		echo 'Running npm install with dev dependencies.'; \
+		cd src/interface && npm install; \
+	else \
+		echo 'Running npm install and omitting dev dependencies.'; \
+		cd src/interface && npm install --omit=dev; \
+	fi
 
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out
@@ -168,4 +168,4 @@ docker-makemigrations:
 docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
 
-.PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
+.PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate test-things
