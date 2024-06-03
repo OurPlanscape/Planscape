@@ -47,7 +47,7 @@ taggit:
 	echo "Completed taggit"
 
 install-dependencies-frontend:
-	@if [ "$(ENV)" = "development" ]; then \
+	@if [ "$(ENV)" == "development" ]; then \
 		echo 'Installing NPM with dev dependencies'; \
 		cd src/interface && npm install
 	else
