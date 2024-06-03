@@ -1,16 +1,103 @@
+import logging
 import math
 import os
 import zipfile
 import fiona
 from datetime import date, time, datetime
 from pathlib import Path
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Tuple, Type
 from django.conf import settings
+from django.db import transaction
 from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
-from planning.models import PlanningArea, Scenario, ScenarioResultStatus
+from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from planning.geometry import coerce_geojson
+from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
+from planning.tasks import async_forsys_run
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
+from django.contrib.auth.models import AbstractUser
+from actstream import action
+
+logger = logging.getLogger(__name__)
+
+
+@transaction.atomic()
+def create_planning_area(
+    user: Type[AbstractUser],
+    name: str,
+    region_name: str,
+    geojson: Dict[str, Any],
+    notes: str = None,
+) -> PlanningArea:
+    """Canonical method to create a new planning area."""
+    geometry = coerce_geojson(geojson)
+    planning_area = PlanningArea.objects.create(
+        user=user,
+        name=name,
+        region_name=region_name,
+        geometry=geometry,
+        notes=notes,
+    )
+    action.send(user, verb="created", action_object=planning_area)
+    return planning_area
+
+
+@transaction.atomic
+def delete_planning_area(
+    user: Type[AbstractUser],
+    planning_area: Type[PlanningArea],
+):
+    if not PlanningAreaPermission.can_remove(user, planning_area):
+        logger.error(f"User {user} has no permission to delete {planning_area.pk}")
+        return (
+            False,
+            f"User does not have permission to delete planning area {planning_area.pk}.",
+        )
+
+    action.send(user, verb="deleted", action_object=planning_area)
+    planning_area.delete()
+    return (True, "deleted")
+
+
+@transaction.atomic()
+def create_scenario(user: Type[AbstractUser], **kwargs) -> Scenario:
+    data = {"user": user, **kwargs}
+    scenario = Scenario.objects.create(**data)
+    scenario_result = ScenarioResult.objects.create(scenario=scenario)
+    scenario_result.save()
+    # george created scenario 1234 on planning area XYZ
+    action.send(
+        user,
+        verb="created",
+        action_object=scenario,
+        target=scenario.planning_area,
+    )
+    async_forsys_run.delay(scenario.pk)
+    return scenario
+
+
+@transaction.atomic
+def delete_scenario(
+    user: Type[AbstractUser],
+    scenario: Type[Scenario],
+):
+    if not ScenarioPermission.can_delete(user, scenario):
+        logger.error(f"User {user} has no permission to delete {scenario.pk}")
+        return (
+            False,
+            f"User does not have permission to delete planning area {scenario.pk}.",
+        )
+
+    # george deleted scenario 12345 on planning area XYZ
+    action.send(
+        user,
+        verb="deleted",
+        action_object=scenario,
+        target=scenario.planning_area,
+    )
+    scenario.delete()
+    return (True, "deleted")
 
 
 def zip_directory(file_obj, source_dir):

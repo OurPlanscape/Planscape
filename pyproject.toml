@@ -53,6 +53,7 @@ jsonschema = ">=4.21,<5.0"
 gunicorn = "^22.0.0"
 pyopenssl = "24.1.0"
 django-treebeard = "^4.7.1"
+django-activity-stream = "^2.0.0"
 
 
 [tool.poetry.dev-dependencies]

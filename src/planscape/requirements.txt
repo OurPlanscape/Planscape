@@ -27,7 +27,8 @@ django-password-policies-validator==1.0.2
 django==4.2.11 
 djangorestframework-gis==1.0 
 djangorestframework-simplejwt==5.2.2 
-djangorestframework==3.15.0 
+djangorestframework==3.15.0
+django-activity-stream==2.0.0
 fiona==1.9.5 
 gunicorn==22.0.0 
 humanize==4.8.0 

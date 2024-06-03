@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_extensions",
+    "actstream",
     "password_policies",
     "rest_framework",
     "rest_framework_gis",
@@ -365,9 +366,6 @@ OUTPUT_DIR = BASE_DIR / "output"
 DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
 
 
-# SINGLE QUEUE BEHAVIOR
-USE_CELERY_FOR_FORSYS = config("USE_CELERY_FOR_FORSYS", False, cast=bool)
-
 # CELERY
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
 
@@ -404,3 +402,9 @@ REPORT_RECIPIENT_EMAIL = config("REPORT_RECIPIENT_EMAIL", default=DEFAULT_FROM_E
 AREA_SRID = 5070
 CONVERSION_SQM_ACRES = 4046.8564213562374
 ADMIN_ORG_UUID = "6eb11079-e007-4776-98e8-29af9167241a"
+
+ACTSTREAM_SETTINGS = {
+    "USE_JSONFIELD": True,
+    "FETCH_RELATIONS": True,
+    "GFK_FETCH_DEPTH": 1,
+}
