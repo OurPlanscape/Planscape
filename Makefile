@@ -167,11 +167,3 @@ docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
 
 .PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
-
-what-env:
-	ifneq ($(ENV),dev)
-		cd src/interface && npm install --omit=dev
-	else
-		cd src/interface && npm install
-	endif
-
