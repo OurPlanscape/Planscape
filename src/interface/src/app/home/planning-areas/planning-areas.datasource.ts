@@ -9,7 +9,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   private _dataStream = new Subject<PreviewPlan[]>();
   private _loading = new BehaviorSubject(false);
 
-  private count = 0;
+  public count = 0;
 
   public loading$ = this._loading.asObservable();
   public initialLoad$ = new BehaviorSubject(true);
@@ -73,7 +73,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    * @private
    */
   private getPageOptions() {
-    console.log(this.count);
     return {
       limit: this.pageOptions.limit,
       offset: this.pageOptions.offset,

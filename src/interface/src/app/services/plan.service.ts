@@ -8,8 +8,8 @@ import { Params } from '@angular/router';
 
 export interface PlanResults {
   count: number;
-  next: boolean;
-  previous: boolean;
+  next?: string;
+  previous?: string;
   results: PreviewPlan[];
 }
 

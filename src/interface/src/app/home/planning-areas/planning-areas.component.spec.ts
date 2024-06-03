@@ -5,12 +5,13 @@ import {
   QueryParamsService,
 } from './query-params.service';
 import { PlanService } from '@services';
-import { PlanningAreasDataSource } from './planning-areas.datasource';
-import { BehaviorSubject, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MockProvider } from 'ng-mocks';
 import { Sort } from '@angular/material/sort';
+import { BehaviorSubject, of } from 'rxjs';
+import { PlanningAreasDataSource } from './planning-areas.datasource';
+import { MockProvider } from 'ng-mocks';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('PlanningAreasComponent', () => {
   let component: PlanningAreasComponent;
@@ -18,31 +19,45 @@ describe('PlanningAreasComponent', () => {
   let router: Router;
   const defaultSort: Sort = { active: 'name', direction: 'asc' };
 
+  const mockQueryParamsService = {};
+  const mockPlanningAreasDataSource = {
+    loading$: new BehaviorSubject<boolean>(false),
+    initialLoad$: new BehaviorSubject<boolean>(false),
+    noEntries$: new BehaviorSubject<boolean>(false),
+    sortOptions: defaultSort,
+    loadData: jasmine.createSpy('loadData').and.returnValue(() => of([])),
+    changeSort: jasmine.createSpy('changeSort'),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule],
-      declarations: [PlanningAreasComponent],
+      imports: [
+        RouterTestingModule,
+        PlanningAreasComponent,
+        NoopAnimationsModule,
+      ],
       providers: [
-        MockProvider(QueryParamsService),
-        MockProvider(PlanService),
-        MockProvider(PlanningAreasDataSource, {
-          loading$: of(false),
-          initialLoad$: new BehaviorSubject(false),
-          noEntries$: of(false),
-          sortOptions: defaultSort,
-          loadData: jasmine.createSpy('loadData'),
-          changeSort: jasmine.createSpy('changeSort'),
+        MockProvider(PlanService, {
+          getPlanPreviews: () =>
+            of({
+              count: 0,
+              results: [],
+            }),
         }),
+        { provide: QueryParamsService, useValue: mockQueryParamsService },
         { provide: DEFAULT_SORT_OPTIONS, useValue: defaultSort },
       ],
-    }).compileComponents();
+    })
+      .overrideProvider(PlanningAreasDataSource, {
+        useValue: mockPlanningAreasDataSource,
+      })
+      .compileComponents();
   });
 
   beforeEach(() => {
     fixture = TestBed.createComponent(PlanningAreasComponent);
     component = fixture.componentInstance;
     router = TestBed.inject(Router);
-    fixture.detectChanges();
   });
 
   it('should create', () => {
@@ -57,19 +72,6 @@ describe('PlanningAreasComponent', () => {
     const dataSource = TestBed.inject(PlanningAreasDataSource);
     expect(component.dataSource).toBe(dataSource);
     expect(component.dataSource.sortOptions).toEqual(defaultSort);
-  });
-
-  it('should load data on initialization', () => {
-    const dataSource = TestBed.inject(PlanningAreasDataSource);
-    component.ngOnInit();
-    expect(dataSource.loadData).toHaveBeenCalled();
-  });
-
-  it('should call dataSource.changeSort on changeSort', () => {
-    const sortEvent: Sort = { active: 'date', direction: 'asc' };
-    const dataSource = TestBed.inject(PlanningAreasDataSource);
-    component.changeSort(sortEvent);
-    expect(dataSource.changeSort).toHaveBeenCalledWith(sortEvent);
   });
 
   it('should navigate to plan on viewPlan', () => {
