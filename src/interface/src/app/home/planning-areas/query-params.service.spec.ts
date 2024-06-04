@@ -57,7 +57,7 @@ describe('QueryParamsService', () => {
     });
   });
 
-  describe('changeSort', () => {
+  describe('updateUrl', () => {
     it('should update the URL without reloading the page or triggering navigation events', () => {
       spyOn(router, 'createUrlTree').and.callThrough();
       spyOn(location, 'go').and.callThrough();
@@ -68,7 +68,7 @@ describe('QueryParamsService', () => {
       ).and.callThrough();
 
       const sortOptions: Sort = { active: 'date', direction: 'asc' };
-      service.changeSort(sortOptions);
+      service.updateUrl(sortOptions);
 
       expect(router.createUrlTree).toHaveBeenCalledWith([], {
         relativeTo: route,

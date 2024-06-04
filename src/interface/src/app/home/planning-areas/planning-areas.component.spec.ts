@@ -4,7 +4,7 @@ import {
   DEFAULT_SORT_OPTIONS,
   QueryParamsService,
 } from './query-params.service';
-import { PlanService } from '@services';
+import { AuthService, PlanService } from '@services';
 import { Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Sort } from '@angular/material/sort';
@@ -37,6 +37,7 @@ describe('PlanningAreasComponent', () => {
         NoopAnimationsModule,
       ],
       providers: [
+        MockProvider(AuthService),
         MockProvider(PlanService, {
           getPlanPreviews: () =>
             of({
