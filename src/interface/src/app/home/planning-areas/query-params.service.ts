@@ -9,7 +9,7 @@ export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
 );
 
 export interface QueryParams extends Sort {
-  page?: number;
+  offset?: number;
 }
 
 @Injectable()
@@ -46,10 +46,10 @@ export class QueryParamsService {
     };
   }
 
-  getInitialPageParams(): { page: number } {
-    const { page } = this.route.snapshot.queryParams;
+  getInitialPageParams(): { offset: number } {
+    const { offset } = this.route.snapshot.queryParams;
     return {
-      page: page || 0,
+      offset: offset || 0,
     };
   }
 }

@@ -61,15 +61,20 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   changeSort(sortOptions: Sort) {
-    this.pageOptions.page = 0;
+    this.pageOptions.offset = 0;
     this.sortOptions = sortOptions;
-    this.queryParamsService.updateUrl({ ...sortOptions, page: undefined });
+    this.queryParamsService.updateUrl({ ...sortOptions, offset: undefined });
     this.loadData();
   }
 
   goToPage(page: number) {
-    this.pageOptions.page = page;
-    this.queryParamsService.updateUrl({ ...this.sortOptions, page: page });
+    this.pageOptions.offset = (page - 1) * this.limit;
+    const offset =
+      this.pageOptions.offset > 0 ? this.pageOptions.offset : undefined;
+    this.queryParamsService.updateUrl({
+      ...this.sortOptions,
+      offset: offset,
+    });
     this.loadData();
   }
 
@@ -89,7 +94,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   private getPageOptions() {
     return {
       limit: this.limit,
-      offset: this.limit * this.pageOptions.page,
+      offset: this.pageOptions.offset,
     };
   }
 
