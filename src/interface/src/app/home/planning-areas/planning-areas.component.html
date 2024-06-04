@@ -94,19 +94,28 @@
               <mat-icon>more_vert</mat-icon>
             </button>
             <mat-menu #menu="matMenu" class="more-treatment-menu">
-              <button mat-menu-item>
+              <a mat-menu-item [routerLink]="['/plan', element.id]">
                 <mat-icon class="material-symbols-outlined"
-                  >file_open_outlined
+                  >folder_open
                 </mat-icon>
                 <span>Open</span>
+              </a>
+              <a mat-menu-item [routerLink]="['/explore', element.id]">
+                <mat-icon class="material-symbols-outlined">map</mat-icon>
+                <span>View Map</span>
+              </a>
+              <button
+                mat-menu-item
+                (click)="sharePlan(element)"
+                [disabled]="!shareEnabled(element)">
+                <mat-icon class="material-symbols-outlined">share</mat-icon>
+                <span>Share</span>
               </button>
-              <button mat-menu-item>
-                <mat-icon class="material-symbols-outlined"
-                  >file_copy_outlined
-                </mat-icon>
-                <span>Duplicate</span>
-              </button>
-              <button mat-menu-item class="delete">
+              <button
+                mat-menu-item
+                class="delete"
+                (click)="deletePlan(element)"
+                [disabled]="!canDeletePlanningArea(element)">
                 <mat-icon class="material-symbols-outlined"
                   >delete_outlined
                 </mat-icon>
@@ -128,8 +137,8 @@
   <!--Placeholder-->
   <div class="pagination-placeholder">
     <div><</div>
-    <div>1</div>
-    <div>2</div>
+    <button (click)="goToPage(1)">1</button>
+    <button (click)="goToPage(2)">2</button>
     <div>...</div>
     <div>6</div>
     <div>7</div>

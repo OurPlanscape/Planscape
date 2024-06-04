@@ -1,15 +1,18 @@
 import { PreviewPlan } from '@types';
-import { BehaviorSubject, map, Observable, Subject } from 'rxjs';
+import { BehaviorSubject, map, Observable, Subject, tap } from 'rxjs';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
 import { QueryParamsService } from './query-params.service';
 
 export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
+  private readonly limit = 13;
+
   private _dataStream = new Subject<PreviewPlan[]>();
   private _loading = new BehaviorSubject(false);
 
   public count = 0;
+  public pages = 0;
 
   public loading$ = this._loading.asObservable();
   public initialLoad$ = new BehaviorSubject(true);
@@ -18,7 +21,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   );
 
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
-  // TODO pagination, just setting limit for now.
+
   public pageOptions = this.queryParamsService.getInitialPageParams();
 
   constructor(
@@ -41,7 +44,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     const params = { ...this.getPageOptions(), ...this.getSortOptions() };
     this._loading.next(true);
     this.planService.getPlanPreviews(params).subscribe((data) => {
-      this.count = data.count;
+      this.setPages(data.count);
       this.setData(data.results);
       this._loading.next(false);
       this.initialLoad$.next(false);
@@ -52,9 +55,21 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     this._dataStream.next(data);
   }
 
+  setPages(count: number) {
+    this.count = count;
+    this.pages = Math.ceil(count / 13);
+  }
+
   changeSort(sortOptions: Sort) {
+    this.pageOptions.page = 0;
     this.sortOptions = sortOptions;
-    this.queryParamsService.changeSort(sortOptions);
+    this.queryParamsService.updateUrl({ ...sortOptions, page: undefined });
+    this.loadData();
+  }
+
+  goToPage(page: number) {
+    this.pageOptions.page = page;
+    this.queryParamsService.updateUrl({ ...this.sortOptions, page: page });
     this.loadData();
   }
 
@@ -68,14 +83,22 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   /**
-   * need to change backend to use pages instead of limitoffsetpagination
-   * https://www.django-rest-framework.org/api-guide/pagination/
+   * transforms page options to limit/offset.
    * @private
    */
   private getPageOptions() {
     return {
-      limit: this.pageOptions.limit,
-      offset: this.pageOptions.offset,
+      limit: this.limit,
+      offset: this.limit * this.pageOptions.page,
     };
+  }
+
+  deletePlan(planId: number) {
+    return this.planService.deletePlan([String(planId)]).pipe(
+      tap(() => {
+        // reload data
+        this.loadData();
+      })
+    );
   }
 }
