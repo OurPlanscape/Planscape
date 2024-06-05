@@ -1,5 +1,5 @@
 <button
-  [matMenuTriggerFor]="menu"
+  [matMenuTriggerFor]="multiSelectMenu"
   aria-label="more scenario Options"
   class="dropdown-button"
   [disabled]="disabled"
@@ -25,7 +25,34 @@
     >close</mat-icon
   >
 </button>
-<mat-menu #menu="matMenu">
+
+<!-- Probably don't need for this component -->
+<mat-menu #singleSelectionMenu="matMenu">
+  <div
+    class="search-section"
+    *ngIf="hasSearch"
+    (click)="$event.stopPropagation()">
+    <sg-input-field leadingIcon="search">
+      <input
+        sgInput
+        type="text"
+        placeholder="Search for {{ menuLabel }}"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="filterSearch()" />
+    </sg-input-field>
+  </div>
+  <button
+    *ngFor="let item of displayedItems"
+    mat-menu-item
+    role="menuitem"
+    (click)="selectItem($event, item)">
+    <div class="menu-item-content">
+      <div>{{ item }}</div>
+    </div>
+  </button>
+</mat-menu>
+
+<mat-menu #multiSelectMenu="matMenu">
   <div
     class="search-section"
     *ngIf="hasSearch"
@@ -33,6 +60,7 @@
     <!-- placeholder for search component -->
     <sg-input-field leadingIcon="search">
       <input
+        sgInput
         type="text"
         placeholder="Search for {{ menuLabel }}"
         [(ngModel)]="searchTerm"
@@ -50,16 +78,17 @@
       <mat-checkbox [checked]="isInSelection(item)"></mat-checkbox>
     </div>
   </button>
-  <button mat-menu-item [matMenuTriggerFor]="dateRangeMenu">
-    Custom Date Range
-  </button>
+
   <div class="bottom-section">
     <div class="bottom-content">
       <div class="clear-all-text" (click)="clearSelections($event)">
         clear all
       </div>
       <div class="button-box">
-        <button mat-stroked-button color="primary" (click)="handleCancel()">
+        <button
+          mat-stroked-button
+          color="primary"
+          (click)="handleCancel($event)">
           Cancel
         </button>
         <button
@@ -74,15 +103,44 @@
   </div>
 </mat-menu>
 
+<!-- TODO: Probably don't need for this component -->
+<mat-menu #dateFilterMenu="matMenu">
+  <button></button>
+  <button mat-menu-item [matMenuTriggerFor]="dateRangeMenu">
+    Custom Date Range
+  </button>
+  <div class="bottom-section">
+    <div class="bottom-content">
+      <div class="clear-all-text" (click)="clearSelections($event)">
+        clear all
+      </div>
+      <div class="button-box">
+        <button
+          mat-stroked-button
+          color="primary"
+          (click)="handleCancel($event)">
+          Cancel
+        </button>
+        <button
+          mat-flat-button
+          type="submit"
+          color="primary"
+          class="create-button">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
+</mat-menu>
 <mat-menu #dateRangeMenu="matMenu">
   <div class="dateRangeSelection">
     <div>From</div>
     <sg-input-field leadingIcon="calendar">
-      <input type="date" />
+      <input sgInput type="date" />
     </sg-input-field>
     <div>To</div>
     <sg-input-field leadingIcon="calendar">
-      <input type="date" />
+      <input sgInput type="date" />
     </sg-input-field>
   </div>
 </mat-menu>

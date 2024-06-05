@@ -75,7 +75,6 @@ export class FilterDropdownComponent implements OnInit {
   handleCancel(e: any) {
     this.selectedItems = this.previousSelections.slice();
     this.previousSelections = [];
-    e.stopPropagation();
   }
 
   handleFilterClick() {
