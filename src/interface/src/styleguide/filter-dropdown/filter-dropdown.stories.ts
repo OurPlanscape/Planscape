@@ -29,14 +29,14 @@ export const Default: Story = {
   args: {
     menuLabel: 'Region',
     menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
-    menuType: 'standard',
+    menuType: 'checkbox',
   },
 };
 export const CheckboxMenu: Story = {
   args: {
     menuLabel: 'Region',
     menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
-    menuType: 'standard',
+    menuType: 'checkbox',
   },
 };
 export const NoSearch: Story = {
@@ -44,7 +44,7 @@ export const NoSearch: Story = {
     hasSearch: false,
     menuLabel: 'Region',
     menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
-    menuType: 'standard',
+    menuType: 'checkbox',
   },
 };
 
@@ -52,7 +52,7 @@ export const Disabled: Story = {
   args: {
     menuLabel: 'Region',
     menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
-    menuType: 'standard',
+    menuType: 'checkbox',
     disabled: true,
   },
 };
@@ -62,7 +62,7 @@ export const OneSelection: Story = {
     selectedItems: ['hello'],
     menuLabel: 'Region',
     menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
-    menuType: 'standard',
+    menuType: 'checkbox',
   },
 };
 
@@ -71,7 +71,7 @@ export const MultipleSelections: Story = {
     selectedItems: ['hello', 'this'],
     menuLabel: 'Region',
     menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
-    menuType: 'standard',
+    menuType: 'checkbox',
   },
 };
 
@@ -106,6 +106,6 @@ export const DoubleDigitSelections: Story = {
       'selectable',
       'stuff',
     ],
-    menuType: 'standard',
+    menuType: 'checkbox',
   },
 };

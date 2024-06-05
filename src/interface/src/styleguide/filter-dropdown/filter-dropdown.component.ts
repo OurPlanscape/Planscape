@@ -6,7 +6,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputFieldComponent } from '@styleguide';
 import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
-export type FilterMenuType = 'standard' | 'checkbox';
+
+export type FilterMenuType = 'single' | 'checkbox';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -61,6 +62,7 @@ export class FilterDropdownComponent implements OnInit {
       this.selectedItems = this.selectedItems.filter((e) => e !== item);
     }
     e.stopPropagation();
+    this.updateSelection.emit(this.selectedItems);
   }
 
   selectionText(): string {
