@@ -1,26 +1,53 @@
 @import 'mixins';
 @import 'colors';
 
+:host {
+    ::ng-deep .mat-mdc-menu-item-text {
+        width: 100%;
+    }
+}
+
 .dropdown-button {
   display: flex;
   flex-direction: row;
-  justify-content:space-between;
-  align-content: center;
-  background-color: $color-white;
-  border: 1px $color-text-gray solid;
+  justify-content: space-between;
+  background-color: #fff;
+  border: 1px #898989 solid;
   border-radius: 4px;
-  padding: 8px 12px;
-  height: 40px;
+  padding: 0px 8px 0px 8px;
+  height: 32px;
+  width: 400px;
+  align-items: center;
+
+  &:hover {
+    border-color: #898989;
+    color: $color-original-purple;
+    background: #f6f6f6;
+  }
   &:active {
-    background-color: $color-original-purple;
-    color: white;
+    border-color: #898989;
+    color: $color-original-purple;
+    background: #f6f6f6;
   }
   width: 400px;
 }
 
-.active-filter {
+.disabled {
+    background-color: $color-soft-gray;
+    border-color: $color-soft-gray;
+    color: $color-text-gray;;
+}
+
+.dropdown-button.active-filter {
   background-color: $color-original-purple;
+  border-color:#9747FF;
   color: white;
+}
+.dropdown-button.active-filter:active {
+    background-color: $color-dark-gray;
+    color: white;
+  
+
 }
 
 .dropdown-label {
@@ -34,32 +61,62 @@
   width: 90%;
   text-overflow: ellipsis;
   overflow: hidden;
+  height: 100%;
 }
 .dropdown-label.active-filter {
   color: white;
 }
-
+.dropdown-label.disabled {
+    background-color: $color-soft-gray;
+    border-color: $color-soft-gray;
+    color: $color-text-gray;;
+}
 .dropdown-item {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between; 
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
 .selected-count-chip {
   @include standard-input-label();
   background-color: white;
-  width: 22px;
+  width: 18px;
   max-width: 30px;
-  line-height: 20px;
-  color: $color-original-purple;
+  line-height: 18px;
+  color: #4854C0;
   margin-left: 2px;
   margin-right: 2px;
-  height: 20px;
+  height: 18px;
   margin-top: 0;
-  margin-bottom: 2px;
+  margin-bottom: 0;
   padding: 2px;
   gap: 8px;
   text-align: center;
   border-radius: 4px;
   opacity: 0px;
+  border: 0px;
+}
+
+.menupanel {
+    width: 400px;
+    background-color: blue;
+}
+
+.menu-item-content {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    align-items: center;
+}
+
+.close-icon {
+    height: 16px;
+    width: 16px;
+    font-size: 16px;
+    &:hover {
+        color: lightgray; //TODO: change this
+    }
+    &:active {
+        color: black; //TODO: change this
+    }
 }

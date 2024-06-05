@@ -48,4 +48,9 @@ export class FilterDropdownComponent {
     }
     return this.menuLabel;
   }
+
+  handleClose(e: any): void {
+    this.selectedItems = [];
+    e.stopPropagation();
+  }
 }
