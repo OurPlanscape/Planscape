@@ -2,19 +2,22 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+
 export type FilterMenuType = 'standard' | 'checkbox';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sg-filter-dropdown',
   standalone: true,
-  imports: [CommonModule, MatIconModule, MatMenuModule],
+  imports: [CommonModule, MatIconModule, MatMenuModule, MatCheckboxModule],
   templateUrl: './filter-dropdown.component.html',
   styleUrls: ['./filter-dropdown.component.scss'],
 })
 export class FilterDropdownComponent {
   selectedItems: string[] = [];
   @Input() leadingIcon: string = '';
+  @Input() hasSearch: boolean = true;
   @Input() disabled: boolean = false;
   @Input() menuType!: FilterMenuType;
   @Input() menuLabel!: string;
@@ -34,17 +37,18 @@ export class FilterDropdownComponent {
     return this.selectedItems.includes(term);
   }
 
-  toggleSelection(item: string) {
+  toggleSelection(e: any, item: string) {
     if (!this.selectedItems.includes(item)) {
       this.selectedItems.push(item);
     } else {
       this.selectedItems = this.selectedItems.filter((e) => e !== item);
     }
+    e.stopPropagation();
   }
 
   selectionText(): string {
     if (this.selectedItems.length > 0) {
-      return `${this.menuLabel} : ${this.selectedItems.join(', ')}`;
+      return `${this.menuLabel} : ${this.selectedItems[0]}`;
     }
     return this.menuLabel;
   }

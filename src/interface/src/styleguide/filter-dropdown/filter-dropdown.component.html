@@ -8,8 +8,11 @@
   <div class="dropdown-label" [ngClass]="{ 'active-filter': hasSelections() }">
     {{ selectionText() }}
   </div>
-  <div class="selected-count-chip" *ngIf="showCount()">
-    {{ selectedItems.length }}
+  <div *ngIf="showCount()" class="more-items-box">
+    <div class="more-items-icon">&plus;</div>
+    <div class="selected-count-chip">
+      {{ selectedItems.length }}
+    </div>
   </div>
   <mat-icon *ngIf="!hasSelections()">keyboard_arrow_down</mat-icon>
   <mat-icon
@@ -19,15 +22,36 @@
     >close</mat-icon
   >
 </button>
-<mat-menu #menu="matMenu" panelClass="menupanel">
+<mat-menu #menu="matMenu">
+  <div class="search-section" *ngIf="hasSearch">
+    <input placeholder="search" /><!-- placeholder for search component -->
+  </div>
+
   <button
-    class="dropdown-item"
-    mat-menu-item
     *ngFor="let item of menuItems"
-    (click)="toggleSelection(item)">
+    mat-menu-item
+    role="menuitemcheckbox"
+    aria-checked="isInSelection(item)"
+    (click)="toggleSelection($event, item)">
     <div class="menu-item-content">
       <div>{{ item }}</div>
-      <mat-icon *ngIf="isInSelection(item)">check</mat-icon>
+      <mat-checkbox [checked]="isInSelection(item)"></mat-checkbox>
     </div>
   </button>
+
+  <div class="bottom-section">
+    <div class="bottom-content">
+      <div class="clear-all-text">clear all</div>
+      <div class="button-box">
+        <button>Cancel</button>
+        <button
+          mat-flat-button
+          type="submit"
+          color="primary"
+          class="create-button">
+          Done
+        </button>
+      </div>
+    </div>
+  </div>
 </mat-menu>
