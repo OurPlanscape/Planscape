@@ -39,6 +39,14 @@ export const CheckboxMenu: Story = {
     menuType: 'standard',
   },
 };
+export const NoSearch: Story = {
+  args: {
+    hasSearch: false,
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    menuType: 'standard',
+  },
+};
 
 export const Disabled: Story = {
   args: {

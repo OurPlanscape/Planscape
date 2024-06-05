@@ -5,7 +5,9 @@
   [disabled]="disabled"
   [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
   <mat-icon *ngIf="leadingIcon"></mat-icon>
-  <div class="dropdown-label" [ngClass]="{ 'active-filter': hasSelections() }">
+  <div
+    class="dropdown-label"
+    [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
     {{ selectionText() }}
   </div>
   <div *ngIf="showCount()" class="more-items-box">
@@ -18,17 +20,26 @@
   <mat-icon
     *ngIf="hasSelections()"
     class="close-icon"
-    (click)="handleClose($event)"
+    (click)="clearSelections($event)"
     >close</mat-icon
   >
 </button>
 <mat-menu #menu="matMenu">
-  <div class="search-section" *ngIf="hasSearch">
-    <input placeholder="search" /><!-- placeholder for search component -->
+  <div
+    class="search-section"
+    *ngIf="hasSearch"
+    (click)="$event.stopPropagation()">
+    <!-- placeholder for search component -->
+    <sg-input-field leadingIcon="search">
+      <input
+        type="text"
+        placeholder="Search for {{ menuLabel }}"
+        [(ngModel)]="searchTerm"
+        (ngModelChange)="filterSearch()" />
+    </sg-input-field>
   </div>
-
   <button
-    *ngFor="let item of menuItems"
+    *ngFor="let item of displayedItems"
     mat-menu-item
     role="menuitemcheckbox"
     aria-checked="isInSelection(item)"
@@ -41,9 +52,11 @@
 
   <div class="bottom-section">
     <div class="bottom-content">
-      <div class="clear-all-text">clear all</div>
+      <div class="clear-all-text" (click)="clearSelections($event)">
+        clear all
+      </div>
       <div class="button-box">
-        <button>Cancel</button>
+        <button mat-stroked-button color="primary">Cancel</button>
         <button
           mat-flat-button
           type="submit"
