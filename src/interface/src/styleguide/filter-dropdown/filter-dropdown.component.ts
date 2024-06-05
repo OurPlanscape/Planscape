@@ -35,7 +35,6 @@ export class FilterDropdownComponent {
   }
 
   toggleSelection(item: string) {
-    console.log('selected ', item);
     if (!this.selectedItems.includes(item)) {
       this.selectedItems.push(item);
     } else {
