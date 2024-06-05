@@ -36,6 +36,7 @@ export class FilterDropdownComponent implements OnInit {
   @Output() updateSelection = new EventEmitter();
   displayedItems: string[] = [];
   searchTerm: string = '';
+  private previousSelections: string[] = [];
 
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
@@ -69,6 +70,20 @@ export class FilterDropdownComponent implements OnInit {
     return this.menuLabel;
   }
 
+  handleCancel(e: any) {
+    this.selectedItems = this.previousSelections.slice();
+    this.previousSelections = [];
+    e.stopPropagation();
+  }
+
+  handleFilterClick() {
+    //clear the search bar
+    this.searchTerm = '';
+    this.filterSearch();
+    //capture the selections prior to this opening
+    this.previousSelections = this.selectedItems.slice();
+  }
+
   clearSelections(e: any): void {
     this.selectedItems = [];
     e.stopPropagation();
@@ -76,7 +91,7 @@ export class FilterDropdownComponent implements OnInit {
 
   filterSearch(): void {
     if (this.searchTerm !== '') {
-      this.displayedItems = this.menuItems;
+      this.displayedItems = this.menuItems.slice();
     }
     this.displayedItems = this.menuItems.filter((e) =>
       e.includes(this.searchTerm)

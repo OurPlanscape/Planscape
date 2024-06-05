@@ -3,6 +3,7 @@
   aria-label="more scenario Options"
   class="dropdown-button"
   [disabled]="disabled"
+  (click)="handleFilterClick()"
   [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
   <mat-icon *ngIf="leadingIcon"></mat-icon>
   <div
@@ -56,7 +57,9 @@
         clear all
       </div>
       <div class="button-box">
-        <button mat-stroked-button color="primary">Cancel</button>
+        <button mat-stroked-button color="primary" (click)="handleCancel()">
+          Cancel
+        </button>
         <button
           mat-flat-button
           type="submit"
