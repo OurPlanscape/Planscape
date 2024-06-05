@@ -1,16 +1,26 @@
-<div>
+<button
+  [matMenuTriggerFor]="menu"
+  aria-label="more scenario Options"
+  class="dropdown-button"
+  [ngClass]="{ 'active-filter': hasSelections() }">
+  <mat-icon *ngIf="leadingIcon"></mat-icon>
+  <div class="dropdown-label" [ngClass]="{ 'active-filter': hasSelections() }">
+    {{ selectionText() }}
+  </div>
+  <div class="selected-count-chip" *ngIf="showCount()">
+    {{ selectedItems.length }}
+  </div>
+  <mat-icon *ngIf="!hasSelections()">keyboard_arrow_down</mat-icon>
+
+  <mat-icon *ngIf="hasSelections()">close</mat-icon>
+</button>
+<mat-menu #menu="matMenu">
   <button
-    [matMenuTriggerFor]="menu"
-    aria-label="more scenario Options"
-    class="dropdown-button">
-    <div class="dropdown-label">{{ getSelections() }}</div>
-    <mat-icon>keyboard_arrow_down</mat-icon>
+    class="dropdown-item"
+    mat-menu-item
+    *ngFor="let item of menuItems"
+    (click)="toggleSelection(item)">
+    <div>{{ item }}</div>
+    <mat-icon *ngIf="isInSelection(item)">check</mat-icon>
   </button>
-  <mat-menu #menu="matMenu">
-    <ng-content> </ng-content>
-    <button mat-menu-item class="checkbox-item">
-      <div>Open</div>
-      <input type="checkbox" />
-    </button>
-  </mat-menu>
-</div>
+</mat-menu>

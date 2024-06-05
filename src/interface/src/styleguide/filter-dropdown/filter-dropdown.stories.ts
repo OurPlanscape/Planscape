@@ -1,14 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { FilterDropdownComponent } from './filter-dropdown.component';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
+import { FilterDropdownComponent } from './filter-dropdown.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
-type PagePropsAndCustomArgs = FilterDropdownComponent & { content?: string };
 
 /**
  *
  */
-const meta: Meta<PagePropsAndCustomArgs> = {
-  title: 'Components/Filter Menu',
+const meta: Meta<FilterDropdownComponent> = {
+  title: 'Components/Filter Dropdown',
   component: FilterDropdownComponent,
   tags: ['autodocs'],
   decorators: [
@@ -16,20 +15,89 @@ const meta: Meta<PagePropsAndCustomArgs> = {
       providers: [provideAnimations()],
     }),
   ],
-  render: ({ content, ...args }) => ({
+  render: ({ ...args }) => ({
     props: args,
     template: `
-     <sg-filter-dropdown ${argsToTemplate(args)}>${content}</sg-filter-dropdown>`,
+     <sg-filter-dropdown ${argsToTemplate(args)}></sg-filter-dropdown>`,
   }),
 };
 
 export default meta;
-type Story = StoryObj<PagePropsAndCustomArgs>;
+type Story = StoryObj<FilterDropdownComponent>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    menuType: 'standard',
+  },
+};
+export const CheckboxMenu: Story = {
+  args: {
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    menuType: 'standard',
+  },
 };
 
-export const WithSelections: Story = {
-  args: { selections: ['Blah', 'blah'] },
+export const Disabled: Story = {
+  args: {
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    menuType: 'standard',
+    disabled: true,
+  },
+};
+
+export const OneSelection: Story = {
+  args: {
+    selectedItems: ['hello'],
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    menuType: 'standard',
+  },
+};
+
+export const MultipleSelections: Story = {
+  args: {
+    selectedItems: ['hello', 'this'],
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    menuType: 'standard',
+  },
+};
+
+export const DoubleDigitSelections: Story = {
+  args: {
+    selectedItems: [
+      'hello',
+      'this',
+      'is',
+      'selectable',
+      'content',
+      'and',
+      'here',
+      'is',
+      'even',
+      'more',
+      'selectable',
+      'stuff',
+    ],
+    menuLabel: 'Region',
+    menuItems: [
+      'hello',
+      'this',
+      'is',
+      'selectable',
+      'content',
+      'and',
+      'here',
+      'is',
+      'even',
+      'more',
+      'selectable',
+      'stuff',
+    ],
+    menuType: 'standard',
+  },
 };

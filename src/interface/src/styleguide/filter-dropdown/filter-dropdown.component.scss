@@ -1,25 +1,65 @@
-@import "mixins";
-@import "colors";
+@import 'mixins';
+@import 'colors';
 
 .dropdown-button {
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-content: center;
-    background-color: $color-white;
-    border: 1px $color-text-gray solid;
-    border-radius: 4px;
-    padding: 8px 12px;
-    height: 40px;
+  display: flex;
+  flex-direction: row;
+  justify-content:space-between;
+  align-content: center;
+  background-color: $color-white;
+  border: 1px $color-text-gray solid;
+  border-radius: 4px;
+  padding: 8px 12px;
+  height: 40px;
+  &:active {
+    background-color: $color-original-purple;
+    color: white;
+  }
+  width: 400px;
+}
+
+.active-filter {
+  background-color: $color-original-purple;
+  color: white;
 }
 
 .dropdown-label {
-   @include standard-input-label();
-   color: $color-black;
+  @include standard-label();
+  font-family: Public Sans;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: left;
+  line-height: 2em;
+  color: $color-black;
+  width: 90%;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+.dropdown-label.active-filter {
+  color: white;
 }
 
-.checkbox-item {
+.dropdown-item {
     display: flex;
     flex-direction: row;
-    justify-content: space-between;
+    justify-content: space-between; 
+}
+
+.selected-count-chip {
+  @include standard-input-label();
+  background-color: white;
+  width: 22px;
+  max-width: 30px;
+  line-height: 20px;
+  color: $color-original-purple;
+  margin-left: 2px;
+  margin-right: 2px;
+  height: 20px;
+  margin-top: 0;
+  margin-bottom: 2px;
+  padding: 2px;
+  gap: 8px;
+  text-align: center;
+  border-radius: 4px;
+  opacity: 0px;
 }
