@@ -1,4 +1,11 @@
-import { Component, Output, EventEmitter, Input } from '@angular/core';
+import {
+  Component,
+  Output,
+  EventEmitter,
+  Input,
+  OnInit,
+  OnDestroy,
+} from '@angular/core';
 import {
   DatePipe,
   CurrencyPipe,
@@ -12,6 +19,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { InputFieldComponent } from '../input/input-field.component';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 /**
  * Search Bar component to encapsulate search behavior
@@ -35,10 +43,35 @@ import { InputFieldComponent } from '../input/input-field.component';
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss',
 })
-export class SearchBarComponent {
+export class SearchBarComponent implements OnInit, OnDestroy {
   @Input() historyItems: string[] = [];
   @Input() searchPlaceholder: string = 'Search';
+  @Input() filterHistory: boolean = true;
+  @Output() updateSearch = new EventEmitter<string>();
+  searchInput = new Subject<string>();
+  displayedHistory = this.historyItems.slice();
 
-  //TODO: min search length, debounce
-  @Output() searchChanged = new EventEmitter();
+  ngOnInit() {
+    this.displayedHistory = this.historyItems.slice();
+
+    this.searchInput
+      .pipe(debounceTime(200), distinctUntilChanged())
+      .subscribe((searchTerm: string) => {
+        if (this.filterHistory) {
+          this.displayedHistory = this.historyItems.filter((e) =>
+            e.includes(searchTerm)
+          );
+        }
+        this.updateSearch.emit(searchTerm);
+      });
+  }
+
+  onSearchInputChange(e: any) {
+    const val = e.target.value;
+    this.searchInput.next(val);
+  }
+
+  ngOnDestroy() {
+    this.searchInput.complete();
+  }
 }

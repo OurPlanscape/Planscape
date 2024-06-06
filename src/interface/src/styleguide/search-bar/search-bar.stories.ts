@@ -28,6 +28,22 @@ export const Default: Story = {
   },
 };
 
+export const FilterHistory: Story = {
+  args: {
+    historyItems: ['previously', 'searched', 'terms'],
+    searchPlaceholder: 'Search for something',
+    filterHistory: true,
+  },
+};
+
+export const StaticHistory: Story = {
+  args: {
+    historyItems: ['previously', 'searched', 'terms'],
+    searchPlaceholder: 'Search for something',
+    filterHistory: false,
+  },
+};
+
 export const NoHistory: Story = {
   args: { historyItems: [] },
 };
