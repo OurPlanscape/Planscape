@@ -9,11 +9,11 @@
   width: 100%;
 
   ::ng-deep .mat-form-field {
-      display: block;
-      text-align: left;
-      line-height: 1em;
-      padding-top: 20px;
-    }
+    display: block;
+    text-align: left;
+    line-height: 1em;
+    padding-top: 20px;
+  }
 
   .page-button {
     @include h5();
@@ -37,13 +37,12 @@
   }
 
   .spacer-button {
-    width: 40px;
     color: #475569; /* TODO: this isnt in our colors? */
     background-color: white;
     border: none; /* TODO: this isnt in our colors? */
     padding: 8px;
     height: 40px;
-    width: 40px;
+    width: 30px;
     font-size: 20px;
   }
 
@@ -97,16 +96,13 @@
   }
 }
 
-
 @media screen and (max-width: 800px) {
   .nav-control-container {
     max-width: 360px;
   }
 }
 
-
 @media screen and (max-width: 400px) {
-
   .nav-control-container {
     max-width: 200px;
   }
