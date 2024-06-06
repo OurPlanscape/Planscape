@@ -85,17 +85,20 @@ export class PaginatorComponent implements OnInit {
       0,
       Math.ceil(buttonsToShow / 2) - (this.selectedPage - 1)
     );
-    const buttonStart = Math.max(
+    let buttonStart = Math.max(
       this.selectedPage - Math.ceil(buttonsToShow / 2) - remainderAtEnd,
       2
     );
-    const buttonEnd = Math.min(
+    let buttonEnd = Math.min(
       this.selectedPage + Math.ceil(buttonsToShow / 2) + 1 + remainderAtStart,
       this.getTotalPages()
     );
 
     this.showFirstSpacer$.next(buttonStart > 2);
     this.showLastSpacer$.next(buttonEnd < this.getTotalPages());
+
+    buttonStart = remainderAtEnd ? buttonStart - 1 : buttonStart;
+    buttonEnd = remainderAtStart ? buttonEnd - 1 : buttonEnd;
 
     //create the range of actual visible buttons
     for (let i = buttonStart; i < buttonEnd; i++) {
