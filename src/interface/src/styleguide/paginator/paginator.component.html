@@ -17,13 +17,13 @@
     </button>
     <button
       sg-button
-      *ngIf="showFirstSpacer"
+      *ngIf="showFirstSpacer$ | async"
       class="spacer-button"
       [disabled]="isCurrentPage(1)">
       ...
     </button>
     <div class="nav-controls">
-      <div *ngFor="let pageNum of getButtonLabels()">
+      <div *ngFor="let pageNum of buttonRange$ | async">
         <button
           sg-button
           [ngClass]="{ 'selected-button': isCurrentPage(pageNum) }"
@@ -36,7 +36,7 @@
     <button
       sg-button
       class="spacer-button"
-      *ngIf="showLastSpacer"
+      *ngIf="showLastSpacer$ | async"
       [disabled]="isCurrentPage(1)">
       ...
     </button>

@@ -12,6 +12,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
+import { BehaviorSubject } from 'rxjs';
+
 @Component({
   selector: 'sg-paginator',
   standalone: true,
@@ -38,12 +40,15 @@ export class PaginatorComponent implements OnInit {
 
   selectedPage: number = 0;
   buttonsShown = 10;
-  showFirstSpacer = false;
-  showLastSpacer = false;
+  showFirstSpacer$ = new BehaviorSubject<boolean>(false);
+  showLastSpacer$ = new BehaviorSubject<boolean>(false);
+  buttonRange$ = new BehaviorSubject<number[]>([]);
+  showAThing$ = new BehaviorSubject<boolean>(false);
 
   ngOnInit(): void {
     this.selectedPage = Number(this.currentPage);
     this.recordsPerPage = Number(this.recordsPerPage);
+    this.getButtonLabels();
   }
 
   visibleButtonCount(): number {
@@ -52,17 +57,17 @@ export class PaginatorComponent implements OnInit {
     // first and last buttons + arrows are 160px wide
     // max width of buttons is 700px
     // TODO: hardcode these once we get the breakpoints settled
-    if (width > 800) return Math.ceil((660 - 200) / 40);
-    if (width > 400) return Math.ceil((360 - 200) / 40);
-    return Math.ceil((300 - 200) / 40);
+    if (width > 800) return Math.ceil((600 - 200) / 40);
+    if (width > 400) return Math.ceil((300 - 200) / 40);
+    return Math.ceil((240 - 200) / 40);
   }
 
   getTotalPages(): number {
     return Number(this.pageCount);
   }
 
-  getButtonLabels(): number[] {
-    const buttonRange = [];
+  getButtonLabels(): void {
+    const buttonArray = [];
     const buttonsToShow = Math.min(
       this.getTotalPages(),
       this.visibleButtonCount()
@@ -89,18 +94,19 @@ export class PaginatorComponent implements OnInit {
       this.getTotalPages()
     );
 
-    this.showFirstSpacer = buttonStart > 2;
-    this.showLastSpacer = buttonEnd < this.getTotalPages();
+    this.showFirstSpacer$.next(buttonStart > 2);
+    this.showLastSpacer$.next(buttonEnd < this.getTotalPages());
 
     //create the range of actual visible buttons
     for (let i = buttonStart; i < buttonEnd; i++) {
-      buttonRange.push(i);
+      buttonArray.push(i);
     }
-    return buttonRange;
+    this.buttonRange$.next(buttonArray);
   }
 
   setPage(pageNum: number) {
     this.selectedPage = pageNum;
+    this.getButtonLabels();
     this.pageChanged.emit(this.selectedPage);
   }
 
@@ -112,21 +118,16 @@ export class PaginatorComponent implements OnInit {
     this.resultsPerPageChanged.emit(this.recordsPerPage);
   }
 
-  @HostListener('window:resize')
-  onResize() {
-    this.visibleButtonCount();
-  }
-
-  toFirstPage() {
-    this.selectedPage = 1;
-  }
   handlePrevious() {
     this.selectedPage = Math.max(this.selectedPage - 1, 1);
+    this.getButtonLabels();
   }
   handleNext() {
     this.selectedPage = Math.min(this.selectedPage + 1, this.getTotalPages());
+    this.getButtonLabels();
   }
-  toLastPage() {
-    this.selectedPage = this.getTotalPages();
+  @HostListener('window:resize')
+  onResize() {
+    this.visibleButtonCount();
   }
 }
