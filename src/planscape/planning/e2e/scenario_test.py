@@ -141,6 +141,11 @@ class E2EScenarioTest:
             self.final_results = task_results.get()
             self.output_results()
 
+            for f in self.final_results:
+                result_obj = json.loads(f)
+                if "result" in result_obj and result_obj["result"] == "FAILED":
+                    raise SystemError("tests failed")
+
     def output_results(self):
         dt = datetime.now()
         print(f"\nTest results {dt}:\n")
