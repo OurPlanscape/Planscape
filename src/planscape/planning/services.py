@@ -62,7 +62,11 @@ def delete_planning_area(
 
 @transaction.atomic()
 def create_scenario(user: Type[AbstractUser], **kwargs) -> Scenario:
-    data = {"user": user, **kwargs}
+    data = {
+        "user": user,
+        "result_status": ScenarioResultStatus.PENDING,
+        **kwargs,
+    }
     scenario = Scenario.objects.create(**data)
     scenario_result = ScenarioResult.objects.create(scenario=scenario)
     scenario_result.save()

@@ -15,11 +15,18 @@ def async_forsys_run(scenario_id: int) -> None:
         log.warning(f"Scenario with {scenario_id} does not exist.")
     try:
         log.info(f"Running scenario {scenario_id}")
+        scenario.result_status = ScenarioResultStatus.RUNNING
+        scenario.save()
+
         call_forsys(scenario.pk)
 
+        scenario.result_status = ScenarioResultStatus.SUCCESS
+        scenario.save()
     except TimeoutExpired:
         # this case should not happen as is, as the default parameter
         # for call_forsys timeout is None.
+        scenario.result_status = ScenarioResultStatus.TIMED_OUT
+        scenario.save()
         scenario.results.status = ScenarioResultStatus.TIMED_OUT
         scenario.results.save()
         # this error WILL be reported by default to Sentry
@@ -27,6 +34,8 @@ def async_forsys_run(scenario_id: int) -> None:
             f"Running forsys for scenario {scenario_id} timed-out. Might be too big."
         )
     except CalledProcessError:
+        scenario.result_status = ScenarioResultStatus.PANIC
+        scenario.save()
         scenario.results.status = ScenarioResultStatus.PANIC
         scenario.results.save()
         # this error WILL be reported by default to Sentry
