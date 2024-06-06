@@ -47,7 +47,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   @Input() historyItems: string[] = [];
   @Input() searchPlaceholder: string = 'Search';
   @Input() filterHistory: boolean = true;
-  @Output() updateSearch = new EventEmitter<string>();
+  @Output() searchString = new EventEmitter<string>();
   searchInput = new Subject<string>();
   displayedHistory = this.historyItems.slice();
 
@@ -62,7 +62,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
             e.includes(searchTerm)
           );
         }
-        this.updateSearch.emit(searchTerm);
+        this.searchString.emit(searchTerm);
       });
   }
 
