@@ -1,11 +1,10 @@
 <button
   [matMenuTriggerFor]="multiSelectMenu"
-  aria-label="more scenario Options"
   class="dropdown-button"
   [disabled]="disabled"
   (click)="handleFilterClick()"
   [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
-  <mat-icon *ngIf="leadingIcon"></mat-icon>
+  <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{leadingIcon}}</mat-icon>
   <div
     class="dropdown-label"
     [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
@@ -60,12 +59,14 @@
       </div>
       <div class="button-box">
         <button
+          sg-button
           mat-stroked-button
           color="primary"
           (click)="handleCancel($event)">
           Cancel
         </button>
         <button
+          sg-button
           mat-flat-button
           type="submit"
           color="primary"

@@ -8,7 +8,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 
 @Component({
-  // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sg-filter-dropdown',
   standalone: true,
   imports: [
@@ -24,16 +23,16 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./filter-dropdown.component.scss'],
 })
 export class FilterDropdownComponent implements OnInit {
-  selectedItems: string[] = [];
-  @Input() leadingIcon: string = '';
-  @Input() hasSearch: boolean = true;
-  @Input() disabled: boolean = false;
+  @Input() leadingIcon = '';
+  @Input() hasSearch = true;
+  @Input() disabled = false;
   @Input() menuLabel!: string;
   @Input() menuItems!: string[];
   @Input() activeFilter = false;
   @Output() updateSelection = new EventEmitter();
   displayedItems: string[] = [];
-  searchTerm: string = '';
+  selectedItems: string[] = [];
+  searchTerm = '';
   private previousSelections: string[] = [];
 
   ngOnInit(): void {

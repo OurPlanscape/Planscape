@@ -1,7 +1,6 @@
 @import 'mixins';
 @import 'colors';
 
-
 ::ng-deep .mat-mdc-menu-panel {
   width: 400px !important;
   max-width: 400px !important;
@@ -11,6 +10,15 @@
 }
 ::ng-deep .mat-mdc-menu-item-text {
   width: 100%;
+}
+
+.trigger-icon {
+  padding: 0;
+  padding-right: 8px;
+  height: 22px;
+  width: 22px;
+  font-size: 22px;
+  line-height: 22px;
 }
 
 .dropdown-button {
@@ -24,6 +32,7 @@
   height: 40px;
   width: 280px;
   align-items: center;
+  cursor: pointer;
 
   &:hover {
     border-color: $color-text-gray;

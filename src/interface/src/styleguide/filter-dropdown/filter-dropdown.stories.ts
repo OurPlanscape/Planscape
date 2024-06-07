@@ -31,6 +31,15 @@ export const Default: Story = {
     menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
   },
 };
+
+export const WithLeadingIcon: Story = {
+  args: {
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    leadingIcon: 'home'
+  },
+};
+
 export const CheckboxMenu: Story = {
   args: {
     menuLabel: 'Region',
