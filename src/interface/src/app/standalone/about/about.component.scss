@@ -1,5 +1,6 @@
 @import "colors";
 @import "mixins";
+@import "media";
 
 .about-container {
   gap: 30px;
@@ -52,8 +53,8 @@ p.small {
   text-align: left;
 }
 
-@media screen and (max-width: 840px) {
-  ::root {
+@include on-small() {
+  :root {
     gap: 10%;
   }
 
