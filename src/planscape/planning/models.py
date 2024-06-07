@@ -126,6 +126,15 @@ class ScenarioStatus(models.TextChoices):
     ARCHIVED = "ARCHIVED", "Archived"
 
 
+class ScenarioResultStatus(models.TextChoices):
+    PENDING = "PENDING", "Pending"
+    RUNNING = "RUNNING", "Running"
+    SUCCESS = "SUCCESS", "Success"
+    FAILURE = "FAILURE", "Failure"
+    PANIC = "PANIC", "Panic"
+    TIMED_OUT = "TIMED_OUT", "Timed Out"
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     planning_area = models.ForeignKey(
         PlanningArea,
@@ -150,6 +159,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
         default=ScenarioStatus.ACTIVE,
     )
 
+    result_status = models.CharField(
+        max_length=32,
+        choices=ScenarioResultStatus.choices,
+        null=True,
+    )
+
     def creator_name(self):
         return self.user.get_full_name()
 
@@ -170,15 +185,6 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
             )
         ]
         ordering = ["planning_area", "-created_at"]
-
-
-class ScenarioResultStatus(models.TextChoices):
-    PENDING = "PENDING", "Pending"
-    RUNNING = "RUNNING", "Running"
-    SUCCESS = "SUCCESS", "Success"
-    FAILURE = "FAILURE", "Failure"
-    PANIC = "PANIC", "Panic"
-    TIMED_OUT = "TIMED_OUT", "Timed Out"
 
 
 class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):

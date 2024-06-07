@@ -1,5 +1,4 @@
 import json
-import os
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
