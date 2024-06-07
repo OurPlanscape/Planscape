@@ -35,10 +35,11 @@ class E2EScenarioTest:
             self.fixtures_path = fixtures_path
 
     def initiate_tests(self):
-        self.load_test_definitions()
-        self.upsert_test_user()
-        self.create_areas()
-        self.run_tests()
+        raise SystemError("Intentional Error to test failures")
+        # self.load_test_definitions()
+        # self.upsert_test_user()
+        # self.create_areas()
+        # self.run_tests()
 
     def load_test_definitions(self):
         """Reads the JSON file that describes our test areas, scenarios and expected results"""
