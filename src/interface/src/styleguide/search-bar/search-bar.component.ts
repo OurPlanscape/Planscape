@@ -47,27 +47,28 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   @Input() historyItems: string[] = [];
   @Input() searchPlaceholder: string = 'Search';
   @Input() filterHistory: boolean = true;
+  @Input() autocompleteTitle = 'Recent Searches';
   @Output() searchString = new EventEmitter<string>();
   searchInput = new Subject<string>();
-  displayedHistory = this.historyItems.slice();
+  displayedHistory: string[] = [];
 
   ngOnInit() {
     this.displayedHistory = this.historyItems.slice();
-
     this.searchInput
       .pipe(debounceTime(200), distinctUntilChanged())
       .subscribe((searchTerm: string) => {
-        if (this.filterHistory) {
-          this.displayedHistory = this.historyItems.filter((e) =>
-            e.includes(searchTerm)
-          );
-        }
+
         this.searchString.emit(searchTerm);
       });
   }
 
   onSearchInputChange(e: any) {
     const val = e.target.value;
+    if (this.filterHistory) {
+      this.displayedHistory = this.historyItems.filter((e) =>
+        e.includes(val)
+      );
+    }
     this.searchInput.next(val);
   }
 

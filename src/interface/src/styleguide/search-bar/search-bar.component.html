@@ -10,7 +10,7 @@
       [matAutocompleteConnectedTo]="origin"
       (input)="onSearchInputChange($event)" />
     <mat-autocomplete #searchHistory="matAutocomplete" panel="acpanel">
-      <div class="autocomplete-label">Recent Searches</div>
+      <div class="autocomplete-label">{{ autocompleteTitle }}</div>
       @for (historyItem of displayedHistory; track historyItem) {
         <mat-option [value]="historyItem" class="autocomplete-option"
           ><mat-icon class="history-icon">schedule</mat-icon
