@@ -47,7 +47,7 @@
         },
         {
           "boundary_name": "southern_california-RecentFires",
-          "display_name": "Fires (1990 through 2021)",
+          "display_name": "Fires (1990 through 2022)",
           "vector_name": "southern-california:vector_recent-fires",
           "region_name": "Southern California",
           "filepath": "recent-fires.shp",
@@ -57,7 +57,7 @@
         },
         {
           "boundary_name": "southern_california-PrescribedBurns",
-          "display_name": "Prescribed Burns (through 2021)",
+          "display_name": "Prescribed Burns (through 2022)",
           "vector_name": "southern-california:vector_prescribed-burns",
           "region_name": "Southern California",
           "filepath": "prescribed-burns.shp",
@@ -113,7 +113,7 @@
         },
         {
           "boundary_name": "sierra-nevada-RecentFires",
-          "display_name": "Fires (1990 through 2021)",
+          "display_name": "Fires (1990 through 2022)",
           "vector_name": "sierra-nevada:vector_recent-fires",
           "region_name": "Sierra Nevada",
           "filepath": "recent-fires.shp",
@@ -123,7 +123,7 @@
         },
         {
           "boundary_name": "sierra-nevada-PrescribedBurns",
-          "display_name": "Prescribed Burns (through 2021)",
+          "display_name": "Prescribed Burns (through 2022)",
           "vector_name": "sierra-nevada:vector_prescribed-burns",
           "region_name": "Sierra Nevada",
           "filepath": "prescribed-burns.shp",
@@ -179,7 +179,7 @@
         },
         {
           "boundary_name": "central-coast-RecentFires",
-          "display_name": "Fires (1990 through 2021)",
+          "display_name": "Fires (1990 through 2022)",
           "vector_name": "central-coast:vector_recent-fires",
           "region_name": "Central Coast",
           "filepath": "recent-fires.shp",
@@ -189,7 +189,7 @@
         },
         {
           "boundary_name": "central-coast-PrescribedBurns",
-          "display_name": "Prescribed Burns (through 2021)",
+          "display_name": "Prescribed Burns (through 2022)",
           "vector_name": "central-coast:vector_prescribed-burns",
           "region_name": "Central Coast",
           "filepath": "prescribed-burns.shp",
@@ -245,7 +245,7 @@
         },
         {
           "boundary_name": "northern-california-RecentFires",
-          "display_name": "Fires (1990 through 2021)",
+          "display_name": "Fires (1990 through 2022)",
           "vector_name": "northern-california:vector_recent-fires",
           "region_name": "Northern California",
           "filepath": "recent-fires.shp",
@@ -255,7 +255,7 @@
         },
         {
           "boundary_name": "northern-california-PrescribedBurns",
-          "display_name": "Prescribed Burns (through 2021)",
+          "display_name": "Prescribed Burns (through 2022)",
           "vector_name": "northern-california:vector_prescribed-burns",
           "region_name": "Northern California",
           "filepath": "prescribed-burns.shp",
