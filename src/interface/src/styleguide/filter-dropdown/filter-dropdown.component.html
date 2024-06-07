@@ -4,7 +4,9 @@
   [disabled]="disabled"
   (click)="handleFilterClick()"
   [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
-  <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{leadingIcon}}</mat-icon>
+  <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
+    leadingIcon
+  }}</mat-icon>
   <div
     class="dropdown-label"
     [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">

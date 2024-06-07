@@ -36,7 +36,7 @@ export const WithLeadingIcon: Story = {
   args: {
     menuLabel: 'Region',
     menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
-    leadingIcon: 'home'
+    leadingIcon: 'home',
   },
 };
 
