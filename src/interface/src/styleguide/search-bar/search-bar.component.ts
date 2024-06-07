@@ -57,7 +57,6 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     this.searchInput
       .pipe(debounceTime(200), distinctUntilChanged())
       .subscribe((searchTerm: string) => {
-
         this.searchString.emit(searchTerm);
       });
   }
@@ -65,9 +64,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   onSearchInputChange(e: any) {
     const val = e.target.value;
     if (this.filterHistory) {
-      this.displayedHistory = this.historyItems.filter((e) =>
-        e.includes(val)
-      );
+      this.displayedHistory = this.historyItems.filter((e) => e.includes(val));
     }
     this.searchInput.next(val);
   }
