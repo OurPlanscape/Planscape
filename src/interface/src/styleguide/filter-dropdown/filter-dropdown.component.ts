@@ -7,8 +7,6 @@ import { InputFieldComponent } from '@styleguide';
 import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
 
-export type FilterMenuType = 'single' | 'checkbox';
-
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'sg-filter-dropdown',
@@ -18,7 +16,7 @@ export type FilterMenuType = 'single' | 'checkbox';
     MatIconModule,
     MatMenuModule,
     MatCheckboxModule,
-    InputFieldComponent, //placeholder for input
+    InputFieldComponent,
     MatButtonModule,
     FormsModule,
   ],
@@ -30,7 +28,6 @@ export class FilterDropdownComponent implements OnInit {
   @Input() leadingIcon: string = '';
   @Input() hasSearch: boolean = true;
   @Input() disabled: boolean = false;
-  @Input() menuType!: FilterMenuType;
   @Input() menuLabel!: string;
   @Input() menuItems!: string[];
   @Input() activeFilter = false;
