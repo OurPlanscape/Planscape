@@ -1,3 +1,4 @@
+library(remotes)
 repos <- "http://cran.us.r-project.org"
 if (!require("remotes")) install.packages("remotes", repos=repos)
 if (!require("pacman")) install.packages("pacman", repos=repos)
@@ -32,6 +33,10 @@ github_packages <- c(
   "MilesMcBain/friendlyeval"
 )
 
+<<<<<<< HEAD
+=======
+if (!require("pacman")) install.packages("pacman", repos=repos)
+>>>>>>> 2b3fbaa1 (fixes install and adds the installation script to the backend dependencies)
 pacman::p_load(packages, character.only=TRUE)
 
 if (!require("forsys")) {
