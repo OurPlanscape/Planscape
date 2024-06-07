@@ -1,5 +1,6 @@
 @import "colors";
 @import "mixins";
+@import "media";
 
 :host {
   display: flex;
@@ -136,7 +137,7 @@ mat-form-field {
   text-align: center;
 }
 
-@media screen and (max-width: 840px) {
+@include on-small() {
   :host {
     gap: 10%;
     flex-direction: column;
