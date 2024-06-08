@@ -3,9 +3,6 @@ import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-/**
- *
- */
 const meta: Meta<FilterDropdownComponent> = {
   title: 'Components/Filter Dropdown',
   component: FilterDropdownComponent,

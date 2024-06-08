@@ -4,9 +4,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputFieldComponent } from '@styleguide';
-import { MatButtonModule } from '@angular/material/button';
 import { FormsModule } from '@angular/forms';
+import { ButtonComponent } from '../button/button.component';
 
+/**
+ * Filter dropdown that lets user select one or multiple strings as part of a search
+ */
 @Component({
   selector: 'sg-filter-dropdown',
   standalone: true,
@@ -16,20 +19,36 @@ import { FormsModule } from '@angular/forms';
     MatMenuModule,
     MatCheckboxModule,
     InputFieldComponent,
-    MatButtonModule,
+    // MatButtonModule,
     FormsModule,
+    ButtonComponent,
   ],
   templateUrl: './filter-dropdown.component.html',
   styleUrls: ['./filter-dropdown.component.scss'],
 })
 export class FilterDropdownComponent implements OnInit {
+  /**
+   * Accepts the name of a Material Icon to be displayed at the left of the menu trigger
+   */
   @Input() leadingIcon = '';
+   /**
+   * Determines whether a search bar is present for filtering menu options
+   */
   @Input() hasSearch = true;
   @Input() disabled = false;
+  /**
+   * The label text displayed for the menu
+   */
   @Input() menuLabel!: string;
+  /**
+   * Items displayed in the menu
+   */
   @Input() menuItems!: string[];
-  @Input() activeFilter = false;
+  /**
+  * Event that returns a string[] array of selected items
+  */
   @Output() updateSelection = new EventEmitter();
+
   displayedItems: string[] = [];
   selectedItems: string[] = [];
   searchTerm = '';
@@ -61,7 +80,7 @@ export class FilterDropdownComponent implements OnInit {
     this.updateSelection.emit(this.selectedItems);
   }
 
-  selectionText(): string {
+   get selectionText(): string {
     if (this.selectedItems.length > 0) {
       return `${this.menuLabel}: ${this.selectedItems[0]}`;
     }
