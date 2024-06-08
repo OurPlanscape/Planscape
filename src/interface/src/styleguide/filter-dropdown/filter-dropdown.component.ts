@@ -31,7 +31,7 @@ export class FilterDropdownComponent implements OnInit {
    * Accepts the name of a Material Icon to be displayed at the left of the menu trigger
    */
   @Input() leadingIcon = '';
-   /**
+  /**
    * Determines whether a search bar is present for filtering menu options
    */
   @Input() hasSearch = true;
@@ -45,8 +45,8 @@ export class FilterDropdownComponent implements OnInit {
    */
   @Input() menuItems!: string[];
   /**
-  * Event that returns a string[] array of selected items
-  */
+   * Event that returns a string[] array of selected items
+   */
   @Output() updateSelection = new EventEmitter();
 
   displayedItems: string[] = [];
@@ -80,7 +80,7 @@ export class FilterDropdownComponent implements OnInit {
     this.updateSelection.emit(this.selectedItems);
   }
 
-   get selectionText(): string {
+  get selectionText(): string {
     if (this.selectedItems.length > 0) {
       return `${this.menuLabel}: ${this.selectedItems[0]}`;
     }
