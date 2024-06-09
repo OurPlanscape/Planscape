@@ -16,6 +16,7 @@
 
 .autocomplete-label {
   @include top-level-label();
+  color: $color-md-gray;
   text-transform: uppercase;
   font-family: Public Sans;
   font-size: 14px;
@@ -26,7 +27,12 @@
 }
 
 .autocomplete-option {
-  @include small-input-label();
+  @include standard-input-label();
+  font-family: Public Sans;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  text-align: left;
   gap: 8px;
   text-align: center;
 }
@@ -36,4 +42,5 @@
   height: 20px;
   width: 20px;
   font-size: 20px;
+  margin-right: 0px;
 }

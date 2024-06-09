@@ -20,10 +20,12 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { InputFieldComponent } from '../input/input-field.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 /**
- * Search Bar component to encapsulate search behavior
+ * Search Bar component to encapsulate search behavior. This includes an optional autocomplete list.
  */
+@UntilDestroy()
 @Component({
   selector: 'sg-search-bar',
   standalone: true,
@@ -44,10 +46,26 @@ import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
   styleUrl: './search-bar.component.scss',
 })
 export class SearchBarComponent implements OnInit, OnDestroy {
+  /**
+   * The search history list for this component, which can be filtered locally.
+   *  If this history is empty, we don't show a history panel.
+   */
   @Input() historyItems: string[] = [];
+  /**
+   * The placeholder label for the input component.
+   */
   @Input() searchPlaceholder: string = 'Search';
+  /**
+   * Determines whether or not the autocomplete history should be filtered by the search term.
+   */
   @Input() filterHistory: boolean = true;
+  /**
+   * The label for the list of autocomplete items.
+   */
   @Input() autocompleteTitle = 'Recent Searches';
+  /**
+   *
+   */
   @Output() searchString = new EventEmitter<string>();
   searchInput = new Subject<string>();
   displayedHistory: string[] = [];
@@ -55,14 +73,15 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.displayedHistory = this.historyItems.slice();
     this.searchInput
-      .pipe(debounceTime(200), distinctUntilChanged())
+      .pipe(debounceTime(200), distinctUntilChanged(), untilDestroyed(this))
       .subscribe((searchTerm: string) => {
         this.searchString.emit(searchTerm);
       });
   }
 
-  onSearchInputChange(e: any) {
-    const val = e.target.value;
+  onSearchInputChange(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const val = target.value;
     if (this.filterHistory) {
       this.displayedHistory = this.historyItems.filter((e) => e.includes(val));
     }
