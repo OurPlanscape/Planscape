@@ -1,5 +1,6 @@
 @import "colors";
 @import "mixins";
+@import "media";
 
 :host {
   display: flex;
@@ -64,7 +65,7 @@ p.regular {
 }
 
 
-@media screen and (max-width: 840px) {
+@include on-small() {
   :host {
     display: flex;
     flex-direction: column;

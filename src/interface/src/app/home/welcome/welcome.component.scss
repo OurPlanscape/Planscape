@@ -1,12 +1,12 @@
 @import "colors";
+@import "media";
 
 :host {
   flex: 1;
   overflow: scroll;
-  @media screen and (min-width: 840px) {
+  @include on-large() {
     display: flex;
   }
-
 }
 
 
@@ -20,7 +20,7 @@
   background-image: url('/assets/webp/background.webp');
   background-color: $color-text-dark;
   background-size: cover;
-  @media screen and (min-width: 840px) {
+  @include on-large() {
     width: 55%;
     padding: 0 65px;
   }
@@ -37,7 +37,7 @@
   display: flex;
   gap: 24px;
   flex-direction: column;
-  @media screen and (min-width: 840px) {
+  @include on-large() {
     width: 45%;
     overflow-y: scroll;
     padding: 60px;

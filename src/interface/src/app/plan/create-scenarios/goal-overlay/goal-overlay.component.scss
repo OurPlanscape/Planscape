@@ -1,5 +1,6 @@
 @import "colors";
 @import "mixins";
+@import "media";
 
 :host {
   display: block;
@@ -10,7 +11,7 @@
   z-index: 200;
   margin: 0 8px;
 
-  @media screen and (max-width: 800px) {
+  @include on-small() {
     right: initial;
     top: initial;
     left: 0;
