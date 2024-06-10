@@ -1,2 +1,7 @@
 <app-welcome *ngIf="(loggedIn$ | async) === false"></app-welcome>
-<app-planning-areas *ngIf="loggedIn$ | async"></app-planning-areas>
+
+<ng-container *ngIf="loggedIn$ | async">
+  <app-legacy-planning-areas
+    *appFeatureFlag="'new_home'; hide: true"></app-legacy-planning-areas>
+  <app-planning-areas *appFeatureFlag="'new_home'"></app-planning-areas>
+</ng-container>
