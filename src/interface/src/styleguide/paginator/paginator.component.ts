@@ -60,7 +60,7 @@ export class PaginatorComponent implements OnInit {
    */
   @Output() resultsPerPageChanged = new EventEmitter<number>();
 
-  private selectedPage: number = 0;
+  selectedPage: number = 0;
   buttonsShown = 0;
   showFirstSpacer$ = new BehaviorSubject<boolean>(false);
   showLastSpacer$ = new BehaviorSubject<boolean>(false);

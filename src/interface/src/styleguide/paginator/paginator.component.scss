@@ -111,7 +111,7 @@
 
   .picker-field {
     width: 100px;
-    padding-top: 4px;
+    padding-top: 0px;
     border: black;
 
     &.disabled {
@@ -144,4 +144,15 @@
     font-weight: 600;
     letter-spacing: normal;
   }
+}
+
+::ng-deep .per-page-item.mat-mdc-option.mdc-list-item {
+  @include h5();
+  font-family: 'Public Sans';
+  color: $color-md-gray;
+}
+::ng-deep .nav-page-item.mat-mdc-option.mdc-list-item {
+  @include h5();
+  font-family: 'Public Sans';
+  color: $color-md-gray;
 }
