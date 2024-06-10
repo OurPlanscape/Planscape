@@ -18,6 +18,10 @@ import { BehaviorSubject } from 'rxjs';
 export const WINDOW_LARGE_BREAKPOINT = 840;
 export const WINDOW_SMALL_BREAKPOINT = 600;
 
+/**
+ * Provides a responsive set of page selection buttons and a select menu for results per page.
+ * At small window widths, it will display a select menu for pages instead of buttons.
+ */
 @Component({
   selector: 'sg-paginator',
   standalone: true,
@@ -35,12 +39,26 @@ export const WINDOW_SMALL_BREAKPOINT = 600;
   styleUrl: './paginator.component.scss',
 })
 export class PaginatorComponent implements OnInit {
+  /**
+   * The initial starting page
+   */
   @Input() currentPage!: number;
+  /**
+   * the number of available result pages. If this one (1) page or less, no page selector will be shown.
+   */
   @Input() pageCount!: number;
+  /**
+   * The intiial number of records per page shown
+   */
   @Input() recordsPerPage!: number;
-
+  /**
+   * Emits an event with the latest selected page
+   */
   @Output() pageChanged = new EventEmitter<number>();
-  @Output() resultsPerPageChanged = new EventEmitter();
+  /**
+   * Emits an event with the latest selection for results per page
+   */
+  @Output() resultsPerPageChanged = new EventEmitter<number>();
 
   private selectedPage: number = 0;
   buttonsShown = 0;
