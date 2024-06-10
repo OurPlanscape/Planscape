@@ -1,5 +1,5 @@
-<div class="pages-container">
-  <div class="nav-control-container">
+<div class="pages-container" *ngIf="!showNavSelect">
+  <div class="nav-control-container" *ngIf="pageCount > 1">
     <button
       class="page-button"
       sg-button
@@ -12,7 +12,7 @@
       sg-button
       class="page-button"
       (click)="setPage(1)"
-      [disabled]="isCurrentPage(1)">
+      [ngClass]="{ 'selected-button': isCurrentPage(1) }">
       1
     </button>
     <button
@@ -43,8 +43,8 @@
     <button
       sg-button
       class="page-button"
-      (click)="getButtonLabels()"
-      [disabled]="isCurrentPage(pageCount)">
+      (click)="setPage(pageCount)"
+      [ngClass]="{ 'selected-button': isCurrentPage(pageCount) }">
       {{ pageCount }}
     </button>
     <button
@@ -58,14 +58,25 @@
   </div>
 </div>
 
+<div class="page-select-container" *ngIf="showNavSelect">
+  <div class="nav-label">Page:</div>
+  <mat-form-field class="picker-field" appearance="outline">
+    <mat-select
+      [(ngModel)]="selectedPage"
+      (selectionChange)="setPage(selectedPage)">
+      @for (page of navSelectRange; track page) {
+        <mat-option [value]="page">{{page}}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
 <div class="per-page-picker">
-  <div class="picker-label">Results Per Page:</div>
+  <div class="picker-label">Results per page:</div>
   <mat-form-field class="picker-field" appearance="outline">
     <mat-select
       [(ngModel)]="recordsPerPage"
-      (selectionChange)="perPageChanged()"
-      class="records-select"
-      panelClass="records-select-panel">
+      (selectionChange)="perPageChanged()">
       <mat-option [value]="10">10</mat-option>
       <mat-option [value]="20">20</mat-option>
       <mat-option [value]="40">40</mat-option>

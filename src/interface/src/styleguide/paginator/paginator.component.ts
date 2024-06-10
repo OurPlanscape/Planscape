@@ -13,6 +13,10 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
+// import { WINDOW_LARGE_BREAKPOINT, WINDOW_SMALL_BREAKPOINT } from '../../app/shared/constants';
+
+export const WINDOW_LARGE_BREAKPOINT = 840;
+export const WINDOW_SMALL_BREAKPOINT = 500;
 
 @Component({
   selector: 'sg-paginator',
@@ -38,28 +42,36 @@ export class PaginatorComponent implements OnInit {
   @Output() pageChanged = new EventEmitter<number>();
   @Output() resultsPerPageChanged = new EventEmitter();
 
-  selectedPage: number = 0;
-  buttonsShown = 10;
+  private selectedPage: number = 0;
+  buttonsShown = 0;
   showFirstSpacer$ = new BehaviorSubject<boolean>(false);
   showLastSpacer$ = new BehaviorSubject<boolean>(false);
   buttonRange$ = new BehaviorSubject<number[]>([]);
-  showAThing$ = new BehaviorSubject<boolean>(false);
+  navSelectRange: number[] = [];
+  showNavSelect = false;
 
   ngOnInit(): void {
     this.selectedPage = Number(this.currentPage);
     this.recordsPerPage = Number(this.recordsPerPage);
+    this.navSelectRange = [1, ...Array(this.pageCount + 1).keys()].slice(2);
     this.getButtonLabels();
   }
 
   visibleButtonCount(): number {
     const width = window.innerWidth;
     // buttons are fixed at 40px
-    // first and last buttons + arrows are 160px wide
-    // max width of buttons is 700px
-    // TODO: hardcode these once we get the breakpoints settled
-    if (width > 800) return Math.ceil((600 - 200) / 40);
-    if (width > 400) return Math.ceil((300 - 200) / 40);
-    return Math.ceil((240 - 200) / 40);
+    if (width > WINDOW_LARGE_BREAKPOINT) {
+      this.showNavSelect = false;
+      return 10;
+    } else if (width > WINDOW_SMALL_BREAKPOINT) {
+      this.showNavSelect = false;
+      return 4;
+    }
+    //anything smaller and we just show a dropdown
+    else {
+      this.showNavSelect = true;
+      return 4;
+    }
   }
 
   getTotalPages(): number {
@@ -67,7 +79,6 @@ export class PaginatorComponent implements OnInit {
   }
 
   getButtonLabels(): void {
-    const buttonArray = [];
     const buttonsToShow = Math.min(
       this.getTotalPages(),
       this.visibleButtonCount()
@@ -79,8 +90,6 @@ export class PaginatorComponent implements OnInit {
         1 -
         (this.getTotalPages() - this.selectedPage)
     );
-
-    // TODO: adjust remainders to account for spacer buttons
     const remainderAtStart = Math.max(
       0,
       Math.ceil(buttonsToShow / 2) - (this.selectedPage - 1)
@@ -98,6 +107,7 @@ export class PaginatorComponent implements OnInit {
     this.showLastSpacer$.next(buttonEnd < this.getTotalPages());
 
     //create the range of actual visible buttons
+    const buttonArray = [];
     for (let i = buttonStart; i < buttonEnd; i++) {
       buttonArray.push(i);
     }
@@ -106,7 +116,6 @@ export class PaginatorComponent implements OnInit {
 
   setPage(pageNum: number) {
     this.selectedPage = pageNum;
-    this.getButtonLabels();
     this.pageChanged.emit(this.selectedPage);
   }
 
@@ -129,5 +138,6 @@ export class PaginatorComponent implements OnInit {
   @HostListener('window:resize')
   onResize() {
     this.visibleButtonCount();
+    this.getButtonLabels();
   }
 }

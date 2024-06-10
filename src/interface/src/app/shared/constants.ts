@@ -57,3 +57,6 @@ export const EXCLUDED_AREAS = [
  * that's accepted by Angular is rejected by the backend.
  */
 export const EMAIL_VALIDATION_REGEX = /^[\w+\.-]+@[\w+\.-]+\.[a-zA-Z]{2,}$/;
+
+export const WINDOW_LARGE_BREAKPOINT = 840;
+export const WINDOW_SMALL_BREAKPOINT = 480;
