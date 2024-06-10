@@ -65,7 +65,7 @@
       [(ngModel)]="selectedPage"
       (selectionChange)="setPage(selectedPage)">
       @for (page of navSelectRange; track page) {
-        <mat-option [value]="page">{{page}}</mat-option>
+        <mat-option [value]="page">{{ page }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
