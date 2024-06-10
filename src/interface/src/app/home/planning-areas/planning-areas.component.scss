@@ -1,57 +1,174 @@
-@import 'variables';
+@import "colors";
+@import "mixins";
+@import "media";
 
 :host {
-  overflow: hidden;
   width: 100%;
-  flex: 1;
+  height: 100%;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+
+.title-nav {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+
+  h3 {
+    margin: 0 auto 0 0;
+  }
 
   .mat-icon {
     line-height: 22px;
   }
 }
 
-.planning {
-  background-color: white;
-  border-radius: 16px;
-  box-shadow: 0px 3px 1px -2px #0000001f;
-  box-shadow: 0px 2px 2px 0px #00000024;
-  box-shadow: 0px 1px 5px 0px #00000033;
-  padding: 16px 26px;
+.filter-bar {
   display: flex;
-  flex-direction: column;
-  min-width: 70%;
-  max-width: 80%;
-  box-sizing: border-box;
-  margin: 20px auto;
-  flex: 1;
-  min-height: calc(100% - $toolbar-height);
-}
-
-.title-nav {
-  display: flex;
-  gap: 10px;
   align-items: center;
+  gap: 8px;
 }
 
-h4 {
-  margin: 0;
-}
 
-.help {
-  margin-left: auto;
-}
+table.planning-areas {
 
-.explore {
-  margin-right: 10px;
-}
+  --mat-table-header-headline-font: "Public Sans", sans-serif;
+  --mat-table-row-item-label-text-font: "Public Sans", sans-serif;
+  --mat-table-footer-supporting-text-font: "Public Sans", sans-serif;
+  --mat-table-header-container-height: 61px;
+  --mat-table-footer-container-height: 61px;
+  --mat-table-row-item-container-height: 61px;
+  --mat-table-row-item-outline-color: #E1E1E1;
+  --mat-table-row-item-label-text-line-height: 22px;
 
-app-plan-table {
-  flex: 1;
+
+  border: 1px solid $color-soft-gray;
+  border-radius: 4px;
+  margin: 16px 0;
   overflow: hidden;
+
+  .mat-column-name, .mat-column-creator {
+    width: 25%;
+  }
+
+  .mat-column-region_name {
+    width: 15%;
+  }
+
+  .mat-column-latest_updated {
+    white-space: nowrap;
+  }
+
+  .mat-mdc-header-cell {
+    white-space: nowrap;
+    font-weight: 600;
+  }
+
+
+  .mat-column-menu {
+    padding: 0;
+    width: 62px;
+    text-align: center;
+  }
+
+  .mdc-data-table__row {
+    cursor: pointer;
+  }
+
+  .mdc-data-table__row:hover {
+    background-color: $color-soft-gray;
+  }
+
+}
+
+.pagination-placeholder {
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 16px;
+
+  div {
+    border: 1px solid black;
+    padding: 5px 10px;
+    aspect-ratio: 1;
+    text-align: center;
+  }
+}
+
+
+@include on-small() {
+  table.planning-areas {
+    .mat-column-region_name,
+    .mat-column-latest_updated,
+    .mat-column-creator,
+    .mat-column-scenario_count,
+    .mat-column-area_acres {
+      display: none;
+    }
+
+    .mat-column-name {
+      width: auto;
+    }
+  }
+
+}
+
+
+.main-loader {
+  margin: 32px auto;
+  text-align: center;
+  display: block;
+}
+
+.empty-state {
+  color: $color-md-gray;
+  text-align: center;
+
+  mat-icon {
+    color: $color-text-gray;
+    width: 48px;
+    height: 48px;
+    font-size: 48px;
+    line-height: 48px;
+  }
+
+  .empty-state__title {
+    @include standard-input-label();
+    color: $color-black;
+    margin-bottom: 4px;
+  }
 }
 
 .tooltip {
   padding: 20px;
+}
+
+// placeholders, remove once the components are ready.
+
+.search-bar-placeholder {
+  border: 1px solid $color-text-gray;
+  padding: 8px;
+  border-radius: 4px;
+  width: 213px;
+}
+
+.filter-placeholder {
+  border: 1px solid $color-text-gray;
+  padding: 8px;
+  border-radius: 4px;
+}
+
+
+::ng-deep {
+  .tooltip-menu {
+    --mat-menu-item-label-text-font: Public Sans;
+    --mat-menu-item-label-text-size: 14px;
+    --mat-menu-item-label-text-tracking: 0;
+    --mat-menu-item-label-text-line-height: 22px;
+    --mat-menu-item-label-text-weight: 400;
+  }
+
 }

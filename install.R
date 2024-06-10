@@ -21,12 +21,13 @@ packages <- c(
   "checkmate",
   "uuid"
 )
-install.packages(
-  packages,
-  repos = repos)
 
-library("devtools")
+github_packages <- c(
+  "forsys-sp/forsysr",
+  "forsys-sp/patchmax",
+  "milesmcbain/friendlyeval"
+)
 
-devtools::install_github("forsys-sp/forsysr")
-devtools::install_github("forsys-sp/patchmax")
-devtools::install_github("milesmcbain/friendlyeval")
+if (!require("pacman")) install.packages("pacman", repos=repos)
+pacman::p_load(packages)
+pacman::p_load_gh(github_packages)
