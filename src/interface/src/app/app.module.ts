@@ -29,12 +29,14 @@ import { LegacyMaterialModule } from './material/legacy-material.module';
 
 import { NgxMaskModule } from 'ngx-mask';
 import { PlanTableComponent } from './home/plan-table/plan-table.component';
-import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
+
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
 import { SharedModule } from '@shared';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { environment } from 'src/environments/environment';
 import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.component';
+import { LegacyPlanningAreasComponent } from './home/legacy-planning-areas/legacy-planning-areas.component';
+import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
 
 @NgModule({
   declarations: [
@@ -42,7 +44,7 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
     ChipInputComponent,
     HomeComponent,
     PlanTableComponent,
-    PlanningAreasComponent,
+    LegacyPlanningAreasComponent,
     SharePlanDialogComponent,
     WelcomeComponent,
   ],
@@ -70,6 +72,7 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
     NgxMaskModule.forRoot(),
     ButtonComponent,
     DeleteDialogComponent,
+    PlanningAreasComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,
