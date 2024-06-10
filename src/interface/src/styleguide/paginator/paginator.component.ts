@@ -16,7 +16,7 @@ import { BehaviorSubject } from 'rxjs';
 // import { WINDOW_LARGE_BREAKPOINT, WINDOW_SMALL_BREAKPOINT } from '../../app/shared/constants';
 
 export const WINDOW_LARGE_BREAKPOINT = 840;
-export const WINDOW_SMALL_BREAKPOINT = 500;
+export const WINDOW_SMALL_BREAKPOINT = 600;
 
 @Component({
   selector: 'sg-paginator',
