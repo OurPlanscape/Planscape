@@ -11,14 +11,18 @@
   .page-button {
     @include h5();
     font-family: 'Public Sans'; // h5() not bringing in public sans?
-    color: $color-md-gray;
+    color: black;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 20px;
+    text-align: center;
     background-color: $color-white;
     border: 1px solid $color-md-gray;
+    border-right: 0px;
     padding: 8px;
     height: 40px;
     width: 40px;
     min-width: 40px;
-    font-size: 20px;
     cursor: pointer;
   }
 
@@ -39,17 +43,31 @@
     height: 40px;
     width: 30px;
     font-size: 20px;
+    border-left: 1px solid $color-md-gray;
   }
 
   .first-page-button {
     border-top-left-radius: 10%;
     border-bottom-left-radius: 10%;
     padding-left: 12px;
+    .mat-icon {
+      font-size: 14px;
+      height: 100%;
+      width: 14px;
+      line-height: 22px;
+    }
   }
 
   .last-page-button {
     border-top-right-radius: 10%;
     border-bottom-right-radius: 10%;
+    border-right: 1px solid $color-md-gray;
+    .mat-icon {
+      font-size: 14px;
+      height: 100%;
+      width: 14px;
+      line-height: 22px;
+    }
   }
 
   .page-button:disabled {
@@ -137,22 +155,25 @@
 
   ::ng-deep .mat-mdc-select-value-text {
     @include h5();
-    font-size: 20px;
+    font-size: 16px;
     font-family: 'Public Sans';
     color: $color-md-gray;
     line-height: 40px;
     font-weight: 600;
     letter-spacing: normal;
+    color: black;
   }
 }
 
 ::ng-deep .per-page-item.mat-mdc-option.mdc-list-item {
   @include h5();
+  font-size: 16px;
   font-family: 'Public Sans';
   color: $color-md-gray;
 }
 ::ng-deep .nav-page-item.mat-mdc-option.mdc-list-item {
   @include h5();
+  font-size: 16px;
   font-family: 'Public Sans';
   color: $color-md-gray;
 }
