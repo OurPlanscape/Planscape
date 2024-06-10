@@ -1,5 +1,6 @@
 @import "colors";
 @import "mixins";
+@import "media";
 
 :host {
   width: 100%;
@@ -98,7 +99,7 @@ table.planning-areas {
 }
 
 
-@media screen and (max-width: 840px) {
+@include on-small() {
   table.planning-areas {
     .mat-column-region_name,
     .mat-column-latest_updated,
@@ -141,6 +142,10 @@ table.planning-areas {
   }
 }
 
+.tooltip {
+  padding: 20px;
+}
+
 // placeholders, remove once the components are ready.
 
 .search-bar-placeholder {
@@ -154,4 +159,16 @@ table.planning-areas {
   border: 1px solid $color-text-gray;
   padding: 8px;
   border-radius: 4px;
+}
+
+
+::ng-deep {
+  .tooltip-menu {
+    --mat-menu-item-label-text-font: Public Sans;
+    --mat-menu-item-label-text-size: 14px;
+    --mat-menu-item-label-text-tracking: 0;
+    --mat-menu-item-label-text-line-height: 22px;
+    --mat-menu-item-label-text-weight: 400;
+  }
+
 }
