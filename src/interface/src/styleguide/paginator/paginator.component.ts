@@ -40,23 +40,23 @@ export const WINDOW_SMALL_BREAKPOINT = 600;
 })
 export class PaginatorComponent implements OnInit {
   /**
-   * The initial starting page
+   * The initial starting page.
    */
-  @Input() currentPage!: number;
+  @Input() currentPage = 1;
   /**
-   * the number of available result pages. If this one (1) page or less, no page selector will be shown.
+   * The number of available result pages. If there's only one page or less, no page selector will be shown.
    */
   @Input() pageCount!: number;
   /**
-   * The intiial number of records per page shown
+   * The intiial number of records per page shown.
    */
-  @Input() recordsPerPage!: number;
+  @Input() recordsPerPage = 10;
   /**
-   * Emits an event with the latest selected page
+   * Emits an event with the latest selected page.
    */
   @Output() pageChanged = new EventEmitter<number>();
   /**
-   * Emits an event with the latest selection for results per page
+   * Emits an event with the latest selection for results per page.
    */
   @Output() resultsPerPageChanged = new EventEmitter<number>();
 

@@ -24,7 +24,7 @@ type Story = StoryObj<PaginatorComponent>;
 export const Default: Story = {
   args: {
     pageCount: 20,
-    currentPage: 6,
+    currentPage: 1,
     recordsPerPage: 10,
   },
   render: ({ ...args }) => ({
@@ -33,26 +33,32 @@ export const Default: Story = {
   }),
 };
 
+
+export const OnePage: Story = {
+  args: {
+    pageCount: 1,
+    recordsPerPage: 10,
+  },
+};
+
+export const TwoPages: Story = {
+  args: {
+    pageCount: 2,
+    recordsPerPage: 10,
+  },
+};
+
+
 export const FewPages: Story = {
   args: {
     pageCount: 5,
-    currentPage: 3,
     recordsPerPage: 10,
   },
-  render: ({ ...args }) => ({
-    props: args,
-    template: `<sg-paginator ${argsToTemplate(args)}></sg-paginator>`,
-  }),
 };
 
 export const ManyPages: Story = {
   args: {
     pageCount: 105,
-    currentPage: 3,
     recordsPerPage: 10,
   },
-  // render: ({ ...args }) => ({
-  //   props: args,
-  //   template: `<sg-paginator ${argsToTemplate(args)}></sg-paginator>`,
-  // }),
 };
