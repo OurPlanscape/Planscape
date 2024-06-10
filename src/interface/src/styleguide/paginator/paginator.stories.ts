@@ -33,7 +33,6 @@ export const Default: Story = {
   }),
 };
 
-
 export const OnePage: Story = {
   args: {
     pageCount: 1,
@@ -47,7 +46,6 @@ export const TwoPages: Story = {
     recordsPerPage: 10,
   },
 };
-
 
 export const FewPages: Story = {
   args: {
