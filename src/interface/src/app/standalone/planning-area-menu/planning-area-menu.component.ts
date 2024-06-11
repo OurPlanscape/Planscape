@@ -75,6 +75,7 @@ export class PlanningAreaMenuComponent {
       .subscribe((confirmed) => {
         if (confirmed) {
           this.planService.deletePlan(this.plan.id).subscribe(() => {
+            this.afterDelete.emit();
             this.snackbar.open(
               `Successfully deleted plan: ${this.plan.name}`,
               'Dismiss',
