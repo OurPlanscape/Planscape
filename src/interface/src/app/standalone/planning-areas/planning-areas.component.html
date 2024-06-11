@@ -86,42 +86,9 @@
             {{ element[column.key] | number: '1.0-0' }}
           </ng-container>
           <ng-container *ngSwitchCase="'menu'">
-            <button
-              [matMenuTriggerFor]="menu"
-              mat-icon-button
-              aria-label="more options"
-              class="more-menu-button">
-              <mat-icon>more_vert</mat-icon>
-            </button>
-            <mat-menu #menu="matMenu" class="more-treatment-menu">
-              <a mat-menu-item [routerLink]="['/plan', element.id]">
-                <mat-icon class="material-symbols-outlined"
-                  >folder_open
-                </mat-icon>
-                <span>Open</span>
-              </a>
-              <a mat-menu-item [routerLink]="['/explore', element.id]">
-                <mat-icon class="material-symbols-outlined">map</mat-icon>
-                <span>View Map</span>
-              </a>
-              <button
-                mat-menu-item
-                (click)="sharePlan(element)"
-                [disabled]="!shareEnabled(element)">
-                <mat-icon class="material-symbols-outlined">share</mat-icon>
-                <span>Share</span>
-              </button>
-              <button
-                mat-menu-item
-                class="delete"
-                (click)="deletePlan(element)"
-                [disabled]="!canDeletePlanningArea(element)">
-                <mat-icon class="material-symbols-outlined"
-                  >delete_outlined
-                </mat-icon>
-                <span>Delete</span>
-              </button>
-            </mat-menu>
+            <app-planning-area-menu
+              [plan]="element"
+              (afterDelete)="reload()"></app-planning-area-menu>
           </ng-container>
         </ng-container>
       </td>
