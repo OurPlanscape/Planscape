@@ -10,6 +10,7 @@ import {
 } from '../../plan/permissions';
 import {
   MatLegacyDialog as MatDialog,
+  MatLegacyDialogModule,
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
 import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
@@ -22,7 +23,13 @@ import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-pla
 @Component({
   selector: 'app-planning-area-menu',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule, MatMenuModule, RouterLink],
+  imports: [
+    MatButtonModule,
+    MatIconModule,
+    MatMenuModule,
+    MatLegacyDialogModule,
+    RouterLink,
+  ],
   templateUrl: './planning-area-menu.component.html',
   styleUrl: './planning-area-menu.component.scss',
 })
