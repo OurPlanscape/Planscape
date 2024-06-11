@@ -20,7 +20,7 @@ import {
 } from '@angular/common';
 
 import { PlanService } from '@services';
-import { PreviewPlan, regions } from '@types';
+import { PreviewPlan, Region, regions } from '@types';
 
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -28,11 +28,13 @@ import {
   DEFAULT_SORT_OPTIONS,
   QueryParamsService,
 } from './query-params.service';
+
 import { KeyPipe } from '../key.pipe';
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-planning-areas',
@@ -60,6 +62,7 @@ import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-
     KeyPipe,
     PlanningAreaMenuComponent,
     PlanningAreasSearchComponent,
+    FormsModule,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -147,5 +150,9 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.dataSource.destroy();
+  }
+
+  selectRegion(region: Region) {
+    this.dataSource.filterRegion(region);
   }
 }

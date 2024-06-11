@@ -12,6 +12,7 @@ export interface QueryParams extends Partial<Sort> {
   page?: number;
   name?: string;
   limit?: number;
+  region?: string;
 }
 
 @Injectable()

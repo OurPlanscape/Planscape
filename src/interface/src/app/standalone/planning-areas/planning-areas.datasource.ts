@@ -1,5 +1,7 @@
-import { PreviewPlan } from '@types';
 import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
+
+import { PreviewPlan, Region, regionToString } from '@types';
+
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
@@ -55,6 +57,10 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    */
   public hasFilters$ = this._hasFilters$.asObservable();
 
+  private selectedRegions: Region[] = [];
+
+  //private selectedCreators: Region[] = [];
+
   constructor(
     private planService: PlanService,
     private queryParamsService: QueryParamsService
@@ -86,9 +92,11 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getPageOptions(),
       ...this.getSortOptions(),
       ...this.searchOptions(),
+      ...this.getRegionFilters(),
     };
     // update filter status when loading data
     this._hasFilters$.next(!!this.searchTerm);
+
     this._loading.next(true);
     this.planService.getPlanPreviews(params).subscribe((data) => {
       this.setPages(data.count);
@@ -108,6 +116,16 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     this.pageOptions.limit = size;
     this.resetPageAndUpdateUrl({ limit: size });
     this.loadData();
+  }
+
+  filterRegion(region: Region) {
+    if (!this.selectedRegions.includes(region)) {
+      this.selectedRegions.push(region);
+    }
+    const regions = this.selectedRegions.join(',');
+    console.log(regions);
+    this.loadData();
+    //this.queryParamsService.updateUrl({ ...this.sortOptions, region: region });
   }
 
   goToPage(page: number) {
@@ -161,6 +179,20 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
           : this.sortOptions.active,
     };
   }
+
+  private getRegionFilters() {
+    if (this.selectedRegions.length === 0) {
+      return;
+    }
+    return {
+      region_name: this.selectedRegions.map((r) => regionToString(r)),
+    };
+  }
+
+  /**
+   * transforms page options to limit/offset.
+   * @private
+   */
 
   private getPageOptions() {
     return {

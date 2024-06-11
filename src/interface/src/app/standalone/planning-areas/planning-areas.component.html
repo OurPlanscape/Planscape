@@ -46,9 +46,13 @@
 <div class="filter-bar">
   <div class="filter-placeholder">Filter placeholder</div>
   <div class="filter-placeholder">Filter placeholder</div>
-  <select>
-    <option *ngFor="let r of regions">{{ r[1] }}</option>
-  </select>
+
+  <div *ngFor="let r of regions">
+    <input
+      type="checkbox"
+      [value]="r[0]"
+      (change)="selectRegion(r[1])" /><label>{{ r[1] }}</label>
+  </div>
 
   <select>
     <option *ngFor="let c of cretors$ | async">{{ c }}</option>
