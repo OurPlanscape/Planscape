@@ -198,6 +198,51 @@ class GetPlanningAreaTest(APITransactionTestCase):
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
 
+    def test_filter_planning_areas_by_own_user_ids(self):
+        self.client.force_authenticate(self.user)
+        query_params = {"creator": f"{self.user.id},{self.user2.id}"}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(planning_areas["count"], 120)  # total results
+
+    def test_filter_planning_areas_multiple_users_unshared(self):
+        # This should only return the planning areas visible to logged in user
+        self.client.force_authenticate(self.user2)
+        query_params = {"creator": f"{self.user.id},{self.user2.id}"}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(planning_areas["count"], 1)
+
+    def test_filter_planning_areas_by_multiple_user_ids(self):
+        # share user2's planning area with user
+        create_collaborator_record(
+            self.user2,
+            self.user,
+            self.planning_area6,
+            Role.COLLABORATOR,
+        )
+        # auth as user1
+        self.client.force_authenticate(self.user)
+        query_params = {"creator": f"{self.user.id},{self.user2.id}"}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(planning_areas["count"], 121)  # total results
+
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(
             reverse("planning:planningareas-list"), {}, content_type="application/json"
