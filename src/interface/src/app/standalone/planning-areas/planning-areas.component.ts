@@ -18,8 +18,10 @@ import {
   NgSwitchCase,
   NgSwitchDefault,
 } from '@angular/common';
+
 import { PlanService } from '@services';
-import { PreviewPlan } from '@types';
+import { PreviewPlan, regions } from '@types';
+
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
@@ -100,9 +102,12 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad$;
+
   noEntries$ = this.dataSource.noEntries$;
   hasFilters$ = this.dataSource.hasFilters$;
+
   pages$ = this.dataSource.pages$;
+  readonly regions = Object.entries(regions);
 
   ngOnInit() {
     this.dataSource.loadData();

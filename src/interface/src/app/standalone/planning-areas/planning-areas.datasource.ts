@@ -29,6 +29,17 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    */
   public loading$ = this._loading.asObservable();
 
+  public creators$ = this._dataStream.pipe(
+    map((plans) =>
+      plans.reduce<string[]>((values, plan) => {
+        if (!values.includes(plan.creator)) {
+          values.push(plan.creator);
+        }
+        return values;
+      }, [])
+    )
+  );
+
   /**
    * Emits `true` if there are no results after loading data.
    */
