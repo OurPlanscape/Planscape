@@ -54,9 +54,12 @@
       (change)="selectRegion(r[1])" /><label>{{ r[1] }}</label>
   </div>
 
-  <select>
-    <option *ngFor="let c of cretors$ | async">{{ c }}</option>
-  </select>
+  <div *ngFor="let creator of creators$ | async">
+    <input
+      type="checkbox"
+      [value]="creator"
+      (change)="selectCreator(creator)" /><label>{{ creator }}</label>
+  </div>
 </div>
 <!--Initial load spinner-->
 <mat-spinner

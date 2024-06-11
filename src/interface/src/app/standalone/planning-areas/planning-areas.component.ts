@@ -155,4 +155,8 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   selectRegion(region: Region) {
     this.dataSource.filterRegion(region);
   }
+
+  selectCreator(creator: string) {
+    this.dataSource.filterCreator(creator);
+  }
 }

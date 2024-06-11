@@ -58,8 +58,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public hasFilters$ = this._hasFilters$.asObservable();
 
   private selectedRegions: Region[] = [];
-
-  //private selectedCreators: Region[] = [];
+  private selectedCreators: string[] = [];
 
   constructor(
     private planService: PlanService,
@@ -93,6 +92,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getSortOptions(),
       ...this.searchOptions(),
       ...this.getRegionFilters(),
+      ...this.getCreatorFilters(),
     };
     // update filter status when loading data
     this._hasFilters$.next(!!this.searchTerm);
@@ -119,13 +119,31 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   filterRegion(region: Region) {
-    if (!this.selectedRegions.includes(region)) {
+    const index = this.selectedRegions.indexOf(region);
+    if (index === -1) {
       this.selectedRegions.push(region);
+    } else {
+      this.selectedRegions.splice(index, 1);
     }
-    const regions = this.selectedRegions.join(',');
-    console.log(regions);
+
+    const regionNames = this.selectedRegions
+      .map((r) => regionToString(r))
+      .join(',');
+    this.queryParamsService.updateUrl({
+      ...this.sortOptions,
+      region: regionNames,
+    });
     this.loadData();
-    //this.queryParamsService.updateUrl({ ...this.sortOptions, region: region });
+  }
+
+  filterCreator(creator: string) {
+    const index = this.selectedCreators.indexOf(creator);
+    if (index === -1) {
+      this.selectedCreators.push(creator);
+    } else {
+      this.selectedCreators.splice(index, 1);
+    }
+    this.loadData();
   }
 
   goToPage(page: number) {
@@ -189,10 +207,14 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     };
   }
 
-  /**
-   * transforms page options to limit/offset.
-   * @private
-   */
+  private getCreatorFilters() {
+    if (this.selectedCreators.length === 0) {
+      return;
+    }
+    return {
+      creator: this.selectedCreators,
+    };
+  }
 
   private getPageOptions() {
     return {
