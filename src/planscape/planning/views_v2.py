@@ -9,7 +9,11 @@ from planning.serializers import (
     ListScenarioSerializer,
     ScenarioSerializer,
 )
-from planning.filters import PlanningAreaFilter, ScenarioFilter
+from planning.filters import (
+    PlanningAreaFilter,
+    ScenarioFilter,
+    PlanningAreaOrderingFilter,
+)
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.services import (
     create_planning_area,
@@ -17,6 +21,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
 )
+from planning.services import get_acreage
 
 logger = logging.getLogger(__name__)
 
@@ -24,8 +29,18 @@ logger = logging.getLogger(__name__)
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     queryset = PlanningArea.objects.all()
     permission_classes = [PlanningAreaViewPermission]
-    ordering_fields = ["name", "created_at", "scenario_count"]
     filterset_class = PlanningAreaFilter
+    filter_backends = [PlanningAreaOrderingFilter]
+    ordering_fields = [
+        "area_acres",
+        "created_at",
+        "creator",
+        "latest_updated",
+        "name",
+        "region_name",
+        "scenario_count",
+        "user",
+    ]
 
     def get_serializer_class(self):
         if self.action == "list":
