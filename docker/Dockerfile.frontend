@@ -1,11 +1,13 @@
-FROM node:18.20.2-bullseye
+FROM arm64v8/node:current-bullseye-slim
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
 
-RUN npm install -g @angular/cli
-
 COPY src/interface/package.json src/interface/package-lock.json /usr/src/app/
+
+RUN npm install -g @angular/cli@17.3.8
+
+RUN npm install @angular-devkit/build-angular@17.3.8 --save-dev --force
 
 RUN npm install
 

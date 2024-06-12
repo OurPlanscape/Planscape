@@ -6,7 +6,8 @@ services:
     command: ["echo", "build done"]
     build:
       context: .
-      dockerfile: docker/Dockerfile
+      dockerfile: docker/Dockerfile.arm64
+
   web:
     image: planscape
     extends:
@@ -22,6 +23,7 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - .:/usr/src/app
+
   frontend:
     build:
       context: .
@@ -35,6 +37,7 @@ services:
     working_dir: /usr/src/app/src/interface
     volumes:
       - .:/usr/src/app
+
   redis:
     image: redis:6.2-alpine
     restart: always
@@ -43,6 +46,7 @@ services:
     command: redis-server --save 20 1 --loglevel warning
     volumes:
       - cache:/data/redis
+
   celery_worker:
     image: planscape
     extends:
@@ -59,19 +63,27 @@ services:
       - redis
     volumes:
       - .:/usr/src/app
+
   db:
-    image: postgis/postgis:15-3.4
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: postgres
-      POSTGRES_MULTIPLE_EXTENSIONS: postgis,hstore,postgis_topology,postgis_raster,pgrouting
+    # image: postgis/postgis:16-3.4
+    image: kartoza/postgis:16-3.4--v2023.11.04
     volumes:
-      - postgres:/data/postgres
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./postgres-resources:/docker-entrypoint-initdb.d
+      - ./data/pgopt:/opt/planscape/data/
+    environment:
+      - POSTGRES_DB=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_USER=postgres
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,postgis_raster,pgrouting
+      - RUN_AS_ROOT=true
     ports:
-      - 5433:5432
-    restart: unless-stopped
-    command: -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+      - "5433:5432"
+    restart: on-failure
+    healthcheck:
+      test: "PGPASSWORD=planscapepw pg_isready -h 127.0.0.1 -U planscaper -d planscape"
+
+
 volumes:
   postgres: null
   cache:

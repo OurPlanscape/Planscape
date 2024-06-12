@@ -131,6 +131,7 @@ test-scenarios:
 
 SERID=$(shell id -u)
 GROUPID=$(shell id -g)
+ARCH=$(shell uname -m)
 
 TEST=.
 APP_LABEL=
