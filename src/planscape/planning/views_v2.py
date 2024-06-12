@@ -2,6 +2,9 @@ import logging
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter
+from django_filters.rest_framework import DjangoFilterBackend
+
 from planning.models import PlanningArea, Scenario
 from planning.serializers import (
     PlanningAreaSerializer,
@@ -30,7 +33,11 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     queryset = PlanningArea.objects.all()
     permission_classes = [PlanningAreaViewPermission]
     filterset_class = PlanningAreaFilter
-    filter_backends = [PlanningAreaOrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        OrderingFilter,
+        PlanningAreaOrderingFilter,
+    ]
     ordering_fields = [
         "area_acres",
         "created_at",
