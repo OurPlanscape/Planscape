@@ -6,7 +6,7 @@
       class="first-page-button page-button"
       (click)="handlePrevious()"
       [disabled]="isCurrentPage(1)">
-      <mat-icon>arrow_back_ios</mat-icon>
+      <mat-icon class="arrow-icon">arrow_back_ios</mat-icon>
     </button>
     <button
       sg-button
@@ -53,7 +53,7 @@
       class="page-button last-page-button"
       (click)="handleNext()"
       [disabled]="isCurrentPage(getTotalPages())">
-      <mat-icon>arrow_forward_ios</mat-icon>
+      <mat-icon class="arrow-icon">arrow_forward_ios</mat-icon>
     </button>
   </div>
 </div>

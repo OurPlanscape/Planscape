@@ -9,25 +9,49 @@
   width: 100%;
 
   .page-button {
-    @include h5();
+    @include xs-label();
     font-family: 'Public Sans'; // h5() not bringing in public sans?
-    color: $color-md-gray;
+    color: $color-black;
     background-color: $color-white;
-    border: 1px solid $color-md-gray;
+    border: 1px solid $color-soft-gray;
     padding: 8px;
     height: 40px;
     width: 40px;
     min-width: 40px;
     font-size: 20px;
+
+    //styleName: Label/xs;
+    font-family: 'Public Sans';
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 14px;
+    text-align: center;
+
     cursor: pointer;
   }
 
+  .page-button:hover {
+    background-color: $color-light-gray;
+    color: $color-black;
+  }
+
   .page-button:active {
-    background-color: lightgrey;
+    background-color: $color-light-gray;
+    color: $color-black;
   }
 
   .selected-button {
-    background-color: grey;
+    background-color: $color-standard-blue;
+    color: white;
+  }
+
+  .selected-button:active {
+    background-color: $color-standard-blue;
+    color: white;
+  }
+
+  .selected-button:hover {
+    background-color: $color-standard-blue;
     color: white;
   }
 
@@ -39,6 +63,13 @@
     height: 40px;
     width: 30px;
     font-size: 20px;
+  }
+
+  .arrow-icon {
+    height: 20px;
+    width: 20px;
+    font-size: 20px;
+    line-height: 26px;
   }
 
   .first-page-button {
@@ -54,7 +85,7 @@
 
   .page-button:disabled {
     background-color: $color-white;
-    color: $color-md-gray;
+    color: $color-text-gray;
   }
 
   .pages-container {
@@ -106,13 +137,12 @@
     margin: 0px;
     width: 180px;
     text-align: right;
-    color: $color-md-gray;
+    color: $color-soft-gray;
   }
 
   .picker-field {
     width: 100px;
     padding-top: 4px;
-    border: black;
 
     &.disabled {
       opacity: 0.6;
