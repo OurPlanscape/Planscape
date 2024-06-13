@@ -78,7 +78,6 @@ load-rasters:
 
 install-dependencies-backend:
 	pip install -r src/planscape/requirements.txt
-	Rscript install.R
 
 deploy-backend: install-dependencies-backend migrate restart
 
