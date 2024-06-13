@@ -1,0 +1,25 @@
+<div class="upload-field-label">
+  {{ fieldLabel }}
+  <span class="required-label">required</span>
+</div>
+<div
+  class="input-container  {{ classByStatus[uploadStatus] }}"
+  (click)="fileInput.click()">
+  <div class="inner-label">{{ innerLabel }}</div>
+
+  <div class="icon-button-box">
+    <div class="status-icon" class="{{ classByStatus[uploadStatus] }}">
+      <mat-icon>{{ iconByStatus[uploadStatus] }}</mat-icon>
+    </div>
+    <button sg-button aria-label="more options">
+      <span>Upload File</span>
+      <input
+        class="input-box"
+        #fileInput
+        type="file"
+        (change)="onFileSelected($event)"
+        style="display: none" />
+    </button>
+  </div>
+</div>
+<div class="field-subscript">Accepted file types</div>

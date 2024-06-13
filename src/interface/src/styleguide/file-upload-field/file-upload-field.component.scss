@@ -1,0 +1,98 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.upload-field-label {
+  @include standard-input-label();
+  font-family: 'Public Sans';
+  color: $color-dark-gray;
+  font-family: Public Sans;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  text-align: left;
+}
+.required-label {
+  @include italic-sm();
+  color: $color-text-gray;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: $color-light-gray;
+  width: 452px;
+  height: 40px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 4px;
+  border: 1px;
+  border-style: solid;
+  border-color: $color-soft-gray;
+  
+  &.in-progress {
+    color: $color-main-blue;
+  }
+
+  &.success {
+    border-color: $color-brand-teal;
+  }
+
+  &.failed {
+    border-color: $color-error;
+  }
+
+  &.running {
+    color: black;
+  }
+}
+
+.inner-label {
+  @include standard-input-label();
+  color: $color-md-gray;
+  text-align: left;
+  font-family: 'Public Sans';
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 22px;
+  text-align: left;
+}
+.field-subscript {
+  @include italic-sm();
+  color: $color-dark-gray;
+}
+
+.icon-button-box {
+  width: 110px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.status-icon {
+  color: $color-black;
+
+  &.in-progress {
+    color: $color-main-blue;
+  }
+
+  &.success {
+    color: $color-brand-green;
+  }
+
+  &.failed {
+    color: $color-error;
+  }
+
+  &.running {
+    color: black;
+  }
+}
