@@ -1,5 +1,8 @@
-library(remotes)
 repos <- "http://cran.us.r-project.org"
+if (!require("remotes")) install.packages("remotes", repos=repos)
+if (!require("pacman")) install.packages("pacman", repos=repos)
+library(remotes)
+library(pacman)
 packages <- c(
   "dplyr",
   "textshaping",
@@ -29,7 +32,6 @@ github_packages <- c(
   "MilesMcBain/friendlyeval"
 )
 
-if (!require("pacman")) install.packages("pacman", repos=repos)
 pacman::p_load(packages, character.only=TRUE)
 
 if (!require("forsys")) {

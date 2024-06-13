@@ -72,6 +72,18 @@ services:
       - 5433:5432
     restart: unless-stopped
     command: -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+  martin:
+    image: ghcr.io/maplibre/martin:v0.13.0
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    environment:
+      - DATABASE_URL=postgresql://postgres:postgres@db/postgres
+    command: --config /usr/src/app/martin.yaml 
+    volumes:
+      - .:/usr/src/app
 volumes:
   postgres: null
   cache:
