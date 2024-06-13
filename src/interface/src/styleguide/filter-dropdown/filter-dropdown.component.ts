@@ -106,9 +106,10 @@ export class FilterDropdownComponent implements OnInit {
   }
 
   handleFilterClick() {
-    //clear the search bar
+    //clear the search bar and show all items
     this.clearInput.next();
-    //capture the selections prior to this opening
+    this.displayedItems = this.menuItems.slice();
+    //copy the selections we had prior to opening, in case the user hits cancel
     this.previousSelections = this.selectedItems.slice();
   }
 
