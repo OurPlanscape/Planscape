@@ -1,4 +1,3 @@
-library(remotes)
 repos <- "http://cran.us.r-project.org"
 if (!require("remotes")) install.packages("remotes", repos=repos)
 if (!require("pacman")) install.packages("pacman", repos=repos)
@@ -34,9 +33,12 @@ github_packages <- c(
 )
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
 if (!require("pacman")) install.packages("pacman", repos=repos)
 >>>>>>> 2b3fbaa1 (fixes install and adds the installation script to the backend dependencies)
+=======
+>>>>>>> 15d1e440 (fixes installation of docker, docker compose and sets up martin tileserver)
 pacman::p_load(packages, character.only=TRUE)
 
 if (!require("forsys")) {
