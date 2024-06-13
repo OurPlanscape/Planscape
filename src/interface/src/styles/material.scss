@@ -23,3 +23,12 @@
 .mat-table .mat-header-cell {
   font-weight: 700;
 }
+
+// default styles for menu
+body {
+  --mat-menu-item-label-text-font: "Public Sans", sans-serif;
+  --mat-menu-item-label-text-size: 14px;
+  --mat-menu-item-label-text-tracking: 0;
+  --mat-menu-item-label-text-line-height: 22px;
+  --mat-menu-item-label-text-weight: 400;
+}
