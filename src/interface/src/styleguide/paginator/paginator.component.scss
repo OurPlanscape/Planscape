@@ -10,13 +10,13 @@
 
   .page-button {
     @include xs-label();
-    font-family: 'Public Sans'; // h5() not bringing in public sans?
+    font-family: 'Public Sans';
     color: $color-black;
     background-color: $color-white;
     border: 1px solid $color-soft-gray;
     padding: 8px;
-    height: 40px;
-    width: 40px;
+    height: 38px;
+    width: 42px;
     min-width: 40px;
     font-size: 20px;
 
@@ -80,7 +80,6 @@
     line-height: 36px;
   }
 
-
   .first-page-button {
     border-top-left-radius: 10%;
     border-bottom-left-radius: 10%;
@@ -117,7 +116,6 @@
     width: 100%;
   }
 
-  // Note the media queries, below
   .nav-control-container {
     display: flex;
     flex-direction: row;
