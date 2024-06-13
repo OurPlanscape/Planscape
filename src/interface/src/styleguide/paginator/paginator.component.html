@@ -20,7 +20,7 @@
       *ngIf="showFirstSpacer$ | async"
       class="spacer-button"
       [disabled]="isCurrentPage(1)">
-      ...
+      <mat-icon class="ellipse-icon">more_horiz</mat-icon>
     </button>
     <div class="nav-controls">
       <div *ngFor="let pageNum of buttonRange$ | async">
@@ -38,7 +38,7 @@
       class="spacer-button"
       *ngIf="showLastSpacer$ | async"
       [disabled]="isCurrentPage(1)">
-      ...
+      <mat-icon class="ellipse-icon">more_horiz</mat-icon>
     </button>
     <button
       sg-button

@@ -59,7 +59,7 @@
     color: $color-md-gray;
     background-color: white;
     border: none;
-    padding: 8px;
+    padding: 0px;
     height: 40px;
     width: 30px;
     font-size: 14px;
@@ -72,6 +72,14 @@
     font-size: 20px;
     line-height: 26px;
   }
+
+  .ellipse-icon {
+    height: 20px;
+    width: 20px;
+    font-size: 20px;
+    line-height: 36px;
+  }
+
 
   .first-page-button {
     border-top-left-radius: 10%;
@@ -151,7 +159,7 @@
     margin: 0px;
     width: 180px;
     text-align: right;
-    color: $color-soft-gray;
+    color: $color-black;
   }
 
   .picker-field {
@@ -194,15 +202,19 @@
 }
 
 ::ng-deep .per-page-item.mat-mdc-option.mdc-list-item {
-  @include h5();
-  font-size: 16px;
   font-family: 'Public Sans';
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
   color: $color-md-gray;
 }
 ::ng-deep .nav-page-item.mat-mdc-option.mdc-list-item {
-  @include h5();
-  font-size: 16px;
   font-family: 'Public Sans';
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
   color: $color-md-gray;
 }
 
