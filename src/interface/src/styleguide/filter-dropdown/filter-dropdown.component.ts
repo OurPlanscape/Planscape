@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -6,7 +13,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { InputFieldComponent } from '@styleguide';
 import { FormsModule } from '@angular/forms';
 import { ButtonComponent } from '../button/button.component';
-
+import { SearchBarComponent } from '../search-bar/search-bar.component';
+import { Subject } from 'rxjs';
 /**
  * Filter dropdown that lets user select one or multiple strings as part of a search
  */
@@ -19,7 +27,7 @@ import { ButtonComponent } from '../button/button.component';
     MatMenuModule,
     MatCheckboxModule,
     InputFieldComponent,
-    // MatButtonModule,
+    SearchBarComponent,
     FormsModule,
     ButtonComponent,
   ],
@@ -27,6 +35,8 @@ import { ButtonComponent } from '../button/button.component';
   styleUrls: ['./filter-dropdown.component.scss'],
 })
 export class FilterDropdownComponent implements OnInit {
+  @ViewChild(SearchBarComponent) searchbar!: SearchBarComponent;
+
   /**
    * Accepts the name of a Material Icon to be displayed at the left of the menu trigger
    */
@@ -51,9 +61,12 @@ export class FilterDropdownComponent implements OnInit {
 
   displayedItems: string[] = [];
   selectedItems: string[] = [];
-  searchTerm = '';
   private previousSelections: string[] = [];
+  clearInput: Subject<void> = new Subject<void>();
 
+  clearSearchBar() {
+    this.clearInput.next();
+  }
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
   }
@@ -94,8 +107,7 @@ export class FilterDropdownComponent implements OnInit {
 
   handleFilterClick() {
     //clear the search bar
-    this.searchTerm = '';
-    this.filterSearch();
+    this.clearInput.next();
     //capture the selections prior to this opening
     this.previousSelections = this.selectedItems.slice();
   }
@@ -105,12 +117,10 @@ export class FilterDropdownComponent implements OnInit {
     e.stopPropagation();
   }
 
-  filterSearch(): void {
-    if (this.searchTerm !== '') {
+  filterSearch(searchTerm: string): void {
+    if (searchTerm !== '') {
       this.displayedItems = this.menuItems.slice();
     }
-    this.displayedItems = this.menuItems.filter((e) =>
-      e.includes(this.searchTerm)
-    );
+    this.displayedItems = this.menuItems.filter((e) => e.includes(searchTerm));
   }
 }

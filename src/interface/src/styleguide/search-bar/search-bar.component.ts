@@ -5,6 +5,8 @@ import {
   Input,
   OnInit,
   OnDestroy,
+  ElementRef,
+  ViewChild,
 } from '@angular/core';
 import {
   DatePipe,
@@ -19,9 +21,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { InputFieldComponent } from '../input/input-field.component';
-import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { Subject, Observable, debounceTime, distinctUntilChanged } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-
 /**
  * Search Bar component to encapsulate search behavior. This includes an optional autocomplete list.
  */
@@ -46,6 +47,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   styleUrl: './search-bar.component.scss',
 })
 export class SearchBarComponent implements OnInit, OnDestroy {
+  @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
   /**
    * The search history list for this component, which can be filtered locally.
    *  If this history is empty, we don't show a history panel.
@@ -66,6 +68,10 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   /**
    *
    */
+  @Input() clearEvent?: Observable<void>;
+  /**
+   *
+   */
   @Output() searchString = new EventEmitter<string>();
   searchInput = new Subject<string>();
   displayedHistory: string[] = [];
@@ -77,6 +83,12 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       .subscribe((searchTerm: string) => {
         this.searchString.emit(searchTerm);
       });
+    //responds to events that request we clear the input value
+    if (this.clearEvent) {
+      this.clearEvent.pipe(untilDestroyed(this)).subscribe(() => {
+        this.clearInput();
+      });
+    }
   }
 
   onSearchInputChange(event: Event) {
@@ -86,6 +98,10 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       this.displayedHistory = this.historyItems.filter((e) => e.includes(val));
     }
     this.searchInput.next(val);
+  }
+
+  clearInput() {
+    this.inputElement.nativeElement.value = '';
   }
 
   ngOnDestroy() {

@@ -4,6 +4,7 @@
   #origin="matAutocompleteOrigin">
   <sg-input-field leadingIcon="search" [disabled]="false">
     <input
+      #inputElement
       sgInput
       placeholder="{{ searchPlaceholder }}"
       [matAutocomplete]="searchHistory"

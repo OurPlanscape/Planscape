@@ -32,15 +32,10 @@
     class="search-section"
     *ngIf="hasSearch"
     (click)="$event.stopPropagation()">
-    <!-- placeholder for search component -->
-    <sg-input-field leadingIcon="search">
-      <input
-        sgInput
-        type="text"
-        placeholder="Search for {{ menuLabel }}"
-        [(ngModel)]="searchTerm"
-        (ngModelChange)="filterSearch()" />
-    </sg-input-field>
+    <sg-search-bar
+      [clearEvent]="clearInput.asObservable()"
+      searchPlaceholder="Search for {{ menuLabel }}"
+      (searchString)="filterSearch($event)"></sg-search-bar>
   </div>
   <button
     *ngFor="let item of displayedItems"
