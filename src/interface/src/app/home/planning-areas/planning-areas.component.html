@@ -1,41 +1,163 @@
-<section class="planning">
-  <div class="title-nav">
-    <h4>Planning areas</h4>
-    <button mat-icon-button class="help" [matMenuTriggerFor]="tooltipMenu">
-      <mat-icon class="material-symbols-outlined" color="primary">
-        info_outline
-      </mat-icon>
-      <mat-menu #tooltipMenu="matMenu">
-        <div class="tooltip">
-          <p>
-            Below is your list of planning areas. Think of each planning area as
-            a folder which holds the scenarios for each of your planning areas.
-            Double-click on the planning area to go into the scenario page,
-            which will then show you a list of all the scenarios that you have
-            run for that plan.
-          </p>
+<div class="title-nav">
+  <h3>Home</h3>
+  <button
+    type="button"
+    mat-icon-button
+    class="help"
+    [matMenuTriggerFor]="tooltipMenu">
+    <mat-icon class="material-symbols-outlined">info_outline</mat-icon>
+    <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
+      <div class="tooltip">
+        <p>
+          Below is your list of planning areas. Think of each planning area as a
+          folder which holds the scenarios for each of your planning areas.
+          Double-click on the planning area to go into the scenario page, which
+          will then show you a list of all the scenarios that you have run for
+          that plan.
+        </p>
 
-          <p>
-            If you haven’t run any plans yet, get started by either uploading
-            your shapefile or drawing your planning area on the map in Explore
-            to get started. Once you have drawn the polygon and hit save, it
-            will prompt you to name your planning area. You can change this name
-            from this page.
-          </p>
+        <p>
+          If you haven’t run any plans yet, get started by either uploading your
+          shapefile or drawing your planning area on the map in Explore to get
+          started. Once you have drawn the polygon and hit save, it will prompt
+          you to name your planning area. You can change this name from this
+          page.
+        </p>
 
-          <p>
-            You can delete your planning area by selecting the delete button. If
-            you want to go back to the map view, just click on the Explore
-            button in the top right corner of the page.
-          </p>
-        </div>
-      </mat-menu>
-    </button>
+        <p>
+          You can delete your planning area by selecting the delete button. If
+          you want to go back to the map view, just click on the Explore button
+          in the top right corner of the page.
+        </p>
+      </div>
+    </mat-menu>
+  </button>
+  <div class="search-bar-placeholder">search bar placeholder</div>
+  <a
+    sg-button
+    variant="primary"
+    icon="explore"
+    [outlined]="true"
+    routerLink="/map">
+    Explore
+  </a>
+</div>
+<div class="filter-bar">
+  <div class="filter-placeholder">Filter placeholder</div>
+  <div class="filter-placeholder">Filter placeholder</div>
+</div>
+<!--Initial load spinner-->
+<mat-spinner
+  *ngIf="initialLoad$ | async"
+  class="main-loader"
+  diameter="48"></mat-spinner>
 
-    <a mat-raised-button color="primary" class="explore" routerLink="/map">
-      <mat-icon class="material-symbols-outlined">add_box</mat-icon>
-      Explore
-    </a>
+<!--Planning area table and pagination-->
+<section
+  [hidden]="initialLoad$ | async"
+  *ngIf="(noEntries | async) !== true; else emptyState">
+  <table
+    class="planning-areas mat-elevation-z0"
+    mat-table
+    matSort
+    [matSortActive]="sortOptions.active"
+    [matSortDirection]="sortOptions.direction"
+    [dataSource]="dataSource"
+    [matSortDisableClear]="true"
+    (matSortChange)="changeSort($event)">
+    <ng-container *ngFor="let column of columns" [matColumnDef]="column.key">
+      <th
+        mat-header-cell
+        *matHeaderCellDef
+        [mat-sort-header]="column.key"
+        [disabled]="column.key === 'menu'">
+        {{ column.label }}
+      </th>
+
+      <td mat-cell *matCellDef="let element">
+        <ng-container [ngSwitch]="column.key">
+          <ng-container *ngSwitchDefault>
+            {{ element[column.key] }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'latest_updated'">
+            {{ element[column.key] | date: 'medium' }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'area_acres'">
+            {{ element[column.key] | number: '1.0-0' }}
+          </ng-container>
+          <ng-container *ngSwitchCase="'menu'">
+            <button
+              [matMenuTriggerFor]="menu"
+              mat-icon-button
+              aria-label="more options"
+              class="more-menu-button">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+            <mat-menu #menu="matMenu" class="more-treatment-menu">
+              <a mat-menu-item [routerLink]="['/plan', element.id]">
+                <mat-icon class="material-symbols-outlined"
+                  >folder_open
+                </mat-icon>
+                <span>Open</span>
+              </a>
+              <a mat-menu-item [routerLink]="['/explore', element.id]">
+                <mat-icon class="material-symbols-outlined">map</mat-icon>
+                <span>View Map</span>
+              </a>
+              <button
+                mat-menu-item
+                (click)="sharePlan(element)"
+                [disabled]="!shareEnabled(element)">
+                <mat-icon class="material-symbols-outlined">share</mat-icon>
+                <span>Share</span>
+              </button>
+              <button
+                mat-menu-item
+                class="delete"
+                (click)="deletePlan(element)"
+                [disabled]="!canDeletePlanningArea(element)">
+                <mat-icon class="material-symbols-outlined"
+                  >delete_outlined
+                </mat-icon>
+                <span>Delete</span>
+              </button>
+            </mat-menu>
+          </ng-container>
+        </ng-container>
+      </td>
+    </ng-container>
+
+    <tr mat-header-row *matHeaderRowDef="columns | keyPipe"></tr>
+    <tr
+      mat-row
+      *matRowDef="let row; columns: columns | keyPipe"
+      (click)="viewPlan(row, $event)"></tr>
+  </table>
+
+  <!--Placeholder-->
+  <div class="pagination-placeholder">
+    <div><</div>
+    <button (click)="goToPage(1)">1</button>
+    <button (click)="goToPage(2)">2</button>
+    <button (click)="goToPage(3)">3</button>
+    <div>...</div>
+    <div>6</div>
+    <div>7</div>
+    <div>></div>
   </div>
-  <app-plan-table></app-plan-table>
 </section>
+
+<!--Empty state-->
+<ng-template #emptyState>
+  <section class="empty-state">
+    <mat-icon class="material-symbols-outlined">create_new_folder</mat-icon>
+    <div class="empty-state__title">No Planning Areas Yet</div>
+    <div>
+      Click "Explore" to start creating your planning areas. Not ready to create
+      new plans?
+    </div>
+    <div>
+      You can explore the mapping tool without creating a planning area.
+    </div>
+  </section>
+</ng-template>

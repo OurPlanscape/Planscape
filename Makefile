@@ -163,3 +163,4 @@ docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
 
 .PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
+

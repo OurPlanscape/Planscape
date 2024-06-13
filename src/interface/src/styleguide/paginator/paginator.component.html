@@ -65,7 +65,7 @@
       [(ngModel)]="selectedPage"
       (selectionChange)="setPage(selectedPage)">
       @for (page of navSelectRange; track page) {
-        <mat-option [value]="page">{{ page }}</mat-option>
+        <mat-option class="nav-page-item" [value]="page">{{ page }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
@@ -77,9 +77,9 @@
     <mat-select
       [(ngModel)]="recordsPerPage"
       (selectionChange)="perPageChanged()">
-      <mat-option [value]="10">10</mat-option>
-      <mat-option [value]="20">20</mat-option>
-      <mat-option [value]="40">40</mat-option>
+      <mat-option class="per-page-item" [value]="10">10</mat-option>
+      <mat-option class="per-page-item" [value]="20">20</mat-option>
+      <mat-option class="per-page-item" [value]="40">40</mat-option>
     </mat-select>
   </mat-form-field>
 </div>

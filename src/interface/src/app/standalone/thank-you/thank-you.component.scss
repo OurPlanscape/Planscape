@@ -1,5 +1,6 @@
 @import "colors";
 @import "mixins";
+@import "media";
 
 :host {
   display: flex;
@@ -68,7 +69,7 @@ a.standard-link {
   background-size: 50%;
 }
 
-@media screen and (max-width: 840px) {
+@include on-small() {
   :host {
     gap: 10%;
     flex-direction: column;

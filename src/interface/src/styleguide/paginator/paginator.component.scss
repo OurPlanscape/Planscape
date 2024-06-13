@@ -62,7 +62,8 @@
     padding: 8px;
     height: 40px;
     width: 30px;
-    font-size: 20px;
+    font-size: 14px;
+    border-left: 1px solid $color-soft-gray;
   }
 
   .arrow-icon {
@@ -76,11 +77,24 @@
     border-top-left-radius: 10%;
     border-bottom-left-radius: 10%;
     padding-left: 12px;
+    .mat-icon {
+      font-size: 14px;
+      height: 100%;
+      width: 14px;
+      line-height: 22px;
+    }
   }
 
   .last-page-button {
     border-top-right-radius: 10%;
     border-bottom-right-radius: 10%;
+    border-right: 1px solid $color-soft-gray;
+    .mat-icon {
+      font-size: 14px;
+      height: 100%;
+      width: 14px;
+      line-height: 22px;
+    }
   }
 
   .page-button:disabled {
@@ -142,7 +156,8 @@
 
   .picker-field {
     width: 100px;
-    padding-top: 4px;
+    padding-top: 0px;
+    border: $color-black;
 
     &.disabled {
       opacity: 0.6;
@@ -155,6 +170,7 @@
 
   ::ng-deep .mat-mdc-text-field-wrapper {
     height: 40px;
+    border-color: $color-soft-gray;
   }
 
   ::ng-deep
@@ -167,11 +183,33 @@
 
   ::ng-deep .mat-mdc-select-value-text {
     @include h5();
-    font-size: 20px;
+    font-size: 16px;
     font-family: 'Public Sans';
     color: $color-md-gray;
     line-height: 40px;
     font-weight: 600;
     letter-spacing: normal;
+    color: black;
   }
+}
+
+::ng-deep .per-page-item.mat-mdc-option.mdc-list-item {
+  @include h5();
+  font-size: 16px;
+  font-family: 'Public Sans';
+  color: $color-md-gray;
+}
+::ng-deep .nav-page-item.mat-mdc-option.mdc-list-item {
+  @include h5();
+  font-size: 16px;
+  font-family: 'Public Sans';
+  color: $color-md-gray;
+}
+
+::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__trailing {
+  border-color: $color-soft-gray !important;
+}
+
+::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__leading {
+  border-color: $color-soft-gray !important;
 }

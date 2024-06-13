@@ -1,6 +1,7 @@
 @import 'variables';
 @import "colors";
 @import "mixins";
+@import "media";
 
 // Top-bar styling
 .mat-toolbar {
@@ -12,9 +13,10 @@
   display: flex;
   align-items: center;
   z-index: 500;
-  @media screen and (max-width: 840px) {
+  @include on-small() {
     padding: 0 12px;
   }
+
 
   .site-link {
     color: $color-white;
@@ -47,7 +49,7 @@
 }
 
 .user-menu, .help, .navbar-item {
-  @media screen and (max-width: 840px) {
+  @include on-small() {
     display: none;
   }
 }
@@ -55,7 +57,7 @@
 .mobile-menu {
   border: none;
   line-height: 0;
-  @media screen and (min-width: 840px) {
+  @include on-large() {
     display: none;
   }
 }
@@ -114,7 +116,7 @@ button.navbar-item, a.navbar-item {
     transform: translateX(0);
   }
 
-  @media screen and (min-width: 840px) {
+  @include on-large() {
     display: none;
   }
 
