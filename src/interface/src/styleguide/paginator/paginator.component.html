@@ -72,14 +72,14 @@
 </div>
 
 <div class="per-page-picker">
-  <div class="picker-label">Results per page:</div>
+  <div class="picker-label">Records per page</div>
   <mat-form-field class="picker-field" appearance="outline">
     <mat-select
       [(ngModel)]="recordsPerPage"
       (selectionChange)="perPageChanged()">
-      <mat-option class="per-page-item" [value]="10">10</mat-option>
-      <mat-option class="per-page-item" [value]="20">20</mat-option>
-      <mat-option class="per-page-item" [value]="40">40</mat-option>
+      @for (count of perPageOptions; track count) {
+        <mat-option class="per-page-item" [value]="count">{{count}}</mat-option>
+      }
     </mat-select>
   </mat-form-field>
 </div>
