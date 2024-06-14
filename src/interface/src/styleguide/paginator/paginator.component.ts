@@ -54,7 +54,7 @@ export class PaginatorComponent implements OnInit {
   /**
    * The options presented for records per page.
    */
-  @Input() perPageOptions = [10,20,50];
+  @Input() perPageOptions = [10, 20, 50];
   /**
    * Emits an event with the latest selected page.
    */
@@ -63,7 +63,6 @@ export class PaginatorComponent implements OnInit {
    * Emits an event with the latest selection for results per page.
    */
   @Output() recordsPerPageChanged = new EventEmitter<number>();
-
 
   selectedPage: number = 0;
   buttonsShown = 0;

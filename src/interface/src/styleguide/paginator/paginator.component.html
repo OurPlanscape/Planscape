@@ -78,7 +78,9 @@
       [(ngModel)]="recordsPerPage"
       (selectionChange)="perPageChanged()">
       @for (count of perPageOptions; track count) {
-        <mat-option class="per-page-item" [value]="count">{{count}}</mat-option>
+        <mat-option class="per-page-item" [value]="count">{{
+          count
+        }}</mat-option>
       }
     </mat-select>
   </mat-form-field>
