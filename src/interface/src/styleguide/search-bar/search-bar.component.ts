@@ -66,6 +66,10 @@ export class SearchBarComponent implements OnInit, OnDestroy {
    */
   @Input() autocompleteTitle = 'Recent Searches';
   /**
+   * Allow the parent component to set a debounce
+   */
+  @Input() debounceInterval: number = 200;
+  /**
    *
    */
   @Input() clearEvent?: Observable<void>;
@@ -77,9 +81,14 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   displayedHistory: string[] = [];
 
   ngOnInit() {
+    const debounceInterval = Number(this.debounceInterval);
     this.displayedHistory = this.historyItems.slice();
     this.searchInput
-      .pipe(debounceTime(200), distinctUntilChanged(), untilDestroyed(this))
+      .pipe(
+        debounceTime(debounceInterval),
+        distinctUntilChanged(),
+        untilDestroyed(this)
+      )
       .subscribe((searchTerm: string) => {
         this.searchString.emit(searchTerm);
       });
@@ -102,6 +111,10 @@ export class SearchBarComponent implements OnInit, OnDestroy {
 
   clearInput() {
     this.inputElement.nativeElement.value = '';
+  }
+
+  onInputKey(event: Event) {
+    event.stopPropagation();
   }
 
   ngOnDestroy() {

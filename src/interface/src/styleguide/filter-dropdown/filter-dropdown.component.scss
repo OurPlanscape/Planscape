@@ -88,7 +88,12 @@
   border-color: $color-soft-gray;
   color: $color-text-gray;
 }
-
+.icon-label-box {
+  width: 200px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 .more-items-box {
   width: 50px;
   height: 22px;
@@ -125,6 +130,10 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+}
+
+.menu-item-text {
+  color: black;
 }
 
 .close-icon {
@@ -191,6 +200,8 @@
   color: $color-text-gray;
   padding: 10px;
   text-align: left;
+  border: none;
+  background-color: inherit;
 }
 .clear-all-text:hover {
   color: black;

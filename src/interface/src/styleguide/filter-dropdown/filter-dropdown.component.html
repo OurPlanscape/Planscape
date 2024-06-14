@@ -4,13 +4,15 @@
   [disabled]="disabled"
   (click)="handleFilterClick()"
   [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
-  <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
-    leadingIcon
-  }}</mat-icon>
-  <div
-    class="dropdown-label"
-    [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
-    {{ selectionText }}
+  <div class="icon-label-box">
+    <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
+      leadingIcon
+    }}</mat-icon>
+    <div
+      class="dropdown-label"
+      [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
+      {{ selectionText }}
+    </div>
   </div>
   <div *ngIf="showCount()" class="more-items-box">
     <div class="more-items-icon">&plus;</div>
@@ -33,6 +35,7 @@
     *ngIf="hasSearch"
     (click)="$event.stopPropagation()">
     <sg-search-bar
+      debounceInterval="0"
       [clearEvent]="clearInput.asObservable()"
       searchPlaceholder="Search for {{ menuLabel }}"
       (searchString)="filterSearch($event)"></sg-search-bar>
@@ -41,10 +44,9 @@
     *ngFor="let item of displayedItems"
     mat-menu-item
     role="menuitemcheckbox"
-    aria-checked="isInSelection(item)"
     (click)="toggleSelection($event, item)">
     <div class="menu-item-content">
-      <div>{{ item }}</div>
+      <span class="menu-item-text">{{ item }}</span>
       <mat-checkbox
         [color]="'primary'"
         [checked]="isInSelection(item)"></mat-checkbox>
@@ -53,9 +55,9 @@
 
   <div class="bottom-section">
     <div class="bottom-content">
-      <div class="clear-all-text" (click)="clearSelections($event)">
+      <button class="clear-all-text" (click)="clearSelections($event)">
         clear all
-      </div>
+      </button>
       <div class="button-box">
         <button sg-button variant="ghost" (click)="handleCancel($event)">
           Cancel

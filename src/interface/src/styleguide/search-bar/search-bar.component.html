@@ -9,7 +9,8 @@
       placeholder="{{ searchPlaceholder }}"
       [matAutocomplete]="searchHistory"
       [matAutocompleteConnectedTo]="origin"
-      (input)="onSearchInputChange($event)" />
+      (input)="onSearchInputChange($event)"
+      (keydown)="onInputKey($event)" />
     <mat-autocomplete #searchHistory="matAutocomplete" panel="acpanel">
       <div class="autocomplete-label" *ngIf="historyItems.length">
         {{ autocompleteTitle }}
