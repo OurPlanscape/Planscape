@@ -10,6 +10,7 @@ import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.co
 })
 export class PlanningAreasSearchComponent {
   readonly key = 'planningAreasSearchHistory';
+  readonly maxLength = 20;
 
   historyItems: string[] = this.getItems();
 
@@ -28,6 +29,7 @@ export class PlanningAreasSearchComponent {
     // save to history
     if (searchString && !this.historyItems.includes(searchString)) {
       this.historyItems.unshift(searchString);
+      this.historyItems = this.historyItems.slice(0, this.maxLength);
       sessionStorage.setItem(this.key, JSON.stringify(this.historyItems));
     }
     this.search.emit(searchString);
