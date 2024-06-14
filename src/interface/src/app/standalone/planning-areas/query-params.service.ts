@@ -10,6 +10,7 @@ export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
 
 export interface QueryParams extends Sort {
   offset?: number;
+  name?: string;
 }
 
 @Injectable()

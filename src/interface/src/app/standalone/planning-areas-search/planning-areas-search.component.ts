@@ -27,7 +27,7 @@ export class PlanningAreasSearchComponent {
   searchString(searchString: string) {
     // save to history
     if (searchString && !this.historyItems.includes(searchString)) {
-      this.historyItems.push(searchString);
+      this.historyItems.unshift(searchString);
       sessionStorage.setItem(this.key, JSON.stringify(this.historyItems));
     }
     this.search.emit(searchString);

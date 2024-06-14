@@ -134,6 +134,11 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   public search(str: string) {
     this.searchTerm = str;
+    this.queryParamsService.updateUrl({
+      ...this.sortOptions,
+      name: this.searchTerm ? this.searchTerm : undefined,
+      offset: undefined,
+    });
     this.loadData();
   }
 }
