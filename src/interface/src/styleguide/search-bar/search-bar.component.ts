@@ -90,7 +90,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     this.searchInput.next(val);
   }
 
-  onSelectionChange(event: MatAutocompleteSelectedEvent) {
+  onHistorySelection(event: MatAutocompleteSelectedEvent) {
     this.searchInput.next(event.option.value);
   }
 
