@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '@styleguide';
@@ -79,7 +79,7 @@ import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-
     },
   ],
 })
-export class PlanningAreasComponent implements OnInit {
+export class PlanningAreasComponent implements OnInit, OnDestroy {
   readonly columns: { key: keyof PreviewPlan | 'menu'; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'creator', label: 'Creator' },
@@ -129,5 +129,9 @@ export class PlanningAreasComponent implements OnInit {
 
   search(str: string) {
     this.dataSource.search(str);
+  }
+
+  ngOnDestroy(): void {
+    this.dataSource.destroy();
   }
 }

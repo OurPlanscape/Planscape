@@ -14,7 +14,6 @@ export class PlanningAreasSearchComponent {
   @Output() search = new EventEmitter<string>();
 
   searchString(searchString: string) {
-    console.log('searching!', searchString);
     // save to history
     if (searchString && !this.historyItems.includes(searchString)) {
       this.historyItems.push(searchString);

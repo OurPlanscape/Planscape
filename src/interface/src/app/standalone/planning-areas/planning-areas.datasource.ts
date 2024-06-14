@@ -1,5 +1,5 @@
 import { PreviewPlan } from '@types';
-import { BehaviorSubject, map, Observable, Subject, tap } from 'rxjs';
+import { BehaviorSubject, map, Observable, tap } from 'rxjs';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
@@ -8,7 +8,7 @@ import { QueryParamsService } from './query-params.service';
 export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   private readonly limit = 13;
 
-  private _dataStream = new Subject<PreviewPlan[]>();
+  public _dataStream = new BehaviorSubject<PreviewPlan[]>([]);
   private _loading = new BehaviorSubject(false);
 
   public count = 0;
@@ -16,9 +16,9 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   public loading$ = this._loading.asObservable();
   public initialLoad$ = new BehaviorSubject(true);
-  public noEntries$ = this._dataStream.pipe(
-    map((results) => results.length === 0)
-  );
+  public noEntries$ = this._dataStream
+    .asObservable()
+    .pipe(map((results) => results.length === 0));
 
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
 
@@ -37,7 +37,17 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     return this._dataStream.asObservable();
   }
 
-  disconnect() {
+  /**
+   * this method is required by `DataSource`, however its triggered when
+   * we emit an empty array (no results) on _dataStream, which is not what we want.
+   * Instead, manually call `destroy` to clean up.
+   */
+  disconnect() {}
+
+  /**
+   * cleanups subscriptions.
+   */
+  destroy() {
     this._dataStream.complete();
     this._loading.complete();
   }
@@ -105,6 +115,9 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   private searchOptions() {
+    if (!this.searchTerm) {
+      return {};
+    }
     return {
       name: this.searchTerm,
     };
