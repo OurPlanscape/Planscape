@@ -32,7 +32,8 @@
       </div>
     </mat-menu>
   </button>
-  <div class="search-bar-placeholder">search bar placeholder</div>
+  <app-planning-areas-search
+    (search)="search($event)"></app-planning-areas-search>
   <a
     sg-button
     variant="primary"

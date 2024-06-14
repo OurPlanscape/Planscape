@@ -30,6 +30,7 @@ import { KeyPipe } from '../key.pipe';
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
+import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -56,6 +57,7 @@ import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-m
     KeyValuePipe,
     KeyPipe,
     PlanningAreaMenuComponent,
+    PlanningAreasSearchComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -123,5 +125,9 @@ export class PlanningAreasComponent implements OnInit {
 
   reload() {
     this.dataSource.loadData();
+  }
+
+  search(str: string) {
+    this.dataSource.search(str);
   }
 }

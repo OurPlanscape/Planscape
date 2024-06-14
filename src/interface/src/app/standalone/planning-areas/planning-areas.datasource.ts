@@ -24,6 +24,8 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   public pageOptions = this.queryParamsService.getInitialPageParams();
 
+  private searchTerm = '';
+
   constructor(
     private planService: PlanService,
     private queryParamsService: QueryParamsService
@@ -41,7 +43,11 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   loadData() {
-    const params = { ...this.getPageOptions(), ...this.getSortOptions() };
+    const params = {
+      ...this.getPageOptions(),
+      ...this.getSortOptions(),
+      ...this.searchOptions(),
+    };
     this._loading.next(true);
     this.planService.getPlanPreviews(params).subscribe((data) => {
       this.setPages(data.count);
@@ -98,6 +104,12 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     };
   }
 
+  private searchOptions() {
+    return {
+      name: this.searchTerm,
+    };
+  }
+
   deletePlan(planId: number) {
     return this.planService.deletePlan([String(planId)]).pipe(
       tap(() => {
@@ -105,5 +117,10 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
         this.loadData();
       })
     );
+  }
+
+  public search(str: string) {
+    this.searchTerm = str;
+    this.loadData();
   }
 }
