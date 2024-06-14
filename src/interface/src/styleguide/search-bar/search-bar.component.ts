@@ -1,21 +1,21 @@
 import {
   Component,
-  Output,
+  ElementRef,
   EventEmitter,
   Input,
-  OnInit,
   OnDestroy,
-  ElementRef,
+  OnInit,
+  Output,
   ViewChild,
 } from '@angular/core';
 import {
-  DatePipe,
   CurrencyPipe,
+  DatePipe,
+  NgClass,
   NgIf,
   NgSwitch,
-  NgClass,
 } from '@angular/common';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent, InputFieldComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import {
@@ -23,9 +23,12 @@ import {
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
-import { InputFieldComponent } from '../input/input-field.component';
-import { Subject, Observable, debounceTime, distinctUntilChanged } from 'rxjs';
+
+import { debounceTime, distinctUntilChanged, Observable, Subject } from 'rxjs';
+
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { InputDirective } from '../input/input.directive';
+
 /**
  * Search Bar component to encapsulate search behavior. This includes an optional autocomplete list.
  */
@@ -45,6 +48,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     MatButtonModule,
     MatAutocompleteModule,
     InputFieldComponent,
+    InputDirective,
   ],
   templateUrl: './search-bar.component.html',
   styleUrl: './search-bar.component.scss',
