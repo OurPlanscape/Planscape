@@ -16,12 +16,14 @@ import {
 import { ButtonComponent } from '../button/button.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { InputFieldComponent } from '../input/input-field.component';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-
 /**
  * Search Bar component to encapsulate search behavior. This includes an optional autocomplete list.
  */
@@ -86,6 +88,10 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       this.displayedHistory = this.historyItems.filter((e) => e.includes(val));
     }
     this.searchInput.next(val);
+  }
+
+  onSelectionChange(event: MatAutocompleteSelectedEvent) {
+    this.searchInput.next(event.option.value);
   }
 
   ngOnDestroy() {
