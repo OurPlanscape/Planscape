@@ -53,4 +53,9 @@ export class QueryParamsService {
       offset: offset || 0,
     };
   }
+
+  getInitialFilterParam(): string {
+    const { name } = this.route.snapshot.queryParams;
+    return name || '';
+  }
 }

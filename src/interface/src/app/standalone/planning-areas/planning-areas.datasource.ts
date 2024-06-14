@@ -1,5 +1,5 @@
 import { PreviewPlan } from '@types';
-import { BehaviorSubject, map, Observable, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
@@ -16,15 +16,18 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   public loading$ = this._loading.asObservable();
   public initialLoad$ = new BehaviorSubject(true);
-  public noEntries$ = this._dataStream
-    .asObservable()
-    .pipe(map((results) => results.length === 0));
+  public noEntries$ = combineLatest([
+    this.initialLoad$.asObservable(),
+    this._dataStream.asObservable(),
+  ]).pipe(
+    map(([initialLoad, results]) => !initialLoad && results.length === 0)
+  );
 
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
 
   public pageOptions = this.queryParamsService.getInitialPageParams();
 
-  private searchTerm = '';
+  private searchTerm = this.queryParamsService.getInitialFilterParam();
 
   constructor(
     private planService: PlanService,
