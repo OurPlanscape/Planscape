@@ -36,7 +36,7 @@ import { WelcomeComponent } from './home/welcome/welcome.component';
 import { environment } from 'src/environments/environment';
 import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.component';
 import { LegacyPlanningAreasComponent } from './home/legacy-planning-areas/legacy-planning-areas.component';
-import { PlanningAreasComponent } from './home/planning-areas/planning-areas.component';
+import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
 
 @NgModule({
   declarations: [
