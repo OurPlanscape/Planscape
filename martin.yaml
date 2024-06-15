@@ -1,0 +1,71 @@
+listen_addresses: "0.0.0.0:3000"
+base_path: /tiles
+worker_processes: 8
+preferred_encoding: gzip
+default_srid: 4269
+max_feature_count: 500
+postgres:
+    connection_string: ${DATABASE_URL}
+    functions:
+        treatment_plan_prescriptions:
+            schema: public
+            function: martin_get_treatment_plan_prescriptions
+            minzoom: 0
+            maxzoom: 20
+            bounds: [-180.0, -90.0, 180.0, 90.0]
+    tables:
+        stands:
+            layer_id: stands
+            schema: public
+            table: stands_stand
+            srid: 4269
+            geometry_column: geometry
+            id_column: id
+            minzoom: 0
+            maxzoom: 20
+            geometry_type: POLYGON
+            properties:
+                id: int8
+                size: string
+        planning_areas:
+            layer_id: planning_areas
+            schema: public
+            table: planning_planningarea
+            srid: 4269
+            geometry_column: geometry
+            id_column: id
+            min_zoom: 0
+            max_zoom: 20
+            geometry_type: POLYGON
+            properties:
+                id: int8
+                name: string
+        project_areas:
+            layer_id: project_areas
+            schema: public
+            table: planning_projectarea
+            srid: 4269
+            geometry_column: geometry
+            id_column: id
+            minzoom: 0
+            maxzoom: 20
+            geometry_type: POLYGON
+            properties:
+                id: int8
+                name: string
+                origin: string
+        treatment_prescriptions:
+            layer_id: treatment_prescriptions
+            schema: public
+            table: impacts_treatmentprescription
+            srid: 4269
+            geometry_column: geometry
+            minzoom: 0
+            maxzoom: 20
+            geometry_type: POLYGON
+            properties:
+                id: int8
+                project_area: int8
+                type: string
+                action: string
+                stand_id: int8

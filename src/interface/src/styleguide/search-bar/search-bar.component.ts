@@ -18,7 +18,10 @@ import {
 import { ButtonComponent } from '../button/button.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import {
+  MatAutocompleteModule,
+  MatAutocompleteSelectedEvent,
+} from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 import { InputFieldComponent } from '../input/input-field.component';
 import { Subject, Observable, debounceTime, distinctUntilChanged } from 'rxjs';
@@ -95,7 +98,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     //responds to events that request we clear the input value
     if (this.clearEvent) {
       this.clearEvent.pipe(untilDestroyed(this)).subscribe(() => {
-        this.clearInput();
+        this.setInput('');
       });
     }
   }
@@ -109,12 +112,16 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     this.searchInput.next(val);
   }
 
-  clearInput() {
-    this.inputElement.nativeElement.value = '';
+  setInput(s : string) {
+    this.inputElement.nativeElement.value = s;
   }
 
   onInputKey(event: Event) {
     event.stopPropagation();
+  }
+
+  onHistorySelection(event: MatAutocompleteSelectedEvent) {
+    this.searchInput.next(event.option.value);
   }
 
   ngOnDestroy() {
