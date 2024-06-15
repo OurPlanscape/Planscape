@@ -112,7 +112,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
     this.searchInput.next(val);
   }
 
-  setInput(s : string) {
+  setInput(s: string) {
     this.inputElement.nativeElement.value = s;
   }
 

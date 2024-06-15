@@ -103,8 +103,7 @@ export const DoubleDigitSelections: Story = {
 
 export const LongOptionList: Story = {
   args: {
-    selectedItems: ['Jack Young',
-      'Katherine Wilson',],
+    selectedItems: ['Jack Young', 'Katherine Wilson'],
     menuLabel: 'Creator',
     menuItems: [
       'Amelia Rose',

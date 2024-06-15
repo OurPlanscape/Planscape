@@ -122,6 +122,8 @@ export class FilterDropdownComponent implements OnInit {
     if (searchTerm !== '') {
       this.displayedItems = this.menuItems.slice();
     }
-    this.displayedItems = this.menuItems.filter((e) => e.toLowerCase().includes(searchTerm.toLowerCase() ));
+    this.displayedItems = this.menuItems.filter((e) =>
+      e.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   }
 }

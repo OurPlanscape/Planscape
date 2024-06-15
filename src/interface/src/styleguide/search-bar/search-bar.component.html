@@ -11,9 +11,10 @@
       [matAutocompleteConnectedTo]="origin"
       (input)="onSearchInputChange($event)"
       (keydown)="onInputKey($event)" />
-    <mat-autocomplete #searchHistory="matAutocomplete" panel="acpanel"
-    (optionSelected)="onHistorySelection($event)">
-
+    <mat-autocomplete
+      #searchHistory="matAutocomplete"
+      panel="acpanel"
+      (optionSelected)="onHistorySelection($event)">
       <div class="autocomplete-label" *ngIf="historyItems.length">
         {{ autocompleteTitle }}
       </div>
