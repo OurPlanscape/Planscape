@@ -53,7 +53,7 @@ $planscape-typography: mat.define-typography-config(
 
 
 // Create a custom palette using the primary color
-$custom-primary-palette: map.merge(mat.$indigo-palette, (500: $color-main-blue));
+$custom-primary-palette: map.merge(mat.$indigo-palette, (500: $color-standard-blue));
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
