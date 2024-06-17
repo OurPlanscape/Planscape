@@ -12,7 +12,6 @@
   @include standard-input-label();
   font-family: 'Public Sans';
   color: $color-dark-gray;
-  font-family: Public Sans;
   font-size: 14px;
   font-weight: 500;
   line-height: 22px;
@@ -33,37 +32,38 @@
   height: 40px;
   padding: 8px 8px 8px 14px;
   border-radius: 4px;
-  border: 1px;
-  border-style: solid;
-  border-color: $color-soft-gray;
-  
-  &.in-progress {
-    color: $color-main-blue;
-  }
+  border: 1px $color-soft-gray solid;
 
-  &.success {
-    border-color: $color-brand-teal;
-  }
-
-  &.failed {
-    border-color: $color-error;
-  }
-
-  &.running {
-    color: black;
+  &:hover {
+    background-color: $color-soft-gray;
   }
 }
+:host.running .input-container {
+  color: $color-main-blue;
+}
 
-.inner-label {
+:host.success .input-container {
+  border-color: $color-brand-teal;
+}
+
+:host.failed .input-container {
+  border-color: $color-error;
+}
+
+.placeholder-label {
   @include standard-input-label();
-  color: $color-md-gray;
-  text-align: left;
-  font-family: 'Public Sans';
-  font-size: 16px;
-  font-weight: 500;
+  color: $color-text-gray;
   line-height: 22px;
   text-align: left;
 }
+
+.filename-label {
+  @include standard-input-label();
+  color: $color-black;
+  line-height: 22px;
+  text-align: left;
+}
+
 .field-subscript {
   @include italic-sm();
   color: $color-dark-gray;
@@ -77,22 +77,24 @@
   align-items: center;
 }
 
+.remove-file-button {
+  padding: 0px;
+  width: 24px;
+  height: 24px;
+}
+
 .status-icon {
   color: $color-black;
+}
 
-  &.in-progress {
-    color: $color-main-blue;
-  }
+:host.running .status-icon {
+  color: $color-main-blue;
+}
 
-  &.success {
-    color: $color-brand-green;
-  }
+:host.success .status-icon {
+  color: $color-black;
+}
 
-  &.failed {
-    color: $color-error;
-  }
-
-  &.running {
-    color: black;
-  }
+:host.failed .status-icon {
+  color: $color-error;
 }

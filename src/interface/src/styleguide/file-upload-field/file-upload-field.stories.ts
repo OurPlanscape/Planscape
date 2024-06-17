@@ -18,6 +18,11 @@ const meta: Meta<FileUploadFieldComponent> = {
   }),
 };
 
+const mockFile = new File(['This is the file content'], 'my-file.txt', {
+  type: 'text/plain',
+  lastModified: Date.now(),
+});
+
 export default meta;
 type Story = StoryObj<FileUploadFieldComponent>;
 
@@ -25,15 +30,6 @@ export const Default: Story = {
   args: { uploadStatus: 'default' },
 };
 
-export const InProgress: Story = {
-  args: { uploadStatus: 'running' },
-};
-
-export const Error: Story = {
-  args: { uploadStatus: 'failed' },
-};
-
-// TODO...
 export const Disabled: Story = {
   args: {
     disabled: true,
@@ -41,6 +37,17 @@ export const Disabled: Story = {
   },
 };
 
-export const Done: Story = {
-  args: { uploadStatus: 'success' },
+export const Running: Story = {
+  args: { uploadStatus: 'running', file: mockFile },
+};
+
+export const Failed: Story = {
+  args: { uploadStatus: 'failed', file: mockFile },
+};
+
+export const Uploaded: Story = {
+  args: {
+    uploadStatus: 'uploaded',
+    file: mockFile,
+  },
 };

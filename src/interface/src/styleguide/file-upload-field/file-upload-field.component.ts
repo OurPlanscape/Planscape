@@ -1,55 +1,68 @@
-import { Component, Input, HostBinding } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+} from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { ButtonComponent } from '../button/button.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
-export type UploadStatus = 'default' | 'running' | 'success' | 'failed';
+export type UploadStatus = 'default' | 'running' | 'uploaded' | 'failed';
 
 @Component({
   selector: 'sg-file-upload',
   standalone: true,
-  imports: [MatButtonModule, MatIconModule],
+  imports: [
+    MatButtonModule,
+    MatIconModule,
+    ButtonComponent,
+    MatProgressSpinnerModule,
+    NgIf,
+  ],
   templateUrl: './file-upload-field.component.html',
   styleUrl: './file-upload-field.component.scss',
 })
 export class FileUploadFieldComponent {
   @Input() fieldLabel = 'Label';
-  @Input() innerLabel = 'Choose a file to upload';
+  @Input() placeholder = 'Choose a shape file to upload';
   @Input() disabled = false;
-  @Input() uploadStatus: string = 'default';
+  @Input() uploadStatus: UploadStatus = 'default';
+  @Input()
+  supportedTypes: string[] = ['application/zip'];
+  @Output() fileEvent = new EventEmitter<any>();
 
-  files: FileList | undefined;
+  file: File | null = null;
 
-  onFileSelected(event: any) {
-    //TODO: just a placeholder...
-    // assume we just want one file?
-    this.files = event.target.files;
-    if (this.files) {
-      this.innerLabel = this.files[0].name;
+  onFileUploaded(event: Event) {
+    const target = event.target as HTMLInputElement;
+    const files = target.files as FileList;
+    if (target.files) {
+      this.file = files.item(0);
+      this.fileEvent.emit(this.file!);
     }
   }
 
-  readonly iconByStatus: Record<UploadStatus, string> = {
-    default: '',
-    running: 'progress_activity',
-    success: 'check_circle',
-    failed: 'error',
-  };
+  resetFile() {
+    this.file = null;
+    this.uploadStatus = 'default';
+  }
 
-  readonly classByStatus: Record<UploadStatus, string> = {
-    default: '',
-    running: 'running',
-    success: 'success',
-    failed: 'failed',
-  };
+  get hasFile() {
+    return this.file !== null;
+  }
 
   @HostBinding('class.default')
-  get isNotStarted() {
+  get isDefault() {
     return this.uploadStatus === 'default';
   }
 
-  @HostBinding('class.success')
-  get isSuccess() {
-    return this.uploadStatus === 'success';
+  @HostBinding('class.uploaded')
+  get isUploaded() {
+    return this.uploadStatus === 'uploaded';
   }
 
   @HostBinding('class.failed')
@@ -60,5 +73,10 @@ export class FileUploadFieldComponent {
   @HostBinding('class.running')
   get isRunning() {
     return this.uploadStatus === 'running';
+  }
+
+  @HostBinding('class.disabled')
+  get isDisabled() {
+    return this.disabled;
   }
 }
