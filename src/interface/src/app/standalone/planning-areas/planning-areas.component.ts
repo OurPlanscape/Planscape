@@ -98,7 +98,8 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   sortOptions: Sort = this.dataSource.sortOptions;
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad$;
-  noEntries = this.dataSource.noEntries$;
+  noEntries$ = this.dataSource.noEntries$;
+  hasFilters$ = this.dataSource.hasFilters$;
 
   ngOnInit() {
     this.dataSource.loadData();
