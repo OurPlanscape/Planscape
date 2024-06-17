@@ -78,6 +78,11 @@ export class InputFieldComponent implements AfterContentInit {
    */
   @Input() showSupportMessage: ShowSupportMessage = 'always';
 
+  /**
+   * Determines the height of the input field
+   */
+  @Input() size: 'regular' | 'small' = 'regular';
+
   @HostBinding('class.error')
   get hasError() {
     return this.error;
@@ -91,6 +96,11 @@ export class InputFieldComponent implements AfterContentInit {
   @HostBinding('class.highlighted')
   get isHighlighted() {
     return this.highlighted;
+  }
+
+  @HostBinding('class.small')
+  get isSmall() {
+    return this.size === 'small';
   }
 
   /**

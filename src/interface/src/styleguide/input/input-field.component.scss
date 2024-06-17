@@ -3,6 +3,7 @@
 
 .input-wrapper {
   @include standard-input-label();
+  box-sizing: border-box;
   cursor: text;
   font-size: 16px;
   display: inline-flex;
@@ -40,6 +41,7 @@
 }
 
 :host {
+
   mat-icon {
     color: currentColor;
   }
@@ -98,6 +100,12 @@
   &.highlighted.error {
     .input-wrapper, .suffix {
       color: $color-error;
+    }
+  }
+
+  &.small {
+    .input-wrapper {
+      height: 40px;
     }
   }
 
