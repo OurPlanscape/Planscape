@@ -26,7 +26,7 @@
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
 @include mat.all-legacy-component-themes($planscape-frontend-theme);
-
+@include mat.all-component-themes($planscape-frontend-theme);
 /* You can add global styles to this file, and also import other style files */
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined');
 
