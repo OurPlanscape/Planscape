@@ -59,7 +59,7 @@ $custom-primary-palette: map.merge(mat.$indigo-palette, (500: $color-main-blue))
 // hue. Available color palettes: https://material.io/design/color/
 $planscape-frontend-primary: mat.define-palette($custom-primary-palette);
 
-$custom-error-pallete: map.merge(mat.$red-palette, (500: $color-error));
+$planscape-error-palette: map.merge(mat.$red-palette, (500: $color-error));
 
 // Create the theme object. A theme consists of configurations for individual
 // theming systems such as "color" or "typography".
@@ -68,7 +68,7 @@ $planscape-frontend-theme: mat.define-light-theme(
       color: (
         primary: $planscape-frontend-primary,
         accent: $planscape-frontend-primary, // not really used
-        warn: mat.define-palette($custom-error-pallete)
+        warn: mat.define-palette($planscape-error-palette)
       ),
     )
 );
