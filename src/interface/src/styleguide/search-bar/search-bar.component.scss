@@ -1,8 +1,11 @@
 @import 'mixins';
 @import 'colors';
 
+:host {
+  width: 100%;
+}
+
 .search-bar-container {
-  max-width: 400px;
   width: 100%;
 }
 
