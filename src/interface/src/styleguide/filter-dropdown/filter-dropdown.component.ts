@@ -62,11 +62,8 @@ export class FilterDropdownComponent implements OnInit {
   displayedItems: string[] = [];
   selectedItems: string[] = [];
   private previousSelections: string[] = [];
-  clearInput: Subject<void> = new Subject<void>();
+  setInputValue: Subject<string> = new Subject<string>();
 
-  clearSearchBar() {
-    this.clearInput.next();
-  }
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
   }
@@ -107,7 +104,7 @@ export class FilterDropdownComponent implements OnInit {
 
   handleFilterClick() {
     //clear the search bar and show all items
-    this.clearInput.next();
+    this.setInputValue.next('fdfdasf');
     this.displayedItems = this.menuItems.slice();
     //copy the selections we had prior to opening, in case the user hits cancel
     this.previousSelections = this.selectedItems.slice();

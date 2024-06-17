@@ -79,7 +79,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   /**
    *
    */
-  @Input() clearEvent?: Observable<void>;
+  @Input() setSearchInput?: Observable<string>;
   /**
    *
    */
@@ -100,9 +100,10 @@ export class SearchBarComponent implements OnInit, OnDestroy {
         this.searchString.emit(searchTerm);
       });
     //responds to events that request we clear the input value
-    if (this.clearEvent) {
-      this.clearEvent.pipe(untilDestroyed(this)).subscribe(() => {
-        this.setInput('');
+    if (this.setSearchInput) {
+      this.setSearchInput.pipe(untilDestroyed(this)).subscribe((s) => {
+        this.setInput(s);
+        this.searchInput.next(s);
       });
     }
   }
