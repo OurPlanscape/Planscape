@@ -13,7 +13,11 @@ import { AuthService } from './auth.service';
   providedIn: 'root',
 })
 export class JwtInterceptor implements HttpInterceptor {
+  private readonly maxRetryAttempts = 3;
+  private retryCount = 0;
+
   constructor(private auth: AuthService) {}
+
   intercept(
     request: HttpRequest<any>,
     next: HttpHandler
@@ -33,8 +37,15 @@ export class JwtInterceptor implements HttpInterceptor {
   }
 
   handle401Error(request: HttpRequest<any>, next: HttpHandler) {
-    return this.auth
-      .refreshLoggedInUser()
-      .pipe(switchMap(() => next.handle(request)));
+    this.retryCount++;
+    if (this.retryCount >= this.maxRetryAttempts) {
+      this.auth.removeCookie();
+    }
+    return this.auth.refreshLoggedInUser().pipe(
+      switchMap(() => {
+        this.retryCount = 0;
+        return next.handle(request);
+      })
+    );
   }
 }
