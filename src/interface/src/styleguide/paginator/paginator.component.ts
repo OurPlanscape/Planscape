@@ -1,11 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  HostListener,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -66,46 +59,38 @@ export class PaginatorComponent implements OnInit {
   showLastSpacer$ = new BehaviorSubject<boolean>(false);
   buttonRange$ = new BehaviorSubject<number[]>([]);
   navSelectRange: number[] = [];
-  deafultButtonsToShow = 6;
+  defaultButtonsToShow = 6;
 
   ngOnInit(): void {
     this.selectedPage = Number(this.currentPage);
     this.recordsPerPage = Number(this.recordsPerPage);
     this.navSelectRange = [1, ...Array(this.pageCount + 1).keys()].slice(2);
-    this.getButtonLabels();
+    this.calcButtonLabels();
   }
 
   getTotalPages(): number {
     return Number(this.pageCount);
   }
 
-  getButtonLabels(): void {
-    const buttonsToShow = Math.min(
-      this.getTotalPages(),
-      this.deafultButtonsToShow
-    );
-
-    const remainderAtEnd = Math.max(
+  calcButtonLabels(): void {
+    const curPages = this.getTotalPages();
+    const buttonsToShow = Math.min(curPages, this.defaultButtonsToShow);
+    const midCount = Math.ceil(buttonsToShow / 2);
+    const rightRemainder = Math.max(
       0,
-      Math.ceil(buttonsToShow / 2) +
-        1 -
-        (this.getTotalPages() - this.selectedPage)
+      midCount + 1 - (curPages - this.selectedPage)
     );
-    const remainderAtStart = Math.max(
-      0,
-      Math.ceil(buttonsToShow / 2) - (this.selectedPage - 1)
-    );
+    const leftRemainder = Math.max(0, midCount - (this.selectedPage - 1));
     let buttonStart = Math.max(
-      this.selectedPage - Math.ceil(buttonsToShow / 2) - remainderAtEnd,
+      this.selectedPage - midCount - rightRemainder,
       2
     );
     let buttonEnd = Math.min(
-      this.selectedPage + Math.ceil(buttonsToShow / 2) + 1 + remainderAtStart,
-      this.getTotalPages()
+      this.selectedPage + midCount + 1 + leftRemainder,
+      curPages
     );
-
     this.showFirstSpacer$.next(buttonStart > 2);
-    this.showLastSpacer$.next(buttonEnd < this.getTotalPages());
+    this.showLastSpacer$.next(buttonEnd < curPages);
 
     //create the range of actual visible buttons
     const buttonArray = [];
@@ -131,15 +116,11 @@ export class PaginatorComponent implements OnInit {
   handlePrevious() {
     const pageNum = Math.max(this.selectedPage - 1, 1);
     this.setPage(pageNum);
-    this.getButtonLabels();
+    this.calcButtonLabels();
   }
   handleNext() {
     const pageNum = Math.min(this.selectedPage + 1, this.getTotalPages());
     this.setPage(pageNum);
-    this.getButtonLabels();
-  }
-  @HostListener('window:resize')
-  onResize() {
-    this.getButtonLabels();
+    this.calcButtonLabels();
   }
 }
