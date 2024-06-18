@@ -200,7 +200,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
     def test_filter_planning_areas_by_own_user_ids(self):
         self.client.force_authenticate(self.user)
-        query_params = {"creator": f"{self.user.id},{self.user2.id}"}
+        query_params = [("creator", str(self.user.id)), ("creator", str(self.user2.id))]
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
@@ -213,7 +213,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
     def test_filter_planning_areas_multiple_users_unshared(self):
         # This should only return the planning areas visible to logged in user
         self.client.force_authenticate(self.user2)
-        query_params = {"creator": f"{self.user.id},{self.user2.id}"}
+        query_params = [("creator", str(self.user.id)), ("creator", str(self.user2.id))]
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
@@ -233,7 +233,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         # auth as user1
         self.client.force_authenticate(self.user)
-        query_params = {"creator": f"{self.user.id},{self.user2.id}"}
+        query_params = [("creator", str(self.user.id)), ("creator", str(self.user2.id))]
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
