@@ -10,11 +10,11 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { InputFieldComponent } from '@styleguide';
+import { ButtonComponent, InputFieldComponent } from '@styleguide';
 import { FormsModule } from '@angular/forms';
-import { ButtonComponent } from '../button/button.component';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
 import { Subject } from 'rxjs';
+
 /**
  * Filter dropdown that lets user select one or multiple strings as part of a search
  */
@@ -34,7 +34,7 @@ import { Subject } from 'rxjs';
   templateUrl: './filter-dropdown.component.html',
   styleUrls: ['./filter-dropdown.component.scss'],
 })
-export class FilterDropdownComponent implements OnInit {
+export class FilterDropdownComponent<T> implements OnInit {
   @ViewChild(SearchBarComponent) searchbar!: SearchBarComponent;
 
   /**
@@ -51,22 +51,39 @@ export class FilterDropdownComponent implements OnInit {
    */
   @Input() menuLabel!: string;
   /**
-   * Items displayed in the menu
+   * Items displayed in the menu, an object of any type
    */
-  @Input() menuItems!: string[];
-  /**
-   * Event that returns a string[] array of selected items
-   */
-  @Output() updateSelection = new EventEmitter();
+  @Input() menuItems!: T[];
 
-  displayedItems: string[] = [];
-  selectedItems: string[] = [];
-  private previousSelections: string[] = [];
+  /**
+   * The display field for the menu items. Optional, used if the
+   * provided menuItems is not already a string.
+   */
+  @Input() displayField?: keyof T;
+
+  /**
+   * Event that emits when list of selected items changes
+   */
+  @Output() changedSelection = new EventEmitter<T[]>();
+
+  /**
+   *  Event that emits when the `done` button is clicked
+   */
+  @Output() confirmedSelection = new EventEmitter<T[]>();
+
+  displayedItems: T[] = [];
+  /**
+   * the items already selected
+   */
+  @Input() selectedItems: T[] = [];
+
+  private previousSelections: T[] = [];
   clearInput: Subject<void> = new Subject<void>();
 
   clearSearchBar() {
     this.clearInput.next();
   }
+
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
   }
@@ -79,23 +96,24 @@ export class FilterDropdownComponent implements OnInit {
     return this.selectedItems.length > 1;
   }
 
-  isInSelection(term: string): boolean {
+  isInSelection(term: T): boolean {
     return this.selectedItems.includes(term);
   }
 
-  toggleSelection(e: any, item: string) {
+  toggleSelection(e: any, item: T) {
     if (!this.selectedItems.includes(item)) {
       this.selectedItems.push(item);
     } else {
       this.selectedItems = this.selectedItems.filter((e) => e !== item);
     }
     e.stopPropagation();
-    this.updateSelection.emit(this.selectedItems);
+    this.changedSelection.emit(this.selectedItems);
   }
 
   get selectionText(): string {
     if (this.selectedItems.length > 0) {
-      return `${this.menuLabel}: ${this.selectedItems[0]}`;
+      const firstItem = this.selectedItems[0];
+      return `${this.menuLabel}: ${this.displayField ? firstItem[this.displayField] : firstItem}`;
     }
     return this.menuLabel;
   }
@@ -122,8 +140,21 @@ export class FilterDropdownComponent implements OnInit {
     if (searchTerm !== '') {
       this.displayedItems = this.menuItems.slice();
     }
-    this.displayedItems = this.menuItems.filter((e) =>
-      e.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+
+    this.displayedItems = this.menuItems.filter((item) => {
+      let value = '';
+      if (typeof item === 'string') {
+        value = item;
+      }
+      if (this.displayField && typeof item !== 'string') {
+        value = item[this.displayField] as string;
+      }
+
+      return value.toLowerCase().includes(searchTerm.toLowerCase());
+    });
+  }
+
+  done() {
+    this.confirmedSelection.emit(this.selectedItems);
   }
 }
