@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '@styleguide';
@@ -30,6 +30,7 @@ import { KeyPipe } from '../key.pipe';
 
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
+import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -56,6 +57,7 @@ import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-m
     KeyValuePipe,
     KeyPipe,
     PlanningAreaMenuComponent,
+    PlanningAreasSearchComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -77,7 +79,7 @@ import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-m
     },
   ],
 })
-export class PlanningAreasComponent implements OnInit {
+export class PlanningAreasComponent implements OnInit, OnDestroy {
   readonly columns: { key: keyof PreviewPlan | 'menu'; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'creator', label: 'Creator' },
@@ -96,7 +98,8 @@ export class PlanningAreasComponent implements OnInit {
   sortOptions: Sort = this.dataSource.sortOptions;
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad$;
-  noEntries = this.dataSource.noEntries$;
+  noEntries$ = this.dataSource.noEntries$;
+  hasFilters$ = this.dataSource.hasFilters$;
 
   ngOnInit() {
     this.dataSource.loadData();
@@ -123,5 +126,13 @@ export class PlanningAreasComponent implements OnInit {
 
   reload() {
     this.dataSource.loadData();
+  }
+
+  search(str: string) {
+    this.dataSource.search(str);
+  }
+
+  ngOnDestroy(): void {
+    this.dataSource.destroy();
   }
 }
