@@ -1,5 +1,6 @@
 @import 'mixins';
 @import 'colors';
+@import 'media';
 
 :host {
   display: flex;
@@ -7,163 +8,6 @@
   justify-content: space-between;
   align-items: center;
   width: 100%;
-
-  .page-button {
-    @include xs-label();
-    font-family: 'Public Sans';
-    color: $color-black;
-    background-color: $color-white;
-    border: 1px solid $color-soft-gray;
-    padding: 8px;
-    height: 38px;
-    width: 42px;
-    min-width: 40px;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 14px;
-    text-align: center;
-    cursor: pointer;
-  }
-
-  .page-button:hover {
-    background-color: $color-light-gray;
-    color: $color-black;
-  }
-
-  .page-button:active {
-    background-color: $color-light-gray;
-    color: $color-black;
-  }
-
-  .selected-button {
-    background-color: $color-standard-blue;
-    color: white;
-  }
-
-  .selected-button:active {
-    background-color: $color-standard-blue;
-    color: white;
-  }
-
-  .selected-button:hover {
-    background-color: $color-standard-blue;
-    color: white;
-  }
-
-  .spacer-button {
-    color: $color-md-gray;
-    background-color: white;
-    border: none;
-    padding: 0px;
-    height: 40px;
-    width: 30px;
-    font-size: 14px;
-    border-left: 1px solid $color-soft-gray;
-  }
-
-  .arrow-icon {
-    height: 20px;
-    width: 20px;
-    font-size: 20px;
-    line-height: 26px;
-  }
-
-  .ellipse-icon {
-    height: 20px;
-    width: 20px;
-    font-size: 20px;
-    line-height: 36px;
-  }
-
-  .first-page-button {
-    border-top-left-radius: 10%;
-    border-bottom-left-radius: 10%;
-    padding-left: 12px;
-    .mat-icon {
-      font-size: 14px;
-      height: 100%;
-      width: 14px;
-      line-height: 22px;
-    }
-  }
-
-  .last-page-button {
-    border-top-right-radius: 10%;
-    border-bottom-right-radius: 10%;
-    border-right: 1px solid $color-soft-gray;
-    .mat-icon {
-      font-size: 14px;
-      height: 100%;
-      width: 14px;
-      line-height: 22px;
-    }
-  }
-
-  .page-button:disabled {
-    background-color: $color-white;
-    color: $color-text-gray;
-  }
-
-  .pages-container {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    width: 100%;
-  }
-
-  .nav-control-container {
-    display: flex;
-    flex-direction: row;
-  }
-
-  .nav-controls {
-    display: flex;
-    flex-direction: row;
-  }
-
-  .page-select-container {
-    width: 120px;
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .nav-label {
-    @include small-input-label();
-    text-align: right;
-    color: $color-md-gray;
-    width: 40px;
-  }
-
-  .per-page-picker {
-    display: flex;
-    flex-direction: row;
-    height: 100%;
-    align-items: center;
-    width: 220px;
-    justify-content: space-between;
-    gap: 8px;
-  }
-
-  .picker-label {
-    @include small-input-label();
-    margin: 0px;
-    width: 180px;
-    text-align: right;
-    color: $color-black;
-  }
-
-  .picker-field {
-    width: 100px;
-    padding-top: 0px;
-    border: $color-black;
-
-    &.disabled {
-      opacity: 0.6;
-    }
-  }
 
   ::ng-deep .mat-mdc-form-field-subscript-wrapper {
     height: 0px;
@@ -184,8 +28,6 @@
 
   ::ng-deep .mat-mdc-select-value-text {
     @include h5();
-    font-size: 16px;
-    font-family: 'Public Sans';
     color: $color-md-gray;
     line-height: 40px;
     font-weight: 600;
@@ -194,8 +36,165 @@
   }
 }
 
+.page-button {
+  @include xs-label();
+  color: $color-black;
+  background-color: $color-white;
+  border: 1px solid $color-soft-gray;
+  padding: 8px;
+  height: 38px;
+  width: 42px;
+  min-width: 40px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 14px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.page-button:hover {
+  background-color: $color-light-gray;
+  color: $color-black;
+}
+
+.page-button:active {
+  background-color: $color-light-gray;
+  color: $color-black;
+}
+
+.selected-button {
+  background-color: $color-standard-blue;
+  color: white;
+}
+
+.selected-button:active {
+  background-color: $color-standard-blue;
+  color: white;
+}
+
+.selected-button:hover {
+  background-color: $color-standard-blue;
+  color: white;
+}
+
+.spacer-button {
+  color: $color-md-gray;
+  background-color: white;
+  border: none;
+  padding: 0px;
+  height: 40px;
+  width: 30px;
+  font-size: 14px;
+  border-left: 1px solid $color-soft-gray;
+}
+
+.arrow-icon {
+  height: 20px;
+  width: 20px;
+  font-size: 20px;
+  line-height: 26px;
+}
+
+.ellipse-icon {
+  height: 20px;
+  width: 20px;
+  font-size: 20px;
+  line-height: 36px;
+}
+
+.first-page-button {
+  border-top-left-radius: 10%;
+  border-bottom-left-radius: 10%;
+  padding-left: 12px;
+  .mat-icon {
+    font-size: 14px;
+    height: 100%;
+    width: 14px;
+    line-height: 22px;
+  }
+}
+
+.last-page-button {
+  border-top-right-radius: 10%;
+  border-bottom-right-radius: 10%;
+  border-right: 1px solid $color-soft-gray;
+  .mat-icon {
+    font-size: 14px;
+    height: 100%;
+    width: 14px;
+    line-height: 22px;
+  }
+}
+
+.page-button:disabled {
+  background-color: $color-white;
+  color: $color-text-gray;
+}
+
+.pages-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.nav-control-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.nav-controls {
+  display: flex;
+  flex-direction: row;
+}
+
+.page-select-container {
+  width: 200px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  display: none;
+}
+
+.nav-label {
+  @include small-input-label();
+  margin: 0px;
+  width: 180px;
+  text-align: right;
+  color: $color-black;
+}
+
+.per-page-picker {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  align-items: center;
+  width: 220px;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.picker-label {
+  @include small-input-label();
+  margin: 0px;
+  width: 180px;
+  text-align: right;
+  color: $color-black;
+}
+
+.picker-field {
+  width: 100px;
+  padding-top: 0px;
+  border: $color-black;
+
+  &.disabled {
+    opacity: 0.6;
+  }
+}
+
 ::ng-deep .per-page-item.mat-mdc-option.mdc-list-item {
-  font-family: 'Public Sans';
   font-size: 14px;
   font-weight: 600;
   line-height: 14px;
@@ -203,7 +202,6 @@
   color: $color-md-gray;
 }
 ::ng-deep .nav-page-item.mat-mdc-option.mdc-list-item {
-  font-family: 'Public Sans';
   font-size: 14px;
   font-weight: 600;
   line-height: 14px;
@@ -217,4 +215,20 @@
 
 ::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__leading {
   border-color: $color-soft-gray !important;
+}
+
+.numeric-button {
+  display: block;
+}
+
+@include on-small() {
+  :host {
+    justify-content: space-evenly;
+  }
+  .pages-container {
+    display: none;
+  }
+  .page-select-container {
+    display: flex;
+  }
 }

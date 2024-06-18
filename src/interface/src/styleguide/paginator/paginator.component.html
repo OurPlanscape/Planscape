@@ -1,4 +1,4 @@
-<div class="pages-container" *ngIf="!showNavSelect">
+<div class="pages-container">
   <div class="nav-control-container" *ngIf="pageCount > 1">
     <button
       class="page-button"
@@ -23,15 +23,14 @@
       <mat-icon class="ellipse-icon">more_horiz</mat-icon>
     </button>
     <div class="nav-controls">
-      <div *ngFor="let pageNum of buttonRange$ | async">
-        <button
-          sg-button
-          [ngClass]="{ 'selected-button': isCurrentPage(pageNum) }"
-          class="page-button"
-          (click)="setPage(pageNum)">
-          {{ pageNum }}
-        </button>
-      </div>
+      <button
+        *ngFor="let pageNum of buttonRange$ | async"
+        sg-button
+        [ngClass]="{ 'selected-button': isCurrentPage(pageNum) }"
+        class="page-button numeric-button"
+        (click)="setPage(pageNum)">
+        {{ pageNum }}
+      </button>
     </div>
     <button
       sg-button
@@ -58,8 +57,8 @@
   </div>
 </div>
 
-<div class="page-select-container" *ngIf="showNavSelect">
-  <div class="nav-label">Page:</div>
+<div class="page-select-container">
+  <div class="nav-label">Go to page</div>
   <mat-form-field class="picker-field" appearance="outline">
     <mat-select
       [(ngModel)]="selectedPage"

@@ -13,10 +13,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { BehaviorSubject } from 'rxjs';
-// import { WINDOW_LARGE_BREAKPOINT, WINDOW_SMALL_BREAKPOINT } from '../../app/shared/constants';
-
-export const WINDOW_LARGE_BREAKPOINT = 840;
-export const WINDOW_SMALL_BREAKPOINT = 600;
 
 /**
  * Provides a responsive set of page selection buttons and a select menu for results per page.
@@ -70,30 +66,13 @@ export class PaginatorComponent implements OnInit {
   showLastSpacer$ = new BehaviorSubject<boolean>(false);
   buttonRange$ = new BehaviorSubject<number[]>([]);
   navSelectRange: number[] = [];
-  showNavSelect = false;
+  deafultButtonsToShow = 6;
 
   ngOnInit(): void {
     this.selectedPage = Number(this.currentPage);
     this.recordsPerPage = Number(this.recordsPerPage);
     this.navSelectRange = [1, ...Array(this.pageCount + 1).keys()].slice(2);
     this.getButtonLabels();
-  }
-
-  visibleButtonCount(): number {
-    const width = window.innerWidth;
-    // buttons are fixed at 40px
-    if (width > WINDOW_LARGE_BREAKPOINT) {
-      this.showNavSelect = false;
-      return 10;
-    } else if (width > WINDOW_SMALL_BREAKPOINT) {
-      this.showNavSelect = false;
-      return 4;
-    }
-    //anything smaller and we just show a dropdown
-    else {
-      this.showNavSelect = true;
-      return 4;
-    }
   }
 
   getTotalPages(): number {
@@ -103,7 +82,7 @@ export class PaginatorComponent implements OnInit {
   getButtonLabels(): void {
     const buttonsToShow = Math.min(
       this.getTotalPages(),
-      this.visibleButtonCount()
+      this.deafultButtonsToShow
     );
 
     const remainderAtEnd = Math.max(
@@ -150,16 +129,17 @@ export class PaginatorComponent implements OnInit {
   }
 
   handlePrevious() {
-    this.selectedPage = Math.max(this.selectedPage - 1, 1);
+    const pageNum = Math.max(this.selectedPage - 1, 1);
+    this.setPage(pageNum);
     this.getButtonLabels();
   }
   handleNext() {
-    this.selectedPage = Math.min(this.selectedPage + 1, this.getTotalPages());
+    const pageNum = Math.min(this.selectedPage + 1, this.getTotalPages());
+    this.setPage(pageNum);
     this.getButtonLabels();
   }
   @HostListener('window:resize')
   onResize() {
-    this.visibleButtonCount();
     this.getButtonLabels();
   }
 }
