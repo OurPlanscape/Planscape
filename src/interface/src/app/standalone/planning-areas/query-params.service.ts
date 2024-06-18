@@ -2,6 +2,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Sort } from '@angular/material/sort';
 import { Inject, Injectable, InjectionToken } from '@angular/core';
+import { RegionsWithString } from '@types';
 
 // Injection token used as default sorting options for this service
 export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
@@ -66,5 +67,16 @@ export class QueryParamsService {
   getInitialFilterParam(): string {
     const { name } = this.route.snapshot.queryParams;
     return name || '';
+  }
+
+  getInitialRegionParam(): { name: string; value: string }[] {
+    const { region } = this.route.snapshot.queryParams;
+    if (region) {
+      const regionKeys = region.split(',');
+      return regionKeys.map((r: string) =>
+        RegionsWithString.find((d) => d.value === r)
+      );
+    }
+    return [];
   }
 }

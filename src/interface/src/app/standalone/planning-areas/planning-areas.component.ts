@@ -20,7 +20,7 @@ import {
 } from '@angular/common';
 
 import { PlanService } from '@services';
-import { PreviewPlan, Region, regions } from '@types';
+import { PreviewPlan, RegionsWithString } from '@types';
 
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -35,6 +35,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 import { FormsModule } from '@angular/forms';
+import { FilterDropdownComponent } from '../../../styleguide/filter-dropdown/filter-dropdown.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -63,6 +64,7 @@ import { FormsModule } from '@angular/forms';
     PlanningAreaMenuComponent,
     PlanningAreasSearchComponent,
     FormsModule,
+    FilterDropdownComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -110,7 +112,10 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   hasFilters$ = this.dataSource.hasFilters$;
 
   pages$ = this.dataSource.pages$;
-  readonly regions = Object.entries(regions);
+
+  selectedRegions = this.dataSource.selectedRegions;
+
+  readonly regions = RegionsWithString;
 
   ngOnInit() {
     this.dataSource.loadData();
@@ -152,11 +157,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     this.dataSource.destroy();
   }
 
-  selectRegion(region: Region) {
-    this.dataSource.filterRegion(region);
-  }
-
-  selectCreator(creator: string) {
-    this.dataSource.filterCreator(creator);
+  selectRegion(regions: { name: string; value: string }[]) {
+    this.dataSource.filterRegion(regions);
   }
 }

@@ -44,22 +44,14 @@
   </a>
 </div>
 <div class="filter-bar">
+  <sg-filter-dropdown
+    menuLabel="Region"
+    [hasSearch]="false"
+    (confirmedSelection)="selectRegion($event)"
+    [selectedItems]="selectedRegions"
+    displayField="name"
+    [menuItems]="regions"></sg-filter-dropdown>
   <div class="filter-placeholder">Filter placeholder</div>
-  <div class="filter-placeholder">Filter placeholder</div>
-
-  <div *ngFor="let r of regions">
-    <input
-      type="checkbox"
-      [value]="r[0]"
-      (change)="selectRegion(r[1])" /><label>{{ r[1] }}</label>
-  </div>
-
-  <div *ngFor="let creator of creators$ | async">
-    <input
-      type="checkbox"
-      [value]="creator"
-      (change)="selectCreator(creator)" /><label>{{ creator }}</label>
-  </div>
 </div>
 <!--Initial load spinner-->
 <mat-spinner

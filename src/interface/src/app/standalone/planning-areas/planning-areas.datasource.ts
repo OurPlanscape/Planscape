@@ -1,6 +1,6 @@
 import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
 
-import { PreviewPlan, Region, regionToString } from '@types';
+import { PreviewPlan } from '@types';
 
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
@@ -17,8 +17,10 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
   public pageOptions = this.queryParamsService.getInitialPageParams();
   public searchTerm = this.queryParamsService.getInitialFilterParam();
-
   public pages$ = this._pages$.asObservable();
+  public selectedRegions: { name: string; value: string }[] =
+    this.queryParamsService.getInitialRegionParam();
+
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
    * `false` when done loading.
@@ -30,17 +32,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    * `false` when done loading.
    */
   public loading$ = this._loading.asObservable();
-
-  public creators$ = this._dataStream.pipe(
-    map((plans) =>
-      plans.reduce<string[]>((values, plan) => {
-        if (!values.includes(plan.creator)) {
-          values.push(plan.creator);
-        }
-        return values;
-      }, [])
-    )
-  );
 
   /**
    * Emits `true` if there are no results after loading data.
@@ -56,9 +47,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    * Emits `true` if applying filters or searching
    */
   public hasFilters$ = this._hasFilters$.asObservable();
-
-  private selectedRegions: Region[] = [];
-  private selectedCreators: string[] = [];
 
   constructor(
     private planService: PlanService,
@@ -92,10 +80,11 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getSortOptions(),
       ...this.searchOptions(),
       ...this.getRegionFilters(),
-      ...this.getCreatorFilters(),
     };
     // update filter status when loading data
-    this._hasFilters$.next(!!this.searchTerm);
+    this._hasFilters$.next(
+      !!this.searchTerm || this.selectedRegions.length > 0
+    );
 
     this._loading.next(true);
     this.planService.getPlanPreviews(params).subscribe((data) => {
@@ -118,31 +107,15 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     this.loadData();
   }
 
-  filterRegion(region: Region) {
-    const index = this.selectedRegions.indexOf(region);
-    if (index === -1) {
-      this.selectedRegions.push(region);
-    } else {
-      this.selectedRegions.splice(index, 1);
-    }
+  filterRegion(regions: { name: string; value: string }[]) {
+    this._initialLoad$.next(true);
 
-    const regionNames = this.selectedRegions
-      .map((r) => regionToString(r))
-      .join(',');
+    this.selectedRegions = regions;
+    const regionNames = this.selectedRegions.map((r) => r.value).join(',');
     this.queryParamsService.updateUrl({
       ...this.sortOptions,
       region: regionNames,
     });
-    this.loadData();
-  }
-
-  filterCreator(creator: string) {
-    const index = this.selectedCreators.indexOf(creator);
-    if (index === -1) {
-      this.selectedCreators.push(creator);
-    } else {
-      this.selectedCreators.splice(index, 1);
-    }
     this.loadData();
   }
 
@@ -203,16 +176,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       return;
     }
     return {
-      region_name: this.selectedRegions.map((r) => regionToString(r)),
-    };
-  }
-
-  private getCreatorFilters() {
-    if (this.selectedCreators.length === 0) {
-      return;
-    }
-    return {
-      creator: this.selectedCreators,
+      region_name: this.selectedRegions.map((r) => r.value),
     };
   }
 

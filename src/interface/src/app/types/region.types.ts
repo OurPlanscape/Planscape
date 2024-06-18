@@ -27,3 +27,22 @@ export function regionToString(region: Region | null): string {
   }
   return 'sierra-nevada';
 }
+
+export const RegionsWithString = [
+  {
+    name: Region.SIERRA_NEVADA,
+    value: regionToString(Region.SIERRA_NEVADA),
+  },
+  {
+    name: Region.CENTRAL_COAST,
+    value: regionToString(Region.CENTRAL_COAST),
+  },
+  {
+    name: Region.NORTHERN_CALIFORNIA,
+    value: regionToString(Region.NORTHERN_CALIFORNIA),
+  },
+  {
+    name: Region.SOUTHERN_CALIFORNIA,
+    value: regionToString(Region.SOUTHERN_CALIFORNIA),
+  },
+];
