@@ -1,8 +1,0 @@
-{
-  "/planscape-backend": {
-    "target": "https://dev.planscape.org/planscape-backend",
-    "secure": false,
-    "logLevel": "debug",
-    "changeOrigin": true
-  }
-}
