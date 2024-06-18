@@ -72,7 +72,11 @@ export class FilterDropdownComponent<T> implements OnInit {
   @Output() confirmedSelection = new EventEmitter<T[]>();
 
   displayedItems: T[] = [];
-  selectedItems: T[] = [];
+  /**
+   * the items already selected
+   */
+  @Input() selectedItems: T[] = [];
+
   private previousSelections: T[] = [];
   clearInput: Subject<void> = new Subject<void>();
 
@@ -108,7 +112,8 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   get selectionText(): string {
     if (this.selectedItems.length > 0) {
-      return `${this.menuLabel}: ${this.selectedItems[0]}`;
+      const firstItem = this.selectedItems[0];
+      return `${this.menuLabel}: ${this.displayField ? firstItem[this.displayField] : firstItem}`;
     }
     return this.menuLabel;
   }
