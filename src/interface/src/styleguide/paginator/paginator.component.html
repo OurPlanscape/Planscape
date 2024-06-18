@@ -61,6 +61,7 @@
   <div class="nav-label">Go to page</div>
   <mat-form-field class="picker-field" appearance="outline">
     <mat-select
+      panelClass="paginator-select-panel"
       [(ngModel)]="selectedPage"
       (selectionChange)="setPage(selectedPage)">
       @for (page of navSelectRange; track page) {
@@ -74,6 +75,7 @@
   <div class="picker-label">Records per page</div>
   <mat-form-field class="picker-field" appearance="outline">
     <mat-select
+      panelClass="paginator-select-panel"
       [(ngModel)]="recordsPerPage"
       (selectionChange)="perPageChanged()">
       @for (count of perPageOptions; track count) {

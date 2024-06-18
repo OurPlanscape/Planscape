@@ -23,33 +23,26 @@
     .mat-mdc-form-field-infix {
     padding-top: 0px;
     padding-bottom: 0px;
-    height: 40px;
   }
 
   ::ng-deep .mat-mdc-select-value-text {
-    @include h5();
-    color: $color-md-gray;
+    @include small-input-label();
     line-height: 40px;
-    font-weight: 600;
-    letter-spacing: normal;
-    color: black;
   }
 }
 
 .page-button {
   @include xs-label();
+  font-family: 'Public Sans';
   color: $color-black;
   background-color: $color-white;
   border: 1px solid $color-soft-gray;
   padding: 8px;
   height: 38px;
   width: 42px;
-  min-width: 40px;
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 14px;
   text-align: center;
   cursor: pointer;
+  border-right: 0px;
 }
 
 .page-button:hover {
@@ -150,7 +143,6 @@
 
 .page-select-container {
   width: 200px;
-  display: flex;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -188,33 +180,26 @@
   width: 100px;
   padding-top: 0px;
   border: $color-black;
-
+  --mat-select-trigger-text-font: 'Public Sans';
+  --mdc-outlined-text-field-outline-color: $color-soft-gray;
   &.disabled {
     opacity: 0.6;
   }
 }
 
-::ng-deep .per-page-item.mat-mdc-option.mdc-list-item {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 14px;
-  text-align: center;
-  color: $color-md-gray;
-}
-::ng-deep .nav-page-item.mat-mdc-option.mdc-list-item {
-  font-size: 14px;
-  font-weight: 600;
-  line-height: 14px;
-  text-align: center;
-  color: $color-md-gray;
+::ng-deep .paginator-select-panel .mat-mdc-option {
+  --mat-option-label-text-font: 'Public Sans';
+  --mat-form-field-container-text-font: 'Public Sans';
+  --mat-option-label-text-size: 14px;
+  --mat-option-label-text-line-height: 24px;
+  --mat-option-label-text-tracking: 0.03125em;
+  --mat-option-label-text-weight: 400;
 }
 
-::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__trailing {
-  border-color: $color-soft-gray !important;
-}
-
+::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__trailing,
 ::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__leading {
-  border-color: $color-soft-gray !important;
+  --mdc-outlined-text-field-focus-outline-width: 1px;
+  color: $color-soft-gray;
 }
 
 .numeric-button {
