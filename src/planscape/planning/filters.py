@@ -1,10 +1,14 @@
 from django_filters import rest_framework as filters
-from django_filters import BaseInFilter, NumberFilter
 from planning.models import PlanningArea, Scenario, RegionChoices
 
 
-class NumberInFilter(BaseInFilter, NumberFilter):
-    pass
+class MultipleCreatorFilter(filters.CharFilter):
+    def filter(self, queryset, value):
+        if not value:
+            return queryset
+        request = self.parent.request
+        creator_ids = request.query_params.getlist(self.field_name)
+        return queryset.filter(user_id__in=creator_ids)
 
 
 class PlanningAreaFilter(filters.FilterSet):
@@ -12,7 +16,7 @@ class PlanningAreaFilter(filters.FilterSet):
     region_name = filters.MultipleChoiceFilter(
         choices=RegionChoices.choices,
     )
-    creator = NumberInFilter(field_name="user_id", lookup_expr="in")
+    creator = MultipleCreatorFilter(field_name="creator")
 
     class Meta:
         model = PlanningArea
