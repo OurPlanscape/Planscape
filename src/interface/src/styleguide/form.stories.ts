@@ -1,13 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { InputFieldComponent } from './input-field.component';
+import { InputFieldComponent } from './input/input-field.component';
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
 import { MatFormFieldModule } from '@angular/material/form-field';
-import { InputDirective } from './input.directive';
+import { InputDirective } from './input/input.directive';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '@styleguide';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatRadioModule } from '@angular/material/radio';
 
 @Component({
   selector: 'sg-demo-form',
@@ -21,27 +23,24 @@ import { ButtonComponent } from '@styleguide';
     InputDirective,
     ReactiveFormsModule,
     ButtonComponent,
+    MatCheckboxModule,
+    MatRadioModule,
   ],
-  template: `
-    <h3>Demo of input fields on reactive forms</h3>
-    <form
-      [formGroup]="demoForm"
-      style="display: flex; gap: 16px; flex-direction: column">
-      <sg-input-field
-        supportMessage="Full name"
-        [error]="demoForm.get('firstName')?.errors !== null"
-        [disabled]="demoForm.get('firstName')?.disabled || false">
-        <input sgInput formControlName="firstName" />
-      </sg-input-field>
-      <sg-input-field
-        supportMessage="5 digits"
-        [error]="demoForm.get('phone')?.errors !== null"
-        [disabled]="demoForm.get('phone')?.disabled || false">
-        <input sgInput formControlName="phone" />
-      </sg-input-field>
-    </form>
-    <button sg-button (click)="disableFields()">Disable</button>
+  styles: `
+    form {
+      display: flex;
+      gap: 48px;
+      text-align: left;
+    }
+    .flex {
+      display: flex;
+      gap: 16px;
+      flex-direction: column;
+      align-items: flex-start;
+      min-width: 200px;
+    }
   `,
+  templateUrl: './form.stories.html',
 })
 export class DemoFormComponent {
   constructor(private fb: FormBuilder) {}
