@@ -127,6 +127,35 @@
           ]
         },
         {
+          "pillar_name": "operational",
+          "display": true,
+          "display_name": "Operational",
+          "elements": [
+            {
+              "element_name": "operational",
+              "display": true,
+              "display_name": "Operational",
+              "metrics": [
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "WUI, Carlson et al",
+                  "data_units": "Categorical",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "northern-california/operational/MSB_WUI_CA_100m.tif",
+                  "raw_layer": ":operational_MSB_WUI_CA_100m",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/NorCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
+                  "source": "Northern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit",
+                  "output_units": "Acres in WUI class 1 or 2",
+                  "hide_chart": true
+                }
+              ]
+            }
+          ]
+        },
+        {
           "pillar_name": "air_quality",
           "display": true,
           "display_name": "Air Quality",
@@ -1629,6 +1658,35 @@
       "future_data": false,
       "pillars": [
         {
+          "pillar_name": "operational",
+          "display": true,
+          "display_name": "Operational",
+          "elements": [
+            {
+              "element_name": "operational",
+              "display": true,
+              "display_name": "Operational",
+              "metrics": [
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "WUI, Carlson et al",
+                  "data_units": "Categorical",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/operational/MSB_WUI_CA_100m.tif",
+                  "raw_layer": ":operational_MSB_WUI_CA_100m",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/NorCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
+                  "source": "Central Coast Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/central-coast-california-regional-resource-kit",
+                  "output_units": "Acres in WUI class 1 or 2",
+                  "hide_chart": true
+                }
+              ]
+            }
+          ]
+        },
+        {
           "pillar_name": "forsys",
           "display": false,
           "elements": [
@@ -3021,6 +3079,35 @@
       "future_data": false,
       "pillars": [
         {
+          "pillar_name": "operational",
+          "display": true,
+          "display_name": "Operational",
+          "elements": [
+            {
+              "element_name": "operational",
+              "display": true,
+              "display_name": "Operational",
+              "metrics": [
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "WUI, Carlson et al",
+                  "data_units": "Categorical",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "southern-california/operational/MSB_WUI_CA_100m.tif",
+                  "raw_layer": ":operational_MSB_WUI_CA_100m",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
+                  "source": "Southern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
+                  "output_units": "Acres in WUI class 1 or 2",
+                  "hide_chart": true
+                }
+              ]
+            }
+          ]
+        },
+        {
           "pillar_name": "forsys",
           "display": false,
           "elements": [
@@ -3849,21 +3936,6 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=13",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
-                },
-                {
-                  "display_name": "Wildland Urban Interface",
-                  "data_provider": "WUI, Carlson et al",
-                  "data_units": "Categorical",
-                  "max_value": 2,
-                  "metric_name": "wildland_urban_interface",
-                  "min_value": 0,
-                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/MSB_WUI_CA_100m.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_MSB_WUI_CA_100m",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
-                  "source": "Southern California Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
-                  "output_units": "Acres in WUI class 1 or 2",
-                  "hide_chart": true
                 }
               ]
             }
@@ -4723,6 +4795,35 @@
       "translated_data": true,
       "future_data": true,
       "pillars": [
+        {
+          "pillar_name": "operational",
+          "display": true,
+          "display_name": "Operational",
+          "elements": [
+            {
+              "element_name": "operational",
+              "display": true,
+              "display_name": "Operational",
+              "metrics": [
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "WUI, Carlson et al",
+                  "data_units": "Categorical",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "sierra-nevada/operational/MSB_WUI_CA_100m.tif",
+                  "raw_layer": ":operational_MSB_WUI_CA_100m",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SN_RRK_Metric-Dictionary_v20230201.pdf#page=15",
+                  "source": "Sierra Nevada Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Acres in WUI class 1 or 2",
+                  "hide_chart": true
+                }
+              ]
+            }
+          ]
+        },
         {
           "pillar_name": "forsys",
           "display": false,
