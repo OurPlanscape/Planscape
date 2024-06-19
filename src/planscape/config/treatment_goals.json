@@ -613,8 +613,7 @@
                   "biodiversity_conservation",
                   "economic_diversity",
                   "wetland_integrity",
-                  "carbon_sequestration",
-                  "operational"
+                  "carbon_sequestration"
                 ],
                 "elements": [
                   "severity",
@@ -625,8 +624,7 @@
                   "wood_product_industry",
                   "composition",
                   "functional_fire",
-                  "carbon_storage",
-                  "operational"
+                  "carbon_storage"
                 ],
                 "metrics": [
                   "annual_burn_probability",
@@ -1142,7 +1140,7 @@
                   "severity",
                   "species_diversity",
                   "Forsys",
-                  "operational"
+                  "fire"
                 ],
                 "metrics": [
                   "annual_burn_probability",
@@ -1574,7 +1572,7 @@
                   "severity",
                   "species_diversity",
                   "Forsys",
-                  "operational"
+                  "fire"
                 ],
                 "metrics": [
                   "aboveground_carbon_turnover_time",
@@ -1655,7 +1653,7 @@
                   "species_diversity",
                   "Forsys",
                   "fire_return_interval_departure",
-                  "operational"
+                  "fire"
                 ],
                 "metrics": [
                   "mean_fri_departure_condition_class",
