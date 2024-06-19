@@ -32,21 +32,22 @@ logger = logging.getLogger(__name__)
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     queryset = PlanningArea.objects.all()
     permission_classes = [PlanningAreaViewPermission]
-    filterset_class = PlanningAreaFilter
-    filter_backends = [
-        DjangoFilterBackend,
-        OrderingFilter,
-        PlanningAreaOrderingFilter,
-    ]
     ordering_fields = [
         "area_acres",
         "created_at",
         "creator",
+        "full_name",
         "latest_updated",
         "name",
         "region_name",
         "scenario_count",
         "user",
+    ]
+    filterset_class = PlanningAreaFilter
+    filter_backends = [
+        PlanningAreaOrderingFilter,
+        DjangoFilterBackend,
+        OrderingFilter,
     ]
 
     def get_serializer_class(self):

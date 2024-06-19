@@ -5,6 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
+from planning.models import RegionChoices
 from planning.tests.helpers import (
     _create_planning_area,
     _create_multiple_planningareas,
@@ -66,7 +67,10 @@ class GetPlanningAreaTest(APITransactionTestCase):
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area6 = _create_planning_area(
-            self.user2, "test plan-manual6", stored_geometry
+            self.user2,
+            "test plan-manual6",
+            stored_geometry,
+            region_name=RegionChoices.SIERRA_NEVADA,
         )
 
         self.central_coast_area = self.test_planningareas[6]
@@ -129,12 +133,24 @@ class GetPlanningAreaTest(APITransactionTestCase):
     def test_list_planning_areas_sort_by_name(self):
         geo = GEOSGeometry(json.dumps(self.geometry))
 
-        _create_planning_area(self.user, "Area D", geo)
-        _create_planning_area(self.user, "Area E", geo)
-        _create_planning_area(self.user, "Area C", geo)
-        _create_planning_area(self.user, "Area F", geo)
-        _create_planning_area(self.user, "Area B", geo)
-        _create_planning_area(self.user, "Area A", geo)
+        _create_planning_area(
+            self.user, "Area D", geo, region_name=RegionChoices.CENTRAL_COAST
+        )
+        _create_planning_area(
+            self.user, "Area E", geo, region_name=RegionChoices.SIERRA_NEVADA
+        )
+        _create_planning_area(
+            self.user, "Area C", geo, region_name=RegionChoices.SOUTHERN_CALIFORNIA
+        )
+        _create_planning_area(
+            self.user, "Area F", geo, region_name=RegionChoices.NORTHERN_CALIFORNIA
+        )
+        _create_planning_area(
+            self.user, "Area B", geo, region_name=RegionChoices.CENTRAL_COAST
+        )
+        _create_planning_area(
+            self.user, "Area A", geo, region_name=RegionChoices.SIERRA_NEVADA
+        )
 
         self.client.force_authenticate(self.user)
         query_params = {"ordering": "name", "limit": 6}
@@ -218,12 +234,232 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(planning_areas["count"], 0)
 
 
+class ListPlanningAreaSortingTest(APITransactionTestCase):
+    def setUp(self):
+        self.user1 = User.objects.create(username="testuser")
+        self.user1.set_password("12345")
+        self.user1.save()
+
+        self.user2 = User.objects.create(username="otherowner")
+        self.user2.set_password("12345")
+        self.user2.save()
+
+        self.emptyuser = User.objects.create(username="emptyuser")
+        self.emptyuser.set_password("12345")
+        self.emptyuser.save()
+
+        self.geometry1 = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
+        }
+        self.geometry2 = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[0, 20], [2, 3], [3, 4], [0, 20]]]],
+        }
+        self.geometry3 = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[10, 20], [2, 30], [30, 4], [10, 20]]]],
+        }
+        self.geometry4 = {
+            "type": "MultiPolygon",
+            "coordinates": [[[[0, 20], [2, 30], [30, 4], [0, 20]]]],
+        }
+        geo1 = GEOSGeometry(json.dumps(self.geometry1))
+        geo2 = GEOSGeometry(json.dumps(self.geometry2))
+        geo3 = GEOSGeometry(json.dumps(self.geometry3))
+        geo4 = GEOSGeometry(json.dumps(self.geometry4))
+
+        self.pa1 = _create_planning_area(
+            self.user1, "Area D", geo1, region_name=RegionChoices.CENTRAL_COAST
+        )
+        self.pa2 = _create_planning_area(
+            self.user1, "Area E", geo3, region_name=RegionChoices.SIERRA_NEVADA
+        )
+        self.pa3 = _create_planning_area(
+            self.user1, "Area C", geo4, region_name=RegionChoices.SOUTHERN_CALIFORNIA
+        )
+        self.pa4 = _create_planning_area(
+            self.user1, "Area F", geo2, region_name=RegionChoices.NORTHERN_CALIFORNIA
+        )
+        self.pa5 = _create_planning_area(
+            self.user1, "Area B", geo3, region_name=RegionChoices.CENTRAL_COAST
+        )
+        self.pa6 = _create_planning_area(
+            self.user1, "Area A", geo3, region_name=RegionChoices.SIERRA_NEVADA
+        )
+
+        self.pa7 = _create_planning_area(
+            self.user2, "Area G", geo1, region_name=RegionChoices.CENTRAL_COAST
+        )
+        self.pa8 = _create_planning_area(
+            self.user2, "Area H", geo2, region_name=RegionChoices.NORTHERN_CALIFORNIA
+        )
+        self.pa9 = _create_planning_area(
+            self.user2, "Area I", geo3, region_name=RegionChoices.SIERRA_NEVADA
+        )
+        self.pa10 = _create_planning_area(
+            self.user2, "Area J", geo4, region_name=RegionChoices.CENTRAL_COAST
+        )
+
+        self.scenario1_1 = _create_scenario(
+            self.pa1, "test pa1 scenario1 ", "{}", self.user1, ""
+        )
+        self.scenario1_2 = _create_scenario(
+            self.pa1, "test pa1 scenario2", "{}", self.user1, ""
+        )
+        self.scenario1_3 = _create_scenario(
+            self.pa1, "test pa1 scenario3", "{}", self.user1, ""
+        )
+        self.scenario3_1 = _create_scenario(
+            self.pa3, "test pa3 scenario1", "{}", self.user1, ""
+        )
+        self.scenario4_1 = _create_scenario(
+            self.pa4, "test pa4 scenario1 ", "{}", self.user1, ""
+        )
+        self.scenario4_2 = _create_scenario(
+            self.pa4, "test pa4 scenario2", "{}", self.user1, ""
+        )
+        self.scenario4_3 = _create_scenario(
+            self.pa4, "test pa4 scenario3", "{}", self.user1, ""
+        )
+
+        # user1 can see all of user2 PA records as a collaborator
+        create_collaborator_record(self.user2, self.user1, self.pa7, Role.COLLABORATOR)
+        create_collaborator_record(self.user2, self.user1, self.pa8, Role.COLLABORATOR)
+        create_collaborator_record(self.user2, self.user1, self.pa9, Role.COLLABORATOR)
+        create_collaborator_record(self.user2, self.user1, self.pa10, Role.COLLABORATOR)
+
+    def test_list_planning_areas_sort_by_region_name(self):
+        self.client.force_authenticate(self.user1)
+        query_params = {"ordering": "region_name"}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        region_names = []
+        for item in planning_areas["results"]:
+            region_names.append(item["region_name"])
+        expected_region_names = [
+            "Central Coast",
+            "Central Coast",
+            "Central Coast",
+            "Central Coast",
+            "Northern California",
+            "Northern California",
+            "Sierra Nevada",
+            "Sierra Nevada",
+            "Sierra Nevada",
+            "Southern California",
+        ]
+        self.assertListEqual(region_names, expected_region_names)
+
+    def test_list_planning_areas_desc_sort_by_region_name(self):
+        self.client.force_authenticate(self.user1)
+        query_params = {"ordering": "-region_name"}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        region_names = []
+        for item in planning_areas["results"]:
+            region_names.append(item["region_name"])
+        expected_region_names = [
+            "Southern California",
+            "Sierra Nevada",
+            "Sierra Nevada",
+            "Sierra Nevada",
+            "Northern California",
+            "Northern California",
+            "Central Coast",
+            "Central Coast",
+            "Central Coast",
+            "Central Coast",
+        ]
+        self.assertListEqual(region_names, expected_region_names)
+
+    def test_list_planning_areas_sort_by_scenario_count(self):
+        self.client.force_authenticate(self.user1)
+        query_params = {"ordering": "scenario_count"}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        scenario_counts = []
+        for item in planning_areas["results"]:
+            print(f"item {item}")
+            scenario_counts.append(item["scenario_count"])
+        expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
+        self.assertListEqual(scenario_counts, expected_scenario_counts)
+
+    def test_list_planning_areas_sort_by_scenario_count_region_name(self):
+        self.client.force_authenticate(self.user1)
+        query_params = {"ordering": "scenario_count, region_name"}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        scenario_counts = []
+        region_names = []
+        for item in planning_areas["results"]:
+            print(f"item {item}")
+            scenario_counts.append(item["scenario_count"])
+            region_names.append(item["region_name"])
+        expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
+        expected_region_names = [
+            "Central Coast",
+            "Central Coast",
+            "Central Coast",
+            "Northern California",
+            "Sierra Nevada",
+            "Sierra Nevada",
+            "Sierra Nevada",
+            "Southern California",
+            "Central Coast",
+            "Northern California",
+        ]
+        self.assertListEqual(scenario_counts, expected_scenario_counts)
+        self.assertListEqual(region_names, expected_region_names)
+
+    def test_list_planning_areas_sort_by_area_acres(self):
+        self.client.force_authenticate(self.user1)
+        query_params = {"ordering": "area_acres"}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        acres = []
+        for item in planning_areas["results"]:
+            print(f"item {item}")
+            acres.append(item["area_acres"])
+        expected_acres = [
+            56338.09165393878,
+            56338.09165393878,
+            29674594.93297612,
+            29674594.93297612,
+            213997881.85468292,
+            213997881.85468292,
+            213997881.85468292,
+            213997881.85468292,
+            525377875.28772503,
+            525377875.28772503,
+        ]
+        self.assertListEqual(acres, expected_acres)
+
+
 class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def setUp(self):
         if Permissions.objects.count() == 0:
             reset_permissions()
-
-        self.planningareas_list_url = ""
 
         self.creator_user = User.objects.create(
             username="makerofthings",

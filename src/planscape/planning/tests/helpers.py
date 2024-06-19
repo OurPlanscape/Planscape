@@ -1,8 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from collaboration.models import Permissions, Role
-from planning.models import PlanningArea, Scenario, ScenarioResult
-
+from planning.models import PlanningArea, Scenario, ScenarioResult, RegionChoices
 
 # Create test plans.  These are going straight to the test DB without
 # normal parameter checking (e.g. if is there a real geometry).
@@ -12,17 +11,17 @@ def _create_planning_area(
     name: str,
     geometry: GEOSGeometry | None = None,
     notes: str | None = None,
+    region_name: RegionChoices | None = RegionChoices.SIERRA_NEVADA,
 ) -> PlanningArea:
     """
     Creates a planning_area with the given user, name, geometry, notes.  All regions
     are in Sierra Nevada.
     """
-    from planning.models import RegionChoices
 
     planning_area = PlanningArea.objects.create(
         user=user,
         name=name,
-        region_name=RegionChoices.SIERRA_NEVADA,
+        region_name=region_name,
         geometry=geometry,
         notes=notes,
     )

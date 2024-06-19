@@ -1,7 +1,9 @@
 from django_filters import rest_framework as filters
+from django.db.models import F, Func, Value, ExpressionWrapper, FloatField
+from django.contrib.gis.db.models.functions import Area, Transform
+from django.conf import settings
 from planning.models import PlanningArea, Scenario, RegionChoices
 from rest_framework.filters import OrderingFilter
-from planning.services import get_acreage
 
 
 class PlanningAreaFilter(filters.FilterSet):
@@ -23,22 +25,28 @@ class PlanningAreaOrderingFilter(OrderingFilter):
                 reverse = order.startswith("-")
                 field_name = order.lstrip("-")
 
-                if field_name == "creator":
-                    queryset = sorted(
-                        queryset,
-                        key=lambda instance: instance.user.get_full_name(),
-                        reverse=reverse,
-                    )
-                    return queryset
+                if field_name == "full_name":
+                    direction = "-" if reverse else ""
+                    queryset = queryset.annotate(
+                        full_name=Func(
+                            F("user__first_name"),
+                            Value(" "),
+                            F("user__last_name"),
+                            function="CONCAT",
+                        )
+                    ).order_by(f"{direction}full_name")
 
                 if field_name == "area_acres":
-                    queryset = sorted(
-                        queryset,
-                        key=lambda instance: get_acreage(instance.geometry),
-                        reverse=reverse,
-                    )
-                    return queryset
-        return super().filter_queryset(request, queryset, view)
+                    direction = "-" if reverse else ""
+                    queryset = queryset.annotate(
+                        area_acres=ExpressionWrapper(
+                            Area(Transform(F("geometry"), settings.AREA_SRID)),
+                            output_field=FloatField(),
+                        )
+                        * settings.CONVERSION_SQM_ACRES
+                    ).order_by(f"{direction}area_acres")
+
+            return super().filter_queryset(request, queryset, view)
 
 
 class ScenarioFilter(filters.FilterSet):
