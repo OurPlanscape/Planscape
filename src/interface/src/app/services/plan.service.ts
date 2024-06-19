@@ -37,14 +37,24 @@ export class PlanService {
   }
 
   /** Makes a request to the backend to delete a plan with the given ID. */
-  deletePlan(planIds: string[]): Observable<string> {
+  deletePlan(planIds: string[]): Observable<string>;
+  deletePlan(planId: number): Observable<string>;
+  deletePlan(planIdsOrId: string[] | number): Observable<string> {
+    let ids: string[];
+
+    if (typeof planIdsOrId === 'number') {
+      ids = [planIdsOrId.toString()];
+    } else {
+      ids = planIdsOrId;
+    }
+
     return this.http.post<string>(
       environment.backend_endpoint.concat(
         '/planning/delete_planning_area/?id=',
-        planIds.toString()
+        ids.toString()
       ),
       {
-        id: planIds,
+        id: ids,
       },
       {
         withCredentials: true,
