@@ -166,6 +166,14 @@ export class AuthService {
     );
   }
 
+  /**
+   * removes the cookies for tokens
+   */
+  removeCookie() {
+    this.cookieService.delete('my-refresh-token');
+    this.cookieService.delete('my-app-auth');
+  }
+
   private getLoggedInUser(): Observable<User> {
     return this.http
       .get(this.API_ROOT.concat('user/'), { withCredentials: true })
