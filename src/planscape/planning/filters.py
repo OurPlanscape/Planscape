@@ -20,6 +20,7 @@ class PlanningAreaFilter(filters.FilterSet):
 class PlanningAreaOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
         ordering = self.get_ordering(request, queryset, view)
+
         if ordering:
             for order in ordering:
                 reverse = order.startswith("-")
@@ -46,7 +47,7 @@ class PlanningAreaOrderingFilter(OrderingFilter):
                         * settings.CONVERSION_SQM_ACRES
                     ).order_by(f"{direction}area_acres")
 
-            return super().filter_queryset(request, queryset, view)
+        return super().filter_queryset(request, queryset, view)
 
 
 class ScenarioFilter(filters.FilterSet):

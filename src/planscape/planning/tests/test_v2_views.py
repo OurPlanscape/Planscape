@@ -20,6 +20,15 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.user = User.objects.create(username="testuser")
         self.user.set_password("12345")
         self.user.save()
+
+        self.user2 = User.objects.create(username="otherowner")
+        self.user2.set_password("12345")
+        self.user2.save()
+
+        self.emptyuser = User.objects.create(username="emptyuser")
+        self.emptyuser.set_password("12345")
+        self.emptyuser.save()
+
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -27,14 +36,41 @@ class GetPlanningAreaTest(APITransactionTestCase):
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
         self.test_planningareas = _create_multiple_planningareas(
-            120, self.user, "test plan", stored_geometry
+            10,
+            self.user,
+            "test plan",
+            stored_geometry,
+            region_name=RegionChoices.SIERRA_NEVADA,
         )
-
+        self.test_planningareas = _create_multiple_planningareas(
+            11,
+            self.user,
+            "test plan",
+            stored_geometry,
+            region_name=RegionChoices.CENTRAL_COAST,
+        )
+        self.test_planningareas = _create_multiple_planningareas(
+            12,
+            self.user,
+            "test plan",
+            stored_geometry,
+            region_name=RegionChoices.SOUTHERN_CALIFORNIA,
+        )
+        self.test_planningareas = _create_multiple_planningareas(
+            13,
+            self.user,
+            "test plan",
+            stored_geometry,
+            region_name=RegionChoices.NORTHERN_CALIFORNIA,
+        )
+        # of the created areas,
         self.planning_area1 = self.test_planningareas[0]
         self.planning_area2 = self.test_planningareas[1]
         self.planning_area3 = self.test_planningareas[2]
         self.planning_area4 = self.test_planningareas[3]
         self.planning_area5 = self.test_planningareas[4]
+        self.planning_area6 = self.test_planningareas[4]
+        self.planning_area7 = self.test_planningareas[4]
 
         self.scenario1_1 = _create_scenario(
             self.planning_area1, "test pa1 scenario1 ", "{}", self.user, ""
@@ -58,29 +94,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
             self.planning_area4, "test pa4 scenario3", "{}", self.user, ""
         )
 
-        self.user2 = User.objects.create(username="otherowner")
-        self.user2.set_password("12345")
-        self.user2.save()
-        self.geometry = {
-            "type": "MultiPolygon",
-            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
-        }
-        stored_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area6 = _create_planning_area(
-            self.user2,
-            "test plan-manual6",
-            stored_geometry,
-            region_name=RegionChoices.SIERRA_NEVADA,
-        )
-
-        self.central_coast_area = self.test_planningareas[6]
-        self.central_coast_area.region_name = "central-coast"
-        self.central_coast_area.save()
-
-        self.emptyuser = User.objects.create(username="emptyuser")
-        self.emptyuser.set_password("12345")
-        self.emptyuser.save()
-
     def test_list_planning_areas(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(
@@ -91,12 +104,12 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
-        self.assertEqual(planning_areas["count"], 120)
-        self.assertEqual(len(planning_areas["results"]), 50)
+        self.assertEqual(planning_areas["count"], 46)
+        self.assertEqual(len(planning_areas["results"]), 46)
 
     def test_list_planning_areas_offset(self):
         self.client.force_authenticate(self.user)
-        query_params = {"offset": "100"}
+        query_params = {"offset": "20"}
         response = self.client.get(
             reverse("planning:planningareas-list"),
             query_params,
@@ -107,8 +120,8 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
-        self.assertEqual(planning_areas["count"], 120)
-        self.assertEqual(len(planning_areas["results"]), 20)
+        self.assertEqual(planning_areas["count"], 46)
+        self.assertEqual(len(planning_areas["results"]), 26)
 
     def test_filter_planning_areas_by_partial_name(self):
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
@@ -130,42 +143,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
 
-    def test_list_planning_areas_sort_by_name(self):
-        geo = GEOSGeometry(json.dumps(self.geometry))
-
-        _create_planning_area(
-            self.user, "Area D", geo, region_name=RegionChoices.CENTRAL_COAST
-        )
-        _create_planning_area(
-            self.user, "Area E", geo, region_name=RegionChoices.SIERRA_NEVADA
-        )
-        _create_planning_area(
-            self.user, "Area C", geo, region_name=RegionChoices.SOUTHERN_CALIFORNIA
-        )
-        _create_planning_area(
-            self.user, "Area F", geo, region_name=RegionChoices.NORTHERN_CALIFORNIA
-        )
-        _create_planning_area(
-            self.user, "Area B", geo, region_name=RegionChoices.CENTRAL_COAST
-        )
-        _create_planning_area(
-            self.user, "Area A", geo, region_name=RegionChoices.SIERRA_NEVADA
-        )
-
-        self.client.force_authenticate(self.user)
-        query_params = {"ordering": "name", "limit": 6}
-        response = self.client.get(
-            reverse("planning:planningareas-list"),
-            query_params,
-            content_type="application/json",
-        )
-        planning_areas = json.loads(response.content)
-        area_names = []
-        for item in planning_areas["results"]:
-            area_names.append(item["name"])
-        expected_names = ["Area A", "Area B", "Area C", "Area D", "Area E", "Area F"]
-        self.assertListEqual(area_names, expected_names)
-
     def test_filter_planning_areas_by_region1(self):
         self.client.force_authenticate(self.user)
         query_params = {"region_name": "sierra-nevada"}
@@ -176,8 +153,8 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 119)  # total results
-        self.assertEqual(len(planning_areas["results"]), 50)
+        self.assertEqual(planning_areas["count"], 10)  # total results
+        self.assertEqual(len(planning_areas["results"]), 10)
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
@@ -192,8 +169,8 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 1)  # total results
-        self.assertEqual(len(planning_areas["results"]), 1)
+        self.assertEqual(planning_areas["count"], 11)  # total results
+        self.assertEqual(len(planning_areas["results"]), 11)
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
@@ -208,8 +185,8 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 120)  # total results
-        self.assertEqual(len(planning_areas["results"]), 50)
+        self.assertEqual(planning_areas["count"], 21)  # total results
+        self.assertEqual(len(planning_areas["results"]), 21)
         self.assertListEqual(
             list(planning_areas.keys()), ["count", "next", "previous", "results"]
         )
@@ -329,6 +306,21 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         create_collaborator_record(self.user2, self.user1, self.pa9, Role.COLLABORATOR)
         create_collaborator_record(self.user2, self.user1, self.pa10, Role.COLLABORATOR)
 
+    def test_list_planning_areas_sort_by_name(self):
+        self.client.force_authenticate(self.user1)
+        query_params = {"ordering": "name", "limit": 6}
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        area_names = []
+        for item in planning_areas["results"]:
+            area_names.append(item["name"])
+        expected_names = ["Area A", "Area B", "Area C", "Area D", "Area E", "Area F"]
+        self.assertListEqual(area_names, expected_names)
+
     def test_list_planning_areas_sort_by_region_name(self):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "region_name"}
@@ -392,7 +384,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         planning_areas = json.loads(response.content)
         scenario_counts = []
         for item in planning_areas["results"]:
-            print(f"item {item}")
             scenario_counts.append(item["scenario_count"])
         expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
         self.assertListEqual(scenario_counts, expected_scenario_counts)
@@ -409,7 +400,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         scenario_counts = []
         region_names = []
         for item in planning_areas["results"]:
-            print(f"item {item}")
             scenario_counts.append(item["scenario_count"])
             region_names.append(item["region_name"])
         expected_scenario_counts = [0, 0, 0, 0, 0, 0, 0, 1, 3, 3]
@@ -439,7 +429,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         planning_areas = json.loads(response.content)
         acres = []
         for item in planning_areas["results"]:
-            print(f"item {item}")
             acres.append(item["area_acres"])
         expected_acres = [
             56338.09165393878,

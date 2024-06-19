@@ -36,6 +36,7 @@ def _create_multiple_planningareas(
     name_prefix: str,
     geometry: GEOSGeometry | None = None,
     notes: str | None = None,
+    region_name: RegionChoices | None = RegionChoices.SIERRA_NEVADA,
 ):
     created_planningareas = []
 
@@ -46,6 +47,7 @@ def _create_multiple_planningareas(
                 name=f"{name_prefix} {s}",
                 geometry=geometry,
                 notes=notes,
+                region_name=region_name,
             )
         )
     return created_planningareas

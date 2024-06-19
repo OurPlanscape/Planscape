@@ -24,13 +24,13 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
 )
-from planning.services import get_acreage
 
 logger = logging.getLogger(__name__)
 
 
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     queryset = PlanningArea.objects.all()
+
     permission_classes = [PlanningAreaViewPermission]
     ordering_fields = [
         "area_acres",
@@ -45,8 +45,8 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     ]
     filterset_class = PlanningAreaFilter
     filter_backends = [
-        PlanningAreaOrderingFilter,
         DjangoFilterBackend,
+        PlanningAreaOrderingFilter,
         OrderingFilter,
     ]
 
