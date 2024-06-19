@@ -4,7 +4,7 @@ secret:
     - "**/README.md"
     - "doc/*"
     - "docker-compose.yml"
-    - ".env.sample"
+    - "**/.env.sample"
     - "**/.env-sample"
     - ".github/workflows/*"
   ignored_detectors:
