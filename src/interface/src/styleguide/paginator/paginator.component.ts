@@ -62,18 +62,17 @@ export class PaginatorComponent implements OnInit {
   defaultButtonsToShow = 6;
 
   ngOnInit(): void {
-    this.selectedPage = Number(this.currentPage);
-    this.recordsPerPage = Number(this.recordsPerPage);
+    this.selectedPage = this.currentPage;
     this.navSelectRange = [1, ...Array(this.pageCount + 1).keys()].slice(2);
     this.calcButtonLabels();
   }
 
   getTotalPages(): number {
-    return Number(this.pageCount);
+    return this.pageCount;
   }
 
   calcButtonLabels(): void {
-    const curPages = this.getTotalPages();
+    const curPages = this.pageCount;
     const buttonsToShow = Math.min(curPages, this.defaultButtonsToShow);
     const midCount = Math.ceil(buttonsToShow / 2);
     const rightRemainder = Math.max(
@@ -101,8 +100,10 @@ export class PaginatorComponent implements OnInit {
   }
 
   setPage(pageNum: number) {
-    this.selectedPage = pageNum;
-    this.pageChanged.emit(this.selectedPage);
+    if (this.selectedPage !== pageNum) {
+      this.selectedPage = pageNum;
+      this.pageChanged.emit(this.selectedPage);
+    }
   }
 
   isCurrentPage(elementPage: number): boolean {
@@ -119,7 +120,7 @@ export class PaginatorComponent implements OnInit {
     this.calcButtonLabels();
   }
   handleNext() {
-    const pageNum = Math.min(this.selectedPage + 1, this.getTotalPages());
+    const pageNum = Math.min(this.selectedPage + 1, this.pageCount);
     this.setPage(pageNum);
     this.calcButtonLabels();
   }

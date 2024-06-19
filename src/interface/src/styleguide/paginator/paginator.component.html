@@ -2,21 +2,18 @@
   <div class="nav-control-container" *ngIf="pageCount > 1">
     <button
       class="page-button"
-      sg-button
       class="first-page-button page-button"
       (click)="handlePrevious()"
       [disabled]="isCurrentPage(1)">
       <mat-icon class="arrow-icon">arrow_back_ios</mat-icon>
     </button>
     <button
-      sg-button
       class="page-button"
       (click)="setPage(1)"
       [ngClass]="{ 'selected-button': isCurrentPage(1) }">
       1
     </button>
     <button
-      sg-button
       *ngIf="showFirstSpacer$ | async"
       class="spacer-button"
       [disabled]="isCurrentPage(1)">
@@ -25,7 +22,6 @@
     <div class="nav-controls">
       <button
         *ngFor="let pageNum of buttonRange$ | async"
-        sg-button
         [ngClass]="{ 'selected-button': isCurrentPage(pageNum) }"
         class="page-button numeric-button"
         (click)="setPage(pageNum)">
@@ -33,14 +29,12 @@
       </button>
     </div>
     <button
-      sg-button
       class="spacer-button"
       *ngIf="showLastSpacer$ | async"
       [disabled]="isCurrentPage(1)">
       <mat-icon class="ellipse-icon">more_horiz</mat-icon>
     </button>
     <button
-      sg-button
       class="page-button"
       (click)="setPage(pageCount)"
       [ngClass]="{ 'selected-button': isCurrentPage(pageCount) }">
@@ -48,7 +42,6 @@
     </button>
     <button
       class="page-button"
-      sg-button
       class="page-button last-page-button"
       (click)="handleNext()"
       [disabled]="isCurrentPage(getTotalPages())">
