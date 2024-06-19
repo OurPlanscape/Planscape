@@ -100,6 +100,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   initialLoad$ = this.dataSource.initialLoad$;
   noEntries$ = this.dataSource.noEntries$;
   hasFilters$ = this.dataSource.hasFilters$;
+  pages$ = this.dataSource.pages$;
 
   ngOnInit() {
     this.dataSource.loadData();
@@ -111,6 +112,11 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   goToPage(page: number) {
     this.dataSource.goToPage(page);
+  }
+
+  changePageSize(event: Event) {
+    const size = (event.target as HTMLSelectElement).value;
+    this.dataSource.changePageSize(parseInt(size, 10));
   }
 
   viewPlan(plan: PreviewPlan, event: MouseEvent) {

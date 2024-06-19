@@ -6,20 +6,18 @@ import { Sort } from '@angular/material/sort';
 import { QueryParamsService } from './query-params.service';
 
 export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
-  private readonly limit = 13;
-
   private _dataStream = new BehaviorSubject<PreviewPlan[]>([]);
   private _loading = new BehaviorSubject(false);
   private _hasFilters$ = new BehaviorSubject(false);
   private _initialLoad$ = new BehaviorSubject(true);
-
-  public count = 0;
-  public pages = 0;
+  private _pages$ = new BehaviorSubject(0);
 
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
   public pageOptions = this.queryParamsService.getInitialPageParams();
   public searchTerm = this.queryParamsService.getInitialFilterParam();
+  public limit = this.queryParamsService.getInitialLimit();
 
+  public pages$ = this._pages$.asObservable();
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
    * `false` when done loading.
@@ -95,14 +93,18 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   setPages(count: number) {
-    this.count = count;
-    this.pages = Math.ceil(count / 13);
+    this._pages$.next(Math.ceil(count / this.limit));
+  }
+
+  changePageSize(size: number) {
+    this.limit = size;
+    this.resetPage();
+    this.loadData();
   }
 
   changeSort(sortOptions: Sort) {
-    this.pageOptions.offset = 0;
     this.sortOptions = sortOptions;
-    this.queryParamsService.updateUrl({ ...sortOptions, offset: undefined });
+    this.resetPage();
     this.loadData();
   }
 
@@ -111,7 +113,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     const offset =
       this.pageOptions.offset > 0 ? this.pageOptions.offset : undefined;
     this.queryParamsService.updateUrl({
-      ...this.sortOptions,
       offset: offset,
     });
     this.loadData();
@@ -130,11 +131,18 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     this._initialLoad$.next(true);
     this.searchTerm = str;
     this.queryParamsService.updateUrl({
-      ...this.sortOptions,
       name: this.searchTerm ? this.searchTerm : undefined,
       offset: undefined,
     });
     this.loadData();
+  }
+
+  private resetPage() {
+    this.pageOptions.offset = 0;
+    this.queryParamsService.updateUrl({
+      ...this.sortOptions,
+      offset: undefined,
+    });
   }
 
   private getSortOptions() {

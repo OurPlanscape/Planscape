@@ -104,14 +104,20 @@
 
   <!--Placeholder-->
   <div class="pagination-placeholder">
-    <div><</div>
-    <button (click)="goToPage(1)">1</button>
-    <button (click)="goToPage(2)">2</button>
-    <button (click)="goToPage(3)">3</button>
-    <div>...</div>
-    <div>6</div>
-    <div>7</div>
-    <div>></div>
+    <button
+      *ngFor="let number of [].constructor(pages$ | async); let i = index"
+      (click)="goToPage(i + 1)">
+      {{ i + 1 }}
+    </button>
+
+    <div>
+      Pages :
+      <select (change)="changePageSize($event)">
+        <option value="5">5</option>
+        <option value="12">12</option>
+        <option value="50">50</option>
+      </select>
+    </div>
   </div>
 </section>
 
