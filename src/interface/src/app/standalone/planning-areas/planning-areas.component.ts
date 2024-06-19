@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
 import { ButtonComponent } from '@styleguide';
@@ -18,7 +18,7 @@ import {
   NgSwitchCase,
   NgSwitchDefault,
 } from '@angular/common';
-import { AuthService, PlanService } from '@services';
+import { PlanService } from '@services';
 import { PreviewPlan } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -26,21 +26,11 @@ import {
   DEFAULT_SORT_OPTIONS,
   QueryParamsService,
 } from './query-params.service';
-import { KeyPipe } from '../../standalone/key.pipe';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogModule as MatDialogModule,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
-import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
-import { take } from 'rxjs';
-import { SNACK_NOTICE_CONFIG } from '@shared';
+import { KeyPipe } from '../key.pipe';
 
-import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
-import {
-  canDeletePlanningArea,
-  canViewCollaborators,
-} from '../../plan/permissions';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
+import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -53,7 +43,6 @@ import {
     MatButtonModule,
     MatTableModule,
     MatSortModule,
-    MatDialogModule,
     NgForOf,
     NgSwitch,
     NgSwitchCase,
@@ -67,6 +56,8 @@ import {
     MatProgressSpinnerModule,
     KeyValuePipe,
     KeyPipe,
+    PlanningAreaMenuComponent,
+    PlanningAreasSearchComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -88,7 +79,7 @@ import {
     },
   ],
 })
-export class PlanningAreasComponent implements OnInit {
+export class PlanningAreasComponent implements OnInit, OnDestroy {
   readonly columns: { key: keyof PreviewPlan | 'menu'; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'creator', label: 'Creator' },
@@ -101,16 +92,14 @@ export class PlanningAreasComponent implements OnInit {
 
   constructor(
     private router: Router,
-    public dataSource: PlanningAreasDataSource,
-    private dialog: MatDialog,
-    private snackbar: MatSnackBar,
-    private authService: AuthService
+    public dataSource: PlanningAreasDataSource
   ) {}
 
   sortOptions: Sort = this.dataSource.sortOptions;
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad$;
-  noEntries = this.dataSource.noEntries$;
+  noEntries$ = this.dataSource.noEntries$;
+  hasFilters$ = this.dataSource.hasFilters$;
 
   ngOnInit() {
     this.dataSource.loadData();
@@ -135,42 +124,15 @@ export class PlanningAreasComponent implements OnInit {
     return;
   }
 
-  shareEnabled(plan: PreviewPlan) {
-    return canViewCollaborators(plan);
+  reload() {
+    this.dataSource.loadData();
   }
 
-  sharePlan(plan: PreviewPlan) {}
-
-  canDeletePlanningArea(plan: PreviewPlan) {
-    const user = this.authService.currentUser();
-    if (!user) {
-      return false;
-    }
-    return canDeletePlanningArea(plan, user);
+  search(str: string) {
+    this.dataSource.search(str);
   }
 
-  deletePlan(plan: PreviewPlan) {
-    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
-      DeleteDialogComponent,
-      {
-        data: {
-          name: '"' + plan.name + '"',
-        },
-      }
-    );
-    dialogRef
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this.dataSource.deletePlan(plan.id).subscribe(() => {
-            this.snackbar.open(
-              `Successfully deleted plan: ${plan.name}`,
-              'Dismiss',
-              SNACK_NOTICE_CONFIG
-            );
-          });
-        }
-      });
+  ngOnDestroy(): void {
+    this.dataSource.destroy();
   }
 }

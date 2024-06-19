@@ -2,6 +2,7 @@
 // For more information: https://material.angular.io/guide/theming
 @use '@angular/material' as mat;
 @import "styles/theme";
+@import "colors";
 // @import '~angular/material/theming';
 // @import 'super-styles';
 // Plus imports for other components in your app.
@@ -25,7 +26,7 @@
 // Alternatively, you can import and @include the theme mixins for each component
 // that you are using.
 @include mat.all-legacy-component-themes($planscape-frontend-theme);
-
+@include mat.all-component-themes($planscape-frontend-theme);
 /* You can add global styles to this file, and also import other style files */
 @import url('https://fonts.googleapis.com/icon?family=Material+Icons|Material+Symbols+Outlined');
 
@@ -52,18 +53,20 @@ body.no-scroll-bounce {
 }
 
 .snackbar-error {
-  background: #b00020;
+  background: $color-error;
 
   button {
-    color: #ffffff;
+    color: $color-white;
   }
 }
 
 .snackbar-notice {
-  background: #000000;
+  --mat-snack-bar-button-color: #{$color-main-yellow};
+  background: $color-black;
+
 
   button {
-    color: #ffffff;
+    color: $color-white;
   }
 }
 

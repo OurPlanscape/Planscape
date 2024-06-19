@@ -1,5 +1,6 @@
 @use '@angular/material' as mat;
 @use 'sass:map';
+@import "colors";
 
 $styleguide: (
   'header-1': mat.define-typography-level(30px, 32px, 700),
@@ -51,11 +52,14 @@ $planscape-typography: mat.define-typography-config(
 );
 
 
+// Create a custom palette using the primary color
+$custom-primary-palette: map.merge(mat.$indigo-palette, (500: $color-standard-blue));
 // Define the palettes for your theme using the Material Design palettes available in palette.scss
 // (imported above). For each palette, you can optionally specify a default, lighter, and darker
 // hue. Available color palettes: https://material.io/design/color/
-$planscape-frontend-primary: mat.define-palette(mat.$indigo-palette);
+$planscape-frontend-primary: mat.define-palette($custom-primary-palette);
 
+$planscape-error-palette: map.merge(mat.$red-palette, (500: $color-error));
 
 // Create the theme object. A theme consists of configurations for individual
 // theming systems such as "color" or "typography".
@@ -64,7 +68,7 @@ $planscape-frontend-theme: mat.define-light-theme(
       color: (
         primary: $planscape-frontend-primary,
         accent: $planscape-frontend-primary, // not really used
-        warn: mat.define-palette(mat.$red-palette)
+        warn: mat.define-palette($planscape-error-palette)
       ),
     )
 );

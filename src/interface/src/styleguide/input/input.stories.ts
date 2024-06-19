@@ -131,3 +131,14 @@ export const Highlighted: Story = {
     highlighted: true,
   },
 };
+
+export const Small: Story = {
+  args: {
+    leadingIcon: 'search',
+    disabled: false,
+    error: false,
+    supportMessage: 'This is a smaller (height) input',
+    placeholder: 'MM/DD/YYYY',
+    size: 'small',
+  },
+};

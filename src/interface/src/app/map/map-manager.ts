@@ -171,6 +171,7 @@ export class MapManager {
         if (feature.geometry.type === 'MultiPolygon') {
           feature.geometry.coordinates.forEach((coord) => {
             const newLayer = transformCoordToLayer(coord);
+            newLayer.setStyle(DRAWING_STYLES);
             newLayer.addTo(this.drawingLayer);
             this.addClonedPolygons(newLayer);
             newLayer.on('pm:edit', ({ layer }) => this.editHandler(layer));

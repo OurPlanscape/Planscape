@@ -1,0 +1,29 @@
+<button
+  [matMenuTriggerFor]="menu"
+  mat-icon-button
+  aria-label="more options"
+  class="more-menu-button">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu" class="planning-area-menu">
+  <a mat-menu-item [routerLink]="['/plan', plan.id]">
+    <mat-icon class="material-symbols-outlined">folder_open</mat-icon>
+    <span>Open</span>
+  </a>
+  <a mat-menu-item [routerLink]="['/explore', plan.id]">
+    <mat-icon class="material-symbols-outlined">map</mat-icon>
+    <span>View Map</span>
+  </a>
+  <button mat-menu-item (click)="sharePlan()" [disabled]="!shareEnabled">
+    <mat-icon class="material-symbols-outlined">share</mat-icon>
+    <span>Share</span>
+  </button>
+  <button
+    mat-menu-item
+    class="delete"
+    (click)="deletePlan()"
+    [disabled]="!canDeletePlanningArea">
+    <mat-icon class="material-symbols-outlined">delete_outlined</mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>

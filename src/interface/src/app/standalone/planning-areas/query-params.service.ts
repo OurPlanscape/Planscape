@@ -10,6 +10,7 @@ export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
 
 export interface QueryParams extends Sort {
   offset?: number;
+  name?: string;
 }
 
 @Injectable()
@@ -51,5 +52,10 @@ export class QueryParamsService {
     return {
       offset: offset || 0,
     };
+  }
+
+  getInitialFilterParam(): string {
+    const { name } = this.route.snapshot.queryParams;
+    return name || '';
   }
 }
