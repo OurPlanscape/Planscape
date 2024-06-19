@@ -1,7 +1,5 @@
 import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
-
 import { PreviewPlan } from '@types';
-
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
@@ -112,9 +110,10 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
     this.selectedRegions = regions;
     const regionNames = this.selectedRegions.map((r) => r.value).join(',');
+
     this.queryParamsService.updateUrl({
       ...this.sortOptions,
-      region: regionNames,
+      region: regionNames || undefined,
     });
     this.loadData();
   }

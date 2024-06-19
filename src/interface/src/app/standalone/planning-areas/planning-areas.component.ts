@@ -21,16 +21,13 @@ import {
 
 import { PlanService } from '@services';
 import { PreviewPlan, RegionsWithString } from '@types';
-
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
   DEFAULT_SORT_OPTIONS,
   QueryParamsService,
 } from './query-params.service';
-
 import { KeyPipe } from '../key.pipe';
-
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
