@@ -1,0 +1,42 @@
+<h3>Demo of input fields on reactive forms</h3>
+<form [formGroup]="demoForm" style="">
+  <section class="flex">
+    <h4>Fields</h4>
+    <sg-input-field
+      supportMessage="Full name"
+      [error]="demoForm.get('firstName')?.errors !== null"
+      [disabled]="demoForm.get('firstName')?.disabled || false">
+      <input sgInput formControlName="firstName" />
+    </sg-input-field>
+    <sg-input-field
+      supportMessage="5 digits"
+      [error]="demoForm.get('phone')?.errors !== null"
+      [disabled]="demoForm.get('phone')?.disabled || false">
+      <input sgInput formControlName="phone" />
+    </sg-input-field>
+  </section>
+
+  <section class="flex">
+    <h4>Checkbox</h4>
+    <mat-checkbox>Checked</mat-checkbox>
+    <mat-checkbox checked>Checked</mat-checkbox>
+    <mat-checkbox disabled>Checked</mat-checkbox>
+    <mat-checkbox disabled checked>Checked</mat-checkbox>
+    <mat-checkbox color="warn">Error one</mat-checkbox>
+  </section>
+
+  <section class="flex">
+    <h4>Radio Buttons</h4>
+    <mat-radio-group aria-label="Select an option" class="flex">
+      <mat-radio-button value="1">Option 1</mat-radio-button>
+      <mat-radio-button value="2">Option 2</mat-radio-button>
+      <mat-radio-button value="3" disabled>Option 3</mat-radio-button>
+      <mat-radio-button value="4" disabled checked="true">
+        Option4
+      </mat-radio-button>
+
+      <mat-radio-button value="5" color="warn">Option 5</mat-radio-button>
+    </mat-radio-group>
+  </section>
+</form>
+<button sg-button (click)="disableFields()">Disable</button>

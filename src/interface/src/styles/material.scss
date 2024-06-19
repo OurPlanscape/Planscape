@@ -1,4 +1,5 @@
 // material overrides
+@import "colors";
 
 .mat-tooltip {
   font-size: 12px;
@@ -31,4 +32,61 @@ body {
   --mat-menu-item-label-text-tracking: 0;
   --mat-menu-item-label-text-line-height: 22px;
   --mat-menu-item-label-text-weight: 400;
+}
+
+
+mat-checkbox:not([disabled]) .mdc-label:hover,
+mat-radio-button:not([disabled]) .mdc-label:hover {
+  background-color: $color-light-gray;
+}
+
+mat-radio-button:not([disabled]) .mdc-label {
+  cursor: pointer;
+}
+
+.mat-mdc-checkbox-checked .mdc-label,
+.mat-mdc-radio-checked .mdc-label {
+  font-weight: bold;
+}
+
+.mat-mdc-checkbox.mat-warn {
+  --mdc-checkbox-unselected-focus-state-layer-color: #{$color-error};
+  --mdc-checkbox-unselected-hover-state-layer-color: #{$color-error};
+  --mdc-checkbox-unselected-pressed-state-layer-color: #{$color-error};
+  --mdc-checkbox-unselected-focus-icon-color: #{$color-error};
+  --mdc-checkbox-unselected-hover-icon-color: #{$color-error};
+  --mdc-checkbox-unselected-icon-color: #{$color-error};
+  --mdc-checkbox-unselected-pressed-icon-color: #{$color-error};
+
+  .mdc-label {
+    color: $color-error;
+  }
+}
+
+
+.mat-mdc-radio-button.mat-warn {
+  --mdc-radio-unselected-icon-color: #{$color-error};
+  --mdc-radio-unselected-pressed-icon-color: #{$color-error};
+  --mdc-radio-selected-focus-icon-color: #{$color-error};
+  --mdc-radio-selected-hover-icon-color: #{$color-error};
+
+  .mdc-label {
+    color: $color-error;
+  }
+
+  &.mat-mdc-radio-checked .mdc-radio__background .mdc-radio__inner-circle {
+    transform: scale(0.6);
+  }
+
+  &.mat-mdc-radio-checked .mdc-radio__background::after {
+    content: '';
+    transform: scale(0.6);
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: -1px;
+    left: -1px;
+    background-image: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" height="24px" viewBox="0 -960 960 960" width="24px" fill="white"><path d="M480-424 364-308q-11 11-28 11t-28-11q-11-11-11-28t11-28l116-116-116-115q-11-11-11-28t11-28q11-11 28-11t28 11l116 116 115-116q11-11 28-11t28 11q12 12 12 28.5T651-595L535-480l116 116q11 11 11 28t-11 28q-12 12-28.5 12T595-308L480-424Z"/></svg>');
+  }
 }

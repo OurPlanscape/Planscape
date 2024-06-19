@@ -2,15 +2,22 @@
   class="search-bar-container"
   matAutocompleteOrigin
   #origin="matAutocompleteOrigin">
-  <sg-input-field leadingIcon="search" [disabled]="false">
+  <sg-input-field leadingIcon="search" [disabled]="false" size="small">
     <input
+      #inputElement
       sgInput
       placeholder="{{ searchPlaceholder }}"
       [matAutocomplete]="searchHistory"
       [matAutocompleteConnectedTo]="origin"
-      (input)="onSearchInputChange($event)" />
-    <mat-autocomplete #searchHistory="matAutocomplete" panel="acpanel">
-      <div class="autocomplete-label">{{ autocompleteTitle }}</div>
+      (input)="onSearchInputChange($event)"
+      (keydown)="onInputKey($event)" />
+    <mat-autocomplete
+      #searchHistory="matAutocomplete"
+      panel="acpanel"
+      (optionSelected)="onHistorySelection($event)">
+      <div class="autocomplete-label" *ngIf="historyItems.length">
+        {{ autocompleteTitle }}
+      </div>
       @for (historyItem of displayedHistory; track historyItem) {
         <mat-option [value]="historyItem" class="autocomplete-option"
           ><mat-icon class="history-icon">schedule</mat-icon
