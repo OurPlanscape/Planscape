@@ -5,7 +5,8 @@ secret:
     - "doc/*"
     - "docker-compose.yml"
     - ".env.sample"
-    - "**/.env.sample"
+    - "**/.env-sample"
+    - "**/.sample.env"
     - ".github/workflows/*"
   ignored_detectors:
     - Generic Password
