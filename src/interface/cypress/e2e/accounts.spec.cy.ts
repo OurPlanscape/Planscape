@@ -1,7 +1,7 @@
-import { randString, urls, testPass, testUser } from '../support/util';
+import { urls, testPass, testUser } from '../support/util';
 
-const newAcctEmail = 'cypress+' + randString(6) + '@local.example';
-const newAcctPass = randString(15);
+const newAcctEmail = 'cypress@local.example';
+const newAcctPass = 'Cypress@Test@Pass123';
 const newAcctFirstName = 'Cypress';
 const newAcctLastName = 'Cypressington';
 
