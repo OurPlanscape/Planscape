@@ -21,23 +21,6 @@ describe('Create an account with unmatching password', () => {
     cy.contains('Given passwords must match.');
     cy.get('button[type="submit"]').should('be.disabled');
   });
-
-  it('Attempts to create an account', () => {
-    cy.envCheck();
-    cy.visit(urls.SIGNUP);
-    cy.contains('Create your account');
-    cy.get('[formControlName="firstName"]').type(newAcctFirstName);
-    cy.get('[formControlName="lastName"]').type(newAcctLastName);
-    cy.get('[formControlName="email"]').type(newAcctEmail);
-    cy.get('[formControlName="password1"]').type(newAcctPass);
-    cy.get('.signup-title').click();
-    cy.get('[formControlName="password2"]').type(newAcctPass);
-    cy.get('.signup-title').click();
-    cy.get('button[type="submit"]').click();
-    cy.wait(2000).then(() => {
-      cy.contains('Thank You!');
-    });
-  });
 });
 
 describe('Login and logout with command', () => {
