@@ -4,39 +4,39 @@
       class="page-button"
       class="first-page-button page-button"
       (click)="handlePrevious()"
+      aria-label="Go to previous page"
       [disabled]="isCurrentPage(1)">
       <mat-icon class="arrow-icon">arrow_back_ios</mat-icon>
     </button>
     <button
       class="page-button"
       (click)="setPage(1)"
+      [attr.aria-label]="'Go to page 1'"
       [ngClass]="{ 'selected-button': isCurrentPage(1) }">
       1
     </button>
-    <button
-      *ngIf="showFirstSpacer$ | async"
-      class="spacer-button"
-      [disabled]="isCurrentPage(1)">
+    <div *ngIf="showFirstSpacer$ | async" class="spacer">
       <mat-icon class="ellipse-icon">more_horiz</mat-icon>
-    </button>
+    </div>
     <div class="nav-controls">
       <button
         *ngFor="let pageNum of buttonRange$ | async"
         [ngClass]="{ 'selected-button': isCurrentPage(pageNum) }"
         class="page-button numeric-button"
+        [attr.aria-label]="'Go to page ' + pageNum"
+        [disabled]="isCurrentPage(pageNum)"
+        aria
         (click)="setPage(pageNum)">
         {{ pageNum }}
       </button>
     </div>
-    <button
-      class="spacer-button"
-      *ngIf="showLastSpacer$ | async"
-      [disabled]="isCurrentPage(1)">
+    <div class="spacer" *ngIf="showLastSpacer$ | async">
       <mat-icon class="ellipse-icon">more_horiz</mat-icon>
-    </button>
+    </div>
     <button
       class="page-button"
       (click)="setPage(pageCount)"
+      [attr.aria-label]="'Go to page ' + pageCount"
       [ngClass]="{ 'selected-button': isCurrentPage(pageCount) }">
       {{ pageCount }}
     </button>
@@ -44,6 +44,7 @@
       class="page-button"
       class="page-button last-page-button"
       (click)="handleNext()"
+      aria-label="Go to next page"
       [disabled]="isCurrentPage(getTotalPages())">
       <mat-icon class="arrow-icon">arrow_forward_ios</mat-icon>
     </button>

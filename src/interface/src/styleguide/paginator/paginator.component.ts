@@ -103,6 +103,7 @@ export class PaginatorComponent implements OnInit {
     if (this.selectedPage !== pageNum) {
       this.selectedPage = pageNum;
       this.pageChanged.emit(this.selectedPage);
+      this.calcButtonLabels();
     }
   }
 
@@ -117,11 +118,9 @@ export class PaginatorComponent implements OnInit {
   handlePrevious() {
     const pageNum = Math.max(this.selectedPage - 1, 1);
     this.setPage(pageNum);
-    this.calcButtonLabels();
   }
   handleNext() {
     const pageNum = Math.min(this.selectedPage + 1, this.pageCount);
     this.setPage(pageNum);
-    this.calcButtonLabels();
   }
 }

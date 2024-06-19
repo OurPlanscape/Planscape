@@ -45,14 +45,16 @@
   border-right: 0px;
 }
 
-.page-button:hover {
+.page-button:focus:not(.selected-button),
+.page-button:hover:not(.selected-button),
+.page-button:active:not(.selected-button) {
   background-color: $color-light-gray;
   color: $color-black;
 }
 
-.page-button:active {
-  background-color: $color-light-gray;
-  color: $color-black;
+.page-button:disabled:not(.selected-button) {
+  background-color: $color-soft-gray;
+  color: $color-text-gray;
 }
 
 .selected-button {
@@ -61,25 +63,18 @@
   cursor: default;
 }
 
-.selected-button:active {
-  background-color: $color-standard-blue;
-  color: white;
-}
-
-.selected-button:hover {
-  background-color: $color-standard-blue;
-  color: white;
-}
-
-.spacer-button {
+.spacer {
   color: $color-md-gray;
   background-color: white;
   border: none;
-  padding: 0px;
   height: 38px;
-  width: 30px;
+  width: 38px;
   font-size: 14px;
   border-left: 1px solid $color-soft-gray;
+  display: flex;
+  padding: 0px;
+  flex-direction: row;
+  justify-content: center;
 }
 
 .arrow-icon {
@@ -94,6 +89,7 @@
   width: 20px;
   font-size: 20px;
   line-height: 36px;
+  margin-top: 4px;
 }
 
 .first-page-button {
@@ -118,11 +114,6 @@
     width: 14px;
     line-height: 22px;
   }
-}
-
-.page-button:disabled {
-  background-color: $color-soft-gray;
-  color: $color-text-gray;
 }
 
 .pages-container {
