@@ -3,6 +3,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from collaboration.models import Permissions, Role
 from planning.models import PlanningArea, Scenario, ScenarioResult, RegionChoices
 
+
 # Create test plans.  These are going straight to the test DB without
 # normal parameter checking (e.g. if is there a real geometry).
 # Always use a Sierra Nevada region.
