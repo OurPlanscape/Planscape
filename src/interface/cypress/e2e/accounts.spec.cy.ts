@@ -1,4 +1,4 @@
-import { randString, urls, baseURL, testPass, testUser } from '../support/util';
+import { randString, urls, testPass, testUser } from '../support/util';
 
 const newAcctEmail = 'cypress+' + randString(6) + '@local.example';
 const newAcctPass = randString(15);
