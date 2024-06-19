@@ -149,6 +149,13 @@ class TreatmentPrescription(
         on_delete=models.RESTRICT,
     )
 
+    treatment_plan = models.ForeignKey(
+        TreatmentPlan,
+        related_name="tx_prescriptions",
+        on_delete=models.RESTRICT,
+        null=True,
+    )
+
     project_area = models.ForeignKey(
         ProjectArea,
         related_name="tx_prescriptions",

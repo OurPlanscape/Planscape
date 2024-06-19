@@ -32,19 +32,6 @@
                   "source_link": ""
                 },
                 {
-                  "display_name": "Wildland Urban Interface",
-                  "data_provider": "SIG",
-                  "data_units": "absolute",
-                  "max_value": 2,
-                  "metric_name": "wildland_urban_interface",
-                  "min_value": 0,
-                  "raw_data_download_path": "northern-california/operational/msb_wui.tif",
-                  "raw_layer": "",
-                  "reference_link": "",
-                  "source": "SIG",
-                  "source_link": ""
-                },
-                {
                   "display_name": "CWHR Vegetation Type",
                   "data_provider": "CWHR",
                   "data_units": "%",
@@ -1530,7 +1517,7 @@
                   "data_provider": "California Department of Water Resources",
                   "data_units": "binary",
                   "max_value": 1,
-                  "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
+                  "metric_name": "groundwater_basins",
                   "min_value": 0,
                   "raw_data_download_path": "northern-california/waterSecurity/Tier3/i08_B118_CA_GroundwaterBasins.tif",
                   "raw_layer": ":waterSecurity_Tier3_i08_B118_CA_GroundwaterBasins",
@@ -1613,6 +1600,35 @@
                   "source": "Northern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit/",
                   "output_units": "Acres of Riparian Habitat"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "pillar_name": "operational",
+          "display": true,
+          "display_name": "Operational",
+          "elements": [
+            {
+              "element_name": "fire",
+              "display": true,
+              "display_name": "Fire",
+              "metrics": [
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "WUI, Carlson et al",
+                  "data_units": "Categorical",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "northern-california/operational/MSB_WUI_CA_100m.tif",
+                  "raw_layer": ":operational_MSB_WUI_CA_100m",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/NorCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
+                  "source": "Northern California Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit",
+                  "output_units": "Acres in WUI class 1 or 2",
+                  "hide_chart": true
                 }
               ]
             }
@@ -2922,7 +2938,7 @@
                   "data_provider": "California Department of Water Resources",
                   "data_units": "Binary",
                   "max_value": 1,
-                  "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
+                  "metric_name": "groundwater_basins",
                   "min_value": 0,
                   "raw_data_download_path": "central-coast/waterSecurity/Tier3/i08_B118_CA_GroundwaterBasins.tif",
                   "raw_layer": ":waterSecurity_Tier3_i08_B118_CA_GroundwaterBasins",
@@ -3005,6 +3021,35 @@
                   "source": "Central Coast Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-regional-resource-kit-2",
                   "output_units": "Acres of Riparian Area"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "pillar_name": "operational",
+          "display": true,
+          "display_name": "Operational",
+          "elements": [
+            {
+              "element_name": "fire",
+              "display": true,
+              "display_name": "Fire",
+              "metrics": [
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "WUI, Carlson et al",
+                  "data_units": "Categorical",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "central-coast/operational/MSB_WUI_CA_100m.tif",
+                  "raw_layer": ":operational_MSB_WUI_CA_100m",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/NorCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
+                  "source": "Central Coast Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/central-coast-california-regional-resource-kit",
+                  "output_units": "Acres in WUI class 1 or 2",
+                  "hide_chart": true
                 }
               ]
             }
@@ -3857,8 +3902,8 @@
                   "max_value": 2,
                   "metric_name": "wildland_urban_interface",
                   "min_value": 0,
-                  "raw_data_download_path": "southern-california/fireAdaptComm/Tier1/MSB_WUI_CA_100m.tif",
-                  "raw_layer": ":fireAdaptComm_Tier1_MSB_WUI_CA_100m",
+                  "raw_data_download_path": "southern-california/operational/MSB_WUI_CA_100m.tif",
+                  "raw_layer": ":operational_MSB_WUI_CA_100m",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
@@ -4600,7 +4645,7 @@
                   "data_provider": "California Department of Water Resources",
                   "data_units": "Binary",
                   "max_value": 1,
-                  "metric_name": "basin",
+                  "metric_name": "groundwater_basins",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/waterSecurity/Tier3/i08_B118_CA_GroundwaterBasins.tif",
                   "raw_layer": ":waterSecurity_Tier3_i08_B118_CA_GroundwaterBasins",
@@ -6381,7 +6426,7 @@
                   "data_units": "mm/y",
                   "data_year": "2021",
                   "max_value": 9000,
-                  "metric_name": "reduction_in_runoff_during_extreme_drought",
+                  "metric_name": "vegetative_stress_during_extreme_drought",
                   "min_value": -2500,
                   "raw_data_download_path": "sierra-nevada/waterSecurity/Tier1/CECS_VegStressDrought_30m.tif",
                   "raw_layer": ":waterSecurity_Tier1_CECS_VegStressDrought_30m",
@@ -6445,6 +6490,35 @@
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
                   "output_units": "Avg. Species Richness"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "pillar_name": "operational",
+          "display": true,
+          "display_name": "Operational",
+          "elements": [
+            {
+              "element_name": "fire",
+              "display": true,
+              "display_name": "Fire",
+              "metrics": [
+                {
+                  "display_name": "Wildland Urban Interface",
+                  "data_provider": "WUI, Carlson et al",
+                  "data_units": "Categorical",
+                  "max_value": 2,
+                  "metric_name": "wildland_urban_interface",
+                  "min_value": 0,
+                  "raw_data_download_path": "sierra-nevada/operational/MSB_WUI_CA_100m.tif",
+                  "raw_layer": ":operational_MSB_WUI_CA_100m",
+                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SN_RRK_Metric-Dictionary_v20230201.pdf#page=15",
+                  "source": "Sierra Nevada Resource Kit",
+                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
+                  "output_units": "Acres in WUI class 1 or 2",
+                  "hide_chart": true
                 }
               ]
             }
