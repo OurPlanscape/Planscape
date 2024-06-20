@@ -5,7 +5,7 @@ import { ButtonComponent } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort, SortDirection } from '@angular/material/sort';
+import { MatSortModule, SortDirection } from '@angular/material/sort';
 import {
   AsyncPipe,
   DatePipe,
@@ -95,7 +95,9 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     public dataSource: PlanningAreasDataSource
   ) {}
 
-  sortOptions: Sort = this.dataSource.sortOptions;
+  sortOptions = this.dataSource.sortOptions;
+  pageOptions = this.dataSource.pageOptions;
+
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad$;
   noEntries$ = this.dataSource.noEntries$;

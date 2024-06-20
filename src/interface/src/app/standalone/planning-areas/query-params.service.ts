@@ -9,12 +9,15 @@ export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
 );
 
 export interface QueryParams extends Partial<Sort> {
-  offset?: number;
+  page?: number;
   name?: string;
+  limit?: number;
 }
 
 @Injectable()
 export class QueryParamsService {
+  readonly defaultLimit = 12;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -51,20 +54,16 @@ export class QueryParamsService {
     };
   }
 
-  getInitialPageParams(): { offset: number } {
-    const { offset } = this.route.snapshot.queryParams;
+  getInitialPageParams(): { page: number; limit: number } {
+    const { page, limit } = this.route.snapshot.queryParams;
     return {
-      offset: offset || 0,
+      page: page || 1,
+      limit: limit || this.defaultLimit,
     };
   }
 
   getInitialFilterParam(): string {
     const { name } = this.route.snapshot.queryParams;
     return name || '';
-  }
-
-  getInitialLimit(): number {
-    const { limit } = this.route.snapshot.queryParams;
-    return limit || 12;
   }
 }

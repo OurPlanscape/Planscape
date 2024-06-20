@@ -106,13 +106,14 @@
   <div class="pagination-placeholder">
     <button
       *ngFor="let number of [].constructor(pages$ | async); let i = index"
-      (click)="goToPage(i + 1)">
+      (click)="goToPage(i + 1)"
+      [disabled]="i + 1 === pageOptions.page">
       {{ i + 1 }}
     </button>
 
     <div>
-      Pages :
-      <select (change)="changePageSize($event)">
+      Page size :
+      <select (change)="changePageSize($event)" [value]="pageOptions.limit">
         <option value="5">5</option>
         <option value="12">12</option>
         <option value="50">50</option>

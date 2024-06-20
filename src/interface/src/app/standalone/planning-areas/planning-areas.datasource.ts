@@ -15,7 +15,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
   public pageOptions = this.queryParamsService.getInitialPageParams();
   public searchTerm = this.queryParamsService.getInitialFilterParam();
-  public limit = this.queryParamsService.getInitialLimit();
 
   public pages$ = this._pages$.asObservable();
   /**
@@ -88,23 +87,23 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     });
   }
 
-  changePageSize(size: number) {
-    this.limit = size;
-    this.resetOffsetAndUpdateUrl();
+  changeSort(sortOptions: Sort) {
+    this.sortOptions = sortOptions;
+    this.resetPageAndUpdateUrl(this.sortOptions);
     this.loadData();
   }
 
-  changeSort(sortOptions: Sort) {
-    this.sortOptions = sortOptions;
-    this.resetOffsetAndUpdateUrl(this.sortOptions);
+  changePageSize(size: number) {
+    this.pageOptions.limit = size;
+    this.resetPageAndUpdateUrl({ limit: size });
     this.loadData();
   }
 
   goToPage(page: number) {
-    this.pageOptions.offset = (page - 1) * this.limit;
-    const offset = this.pageOptions.offset || undefined;
+    this.pageOptions.page = page;
     this.queryParamsService.updateUrl({
-      offset: offset,
+      // if we are on page 1, omit the page parameter
+      page: page > 1 ? page : undefined,
     });
     this.loadData();
   }
@@ -121,17 +120,17 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   search(str: string) {
     this._initialLoad$.next(true);
     this.searchTerm = str;
-    this.resetOffsetAndUpdateUrl({
+    this.resetPageAndUpdateUrl({
       name: this.searchTerm ? this.searchTerm : undefined,
     });
     this.loadData();
   }
 
-  private resetOffsetAndUpdateUrl(options?: QueryParams) {
-    this.pageOptions.offset = 0;
+  private resetPageAndUpdateUrl(options?: QueryParams) {
+    this.pageOptions.page = 1;
     this.queryParamsService.updateUrl({
       ...options,
-      offset: undefined,
+      page: undefined,
     });
   }
 
@@ -140,7 +139,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   private setPages(count: number) {
-    this._pages$.next(Math.ceil(count / this.limit));
+    this._pages$.next(Math.ceil(count / this.pageOptions.limit));
   }
 
   private getSortOptions() {
@@ -154,8 +153,8 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   private getPageOptions() {
     return {
-      limit: this.limit,
-      offset: this.pageOptions.offset,
+      limit: this.pageOptions.limit,
+      offset: (this.pageOptions.page - 1) * this.pageOptions.limit,
     };
   }
 
