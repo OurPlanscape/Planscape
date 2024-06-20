@@ -28,7 +28,7 @@ export class QueryParamsService {
    * Note that this action does not trigger route navigation or component reinitialization.
    */
   updateUrl(options: QueryParams) {
-    // Parse the current query parameters
+    // Parse the current path parameters
     const urlTree = this.router.parseUrl(this.location.path());
     const currentParams = urlTree.queryParams;
 

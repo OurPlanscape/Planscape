@@ -3,7 +3,7 @@ import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
-import { QueryParamsService } from './query-params.service';
+import { QueryParams, QueryParamsService } from './query-params.service';
 
 export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   private _dataStream = new BehaviorSubject<PreviewPlan[]>([]);
@@ -88,30 +88,21 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     });
   }
 
-  setData(data: PreviewPlan[]) {
-    this._dataStream.next(data);
-  }
-
-  setPages(count: number) {
-    this._pages$.next(Math.ceil(count / this.limit));
-  }
-
   changePageSize(size: number) {
     this.limit = size;
-    this.resetPage();
+    this.resetOffsetAndUpdateUrl();
     this.loadData();
   }
 
   changeSort(sortOptions: Sort) {
     this.sortOptions = sortOptions;
-    this.resetPage();
+    this.resetOffsetAndUpdateUrl(this.sortOptions);
     this.loadData();
   }
 
   goToPage(page: number) {
     this.pageOptions.offset = (page - 1) * this.limit;
-    const offset =
-      this.pageOptions.offset > 0 ? this.pageOptions.offset : undefined;
+    const offset = this.pageOptions.offset || undefined;
     this.queryParamsService.updateUrl({
       offset: offset,
     });
@@ -130,19 +121,26 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   search(str: string) {
     this._initialLoad$.next(true);
     this.searchTerm = str;
-    this.queryParamsService.updateUrl({
+    this.resetOffsetAndUpdateUrl({
       name: this.searchTerm ? this.searchTerm : undefined,
-      offset: undefined,
     });
     this.loadData();
   }
 
-  private resetPage() {
+  private resetOffsetAndUpdateUrl(options?: QueryParams) {
     this.pageOptions.offset = 0;
     this.queryParamsService.updateUrl({
-      ...this.sortOptions,
+      ...options,
       offset: undefined,
     });
+  }
+
+  private setData(data: PreviewPlan[]) {
+    this._dataStream.next(data);
+  }
+
+  private setPages(count: number) {
+    this._pages$.next(Math.ceil(count / this.limit));
   }
 
   private getSortOptions() {
