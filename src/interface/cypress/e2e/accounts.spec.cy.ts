@@ -29,7 +29,8 @@ describe('Login and logout with command', () => {
     expect(testUser).to.exist;
     expect(testPass).to.exist;
     cy.doLogin(testUser, testPass);
-    cy.contains('Planning areas').should('be.visible');
+    cy.url().should('include', '/home');
+    cy.get('app-planning-areas').should('exist');
     cy.doLogout();
     cy.contains('Welcome to Planscape').should('be.visible');
   });
