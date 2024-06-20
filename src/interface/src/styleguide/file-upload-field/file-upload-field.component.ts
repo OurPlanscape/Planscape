@@ -12,6 +12,10 @@ import { ButtonComponent } from '../button/button.component';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export type UploadStatus = 'default' | 'running' | 'uploaded' | 'failed';
+export type MimeType = {
+  mime: string;
+  suffix: string;
+};
 
 @Component({
   selector: 'sg-file-upload',
@@ -31,8 +35,9 @@ export class FileUploadFieldComponent {
   @Input() placeholder = 'Choose a shape file to upload';
   @Input() disabled = false;
   @Input() uploadStatus: UploadStatus = 'default';
-  @Input()
-  supportedTypes: string[] = ['application/zip'];
+  @Input() supportedTypes: MimeType[] = [
+    { mime: 'application/zip', suffix: 'zip' },
+  ];
   @Output() fileEvent = new EventEmitter<any>();
 
   file: File | null = null;
@@ -44,6 +49,13 @@ export class FileUploadFieldComponent {
       this.file = files.item(0);
       this.fileEvent.emit(this.file!);
     }
+  }
+  acceptedMimeTypesString(): string {
+    return this.supportedTypes.map((t) => t.mime as string).join(', ');
+  }
+
+  acceptedSuffixesString(): string {
+    return this.supportedTypes.map((t) => `.${t.suffix}`).join(', ');
   }
 
   resetFile() {

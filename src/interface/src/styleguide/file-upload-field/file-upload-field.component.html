@@ -27,13 +27,17 @@
       [disabled]="isRunning || isDisabled"
       (click)="fileInput.click()">
       <span>Browse</span>
+      <span>{{ acceptedMimeTypesString() }}</span>
       <input
         class="input-box"
         #fileInput
+        [accept]="acceptedMimeTypesString()"
         type="file"
         (change)="onFileUploaded($event)"
         style="display: none" />
     </button>
   </div>
 </div>
-<div class="field-subscript">File supported:</div>
+<div class="field-subscript">
+  Files supported: {{ acceptedSuffixesString() }}
+</div>
