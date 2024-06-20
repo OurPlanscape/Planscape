@@ -3,7 +3,7 @@ import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { FilterDropdownComponent } from './filter-dropdown.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-const meta: Meta<FilterDropdownComponent> = {
+const meta: Meta<FilterDropdownComponent<string>> = {
   title: 'Components/Filter Dropdown',
   component: FilterDropdownComponent,
   tags: ['autodocs'],
@@ -20,7 +20,7 @@ const meta: Meta<FilterDropdownComponent> = {
 };
 
 export default meta;
-type Story = StoryObj<FilterDropdownComponent>;
+type Story = StoryObj<FilterDropdownComponent<string>>;
 
 export const Default: Story = {
   args: {
@@ -159,6 +159,38 @@ export const LongOptionList: Story = {
       'Olivia Turner',
       'Owen King',
       'Penelope Johnson',
+    ],
+  },
+};
+
+interface Thing {
+  id: number;
+  name: string;
+}
+
+type GenericStory = StoryObj<FilterDropdownComponent<Thing>>;
+
+export const GenericItems: GenericStory = {
+  args: {
+    menuLabel: 'Region',
+    displayField: 'name',
+    menuItems: [
+      { id: 1, name: 'Amelia Rose' },
+      { id: 2, name: 'Benjamin Walker' },
+      { id: 3, name: 'Charlotte Lee' },
+      { id: 4, name: 'David Anderson' },
+      { id: 5, name: 'Evelyn Wright' },
+      { id: 6, name: 'Felix Thompson' },
+      { id: 7, name: 'Grace Miller' },
+      { id: 8, name: 'Henry Jackson' },
+      { id: 9, name: 'Isabella Clark' },
+      { id: 10, name: 'Jack Young' },
+      { id: 11, name: 'Katherine Wilson' },
+      { id: 12, name: 'Liam Moore' },
+      { id: 13, name: 'Mia Brown' },
+      { id: 14, name: 'Noah Garcia' },
+      { id: 15, name: 'Olivia Harris' },
+      { id: 16, name: 'Owen Lewis' },
     ],
   },
 };

@@ -25,8 +25,8 @@
     *ngIf="hasSelections()"
     class="close-icon"
     (click)="clearSelections($event)"
-    >close</mat-icon
-  >
+    >close
+  </mat-icon>
 </button>
 
 <mat-menu #multiSelectMenu="matMenu" class="filtermenu">
@@ -35,7 +35,7 @@
     *ngIf="hasSearch"
     (click)="$event.stopPropagation()">
     <sg-search-bar
-      debounceInterval="0"
+      [debounceInterval]="0"
       [clearEvent]="clearInput.asObservable()"
       searchPlaceholder="Search for {{ menuLabel }}"
       (searchString)="filterSearch($event)"></sg-search-bar>
@@ -47,7 +47,9 @@
       role="menuitemcheckbox"
       (click)="toggleSelection($event, item)">
       <div class="menu-item-content">
-        <span class="menu-item-text">{{ item }}</span>
+        <span class="menu-item-text">{{
+          displayField ? item[displayField] : item
+        }}</span>
         <mat-checkbox
           [color]="'primary'"
           [checked]="isInSelection(item)"></mat-checkbox>
@@ -63,7 +65,9 @@
         <button sg-button variant="ghost" (click)="handleCancel($event)">
           Cancel
         </button>
-        <button sg-button variant="primary" type="submit">Done</button>
+        <button sg-button variant="primary" type="submit" (click)="done()">
+          Done
+        </button>
       </div>
     </div>
   </div>
