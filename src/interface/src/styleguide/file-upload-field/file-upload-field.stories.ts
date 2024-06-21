@@ -26,27 +26,52 @@ const mockFile = new File(['This is the file content'], 'my-file.txt', {
 export default meta;
 type Story = StoryObj<FileUploadFieldComponent>;
 
+const acceptedTypes = [
+  { mime: 'application/zip', suffix: 'zip' },
+  { mime: 'application/gzip', suffix: 'gz' },
+];
+
 export const Default: Story = {
-  args: { uploadStatus: 'default' },
+  args: {
+    uploadStatus: 'default',
+    fieldLabel: 'Label',
+    required: true,
+    supportedTypes: acceptedTypes,
+  },
+};
+
+export const NoLabel: Story = {
+  args: {
+    ...Default.args,
+    fieldLabel: undefined,
+  },
 };
 
 export const Disabled: Story = {
   args: {
+    ...Default.args,
     disabled: true,
-    uploadStatus: 'default',
   },
 };
 
 export const Running: Story = {
-  args: { uploadStatus: 'running', file: mockFile },
+  args: {
+    ...Default.args,
+    uploadStatus: 'running',
+  },
 };
 
 export const Failed: Story = {
-  args: { uploadStatus: 'failed', file: mockFile },
+  args: {
+    ...Default.args,
+    uploadStatus: 'failed',
+    file: mockFile,
+  },
 };
 
 export const Uploaded: Story = {
   args: {
+    ...Default.args,
     uploadStatus: 'uploaded',
     file: mockFile,
   },

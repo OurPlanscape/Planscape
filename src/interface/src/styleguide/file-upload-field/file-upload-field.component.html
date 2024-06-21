@@ -1,6 +1,6 @@
-<div class="upload-field-label">
-  {{ fieldLabel }}
-  <span class="required-label">required</span>
+<div class="field-label-box" *ngIf="fieldLabel">
+  <span class="field-label"> {{ fieldLabel }}</span>
+  <span class="required-label" *ngIf="required">required</span>
 </div>
 <div class="input-container">
   <div *ngIf="!file" class="placeholder-label">{{ placeholder }}</div>
@@ -22,12 +22,12 @@
       </button>
     </div>
     <button
+      class="browse-button"
       sg-button
       aria-label="more options"
       [disabled]="isRunning || isDisabled"
       (click)="fileInput.click()">
       <span>Browse</span>
-      <span>{{ acceptedMimeTypesString() }}</span>
       <input
         class="input-box"
         #fileInput

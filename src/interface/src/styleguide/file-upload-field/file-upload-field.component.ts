@@ -31,9 +31,10 @@ export type MimeType = {
   styleUrl: './file-upload-field.component.scss',
 })
 export class FileUploadFieldComponent {
-  @Input() fieldLabel = 'Label';
+  @Input() fieldLabel?: string;
   @Input() placeholder = 'Choose a shape file to upload';
   @Input() disabled = false;
+  @Input() required = true;
   @Input() uploadStatus: UploadStatus = 'default';
   @Input() supportedTypes: MimeType[] = [
     { mime: 'application/zip', suffix: 'zip' },

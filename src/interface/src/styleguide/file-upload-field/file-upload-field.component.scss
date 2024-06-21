@@ -8,15 +8,21 @@
   gap: 8px;
 }
 
-.upload-field-label {
+.field-label-box {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.field-label {
   @include standard-input-label();
-  font-family: 'Public Sans';
   color: $color-dark-gray;
   font-size: 14px;
   font-weight: 500;
   line-height: 22px;
   text-align: left;
 }
+
 .required-label {
   @include italic-sm();
   color: $color-text-gray;
@@ -34,7 +40,7 @@
   border-radius: 4px;
   border: 1px $color-soft-gray solid;
 
-  &:hover {
+  &:hover:not(:host.running .input-container, :host.disabled .input-container) {
     background-color: $color-soft-gray;
   }
 }
@@ -75,6 +81,19 @@
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
+}
+
+.browse-button {
+  width: 77px;
+  height: 40px;
+  & span {
+    width: 100%;
+  }
+}
+
+:host.disabled .browse-button,
+:host.running .browse-button {
+  cursor: default;
 }
 
 .remove-file-button {
