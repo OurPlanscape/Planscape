@@ -67,7 +67,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   @Output() changedSelection = new EventEmitter<T[]>();
 
   /**
-   *  Event that emits when the `done` button is clicked
+   *  Event that emits when the `apply` button is clicked
    */
   @Output() confirmedSelection = new EventEmitter<T[]>();
 
@@ -93,7 +93,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   }
 
   handleClosedMenu(e: any): void {
-    // if menu was closed because of the done button,
+    // if menu was closed because of the apply button,
     // we don't cancel the selections
     if (e !== 'click') {
       this.handleCancel();
@@ -161,7 +161,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     });
   }
 
-  done(e: Event) {
+  applyChanges(e: Event) {
     this.confirmedSelection.emit(this.selectedItems);
   }
 }
