@@ -8,13 +8,16 @@ export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
   'DEFAULT_SORT_OPTIONS'
 );
 
-export interface QueryParams extends Sort {
-  offset?: number;
+export interface QueryParams extends Partial<Sort> {
+  page?: number;
   name?: string;
+  limit?: number;
 }
 
 @Injectable()
 export class QueryParamsService {
+  readonly defaultLimit = 12;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -28,10 +31,14 @@ export class QueryParamsService {
    * Note that this action does not trigger route navigation or component reinitialization.
    */
   updateUrl(options: QueryParams) {
+    // Parse the current path parameters
+    const urlTree = this.router.parseUrl(this.location.path());
+    const currentParams = urlTree.queryParams;
+
     const currentUrl = this.router
       .createUrlTree([], {
         relativeTo: this.route,
-        queryParams: options,
+        queryParams: { ...currentParams, ...options },
         queryParamsHandling: 'merge', // Merge with existing query parameters
       })
       .toString();
@@ -47,10 +54,11 @@ export class QueryParamsService {
     };
   }
 
-  getInitialPageParams(): { offset: number } {
-    const { offset } = this.route.snapshot.queryParams;
+  getInitialPageParams(): { page: number; limit: number } {
+    const { page, limit } = this.route.snapshot.queryParams;
     return {
-      offset: offset || 0,
+      page: page || 1,
+      limit: limit || this.defaultLimit,
     };
   }
 
