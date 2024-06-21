@@ -115,6 +115,7 @@ export class FilterDropdownComponent<T> implements OnInit {
       this.selectedItems = this.selectedItems.filter((e) => e !== item);
     }
     e.stopPropagation();
+    this.changedSelection.emit(this.selectedItems);
   }
 
   get selectionText(): string {
