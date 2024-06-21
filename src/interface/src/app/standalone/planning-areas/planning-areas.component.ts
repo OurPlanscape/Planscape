@@ -33,6 +33,7 @@ import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-m
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 import { FormsModule } from '@angular/forms';
 import { FilterDropdownComponent } from '../../../styleguide/filter-dropdown/filter-dropdown.component';
+import { PaginatorComponent } from '../../../styleguide/paginator/paginator.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -62,6 +63,7 @@ import { FilterDropdownComponent } from '../../../styleguide/filter-dropdown/fil
     PlanningAreasSearchComponent,
     FormsModule,
     FilterDropdownComponent,
+    PaginatorComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -126,9 +128,8 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     this.dataSource.goToPage(page);
   }
 
-  changePageSize(event: Event) {
-    const size = (event.target as HTMLSelectElement).value;
-    this.dataSource.changePageSize(parseInt(size, 10));
+  changePageSize(size: number) {
+    this.dataSource.changePageSize(size);
   }
 
   viewPlan(plan: PreviewPlan, event: MouseEvent) {
