@@ -44,10 +44,12 @@ export class FileUploadFieldComponent {
   file: File | null = null;
 
   onFileUploaded(event: Event) {
+    this.uploadStatus = 'running';
     const target = event.target as HTMLInputElement;
     const files = target.files as FileList;
     if (target.files) {
       this.file = files.item(0);
+      this.uploadStatus = 'uploaded';
       this.fileEvent.emit(this.file!);
     }
   }
