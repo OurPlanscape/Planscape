@@ -92,6 +92,14 @@ export class FilterDropdownComponent<T> implements OnInit {
     return this.selectedItems.length > 0;
   }
 
+  handleClosedMenu(e: any): void {
+    // if menu was closed because of the done button,
+    // we don't cancel the selections
+    if (e !== 'click') {
+      this.handleCancel();
+    }
+  }
+
   showCount(): boolean {
     return this.selectedItems.length > 1;
   }
@@ -107,7 +115,6 @@ export class FilterDropdownComponent<T> implements OnInit {
       this.selectedItems = this.selectedItems.filter((e) => e !== item);
     }
     e.stopPropagation();
-    this.changedSelection.emit(this.selectedItems);
   }
 
   get selectionText(): string {
@@ -118,7 +125,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     return this.menuLabel;
   }
 
-  handleCancel(e: any) {
+  handleCancel() {
     this.selectedItems = this.previousSelections.slice();
     this.previousSelections = [];
   }
@@ -154,7 +161,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     });
   }
 
-  done() {
+  done(e: Event) {
     this.confirmedSelection.emit(this.selectedItems);
   }
 }

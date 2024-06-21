@@ -1,4 +1,5 @@
 <button
+  #triggerButton
   [matMenuTriggerFor]="multiSelectMenu"
   class="dropdown-button"
   [disabled]="disabled"
@@ -29,7 +30,10 @@
   </mat-icon>
 </button>
 
-<mat-menu #multiSelectMenu="matMenu" class="filtermenu">
+<mat-menu
+  #multiSelectMenu="matMenu"
+  class="filtermenu"
+  (closed)="handleClosedMenu($event)">
   <div
     class="search-section"
     *ngIf="hasSearch"
@@ -62,11 +66,15 @@
         clear all
       </button>
       <div class="button-box">
-        <button sg-button variant="ghost" (click)="handleCancel($event)">
+        <button sg-button variant="ghost" (click)="handleCancel()">
           Cancel
         </button>
-        <button sg-button variant="primary" type="submit" (click)="done()">
-          Done
+        <button
+          sg-button
+          variant="primary"
+          type="submit"
+          (click)="done($event)">
+          Apply
         </button>
       </div>
     </div>
