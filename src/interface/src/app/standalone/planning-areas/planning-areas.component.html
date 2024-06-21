@@ -114,7 +114,6 @@
     [recordsPerPage]="pageOptions.limit"
     (pageChanged)="goToPage($event)"
     (recordsPerPageChanged)="changePageSize($event)"
-    [perPageOptions]="[5, 12, 20]"
     [pageCount]="(pages$ | async) || 0"></sg-paginator>
 </section>
 

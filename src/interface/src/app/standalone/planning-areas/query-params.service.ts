@@ -18,7 +18,7 @@ export interface QueryParams extends Partial<Sort> {
 
 @Injectable()
 export class QueryParamsService {
-  readonly defaultLimit = 12;
+  readonly defaultLimit = 10;
 
   constructor(
     private route: ActivatedRoute,
