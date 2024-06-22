@@ -36,7 +36,7 @@
     (click)="$event.stopPropagation()">
     <sg-search-bar
       [debounceInterval]="0"
-      searchValue="searchInputValue"
+      [clearEvent]="clearInput.asObservable()"
       searchPlaceholder="Search for {{ menuLabel }}"
       (searchString)="filterSearch($event)"></sg-search-bar>
   </div>

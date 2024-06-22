@@ -36,8 +36,6 @@ import { Subject } from 'rxjs';
 })
 export class FilterDropdownComponent<T> implements OnInit {
   @ViewChild(SearchBarComponent) searchbar!: SearchBarComponent;
-  searchInputValue: string = '';
-
   /**
    * Accepts the name of a Material Icon to be displayed at the left of the menu trigger
    */
@@ -81,10 +79,6 @@ export class FilterDropdownComponent<T> implements OnInit {
   private previousSelections: T[] = [];
   clearInput: Subject<void> = new Subject<void>();
 
-  clearSearchBar() {
-    this.clearInput.next();
-  }
-
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
   }
@@ -126,7 +120,7 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   handleFilterClick() {
     //clear the search bar and show all items
-    this.searchInputValue = '';
+    this.clearInput.next();
     this.displayedItems = this.menuItems.slice();
     //copy the selections we had prior to opening, in case the user hits cancel
     this.previousSelections = this.selectedItems.slice();
