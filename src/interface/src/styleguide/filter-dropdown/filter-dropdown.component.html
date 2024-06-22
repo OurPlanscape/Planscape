@@ -35,8 +35,8 @@
     *ngIf="hasSearch"
     (click)="$event.stopPropagation()">
     <sg-search-bar
-      debounceInterval="0"
-      [setSearchInput]="setInputValue.asObservable()"
+      [debounceInterval]="0"
+      searchValue="searchInputValue"
       searchPlaceholder="Search for {{ menuLabel }}"
       (searchString)="filterSearch($event)"></sg-search-bar>
   </div>

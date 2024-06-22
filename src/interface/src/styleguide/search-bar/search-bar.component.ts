@@ -24,7 +24,7 @@ import {
 } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 
-import { debounceTime, distinctUntilChanged, Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { InputDirective } from '../input/input.directive';
@@ -56,6 +56,11 @@ import { InputDirective } from '../input/input.directive';
 export class SearchBarComponent implements OnInit, OnDestroy {
   @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
   /**
+   * The value of the string displayed in the searchbar input element.
+   */
+  @Input() searchValue: string = '';
+
+  /**
    * The search history list for this component, which can be filtered locally.
    *  If this history is empty, we don't show a history panel.
    */
@@ -79,10 +84,6 @@ export class SearchBarComponent implements OnInit, OnDestroy {
   /**
    *
    */
-  @Input() setSearchInput?: Observable<string>;
-  /**
-   *
-   */
   @Output() searchString = new EventEmitter<string>();
   searchInput = new Subject<string>();
   displayedHistory: string[] = [];
@@ -99,13 +100,6 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       .subscribe((searchTerm: string) => {
         this.searchString.emit(searchTerm);
       });
-    //responds to events that request we clear the input value
-    if (this.setSearchInput) {
-      this.setSearchInput.pipe(untilDestroyed(this)).subscribe((s) => {
-        this.setInput(s);
-        this.searchInput.next(s);
-      });
-    }
   }
 
   onSearchInputChange(event: Event) {

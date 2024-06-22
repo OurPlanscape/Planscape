@@ -9,6 +9,7 @@
       placeholder="{{ searchPlaceholder }}"
       [matAutocomplete]="searchHistory"
       [matAutocompleteConnectedTo]="origin"
+      [value]="searchValue"
       (input)="onSearchInputChange($event)"
       (keydown)="onInputKey($event)" />
     <mat-autocomplete
