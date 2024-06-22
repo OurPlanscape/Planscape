@@ -1,0 +1,82 @@
+<div class="pages-container">
+  <div class="nav-control-container" *ngIf="pageCount > 1">
+    <button
+      class="page-button"
+      class="first-page-button page-button"
+      (click)="handlePrevious()"
+      aria-label="Go to previous page"
+      [disabled]="isCurrentPage(1)">
+      <mat-icon class="arrow-icon">arrow_back_ios</mat-icon>
+    </button>
+    <button
+      class="page-button"
+      (click)="setPage(1)"
+      [attr.aria-label]="'Go to page 1'"
+      [ngClass]="{ 'selected-button': isCurrentPage(1) }">
+      1
+    </button>
+    <div *ngIf="showFirstSpacer$ | async" class="spacer">
+      <mat-icon class="ellipse-icon">more_horiz</mat-icon>
+    </div>
+    <div class="nav-controls">
+      <button
+        *ngFor="let pageNum of buttonRange$ | async"
+        [ngClass]="{ 'selected-button': isCurrentPage(pageNum) }"
+        class="page-button numeric-button"
+        [attr.aria-label]="'Go to page ' + pageNum"
+        [disabled]="isCurrentPage(pageNum)"
+        aria
+        (click)="setPage(pageNum)">
+        {{ pageNum }}
+      </button>
+    </div>
+    <div class="spacer" *ngIf="showLastSpacer$ | async">
+      <mat-icon class="ellipse-icon">more_horiz</mat-icon>
+    </div>
+    <button
+      class="page-button"
+      (click)="setPage(pageCount)"
+      [attr.aria-label]="'Go to page ' + pageCount"
+      [ngClass]="{ 'selected-button': isCurrentPage(pageCount) }">
+      {{ pageCount }}
+    </button>
+    <button
+      class="page-button"
+      class="page-button last-page-button"
+      (click)="handleNext()"
+      aria-label="Go to next page"
+      [disabled]="isCurrentPage(getTotalPages())">
+      <mat-icon class="arrow-icon">arrow_forward_ios</mat-icon>
+    </button>
+  </div>
+</div>
+
+<div class="page-select-container">
+  <div class="nav-label">Go to page</div>
+  <mat-form-field class="picker-field" appearance="outline">
+    <mat-select
+      panelClass="paginator-select-panel"
+      [(ngModel)]="selectedPage"
+      (selectionChange)="setPage(selectedPage)">
+      @for (page of navSelectRange; track page) {
+        <mat-option class="nav-page-item" [value]="page">{{ page }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>
+
+<div class="per-page-picker">
+  <div class="picker-label">Records per page</div>
+  <mat-form-field class="picker-field" appearance="outline">
+    <mat-select
+      panelClass="paginator-select-panel"
+      [(ngModel)]="recordsPerPage"
+      (selectionChange)="perPageChanged()">
+      @for (count of perPageOptions; track count) {
+        <mat-option class="per-page-item" [value]="count">{{
+          count
+        }}</mat-option>
+      }
+    </mat-select>
+  </mat-form-field>
+</div>

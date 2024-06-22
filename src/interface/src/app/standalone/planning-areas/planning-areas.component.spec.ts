@@ -27,6 +27,8 @@ describe('PlanningAreasComponent', () => {
     sortOptions: defaultSort,
     loadData: jasmine.createSpy('loadData').and.returnValue(() => of([])),
     changeSort: jasmine.createSpy('changeSort'),
+    destroy: jasmine.createSpy('destroy'),
+    search: jasmine.createSpy('search'),
   };
 
   beforeEach(async () => {
@@ -80,5 +82,11 @@ describe('PlanningAreasComponent', () => {
     spyOn(router, 'navigate');
     component.viewPlan(plan, new MouseEvent('click'));
     expect(router.navigate).toHaveBeenCalledWith(['plan', plan.id]);
+  });
+
+  it('should call search method of dataSource with correct argument', () => {
+    const searchTerm = 'testSearch';
+    component.search(searchTerm);
+    expect(mockPlanningAreasDataSource.search).toHaveBeenCalledWith(searchTerm);
   });
 });

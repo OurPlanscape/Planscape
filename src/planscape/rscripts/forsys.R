@@ -88,7 +88,8 @@ CATEGORIES_PER_METRIC <- list(
   structure_exposure = seq(1, 10),
   structure_exposure_score = seq(1, 10),
   wetland_diversity = seq(1, 8),
-  wui_damage_potential = seq(0, 5)
+  wui_damage_potential = seq(0, 5),
+  wildland_urban_interface = seq(0, 2)
 )
 
 POSTPROCESSING_FUNCTIONS <- list(
@@ -158,6 +159,7 @@ POSTPROCESSING_FUNCTIONS <- list(
   unemployment_percentile = average_per_stand,
   wetland_diversity = average_and_clamp,
   wildlife_species_richness = average_per_stand,
+  wildland_urban_interface = average_and_clamp,
   wui_damage_potential = average_and_clamp
 )
 
@@ -167,7 +169,8 @@ METRIC_COLUMNS <- list(
   low_income_population_proportional = "sum",
   wui = "majority",
   mean_percent_fire_return_interval_departure_condition_class = "majority",
-  f3veg100 = "majority"
+  f3veg100 = "majority",
+  wildland_urban_interface = "majority"
 )
 
 

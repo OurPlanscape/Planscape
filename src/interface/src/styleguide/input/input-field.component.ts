@@ -117,8 +117,9 @@ export class InputFieldComponent implements AfterContentInit {
 
   get displaysSupportMessage() {
     return (
-      this.showSupportMessage === 'always' ||
-      (this.showSupportMessage === 'on-error' && this.error)
+      !!this.supportMessage &&
+      (this.showSupportMessage === 'always' ||
+        (this.showSupportMessage === 'on-error' && this.error))
     );
   }
 

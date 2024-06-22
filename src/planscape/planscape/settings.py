@@ -74,9 +74,9 @@ INSTALLED_APPS = [
 # Middleware order matters because of layering dependencies
 # https://docs.djangoproject.com/en/4.2/topics/http/middleware/#activating-middleware
 MIDDLEWARE = [
+    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -179,18 +179,14 @@ SPATIALITE_LIBRARY_PATH = "/opt/homebrew/lib/mod_spatialite.dylib"
 CORS_ALLOWED_ORIGINS = str(
     config("PLANSCAPE_CORS_ALLOWED_ORIGINS", default="http://localhost:4200")
 ).split(",")
-CORS_ALLOWED_HOSTS = str(
-    config("PLANSCAPE_CORS_ALLOWED_HOSTS", default="http://localhost:4200")
-).split(",")
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = list(default_headers) + ["Set-Cookie"]
 
 # Cross-Site Request Forgery protection settings
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_HTTPONLY = False
-CSRF_TRUSTED_ORIGINS = str(
-    config("PLANSCAPE_CSRF_TRUSTED_ORIGINS", default="http://localhost:4200")
-).split(",")
 CSRF_HEADER_NAME = "CSRF_COOKIE"
 SESSION_COOKIE_SECURE = False
 CSRF_COOKIE_SECURE = False

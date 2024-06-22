@@ -1,0 +1,211 @@
+@import 'mixins';
+@import 'colors';
+@import 'media';
+
+:host {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+
+  ::ng-deep .mat-mdc-form-field-subscript-wrapper {
+    height: 0px;
+  }
+
+  ::ng-deep .mat-mdc-text-field-wrapper {
+    height: 40px;
+    border-color: $color-soft-gray;
+  }
+
+  ::ng-deep
+    .mat-mdc-text-field-wrapper.mdc-text-field--outlined
+    .mat-mdc-form-field-infix {
+    padding-top: 0px;
+    padding-bottom: 0px;
+  }
+
+  ::ng-deep .mat-mdc-select-value-text {
+    @include small-input-label();
+    line-height: 40px;
+  }
+}
+
+.page-button {
+  @include xs-label();
+  font-family: 'Public Sans';
+  color: $color-black;
+  background-color: $color-white;
+  border: 1px solid $color-soft-gray;
+  padding: 8px;
+  height: 38px;
+  width: 42px;
+  text-align: center;
+  cursor: pointer;
+  border-right: 0px;
+}
+
+.page-button:focus:not(.selected-button),
+.page-button:hover:not(.selected-button),
+.page-button:active:not(.selected-button) {
+  background-color: $color-light-gray;
+  color: $color-black;
+}
+
+.page-button:disabled:not(.selected-button) {
+  background-color: $color-soft-gray;
+  color: $color-text-gray;
+}
+
+.selected-button {
+  background-color: $color-standard-blue;
+  color: white;
+  cursor: default;
+}
+
+.spacer {
+  color: $color-md-gray;
+  background-color: white;
+  border: none;
+  height: 38px;
+  width: 38px;
+  font-size: 14px;
+  border-left: 1px solid $color-soft-gray;
+  display: flex;
+  padding: 0px;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.arrow-icon {
+  height: 20px;
+  width: 20px;
+  font-size: 20px;
+  line-height: 26px;
+}
+
+.ellipse-icon {
+  height: 20px;
+  width: 20px;
+  font-size: 20px;
+  line-height: 36px;
+  margin-top: 4px;
+}
+
+.first-page-button {
+  border-top-left-radius: 10%;
+  border-bottom-left-radius: 10%;
+  padding-left: 12px;
+  .mat-icon {
+    font-size: 14px;
+    height: 100%;
+    width: 14px;
+    line-height: 22px;
+  }
+}
+
+.last-page-button {
+  border-top-right-radius: 10%;
+  border-bottom-right-radius: 10%;
+  border-right: 1px solid $color-soft-gray;
+  .mat-icon {
+    font-size: 14px;
+    height: 100%;
+    width: 14px;
+    line-height: 22px;
+  }
+}
+
+.pages-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  width: 100%;
+}
+
+.nav-control-container {
+  display: flex;
+  flex-direction: row;
+}
+
+.nav-controls {
+  display: flex;
+  flex-direction: row;
+}
+
+.page-select-container {
+  width: 200px;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  display: none;
+}
+
+.nav-label {
+  @include small-input-label();
+  margin: 0px;
+  width: 180px;
+  text-align: right;
+  color: $color-black;
+}
+
+.per-page-picker {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  align-items: center;
+  width: 220px;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.picker-label {
+  @include small-input-label();
+  margin: 0px;
+  width: 180px;
+  text-align: right;
+  color: $color-black;
+}
+
+.picker-field {
+  width: 100px;
+  padding-top: 0px;
+  border: $color-black;
+  --mat-select-trigger-text-font: 'Public Sans';
+  --mdc-outlined-text-field-outline-color: $color-soft-gray;
+  &.disabled {
+    opacity: 0.6;
+  }
+}
+
+::ng-deep .paginator-select-panel .mat-mdc-option {
+  --mat-option-label-text-font: 'Public Sans';
+  --mat-form-field-container-text-font: 'Public Sans';
+  --mat-option-label-text-size: 14px;
+  --mat-option-label-text-line-height: 24px;
+  --mat-option-label-text-tracking: 0.03125em;
+  --mat-option-label-text-weight: 400;
+}
+
+::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__trailing,
+::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__leading {
+  --mdc-outlined-text-field-focus-outline-width: 1px;
+  color: $color-soft-gray;
+}
+
+.numeric-button {
+  display: block;
+}
+
+@include on-small() {
+  :host {
+    justify-content: space-evenly;
+  }
+  .pages-container {
+    display: none;
+  }
+  .page-select-container {
+    display: flex;
+  }
+}

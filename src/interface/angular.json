@@ -104,7 +104,8 @@
               "buildTarget": "interface:build:production"
             },
             "development": {
-              "buildTarget": "interface:build:development"
+              "buildTarget": "interface:build:development",
+              "proxyConfig": "proxy.conf.json"
             }
           },
           "defaultConfiguration": "development"

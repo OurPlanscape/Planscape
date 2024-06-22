@@ -1,28 +1,48 @@
 import { PreviewPlan } from '@types';
-import { BehaviorSubject, map, Observable, Subject, tap } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
-import { QueryParamsService } from './query-params.service';
+import { QueryParams, QueryParamsService } from './query-params.service';
 
 export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
-  private readonly limit = 13;
-
-  private _dataStream = new Subject<PreviewPlan[]>();
+  private _dataStream = new BehaviorSubject<PreviewPlan[]>([]);
   private _loading = new BehaviorSubject(false);
-
-  public count = 0;
-  public pages = 0;
-
-  public loading$ = this._loading.asObservable();
-  public initialLoad$ = new BehaviorSubject(true);
-  public noEntries$ = this._dataStream.pipe(
-    map((results) => results.length === 0)
-  );
+  private _hasFilters$ = new BehaviorSubject(false);
+  private _initialLoad$ = new BehaviorSubject(true);
+  private _pages$ = new BehaviorSubject(0);
 
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
-
   public pageOptions = this.queryParamsService.getInitialPageParams();
+  public searchTerm = this.queryParamsService.getInitialFilterParam();
+
+  public pages$ = this._pages$.asObservable();
+  /**
+   * Emits `true` if loading the first time or applying filters (where number of results change)
+   * `false` when done loading.
+   */
+  public initialLoad$ = this._initialLoad$.asObservable();
+
+  /**
+   * Emits `true` if loading data. Includes sorting or changing pages.
+   * `false` when done loading.
+   */
+  public loading$ = this._loading.asObservable();
+
+  /**
+   * Emits `true` if there are no results after loading data.
+   */
+  public noEntries$ = combineLatest([
+    this.initialLoad$,
+    this._dataStream.asObservable(),
+  ]).pipe(
+    map(([initialLoad, results]) => !initialLoad && results.length === 0)
+  );
+
+  /**
+   * Emits `true` if applying filters or searching
+   */
+  public hasFilters$ = this._hasFilters$.asObservable();
 
   constructor(
     private planService: PlanService,
@@ -35,47 +55,91 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     return this._dataStream.asObservable();
   }
 
-  disconnect() {
+  /**
+   * this method is required by `DataSource`, however its triggered when
+   * we emit an empty array (no results) on _dataStream, which is not what we want.
+   * Instead, manually call `destroy` to clean up.
+   */
+  disconnect() {}
+
+  /**
+   * cleanups subscriptions.
+   */
+  destroy() {
     this._dataStream.complete();
     this._loading.complete();
   }
 
   loadData() {
-    const params = { ...this.getPageOptions(), ...this.getSortOptions() };
+    const params = {
+      ...this.getPageOptions(),
+      ...this.getSortOptions(),
+      ...this.searchOptions(),
+    };
+    // update filter status when loading data
+    this._hasFilters$.next(!!this.searchTerm);
     this._loading.next(true);
     this.planService.getPlanPreviews(params).subscribe((data) => {
       this.setPages(data.count);
       this.setData(data.results);
       this._loading.next(false);
-      this.initialLoad$.next(false);
+      this._initialLoad$.next(false);
     });
   }
 
-  setData(data: PreviewPlan[]) {
-    this._dataStream.next(data);
-  }
-
-  setPages(count: number) {
-    this.count = count;
-    this.pages = Math.ceil(count / 13);
-  }
-
   changeSort(sortOptions: Sort) {
-    this.pageOptions.offset = 0;
     this.sortOptions = sortOptions;
-    this.queryParamsService.updateUrl({ ...sortOptions, offset: undefined });
+    this.resetPageAndUpdateUrl(this.sortOptions);
+    this.loadData();
+  }
+
+  changePageSize(size: number) {
+    this.pageOptions.limit = size;
+    this.resetPageAndUpdateUrl({ limit: size });
     this.loadData();
   }
 
   goToPage(page: number) {
-    this.pageOptions.offset = (page - 1) * this.limit;
-    const offset =
-      this.pageOptions.offset > 0 ? this.pageOptions.offset : undefined;
+    this.pageOptions.page = page;
     this.queryParamsService.updateUrl({
-      ...this.sortOptions,
-      offset: offset,
+      // if we are on page 1, omit the page parameter
+      page: page > 1 ? page : undefined,
     });
     this.loadData();
+  }
+
+  deletePlan(planId: number) {
+    return this.planService.deletePlan([String(planId)]).pipe(
+      tap(() => {
+        // reload data
+        this.loadData();
+      })
+    );
+  }
+
+  search(str: string) {
+    this._initialLoad$.next(true);
+    this.searchTerm = str;
+    this.resetPageAndUpdateUrl({
+      name: this.searchTerm ? this.searchTerm : undefined,
+    });
+    this.loadData();
+  }
+
+  private resetPageAndUpdateUrl(options?: QueryParams) {
+    this.pageOptions.page = 1;
+    this.queryParamsService.updateUrl({
+      ...options,
+      page: undefined,
+    });
+  }
+
+  private setData(data: PreviewPlan[]) {
+    this._dataStream.next(data);
+  }
+
+  private setPages(count: number) {
+    this._pages$.next(Math.ceil(count / this.pageOptions.limit));
   }
 
   private getSortOptions() {
@@ -87,23 +151,19 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     };
   }
 
-  /**
-   * transforms page options to limit/offset.
-   * @private
-   */
   private getPageOptions() {
     return {
-      limit: this.limit,
-      offset: this.pageOptions.offset,
+      limit: this.pageOptions.limit,
+      offset: (this.pageOptions.page - 1) * this.pageOptions.limit,
     };
   }
 
-  deletePlan(planId: number) {
-    return this.planService.deletePlan([String(planId)]).pipe(
-      tap(() => {
-        // reload data
-        this.loadData();
-      })
-    );
+  private searchOptions() {
+    if (!this.searchTerm) {
+      return {};
+    }
+    return {
+      name: this.searchTerm,
+    };
   }
 }

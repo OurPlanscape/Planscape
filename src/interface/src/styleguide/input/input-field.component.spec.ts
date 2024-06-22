@@ -94,6 +94,7 @@ describe('InputFieldComponent', () => {
       By.directive(InputFieldComponent)
     ).componentInstance as InputFieldComponent;
     inputComponent.error = true;
+    inputComponent.supportMessage = 'some message';
     inputComponent.showSupportMessage = 'on-error';
     hostFixture.detectChanges();
     expect(inputComponent.displaysSupportMessage).toBeTrue();
@@ -103,6 +104,15 @@ describe('InputFieldComponent', () => {
     expect(inputComponent.displaysSupportMessage).toBeTrue();
 
     inputComponent.showSupportMessage = false;
+    hostFixture.detectChanges();
+    expect(inputComponent.displaysSupportMessage).toBeFalse();
+  });
+
+  it('should not display support messages if no message is provided', () => {
+    const inputComponent = hostFixture.debugElement.query(
+      By.directive(InputFieldComponent)
+    ).componentInstance as InputFieldComponent;
+
     hostFixture.detectChanges();
     expect(inputComponent.displaysSupportMessage).toBeFalse();
   });

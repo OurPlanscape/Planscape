@@ -3,7 +3,8 @@ import { urls } from '../support/util';
 describe('Map', () => {
   it('Shows welcome page', () => {
     cy.visit(urls.MAP);
-    cy.contains('Planning Areas');
+    cy.url().should('include', '/map');
+    cy.get('app-map-control-panel').should('exist');
   });
   it('Switches number of maps', () => {
     cy.visit(urls.MAP);

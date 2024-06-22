@@ -1,0 +1,12 @@
+{
+  "/planscape-backend": {
+    "_notes": "copy this file and rename to proxy.conf.json with your backend URL for target",
+    "target": "your-backend-url",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": {
+      "^/planscape-backend": ""
+    }
+  }
+}
