@@ -79,6 +79,10 @@ export class FilterDropdownComponent<T> implements OnInit {
   private previousSelections: T[] = [];
   clearInput: Subject<void> = new Subject<void>();
 
+  clearSearchBar() {
+    this.clearInput.next();
+  }
+
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
   }
