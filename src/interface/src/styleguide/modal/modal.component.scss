@@ -1,0 +1,10 @@
+@import 'mixins';
+@import 'colors';
+
+.modal-footer-buttons {
+  width: 100%;
+  height: 72px;
+  display: flex;
+  background-color: white;
+  border-bottom: 1px solid $color-soft-gray;
+}
