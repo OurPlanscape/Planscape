@@ -1,15 +1,17 @@
 @import 'mixins';
 @import 'colors';
 
-
 ::ng-deep .filtermenu.mat-mdc-menu-panel {
-    width: 400px;
-    max-width: 400px;
-    overscroll-behavior: contain;
-  }
+  width: 100%;
+  overscroll-behavior: contain;
+}
 
 ::ng-deep .filtermenu .mat-mdc-menu-item-text {
   width: 100%;
+}
+
+.filter-dropdown-container {
+  width: inherit;
 }
 
 .trigger-icon {
@@ -30,7 +32,7 @@
   border-radius: 4px;
   padding: 8px 8px 8px 8px;
   height: 40px;
-  width: 280px;
+  width: 100%;
   align-items: center;
   cursor: pointer;
 
@@ -80,6 +82,7 @@
   overflow: hidden;
   height: 22px;
 }
+
 .dropdown-label.active-filter {
   font-weight: 500;
   color: $color-white;
@@ -89,14 +92,24 @@
   border-color: $color-soft-gray;
   color: $color-text-gray;
 }
+
 .icon-label-box {
   width: 200px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 }
+
+.right-items-box {
+  display: flex;
+  min-width: 80px;
+  display: flex;
+  flex-direction: row;
+  justify-content: end;
+  min-width: 80px;
+}
+
 .more-items-box {
-  width: 50px;
   height: 22px;
   display: flex;
   flex-direction: row;

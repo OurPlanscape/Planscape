@@ -60,7 +60,10 @@ export class FilterDropdownComponent<T> implements OnInit {
    * provided menuItems is not already a string.
    */
   @Input() displayField?: keyof T;
-
+  /**
+   * Dynamically set the width from the consumer
+   */
+  @Input() width: string | number = '200px'; // Default width
   /**
    * Event that emits when list of selected items changes
    */
@@ -113,9 +116,9 @@ export class FilterDropdownComponent<T> implements OnInit {
   get selectionText(): string {
     if (this.selectedItems.length > 0) {
       const firstItem = this.selectedItems[0];
-      return `${this.menuLabel}: ${this.displayField ? firstItem[this.displayField] : firstItem}`;
+      return `: ${this.displayField ? firstItem[this.displayField] : firstItem}`;
     }
-    return this.menuLabel;
+    return '';
   }
 
   handleCancel(e: any) {
@@ -156,5 +159,9 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   done() {
     this.confirmedSelection.emit(this.selectedItems);
+  }
+
+  getWidth() {
+    return typeof this.width === 'string' ? this.width : this.width + 'px';
   }
 }
