@@ -56,6 +56,10 @@
   border-color: $color-error;
 }
 
+.input-box {
+  display: none;
+}
+
 .placeholder-label {
   @include standard-input-label();
   color: $color-text-gray;

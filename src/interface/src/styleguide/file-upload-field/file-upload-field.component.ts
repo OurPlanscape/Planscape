@@ -39,7 +39,8 @@ export class FileUploadFieldComponent {
   @Input() supportedTypes: MimeType[] = [
     { mime: 'application/zip', suffix: 'zip' },
   ];
-  @Output() fileEvent = new EventEmitter<any>();
+  @Output() fileEvent = new EventEmitter<File>();
+  @Output() uploadFailure = new EventEmitter<void>();
 
   file: File | null = null;
 
@@ -51,16 +52,18 @@ export class FileUploadFieldComponent {
       this.file = files.item(0);
       this.uploadStatus = 'uploaded';
       this.fileEvent.emit(this.file!);
+    } else {
+      this.uploadFailure.emit();
     }
   }
-  acceptedMimeTypesString(): string {
-    return this.supportedTypes.map((t) => t.mime as string).join(', ');
+
+  get acceptedMimeTypes(): string {
+    return this.supportedTypes.map((t) => t.mime).join(', ');
   }
 
-  acceptedSuffixesString(): string {
+  get acceptedSuffixes(): string {
     return this.supportedTypes.map((t) => `.${t.suffix}`).join(', ');
   }
-
   resetFile() {
     this.file = null;
     this.uploadStatus = 'default';

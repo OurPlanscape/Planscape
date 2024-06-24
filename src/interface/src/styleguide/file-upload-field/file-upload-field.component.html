@@ -31,13 +31,10 @@
       <input
         class="input-box"
         #fileInput
-        [accept]="acceptedMimeTypesString()"
+        [accept]="acceptedMimeTypes"
         type="file"
-        (change)="onFileUploaded($event)"
-        style="display: none" />
+        (change)="onFileUploaded($event)" />
     </button>
   </div>
 </div>
-<div class="field-subscript">
-  Files supported: {{ acceptedSuffixesString() }}
-</div>
+<div class="field-subscript">Files supported: {{ acceptedSuffixes }}</div>
