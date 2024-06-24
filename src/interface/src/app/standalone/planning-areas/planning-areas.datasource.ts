@@ -1,5 +1,5 @@
-import { PreviewPlan } from '@types';
 import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
+import { PreviewPlan } from '@types';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
 import { Sort } from '@angular/material/sort';
@@ -15,8 +15,10 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public sortOptions: Sort = this.queryParamsService.getInitialSortParams();
   public pageOptions = this.queryParamsService.getInitialPageParams();
   public searchTerm = this.queryParamsService.getInitialFilterParam();
-
   public pages$ = this._pages$.asObservable();
+  public selectedRegions: { name: string; value: string }[] =
+    this.queryParamsService.getInitialRegionParam();
+
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
    * `false` when done loading.
@@ -75,9 +77,13 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getPageOptions(),
       ...this.getSortOptions(),
       ...this.searchOptions(),
+      ...this.getRegionFilters(),
     };
     // update filter status when loading data
-    this._hasFilters$.next(!!this.searchTerm);
+    this._hasFilters$.next(
+      !!this.searchTerm || this.selectedRegions.length > 0
+    );
+
     this._loading.next(true);
     this.planService.getPlanPreviews(params).subscribe((data) => {
       this.setPages(data.count);
@@ -96,6 +102,19 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   changePageSize(size: number) {
     this.pageOptions.limit = size;
     this.resetPageAndUpdateUrl({ limit: size });
+    this.loadData();
+  }
+
+  filterRegion(regions: { name: string; value: string }[]) {
+    this._initialLoad$.next(true);
+
+    this.selectedRegions = regions;
+    const regionNames = this.selectedRegions.map((r) => r.value).join(',');
+
+    this.queryParamsService.updateUrl({
+      ...this.sortOptions,
+      region: regionNames || undefined,
+    });
     this.loadData();
   }
 
@@ -148,6 +167,15 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
         this.sortOptions.direction === 'desc'
           ? '-' + this.sortOptions.active
           : this.sortOptions.active,
+    };
+  }
+
+  private getRegionFilters() {
+    if (this.selectedRegions.length === 0) {
+      return;
+    }
+    return {
+      region_name: this.selectedRegions.map((r) => r.value),
     };
   }
 
