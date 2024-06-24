@@ -60,19 +60,3 @@ export const Running: Story = {
     uploadStatus: 'running',
   },
 };
-
-export const Failed: Story = {
-  args: {
-    ...Default.args,
-    uploadStatus: 'failed',
-    file: mockFile,
-  },
-};
-
-export const Uploaded: Story = {
-  args: {
-    ...Default.args,
-    uploadStatus: 'uploaded',
-    file: mockFile,
-  },
-};
