@@ -2,12 +2,14 @@ import logging
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from planning.models import PlanningArea, Scenario
+from rest_framework.viewsets import ReadOnlyModelViewSet
+from planning.models import PlanningArea, Scenario, User
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     ScenarioSerializer,
+    ListPlanningAreaCreatorSerializer,
 )
 from planning.filters import PlanningAreaFilter, ScenarioFilter
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
@@ -108,3 +110,11 @@ class ScenarioViewSet(viewsets.ModelViewSet):
                 return Scenario.objects.none()  # Return an empty queryset
         else:
             return Scenario.objects.none()
+
+
+class CreatorViewSet(ReadOnlyModelViewSet):
+    queryset = User.objects.none()
+    serializer_class = ListPlanningAreaCreatorSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(planning_areas__isnull=False).distinct()

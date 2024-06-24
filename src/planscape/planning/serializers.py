@@ -10,6 +10,7 @@ from planning.models import (
     ScenarioResult,
     SharedLink,
     PlanningAreaNote,
+    User,
     UserPrefs,
 )
 from planning.services import get_acreage
@@ -294,3 +295,9 @@ class UserPrefsSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserPrefs
         fields = ("updated_at", "created_at", "preferences", "user_id")
+
+
+class ListPlanningAreaCreatorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('id', 'email', 'first_name', 'last_name')
