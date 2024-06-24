@@ -1,0 +1,124 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.field-label-box {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+}
+
+.field-label {
+  @include standard-input-label();
+  color: $color-dark-gray;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  text-align: left;
+}
+
+.required-label {
+  @include italic-sm();
+  color: $color-text-gray;
+}
+
+.input-container {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  background-color: $color-light-gray;
+  width: 452px;
+  height: 40px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 4px;
+  border: 1px $color-soft-gray solid;
+
+  &:hover:not(:host.running .input-container, :host.disabled .input-container) {
+    background-color: $color-soft-gray;
+  }
+}
+:host.running .input-container {
+  color: $color-main-blue;
+}
+
+:host.success .input-container {
+  border-color: $color-brand-teal;
+}
+
+:host.failed .input-container {
+  border-color: $color-error;
+}
+
+.input-box {
+  display: none;
+}
+
+.placeholder-label {
+  @include standard-input-label();
+  color: $color-text-gray;
+  line-height: 22px;
+  font-size: 16px;
+  text-align: left;
+}
+
+.filename-label {
+  @include standard-input-label();
+  color: $color-black;
+  line-height: 22px;
+  text-align: left;
+}
+
+.field-subscript {
+  @include italic-sm();
+  color: $color-dark-gray;
+}
+
+.icon-button-box {
+  width: 110px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.browse-button {
+  width: 77px;
+  height: 40px;
+  & span {
+    width: 100%;
+  }
+}
+
+:host.disabled .browse-button,
+:host.running .browse-button {
+  cursor: default;
+}
+
+.remove-file-button {
+  padding: 0px;
+  width: 24px;
+  height: 24px;
+}
+
+.status-icon {
+  color: $color-black;
+}
+
+:host.running .status-icon {
+  color: $color-main-blue;
+}
+
+:host.success .status-icon {
+  color: $color-black;
+}
+
+:host.failed .status-icon {
+  color: $color-error;
+}
