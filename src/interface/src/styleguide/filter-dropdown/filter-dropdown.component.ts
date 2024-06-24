@@ -8,7 +8,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent, InputFieldComponent } from '@styleguide';
 import { FormsModule } from '@angular/forms';
@@ -92,7 +92,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     return this.selectedItems.length > 0;
   }
 
-  handleClosedMenu(e: any): void {
+  handleClosedMenu(e: MenuCloseReason): void {
     // if menu was closed because of the apply button,
     // we don't cancel the selections
     if (e !== 'click') {
