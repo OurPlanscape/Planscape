@@ -108,7 +108,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     return this.selectedItems.includes(term);
   }
 
-  toggleSelection(e: any, item: T) {
+  toggleSelection(e: Event, item: T) {
     if (!this.selectedItems.includes(item)) {
       this.selectedItems.push(item);
     } else {
@@ -139,8 +139,10 @@ export class FilterDropdownComponent<T> implements OnInit {
     this.previousSelections = this.selectedItems.slice();
   }
 
-  clearSelections(e: any): void {
+  clearSelections(e: Event): void {
     this.selectedItems = [];
+    this.changedSelection.emit(this.selectedItems);
+    this.confirmedSelection.emit(this.selectedItems);
     e.stopPropagation();
   }
 

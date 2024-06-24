@@ -44,7 +44,13 @@
   </a>
 </div>
 <div class="filter-bar">
-  <div class="filter-placeholder">Filter placeholder</div>
+  <sg-filter-dropdown
+    menuLabel="Region"
+    [hasSearch]="false"
+    (confirmedSelection)="selectRegion($event)"
+    [selectedItems]="selectedRegions"
+    displayField="name"
+    [menuItems]="regions"></sg-filter-dropdown>
   <div class="filter-placeholder">Filter placeholder</div>
 </div>
 <!--Initial load spinner-->
