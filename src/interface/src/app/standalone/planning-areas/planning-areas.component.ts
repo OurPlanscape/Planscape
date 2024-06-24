@@ -5,7 +5,7 @@ import { ButtonComponent } from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
-import { MatSortModule, Sort, SortDirection } from '@angular/material/sort';
+import { MatSortModule, SortDirection } from '@angular/material/sort';
 import {
   AsyncPipe,
   DatePipe,
@@ -18,8 +18,9 @@ import {
   NgSwitchCase,
   NgSwitchDefault,
 } from '@angular/common';
+
 import { PlanService } from '@services';
-import { PreviewPlan } from '@types';
+import { PreviewPlan, RegionsWithString } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
@@ -27,10 +28,11 @@ import {
   QueryParamsService,
 } from './query-params.service';
 import { KeyPipe } from '../key.pipe';
-
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
+import { FormsModule } from '@angular/forms';
+import { FilterDropdownComponent } from '../../../styleguide/filter-dropdown/filter-dropdown.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -58,6 +60,8 @@ import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-
     KeyPipe,
     PlanningAreaMenuComponent,
     PlanningAreasSearchComponent,
+    FormsModule,
+    FilterDropdownComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -95,11 +99,20 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     public dataSource: PlanningAreasDataSource
   ) {}
 
-  sortOptions: Sort = this.dataSource.sortOptions;
+  sortOptions = this.dataSource.sortOptions;
+  pageOptions = this.dataSource.pageOptions;
+
   loading$ = this.dataSource.loading$;
   initialLoad$ = this.dataSource.initialLoad$;
+
   noEntries$ = this.dataSource.noEntries$;
   hasFilters$ = this.dataSource.hasFilters$;
+
+  pages$ = this.dataSource.pages$;
+
+  selectedRegions = this.dataSource.selectedRegions;
+
+  readonly regions = RegionsWithString;
 
   ngOnInit() {
     this.dataSource.loadData();
@@ -111,6 +124,11 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   goToPage(page: number) {
     this.dataSource.goToPage(page);
+  }
+
+  changePageSize(event: Event) {
+    const size = (event.target as HTMLSelectElement).value;
+    this.dataSource.changePageSize(parseInt(size, 10));
   }
 
   viewPlan(plan: PreviewPlan, event: MouseEvent) {
@@ -134,5 +152,9 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.dataSource.destroy();
+  }
+
+  selectRegion(regions: { name: string; value: string }[]) {
+    this.dataSource.filterRegion(regions);
   }
 }

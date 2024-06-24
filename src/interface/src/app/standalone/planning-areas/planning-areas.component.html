@@ -44,7 +44,13 @@
   </a>
 </div>
 <div class="filter-bar">
-  <div class="filter-placeholder">Filter placeholder</div>
+  <sg-filter-dropdown
+    menuLabel="Region"
+    [hasSearch]="false"
+    (confirmedSelection)="selectRegion($event)"
+    [selectedItems]="selectedRegions"
+    displayField="name"
+    [menuItems]="regions"></sg-filter-dropdown>
   <div class="filter-placeholder">Filter placeholder</div>
 </div>
 <!--Initial load spinner-->
@@ -104,23 +110,29 @@
 
   <!--Placeholder-->
   <div class="pagination-placeholder">
-    <div><</div>
-    <button (click)="goToPage(1)">1</button>
-    <button (click)="goToPage(2)">2</button>
-    <button (click)="goToPage(3)">3</button>
-    <div>...</div>
-    <div>6</div>
-    <div>7</div>
-    <div>></div>
+    <button
+      *ngFor="let number of [].constructor(pages$ | async); let i = index"
+      (click)="goToPage(i + 1)"
+      [disabled]="i + 1 === pageOptions.page">
+      {{ i + 1 }}
+    </button>
+
+    <div>
+      Page size :
+      <select (change)="changePageSize($event)" [value]="pageOptions.limit">
+        <option value="5">5</option>
+        <option value="12">12</option>
+        <option value="50">50</option>
+      </select>
+    </div>
   </div>
 </section>
 
 <!--Empty state-->
 <ng-template #emptyState>
   <section class="empty-state">
-    <mat-icon class="material-symbols-outlined">create_new_folder</mat-icon>
-
     <ng-container *ngIf="hasFilters$ | async; else noData">
+      <mat-icon class="material-symbols-outlined">find_in_page</mat-icon>
       <div class="empty-state__title">No Planning Areas Found</div>
       <div>No planning areas match the search criteria provided.</div>
       <div>
@@ -129,6 +141,7 @@
       </div>
     </ng-container>
     <ng-template #noData>
+      <mat-icon class="material-symbols-outlined">create_new_folder</mat-icon>
       <div class="empty-state__title">No Planning Areas Yet</div>
       <div>
         Click "Explore" to start creating your planning areas. Not ready to

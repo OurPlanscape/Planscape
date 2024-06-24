@@ -7,6 +7,7 @@
   height: 100%;
   padding: 24px;
   box-sizing: border-box;
+  background-color: $color-light-gray;
 }
 
 
@@ -83,21 +84,6 @@ table.planning-areas {
 
 }
 
-.pagination-placeholder {
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 16px;
-
-  div {
-    border: 1px solid black;
-    padding: 5px 10px;
-    aspect-ratio: 1;
-    text-align: center;
-  }
-}
-
 
 @include on-small() {
   table.planning-areas {
@@ -126,6 +112,12 @@ table.planning-areas {
 .empty-state {
   color: $color-md-gray;
   text-align: center;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
 
   mat-icon {
     color: $color-text-gray;
@@ -159,4 +151,19 @@ table.planning-areas {
   border: 1px solid $color-text-gray;
   padding: 8px;
   border-radius: 4px;
+}
+
+
+.pagination-placeholder {
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 16px;
+
+  div {
+
+    padding: 5px 10px;
+   
+  }
 }
