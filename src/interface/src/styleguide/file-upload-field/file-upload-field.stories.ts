@@ -18,11 +18,6 @@ const meta: Meta<FileUploadFieldComponent> = {
   }),
 };
 
-const mockFile = new File(['This is the file content'], 'my-file.txt', {
-  type: 'text/plain',
-  lastModified: Date.now(),
-});
-
 export default meta;
 type Story = StoryObj<FileUploadFieldComponent>;
 
