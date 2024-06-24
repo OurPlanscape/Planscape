@@ -18,7 +18,7 @@ export interface QueryParams extends Partial<Sort> {
 
 @Injectable()
 export class QueryParamsService {
-  readonly defaultLimit = 12;
+  readonly defaultLimit = 10;
 
   constructor(
     private route: ActivatedRoute,
@@ -59,8 +59,8 @@ export class QueryParamsService {
   getInitialPageParams(): { page: number; limit: number } {
     const { page, limit } = this.route.snapshot.queryParams;
     return {
-      page: page || 1,
-      limit: limit || this.defaultLimit,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : this.defaultLimit,
     };
   }
 
