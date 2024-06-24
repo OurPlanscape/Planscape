@@ -1,7 +1,11 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { Router, RouterLink } from '@angular/router';
-import { ButtonComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  FilterDropdownComponent,
+  PaginatorComponent,
+} from '@styleguide';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
@@ -32,7 +36,6 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 import { FormsModule } from '@angular/forms';
-import { FilterDropdownComponent } from '../../../styleguide/filter-dropdown/filter-dropdown.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -62,6 +65,7 @@ import { FilterDropdownComponent } from '../../../styleguide/filter-dropdown/fil
     PlanningAreasSearchComponent,
     FormsModule,
     FilterDropdownComponent,
+    PaginatorComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -126,9 +130,8 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     this.dataSource.goToPage(page);
   }
 
-  changePageSize(event: Event) {
-    const size = (event.target as HTMLSelectElement).value;
-    this.dataSource.changePageSize(parseInt(size, 10));
+  changePageSize(size: number) {
+    this.dataSource.changePageSize(size);
   }
 
   viewPlan(plan: PreviewPlan, event: MouseEvent) {
