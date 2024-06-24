@@ -20,17 +20,9 @@ from planning.views import (
     get_shared_link,
     PlanningAreaNotes,
 )
-from planning.views_v2 import PlanningAreaViewSet, ScenarioViewSet
-from rest_framework import routers
 from planning.views_userprefs import UserPreferencesView
+from planning.routers import router
 
-router = routers.SimpleRouter()
-router.register(r"planningareas", PlanningAreaViewSet, basename="planningareas")
-router.register(
-    r"planningareas/(?P<planningarea_pk>\d+)/scenarios",
-    ScenarioViewSet,
-    basename="scenarios",
-)
 
 app_name = "planning"
 
@@ -144,6 +136,8 @@ urlpatterns = [
     ),
     path("user_prefs/", UserPreferencesView.as_view(), name="get_userprefs"),
     path("user_prefs/", UserPreferencesView.as_view(), name="patch_userprefs"),
-    # v2 URLS
+    # DEPRECATE WHEN FRONT-END MIGRATES
+    # not only we need to remove this, but we also need to update all the
+    # tests for planning, to add the new `api:` prefix
     path("v2/", include(router.urls)),
 ]
