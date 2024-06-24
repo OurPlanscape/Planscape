@@ -108,8 +108,8 @@
       (click)="viewPlan(row, $event)"></tr>
   </table>
 
-  <!--Placeholder-->
   <sg-paginator
+    *ngIf="pages$ | async"
     [currentPage]="pageOptions.page"
     [recordsPerPage]="pageOptions.limit"
     (pageChanged)="goToPage($event)"
