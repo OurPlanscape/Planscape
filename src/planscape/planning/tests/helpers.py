@@ -1,7 +1,7 @@
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from collaboration.models import Permissions, Role
-from planning.models import PlanningArea, Scenario, ScenarioResult
+from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioStatus
 
 
 # Create test plans.  These are going straight to the test DB without
@@ -66,6 +66,7 @@ def _create_scenario(
         configuration=configuration,
         notes=notes,
         user=user,
+        status=ScenarioStatus.ACTIVE,
     )
     scenario.save()
 
