@@ -2,7 +2,8 @@ import logging
 
 from rest_framework import viewsets, status
 from rest_framework.response import Response
-from planning.models import PlanningArea, Scenario
+from rest_framework.decorators import action
+from planning.models import PlanningArea, Scenario, ScenarioStatus
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
@@ -16,6 +17,7 @@ from planning.services import (
     create_scenario,
     delete_planning_area,
     delete_scenario,
+    toggle_scenario_status,
 )
 
 logger = logging.getLogger(__name__)
@@ -108,3 +110,10 @@ class ScenarioViewSet(viewsets.ModelViewSet):
                 return Scenario.objects.none()  # Return an empty queryset
         else:
             return Scenario.objects.none()
+
+    @action(methods=["post"], detail=True)
+    def toggle_status(self, request, planningarea_pk, pk=None):
+        scenario = self.get_object()
+        toggle_scenario_status(scenario, self.request.user)
+        serializer = ScenarioSerializer(instance=scenario)
+        return Response(data=serializer.data)
