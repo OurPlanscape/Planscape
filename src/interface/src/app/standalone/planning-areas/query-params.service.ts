@@ -2,19 +2,24 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Sort } from '@angular/material/sort';
 import { Inject, Injectable, InjectionToken } from '@angular/core';
+import { RegionsWithString } from '@types';
 
 // Injection token used as default sorting options for this service
 export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
   'DEFAULT_SORT_OPTIONS'
 );
 
-export interface QueryParams extends Sort {
-  offset?: number;
+export interface QueryParams extends Partial<Sort> {
+  page?: number;
   name?: string;
+  limit?: number;
+  region?: string;
 }
 
 @Injectable()
 export class QueryParamsService {
+  readonly defaultLimit = 10;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -28,10 +33,14 @@ export class QueryParamsService {
    * Note that this action does not trigger route navigation or component reinitialization.
    */
   updateUrl(options: QueryParams) {
+    // Parse the current path parameters
+    const urlTree = this.router.parseUrl(this.location.path());
+    const currentParams = urlTree.queryParams;
+
     const currentUrl = this.router
       .createUrlTree([], {
         relativeTo: this.route,
-        queryParams: options,
+        queryParams: { ...currentParams, ...options },
         queryParamsHandling: 'merge', // Merge with existing query parameters
       })
       .toString();
@@ -47,15 +56,27 @@ export class QueryParamsService {
     };
   }
 
-  getInitialPageParams(): { offset: number } {
-    const { offset } = this.route.snapshot.queryParams;
+  getInitialPageParams(): { page: number; limit: number } {
+    const { page, limit } = this.route.snapshot.queryParams;
     return {
-      offset: offset || 0,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : this.defaultLimit,
     };
   }
 
   getInitialFilterParam(): string {
     const { name } = this.route.snapshot.queryParams;
     return name || '';
+  }
+
+  getInitialRegionParam(): { name: string; value: string }[] {
+    const { region } = this.route.snapshot.queryParams;
+    if (region) {
+      const regionKeys = region.split(',');
+      return regionKeys.map((r: string) =>
+        RegionsWithString.find((d) => d.value === r)
+      );
+    }
+    return [];
   }
 }

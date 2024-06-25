@@ -3,10 +3,10 @@
 
 
 ::ng-deep .filtermenu.mat-mdc-menu-panel {
-    width: 400px;
-    max-width: 400px;
-    overscroll-behavior: contain;
-  }
+  width: 400px;
+  max-width: 400px;
+  overscroll-behavior: contain;
+}
 
 ::ng-deep .filtermenu .mat-mdc-menu-item-text {
   width: 100%;
@@ -39,6 +39,7 @@
     color: $color-original-purple;
     background: $color-soft-gray;
   }
+
   &:active {
     border-width: 1px;
     color: $color-original-purple;
@@ -52,6 +53,7 @@
   color: $color-white;
   border-width: 0px;
 }
+
 .dropdown-button.active-filter:active {
   background-color: $color-dark-gray;
   color: $color-white;
@@ -62,6 +64,7 @@
   background-color: $color-soft-gray;
   border-color: $color-soft-gray;
   color: $color-text-gray;
+
   &:hover {
     background-color: $color-soft-gray;
     border-color: $color-soft-gray;
@@ -80,21 +83,25 @@
   overflow: hidden;
   height: 22px;
 }
+
 .dropdown-label.active-filter {
   font-weight: 500;
   color: $color-white;
 }
+
 .dropdown-label.disabled {
   background-color: $color-soft-gray;
   border-color: $color-soft-gray;
   color: $color-text-gray;
 }
+
 .icon-label-box {
   width: 200px;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
 }
+
 .more-items-box {
   width: 50px;
   height: 22px;
@@ -102,6 +109,7 @@
   flex-direction: row;
   align-items: center;
 }
+
 .more-items-icon {
   width: 10px;
 }
@@ -142,9 +150,11 @@
   width: 16px;
   font-size: 16px;
   margin-right: 4px;
+
   &:hover {
     color: $color-soft-gray;
   }
+
   &:active {
     color: $color-black;
   }
@@ -180,6 +190,7 @@
   align-items: center;
   width: 100%;
 }
+
 .bottom-section {
   width: 100%;
   height: 64px;
@@ -202,6 +213,7 @@
 
 .clear-all-text {
   @include xs-label();
+  cursor: pointer;
   text-transform: uppercase;
   color: $color-text-gray;
   padding: 10px;
@@ -209,6 +221,7 @@
   border: none;
   background-color: inherit;
 }
+
 .clear-all-text:hover {
   color: black;
 }

@@ -147,7 +147,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         )
 
     def test_list_goals(self):
-        response = self.client.get(reverse("goals:treatment_goals-list"))
+        response = self.client.get(reverse("api:goals:treatment_goals-list"))
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 2)
         self.assertEqual(response.data.get("count"), 2)
@@ -155,7 +155,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
     def test_retrieve_goal(self):
         response = self.client.get(
             reverse(
-                "goals:treatment_goals-detail",
+                "api:goals:treatment_goals-detail",
                 kwargs={"pk": self.goal.pk},
             )
         )
@@ -169,7 +169,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(usage["output_units"], "Acres per Project")
 
     def test_filter_by_organization(self):
-        url = reverse("goals:treatment_goals-list")
+        url = reverse("api:goals:treatment_goals-list")
         response = self.client.get(
             url,
             {"organization": self.organization.uuid},
@@ -180,7 +180,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(response.data["results"][0]["name"], self.goal.name)
 
     def test_filter_by_project(self):
-        url = reverse("goals:treatment_goals-list")
+        url = reverse("api:goals:treatment_goals-list")
         response = self.client.get(
             url,
             {"project": str(self.project.uuid)},
@@ -191,7 +191,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(response.data["results"][0]["name"], self.goal.name)
 
     def test_filter_by_name_exact(self):
-        url = reverse("goals:treatment_goals-list")
+        url = reverse("api:goals:treatment_goals-list")
         response = self.client.get(url, {"name": "my goal 1"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
@@ -199,7 +199,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(response.data["results"][0]["name"], self.goal.name)
 
     def test_filter_by_name_icontains(self):
-        url = reverse("goals:treatment_goals-list")
+        url = reverse("api:goals:treatment_goals-list")
         response = self.client.get(url, {"name__icontains": "2"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)

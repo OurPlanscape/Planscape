@@ -37,6 +37,7 @@ yarn-error.log
 testem.log
 /typings
 src/styleguide/generated/
+proxy.conf.json
 # System files
 .DS_Store
 Thumbs.db

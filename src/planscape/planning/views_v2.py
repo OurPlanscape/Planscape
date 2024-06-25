@@ -1,23 +1,24 @@
 import logging
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.filters import OrderingFilter
-from django_filters.rest_framework import DjangoFilterBackend
-
 from planning.models import PlanningArea, Scenario
+from rest_framework.decorators import action
+from planning.filters import (
+    PlanningAreaFilter,
+    ScenarioFilter,
+    PlanningAreaOrderingFilter,
+)
+from planning.models import PlanningArea, Scenario, ScenarioStatus
+from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     ScenarioSerializer,
 )
-from planning.filters import (
-    PlanningAreaFilter,
-    ScenarioFilter,
-    PlanningAreaOrderingFilter,
-)
-from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.services import (
     create_planning_area,
     create_scenario,
@@ -131,3 +132,15 @@ class ScenarioViewSet(viewsets.ModelViewSet):
                 return Scenario.objects.none()  # Return an empty queryset
         else:
             return Scenario.objects.none()
+
+    @action(methods=["post"], detail=True)
+    def toggle_status(self, request, pk=None):
+        scenario = self.get_object()
+        scenario.status = (
+            ScenarioStatus.ACTIVE
+            if scenario.status == ScenarioStatus.ARCHIVED
+            else ScenarioStatus.ARCHIVED
+        )
+        scenario.save()
+        serializer = ScenarioSerializer(instance=scenario)
+        return Response(data=serializer.data)

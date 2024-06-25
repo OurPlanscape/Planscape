@@ -68,7 +68,7 @@
               "weights": [],
               "scenario_output_fields_paths": {
                 "pillars": [
-                  "forsys",
+                  "operational",
                   "air_quality",
                   "carbon_sequestration",
                   "fire_dynamics",
@@ -77,7 +77,7 @@
                   "fire_adapted_communities"
                 ],
                 "elements": [
-                  "Forsys",
+                  "fire",
                   "functional_fire",
                   "particulate_matter",
                   "carbon_stability",
@@ -87,7 +87,7 @@
                   "hazard"
                 ],
                 "metrics": [
-                  "wui",
+                  "wildland_urban_interface",
                   "probability_of_fire_severity_high",
                   "structure_exposure",
                   "damage_potential_wui",
@@ -104,7 +104,7 @@
                 ]
               },
               "stand_thresholds": [
-                "(wui == 1 | wui == 2)",
+                "(wildland_urban_interface == 1 | wildland_urban_interface == 2)",
                 "total_fuel_exposed_to_fire > 0",
                 "probability_of_fire_severity_high > 0",
                 "(mean_percent_fire_return_interval_departure_condition_class == 2 | mean_percent_fire_return_interval_departure_condition_class == 3)"
@@ -1127,7 +1127,8 @@
                   "fire_dynamics",
                   "forsys",
                   "social_and_cultural_wellbeing",
-                  "wetland_integrity"
+                  "wetland_integrity",
+                  "operational"
                 ],
                 "elements": [
                   "carbon_storage",
@@ -1138,7 +1139,8 @@
                   "particulate_matter",
                   "severity",
                   "species_diversity",
-                  "Forsys"
+                  "Forsys",
+                  "fire"
                 ],
                 "metrics": [
                   "annual_burn_probability",
@@ -1556,7 +1558,8 @@
                   "social_and_cultural_wellbeing",
                   "water_security",
                   "wetland_integrity",
-                  "forsys"
+                  "forsys",
+                  "operational"
                 ],
                 "elements": [
                   "carbon_stability",
@@ -1568,7 +1571,8 @@
                   "quality",
                   "severity",
                   "species_diversity",
-                  "Forsys"
+                  "Forsys",
+                  "fire"
                 ],
                 "metrics": [
                   "aboveground_carbon_turnover_time",
@@ -1634,7 +1638,8 @@
                   "social_and_cultural_wellbeing",
                   "water_security",
                   "wetland_integrity",
-                  "forsys"
+                  "forsys",
+                  "operational"
                 ],
                 "elements": [
                   "carbon_stability",
@@ -1647,7 +1652,8 @@
                   "severity",
                   "species_diversity",
                   "Forsys",
-                  "fire_return_interval_departure"
+                  "fire_return_interval_departure",
+                  "fire"
                 ],
                 "metrics": [
                   "mean_fri_departure_condition_class",
