@@ -17,6 +17,8 @@ export interface PlanResults {
   providedIn: 'root',
 })
 export class PlanService {
+  private readonly v2basePath = '/v2/planningareas/';
+
   constructor(private http: HttpClient) {}
 
   planNameExists(planName: string) {
@@ -88,9 +90,7 @@ export class PlanService {
   }
 
   getPlanPreviews(params: Params): Observable<PlanResults> {
-    let url = environment.backend_endpoint.concat(
-      '/planning/v2/planningareas/'
-    );
+    let url = environment.backend_endpoint.concat(this.v2basePath);
 
     return this.http.get<PlanResults>(url, {
       withCredentials: true,
