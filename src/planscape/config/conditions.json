@@ -1627,7 +1627,7 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/NorCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
                   "source": "Northern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/northern-california-regional-resource-kit",
-                  "output_units": "Acres in WUI class 1 or 2",
+                  "output_units": "Majority WUI Class",
                   "hide_chart": true
                 }
               ]
@@ -3048,7 +3048,7 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/NorCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
                   "source": "Central Coast Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/central-coast-california-regional-resource-kit",
-                  "output_units": "Acres in WUI class 1 or 2",
+                  "output_units": "Majority WUI Class",
                   "hide_chart": true
                 }
               ]
@@ -3237,7 +3237,7 @@
                   "data_provider": "LANDFIRE FCCS 2022",
                   "data_units": "Index",
                   "max_value": 1,
-                  "metric_name": "potential_total_smoke",
+                  "metric_name": "potential_avoided_smoke",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/airQuality/Tier1/PotentialAvoidedSmoke_202209.tif",
                   "raw_layer": ":airQuality_Tier1_PotentialAvoidedSmoke_202209",
@@ -3907,7 +3907,7 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=15",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit",
-                  "output_units": "Acres in WUI class 1 or 2",
+                  "output_units": "Majority WUI Class",
                   "hide_chart": true
                 }
               ]
@@ -4671,7 +4671,7 @@
                   "data_provider": "San Diego State University",
                   "data_units": "relative Index, low to high",
                   "max_value": 1,
-                  "metric_name": "precipitation_minus_actual_evapotranspiration_normal_conditions",
+                  "metric_name": "drought_sensitivity",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/waterSecurity/Tier3/Drought_Sensitivity.tif",
                   "raw_layer": ":waterSecurity_Tier3_Drought_Sensitivity",
@@ -4953,23 +4953,6 @@
                   "source": "Sierra Nevada Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
                   "output_units": "Avg Tons per Acre"
-                },
-                {
-                  "display_name": "Total Fuel Exposed To Fire",
-                  "data_provider": "USDA Forest Service, Region 5",
-                  "data_download_link": "https://data.fs.usda.gov/geodata/rastergateway/regional-resource-kit/docs/airQuality.zip",
-                  "data_units": "Short Tons Biomass/acre",
-                  "output_units": "Avg Tons per Acre",
-                  "data_year": "2021",
-                  "invert_raw": false,
-                  "max_value": 200,
-                  "metric_name": "total_fuel_exposed_to_fire",
-                  "min_value": 0,
-                  "raw_data_download_path": "sierra-nevada/fireDynamics/Tier2/TotFuelExpFire_2021_30m.tif",
-                  "raw_layer": ":fireDynamics_Tier2_TotFuelExpFire_2021_30m",
-                  "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/06/SN_RRK_Metric-Dictionary_v20230414.pdf#page=36",
-                  "source": "Sierra Nevada Regional Resource Kit",
-                  "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit"
                 }
               ]
             }
@@ -6517,7 +6500,7 @@
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SN_RRK_Metric-Dictionary_v20230201.pdf#page=15",
                   "source": "Sierra Nevada Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/sierra-nevada-regional-resource-kit",
-                  "output_units": "Acres in WUI class 1 or 2",
+                  "output_units": "Majority WUI Class",
                   "hide_chart": true
                 }
               ]
