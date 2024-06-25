@@ -33,6 +33,18 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
         }
         get_adapter(request).send_mail("account/email/unknown_account", email, context)
 
+    def _send_inactive_account_mail(self, request, email):
+        referrer = request.META.get("HTTP_ORIGIN")
+        # signup_url = f"{referrer}/signup"
+        context = {
+            "current_site": referrer,
+            "request": request,
+            # "signup_url": signup_url,
+            "given_email": email,
+        }
+        # We will have to decide on the outgoing template for this
+        get_adapter(request).send_mail("account/email/inactive_account", email, context)
+
     def save(self, request, **kwargs):
         """Adapted from dj_rest_auth's own password reset form, but with URL
         configuration set via Django's configuration.
@@ -55,19 +67,20 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
             print(f"The user: {user.is_active}")
             if user.is_active == False:
                 print("This user is deactivated....")
-
-            token = token_generator.make_token(user)
-            user_id = user_pk_to_url_str(user)
-            url = f"{referrer}/reset/{user_id}/{token}"
-            # We don't specify a username because authentication is based
-            # on email.
-            context = {
-                "current_site": referrer,
-                "user": user,
-                "password_reset_url": url,
-                "request": request,
-            }
-            get_adapter(request).send_mail(
-                "account/email/password_reset_key", email, context
-            )
+                self._send_inactive_account_mail(request, email)
+            else:
+                token = token_generator.make_token(user)
+                user_id = user_pk_to_url_str(user)
+                url = f"{referrer}/reset/{user_id}/{token}"
+                # We don't specify a username because authentication is based
+                # on email.
+                context = {
+                    "current_site": referrer,
+                    "user": user,
+                    "password_reset_url": url,
+                    "request": request,
+                }
+                get_adapter(request).send_mail(
+                    "account/email/password_reset_key", email, context
+                )
         return self.cleaned_data["email"]
