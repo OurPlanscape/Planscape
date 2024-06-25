@@ -38,10 +38,10 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "created_at",
         "creator",
         "full_name",
-        "latest_updated",
         "name",
         "region_name",
         "scenario_count",
+        "updated_at",
         "user",
     ]
     filterset_class = PlanningAreaFilter

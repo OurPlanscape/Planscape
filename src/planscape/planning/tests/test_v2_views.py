@@ -35,42 +35,49 @@ class GetPlanningAreaTest(APITransactionTestCase):
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
-        self.test_planningareas = _create_multiple_planningareas(
+        self.test_pa_sn = _create_multiple_planningareas(
             10,
             self.user,
             "test plan",
             stored_geometry,
             region_name=RegionChoices.SIERRA_NEVADA,
         )
-        self.test_planningareas = _create_multiple_planningareas(
+        self.test_pa_cc = _create_multiple_planningareas(
             11,
             self.user,
             "test plan",
             stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
-        self.test_planningareas = _create_multiple_planningareas(
+        self.test_pa_sc = _create_multiple_planningareas(
             12,
             self.user,
             "test plan",
             stored_geometry,
             region_name=RegionChoices.SOUTHERN_CALIFORNIA,
         )
-        self.test_planningareas = _create_multiple_planningareas(
+        self.test_pa_nc = _create_multiple_planningareas(
             13,
             self.user,
             "test plan",
             stored_geometry,
             region_name=RegionChoices.NORTHERN_CALIFORNIA,
         )
+        self.test_pa_user2_nc = _create_multiple_planningareas(
+            13,
+            self.user2,
+            "other user plan",
+            stored_geometry,
+            region_name=RegionChoices.NORTHERN_CALIFORNIA,
+        )
         # of the created areas,
-        self.planning_area1 = self.test_planningareas[0]
-        self.planning_area2 = self.test_planningareas[1]
-        self.planning_area3 = self.test_planningareas[2]
-        self.planning_area4 = self.test_planningareas[3]
-        self.planning_area5 = self.test_planningareas[4]
-        self.planning_area6 = self.test_planningareas[4]
-        self.planning_area7 = self.test_planningareas[4]
+        self.planning_area1 = self.test_pa_sn[0]
+        self.planning_area2 = self.test_pa_sn[1]
+        self.planning_area3 = self.test_pa_sn[2]
+        self.planning_area4 = self.test_pa_sn[3]
+        self.planning_area5 = self.test_pa_sn[4]
+        self.planning_area6 = self.test_pa_sn[4]
+        self.planning_area7 = self.test_pa_sn[4]
 
         self.scenario1_1 = _create_scenario(
             self.planning_area1, "test pa1 scenario1 ", "{}", self.user, ""
@@ -201,7 +208,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 120)  # total results
+        self.assertEqual(planning_areas["count"], 46)  # total results
 
     def test_filter_planning_areas_multiple_users_unshared(self):
         # This should only return the planning areas visible to logged in user
@@ -214,14 +221,34 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 1)
+        self.assertEqual(planning_areas["count"], 13)
+
+    def test_filter_planning_areas_multiple_users_some_shared(self):
+        # This allows user2 to see all 13 of their own areas, plus 10 from self.user
+        for pa in self.test_pa_sn:
+            create_collaborator_record(
+                self.user,
+                self.user2,
+                pa,
+                Role.COLLABORATOR,
+            )
+        self.client.force_authenticate(self.user2)
+        query_params = [("creator", str(self.user.id)), ("creator", str(self.user2.id))]
+        response = self.client.get(
+            reverse("planning:planningareas-list"),
+            query_params,
+            content_type="application/json",
+        )
+        planning_areas = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(planning_areas["count"], 23)
 
     def test_filter_planning_areas_by_multiple_user_ids(self):
         # share user2's planning area with user
         create_collaborator_record(
             self.user2,
             self.user,
-            self.planning_area6,
+            self.test_pa_user2_nc[0],
             Role.COLLABORATOR,
         )
         # auth as user1
@@ -234,7 +261,11 @@ class GetPlanningAreaTest(APITransactionTestCase):
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(planning_areas["count"], 121)  # total results
+        user_ids_found = []
+        for item in planning_areas["results"]:
+            user_ids_found.append(item["user"])
+        self.assertEqual({self.user.pk, self.user2.pk}, set(user_ids_found))
+        self.assertEqual(planning_areas["count"], 47)  # total results
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(
