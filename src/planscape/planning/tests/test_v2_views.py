@@ -13,6 +13,7 @@ from planning.tests.helpers import (
     reset_permissions,
 )
 
+
 class CreatorsTest(APITransactionTestCase):
     def setUp(self):
         self.geometry = {
@@ -21,16 +22,24 @@ class CreatorsTest(APITransactionTestCase):
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
-        self.user_a = User.objects.create(username="user a", first_name="user", last_name="a")
+        self.user_a = User.objects.create(
+            username="user a", first_name="user", last_name="a"
+        )
         self.user_a.set_password("12345")
         self.user_a.save()
-        self.user_b = User.objects.create(username="user b", first_name="user", last_name="b")
+        self.user_b = User.objects.create(
+            username="user b", first_name="user", last_name="b"
+        )
         self.user_b.set_password("12345")
         self.user_b.save()
-        self.user_c = User.objects.create(username="user c", first_name="user", last_name="c")
+        self.user_c = User.objects.create(
+            username="user c", first_name="user", last_name="c"
+        )
         self.user_c.set_password("12345")
         self.user_c.save()
-        self.user_d = User.objects.create(username="user d", first_name="user", last_name="d")
+        self.user_d = User.objects.create(
+            username="user d", first_name="user", last_name="d"
+        )
         self.user_d.set_password("12345")
         self.user_d.save()
         self.test_pa_user_a = _create_multiple_planningareas(
@@ -54,6 +63,7 @@ class CreatorsTest(APITransactionTestCase):
             stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
+
     # Note: No areas for user_c
     def test_list_creators(self):
         self.client.force_authenticate(self.user_a)
@@ -61,16 +71,17 @@ class CreatorsTest(APITransactionTestCase):
             reverse("planning:creators-list"), {}, content_type="application/json"
         )
         creators = json.loads(response.content)
-        
+
         ids = []
-        creator_names = [];
+        creator_names = []
         for c in creators["results"]:
             ids.append(c["id"])
             creator_names.append(f"{c['first_name']} {c['last_name']}")
-        self.assertEqual(response.status_code, 200)        
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(creators["count"], 3)
-        self.assertEqual(set(ids), {self.user_a.pk,self.user_b.pk,self.user_d.pk})
-        self.assertEqual(set(creator_names), {'user a', 'user b', 'user d'})
+        self.assertEqual(set(ids), {self.user_a.pk, self.user_b.pk, self.user_d.pk})
+        self.assertEqual(set(creator_names), {"user a", "user b", "user d"})
+
 
 class GetPlanningAreaTest(APITransactionTestCase):
     def setUp(self):

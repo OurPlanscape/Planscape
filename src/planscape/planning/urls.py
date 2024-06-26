@@ -5,7 +5,7 @@ from planning.views import (
     create_planning_area,
     delete_planning_area,
     get_planning_area_by_id,
-    download_csv,  
+    download_csv,
     download_shapefile,
     list_planning_areas,
     update_planning_area,

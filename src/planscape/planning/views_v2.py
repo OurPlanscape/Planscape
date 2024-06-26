@@ -135,13 +135,14 @@ class ScenarioViewSet(viewsets.ModelViewSet):
                 return Scenario.objects.none()  # Return an empty queryset
         else:
             return Scenario.objects.none()
-        
+
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, planningarea_pk, pk=None):
         scenario = self.get_object()
         toggle_scenario_status(scenario, self.request.user)
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
+
 
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
