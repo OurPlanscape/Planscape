@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  OnInit,
+  Output,
+  SimpleChanges,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgFor, NgIf, NgClass } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,7 +35,7 @@ import { BehaviorSubject } from 'rxjs';
   templateUrl: './paginator.component.html',
   styleUrl: './paginator.component.scss',
 })
-export class PaginatorComponent implements OnInit {
+export class PaginatorComponent implements OnInit, OnChanges {
   /**
    * The initial starting page.
    */
@@ -67,6 +75,12 @@ export class PaginatorComponent implements OnInit {
     this.calcButtonLabels();
   }
 
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['pageCount']) {
+      this.calcButtonLabels();
+    }
+  }
+
   getTotalPages(): number {
     return this.pageCount;
   }
@@ -74,6 +88,12 @@ export class PaginatorComponent implements OnInit {
   calcButtonLabels(): void {
     const curPages = this.pageCount;
     const buttonsToShow = Math.min(curPages, this.defaultButtonsToShow);
+
+    // in case the results-per-page changes, ensure that the
+    // currently selected page number doesn't exceed
+    // the number of pages available
+    this.selectedPage = Math.min(curPages, this.selectedPage);
+
     const midCount = Math.ceil(buttonsToShow / 2);
     const rightRemainder = Math.max(
       0,
