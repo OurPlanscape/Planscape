@@ -84,7 +84,7 @@ export class PlanService {
     let url = environment.backend_endpoint.concat(
       '/planning/list_planning_areas'
     );
-    return this.http.get<Plan[]>(url, {
+    return this.http.get<PreviewPlan[]>(url, {
       withCredentials: true,
     });
   }
@@ -96,6 +96,22 @@ export class PlanService {
       withCredentials: true,
       params: params,
     });
+  }
+
+  // placeholder
+  listPlanCreators() {
+    let url = environment.backend_endpoint.concat(
+      '/planning/list_planning_areas'
+    );
+    return this.http
+      .get<PreviewPlan[]>(url, {
+        withCredentials: true,
+      })
+      .pipe(
+        map((plans) =>
+          plans.map((plan) => ({ id: plan.id, name: plan.creator }))
+        )
+      );
   }
 
   /** Updates a planning area with new parameters. */

@@ -19,6 +19,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public selectedRegions: { name: string; value: string }[] =
     this.queryParamsService.getInitialRegionParam();
 
+  public selectedCreators = [];
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
    * `false` when done loading.
@@ -45,6 +46,8 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    * Emits `true` if applying filters or searching
    */
   public hasFilters$ = this._hasFilters$.asObservable();
+
+  public creators$ = this.planService.listPlanCreators();
 
   constructor(
     private planService: PlanService,

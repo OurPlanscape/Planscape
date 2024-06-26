@@ -119,7 +119,13 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   pages$ = this.dataSource.pages$;
 
   selectedRegions = this.dataSource.selectedRegions;
+
   searchTerm = this.dataSource.searchTerm;
+
+  selectedCreators = this.dataSource.selectedCreators;
+
+  creators$ = this.dataSource.creators$;
+
   readonly regions = RegionsWithString;
 
   ngOnInit() {
@@ -163,5 +169,9 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   selectRegion(regions: { name: string; value: string }[]) {
     this.dataSource.filterRegion(regions);
+  }
+
+  selectCreators(creators: { id: number; name: string }[]) {
+    console.log(creators);
   }
 }
