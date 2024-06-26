@@ -1,0 +1,40 @@
+<div class="field-label-box" *ngIf="fieldLabel">
+  <span class="field-label"> {{ fieldLabel }}</span>
+  <span class="required-label" *ngIf="required">required</span>
+</div>
+<div class="input-container">
+  <div *ngIf="!file" class="placeholder-label">{{ placeholder }}</div>
+  <div *ngIf="file" class="file-name">{{ file.name }}</div>
+  <div class="icon-button-box">
+    <div class="status-icon">
+      <mat-spinner
+        *ngIf="isRunning"
+        diameter="20"
+        class="spinner"></mat-spinner>
+      <mat-icon *ngIf="isFailed">error</mat-icon>
+      <button
+        class="remove-file-button"
+        *ngIf="isUploaded"
+        mat-icon-button
+        aria-label="remove file"
+        (click)="resetFile()">
+        <mat-icon>cancel</mat-icon>
+      </button>
+    </div>
+    <button
+      class="browse-button"
+      sg-button
+      aria-label="more options"
+      [disabled]="isRunning || isDisabled"
+      (click)="fileInput.click()">
+      <span>Browse</span>
+      <input
+        class="input-box"
+        #fileInput
+        [accept]="acceptedMimeTypes"
+        type="file"
+        (change)="onFileUploaded($event)" />
+    </button>
+  </div>
+</div>
+<div class="field-subscript">Files supported: {{ acceptedSuffixes }}</div>

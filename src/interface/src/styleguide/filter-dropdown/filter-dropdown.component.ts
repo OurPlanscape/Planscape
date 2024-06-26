@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent, InputFieldComponent } from '@styleguide';
 import { FormsModule } from '@angular/forms';
@@ -72,7 +72,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   @Output() changedSelection = new EventEmitter<T[]>();
 
   /**
-   *  Event that emits when the `done` button is clicked
+   *  Event that emits when the `apply` button is clicked
    */
   @Output() confirmedSelection = new EventEmitter<T[]>();
 
@@ -97,11 +97,19 @@ export class FilterDropdownComponent<T> implements OnInit {
     return this.selectedItems.length > 0;
   }
 
+  handleClosedMenu(e: MenuCloseReason): void {
+    // if menu was closed because of the apply button,
+    // we don't cancel the selections
+    if (e !== 'click') {
+      this.handleCancel();
+    }
+  }
+
   isInSelection(term: T): boolean {
     return this.selectedItems.includes(term);
   }
 
-  toggleSelection(e: any, item: T) {
+  toggleSelection(e: Event, item: T) {
     if (!this.selectedItems.includes(item)) {
       this.selectedItems.push(item);
     } else {
@@ -119,7 +127,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     return '';
   }
 
-  handleCancel(e: any) {
+  handleCancel() {
     this.selectedItems = this.previousSelections.slice();
     this.previousSelections = [];
   }
@@ -132,8 +140,10 @@ export class FilterDropdownComponent<T> implements OnInit {
     this.previousSelections = this.selectedItems.slice();
   }
 
-  clearSelections(e: any): void {
+  clearSelections(e: Event): void {
     this.selectedItems = [];
+    this.changedSelection.emit(this.selectedItems);
+    this.confirmedSelection.emit(this.selectedItems);
     e.stopPropagation();
   }
 
@@ -155,7 +165,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     });
   }
 
-  done() {
+  applyChanges(e: Event) {
     this.confirmedSelection.emit(this.selectedItems);
   }
 

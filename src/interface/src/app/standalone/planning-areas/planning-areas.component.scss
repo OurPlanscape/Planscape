@@ -7,6 +7,7 @@
   height: 100%;
   padding: 24px;
   box-sizing: border-box;
+  background-color: $color-light-gray;
 }
 
 
@@ -111,6 +112,12 @@ table.planning-areas {
 .empty-state {
   color: $color-md-gray;
   text-align: center;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
 
   mat-icon {
     color: $color-text-gray;

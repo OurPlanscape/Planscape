@@ -2,6 +2,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Sort } from '@angular/material/sort';
 import { Inject, Injectable, InjectionToken } from '@angular/core';
+import { RegionsWithString } from '@types';
 
 // Injection token used as default sorting options for this service
 export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
@@ -12,11 +13,12 @@ export interface QueryParams extends Partial<Sort> {
   page?: number;
   name?: string;
   limit?: number;
+  region?: string;
 }
 
 @Injectable()
 export class QueryParamsService {
-  readonly defaultLimit = 12;
+  readonly defaultLimit = 10;
 
   constructor(
     private route: ActivatedRoute,
@@ -57,13 +59,24 @@ export class QueryParamsService {
   getInitialPageParams(): { page: number; limit: number } {
     const { page, limit } = this.route.snapshot.queryParams;
     return {
-      page: page || 1,
-      limit: limit || this.defaultLimit,
+      page: page ? parseInt(page, 10) : 1,
+      limit: limit ? parseInt(limit, 10) : this.defaultLimit,
     };
   }
 
   getInitialFilterParam(): string {
     const { name } = this.route.snapshot.queryParams;
     return name || '';
+  }
+
+  getInitialRegionParam(): { name: string; value: string }[] {
+    const { region } = this.route.snapshot.queryParams;
+    if (region) {
+      const regionKeys = region.split(',');
+      return regionKeys.map((r: string) =>
+        RegionsWithString.find((d) => d.value === r)
+      );
+    }
+    return [];
   }
 }

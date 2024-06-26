@@ -21,4 +21,9 @@ class ScenarioViewPermission(PlanscapePermission):
             return PlanningAreaPermission.can_add_scenario(request.user, planningarea)
         if view.action == "list" and planningarea_pk:
             return PlanningAreaPermission.can_view(request.user, planningarea)
+
         return PlanningAreaPermission.can_change(request.user, planningarea)
+
+    def has_object_permission(self, request, view, object):
+        planning_area = object.planning_area
+        return PlanningAreaPermission.can_change(request.user, planning_area)
