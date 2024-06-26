@@ -55,18 +55,13 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
         token_generator = kwargs.get("token_generator", default_token_generator)
         email = self.cleaned_data["email"]
 
-        print(f"So...what are self.users?? {self.users}")
-
-
         # if we don't locate an email record, we still send an email
         # letting the user know that someone is trying to reset a password for this account
         if not self.users and settings.EMAIL_UNKNOWN_ACCOUNTS:
             self._send_unknown_account_mail(request, email)
 
         for user in self.users:
-            print(f"The user: {user.is_active}")
             if user.is_active == False:
-                print("This user is deactivated....")
                 self._send_inactive_account_mail(request, email)
             else:
                 token = token_generator.make_token(user)
