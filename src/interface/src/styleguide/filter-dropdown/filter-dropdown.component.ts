@@ -1,6 +1,7 @@
 import {
   Component,
   EventEmitter,
+  HostBinding,
   Input,
   OnInit,
   Output,
@@ -63,7 +64,8 @@ export class FilterDropdownComponent<T> implements OnInit {
   /**
    * Dynamically set the width from the consumer
    */
-  @Input() width: string | number = '200px'; // Default width
+  @Input() size: 'small' | 'medium' | 'large' = 'medium';
+
   /**
    * Event that emits when list of selected items changes
    */
@@ -96,7 +98,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   }
 
   showCount(): boolean {
-    return this.selectedItems.length > 1;
+    return this.selectedItems.length > 0;
   }
 
   isInSelection(term: T): boolean {
@@ -161,7 +163,12 @@ export class FilterDropdownComponent<T> implements OnInit {
     this.confirmedSelection.emit(this.selectedItems);
   }
 
-  getWidth() {
-    return typeof this.width === 'string' ? this.width : this.width + 'px';
+  @HostBinding('class.small')
+  get isSmall() {
+    return this.size === 'small';
+  }
+  @HostBinding('class.large')
+  get isLarge() {
+    return this.size === 'large';
   }
 }

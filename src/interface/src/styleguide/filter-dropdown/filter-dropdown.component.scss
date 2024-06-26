@@ -10,8 +10,15 @@
   width: 100%;
 }
 
-.filter-dropdown-container {
-  width: inherit;
+:host {
+  width: 200px;
+  display: block;
+  &.small {
+    width: 140px;
+  }
+  &.large {
+    width: 300px;
+  }
 }
 
 .trigger-icon {
@@ -102,11 +109,10 @@
 
 .right-items-box {
   display: flex;
-  min-width: 80px;
-  display: flex;
   flex-direction: row;
   justify-content: end;
-  min-width: 80px;
+  min-width: 60px;
+  align-items: center;
 }
 
 .more-items-box {
