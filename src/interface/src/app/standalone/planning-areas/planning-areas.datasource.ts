@@ -19,7 +19,8 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public selectedRegions: { name: string; value: string }[] =
     this.queryParamsService.getInitialRegionParam();
 
-  public selectedCreators = [];
+  public selectedCreatorsIds =
+    this.queryParamsService.getInitialCreatorsParam();
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
    * `false` when done loading.
@@ -115,8 +116,18 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     const regionNames = this.selectedRegions.map((r) => r.value).join(',');
 
     this.queryParamsService.updateUrl({
-      ...this.sortOptions,
+      ...this.sortOptions, // can i remove this
       region: regionNames || undefined,
+    });
+    this.loadData();
+  }
+
+  filterCreator(creatorIds: number[]) {
+    this._initialLoad$.next(true);
+    this.selectedCreatorsIds = creatorIds;
+    this.queryParamsService.updateUrl({
+      ...this.sortOptions, // can i remove this
+      creators: creatorIds.join(',') || undefined,
     });
     this.loadData();
   }

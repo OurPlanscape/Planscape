@@ -122,7 +122,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   searchTerm = this.dataSource.searchTerm;
 
-  selectedCreators = this.dataSource.selectedCreators;
+  selectedCreatorsIds = this.dataSource.selectedCreatorsIds;
 
   creators$ = this.dataSource.creators$;
 
@@ -172,6 +172,6 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   }
 
   selectCreators(creators: { id: number; name: string }[]) {
-    console.log(creators);
+    this.dataSource.filterCreator(creators.map((creator) => creator.id));
   }
 }

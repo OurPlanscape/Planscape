@@ -3,6 +3,8 @@
   <mat-spinner class="main-loader" diameter="48"></mat-spinner>
 </div>
 
+{{ selectedCreatorsIds | json }}
+
 <div class="title-nav">
   <h3>Home</h3>
   <button
@@ -52,9 +54,9 @@
 
 <div class="filter-bar">
   <sg-filter-dropdown
+    [disabled]="(creators$ | async) === null"
     menuLabel="Creator"
     (confirmedSelection)="selectCreators($event)"
-    [selectedItems]="selectedCreators"
     displayField="name"
     [menuItems]="(creators$ | async) || []"></sg-filter-dropdown>
 
