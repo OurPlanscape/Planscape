@@ -24,6 +24,7 @@ from planning.services import (
     create_scenario,
     delete_planning_area,
     delete_scenario,
+    toggle_scenario_status,
 )
 
 logger = logging.getLogger(__name__)
@@ -134,13 +135,8 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             return Scenario.objects.none()
 
     @action(methods=["post"], detail=True)
-    def toggle_status(self, request, pk=None):
+    def toggle_status(self, request, planningarea_pk, pk=None):
         scenario = self.get_object()
-        scenario.status = (
-            ScenarioStatus.ACTIVE
-            if scenario.status == ScenarioStatus.ARCHIVED
-            else ScenarioStatus.ARCHIVED
-        )
-        scenario.save()
+        toggle_scenario_status(scenario, self.request.user)
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
