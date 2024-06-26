@@ -87,7 +87,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
 
   calcButtonLabels(): void {
     const curPages = this.pageCount;
-    const buttonsToShow = this.defaultButtonsToShow;
+    const buttonsToShow = Math.min(curPages, this.defaultButtonsToShow);
 
     // in case the results-per-page changes, ensure that the
     // currently selected page number doesn't exceed
