@@ -9,8 +9,8 @@ from django.contrib.sites.shortcuts import get_current_site
 from dj_rest_auth.forms import AllAuthPasswordResetForm
 from allauth.account.utils import filter_users_by_email
 
-class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
 
+class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
     def clean_email(self):
         """
         Invalid email should not raise error, as this would leak users
@@ -18,9 +18,8 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
         """
         email = self.cleaned_data["email"]
         email = get_adapter().clean_email(email)
-        self.users = filter_users_by_email(email) # remove the is_active test
+        self.users = filter_users_by_email(email)  # remove the is_active test
         return self.cleaned_data["email"]
-
 
     def _send_unknown_account_mail(self, request, email):
         referrer = request.META.get("HTTP_ORIGIN")
