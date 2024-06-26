@@ -136,15 +136,16 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         else:
             return Scenario.objects.none()
         
-class CreatorViewSet(ReadOnlyModelViewSet):
-    queryset = User.objects.none()
-    serializer_class = ListPlanningAreaCreatorSerializer
-
-    def get_queryset(self):
-        return User.objects.filter(planning_areas__isnull=False).distinct()
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, planningarea_pk, pk=None):
         scenario = self.get_object()
         toggle_scenario_status(scenario, self.request.user)
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
+
+class CreatorViewSet(ReadOnlyModelViewSet):
+    queryset = User.objects.none()
+    serializer_class = ListPlanningAreaCreatorSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(planning_areas__isnull=False).distinct()
