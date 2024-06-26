@@ -12,7 +12,13 @@ from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from planning.geometry import coerce_geojson
-from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
+from planning.models import (
+    PlanningArea,
+    Scenario,
+    ScenarioResult,
+    ScenarioResultStatus,
+    ScenarioStatus,
+)
 from planning.tasks import async_forsys_run
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
@@ -20,11 +26,12 @@ from django.contrib.auth.models import AbstractUser
 from actstream import action
 
 logger = logging.getLogger(__name__)
+UserType = Type[AbstractUser]
 
 
 @transaction.atomic()
 def create_planning_area(
-    user: Type[AbstractUser],
+    user: UserType,
     name: str,
     region_name: str,
     geojson: Dict[str, Any],
@@ -45,7 +52,7 @@ def create_planning_area(
 
 @transaction.atomic
 def delete_planning_area(
-    user: Type[AbstractUser],
+    user: UserType,
     planning_area: Type[PlanningArea],
 ):
     if not PlanningAreaPermission.can_remove(user, planning_area):
@@ -61,7 +68,7 @@ def delete_planning_area(
 
 
 @transaction.atomic()
-def create_scenario(user: Type[AbstractUser], **kwargs) -> Scenario:
+def create_scenario(user: UserType, **kwargs) -> Scenario:
     data = {
         "user": user,
         "result_status": ScenarioResultStatus.PENDING,
@@ -83,7 +90,7 @@ def create_scenario(user: Type[AbstractUser], **kwargs) -> Scenario:
 
 @transaction.atomic
 def delete_scenario(
-    user: Type[AbstractUser],
+    user: UserType,
     scenario: Type[Scenario],
 ):
     if not ScenarioPermission.can_delete(user, scenario):
@@ -232,3 +239,17 @@ def export_to_shapefile(scenario: Scenario) -> Path:
             c.write(feature)
 
     return shapefile_folder
+
+
+@transaction.atomic()
+def toggle_scenario_status(scenario: Scenario, user: UserType) -> Scenario:
+    new_status = (
+        ScenarioStatus.ACTIVE
+        if scenario.status == ScenarioStatus.ARCHIVED
+        else ScenarioStatus.ARCHIVED
+    )
+    verb = "activated" if scenario.status == ScenarioStatus.ARCHIVED else "archived"
+    scenario.status = new_status
+    scenario.save()
+    action.send(user, verb=verb, action_object=scenario)
+    return scenario

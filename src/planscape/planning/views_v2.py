@@ -1,21 +1,30 @@
 import logging
 
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.filters import OrderingFilter
 from planning.models import PlanningArea, Scenario
+from rest_framework.decorators import action
+from planning.filters import (
+    PlanningAreaFilter,
+    ScenarioFilter,
+    PlanningAreaOrderingFilter,
+)
+from planning.models import PlanningArea, Scenario, ScenarioStatus
+from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     ScenarioSerializer,
 )
-from planning.filters import PlanningAreaFilter, ScenarioFilter
-from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.services import (
     create_planning_area,
     create_scenario,
     delete_planning_area,
     delete_scenario,
+    toggle_scenario_status,
 )
 
 logger = logging.getLogger(__name__)
@@ -23,9 +32,25 @@ logger = logging.getLogger(__name__)
 
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     queryset = PlanningArea.objects.all()
+
     permission_classes = [PlanningAreaViewPermission]
-    ordering_fields = ["name", "created_at", "scenario_count"]
+    ordering_fields = [
+        "area_acres",
+        "created_at",
+        "creator",
+        "full_name",
+        "name",
+        "region_name",
+        "scenario_count",
+        "updated_at",
+        "user",
+    ]
     filterset_class = PlanningAreaFilter
+    filter_backends = [
+        DjangoFilterBackend,
+        PlanningAreaOrderingFilter,
+        OrderingFilter,
+    ]
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -108,3 +133,10 @@ class ScenarioViewSet(viewsets.ModelViewSet):
                 return Scenario.objects.none()  # Return an empty queryset
         else:
             return Scenario.objects.none()
+
+    @action(methods=["post"], detail=True)
+    def toggle_status(self, request, planningarea_pk, pk=None):
+        scenario = self.get_object()
+        toggle_scenario_status(scenario, self.request.user)
+        serializer = ScenarioSerializer(instance=scenario)
+        return Response(data=serializer.data)
