@@ -97,10 +97,6 @@ export class FilterDropdownComponent<T> implements OnInit {
     return this.selectedItems.length > 0;
   }
 
-  showCount(): boolean {
-    return this.selectedItems.length > 0;
-  }
-
   isInSelection(term: T): boolean {
     return this.selectedItems.includes(term);
   }
