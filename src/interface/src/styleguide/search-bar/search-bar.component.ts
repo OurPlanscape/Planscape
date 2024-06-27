@@ -55,6 +55,12 @@ import { InputDirective } from '../input/input.directive';
 })
 export class SearchBarComponent implements OnInit, OnDestroy {
   @ViewChild('inputElement') inputElement!: ElementRef<HTMLInputElement>;
+
+  /**
+   * The value of the string displayed in the searchbar input element.
+   */
+  @Input() searchValue: string = '';
+
   /**
    * The search history list for this component, which can be filtered locally.
    *  If this history is empty, we don't show a history panel.

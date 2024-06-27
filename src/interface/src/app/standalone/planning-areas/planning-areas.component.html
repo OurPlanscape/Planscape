@@ -33,6 +33,7 @@
     </mat-menu>
   </button>
   <app-planning-areas-search
+    [searchTerm]="searchTerm"
     (search)="search($event)"></app-planning-areas-search>
   <a
     sg-button
