@@ -14,17 +14,17 @@ UserType = Type[AbstractUser]
 def create_treatment_plan(
     scenario: ScenarioType,
     name: str,
-    user: UserType,
+    created_by: UserType,
 ) -> TreatmentPlanType:
     # question: should we add a constraint on
     # treament plan to prevent users from creating
     # treamentplans with for the same scenario with the
     # same name?
     treatment_plan = TreatmentPlan.objects.create(
-        created_by=user,
+        created_by=created_by,
         scenario=scenario,
         status=TreatmentPlanStatus.PENDING,
         name=name,
     )
-    action.send(user, verb="created", action_object=treatment_plan)
+    action.send(created_by, verb="created", action_object=treatment_plan)
     return treatment_plan
