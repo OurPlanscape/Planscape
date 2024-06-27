@@ -119,7 +119,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   pages$ = this.dataSource.pages$;
 
   selectedRegions = this.dataSource.selectedRegions;
-
+  searchTerm = this.dataSource.searchTerm;
   readonly regions = RegionsWithString;
 
   ngOnInit() {

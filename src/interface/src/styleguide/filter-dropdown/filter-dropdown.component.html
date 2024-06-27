@@ -3,7 +3,7 @@
   [matMenuTriggerFor]="multiSelectMenu"
   class="dropdown-button"
   [disabled]="disabled"
-  (click)="handleFilterClick()"
+  (click)="openFilterPanel()"
   [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
   <div class="icon-label-box">
     <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
@@ -40,8 +40,8 @@
     (click)="$event.stopPropagation()">
     <sg-search-bar
       [debounceInterval]="0"
-      [clearEvent]="clearInput.asObservable()"
       searchPlaceholder="Search for {{ menuLabel }}"
+      [searchValue]="searchTerm"
       (searchString)="filterSearch($event)"></sg-search-bar>
   </div>
   <div class="options-section">
