@@ -1,4 +1,12 @@
-import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  shareReplay,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { PreviewPlan } from '@types';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
@@ -19,8 +27,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   public selectedRegions: { name: string; value: string }[] =
     this.queryParamsService.getInitialRegionParam();
 
-  public selectedCreatorsIds =
-    this.queryParamsService.getInitialCreatorsParam();
   /**
    * Emits `true` if loading the first time or applying filters (where number of results change)
    * `false` when done loading.
@@ -48,7 +54,28 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    */
   public hasFilters$ = this._hasFilters$.asObservable();
 
-  public creators$ = this.planService.listPlanCreators();
+  // all the creators
+  public creators$ = this.planService.listPlanCreators().pipe(
+    shareReplay(1) // Caches the result and replays the last emitted value to new subscribers
+  );
+
+  // the ids of the selected creators to filter
+  private selectedCreatorsIds = new BehaviorSubject<number[]>(
+    this.queryParamsService.getInitialCreatorsIdParam()
+  );
+
+  // gets the list of selected creators used for filtering
+  public selectedCreators$ = this.selectedCreatorsIds.pipe(
+    switchMap((creatorIds) =>
+      this.creators$.pipe(
+        map((allCreators) =>
+          allCreators.filter((singleCreator) =>
+            creatorIds.includes(singleCreator.id)
+          )
+        )
+      )
+    )
+  );
 
   constructor(
     private planService: PlanService,
@@ -124,7 +151,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
 
   filterCreator(creatorIds: number[]) {
     this._initialLoad$.next(true);
-    this.selectedCreatorsIds = creatorIds;
+    this.selectedCreatorsIds.next(creatorIds);
     this.queryParamsService.updateUrl({
       ...this.sortOptions, // can i remove this
       creators: creatorIds.join(',') || undefined,

@@ -81,7 +81,7 @@ export class QueryParamsService {
     return [];
   }
 
-  getInitialCreatorsParam(): number[] {
+  getInitialCreatorsIdParam(): number[] {
     const { creators } = this.route.snapshot.queryParams;
     if (creators) {
       return creators.split(',').map((id: string) => parseInt(id, 10));

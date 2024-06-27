@@ -122,7 +122,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   searchTerm = this.dataSource.searchTerm;
 
-  selectedCreatorsIds = this.dataSource.selectedCreatorsIds;
+  selectedCreators$ = this.dataSource.selectedCreators$;
 
   creators$ = this.dataSource.creators$;
 
