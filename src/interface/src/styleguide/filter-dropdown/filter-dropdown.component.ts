@@ -131,13 +131,14 @@ export class FilterDropdownComponent<T> implements OnInit {
   }
 
   openFilterPanel() {
-    this.displayedItems = this.menuItems.slice();
+    this.filterSearch(this.searchTerm);
     //copy the selections we had prior to opening, in case the user hits cancel
     this.previousSelections = this.selectedItems.slice();
   }
 
   clearSelections(e: Event): void {
     this.selectedItems = [];
+    this.searchTerm = '';
     this.changedSelection.emit(this.selectedItems);
     this.confirmedSelection.emit(this.selectedItems);
     e.stopPropagation();
