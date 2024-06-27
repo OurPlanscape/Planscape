@@ -24,7 +24,7 @@ import {
 } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
 
-import { debounceTime, distinctUntilChanged, Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { InputDirective } from '../input/input.directive';
@@ -82,10 +82,7 @@ export class SearchBarComponent implements OnInit, OnDestroy {
    * Allow the parent component to set a debounce
    */
   @Input() debounceInterval: number = 200;
-  /**
-   *
-   */
-  @Input() clearEvent?: Observable<void>;
+
   /**
    *
    */
@@ -105,12 +102,6 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       .subscribe((searchTerm: string) => {
         this.searchString.emit(searchTerm);
       });
-    //responds to events that request we clear the input value
-    if (this.clearEvent) {
-      this.clearEvent.pipe(untilDestroyed(this)).subscribe(() => {
-        this.setInput('');
-      });
-    }
   }
 
   onSearchInputChange(event: Event) {
@@ -120,10 +111,6 @@ export class SearchBarComponent implements OnInit, OnDestroy {
       this.displayedHistory = this.historyItems.filter((e) => e.includes(val));
     }
     this.searchInput.next(val);
-  }
-
-  setInput(s: string) {
-    this.inputElement.nativeElement.value = s;
   }
 
   onInputKey(event: Event) {
