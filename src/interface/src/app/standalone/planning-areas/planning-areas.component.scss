@@ -138,32 +138,20 @@ table.planning-areas {
   padding: 20px;
 }
 
-// placeholders, remove once the components are ready.
-
-.search-bar-placeholder {
-  border: 1px solid $color-text-gray;
-  padding: 8px;
-  border-radius: 4px;
-  width: 213px;
+.overlay-loader {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.50);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
+// placeholders, remove once the components are ready.
 .filter-placeholder {
   border: 1px solid $color-text-gray;
   padding: 8px;
   border-radius: 4px;
 }
 
-
-.pagination-placeholder {
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding-bottom: 16px;
-
-  div {
-
-    padding: 5px 10px;
-   
-  }
-}
