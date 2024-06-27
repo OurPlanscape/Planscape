@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
 
 @Component({
@@ -13,6 +13,7 @@ export class PlanningAreasSearchComponent {
 
   historyItems: string[] = this.getItems();
 
+  @Input() searchTerm = '';
   @Output() search = new EventEmitter<string>();
 
   private getItems(): string[] {

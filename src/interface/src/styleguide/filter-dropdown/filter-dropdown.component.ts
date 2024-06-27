@@ -13,7 +13,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent, InputFieldComponent } from '@styleguide';
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
-import { Subject } from 'rxjs';
 
 /**
  * Filter dropdown that lets user select one or multiple strings as part of a search
@@ -77,12 +76,12 @@ export class FilterDropdownComponent<T> implements OnInit {
    */
   @Input() selectedItems: T[] = [];
 
-  private previousSelections: T[] = [];
-  clearInput: Subject<void> = new Subject<void>();
+  /**
+   * The search term
+   */
+  @Input() searchTerm = '';
 
-  clearSearchBar() {
-    this.clearInput.next();
-  }
+  private previousSelections: T[] = [];
 
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
@@ -131,16 +130,15 @@ export class FilterDropdownComponent<T> implements OnInit {
     this.previousSelections = [];
   }
 
-  handleFilterClick() {
-    //clear the search bar and show all items
-    this.clearInput.next();
-    this.displayedItems = this.menuItems.slice();
+  openFilterPanel() {
+    this.filterSearch(this.searchTerm);
     //copy the selections we had prior to opening, in case the user hits cancel
     this.previousSelections = this.selectedItems.slice();
   }
 
   clearSelections(e: Event): void {
     this.selectedItems = [];
+    this.searchTerm = '';
     this.changedSelection.emit(this.selectedItems);
     this.confirmedSelection.emit(this.selectedItems);
     e.stopPropagation();
