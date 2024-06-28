@@ -36,6 +36,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-menu.component';
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 import { FormsModule } from '@angular/forms';
+import { combineLatest, map } from 'rxjs';
 
 @Component({
   selector: 'app-planning-areas',
@@ -106,7 +107,10 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   sortOptions = this.dataSource.sortOptions;
   pageOptions = this.dataSource.pageOptions;
 
-  loading$ = this.dataSource.loading$;
+  overlayLoader$ = combineLatest([
+    this.dataSource.loading$,
+    this.dataSource.initialLoad$,
+  ]).pipe(map(([loading, initial]) => loading && !initial));
   initialLoad$ = this.dataSource.initialLoad$;
 
   noEntries$ = this.dataSource.noEntries$;
@@ -115,7 +119,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   pages$ = this.dataSource.pages$;
 
   selectedRegions = this.dataSource.selectedRegions;
-
+  searchTerm = this.dataSource.searchTerm;
   readonly regions = RegionsWithString;
 
   ngOnInit() {

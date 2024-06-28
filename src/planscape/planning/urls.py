@@ -20,9 +20,23 @@ from planning.views import (
     get_shared_link,
     PlanningAreaNotes,
 )
+from planning.views_v2 import PlanningAreaViewSet, ScenarioViewSet, CreatorViewSet
+from rest_framework import routers
 from planning.views_userprefs import UserPreferencesView
 from planning.routers import router
 
+router = routers.SimpleRouter()
+router.register(r"planningareas", PlanningAreaViewSet, basename="planningareas")
+router.register(
+    r"planningareas/(?P<planningarea_pk>\d+)/scenarios",
+    ScenarioViewSet,
+    basename="scenarios",
+)
+router.register(
+    r"creators",
+    CreatorViewSet,
+    basename="creators",
+)
 
 app_name = "planning"
 
