@@ -31,4 +31,14 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPlanListSerializer(serializers.ModelSerializer):
-    pass
+    class Meta:
+        model = TreatmentPlan
+        fields = (
+            "uuid",
+            "created_at",
+            "created_by",
+            "updated_at",
+            "scenario",
+            "name",
+            "status",
+        )

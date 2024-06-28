@@ -7,6 +7,8 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import OrderingFilter
 from rest_framework.decorators import action
 from planning.models import PlanningArea, Scenario, User
+from impacts.models import TreatmentPlan
+from impacts.serializers import TreatmentPlanListSerializer
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
@@ -142,6 +144,13 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         toggle_scenario_status(scenario, self.request.user)
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
+
+    @action(methods=["get"], detail=True)
+    def treatment_plans(self, request, planningarea_pk, pk=None):
+        scenario = self.get_object()
+        treatments = TreatmentPlan.objects.filter(scenario_id=scenario)
+        serializer = TreatmentPlanListSerializer(treatments, many=True)
+        return Response(serializer.data)
 
 
 class CreatorViewSet(ReadOnlyModelViewSet):
