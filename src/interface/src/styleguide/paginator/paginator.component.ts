@@ -79,6 +79,9 @@ export class PaginatorComponent implements OnInit, OnChanges {
     if (changes['pageCount']) {
       this.calcButtonLabels();
     }
+    if (changes['currentPage']) {
+      this.selectedPage = this.currentPage;
+    }
   }
 
   getTotalPages(): number {
@@ -88,11 +91,6 @@ export class PaginatorComponent implements OnInit, OnChanges {
   calcButtonLabels(): void {
     const curPages = this.pageCount;
     const buttonsToShow = Math.min(curPages, this.defaultButtonsToShow);
-
-    // in case the results-per-page changes, ensure that the
-    // currently selected page number doesn't exceed
-    // the number of pages available
-    this.selectedPage = Math.min(curPages, this.selectedPage);
 
     const midCount = Math.ceil(buttonsToShow / 2);
     const rightRemainder = Math.max(
