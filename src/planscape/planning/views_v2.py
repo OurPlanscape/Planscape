@@ -146,6 +146,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
+    permission_classes = [PlanningAreaViewPermission]
     serializer_class = ListCreatorSerializer
     pagination_class = None
 

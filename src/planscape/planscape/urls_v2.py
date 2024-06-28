@@ -2,7 +2,7 @@ from django.urls import path, include
 from projects.routers import router as projects_router
 from metrics.routers import router as metrics_router
 from goals.routers import router as goals_router
-from planning.routers import router as planning_router
+from planning.routers import creator_router, router as planning_router
 from impacts.routers import router as impacts_router
 
 app_name = "api"
@@ -12,4 +12,5 @@ urlpatterns = [
     path("", include((goals_router.urls, "goals"), namespace="goals")),
     path("", include((planning_router.urls, "planning"), namespace="planning")),
     path("", include((impacts_router.urls, "impacts"), namespace="impacts")),
+    path("", include((creator_router.urls, "creators"), namespace="creators")),
 ]
