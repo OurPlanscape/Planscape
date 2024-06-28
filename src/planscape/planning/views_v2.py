@@ -147,6 +147,10 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
     serializer_class = ListCreatorSerializer
+    pagination_class = None
 
     def get_queryset(self):
-        return User.objects.filter(planning_areas__isnull=False).distinct()
+        user = self.request.user
+        return User.objects.filter(
+            planning_areas__in=PlanningArea.objects.get_for_user(user)
+        ).distinct()
