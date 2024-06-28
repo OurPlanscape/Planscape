@@ -19,7 +19,7 @@ from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     ScenarioSerializer,
-    ListPlanningAreaCreatorSerializer,
+    ListCreatorSerializer,
 )
 from planning.services import (
     create_planning_area,
@@ -146,7 +146,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
-    serializer_class = ListPlanningAreaCreatorSerializer
+    serializer_class = ListCreatorSerializer
 
     def get_queryset(self):
         return User.objects.filter(planning_areas__isnull=False).distinct()

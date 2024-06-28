@@ -297,7 +297,7 @@ class UserPrefsSerializer(serializers.ModelSerializer):
         fields = ("updated_at", "created_at", "preferences", "user_id")
 
 
-class ListPlanningAreaCreatorSerializer(serializers.ModelSerializer):
+class ListCreatorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "email", "first_name", "last_name")
