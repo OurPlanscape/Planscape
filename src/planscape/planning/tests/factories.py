@@ -3,6 +3,7 @@ from django.contrib.gis.geos import Polygon, MultiPolygon
 from planning.models import (
     PlanningArea,
     ProjectArea,
+    ProjectAreaOrigin,
     Scenario,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -44,9 +45,17 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
 
 
 class ProjectAreaFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = ProjectArea
+    created_by = factory.SelfAttribute("scenario.user")
+
+    scenario = factory.SubFactory(ScenarioFactory)
+
+    name = factory.Sequence(lambda x: "project area %s" % x)
+
+    origin = factory.Iterator(
+        [ProjectAreaOrigin.OPTIMIZATION, ProjectAreaOrigin.USER_CREATED]
+    )
 
     geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
-    created_by = factory.SubFactory(UserFactory)
-    scenario = factory.SubFactory(ScenarioFactory)
+
+    class Meta:
+        model = ProjectArea
