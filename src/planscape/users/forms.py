@@ -32,16 +32,14 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
         }
         get_adapter(request).send_mail("account/email/unknown_account", email, context)
 
-    def _send_inactive_account_mail(self, request, email):
+    def _send_inactive_account_mail(self, request, email, pw_reset_url):
         referrer = request.META.get("HTTP_ORIGIN")
-        # signup_url = f"{referrer}/signup"
         context = {
             "current_site": referrer,
             "request": request,
-            # "signup_url": signup_url,
+            "password_reset_url": pw_reset_url,
             "given_email": email,
         }
-        # We will have to decide on the outgoing template for this
         get_adapter(request).send_mail("account/email/inactive_account", email, context)
 
     def save(self, request, **kwargs):
@@ -60,14 +58,15 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
             self._send_unknown_account_mail(request, email)
 
         for user in self.users:
+            token = token_generator.make_token(user)
+            user_id = user_pk_to_url_str(user)
+            url = f"{referrer}/reset/{user_id}/{token}"
+            # We don't specify a username because authentication is based
+            # on email.
+
             if user.is_active == False:
-                self._send_inactive_account_mail(request, email)
+                self._send_inactive_account_mail(request, email, url)
             else:
-                token = token_generator.make_token(user)
-                user_id = user_pk_to_url_str(user)
-                url = f"{referrer}/reset/{user_id}/{token}"
-                # We don't specify a username because authentication is based
-                # on email.
                 context = {
                     "current_site": referrer,
                     "user": user,
