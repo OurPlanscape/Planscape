@@ -27,16 +27,13 @@ class StorybookModalWrapperComponent {
     });
 
     dialogRef.afterClosed().subscribe((result) => {
-      console.log('Dialog result:', result);
       this.showModal = false;
     });
 
     this.showModal = true;
   }
 
-  dialogClosed(event: any) {
-    console.log('Dialog closed with:', event);
-  }
+  dialogClosed(event: any) {}
 }
 
 const meta: Meta<StorybookModalWrapperComponent> = {
