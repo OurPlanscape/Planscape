@@ -4,6 +4,8 @@ from django.contrib.gis.db.models.functions import Area, Transform
 from django.conf import settings
 from planning.models import PlanningArea, Scenario, RegionChoices
 from rest_framework.filters import OrderingFilter
+from django.db.models.functions import Coalesce
+from django.db.models import Max
 
 
 class MultipleValueFilter(filters.CharFilter):
@@ -44,16 +46,16 @@ class PlanningAreaOrderingFilter(OrderingFilter):
                 reverse = order.startswith("-")
                 field_name = order.lstrip("-")
 
-                if field_name == "full_name":
+                if field_name == "creator":
                     direction = "-" if reverse else ""
                     queryset = queryset.annotate(
-                        full_name=Func(
+                        creator=Func(
                             F("user__first_name"),
                             Value(" "),
                             F("user__last_name"),
                             function="CONCAT",
                         )
-                    ).order_by(f"{direction}full_name")
+                    ).order_by(f"{direction}creator")
 
                 if field_name == "area_acres":
                     direction = "-" if reverse else ""
@@ -64,6 +66,14 @@ class PlanningAreaOrderingFilter(OrderingFilter):
                         )
                         * settings.CONVERSION_SQM_ACRES
                     ).order_by(f"{direction}area_acres")
+
+                if field_name == "latest_updated":
+                    direction = "-" if reverse else ""
+                    queryset = queryset.annotate(
+                        latest_updated=Coalesce(
+                            Max("scenarios__updated_at"), "updated_at"
+                        )
+                    ).order_by(f"{direction}latest_updated")
 
         return super().filter_queryset(request, queryset, view)
 
