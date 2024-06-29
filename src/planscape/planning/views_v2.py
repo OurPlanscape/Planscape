@@ -3,9 +3,10 @@ import logging
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
 from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import OrderingFilter
-from planning.models import PlanningArea, Scenario
 from rest_framework.decorators import action
+from planning.models import PlanningArea, Scenario, User
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
@@ -18,6 +19,7 @@ from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     ScenarioSerializer,
+    ListCreatorSerializer,
 )
 from planning.services import (
     create_planning_area,
@@ -140,3 +142,11 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         toggle_scenario_status(scenario, self.request.user)
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
+
+
+class CreatorViewSet(ReadOnlyModelViewSet):
+    queryset = User.objects.none()
+    serializer_class = ListCreatorSerializer
+
+    def get_queryset(self):
+        return User.objects.filter(planning_areas__isnull=False).distinct()

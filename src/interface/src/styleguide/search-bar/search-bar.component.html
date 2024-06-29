@@ -10,7 +10,8 @@
       [matAutocomplete]="searchHistory"
       [matAutocompleteConnectedTo]="origin"
       (input)="onSearchInputChange($event)"
-      (keydown)="onInputKey($event)" />
+      (keydown)="onInputKey($event)"
+      [value]="searchValue" />
     <mat-autocomplete
       #searchHistory="matAutocomplete"
       panel="acpanel"
