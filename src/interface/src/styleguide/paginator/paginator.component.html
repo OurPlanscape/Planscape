@@ -57,7 +57,7 @@
     <mat-select
       panelClass="paginator-select-panel"
       [(ngModel)]="currentPage"
-      (selectionChange)="setPage(currentPage)">
+      (selectionChange)="changeSelection()">
       @for (page of navSelectRange; track page) {
         <mat-option class="nav-page-item" [value]="page">{{ page }}</mat-option>
       }
