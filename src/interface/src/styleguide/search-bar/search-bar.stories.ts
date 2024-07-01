@@ -47,3 +47,7 @@ export const StaticHistory: Story = {
 export const NoHistory: Story = {
   args: { historyItems: [] },
 };
+
+export const WithSearchTerm: Story = {
+  args: { historyItems: [], searchValue: 'Some Search' },
+};
