@@ -56,8 +56,8 @@
   <mat-form-field class="picker-field" appearance="outline">
     <mat-select
       panelClass="paginator-select-panel"
-      [(ngModel)]="selectedPage"
-      (selectionChange)="setPage(selectedPage)">
+      [(ngModel)]="currentPage"
+      (selectionChange)="changeSelection()">
       @for (page of navSelectRange; track page) {
         <mat-option class="nav-page-item" [value]="page">{{ page }}</mat-option>
       }
