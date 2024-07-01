@@ -136,11 +136,13 @@ export class FilterDropdownComponent<T> implements OnInit {
     this.previousSelections = this.selectedItems.slice();
   }
 
-  clearSelections(e: Event): void {
+  clearSelections(e: Event, confirm?: boolean): void {
     this.selectedItems = [];
     this.searchTerm = '';
     this.changedSelection.emit(this.selectedItems);
-    this.confirmedSelection.emit(this.selectedItems);
+    if (confirm) {
+      this.confirmedSelection.emit(this.selectedItems);
+    }
     e.stopPropagation();
   }
 

@@ -55,7 +55,7 @@
     [disabled]="(creators$ | async) === null"
     menuLabel="Creator"
     (confirmedSelection)="selectCreators($event)"
-    displayField="name"
+    displayField="first_name"
     [selectedItems]="(selectedCreators$ | async) || []"
     [menuItems]="(creators$ | async) || []"></sg-filter-dropdown>
 

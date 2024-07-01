@@ -109,10 +109,13 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getSortOptions(),
       ...this.searchOptions(),
       ...this.getRegionFilters(),
+      ...this.getCreatorFilters(),
     };
     // update filter status when loading data
     this._hasFilters$.next(
-      !!this.searchTerm || this.selectedRegions.length > 0
+      !!this.searchTerm ||
+        this.selectedRegions.length > 0 ||
+        this.selectedCreatorsIds.value.length > 0
     );
 
     this._loading.next(true);
@@ -152,7 +155,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   filterCreator(creatorIds: number[]) {
     this._initialLoad$.next(true);
     this.selectedCreatorsIds.next(creatorIds);
-    this.queryParamsService.updateUrl({
+    this.resetPageAndUpdateUrl({
       ...this.sortOptions, // can i remove this
       creators: creatorIds.join(',') || undefined,
     });
@@ -217,6 +220,16 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     }
     return {
       region_name: this.selectedRegions.map((r) => r.value),
+    };
+  }
+
+  private getCreatorFilters() {
+    const creatorIds = this.selectedCreatorsIds.value;
+    if (creatorIds.length === 0) {
+      return;
+    }
+    return {
+      creator: creatorIds,
     };
   }
 

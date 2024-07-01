@@ -42,7 +42,6 @@ export class QueryParamsService {
       .createUrlTree([], {
         relativeTo: this.route,
         queryParams: { ...currentParams, ...options },
-        queryParamsHandling: 'merge', // Merge with existing query parameters
       })
       .toString();
 

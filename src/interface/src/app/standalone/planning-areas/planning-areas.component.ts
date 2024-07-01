@@ -23,7 +23,7 @@ import {
   NgSwitchDefault,
 } from '@angular/common';
 
-import { PlanService } from '@services';
+import { Creator, PlanService } from '@services';
 import { PreviewPlan, RegionsWithString } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -171,7 +171,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     this.dataSource.filterRegion(regions);
   }
 
-  selectCreators(creators: { id: number; name: string }[]) {
+  selectCreators(creators: Creator[]) {
     this.dataSource.filterCreator(creators.map((creator) => creator.id));
   }
 }

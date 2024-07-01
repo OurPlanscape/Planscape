@@ -13,6 +13,20 @@ export interface PlanResults {
   results: PreviewPlan[];
 }
 
+export interface CreatorResults {
+  count: number;
+  next?: string;
+  previous?: string;
+  results: Creator[];
+}
+
+export interface Creator {
+  id: number;
+  email: string;
+  first_name: string;
+  last_name: string;
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -100,18 +114,12 @@ export class PlanService {
 
   // placeholder
   listPlanCreators() {
-    let url = environment.backend_endpoint.concat(
-      '/planning/list_planning_areas'
-    );
+    let url = environment.backend_endpoint.concat('/planning/v2/creators/');
     return this.http
-      .get<PreviewPlan[]>(url, {
+      .get<CreatorResults>(url, {
         withCredentials: true,
       })
-      .pipe(
-        map((plans) =>
-          plans.map((plan) => ({ id: plan.id, name: plan.creator }))
-        )
-      );
+      .pipe(map((creatorResults) => creatorResults.results));
   }
 
   /** Updates a planning area with new parameters. */
