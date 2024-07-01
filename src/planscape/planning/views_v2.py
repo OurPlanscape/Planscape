@@ -43,6 +43,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "full_name",
         "name",
         "region_name",
+        "latest_updated",
         "scenario_count",
         "updated_at",
         "user",
