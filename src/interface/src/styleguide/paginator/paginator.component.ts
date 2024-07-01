@@ -109,7 +109,8 @@ export class PaginatorComponent implements OnInit, OnChanges {
     this.buttonRange$.next(buttonArray);
   }
 
-  changeSelection() {
+  selectPageChange() {
+    this.calcButtonLabels();
     this.pageChanged.emit(this.currentPage);
   }
 
