@@ -25,7 +25,7 @@
   <mat-icon
     *ngIf="hasSelections()"
     class="close-icon"
-    (click)="clearSelections($event, true)"
+    (click)="clearAndConfirmSelections($event)"
     >close
   </mat-icon>
 </button>
