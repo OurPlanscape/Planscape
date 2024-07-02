@@ -100,7 +100,6 @@ class CreatorsTest(APITransactionTestCase):
     # Test - if planning areas are shared w/ logged in user,
     # then any creator in that list will appear
     def test_list_creators_shared(self):
-
         create_collaborator_record(
             self.user_b,
             self.user_a,

@@ -298,7 +298,6 @@ class UserPrefsSerializer(serializers.ModelSerializer):
 
 
 class ListCreatorSerializer(serializers.ModelSerializer):
-
     full_name = serializers.SerializerMethodField()
 
     def get_full_name(self, obj):
