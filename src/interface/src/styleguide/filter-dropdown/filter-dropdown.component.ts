@@ -140,8 +140,12 @@ export class FilterDropdownComponent<T> implements OnInit {
     this.selectedItems = [];
     this.searchTerm = '';
     this.changedSelection.emit(this.selectedItems);
-    this.confirmedSelection.emit(this.selectedItems);
     e.stopPropagation();
+  }
+
+  clearAndConfirmSelections(e: Event): void {
+    this.clearSelections(e);
+    this.confirmedSelection.emit(this.selectedItems);
   }
 
   filterSearch(searchTerm: string): void {

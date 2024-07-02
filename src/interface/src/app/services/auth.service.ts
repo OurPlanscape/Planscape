@@ -15,6 +15,7 @@ import {
   map,
   Observable,
   of,
+  switchMap,
   take,
   tap,
   throwError,
@@ -387,11 +388,11 @@ export class AuthGuard {
     state?: RouterStateSnapshot
   ): Observable<boolean> {
     return this.authService.isLoggedIn$.pipe(
-      map((loggedIn) => {
-        if (!loggedIn) {
-          throw new Error('not logged in');
+      switchMap((loggedIn) => {
+        if (loggedIn) {
+          return of(true);
         }
-        return true;
+        return this.authService.getLoggedInUser().pipe(map(() => true));
       }),
       catchError((_) => {
         if (state) {
