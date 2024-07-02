@@ -65,7 +65,8 @@ postgres:
             geometry_type: POLYGON
             properties:
                 id: int8
-                project_area: int8
+                stand_size: string
+                treatment_plan_id: int8
+                project_area_id: int8
                 type: string
                 action: string
-                stand_id: int8

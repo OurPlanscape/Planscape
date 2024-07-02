@@ -19,17 +19,24 @@ BEGIN
   SELECT INTO p_mvt ST_AsMVT(tile, 'treatment_plan_prescriptions', 4096, 'geom') FROM (
 
     SELECT
-      ss.id as "stand_id",
+      ss.id as "id",
       ss.size as "stand_size",
+      it.treatment_plan_id,
+      it.project_area_id,
+      it.type,
+      it.action,
       ST_AsMVTGeom(
           ST_Transform(ss.geometry, 3857),
           ST_TileEnvelope(z, x, y),
           4096, 64, true) AS geom
     FROM stands_stand ss
+    LEFT JOIN impacts_treatmentprescription it ON (ss.id = it.stand_id)
     WHERE 
         ss.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269) AND
         ss.geometry && p_project_area AND ST_Intersects(ss.geometry, p_project_area) AND
-        ss.size = p_stand_size
+        ss.size = p_stand_size AND
+        it.treatment_plan_id = (query_params->>'treatment_plan_id')::int OR
+        it.treatment_plan_id IS NULL
   ) as tile WHERE geom IS NOT NULL;
 
   RETURN p_mvt;
