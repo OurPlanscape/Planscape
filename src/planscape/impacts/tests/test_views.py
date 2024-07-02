@@ -51,5 +51,3 @@ class TxPrescriptionListTest(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(data["count"], 2)
-        self.assertEqual(data["results"][0]["treatment_plan"], self.tx_plan.pk)
-        self.assertEqual(data["results"][1]["treatment_plan"], self.tx_plan.pk)
