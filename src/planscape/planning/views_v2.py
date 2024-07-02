@@ -43,6 +43,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "full_name",
         "name",
         "region_name",
+        "latest_updated",
         "scenario_count",
         "updated_at",
         "user",
@@ -146,7 +147,12 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
+    permission_classes = [PlanningAreaViewPermission]
     serializer_class = ListCreatorSerializer
+    pagination_class = None
 
     def get_queryset(self):
-        return User.objects.filter(planning_areas__isnull=False).distinct()
+        user = self.request.user
+        return User.objects.filter(
+            planning_areas__in=PlanningArea.objects.get_for_user(user)
+        ).distinct()
