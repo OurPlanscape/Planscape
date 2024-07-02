@@ -42,6 +42,11 @@ class CreatorsTest(APITransactionTestCase):
         )
         self.user_d.set_password("12345")
         self.user_d.save()
+        self.user_e = User.objects.create(
+            username="user e", first_name="user", last_name="e"
+        )
+        self.user_e.set_password("12345")
+        self.user_e.save()
         self.test_pa_user_a = _create_multiple_planningareas(
             11,
             self.user_a,
@@ -56,31 +61,70 @@ class CreatorsTest(APITransactionTestCase):
             stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
-        self.test_pa_user_c = _create_multiple_planningareas(
+
+        # Note: No areas for user_c
+
+        self.test_pa_user_d = _create_multiple_planningareas(
             11,
             self.user_d,
             "userd plan",
             stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
+        self.test_pa_user_e = _create_multiple_planningareas(
+            11,
+            self.user_e,
+            "usere plan",
+            stored_geometry,
+            region_name=RegionChoices.CENTRAL_COAST,
+        )
 
-    # Note: No areas for user_c
-    def test_list_creators(self):
+    # Test - if no planning areas are shared w/ logged in user, then we only see
+    # the creators list for the logged in user
+    def test_list_creators_no_sharing(self):
         self.client.force_authenticate(self.user_a)
         response = self.client.get(
-            reverse("planning:creators-list"), {}, content_type="application/json"
+            reverse("api:planning:creators-list"), {}, content_type="application/json"
         )
-        creators = json.loads(response.content)
+        creator_results = json.loads(response.content)
 
         ids = []
         creator_names = []
-        for c in creators["results"]:
+        for c in creator_results:
             ids.append(c["id"])
-            creator_names.append(f"{c['first_name']} {c['last_name']}")
+            creator_names.append(f"{c['full_name']}")
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(creators["count"], 3)
-        self.assertEqual(set(ids), {self.user_a.pk, self.user_b.pk, self.user_d.pk})
-        self.assertEqual(set(creator_names), {"user a", "user b", "user d"})
+        self.assertEqual(set(ids), {self.user_a.pk})
+        self.assertEqual(set(creator_names), {"user a"})
+
+    # Test - if planning areas are shared w/ logged in user,
+    # then any creator in that list will appear
+    def test_list_creators_shared(self):
+        create_collaborator_record(
+            self.user_b,
+            self.user_a,
+            self.test_pa_user_b[0],
+            Role.COLLABORATOR,
+        )
+        create_collaborator_record(
+            self.user_e,
+            self.user_a,
+            self.test_pa_user_e[0],
+            Role.COLLABORATOR,
+        )
+        self.client.force_authenticate(self.user_a)
+        response = self.client.get(
+            reverse("api:planning:creators-list"), {}, content_type="application/json"
+        )
+        creator_results = json.loads(response.content)
+        ids = []
+        creator_names = []
+        for c in creator_results:
+            ids.append(c["id"])
+            creator_names.append(f"{c['full_name']}")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(set(ids), {self.user_a.pk, self.user_b.pk, self.user_e.pk})
+        self.assertEqual(set(creator_names), {"user a", "user b", "user e"})
 
 
 class GetPlanningAreaTest(APITransactionTestCase):
