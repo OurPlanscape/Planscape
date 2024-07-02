@@ -4,7 +4,7 @@ import {
   DEFAULT_SORT_OPTIONS,
   QueryParamsService,
 } from './query-params.service';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, UrlTree } from '@angular/router';
 import { Location } from '@angular/common';
 import { Sort } from '@angular/material/sort';
 
@@ -59,8 +59,8 @@ describe('QueryParamsService', () => {
 
   describe('updateUrl', () => {
     it('should update the URL without reloading the page or triggering navigation events', () => {
-      spyOn(router, 'createUrlTree').and.callThrough();
-      spyOn(location, 'go').and.callThrough();
+      const createUrlTreeSpy = spyOn(router, 'createUrlTree').and.callThrough();
+      const locationGoSpy = spyOn(location, 'go').and.callThrough();
 
       const routerEventsSpy = spyOn(
         router.events,
@@ -70,22 +70,81 @@ describe('QueryParamsService', () => {
       const sortOptions: Sort = { active: 'date', direction: 'asc' };
       service.updateUrl(sortOptions);
 
-      expect(router.createUrlTree).toHaveBeenCalledWith([], {
+      expect(createUrlTreeSpy).toHaveBeenCalledWith([], {
         relativeTo: route,
         queryParams: sortOptions,
-        queryParamsHandling: 'merge',
       });
 
       const urlTree = router
         .createUrlTree([], {
           relativeTo: route,
           queryParams: sortOptions,
-          queryParamsHandling: 'merge',
         })
         .toString();
 
-      expect(location.go).toHaveBeenCalledWith(urlTree);
+      expect(locationGoSpy).toHaveBeenCalledWith(urlTree);
       expect(routerEventsSpy).not.toHaveBeenCalled();
+    });
+
+    it('should update the URL with merged query params', () => {
+      const sortOptions: Sort = { active: 'date', direction: 'asc' };
+      const pageOptions = {
+        page: '2',
+        name: 'test',
+      };
+      const url = '/?' + new URLSearchParams(pageOptions).toString();
+
+      spyOn(location, 'path').and.returnValue(url);
+
+      const expectedMergedParams = {
+        ...pageOptions,
+        ...sortOptions,
+      };
+
+      const urlTree: UrlTree = router.createUrlTree([], {
+        relativeTo: route,
+        queryParams: expectedMergedParams,
+      });
+
+      const locationGoSpy = spyOn(location, 'go');
+
+      service.updateUrl(sortOptions);
+
+      expect(locationGoSpy).toHaveBeenCalledWith(urlTree.toString());
+    });
+
+    it('should remove parameters if we provide undefined', () => {
+      const region = 'sierra-nevada';
+      const pageOptions = {
+        page: '2',
+        name: 'test',
+      };
+      const newOptions = {
+        page: undefined,
+        name: undefined,
+        region: region,
+      };
+      const url = '/?' + new URLSearchParams(pageOptions).toString();
+
+      spyOn(location, 'path').and.returnValue(url);
+
+      const expectedMergedParams = {
+        ...pageOptions,
+        ...newOptions,
+      };
+
+      const urlTree: UrlTree = router.createUrlTree([], {
+        relativeTo: route,
+        queryParams: expectedMergedParams,
+      });
+
+      const locationGoSpy = spyOn(location, 'go');
+
+      service.updateUrl(newOptions);
+      expect(urlTree.queryParams['region']).toBe(region);
+      expect(urlTree.queryParams['page']).toBe(undefined);
+      expect(urlTree.queryParams['name']).toBe(undefined);
+      expect(locationGoSpy).toHaveBeenCalledWith(urlTree.toString());
     });
   });
 });
