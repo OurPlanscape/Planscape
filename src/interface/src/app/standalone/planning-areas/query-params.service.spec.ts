@@ -57,6 +57,62 @@ describe('QueryParamsService', () => {
     });
   });
 
+  describe('getInitialRegionParam', () => {
+    it('should return region param from URL if it exists', () => {
+      route.snapshot.queryParams = { region: 'sierra-nevada' };
+
+      const regionParam = service.getInitialRegionParam();
+
+      expect(regionParam).toEqual([
+        { name: 'Sierra Nevada', value: 'sierra-nevada' },
+      ]);
+    });
+
+    it('should return default region param if URL param does not exist', () => {
+      route.snapshot.queryParams = {};
+
+      const regionParam = service.getInitialRegionParam();
+
+      expect(regionParam).toEqual([]);
+    });
+  });
+
+  describe('getInitialCreatorsIdParam', () => {
+    it('should return creators ID param from URL if it exists', () => {
+      route.snapshot.queryParams = { creators: '2,19' };
+
+      const creatorsIdParam = service.getInitialCreatorsIdParam();
+
+      expect(creatorsIdParam).toEqual([2, 19]);
+    });
+
+    it('should return default creators ID param if URL param does not exist', () => {
+      route.snapshot.queryParams = {};
+
+      const creatorsIdParam = service.getInitialCreatorsIdParam();
+
+      expect(creatorsIdParam).toEqual([]);
+    });
+  });
+
+  describe('getInitialPageParams', () => {
+    it('should return page params from URL if they exist', () => {
+      route.snapshot.queryParams = { page: '2' };
+
+      const pageParams = service.getInitialPageParams();
+
+      expect(pageParams).toEqual({ page: 2, limit: 10 });
+    });
+
+    it('should return default page params if URL params do not exist', () => {
+      route.snapshot.queryParams = {};
+
+      const pageParams = service.getInitialPageParams();
+
+      expect(pageParams).toEqual({ page: 1, limit: 10 });
+    });
+  });
+
   describe('updateUrl', () => {
     it('should update the URL without reloading the page or triggering navigation events', () => {
       const createUrlTreeSpy = spyOn(router, 'createUrlTree').and.callThrough();
