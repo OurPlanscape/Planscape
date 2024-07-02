@@ -62,7 +62,7 @@ class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
         self.user.save()
 
     def save(self):
-        if self.user.is_active == False:
+        if not self.user.is_active:
             self.reactivate_user()
         super(CustomPasswordResetConfirmSerializer, self).save()
         self._send_email()

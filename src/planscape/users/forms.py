@@ -64,7 +64,7 @@ class CustomAllAuthPasswordResetForm(AllAuthPasswordResetForm):
             # We don't specify a username because authentication is based
             # on email.
 
-            if user.is_active == False:
+            if not user.is_active:
                 self._send_inactive_account_mail(request, email, url)
             else:
                 context = {
