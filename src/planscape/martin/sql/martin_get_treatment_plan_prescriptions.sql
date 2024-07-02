@@ -16,7 +16,7 @@ BEGIN
     WHERE pa.id = (query_params->>'project_area_id')::int
   );
 
-  IF (query_params::jsonb) ? 'planning_area_id' THEN
+  IF (query_params::jsonb) ? 'treatment_plan_id' THEN
 
     SELECT INTO p_mvt ST_AsMVT(tile, 'treatment_plan_prescriptions', 4096, 'geom') FROM (
 
