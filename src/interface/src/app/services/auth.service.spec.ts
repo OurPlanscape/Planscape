@@ -15,6 +15,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 
 // Define a dummy component for the route
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 
 @Component({
   template: '',
@@ -564,22 +565,27 @@ describe('AuthGuard', () => {
       });
     });
 
-    it('returns false if user is not logged in', (done) => {
+    it('checks for getLoggedInUser if user is not logged in', (done) => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
       authServiceStub.isLoggedIn$ = of(false);
+      spyOn(authServiceStub, 'getLoggedInUser');
 
       service.canActivate().subscribe((result) => {
-        expect(result).toBeFalse();
+        expect(authServiceStub.getLoggedInUser).toHaveBeenCalled();
         done();
       });
     });
 
-    it('returns false if user logged in is null', (done) => {
+    it('goes to login if getLoggedInUser throws error ', (done) => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
       authServiceStub.isLoggedIn$ = of(null);
+      spyOn(authServiceStub, 'getLoggedInUser').and.throwError('some error');
 
       service.canActivate().subscribe((result) => {
         expect(result).toBeFalse();
+        expect(router.navigate).toHaveBeenCalledWith(['login']);
         done();
       });
     });
