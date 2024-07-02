@@ -8,7 +8,13 @@ import {
 import * as L from 'leaflet';
 import { BehaviorSubject, Subject, takeUntil } from 'rxjs';
 import { take } from 'rxjs/operators';
-import { FrontendConstants, Plan, Region, regionToString } from '@types';
+import {
+  BaseLayerType,
+  FrontendConstants,
+  Plan,
+  Region,
+  regionToString,
+} from '@types';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { PlanStateService } from '@services';
 import { regionMapCenters } from '../../map/map.helper';
@@ -18,9 +24,10 @@ import polylabel from 'polylabel';
 import { environment } from '../../../environments/environment';
 import { MapLayerSelectDialogComponent } from '../map-layer-select-dialog/map-layer-select-dialog.component';
 import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
-import { BaseLayerType } from '@types';
 import { satelliteTiles, terrainTiles } from 'src/app/map/map.tiles';
 import { MapLayerControlComponent } from './map-layer-control/map-layer-control-component';
+import { Router } from '@angular/router';
+
 // Needed to keep references to div elements to remove
 export interface MapRef {
   legend?: HTMLElement | undefined;
@@ -56,10 +63,12 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private shapes: any | null = null;
   private layerControl = new MapLayerControlComponent();
   private currentBaseLayer: BaseLayerType = BaseLayerType.Road;
+
   constructor(
     private planStateService: PlanStateService,
     private http: HttpClient,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private router: Router
   ) {
     this.selectedRegion$ = this.planStateService.planRegion$;
   }
@@ -322,6 +331,10 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       }),
       onEachFeature: (feature, layer) => {
         let center: number[] = [];
+        layer.on('click', (e) => {
+          // TODO navigate to treatments
+          this.router.navigate(['areas', 3]);
+        });
         if (feature.geometry.type === 'Polygon') {
           center = polylabel(feature.geometry.coordinates, 0.0005);
           addTooltipAtCenter(
