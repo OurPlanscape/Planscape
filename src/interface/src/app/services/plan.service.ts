@@ -6,25 +6,17 @@ import { GeoJSON } from 'geojson';
 import { environment } from '../../environments/environment';
 import { Params } from '@angular/router';
 
-export interface PlanResults {
+interface PlanResults {
   count: number;
   next?: string;
   previous?: string;
   results: PreviewPlan[];
 }
 
-export interface CreatorResults {
-  count: number;
-  next?: string;
-  previous?: string;
-  results: Creator[];
-}
-
 export interface Creator {
   id: number;
   email: string;
-  first_name: string;
-  last_name: string;
+  full_name: string;
 }
 
 @Injectable({
@@ -112,14 +104,11 @@ export class PlanService {
     });
   }
 
-  // placeholder
   listPlanCreators() {
     let url = environment.backend_endpoint.concat('/planning/v2/creators/');
-    return this.http
-      .get<CreatorResults>(url, {
-        withCredentials: true,
-      })
-      .pipe(map((creatorResults) => creatorResults.results));
+    return this.http.get<Creator[]>(url, {
+      withCredentials: true,
+    });
   }
 
   /** Updates a planning area with new parameters. */
