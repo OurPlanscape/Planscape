@@ -89,3 +89,10 @@ export enum FormMessageType {
   ERROR,
   ALERT,
 }
+
+export interface Pagination<T> {
+  count: number;
+  next?: string;
+  previous?: string;
+  results: T[];
+}

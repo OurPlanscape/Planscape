@@ -1,17 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { map, Observable, take } from 'rxjs';
-import { CreatePlanPayload, Plan, PreviewPlan } from '@types';
+import {
+  CreatePlanPayload,
+  Creator,
+  Pagination,
+  Plan,
+  PreviewPlan,
+} from '@types';
 import { GeoJSON } from 'geojson';
 import { environment } from '../../environments/environment';
 import { Params } from '@angular/router';
-
-export interface PlanResults {
-  count: number;
-  next?: string;
-  previous?: string;
-  results: PreviewPlan[];
-}
 
 @Injectable({
   providedIn: 'root',
@@ -84,17 +83,24 @@ export class PlanService {
     let url = environment.backend_endpoint.concat(
       '/planning/list_planning_areas'
     );
-    return this.http.get<Plan[]>(url, {
+    return this.http.get<PreviewPlan[]>(url, {
       withCredentials: true,
     });
   }
 
-  getPlanPreviews(params: Params): Observable<PlanResults> {
+  getPlanPreviews(params: Params) {
     let url = environment.backend_endpoint.concat(this.v2basePath);
 
-    return this.http.get<PlanResults>(url, {
+    return this.http.get<Pagination<PreviewPlan>>(url, {
       withCredentials: true,
       params: params,
+    });
+  }
+
+  getCreators() {
+    let url = environment.backend_endpoint.concat('/planning/v2/creators/');
+    return this.http.get<Creator[]>(url, {
+      withCredentials: true,
     });
   }
 

@@ -34,3 +34,9 @@ export interface BackendProjectArea {
     project?: number;
   };
 }
+
+export interface Creator {
+  id: number;
+  email: string;
+  full_name: string;
+}

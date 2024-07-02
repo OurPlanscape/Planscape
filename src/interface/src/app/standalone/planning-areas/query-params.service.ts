@@ -14,6 +14,7 @@ export interface QueryParams extends Partial<Sort> {
   name?: string;
   limit?: number;
   region?: string;
+  creators?: string;
 }
 
 @Injectable()
@@ -41,7 +42,6 @@ export class QueryParamsService {
       .createUrlTree([], {
         relativeTo: this.route,
         queryParams: { ...currentParams, ...options },
-        queryParamsHandling: 'merge', // Merge with existing query parameters
       })
       .toString();
 
@@ -76,6 +76,14 @@ export class QueryParamsService {
       return regionKeys.map((r: string) =>
         RegionsWithString.find((d) => d.value === r)
       );
+    }
+    return [];
+  }
+
+  getInitialCreatorsIdParam(): number[] {
+    const { creators } = this.route.snapshot.queryParams;
+    if (creators) {
+      return creators.split(',').map((id: string) => parseInt(id, 10));
     }
     return [];
   }

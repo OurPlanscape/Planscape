@@ -49,7 +49,16 @@
     Explore
   </a>
 </div>
+
 <div class="filter-bar">
+  <sg-filter-dropdown
+    [disabled]="(creators$ | async) === null"
+    menuLabel="Creator"
+    (confirmedSelection)="selectCreators($event)"
+    displayField="full_name"
+    [selectedItems]="(selectedCreators$ | async) || []"
+    [menuItems]="(creators$ | async) || []"></sg-filter-dropdown>
+
   <sg-filter-dropdown
     menuLabel="Region"
     [hasSearch]="false"
@@ -57,7 +66,6 @@
     [selectedItems]="selectedRegions"
     displayField="name"
     [menuItems]="regions"></sg-filter-dropdown>
-  <div class="filter-placeholder">Filter placeholder</div>
 </div>
 <!--Initial load spinner-->
 <mat-spinner

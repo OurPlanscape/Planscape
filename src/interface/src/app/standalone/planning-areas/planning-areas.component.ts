@@ -24,7 +24,7 @@ import {
 } from '@angular/common';
 
 import { PlanService } from '@services';
-import { PreviewPlan, RegionsWithString } from '@types';
+import { Creator, PreviewPlan, RegionsWithString } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {
@@ -119,7 +119,13 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   pages$ = this.dataSource.pages$;
 
   selectedRegions = this.dataSource.selectedRegions;
+
   searchTerm = this.dataSource.searchTerm;
+
+  selectedCreators$ = this.dataSource.selectedCreators$;
+
+  creators$ = this.dataSource.creators$;
+
   readonly regions = RegionsWithString;
 
   ngOnInit() {
@@ -163,5 +169,9 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   selectRegion(regions: { name: string; value: string }[]) {
     this.dataSource.filterRegion(regions);
+  }
+
+  selectCreators(creators: Creator[]) {
+    this.dataSource.filterCreator(creators.map((creator) => creator.id));
   }
 }
