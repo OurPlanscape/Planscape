@@ -2,8 +2,8 @@ import factory
 from django.contrib.gis.geos import Polygon, MultiPolygon
 from planning.models import (
     PlanningArea,
+    ProjectArea,
     Scenario,
-    ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
 )
@@ -41,3 +41,12 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
 
     status = ScenarioStatus.ACTIVE
     result_status = ScenarioResultStatus.PENDING
+
+
+class ProjectAreaFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectArea
+
+    geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+    created_by = factory.SubFactory(UserFactory)
+    scenario = factory.SubFactory(ScenarioFactory)
