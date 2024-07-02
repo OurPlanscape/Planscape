@@ -23,8 +23,8 @@ import {
   NgSwitchDefault,
 } from '@angular/common';
 
-import { Creator, PlanService } from '@services';
-import { PreviewPlan, RegionsWithString } from '@types';
+import { PlanService } from '@services';
+import { Creator, PreviewPlan, RegionsWithString } from '@types';
 import { PlanningAreasDataSource } from './planning-areas.datasource';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import {

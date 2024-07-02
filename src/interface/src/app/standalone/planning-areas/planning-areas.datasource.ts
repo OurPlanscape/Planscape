@@ -54,8 +54,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    */
   public hasFilters$ = this._hasFilters$.asObservable();
 
-  // all the creators
-  public creators$ = this.planService.listPlanCreators().pipe(
+  public creators$ = this.planService.getCreators().pipe(
     shareReplay(1) // Caches the result and replays the last emitted value to new subscribers
   );
 
@@ -146,7 +145,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     const regionNames = this.selectedRegions.map((r) => r.value).join(',');
 
     this.queryParamsService.updateUrl({
-      ...this.sortOptions, // can i remove this
       region: regionNames || undefined,
     });
     this.loadData();
@@ -156,7 +154,6 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     this._initialLoad$.next(true);
     this.selectedCreatorsIds.next(creatorIds);
     this.resetPageAndUpdateUrl({
-      ...this.sortOptions, // can i remove this
       creators: creatorIds.join(',') || undefined,
     });
     this.loadData();
@@ -174,7 +171,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   deletePlan(planId: number) {
     return this.planService.deletePlan([String(planId)]).pipe(
       tap(() => {
-        // reload data
+        // reload data after removing plan
         this.loadData();
       })
     );
