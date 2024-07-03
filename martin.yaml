@@ -13,6 +13,12 @@ postgres:
             minzoom: 0
             maxzoom: 20
             bounds: [-180.0, -90.0, 180.0, 90.0]
+        project_area_outline:
+            schema: public
+            function: martin_project_area_outline
+            minzoom: 0
+            maxzoom: 20
+            bounds: [-180.0, -90.0, 180.0, 90.0]
     tables:
         stands:
             layer_id: stands
