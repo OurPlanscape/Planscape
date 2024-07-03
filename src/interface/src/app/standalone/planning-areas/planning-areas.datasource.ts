@@ -1,4 +1,12 @@
-import { BehaviorSubject, combineLatest, map, Observable, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  shareReplay,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { PreviewPlan } from '@types';
 import { PlanService } from '@services';
 import { DataSource } from '@angular/cdk/collections';
@@ -46,6 +54,28 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
    */
   public hasFilters$ = this._hasFilters$.asObservable();
 
+  public creators$ = this.planService.getCreators().pipe(
+    shareReplay(1) // Caches the result and replays the last emitted value to new subscribers
+  );
+
+  // the ids of the selected creators to filter
+  private selectedCreatorsIds = new BehaviorSubject<number[]>(
+    this.queryParamsService.getInitialCreatorsIdParam()
+  );
+
+  // gets the list of selected creators used for filtering
+  public selectedCreators$ = this.selectedCreatorsIds.pipe(
+    switchMap((creatorIds) =>
+      this.creators$.pipe(
+        map((allCreators) =>
+          allCreators.filter((singleCreator) =>
+            creatorIds.includes(singleCreator.id)
+          )
+        )
+      )
+    )
+  );
+
   constructor(
     private planService: PlanService,
     private queryParamsService: QueryParamsService
@@ -78,10 +108,13 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
       ...this.getSortOptions(),
       ...this.searchOptions(),
       ...this.getRegionFilters(),
+      ...this.getCreatorFilters(),
     };
     // update filter status when loading data
     this._hasFilters$.next(
-      !!this.searchTerm || this.selectedRegions.length > 0
+      !!this.searchTerm ||
+        this.selectedRegions.length > 0 ||
+        this.selectedCreatorsIds.value.length > 0
     );
 
     this._loading.next(true);
@@ -112,8 +145,16 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     const regionNames = this.selectedRegions.map((r) => r.value).join(',');
 
     this.queryParamsService.updateUrl({
-      ...this.sortOptions,
       region: regionNames || undefined,
+    });
+    this.loadData();
+  }
+
+  filterCreator(creatorIds: number[]) {
+    this._initialLoad$.next(true);
+    this.selectedCreatorsIds.next(creatorIds);
+    this.resetPageAndUpdateUrl({
+      creators: creatorIds.join(',') || undefined,
     });
     this.loadData();
   }
@@ -130,7 +171,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   deletePlan(planId: number) {
     return this.planService.deletePlan([String(planId)]).pipe(
       tap(() => {
-        // reload data
+        // reload data after removing plan
         this.loadData();
       })
     );
@@ -176,6 +217,16 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
     }
     return {
       region_name: this.selectedRegions.map((r) => r.value),
+    };
+  }
+
+  private getCreatorFilters() {
+    const creatorIds = this.selectedCreatorsIds.value;
+    if (creatorIds.length === 0) {
+      return;
+    }
+    return {
+      creator: creatorIds,
     };
   }
 
