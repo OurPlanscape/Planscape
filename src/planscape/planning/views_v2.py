@@ -153,6 +153,7 @@ class CreatorViewSet(ReadOnlyModelViewSet):
 
 class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = ProjectArea.objects.all()
+    permission_classes = [PlanningAreaViewPermission]
     serializer_class = ProjectAreaSerializer
     serializer_classes = {
         "retrieve": ProjectAreaSerializer,
