@@ -48,7 +48,7 @@ BEGIN
         ss.id as "id",
         ss.size as "stand_size",
         NULL as "treatment_plan_id",
-        query_params->>'project_area_id'::int as "project_area_id",
+        (query_params->>'project_area_id')::int as "project_area_id",
         NULL as "type",
         NULL as "action",
         ST_AsMVTGeom(
