@@ -4,6 +4,7 @@ import { FrontendConstants } from '../../map/map.constants';
 import { regionMapCenters } from '../../map/map.helper';
 import { Region } from '@types';
 import { stadiaAlidadeTiles } from '../../map/map.tiles';
+import { JsonPipe } from '@angular/common';
 
 const defaultStyles = {
   weight: 1,
@@ -29,16 +30,18 @@ const selectedStyles = {
 @Component({
   selector: 'app-project-area',
   standalone: true,
-  imports: [],
+  imports: [JsonPipe],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
 })
 export class ProjectAreaComponent implements OnInit {
   map!: L.Map;
+  ids: number[] = [];
+
+  selectedStands: number[] = [];
 
   ngOnInit() {
     const stands = this.loadStands();
-
     const outline = this.loadAreaOutline();
 
     this.map = L.map('map', {
@@ -46,18 +49,17 @@ export class ProjectAreaComponent implements OnInit {
       zoom: FrontendConstants.MAP_INITIAL_ZOOM,
       minZoom: FrontendConstants.MAP_MIN_ZOOM,
       maxZoom: FrontendConstants.MAP_MAX_ZOOM,
-      layers: [stadiaAlidadeTiles(), stands, outline],
+      layers: [stadiaAlidadeTiles(), outline, stands],
       zoomControl: false,
-      pmIgnore: false,
       scrollWheelZoom: true,
       // attributionControl: this.showAttributionAndZoom,
     });
 
-    outline.on(
-      'load',
-      () => console.log(outline)
-      //this.map.fitBounds((outline as Polyline).getBounds())
-    );
+    // outline.on(
+    //   'load',
+    //   () => console.log(outline)
+    //   //this.map.fitBounds((outline as Polyline).getBounds())
+    // );
   }
 
   private loadStands() {
@@ -66,22 +68,33 @@ export class ProjectAreaComponent implements OnInit {
 
     const layer = L.vectorGrid.protobuf(url, {
       vectorTileLayerStyles: {
-        ['treatment_plan_prescriptions']: defaultStyles,
+        treatment_plan_prescriptions: defaultStyles,
       },
       interactive: true,
       pane: 'overlayPane',
       cache: true,
-      getFeatureId: function (f: any) {
-        return f.properties.id;
+      getFeatureId: (f: any) => {
+        const p = f.properties.id as number;
+        if (!this.ids.includes(p)) {
+          this.ids.push(p);
+        }
+        return p;
       },
     });
     // layer.on('mouseover', (thing) => console.log('mouse over', thing));
     layer.on('click', (thing) => {
-      const id = (thing as any).layer.properties.id;
-      (layer as unknown as typeof L.vectorGrid).setFeatureStyle(
-        id,
-        selectedStyles
-      );
+      const vectorLayer = layer as unknown as typeof L.vectorGrid;
+      const properties = (thing as any).layer.properties;
+      const id = properties.id;
+      if (this.selectedStands.includes(id)) {
+        vectorLayer.resetFeatureStyle(id);
+        this.selectedStands = this.selectedStands.filter(
+          (standId) => standId !== id
+        );
+      } else {
+        vectorLayer.setFeatureStyle(id, selectedStyles);
+        this.selectedStands.push(id);
+      }
     });
     return layer;
   }
@@ -92,7 +105,7 @@ export class ProjectAreaComponent implements OnInit {
 
     return L.vectorGrid.protobuf(url, {
       vectorTileLayerStyles: {
-        ['project_area_outline']: outlineStyles,
+        project_area_outline: outlineStyles,
       },
       zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
     });
