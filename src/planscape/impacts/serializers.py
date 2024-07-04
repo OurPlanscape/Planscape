@@ -1,8 +1,13 @@
 from rest_framework import serializers
 
 from core.fields import UUIDRelatedField
-from impacts.models import TreatmentPlan, TreatmentPrescription
-from planning.models import Scenario
+from impacts.models import (
+    TreatmentPlan,
+    TreatmentPrescription,
+    TreatmentPrescriptionType,
+)
+from planning.models import ProjectArea, Scenario
+from stands.models import Stand
 
 
 class CreateTreatmentPlanSerializer(serializers.Serializer):
@@ -31,12 +36,47 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPlanListSerializer(serializers.ModelSerializer):
-    pass
+    def get_creator_name(self, instance):
+        return instance.user.get_full_name()
+
+    class Meta:
+        model = TreatmentPlan
+        fields = (
+            "uuid",
+            "created_at",
+            "created_by",
+            "creator_name",
+            "status",
+            "name",
+        )
 
 
 class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPrescription
+
+
+class UpsertTreamentPrescriptionSerializer(serializers.Serializer):
+    created_by = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+
+    treatment_plan = UUIDRelatedField(
+        uuid_field="uuid",
+        queryset=TreatmentPlan.objects.all(),
+    )
+
+    project_area = UUIDRelatedField(
+        uuid_field="uuid",
+        queryset=ProjectArea.objects.all(),
+    )
+
+    action = serializers.ChoiceField(choices=TreatmentPrescriptionType.choices)
+
+    stands = serializers.PrimaryKeyRelatedField(
+        queryset=Stand.objects.all(),
+        many=True,
+    )
 
 
 class TreatmentPrescriptionListSerializer(serializers.ModelSerializer):
