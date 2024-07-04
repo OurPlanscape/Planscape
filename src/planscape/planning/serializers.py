@@ -310,11 +310,6 @@ class ListCreatorSerializer(serializers.ModelSerializer):
 
 
 class ProjectAreaSerializer(serializers.ModelSerializer):
-    extent = serializers.SerializerMethodField()
-
-    def get_extent(self, instance):
-        return instance.geometry.transform(srid=4326, clone=True).extent
-
     class Meta:
         model = ProjectArea
         fields = (
@@ -324,5 +319,4 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
             "origin",
             "data",
             "geometry",
-            "extent",
         )

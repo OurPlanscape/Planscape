@@ -24,19 +24,6 @@ from planning.views import (
 from planning.views_userprefs import UserPreferencesView
 from planning.routers import router
 
-# router = routers.SimpleRouter()
-# router.register(r"planningareas", PlanningAreaViewSet, basename="planningareas")
-# router.register(
-#     r"planningareas/(?P<planningarea_pk>\d+)/scenarios",
-#     ScenarioViewSet,
-#     basename="scenarios",
-# )
-# router.register(
-#     r"creators",
-#     CreatorViewSet,
-#     basename="creators",
-# )
-
 app_name = "planning"
 
 urlpatterns = [
