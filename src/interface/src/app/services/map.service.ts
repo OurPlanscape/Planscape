@@ -115,6 +115,7 @@ export class MapService {
   /** Get shapes for a boundary from assets, if possible.  Fall back to the
    *  REST server, clipping the shapes to the region if the region is non-null. */
   getBoundaryShapes(vectorName: string): Observable<L.Layer> {
+    console.log('the vector name???', vectorName);
     var vector: Observable<L.Layer> = of(
       L.vectorGrid.protobuf(
         environment.tile_endpoint +
