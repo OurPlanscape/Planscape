@@ -6,8 +6,9 @@ from impacts.serializers import (
     TreatmentPlanSerializer,
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
+    UpsertTreamentPrescriptionSerializer,
 )
-from impacts.services import create_treatment_plan
+from impacts.services import create_treatment_plan, upsert_treatment_prescriptions
 
 
 class TreatmentPlanViewSet(
@@ -60,7 +61,7 @@ class TreatmentPrescriptionViewSet(
     serializer_class = TreatmentPrescriptionSerializer
     serializer_classes = {
         "list": TreatmentPrescriptionListSerializer,
-        "create": TreatmentPrescriptionSerializer,
+        "create": UpsertTreamentPrescriptionSerializer,
         "retrieve": TreatmentPrescriptionSerializer,
     }
 
@@ -71,24 +72,20 @@ class TreatmentPrescriptionViewSet(
             return self.serializer_class
 
     def get_queryset(self):
-        tx_plan_pk = self.kwargs.get("tx_plan_pk")
-        if tx_plan_pk:
-            try:
-                tx_prescriptions = TreatmentPrescription.objects.filter(
-                    treatment_plan_id=tx_plan_pk,
-                )
-                return tx_prescriptions
-            except TreatmentPrescription.DoesNotExist:
-                return TreatmentPrescription.objects.none()
-        else:
-            return TreatmentPrescription.objects.none()
+        tx_plan_pk = self.kwargs.get("tx_plan_pk", 0)
+        # filter will return zero elements if it does not match with anything
+        return TreatmentPrescription.objects.filter(
+            treatment_plan_id=tx_plan_pk,
+        )
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
+        prescriptions = self.perform_create(serializer)
         headers = self.get_success_headers(serializer.data)
-        out_serializer = TreatmentPlanSerializer(instance=serializer.instance)
+        out_serializer = TreatmentPrescriptionSerializer(
+            instance=prescriptions, many=True
+        )
         return response.Response(
             out_serializer.data,
             status=status.HTTP_201_CREATED,
@@ -96,6 +93,4 @@ class TreatmentPrescriptionViewSet(
         )
 
     def perform_create(self, serializer):
-        serializer.instance = create_treatment_plan(
-            **serializer.validated_data,
-        )
+        return upsert_treatment_prescriptions(**serializer.validated_data)

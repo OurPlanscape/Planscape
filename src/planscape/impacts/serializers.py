@@ -54,6 +54,18 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
 class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPrescription
+        fields = (
+            "uuid",
+            "created_at",
+            "created_by",
+            "updated_at",
+            "updated_by",
+            "treatment_plan",
+            "project_area",
+            "stand",
+            "action",
+            "geometry",
+        )
 
 
 class UpsertTreamentPrescriptionSerializer(serializers.Serializer):
@@ -83,11 +95,10 @@ class TreatmentPrescriptionListSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPrescription
         fields = (
-            "created_at",
-            "updated_at",
             "uuid",
-            "type",
+            "created_at",
+            "created_by",
+            "updated_at",
             "action",
             "stand",
-            "created_by",
         )
