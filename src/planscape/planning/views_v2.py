@@ -1,12 +1,12 @@
 import logging
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import OrderingFilter
 from rest_framework.decorators import action
-from planning.models import PlanningArea, Scenario, User
+from planning.models import PlanningArea, ProjectArea, Scenario, User
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
@@ -18,6 +18,7 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    ProjectAreaSerializer,
     ScenarioSerializer,
     ListCreatorSerializer,
 )
@@ -126,16 +127,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         planningarea_pk = self.kwargs.get("planningarea_pk")
-        if planningarea_pk:
-            try:
-                scenarios = Scenario.objects.filter(
-                    planning_area__pk=planningarea_pk,
-                )
-                return scenarios
-            except PlanningArea.DoesNotExist:
-                return Scenario.objects.none()  # Return an empty queryset
-        else:
-            return Scenario.objects.none()
+        return Scenario.objects.filter(planning_area__pk=planningarea_pk)
 
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, planningarea_pk, pk=None):
@@ -145,6 +137,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         return Response(data=serializer.data)
 
 
+# TODO: migrate this to an action inside the planning area viewset
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
     permission_classes = [PlanningAreaViewPermission]
@@ -156,3 +149,12 @@ class CreatorViewSet(ReadOnlyModelViewSet):
         return User.objects.filter(
             planning_areas__in=PlanningArea.objects.get_for_user(user)
         ).distinct()
+
+
+class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = ProjectArea.objects.all()
+    permission_classes = [PlanningAreaViewPermission]
+    serializer_class = ProjectAreaSerializer
+    serializer_classes = {
+        "retrieve": ProjectAreaSerializer,
+    }
