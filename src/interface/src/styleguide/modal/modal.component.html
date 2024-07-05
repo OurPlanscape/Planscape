@@ -1,12 +1,19 @@
-<section class="header">
+<section class="header" *ngIf="hasHeader">
   <div class="header-title">
-    <mat-icon *ngIf="leadingIcon">{{ leadingIcon }}</mat-icon>
+    <mat-icon *ngIf="leadingIcon" [matMenuTriggerFor]="tooltipMenu">{{
+      leadingIcon
+    }}</mat-icon>
     <h4>{{ title }}</h4>
   </div>
 
   <div class="title-buttons">
     <button>
-      <mat-icon>help_outline</mat-icon>
+      <mat-icon *ngIf="showToolTip">help_outline</mat-icon>
+      <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
+        <div class="tooltip">
+          {{ toolTipContent }}
+        </div>
+      </mat-menu>
     </button>
     <button mat-icon-button (click)="handleCancel()" aria-label="close">
       <mat-icon class="close-btn">close</mat-icon>
@@ -14,13 +21,27 @@
   </div>
 </section>
 
-<section class="modal-body">
-  <div>Here is a bunch of content</div>
+<main
+  class="modal-body"
+  [ngClass]="{
+    scrollable: scrollableContent
+  }">
   <ng-content> </ng-content>
-</section>
+</main>
 
-<section class="footer">
-  <button sg-button mat-raised-button type="button" (click)="handleCancel()">
+<div class="progress-element">
+  <div><mat-icon>help_outline</mat-icon> Placeholder</div>
+  <mat-icon>help_outline</mat-icon>
+</div>
+
+<section class="footer" *ngIf="hasFooter">
+  <button
+    *ngIf="hasSecondaryButton"
+    sg-button
+    mat-raised-button
+    type="button"
+    [variant]="secondaryButtonVariant"
+    (click)="handleCancel()">
     {{ secondaryButtonText }}
   </button>
 
@@ -29,6 +50,7 @@
     variant="primary"
     mat-raised-button
     type="button"
+    [variant]="primaryButtonVariant"
     (click)="handleDone()">
     {{ primaryButtonText }}
   </button>

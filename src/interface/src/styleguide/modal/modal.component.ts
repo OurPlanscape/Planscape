@@ -1,6 +1,7 @@
 import { Component, Inject, Input, Output, EventEmitter } from '@angular/core';
 import { NgIf, CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import {
   MatDialog,
@@ -8,7 +9,7 @@ import {
   MAT_DIALOG_DATA,
   MatDialogRef,
 } from '@angular/material/dialog';
-import { ButtonComponent } from '../button/button.component';
+import { ButtonComponent, ButtonVariant } from '../button/button.component';
 
 @Component({
   selector: 'sg-modal',
@@ -22,16 +23,25 @@ import { ButtonComponent } from '../button/button.component';
     ButtonComponent,
     MatIconModule,
     MatDividerModule,
+    MatMenuModule,
   ],
 })
 export class ModalComponent {
-  @Input() title: string = 'Huh ok';
+  @Input() title: string = 'Here is a title';
+  @Input() width: string = 'medium'; // TODO: use types here
   @Input() leadingIcon?: string | null;
-  // @Input() openDialog?: () => void;
-  @Input() primaryButtonText: string = 'Done';
-  @Input() secondaryButtonText: string = 'Cancel';
-  @Input() showClose: boolean = false;
-  @Input() showModal = false;
+  @Input() primaryButtonText?: string = 'Done';
+  @Input() primaryButtonVariant: ButtonVariant = 'primary';
+  @Input() hasSecondaryButton = true;
+  @Input() secondaryButtonText?: string = 'Cancel';
+  @Input() secondaryButtonVariant: ButtonVariant = 'ghost';
+  @Input() scrollableContent? = false;
+  @Input() showClose? = true;
+  @Input() showToolTip? = false;
+  @Input() hasHeader? = true;
+  @Input() hasFooter? = true;
+
+  @Input() toolTipContent = 'Here is some tooltip content';
 
   @Output() canceledClose = new EventEmitter<any>();
   @Output() doneClose = new EventEmitter<any>();
@@ -43,52 +53,17 @@ export class ModalComponent {
   ) {}
 
   openDialog() {
-    const dialogRef = this.dialog.open(ModalComponent, {
-      data: { title: this.title },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      this.showModal = false;
-    });
-
-    this.showModal = true;
+    this.dialogRef = this.dialog.open(ModalComponent, {});
+    this.dialogRef.afterClosed().subscribe((result) => {});
   }
 
   dialogClosed(event: any) {}
 
   handleCancel(): void {
-    this.dialogRef.close(false);
-    this.canceledClose.emit();
+    this.canceledClose.emit(); // should this just emit something different?
   }
 
   handleDone(): void {
-    this.dialogRef.close(true);
     this.doneClose.emit();
   }
-}
-
-@Component({
-  selector: 'sg-modal-wrapper',
-  template: `<button (click)="openDialog()">Click for Modal</button> `,
-})
-export class ModalWrapperComponent {
-  @Input() title = 'Some Title';
-  @Input() showClose = true;
-  @Input() showModal = false;
-
-  constructor(private dialog: MatDialog) {}
-
-  openDialog() {
-    const dialogRef = this.dialog.open(ModalComponent, {
-      data: { title: 'what about this' },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      this.showModal = false;
-    });
-
-    this.showModal = true;
-  }
-
-  dialogClosed(event: any) {}
 }
