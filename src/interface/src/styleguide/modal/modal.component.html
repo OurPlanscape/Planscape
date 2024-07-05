@@ -1,12 +1,35 @@
-<div class="modal-dialog">
-  <div class="title-line">
-    <button><mat-icon>close</mat-icon></button>
+<section class="header">
+  <div class="header-title">
+    <mat-icon *ngIf="leadingIcon">{{ leadingIcon }}</mat-icon>
+    <h4>{{ title }}</h4>
   </div>
 
-  <ng-content></ng-content>
-
-  <div class="modal-footer-buttons">
-    <button sg-button>Cancel</button>
-    <button sg-button>Done</button>
+  <div class="title-buttons">
+    <button>
+      <mat-icon>help_outline</mat-icon>
+    </button>
+    <button mat-icon-button (click)="cancel()" aria-label="close">
+      <mat-icon class="close-btn">close</mat-icon>
+    </button>
   </div>
-</div>
+</section>
+
+<section class="modal-body">
+  <div>Here is a bunch of content</div>
+  <ng-content> </ng-content>
+</section>
+
+<section class="footer">
+  <button sg-button mat-raised-button type="button" (click)="handleCancel()">
+    {{ secondaryButtonText }}
+  </button>
+
+  <button
+    sg-button
+    variant="primary"
+    mat-raised-button
+    type="button"
+    (click)="handleDone()">
+    {{ primaryButtonText }}
+  </button>
+</section>

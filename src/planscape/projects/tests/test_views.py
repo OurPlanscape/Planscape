@@ -55,13 +55,17 @@ class ProjectViewSetTest(TransactionTestCase):
             name="Private Project",
             display_name="Private Project Display",
             visibility=ProjectVisibility.PRIVATE,
+            capabilities=[
+                ProjectCapabilities.EXPLORE,
+                ProjectCapabilities.PLAN,
+            ],
             geometry=MultiPolygon(
                 Polygon(((0, 0), (1, 0), (1, 1), (0, 1), (0, 0))),
             ),
         )
 
     def test_list_projects(self):
-        url = reverse("projects:projects-list")
+        url = reverse("api:projects:projects-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
         data = response.json()
@@ -71,7 +75,7 @@ class ProjectViewSetTest(TransactionTestCase):
 
     def test_retrieve_project(self):
         url = reverse(
-            "projects:projects-detail",
+            "api:projects:projects-detail",
             args=[self.public_project.uuid],
         )
         response = self.client.get(url)
@@ -80,14 +84,14 @@ class ProjectViewSetTest(TransactionTestCase):
 
     def test_retrieve_nonexistent_project(self):
         url = reverse(
-            "projects:projects-detail",
+            "api:projects:projects-detail",
             args=[str(uuid4())],
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)
 
     def test_filter_by_name_exact(self):
-        url = reverse("projects:projects-list")
+        url = reverse("api:projects:projects-list")
         response = self.client.get(url, {"name": self.public_project.name})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
@@ -98,7 +102,7 @@ class ProjectViewSetTest(TransactionTestCase):
         )
 
     def test_filter_by_name_contains(self):
-        url = reverse("projects:projects-list")
+        url = reverse("api:projects:projects-list")
         response = self.client.get(
             url,
             {"name__icontains": "project"},
@@ -112,7 +116,7 @@ class ProjectViewSetTest(TransactionTestCase):
         )
 
     def test_filter_by_display_name_exact(self):
-        url = reverse("projects:projects-list")
+        url = reverse("api:projects:projects-list")
         response = self.client.get(
             url,
             {"display_name": self.public_project.display_name},
@@ -126,7 +130,7 @@ class ProjectViewSetTest(TransactionTestCase):
         )
 
     def test_filter_by_display_name_contains(self):
-        url = reverse("projects:projects-list")
+        url = reverse("api:projects:projects-list")
         response = self.client.get(
             url,
             {"display_name__icontains": "Display"},
@@ -140,7 +144,7 @@ class ProjectViewSetTest(TransactionTestCase):
         )
 
     def test_filter_by_capabilities_explore(self):
-        url = reverse("projects:projects-list")
+        url = reverse("api:projects:projects-list")
         response = self.client.get(
             url,
             {"capabilities": "EXPLORE"},
@@ -150,7 +154,7 @@ class ProjectViewSetTest(TransactionTestCase):
         self.assertEqual(response.data.get("count"), 2)
 
     def test_filter_by_capabilities_plan(self):
-        url = reverse("projects:projects-list")
+        url = reverse("api:projects:projects-list")
         response = self.client.get(
             url,
             {"capabilities": "PLAN"},
@@ -160,11 +164,13 @@ class ProjectViewSetTest(TransactionTestCase):
         self.assertEqual(response.data.get("count"), 1)
 
     def test_filter_by_capabilities_both_plan(self):
-        url = reverse("projects:projects-list")
+        url = reverse("api:projects:projects-list")
         response = self.client.get(
             url,
             {"capabilities": "EXPLORE,PLAN"},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        # in here we have 1 project that is defined in the tests plus
+        # 4 that are loaded view fixtures.
         self.assertEqual(len(response.data.get("results")), 1)
         self.assertEqual(response.data.get("count"), 1)

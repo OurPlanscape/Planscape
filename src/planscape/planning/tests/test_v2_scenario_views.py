@@ -8,7 +8,12 @@ from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
-from planning.models import Scenario, ScenarioResult, ScenarioResultStatus
+from planning.models import (
+    Scenario,
+    ScenarioResult,
+    ScenarioResultStatus,
+    ScenarioStatus,
+)
 from planning.tests.helpers import (
     _create_planning_area,
     _create_scenario,
@@ -108,6 +113,37 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(len(scenarios["results"]), 3)
         self.assertIsNotNone(scenarios["results"][0]["created_at"])
         self.assertIsNotNone(scenarios["results"][0]["updated_at"])
+
+    def test_toggle_scenario_status(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.post(
+            reverse(
+                "planning:scenarios-toggle-status",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        scenario = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(scenario.get("status"), "ARCHIVED")
+
+        # toogle back!
+        response = self.client.post(
+            reverse(
+                "planning:scenarios-toggle-status",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        scenario = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(scenario.get("status"), "ACTIVE")
 
     def test_list_scenario_not_logged_in(self):
         response = self.client.get(

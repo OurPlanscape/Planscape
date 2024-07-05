@@ -1,27 +1,49 @@
-import { Component, Input } from '@angular/core';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { Component, Inject, Input, Output, EventEmitter } from '@angular/core';
+import { NgIf, CommonModule } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
+import { ButtonComponent } from '../button/button.component';
 
 @Component({
   selector: 'sg-modal',
   templateUrl: './modal.component.html',
   styleUrls: ['./modal.component.scss'],
+  standalone: true,
+  imports: [
+    CommonModule,
+    NgIf,
+    MatDialogModule,
+    ButtonComponent,
+    MatIconModule,
+  ],
 })
 export class ModalComponent {
-  error: any;
-  @Input() openDialog?: void;
+  @Input() title: string = 'Modal Title';
+  @Input() leadingIcon?: string | null;
+  @Input() openDialog?: () => void;
+  @Input() primaryButtonText: string = 'Done';
+  @Input() secondaryButtonText: string = 'Cancel';
+  @Input() showClose: boolean = false;
+
+  @Output() canceledClose = new EventEmitter<any>();
+  @Output() doneClose = new EventEmitter<any>();
 
   constructor(
-    // @Inject(MAT_DIALOG_DATA) private data: { someData: 'testData' },
-    private dialogRef: MatDialogRef<ModalComponent>,
-    private dialog: MatDialog
+    @Inject(MAT_DIALOG_DATA) public data: { name: string },
+    public dialogRef: MatDialogRef<ModalComponent>
   ) {}
 
-  openModal() {
-    console.log('you want to open this modal?');
-    this.dialog.open(ModalComponent);
+  handleCancel(): void {
+    this.dialogRef.close(false);
+    this.canceledClose.emit();
   }
 
-  cancel(): void {
-    this.dialogRef.close();
+  handleDone(): void {
+    this.dialogRef.close(true);
+    this.doneClose.emit();
   }
 }

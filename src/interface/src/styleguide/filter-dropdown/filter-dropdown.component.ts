@@ -8,12 +8,11 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatMenuModule } from '@angular/material/menu';
+import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { ButtonComponent, InputFieldComponent } from '@styleguide';
 import { FormsModule } from '@angular/forms';
 import { SearchBarComponent } from '../search-bar/search-bar.component';
-import { Subject } from 'rxjs';
 
 /**
  * Filter dropdown that lets user select one or multiple strings as part of a search
@@ -67,7 +66,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   @Output() changedSelection = new EventEmitter<T[]>();
 
   /**
-   *  Event that emits when the `done` button is clicked
+   *  Event that emits when the `apply` button is clicked
    */
   @Output() confirmedSelection = new EventEmitter<T[]>();
 
@@ -77,12 +76,12 @@ export class FilterDropdownComponent<T> implements OnInit {
    */
   @Input() selectedItems: T[] = [];
 
-  private previousSelections: T[] = [];
-  clearInput: Subject<void> = new Subject<void>();
+  /**
+   * The search term
+   */
+  @Input() searchTerm = '';
 
-  clearSearchBar() {
-    this.clearInput.next();
-  }
+  private previousSelections: T[] = [];
 
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
@@ -90,6 +89,14 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   hasSelections(): boolean {
     return this.selectedItems.length > 0;
+  }
+
+  handleClosedMenu(e: MenuCloseReason): void {
+    // if menu was closed because of the apply button,
+    // we don't cancel the selections
+    if (e !== 'click') {
+      this.handleCancel();
+    }
   }
 
   showCount(): boolean {
@@ -100,7 +107,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     return this.selectedItems.includes(term);
   }
 
-  toggleSelection(e: any, item: T) {
+  toggleSelection(e: Event, item: T) {
     if (!this.selectedItems.includes(item)) {
       this.selectedItems.push(item);
     } else {
@@ -118,21 +125,22 @@ export class FilterDropdownComponent<T> implements OnInit {
     return this.menuLabel;
   }
 
-  handleCancel(e: any) {
+  handleCancel() {
     this.selectedItems = this.previousSelections.slice();
     this.previousSelections = [];
   }
 
-  handleFilterClick() {
-    //clear the search bar and show all items
-    this.clearInput.next();
-    this.displayedItems = this.menuItems.slice();
+  openFilterPanel() {
+    this.filterSearch(this.searchTerm);
     //copy the selections we had prior to opening, in case the user hits cancel
     this.previousSelections = this.selectedItems.slice();
   }
 
-  clearSelections(e: any): void {
+  clearSelections(e: Event): void {
     this.selectedItems = [];
+    this.searchTerm = '';
+    this.changedSelection.emit(this.selectedItems);
+    this.confirmedSelection.emit(this.selectedItems);
     e.stopPropagation();
   }
 
@@ -154,7 +162,7 @@ export class FilterDropdownComponent<T> implements OnInit {
     });
   }
 
-  done() {
+  applyChanges(e: Event) {
     this.confirmedSelection.emit(this.selectedItems);
   }
 }

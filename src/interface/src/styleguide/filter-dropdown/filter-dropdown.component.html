@@ -1,8 +1,9 @@
 <button
+  #triggerButton
   [matMenuTriggerFor]="multiSelectMenu"
   class="dropdown-button"
   [disabled]="disabled"
-  (click)="handleFilterClick()"
+  (click)="openFilterPanel()"
   [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
   <div class="icon-label-box">
     <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
@@ -29,15 +30,18 @@
   </mat-icon>
 </button>
 
-<mat-menu #multiSelectMenu="matMenu" class="filtermenu">
+<mat-menu
+  #multiSelectMenu="matMenu"
+  class="filtermenu"
+  (closed)="handleClosedMenu($event)">
   <div
     class="search-section"
     *ngIf="hasSearch"
     (click)="$event.stopPropagation()">
     <sg-search-bar
       [debounceInterval]="0"
-      [clearEvent]="clearInput.asObservable()"
       searchPlaceholder="Search for {{ menuLabel }}"
+      [searchValue]="searchTerm"
       (searchString)="filterSearch($event)"></sg-search-bar>
   </div>
   <div class="options-section">
@@ -62,11 +66,15 @@
         clear all
       </button>
       <div class="button-box">
-        <button sg-button variant="ghost" (click)="handleCancel($event)">
+        <button sg-button variant="ghost" (click)="handleCancel()">
           Cancel
         </button>
-        <button sg-button variant="primary" type="submit" (click)="done()">
-          Done
+        <button
+          sg-button
+          variant="primary"
+          type="submit"
+          (click)="applyChanges($event)">
+          Apply
         </button>
       </div>
     </div>

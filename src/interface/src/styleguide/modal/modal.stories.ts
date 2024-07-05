@@ -1,32 +1,71 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { applicationConfig, moduleMetadata } from '@storybook/angular';
-import { provideAnimations } from '@angular/platform-browser/animations';
-import { MatDialogModule } from '@angular/material/dialog';
+import { moduleMetadata } from '@storybook/angular';
+import {
+  MatDialog,
+  MatDialogModule,
+  MAT_DIALOG_DATA,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ModalComponent } from './modal.component';
+import { Component } from '@angular/core';
 
-type InputAndCustomArgs = ModalComponent & { placeholder: string };
+@Component({
+  selector: 'storybook-modal-wrapper',
+  template: `<button (click)="openDialog()">Click for Modal</button> `,
+})
+class StorybookModalWrapperComponent {
+  title = 'Modal Title';
+  showClose = true;
+  showModal = false;
 
-const meta: Meta<InputAndCustomArgs> = {
-  title: 'Components/Modal Demo',
-  component: ModalComponent,
+  constructor(private dialog: MatDialog) {}
+
+  openDialog() {
+    const dialogRef = this.dialog.open(ModalComponent, {
+      data: { title: 'Example Name' },
+    });
+
+    dialogRef.afterClosed().subscribe((result) => {
+      this.showModal = false;
+    });
+
+    this.showModal = true;
+  }
+
+  dialogClosed(event: any) {}
+}
+
+const meta: Meta<StorybookModalWrapperComponent> = {
+  title: 'Components/Modal',
+  component: StorybookModalWrapperComponent,
   tags: ['autodocs'],
-
   decorators: [
-    applicationConfig({
-      providers: [provideAnimations()],
+    moduleMetadata({
+      imports: [ModalComponent, MatDialogModule, BrowserAnimationsModule],
+      declarations: [StorybookModalWrapperComponent],
+      providers: [
+        MatDialog,
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: { name: 'Example Name' },
+        },
+        {
+          provide: MatDialogRef,
+          useValue: {
+            close: (dialogResult: any) => {},
+          },
+        },
+      ],
     }),
-    moduleMetadata({ imports: [MatDialogModule] }),
   ],
-  render: ({ placeholder, ...args }) => ({
-    props: args,
-    template: `
-    <button>Here is a button</button>
-     <sg-modal ></sg-modal>
-`,
-  }),
 };
 
 export default meta;
-type Story = StoryObj<InputAndCustomArgs>;
+type Story = StoryObj<StorybookModalWrapperComponent>;
 
-export const Default: Story = {};
+export const Default: Story = {
+  args: {
+    title: 'Here is a title',
+  },
+};
