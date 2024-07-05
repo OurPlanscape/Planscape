@@ -1,5 +1,9 @@
-<section>treatments</section>
-<div>{{ ids | json }}</div>
+<section>Selected Stands:</section>
+<div>{{ selectedStands | json }}</div>
+<div>
+  <button (click)="toggleMapDrag()">Toggle map drag</button>
+</div>
+
 <section>
   <div class="map" id="map"></div>
 </section>

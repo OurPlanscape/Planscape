@@ -4,7 +4,7 @@ import { FrontendConstants } from '../../map/map.constants';
 import { regionMapCenters } from '../../map/map.helper';
 import { Region } from '@types';
 import { stadiaAlidadeTiles } from '../../map/map.tiles';
-import { JsonPipe } from '@angular/common';
+import { JsonPipe, NgForOf } from '@angular/common';
 
 const defaultStyles = {
   weight: 1,
@@ -30,7 +30,7 @@ const selectedStyles = {
 @Component({
   selector: 'app-project-area',
   standalone: true,
-  imports: [JsonPipe],
+  imports: [JsonPipe, NgForOf],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
 })
@@ -39,6 +39,7 @@ export class ProjectAreaComponent implements OnInit {
   ids: number[] = [];
 
   selectedStands: number[] = [];
+  mapDragging = true;
 
   ngOnInit() {
     const stands = this.loadStands();
@@ -52,14 +53,10 @@ export class ProjectAreaComponent implements OnInit {
       layers: [stadiaAlidadeTiles(), outline, stands],
       zoomControl: false,
       scrollWheelZoom: true,
+      dragging: this.mapDragging,
+
       // attributionControl: this.showAttributionAndZoom,
     });
-
-    // outline.on(
-    //   'load',
-    //   () => console.log(outline)
-    //   //this.map.fitBounds((outline as Polyline).getBounds())
-    // );
   }
 
   private loadStands() {
@@ -71,8 +68,6 @@ export class ProjectAreaComponent implements OnInit {
         treatment_plan_prescriptions: defaultStyles,
       },
       interactive: true,
-      pane: 'overlayPane',
-      cache: true,
       getFeatureId: (f: any) => {
         const p = f.properties.id as number;
         if (!this.ids.includes(p)) {
@@ -81,22 +76,25 @@ export class ProjectAreaComponent implements OnInit {
         return p;
       },
     });
-    // layer.on('mouseover', (thing) => console.log('mouse over', thing));
-    layer.on('click', (thing) => {
+
+    layer.on('click', (event) => {
       const vectorLayer = layer as unknown as typeof L.vectorGrid;
-      const properties = (thing as any).layer.properties;
-      const id = properties.id;
-      if (this.selectedStands.includes(id)) {
-        vectorLayer.resetFeatureStyle(id);
-        this.selectedStands = this.selectedStands.filter(
-          (standId) => standId !== id
-        );
-      } else {
-        vectorLayer.setFeatureStyle(id, selectedStyles);
-        this.selectedStands.push(id);
-      }
+      const id = (event as any).layer.properties.id;
+      this.toggleStands(vectorLayer, id);
     });
     return layer;
+  }
+
+  private toggleStands(layer: typeof L.vectorGrid, id: number) {
+    if (this.selectedStands.includes(id)) {
+      layer.resetFeatureStyle(id);
+      this.selectedStands = this.selectedStands.filter(
+        (standId) => standId !== id
+      );
+    } else {
+      layer.setFeatureStyle(id, selectedStyles);
+      this.selectedStands.push(id);
+    }
   }
 
   private loadAreaOutline() {
@@ -109,5 +107,16 @@ export class ProjectAreaComponent implements OnInit {
       },
       zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
     });
+  }
+
+  toggle(id: number) {}
+
+  toggleMapDrag() {
+    if (this.mapDragging) {
+      this.map.dragging.disable();
+    } else {
+      this.map.dragging.enable();
+    }
+    this.mapDragging = !this.mapDragging;
   }
 }
