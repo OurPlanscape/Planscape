@@ -7,43 +7,16 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { ModalComponent } from './modal.component';
-import { Component } from '@angular/core';
+import { ModalComponent, ModalWrapperComponent } from './modal.component';
 
-@Component({
-  selector: 'storybook-modal-wrapper',
-  template: `<button (click)="openDialog()">Click for Modal</button> `,
-})
-class StorybookModalWrapperComponent {
-  title = 'Modal Title';
-  showClose = true;
-  showModal = false;
-
-  constructor(private dialog: MatDialog) {}
-
-  openDialog() {
-    const dialogRef = this.dialog.open(ModalComponent, {
-      data: { title: 'Example Name' },
-    });
-
-    dialogRef.afterClosed().subscribe((result) => {
-      this.showModal = false;
-    });
-
-    this.showModal = true;
-  }
-
-  dialogClosed(event: any) {}
-}
-
-const meta: Meta<StorybookModalWrapperComponent> = {
+const meta: Meta<ModalWrapperComponent> = {
   title: 'Components/Modal',
-  component: StorybookModalWrapperComponent,
+  component: ModalWrapperComponent,
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({
       imports: [ModalComponent, MatDialogModule, BrowserAnimationsModule],
-      declarations: [StorybookModalWrapperComponent],
+      declarations: [ModalWrapperComponent],
       providers: [
         MatDialog,
         {
@@ -62,7 +35,7 @@ const meta: Meta<StorybookModalWrapperComponent> = {
 };
 
 export default meta;
-type Story = StoryObj<StorybookModalWrapperComponent>;
+type Story = StoryObj<ModalWrapperComponent>;
 
 export const Default: Story = {
   args: {
