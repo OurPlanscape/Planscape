@@ -111,7 +111,27 @@ export const WithoutFooter: Story = {
   }),
 };
 
-export const ProgressItems: Story = {
+export const WithProgressElements: Story = {
+  args: {
+    ...Default,
+    hasHeader: true,
+    hasFooter: false,
+    progressItems: [
+      { status: 'started', name: 'Process 1' },
+      { status: 'done', name: 'Big Process' },
+      { status: 'started', name: 'Another process' },
+    ],
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div ${containerStyle}>
+        <sg-modal ${argsToTemplate(args)}>
+        <div>Standard modal content</div>
+        </sg-modal><div>`,
+  }),
+};
+
+export const ProgressBlurb: Story = {
   args: {
     ...Default,
     hasHeader: true,

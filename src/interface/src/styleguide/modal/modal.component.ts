@@ -3,6 +3,8 @@ import { NgIf, CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+
 import {
   MatDialog,
   MatDialogModule,
@@ -24,6 +26,7 @@ import { ButtonComponent, ButtonVariant } from '../button/button.component';
     MatIconModule,
     MatDividerModule,
     MatMenuModule,
+    MatProgressSpinnerModule, // make separate component for the progress thingy?
   ],
 })
 export class ModalComponent {
@@ -40,6 +43,7 @@ export class ModalComponent {
   @Input() showToolTip? = false;
   @Input() hasHeader? = true;
   @Input() hasFooter? = true;
+  @Input() progressItems?: any[];
 
   @Input() toolTipContent = 'Here is some tooltip content';
 

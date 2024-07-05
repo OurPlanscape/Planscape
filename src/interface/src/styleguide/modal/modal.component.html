@@ -29,9 +29,15 @@
   <ng-content> </ng-content>
 </main>
 
-<div class="progress-element">
-  <div><mat-icon>help_outline</mat-icon> Placeholder</div>
-  <mat-icon>help_outline</mat-icon>
+<div class="progress-element" *ngFor="let progressItem of progressItems">
+  <div class="progress-info">
+    <mat-icon>assignment</mat-icon>{{ progressItem.name }}
+  </div>
+  <mat-spinner
+    *ngIf="progressItem.status === 'started'"
+    class="main-loader"
+    diameter="24"></mat-spinner>
+  <mat-icon *ngIf="progressItem.status === 'done'">check</mat-icon>
 </div>
 
 <section class="footer" *ngIf="hasFooter">
