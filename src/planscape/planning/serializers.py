@@ -6,6 +6,7 @@ from collaboration.services import get_role, get_permissions
 from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
+    ProjectArea,
     Scenario,
     ScenarioResult,
     SharedLink,
@@ -306,3 +307,16 @@ class ListCreatorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "email", "full_name")
+
+
+class ProjectAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectArea
+        fields = (
+            "uuid",
+            "scenario",
+            "name",
+            "origin",
+            "data",
+            "geometry",
+        )
