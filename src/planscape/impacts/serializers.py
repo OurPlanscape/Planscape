@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
 from core.fields import UUIDRelatedField
-from impacts.models import TreatmentPlan
+from impacts.models import TreatmentPlan, TreatmentPrescription
 from planning.models import Scenario
 
 
@@ -41,4 +41,23 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
             "scenario",
             "name",
             "status",
+        )
+
+
+class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentPrescription
+
+
+class TreatmentPrescriptionListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentPrescription
+        fields = (
+            "created_at",
+            "updated_at",
+            "uuid",
+            "type",
+            "action",
+            "stand",
+            "created_by",
         )

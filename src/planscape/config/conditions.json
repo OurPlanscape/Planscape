@@ -1729,19 +1729,6 @@
                   "reference_link": "",
                   "source": "SIG-GIS",
                   "source_link": ""
-                },
-                {
-                  "display_name": "Wildland Urban Interface",
-                  "data_provider": "SIG-GIS",
-                  "data_units": "meters",
-                  "max_value": 2,
-                  "metric_name": "wildland_urban_interface",
-                  "min_value": 0,
-                  "raw_data_download_path": "central-coast/forsys/wildland_urban_interface.tif",
-                  "raw_layer": "",
-                  "reference_link": "",
-                  "source": "SIG-GIS",
-                  "source_link": ""
                 }
               ]
             }

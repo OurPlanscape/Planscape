@@ -2,10 +2,12 @@ import logging
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework.filters import OrderingFilter
 from rest_framework.decorators import action
+
 from planning.models import PlanningArea, Scenario, User
 from impacts.models import TreatmentPlan
 from impacts.serializers import TreatmentPlanListSerializer
@@ -45,6 +47,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "full_name",
         "name",
         "region_name",
+        "latest_updated",
         "scenario_count",
         "updated_at",
         "user",
@@ -149,13 +152,24 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     def treatment_plans(self, request, planningarea_pk, pk=None):
         scenario = self.get_object()
         treatments = TreatmentPlan.objects.filter(scenario_id=scenario)
+        paginator = LimitOffsetPagination()
+        # Paginate the queryset
+        page = paginator.paginate_queryset(treatments, request)
+        if page is not None:
+            serializer = TreatmentPlanListSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
         serializer = TreatmentPlanListSerializer(treatments, many=True)
         return Response(serializer.data)
 
 
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
+    permission_classes = [PlanningAreaViewPermission]
     serializer_class = ListCreatorSerializer
+    pagination_class = None
 
     def get_queryset(self):
-        return User.objects.filter(planning_areas__isnull=False).distinct()
+        user = self.request.user
+        return User.objects.filter(
+            planning_areas__in=PlanningArea.objects.get_for_user(user)
+        ).distinct()

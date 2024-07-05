@@ -15,6 +15,7 @@ import {
   map,
   Observable,
   of,
+  switchMap,
   take,
   tap,
   throwError,
@@ -174,7 +175,7 @@ export class AuthService {
     this.cookieService.delete('my-app-auth');
   }
 
-  private getLoggedInUser(): Observable<User> {
+  public getLoggedInUser(): Observable<User> {
     return this.http
       .get(this.API_ROOT.concat('user/'), { withCredentials: true })
       .pipe(
@@ -386,8 +387,13 @@ export class AuthGuard {
     route?: ActivatedRouteSnapshot,
     state?: RouterStateSnapshot
   ): Observable<boolean> {
-    return this.authService.refreshLoggedInUser().pipe(
-      map((_) => true),
+    return this.authService.isLoggedIn$.pipe(
+      switchMap((loggedIn) => {
+        if (loggedIn) {
+          return of(true);
+        }
+        return this.authService.getLoggedInUser().pipe(map(() => true));
+      }),
       catchError((_) => {
         if (state) {
           this.redirectService.setRedirect(state.url);
