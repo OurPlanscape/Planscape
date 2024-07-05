@@ -1,4 +1,9 @@
-from planning.views_v2 import PlanningAreaViewSet, ScenarioViewSet, CreatorViewSet
+from planning.views_v2 import (
+    PlanningAreaViewSet,
+    ScenarioViewSet,
+    CreatorViewSet,
+    ProjectAreaViewSet,
+)
 from rest_framework import routers
 
 router = routers.SimpleRouter()
@@ -15,3 +20,5 @@ router.register(
     ScenarioViewSet,
     basename="scenarios",
 )
+
+router.register("project-areas", ProjectAreaViewSet, basename="project-areas")
