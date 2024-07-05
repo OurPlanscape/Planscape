@@ -1,4 +1,11 @@
-import { Component, Inject, Input, Output, EventEmitter } from '@angular/core';
+import {
+  Component,
+  HostBinding,
+  Inject,
+  Input,
+  Output,
+  EventEmitter,
+} from '@angular/core';
 import { NgIf, CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -31,7 +38,7 @@ import { ButtonComponent, ButtonVariant } from '../button/button.component';
 })
 export class ModalComponent {
   @Input() title: string = 'Here is a title';
-  @Input() width: string = 'medium'; // TODO: use types here
+  @Input() width: 'regular' | 'large' = 'regular';
   @Input() leadingIcon?: string | null;
   @Input() primaryButtonText?: string = 'Done';
   @Input() primaryButtonVariant: ButtonVariant = 'primary';
@@ -69,5 +76,10 @@ export class ModalComponent {
 
   handleDone(): void {
     this.doneClose.emit();
+  }
+
+  @HostBinding('class.large')
+  get isSmall() {
+    return this.width === 'large';
   }
 }
