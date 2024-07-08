@@ -4,14 +4,23 @@ import {
 } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { Router } from '@angular/router';
 import { CookieService } from 'ngx-cookie-service';
-import { of, throwError } from 'rxjs';
+import { of } from 'rxjs';
 import { User } from '@types';
 import { AuthGuard, AuthService } from './auth.service';
 import { RedirectService } from './redirect.service';
 import { MockProvider } from 'ng-mocks';
 import { environment } from 'src/environments/environment';
+import { RouterTestingModule } from '@angular/router/testing';
+
+// Define a dummy component for the route
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+
+@Component({
+  template: '',
+})
+class DummyComponent {}
 
 describe('AuthService', () => {
   let httpTestingController: HttpTestingController;
@@ -522,7 +531,12 @@ describe('AuthGuard', () => {
       {}
     );
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
+      imports: [
+        HttpClientTestingModule,
+        RouterTestingModule.withRoutes([
+          { path: 'login', component: DummyComponent },
+        ]),
+      ],
       providers: [
         AuthService,
         AuthGuard,
@@ -541,11 +555,9 @@ describe('AuthGuard', () => {
   });
 
   describe('canActivate', () => {
-    it('returns true if refreshLoggedInUser succeeds', (done) => {
+    it('returns true if user is logged in', (done) => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
-      spyOn(authServiceStub, 'refreshLoggedInUser').and.returnValue(
-        of({ email: 'test@test.com' })
-      );
+      authServiceStub.isLoggedIn$ = of(true);
 
       service.canActivate().subscribe((result) => {
         expect(result).toBeTrue();
@@ -553,17 +565,27 @@ describe('AuthGuard', () => {
       });
     });
 
-    it('returns false and redirects to login if refreshLoggedInUser fails', (done) => {
+    it('checks for getLoggedInUser if user is not logged in', (done) => {
       const authServiceStub: AuthService = TestBed.inject(AuthService);
-      spyOn(authServiceStub, 'refreshLoggedInUser').and.returnValue(
-        throwError(() => new Error())
-      );
-      const routerStub: Router = TestBed.inject(Router);
-      spyOn(routerStub, 'navigate');
+      authServiceStub.isLoggedIn$ = of(false);
+      spyOn(authServiceStub, 'getLoggedInUser');
 
       service.canActivate().subscribe((result) => {
-        expect(routerStub.navigate).toHaveBeenCalledOnceWith(['login']);
+        expect(authServiceStub.getLoggedInUser).toHaveBeenCalled();
+        done();
+      });
+    });
+
+    it('goes to login if getLoggedInUser throws error ', (done) => {
+      const authServiceStub: AuthService = TestBed.inject(AuthService);
+      const router = TestBed.inject(Router);
+      spyOn(router, 'navigate');
+      authServiceStub.isLoggedIn$ = of(null);
+      spyOn(authServiceStub, 'getLoggedInUser').and.throwError('some error');
+
+      service.canActivate().subscribe((result) => {
         expect(result).toBeFalse();
+        expect(router.navigate).toHaveBeenCalledWith(['login']);
         done();
       });
     });

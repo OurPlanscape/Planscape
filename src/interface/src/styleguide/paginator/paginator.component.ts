@@ -61,7 +61,6 @@ export class PaginatorComponent implements OnInit, OnChanges {
    */
   @Output() recordsPerPageChanged = new EventEmitter<number>();
 
-  selectedPage: number = 0;
   buttonsShown = 0;
   showFirstSpacer$ = new BehaviorSubject<boolean>(false);
   showLastSpacer$ = new BehaviorSubject<boolean>(false);
@@ -70,7 +69,6 @@ export class PaginatorComponent implements OnInit, OnChanges {
   defaultButtonsToShow = 6;
 
   ngOnInit(): void {
-    this.selectedPage = this.currentPage;
     this.navSelectRange = [1, ...Array(this.pageCount + 1).keys()].slice(2);
     this.calcButtonLabels();
   }
@@ -89,23 +87,15 @@ export class PaginatorComponent implements OnInit, OnChanges {
     const curPages = this.pageCount;
     const buttonsToShow = Math.min(curPages, this.defaultButtonsToShow);
 
-    // in case the results-per-page changes, ensure that the
-    // currently selected page number doesn't exceed
-    // the number of pages available
-    this.selectedPage = Math.min(curPages, this.selectedPage);
-
     const midCount = Math.ceil(buttonsToShow / 2);
     const rightRemainder = Math.max(
       0,
-      midCount + 1 - (curPages - this.selectedPage)
+      midCount + 1 - (curPages - this.currentPage)
     );
-    const leftRemainder = Math.max(0, midCount - (this.selectedPage - 1));
-    let buttonStart = Math.max(
-      this.selectedPage - midCount - rightRemainder,
-      2
-    );
+    const leftRemainder = Math.max(0, midCount - (this.currentPage - 1));
+    let buttonStart = Math.max(this.currentPage - midCount - rightRemainder, 2);
     let buttonEnd = Math.min(
-      this.selectedPage + midCount + 1 + leftRemainder,
+      this.currentPage + midCount + 1 + leftRemainder,
       curPages
     );
     this.showFirstSpacer$.next(buttonStart > 2);
@@ -119,16 +109,21 @@ export class PaginatorComponent implements OnInit, OnChanges {
     this.buttonRange$.next(buttonArray);
   }
 
+  selectPageChange() {
+    this.calcButtonLabels();
+    this.pageChanged.emit(this.currentPage);
+  }
+
   setPage(pageNum: number) {
-    if (this.selectedPage !== pageNum) {
-      this.selectedPage = pageNum;
-      this.pageChanged.emit(this.selectedPage);
+    if (this.currentPage !== pageNum) {
+      this.currentPage = pageNum;
+      this.pageChanged.emit(this.currentPage);
       this.calcButtonLabels();
     }
   }
 
   isCurrentPage(elementPage: number): boolean {
-    return elementPage === this.selectedPage;
+    return elementPage === this.currentPage;
   }
 
   perPageChanged() {
@@ -136,11 +131,11 @@ export class PaginatorComponent implements OnInit, OnChanges {
   }
 
   handlePrevious() {
-    const pageNum = Math.max(this.selectedPage - 1, 1);
+    const pageNum = Math.max(this.currentPage - 1, 1);
     this.setPage(pageNum);
   }
   handleNext() {
-    const pageNum = Math.min(this.selectedPage + 1, this.pageCount);
+    const pageNum = Math.min(this.currentPage + 1, this.pageCount);
     this.setPage(pageNum);
   }
 }
