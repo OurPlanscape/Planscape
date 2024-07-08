@@ -6,7 +6,7 @@ from impacts.serializers import (
     TreatmentPlanSerializer,
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
-    UpsertTreamentPrescriptionSerializer,
+    TreamentPrescriptionUpsertSerializer,
 )
 from impacts.services import create_treatment_plan, upsert_treatment_prescriptions
 
@@ -61,7 +61,7 @@ class TreatmentPrescriptionViewSet(
     serializer_class = TreatmentPrescriptionSerializer
     serializer_classes = {
         "list": TreatmentPrescriptionListSerializer,
-        "create": UpsertTreamentPrescriptionSerializer,
+        "create": TreamentPrescriptionUpsertSerializer,
         "retrieve": TreatmentPrescriptionSerializer,
     }
 

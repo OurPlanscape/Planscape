@@ -68,7 +68,7 @@ class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
         )
 
 
-class UpsertTreamentPrescriptionSerializer(serializers.Serializer):
+class TreamentPrescriptionUpsertSerializer(serializers.Serializer):
     created_by = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
