@@ -242,6 +242,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "creator",
             "status",
             "scenario_result",
+            "configuration",
         )
         model = Scenario
 

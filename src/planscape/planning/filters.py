@@ -84,3 +84,26 @@ class ScenarioFilter(filters.FilterSet):
     class Meta:
         model = Scenario
         fields = ["name"]
+
+
+class ScenarioOrderingFilter(OrderingFilter):
+
+    def filter_queryset(self, request, queryset, view):
+        print(f"Is this happening??? {request}")
+        ordering = self.get_ordering(request, queryset, view)
+        print(f"wtf is ordering?: {ordering}")
+
+        if ordering:
+            for order in ordering:
+                reverse = order.startswith("-")
+                field_name = order.lstrip("-")
+
+                if field_name == "budget":
+                    print("so we have a budget, I guess")
+                    direction = "-" if reverse else ""
+                    queryset = queryset.order_by(
+                        f"{direction}configuration__max_budget", "pk"
+                    )
+                    return queryset
+
+        return super().filter_queryset(request, queryset, view)
