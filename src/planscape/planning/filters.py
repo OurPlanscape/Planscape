@@ -89,21 +89,31 @@ class ScenarioFilter(filters.FilterSet):
 class ScenarioOrderingFilter(OrderingFilter):
 
     def filter_queryset(self, request, queryset, view):
-        print(f"Is this happening??? {request}")
         ordering = self.get_ordering(request, queryset, view)
-        print(f"wtf is ordering?: {ordering}")
-
+        custom_ordering = []
         if ordering:
             for order in ordering:
                 reverse = order.startswith("-")
                 field_name = order.lstrip("-")
 
                 if field_name == "budget":
-                    print("so we have a budget, I guess")
                     direction = "-" if reverse else ""
-                    queryset = queryset.order_by(
-                        f"{direction}configuration__max_budget", "pk"
+                    custom_ordering.append(f"{direction}configuration__max_budget")
+
+                elif field_name == "acres":
+                    direction = "-" if reverse else ""
+                    custom_ordering.append(
+                        f"{direction}configuration__max_treatment_area_ratio"
                     )
-                    return queryset
+                elif field_name == "completed_at":
+                    direction = "-" if reverse else ""
+                    custom_ordering.append(f"{direction}results__completed_at")
+
+                else:
+                    custom_ordering.append(order)
+
+            if custom_ordering:
+                queryset = queryset.order_by(*custom_ordering)
+                return queryset
 
         return super().filter_queryset(request, queryset, view)

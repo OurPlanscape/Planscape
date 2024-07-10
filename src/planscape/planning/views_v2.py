@@ -93,7 +93,15 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.all()
     permission_classes = [ScenarioViewPermission]
-    ordering_fields = ["name", "created_at", "id", "status", "budget"]
+    ordering_fields = [
+        "name",
+        "created_at",
+        "id",
+        "status",
+        "budget",
+        "acres",
+        "completed_at",
+    ]
     # TODO: acres, budget, status, completion date?
     filterset_class = ScenarioFilter
     filter_backends = [ScenarioOrderingFilter]

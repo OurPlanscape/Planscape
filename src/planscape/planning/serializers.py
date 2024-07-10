@@ -229,6 +229,10 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         read_only=True,
         source="results",
     )
+    max_treatment_area = serializers.ReadOnlyField(
+        source="configuration.max_treatment_area_ratio"
+    )
+    max_budget = serializers.ReadOnlyField(source="configuration.max_budget")
 
     class Meta:
         fields = (
@@ -236,6 +240,8 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "updated_at",
             "created_at",
             "planning_area",
+            "max_treatment_area",
+            "max_budget",
             "name",
             "notes",
             "user",
