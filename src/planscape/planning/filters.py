@@ -87,7 +87,6 @@ class ScenarioFilter(filters.FilterSet):
 
 
 class ScenarioOrderingFilter(OrderingFilter):
-
     def filter_queryset(self, request, queryset, view):
         ordering = self.get_ordering(request, queryset, view)
         custom_ordering = []
