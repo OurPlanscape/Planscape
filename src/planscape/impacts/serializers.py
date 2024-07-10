@@ -46,7 +46,6 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
         fields = (
             "uuid",
             "created_at",
-            "created_by",
             "creator_name",
             "updated_at",
             "scenario",
