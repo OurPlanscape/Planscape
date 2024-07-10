@@ -36,14 +36,17 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPlanListSerializer(serializers.ModelSerializer):
+    creator_name = serializers.SerializerMethodField()
+
     def get_creator_name(self, instance):
-        return instance.user.get_full_name()
+        return instance.created_by.get_full_name()
 
     class Meta:
         model = TreatmentPlan
         fields = (
             "uuid",
             "created_at",
+            "created_by",
             "creator_name",
             "updated_at",
             "scenario",
