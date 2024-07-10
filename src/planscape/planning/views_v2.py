@@ -1,7 +1,7 @@
 import logging
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status, mixins
+from rest_framework import viewsets, status, mixins, permissions
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import LimitOffsetPagination
@@ -168,7 +168,7 @@ class CreatorViewSet(ReadOnlyModelViewSet):
 
 class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = ProjectArea.objects.all()
-    permission_classes = [PlanningAreaViewPermission]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = ProjectAreaSerializer
     serializer_classes = {
         "retrieve": ProjectAreaSerializer,
