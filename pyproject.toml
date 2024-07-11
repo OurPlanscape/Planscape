@@ -55,6 +55,7 @@ pyopenssl = "24.1.0"
 django-treebeard = "^4.7.1"
 django-activity-stream = "^2.0.0"
 factory-boy = "^3.3.0"
+flake8-pyproject = "^1.2.3"
 
 
 [tool.poetry.dev-dependencies]
@@ -84,6 +85,7 @@ typed-ast = "^1.5.4"
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"
 poetry-plugin-export = "^1.7.1"
+flake8-pyproject = "^1.2.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]

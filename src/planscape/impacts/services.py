@@ -1,4 +1,4 @@
-from typing import List, Type
+from typing import List, Type, Dict, Union, Tuple
 from django.db import transaction
 from impacts.models import (
     TreatmentPlan,
@@ -20,6 +20,7 @@ StandType = Type[Stand]
 ActionType = Type[TreatmentPrescriptionType]
 ProjectAreaType = Type[ProjectArea]
 TreatmentPrescriptionEntityType = Type[TreatmentPrescription]
+CloneResultType = Tuple[TreatmentPlanType, List[TreatmentPrescriptionEntityType]]
 
 
 @transaction.atomic()
@@ -81,3 +82,50 @@ def upsert_treatment_prescriptions(
         )
     )
     return results
+
+
+@transaction.atomic()
+def clone_treatment_prescription(
+    rx_prescription: TreatmentPrescriptionEntityType,
+    new_treatment_plan: TreatmentPlanType,
+    user: UserType,
+):
+    return TreatmentPrescription.objects.create(
+        created_by=user,
+        updated_by=user,
+        treatment_plan=new_treatment_plan,
+        project_area=rx_prescription.project_area,
+        type=rx_prescription.type,
+        action=rx_prescription.action,
+        stand=rx_prescription.stand,
+        geometry=rx_prescription.geometry,
+    )
+
+
+@transaction.atomic()
+def clone_treatment_plan(
+    treatment_plan: TreatmentPlanType,
+    user: UserType,
+) -> CloneResultType:
+    cloned_plan = TreatmentPlan.objects.create(
+        created_by=user,
+        scenario=treatment_plan.scenario,
+        status=TreatmentPlanStatus.PENDING,
+        name=treatment_plan.name,  # TODO fix name
+    )
+
+    cloned_prescriptions = list(
+        map(
+            lambda rx: clone_treatment_prescription(rx, cloned_plan, user),
+            treatment_plan.tx_prescriptions.all(),
+        )
+    )
+
+    actstream_action.send(
+        user,
+        verb="cloned",
+        action_object=cloned_plan,
+        target=treatment_plan,
+    )
+
+    return (cloned_plan, cloned_prescriptions)
