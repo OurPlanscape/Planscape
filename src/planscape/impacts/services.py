@@ -102,6 +102,10 @@ def clone_treatment_prescription(
     )
 
 
+def get_cloned_name(name: str) -> str:
+    return f"{name} (clone)"
+
+
 @transaction.atomic()
 def clone_treatment_plan(
     treatment_plan: TreatmentPlanType,
@@ -111,7 +115,7 @@ def clone_treatment_plan(
         created_by=user,
         scenario=treatment_plan.scenario,
         status=TreatmentPlanStatus.PENDING,
-        name=treatment_plan.name,  # TODO fix name
+        name=get_cloned_name(treatment_plan.name),
     )
 
     cloned_prescriptions = list(
