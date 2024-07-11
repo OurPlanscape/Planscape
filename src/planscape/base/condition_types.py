@@ -24,7 +24,7 @@ from typing_extensions import NotRequired
 
 ConditionMatrix = npt.NDArray[np.float32]
 
-
+foo=1
 class ConditionLevel(enum.IntEnum):
     """Level of the hierarchy of the condition."""
 
