@@ -31,6 +31,34 @@ class TxPlanViewSetTest(APITransactionTestCase):
             tx_plan.created_by.id,
         )
 
+    def test_get_tx_plan(self):
+        self.client.force_authenticate(user=self.scenario.user)
+
+        tx_plan = TreatmentPlanFactory.create(
+            name="it's a bold plan",
+        )
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["name"], "it's a bold plan")
+
+    def test_update_tx_plan(self):
+        self.client.force_authenticate(user=self.scenario.user)
+
+        tx_plan = TreatmentPlanFactory.create(name="it's a bold plan")
+        payload = {"name": "lets see how it works out"}
+        response = self.client.patch(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_plan = TreatmentPlan.objects.get(pk=tx_plan.id)
+        self.assertEqual(updated_plan.name, "lets see how it works out")
+
     def test_list_txplans_in_scenario(self):
         for _ in range(50):
             TreatmentPlanFactory.create(scenario=self.scenario)

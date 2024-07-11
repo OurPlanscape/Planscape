@@ -14,6 +14,7 @@ from impacts.services import create_treatment_plan, upsert_treatment_prescriptio
 class TreatmentPlanViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
