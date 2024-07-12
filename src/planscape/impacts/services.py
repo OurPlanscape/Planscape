@@ -20,7 +20,9 @@ StandType = Type[Stand]
 ActionType = Type[TreatmentPrescriptionType]
 ProjectAreaType = Type[ProjectArea]
 TreatmentPrescriptionEntityType = Type[TreatmentPrescription]
-CloneResultType = Tuple[TreatmentPlanType, List[TreatmentPrescriptionEntityType]]
+TreatmentPlanCloneResultType = Tuple[
+    TreatmentPlanType, List[TreatmentPrescriptionEntityType]
+]
 
 
 @transaction.atomic()
@@ -86,7 +88,7 @@ def upsert_treatment_prescriptions(
 
 @transaction.atomic()
 def clone_treatment_prescription(
-    rx_prescription: TreatmentPrescriptionEntityType,
+    tx_prescription: TreatmentPrescriptionEntityType,
     new_treatment_plan: TreatmentPlanType,
     user: UserType,
 ):
@@ -94,11 +96,11 @@ def clone_treatment_prescription(
         created_by=user,
         updated_by=user,
         treatment_plan=new_treatment_plan,
-        project_area=rx_prescription.project_area,
-        type=rx_prescription.type,
-        action=rx_prescription.action,
-        stand=rx_prescription.stand,
-        geometry=rx_prescription.geometry,
+        project_area=tx_prescription.project_area,
+        type=tx_prescription.type,
+        action=tx_prescription.action,
+        stand=tx_prescription.stand,
+        geometry=tx_prescription.geometry,
     )
 
 
@@ -110,7 +112,7 @@ def get_cloned_name(name: str) -> str:
 def clone_treatment_plan(
     treatment_plan: TreatmentPlanType,
     user: UserType,
-) -> CloneResultType:
+) -> TreatmentPlanCloneResultType:
     cloned_plan = TreatmentPlan.objects.create(
         created_by=user,
         scenario=treatment_plan.scenario,
