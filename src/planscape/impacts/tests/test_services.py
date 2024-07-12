@@ -1,11 +1,12 @@
 from django.test import TransactionTestCase
 
 from impacts.models import (
+    TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
 )
-from impacts.services import upsert_treatment_prescriptions
+from impacts.services import clone_treatment_plan, upsert_treatment_prescriptions
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
 from planning.tests.factories import ProjectAreaFactory
 from stands.tests.factories import StandFactory
@@ -79,3 +80,33 @@ class UpsertTreatmentPrescriptionTest(TransactionTestCase):
 
         self.assertEqual(TreatmentPrescription.objects.all().count(), 2)
         self.assertNotEqual(rx1.pk, results[0].pk)
+
+
+class CloneTreatmentPlanTest(TransactionTestCase):
+    def setUp(self):
+        self.treatment_plan = TreatmentPlanFactory.create()
+        self.project_area = ProjectAreaFactory.create(
+            scenario=self.treatment_plan.scenario
+        )
+        self.stand1 = StandFactory.create()
+        self.stand2 = StandFactory.create()
+        self.stand3 = StandFactory.create()
+        self.prescriptions = TreatmentPrescriptionFactory.create_batch(
+            size=5,
+            **{
+                "treatment_plan": self.treatment_plan,
+                "project_area": self.project_area,
+                "stand": self.stand1,
+                "geometry": self.stand1.geometry,
+            },
+        )
+
+    def test_clone_treatment_plan(self):
+        new_plan, new_prescriptions = clone_treatment_plan(
+            self.treatment_plan,
+            self.treatment_plan.created_by,
+        )
+
+        self.assertEqual(TreatmentPlan.objects.all().count(), 2)
+        self.assertEqual(TreatmentPrescription.objects.all().count(), 10)
+        self.assertNotEqual(new_plan.pk, self.treatment_plan.pk)
