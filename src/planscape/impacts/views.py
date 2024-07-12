@@ -1,4 +1,5 @@
 from rest_framework import mixins, viewsets, response, status
+from rest_framework.decorators import action
 from impacts.models import TreatmentPlan, TreatmentPrescription
 from impacts.serializers import (
     CreateTreatmentPlanSerializer,
@@ -8,7 +9,11 @@ from impacts.serializers import (
     TreatmentPrescriptionListSerializer,
     TreamentPrescriptionUpsertSerializer,
 )
-from impacts.services import create_treatment_plan, upsert_treatment_prescriptions
+from impacts.services import (
+    clone_treatment_plan,
+    create_treatment_plan,
+    upsert_treatment_prescriptions,
+)
 
 
 class TreatmentPlanViewSet(
@@ -47,6 +52,19 @@ class TreatmentPlanViewSet(
     def perform_create(self, serializer):
         serializer.instance = create_treatment_plan(
             **serializer.validated_data,
+        )
+
+    @action(detail=True, methods=["post"])
+    def clone(self, request, pk=None):
+        treatment_plan = self.get_object()
+        cloned_plan, cloned_prescriptions = clone_treatment_plan(
+            treatment_plan,
+            self.request.user,
+        )
+        serializer = TreatmentPlanSerializer(instance=cloned_plan)
+        return response.Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
         )
 
 
