@@ -5,6 +5,7 @@ from rest_framework import viewsets, status, mixins, permissions
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from impacts.models import TreatmentPlan
@@ -130,6 +131,34 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         planningarea_pk = self.kwargs.get("planningarea_pk")
         return Scenario.objects.filter(planning_area__pk=planningarea_pk)
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="from-file",
+        parser_classes=[MultiPartParser, FormParser],
+    )
+    def from_file(self, request, *args, **kwargs):
+        file = request.FILES.get("file")
+        if not file:
+            return Response(
+                {"error": "No file provided."}, status=status.HTTP_400_BAD_REQUEST
+            )
+        print(f"Was there a file? {file}")
+
+        try:
+            file_data = self.process_file(file)
+            serializer = self.get_serializer(data=file_data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    def process_file(self, file):
+        print(f"what is the file we have? {file}")
+        scenario_data = {"somedata": "filedata"}
+        return scenario_data
 
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, planningarea_pk, pk=None):
