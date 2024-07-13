@@ -1,4 +1,5 @@
 from rest_framework import mixins, viewsets, response, status
+from rest_framework.decorators import action
 from impacts.models import TreatmentPlan, TreatmentPrescription
 from impacts.serializers import (
     CreateTreatmentPlanSerializer,
@@ -6,8 +7,13 @@ from impacts.serializers import (
     TreatmentPlanSerializer,
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
+    TreamentPrescriptionUpsertSerializer,
 )
-from impacts.services import create_treatment_plan
+from impacts.services import (
+    clone_treatment_plan,
+    create_treatment_plan,
+    upsert_treatment_prescriptions,
+)
 
 
 class TreatmentPlanViewSet(
@@ -48,6 +54,19 @@ class TreatmentPlanViewSet(
             **serializer.validated_data,
         )
 
+    @action(detail=True, methods=["post"])
+    def clone(self, request, pk=None):
+        treatment_plan = self.get_object()
+        cloned_plan, cloned_prescriptions = clone_treatment_plan(
+            treatment_plan,
+            self.request.user,
+        )
+        serializer = TreatmentPlanSerializer(instance=cloned_plan)
+        return response.Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
+
 
 class TreatmentPrescriptionViewSet(
     mixins.CreateModelMixin,
@@ -60,7 +79,7 @@ class TreatmentPrescriptionViewSet(
     serializer_class = TreatmentPrescriptionSerializer
     serializer_classes = {
         "list": TreatmentPrescriptionListSerializer,
-        "create": TreatmentPrescriptionSerializer,
+        "create": TreamentPrescriptionUpsertSerializer,
         "retrieve": TreatmentPrescriptionSerializer,
     }
 
@@ -71,14 +90,25 @@ class TreatmentPrescriptionViewSet(
             return self.serializer_class
 
     def get_queryset(self):
-        tx_plan_pk = self.kwargs.get("tx_plan_pk")
-        if tx_plan_pk:
-            try:
-                tx_prescriptions = TreatmentPrescription.objects.filter(
-                    treatment_plan_id=tx_plan_pk,
-                )
-                return tx_prescriptions
-            except TreatmentPrescription.DoesNotExist:
-                return TreatmentPrescription.objects.none()
-        else:
-            return TreatmentPrescription.objects.none()
+        tx_plan_pk = self.kwargs.get("tx_plan_pk", 0)
+        # filter will return zero elements if it does not match with anything
+        return TreatmentPrescription.objects.filter(
+            treatment_plan_id=tx_plan_pk,
+        )
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        prescriptions = self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        out_serializer = TreatmentPrescriptionSerializer(
+            instance=prescriptions, many=True
+        )
+        return response.Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
+    def perform_create(self, serializer):
+        return upsert_treatment_prescriptions(**serializer.validated_data)
