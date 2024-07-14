@@ -30,6 +30,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
+    create_scenario_and_project_from_upload
 )
 
 logger = logging.getLogger(__name__)
@@ -89,7 +90,6 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
             user=self.request.user,
             planning_area=instance,
         )
-
 
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.all()
@@ -151,6 +151,37 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         serializer = TreatmentPlanListSerializer(treatments, many=True)
         return Response(serializer.data)
 
+    @action(methods=["post"], detail=False)
+    def upload_shapefile(self, request, planningarea_pk):
+        # query receives geometry, stand size, scenario name, planning area
+        # call Geometry Validation serializer, 
+        # then create a scenario...with what values?
+        # then, create a ProjectArea, with a name?
+
+        scenario_data = {
+            "planning_area": planningarea_pk,
+            "name": request.data['name']
+        }
+        project_area_data = {
+            **request.data
+        }
+        serializer = self.get_serializer(data=scenario_data)
+        serializer.is_valid(raise_exception=True)
+        projectarea_serializer = ValidateProjectAreaSerializer(data=project_area_data)
+        projectarea_serializer.is_valid(raise_exception=True)
+        # in a service...create all the things
+        scenario = create_scenario_and_project_from_upload(
+            user=self.request.user,
+            **serializer.validated_data,
+            **projectarea_serializer.validated_data
+        )
+        out_serializer = ScenarioSerializer(instance=scenario)
+        headers = self.get_success_headers(out_serializer.data)
+        return Response(
+            serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
 
 # TODO: migrate this to an action inside the planning area viewset
 class CreatorViewSet(ReadOnlyModelViewSet):

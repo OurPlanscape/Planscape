@@ -87,6 +87,27 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
     async_forsys_run.delay(scenario.pk)
     return scenario
 
+@transaction.atomic()
+def create_scenario_and_project_from_upload(user: UserType, **kwargs) -> Scenario:
+    data = {
+        "user": user,
+        "result_status": ScenarioResultStatus.PENDING,
+        **kwargs,
+    }
+    # make a project area, also
+    scenario = Scenario.objects.create(**data)
+    scenario_result = ScenarioResult.objects.create(scenario=scenario)
+    scenario_result.save()
+    action.send(
+        user,
+        verb="created",
+        action_object=scenario,
+        target=scenario.planning_area,
+    )
+    async_forsys_run.delay(scenario.pk)
+    return scenario
+
+
 
 @transaction.atomic
 def delete_scenario(

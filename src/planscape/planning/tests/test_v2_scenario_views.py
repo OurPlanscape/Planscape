@@ -20,7 +20,7 @@ from planning.tests.helpers import (
     _create_test_user_set,
     reset_permissions,
 )
-
+from planning.tests.factories import PlanningAreaFactory
 
 class ListScenariosForPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
@@ -247,3 +247,59 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertJSONEqual(
             response.content, {"detail": "No PlanningArea matches the given query."}
         )
+
+class CreateScenarios(APITransactionTestCase):
+    def setUp(self):
+        self.test_users = _create_test_user_set()
+        self.owner_user = self.test_users["owner"]
+        self.owner_user2 = self.test_users["owner2"]
+        self.planning_area = PlanningAreaFactory(user=self.owner_user)
+        self.valid_geometry = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [0, 0],
+                    [0, 1],
+                    [1, 1],
+                    [1, 0],
+                    [0, 0],
+                ],
+            ],
+        }
+        self.invalid_geometry = {
+            "type": "Polygon",
+            "coordinates": [
+                [
+                    [-46.01299715793388, -18.545559916237735],
+                    [-45.43418235211229, -18.296994989031617],
+                    [-46.02213633907763, -18.99263980743585],
+                    [-45.34888332809618, -18.534006734887157],
+                    [-46.01299715793388, -18.545559916237735],
+                ]
+            ],
+        }
+
+    def test_create_from_upload(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {"geometry": self.valid_geometry, "name": "new scenario", "stand_size": "SMALL"}
+        response = self.client.post(
+           reverse("planning:scenarios-upload-shapefile", 
+                    kwargs={ "planningarea_pk": self.planning_area.pk }
+                ), 
+                data=payload, 
+                format="json"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("area_acres", response.json())
+
+    def test_create_bad_geometry(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {"geometry": self.valid_geometry, "name": "new scenario", "stand_size": "SMALL"}
+        response = self.client.post(
+            reverse("planning:scenarios-upload-shapefile", 
+                    kwargs={ "planningarea_pk": self.planning_area.pk }
+                ), 
+                data=payload, 
+                format="json"
+        )
+        self.assertEqual(response.status_code, 200)

@@ -119,6 +119,8 @@ class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
         fields = ("geometry",)
 
 
+
+
 class ValidatePlanningAreaOutputSerializer(serializers.Serializer):
     area_acres = serializers.FloatField()
 
@@ -320,3 +322,29 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
             "data",
             "geometry",
         )
+
+class ValidateProjectAreaSerializer(gis_serializers.GeoModelSerializer):
+    geometry = gis_serializers.GeometryField()
+
+    def validate_geometry(self, geometry):
+        if not isinstance(geometry, GEOSGeometry):
+            geometry = GEOSGeometry(
+                geometry,
+                srid=settings.CRS_INTERNAL_REPRESENTATION,
+            )
+
+        if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
+            geometry = geometry.transform(
+                settings.CRS_INTERNAL_REPRESENTATION, clone=True
+            )
+
+        try:
+            geometry = coerce_geometry(geometry)
+        except ValueError as valEx:
+            raise serializers.ValidationError(str(valEx))
+        return geometry
+
+    class Meta:
+        model = ProjectArea
+        fields = ("geometry",)
+
