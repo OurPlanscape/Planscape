@@ -2,17 +2,19 @@ import logging
 
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins, permissions
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.filters import OrderingFilter
-from rest_framework.decorators import action
-from planning.models import PlanningArea, ProjectArea, Scenario, User
+from impacts.models import TreatmentPlan
+from impacts.serializers import TreatmentPlanListSerializer
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
     PlanningAreaOrderingFilter,
 )
-from planning.models import PlanningArea, Scenario, ScenarioStatus
+from planning.models import PlanningArea, ProjectArea, Scenario, ScenarioStatus, User
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     PlanningAreaSerializer,
@@ -135,6 +137,19 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         toggle_scenario_status(scenario, self.request.user)
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
+
+    @action(methods=["get"], detail=True)
+    def treatment_plans(self, request, planningarea_pk, pk=None):
+        scenario = self.get_object()
+        treatments = TreatmentPlan.objects.filter(scenario_id=scenario)
+        paginator = LimitOffsetPagination()
+        # Paginate the queryset
+        page = paginator.paginate_queryset(treatments, request)
+        if page is not None:
+            serializer = TreatmentPlanListSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = TreatmentPlanListSerializer(treatments, many=True)
+        return Response(serializer.data)
 
 
 # TODO: migrate this to an action inside the planning area viewset
