@@ -88,31 +88,19 @@ class ScenarioFilter(filters.FilterSet):
 
 class ScenarioOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
+        ordering_dict = {
+            "budget": "configuration__max_budget",
+            "acres": "configuration__max_treatment_area_ratio",
+            "completed_at": "results__completed_at",
+        }
         ordering = self.get_ordering(request, queryset, view)
-        custom_ordering = []
-        if ordering:
-            for order in ordering:
-                reverse = order.startswith("-")
-                field_name = order.lstrip("-")
+        if not ordering:
+            return super().filter_queryset(request, queryset, view)
 
-                if field_name == "budget":
-                    direction = "-" if reverse else ""
-                    custom_ordering.append(f"{direction}configuration__max_budget")
+        def get_custom_ordering(order):
+            direction = "-" if order.startswith("-") else ""
+            field = order.lstrip("-")
+            return f"{direction}{ordering_dict.get(field, field)}"
 
-                elif field_name == "acres":
-                    direction = "-" if reverse else ""
-                    custom_ordering.append(
-                        f"{direction}configuration__max_treatment_area_ratio"
-                    )
-                elif field_name == "completed_at":
-                    direction = "-" if reverse else ""
-                    custom_ordering.append(f"{direction}results__completed_at")
-
-                else:
-                    custom_ordering.append(order)
-
-            if custom_ordering:
-                queryset = queryset.order_by(*custom_ordering)
-                return queryset
-
-        return super().filter_queryset(request, queryset, view)
+        custom_ordering = map(get_custom_ordering, ordering)
+        return queryset.order_by(*custom_ordering)
