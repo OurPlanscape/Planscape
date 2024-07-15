@@ -69,6 +69,7 @@ INSTALLED_APPS = [
     "rest_framework_gis",
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
+    "drf_spectacular",
 ] + planscape_apps
 
 # Middleware order matters because of layering dependencies
@@ -214,6 +215,7 @@ REST_FRAMEWORK = {
         "%Y-%m-%dT%H:%M:%S",
         "%Y-%m-%dT%H:%M:%SZ",  # Optional: to accept inputs with 'Z' indicating UTC time
     ],
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 REST_AUTH = {
@@ -404,4 +406,11 @@ ACTSTREAM_SETTINGS = {
     "USE_JSONFIELD": True,
     "FETCH_RELATIONS": True,
     "GFK_FETCH_DEPTH": 1,
+}
+
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Planscape API",
+    "DESCRIPTION": "Planscape is a project that allows regional planners to determine the best locations & interventions to the landscape based on hard data.",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
 }

@@ -56,6 +56,7 @@ django-treebeard = "^4.7.1"
 django-activity-stream = "^2.0.0"
 factory-boy = "^3.3.0"
 flake8-pyproject = "^1.2.3"
+drf-spectacular = "^0.27.2"
 
 
 [tool.poetry.dev-dependencies]
