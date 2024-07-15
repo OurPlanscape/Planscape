@@ -38,10 +38,12 @@ urlpatterns = [
 
 if settings.ENV == "development":
     urlpatterns.append(
-        "planscape-backend/v2/schema", SpectacularAPIView.as_view(), name="schema"
+        path("planscape-backend/v2/schema", SpectacularAPIView.as_view(), name="schema")
     )
     urlpatterns.append(
-        "planscape-backend/v2/schema/swagger",
-        SpectacularSwaggerView.as_view(),
-        name="swagger",
+        path(
+            "planscape-backend/v2/schema/swagger",
+            SpectacularSwaggerView.as_view(),
+            name="swagger",
+        ),
     )
