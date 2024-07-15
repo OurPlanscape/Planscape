@@ -150,12 +150,13 @@ export const ProgressBlurb: Story = {
     ...Default,
     hasHeader: true,
     hasFooter: false,
+    padBody: false,
   },
   render: (args) => ({
     props: args,
     template: `<div ${containerStyle}>
         <sg-modal ${argsToTemplate(args)}>
-        <div style="background-color: #f6f6f6;">Estimated time remaining: 3 minutes</div>
+        <div style="padding:10px;background-color: #f6f6f6;">Estimated time remaining: 3 minutes</div>
         
         </sg-modal><div>`,
   }),

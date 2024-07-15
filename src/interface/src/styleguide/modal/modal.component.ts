@@ -37,20 +37,70 @@ import { ButtonComponent, ButtonVariant } from '../button/button.component';
   ],
 })
 export class ModalComponent {
+  /**
+   * Show or hide the modal
+   */
+  @Input() showModal = false;
+  /**
+   * Text at the top of the dialog
+   */
   @Input() title: string = 'Here is a title';
+  /**
+   * Set horizontal size of the modal
+   */
   @Input() width: 'regular' | 'large' = 'regular';
+  /**
+   * Optional Material icon name at left of header
+   */
   @Input() leadingIcon?: string | null;
+  /**
+   * Optional alternative text for the right-most bottom button
+   */
   @Input() primaryButtonText?: string = 'Done';
+  /**
+   * Optional alternative style variant for the right-most bottom button
+   */
   @Input() primaryButtonVariant: ButtonVariant = 'primary';
+  /**
+   * Show/hide left-most bottom button
+   */
   @Input() hasSecondaryButton = true;
+  /**
+   * Optional alternative text for the left-most bottom button
+   */
   @Input() secondaryButtonText?: string = 'Cancel';
+  /**
+   * Optional alternative style variant for the left-most bottom button
+   */
   @Input() secondaryButtonVariant: ButtonVariant = 'ghost';
+  /**
+   * Whether or not to show the close button in the header
+   */
   @Input() scrollableContent? = false;
+  /**
+   * Whether or not to show the tooltip button in the header
+   */
   @Input() showClose? = true;
+  /**
+   * Whether or not to show the header at all
+   */
   @Input() showToolTip? = false;
+  /**
+   * Whether or not to show the header at all
+   */
   @Input() hasHeader? = true;
+  /**
+   * Whether or not to show the footer at all
+   */
   @Input() hasFooter? = true;
+  /**
+   * A potential list of progress items
+   */
   @Input() progressItems?: any[];
+  /**
+   * Whether or not to use default padding for the projected content
+   */
+  @Input() padBody? = true;
 
   @Input() toolTipContent = 'Here is some tooltip content';
 
@@ -64,17 +114,24 @@ export class ModalComponent {
   ) {}
 
   openDialog() {
-    this.dialogRef = this.dialog.open(ModalComponent, {});
+    this.dialogRef = this.dialog.open(ModalComponent, {
+      data: {
+        title: this.title,
+        showClose: true,
+      },
+    });
     this.dialogRef.afterClosed().subscribe((result) => {});
   }
 
   dialogClosed(event: any) {}
 
   handleCancel(): void {
+    this.dialogRef.close();
     this.canceledClose.emit(); // should this just emit something different?
   }
 
   handleDone(): void {
+    this.dialogRef.close();
     this.doneClose.emit();
   }
 

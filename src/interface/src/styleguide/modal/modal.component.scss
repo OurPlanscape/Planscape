@@ -13,7 +13,6 @@
   }
 }
 
-
 .header {
   @include h4();
   display: flex;
@@ -32,6 +31,10 @@
   padding-top: 10px;
   border-bottom: 1px solid $color-soft-gray;
   height: 64px;
+}
+
+.tooltip-content {
+  padding: 10px;
 }
 
 .title-buttons {
@@ -66,10 +69,6 @@
   gap: 16px;
 }
 
-.modal-body {
-  padding: 10px;
-}
-
 .progress-element {
   @include xs-label();
   height: 64px;
@@ -80,7 +79,7 @@
   align-items: center;
   padding-left: 10px;
   padding-right: 10px;
-  border-bottom: 1px solid #E1E1E1;
+  border-bottom: 1px solid #e1e1e1;
   box-sizing: border-box;
 }
 .progress-info {
@@ -92,8 +91,13 @@
   height: 40px;
 }
 
-.modal-body.scrollable {
-  overflow-y: scroll;
+.modal-body {
+  &.padded {
+    padding: 10px;
+  }
+  &.scrollable {
+    overflow-y: scroll;
+  }
 }
 
 .footer {
