@@ -5,6 +5,7 @@ import { regionMapCenters } from '../../map/map.helper';
 import { Region } from '@types';
 import { stadiaAlidadeTiles } from '../../map/map.tiles';
 import { JsonPipe, NgForOf } from '@angular/common';
+import { PlanService } from '@services';
 
 const defaultStyles = {
   weight: 1,
@@ -41,6 +42,8 @@ export class ProjectAreaComponent implements OnInit {
   selectedStands: number[] = [];
   mapDragging = true;
 
+  constructor(private planService: PlanService) {}
+
   ngOnInit() {
     const stands = this.loadStands();
     const outline = this.loadAreaOutline();
@@ -57,6 +60,8 @@ export class ProjectAreaComponent implements OnInit {
 
       // attributionControl: this.showAttributionAndZoom,
     });
+
+    this.planService.getProjectAreas(2710).subscribe((r) => console.log(r));
   }
 
   private loadStands() {
@@ -70,6 +75,7 @@ export class ProjectAreaComponent implements OnInit {
       interactive: true,
       getFeatureId: (f: any) => {
         const p = f.properties.id as number;
+        console.log(f);
         if (!this.ids.includes(p)) {
           this.ids.push(p);
         }

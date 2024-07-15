@@ -126,6 +126,12 @@ export class PlanService {
       .pipe(take(1));
   }
 
+  getProjectAreas(pk: number) {
+    return this.http.get(
+      environment.backend_endpoint.concat(`/v2/project-areas/${pk}`)
+    );
+  }
+
   getTotalArea(shape: GeoJSON) {
     return this.http
       .post<{
