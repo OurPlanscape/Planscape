@@ -4,7 +4,7 @@ from collaboration.models import Role
 
 
 VIEWER_PERMISSIONS = [
-    "view_treatmentplan",
+    "view_tx_plan",
 ]
 COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "add_tx_plan",
