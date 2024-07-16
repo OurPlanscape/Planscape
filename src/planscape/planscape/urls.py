@@ -1,24 +1,9 @@
-"""planscape URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/4.1/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
-
 from django.contrib import admin
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.urls import path, include, register_converter
 from dj_rest_auth.registration.views import VerifyEmailView
 from planscape.url_converters import ContentTypeURLConverter
-
+from django.conf import settings
 from users import views as user_views
 
 register_converter(ContentTypeURLConverter, "ctype")
@@ -50,3 +35,15 @@ urlpatterns = [
     ),
     path("planscape-backend/v2/", include("planscape.urls_v2")),
 ]
+
+if settings.ENV == "development":
+    urlpatterns.append(
+        path("planscape-backend/v2/schema", SpectacularAPIView.as_view(), name="schema")
+    )
+    urlpatterns.append(
+        path(
+            "planscape-backend/v2/schema/swagger",
+            SpectacularSwaggerView.as_view(),
+            name="swagger",
+        ),
+    )
