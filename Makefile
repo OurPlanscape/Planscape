@@ -77,9 +77,7 @@ load-rasters:
 	cd src/planscape && python3 manage.py load_rasters
 
 install-dependencies-backend:
-	pip install poetry setuptools && \
-	poetry export -f requirements.txt --with dev --without-hashes --output requirements.txt && \
-	pip install -r requirements.txt
+	pip install poetry setuptools && python3 -m poetry export -f requirements.txt --with dev --without-hashes --output requirements.txt && pip install -r requirements.txt
 
 deploy-backend: install-dependencies-backend migrate restart
 
