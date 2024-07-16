@@ -21,6 +21,12 @@ class CreateTreatmentPlanSerializer(serializers.Serializer):
     name = serializers.CharField()
 
 
+class TreatmentPlanUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentPlan
+        fields = ["status", "name"]
+
+
 class TreatmentPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPlan
