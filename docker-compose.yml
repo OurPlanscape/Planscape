@@ -50,7 +50,7 @@ services:
     working_dir: /usr/src/app/src/planscape
     command: celery -A planscape worker -E --loglevel INFO --concurrency 3
     deploy:
-      replicas: 2
+      replicas: 1
     env_file:
       - .env
     depends_on:
