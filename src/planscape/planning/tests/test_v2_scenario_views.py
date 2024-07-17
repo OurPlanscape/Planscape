@@ -272,10 +272,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.content)
         expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
-        budget_results = [
-            s["configuration"]["max_treatment_area_ratio"]
-            for s in response_data["results"]
-        ]
+        budget_results = [s["max_treatment_area"] for s in response_data["results"]]
         self.assertEquals(budget_results, expected_acres_order)
 
     def test_sort_scenario_by_reverse_budget(self):
@@ -302,9 +299,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         response_data = json.loads(response.content)
         expected_budget_order = [104, 103, 102, 101, 100, None, None, None]
-        budget_results = [
-            s["configuration"]["max_budget"] for s in response_data["results"]
-        ]
+        budget_results = [s["max_budget"] for s in response_data["results"]]
         self.assertEquals(budget_results, expected_budget_order)
 
     def test_sort_scenario_by_multiple_fields(self):
