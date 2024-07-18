@@ -75,8 +75,7 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
         **kwargs,
     }
     scenario = Scenario.objects.create(**data)
-    scenario_result = ScenarioResult.objects.create(scenario=scenario)
-    scenario_result.save()
+    ScenarioResult.objects.create(scenario=scenario)
     # george created scenario 1234 on planning area XYZ
     action.send(
         user,

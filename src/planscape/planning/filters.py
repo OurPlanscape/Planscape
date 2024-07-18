@@ -84,3 +84,23 @@ class ScenarioFilter(filters.FilterSet):
     class Meta:
         model = Scenario
         fields = ["name"]
+
+
+class ScenarioOrderingFilter(OrderingFilter):
+    def filter_queryset(self, request, queryset, view):
+        ordering_dict = {
+            "budget": "configuration__max_budget",
+            "acres": "configuration__max_treatment_area_ratio",
+            "completed_at": "results__completed_at",
+        }
+        ordering = self.get_ordering(request, queryset, view)
+        if not ordering:
+            return super().filter_queryset(request, queryset, view)
+
+        def get_custom_ordering(order):
+            direction = "-" if order.startswith("-") else ""
+            field = order.lstrip("-")
+            return f"{direction}{ordering_dict.get(field, field)}"
+
+        custom_ordering = map(get_custom_ordering, ordering)
+        return queryset.order_by(*custom_ordering)
