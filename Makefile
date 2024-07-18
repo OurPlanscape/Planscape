@@ -6,7 +6,6 @@ USER_ID = $(shell id -u)
 
 # User Systemd Service (see: ~/.config/systemd/user/planscape.service)
 SERVICE=planscape
-FORSYS_QUEUE=forsys-queue
 CELERY_FORSYS=celery-forsys-worker
 CELERY_DEFAULT=celery-default-worker
 
@@ -83,15 +82,6 @@ deploy-backend: install-dependencies-backend migrate restart
 
 deploy-all: deploy-backend deploy-frontend
 
-start-forsys:
-	${SYS_CTL} start ${FORSYS_QUEUE}
-
-stop-forsys:
-	${SYS_CTL} stop ${FORSYS_QUEUE}
-
-status-forsys:
-	${SYS_CTL} status ${FORSYS_QUEUE}
-
 start-celery:
 	${SYS_CTL} start ${CELERY_DEFAULT} --no-block
 	${SYS_CTL} start ${CELERY_FORSYS} --no-block
@@ -116,7 +106,7 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop stop-forsys stop-celery start start-forsys start-celery
+restart: reload stop stop-celery start start-celery
 
 nginx-restart:
 	sudo service nginx restart
@@ -126,8 +116,6 @@ load-restrictions:
 
 test-scenarios:
 	cd src/planscape && python3 manage.py test_scenarios
-
-
 
 SERID=$(shell id -u)
 GROUPID=$(shell id -g)
