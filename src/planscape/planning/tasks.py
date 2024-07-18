@@ -9,19 +9,31 @@ log = logging.getLogger(__name__)
 
 @app.task(max_retries=3, retry_backoff=True)
 def async_forsys_run(scenario_id: int) -> None:
+    log.debug("Calling async_forsys_run for scenario {scenario_id}")
     try:
         scenario = Scenario.objects.get(id=scenario_id)
+        log.info(f"Scenario {scenario_id} has status {scenario.result_status}")
     except Scenario.DoesNotExist:
-        log.warning(f"Scenario with {scenario_id} does not exist.")
+        log.warning(f"Scenario of {scenario_id} does not exist.")
     try:
-        log.info(f"Running scenario {scenario_id}")
-        scenario.result_status = ScenarioResultStatus.RUNNING
-        scenario.save()
+        log.info(f"Saving scenario {scenario_id}")
+        if (
+            scenario.result_status == None
+            or scenario.result_status == ScenarioResultStatus.PENDING
+        ):
+            scenario.result_status = ScenarioResultStatus.RUNNING
+            print(f"Calling forsys for {scenario_id}")
+            forsys_result = call_forsys(scenario.pk)
+            print(f"Are we getting a forsys_result? {forsys_result}")
+            if forsys_result.returncode == 0:
+                print(f"forsys result for scenario {scenario_id} was successful")
+                scenario.result_status = ScenarioResultStatus.SUCCESS
+                scenario.save()
+            else:
+                print(
+                    f"Forsys result for scenario {scenario_id} was not successful: {forsys_result.returncode}"
+                )
 
-        call_forsys(scenario.pk)
-
-        scenario.result_status = ScenarioResultStatus.SUCCESS
-        scenario.save()
     except TimeoutExpired:
         # this case should not happen as is, as the default parameter
         # for call_forsys timeout is None.

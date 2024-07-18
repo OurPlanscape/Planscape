@@ -75,8 +75,8 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
         **kwargs,
     }
     scenario = Scenario.objects.create(**data)
-    scenario_result = ScenarioResult.objects.create(scenario=scenario)
-    scenario_result.save()
+    resultrec = ScenarioResult.objects.create(scenario=scenario)
+    # scenario_result.save()
     # george created scenario 1234 on planning area XYZ
     action.send(
         user,
@@ -86,6 +86,7 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
     )
     async_forsys_run.delay(scenario.pk)
     return scenario
+
 
 @transaction.atomic()
 def create_scenario_and_project_from_upload(user: UserType, **kwargs) -> Scenario:
@@ -106,7 +107,6 @@ def create_scenario_and_project_from_upload(user: UserType, **kwargs) -> Scenari
     )
     async_forsys_run.delay(scenario.pk)
     return scenario
-
 
 
 @transaction.atomic
