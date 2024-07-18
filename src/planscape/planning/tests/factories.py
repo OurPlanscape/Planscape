@@ -5,6 +5,7 @@ from planning.models import (
     ProjectArea,
     ProjectAreaOrigin,
     Scenario,
+    ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
 )
@@ -42,6 +43,13 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
 
     status = ScenarioStatus.ACTIVE
     result_status = ScenarioResultStatus.PENDING
+
+
+class ScenarioResultFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ScenarioResult
+
+    scenario = factory.SubFactory(ScenarioFactory)
 
 
 class ProjectAreaFactory(factory.django.DjangoModelFactory):
