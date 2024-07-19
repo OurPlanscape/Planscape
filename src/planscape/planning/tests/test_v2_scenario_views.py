@@ -1,5 +1,6 @@
 import json
 import os
+from shapely.geometry import shape, MultiPolygon
 from unittest import mock
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -8,6 +9,7 @@ from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
+from planning.geometry import coerce_geometry
 from planning.models import (
     Scenario,
     ScenarioResult,
@@ -19,8 +21,10 @@ from planning.tests.helpers import (
     _create_scenario,
     _create_test_user_set,
     reset_permissions,
+    _load_geojson_fixture,
 )
 from planning.tests.factories import PlanningAreaFactory
+
 
 class ListScenariosForPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
@@ -248,58 +252,57 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             response.content, {"detail": "No PlanningArea matches the given query."}
         )
 
+
 class CreateScenarios(APITransactionTestCase):
     def setUp(self):
         self.test_users = _create_test_user_set()
         self.owner_user = self.test_users["owner"]
         self.owner_user2 = self.test_users["owner2"]
-        self.planning_area = PlanningAreaFactory(user=self.owner_user)
-        self.valid_geometry = {
-            "type": "Polygon",
-            "coordinates": [
-                [
-                    [0, 0],
-                    [0, 1],
-                    [1, 1],
-                    [1, 0],
-                    [0, 0],
-                ],
-            ],
-        }
-        self.invalid_geometry = {
-            "type": "Polygon",
-            "coordinates": [
-                [
-                    [-46.01299715793388, -18.545559916237735],
-                    [-45.43418235211229, -18.296994989031617],
-                    [-46.02213633907763, -18.99263980743585],
-                    [-45.34888332809618, -18.534006734887157],
-                    [-46.01299715793388, -18.545559916237735],
-                ]
-            ],
-        }
+
+        self.la_county_geo = _load_geojson_fixture("la_county.geojson")
+        self.compton_geo = _load_geojson_fixture("compton.geojson")
+        self.fresno_geo = _load_geojson_fixture("fresno_bakersfield_la.geojson")
+        self.bayarea_geo = _load_geojson_fixture("bayarea.geojson")
+        self.la_features = _load_geojson_fixture("la_features.geojson")
+
+        self.planning_area = PlanningAreaFactory(
+            user=self.owner_user,
+            geometry=coerce_geometry(self.la_county_geo["geometry"]),
+        )
 
     def test_create_from_upload(self):
         self.client.force_authenticate(self.owner_user)
-        payload = {"geometry": self.valid_geometry, "name": "new scenario", "stand_size": "SMALL"}
+        payload = {
+            "geometry": self.la_features,
+            "name": "new scenario",
+            "stand_size": "SMALL",
+        }
         response = self.client.post(
-           reverse("planning:scenarios-upload-shapefile", 
-                    kwargs={ "planningarea_pk": self.planning_area.pk }
-                ), 
-                data=payload, 
-                format="json"
+            reverse(
+                "planning:scenarios-upload-shapefile",
+                kwargs={"planningarea_pk": self.planning_area.pk},
+            ),
+            data=payload,
+            format="json",
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertIn("area_acres", response.json())
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        print(f"response_data {response_data}")
+        self.assertEqual(response_data, "idk")
 
-    def test_create_bad_geometry(self):
+    def test_create_uncontained_geometry(self):
         self.client.force_authenticate(self.owner_user)
-        payload = {"geometry": self.valid_geometry, "name": "new scenario", "stand_size": "SMALL"}
+        payload = {
+            "geometry": self.bayarea_geo,
+            "name": "new scenario",
+            "stand_size": "SMALL",
+        }
         response = self.client.post(
-            reverse("planning:scenarios-upload-shapefile", 
-                    kwargs={ "planningarea_pk": self.planning_area.pk }
-                ), 
-                data=payload, 
-                format="json"
+            reverse(
+                "planning:scenarios-upload-shapefile",
+                kwargs={"planningarea_pk": self.planning_area.pk},
+            ),
+            data=payload,
+            format="json",
         )
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, 400)

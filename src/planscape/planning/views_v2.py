@@ -14,12 +14,14 @@ from planning.filters import (
     ScenarioFilter,
     PlanningAreaOrderingFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario, ScenarioStatus, User
+from planning.geometry import is_inside
+from planning.models import PlanningArea, ProjectArea, Scenario, User
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    ScenarioProjectAreasSerializer,
     ProjectAreaSerializer,
     ScenarioSerializer,
     ListCreatorSerializer,
@@ -30,7 +32,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
-    create_scenario_and_project_from_upload
+    create_scenario_and_projects_from_upload,
 )
 
 logger = logging.getLogger(__name__)
@@ -90,6 +92,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
             user=self.request.user,
             planning_area=instance,
         )
+
 
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.all()
@@ -153,35 +156,28 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     @action(methods=["post"], detail=False)
     def upload_shapefile(self, request, planningarea_pk):
-        # query receives geometry, stand size, scenario name, planning area
-        # call Geometry Validation serializer, 
-        # then create a scenario...with what values?
-        # then, create a ProjectArea, with a name?
+        uploaded_geom = {**request.data["geometry"]}
+        print(f" we have upladed geom? {uploaded_geom}")
+        pa = PlanningArea.objects.get(pk=planningarea_pk)
+        # if not is_inside(pa.geometry, uploaded_geom):
+        #     print(f"not inside!")
+        print(f" we have planning area geom? {pa.geometry}")
 
-        scenario_data = {
-            "planning_area": planningarea_pk,
-            "name": request.data['name']
-        }
-        project_area_data = {
-            **request.data
-        }
-        serializer = self.get_serializer(data=scenario_data)
-        serializer.is_valid(raise_exception=True)
-        projectarea_serializer = ValidateProjectAreaSerializer(data=project_area_data)
-        projectarea_serializer.is_valid(raise_exception=True)
         # in a service...create all the things
-        scenario = create_scenario_and_project_from_upload(
+        scenario = create_scenario_and_projects_from_upload(
             user=self.request.user,
-            **serializer.validated_data,
-            **projectarea_serializer.validated_data
+            planningarea=pa,
+            scenario_name=request.data["name"],
+            uploaded_geom=uploaded_geom,
         )
-        out_serializer = ScenarioSerializer(instance=scenario)
+        out_serializer = ScenarioProjectAreasSerializer(instance=scenario)
         headers = self.get_success_headers(out_serializer.data)
         return Response(
-            serializer.data,
+            out_serializer.data,
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
+
 
 # TODO: migrate this to an action inside the planning area viewset
 class CreatorViewSet(ReadOnlyModelViewSet):

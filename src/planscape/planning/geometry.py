@@ -1,4 +1,6 @@
 import json
+from django.conf import settings
+from shapely.geometry import shape
 from typing import Any, Dict, Union
 from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 
@@ -49,6 +51,28 @@ GEOMETRY_OPERATIONS = [
 ]
 
 
+def get_acreage(geometry: GEOSGeometry):
+    epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
+    acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
+    return acres
+
+
+def is_inside(larger_geometry, smaller_geometry):
+    larger_shape = None
+    smaller_shape = None
+    try:
+        larger_g = larger_geometry["geometry"]
+        larger_shape = shape(larger_g)
+    except Exception as e:
+        print("Could not convert larger shape {e}")
+    try:
+        smaller_g = smaller_geometry["geometry"]
+        smaller_shape = shape(smaller_g)
+    except Exception as e:
+        print("Could not convert smaller shape {e}")
+    return smaller_shape.within(larger_shape)
+
+
 def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeometry:
     """This function takes in a GeoJSON
     geometry and tries to coerce it to
@@ -64,5 +88,20 @@ def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeome
         raise InvalidGeometry("Geometry is invalid and cannot be used.")
     if geometry.geom_type != "MultiPolygon":
         raise InvalidGeometry("Could not parse geometry")
+
+    return geometry
+
+
+def validate_geometry(geometry):
+    if not isinstance(geometry, GEOSGeometry):
+        geometry = GEOSGeometry(
+            geometry,
+            srid=settings.CRS_INTERNAL_REPRESENTATION,
+        )
+
+    if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
+        geometry = geometry.transform(settings.CRS_INTERNAL_REPRESENTATION, clone=True)
+
+    geometry = coerce_geometry(geometry)
 
     return geometry

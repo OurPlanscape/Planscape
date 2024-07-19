@@ -18,6 +18,7 @@ from collaboration.permissions import (
     ScenarioPermission,
     PlanningAreaNotePermission,
 )
+from planning.geometry import get_acreage
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
@@ -39,7 +40,6 @@ from planning.serializers import (
 )
 from planning.services import (
     export_to_shapefile,
-    get_acreage,
     validate_scenario_treatment_ratio,
     zip_directory,
     create_planning_area as create_planning_area_service,

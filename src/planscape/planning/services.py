@@ -3,6 +3,7 @@ import math
 import os
 import zipfile
 import fiona
+
 from datetime import date, time, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple, Type
@@ -11,7 +12,8 @@ from django.db import transaction
 from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from planning.geometry import coerce_geojson
+from impacts.models import ProjectArea
+from planning.geometry import coerce_geojson, is_inside, coerce_geometry
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -19,6 +21,7 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
 )
+from planning.serializers import ScenarioSerializer
 from planning.tasks import async_forsys_run
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
@@ -87,15 +90,19 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
     async_forsys_run.delay(scenario.pk)
     return scenario
 
+
 @transaction.atomic()
-def create_scenario_and_project_from_upload(user: UserType, **kwargs) -> Scenario:
-    data = {
-        "user": user,
-        "result_status": ScenarioResultStatus.PENDING,
-        **kwargs,
-    }
-    # make a project area, also
-    scenario = Scenario.objects.create(**data)
+def create_scenario_and_projects_from_upload(
+    user: UserType, planningarea: PlanningArea, scenario_name: str, uploaded_geom
+) -> Scenario:
+
+    # validate geojson
+    # test that it's within the planning_area shape
+    # validate_geometry(uploaded_geom)
+    # then create scenario
+    scenario = Scenario.objects.create(planning_area=planningarea, name=scenario_name)
+    # serializer = ScenarioSerializer(data=scenario)
+    # serializer.is_valid(raise_exception=True)
     scenario_result = ScenarioResult.objects.create(scenario=scenario)
     scenario_result.save()
     action.send(
@@ -104,9 +111,27 @@ def create_scenario_and_project_from_upload(user: UserType, **kwargs) -> Scenari
         action_object=scenario,
         target=scenario.planning_area,
     )
-    async_forsys_run.delay(scenario.pk)
-    return scenario
 
+    print(f"Are there features in the uploaded_geom? {uploaded_geom}")
+
+    # then create project areas from features...
+    for idx, f in enumerate(uploaded_geom["features"]):
+        print(f"\nFeature: {f}")
+        print(f"\n\nCreating {scenario_name} project:{idx}...")
+        try:
+            project_area = ProjectArea(
+                geometry=coerce_geometry(f), name=f"{scenario_name} project:{idx}"
+            )
+            # projectarea_serializer = ProjectAreaSerializer(data=project_area)
+            # projectarea_serializer.is_valid(raise_exception=True)
+            project_area.save
+        except Exception as e:
+            print(
+                "Something happened with creating {scenario_name} project:{idx}...{e}"
+            )
+
+    # async_forsys_run.delay(scenario.pk)
+    return scenario
 
 
 @transaction.atomic
@@ -159,12 +184,6 @@ def get_max_treatable_stand_count(
 ) -> int:
     stand_area = area_from_size(stand_size)
     return math.floor(max_treatable_area / stand_area)
-
-
-def get_acreage(geometry: GEOSGeometry):
-    epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
-    acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
-    return acres
 
 
 def validate_scenario_treatment_ratio(

@@ -1,4 +1,5 @@
 from datetime import date, datetime
+import json
 import shutil
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
@@ -11,9 +12,11 @@ from planning.services import (
     get_max_treatable_stand_count,
     get_schema,
     validate_scenario_treatment_ratio,
+    is_inside,
 )
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 from stands.models import Stand, StandSizeChoices
+from planning.tests.helpers import _load_geojson_fixture
 
 
 class MaxTreatableAreaTest(TestCase):
@@ -238,3 +241,27 @@ class ExportToShapefileTest(TransactionTestCase):
             self.assertEqual(1, len(source))
             self.assertEqual(to_string(source.crs), "EPSG:4326")
             shutil.rmtree(str(output))
+
+
+class GeometryServiceTests(TransactionTestCase):
+    def setUp(self):
+        self.la_county_geo = _load_geojson_fixture("la_county.geojson")
+        self.compton_geo = _load_geojson_fixture("compton.geojson")
+        self.fresno_geo = _load_geojson_fixture("fresno_bakersfield_la.geojson")
+        self.bayarea_geo = _load_geojson_fixture("bayarea.geojson")
+
+    def test_intersections(self):
+        contained = is_inside(self.la_county_geo, self.compton_geo)
+        self.assertEquals(contained, True)
+
+        inverse = is_inside(self.compton_geo, self.la_county_geo)
+        self.assertEquals(inverse, False)
+
+        disjoint = is_inside(self.bayarea_geo, self.la_county_geo)
+        self.assertEquals(disjoint, False)
+
+        intersect = is_inside(self.fresno_geo, self.la_county_geo)
+        self.assertEquals(intersect, False)
+
+    def test_valid(self):
+        pass

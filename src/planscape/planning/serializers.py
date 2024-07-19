@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry
 from collaboration.services import get_role, get_permissions
 from planning.geometry import coerce_geometry
 from planning.models import (
@@ -14,7 +14,7 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.services import get_acreage
+from planning.geometry import get_acreage
 from stands.models import StandSizeChoices
 
 
@@ -117,8 +117,6 @@ class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
     class Meta:
         model = PlanningArea
         fields = ("geometry",)
-
-
 
 
 class ValidatePlanningAreaOutputSerializer(serializers.Serializer):
@@ -279,6 +277,38 @@ class ScenarioSerializer(
         model = Scenario
 
 
+class ProjectAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectArea
+        fields = (
+            "uuid",
+            "scenario",
+            "name",
+            "origin",
+            "data",
+            "geometry",
+        )
+
+
+class ScenarioProjectAreasSerializer(serializers.ModelSerializer):
+
+    project_areas = ProjectAreaSerializer(many=True, read_only=True)
+
+    class Meta:
+        fields = (
+            "id",
+            "updated_at",
+            "created_at",
+            "planning_area",
+            "name",
+            "notes",
+            "user",
+            "status",
+            "project_areas",
+        )
+        model = Scenario
+
+
 class SharedLinkSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["user"] or None
@@ -311,40 +341,27 @@ class ListCreatorSerializer(serializers.ModelSerializer):
         fields = ("id", "email", "full_name")
 
 
-class ProjectAreaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectArea
-        fields = (
-            "uuid",
-            "scenario",
-            "name",
-            "origin",
-            "data",
-            "geometry",
-        )
+# class ValidateProjectAreaSerializer(gis_serializers.GeoModelSerializer):
+#     geometry = gis_serializers.GeometryField()
 
-class ValidateProjectAreaSerializer(gis_serializers.GeoModelSerializer):
-    geometry = gis_serializers.GeometryField()
+#     def validate_geometry(self, geometry):
+#         if not isinstance(geometry, GEOSGeometry):
+#             geometry = GEOSGeometry(
+#                 geometry,
+#                 srid=settings.CRS_INTERNAL_REPRESENTATION,
+#             )
 
-    def validate_geometry(self, geometry):
-        if not isinstance(geometry, GEOSGeometry):
-            geometry = GEOSGeometry(
-                geometry,
-                srid=settings.CRS_INTERNAL_REPRESENTATION,
-            )
+#         if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
+#             geometry = geometry.transform(
+#                 settings.CRS_INTERNAL_REPRESENTATION, clone=True
+#             )
 
-        if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
-            geometry = geometry.transform(
-                settings.CRS_INTERNAL_REPRESENTATION, clone=True
-            )
+#         try:
+#             geometry = coerce_geometry(geometry)
+#         except ValueError as valEx:
+#             raise serializers.ValidationError(str(valEx))
+#         return geometry
 
-        try:
-            geometry = coerce_geometry(geometry)
-        except ValueError as valEx:
-            raise serializers.ValidationError(str(valEx))
-        return geometry
-
-    class Meta:
-        model = ProjectArea
-        fields = ("geometry",)
-
+#     class Meta:
+#         model = ProjectArea
+#         fields = ("geometry",)
