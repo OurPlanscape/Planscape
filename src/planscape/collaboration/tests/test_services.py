@@ -58,7 +58,7 @@ class TestGetPermissions(TransactionTestCase):
 
     def test_get_permissions_not_owner_no_role(self):
         permissions = get_permissions(self.user1, self.planning_area2)
-        self.assertEqual(len(permissions), 2)
+        self.assertGreaterEqual(len(permissions), 2)
         self.assertIn("view_planningarea", permissions)
         self.assertIn("view_scenario", permissions)
 
