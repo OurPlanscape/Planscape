@@ -1,9 +1,6 @@
+import copy
 import json
-import os
-from unittest import mock
-from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
@@ -11,14 +8,16 @@ from collaboration.models import Permissions, Role
 from planning.models import (
     Scenario,
     ScenarioResult,
-    ScenarioResultStatus,
-    ScenarioStatus,
 )
 from planning.tests.helpers import (
     _create_planning_area,
-    _create_scenario,
-    _create_test_user_set,
     reset_permissions,
+)
+from planscape.tests.factories import UserFactory
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ScenarioFactory,
+    ScenarioResultFactory,
 )
 
 
@@ -27,21 +26,24 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         if Permissions.objects.count() == 0:
             reset_permissions()
 
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unprivileged_user = self.test_users["unprivileged"]
+        self.owner_user = UserFactory.create()
+        self.owner_user2 = UserFactory.create(username="test_user2")
+        self.collab_user = UserFactory.create(username="collab_user")
+        self.viewer_user = UserFactory.create(username="viewer_user")
+        self.unprivileged_user = UserFactory.create(username="guest")
 
-        self.geometry = {
-            "type": "MultiPolygon",
-            "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
-        }
-        self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.storable_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="test plan"
         )
+
+        self.empty_planning_area = _create_planning_area(
+            user=self.owner_user, name="empty test plan"
+        )
+
+        self.planning_area2 = _create_planning_area(
+            user=self.owner_user2, name="test plan2"
+        )
+
         self.configuration = {
             "question_id": 1,
             "weights": [],
@@ -57,37 +59,35 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             "scenario_output_fields": ["out1"],
             "max_treatment_area_ratio": 40000,
         }
-        self.scenario = _create_scenario(
-            self.planning_area,
-            "test scenario",
-            self.configuration,
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            name="test scenario",
+            configuration=self.configuration,
             user=self.owner_user,
         )
-        self.scenario2 = _create_scenario(
-            self.planning_area,
-            "test scenario2",
-            self.configuration,
+        self.scenario_res = ScenarioResultFactory(scenario=self.scenario)
+        self.scenario2 = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            name="test scenario2",
+            configuration=self.configuration,
             user=self.owner_user,
         )
-        self.scenario3 = _create_scenario(
-            self.planning_area,
-            "test scenario3",
-            self.configuration,
+        self.scenario_res = ScenarioResultFactory(scenario=self.scenario2)
+        self.scenario3 = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            name="test scenario3",
+            configuration=self.configuration,
             user=self.owner_user,
         )
-        self.empty_planning_area = _create_planning_area(
-            self.owner_user, "empty test plan", self.storable_geometry
-        )
+        self.scenario_res = ScenarioResultFactory(scenario=self.scenario3)
 
-        self.owner_user2 = User.objects.create(username="testuser2")
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan2", self.storable_geometry
+        self.owner_user2scenario = ScenarioFactory.create(
+            planning_area=self.planning_area2,
+            name="test user2scenario",
+            user=self.owner_user2,
         )
-        self.owner_user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
-        )
+        self.scenario_res = ScenarioResultFactory(scenario=self.owner_user2scenario)
+
         create_collaborator_record(
             self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
         )
@@ -130,7 +130,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(scenario.get("status"), "ARCHIVED")
 
-        # toogle back!
+        # toggle back!
         response = self.client.post(
             reverse(
                 "planning:scenarios-toggle-status",
@@ -168,7 +168,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             ),
             content_type="application/json",
         )
-        # self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 403)
         self.assertJSONEqual(
             response.content,
             {"detail": "You do not have permission to perform this action."},
@@ -247,3 +247,130 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertJSONEqual(
             response.content, {"detail": "No PlanningArea matches the given query."}
         )
+
+    def test_sort_scenario_by_reverse_acres(self):
+        for acres in range(100, 105):
+            budget_conf = copy.copy(self.configuration)
+            budget_conf["max_treatment_area_ratio"] = acres
+            ScenarioFactory.create(
+                planning_area=self.planning_area,
+                name=f"scenario {acres}",
+                configuration=budget_conf,
+                user=self.owner_user,
+            )
+        self.client.force_authenticate(self.owner_user)
+
+        query_params = {"ordering": "-acres"}
+        response = self.client.get(
+            reverse(
+                "planning:scenarios-list",
+                kwargs={"planningarea_pk": self.planning_area.pk},
+            ),
+            query_params,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = json.loads(response.content)
+        expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
+        budget_results = [s["max_treatment_area"] for s in response_data["results"]]
+        self.assertEquals(budget_results, expected_acres_order)
+
+    def test_sort_scenario_by_reverse_budget(self):
+        for b in range(100, 105):
+            budget_conf = copy.copy(self.configuration)
+            budget_conf["max_budget"] = b
+            ScenarioFactory.create(
+                planning_area=self.planning_area,
+                name=f"scenario {b}",
+                configuration=budget_conf,
+                user=self.owner_user,
+            )
+
+        self.client.force_authenticate(self.owner_user)
+        query_params = {"ordering": "-budget"}
+        response = self.client.get(
+            reverse(
+                "planning:scenarios-list",
+                kwargs={"planningarea_pk": self.planning_area.pk},
+            ),
+            query_params,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = json.loads(response.content)
+        expected_budget_order = [104, 103, 102, 101, 100, None, None, None]
+        budget_results = [s["max_budget"] for s in response_data["results"]]
+        self.assertEquals(budget_results, expected_budget_order)
+
+    def test_sort_scenario_by_multiple_fields(self):
+        for a in range(1, 4):
+            for b in range(100, 104):
+                for n in ["aaaa", "bbbb", "cccc"]:
+                    budget_conf = copy.copy(self.configuration)
+                    budget_conf["max_budget"] = b
+                    budget_conf["max_treatment_area_ratio"] = a
+                    ScenarioFactory.create(
+                        planning_area=self.planning_area,
+                        name=f"{n} scenario,a{a}-b{b}",
+                        configuration=budget_conf,
+                        user=self.owner_user,
+                    )
+        self.client.force_authenticate(self.owner_user)
+
+        # sort by rev budget, then acres, then name
+        query_params = {"ordering": "-budget,acres,-name"}
+        response = self.client.get(
+            reverse(
+                "planning:scenarios-list",
+                kwargs={"planningarea_pk": self.planning_area.pk},
+            ),
+            query_params,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = json.loads(response.content)
+
+        expected_names = [
+            "cccc scenario,a1-b103",
+            "bbbb scenario,a1-b103",
+            "aaaa scenario,a1-b103",
+            "cccc scenario,a2-b103",
+            "bbbb scenario,a2-b103",
+            "aaaa scenario,a2-b103",
+            "cccc scenario,a3-b103",
+            "bbbb scenario,a3-b103",
+            "aaaa scenario,a3-b103",
+            "cccc scenario,a1-b102",
+            "bbbb scenario,a1-b102",
+            "aaaa scenario,a1-b102",
+            "cccc scenario,a2-b102",
+            "bbbb scenario,a2-b102",
+            "aaaa scenario,a2-b102",
+            "cccc scenario,a3-b102",
+            "bbbb scenario,a3-b102",
+            "aaaa scenario,a3-b102",
+            "cccc scenario,a1-b101",
+            "bbbb scenario,a1-b101",
+            "aaaa scenario,a1-b101",
+            "cccc scenario,a2-b101",
+            "bbbb scenario,a2-b101",
+            "aaaa scenario,a2-b101",
+            "cccc scenario,a3-b101",
+            "bbbb scenario,a3-b101",
+            "aaaa scenario,a3-b101",
+            "cccc scenario,a1-b100",
+            "bbbb scenario,a1-b100",
+            "aaaa scenario,a1-b100",
+            "cccc scenario,a2-b100",
+            "bbbb scenario,a2-b100",
+            "aaaa scenario,a2-b100",
+            "cccc scenario,a3-b100",
+            "bbbb scenario,a3-b100",
+            "aaaa scenario,a3-b100",
+            # these initial records have None for budget and acres
+            "test scenario3",
+            "test scenario2",
+            "test scenario",
+        ]
+        name_results = [s["name"] for s in response_data["results"]]
+        self.assertEquals(expected_names, name_results)

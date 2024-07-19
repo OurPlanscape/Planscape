@@ -6,6 +6,7 @@ from collaboration.services import get_role, get_permissions
 from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
+    ProjectArea,
     Scenario,
     ScenarioResult,
     SharedLink,
@@ -228,6 +229,10 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         read_only=True,
         source="results",
     )
+    max_treatment_area = serializers.ReadOnlyField(
+        source="configuration.max_treatment_area_ratio"
+    )
+    max_budget = serializers.ReadOnlyField(source="configuration.max_budget")
 
     class Meta:
         fields = (
@@ -235,6 +240,8 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "updated_at",
             "created_at",
             "planning_area",
+            "max_treatment_area",
+            "max_budget",
             "name",
             "notes",
             "user",
@@ -298,6 +305,24 @@ class UserPrefsSerializer(serializers.ModelSerializer):
 
 
 class ListCreatorSerializer(serializers.ModelSerializer):
+    full_name = serializers.SerializerMethodField()
+
+    def get_full_name(self, obj):
+        return f"{obj.first_name} {obj.last_name}"
+
     class Meta:
         model = User
-        fields = ("id", "email", "first_name", "last_name")
+        fields = ("id", "email", "full_name")
+
+
+class ProjectAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectArea
+        fields = (
+            "uuid",
+            "scenario",
+            "name",
+            "origin",
+            "data",
+            "geometry",
+        )

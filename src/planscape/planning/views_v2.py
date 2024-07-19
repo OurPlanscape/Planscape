@@ -1,23 +1,27 @@
 import logging
 
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, mixins, permissions
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
+from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework.filters import OrderingFilter
-from rest_framework.decorators import action
-from planning.models import PlanningArea, Scenario, User
+from impacts.models import TreatmentPlan
+from impacts.serializers import TreatmentPlanListSerializer
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
     PlanningAreaOrderingFilter,
+    ScenarioOrderingFilter,
 )
-from planning.models import PlanningArea, Scenario, ScenarioStatus
+from planning.models import PlanningArea, ProjectArea, Scenario, ScenarioStatus, User
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    ProjectAreaSerializer,
     ScenarioSerializer,
     ListCreatorSerializer,
 )
@@ -43,6 +47,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "full_name",
         "name",
         "region_name",
+        "latest_updated",
         "scenario_count",
         "updated_at",
         "user",
@@ -90,8 +95,18 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.all()
     permission_classes = [ScenarioViewPermission]
-    ordering_fields = ["name", "created_at"]
+    ordering_fields = [
+        "name",
+        "created_at",
+        "id",
+        "status",
+        "budget",
+        "acres",
+        "completed_at",
+    ]
+    # TODO: acres, budget, status, completion date?
     filterset_class = ScenarioFilter
+    filter_backends = [ScenarioOrderingFilter]
 
     def create(self, request, planningarea_pk):
         input_data = {
@@ -125,16 +140,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         planningarea_pk = self.kwargs.get("planningarea_pk")
-        if planningarea_pk:
-            try:
-                scenarios = Scenario.objects.filter(
-                    planning_area__pk=planningarea_pk,
-                )
-                return scenarios
-            except PlanningArea.DoesNotExist:
-                return Scenario.objects.none()  # Return an empty queryset
-        else:
-            return Scenario.objects.none()
+        return Scenario.objects.filter(planning_area__pk=planningarea_pk)
 
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, planningarea_pk, pk=None):
@@ -143,10 +149,38 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
 
+    @action(methods=["get"], detail=True)
+    def treatment_plans(self, request, planningarea_pk, pk=None):
+        scenario = self.get_object()
+        treatments = TreatmentPlan.objects.filter(scenario_id=scenario)
+        paginator = LimitOffsetPagination()
+        # Paginate the queryset
+        page = paginator.paginate_queryset(treatments, request)
+        if page is not None:
+            serializer = TreatmentPlanListSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
+        serializer = TreatmentPlanListSerializer(treatments, many=True)
+        return Response(serializer.data)
 
+
+# TODO: migrate this to an action inside the planning area viewset
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
+    permission_classes = [PlanningAreaViewPermission]
     serializer_class = ListCreatorSerializer
+    pagination_class = None
 
     def get_queryset(self):
-        return User.objects.filter(planning_areas__isnull=False).distinct()
+        user = self.request.user
+        return User.objects.filter(
+            planning_areas__in=PlanningArea.objects.get_for_user(user)
+        ).distinct()
+
+
+class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
+    queryset = ProjectArea.objects.all()
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = ProjectAreaSerializer
+    serializer_classes = {
+        "retrieve": ProjectAreaSerializer,
+    }

@@ -56,7 +56,14 @@ class CustomPasswordResetSerializer(PasswordResetSerializer):
 class CustomPasswordResetConfirmSerializer(PasswordResetConfirmSerializer):
     """Custom serializer to send email for password reset post-save."""
 
+    def reactivate_user(self):
+        log.info(f"Reactivating user {self.user.get_username()} for password reset.")
+        self.user.is_active = True
+        self.user.save()
+
     def save(self):
+        if not self.user.is_active:
+            self.reactivate_user()
         super(CustomPasswordResetConfirmSerializer, self).save()
         self._send_email()
 

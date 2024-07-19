@@ -181,3 +181,5 @@ pyrightconfig.json
 Session.vim
 
 .nx/
+.zed/**
+requirements.txt
