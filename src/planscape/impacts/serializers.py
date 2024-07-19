@@ -54,6 +54,12 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
         )
 
 
+class TreatmentPlanUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentPlan
+        fields = ["name"]
+
+
 class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPrescription

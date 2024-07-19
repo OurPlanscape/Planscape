@@ -1,5 +1,6 @@
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
+from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.contrib.auth import get_user_model
 from impacts.models import TreatmentPlan
@@ -30,6 +31,79 @@ class TxPlanViewSetTest(APITransactionTestCase):
             data.get("created_by"),
             tx_plan.created_by.id,
         )
+
+    def test_get_tx_plan(self):
+        self.client.force_authenticate(user=self.scenario.user)
+
+        tx_plan = TreatmentPlanFactory.create(
+            name="it's a bold plan",
+        )
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["name"], "it's a bold plan")
+
+    def test_update_tx_plan(self):
+        self.client.force_authenticate(user=self.scenario.user)
+
+        tx_plan = TreatmentPlanFactory.create(name="it's a bold plan")
+        payload = {"name": "lets see how it works out"}
+        response = self.client.patch(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_plan = TreatmentPlan.objects.get(pk=tx_plan.id)
+        self.assertEqual(updated_plan.name, "lets see how it works out")
+
+    def test_update_tx_plan_restrict_fields(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        other_user = UserFactory(username="otheruser")
+        orig_scenario = ScenarioFactory()
+        new_scenario = ScenarioFactory()
+        tx_plan = TreatmentPlanFactory.create(
+            name="it's a bold plan", scenario=orig_scenario
+        )
+
+        payload = {"created_by_id": other_user.pk, "scenario": new_scenario.pk}
+        response = self.client.patch(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_plan = TreatmentPlan.objects.get(pk=tx_plan.id)
+        self.assertNotEqual(updated_plan.created_by, other_user)
+        self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
+
+    def test_put_tx_plan_restrict_fields(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        other_user = UserFactory(username="otheruser")
+        orig_scenario = ScenarioFactory()
+        new_scenario = ScenarioFactory()
+        tx_plan = TreatmentPlanFactory.create(
+            name="it's a bold plan", scenario=orig_scenario
+        )
+
+        tx_plan.name = "ok new name"
+        tx_plan.scenario = new_scenario
+        tx_plan.created_by = other_user
+        plan_dict = model_to_dict(tx_plan)
+
+        response = self.client.put(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            data=plan_dict,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_plan = TreatmentPlan.objects.get(pk=tx_plan.id)
+        self.assertEqual(updated_plan.name, "ok new name")
+        self.assertNotEqual(updated_plan.created_by, other_user)
+        self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
 
     def test_list_txplans_in_scenario(self):
         for _ in range(50):

@@ -4,6 +4,7 @@ from impacts.models import TreatmentPlan, TreatmentPrescription
 from impacts.serializers import (
     CreateTreatmentPlanSerializer,
     TreatmentPlanListSerializer,
+    TreatmentPlanUpdateSerializer,
     TreatmentPlanSerializer,
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
@@ -19,6 +20,7 @@ from impacts.services import (
 class TreatmentPlanViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
+    mixins.UpdateModelMixin,
     mixins.RetrieveModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
@@ -29,6 +31,8 @@ class TreatmentPlanViewSet(
         "list": TreatmentPlanListSerializer,
         "create": CreateTreatmentPlanSerializer,
         "retrieve": TreatmentPlanSerializer,
+        "update": TreatmentPlanUpdateSerializer,
+        "partial_update": TreatmentPlanUpdateSerializer,
     }
 
     def get_serializer_class(self):
