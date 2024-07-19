@@ -101,10 +101,13 @@ def create_scenario_and_projects_from_upload(
     # validate_geometry(uploaded_geom)
     # then create scenario
     scenario = Scenario.objects.create(planning_area=planningarea, name=scenario_name)
-    # serializer = ScenarioSerializer(data=scenario)
-    # serializer.is_valid(raise_exception=True)
-    scenario_result = ScenarioResult.objects.create(scenario=scenario)
-    scenario_result.save()
+    try:
+        serializer = ScenarioSerializer(data=scenario)
+        serializer.is_valid(raise_exception=True)
+        scenario_result = ScenarioResult.objects.create(scenario=scenario)
+        scenario_result.save()
+    except Exception as e:
+        print(f"Could not save scenario {e}")
     action.send(
         user,
         verb="created",
@@ -115,19 +118,22 @@ def create_scenario_and_projects_from_upload(
     print(f"Are there features in the uploaded_geom? {uploaded_geom}")
 
     # then create project areas from features...
-    for idx, f in enumerate(uploaded_geom["features"]):
+    for idx, f in enumerate(uploaded_geom["features"], 1):
         print(f"\nFeature: {f}")
         print(f"\n\nCreating {scenario_name} project:{idx}...")
         try:
             project_area = ProjectArea(
-                geometry=coerce_geometry(f), name=f"{scenario_name} project:{idx}"
+                geometry=coerce_geometry(f["geometry"]),
+                name=f"{scenario_name} project:{idx}",
+                created_by=user,
+                scenario=scenario,
             )
             # projectarea_serializer = ProjectAreaSerializer(data=project_area)
             # projectarea_serializer.is_valid(raise_exception=True)
-            project_area.save
+            project_area.save()
         except Exception as e:
             print(
-                "Something happened with creating {scenario_name} project:{idx}...{e}"
+                f"Something happened with creating {scenario_name} project:{idx}...{e}"
             )
 
     # async_forsys_run.delay(scenario.pk)

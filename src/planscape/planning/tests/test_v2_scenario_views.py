@@ -288,7 +288,7 @@ class CreateScenarios(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, 201)
         print(f"response_data {response_data}")
-        self.assertEqual(response_data, "idk")
+        self.assertEqual(len(response_data["project_areas"]), 4)
 
     def test_create_uncontained_geometry(self):
         self.client.force_authenticate(self.owner_user)
@@ -305,4 +305,6 @@ class CreateScenarios(APITransactionTestCase):
             data=payload,
             format="json",
         )
+        response_data = response.json()
         self.assertEqual(response.status_code, 400)
+        self.assertEqual(len(response_data["project_areas"]), 3)

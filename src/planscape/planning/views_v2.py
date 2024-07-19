@@ -159,8 +159,8 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         uploaded_geom = {**request.data["geometry"]}
         print(f" we have upladed geom? {uploaded_geom}")
         pa = PlanningArea.objects.get(pk=planningarea_pk)
-        # if not is_inside(pa.geometry, uploaded_geom):
-        #     print(f"not inside!")
+        if not is_inside(pa.geometry, uploaded_geom):
+            print("uploaded_geom is not contained by planning area!")
         print(f" we have planning area geom? {pa.geometry}")
 
         # in a service...create all the things
