@@ -291,7 +291,6 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
 
 
 class ScenarioProjectAreasSerializer(serializers.ModelSerializer):
-
     project_areas = ProjectAreaSerializer(many=True, read_only=True)
 
     class Meta:

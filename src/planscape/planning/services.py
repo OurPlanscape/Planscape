@@ -123,7 +123,6 @@ def create_scenario_from_upload(
     stand_size: str,
     uploaded_geom,
 ) -> Scenario:
-
     scenario = Scenario.objects.create(
         planning_area=planningarea, name=scenario_name, user=user
     )
