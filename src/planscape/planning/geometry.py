@@ -3,7 +3,7 @@ from django.conf import settings
 from shapely import wkt
 from shapely.geometry import shape
 from typing import Any, Dict, Union
-from django.contrib.gis.geos import MultiPolygon, GEOSGeometry, Polygon
+from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 
 from planscape.exceptions import InvalidGeometry
 
