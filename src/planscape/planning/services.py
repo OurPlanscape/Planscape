@@ -11,10 +11,9 @@ from typing import Any, Dict, Tuple, Type
 from django.conf import settings
 from django.db import transaction
 from fiona.crs import from_epsg
-from django.contrib.gis.geos import GEOSGeometry
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from impacts.models import ProjectArea
-from planning.geometry import coerce_geojson, is_inside, coerce_geometry
+from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -22,7 +21,6 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
 )
-from planning.serializers import ScenarioSerializer
 from planning.tasks import async_forsys_run
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi

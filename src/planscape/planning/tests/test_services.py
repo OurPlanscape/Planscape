@@ -250,7 +250,7 @@ class GeometryServiceTests(TransactionTestCase):
         self.fresno_geo = _load_geojson_fixture("fresno_bakersfield_la.geojson")
         self.bayarea_geo = _load_geojson_fixture("bayarea.geojson")
 
-    def test_intersections(self):
+    def test_containment(self):
         contained = is_inside(self.la_county_geo, self.compton_geo)
         self.assertEquals(contained, True)
 
@@ -262,6 +262,3 @@ class GeometryServiceTests(TransactionTestCase):
 
         intersect = is_inside(self.fresno_geo, self.la_county_geo)
         self.assertEquals(intersect, False)
-
-    def test_valid(self):
-        pass

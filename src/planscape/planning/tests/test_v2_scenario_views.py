@@ -1,5 +1,4 @@
 import json
-import os
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
@@ -10,8 +9,6 @@ from planning.geometry import coerce_geometry
 from planning.models import (
     Scenario,
     ScenarioResult,
-    ScenarioResultStatus,
-    ScenarioStatus,
 )
 from planning.tests.helpers import (
     _create_planning_area,
