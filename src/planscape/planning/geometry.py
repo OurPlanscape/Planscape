@@ -101,18 +101,3 @@ def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeome
         raise InvalidGeometry("Could not parse geometry")
 
     return geometry
-
-
-def validate_geometry(geometry):
-    if not isinstance(geometry, GEOSGeometry):
-        geometry = GEOSGeometry(
-            geometry,
-            srid=settings.CRS_INTERNAL_REPRESENTATION,
-        )
-
-    if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
-        geometry = geometry.transform(settings.CRS_INTERNAL_REPRESENTATION, clone=True)
-
-    geometry = coerce_geometry(geometry)
-
-    return geometry
