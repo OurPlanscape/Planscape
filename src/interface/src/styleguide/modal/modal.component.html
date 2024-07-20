@@ -8,9 +8,11 @@
 
   <div class="title-buttons">
     <button>
-      <mat-icon *ngIf="showToolTip">help_outline</mat-icon>
+      <mat-icon *ngIf="showToolTip" [matMenuTriggerFor]="tooltipMenu"
+        >help_outline</mat-icon
+      >
       <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
-        <div class="tooltip">
+        <div class="tooltip-content">
           {{ toolTipContent }}
         </div>
       </mat-menu>
@@ -24,7 +26,8 @@
 <main
   class="modal-body"
   [ngClass]="{
-    scrollable: scrollableContent
+    scrollable: scrollableContent,
+    padded: padBody
   }">
   <ng-content> </ng-content>
 </main>
