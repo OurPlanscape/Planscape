@@ -1,3 +1,4 @@
+import json
 import logging
 import math
 import os
@@ -91,23 +92,46 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
     return scenario
 
 
+def feature_to_project_area(idx: int, user: UserType, scenario: Scenario, feature):
+    try:
+        project_area = ProjectArea(
+            geometry=coerce_geometry(feature),
+            name=f"{scenario.name} project:{idx}",
+            created_by=user,
+            scenario=scenario,
+        )
+        # projectarea_serializer = ProjectAreaSerializer(data=project_area)
+        # projectarea_serializer.is_valid(raise_exception=True)
+        action.send(
+            user,
+            verb="created",
+            action_object=project_area,
+            target=scenario,
+        )
+        project_area.save()
+    except Exception as e:
+        print(
+            f"\n\nSomething happened with creating {scenario.name} project:{idx}...{e}"
+        )
+
+
 @transaction.atomic()
-def create_scenario_and_projects_from_upload(
-    user: UserType, planningarea: PlanningArea, scenario_name: str, uploaded_geom
+def create_scenario_from_upload(
+    user: UserType,
+    planningarea: PlanningArea,
+    scenario_name: str,
+    stand_size: str,
+    uploaded_geom,
 ) -> Scenario:
 
-    # validate geojson
-    # test that it's within the planning_area shape
-    # validate_geometry(uploaded_geom)
-    # then create scenario
-    scenario = Scenario.objects.create(planning_area=planningarea, name=scenario_name)
-    try:
-        serializer = ScenarioSerializer(data=scenario)
-        serializer.is_valid(raise_exception=True)
-        scenario_result = ScenarioResult.objects.create(scenario=scenario)
-        scenario_result.save()
-    except Exception as e:
-        print(f"Could not save scenario {e}")
+    scenario = Scenario.objects.create(
+        planning_area=planningarea, name=scenario_name, user=user
+    )
+    scenario.configuration["stand_size"] = stand_size
+    scenario.save()
+    scenario_result = ScenarioResult.objects.create(scenario=scenario)
+    scenario_result.save()
+
     action.send(
         user,
         verb="created",
@@ -115,27 +139,18 @@ def create_scenario_and_projects_from_upload(
         target=scenario.planning_area,
     )
 
-    print(f"Are there features in the uploaded_geom? {uploaded_geom}")
+    # this is a format provided by a shpjs shapefile when it has multiple features
+    if "geometry" in uploaded_geom and "coordinates" in uploaded_geom["geometry"]:
+        for idx, f in enumerate(uploaded_geom["geometry"]["coordinates"], 1):
+            feature_obj = {"type": "Polygon", "coordinates": [f]}
+            feature_to_project_area(idx, user, scenario, feature_obj)
 
     # then create project areas from features...
-    for idx, f in enumerate(uploaded_geom["features"], 1):
-        print(f"\nFeature: {f}")
-        print(f"\n\nCreating {scenario_name} project:{idx}...")
-        try:
-            project_area = ProjectArea(
-                geometry=coerce_geometry(f["geometry"]),
-                name=f"{scenario_name} project:{idx}",
-                created_by=user,
-                scenario=scenario,
-            )
-            # projectarea_serializer = ProjectAreaSerializer(data=project_area)
-            # projectarea_serializer.is_valid(raise_exception=True)
-            project_area.save()
-        except Exception as e:
-            print(
-                f"Something happened with creating {scenario_name} project:{idx}...{e}"
-            )
+    if "features" in uploaded_geom:
+        for idx, f in enumerate(uploaded_geom["features"], 1):
+            feature_to_project_area(idx, user, scenario, f["geometry"])
 
+    # TODO: should we run forsys yet?
     # async_forsys_run.delay(scenario.pk)
     return scenario
 

@@ -32,7 +32,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
-    create_scenario_and_projects_from_upload,
+    create_scenario_from_upload,
 )
 
 logger = logging.getLogger(__name__)
@@ -157,17 +157,21 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     @action(methods=["post"], detail=False)
     def upload_shapefile(self, request, planningarea_pk):
         uploaded_geom = {**request.data["geometry"]}
-        print(f" we have upladed geom? {uploaded_geom}")
         pa = PlanningArea.objects.get(pk=planningarea_pk)
-        if not is_inside(pa.geometry, uploaded_geom):
-            print("uploaded_geom is not contained by planning area!")
-        print(f" we have planning area geom? {pa.geometry}")
 
-        # in a service...create all the things
-        scenario = create_scenario_and_projects_from_upload(
+        # Ensure that planning area contains the uploaded geometry
+        if not is_inside(pa.geometry, uploaded_geom):
+            return Response(
+                {"error": "Uploaded geometry is not contained by planning area"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # so now we create a scenario
+        scenario = create_scenario_from_upload(
             user=self.request.user,
             planningarea=pa,
             scenario_name=request.data["name"],
+            stand_size=request.data["stand_size"],
             uploaded_geom=uploaded_geom,
         )
         out_serializer = ScenarioProjectAreasSerializer(instance=scenario)
