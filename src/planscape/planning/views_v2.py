@@ -13,6 +13,7 @@ from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
     PlanningAreaOrderingFilter,
+    ScenarioOrderingFilter,
 )
 from planning.geometry import is_inside
 from planning.models import PlanningArea, ProjectArea, Scenario, User
@@ -97,8 +98,18 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.all()
     permission_classes = [ScenarioViewPermission]
-    ordering_fields = ["name", "created_at"]
+    ordering_fields = [
+        "name",
+        "created_at",
+        "id",
+        "status",
+        "budget",
+        "acres",
+        "completed_at",
+    ]
+    # TODO: acres, budget, status, completion date?
     filterset_class = ScenarioFilter
+    filter_backends = [ScenarioOrderingFilter]
 
     def create(self, request, planningarea_pk):
         input_data = {

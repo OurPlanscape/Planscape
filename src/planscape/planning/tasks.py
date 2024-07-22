@@ -13,6 +13,7 @@ def async_forsys_run(scenario_id: int) -> None:
         scenario = Scenario.objects.get(id=scenario_id)
     except Scenario.DoesNotExist:
         log.warning(f"Scenario with {scenario_id} does not exist.")
+        raise
     try:
         log.info(f"Running scenario {scenario_id}")
         scenario.result_status = ScenarioResultStatus.RUNNING
