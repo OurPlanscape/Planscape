@@ -11,9 +11,9 @@ from typing import Any, Dict, Tuple, Type
 from django.conf import settings
 from django.db import transaction
 from fiona.crs import from_epsg
+from rest_framework.serializers import ValidationError
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from impacts.models import ProjectArea
-from planning.geometry import coerce_geojson, coerce_geometry
+from planning.geometry import coerce_geojson, coerce_geometry, get_acreage
 from planning.models import (
     PlanningArea,
     Scenario,
@@ -21,6 +21,7 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
 )
+from planning.serializers import ProjectAreaSerializer
 from planning.tasks import async_forsys_run
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
@@ -92,25 +93,27 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
 
 def feature_to_project_area(idx: int, user: UserType, scenario: Scenario, feature):
     try:
-        project_area = ProjectArea(
-            geometry=coerce_geometry(feature),
-            name=f"{scenario.name} project:{idx}",
-            created_by=user,
-            scenario=scenario,
-        )
-        # projectarea_serializer = ProjectAreaSerializer(data=project_area)
-        # projectarea_serializer.is_valid(raise_exception=True)
+        project_area = {
+            "geometry": coerce_geometry(feature),
+            "name": f"{scenario.name} project:{idx}",
+            "created_by": user.pk,
+            "scenario": scenario.pk,
+        }
+        serializer = ProjectAreaSerializer(data=project_area)
+        serializer.is_valid(raise_exception=True)
+        proj_area_obj = serializer.save()
         action.send(
             user,
             verb="created",
-            action_object=project_area,
+            action_object=proj_area_obj,
             target=scenario,
         )
-        project_area.save()
+    except ValidationError as ve:
+        logger.error(f"Validation error with {ve}")
+        raise ve
     except Exception as e:
-        print(
-            f"\n\nSomething happened with creating {scenario.name} project:{idx}...{e}"
-        )
+        logger.error(f"Unable to create project area for {scenario.name} {e}")
+        raise e
 
 
 @transaction.atomic()

@@ -287,6 +287,7 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
             "origin",
             "data",
             "geometry",
+            "created_by",
         )
 
 
