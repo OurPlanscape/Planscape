@@ -44,7 +44,7 @@ export class ScenarioResultsComponent implements OnChanges {
   }
 
   downloadCsv() {
-    const filename = this.scenarioName + ' csv';
+    const filename = this.scenarioName.replace(/[\s./\\]/g, '_') + '.zip';
     if (this.scenarioId) {
       this.scenarioService
         .downloadCsvData(this.scenarioId)
@@ -58,7 +58,9 @@ export class ScenarioResultsComponent implements OnChanges {
   }
 
   downloadShapeFiles() {
-    const filename = this.scenarioName + ' shapefiles';
+    const filename =
+      this.scenarioName.replace(/[\s./\\/]/g, '_').replace(/_+/g, '_') +
+      '_shp.zip';
     if (this.scenarioId) {
       this.scenarioService
         .downloadShapeFiles(this.scenarioId)
