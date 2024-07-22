@@ -1,4 +1,5 @@
 import json
+import logging
 from django.conf import settings
 from shapely import wkt
 from shapely.geometry import shape
@@ -6,6 +7,8 @@ from typing import Any, Dict, Union
 from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 
 from planscape.exceptions import InvalidGeometry
+
+logger = logging.getLogger(__name__)
 
 
 def coerce_geojson(geojson: Dict[str, Any]) -> GEOSGeometry:
@@ -67,7 +70,7 @@ def is_inside(larger_geometry, smaller_geometry):
             larger_geometry = larger_geometry.split(";", 1)[1]
             larger_shape = wkt.loads(larger_geometry)
     except Exception as e:
-        print(f"Could not convert larger shape {e}")
+        logger.error(f"Could not convert larger shape to compare containment {e}")
 
     # determine whether we have a feature collection or individual geometry
     if "features" in smaller_geometry:
@@ -80,7 +83,7 @@ def is_inside(larger_geometry, smaller_geometry):
         smaller_g = smaller_geometry["geometry"]
         smaller_shape = shape(smaller_g)
     except Exception as e:
-        print(f"Could not convert smaller shape {e}")
+        logger.error(f"Could not convert smaller shape to compare containment {e}")
     return smaller_shape.within(larger_shape)
 
 

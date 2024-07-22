@@ -3,7 +3,7 @@ from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from collaboration.services import get_role, get_permissions
-from planning.geometry import coerce_geometry
+from planning.geometry import coerce_geometry, get_acreage
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -14,7 +14,6 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.geometry import get_acreage
 from stands.models import StandSizeChoices
 
 
