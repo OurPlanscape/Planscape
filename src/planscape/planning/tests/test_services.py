@@ -5,14 +5,13 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 import fiona
 from fiona.crs import to_string
-
+from planning.geometry import is_inside
 from planning.services import (
     export_to_shapefile,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
     validate_scenario_treatment_ratio,
-    is_inside,
 )
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 from stands.models import Stand, StandSizeChoices
