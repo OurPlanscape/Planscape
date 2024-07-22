@@ -100,7 +100,7 @@ export class ModalComponent {
   /**
    * Whether or not to use default padding for the projected content
    */
-  @Input() padBody? = true;
+  @Input() padBody? = false;
 
   @Input() toolTipContent = 'Here is some tooltip content';
 
@@ -125,13 +125,18 @@ export class ModalComponent {
 
   dialogClosed(event: any) {}
 
-  handleCancel(): void {
+  handleCloseButton(): void {
+    this.dialogRef.close();
+    this.canceledClose.emit();
+  }
+
+  handleSecondaryButton(): void {
     this.dialogRef.close();
     this.canceledClose.emit(); // should this just emit something different?
   }
 
-  handleDone(): void {
-    this.dialogRef.close();
+  handlePrimaryButton(): void {
+    // this.dialogRef.close();
     this.doneClose.emit();
   }
 

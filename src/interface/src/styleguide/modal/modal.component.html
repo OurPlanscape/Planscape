@@ -1,9 +1,9 @@
 <section class="header" *ngIf="hasHeader">
   <div class="header-title">
-    <mat-icon *ngIf="leadingIcon" [matMenuTriggerFor]="tooltipMenu">{{
+    <mat-icon *ngIf="leadingIcon" class="leading-icon">{{
       leadingIcon
     }}</mat-icon>
-    <h4>{{ title }}</h4>
+    <div>{{ title }}</div>
   </div>
 
   <div class="title-buttons">
@@ -17,7 +17,7 @@
         </div>
       </mat-menu>
     </button>
-    <button mat-icon-button (click)="handleCancel()" aria-label="close">
+    <button mat-icon-button (click)="handleCloseButton()" aria-label="close">
       <mat-icon class="close-btn">close</mat-icon>
     </button>
   </div>
@@ -50,7 +50,7 @@
     mat-raised-button
     type="button"
     [variant]="secondaryButtonVariant"
-    (click)="handleCancel()">
+    (click)="handleSecondaryButton()">
     {{ secondaryButtonText }}
   </button>
 
@@ -60,7 +60,7 @@
     mat-raised-button
     type="button"
     [variant]="primaryButtonVariant"
-    (click)="handleDone()">
+    (click)="handlePrimaryButton()">
     {{ primaryButtonText }}
   </button>
 </section>
