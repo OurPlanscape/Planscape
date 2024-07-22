@@ -166,7 +166,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        # so now we create a scenario
+        # now we create a scenario
         scenario = create_scenario_from_upload(
             user=self.request.user,
             planningarea=pa,

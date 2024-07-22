@@ -139,13 +139,13 @@ def create_scenario_from_upload(
         target=scenario.planning_area,
     )
 
-    # this is a format provided by a shpjs shapefile when it has multiple features
+    # this handles a format provided by shpjs when a shapefile has multiple features
     if "geometry" in uploaded_geom and "coordinates" in uploaded_geom["geometry"]:
         for idx, f in enumerate(uploaded_geom["geometry"]["coordinates"], 1):
             feature_obj = {"type": "Polygon", "coordinates": [f]}
             feature_to_project_area(idx, user, scenario, feature_obj)
 
-    # then create project areas from features...
+    # this handles a more standard FeatureCollection
     if "features" in uploaded_geom:
         for idx, f in enumerate(uploaded_geom["features"], 1):
             feature_to_project_area(idx, user, scenario, f["geometry"])
