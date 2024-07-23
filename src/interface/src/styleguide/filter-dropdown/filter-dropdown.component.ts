@@ -1,6 +1,7 @@
 import {
   Component,
   EventEmitter,
+  HostBinding,
   Input,
   OnInit,
   Output,
@@ -59,6 +60,10 @@ export class FilterDropdownComponent<T> implements OnInit {
    * provided menuItems is not already a string.
    */
   @Input() displayField?: keyof T;
+  /**
+   * Dynamically set the width from the consumer
+   */
+  @Input() size: 'small' | 'medium' | 'large' = 'medium';
 
   /**
    * Event that emits when list of selected items changes
@@ -99,10 +104,6 @@ export class FilterDropdownComponent<T> implements OnInit {
     }
   }
 
-  showCount(): boolean {
-    return this.selectedItems.length > 1;
-  }
-
   isInSelection(term: T): boolean {
     return this.selectedItems.includes(term);
   }
@@ -119,10 +120,10 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   get selectionText(): string {
     if (this.selectedItems.length > 0) {
-      const firstItem = this.selectedItems[0];
-      return `${this.menuLabel}: ${this.displayField ? firstItem[this.displayField] : firstItem}`;
+      const itemsString = this.selectedItems.join(', ');
+      return `: ${this.displayField ? '' : itemsString}`;
     }
-    return this.menuLabel;
+    return '';
   }
 
   handleCancel() {
@@ -168,5 +169,14 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   applyChanges(e: Event) {
     this.confirmedSelection.emit(this.selectedItems);
+  }
+
+  @HostBinding('class.small')
+  get isSmall() {
+    return this.size === 'small';
+  }
+  @HostBinding('class.large')
+  get isLarge() {
+    return this.size === 'large';
   }
 }
