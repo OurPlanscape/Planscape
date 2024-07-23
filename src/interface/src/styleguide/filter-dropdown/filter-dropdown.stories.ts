@@ -29,6 +29,22 @@ export const Default: Story = {
   },
 };
 
+export const Small: Story = {
+  args: {
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    size: 'small',
+  },
+};
+
+export const Large: Story = {
+  args: {
+    menuLabel: 'Region',
+    menuItems: ['hello', 'this', 'is', 'selectable', 'content'],
+    size: 'large',
+  },
+};
+
 export const WithLeadingIcon: Story = {
   args: {
     menuLabel: 'Region',
