@@ -58,9 +58,7 @@ export class ScenarioResultsComponent implements OnChanges {
   }
 
   downloadShapeFiles() {
-    const filename =
-      this.scenarioName.replace(/[\s./\\/]/g, '_').replace(/_+/g, '_') +
-      '_shp.zip';
+    const filename = this.scenarioName.replace(/[\s./\\/]/g, '_') + '_shp.zip';
     if (this.scenarioId) {
       this.scenarioService
         .downloadShapeFiles(this.scenarioId)
