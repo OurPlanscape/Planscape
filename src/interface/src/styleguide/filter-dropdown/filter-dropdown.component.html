@@ -5,29 +5,30 @@
   [disabled]="disabled"
   (click)="openFilterPanel()"
   [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
-  <div class="icon-label-box">
-    <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
-      leadingIcon
-    }}</mat-icon>
+  <div class="button-content">
     <div
-      class="dropdown-label"
+      class="icon-label-box"
       [ngClass]="{ 'active-filter': hasSelections(), disabled: disabled }">
-      {{ selectionText }}
+      <mat-icon class="trigger-icon" *ngIf="leadingIcon">{{
+        leadingIcon
+      }}</mat-icon>
+      <div class="label-box">{{ menuLabel }}{{ selectionText }}</div>
+    </div>
+    <div class="right-items-box">
+      <div *ngIf="hasSelections()" class="more-items-box">
+        <div class="selected-count-chip">
+          {{ selectedItems.length }}
+        </div>
+      </div>
+      <mat-icon *ngIf="!hasSelections()">keyboard_arrow_down</mat-icon>
+      <mat-icon
+        *ngIf="hasSelections()"
+        class="close-icon"
+        (click)="clearAndConfirmSelections($event)"
+        >close
+      </mat-icon>
     </div>
   </div>
-  <div *ngIf="showCount()" class="more-items-box">
-    <div class="more-items-icon">&plus;</div>
-    <div class="selected-count-chip">
-      {{ selectedItems.length }}
-    </div>
-  </div>
-  <mat-icon *ngIf="!hasSelections()">keyboard_arrow_down</mat-icon>
-  <mat-icon
-    *ngIf="hasSelections()"
-    class="close-icon"
-    (click)="clearAndConfirmSelections($event)"
-    >close
-  </mat-icon>
 </button>
 
 <mat-menu
