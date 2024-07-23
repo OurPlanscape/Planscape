@@ -29,12 +29,14 @@ class TreatmentPlanPermissionTest(TransactionTestCase):
         self.assertFalse(TreatmentPlanPermission.can_clone(user, tx_plan))
         self.assertFalse(TreatmentPlanPermission.can_remove(user, tx_plan))
 
-        map(
-            lambda p: Permissions.objects.create(role=Role.OWNER, permission=p),
-            PERMISSIONS[Role.OWNER],
+        list(
+            map(
+                lambda p: Permissions.objects.create(role=Role.OWNER, permission=p),
+                PERMISSIONS[Role.OWNER],
+            )
         )
 
-        _ = UserObjectRole.objects.create(
+        user_role = UserObjectRole.objects.create(
             email=tx_plan.scenario.user.email,
             inviter=tx_plan.scenario.user,
             collaborator=user,
@@ -42,7 +44,7 @@ class TreatmentPlanPermissionTest(TransactionTestCase):
             content_type=get_content_type("PlanningArea"),
             object_pk=tx_plan.scenario.planning_area.pk,
         )
-
+        self.assertIsNotNone(user_role)
         self.assertTrue(TreatmentPlanPermission.can_add(user, tx_plan.scenario))
         self.assertTrue(TreatmentPlanPermission.can_view(user, tx_plan))
         self.assertTrue(TreatmentPlanPermission.can_change(user, tx_plan))

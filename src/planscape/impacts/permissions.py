@@ -15,8 +15,9 @@ COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "add_tx_plan",
     "clone_tx_plan",
     "edit_tx_plan",
+    "remove_tx_plan",
     "add_tx_prescription",
-    "delete_tx_prescription",
+    "remove_tx_prescription",
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "run_tx",
@@ -59,9 +60,16 @@ class TreatmentPlanPermission(CheckPermissionMixin):
 
     @staticmethod
     def can_remove(user: UserType, tx_plan: TreatmentPlan):
-        return (
-            is_creator(user, tx_plan.scenario.planning_area)
-            or tx_plan.created_by.pk == user.pk
+        if is_creator(user, tx_plan.scenario.planning_area):
+            return True
+
+        if tx_plan.created_by.pk == user.pk:
+            return True
+
+        return check_for_permission(
+            user.id,
+            tx_plan.scenario.planning_area,
+            "remove_tx_plan",
         )
 
     @staticmethod
