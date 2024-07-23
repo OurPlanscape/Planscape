@@ -1,10 +1,8 @@
 @import 'mixins';
 @import 'colors';
 
-
 ::ng-deep .filtermenu.mat-mdc-menu-panel {
-  width: 400px;
-  max-width: 400px;
+  width: 100%;
   overscroll-behavior: contain;
 }
 
@@ -12,11 +10,23 @@
   width: 100%;
 }
 
+:host {
+  width: 200px;
+  display: block;
+  &.small {
+    width: 140px;
+  }
+  &.large {
+    width: 300px;
+  }
+}
+
 .trigger-icon {
   padding: 0;
   padding-right: 8px;
   height: 22px;
   width: 22px;
+  min-width: 22px;
   font-size: 22px;
   line-height: 22px;
 }
@@ -30,7 +40,7 @@
   border-radius: 4px;
   padding: 8px 8px 8px 8px;
   height: 40px;
-  width: 280px;
+  width: 100%;
   align-items: center;
   cursor: pointer;
 
@@ -72,38 +82,57 @@
   }
 }
 
-.dropdown-label {
+.button-content {
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  max-width: 100%;
+  justify-content: space-between;
+}
+
+.icon-label-box {
   @include xs-label();
   text-align: left;
   line-height: 22px;
   color: $color-black;
-  width: 90%;
   font-weight: 500;
-  text-overflow: ellipsis;
-  overflow: hidden;
+  white-space: nowrap;
   height: 22px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  overflow: hidden;
+  justify-content: start;
 }
 
-.dropdown-label.active-filter {
+.icon-label-box.active-filter {
   font-weight: 500;
   color: $color-white;
 }
 
-.dropdown-label.disabled {
+.icon-label-box.disabled {
   background-color: $color-soft-gray;
   border-color: $color-soft-gray;
   color: $color-text-gray;
 }
 
-.icon-label-box {
-  width: 200px;
+.label-box {
+  flex: 1;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.right-items-box {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
+  justify-content: end;
+  min-width: 60px;
+  width: 60px;
+  align-items: center;
 }
 
 .more-items-box {
-  width: 50px;
   height: 22px;
   display: flex;
   flex-direction: row;
