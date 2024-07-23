@@ -37,7 +37,7 @@ describe('ScenarioResultsComponent', () => {
     fixture = TestBed.createComponent(ScenarioResultsComponent);
     component = fixture.componentInstance;
     component.scenarioId = '1234';
-    component.scenarioName = 'A great scenario result';
+    component.scenarioName = 'A\\great.scenario/result';
 
     scenarioService = TestBed.inject(ScenarioService);
     fileSaverService = TestBed.inject(FileSaverService);
@@ -65,7 +65,7 @@ describe('ScenarioResultsComponent', () => {
       expect(scenarioService.downloadCsvData).toHaveBeenCalledWith('1234');
       expect(fileSaverService.saveAs).toHaveBeenCalledWith(
         jasmine.any(Blob),
-        'A great scenario result csv'
+        'A_great_scenario_result.zip'
       );
     });
     it('should download shapefile file with scenario name', () => {
@@ -76,7 +76,7 @@ describe('ScenarioResultsComponent', () => {
       expect(scenarioService.downloadShapeFiles).toHaveBeenCalledWith('1234');
       expect(fileSaverService.saveAs).toHaveBeenCalledWith(
         jasmine.any(Blob),
-        'A great scenario result shapefiles'
+        'A_great_scenario_result_shp.zip'
       );
     });
   });
