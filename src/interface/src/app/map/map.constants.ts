@@ -76,6 +76,6 @@ export const BOUNDARY_LAYER_HOVER_STYLES: L.PathOptions = {
 export const FrontendConstants = {
   MAP_INITIAL_ZOOM: 9,
   MAP_MIN_ZOOM: 7,
-  MAP_MAX_ZOOM: 13,
+  MAP_MAX_ZOOM: 19,
   MAP_DATA_LAYER_OPACITY: 0.7,
 } as const;
