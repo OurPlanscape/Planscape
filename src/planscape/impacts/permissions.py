@@ -1,3 +1,4 @@
+from collaboration.models import Role
 from collaboration.permissions import CheckPermissionMixin
 from collaboration.utils import check_for_permission, is_creator
 from django.shortcuts import get_object_or_404
@@ -6,6 +7,25 @@ from impacts.models import TreatmentPlan
 from planscape.permissions import PlanscapePermission
 from planscape.typing import UserType
 from planning.models import ScenarioType
+
+VIEWER_PERMISSIONS = [
+    "view_tx_plan",
+]
+COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
+    "add_tx_plan",
+    "clone_tx_plan",
+    "edit_tx_plan",
+    "add_tx_prescription",
+    "delete_tx_prescription",
+]
+OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
+    "run_tx",
+]
+PERMISSIONS = {
+    Role.OWNER: OWNER_PERMISSIONS,
+    Role.COLLABORATOR: COLLABORATOR_PERMISSIONS,
+    Role.VIEWER: VIEWER_PERMISSIONS,
+}
 
 
 class TreatmentPlanPermission(CheckPermissionMixin):
