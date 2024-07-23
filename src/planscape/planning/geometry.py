@@ -65,8 +65,18 @@ def get_acreage(geometry: GEOSGeometry):
 def is_inside(larger_geometry, smaller_geometry):
     larger_shape = None
     smaller_shape = None
+
+    # TODO: clean up coercions / add new functions to convert various formats
     try:
-        if "features" in larger_geometry:
+        if isinstance(larger_geometry, MultiPolygon):
+            geojson_dict = {
+                "type": "MultiPolygon",
+                "coordinates": [polygon.coords for polygon in larger_geometry],
+            }
+            larger_shape = shape(geojson_dict)
+        elif isinstance(larger_geometry, GEOSGeometry):
+            larger_shape = shape(larger_geometry)
+        elif "features" in larger_geometry:
             shapes = [
                 shape(feature["geometry"]) for feature in larger_geometry["features"]
             ]
