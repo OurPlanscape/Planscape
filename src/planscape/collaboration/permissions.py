@@ -77,7 +77,7 @@ class PlanningAreaNotePermission(CheckPermissionMixin):
             user, planning_area_note
         )
 
-    ##creators of the planning area or authors of notes can remove a note
+    # creators of the planning area or authors of notes can remove a note
     @staticmethod
     def can_remove(user: User, planning_area_note: PlanningAreaNote):
         return is_creator(user, planning_area_note.planning_area) or is_creator(
@@ -108,7 +108,7 @@ class CollaboratorPermission(CheckPermissionMixin):
         return check_for_permission(user.id, planning_area, "change_collaborator")
 
     @staticmethod
-    def can_delete(user: User, planning_area: PlanningArea):
+    def can_remove(user: User, planning_area: PlanningArea):
         if is_creator(user, planning_area):
             return True
 
@@ -138,52 +138,5 @@ class ScenarioPermission(CheckPermissionMixin):
         return check_for_permission(user.id, scenario.planning_area, "change_scenario")
 
     @staticmethod
-    def can_delete(user: User, scenario: Scenario):
+    def can_remove(user: User, scenario: Scenario):
         return is_creator(user, scenario.planning_area) or scenario.user.pk == user.pk
-
-
-class TreatmentPlanPermission(CheckPermissionMixin):
-    @staticmethod
-    def can_view(user: User, tx_plan: TreatmentPlan):
-        if is_creator(user, tx_plan.scenario.planning_area):
-            return True
-
-        return check_for_permission(
-            user.id, tx_plan.scenario.planning_area, "view_tx_plan"
-        )
-
-    @staticmethod
-    def can_add(user: User, tx_plan: TreatmentPlan):
-        if is_creator(user, tx_plan.scenario.planning_area):
-            return True
-
-        return check_for_permission(
-            user.id, tx_plan.scenario.planning_area, "add_tx_plan"
-        )
-
-    @staticmethod
-    def can_change(user: User, tx_plan: TreatmentPlan):
-        if (
-            is_creator(user, tx_plan.scenario.planning_area)
-            or tx_plan.created_by.pk == user.pk
-        ):
-            return True
-
-        return check_for_permission(
-            user.id, tx_plan.scenario.planning_area, "edit_tx_plan"
-        )
-
-    @staticmethod
-    def can_delete(user: User, tx_plan: TreatmentPlan):
-        return (
-            is_creator(user, tx_plan.scenario.planning_area)
-            or tx_plan.created_by.pk == user.pk
-        )
-
-    @staticmethod
-    def can_clone(user: User, tx_plan: TreatmentPlan):
-        return is_creator(user, tx_plan.scenario.planning_area) or check_for_permission(
-            user,
-            tx_plan.scenario.planning_area,
-            "clone_tx_plan",
-        )
