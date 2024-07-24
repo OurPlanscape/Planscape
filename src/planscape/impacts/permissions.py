@@ -80,6 +80,15 @@ class TreatmentPlanPermission(CheckPermissionMixin):
             "clone_tx_plan",
         )
 
+    @staticmethod
+    def can_run(user: UserType, tx_plan: TreatmentPlan):
+        is_creator_pa = is_creator(user, tx_plan.scenario.planning_area)
+        is_creator_tx = tx_plan.created_by.pk == user.pk
+        has_perm = check_for_permission(
+            user.pk, tx_plan.scenario.planning_area, "run_tx"
+        )
+        return any([is_creator_pa, is_creator_tx, has_perm])
+
 
 class TreatmentPlanViewPermission(PlanscapePermission):
     permission_set = TreatmentPlanPermission
