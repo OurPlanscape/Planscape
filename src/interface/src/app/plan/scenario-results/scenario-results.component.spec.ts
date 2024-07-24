@@ -65,7 +65,7 @@ describe('ScenarioResultsComponent', () => {
       expect(scenarioService.downloadCsvData).toHaveBeenCalledWith('1234');
       expect(fileSaverService.saveAs).toHaveBeenCalledWith(
         jasmine.any(Blob),
-        'A_great_scenario_result.zip'
+        'A_great_scenario_result_csv.zip'
       );
     });
     it('should download shapefile file with scenario name', () => {

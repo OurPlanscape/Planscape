@@ -44,7 +44,7 @@ export class ScenarioResultsComponent implements OnChanges {
   }
 
   downloadCsv() {
-    const filename = this.scenarioName.replace(/[\s./\\]/g, '_') + '.zip';
+    const filename = this.scenarioName.replace(/[\s./\\]/g, '_') + '_csv.zip';
     if (this.scenarioId) {
       this.scenarioService
         .downloadCsvData(this.scenarioId)
