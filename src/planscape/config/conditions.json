@@ -3720,7 +3720,7 @@
                   "metric_name": "standing_dead_biomass_2021",
                   "min_value": 1,
                   "raw_data_download_path": "southern-california/carbonSeq/Tier2/WWETAC_UCD_standing_dead_2021_g_m2_v22.tif",
-                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_WWETAC_UCD_standing_dead_2021_g_m2_v22",
+                  "raw_layer": ":carbonSeq_Tier2_WWETAC_UCD_standing_dead_2021_g_m2_v22",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=48",
                   "source": "Southern California Regional Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
