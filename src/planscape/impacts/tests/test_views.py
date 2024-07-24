@@ -1,8 +1,11 @@
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
+from django.contrib.contenttypes.models import ContentType
 from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.contrib.auth import get_user_model
+from collaboration.models import Permissions, Role, UserObjectRole
+from collaboration.services import get_content_type
 from impacts.models import TreatmentPlan
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
 from planning.tests.factories import ScenarioFactory, PlanningAreaFactory
@@ -36,7 +39,30 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.client.force_authenticate(user=self.scenario.user)
 
         tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
             name="it's a bold plan",
+        )
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["name"], "it's a bold plan")
+
+    def test_get_tx_plan_with_role(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        tx_plan = TreatmentPlanFactory.create(
+            name="it's a bold plan",
+        )
+        _ = Permissions.objects.create(role=Role.OWNER, permission="view_tx_plan")
+        _ = UserObjectRole.objects.create(
+            email=self.scenario.user.email,
+            inviter=tx_plan.scenario.user,
+            collaborator=self.scenario.user,
+            role=Role.OWNER,
+            content_type=get_content_type("PlanningArea"),
+            object_pk=tx_plan.scenario.planning_area.pk,
         )
         response = self.client.get(
             reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
@@ -49,7 +75,32 @@ class TxPlanViewSetTest(APITransactionTestCase):
     def test_update_tx_plan(self):
         self.client.force_authenticate(user=self.scenario.user)
 
+        tx_plan = TreatmentPlanFactory.create(
+            name="it's a bold plan", scenario=self.scenario
+        )
+        payload = {"name": "lets see how it works out"}
+        response = self.client.patch(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_plan = TreatmentPlan.objects.get(pk=tx_plan.id)
+        self.assertEqual(updated_plan.name, "lets see how it works out")
+
+    def test_update_tx_plan_with_role(self):
+        self.client.force_authenticate(user=self.scenario.user)
         tx_plan = TreatmentPlanFactory.create(name="it's a bold plan")
+        _ = Permissions.objects.create(role=Role.OWNER, permission="edit_tx_plan")
+        _ = UserObjectRole.objects.create(
+            email=self.scenario.user.email,
+            inviter=tx_plan.scenario.user,
+            collaborator=self.scenario.user,
+            role=Role.OWNER,
+            content_type=get_content_type("PlanningArea"),
+            object_pk=tx_plan.scenario.planning_area.pk,
+        )
+
         payload = {"name": "lets see how it works out"}
         response = self.client.patch(
             reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
@@ -61,9 +112,9 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertEqual(updated_plan.name, "lets see how it works out")
 
     def test_update_tx_plan_restrict_fields(self):
-        self.client.force_authenticate(user=self.scenario.user)
-        other_user = UserFactory(username="otheruser")
         orig_scenario = ScenarioFactory()
+        self.client.force_authenticate(user=orig_scenario.user)
+        other_user = UserFactory(username="otheruser")
         new_scenario = ScenarioFactory()
         tx_plan = TreatmentPlanFactory.create(
             name="it's a bold plan", scenario=orig_scenario
@@ -80,10 +131,39 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
 
-    def test_put_tx_plan_restrict_fields(self):
+    def test_update_tx_plan_restrict_fields_with_role(self):
         self.client.force_authenticate(user=self.scenario.user)
-        other_user = UserFactory(username="otheruser")
         orig_scenario = ScenarioFactory()
+        other_user = UserFactory(username="otheruser")
+        new_scenario = ScenarioFactory()
+        tx_plan = TreatmentPlanFactory.create(
+            name="it's a bold plan", scenario=orig_scenario
+        )
+        _ = Permissions.objects.create(role=Role.OWNER, permission="edit_tx_plan")
+        _ = UserObjectRole.objects.create(
+            email=self.scenario.user.email,
+            inviter=tx_plan.scenario.user,
+            collaborator=self.scenario.user,
+            role=Role.OWNER,
+            content_type=get_content_type("PlanningArea"),
+            object_pk=tx_plan.scenario.planning_area.pk,
+        )
+
+        payload = {"created_by_id": other_user.pk, "scenario": new_scenario.pk}
+        response = self.client.patch(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        updated_plan = TreatmentPlan.objects.get(pk=tx_plan.id)
+        self.assertNotEqual(updated_plan.created_by, other_user)
+        self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
+
+    def test_put_tx_plan_restrict_fields(self):
+        orig_scenario = ScenarioFactory()
+        self.client.force_authenticate(user=orig_scenario.user)
+        other_user = UserFactory(username="otheruser")
         new_scenario = ScenarioFactory()
         tx_plan = TreatmentPlanFactory.create(
             name="it's a bold plan", scenario=orig_scenario
