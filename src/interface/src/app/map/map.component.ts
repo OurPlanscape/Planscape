@@ -669,7 +669,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   private showAreaTooComplexError() {
     this.matSnackBar.open(
-      '[Error] your shapefile is too complex!',
+      'Unable to process this shapefile. Your shapefile may be too large or have too many features.',
       'Dismiss',
       SNACK_ERROR_CONFIG
     );
