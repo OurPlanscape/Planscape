@@ -21,6 +21,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Feature, FeatureCollection, Geometry } from 'geojson';
 import {
   BehaviorSubject,
+  catchError,
   combineLatest,
   firstValueFrom,
   map,
@@ -153,6 +154,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       return this.planService.getTotalArea(
         (shape as GeoJSON.FeatureCollection).features?.[0]?.geometry
       );
+    }),
+    catchError((error) => {
+      if (error.status === 413 || error.status === 400) {
+        this.mapManager.clearAllDrawings();
+        this.showAreaTooComplexError();
+      }
+      throw error;
     })
   );
 
@@ -620,15 +628,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           fileAsArrayBuffer
         )) as GeoJSON.GeoJSON;
         if (geojson.type == 'FeatureCollection') {
-          const selectedMapIndex =
-            this.mapViewOptions$.getValue().selectedMapIndex;
-          this.mapManager.addGeoJsonToDrawing(
-            geojson,
-            this.maps[selectedMapIndex]
-          );
-
-          this.showUploader = false;
-          this.addDrawingControlToAllMaps();
+          this.addFeaturesToMapIfValid(geojson);
         } else {
           this.showUploadError();
         }
@@ -638,9 +638,38 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     }
   }
 
+  private addFeaturesToMapIfValid(geojson: FeatureCollection) {
+    this.planService
+      .getTotalArea(geojson.features?.[0]?.geometry)
+      .pipe(take(1))
+      .subscribe({
+        next: () => {
+          const selectedMapIndex =
+            this.mapViewOptions$.getValue().selectedMapIndex;
+          this.mapManager.addGeoJsonToDrawing(
+            geojson,
+            this.maps[selectedMapIndex]
+          );
+          this.showUploader = false;
+          this.addDrawingControlToAllMaps();
+        },
+        error: () => {
+          this.showAreaTooComplexError();
+        },
+      });
+  }
+
   private showUploadError() {
     this.matSnackBar.open(
       '[Error] Not a valid shapefile!',
+      'Dismiss',
+      SNACK_ERROR_CONFIG
+    );
+  }
+
+  private showAreaTooComplexError() {
+    this.matSnackBar.open(
+      'Unable to process this shapefile. Your shapefile may be too large or have too many features.',
       'Dismiss',
       SNACK_ERROR_CONFIG
     );
