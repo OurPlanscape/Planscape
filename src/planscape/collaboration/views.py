@@ -151,7 +151,7 @@ class InvitationsForObject(APIView):
             Model = user_object_role_obj.content_type.model_class()
             instance = Model.objects.get(pk=user_object_role_obj.object_pk)
 
-            if not CollaboratorPermission.can_delete(user, instance):
+            if not CollaboratorPermission.can_remove(user, instance):
                 return Response(
                     {
                         "message": "User does not have permission to delete this assignment."

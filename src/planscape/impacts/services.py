@@ -8,14 +8,12 @@ from impacts.models import (
     get_prescription_type,
 )
 from planning.models import ProjectArea, Scenario
-from django.contrib.auth.models import AbstractUser
 from actstream import action as actstream_action
-
 from stands.models import Stand
+from planscape.typing import UserType
 
 TreatmentPlanType = Type[TreatmentPlan]
 ScenarioType = Type[Scenario]
-UserType = Type[AbstractUser]
 StandType = Type[Stand]
 ActionType = Type[TreatmentPrescriptionType]
 ProjectAreaType = Type[ProjectArea]
