@@ -1,5 +1,5 @@
 import logging
-
+from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins, permissions
 from rest_framework.decorators import action
@@ -15,7 +15,7 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioOrderingFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario, ScenarioStatus, User
+from planning.models import PlanningArea, ProjectArea, Scenario
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     PlanningAreaSerializer,
@@ -33,6 +33,7 @@ from planning.services import (
     toggle_scenario_status,
 )
 
+User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
