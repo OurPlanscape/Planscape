@@ -53,7 +53,7 @@ export class DeleteAccountDialogComponent {
     });
   }
 
-  cancel(): void {
+  closeModal(): void {
     this.dialogRef.close();
   }
 

@@ -1,9 +1,11 @@
 import {
   Component,
+  ContentChild,
   HostBinding,
   Inject,
   Input,
   Output,
+  ElementRef,
   EventEmitter,
 } from '@angular/core';
 import { NgIf, CommonModule } from '@angular/common';
@@ -13,7 +15,6 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import {
-  MatDialog,
   MatDialogModule,
   MAT_DIALOG_DATA,
   MatDialogRef,
@@ -38,21 +39,26 @@ import { ButtonComponent, ButtonVariant } from '../button/button.component';
 })
 export class ModalComponent {
   /**
-   * Show or hide the modal
-   */
-  @Input() showModal = false;
-  /**
-   * Text at the top of the dialog
+   * Heading title
    */
   @Input() title: string = 'Here is a title';
   /**
-   * Set horizontal size of the modal
+   * Set horizontal size variant of the modal
    */
   @Input() width: 'regular' | 'large' = 'regular';
   /**
    * Optional Material icon name at left of header
    */
   @Input() leadingIcon?: string | null;
+  /**
+   * Optional Material icon variant
+   */
+  @Input() leadingIconVariant?:
+    | 'info'
+    | 'alert'
+    | 'warning'
+    | 'error'
+    | 'success' = 'info';
   /**
    * Optional alternative text for the right-most bottom button
    */
@@ -102,42 +108,33 @@ export class ModalComponent {
    */
   @Input() padBody? = false;
 
-  @Input() toolTipContent = 'Here is some tooltip content';
+  @Output() clickedSecondary = new EventEmitter<any>();
+  @Output() clickedPrimary = new EventEmitter<any>();
+  @Output() clickedClose = new EventEmitter<any>();
 
-  @Output() canceledClose = new EventEmitter<any>();
-  @Output() doneClose = new EventEmitter<any>();
+  @ContentChild('tooltipContent', { static: false })
+  tooltipContentDiv: ElementRef | null = null;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { name: string },
-    public dialogRef: MatDialogRef<ModalComponent>,
-    private dialog: MatDialog
+    public dialogRef: MatDialogRef<ModalComponent>
   ) {}
 
-  openDialog() {
-    this.dialogRef = this.dialog.open(ModalComponent, {
-      data: {
-        title: this.title,
-        showClose: true,
-      },
-    });
-    this.dialogRef.afterClosed().subscribe((result) => {});
+  get hasTooltipContent(): boolean {
+    return !!this.tooltipContentDiv;
   }
 
-  dialogClosed(event: any) {}
-
   handleCloseButton(): void {
-    this.dialogRef.close();
-    this.canceledClose.emit();
+    this.clickedClose.emit();
   }
 
   handleSecondaryButton(): void {
-    this.dialogRef.close();
-    this.canceledClose.emit(); // should this just emit something different?
+    this.clickedSecondary.emit(); // should this just emit something different?
   }
 
   handlePrimaryButton(): void {
-    // this.dialogRef.close();
-    this.doneClose.emit();
+    this.dialogRef.close();
+    this.clickedPrimary.emit();
   }
 
   @HostBinding('class.large')

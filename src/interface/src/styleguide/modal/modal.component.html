@@ -1,20 +1,22 @@
 <section class="header" *ngIf="hasHeader">
   <div class="header-title">
-    <mat-icon *ngIf="leadingIcon" class="leading-icon">{{
-      leadingIcon
-    }}</mat-icon>
+    <mat-icon
+      *ngIf="leadingIcon"
+      class="leading-icon"
+      [ngClass]="leadingIconVariant"
+      >{{ leadingIcon }}</mat-icon
+    >
     <div>{{ title }}</div>
   </div>
 
   <div class="title-buttons">
     <button>
-      <mat-icon *ngIf="showToolTip" [matMenuTriggerFor]="tooltipMenu"
+      <mat-icon *ngIf="hasTooltipContent" [matMenuTriggerFor]="tooltipMenu"
         >help_outline</mat-icon
       >
       <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
-        <div class="tooltip-content">
-          {{ toolTipContent }}
-        </div>
+        <ng-content class="tooltip-content" select="[tooltipContent]">
+        </ng-content>
       </mat-menu>
     </button>
     <button mat-icon-button (click)="handleCloseButton()" aria-label="close">
@@ -29,7 +31,7 @@
     scrollable: scrollableContent,
     padded: padBody
   }">
-  <ng-content> </ng-content>
+  <ng-content select="[modalBodyContent]"> </ng-content>
 </main>
 
 <div class="progress-element" *ngFor="let progressItem of progressItems">

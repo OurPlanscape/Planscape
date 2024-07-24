@@ -31,6 +31,24 @@
   padding-top: 10px;
   border-bottom: 1px solid $color-soft-gray;
   height: 64px;
+
+  .leading-icon {
+    &.info {
+      color: $color-black;
+    }
+
+    &.alert {
+      color: #f3b300;
+    }
+
+    &.error {
+      color: $color-dark-red;
+    }
+
+    &.success {
+      color: $color-brand-green;
+    }
+  }
 }
 
 .tooltip-content {
