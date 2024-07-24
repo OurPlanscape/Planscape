@@ -1,16 +1,17 @@
-from pathlib import Path
-from django.contrib.gis.db import models
-from django.db.models import Count, Max
-from django.db.models.functions import Coalesce
-from django.contrib.auth import get_user_model
-from django.conf import settings
-from django.contrib.contenttypes.models import ContentType
-from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Q
-from utils.uuid_utils import generate_short_uuid
-from collaboration.models import UserObjectRole
-from core.models import CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin
 import uuid
+from pathlib import Path
+from typing import Type
+
+from collaboration.models import UserObjectRole
+from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin, UUIDMixin
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
+from django.contrib.gis.db import models
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import Count, Max, Q
+from django.db.models.functions import Coalesce
+from utils.uuid_utils import generate_short_uuid
 
 User = get_user_model()
 
@@ -285,3 +286,9 @@ class ProjectArea(
                 name="scenario_name_unique_constraint",
             )
         ]
+
+
+PlanningAreaType = Type[PlanningArea]
+PlanningAreaNoteType = Type[PlanningAreaNote]
+ScenarioType = Type[Scenario]
+ScenarioResultType = Type[ScenarioResult]

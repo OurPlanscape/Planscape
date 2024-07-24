@@ -953,7 +953,10 @@ class PlanningAreaNotes(APIView):
                 data=note_data, context={"user": user}
             )
             serializer.is_valid(raise_exception=True)
-            if not PlanningAreaNotePermission.can_add(user, serializer.validated_data):
+
+            if not PlanningAreaNotePermission.can_add(
+                user, PlanningAreaNote(**serializer.validated_data)
+            ):
                 return Response(
                     {"error": "Authentication Required"},
                     status=status.HTTP_403_FORBIDDEN,

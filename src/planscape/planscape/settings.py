@@ -1,6 +1,7 @@
 import multiprocessing
 import os
 from pathlib import Path
+from datetime import timedelta
 import sys
 import sentry_sdk
 from corsheaders.defaults import default_headers
@@ -226,12 +227,19 @@ REST_AUTH = {
     "JWT_AUTH_SAMESITE": "Lax",
     "JWT_AUTH_HTTPONLY": False,
     "OLD_PASSWORD_FIELD_ENABLED": True,
+    "JWT_SERIALIZER_WITH_EXPIRATION": "dj_rest_auth.serializers.JWTSerializerWithExpiration",
     "REGISTER_SERIALIZER": "users.serializers.NameRegistrationSerializer",
     "PASSWORD_CHANGE_SERIALIZER": "users.serializers.CustomPasswordChangeSerializer",
     "PASSWORD_RESET_SERIALIZER": "users.serializers.CustomPasswordResetSerializer",
     "PASSWORD_RESET_CONFIRM_SERIALIZER": "users.serializers.CustomPasswordResetConfirmSerializer",
     "LANGUAGE_CODE": "en-us",
     "SESSION_LOGIN": False,
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(hours=3),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=90),
+    "ROTATE_REFRESH_TOKENS": True,  # ensure the Refresh token is invalidated at each login
 }
 
 AUTHENTICATION_BACKENDS = [
