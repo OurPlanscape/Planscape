@@ -4321,7 +4321,7 @@
                   "metric_name": "shrubland_low_natural_regeneration",
                   "min_value": 0,
                   "raw_data_download_path": "southern-california/forestShrubResil/Tier2/prepregen2020.tif",
-                  "raw_layer": ":forestShrubResil_Tier2_prepregen2020.tif",
+                  "raw_layer": ":forestShrubResil_Tier2_prepregen2020",
                   "reference_link": "https://wildfiretaskforce.org/wp-content/uploads/2023/02/SoCal_RRK_Metric-Dictionary_v20230201.pdf#page=26",
                   "source": "Southern California Resource Kit",
                   "source_link": "https://wildfiretaskforce.org/southern-california-regional-resource-kit"
