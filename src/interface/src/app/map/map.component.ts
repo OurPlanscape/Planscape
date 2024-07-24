@@ -156,7 +156,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
       );
     }),
     catchError((error) => {
-      if (error.status === 413) {
+      if (error.status === 413 || error.status === 400) {
         this.mapManager.clearAllDrawings();
         this.showAreaTooComplexError();
       }
