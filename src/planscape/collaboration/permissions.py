@@ -61,12 +61,7 @@ class PlanningAreaNotePermission(CheckPermissionMixin):
 
     @staticmethod
     def can_add(user: User, planning_area_note: PlanningAreaNote):
-        planning_area = None
-        if isinstance(planning_area_note, PlanningAreaNote):
-            planning_area = planning_area_note.planning_area
-        else:
-            planning_area = planning_area_note["planning_area"]
-
+        planning_area = planning_area_note.planning_area
         if is_creator(user, planning_area):
             return True
         return check_for_permission(user.id, planning_area, "view_planningarea")
