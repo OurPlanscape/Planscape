@@ -10,8 +10,9 @@ COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "add_tx_plan",
     "clone_tx_plan",
     "edit_tx_plan",
+    "remove_tx_plan",
     "add_tx_prescription",
-    "delete_tx_prescription",
+    "remove_tx_prescription",
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "run_tx",

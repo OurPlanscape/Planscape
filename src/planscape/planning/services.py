@@ -92,7 +92,7 @@ def delete_scenario(
     user: UserType,
     scenario: Type[Scenario],
 ):
-    if not ScenarioPermission.can_delete(user, scenario):
+    if not ScenarioPermission.can_remove(user, scenario):
         logger.error(f"User {user} has no permission to delete {scenario.pk}")
         return (
             False,

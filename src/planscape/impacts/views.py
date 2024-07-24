@@ -1,6 +1,10 @@
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
 from impacts.models import TreatmentPlan, TreatmentPrescription
+from impacts.permissions import (
+    TreatmentPlanViewPermission,
+    TreatmentPrescriptionViewPermission,
+)
 from impacts.serializers import (
     CreateTreatmentPlanSerializer,
     TreatmentPlanListSerializer,
@@ -25,7 +29,12 @@ class TreatmentPlanViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = TreatmentPlan.objects.all()
+    queryset = TreatmentPlan.objects.all().select_related(
+        "scenario",
+        "scenario__planning_area",
+        "created_by",
+    )
+    permission_classes = [TreatmentPlanViewPermission]
     serializer_class = TreatmentPlanSerializer
     serializer_classes = {
         "list": TreatmentPlanListSerializer,
@@ -79,7 +88,15 @@ class TreatmentPrescriptionViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = TreatmentPrescription.objects.all()
+    queryset = TreatmentPrescription.objects.all().select_related(
+        "treatment_plan",
+        "treatment_plan__scenario",
+        "treatment_plan__scenario__planning_area",
+        "created_by",
+    )
+    permission_classes = [
+        TreatmentPrescriptionViewPermission,
+    ]
     serializer_class = TreatmentPrescriptionSerializer
     serializer_classes = {
         "list": TreatmentPrescriptionListSerializer,

@@ -15,7 +15,7 @@ def check_for_permission(user_id, model, permission):
         content_type = ContentType.objects.get_for_model(model)
         entry = UserObjectRole.objects.get(
             collaborator_id=user_id,
-            content_type_id=content_type,
+            content_type_id=content_type.pk,
             object_pk=model.pk,
         )
         Permissions.objects.get(role=entry.role, permission=permission)
