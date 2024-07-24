@@ -1,4 +1,4 @@
-from typing import List
+from typing import Any, List
 from collaboration.models import Permissions, Role, UserObjectRole
 from django.db import transaction
 from django.db.models import Model
@@ -11,6 +11,7 @@ import logging
 
 from planscape.exceptions import InvalidOwnership
 
+User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
@@ -18,7 +19,7 @@ User = get_user_model()
 
 
 def get_content_type(target_entity: str) -> Model:
-    return ContentType.objects.get(model=target_entity)
+    return ContentType.objects.get(model__iexact=target_entity)
 
 
 def validate_ownership(user, instance):
