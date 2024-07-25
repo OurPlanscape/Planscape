@@ -19,7 +19,6 @@ class ScenarioViewPermission(PlanscapePermission):
             return False
         match view.action:
             case "create":
-                # FIX: this is broken
                 pa_id = request.data.get("planning_area") or None
                 if not pa_id:
                     return False
