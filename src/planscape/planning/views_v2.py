@@ -156,8 +156,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     @action(methods=["get"], detail=True)
     def treatment_plans(self, request, pk=None):
         scenario = self.get_object()
-        if not ScenarioPermission.can_view(self.request.user, scenario):
-            return Response(status=status.HTTP_403_FORBIDDEN)
         treatments = TreatmentPlan.objects.filter(scenario_id=scenario.pk)
         paginator = LimitOffsetPagination()
         # Paginate the queryset

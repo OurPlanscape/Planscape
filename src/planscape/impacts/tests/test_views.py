@@ -241,8 +241,7 @@ class TxPlanViewSetTest(APITransactionTestCase):
             ),
             content_type="application/json",
         )
-        # the default for resources that are outside of the user's scope is 404
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, 404)
 
 
 class TxPrescriptionListTest(APITransactionTestCase):
