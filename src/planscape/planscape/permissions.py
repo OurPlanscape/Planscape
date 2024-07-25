@@ -8,7 +8,7 @@ class PlanscapePermission(BasePermission):
         return self.is_authenticated(request)
 
     def is_authenticated(self, request):
-        return request.user.is_authenticated
+        return bool(request.user and request.user.is_authenticated)
 
     def has_object_permission(self, request, view, object):
         if not self.permission_set:

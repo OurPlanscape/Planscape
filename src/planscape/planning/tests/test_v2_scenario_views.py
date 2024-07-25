@@ -102,8 +102,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
+                "api:planning:scenarios-list",
             ),
             content_type="application/json",
         )
@@ -118,9 +117,8 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.owner_user)
         response = self.client.post(
             reverse(
-                "planning:scenarios-toggle-status",
+                "api:planning:scenarios-toggle-status",
                 kwargs={
-                    "planningarea_pk": self.planning_area.pk,
                     "pk": self.scenario.pk,
                 },
             ),
@@ -133,9 +131,8 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         # toggle back!
         response = self.client.post(
             reverse(
-                "planning:scenarios-toggle-status",
+                "api:planning:scenarios-toggle-status",
                 kwargs={
-                    "planningarea_pk": self.planning_area.pk,
                     "pk": self.scenario.pk,
                 },
             ),
@@ -148,8 +145,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
     def test_list_scenario_not_logged_in(self):
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
+                "api:planning:scenarios-list",
             ),
             content_type="application/json",
         )
@@ -163,23 +159,21 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area2.pk},
+                "api:planning:scenarios-list",
             ),
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 403)
-        self.assertJSONEqual(
-            response.content,
-            {"detail": "You do not have permission to perform this action."},
-        )
+        # changed because this is filtered
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        ids = [record.get("id") for record in data.get("results")]
+        self.assertNotIn(self.owner_user2scenario.pk, ids)
 
     def test_list_scenario_collab_user(self):
         self.client.force_authenticate(self.collab_user)
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
+                "api:planning:scenarios-list",
             ),
             content_type="application/json",
         )
@@ -194,8 +188,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.viewer_user)
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
+                "api:planning:scenarios-list",
             ),
             content_type="application/json",
         )
@@ -206,47 +199,17 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertIsNotNone(scenarios["results"][0]["created_at"])
         self.assertIsNotNone(scenarios["results"][0]["updated_at"])
 
-    def test_list_scenario_unprivileged_user(self):
+    def test_list_scenario_unprivileged_user_returns_zero_results(self):
         self.client.force_authenticate(self.unprivileged_user)
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 403)
-        self.assertJSONEqual(
-            response.content,
-            {"detail": "You do not have permission to perform this action."},
-        )
-
-    def test_list_scenario_empty_planning_area(self):
-        self.client.force_authenticate(self.owner_user)
-        response = self.client.get(
-            reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.empty_planning_area.pk},
+                "api:planning:scenarios-list",
             ),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        scenarios = response.json()
-        self.assertEqual(len(scenarios["results"]), 0)
-
-    def test_list_scenario_nonexistent_planning_area(self):
-        self.client.force_authenticate(self.owner_user)
-        response = self.client.get(
-            reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": 99999},
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 404)
-        self.assertJSONEqual(
-            response.content, {"detail": "No PlanningArea matches the given query."}
-        )
+        data = response.json()
+        self.assertEqual(len(data.get("results")), 0)
 
     def test_sort_scenario_by_reverse_acres(self):
         for acres in range(100, 105):
@@ -263,8 +226,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         query_params = {"ordering": "-acres"}
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
+                "api:planning:scenarios-list",
             ),
             query_params,
             content_type="application/json",
@@ -287,11 +249,10 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             )
 
         self.client.force_authenticate(self.owner_user)
-        query_params = {"ordering": "-budget"}
+        query_params = {"ordering": "-budget", "planningarea": self.planning_area.pk}
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
+                "api:planning:scenarios-list",
             ),
             query_params,
             content_type="application/json",
@@ -321,8 +282,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         query_params = {"ordering": "-budget,acres,-name"}
         response = self.client.get(
             reverse(
-                "planning:scenarios-list",
-                kwargs={"planningarea_pk": self.planning_area.pk},
+                "api:planning:scenarios-list",
             ),
             query_params,
             content_type="application/json",

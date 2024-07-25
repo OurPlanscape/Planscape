@@ -343,7 +343,7 @@ class PlanningAreaPermisssionsTest(TestCase):
         return user
 
     def test_get_planningareas_for_user(self):
-        areas = PlanningArea.objects.get_for_user(self.invitee)
+        areas = PlanningArea.objects.list_by_user(self.invitee)
         self.assertEqual(len(areas), 4)
 
         view_name = "User Can View This Area"
