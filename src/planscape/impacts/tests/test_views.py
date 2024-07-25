@@ -1,6 +1,5 @@
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
-from django.contrib.contenttypes.models import ContentType
 from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.contrib.auth import get_user_model
