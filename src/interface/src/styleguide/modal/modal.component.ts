@@ -41,11 +41,11 @@ export class ModalComponent {
   /**
    * Heading title
    */
-  @Input() title: string = 'Here is a title';
+  @Input() title: string = 'Title';
   /**
    * Set horizontal size variant of the modal
    */
-  @Input() width: 'regular' | 'large' = 'regular';
+  @Input() width: 'small' | 'regular' | 'large' = 'regular';
   /**
    * Optional Material icon name at left of header
    */
@@ -112,8 +112,8 @@ export class ModalComponent {
   @Output() clickedPrimary = new EventEmitter<any>();
   @Output() clickedClose = new EventEmitter<any>();
 
-  @ContentChild('tooltipContent', { static: false })
-  tooltipContentDiv: ElementRef | null = null;
+  @ContentChild('tooltipContentDiv', { static: false })
+  tooltipContentDiv?: ElementRef | null = null;
 
   constructor(
     @Inject(MAT_DIALOG_DATA) public data: { name: string },

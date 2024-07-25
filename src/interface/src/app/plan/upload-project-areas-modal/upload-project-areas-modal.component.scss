@@ -1,0 +1,26 @@
+@import 'colors';
+@import 'mixins';
+
+.upload-scenario-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px;
+}
+
+.scenario-input {
+  width: 100%;
+}
+
+.modal-alert {
+  @include xs-label();
+  color: $color-main-blue;
+  width: 100%;
+  height: 48px;
+  background-color: $color-soft-light-blue;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1em;
+  padding-left: 1em;
+}

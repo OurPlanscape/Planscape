@@ -4,10 +4,14 @@
 :host {
   display: flex;
   flex-direction: column;
-  width: 400px;
+  width: 500px;
   background-color: white;
-  max-height: 400px;
+  max-height: 700px;
+  height: 600px;
   border-radius: 4px;
+  &.small {
+    width: 400px;
+  }
   &.large {
     width: 100%;
   }

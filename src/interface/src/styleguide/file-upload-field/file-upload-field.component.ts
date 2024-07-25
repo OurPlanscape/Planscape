@@ -39,6 +39,7 @@ export class FileUploadFieldComponent {
   @Input() supportedTypes: MimeType[] = [
     { mime: 'application/zip', suffix: 'zip' },
   ];
+  @Input() supportedFileInfo?: string | null;
   @Output() fileEvent = new EventEmitter<File>();
   @Output() uploadFailure = new EventEmitter<void>();
 
