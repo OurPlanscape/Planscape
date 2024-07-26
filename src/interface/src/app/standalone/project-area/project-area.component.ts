@@ -8,26 +8,7 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-const defaultStyles = {
-  weight: 1,
-  fillOpacity: 0.2,
-  color: '#FF0000',
-  fillColor: '#FF0000',
-  fill: true,
-};
-
-const outlineStyles = {
-  weight: 2,
-  color: '#000',
-  fill: false,
-};
-
-const selectedStyles = {
-  fillOpacity: 0.2,
-  color: '#00FF00',
-  fillColor: '#00FF00',
-  fill: true,
-};
+import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
 
 @Component({
   selector: 'app-project-area',
@@ -44,94 +25,38 @@ const selectedStyles = {
 })
 export class ProjectAreaComponent implements OnInit {
   map!: L.Map;
+  maplibreMap!: MapLibreMap;
   ids: number[] = [];
 
   key = '52395617-45bd-4500-87d4-2159a35e3dcf';
 
   projectAreaId = 2710;
 
-  selectedStands: number[] = [];
+  selectedStands: number[] = [1344190];
   mapDragging = true;
 
   constructor(private planService: PlanService) {}
 
   ngOnInit() {
-    // const stands = this.loadStands();
-    // const outline = this.loadAreaOutline();
-    //
-    // // this.map = L.map('map', {
-    //   center: [...regionMapCenters(Region.SIERRA_NEVADA)],
-    //   zoom: FrontendConstants.MAP_INITIAL_ZOOM,
-    //   minZoom: FrontendConstants.MAP_MIN_ZOOM,
-    //   maxZoom: FrontendConstants.MAP_MAX_ZOOM,
-    //   layers: [stadiaAlidadeTiles(), outline, stands],
-    //   zoomControl: false,
-    //   scrollWheelZoom: true,
-    //   dragging: this.mapDragging,
-    //
-    //   // attributionControl: this.showAttributionAndZoom,
-    // });
-
     this.planService.getProjectAreas(2710).subscribe((r) => console.log(r));
   }
 
   get overlayVectorLayerUrl() {
-    return `/planscape-backend/tiles/project_area_outline/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
+    return `http://localhost:4200/planscape-backend/tiles/project_area_outline/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
   }
 
   get standsVectorLayerUrl() {
-    return `/planscape-backend/tiles/treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=&project_area_id=${this.projectAreaId}`;
+    return `http://localhost:4200/planscape-backend/tiles/treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
   }
 
-  loadStands() {
-    const url =
-      '/planscape-backend/tiles/treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=2710';
-
-    const layer = L.vectorGrid.protobuf(url, {
-      vectorTileLayerStyles: {
-        treatment_plan_prescriptions: defaultStyles,
-      },
-      interactive: true,
-      getFeatureId: (f: any) => {
-        const p = f.properties.id as number;
-        console.log(f);
-        if (!this.ids.includes(p)) {
-          this.ids.push(p);
-        }
-        return p;
-      },
-    });
-
-    layer.on('click', (event) => {
-      const vectorLayer = layer as unknown as typeof L.vectorGrid;
-      const id = (event as any).layer.properties.id;
-      this.toggleStands(vectorLayer, id);
-    });
-    return layer;
-  }
-
-  private toggleStands(layer: typeof L.vectorGrid, id: number) {
+  private toggleStands(id: number) {
     if (this.selectedStands.includes(id)) {
-      layer.resetFeatureStyle(id);
       this.selectedStands = this.selectedStands.filter(
         (standId) => standId !== id
       );
     } else {
-      layer.setFeatureStyle(id, selectedStyles);
-      this.selectedStands.push(id);
+      this.selectedStands = [...this.selectedStands, id];
     }
-  }
-
-  loadAreaOutline() {
-    const url =
-      '/planscape-backend/tiles/project_area_outline/{z}/{x}/{y}?&project_area_id=2710';
-
-    return L.vectorGrid.protobuf(url, {
-      vectorTileLayerStyles: {
-        project_area_outline: outlineStyles,
-      },
-      zIndex: 1000, // To ensure boundary is loaded in on top of any other layers
-    });
   }
 
   toggle(id: number) {}
@@ -144,4 +69,24 @@ export class ProjectAreaComponent implements OnInit {
     }
     this.mapDragging = !this.mapDragging;
   }
+
+  clickLayer(event: any) {
+    const features = this.maplibreMap.queryRenderedFeatures(event.point, {
+      layers: ['stands-layer'],
+    });
+
+    const standId = features[0].properties['id'];
+    this.toggleStands(standId);
+    this.updateMapFilter();
+  }
+
+  updateMapFilter(): void {
+    this.mapFilter = ['in', ['get', 'id'], ['literal', this.selectedStands]];
+  }
+
+  mapFilter: FilterSpecification = [
+    'in',
+    ['get', 'id'],
+    ['literal', this.selectedStands],
+  ];
 }
