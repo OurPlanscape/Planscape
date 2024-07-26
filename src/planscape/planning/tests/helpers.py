@@ -10,55 +10,6 @@ from planning.models import (
 )
 
 
-# Create test plans.  These are going straight to the test DB without
-# normal parameter checking (e.g. if is there a real geometry).
-# Always use a Sierra Nevada region.
-def _create_planning_area(
-    user: User,
-    name: str,
-    geometry: GEOSGeometry | None = None,
-    notes: str | None = None,
-    region_name: RegionChoices | None = RegionChoices.SIERRA_NEVADA,
-) -> PlanningArea:
-    """
-    Creates a planning_area with the given user, name, geometry, notes.  All regions
-    are in Sierra Nevada.
-    """
-
-    planning_area = PlanningArea.objects.create(
-        user=user,
-        name=name,
-        region_name=region_name,
-        geometry=geometry,
-        notes=notes,
-    )
-    planning_area.save()
-    return planning_area
-
-
-def _create_multiple_planningareas(
-    count: int,
-    user: User,
-    name_prefix: str,
-    geometry: GEOSGeometry | None = None,
-    notes: str | None = None,
-    region_name: RegionChoices | None = RegionChoices.SIERRA_NEVADA,
-):
-    created_planningareas = []
-
-    for s in range(0, count):
-        created_planningareas.append(
-            _create_planning_area(
-                user=user,
-                name=f"{name_prefix} {s}",
-                geometry=geometry,
-                notes=notes,
-                region_name=region_name,
-            )
-        )
-    return created_planningareas
-
-
 # Blindly create a scenario and a scenario result in its default (pending) state.
 # Note that this does no deduplication, which our APIs may eventually do.
 def _create_scenario(
