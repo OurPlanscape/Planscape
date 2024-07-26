@@ -1,7 +1,10 @@
 <sg-modal
   title="Upload Scenario to &ldquo;{{ data.planning_area_name }}&rdquo;"
   primaryButtonText="Create"
-  secondaryButtonText="Cancel">
+  secondaryButtonText="Cancel"
+  (clickedPrimary)="closeModal()"
+  (clickedSecondary)="closeModal()"
+  (clickedClose)="closeModal()">
   <div modalBodyContent>
     <div class="modal-alert">
       <mat-icon>info_filled</mat-icon>
