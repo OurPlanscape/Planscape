@@ -1,0 +1,13 @@
+@import 'colors';
+@import 'mixins';
+
+.upload-scenario-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding: 10px;
+}
+
+.scenario-input {
+  width: 100%;
+}

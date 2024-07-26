@@ -3,6 +3,7 @@
     <div class="scenario-table-head">
       <mat-card-title>Scenarios</mat-card-title>
       <div class="new-scenario-button">
+        <button (click)="openUploadDialog()">Upload Scenario</button>
         <button
           matTooltip="Planning Area is Less than 100 Acres"
           [matTooltipDisabled]="isValidPlanningArea"

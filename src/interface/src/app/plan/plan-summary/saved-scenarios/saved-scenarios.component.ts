@@ -6,10 +6,7 @@ import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { canAddScenario } from '../../permissions';
 import {
@@ -19,6 +16,7 @@ import {
 } from '@shared';
 import { MatTab } from '@angular/material/tabs';
 import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
+import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -204,5 +202,20 @@ export class SavedScenariosComponent implements OnInit {
       return false;
     }
     return isValidTotalArea(this.plan.area_acres);
+  }
+
+  openUploadDialog(): void {
+    this.dialog
+      .open(UploadProjectAreasModalComponent, {
+        data: {
+          planning_area_name: this.plan?.name,
+        },
+      })
+      .afterClosed()
+      .subscribe((data) => {
+        if (data?.deletedAccount) {
+          this.router.navigate(['login']);
+        }
+      });
   }
 }
