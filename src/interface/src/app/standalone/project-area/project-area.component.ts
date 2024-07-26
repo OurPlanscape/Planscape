@@ -1,11 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import * as L from 'leaflet';
-import { FrontendConstants } from '../../map/map.constants';
-import { regionMapCenters } from '../../map/map.helper';
-import { Region } from '@types';
-import { stadiaAlidadeTiles } from '../../map/map.tiles';
 import { JsonPipe, NgForOf } from '@angular/common';
 import { PlanService } from '@services';
+import {
+  LayerComponent,
+  MapComponent,
+  VectorSourceComponent,
+} from '@maplibre/ngx-maplibre-gl';
 
 const defaultStyles = {
   weight: 1,
@@ -31,7 +32,13 @@ const selectedStyles = {
 @Component({
   selector: 'app-project-area',
   standalone: true,
-  imports: [JsonPipe, NgForOf],
+  imports: [
+    JsonPipe,
+    NgForOf,
+    MapComponent,
+    VectorSourceComponent,
+    LayerComponent,
+  ],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
 })
@@ -39,32 +46,44 @@ export class ProjectAreaComponent implements OnInit {
   map!: L.Map;
   ids: number[] = [];
 
+  key = '52395617-45bd-4500-87d4-2159a35e3dcf';
+
+  projectAreaId = 2710;
+
   selectedStands: number[] = [];
   mapDragging = true;
 
   constructor(private planService: PlanService) {}
 
   ngOnInit() {
-    const stands = this.loadStands();
-    const outline = this.loadAreaOutline();
-
-    this.map = L.map('map', {
-      center: [...regionMapCenters(Region.SIERRA_NEVADA)],
-      zoom: FrontendConstants.MAP_INITIAL_ZOOM,
-      minZoom: FrontendConstants.MAP_MIN_ZOOM,
-      maxZoom: FrontendConstants.MAP_MAX_ZOOM,
-      layers: [stadiaAlidadeTiles(), outline, stands],
-      zoomControl: false,
-      scrollWheelZoom: true,
-      dragging: this.mapDragging,
-
-      // attributionControl: this.showAttributionAndZoom,
-    });
+    // const stands = this.loadStands();
+    // const outline = this.loadAreaOutline();
+    //
+    // // this.map = L.map('map', {
+    //   center: [...regionMapCenters(Region.SIERRA_NEVADA)],
+    //   zoom: FrontendConstants.MAP_INITIAL_ZOOM,
+    //   minZoom: FrontendConstants.MAP_MIN_ZOOM,
+    //   maxZoom: FrontendConstants.MAP_MAX_ZOOM,
+    //   layers: [stadiaAlidadeTiles(), outline, stands],
+    //   zoomControl: false,
+    //   scrollWheelZoom: true,
+    //   dragging: this.mapDragging,
+    //
+    //   // attributionControl: this.showAttributionAndZoom,
+    // });
 
     this.planService.getProjectAreas(2710).subscribe((r) => console.log(r));
   }
 
-  private loadStands() {
+  get overlayVectorLayerUrl() {
+    return `/planscape-backend/tiles/project_area_outline/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
+  }
+
+  get standsVectorLayerUrl() {
+    return `/planscape-backend/tiles/treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=&project_area_id=${this.projectAreaId}`;
+  }
+
+  loadStands() {
     const url =
       '/planscape-backend/tiles/treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=2710';
 
@@ -103,7 +122,7 @@ export class ProjectAreaComponent implements OnInit {
     }
   }
 
-  private loadAreaOutline() {
+  loadAreaOutline() {
     const url =
       '/planscape-backend/tiles/project_area_outline/{z}/{x}/{y}?&project_area_id=2710';
 

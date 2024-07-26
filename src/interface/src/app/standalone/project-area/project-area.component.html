@@ -5,5 +5,25 @@
 </div>
 
 <section>
-  <div class="map" id="map"></div>
+  <mgl-map
+    [style]="
+      'https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=' + key
+    "
+    [zoom]="[7]"
+    [center]="[-122.5, 37]">
+    <mgl-vector-source
+      id="outline"
+      [url]="overlayVectorLayerUrl"></mgl-vector-source>
+    <mgl-vector-source
+      id="stands"
+      [url]="standsVectorLayerUrl"></mgl-vector-source>
+    <mgl-layer
+      id="outline-layer"
+      type="line"
+      source="outline"
+      [paint]="{
+        'line-color': 'blue'
+      }"
+      sourceLayer="countries"></mgl-layer>
+  </mgl-map>
 </section>
