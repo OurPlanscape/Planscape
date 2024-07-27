@@ -4,6 +4,10 @@
   <button (click)="toggleMapDrag()">
     Toggle map drag {{ mapDragging ? 'off' : 'on' }}
   </button>
+
+  <button (click)="assignTreatment1()">Assign treatment 1</button>
+
+  <button (click)="assignTreatment2()">Assign treatment 2</button>
 </div>
 
 <section>
@@ -37,23 +41,9 @@
       id="stands-layer"
       type="fill"
       source="stands"
-      [paint]="{
-        'fill-color': 'black',
-        'fill-opacity': 0.1
-      }"
+      [paint]="paint"
       sourceLayer="treatment_plan_prescriptions"
       (layerClick)="clickLayer($event)"></mgl-layer>
-
-    <mgl-layer
-      id="stands-layer-selected"
-      type="fill"
-      source="stands"
-      [paint]="{
-        'fill-color': 'green',
-        'fill-opacity': 0.5
-      }"
-      sourceLayer="treatment_plan_prescriptions"
-      [filter]="mapFilter"></mgl-layer>
 
     <mgl-geojson-source id="rectangle-source">
       <mgl-feature [geometry]="rectangleGeometry"></mgl-feature>

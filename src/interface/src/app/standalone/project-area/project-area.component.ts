@@ -11,11 +11,14 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 
 import {
-  FilterSpecification,
   GeoJSONSource,
+  LayerSpecification,
   Map as MapLibreMap,
 } from 'maplibre-gl';
 import { Polygon } from 'geojson';
+
+// possible assignment for  a stand.
+export type StandAssigment = 'selected' | 'treatment-1' | 'treatment-2';
 
 @Component({
   selector: 'app-project-area',
@@ -34,6 +37,7 @@ import { Polygon } from 'geojson';
   styleUrl: './project-area.component.scss',
 })
 export class ProjectAreaComponent implements OnInit {
+  types: StandAssigment = 'selected';
   maplibreMap!: MapLibreMap;
   key = '52395617-45bd-4500-87d4-2159a35e3dcf';
 
@@ -42,26 +46,32 @@ export class ProjectAreaComponent implements OnInit {
   selectedStands: number[] = [];
   mapDragging = false;
 
+  get paint(): LayerSpecification['paint'] {
+    return {
+      'fill-color': [
+        'case',
+        [
+          'boolean',
+          ['in', ['get', 'id'], ['literal', this.selectedStands]],
+          false,
+        ],
+        '#FF0000', // Color for selected stands
+        '#00FF00', // Color for non-selected stands
+      ],
+      'fill-opacity': 0.5,
+    };
+  }
+
   rectangleGeometry: Polygon = {
     type: 'Polygon',
     coordinates: [[]],
   };
-
-  mapFilter: FilterSpecification = [
-    'in',
-    ['get', 'id'],
-    ['literal', this.selectedStands],
-  ];
 
   private isDragging = false;
   private start: [number, number] | null = null;
   private end: [number, number] | null = null;
 
   constructor(private planService: PlanService) {}
-
-  log(...a: any) {
-    console.log(a);
-  }
 
   ngOnInit() {
     this.planService.getProjectAreas(2710).subscribe((r) => console.log(r));
@@ -92,11 +102,6 @@ export class ProjectAreaComponent implements OnInit {
 
     const standId = features[0].properties['id'];
     this.toggleStands(standId);
-    this.updateMapFilter();
-  }
-
-  updateMapFilter(): void {
-    this.mapFilter = ['in', ['get', 'id'], ['literal', this.selectedStands]];
   }
 
   ///
@@ -173,5 +178,14 @@ export class ProjectAreaComponent implements OnInit {
 
   onDrag(e: any) {
     console.log(e);
+  }
+
+  // assigning treatment
+  assignTreatment1() {
+    console.log(this.selectedStands, 'treatment 1');
+  }
+
+  assignTreatment2() {
+    console.log(this.selectedStands, 'treatment 2');
   }
 }
