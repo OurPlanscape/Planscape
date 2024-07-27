@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
-import * as L from 'leaflet';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { JsonPipe, NgForOf } from '@angular/common';
 import { PlanService } from '@services';
 import {
+  DraggableDirective,
+  FeatureComponent,
+  GeoJSONSourceComponent,
   LayerComponent,
   MapComponent,
   VectorSourceComponent,
@@ -19,34 +21,54 @@ import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
     MapComponent,
     VectorSourceComponent,
     LayerComponent,
+    FeatureComponent,
+    DraggableDirective,
+    GeoJSONSourceComponent,
   ],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
 })
 export class ProjectAreaComponent implements OnInit {
-  map!: L.Map;
   maplibreMap!: MapLibreMap;
-  ids: number[] = [];
-
   key = '52395617-45bd-4500-87d4-2159a35e3dcf';
 
   projectAreaId = 2710;
 
-  selectedStands: number[] = [1344190];
-  mapDragging = true;
+  selectedStands: number[] = [];
+  mapDragging = false;
 
-  constructor(private planService: PlanService) {}
+  rectangleGeometry: GeoJSON.GeometryObject = {
+    type: 'Polygon',
+    coordinates: [
+      [
+        [-119.804156453432, 42.117710545554985],
+        [-119.804156453432, 36.256407112632246],
+        [-127.40401137703626, 36.256407112632246],
+        [-127.40401137703626, 42.117710545554985],
+        [-119.804156453432, 42.117710545554985],
+      ],
+    ],
+  };
+
+  private isDragging = false;
+  private start: [number, number] | null = null;
+  private end: [number, number] | null = null;
+
+  constructor(
+    private planService: PlanService,
+    private cdr: ChangeDetectorRef
+  ) {}
+
+  log(...a: any) {
+    console.log(a);
+  }
 
   ngOnInit() {
-    this.planService.getProjectAreas(2710).subscribe((r) => console.log(r));
+    this.planService.getProjectAreas(2710).subscribe((r) => this.log(r));
   }
 
-  get overlayVectorLayerUrl() {
-    return `http://localhost:4200/planscape-backend/tiles/project_area_outline/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
-  }
-
-  get standsVectorLayerUrl() {
-    return `http://localhost:4200/planscape-backend/tiles/treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
+  get vectorLayerUrl() {
+    return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
   }
 
   private toggleStands(id: number) {
@@ -62,11 +84,6 @@ export class ProjectAreaComponent implements OnInit {
   toggle(id: number) {}
 
   toggleMapDrag() {
-    if (this.mapDragging) {
-      this.map.dragging.disable();
-    } else {
-      this.map.dragging.enable();
-    }
     this.mapDragging = !this.mapDragging;
   }
 
@@ -89,4 +106,101 @@ export class ProjectAreaComponent implements OnInit {
     ['get', 'id'],
     ['literal', this.selectedStands],
   ];
+
+  ///
+
+  onMapMouseDown(event: any): void {
+    this.isDragging = true;
+    this.start = [event.lngLat.lng, event.lngLat.lat];
+    // this.maplibreMap.getCanvas().style.cursor = 'crosshair';
+  }
+
+  onMapMouseMove(event: any): void {
+    if (!this.isDragging) return;
+    this.end = [event.lngLat.lng, event.lngLat.lat];
+    this.updateRectangleSource(this.start!, this.end);
+  }
+
+  onMapMouseUp(event: any): void {
+    if (!this.isDragging) return;
+    this.isDragging = false;
+    this.maplibreMap.getCanvas().style.cursor = '';
+
+    this.end = [event.lngLat.lng, event.lngLat.lat];
+    if (this.start && this.end) {
+      this.selectStandsWithinRectangle(this.start, this.end);
+    }
+
+    this.start = null;
+    this.end = null;
+    this.clearRectangle();
+  }
+
+  updateRectangleSource(start: [number, number], end: [number, number]): void {
+    // const rectangle = {
+    //   type: 'Feature',
+    //   geometry: {
+    //     type: 'Polygon',
+    //     coordinates: [
+    //       [start, [start[0], end[1]], end, [end[0], start[1]], start],
+    //     ],
+    //   },
+    // };
+    //
+    // this.rectangleSource.data = {
+    //   type: 'FeatureCollection',
+    //   features: [rectangle],
+    // };
+
+    this.rectangleGeometry = {
+      type: 'Polygon',
+      coordinates: [
+        [start, [start[0], end[1]], end, [end[0], start[1]], start],
+      ],
+    };
+  }
+
+  clearRectangle(): void {
+    this.log('Clearing rectangle');
+    this.log('Before clearing:', this.rectangleGeometry);
+
+    this.rectangleGeometry = {
+      type: 'Polygon',
+      coordinates: [[]],
+    };
+
+    // Trigger change detection manually
+    this.cdr.detectChanges();
+    this.log(this.rectangleGeometry);
+  }
+
+  selectStandsWithinRectangle(
+    start: [number, number],
+    end: [number, number]
+  ): void {
+    const bbox: [[number, number], [number, number]] = [
+      [Math.min(start[0], end[0]), Math.min(start[1], end[1])],
+      [Math.max(start[0], end[0]), Math.max(start[1], end[1])],
+    ];
+    const features = this.maplibreMap.queryRenderedFeatures(bbox, {
+      layers: ['stands-layer'],
+    });
+
+    const selectedIds = features.map((feature) => feature.properties['id']);
+    this.selectedStands = Array.from(
+      new Set([...this.selectedStands, ...selectedIds])
+    );
+  }
+
+  onDragStart(e: any) {
+    this.log(e);
+  }
+
+  onDragEnd(e: any) {
+    this.log(e);
+  }
+
+  onDrag(e: any) {
+    this.log(e);
+  }
 }
