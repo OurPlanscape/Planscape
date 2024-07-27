@@ -43,7 +43,7 @@
       source="stands"
       [paint]="paint"
       sourceLayer="treatment_plan_prescriptions"
-      (layerClick)="clickLayer($event)"></mgl-layer>
+      (layerClick)="clickOnStand($event)"></mgl-layer>
 
     <mgl-geojson-source id="rectangle-source">
       <mgl-feature [geometry]="rectangleGeometry"></mgl-feature>

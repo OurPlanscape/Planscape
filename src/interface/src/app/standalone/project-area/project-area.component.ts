@@ -46,22 +46,6 @@ export class ProjectAreaComponent implements OnInit {
   selectedStands: number[] = [];
   mapDragging = false;
 
-  get paint(): LayerSpecification['paint'] {
-    return {
-      'fill-color': [
-        'case',
-        [
-          'boolean',
-          ['in', ['get', 'id'], ['literal', this.selectedStands]],
-          false,
-        ],
-        '#FF0000', // Color for selected stands
-        '#00FF00', // Color for non-selected stands
-      ],
-      'fill-opacity': 0.5,
-    };
-  }
-
   rectangleGeometry: Polygon = {
     type: 'Polygon',
     coordinates: [[]],
@@ -81,6 +65,31 @@ export class ProjectAreaComponent implements OnInit {
     return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
   }
 
+  get paint(): LayerSpecification['paint'] {
+    return {
+      'fill-color': [
+        'case',
+        [
+          'boolean',
+          ['in', ['get', 'id'], ['literal', this.selectedStands]],
+          false,
+        ],
+        '#FF0000', // Color for selected stands
+        '#00FF00', // Color for non-selected stands
+      ],
+      'fill-opacity': 0.5,
+    };
+  }
+
+  clickOnStand(event: any) {
+    const features = this.maplibreMap.queryRenderedFeatures(event.point, {
+      layers: ['stands-layer'],
+    });
+
+    const standId = features[0].properties['id'];
+    this.toggleStands(standId);
+  }
+
   private toggleStands(id: number) {
     if (this.selectedStands.includes(id)) {
       this.selectedStands = this.selectedStands.filter(
@@ -91,20 +100,9 @@ export class ProjectAreaComponent implements OnInit {
     }
   }
 
-  toggleMapDrag() {
-    this.mapDragging = !this.mapDragging;
-  }
-
-  clickLayer(event: any) {
-    const features = this.maplibreMap.queryRenderedFeatures(event.point, {
-      layers: ['stands-layer'],
-    });
-
-    const standId = features[0].properties['id'];
-    this.toggleStands(standId);
-  }
-
-  ///
+  // -----------------------------------------------------------------
+  // Map events, used for drawing the rectangle.
+  // -----------------------------------------------------------------
 
   onMapMouseDown(event: any): void {
     this.isDragging = true;
@@ -133,6 +131,10 @@ export class ProjectAreaComponent implements OnInit {
     this.clearRectangle();
   }
 
+  // -----------------------------------------------------------------
+  // Drawing rectangle on page
+  // -----------------------------------------------------------------
+
   updateRectangleSource(start: [number, number], end: [number, number]): void {
     this.updateRectangleGeometry([
       [start, [start[0], end[1]], end, [end[0], start[1]], start],
@@ -143,6 +145,7 @@ export class ProjectAreaComponent implements OnInit {
     this.updateRectangleGeometry([[]]);
   }
 
+  // todo maybe I can use a get() here and avoid this.
   private updateRectangleGeometry(cords: number[][][]) {
     this.rectangleGeometry.coordinates = cords;
     (this.maplibreMap.getSource('rectangle-source') as GeoJSONSource)?.setData(
@@ -168,16 +171,12 @@ export class ProjectAreaComponent implements OnInit {
     );
   }
 
-  onDragStart(e: any) {
-    console.log(e);
-  }
+  // -----------------------------------------------------------------
+  // Page demo actions
+  // -----------------------------------------------------------------
 
-  onDragEnd(e: any) {
-    console.log(e);
-  }
-
-  onDrag(e: any) {
-    console.log(e);
+  toggleMapDrag() {
+    this.mapDragging = !this.mapDragging;
   }
 
   // assigning treatment
