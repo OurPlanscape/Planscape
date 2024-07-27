@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { JsonPipe, NgForOf } from '@angular/common';
 import { PlanService } from '@services';
 import {
@@ -10,7 +10,12 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import { FilterSpecification, Map as MapLibreMap } from 'maplibre-gl';
+import {
+  FilterSpecification,
+  GeoJSONSource,
+  Map as MapLibreMap,
+} from 'maplibre-gl';
+import { Polygon } from 'geojson';
 
 @Component({
   selector: 'app-project-area',
@@ -37,34 +42,29 @@ export class ProjectAreaComponent implements OnInit {
   selectedStands: number[] = [];
   mapDragging = false;
 
-  rectangleGeometry: GeoJSON.GeometryObject = {
+  rectangleGeometry: Polygon = {
     type: 'Polygon',
-    coordinates: [
-      [
-        [-119.804156453432, 42.117710545554985],
-        [-119.804156453432, 36.256407112632246],
-        [-127.40401137703626, 36.256407112632246],
-        [-127.40401137703626, 42.117710545554985],
-        [-119.804156453432, 42.117710545554985],
-      ],
-    ],
+    coordinates: [[]],
   };
+
+  mapFilter: FilterSpecification = [
+    'in',
+    ['get', 'id'],
+    ['literal', this.selectedStands],
+  ];
 
   private isDragging = false;
   private start: [number, number] | null = null;
   private end: [number, number] | null = null;
 
-  constructor(
-    private planService: PlanService,
-    private cdr: ChangeDetectorRef
-  ) {}
+  constructor(private planService: PlanService) {}
 
   log(...a: any) {
     console.log(a);
   }
 
   ngOnInit() {
-    this.planService.getProjectAreas(2710).subscribe((r) => this.log(r));
+    this.planService.getProjectAreas(2710).subscribe((r) => console.log(r));
   }
 
   get vectorLayerUrl() {
@@ -80,8 +80,6 @@ export class ProjectAreaComponent implements OnInit {
       this.selectedStands = [...this.selectedStands, id];
     }
   }
-
-  toggle(id: number) {}
 
   toggleMapDrag() {
     this.mapDragging = !this.mapDragging;
@@ -101,18 +99,12 @@ export class ProjectAreaComponent implements OnInit {
     this.mapFilter = ['in', ['get', 'id'], ['literal', this.selectedStands]];
   }
 
-  mapFilter: FilterSpecification = [
-    'in',
-    ['get', 'id'],
-    ['literal', this.selectedStands],
-  ];
-
   ///
 
   onMapMouseDown(event: any): void {
     this.isDragging = true;
     this.start = [event.lngLat.lng, event.lngLat.lat];
-    // this.maplibreMap.getCanvas().style.cursor = 'crosshair';
+    this.maplibreMap.getCanvas().style.cursor = 'crosshair';
   }
 
   onMapMouseMove(event: any): void {
@@ -137,41 +129,20 @@ export class ProjectAreaComponent implements OnInit {
   }
 
   updateRectangleSource(start: [number, number], end: [number, number]): void {
-    // const rectangle = {
-    //   type: 'Feature',
-    //   geometry: {
-    //     type: 'Polygon',
-    //     coordinates: [
-    //       [start, [start[0], end[1]], end, [end[0], start[1]], start],
-    //     ],
-    //   },
-    // };
-    //
-    // this.rectangleSource.data = {
-    //   type: 'FeatureCollection',
-    //   features: [rectangle],
-    // };
-
-    this.rectangleGeometry = {
-      type: 'Polygon',
-      coordinates: [
-        [start, [start[0], end[1]], end, [end[0], start[1]], start],
-      ],
-    };
+    this.updateRectangleGeometry([
+      [start, [start[0], end[1]], end, [end[0], start[1]], start],
+    ]);
   }
 
   clearRectangle(): void {
-    this.log('Clearing rectangle');
-    this.log('Before clearing:', this.rectangleGeometry);
+    this.updateRectangleGeometry([[]]);
+  }
 
-    this.rectangleGeometry = {
-      type: 'Polygon',
-      coordinates: [[]],
-    };
-
-    // Trigger change detection manually
-    this.cdr.detectChanges();
-    this.log(this.rectangleGeometry);
+  private updateRectangleGeometry(cords: number[][][]) {
+    this.rectangleGeometry.coordinates = cords;
+    (this.maplibreMap.getSource('rectangle-source') as GeoJSONSource)?.setData(
+      this.rectangleGeometry
+    );
   }
 
   selectStandsWithinRectangle(
@@ -193,14 +164,14 @@ export class ProjectAreaComponent implements OnInit {
   }
 
   onDragStart(e: any) {
-    this.log(e);
+    console.log(e);
   }
 
   onDragEnd(e: any) {
-    this.log(e);
+    console.log(e);
   }
 
   onDrag(e: any) {
-    this.log(e);
+    console.log(e);
   }
 }
