@@ -1,13 +1,14 @@
 <section>Selected Stands:</section>
-<div>{{ selectedStands | json }}</div>
+
 <div>
   <button (click)="toggleMapDrag()">
     Toggle map drag {{ mapDragging ? 'off' : 'on' }}
   </button>
 
-  <button (click)="assignTreatment1()">Assign treatment 1</button>
-
-  <button (click)="assignTreatment2()">Assign treatment 2</button>
+  <button (click)="assignTreatment('treatment-1')">Assign treatment 1</button>
+  <button (click)="assignTreatment('treatment-2')">Assign treatment 2</button>
+  <button (click)="assignTreatment('treatment-3')">Assign treatment 2</button>
+  <button (click)="clearTreatments()">clear treatments</button>
 </div>
 
 <section>

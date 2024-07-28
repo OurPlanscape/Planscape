@@ -18,7 +18,18 @@ import {
 import { Polygon } from 'geojson';
 
 // possible assignment for  a stand.
-export type StandAssigment = 'selected' | 'treatment-1' | 'treatment-2';
+export type StandAssigment =
+  | 'selected'
+  | 'treatment-1'
+  | 'treatment-2'
+  | 'treatment-3';
+
+export const StandColors: Record<StandAssigment, string> = {
+  selected: '#0066ff',
+  'treatment-1': '#f8f802',
+  'treatment-2': '#d27601',
+  'treatment-3': '#ee0d0d',
+};
 
 @Component({
   selector: 'app-project-area',
@@ -43,7 +54,7 @@ export class ProjectAreaComponent implements OnInit {
 
   projectAreaId = 2710;
 
-  selectedStands: number[] = [];
+  selectedStands: { id: number; assigment: StandAssigment }[] = [];
   mapDragging = false;
 
   rectangleGeometry: Polygon = {
@@ -67,18 +78,33 @@ export class ProjectAreaComponent implements OnInit {
 
   get paint(): LayerSpecification['paint'] {
     return {
-      'fill-color': [
-        'case',
-        [
-          'boolean',
-          ['in', ['get', 'id'], ['literal', this.selectedStands]],
-          false,
-        ],
-        '#FF0000', // Color for selected stands
-        '#00FF00', // Color for non-selected stands
-      ],
+      'fill-outline-color': '#000',
+      'fill-color': this.getFillColors() as any,
       'fill-opacity': 0.5,
     };
+  }
+
+  someIds = [1344190, 1344988];
+
+  getFillColors() {
+    const matchExpression: (string | string[] | number)[] = [];
+    matchExpression.push('match');
+    matchExpression.push(['get', 'id']);
+    matchExpression.push(0);
+    matchExpression.push('#00a000');
+    matchExpression.push(1);
+    matchExpression.push('#00a000');
+
+    this.selectedStands.forEach((stand) => {
+      matchExpression.push(stand.id);
+      matchExpression.push(StandColors[stand.assigment]);
+    });
+    matchExpression.push('#00000050');
+    return matchExpression;
+  }
+
+  get selectedIds() {
+    return this.selectedStands.map((stand) => stand.id);
   }
 
   clickOnStand(event: any) {
@@ -91,12 +117,22 @@ export class ProjectAreaComponent implements OnInit {
   }
 
   private toggleStands(id: number) {
-    if (this.selectedStands.includes(id)) {
+    const selectedStand = this.selectedStands.find((stand) => stand.id === id);
+    if (selectedStand) {
       this.selectedStands = this.selectedStands.filter(
-        (standId) => standId !== id
+        (stand) => stand.id !== id
       );
+      if (selectedStand.assigment !== 'selected') {
+        this.selectedStands = [
+          ...this.selectedStands,
+          { id, assigment: 'selected' },
+        ];
+      }
     } else {
-      this.selectedStands = [...this.selectedStands, id];
+      this.selectedStands = [
+        ...this.selectedStands,
+        { id, assigment: 'selected' },
+      ];
     }
   }
 
@@ -180,11 +216,18 @@ export class ProjectAreaComponent implements OnInit {
   }
 
   // assigning treatment
-  assignTreatment1() {
+  assignTreatment(treatment: StandAssigment) {
     console.log(this.selectedStands, 'treatment 1');
+
+    this.selectedStands = this.selectedStands.map((stand) => ({
+      id: stand.id,
+      assigment: stand.assigment === 'selected' ? treatment : stand.assigment,
+    }));
   }
 
-  assignTreatment2() {
-    console.log(this.selectedStands, 'treatment 2');
+  clearTreatments() {
+    this.selectedStands = this.selectedStands.filter(
+      (stand) => stand.assigment != 'selected'
+    );
   }
 }
