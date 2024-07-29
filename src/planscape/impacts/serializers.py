@@ -7,7 +7,18 @@ from impacts.models import (
     TreatmentPrescriptionType,
 )
 from planning.models import ProjectArea, Scenario
-from stands.models import Stand
+from planning.services import get_acreage
+from stands.models import Stand, area_from_size
+
+
+class TxPrescriptionProjectAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectArea
+        fields = (
+            "id",
+            "uuid",
+            "name",
+        )
 
 
 class CreateTreatmentPlanSerializer(serializers.Serializer):
@@ -25,6 +36,7 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPlan
         fields = (
+            "id",
             "uuid",
             "created_at",
             "created_by",
@@ -44,6 +56,7 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPlan
         fields = (
+            "id",
             "uuid",
             "created_at",
             "creator_name",
@@ -61,9 +74,12 @@ class TreatmentPlanUpdateSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
+    project_area = TxPrescriptionProjectAreaSerializer()
+
     class Meta:
         model = TreatmentPrescription
         fields = (
+            "id",
             "uuid",
             "created_at",
             "created_by",
@@ -101,13 +117,26 @@ class TreamentPrescriptionUpsertSerializer(serializers.Serializer):
 
 
 class TreatmentPrescriptionListSerializer(serializers.ModelSerializer):
+    area_acres = serializers.SerializerMethodField()
+    project_area = TxPrescriptionProjectAreaSerializer()
+
+    def get_area_acres(self, instance: TreatmentPrescription) -> float:
+        # this path is much faster
+        if instance.stand:
+            return area_from_size(instance.stand.size)
+
+        return get_acreage(instance.geometry)
+
     class Meta:
         model = TreatmentPrescription
         fields = (
+            "id",
             "uuid",
             "created_at",
             "created_by",
             "updated_at",
+            "project_area",
             "action",
             "stand",
+            "area_acres",
         )
