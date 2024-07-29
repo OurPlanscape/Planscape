@@ -7,7 +7,6 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from collaboration.permissions import ScenarioPermission
 from impacts.models import TreatmentPlan
 from impacts.serializers import TreatmentPlanListSerializer
 from planning.filters import (
