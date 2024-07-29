@@ -193,7 +193,7 @@ def delete_planning_area(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        planning_areas = PlanningArea.objects.get_for_user(user).filter(
+        planning_areas = PlanningArea.objects.list_by_user(user).filter(
             pk__in=planning_area_ids
         )
 
@@ -363,7 +363,7 @@ def list_planning_areas(request: Request) -> Response:
                 {"error": "Authentication Required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        planning_areas = PlanningArea.objects.get_list_for_user(user)
+        planning_areas = PlanningArea.objects.list_for_api(user)
         serializer = ListPlanningAreaSerializer(
             instance=planning_areas, many=True, context={"request": request}
         )

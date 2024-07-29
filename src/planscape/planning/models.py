@@ -17,7 +17,7 @@ User = get_user_model()
 
 
 class PlanningAreaManager(models.Manager):
-    def get_for_user(self, user):
+    def list_by_user(self, user):
         content_type_pk = ContentType.objects.get(model="planningarea").pk
         qs = super().get_queryset()
         filtered_qs = qs.filter(
@@ -30,8 +30,8 @@ class PlanningAreaManager(models.Manager):
         )
         return filtered_qs
 
-    def get_list_for_user(self, user):
-        queryset = PlanningArea.objects.get_for_user(user)
+    def list_for_api(self, user):
+        queryset = PlanningArea.objects.list_by_user(user)
         return (
             queryset.annotate(scenario_count=Count("scenarios", distinct=True))
             .annotate(
@@ -136,6 +136,15 @@ class ScenarioResultStatus(models.TextChoices):
     TIMED_OUT = "TIMED_OUT", "Timed Out"
 
 
+class ScenarioManager(models.Manager):
+    def list_by_user(self, user):
+        # this will become super slow when the database get's bigger
+        planning_areas = PlanningArea.objects.list_by_user(user).values_list(
+            "id", flat=True
+        )
+        return self.get_queryset().filter(planning_area__id__in=planning_areas)
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
     planning_area = models.ForeignKey(
         PlanningArea,
@@ -174,6 +183,8 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     def get_forsys_folder(self):
         return Path(settings.OUTPUT_DIR) / Path(str(self.uuid))
+
+    objects = ScenarioManager()
 
     class Meta:
         constraints = [
