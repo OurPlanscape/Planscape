@@ -78,12 +78,32 @@ class PlanningAreaOrderingFilter(OrderingFilter):
         return super().filter_queryset(request, queryset, view)
 
 
+def get_planning_areas_for_filter(request):
+    """
+    django-filters supports a callable
+    to identify the available queryset
+    for filtering.
+
+    in our case, we should only allow the user
+    to filter for planning areas he/she has
+    access to, hence this method.
+    """
+    if request:
+        return PlanningArea.objects.list_for_user(request.user)
+
+    return PlanningArea.objects.none()
+
+
 class ScenarioFilter(filters.FilterSet):
     name = filters.CharFilter(lookup_expr="icontains")
+    planning_area = filters.ModelChoiceFilter(
+        field_name="planning_area",
+        queryset=get_planning_areas_for_filter,
+    )
 
     class Meta:
         model = Scenario
-        fields = ["name"]
+        fields = ["name", "planning_area"]
 
 
 class ScenarioOrderingFilter(OrderingFilter):

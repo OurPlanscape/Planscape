@@ -1,4 +1,3 @@
-from django.shortcuts import get_object_or_404
 from planscape.permissions import PlanscapePermission
 from collaboration.permissions import (
     PlanningAreaPermission,
