@@ -11,6 +11,7 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 
 import {
+  FilterSpecification,
   GeoJSONSource,
   LayerSpecification,
   Map as MapLibreMap,
@@ -55,9 +56,10 @@ export class ProjectAreaComponent implements OnInit {
 
   projectAreaId = 2710;
 
-  selectedStands: { id: number; assigment: StandAssigment }[] = [];
+  selectedStands: number[] = [];
+  private initialSelectedStands: number[] = [];
 
-  initialSelectedStands: { id: number; assigment: StandAssigment }[] = [];
+  treatedStands: { id: number; assigment: StandAssigment }[] = [];
 
   mapDragging = false;
 
@@ -80,8 +82,7 @@ export class ProjectAreaComponent implements OnInit {
     return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
   }
 
-  // todo maybe this needs to be a static prop and not a get
-  // and manually handle when to update this.
+  // todo maybe this needs to be a static prop and not a get and manually handle when to update this?
   get paint(): LayerSpecification['paint'] {
     return {
       'fill-outline-color': '#000',
@@ -96,12 +97,13 @@ export class ProjectAreaComponent implements OnInit {
     const matchExpression: (string | string[] | number)[] = [];
     matchExpression.push('match');
     matchExpression.push(['get', 'id']);
+    // match expression requires at least 2 definitions...
     matchExpression.push(0);
     matchExpression.push('#00a000');
     matchExpression.push(1);
     matchExpression.push('#00a000');
 
-    this.selectedStands.forEach((stand) => {
+    this.treatedStands.forEach((stand) => {
       matchExpression.push(stand.id);
       matchExpression.push(StandColors[stand.assigment]);
     });
@@ -110,6 +112,7 @@ export class ProjectAreaComponent implements OnInit {
   }
 
   clickOnStand(event: any) {
+    console.log('clicked');
     const features = this.maplibreMap.queryRenderedFeatures(event.point, {
       layers: ['stands-layer'],
     });
@@ -119,22 +122,13 @@ export class ProjectAreaComponent implements OnInit {
   }
 
   private toggleStands(id: number) {
-    const selectedStand = this.selectedStands.find((stand) => stand.id === id);
+    const selectedStand = this.selectedStands.find((standId) => standId === id);
     if (selectedStand) {
       this.selectedStands = this.selectedStands.filter(
-        (stand) => stand.id !== id
+        (selectedStandId) => selectedStandId !== id
       );
-      if (selectedStand.assigment !== 'selected') {
-        this.selectedStands = [
-          ...this.selectedStands,
-          { id, assigment: 'selected' },
-        ];
-      }
     } else {
-      this.selectedStands = [
-        ...this.selectedStands,
-        { id, assigment: 'selected' },
-      ];
+      this.selectedStands = [...this.selectedStands, id];
     }
   }
 
@@ -156,8 +150,6 @@ export class ProjectAreaComponent implements OnInit {
     this.end = event;
     this.updateRectangleSource();
     this.selectStandsWithinRectangle();
-    // TODO - while mouse is moving, check only update the stands
-    // that are NOW selected, meaning always compare against initialSelectedStands
   }
 
   onMapMouseUp(event: MapMouseEvent): void {
@@ -166,7 +158,6 @@ export class ProjectAreaComponent implements OnInit {
     this.maplibreMap.getCanvas().style.cursor = '';
     this.start = null;
     this.end = null;
-    // TODO "commit" the selected stands.
     this.clearRectangle();
   }
 
@@ -189,7 +180,7 @@ export class ProjectAreaComponent implements OnInit {
     this.updateRectangleGeometry([[]]);
   }
 
-  // todo maybe I can use a get() here and avoid this.
+  // todo maybe I can use a get() here and avoid this?
   private updateRectangleGeometry(cords: number[][][]) {
     this.rectangleGeometry.coordinates = cords;
     (this.maplibreMap.getSource('rectangle-source') as GeoJSONSource)?.setData(
@@ -214,23 +205,27 @@ export class ProjectAreaComponent implements OnInit {
 
     // this.initialSelectedStands are the stands I have selected before starting the mouse events.
     // I need to calculate this.selectedStands by adding all the features that landed on the query
-    const newStands: { id: number; assigment: StandAssigment }[] = [];
 
+    const newStands: number[] = [];
     let id: any;
     features.forEach((feature) => {
       id = feature.properties['id'];
-      const stand = this.initialSelectedStands.find((s) => s.id === id);
+      const stand = this.initialSelectedStands.find((sId) => sId === id);
       if (stand) {
       } else {
-        // this.selectedStands = [
-        //   ...this.initialSelectedStands,
-        //   { id: id, assigment: 'selected' },
-        // ];
-        newStands.push({ id: id, assigment: 'selected' });
+        newStands.push(id);
       }
     });
 
-    this.selectedStands = [...this.initialSelectedStands, ...newStands];
+    const combinedStands = new Set([
+      ...this.initialSelectedStands,
+      ...newStands,
+    ]);
+    this.selectedStands = Array.from(combinedStands);
+  }
+
+  get mapFilter(): FilterSpecification {
+    return ['in', ['get', 'id'], ['literal', this.selectedStands]];
   }
 
   // -----------------------------------------------------------------
@@ -243,17 +238,20 @@ export class ProjectAreaComponent implements OnInit {
 
   // assigning treatment
   assignTreatment(treatment: StandAssigment) {
-    console.log(this.selectedStands, 'treatment 1');
-
-    this.selectedStands = this.selectedStands.map((stand) => ({
-      id: stand.id,
-      assigment: stand.assigment === 'selected' ? treatment : stand.assigment,
-    }));
+    this.treatedStands = [
+      ...this.treatedStands.filter(
+        (treatment) => !this.selectedStands.includes(treatment.id)
+      ),
+      ...this.selectedStands.map((id) => ({
+        id: id,
+        assigment: treatment,
+      })),
+    ];
+    this.selectedStands = [];
   }
 
   clearTreatments() {
-    this.selectedStands = this.selectedStands.filter(
-      (stand) => stand.assigment != 'selected'
-    );
+    this.selectedStands = [];
+    this.treatedStands = [];
   }
 }

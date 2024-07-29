@@ -7,8 +7,8 @@
 
   <button (click)="assignTreatment('treatment-1')">Assign treatment 1</button>
   <button (click)="assignTreatment('treatment-2')">Assign treatment 2</button>
-  <button (click)="assignTreatment('treatment-3')">Assign treatment 2</button>
-  <button (click)="clearTreatments()">clear treatments</button>
+  <button (click)="assignTreatment('treatment-3')">Assign treatment 3</button>
+  <button (click)="clearTreatments()">clear all</button>
 </div>
 
 <section>
@@ -45,6 +45,17 @@
       [paint]="paint"
       sourceLayer="treatment_plan_prescriptions"
       (layerClick)="clickOnStand($event)"></mgl-layer>
+
+    <mgl-layer
+      id="stands-layer-selected"
+      type="fill"
+      source="stands"
+      [paint]="{
+        'fill-color': 'green',
+        'fill-opacity': 0.5
+      }"
+      sourceLayer="treatment_plan_prescriptions"
+      [filter]="mapFilter"></mgl-layer>
 
     <mgl-geojson-source id="rectangle-source">
       <mgl-feature [geometry]="rectangleGeometry"></mgl-feature>
