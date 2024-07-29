@@ -77,6 +77,13 @@ class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
     project_area = TxPrescriptionProjectAreaSerializer()
     area_acres = serializers.SerializerMethodField()
 
+    def get_area_acres(self, instance: TreatmentPrescription) -> float:
+        # this path is much faster
+        if instance.stand:
+            return area_from_size(instance.stand.size)
+
+        return get_acreage(instance.geometry)
+
     class Meta:
         model = TreatmentPrescription
         fields = (
