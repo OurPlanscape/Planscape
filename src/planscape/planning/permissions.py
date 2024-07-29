@@ -15,14 +15,20 @@ class ScenarioViewPermission(PlanscapePermission):
     permission_set = ScenarioPermission
 
     def has_permission(self, request, view):
-        planningarea_pk = view.kwargs.get("planningarea_pk")
-        planningarea = get_object_or_404(PlanningArea, id=planningarea_pk)
-        if view.action == "create" and planningarea_pk:
-            return PlanningAreaPermission.can_add_scenario(request.user, planningarea)
-        if view.action == "list" and planningarea_pk:
-            return PlanningAreaPermission.can_view(request.user, planningarea)
-
-        return PlanningAreaPermission.can_change(request.user, planningarea)
+        if not self.is_authenticated(request):
+            return False
+        match view.action:
+            case "create":
+                pa_id = request.data.get("planning_area") or None
+                if not pa_id:
+                    return False
+                planning_area = PlanningArea.objects.get("planning_area")
+                return PlanningAreaPermission.can_add_scenario(
+                    request.user, planning_area
+                )
+            case _:
+                # scenario filters this on the queryset
+                return True
 
     def has_object_permission(self, request, view, object):
         planning_area = object.planning_area

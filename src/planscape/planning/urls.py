@@ -136,8 +136,4 @@ urlpatterns = [
     ),
     path("user_prefs/", UserPreferencesView.as_view(), name="get_userprefs"),
     path("user_prefs/", UserPreferencesView.as_view(), name="patch_userprefs"),
-    # DEPRECATE WHEN FRONT-END MIGRATES
-    # not only we need to remove this, but we also need to update all the
-    # tests for planning, to add the new `api:` prefix
-    path("v2/", include(router.urls)),
 ]

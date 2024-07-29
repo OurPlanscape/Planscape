@@ -216,7 +216,9 @@ class GetPlanningAreaTest(APITransactionTestCase):
     def test_list_planning_areas(self):
         self.client.force_authenticate(self.user)
         response = self.client.get(
-            reverse("planning:planningareas-list"), {}, content_type="application/json"
+            reverse("api:planning:planningareas-list"),
+            {},
+            content_type="application/json",
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -230,7 +232,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"offset": "20"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -250,7 +252,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"name": "ted"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -266,7 +268,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"region_name": "sierra-nevada"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -282,7 +284,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"region_name": "central-coast"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -298,7 +300,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = {"region_name": ["central-coast", "sierra-nevada"]}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -314,7 +316,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = [("creator", str(self.user.id)), ("creator", str(self.user2.id))]
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -327,7 +329,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user2)
         query_params = [("creator", str(self.user.id)), ("creator", str(self.user2.id))]
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -347,7 +349,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user2)
         query_params = [("creator", str(self.user.id)), ("creator", str(self.user2.id))]
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -367,7 +369,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
         query_params = [("creator", str(self.user.id)), ("creator", str(self.user2.id))]
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -381,7 +383,9 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
     def test_list_planning_areas_not_logged_in(self):
         response = self.client.get(
-            reverse("planning:planningareas-list"), {}, content_type="application/json"
+            reverse("api:planning:planningareas-list"),
+            {},
+            content_type="application/json",
         )
         self.assertEqual(response.status_code, 401)
         self.assertJSONEqual(
@@ -392,7 +396,9 @@ class GetPlanningAreaTest(APITransactionTestCase):
     def test_list_planning_areas_empty_user(self):
         self.client.force_authenticate(self.emptyuser)
         response = self.client.get(
-            reverse("planning:planningareas-list"), {}, content_type="application/json"
+            reverse("api:planning:planningareas-list"),
+            {},
+            content_type="application/json",
         )
         planning_areas = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
@@ -498,7 +504,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "name", "limit": 6}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -513,7 +519,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "region_name"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -539,7 +545,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "-region_name"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -565,7 +571,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "scenario_count"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -580,7 +586,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "scenario_count, region_name"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -610,7 +616,7 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         self.client.force_authenticate(self.user1)
         query_params = {"ordering": "area_acres"}
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             query_params,
             content_type="application/json",
         )
@@ -696,7 +702,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def test_planningareas_list_for_creator(self):
         self.client.force_authenticate(self.creator_user)
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             {},
             content_type="application/json",
         )
@@ -729,7 +735,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def test_planningareas_list_for_collaborator(self):
         self.client.force_authenticate(self.collab_user)
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             {},
             content_type="application/json",
         )
@@ -745,7 +751,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
     def test_planningareas_list_for_viewer(self):
         self.client.force_authenticate(self.viewer_user)
         response = self.client.get(
-            reverse("planning:planningareas-list"),
+            reverse("api:planning:planningareas-list"),
             {},
             content_type="application/json",
         )
