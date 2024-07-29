@@ -6,9 +6,8 @@ from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
 from planning.models import RegionChoices
+from planning.tests.factories import PlanningAreaFactory
 from planning.tests.helpers import (
-    _create_planning_area,
-    _create_multiple_planningareas,
     _create_scenario,
     reset_permissions,
 )
@@ -47,35 +46,31 @@ class CreatorsTest(APITransactionTestCase):
         )
         self.user_e.set_password("12345")
         self.user_e.save()
-        self.test_pa_user_a = _create_multiple_planningareas(
-            11,
-            self.user_a,
-            "usera plan",
-            stored_geometry,
+        self.test_pa_user_a = PlanningAreaFactory.create_batch(
+            size=11,
+            user=self.user_a,
+            geometry=stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
-        self.test_pa_user_b = _create_multiple_planningareas(
-            11,
-            self.user_b,
-            "userb plan",
-            stored_geometry,
+        self.test_pa_user_b = PlanningAreaFactory.create_batch(
+            size=11,
+            user=self.user_b,
+            geometry=stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
 
         # Note: No areas for user_c
 
-        self.test_pa_user_d = _create_multiple_planningareas(
-            11,
-            self.user_d,
-            "userd plan",
-            stored_geometry,
+        self.test_pa_user_d = PlanningAreaFactory.create_batch(
+            size=11,
+            user=self.user_d,
+            geometry=stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
-        self.test_pa_user_e = _create_multiple_planningareas(
-            11,
-            self.user_e,
-            "usere plan",
-            stored_geometry,
+        self.test_pa_user_e = PlanningAreaFactory.create_batch(
+            size=11,
+            user=self.user_e,
+            geometry=stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
 
@@ -146,40 +141,35 @@ class GetPlanningAreaTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
-
-        self.test_pa_sn = _create_multiple_planningareas(
-            10,
-            self.user,
-            "test plan",
-            stored_geometry,
+        # name_fn = lambda x: f"test plan {x}".format(x)
+        self.test_pa_sn = PlanningAreaFactory.create_batch(
+            size=10,
+            user=self.user,
+            geometry=stored_geometry,
             region_name=RegionChoices.SIERRA_NEVADA,
         )
-        self.test_pa_cc = _create_multiple_planningareas(
-            11,
-            self.user,
-            "test plan",
-            stored_geometry,
+        self.test_pa_cc = PlanningAreaFactory.create_batch(
+            size=11,
+            user=self.user,
+            geometry=stored_geometry,
             region_name=RegionChoices.CENTRAL_COAST,
         )
-        self.test_pa_sc = _create_multiple_planningareas(
-            12,
-            self.user,
-            "test plan",
-            stored_geometry,
+        self.test_pa_sc = PlanningAreaFactory.create_batch(
+            size=12,
+            user=self.user,
+            geometry=stored_geometry,
             region_name=RegionChoices.SOUTHERN_CALIFORNIA,
         )
-        self.test_pa_nc = _create_multiple_planningareas(
-            13,
-            self.user,
-            "test plan",
-            stored_geometry,
+        self.test_pa_nc = PlanningAreaFactory.create_batch(
+            size=13,
+            user=self.user,
+            geometry=stored_geometry,
             region_name=RegionChoices.NORTHERN_CALIFORNIA,
         )
-        self.test_pa_user2_nc = _create_multiple_planningareas(
-            13,
-            self.user2,
-            "other user plan",
-            stored_geometry,
+        self.test_pa_user2_nc = PlanningAreaFactory.create_batch(
+            size=13,
+            user=self.user2,
+            geometry=stored_geometry,
             region_name=RegionChoices.NORTHERN_CALIFORNIA,
         )
         # of the created areas,
@@ -246,8 +236,18 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
     def test_filter_planning_areas_by_partial_name(self):
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
-        _create_multiple_planningareas(10, self.user, "invented name", stored_geometry)
-        _create_multiple_planningareas(10, self.user, "created name", stored_geometry)
+        for i in range(0, 10):
+            PlanningAreaFactory.create(
+                user=self.user,
+                name=f"created name {i}",
+                geometry=stored_geometry,
+            )
+        for i in range(0, 10):
+            PlanningAreaFactory.create(
+                user=self.user,
+                name=f"invented name {i}",
+                geometry=stored_geometry,
+            )
 
         self.client.force_authenticate(self.user)
         query_params = {"name": "ted"}
@@ -440,36 +440,66 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         geo3 = GEOSGeometry(json.dumps(self.geometry3))
         geo4 = GEOSGeometry(json.dumps(self.geometry4))
 
-        self.pa1 = _create_planning_area(
-            self.user1, "Area D", geo1, region_name=RegionChoices.CENTRAL_COAST
+        self.pa1 = PlanningAreaFactory.create(
+            user=self.user1,
+            name="Area D",
+            geometry=geo1,
+            region_name=RegionChoices.CENTRAL_COAST,
         )
-        self.pa2 = _create_planning_area(
-            self.user1, "Area E", geo3, region_name=RegionChoices.SIERRA_NEVADA
+        self.pa2 = PlanningAreaFactory.create(
+            user=self.user1,
+            name="Area E",
+            geometry=geo3,
+            region_name=RegionChoices.SIERRA_NEVADA,
         )
-        self.pa3 = _create_planning_area(
-            self.user1, "Area C", geo4, region_name=RegionChoices.SOUTHERN_CALIFORNIA
+        self.pa3 = PlanningAreaFactory.create(
+            user=self.user1,
+            name="Area C",
+            geometry=geo4,
+            region_name=RegionChoices.SOUTHERN_CALIFORNIA,
         )
-        self.pa4 = _create_planning_area(
-            self.user1, "Area F", geo2, region_name=RegionChoices.NORTHERN_CALIFORNIA
+        self.pa4 = PlanningAreaFactory.create(
+            user=self.user1,
+            name="Area F",
+            geometry=geo2,
+            region_name=RegionChoices.NORTHERN_CALIFORNIA,
         )
-        self.pa5 = _create_planning_area(
-            self.user1, "Area B", geo3, region_name=RegionChoices.CENTRAL_COAST
+        self.pa5 = PlanningAreaFactory.create(
+            user=self.user1,
+            name="Area B",
+            geometry=geo3,
+            region_name=RegionChoices.CENTRAL_COAST,
         )
-        self.pa6 = _create_planning_area(
-            self.user1, "Area A", geo3, region_name=RegionChoices.SIERRA_NEVADA
+        self.pa6 = PlanningAreaFactory.create(
+            user=self.user1,
+            name="Area A",
+            geometry=geo3,
+            region_name=RegionChoices.SIERRA_NEVADA,
         )
 
-        self.pa7 = _create_planning_area(
-            self.user2, "Area G", geo1, region_name=RegionChoices.CENTRAL_COAST
+        self.pa7 = PlanningAreaFactory.create(
+            user=self.user2,
+            name="Area G",
+            geometry=geo1,
+            region_name=RegionChoices.CENTRAL_COAST,
         )
-        self.pa8 = _create_planning_area(
-            self.user2, "Area H", geo2, region_name=RegionChoices.NORTHERN_CALIFORNIA
+        self.pa8 = PlanningAreaFactory.create(
+            user=self.user2,
+            name="Area H",
+            geometry=geo2,
+            region_name=RegionChoices.NORTHERN_CALIFORNIA,
         )
-        self.pa9 = _create_planning_area(
-            self.user2, "Area I", geo3, region_name=RegionChoices.SIERRA_NEVADA
+        self.pa9 = PlanningAreaFactory.create(
+            user=self.user2,
+            name="Area I",
+            geometry=geo3,
+            region_name=RegionChoices.SIERRA_NEVADA,
         )
-        self.pa10 = _create_planning_area(
-            self.user2, "Area J", geo4, region_name=RegionChoices.CENTRAL_COAST
+        self.pa10 = PlanningAreaFactory.create(
+            user=self.user2,
+            name="Area J",
+            geometry=geo4,
+            region_name=RegionChoices.CENTRAL_COAST,
         )
 
         self.scenario1_1 = _create_scenario(
@@ -677,14 +707,20 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
-        self.planning_area_w_collab = _create_planning_area(
-            self.creator_user, "Shared with Collaborator", stored_geometry
+        self.planning_area_w_collab = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Shared with Collaborator",
+            geometry=stored_geometry,
         )
-        self.planning_area_w_viewer = _create_planning_area(
-            self.creator_user, "Area Shared with Viewer", stored_geometry
+        self.planning_area_w_viewer = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Area Shared with Viewer",
+            geometry=stored_geometry,
         )
-        self.planning_area_notshared = _create_planning_area(
-            self.creator_user, "Not Shared Area", stored_geometry
+        self.planning_area_notshared = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Not Shared Area",
+            geometry=stored_geometry,
         )
         create_collaborator_record(
             self.creator_user,

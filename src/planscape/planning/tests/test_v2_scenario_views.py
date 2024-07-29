@@ -10,7 +10,6 @@ from planning.models import (
     ScenarioResult,
 )
 from planning.tests.helpers import (
-    _create_planning_area,
     reset_permissions,
 )
 from planscape.tests.factories import UserFactory
@@ -36,11 +35,12 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             user=self.owner_user, name="test plan"
         )
 
-        self.empty_planning_area = _create_planning_area(
-            user=self.owner_user, name="empty test plan"
+        self.empty_planning_area = PlanningAreaFactory.create(
+            user=self.owner_user,
+            name="empty test plan",
         )
 
-        self.planning_area2 = _create_planning_area(
+        self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2, name="test plan2"
         )
 
@@ -334,3 +334,22 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         ]
         name_results = [s["name"] for s in response_data["results"]]
         self.assertEquals(expected_names, name_results)
+
+    def test_filter_by_planning_area_returns_filtered_records(self):
+        planning_area = PlanningAreaFactory.create()
+        s1 = ScenarioFactory.create(planning_area=planning_area)
+        s2 = ScenarioFactory.create(planning_area=planning_area)
+        self.client.force_authenticate(planning_area.user)
+
+        query_params = {"planning_area": planning_area.pk}
+        response = self.client.get(
+            reverse("api:planning:scenarios-list"),
+            query_params,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        data = response.json()
+        self.assertEqual(len(data.get("results")), 2)
+        names = [r.get("name") for r in data.get("results")]
+        self.assertIn(s1.name, names)
+        self.assertIn(s2.name, names)
