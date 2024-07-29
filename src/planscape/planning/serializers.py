@@ -96,6 +96,7 @@ class PlanningAreaSerializer(
     class Meta:
         fields = (
             "id",
+            "planning_area",
             "user",
             "name",
             "notes",

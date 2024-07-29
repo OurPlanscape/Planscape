@@ -1,6 +1,5 @@
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
-from django.contrib.contenttypes.models import ContentType
 from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -8,7 +7,7 @@ from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
 from impacts.models import TreatmentPlan
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
-from planning.tests.factories import ScenarioFactory, PlanningAreaFactory
+from planning.tests.factories import ScenarioFactory
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -191,9 +190,8 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.client.force_authenticate(user=self.scenario.user)
         response = self.client.get(
             reverse(
-                "planning:scenarios-treatment-plans",
+                "api:planning:scenarios-treatment-plans",
                 kwargs={
-                    "planningarea_pk": self.scenario.planning_area.pk,
                     "pk": self.scenario.pk,
                 },
             ),
@@ -213,9 +211,8 @@ class TxPlanViewSetTest(APITransactionTestCase):
         query_string = {"limit": 10, "offset": 48}
         response = self.client.get(
             reverse(
-                "planning:scenarios-treatment-plans",
+                "api:planning:scenarios-treatment-plans",
                 kwargs={
-                    "planningarea_pk": self.scenario.planning_area.pk,
                     "pk": self.scenario.pk,
                 },
             ),
@@ -236,16 +233,14 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.client.force_authenticate(user=other_user)
         response = self.client.get(
             reverse(
-                "planning:scenarios-treatment-plans",
+                "api:planning:scenarios-treatment-plans",
                 kwargs={
-                    "planningarea_pk": self.scenario.planning_area.pk,
                     "pk": self.scenario.pk,
                 },
             ),
             content_type="application/json",
         )
-        response_data = response.json()
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, 404)
 
 
 class TxPrescriptionListTest(APITransactionTestCase):
