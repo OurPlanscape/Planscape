@@ -56,6 +56,9 @@ export class ProjectAreaComponent implements OnInit {
   projectAreaId = 2710;
 
   selectedStands: { id: number; assigment: StandAssigment }[] = [];
+
+  initialSelectedStands: { id: number; assigment: StandAssigment }[] = [];
+
   mapDragging = false;
 
   rectangleGeometry: Polygon = {
@@ -77,6 +80,8 @@ export class ProjectAreaComponent implements OnInit {
     return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
   }
 
+  // todo maybe this needs to be a static prop and not a get
+  // and manually handle when to update this.
   get paint(): LayerSpecification['paint'] {
     return {
       'fill-outline-color': '#000',
@@ -102,10 +107,6 @@ export class ProjectAreaComponent implements OnInit {
     });
     matchExpression.push('#00000050');
     return matchExpression;
-  }
-
-  get selectedIds() {
-    return this.selectedStands.map((stand) => stand.id);
   }
 
   clickOnStand(event: any) {
@@ -145,6 +146,9 @@ export class ProjectAreaComponent implements OnInit {
     this.isDragging = true;
     this.start = event;
     this.maplibreMap.getCanvas().style.cursor = 'crosshair';
+    // TODO
+    // save initialSelectedStands
+    this.initialSelectedStands = [...this.selectedStands];
   }
 
   onMapMouseMove(event: MapMouseEvent): void {
@@ -152,19 +156,17 @@ export class ProjectAreaComponent implements OnInit {
     this.end = event;
     this.updateRectangleSource();
     this.selectStandsWithinRectangle();
+    // TODO - while mouse is moving, check only update the stands
+    // that are NOW selected, meaning always compare against initialSelectedStands
   }
 
   onMapMouseUp(event: MapMouseEvent): void {
     if (!this.isDragging) return;
     this.isDragging = false;
     this.maplibreMap.getCanvas().style.cursor = '';
-
-    this.end = event;
-
-    this.selectStandsWithinRectangle();
-
     this.start = null;
     this.end = null;
+    // TODO "commit" the selected stands.
     this.clearRectangle();
   }
 
@@ -210,26 +212,25 @@ export class ProjectAreaComponent implements OnInit {
       layers: ['stands-layer'],
     });
 
-    const selectedIds = features.map((feature) => feature.properties['id']);
-    console.log(selectedIds);
+    // this.initialSelectedStands are the stands I have selected before starting the mouse events.
+    // I need to calculate this.selectedStands by adding all the features that landed on the query
+    const newStands: { id: number; assigment: StandAssigment }[] = [];
 
-    selectedIds.forEach((id: number) => {
-      // if I dont have it add it
-      // if I have it mark as selected
-
-      const stand = this.selectedStands.find((s) => s.id === id);
+    let id: any;
+    features.forEach((feature) => {
+      id = feature.properties['id'];
+      const stand = this.initialSelectedStands.find((s) => s.id === id);
       if (stand) {
       } else {
-        this.selectedStands = [
-          ...this.selectedStands,
-          { id: id, assigment: 'selected' },
-        ];
+        // this.selectedStands = [
+        //   ...this.initialSelectedStands,
+        //   { id: id, assigment: 'selected' },
+        // ];
+        newStands.push({ id: id, assigment: 'selected' });
       }
     });
 
-    // this.selectedStands = Array.from(
-    //   new Set([...this.selectedStands, ...selectedIds])
-    // );
+    this.selectedStands = [...this.initialSelectedStands, ...newStands];
   }
 
   // -----------------------------------------------------------------
