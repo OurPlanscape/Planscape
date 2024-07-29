@@ -95,6 +95,35 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
             planning_area=instance,
         )
 
+    @action(methods=["POST"], detail=True)
+    def upload_shapefiles(self, request, pk=None):
+        print(f"here is the pk: {pk}")
+        uploaded_geom = {**request.data["geometry"]}
+        pa = PlanningArea.objects.get(pk=pk)
+
+        # Ensure that planning area contains the uploaded geometry
+        if not is_inside(pa.geometry, uploaded_geom):
+            return Response(
+                {"error": "Uploaded geometry is not contained by planning area"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # now we create a scenario
+        scenario = create_scenario_from_upload(
+            user=self.request.user,
+            planningarea=pa,
+            scenario_name=request.data["name"],
+            stand_size=request.data["stand_size"],
+            uploaded_geom=uploaded_geom,
+        )
+        out_serializer = ScenarioProjectAreasSerializer(instance=scenario)
+        headers = self.get_success_headers(out_serializer.data)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
 
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.none()
@@ -167,34 +196,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             return paginator.get_paginated_response(serializer.data)
         serializer = TreatmentPlanListSerializer(treatments, many=True)
         return Response(serializer.data)
-
-    @action(methods=["post"], detail=False)
-    def upload_shapefile(self, request, planningarea_pk):
-        uploaded_geom = {**request.data["geometry"]}
-        pa = PlanningArea.objects.get(pk=planningarea_pk)
-
-        # Ensure that planning area contains the uploaded geometry
-        if not is_inside(pa.geometry, uploaded_geom):
-            return Response(
-                {"error": "Uploaded geometry is not contained by planning area"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # now we create a scenario
-        scenario = create_scenario_from_upload(
-            user=self.request.user,
-            planningarea=pa,
-            scenario_name=request.data["name"],
-            stand_size=request.data["stand_size"],
-            uploaded_geom=uploaded_geom,
-        )
-        out_serializer = ScenarioProjectAreasSerializer(instance=scenario)
-        headers = self.get_success_headers(out_serializer.data)
-        return Response(
-            out_serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
 
 
 # TODO: migrate this to an action inside the planning area viewset
