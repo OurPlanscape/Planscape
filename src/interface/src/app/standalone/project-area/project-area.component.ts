@@ -14,6 +14,7 @@ import {
   GeoJSONSource,
   LayerSpecification,
   Map as MapLibreMap,
+  MapMouseEvent,
 } from 'maplibre-gl';
 import { Polygon } from 'geojson';
 
@@ -63,8 +64,8 @@ export class ProjectAreaComponent implements OnInit {
   };
 
   private isDragging = false;
-  private start: [number, number] | null = null;
-  private end: [number, number] | null = null;
+  private start: MapMouseEvent | null = null;
+  private end: MapMouseEvent | null = null;
 
   constructor(private planService: PlanService) {}
 
@@ -140,27 +141,27 @@ export class ProjectAreaComponent implements OnInit {
   // Map events, used for drawing the rectangle.
   // -----------------------------------------------------------------
 
-  onMapMouseDown(event: any): void {
+  onMapMouseDown(event: MapMouseEvent): void {
     this.isDragging = true;
-    this.start = [event.lngLat.lng, event.lngLat.lat];
+    this.start = event;
     this.maplibreMap.getCanvas().style.cursor = 'crosshair';
   }
 
-  onMapMouseMove(event: any): void {
+  onMapMouseMove(event: MapMouseEvent): void {
     if (!this.isDragging) return;
-    this.end = [event.lngLat.lng, event.lngLat.lat];
-    this.updateRectangleSource(this.start!, this.end);
+    this.end = event;
+    this.updateRectangleSource();
+    this.selectStandsWithinRectangle();
   }
 
-  onMapMouseUp(event: any): void {
+  onMapMouseUp(event: MapMouseEvent): void {
     if (!this.isDragging) return;
     this.isDragging = false;
     this.maplibreMap.getCanvas().style.cursor = '';
 
-    this.end = [event.lngLat.lng, event.lngLat.lat];
-    if (this.start && this.end) {
-      this.selectStandsWithinRectangle(this.start, this.end);
-    }
+    this.end = event;
+
+    this.selectStandsWithinRectangle();
 
     this.start = null;
     this.end = null;
@@ -171,7 +172,12 @@ export class ProjectAreaComponent implements OnInit {
   // Drawing rectangle on page
   // -----------------------------------------------------------------
 
-  updateRectangleSource(start: [number, number], end: [number, number]): void {
+  updateRectangleSource(): void {
+    if (!this.start || !this.end) {
+      return;
+    }
+    const start = [this.start.lngLat.lng, this.start.lngLat.lat];
+    const end = [this.end.lngLat.lng, this.end.lngLat.lat];
     this.updateRectangleGeometry([
       [start, [start[0], end[1]], end, [end[0], start[1]], start],
     ]);
@@ -189,10 +195,13 @@ export class ProjectAreaComponent implements OnInit {
     );
   }
 
-  selectStandsWithinRectangle(
-    start: [number, number],
-    end: [number, number]
-  ): void {
+  selectStandsWithinRectangle(): void {
+    if (!this.start || !this.end) {
+      return;
+    }
+    const start = [this.start.point.x, this.start.point.y];
+    const end = [this.end.point.x, this.end.point.y];
+
     const bbox: [[number, number], [number, number]] = [
       [Math.min(start[0], end[0]), Math.min(start[1], end[1])],
       [Math.max(start[0], end[0]), Math.max(start[1], end[1])],
@@ -202,9 +211,25 @@ export class ProjectAreaComponent implements OnInit {
     });
 
     const selectedIds = features.map((feature) => feature.properties['id']);
-    this.selectedStands = Array.from(
-      new Set([...this.selectedStands, ...selectedIds])
-    );
+    console.log(selectedIds);
+
+    selectedIds.forEach((id: number) => {
+      // if I dont have it add it
+      // if I have it mark as selected
+
+      const stand = this.selectedStands.find((s) => s.id === id);
+      if (stand) {
+      } else {
+        this.selectedStands = [
+          ...this.selectedStands,
+          { id: id, assigment: 'selected' },
+        ];
+      }
+    });
+
+    // this.selectedStands = Array.from(
+    //   new Set([...this.selectedStands, ...selectedIds])
+    // );
   }
 
   // -----------------------------------------------------------------
