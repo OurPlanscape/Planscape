@@ -1,0 +1,9 @@
+<mat-icon *ngIf="leadingIcon">{{ leadingIcon }}</mat-icon>
+{{ message }}
+<div class="right-icon">
+  <mat-icon *ngIf="infoType === 'complete'">check</mat-icon>
+  <mat-spinner
+    *ngIf="infoType === 'inProgress'"
+    class="main-loader"
+    diameter="24"></mat-spinner>
+</div>
