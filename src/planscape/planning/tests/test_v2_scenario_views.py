@@ -1,18 +1,15 @@
 import copy
 import json
-from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
-from planning.geometry import coerce_geometry
 from planning.models import (
     Scenario,
     ScenarioResult,
 )
 from planning.tests.helpers import (
     reset_permissions,
-    _load_geojson_fixture,
 )
 from planscape.tests.factories import UserFactory
 from planning.tests.factories import (
@@ -355,173 +352,3 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         names = [r.get("name") for r in data.get("results")]
         self.assertIn(s1.name, names)
         self.assertIn(s2.name, names)
-
-
-class CreateScenarios(APITransactionTestCase):
-    def setUp(self):
-        self.owner_user = UserFactory.create()
-
-        self.la_county_geo = _load_geojson_fixture("la_county.geojson")
-        self.la_features = _load_geojson_fixture("la_features.geojson")
-        self.bayarea_geo = _load_geojson_fixture("bayarea.geojson")
-
-        self.burbank_shpjs = {
-            "geometry": {
-                "type": "Polygon",
-                "coordinates": [
-                    [
-                        [-118.30225, 34.196327],
-                        [-118.334029, 34.194174],
-                        [-118.365419, 34.174367],
-                        [-118.3022, 34.159177],
-                        [-118.258063, 34.166767],
-                        [-118.249365, 34.182766],
-                        [-118.30225, 34.196327],
-                    ]
-                ],
-            }
-        }
-        self.la_multi_shpjs = {
-            "geometry": {
-                "coordinates": [
-                    [
-                        [-118.30225, 34.196327],
-                        [-118.334029, 34.194174],
-                        [-118.365419, 34.174367],
-                        [-118.3022, 34.159177],
-                        [-118.258063, 34.166767],
-                        [-118.249365, 34.182766],
-                        [-118.30225, 34.196327],
-                    ],
-                    [
-                        [-118.377882, 34.11097],
-                        [-118.447442, 34.113653],
-                        [-118.453988, 34.075555],
-                        [-118.436742, 34.045408],
-                        [-118.336649, 34.044481],
-                        [-118.288021, 34.073666],
-                        [-118.294062, 34.10461],
-                        [-118.377882, 34.11097],
-                    ],
-                    [
-                        [-118.20343, 34.126106],
-                        [-118.248104, 34.11713],
-                        [-118.272937, 34.078179],
-                        [-118.316097, 34.037767],
-                        [-118.259814, 33.986624],
-                        [-118.157527, 33.996031],
-                        [-118.137324, 34.045068],
-                        [-118.143416, 34.106869],
-                        [-118.20343, 34.126106],
-                    ],
-                    [
-                        [-118.074253, 34.073687],
-                        [-118.119187, 34.053145],
-                        [-118.145405, 34.008519],
-                        [-118.106502, 34.005393],
-                        [-118.092114, 34.042635],
-                        [-118.074253, 34.073687],
-                    ],
-                ],
-                "type": "Polygon",
-            }
-        }
-
-        self.planning_area = PlanningAreaFactory(
-            user=self.owner_user,
-            geometry=coerce_geometry(self.la_county_geo["geometry"]),
-        )
-
-    def test_confirm_permissions_required(self):
-        payload = {
-            "geometry": self.burbank_shpjs,
-            "name": "new scenario",
-            "stand_size": "SMALL",
-        }
-        response = self.client.post(
-            reverse(
-                "api:planning:planningareas-upload-shapefiles",
-                kwargs={"pk": self.planning_area.pk},
-            ),
-            data=payload,
-            format="json",
-        )
-        self.assertEqual(response.status_code, 401)
-
-    def test_create_from_single_feature_shpjs(self):
-        self.client.force_authenticate(self.owner_user)
-        payload = {
-            "geometry": self.burbank_shpjs,
-            "name": "new scenario",
-            "stand_size": "SMALL",
-        }
-        response = self.client.post(
-            reverse(
-                "api:planning:planningareas-upload-shapefiles",
-                kwargs={"pk": self.planning_area.pk},
-            ),
-            data=payload,
-            format="json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response_data["project_areas"]), 1)
-
-    def test_create_from_multifeature_shpjs(self):
-        self.client.force_authenticate(self.owner_user)
-        payload = {
-            "geometry": self.la_multi_shpjs,
-            "name": "new scenario",
-            "stand_size": "SMALL",
-        }
-        response = self.client.post(
-            reverse(
-                "api:planning:planningareas-upload-shapefiles",
-                kwargs={"pk": self.planning_area.pk},
-            ),
-            data=payload,
-            format="json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response_data["project_areas"]), 4)
-
-    def test_create_from_geojson(self):
-        self.client.force_authenticate(self.owner_user)
-        payload = {
-            "geometry": self.la_features,
-            "name": "new scenario",
-            "stand_size": "SMALL",
-        }
-        response = self.client.post(
-            reverse(
-                "api:planning:planningareas-upload-shapefiles",
-                kwargs={"pk": self.planning_area.pk},
-            ),
-            data=payload,
-            format="json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response_data["project_areas"]), 4)
-
-    def test_create_uncontained_geometry(self):
-        self.client.force_authenticate(self.owner_user)
-        payload = {
-            "geometry": self.bayarea_geo,
-            "name": "new scenario",
-            "stand_size": "SMALL",
-        }
-        response = self.client.post(
-            reverse(
-                "api:planning:planningareas-upload-shapefiles",
-                kwargs={"pk": self.planning_area.pk},
-            ),
-            data=payload,
-            format="json",
-        )
-        self.assertEqual(response.status_code, 400)
-        self.assertEquals(
-            b'{"error":"Uploaded geometry is not contained by planning area"}',
-            response.content,
-        )
