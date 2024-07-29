@@ -1,28 +1,14 @@
+from typing import Optional
 from django_filters import rest_framework as filters
-from django.db.models import F, Func, Value, ExpressionWrapper, FloatField
+from django.db.models import F, Func, Value, ExpressionWrapper, FloatField, QuerySet
 from django.contrib.gis.db.models.functions import Area, Transform
 from django.conf import settings
+from planscape.filters import MultipleValueFilter
 from planning.models import PlanningArea, Scenario, RegionChoices
+from rest_framework.request import Request
 from rest_framework.filters import OrderingFilter
 from django.db.models.functions import Coalesce
 from django.db.models import Max
-
-
-class MultipleValueFilter(filters.CharFilter):
-    def __init__(self, given_param, field_name, *args, **kwargs):
-        self.given_param = given_param
-        super(MultipleValueFilter, self).__init__(
-            field_name=field_name, *args, **kwargs
-        )
-
-    def filter(self, queryset, value):
-        if not value:
-            return queryset
-        request = self.parent.request
-        # getlist grabs all values associated with this param
-        all_values = request.query_params.getlist(self.given_param)
-        filter_expr = {f"{self.field_name}__in": all_values}
-        return queryset.filter(**filter_expr)
 
 
 class PlanningAreaFilter(filters.FilterSet):
@@ -78,7 +64,7 @@ class PlanningAreaOrderingFilter(OrderingFilter):
         return super().filter_queryset(request, queryset, view)
 
 
-def get_planning_areas_for_filter(request):
+def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
     """
     django-filters supports a callable
     to identify the available queryset
@@ -88,10 +74,9 @@ def get_planning_areas_for_filter(request):
     to filter for planning areas he/she has
     access to, hence this method.
     """
-    if request:
-        return PlanningArea.objects.list_for_user(request.user)
-
-    return PlanningArea.objects.none()
+    if not request:
+        return PlanningArea.objects.none()
+    return PlanningArea.objects.list_by_user(request.user)
 
 
 class ScenarioFilter(filters.FilterSet):

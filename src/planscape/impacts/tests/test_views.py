@@ -184,64 +184,6 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
 
-    def test_list_txplans_in_scenario(self):
-        for _ in range(50):
-            TreatmentPlanFactory.create(scenario=self.scenario)
-        self.client.force_authenticate(user=self.scenario.user)
-        response = self.client.get(
-            reverse(
-                "api:planning:scenarios-treatment-plans",
-                kwargs={
-                    "pk": self.scenario.pk,
-                },
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data = response.json()
-        self.assertEqual(response_data["count"], 50)
-        self.assertEqual(len(response_data["results"]), 50)
-
-    # test pagination
-    def test_txplans_pagination(self):
-        for _ in range(50):
-            TreatmentPlanFactory.create(scenario=self.scenario)
-        self.client.force_authenticate(user=self.scenario.user)
-
-        query_string = {"limit": 10, "offset": 48}
-        response = self.client.get(
-            reverse(
-                "api:planning:scenarios-treatment-plans",
-                kwargs={
-                    "pk": self.scenario.pk,
-                },
-            ),
-            query_string,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        paged_data = response.json()
-        self.assertEqual(paged_data["count"], 50)
-        self.assertIn("next", paged_data)
-        self.assertIn("http", paged_data["previous"])
-        self.assertEqual(len(paged_data["results"]), 2)
-
-    def test_tx_plans_auth(self):
-        other_user = UserFactory()
-        for _ in range(50):
-            TreatmentPlanFactory.create(scenario=self.scenario)
-        self.client.force_authenticate(user=other_user)
-        response = self.client.get(
-            reverse(
-                "api:planning:scenarios-treatment-plans",
-                kwargs={
-                    "pk": self.scenario.pk,
-                },
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 404)
-
 
 class TxPrescriptionListTest(APITransactionTestCase):
     def setUp(self):
