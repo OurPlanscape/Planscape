@@ -1,6 +1,6 @@
 import uuid
 from pathlib import Path
-from typing import Type
+from typing import Optional, Type
 
 from collaboration.models import UserObjectRole
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin, UUIDMixin
@@ -9,15 +9,16 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.core.serializers.json import DjangoJSONEncoder
-from django.db.models import Count, Max, Q
+from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
+from planscape.typing import UserType
 from utils.uuid_utils import generate_short_uuid
 
 User = get_user_model()
 
 
 class PlanningAreaManager(models.Manager):
-    def list_by_user(self, user):
+    def list_by_user(self, user: UserType) -> QuerySet:
         content_type_pk = ContentType.objects.get(model="planningarea").pk
         qs = super().get_queryset()
         filtered_qs = qs.filter(
@@ -30,7 +31,7 @@ class PlanningAreaManager(models.Manager):
         )
         return filtered_qs
 
-    def list_for_api(self, user):
+    def list_for_api(self, user: UserType) -> QuerySet:
         queryset = PlanningArea.objects.list_by_user(user)
         return (
             queryset.annotate(scenario_count=Count("scenarios", distinct=True))
@@ -137,7 +138,9 @@ class ScenarioResultStatus(models.TextChoices):
 
 
 class ScenarioManager(models.Manager):
-    def list_by_user(self, user):
+    def list_by_user(self, user: Optional[UserType]):
+        if not user:
+            return self.get_queryset().none()
         # this will become super slow when the database get's bigger
         planning_areas = PlanningArea.objects.list_by_user(user).values_list(
             "id", flat=True
