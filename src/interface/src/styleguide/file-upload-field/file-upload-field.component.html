@@ -37,4 +37,6 @@
     </button>
   </div>
 </div>
-<div class="field-subscript">Files supported: {{ acceptedSuffixes }}</div>
+<div class="field-subscript">
+  Files supported: {{ supportedFileInfo || acceptedSuffixes }}
+</div>

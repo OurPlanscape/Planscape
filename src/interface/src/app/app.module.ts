@@ -20,6 +20,7 @@ import { ButtonComponent } from '@styleguide';
 import { ChipInputComponent } from './home/chip-input/chip-input.component';
 
 import { FeaturesModule } from './features/features.module';
+import { FileUploadFieldComponent } from '../styleguide/file-upload-field/file-upload-field.component';
 import { HomeComponent } from './home/home.component';
 import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
 import { MapModule } from './map/map.module';
@@ -54,6 +55,7 @@ import { PlanningAreasComponent } from './standalone/planning-areas/planning-are
     BrowserModule,
     CommonModule,
     FeaturesModule,
+    FileUploadFieldComponent,
     FormsModule,
     HttpClientModule,
     HttpClientXsrfModule.withOptions({

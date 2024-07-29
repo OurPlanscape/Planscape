@@ -2,12 +2,12 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
+import { MatButtonHarness } from '@angular/material/button/testing';
 import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MAT_DIALOG_DATA,
+  MatDialog,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
@@ -54,8 +54,9 @@ describe('DeleteAccountDialogComponent', () => {
         LegacyMaterialModule,
         ReactiveFormsModule,
         NoopAnimationsModule,
+        DeleteAccountDialogComponent,
       ],
-      declarations: [DeleteAccountDialogComponent],
+      // declarations: [DeleteAccountDialogComponent],
       providers: [
         {
           provide: AuthService,

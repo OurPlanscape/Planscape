@@ -1,0 +1,35 @@
+<sg-modal
+  title="Upload Scenario to &ldquo;{{ data.planning_area_name }}&rdquo;"
+  primaryButtonText="Create"
+  secondaryButtonText="Cancel">
+  <div modalBodyContent>
+    <div class="modal-alert">
+      <mat-icon>info_filled</mat-icon>
+      Project area(s) must be within the planning area.
+    </div>
+    <div class="upload-scenario-form">
+      <app-form-message
+        [messageType]="FormMessageType.ERROR"
+        *ngIf="uploadError"
+        title="Upload was unsuccessful"
+        message="{{ uploadError }}">
+      </app-form-message>
+      <form>
+        <div class="field-label">Scenario Name</div>
+        <sg-input-field [disabled]="false" class="scenario-input">
+          <input #inputElement sgInput placeholder="Scenario Name" />
+        </sg-input-field>
+
+        <div class="field-label">Upload a project area</div>
+        <sg-file-upload
+          supportedFileInfo="zip archive must contain DPF, SHP, SPX, CPG, PRJ files." />
+        <div class="field-label">Select a stand size</div>
+        <select>
+          <option>Small</option>
+          <option>Medium</option>
+          <option>Large</option>
+        </select>
+      </form>
+    </div>
+  </div>
+</sg-modal>

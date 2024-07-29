@@ -1,36 +1,35 @@
-<div class="delete-account-dialog">
-  <mat-icon class="warning-icon">warning</mat-icon>
+<sg-modal
+  (clickedSecondary)="closeModal()"
+  title="Deactivate Account"
+  primaryButtonText="Deactivate"
+  primaryButtonVariant="negative"
+  secondaryButtonText="Cancel"
+  width="large"
+  (clickedPrimary)="deleteAccount()"
+  (clickedSecondary)="closeModal()"
+  (clickedClose)="closeModal()"
+  leadingIcon="warning-icon"
+  leadingIconVariant="alert">
+  <div tooltipContent #tooltipContentDiv>HELLOOOO</div>
+  <div class="delete-account-dialog" modalBodyContent>
+    <p>
+      <b>Are you sure you want to deactivate your account?</b>
+      <br />
+      This will deactivate your account, including any plans that you own.
+      <br />
+      <a href="/home">View my plans</a>
+    </p>
 
-  <p>
-    <b>Are you sure you want to deactivate your account?</b>
-    <br />
-    This will deactivate your account, including any plans that you own.
-    <br />
-    <a href="/home">View my plans</a>
-  </p>
-
-  <form [formGroup]="deleteAccountForm">
-    <mat-form-field>
-      <mat-label>Password</mat-label>
-      <input
-        type="password"
-        required
-        formControlName="currentPassword"
-        matInput />
-    </mat-form-field>
-
-    <div class="button-row">
-      <button
-        mat-raised-button
-        color="warn"
-        (click)="deleteAccount()"
-        [disabled]="disableDeleteButton">
-        DEACTIVATE
-      </button>
-
-      <button mat-raised-button (click)="cancel()">CANCEL</button>
-    </div>
-  </form>
-
-  <p *ngIf="error">{{ error }}</p>
-</div>
+    <form [formGroup]="deleteAccountForm">
+      <mat-form-field>
+        <mat-label>Password</mat-label>
+        <input
+          type="password"
+          required
+          formControlName="currentPassword"
+          matInput />
+      </mat-form-field>
+    </form>
+    <p *ngIf="error">{{ error }}</p>
+  </div>
+</sg-modal>
