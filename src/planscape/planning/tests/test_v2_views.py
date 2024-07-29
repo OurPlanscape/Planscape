@@ -5,6 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
+from planning.geometry import coerce_geometry
 from planning.models import RegionChoices
 from planning.tests.factories import PlanningAreaFactory, UserFactory
 from planning.tests.helpers import (

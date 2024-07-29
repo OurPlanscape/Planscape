@@ -18,6 +18,7 @@ from collaboration.permissions import (
     ScenarioPermission,
     PlanningAreaNotePermission,
 )
+from planning.geometry import get_acreage
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
