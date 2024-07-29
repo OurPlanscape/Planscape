@@ -1,6 +1,6 @@
 import copy
 import json
-from django.contrib.auth.models import User
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
@@ -112,6 +112,26 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(len(scenarios["results"]), 3)
         self.assertIsNotNone(scenarios["results"][0]["created_at"])
         self.assertIsNotNone(scenarios["results"][0]["updated_at"])
+
+    def test_create_from_file(self):
+        test_file_content = b"This is a test file content"
+        test_file = SimpleUploadedFile(
+            "testfile.txt", test_file_content, content_type="text/plain"
+        )
+        self.client.force_authenticate(self.owner_user)
+        payload = {"file": test_file}
+        upload_response = self.client.post(
+            reverse(
+                "planning:scenarios-from-file",
+                kwargs={
+                    "planningarea_pk": self.planning_area.pk,
+                },
+            ),
+            payload,
+            format="multipart",
+        )
+        print(f"response: {upload_response}")
+        self.assertEqual(upload_response.status_code, 200)
 
     def test_toggle_scenario_status(self):
         self.client.force_authenticate(self.owner_user)
