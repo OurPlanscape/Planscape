@@ -137,20 +137,14 @@ def create_planning_area(request: Request) -> Response:
             instance=planning_area, context={"request": request}
         )
         return Response(serializer.data)
-    except ValueError as ve:
-        logger.error(
-            "Invalid geometry while creating a new planning area. Payload has more than one feature."
-        )
+    except InvalidGeometry as invGeom:
+        msg = f"User uploaded invalid geometry.\n{invGeom}"
+        logger.warning(msg)
+        # this error data mirrors what django auto-generates from serializer errors
+        # when we migrate to v2 endpoints, this will be automatically taken care of
+        error_data = {"errors": {"geometry": [msg]}}
         return Response(
-            {"message": f"Error creating planning area: {str(ve)}"},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-    except InvalidGeometry as ve:
-        logger.error(
-            "Invalid geometry while creating a new planning area. Geometry is invalid for some reason."
-        )
-        return Response(
-            {"message": f"Error creating planning area: {str(ve)}"},
+            data=error_data,
             status=status.HTTP_400_BAD_REQUEST,
         )
     except Exception as e:
@@ -199,7 +193,7 @@ def delete_planning_area(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        planning_areas = PlanningArea.objects.get_for_user(user).filter(
+        planning_areas = PlanningArea.objects.list_by_user(user).filter(
             pk__in=planning_area_ids
         )
 
@@ -369,7 +363,7 @@ def list_planning_areas(request: Request) -> Response:
                 {"error": "Authentication Required"},
                 status=status.HTTP_401_UNAUTHORIZED,
             )
-        planning_areas = PlanningArea.objects.get_list_for_user(user)
+        planning_areas = PlanningArea.objects.list_for_api(user)
         serializer = ListPlanningAreaSerializer(
             instance=planning_areas, many=True, context={"request": request}
         )
@@ -953,7 +947,10 @@ class PlanningAreaNotes(APIView):
                 data=note_data, context={"user": user}
             )
             serializer.is_valid(raise_exception=True)
-            if not PlanningAreaNotePermission.can_add(user, serializer.validated_data):
+
+            if not PlanningAreaNotePermission.can_add(
+                user, PlanningAreaNote(**serializer.validated_data)
+            ):
                 return Response(
                     {"error": "Authentication Required"},
                     status=status.HTTP_403_FORBIDDEN,

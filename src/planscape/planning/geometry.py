@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 def coerce_geojson(geojson: Dict[str, Any]) -> GEOSGeometry:
     features = geojson.get("features", [])
     if len(features) > 1 or len(features) == 0:
-        raise ValueError("Must send exactly one feature.")
+        raise InvalidGeometry("Must send exactly one feature.")
     feature = features[0]
     geometry = feature.get("geometry", {}) or {}
     return coerce_geometry(geometry)

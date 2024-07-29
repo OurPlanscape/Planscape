@@ -1,0 +1,54 @@
+<section class="header" *ngIf="hasHeader">
+  <div class="header-title">
+    <mat-icon
+      *ngIf="leadingIcon"
+      class="leading-icon"
+      [ngClass]="leadingIconVariant"
+      >{{ leadingIcon }}</mat-icon
+    >
+    <div>{{ title }}</div>
+  </div>
+  <div class="title-buttons">
+    <button>
+      <mat-icon *ngIf="hasTooltipContent" [matMenuTriggerFor]="tooltipMenu"
+        >help_outline</mat-icon
+      >
+      <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
+        <ng-content class="tooltip-content" select="[tooltipContent]">
+        </ng-content>
+      </mat-menu>
+    </button>
+    <button mat-icon-button (click)="handleCloseButton()" aria-label="close">
+      <mat-icon class="close-btn">close</mat-icon>
+    </button>
+  </div>
+</section>
+<main
+  class="modal-body"
+  [ngClass]="{
+    scrollable: scrollableContent,
+    padded: padBody
+  }">
+  <ng-content select="[modalBodyContent]"> </ng-content>
+</main>
+<section class="footer" *ngIf="hasFooter">
+  <button
+    *ngIf="hasSecondaryButton"
+    sg-button
+    mat-raised-button
+    type="button"
+    [variant]="secondaryButtonVariant"
+    (click)="handleSecondaryButton()">
+    {{ secondaryButtonText }}
+  </button>
+
+  <button
+    sg-button
+    variant="primary"
+    mat-raised-button
+    type="button"
+    [variant]="primaryButtonVariant"
+    (click)="handlePrimaryButton()">
+    {{ primaryButtonText }}
+  </button>
+</section>

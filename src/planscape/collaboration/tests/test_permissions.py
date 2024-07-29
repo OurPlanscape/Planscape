@@ -140,22 +140,22 @@ class PermissionsTest(TestCase):
 
     # Delete scenarios
     def test_creator_can_delete_scenarios(self):
-        self.assertTrue(ScenarioPermission.can_delete(self.user, self.scenario))
+        self.assertTrue(ScenarioPermission.can_remove(self.user, self.scenario))
 
     def test_not_invited_cannot_delete_scenarios(self):
-        self.assertFalse(ScenarioPermission.can_delete(self.invitee, self.scenario))
+        self.assertFalse(ScenarioPermission.can_remove(self.invitee, self.scenario))
 
     def test_viewer_cannot_delete_scenarios(self):
         self.create_collaborator_record(Role.VIEWER)
-        self.assertFalse(ScenarioPermission.can_delete(self.invitee, self.scenario))
+        self.assertFalse(ScenarioPermission.can_remove(self.invitee, self.scenario))
 
     def test_collaborator_cannot_delete_scenarios(self):
         self.create_collaborator_record(Role.COLLABORATOR)
-        self.assertFalse(ScenarioPermission.can_delete(self.invitee, self.scenario))
+        self.assertFalse(ScenarioPermission.can_remove(self.invitee, self.scenario))
 
     def test_owner_cannot_delete_scenarios(self):
         self.create_collaborator_record(Role.OWNER)
-        self.assertFalse(ScenarioPermission.can_delete(self.invitee, self.scenario))
+        self.assertFalse(ScenarioPermission.can_remove(self.invitee, self.scenario))
 
     # View Collaborators
 
@@ -247,30 +247,30 @@ class PermissionsTest(TestCase):
 
     def test_creator_can_delete_collaborators(self):
         self.assertTrue(
-            CollaboratorPermission.can_delete(self.user, self.planning_area)
+            CollaboratorPermission.can_remove(self.user, self.planning_area)
         )
 
     def test_not_invited_cannot_delete_collaborator(self):
         self.assertFalse(
-            CollaboratorPermission.can_delete(self.invitee, self.planning_area)
+            CollaboratorPermission.can_remove(self.invitee, self.planning_area)
         )
 
     def test_viewer_cannot_delete_collaborator(self):
         self.create_collaborator_record(Role.VIEWER)
         self.assertFalse(
-            CollaboratorPermission.can_delete(self.invitee, self.planning_area)
+            CollaboratorPermission.can_remove(self.invitee, self.planning_area)
         )
 
     def test_collaborator_cannot_delete_collaborator(self):
         self.create_collaborator_record(Role.COLLABORATOR)
         self.assertFalse(
-            CollaboratorPermission.can_delete(self.invitee, self.planning_area)
+            CollaboratorPermission.can_remove(self.invitee, self.planning_area)
         )
 
     def test_owner_can_delete_collaborator(self):
         self.create_collaborator_record(Role.OWNER)
         self.assertTrue(
-            CollaboratorPermission.can_delete(self.invitee, self.planning_area)
+            CollaboratorPermission.can_remove(self.invitee, self.planning_area)
         )
 
 
@@ -343,7 +343,7 @@ class PlanningAreaPermisssionsTest(TestCase):
         return user
 
     def test_get_planningareas_for_user(self):
-        areas = PlanningArea.objects.get_for_user(self.invitee)
+        areas = PlanningArea.objects.list_by_user(self.invitee)
         self.assertEqual(len(areas), 4)
 
         view_name = "User Can View This Area"

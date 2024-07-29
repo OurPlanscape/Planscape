@@ -14,6 +14,8 @@ from planning.models import (
     User,
     UserPrefs,
 )
+from planning.services import get_acreage
+from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices
 
 
@@ -72,9 +74,29 @@ class PlanningAreaSerializer(
     ListPlanningAreaSerializer,
     gis_serializers.GeoModelSerializer,
 ):
+    def validate_geometry(self, geometry):
+        if not isinstance(geometry, GEOSGeometry):
+            geometry = GEOSGeometry(
+                geometry,
+                srid=settings.CRS_INTERNAL_REPRESENTATION,
+            )
+
+        if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
+            geometry = geometry.transform(
+                settings.CRS_INTERNAL_REPRESENTATION, clone=True
+            )
+
+        try:
+            geometry = coerce_geometry(geometry)
+        except (InvalidGeometry, ValueError) as valEx:
+            raise serializers.ValidationError(str(valEx))
+
+        return geometry
+
     class Meta:
         fields = (
             "id",
+            "planning_area",
             "user",
             "name",
             "notes",
@@ -109,8 +131,9 @@ class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
 
         try:
             geometry = coerce_geometry(geometry)
-        except ValueError as valEx:
+        except (InvalidGeometry, ValueError) as valEx:
             raise serializers.ValidationError(str(valEx))
+
         return geometry
 
     class Meta:

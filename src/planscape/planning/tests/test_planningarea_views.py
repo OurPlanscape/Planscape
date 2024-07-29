@@ -10,9 +10,8 @@ from collaboration.models import Role, Permissions
 from collaboration.tests.helpers import create_collaborator_record
 from planning.geometry import coerce_geojson
 from planning.models import PlanningArea, Scenario, ScenarioResult, PlanningAreaNote
+from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planning.tests.helpers import (
-    _create_planning_area,
-    _create_scenario,
     _create_test_user_set,
     reset_permissions,
 )
@@ -301,11 +300,15 @@ class DeletePlanningAreaTest(APITransactionTestCase):
         self.unprivileged_user.set_password("12345")
         self.unprivileged_user.save()
 
-        self.planning_area1 = _create_planning_area(
-            self.owner_user, "Owned by owner1-First", None
+        self.planning_area1 = PlanningAreaFactory.create(
+            user=self.owner_user,
+            name="Owned by owner1-First",
+            geometry=None,
         )
-        self.planning_area2 = _create_planning_area(
-            self.owner_user, "Owned by owner1-Second", None
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user,
+            name="Owned by owner1-Second",
+            geometry=None,
         )
         create_collaborator_record(
             self.owner_user, self.collab_user, self.planning_area1, Role.COLLABORATOR
@@ -319,8 +322,10 @@ class DeletePlanningAreaTest(APITransactionTestCase):
         create_collaborator_record(
             self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
         )
-        self.planning_area3 = _create_planning_area(
-            self.owner_user2, "Owned by owner2-First", None
+        self.planning_area3 = PlanningAreaFactory.create(
+            user=self.owner_user2,
+            name="Owned by owner2-First",
+            geometry=None,
         )
         create_collaborator_record(
             self.owner_user, self.collab_user, self.planning_area3, Role.COLLABORATOR
@@ -481,8 +486,11 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.old_name = "Westley"
         self.old_notes = "I know something you don't know."
-        self.planning_area = _create_planning_area(
-            self.owner_user, self.old_name, storable_geometry, self.old_notes
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user,
+            name=self.old_name,
+            geometry=storable_geometry,
+            notes=self.old_notes,
         )
         create_collaborator_record(
             self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
@@ -491,8 +499,8 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "Owned By Owner 2 plan", storable_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2, name="Owned By Owner 2 plan"
         )
         create_collaborator_record(
             self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
@@ -769,8 +777,10 @@ class GetPlanningAreaTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         storable_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "Owned By Owner 1 plan", storable_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user,
+            name="Owned By Owner 1 plan",
+            geometry=storable_geometry,
         )
         create_collaborator_record(
             self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
@@ -779,8 +789,10 @@ class GetPlanningAreaTest(APITransactionTestCase):
             self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "Owned By Owner 2 plan", storable_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2,
+            name="Owned By Owner 2 plan",
+            geometry=storable_geometry,
         )
         create_collaborator_record(
             self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
@@ -897,41 +909,79 @@ class ListPlanningAreaTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area1 = _create_planning_area(
-            self.user, "test plan1", stored_geometry
+        self.planning_area1 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan1",
+            geometry=stored_geometry,
         )
-        self.planning_area2 = _create_planning_area(
-            self.user, "test plan2", stored_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan2",
+            geometry=stored_geometry,
         )
-        self.planning_area3 = _create_planning_area(
-            self.user, "test plan3", stored_geometry
+        self.planning_area3 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan3",
+            geometry=stored_geometry,
         )
-        self.planning_area4 = _create_planning_area(
-            self.user, "test plan4", stored_geometry
+        self.planning_area4 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan4",
+            geometry=stored_geometry,
         )
-        self.planning_area5 = _create_planning_area(
-            self.user, "test plan5", stored_geometry
+        self.planning_area5 = PlanningAreaFactory.create(
+            user=self.user,
+            name="test plan5",
+            geometry=stored_geometry,
         )
-        self.scenario1_1 = _create_scenario(
-            self.planning_area1, "test pa1 scenario1 ", "{}", self.user, ""
+        self.scenario1_1 = ScenarioFactory.create(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario1 ",
+            configuration={},
+            user=self.user,
+            notes="",
         )
-        self.scenario1_2 = _create_scenario(
-            self.planning_area1, "test pa1 scenario2", "{}", self.user, ""
+        self.scenario1_2 = ScenarioFactory.create(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario2",
+            configuration={},
+            user=self.user,
+            notes="",
         )
-        self.scenario1_3 = _create_scenario(
-            self.planning_area1, "test pa1 scenario3", "{}", self.user, ""
+        self.scenario1_3 = ScenarioFactory.create(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario3",
+            configuration={},
+            user=self.user,
+            notes="",
         )
-        self.scenario3_1 = _create_scenario(
-            self.planning_area3, "test pa3 scenario1", "{}", self.user, ""
+        self.scenario3_1 = ScenarioFactory.create(
+            planning_area=self.planning_area3,
+            name="test pa3 scenario1",
+            configuration={},
+            user=self.user,
+            notes="",
         )
-        self.scenario4_1 = _create_scenario(
-            self.planning_area4, "test pa4 scenario1 ", "{}", self.user, ""
+        self.scenario4_1 = ScenarioFactory.create(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario1 ",
+            configuration={},
+            user=self.user,
+            notes="",
         )
-        self.scenario4_2 = _create_scenario(
-            self.planning_area4, "test pa4 scenario2", "{}", self.user, ""
+        self.scenario4_2 = ScenarioFactory.create(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario2",
+            configuration={},
+            user=self.user,
+            notes="",
         )
-        self.scenario4_3 = _create_scenario(
-            self.planning_area4, "test pa4 scenario3", "{}", self.user, ""
+        self.scenario4_3 = ScenarioFactory.create(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario3",
+            configuration={},
+            user=self.user,
+            notes="",
         )
 
         self.user2 = User.objects.create(username="otherowner")
@@ -942,8 +992,10 @@ class ListPlanningAreaTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area6 = _create_planning_area(
-            self.user2, "test plan3", stored_geometry
+        self.planning_area6 = PlanningAreaFactory.create(
+            user=self.user2,
+            name="test plan3",
+            geometry=stored_geometry,
         )
 
         self.emptyuser = User.objects.create(username="emptyuser")
@@ -965,10 +1017,10 @@ class ListPlanningAreaTest(APITransactionTestCase):
         self.assertIsNotNone(planning_areas[0]["created_at"])
 
     def test_list_planning_areas_ordered(self):
-        ## This tests the logic for ordering areas by most recent scenario date,
+        # This tests the logic for ordering areas by most recent scenario date,
         #   or by the plan's most recent update, if it has no scenario
 
-        ## Results follow this logic:
+        # Results follow this logic:
         # plan4 - 2010-12-01 00:01:01-05 -- from most recent scenario
         # plan5 - 2010-11-01 00:01:01-05 -- no scenarios
         # plan3 - 2010-10-01 00:01:01-05 -- from most recent scenario
@@ -1077,14 +1129,20 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
-        self.planning_area_w_collab = _create_planning_area(
-            self.creator_user, "Shared with Collaborator", stored_geometry
+        self.planning_area_w_collab = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Shared with Collaborator",
+            geometry=stored_geometry,
         )
-        self.planning_area_w_viewer = _create_planning_area(
-            self.creator_user, "Area Shared with Viewer", stored_geometry
+        self.planning_area_w_viewer = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Area Shared with Viewer",
+            geometry=stored_geometry,
         )
-        self.planning_area_notshared = _create_planning_area(
-            self.creator_user, "Not Shared Area", stored_geometry
+        self.planning_area_notshared = PlanningAreaFactory.create(
+            user=self.creator_user,
+            name="Not Shared Area",
+            geometry=stored_geometry,
         )
         create_collaborator_record(
             self.creator_user,
@@ -1293,7 +1351,8 @@ class GetPlanningAreaNotes(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         planning_area_notes = response.json()
         self.assertEqual(len(planning_area_notes), 3)
-        # these should be ordered by created_at, latest on top, so we ought to be able to test by index id
+        # these should be ordered by created_at, latest on top
+        # so we ought to be able to test by index id
         self.assertEqual(
             planning_area_notes[0]["content"],
             "Viewer comment, just commenting",
