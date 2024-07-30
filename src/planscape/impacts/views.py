@@ -1,6 +1,7 @@
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema
+from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import TreatmentPlan, TreatmentPrescription
 from impacts.permissions import (
     TreatmentPlanViewPermission,
@@ -35,6 +36,7 @@ class TreatmentPlanViewSet(
         "scenario__planning_area",
         "created_by",
     )
+    filterset_class = TreatmentPlanFilterSet
     permission_classes = [TreatmentPlanViewPermission]
     serializer_class = TreatmentPlanSerializer
     serializer_classes = {

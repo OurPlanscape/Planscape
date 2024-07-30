@@ -2,7 +2,7 @@ from typing import Optional
 from django_filters import rest_framework as filters
 from django.db.models import QuerySet
 from rest_framework.request import Request
-from impacts.models import TreatmentPlanStatus
+from impacts.models import TreatmentPlan, TreatmentPlanStatus
 from planning.models import Scenario
 
 
@@ -29,7 +29,7 @@ class TreatmentPlanFilterSet(filters.FilterSet):
     )
 
     class Meta:
-        model = Scenario
+        model = TreatmentPlan
         fields = (
             "scenario",
             "name",
