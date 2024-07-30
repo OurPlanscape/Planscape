@@ -6,19 +6,21 @@
   (clickedClose)="closeModal()"
   (clickedPrimary)="handleCreateForm()">
   <div modalBodyContent>
-    <div class="modal-alert" *ngIf="alertMessage">
-      <mat-icon>info_filled</mat-icon>
-      Project area(s) must be within the planning area.
-    </div>
-    <div class="upload-scenario-form">
+    <sg-modal-info
+      infoType="info"
+      leadingIcon="info_filled"
+      message="Project area(s) must be within the planning area.">
+    </sg-modal-info>
+    <form [formGroup]="uploadProjectsForm!" class="upload-scenario-form">
       <app-form-message
         [messageType]="FormMessageType.ERROR"
         *ngIf="uploadError"
         title="Upload was unsuccessful"
         message="{{ uploadError }}">
       </app-form-message>
-      <form [formGroup]="uploadProjectsForm!">
-        <div class="field-label">Scenario Name</div>
+
+      <div>
+        <div class="field-label">Scenario name</div>
         <sg-input-field [disabled]="false" class="scenario-input">
           <input
             #inputElement
@@ -28,18 +30,38 @@
             formControlName="scenarioName"
             class="scenario-name-field" />
         </sg-input-field>
+      </div>
 
+      <div>
         <div class="field-label">Upload a project area</div>
-        <sg-file-upload
-          (fileEvent)="handleFileEvent($event)"
-          supportedFileInfo="zip archive must contain DPF, SHP, SPX, CPG, PRJ files." />
-        <div class="field-label">Select a stand size</div>
-        <select name="standSize" formControlName="standSize">
-          <option>Small</option>
-          <option>Medium</option>
-          <option>Large</option>
-        </select>
-      </form>
-    </div>
+        <div class="file-upload-input">
+          <sg-file-upload
+            [uploadStatus]=""
+            (fileEvent)="handleFileEvent($event)"
+            supportedFileInfo="zip archive must contain DPF, SHP, SPX, CPG, PRJ files." />
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">
+          Select a stand size<mat-icon class="stands-info-icon" color="primary"
+            >info_outline</mat-icon
+          >
+        </div>
+        <mat-form-field class="stand-picker-field" appearance="outline">
+          <mat-select panelClass="" name="standSize">
+            <mat-option class="nav-page-item" value="Small"
+              >Small (10 acres)</mat-option
+            >
+            <mat-option class="nav-page-item" value="Medium"
+              >Medium (100 acres)</mat-option
+            >
+            <mat-option class="nav-page-item" value="Large"
+              >Large (?? acres)</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </form>
   </div>
 </sg-modal>

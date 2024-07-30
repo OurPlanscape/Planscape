@@ -68,6 +68,7 @@ export class FileUploadFieldComponent {
   resetFile() {
     this.file = null;
     this.uploadStatus = 'default';
+    this.fileEvent.emit(undefined);
   }
 
   get hasFile() {
