@@ -1,3 +1,4 @@
+from typing import Union
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import QuerySet
@@ -30,11 +31,11 @@ STAND_AREA_ACRES = {
 }
 
 
-def length_from_size(size):
+def length_from_size(size: Union[str | StandSizeChoices]) -> float:
     return STAND_LENGTH_METERS[size]
 
 
-def area_from_size(size):
+def area_from_size(size: Union[str | StandSizeChoices]) -> float:
     return STAND_AREA_ACRES[size]
 
 
