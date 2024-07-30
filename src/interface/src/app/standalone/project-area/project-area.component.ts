@@ -13,6 +13,7 @@ import {
 import { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
+import { MapStandsService } from '../map-stands/map-stands.service';
 
 // possible assignment for  a stand.
 export type StandAssigment =
@@ -53,9 +54,6 @@ export class ProjectAreaComponent implements OnInit {
 
   projectAreaId = 2710;
 
-  selectedStands: number[] = [];
-  private initialSelectedStands: number[] = [];
-
   treatedStands: { id: number; assigment: StandAssigment }[] = [];
 
   mapDragging = false;
@@ -64,25 +62,13 @@ export class ProjectAreaComponent implements OnInit {
   start: MapMouseEvent | null = null;
   end: MapMouseEvent | null = null;
 
-  constructor(private planService: PlanService) {}
+  constructor(
+    private planService: PlanService,
+    private mapStandsService: MapStandsService
+  ) {}
 
   ngOnInit() {
     this.planService.getProjectAreas(2710).subscribe((r) => console.log(r));
-  }
-
-  clickOnStand(standId: any) {
-    this.toggleStands(standId);
-  }
-
-  private toggleStands(id: number) {
-    const selectedStand = this.selectedStands.find((standId) => standId === id);
-    if (selectedStand) {
-      this.selectedStands = this.selectedStands.filter(
-        (selectedStandId) => selectedStandId !== id
-      );
-    } else {
-      this.selectedStands = [...this.selectedStands, id];
-    }
   }
 
   // -----------------------------------------------------------------
@@ -93,13 +79,11 @@ export class ProjectAreaComponent implements OnInit {
     this.isDragging = true;
     this.start = event;
     this.maplibreMap.getCanvas().style.cursor = 'crosshair';
-    this.initialSelectedStands = [...this.selectedStands];
   }
 
   onMapMouseMove(event: MapMouseEvent): void {
     if (!this.isDragging) return;
     this.end = event;
-    this.selectStandsWithinRectangle();
   }
 
   onMapMouseUp(event: MapMouseEvent): void {
@@ -108,46 +92,6 @@ export class ProjectAreaComponent implements OnInit {
     this.maplibreMap.getCanvas().style.cursor = '';
     this.start = null;
     this.end = null;
-  }
-
-  // -----------------------------------------------------------------
-  // Drawing rectangle on page
-  // -----------------------------------------------------------------
-
-  selectStandsWithinRectangle(): void {
-    if (!this.start || !this.end) {
-      return;
-    }
-    const start = [this.start.point.x, this.start.point.y];
-    const end = [this.end.point.x, this.end.point.y];
-
-    const bbox: [[number, number], [number, number]] = [
-      [Math.min(start[0], end[0]), Math.min(start[1], end[1])],
-      [Math.max(start[0], end[0]), Math.max(start[1], end[1])],
-    ];
-    const features = this.maplibreMap.queryRenderedFeatures(bbox, {
-      layers: ['stands-layer'],
-    });
-
-    // this.initialSelectedStands are the stands I have selected before starting the mouse events.
-    // I need to calculate this.selectedStands by adding all the features that landed on the query
-
-    const newStands: number[] = [];
-    let id: any;
-    features.forEach((feature) => {
-      id = feature.properties['id'];
-      const stand = this.initialSelectedStands.find((sId) => sId === id);
-      if (stand) {
-      } else {
-        newStands.push(id);
-      }
-    });
-
-    const combinedStands = new Set([
-      ...this.initialSelectedStands,
-      ...newStands,
-    ]);
-    this.selectedStands = Array.from(combinedStands);
   }
 
   // -----------------------------------------------------------------
@@ -160,20 +104,22 @@ export class ProjectAreaComponent implements OnInit {
 
   // assigning treatment
   assignTreatment(treatment: StandAssigment) {
+    const selectedStands: number[] =
+      this.mapStandsService.selectedStands$.value;
     this.treatedStands = [
       ...this.treatedStands.filter(
-        (treatment) => !this.selectedStands.includes(treatment.id)
+        (treatment) => !selectedStands.includes(treatment.id)
       ),
-      ...this.selectedStands.map((id) => ({
+      ...selectedStands.map((id) => ({
         id: id,
         assigment: treatment,
       })),
     ];
-    this.selectedStands = [];
+    this.mapStandsService.clearStands();
   }
 
   clearTreatments() {
-    this.selectedStands = [];
+    this.mapStandsService.clearStands();
     this.treatedStands = [];
   }
 }

@@ -15,7 +15,7 @@
   type="fill"
   source="stands"
   [paint]="paint"
-  (layerClick)="clickOnLayer($event)"
+  (layerMouseDown)="clickOnLayer($event)"
   sourceLayer="treatment_plan_prescriptions"></mgl-layer>
 
 <mgl-layer
@@ -23,8 +23,12 @@
   type="fill"
   source="stands"
   [paint]="{
-    'fill-color': 'green',
-    'fill-opacity': 0.5
+    'fill-color': '#007dff',
+    'fill-opacity': 0.2
   }"
   sourceLayer="treatment_plan_prescriptions"
-  [filter]="['in', ['get', 'id'], ['literal', selectedStands]]"></mgl-layer>
+  [filter]="[
+    'in',
+    ['get', 'id'],
+    ['literal', selectedStands$ | async]
+  ]"></mgl-layer>

@@ -27,9 +27,9 @@
     <app-map-stands
       [maplibreMap]="maplibreMap"
       [projectAreaId]="projectAreaId"
-      [selectedStands]="selectedStands"
       [treatedStands]="treatedStands"
-      (clickOnStand)="clickOnStand($event)"></app-map-stands>
+      [selectStart]="start ? start.point : null"
+      [selectEnd]="end ? end.point : null"></app-map-stands>
 
     <app-map-rectangle
       [maplibreMap]="maplibreMap"
