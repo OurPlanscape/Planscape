@@ -10,14 +10,9 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import {
-  FilterSpecification,
-  GeoJSONSource,
-  LayerSpecification,
-  Map as MapLibreMap,
-  MapMouseEvent,
-} from 'maplibre-gl';
+import { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 import { Polygon } from 'geojson';
+import { MapStandsComponent } from '../map-stands/map-stands.component';
 
 // possible assignment for  a stand.
 export type StandAssigment =
@@ -45,6 +40,7 @@ export const StandColors: Record<StandAssigment, string> = {
     FeatureComponent,
     DraggableDirective,
     GeoJSONSourceComponent,
+    MapStandsComponent,
   ],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
@@ -78,46 +74,7 @@ export class ProjectAreaComponent implements OnInit {
     this.planService.getProjectAreas(2710).subscribe((r) => console.log(r));
   }
 
-  get vectorLayerUrl() {
-    return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
-  }
-
-  // todo maybe this needs to be a static prop and not a get and manually handle when to update this?
-  get paint(): LayerSpecification['paint'] {
-    return {
-      'fill-outline-color': '#000',
-      'fill-color': this.getFillColors() as any,
-      'fill-opacity': 0.5,
-    };
-  }
-
-  someIds = [1344190, 1344988];
-
-  getFillColors() {
-    const matchExpression: (string | string[] | number)[] = [];
-    matchExpression.push('match');
-    matchExpression.push(['get', 'id']);
-    // match expression requires at least 2 definitions...
-    matchExpression.push(0);
-    matchExpression.push('#00a000');
-    matchExpression.push(1);
-    matchExpression.push('#00a000');
-
-    this.treatedStands.forEach((stand) => {
-      matchExpression.push(stand.id);
-      matchExpression.push(StandColors[stand.assigment]);
-    });
-    matchExpression.push('#00000050');
-    return matchExpression;
-  }
-
-  clickOnStand(event: any) {
-    console.log('clicked');
-    const features = this.maplibreMap.queryRenderedFeatures(event.point, {
-      layers: ['stands-layer'],
-    });
-
-    const standId = features[0].properties['id'];
+  clickOnStand(standId: any) {
     this.toggleStands(standId);
   }
 
@@ -222,10 +179,6 @@ export class ProjectAreaComponent implements OnInit {
       ...newStands,
     ]);
     this.selectedStands = Array.from(combinedStands);
-  }
-
-  get mapFilter(): FilterSpecification {
-    return ['in', ['get', 'id'], ['literal', this.selectedStands]];
   }
 
   // -----------------------------------------------------------------

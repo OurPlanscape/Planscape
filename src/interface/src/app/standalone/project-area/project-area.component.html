@@ -24,38 +24,12 @@
     (mapMouseDown)="onMapMouseDown($event)"
     (mapMouseMove)="onMapMouseMove($event)"
     (mapMouseUp)="onMapMouseUp($event)">
-    <mgl-vector-source
-      id="stands"
-      [tiles]="[vectorLayerUrl]"></mgl-vector-source>
-
-    <mgl-layer
-      id="outline-layer"
-      type="line"
-      source="stands"
-      [paint]="{
-        'line-color': 'black',
-        'line-width': 3
-      }"
-      sourceLayer="project_area_outline"></mgl-layer>
-
-    <mgl-layer
-      id="stands-layer"
-      type="fill"
-      source="stands"
-      [paint]="paint"
-      sourceLayer="treatment_plan_prescriptions"
-      (layerClick)="clickOnStand($event)"></mgl-layer>
-
-    <mgl-layer
-      id="stands-layer-selected"
-      type="fill"
-      source="stands"
-      [paint]="{
-        'fill-color': 'green',
-        'fill-opacity': 0.5
-      }"
-      sourceLayer="treatment_plan_prescriptions"
-      [filter]="mapFilter"></mgl-layer>
+    <app-map-stands
+      [maplibreMap]="maplibreMap"
+      [projectAreaId]="projectAreaId"
+      [selectedStands]="selectedStands"
+      [treatedStands]="treatedStands"
+      (clickOnStand)="clickOnStand($event)"></app-map-stands>
 
     <mgl-geojson-source id="rectangle-source">
       <mgl-feature [geometry]="rectangleGeometry"></mgl-feature>
