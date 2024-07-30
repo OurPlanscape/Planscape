@@ -5,6 +5,7 @@ import {
   FormsModule,
   FormBuilder,
   Validators,
+  ReactiveFormsModule,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -42,24 +43,64 @@ export interface DialogData {
     MatIconModule,
     NgIf,
     SharedModule,
+    ReactiveFormsModule,
   ],
 })
 export class UploadProjectAreasModalComponent {
   uploadProjectsForm: FormGroup;
   planning_area_name = 'Planning Area';
-  uploadError?: string | null =
-    'Invalid file format. Please upload again using the following format: DBF, SHP, SHX, CPG, PRJ.';
+  file: File | null = null;
+  uploadError?: string | null = null;
+  alertMessage?: string | null = null;
+
   readonly FormMessageType = FormMessageType;
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
   constructor(private fb: FormBuilder) {
     this.uploadProjectsForm = this.fb.group({
-      currentPassword: this.fb.control('', [Validators.required]),
+      scenarioName: this.fb.control('', [Validators.required]),
+      standSize: this.fb.control(''),
     });
+  }
+
+  handleFileEvent(file: File): void {
+    this.uploadError = null;
+
+    if (file) {
+      console.log('we got a file:', file);
+      this.file = file;
+      this.uploadProjectsForm.patchValue({ file: file });
+    } else {
+      this.uploadError = 'Could not upload file.';
+    }
   }
 
   closeModal(): void {
     this.dialogRef.close();
+  }
+
+  handleCreateForm() {
+    console.log('form:', this.uploadProjectsForm);
+    if (this.file) {
+      const formData = new FormData();
+
+      // Append file data
+      formData.append('file', this.file, this.file.name);
+
+      // Append additional form data
+      formData.append(
+        'scenarioName',
+        this.uploadProjectsForm.get('scenarioName')?.value
+      );
+      formData.append(
+        'standSize',
+        this.uploadProjectsForm.get('standSize')?.value
+      );
+
+      console.log('here is the formdata now:', formData);
+    } else {
+      this.uploadError = 'A file was not uploaded.';
+    }
   }
 }

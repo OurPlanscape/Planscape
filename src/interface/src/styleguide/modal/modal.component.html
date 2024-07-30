@@ -23,9 +23,7 @@
     </button>
   </div>
 </section>
-  [ngClass]="{
-    padded: padBody
-  }">
+<main [ngClass]="{ padded: padBody }">
   <ng-content select="[modalBodyContent]"> </ng-content>
 </main>
 <section class="footer" *ngIf="hasFooter">
