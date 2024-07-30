@@ -33,7 +33,7 @@
 
     <app-map-rectangle
       [maplibreMap]="maplibreMap"
-      [start]="selectStart"
-      [end]="selectEnd"></app-map-rectangle>
+      [start]="start ? start.lngLat : null"
+      [end]="end ? end.lngLat : null"></app-map-rectangle>
   </mgl-map>
 </section>

@@ -10,7 +10,7 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import { LngLat, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
+import { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 
@@ -61,11 +61,8 @@ export class ProjectAreaComponent implements OnInit {
   mapDragging = false;
 
   private isDragging = false;
-  private start: MapMouseEvent | null = null;
-  private end: MapMouseEvent | null = null;
-
-  public selectStart: LngLat | null = null;
-  public selectEnd: LngLat | null = null;
+  start: MapMouseEvent | null = null;
+  end: MapMouseEvent | null = null;
 
   constructor(private planService: PlanService) {}
 
@@ -102,7 +99,6 @@ export class ProjectAreaComponent implements OnInit {
   onMapMouseMove(event: MapMouseEvent): void {
     if (!this.isDragging) return;
     this.end = event;
-    this.updateRectangleSource();
     this.selectStandsWithinRectangle();
   }
 
@@ -112,26 +108,11 @@ export class ProjectAreaComponent implements OnInit {
     this.maplibreMap.getCanvas().style.cursor = '';
     this.start = null;
     this.end = null;
-    this.clearRectangle();
   }
 
   // -----------------------------------------------------------------
   // Drawing rectangle on page
   // -----------------------------------------------------------------
-
-  updateRectangleSource(): void {
-    if (!this.start || !this.end) {
-      return;
-    }
-    this.selectStart = this.start.lngLat;
-    this.selectEnd = this.end.lngLat;
-  }
-
-  clearRectangle(): void {
-    this.selectStart = null;
-    this.selectEnd = null;
-    //  this.updateRectangleGeometry([[]]);
-  }
 
   selectStandsWithinRectangle(): void {
     if (!this.start || !this.end) {
