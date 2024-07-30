@@ -3,7 +3,13 @@ from pathlib import Path
 from typing import Optional, Type
 
 from collaboration.models import UserObjectRole
-from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin, UUIDMixin
+from core.models import (
+    AliveObjectsManager,
+    CreatedAtMixin,
+    DeletedAtMixin,
+    UpdatedAtMixin,
+    UUIDMixin,
+)
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
@@ -17,7 +23,7 @@ from utils.uuid_utils import generate_short_uuid
 User = get_user_model()
 
 
-class PlanningAreaManager(models.Manager):
+class PlanningAreaManager(AliveObjectsManager):
     def list_by_user(self, user: UserType) -> QuerySet:
         content_type_pk = ContentType.objects.get(model="planningarea").pk
         qs = super().get_queryset()
@@ -51,15 +57,13 @@ class RegionChoices(models.TextChoices):
     NORTHERN_CALIFORNIA = "northern-california", "Northern California"
 
 
-class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
+class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     user = models.ForeignKey(
         User,
         related_name="planning_areas",
         on_delete=models.CASCADE,
         null=True,
     )
-
-    objects = PlanningAreaManager()
 
     region_name: models.CharField = models.CharField(
         max_length=120, choices=RegionChoices.choices
@@ -76,6 +80,8 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     def creator_name(self):
         return self.user.get_full_name()
+
+    objects = PlanningAreaManager()
 
     class Meta:
         indexes = [
@@ -137,7 +143,7 @@ class ScenarioResultStatus(models.TextChoices):
     TIMED_OUT = "TIMED_OUT", "Timed Out"
 
 
-class ScenarioManager(models.Manager):
+class ScenarioManager(AliveObjectsManager):
     def list_by_user(self, user: Optional[UserType]):
         if not user:
             return self.get_queryset().none()
@@ -148,7 +154,7 @@ class ScenarioManager(models.Manager):
         return self.get_queryset().filter(planning_area__id__in=planning_areas)
 
 
-class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
+class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     planning_area = models.ForeignKey(
         PlanningArea,
         related_name="scenarios",
@@ -202,7 +208,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, models.Model):
         ordering = ["planning_area", "-created_at"]
 
 
-class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, models.Model):
+class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     scenario = models.OneToOneField(
         Scenario,
         related_name="results",
