@@ -10,9 +10,9 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import { GeoJSONSource, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
-import { Polygon } from 'geojson';
+import { LngLat, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
+import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 
 // possible assignment for  a stand.
 export type StandAssigment =
@@ -41,6 +41,7 @@ export const StandColors: Record<StandAssigment, string> = {
     DraggableDirective,
     GeoJSONSourceComponent,
     MapStandsComponent,
+    MapRectangleComponent,
   ],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
@@ -59,14 +60,12 @@ export class ProjectAreaComponent implements OnInit {
 
   mapDragging = false;
 
-  rectangleGeometry: Polygon = {
-    type: 'Polygon',
-    coordinates: [[]],
-  };
-
   private isDragging = false;
   private start: MapMouseEvent | null = null;
   private end: MapMouseEvent | null = null;
+
+  public selectStart: LngLat | null = null;
+  public selectEnd: LngLat | null = null;
 
   constructor(private planService: PlanService) {}
 
@@ -124,23 +123,14 @@ export class ProjectAreaComponent implements OnInit {
     if (!this.start || !this.end) {
       return;
     }
-    const start = [this.start.lngLat.lng, this.start.lngLat.lat];
-    const end = [this.end.lngLat.lng, this.end.lngLat.lat];
-    this.updateRectangleGeometry([
-      [start, [start[0], end[1]], end, [end[0], start[1]], start],
-    ]);
+    this.selectStart = this.start.lngLat;
+    this.selectEnd = this.end.lngLat;
   }
 
   clearRectangle(): void {
-    this.updateRectangleGeometry([[]]);
-  }
-
-  // todo maybe I can use a get() here and avoid this?
-  private updateRectangleGeometry(cords: number[][][]) {
-    this.rectangleGeometry.coordinates = cords;
-    (this.maplibreMap.getSource('rectangle-source') as GeoJSONSource)?.setData(
-      this.rectangleGeometry
-    );
+    this.selectStart = null;
+    this.selectEnd = null;
+    //  this.updateRectangleGeometry([[]]);
   }
 
   selectStandsWithinRectangle(): void {
