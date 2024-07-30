@@ -25,6 +25,7 @@
             sgInput
             placeholder="Scenario Name"
             name="scenarioName"
+            formControlName="scenarioName"
             class="scenario-name-field" />
         </sg-input-field>
 
@@ -33,7 +34,7 @@
           (fileEvent)="handleFileEvent($event)"
           supportedFileInfo="zip archive must contain DPF, SHP, SPX, CPG, PRJ files." />
         <div class="field-label">Select a stand size</div>
-        <select name="standSize">
+        <select name="standSize" formControlName="standSize">
           <option>Small</option>
           <option>Medium</option>
           <option>Large</option>
