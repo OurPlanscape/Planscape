@@ -1,7 +1,6 @@
 from typing import Optional
 from django_filters import rest_framework as filters
 from django.db.models import QuerySet
-from django.conf import settings
 from rest_framework.request import Request
 from impacts.models import TreatmentPlanStatus
 from planning.models import Scenario

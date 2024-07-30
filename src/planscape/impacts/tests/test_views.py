@@ -19,7 +19,7 @@ class TxPlanViewSetTest(APITransactionTestCase):
 
     def test_create_tx_plan_returns_201(self):
         self.client.force_authenticate(user=self.scenario.user)
-        payload = {"scenario": str(self.scenario.uuid), "name": "my cool name"}
+        payload = {"scenario": str(self.scenario.pk), "name": "my cool name"}
         response = self.client.post(
             reverse("api:impacts:tx-plans-list"),
             data=payload,
