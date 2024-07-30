@@ -140,26 +140,26 @@ class TreatmentPrescription(
     created_by = models.ForeignKey(
         User,
         related_name="created_tx_prescriptions",
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
     )
 
     updated_by = models.ForeignKey(
         User,
         related_name="updated_tx_prescriptions",
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
     )
 
     treatment_plan = models.ForeignKey(
         TreatmentPlan,
         related_name="tx_prescriptions",
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
         null=True,
     )
 
     project_area = models.ForeignKey(
         ProjectArea,
         related_name="tx_prescriptions",
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
     )
 
     type = models.CharField(

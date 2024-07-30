@@ -105,7 +105,11 @@ class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
         on_delete=models.CASCADE,
     )
     user = models.ForeignKey(
-        User, related_name="notes", on_delete=models.SET_NULL, null=True, blank=True
+        User,
+        related_name="notes",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
     )
     content = models.TextField(null=True)
 
@@ -269,13 +273,13 @@ class ProjectArea(
     created_by = models.ForeignKey(
         User,
         related_name="project_areas",
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
     )
 
     scenario = models.ForeignKey(
         Scenario,
         related_name="project_areas",
-        on_delete=models.RESTRICT,
+        on_delete=models.CASCADE,
     )
 
     name = models.CharField(max_length=128)
