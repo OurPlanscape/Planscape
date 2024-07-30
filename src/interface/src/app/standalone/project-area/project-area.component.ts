@@ -97,8 +97,6 @@ export class ProjectAreaComponent implements OnInit {
     this.isDragging = true;
     this.start = event;
     this.maplibreMap.getCanvas().style.cursor = 'crosshair';
-    // TODO
-    // save initialSelectedStands
     this.initialSelectedStands = [...this.selectedStands];
   }
 

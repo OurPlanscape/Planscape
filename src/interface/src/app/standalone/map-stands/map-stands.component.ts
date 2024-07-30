@@ -9,11 +9,7 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import {
-  FilterSpecification,
-  LayerSpecification,
-  Map as MapLibreMap,
-} from 'maplibre-gl';
+import { LayerSpecification, Map as MapLibreMap } from 'maplibre-gl';
 import {
   StandAssigment,
   StandColors,
@@ -36,10 +32,6 @@ export class MapStandsComponent {
 
   @Output() clickOnStand = new EventEmitter();
 
-  get mapFilter(): FilterSpecification {
-    return ['in', ['get', 'id'], ['literal', this.selectedStands]];
-  }
-
   get vectorLayerUrl() {
     return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
   }
@@ -53,13 +45,12 @@ export class MapStandsComponent {
     this.clickOnStand.emit(standId);
   }
 
-  get paint(): LayerSpecification['paint'] {
-    return {
-      'fill-outline-color': '#000',
-      'fill-color': this.getFillColors() as any,
-      'fill-opacity': 0.5,
-    };
-  }
+  // update and change only when needed.
+  paint: LayerSpecification['paint'] = {
+    'fill-outline-color': '#000',
+    'fill-color': this.getFillColors() as any,
+    'fill-opacity': 0.5,
+  };
 
   getFillColors() {
     const matchExpression: (string | string[] | number)[] = [];
@@ -81,8 +72,13 @@ export class MapStandsComponent {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['selectedStands']) {
-      //redraw
+    if (changes['treatedStands']) {
+      // update map filter
+      this.paint = {
+        'fill-outline-color': '#000',
+        'fill-color': this.getFillColors() as any,
+        'fill-opacity': 0.5,
+      };
     }
     // changes.prop contains the old and the new value...
   }

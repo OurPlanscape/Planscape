@@ -27,4 +27,4 @@
     'fill-opacity': 0.5
   }"
   sourceLayer="treatment_plan_prescriptions"
-  [filter]="mapFilter"></mgl-layer>
+  [filter]="['in', ['get', 'id'], ['literal', selectedStands]]"></mgl-layer>
