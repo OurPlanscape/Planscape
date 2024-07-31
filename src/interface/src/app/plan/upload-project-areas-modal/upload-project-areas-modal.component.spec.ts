@@ -8,10 +8,9 @@ describe('UploadProjectAreasModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UploadProjectAreasModalComponent]
-    })
-    .compileComponents();
-    
+      imports: [UploadProjectAreasModalComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(UploadProjectAreasModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
