@@ -126,9 +126,64 @@ def create_scenario_from_upload(
     scenario = Scenario.objects.create(
         planning_area=planningarea, name=scenario_name, user=user
     )
+
+    # TODO: refactor
+    # ALSO TODO: what other configs do we need to set as default?
+    # or should we use a different serializer for validation?
+
     scenario.configuration["stand_size"] = stand_size
+    scenario.configuration["weights"] = []
+    scenario.configuration["est_cost"] = 1
+    scenario.configuration["excluded_areas"] = []
+    scenario.configuration["stand_thresholds"] = []
+    scenario.configuration["global_thresholds"] = []
+    scenario.configuration["scenario_priorities"] = [
+        "probability_of_fire_severity_high"
+    ]
+    # TODO: we shouldn't hardcode this
+    scenario.configuration["max_treatment_area_ratio"] = 100
+    scenario.configuration["scenario_output_fields"] = [
+        "probability_of_fire_severity_high",
+        "total_fuel_exposed_to_fire",
+        "dead_and_down_carbon",
+        "structure_exposure",
+        "damage_potential_wui",
+        "standing_dead_and_ladder_fuels",
+        "available_standing_biomass",
+        "sawtimber_biomass",
+        "california_spotted_owl_habitat",
+    ]
+
+    # {
+    #     "weights": [],
+    #     "est_cost": 2470.0,
+    #     "max_slope": 100.0,
+    #     "stand_size": "LARGE",
+    #     "question_id": 1,
+    #     "excluded_areas": [],
+    #     "stand_thresholds": ["probability_of_fire_severity_high > 0"],
+    #     "global_thresholds": [],
+    #     "scenario_priorities": ["probability_of_fire_severity_high"],
+    #     "min_distance_from_road": null,
+    # "scenario_output_fields": [
+    #     "probability_of_fire_severity_high",
+    #     "total_fuel_exposed_to_fire",
+    #     "dead_and_down_carbon",
+    #     "structure_exposure",
+    #     "damage_potential_wui",
+    #     "standing_dead_and_ladder_fuels",
+    #     "available_standing_biomass",
+    #     "sawtimber_biomass",
+    #     "california_spotted_owl_habitat",
+    # ],
+    #     "max_treatment_area_ratio": 800000.0,
+    # }
+    scenario.status = ScenarioStatus.ACTIVE
+
     scenario.save()
     scenario_result = ScenarioResult.objects.create(scenario=scenario)
+    # TODO: and here? should this be default?
+    scenario_result.status = ScenarioResultStatus.SUCCESS
     scenario_result.save()
 
     action.send(

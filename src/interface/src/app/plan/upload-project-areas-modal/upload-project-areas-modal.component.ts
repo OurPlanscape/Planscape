@@ -156,6 +156,9 @@ export class UploadProjectAreasModalComponent {
         .subscribe({
           next: (response) => {
             console.log('Successful response!:', response);
+            this.closeModal();
+            // TODO: show...some sort of successful feedback?
+            //  navigate to the scenario page?
           },
           error: (err) => {
             if (err.error) {
