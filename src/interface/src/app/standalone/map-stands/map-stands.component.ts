@@ -3,12 +3,17 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { LayerSpecification, Map as MapLibreMap, Point } from 'maplibre-gl';
+import {
+  LayerSpecification,
+  Map as MapLibreMap,
+  MapMouseEvent,
+  Point,
+} from 'maplibre-gl';
 import {
   StandAssigment,
   StandColors,
 } from '../project-area/project-area.component';
-import { MapStandsService } from './map-stands.service';
+import { SelectedStandsState } from './selected-stands.state';
 import { AsyncPipe } from '@angular/common';
 
 @Component({
@@ -25,11 +30,11 @@ export class MapStandsComponent {
   @Input() selectEnd!: Point | null;
 
   selectedStands$ = this.mapStandsService.selectedStands$;
-  @Input() treatedStands: { id: number; assigment: StandAssigment }[] = [];
-
   private initialSelectedStands: number[] = [];
 
-  constructor(private mapStandsService: MapStandsService) {}
+  @Input() treatedStands: { id: number; assigment: StandAssigment }[] = [];
+
+  constructor(private mapStandsService: SelectedStandsState) {}
 
   get vectorLayerUrl() {
     return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=${this.projectAreaId}`;
@@ -39,7 +44,11 @@ export class MapStandsComponent {
     this.mapStandsService.updateSelectedStands(selectedStands);
   }
 
-  clickOnLayer(event: any) {
+  clickOnLayer(event: MapMouseEvent) {
+    if (event.originalEvent.button === 2) {
+      return;
+    }
+
     const features = this.maplibreMap.queryRenderedFeatures(event.point, {
       layers: ['stands-layer'],
     });
@@ -56,20 +65,19 @@ export class MapStandsComponent {
   };
 
   getFillColors() {
-    const matchExpression: (string | string[] | number)[] = [];
-    matchExpression.push('match');
-    matchExpression.push(['get', 'id']);
-    // match expression requires at least 2 definitions...
-    matchExpression.push(0);
-    matchExpression.push('#00a000');
-    matchExpression.push(1);
-    matchExpression.push('#00a000');
+    const defaultColor = '#00000050';
+    if (this.treatedStands.length === 0) {
+      return defaultColor;
+    }
+    const matchExpression: (number | string | string[])[] = [
+      'match',
+      ['get', 'id'],
+    ];
 
     this.treatedStands.forEach((stand) => {
-      matchExpression.push(stand.id);
-      matchExpression.push(StandColors[stand.assigment]);
+      matchExpression.push(stand.id, StandColors[stand.assigment]);
     });
-    matchExpression.push('#00000050');
+    matchExpression.push(defaultColor);
 
     return matchExpression;
   }
@@ -77,17 +85,12 @@ export class MapStandsComponent {
   selectStandsWithinRectangle(): void {
     if (!this.selectStart || !this.selectEnd) {
       this.initialSelectedStands = [
-        ...this.mapStandsService.selectedStands$.value,
+        ...this.mapStandsService.getSelectedStands(),
       ];
       return;
     }
-    const start = [this.selectStart.x, this.selectStart.y];
-    const end = [this.selectEnd.x, this.selectEnd.y];
 
-    const bbox: [[number, number], [number, number]] = [
-      [Math.min(start[0], end[0]), Math.min(start[1], end[1])],
-      [Math.max(start[0], end[0]), Math.max(start[1], end[1])],
-    ];
+    const bbox = this.getBoundingBox(this.selectStart, this.selectEnd);
     const features = this.maplibreMap.queryRenderedFeatures(bbox, {
       layers: ['stands-layer'],
     });
@@ -111,7 +114,20 @@ export class MapStandsComponent {
     this.updateSelectedStands(Array.from(combinedStands));
   }
 
+  private getBoundingBox(
+    startPoint: Point,
+    endPoint: Point
+  ): [[number, number], [number, number]] {
+    const start = [startPoint.x, startPoint.y];
+    const end = [endPoint.x, endPoint.y];
+    return [
+      [Math.min(start[0], end[0]), Math.min(start[1], end[1])],
+      [Math.max(start[0], end[0]), Math.max(start[1], end[1])],
+    ];
+  }
+
   ngOnChanges(changes: SimpleChanges) {
+    // update map colors when the treatedStands change
     if (changes['treatedStands']) {
       // update map filter
       this.paint = {
@@ -120,7 +136,7 @@ export class MapStandsComponent {
         'fill-opacity': 0.5,
       };
     }
-
+    // finds selected stands when the select bounding box changes
     if (changes['selectStart'] || changes['selectEnd']) {
       //select stands
       this.selectStandsWithinRectangle();

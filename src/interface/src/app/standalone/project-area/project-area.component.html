@@ -1,5 +1,3 @@
-<section>Selected Stands:</section>
-
 <div>
   <button (click)="toggleMapDrag()">
     Toggle map drag {{ mapDragging ? 'off' : 'on' }}
@@ -20,7 +18,9 @@
     [zoom]="[7]"
     [center]="[-122.5, 37]"
     [dragPan]="mapDragging"
+    [boxZoom]="false"
     [interactive]="true"
+    [pitchWithRotate]="false"
     (mapMouseDown)="onMapMouseDown($event)"
     (mapMouseMove)="onMapMouseMove($event)"
     (mapMouseUp)="onMapMouseUp($event)">

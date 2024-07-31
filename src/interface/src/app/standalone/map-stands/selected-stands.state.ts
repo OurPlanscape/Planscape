@@ -1,22 +1,23 @@
-import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 
-@Injectable({
-  providedIn: 'root',
-})
-export class MapStandsService {
-  selectedStands$ = new BehaviorSubject<number[]>([]);
+export class SelectedStandsState {
+  private _selectedStands$ = new BehaviorSubject<number[]>([]);
+  selectedStands$ = this._selectedStands$.asObservable();
 
   updateSelectedStands(stands: number[]) {
-    this.selectedStands$.next(stands);
+    this._selectedStands$.next(stands);
   }
 
   clearStands() {
-    this.selectedStands$.next([]);
+    this._selectedStands$.next([]);
+  }
+
+  getSelectedStands() {
+    return this._selectedStands$.value;
   }
 
   toggleStand(id: number) {
-    const selectedStands = this.selectedStands$.value;
+    const selectedStands = this.getSelectedStands();
     const selectedStand = selectedStands.find((standId) => standId === id);
     if (selectedStand) {
       this.updateSelectedStands(
@@ -26,6 +27,4 @@ export class MapStandsService {
       this.updateSelectedStands([...selectedStands, id]);
     }
   }
-
-  constructor() {}
 }
