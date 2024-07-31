@@ -554,8 +554,8 @@ export class MapManager {
       environment.tile_endpoint + region + '/wms?',
       {
         layers: region + layer,
-        minZoom: 7,
-        maxZoom: 13,
+        minZoom: FrontendConstants.MAP_MIN_ZOOM,
+        maxZoom: FrontendConstants.MAP_MAX_ZOOM,
         format: 'image/png',
         transparent: true,
         opacity:
