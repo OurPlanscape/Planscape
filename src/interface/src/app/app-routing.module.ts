@@ -15,6 +15,7 @@ import {
   redirectResolver,
 } from '@services';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
+import { ProjectAreaComponent } from './standalone/project-area/project-area.component';
 
 const routes: Routes = [
   {
@@ -114,6 +115,12 @@ const routes: Routes = [
         path: 'account',
         loadChildren: () =>
           import('./account/account.module').then((m) => m.AccountModule),
+      },
+      {
+        path: 'areas/:id',
+        title: 'Project Areas',
+        component: ProjectAreaComponent,
+        canActivate: [AuthGuard],
       },
     ],
   },
