@@ -21,15 +21,18 @@ class TxPrescriptionProjectAreaSerializer(serializers.ModelSerializer):
         )
 
 
-class CreateTreatmentPlanSerializer(serializers.Serializer):
+class CreateTreatmentPlanSerializer(serializers.ModelSerializer):
     created_by = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
-    scenario = UUIDRelatedField(
-        uuid_field="uuid",
-        queryset=Scenario.objects.all(),
-    )
-    name = serializers.CharField()
+
+    class Meta:
+        model = TreatmentPlan
+        fields = (
+            "created_by",
+            "scenario",
+            "name",
+        )
 
 
 class TreatmentPlanSerializer(serializers.ModelSerializer):

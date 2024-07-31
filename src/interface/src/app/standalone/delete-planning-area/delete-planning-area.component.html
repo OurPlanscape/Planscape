@@ -1,0 +1,14 @@
+<sg-modal
+  [title]="'Delete planning area ' + data.name"
+  primaryButtonVariant="negative"
+  primaryButtonText="Delete"
+  [showBorders]="false"
+  (clickedClose)="clickedClose($event)"
+  (clickedPrimary)="clickedPrimary($event)"
+  (clickedSecondary)="clickedClose($event)">
+  <div modalBodyContent class="padded">
+    Are you sure you want to delete this planning area? All scenarios of this
+    planning area will be permanently deleted, and users who have access to this
+    planning area will lose the access.
+  </div>
+</sg-modal>
