@@ -209,6 +209,7 @@ export class SavedScenariosComponent implements OnInit {
       .open(UploadProjectAreasModalComponent, {
         data: {
           planning_area_name: this.plan?.name,
+          planId: this.plan?.id,
         },
       })
       .afterClosed()

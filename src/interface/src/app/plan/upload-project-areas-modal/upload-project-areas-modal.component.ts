@@ -21,8 +21,15 @@ import { ButtonComponent, InputFieldComponent } from '@styleguide';
 import { FileUploadFieldComponent } from '../../../styleguide/file-upload-field/file-upload-field.component';
 import { SharedModule } from '../../shared/shared.module';
 import { FormMessageType } from '@types';
+import { GeoJsonObject } from 'geojson';
+import { PlanService } from '@services';
+import { take } from 'rxjs';
+
+import * as shp from 'shpjs';
+
 export interface DialogData {
   planning_area_name: string;
+  planId: string;
 }
 
 @Component({
@@ -52,12 +59,15 @@ export class UploadProjectAreasModalComponent {
   file: File | null = null;
   uploadError?: string | null = null;
   alertMessage?: string | null = null;
-
+  geometries: GeoJsonObject | null = null;
   readonly FormMessageType = FormMessageType;
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private planService: PlanService
+  ) {
     this.uploadProjectsForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
       standSize: this.fb.control(''),
@@ -71,17 +81,48 @@ export class UploadProjectAreasModalComponent {
       console.log('we got a file:', file);
       this.file = file;
       this.uploadProjectsForm.patchValue({ file: file });
+      this.convertToGeoJson(this.file);
     } else {
       this.uploadError = 'Could not upload file.';
     }
+  }
+
+  canSubmit(): boolean {
+    return this.uploadProjectsForm.valid && this.geometries !== null;
   }
 
   closeModal(): void {
     this.dialogRef.close();
   }
 
+  async convertToGeoJson(file: File) {
+    const reader = new FileReader();
+    //TODO: account for wrong file type, as well as other errors
+    const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
+      reader.onload = () => {
+        resolve(reader.result as ArrayBuffer);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+    try {
+      const geojson = (await shp.parseZip(
+        fileAsArrayBuffer
+      )) as GeoJSON.GeoJSON;
+      if (geojson.type == 'FeatureCollection') {
+        this.geometries = geojson;
+        console.log('we have some gemoetries:', this.geometries);
+      } else {
+        this.uploadError = 'The file cannot be converted to GeoJSON.';
+      }
+    } catch (e) {
+      this.uploadError =
+        'The zip file does not appear to contain a valid shapefile.';
+    }
+  }
+
   handleCreateForm() {
     console.log('form:', this.uploadProjectsForm);
+    console.log('do we have any dialog data?', this.data.planId);
     if (this.file) {
       const formData = new FormData();
 
@@ -97,10 +138,32 @@ export class UploadProjectAreasModalComponent {
         'standSize',
         this.uploadProjectsForm.get('standSize')?.value
       );
-
-      console.log('here is the formdata now:', formData);
     } else {
       this.uploadError = 'A file was not uploaded.';
+    }
+    this.uploadData();
+  }
+
+  uploadData() {
+    if (this.geometries !== null) {
+      console.log('uploading data:', this.geometries);
+
+      this.planService
+        .uploadGeometryForNewScenario(
+          this.geometries,
+          this.uploadProjectsForm.get('scenarioName')?.value,
+          this.uploadProjectsForm.get('standSize')?.value,
+          this.data.planId
+        )
+        .pipe(take(1))
+        .subscribe({
+          next: (data) => {
+            console.log('we got some data:', data);
+          },
+          error: (err) => {
+            console.log('there was a terrible error: ', err);
+          },
+        });
     }
   }
 }

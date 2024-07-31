@@ -1,6 +1,7 @@
 <sg-modal
   title="Upload Scenario to &ldquo;{{ data.planning_area_name }}&rdquo;"
   primaryButtonText="Create"
+  [primaryButtonEnabled]="canSubmit()"
   secondaryButtonText="Cancel"
   (clickedSecondary)="closeModal()"
   (clickedClose)="closeModal()"
