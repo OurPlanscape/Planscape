@@ -154,8 +154,8 @@ export class UploadProjectAreasModalComponent {
         )
         .pipe(take(1))
         .subscribe({
-          next: (data) => {
-            console.log('we got some data:', data);
+          next: (response) => {
+            console.log('Successful response!:', response);
           },
           error: (err) => {
             if (err.error) {

@@ -154,8 +154,8 @@ export class PlanService {
       ),
       {
         geometry: shape,
-        scenarioName: scenarioName,
-        standSize: standSize,
+        name: scenarioName,
+        stand_size: standSize,
       },
       {
         withCredentials: true,
