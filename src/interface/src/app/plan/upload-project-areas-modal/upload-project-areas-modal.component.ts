@@ -135,8 +135,6 @@ export class UploadProjectAreasModalComponent {
   }
 
   handleCreateForm() {
-    console.log('form:', this.uploadProjectsForm);
-    console.log('do we have any dialog data?', this.data.planId);
     if (this.file) {
       const formData = new FormData();
 
@@ -176,7 +174,6 @@ export class UploadProjectAreasModalComponent {
         .pipe(take(1))
         .subscribe({
           next: (response) => {
-            console.log('Successful response!:', response);
             this.closeModal();
             // TODO: show...some sort of successful feedback?
             //  navigate to the scenario page?
