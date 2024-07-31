@@ -31,6 +31,7 @@
     *ngIf="hasSecondaryButton"
     sg-button
     mat-raised-button
+    enabled="secondaryButtonEnabled |  async"
     type="button"
     [variant]="secondaryButtonVariant"
     (click)="handleSecondaryButton()">
@@ -41,6 +42,7 @@
     sg-button
     variant="primary"
     mat-raised-button
+    [disabled]="!primaryButtonEnabled"
     type="button"
     [variant]="primaryButtonVariant"
     (click)="handlePrimaryButton()">

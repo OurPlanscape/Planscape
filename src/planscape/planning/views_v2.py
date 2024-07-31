@@ -16,12 +16,14 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioOrderingFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario
+from planning.geometry import is_inside
+from planning.models import PlanningArea, ProjectArea, Scenario, User
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    ScenarioProjectAreasSerializer,
     ProjectAreaSerializer,
     ScenarioSerializer,
     ListCreatorSerializer,
@@ -32,6 +34,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
+    create_scenario_from_upload,
 )
 
 User = get_user_model()
@@ -91,6 +94,35 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         delete_planning_area(
             user=self.request.user,
             planning_area=instance,
+        )
+
+    @action(methods=["POST"], detail=True)
+    def upload_shapefiles(self, request, pk=None):
+        print(f"here is the pk: {pk}")
+        uploaded_geom = {**request.data["geometry"]}
+        pa = PlanningArea.objects.get(pk=pk)
+
+        # Ensure that planning area contains the uploaded geometry
+        if not is_inside(pa.geometry, uploaded_geom):
+            return Response(
+                {"error": "Uploaded geometry is not contained by planning area"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        # now we create a scenario
+        scenario = create_scenario_from_upload(
+            user=self.request.user,
+            planningarea=pa,
+            scenario_name=request.data["name"],
+            stand_size=request.data["stand_size"],
+            uploaded_geom=uploaded_geom,
+        )
+        out_serializer = ScenarioProjectAreasSerializer(instance=scenario)
+        headers = self.get_success_headers(out_serializer.data)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
         )
 
 

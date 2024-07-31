@@ -231,32 +231,6 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         data = response.json()
         self.assertEqual(len(data.get("results")), 0)
 
-    def test_sort_scenario_by_reverse_acres(self):
-        for acres in range(100, 105):
-            budget_conf = copy.copy(self.configuration)
-            budget_conf["max_treatment_area_ratio"] = acres
-            ScenarioFactory.create(
-                planning_area=self.planning_area,
-                name=f"scenario {acres}",
-                configuration=budget_conf,
-                user=self.owner_user,
-            )
-        self.client.force_authenticate(self.owner_user)
-
-        query_params = {"ordering": "-acres"}
-        response = self.client.get(
-            reverse(
-                "api:planning:scenarios-list",
-            ),
-            query_params,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, 200)
-        response_data = json.loads(response.content)
-        expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
-        budget_results = [s["max_treatment_area"] for s in response_data["results"]]
-        self.assertEquals(budget_results, expected_acres_order)
-
     def test_sort_scenario_by_reverse_budget(self):
         for b in range(100, 105):
             budget_conf = copy.copy(self.configuration)
@@ -354,6 +328,32 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         ]
         name_results = [s["name"] for s in response_data["results"]]
         self.assertEquals(expected_names, name_results)
+
+    def test_sort_scenario_by_reverse_acres(self):
+        for acres in range(100, 105):
+            budget_conf = copy.copy(self.configuration)
+            budget_conf["max_treatment_area_ratio"] = acres
+            ScenarioFactory.create(
+                planning_area=self.planning_area,
+                name=f"scenario {acres}",
+                configuration=budget_conf,
+                user=self.owner_user,
+            )
+        self.client.force_authenticate(self.owner_user)
+
+        query_params = {"ordering": "-acres"}
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-list",
+            ),
+            query_params,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_data = json.loads(response.content)
+        expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
+        budget_results = [s["max_treatment_area"] for s in response_data["results"]]
+        self.assertEquals(budget_results, expected_acres_order)
 
     def test_filter_by_planning_area_returns_filtered_records(self):
         planning_area = PlanningAreaFactory.create()

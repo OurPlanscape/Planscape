@@ -1,6 +1,7 @@
 <sg-modal
   title="Upload Scenario to &ldquo;{{ data.planning_area_name }}&rdquo;"
   primaryButtonText="Create"
+  [primaryButtonEnabled]="canSubmit()"
   secondaryButtonText="Cancel"
   (clickedSecondary)="closeModal()"
   (clickedClose)="closeModal()"
@@ -23,8 +24,8 @@
         <div class="field-label">Scenario name</div>
         <sg-input-field [disabled]="false" class="scenario-input">
           <input
-            #inputElement
             sgInput
+            #inputElement
             placeholder="Scenario Name"
             name="scenarioName"
             formControlName="scenarioName"
