@@ -13,7 +13,7 @@ import {
 import { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
-import { MapStandsService } from '../map-stands/map-stands.service';
+import { SelectedStandsState } from '../map-stands/selected-stands.state';
 
 // possible assignment for  a stand.
 export type StandAssigment =
@@ -44,6 +44,7 @@ export const StandColors: Record<StandAssigment, string> = {
     MapStandsComponent,
     MapRectangleComponent,
   ],
+  providers: [SelectedStandsState],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
 })
@@ -64,7 +65,7 @@ export class ProjectAreaComponent implements OnInit {
 
   constructor(
     private planService: PlanService,
-    private mapStandsService: MapStandsService
+    private mapStandsService: SelectedStandsState
   ) {}
 
   ngOnInit() {
@@ -72,10 +73,13 @@ export class ProjectAreaComponent implements OnInit {
   }
 
   // -----------------------------------------------------------------
-  // Map events, used for drawing the rectangle.
+  // Map events
   // -----------------------------------------------------------------
 
   onMapMouseDown(event: MapMouseEvent): void {
+    if (event.originalEvent.button === 2) {
+      return;
+    }
     this.isDragging = true;
     this.start = event;
     this.maplibreMap.getCanvas().style.cursor = 'crosshair';
@@ -102,10 +106,8 @@ export class ProjectAreaComponent implements OnInit {
     this.mapDragging = !this.mapDragging;
   }
 
-  // assigning treatment
   assignTreatment(treatment: StandAssigment) {
-    const selectedStands: number[] =
-      this.mapStandsService.selectedStands$.value;
+    const selectedStands: number[] = this.mapStandsService.getSelectedStands();
     this.treatedStands = [
       ...this.treatedStands.filter(
         (treatment) => !selectedStands.includes(treatment.id)

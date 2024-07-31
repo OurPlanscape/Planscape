@@ -20,7 +20,9 @@
     [zoom]="[7]"
     [center]="[-122.5, 37]"
     [dragPan]="mapDragging"
+    [boxZoom]="false"
     [interactive]="true"
+    [pitchWithRotate]="false"
     (mapMouseDown)="onMapMouseDown($event)"
     (mapMouseMove)="onMapMouseMove($event)"
     (mapMouseUp)="onMapMouseUp($event)">
