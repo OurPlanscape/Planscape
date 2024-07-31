@@ -1,17 +1,13 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { Plan, PreviewPlan } from '@types';
-import {
-  canDeletePlanningArea,
-  canViewCollaborators,
-} from '../../plan/permissions';
+import { canDeletePlanningArea } from '../../plan/permissions';
 import { take } from 'rxjs';
 import { SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
 import {
   MatDialog,
   MatDialogModule,
@@ -21,7 +17,7 @@ import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-plan
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 
 @Component({
-  selector: 'app-planning-area-menu',
+  selector: 'app-planning-area-titlebar-menu',
   standalone: true,
   imports: [
     MatLegacyButtonModule,
@@ -30,39 +26,19 @@ import { MatLegacyButtonModule } from '@angular/material/legacy-button';
     RouterLink,
     MatDialogModule,
   ],
-  templateUrl: './planning-area-menu.component.html',
-  styleUrl: './planning-area-menu.component.scss',
+  templateUrl: './planning-area-titlebar-menu.component.html',
+  styleUrl: './planning-area-titlebar-menu.component.scss',
 })
-export class PlanningAreaMenuComponent {
+export class PlanningAreaTitlebarMenuComponent {
   @Input() plan!: Plan | PreviewPlan;
-  @Output() afterDelete = new EventEmitter();
 
   constructor(
     private authService: AuthService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
-    private planService: PlanService
+    private planService: PlanService,
+    private router: Router
   ) {}
-
-  get shareEnabled() {
-    return canViewCollaborators(this.plan);
-  }
-
-  stopClickEvent(event: MouseEvent) {
-    event.stopPropagation();
-    return false;
-  }
-
-  sharePlan() {
-    this.dialog.open(SharePlanDialogComponent, {
-      data: {
-        planningAreaName: '"' + this.plan.name + '"',
-        planningAreaId: this.plan.id,
-      },
-      restoreFocus: false,
-      panelClass: 'no-padding-dialog',
-    });
-  }
 
   get canDeletePlanningArea() {
     const user = this.authService.currentUser();
@@ -85,12 +61,12 @@ export class PlanningAreaMenuComponent {
       .subscribe((confirmed) => {
         if (confirmed) {
           this.planService.deletePlan(this.plan.id).subscribe(() => {
-            this.afterDelete.emit();
             this.snackbar.open(
               `Successfully deleted plan: ${this.plan.name}`,
               'Dismiss',
               SNACK_NOTICE_CONFIG
             );
+            this.router.navigate(['/home']);
           });
         }
       });

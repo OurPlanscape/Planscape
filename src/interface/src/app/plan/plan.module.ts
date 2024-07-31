@@ -40,6 +40,7 @@ import { MapLayerSelectDialogComponent } from './map-layer-select-dialog/map-lay
 import { PlanRoutingModule } from './plan-routing.module';
 import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
+import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -90,6 +91,7 @@ import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog
     SharedModule,
     ButtonComponent,
     DeleteDialogComponent,
+    PlanningAreaTitlebarMenuComponent,
   ],
 })
 export class PlanModule {}
