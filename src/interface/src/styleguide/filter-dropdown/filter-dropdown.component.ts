@@ -120,8 +120,15 @@ export class FilterDropdownComponent<T> implements OnInit {
 
   get selectionText(): string {
     if (this.selectedItems.length > 0) {
-      const itemsString = this.selectedItems.join(', ');
-      return `: ${this.displayField ? '' : itemsString}`;
+      const itemsString = this.selectedItems
+        .map((s) => {
+          if (this.displayField && typeof s !== 'string') {
+            return s[this.displayField] as string;
+          }
+          return s;
+        })
+        .join(', ');
+      return `: ${itemsString}`;
     }
     return '';
   }
