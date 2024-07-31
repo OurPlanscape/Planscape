@@ -110,7 +110,6 @@ export class UploadProjectAreasModalComponent {
       )) as GeoJSON.GeoJSON;
       if (geojson.type == 'FeatureCollection') {
         this.geometries = geojson;
-        console.log('we have some gemoetries:', this.geometries);
       } else {
         this.uploadError = 'The file cannot be converted to GeoJSON.';
       }
@@ -146,8 +145,6 @@ export class UploadProjectAreasModalComponent {
 
   uploadData() {
     if (this.geometries !== null) {
-      console.log('uploading data:', this.geometries);
-
       this.planService
         .uploadGeometryForNewScenario(
           this.geometries,
@@ -161,7 +158,9 @@ export class UploadProjectAreasModalComponent {
             console.log('we got some data:', data);
           },
           error: (err) => {
-            console.log('there was a terrible error: ', err);
+            if (err.error) {
+              this.uploadError = err.error.error;
+            }
           },
         });
     }

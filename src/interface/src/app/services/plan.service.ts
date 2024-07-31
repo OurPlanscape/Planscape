@@ -150,7 +150,7 @@ export class PlanService {
   ) {
     return this.http.post(
       environment.backend_endpoint.concat(
-        '/v2/planningareas/' + planId + '/shapefile/'
+        '/v2/planningareas/' + planId + '/upload_shapefiles/'
       ),
       {
         geometry: shape,
