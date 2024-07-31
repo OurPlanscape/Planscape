@@ -1,3 +1,4 @@
+from collections import defaultdict
 from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -106,6 +107,15 @@ class TreatmentPrescriptionAction(models.TextChoices):
         "MODERATE_MASTICATION_PLUS_RX_FIRE",
         "Moderate Mastication (year 0), Prescribed Fire (year 10)",
     )
+
+    @classmethod
+    def json(cls):
+        output = defaultdict(dict)
+        for key, item in dict(cls.choices).items():
+            rx_type = str(get_prescription_type(key))
+            output[rx_type][key] = item
+
+        return output
 
 
 def get_prescription_type(
