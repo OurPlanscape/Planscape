@@ -9,7 +9,9 @@ from datetime import date, time, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple, Type
 from django.conf import settings
+from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
+from django.utils.timezone import now
 from fiona.crs import from_epsg
 from rest_framework.serializers import ValidationError
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
@@ -17,6 +19,7 @@ from planning.geometry import coerce_geojson, coerce_geometry, get_acreage
 from planning.models import (
     PlanningArea,
     PlanningAreaType,
+    ProjectArea,
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
@@ -207,7 +210,6 @@ def delete_scenario(
             False,
             f"User does not have permission to delete planning area {scenario.pk}.",
         )
-
     # george deleted scenario 12345 on planning area XYZ
     action.send(
         user,
@@ -215,7 +217,10 @@ def delete_scenario(
         action_object=scenario,
         target=scenario.planning_area,
     )
+    right_now = now()
     scenario.delete()
+    ScenarioResult.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
+    ProjectArea.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     return (True, "deleted")
 
 
