@@ -112,18 +112,14 @@ def feature_to_project_area(idx: int, user: UserType, scenario: Scenario, featur
             "created_by": user.pk,
             "scenario": scenario.pk,
         }
-        serializer = ProjectAreaSerializer(data=project_area)
-        serializer.is_valid(raise_exception=True)
-        proj_area_obj = serializer.save()
+        proj_area_obj = ProjectArea.objects.create(**project_area)
+
         action.send(
             user,
             verb="created",
             action_object=proj_area_obj,
             target=scenario,
         )
-    except ValidationError as ve:
-        logger.error(f"Validation error with {ve}")
-        raise ve
     except Exception as e:
         logger.error(f"Unable to create project area for {scenario.name} {e}")
         raise e
@@ -137,8 +133,9 @@ def create_scenario_from_upload(
     stand_size: str,
     uploaded_geom,
 ) -> Scenario:
+    
     scenario = Scenario.objects.create(
-        planning_area=planningarea, name=scenario_name, user=user
+        user, 
     )
 
     # TODO: refactor

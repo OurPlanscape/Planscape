@@ -63,43 +63,21 @@ def get_acreage(geometry: GEOSGeometry):
 
 
 def is_inside(larger_geometry, smaller_geometry):
-    larger_shape = None
-    smaller_shape = None
+    larger_geom = None
+    smaller_geom = None
 
-    # TODO: clean up coercions / add new functions to convert various formats
     try:
-        if isinstance(larger_geometry, MultiPolygon):
-            geojson_dict = {
-                "type": "MultiPolygon",
-                "coordinates": [polygon.coords for polygon in larger_geometry],
-            }
-            larger_shape = shape(geojson_dict)
-        elif isinstance(larger_geometry, GEOSGeometry):
-            larger_shape = shape(larger_geometry)
-        elif "features" in larger_geometry:
-            shapes = [
-                shape(feature["geometry"]) for feature in larger_geometry["features"]
-            ]
-            larger_shape = unary_union(shapes)
-        elif "SRID=" in larger_geometry:
-            larger_geometry = larger_geometry.split(";", 1)[1]
-            larger_shape = wkt.loads(larger_geometry)
-        else:
-            larger_shape = shape(larger_geometry["geometry"])
+        larger_geom = GEOSGeometry(larger_geometry, srid=4326) 
     except Exception as e:
-        logger.error(f"Could not convert larger shape when comparing containment: {e}")
-
-    # for smaller shape: determine whether we have a feature collection or individual geometry
-    if "features" in smaller_geometry:
-        return all(
-            shape(feature["geometry"]).within(larger_shape)
-            for feature in smaller_geometry["features"]
-        )
+        logger.error(f"Could not convert larger shape to compare containment {e}")
+        raise e
     try:
-        smaller_shape = shape(smaller_geometry["geometry"])
-        return smaller_shape.within(larger_shape)
+        smaller_geom = GEOSGeometry(smaller_geometry, srid=4236)
     except Exception as e:
         logger.error(f"Could not convert smaller shape to compare containment {e}")
+        raise e
+
+    return larger_geom.contains(smaller_geom)
 
 
 def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeometry:
