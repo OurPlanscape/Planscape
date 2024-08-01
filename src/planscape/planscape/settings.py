@@ -209,7 +209,7 @@ REST_FRAMEWORK = {
         "django_filters.rest_framework.DjangoFilterBackend",
         "rest_framework.filters.OrderingFilter",
     ],
-    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
+    "DEFAULT_PAGINATION_CLASS": None,
     "PAGE_SIZE": 50,
     "DATETIME_FORMAT": "%Y-%m-%dT%H:%M:%SZ",  # ISO 8601 format without microseconds
     "DATETIME_INPUT_FORMATS": [

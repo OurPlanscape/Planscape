@@ -1,6 +1,6 @@
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import GenericViewSet
-
+from rest_framework.pagination import LimitOffsetPagination
 from metrics.filters import MetricFilterSet
 from metrics.models import Metric
 from metrics.serializers import MetricSerializer
@@ -16,6 +16,7 @@ class MetricsViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
         "dataset",
         "category",
     )
+    pagination_class = LimitOffsetPagination
     ordering_fields = ["name", "created_at"]
     filterset_class = MetricFilterSet
     serializer_class = MetricSerializer
