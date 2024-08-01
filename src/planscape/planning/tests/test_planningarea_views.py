@@ -21,6 +21,7 @@ from planning.tests.helpers import (
     _create_test_user_set,
     reset_permissions,
 )
+from planning.tests.test_geometry import read_shapefile, to_geometry
 
 
 class CreatePlanningAreaTest(APITransactionTestCase):
@@ -61,6 +62,9 @@ class CreatePlanningAreaTest(APITransactionTestCase):
               You keep using that word. \
               I do not think it means what you think it means."
 
+        with read_shapefile("planning/tests/data/self-intersection.shp") as col:
+            self.self_intersection = json.loads(to_geometry(col[0].geometry).json)
+
     def test_create_planning_area(self):
         self.client.force_authenticate(self.user)
         payload = json.dumps(
@@ -88,6 +92,31 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(planning_area.name, "test plan")
         self.assertEqual(planning_area.user.pk, self.user.pk)
         self.assertIn("id", data)
+
+    def test_create_planning_area_fails_bad_geometry(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {
+                "name": "test plan",
+                "region_name": "Sierra Nevada",
+                "geometry": {
+                    "features": [
+                        {
+                            "geometry": self.self_intersection,
+                        }
+                    ]
+                },
+                "notes": self.notes,
+            }
+        )
+
+        response = self.client.post(
+            reverse("planning:create_planning_area"),
+            data=payload,
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, 400)
 
     def test_create_planning_area_no_notes(self):
         self.client.force_authenticate(self.user)

@@ -1,8 +1,10 @@
 import json
-import os
+from planning.models import UserPrefs
 from django.contrib.auth.models import User
 from django.urls import reverse
 from rest_framework.test import APITestCase, APITransactionTestCase
+
+from planning.tests.test_geometry import read_shapefile, to_geometry
 
 
 class ValidatePlanningAreaTest(APITestCase):
@@ -34,6 +36,8 @@ class ValidatePlanningAreaTest(APITestCase):
                 ]
             ],
         }
+        with read_shapefile("planning/tests/data/self-intersection.shp") as col:
+            self.self_intersection = json.loads(to_geometry(col[0].geometry).json)
 
     def test_validate_planning_area_returns_area_acres(self):
         self.client.force_authenticate(self.user)
@@ -52,8 +56,13 @@ class ValidatePlanningAreaTest(APITestCase):
         )
         self.assertEqual(response.status_code, 200)
 
-
-from planning.models import UserPrefs
+    def test_validate_planning_area_fails(self):
+        self.client.force_authenticate(self.user)
+        payload = {"geometry": self.self_intersection}
+        response = self.client.post(
+            reverse("planning:validate_planning_area"), data=payload, format="json"
+        )
+        self.assertEqual(response.status_code, 400)
 
 
 class CreateSharedLinkTest(APITransactionTestCase):
