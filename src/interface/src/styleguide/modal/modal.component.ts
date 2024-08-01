@@ -61,6 +61,10 @@ export class ModalComponent {
    */
   @Input() primaryButtonText?: string = 'Done';
   /**
+   * Optional attribute to enable/disable the right-most bottom button
+   */
+  @Input() primaryButtonDisabled: boolean = false;
+  /**
    * Optional alternative style variant for the right-most bottom button
    */
   @Input() primaryButtonVariant: ButtonVariant = 'primary';
@@ -68,6 +72,10 @@ export class ModalComponent {
    * Show/hide left-most bottom button
    */
   @Input() hasSecondaryButton = true;
+  /**
+   * Optional attribute to enable/disable the left-most bottom button
+   */
+  @Input() secondaryButtonDisabled: boolean = false;
   /**
    * Optional alternative text for the left-most bottom button
    */

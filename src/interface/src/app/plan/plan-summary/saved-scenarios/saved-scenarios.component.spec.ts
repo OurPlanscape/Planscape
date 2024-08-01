@@ -25,10 +25,7 @@ import {
 } from '@shared';
 import { CurrencyPipe } from '@angular/common';
 import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';

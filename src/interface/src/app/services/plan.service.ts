@@ -8,7 +8,7 @@ import {
   Plan,
   PreviewPlan,
 } from '@types';
-import { GeoJSON } from 'geojson';
+import { GeoJSON, GeoJsonObject } from 'geojson';
 import { environment } from '../../environments/environment';
 import { Params } from '@angular/router';
 
@@ -139,5 +139,27 @@ export class PlanService {
         { geometry: shape }
       )
       .pipe(map((result) => Math.round(result.area_acres)));
+  }
+
+  //TODO: Probably move this its own service..
+  uploadGeometryForNewScenario(
+    shape: GeoJsonObject,
+    scenarioName: string,
+    standSize: string,
+    planId: string
+  ) {
+    return this.http.post(
+      environment.backend_endpoint.concat(
+        '/v2/planningareas/' + planId + '/upload_shapefiles/'
+      ),
+      {
+        geometry: shape,
+        name: scenarioName,
+        stand_size: standSize,
+      },
+      {
+        withCredentials: true,
+      }
+    );
   }
 }

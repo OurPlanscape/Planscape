@@ -16,7 +16,7 @@ import {
 } from '@shared';
 import { MatTab } from '@angular/material/tabs';
 import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
-import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal';
+import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -209,6 +209,7 @@ export class SavedScenariosComponent implements OnInit {
       .open(UploadProjectAreasModalComponent, {
         data: {
           planning_area_name: this.plan?.name,
+          planId: this.plan?.id,
         },
       })
       .afterClosed()

@@ -1,0 +1,67 @@
+<sg-modal
+  title="Upload Scenario to &ldquo;{{ data.planning_area_name }}&rdquo;"
+  primaryButtonText="Create"
+  [primaryButtonDisabled]="!canSubmit()"
+  secondaryButtonText="Cancel"
+  (clickedSecondary)="closeModal()"
+  (clickedClose)="closeModal()"
+  (clickedPrimary)="handleCreateForm()">
+  <div modalBodyContent>
+    <sg-modal-info
+      infoType="info"
+      leadingIcon="info_filled"
+      message="Project area(s) must be within the planning area.">
+    </sg-modal-info>
+    <form [formGroup]="uploadProjectsForm!" class="upload-scenario-form">
+      <app-form-message
+        [messageType]="FormMessageType.ERROR"
+        *ngIf="uploadError"
+        title="Upload was unsuccessful"
+        message="{{ uploadError }}">
+      </app-form-message>
+
+      <div>
+        <div class="field-label">Scenario name</div>
+        <sg-input-field [disabled]="false" class="scenario-input">
+          <input
+            sgInput
+            #inputElement
+            placeholder="Scenario Name"
+            name="scenarioName"
+            formControlName="scenarioName"
+            class="scenario-name-field" />
+        </sg-input-field>
+      </div>
+
+      <div>
+        <div class="field-label">Upload a project area</div>
+        <div class="file-upload-input">
+          <sg-file-upload
+            (fileEvent)="handleFileEvent($event)"
+            supportedFileInfo="zip archive must contain DPF, SHP, SPX, CPG, PRJ files." />
+        </div>
+      </div>
+
+      <div>
+        <div class="field-label">
+          Select a stand size<mat-icon class="stands-info-icon" color="primary"
+            >info_outline</mat-icon
+          >
+        </div>
+        <mat-form-field class="stand-picker-field" appearance="outline">
+          <mat-select panelClass="" name="standSize">
+            <mat-option class="nav-page-item" value="Small"
+              >Small (10 acres)</mat-option
+            >
+            <mat-option class="nav-page-item" value="Medium"
+              >Medium (100 acres)</mat-option
+            >
+            <mat-option class="nav-page-item" value="Large"
+              >Large (?? acres)</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+      </div>
+    </form>
+  </div>
+</sg-modal>
