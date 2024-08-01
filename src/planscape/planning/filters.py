@@ -11,18 +11,6 @@ from django.db.models.functions import Coalesce
 from django.db.models import Max
 
 
-class PlanningAreaFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")
-    region_name = filters.MultipleChoiceFilter(
-        choices=RegionChoices.choices,
-    )
-    creator = MultipleValueFilter(field_name="user_id", given_param="creator")
-
-    class Meta:
-        model = PlanningArea
-        fields = ["name", "region_name", "creator"]
-
-
 class PlanningAreaOrderingFilter(OrderingFilter):
     def filter_queryset(self, request, queryset, view):
         ordering = self.get_ordering(request, queryset, view)
@@ -64,6 +52,18 @@ class PlanningAreaOrderingFilter(OrderingFilter):
         return super().filter_queryset(request, queryset, view)
 
 
+class PlanningAreaFilter(filters.FilterSet):
+    name = filters.CharFilter(lookup_expr="icontains")
+    region_name = filters.MultipleChoiceFilter(
+        choices=RegionChoices.choices,
+    )
+    creator = MultipleValueFilter(field_name="user_id", given_param="creator")
+
+    class Meta:
+        model = PlanningArea
+        fields = ["name", "region_name", "creator"]
+
+
 def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
     """
     django-filters supports a callable
@@ -77,18 +77,6 @@ def get_planning_areas_for_filter(request: Optional[Request]) -> QuerySet:
     if not request:
         return PlanningArea.objects.none()
     return PlanningArea.objects.list_by_user(request.user)
-
-
-class ScenarioFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")
-    planning_area = filters.ModelChoiceFilter(
-        field_name="planning_area",
-        queryset=get_planning_areas_for_filter,
-    )
-
-    class Meta:
-        model = Scenario
-        fields = ["name", "planning_area"]
 
 
 class ScenarioOrderingFilter(OrderingFilter):
@@ -109,3 +97,15 @@ class ScenarioOrderingFilter(OrderingFilter):
 
         custom_ordering = map(get_custom_ordering, ordering)
         return queryset.order_by(*custom_ordering)
+
+
+class ScenarioFilter(filters.FilterSet):
+    name = filters.CharFilter(lookup_expr="icontains")
+    planning_area = filters.ModelChoiceFilter(
+        field_name="planning_area",
+        queryset=get_planning_areas_for_filter,
+    )
+
+    class Meta:
+        model = Scenario
+        fields = ["name", "planning_area"]

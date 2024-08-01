@@ -249,7 +249,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             )
 
         self.client.force_authenticate(self.owner_user)
-        query_params = {"ordering": "-budget", "planningarea": self.planning_area.pk}
+        query_params = {"ordering": "-budget", "planning_area": self.planning_area.pk}
         response = self.client.get(
             reverse(
                 "api:planning:scenarios-list",
@@ -337,8 +337,11 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
 
     def test_filter_by_planning_area_returns_filtered_records(self):
         planning_area = PlanningAreaFactory.create()
+        planning_area2 = PlanningAreaFactory.create(user=planning_area.user)
         s1 = ScenarioFactory.create(planning_area=planning_area)
         s2 = ScenarioFactory.create(planning_area=planning_area)
+        s3 = ScenarioFactory.create(planning_area=planning_area2)
+        s4 = ScenarioFactory.create(planning_area=planning_area2)
         self.client.force_authenticate(planning_area.user)
 
         query_params = {"planning_area": planning_area.pk}
@@ -353,3 +356,5 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         names = [r.get("name") for r in data.get("results")]
         self.assertIn(s1.name, names)
         self.assertIn(s2.name, names)
+        self.assertNotIn(s3.name, names)
+        self.assertNotIn(s4.name, names)

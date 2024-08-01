@@ -109,7 +109,10 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         "list": ListScenarioSerializer,
     }
     filterset_class = ScenarioFilter
-    filter_backends = [ScenarioOrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        ScenarioOrderingFilter,
+    ]
 
     def get_queryset(self):
         user = self.request.user
