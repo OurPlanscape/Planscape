@@ -1,18 +1,21 @@
+import json
 import logging
 import math
 import os
 import zipfile
 import fiona
+
 from datetime import date, time, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple, Type
 from django.conf import settings
-from django.db import transaction
-from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
+from django.db import transaction
 from django.utils.timezone import now
+from fiona.crs import from_epsg
+from rest_framework.serializers import ValidationError
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from planning.geometry import coerce_geojson
+from planning.geometry import coerce_geojson, coerce_geometry, get_acreage
 from planning.models import (
     PlanningArea,
     PlanningAreaType,
@@ -22,6 +25,7 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
 )
+from planning.serializers import ProjectAreaSerializer
 from planning.tasks import async_forsys_run
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
@@ -100,6 +104,101 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
     return scenario
 
 
+def feature_to_project_area(idx: int, user: UserType, scenario: Scenario, feature):
+    try:
+        project_area = {
+            "geometry": coerce_geometry(feature),
+            "name": f"{scenario.name} project:{idx}",
+            "created_by": user.pk,
+            "scenario": scenario.pk,
+        }
+        serializer = ProjectAreaSerializer(data=project_area)
+        serializer.is_valid(raise_exception=True)
+        proj_area_obj = serializer.save()
+        action.send(
+            user,
+            verb="created",
+            action_object=proj_area_obj,
+            target=scenario,
+        )
+    except ValidationError as ve:
+        logger.error(f"Validation error with {ve}")
+        raise ve
+    except Exception as e:
+        logger.error(f"Unable to create project area for {scenario.name} {e}")
+        raise e
+
+
+@transaction.atomic()
+def create_scenario_from_upload(
+    user: UserType,
+    planningarea: PlanningArea,
+    scenario_name: str,
+    stand_size: str,
+    uploaded_geom,
+) -> Scenario:
+    scenario = Scenario.objects.create(
+        planning_area=planningarea, name=scenario_name, user=user
+    )
+
+    # TODO: refactor
+    # ALSO TODO: what other configs do we need to set as default?
+    # or should we use a different serializer for validation?
+
+    scenario.configuration["stand_size"] = stand_size
+    scenario.configuration["weights"] = []
+    scenario.configuration["est_cost"] = 1
+    scenario.configuration["excluded_areas"] = []
+    scenario.configuration["stand_thresholds"] = []
+    scenario.configuration["global_thresholds"] = []
+    scenario.configuration["scenario_priorities"] = [
+        "probability_of_fire_severity_high"
+    ]
+    # TODO: we shouldn't hardcode this?
+    scenario.configuration["max_treatment_area_ratio"] = 100
+    scenario.configuration["scenario_output_fields"] = [
+        "probability_of_fire_severity_high",
+        "total_fuel_exposed_to_fire",
+        "dead_and_down_carbon",
+        "structure_exposure",
+        "damage_potential_wui",
+        "standing_dead_and_ladder_fuels",
+        "available_standing_biomass",
+        "sawtimber_biomass",
+        "california_spotted_owl_habitat",
+    ]
+
+    scenario.status = ScenarioStatus.ACTIVE
+
+    scenario.save()
+    scenario_result = ScenarioResult.objects.create(scenario=scenario)
+    # TODO: and here? should this be default?
+    scenario_result.status = ScenarioResultStatus.SUCCESS
+    scenario_result.save()
+
+    action.send(
+        user,
+        verb="created",
+        action_object=scenario,
+        target=scenario.planning_area,
+    )
+
+    # this handles a format provided by shpjs when a shapefile has multiple features
+    if "geometry" in uploaded_geom and "coordinates" in uploaded_geom["geometry"]:
+        for idx, f in enumerate(uploaded_geom["geometry"]["coordinates"], 1):
+            feature_obj = {"type": "Polygon", "coordinates": [f]}
+            feature_to_project_area(idx, user, scenario, feature_obj)
+
+    # this handles a more standard FeatureCollection
+    if "features" in uploaded_geom:
+        for idx, f in enumerate(uploaded_geom["features"], 1):
+            feature_to_project_area(idx, user, scenario, f["geometry"])
+
+    # TODO: should we run forsys yet?
+    # async_forsys_run.delay(scenario.pk)
+    return scenario
+
+
 @transaction.atomic
 def delete_scenario(
     user: UserType,
@@ -111,7 +210,6 @@ def delete_scenario(
             False,
             f"User does not have permission to delete planning area {scenario.pk}.",
         )
-
     # george deleted scenario 12345 on planning area XYZ
     action.send(
         user,
@@ -153,12 +251,6 @@ def get_max_treatable_stand_count(
 ) -> int:
     stand_area = area_from_size(stand_size)
     return math.floor(max_treatable_area / stand_area)
-
-
-def get_acreage(geometry: GEOSGeometry) -> float:
-    epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
-    acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
-    return acres
 
 
 def validate_scenario_treatment_ratio(

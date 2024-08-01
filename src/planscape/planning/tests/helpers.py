@@ -1,11 +1,11 @@
+import json
+import os
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry
 from collaboration.models import Permissions, Role
 from planning.models import (
     PlanningArea,
     Scenario,
     ScenarioResult,
-    RegionChoices,
     ScenarioStatus,
 )
 
@@ -35,26 +35,11 @@ def _create_scenario(
     return scenario
 
 
-def _create_multiple_scenarios(
-    count: int,
-    planning_area: PlanningArea,
-    name_prefix: str,
-    configuration: str,
-    user: User,
-):
-    created_scenarios = []
-
-    for s in range(0, count):
-        created_scenarios.append(
-            _create_scenario(
-                planning_area=planning_area,
-                scenario_name=f"{name_prefix} {s}",
-                configuration=configuration,
-                user=user,
-                notes="",
-            )
-        )
-    return created_scenarios
+def _load_geojson_fixture(filename):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    fixture_path = os.path.join(current_dir, "../fixtures", filename)
+    with open(fixture_path, "r") as file:
+        return json.load(file)
 
 
 def _create_test_user_set():

@@ -1,9 +1,10 @@
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry
 from collaboration.services import get_role, get_permissions
-from planning.geometry import coerce_geometry
+from planning.geometry import coerce_geometry, get_acreage
+
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -14,7 +15,6 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.services import get_acreage
 from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices
 
@@ -307,6 +307,38 @@ class ScenarioSerializer(
         model = Scenario
 
 
+class ProjectAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectArea
+        fields = (
+            "uuid",
+            "scenario",
+            "name",
+            "origin",
+            "data",
+            "geometry",
+            "created_by",
+        )
+
+
+class ScenarioProjectAreasSerializer(serializers.ModelSerializer):
+    project_areas = ProjectAreaSerializer(many=True, read_only=True)
+
+    class Meta:
+        fields = (
+            "id",
+            "updated_at",
+            "created_at",
+            "planning_area",
+            "name",
+            "notes",
+            "user",
+            "status",
+            "project_areas",
+        )
+        model = Scenario
+
+
 class SharedLinkSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["user"] or None
@@ -350,4 +382,5 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
             "origin",
             "data",
             "geometry",
+            "created_by",
         )
