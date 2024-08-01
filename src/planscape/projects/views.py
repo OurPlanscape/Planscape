@@ -1,5 +1,6 @@
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import GenericViewSet
+from rest_framework.pagination import LimitOffsetPagination
 
 from projects.filters import ProjectFilterSet
 from projects.models import Project, ProjectVisibility
@@ -12,6 +13,7 @@ class ProjectViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     ).select_related(
         "organization",
     )
+    pagination_class = LimitOffsetPagination
     ordering_fields = ["name", "display_name", "created_at"]
     filterset_class = ProjectFilterSet
     serializer_class = ProjectSerializer
