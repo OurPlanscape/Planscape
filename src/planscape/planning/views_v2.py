@@ -4,11 +4,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins, permissions
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from impacts.models import TreatmentPlan
-from impacts.serializers import TreatmentPlanListSerializer
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
@@ -97,7 +94,6 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["POST"], detail=True)
     def upload_shapefiles(self, request, pk=None):
-        print(f"here is the pk: {pk}")
         uploaded_geom = {**request.data["geometry"]}
         pa = PlanningArea.objects.get(pk=pk)
 
