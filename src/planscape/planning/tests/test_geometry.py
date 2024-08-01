@@ -18,7 +18,7 @@ def to_geometry(fiona_geom) -> GEOSGeometry:
 
 class GeometryTestCase(TestCase):
     def setUp(self):
-        with read_shapefile("planning/tests/data/self-intersection.shp") as col:
+        with read_shapefile("planning/tests/test_data/self-intersection.shp") as col:
             self.self_intersection = to_geometry(col[0].geometry)
 
     def coerce_geometry_raises_error_on_invalid_geom1(self):

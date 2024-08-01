@@ -36,7 +36,7 @@ class ValidatePlanningAreaTest(APITestCase):
                 ]
             ],
         }
-        with read_shapefile("planning/tests/data/self-intersection.shp") as col:
+        with read_shapefile("planning/tests/test_data/self-intersection.shp") as col:
             self.self_intersection = json.loads(to_geometry(col[0].geometry).json)
 
     def test_validate_planning_area_returns_area_acres(self):

@@ -62,7 +62,7 @@ class CreatePlanningAreaTest(APITransactionTestCase):
               You keep using that word. \
               I do not think it means what you think it means."
 
-        with read_shapefile("planning/tests/data/self-intersection.shp") as col:
+        with read_shapefile("planning/tests/test_data/self-intersection.shp") as col:
             self.self_intersection = json.loads(to_geometry(col[0].geometry).json)
 
     def test_create_planning_area(self):
