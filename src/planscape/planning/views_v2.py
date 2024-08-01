@@ -103,13 +103,15 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         "acres",
         "completed_at",
     ]
-    pagination_class = pagination.LimitOffsetPagination
     serializer_class = ScenarioSerializer
     serializer_classes = {
         "list": ListScenarioSerializer,
     }
     filterset_class = ScenarioFilter
-    filter_backends = [ScenarioOrderingFilter]
+    filter_backends = [
+        DjangoFilterBackend,
+        ScenarioOrderingFilter,
+    ]
 
     def get_queryset(self):
         user = self.request.user
