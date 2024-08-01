@@ -38,8 +38,8 @@ logger = logging.getLogger(__name__)
 
 
 class PlanningAreaViewSet(viewsets.ModelViewSet):
-    queryset = PlanningArea.objects.all()
-
+    # this member is configured for instrospection and swagger automcatic generation
+    queryset = PlanningArea.objects.none()
     permission_classes = [PlanningAreaViewPermission]
     ordering_fields = [
         "area_acres",
@@ -67,7 +67,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = PlanningArea.objects.get_list_for_user(user)
+        qs = PlanningArea.objects.list_for_api(user=user)
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -94,7 +94,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
 
 class ScenarioViewSet(viewsets.ModelViewSet):
-    queryset = Scenario.objects.all()
+    queryset = Scenario.objects.none()
     permission_classes = [ScenarioViewPermission]
     ordering_fields = [
         "name",
@@ -105,16 +105,21 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         "acres",
         "completed_at",
     ]
+    serializer_class = ScenarioSerializer
+    serializer_classes = {
+        "list": ListScenarioSerializer,
+    }
     # TODO: acres, budget, status, completion date?
     filterset_class = ScenarioFilter
     filter_backends = [ScenarioOrderingFilter]
 
-    def create(self, request, planningarea_pk):
-        input_data = {
-            "planning_area": planningarea_pk,
-            **request.data,
-        }
-        serializer = self.get_serializer(data=input_data)
+    def get_queryset(self):
+        user = self.request.user
+        qs = Scenario.objects.list_by_user(user=user)
+        return qs
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(
             user=self.request.user,
@@ -135,33 +140,17 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         )
 
     def get_serializer_class(self):
-        if self.action == "list":
-            return ListScenarioSerializer
-        return ScenarioSerializer
-
-    def get_queryset(self):
-        planningarea_pk = self.kwargs.get("planningarea_pk")
-        return Scenario.objects.filter(planning_area__pk=planningarea_pk)
+        return (
+            self.serializer_classes.get(self.action, self.serializer_class)
+            or self.serializer_class
+        )
 
     @action(methods=["post"], detail=True)
-    def toggle_status(self, request, planningarea_pk, pk=None):
+    def toggle_status(self, request, pk=None):
         scenario = self.get_object()
         toggle_scenario_status(scenario, self.request.user)
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
-
-    @action(methods=["get"], detail=True)
-    def treatment_plans(self, request, planningarea_pk, pk=None):
-        scenario = self.get_object()
-        treatments = TreatmentPlan.objects.filter(scenario_id=scenario)
-        paginator = LimitOffsetPagination()
-        # Paginate the queryset
-        page = paginator.paginate_queryset(treatments, request)
-        if page is not None:
-            serializer = TreatmentPlanListSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-        serializer = TreatmentPlanListSerializer(treatments, many=True)
-        return Response(serializer.data)
 
 
 # TODO: migrate this to an action inside the planning area viewset
@@ -173,9 +162,8 @@ class CreatorViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return User.objects.filter(
-            planning_areas__in=PlanningArea.objects.get_for_user(user)
-        ).distinct()
+        pas = PlanningArea.objects.list_by_user(user=user).values_list("id", flat=True)
+        return User.objects.filter(planning_areas__id__in=pas).distinct()
 
 
 class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):

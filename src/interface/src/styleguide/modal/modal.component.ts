@@ -1,14 +1,14 @@
 import {
   Component,
   ContentChild,
+  ElementRef,
+  EventEmitter,
   HostBinding,
   Inject,
   Input,
   Output,
-  ElementRef,
-  EventEmitter,
 } from '@angular/core';
-import { NgIf, CommonModule } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
@@ -100,6 +100,10 @@ export class ModalComponent {
    * Whether or not to use default padding for the projected content
    */
   @Input() padBody? = false;
+  /**
+   * Whether or not to show the borders on header and footer
+   */
+  @Input() showBorders? = true;
 
   @Output() clickedSecondary = new EventEmitter<any>();
   @Output() clickedPrimary = new EventEmitter<any>();
@@ -132,5 +136,10 @@ export class ModalComponent {
   @HostBinding('class.large')
   get isSmall() {
     return this.width === 'large';
+  }
+
+  @HostBinding('class.no-border')
+  get noBorders() {
+    return !this.showBorders;
   }
 }

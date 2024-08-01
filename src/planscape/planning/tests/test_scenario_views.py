@@ -9,8 +9,8 @@ from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
 from planning.models import Scenario, ScenarioResult, ScenarioResultStatus
+from planning.tests.factories import PlanningAreaFactory
 from planning.tests.helpers import (
-    _create_planning_area,
     _create_scenario,
     _create_test_user_set,
     reset_permissions,
@@ -35,12 +35,12 @@ class CreateScenarioTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.stored_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="test plan", geometry=self.stored_geometry
         )
 
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan 2", self.stored_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2, name="test plan 2", geometry=self.stored_geometry
         )
 
         create_collaborator_record(
@@ -340,8 +340,8 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.old_notes = "Truly, you have a dizzying intellect."
         self.old_name = "Man in black"
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.storable_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="test plan"
         )
         self.scenario = _create_scenario(
             self.planning_area, self.old_name, "{}", self.owner_user, self.old_notes
@@ -350,8 +350,8 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.owner_user2 = User.objects.create(username="testuser2")
         self.owner_user2.set_password("12345")
         self.owner_user2.save()
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan2", self.storable_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2, name="test plan2"
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
@@ -623,8 +623,8 @@ class UpdateScenarioResultTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.storable_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="test plan"
         )
         self.scenario = _create_scenario(
             self.planning_area, "test scenario", "{}", user=self.owner_user
@@ -635,12 +635,12 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.scenario3 = _create_scenario(
             self.planning_area, "test scenario3", "{}", user=self.owner_user
         )
-        self.empty_planning_area = _create_planning_area(
-            self.owner_user, "empty test plan", self.storable_geometry
+        self.empty_planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="empty test plan"
         )
 
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan2", self.storable_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2, name="test plan2"
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", self.owner_user2
@@ -897,8 +897,8 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.storable_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="test plan"
         )
         self.configuration = {
             "question_id": 1,
@@ -933,15 +933,15 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             self.configuration,
             user=self.owner_user,
         )
-        self.empty_planning_area = _create_planning_area(
-            self.owner_user, "empty test plan", self.storable_geometry
+        self.empty_planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="empty test plan"
         )
 
         self.owner_user2 = User.objects.create(username="testuser2")
         self.owner_user2.set_password("12345")
         self.owner_user2.save()
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan2", self.storable_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2, name="test plan2"
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
@@ -1084,8 +1084,8 @@ class GetScenarioTest(APITransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.storable_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="test plan"
         )
         self.scenario = _create_scenario(
             self.planning_area,
@@ -1097,8 +1097,8 @@ class GetScenarioTest(APITransactionTestCase):
         self.owner_user2 = User.objects.create(username="testuser2")
         self.owner_user2.set_password("12345")
         self.owner_user2.save()
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan2", self.storable_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2, name="test plan2"
         )
         self.scenario2 = _create_scenario(
             self.planning_area2,
@@ -1209,8 +1209,8 @@ class GetScenarioDownloadTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.storable_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="test plan"
         )
         self.scenario = _create_scenario(
             self.planning_area, "test scenario", "{}", user=self.owner_user
@@ -1233,8 +1233,8 @@ class GetScenarioDownloadTest(APITransactionTestCase):
             print("Just test data", file=handle)
 
         # create a second scenario with a different user
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan2", self.storable_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2, name="test plan2"
         )
         self.scenario2 = _create_scenario(
             self.planning_area2, "test scenario2", "{}", user=self.owner_user2
@@ -1373,8 +1373,8 @@ class DeleteScenarioTest(APITransactionTestCase):
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
-        self.planning_area = _create_planning_area(
-            self.owner_user, "test plan", self.storable_geometry
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner_user, name="test plan"
         )
         self.scenario = _create_scenario(
             self.planning_area, "test scenario", "{}", user=self.owner_user
@@ -1389,8 +1389,9 @@ class DeleteScenarioTest(APITransactionTestCase):
         self.owner_user2 = User.objects.create(username="testuser2")
         self.owner_user2.set_password("12345")
         self.owner_user2.save()
-        self.planning_area2 = _create_planning_area(
-            self.owner_user2, "test plan2", self.storable_geometry
+        self.planning_area2 = PlanningAreaFactory.create(
+            user=self.owner_user2,
+            name="test plan2",
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", user=self.owner_user2

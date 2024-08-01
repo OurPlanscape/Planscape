@@ -1,6 +1,5 @@
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
-from django.contrib.contenttypes.models import ContentType
 from django.forms.models import model_to_dict
 from django.urls import reverse
 from django.contrib.auth import get_user_model
@@ -8,7 +7,7 @@ from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
 from impacts.models import TreatmentPlan
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
-from planning.tests.factories import ScenarioFactory, PlanningAreaFactory
+from planning.tests.factories import ScenarioFactory
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -20,7 +19,7 @@ class TxPlanViewSetTest(APITransactionTestCase):
 
     def test_create_tx_plan_returns_201(self):
         self.client.force_authenticate(user=self.scenario.user)
-        payload = {"scenario": str(self.scenario.uuid), "name": "my cool name"}
+        payload = {"scenario": str(self.scenario.pk), "name": "my cool name"}
         response = self.client.post(
             reverse("api:impacts:tx-plans-list"),
             data=payload,
@@ -184,68 +183,6 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertEqual(updated_plan.name, "ok new name")
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
-
-    def test_list_txplans_in_scenario(self):
-        for _ in range(50):
-            TreatmentPlanFactory.create(scenario=self.scenario)
-        self.client.force_authenticate(user=self.scenario.user)
-        response = self.client.get(
-            reverse(
-                "planning:scenarios-treatment-plans",
-                kwargs={
-                    "planningarea_pk": self.scenario.planning_area.pk,
-                    "pk": self.scenario.pk,
-                },
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data = response.json()
-        self.assertEqual(response_data["count"], 50)
-        self.assertEqual(len(response_data["results"]), 50)
-
-    # test pagination
-    def test_txplans_pagination(self):
-        for _ in range(50):
-            TreatmentPlanFactory.create(scenario=self.scenario)
-        self.client.force_authenticate(user=self.scenario.user)
-
-        query_string = {"limit": 10, "offset": 48}
-        response = self.client.get(
-            reverse(
-                "planning:scenarios-treatment-plans",
-                kwargs={
-                    "planningarea_pk": self.scenario.planning_area.pk,
-                    "pk": self.scenario.pk,
-                },
-            ),
-            query_string,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        paged_data = response.json()
-        self.assertEqual(paged_data["count"], 50)
-        self.assertIn("next", paged_data)
-        self.assertIn("http", paged_data["previous"])
-        self.assertEqual(len(paged_data["results"]), 2)
-
-    def test_tx_plans_auth(self):
-        other_user = UserFactory()
-        for _ in range(50):
-            TreatmentPlanFactory.create(scenario=self.scenario)
-        self.client.force_authenticate(user=other_user)
-        response = self.client.get(
-            reverse(
-                "planning:scenarios-treatment-plans",
-                kwargs={
-                    "planningarea_pk": self.scenario.planning_area.pk,
-                    "pk": self.scenario.pk,
-                },
-            ),
-            content_type="application/json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
 
 class TxPrescriptionListTest(APITransactionTestCase):

@@ -99,7 +99,7 @@ export class PlanService {
 
   getCreators() {
     let url = environment.backend_endpoint.concat(
-      '/planning/v2/planningareas/creators/'
+      '/v2/planningareas/creators/'
     );
     return this.http.get<Creator[]>(url, {
       withCredentials: true,

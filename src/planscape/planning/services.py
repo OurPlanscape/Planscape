@@ -10,10 +10,13 @@ from django.conf import settings
 from django.db import transaction
 from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
+from django.utils.timezone import now
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
+    PlanningAreaType,
+    ProjectArea,
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
@@ -53,7 +56,7 @@ def create_planning_area(
 @transaction.atomic
 def delete_planning_area(
     user: UserType,
-    planning_area: Type[PlanningArea],
+    planning_area: PlanningAreaType,
 ):
     if not PlanningAreaPermission.can_remove(user, planning_area):
         logger.error(f"User {user} has no permission to delete {planning_area.pk}")
@@ -62,8 +65,18 @@ def delete_planning_area(
             f"User does not have permission to delete planning area {planning_area.pk}.",
         )
 
+    right_now = now()
     action.send(user, verb="deleted", action_object=planning_area)
     planning_area.delete()
+    Scenario.objects.filter(planning_area__pk=planning_area.pk).update(
+        deleted_at=right_now
+    )
+    ScenarioResult.objects.filter(scenario__planning_area__pk=planning_area.pk).update(
+        deleted_at=right_now
+    )
+    ProjectArea.objects.filter(scenario__planning_area__pk=planning_area.pk).update(
+        deleted_at=right_now
+    )
     return (True, "deleted")
 
 
@@ -106,7 +119,10 @@ def delete_scenario(
         action_object=scenario,
         target=scenario.planning_area,
     )
+    right_now = now()
     scenario.delete()
+    ScenarioResult.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
+    ProjectArea.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     return (True, "deleted")
 
 
@@ -139,7 +155,7 @@ def get_max_treatable_stand_count(
     return math.floor(max_treatable_area / stand_area)
 
 
-def get_acreage(geometry: GEOSGeometry):
+def get_acreage(geometry: GEOSGeometry) -> float:
     epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
     acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
     return acres

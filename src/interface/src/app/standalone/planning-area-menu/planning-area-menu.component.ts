@@ -8,17 +8,17 @@ import {
   canDeletePlanningArea,
   canViewCollaborators,
 } from '../../plan/permissions';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogModule,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
-import { DeleteDialogComponent } from '../delete-dialog/delete-dialog.component';
 import { take } from 'rxjs';
 import { SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
+import {
+  MatDialog,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-planning-area.component';
 
 @Component({
   selector: 'app-planning-area-menu',
@@ -27,8 +27,8 @@ import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-pla
     MatButtonModule,
     MatIconModule,
     MatMenuModule,
-    MatLegacyDialogModule,
     RouterLink,
+    MatDialogModule,
   ],
   templateUrl: './planning-area-menu.component.html',
   styleUrl: './planning-area-menu.component.scss',
@@ -68,14 +68,12 @@ export class PlanningAreaMenuComponent {
   }
 
   deletePlan() {
-    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
-      DeleteDialogComponent,
-      {
+    const dialogRef: MatDialogRef<DeletePlanningAreaComponent> =
+      this.dialog.open(DeletePlanningAreaComponent, {
         data: {
           name: '"' + this.plan.name + '"',
         },
-      }
-    );
+      });
     dialogRef
       .afterClosed()
       .pipe(take(1))

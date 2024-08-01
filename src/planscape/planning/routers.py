@@ -12,11 +12,13 @@ router.register(
     CreatorViewSet,
     basename="creators",
 )
-router.register(r"planningareas", PlanningAreaViewSet, basename="planningareas")
-
-
 router.register(
-    r"planningareas/(?P<planningarea_pk>\d+)/scenarios",
+    r"planningareas",
+    PlanningAreaViewSet,
+    basename="planningareas",
+)
+router.register(
+    r"scenarios",
     ScenarioViewSet,
     basename="scenarios",
 )
