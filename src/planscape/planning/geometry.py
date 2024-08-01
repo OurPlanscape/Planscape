@@ -62,23 +62,28 @@ def get_acreage(geometry: GEOSGeometry):
     return acres
 
 
+def create_geos_geometry(geojson_data):
+    if isinstance(geojson_data, str):
+        geojson_data = json.loads(geojson_data)
+    geometry = geojson_data['features'][0]['geometry']
+    geometry_json = json.dumps(geometry)
+    try:
+        geos_geom = GEOSGeometry(geometry_json)
+        if geos_geom.srid is None:
+            geos_geom.srid = 4326
+        return geos_geom
+    except Exception as e:
+        logger.error(f"Could not convert to GEOSGeometry: {e}")
+        raise e
+
 def is_inside(larger_geometry, smaller_geometry):
-    larger_geom = None
-    smaller_geom = None
-
     try:
-        larger_geom = GEOSGeometry(larger_geometry, srid=4326) 
+        larger_obj = create_geos_geometry(larger_geometry)
+        smaller_obj = create_geos_geometry(smaller_geometry)
+        return larger_obj.contains(smaller_obj)
     except Exception as e:
-        logger.error(f"Could not convert larger shape to compare containment {e}")
+        logger.error(f"Error in is_inside function: {e}")
         raise e
-    try:
-        smaller_geom = GEOSGeometry(smaller_geometry, srid=4236)
-    except Exception as e:
-        logger.error(f"Could not convert smaller shape to compare containment {e}")
-        raise e
-
-    return larger_geom.contains(smaller_geom)
-
 
 def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeometry:
     """This function takes in a GeoJSON

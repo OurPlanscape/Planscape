@@ -806,7 +806,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
 
-        self.la_county_geo = _load_geojson_fixture("la_county.geojson")
+        self.la_region = _load_geojson_fixture("la_region.geojson")
         self.la_features = _load_geojson_fixture("la_features.geojson")
         self.bayarea_geo = _load_geojson_fixture("bayarea.geojson")
 
@@ -874,7 +874,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
 
         self.planning_area = PlanningAreaFactory(
             user=self.owner_user,
-            geometry=coerce_geometry(self.la_county_geo["geometry"]),
+            geometry=coerce_geometry(self.la_region),
         )
 
     def test_confirm_permissions_required(self):
