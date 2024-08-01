@@ -108,10 +108,9 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(scenarios["count"], 3)
-        self.assertEqual(len(scenarios["results"]), 3)
-        self.assertIsNotNone(scenarios["results"][0]["created_at"])
-        self.assertIsNotNone(scenarios["results"][0]["updated_at"])
+        self.assertEqual(len(scenarios), 3)
+        self.assertIsNotNone(scenarios[0]["created_at"])
+        self.assertIsNotNone(scenarios[0]["updated_at"])
 
     def test_toggle_scenario_status(self):
         self.client.force_authenticate(self.owner_user)
@@ -166,7 +165,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         # changed because this is filtered
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        ids = [record.get("id") for record in data.get("results")]
+        ids = [record.get("id") for record in data]
         self.assertNotIn(self.owner_user2scenario.pk, ids)
 
     def test_list_scenario_collab_user(self):
@@ -179,10 +178,9 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(scenarios["count"], 3)
-        self.assertEqual(len(scenarios["results"]), 3)
-        self.assertIsNotNone(scenarios["results"][0]["created_at"])
-        self.assertIsNotNone(scenarios["results"][0]["updated_at"])
+        self.assertEqual(len(scenarios), 3)
+        self.assertIsNotNone(scenarios[0]["created_at"])
+        self.assertIsNotNone(scenarios[0]["updated_at"])
 
     def test_list_scenario_viewer_user(self):
         self.client.force_authenticate(self.viewer_user)
@@ -194,10 +192,9 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         scenarios = response.json()
-        self.assertEqual(scenarios["count"], 3)
-        self.assertEqual(len(scenarios["results"]), 3)
-        self.assertIsNotNone(scenarios["results"][0]["created_at"])
-        self.assertIsNotNone(scenarios["results"][0]["updated_at"])
+        self.assertEqual(len(scenarios), 3)
+        self.assertIsNotNone(scenarios[0]["created_at"])
+        self.assertIsNotNone(scenarios[0]["updated_at"])
 
     def test_list_scenario_unprivileged_user_returns_zero_results(self):
         self.client.force_authenticate(self.unprivileged_user)
@@ -209,7 +206,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data.get("results")), 0)
+        self.assertEqual(len(data), 0)
 
     def test_sort_scenario_by_reverse_acres(self):
         for acres in range(100, 105):
@@ -232,9 +229,9 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response_data = json.loads(response.content)
+        response_data = response.json()
         expected_acres_order = [40000, 40000, 40000, 104, 103, 102, 101, 100]
-        budget_results = [s["max_treatment_area"] for s in response_data["results"]]
+        budget_results = [s["max_treatment_area"] for s in response_data]
         self.assertEquals(budget_results, expected_acres_order)
 
     def test_sort_scenario_by_reverse_budget(self):
@@ -249,7 +246,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             )
 
         self.client.force_authenticate(self.owner_user)
-        query_params = {"ordering": "-budget", "planningarea": self.planning_area.pk}
+        query_params = {"ordering": "-budget", "planning_area": self.planning_area.pk}
         response = self.client.get(
             reverse(
                 "api:planning:scenarios-list",
@@ -258,9 +255,9 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response_data = json.loads(response.content)
+        response_data = response.json()
         expected_budget_order = [104, 103, 102, 101, 100, None, None, None]
-        budget_results = [s["max_budget"] for s in response_data["results"]]
+        budget_results = [s["max_budget"] for s in response_data]
         self.assertEquals(budget_results, expected_budget_order)
 
     def test_sort_scenario_by_multiple_fields(self):
@@ -288,7 +285,7 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 200)
-        response_data = json.loads(response.content)
+        response_data = response.json()
 
         expected_names = [
             "cccc scenario,a1-b103",
@@ -332,13 +329,16 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             "test scenario2",
             "test scenario",
         ]
-        name_results = [s["name"] for s in response_data["results"]]
+        name_results = [s["name"] for s in response_data]
         self.assertEquals(expected_names, name_results)
 
     def test_filter_by_planning_area_returns_filtered_records(self):
         planning_area = PlanningAreaFactory.create()
+        planning_area2 = PlanningAreaFactory.create(user=planning_area.user)
         s1 = ScenarioFactory.create(planning_area=planning_area)
         s2 = ScenarioFactory.create(planning_area=planning_area)
+        s3 = ScenarioFactory.create(planning_area=planning_area2)
+        s4 = ScenarioFactory.create(planning_area=planning_area2)
         self.client.force_authenticate(planning_area.user)
 
         query_params = {"planning_area": planning_area.pk}
@@ -349,7 +349,9 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(len(data.get("results")), 2)
-        names = [r.get("name") for r in data.get("results")]
+        self.assertEqual(len(data), 2)
+        names = [r.get("name") for r in data]
         self.assertIn(s1.name, names)
         self.assertIn(s2.name, names)
+        self.assertNotIn(s3.name, names)
+        self.assertNotIn(s4.name, names)

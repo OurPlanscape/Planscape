@@ -1,5 +1,6 @@
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
 from drf_spectacular.utils import extend_schema
 from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import TreatmentPlan, TreatmentPrescription
@@ -36,6 +37,7 @@ class TreatmentPlanViewSet(
         "scenario__planning_area",
         "created_by",
     )
+    pagination_class = LimitOffsetPagination
     filterset_class = TreatmentPlanFilterSet
     permission_classes = [TreatmentPlanViewPermission]
     serializer_class = TreatmentPlanSerializer
@@ -107,6 +109,7 @@ class TreatmentPrescriptionViewSet(
     permission_classes = [
         TreatmentPrescriptionViewPermission,
     ]
+    pagination_class = LimitOffsetPagination
     serializer_class = TreatmentPrescriptionSerializer
     serializer_classes = {
         "list": TreatmentPrescriptionListSerializer,
