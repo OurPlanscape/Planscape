@@ -103,7 +103,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         "acres",
         "completed_at",
     ]
-    pagination_class = pagination.LimitOffsetPagination
     serializer_class = ScenarioSerializer
     serializer_classes = {
         "list": ListScenarioSerializer,
