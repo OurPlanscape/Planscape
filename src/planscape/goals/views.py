@@ -1,6 +1,6 @@
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import GenericViewSet
-
+from rest_framework.pagination import LimitOffsetPagination
 from goals.filters import TreatmentGoalFilterSet
 from goals.models import TreatmentGoal
 from goals.serializers import TreatmentGoalSerializer
@@ -14,6 +14,7 @@ class TreatmentGoalViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
         "project",
         "project__organization",
     )
+    pagination_class = LimitOffsetPagination
     ordering_fields = ["name", "created_at"]
     filterset_class = TreatmentGoalFilterSet
     serializer_class = TreatmentGoalSerializer

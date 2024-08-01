@@ -1,14 +1,11 @@
 import logging
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status, mixins, permissions
+from rest_framework import viewsets, status, mixins, permissions, pagination
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
-from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from impacts.models import TreatmentPlan
-from impacts.serializers import TreatmentPlanListSerializer
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
@@ -53,6 +50,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "updated_at",
         "user",
     ]
+    pagination_class = pagination.LimitOffsetPagination
     filterset_class = PlanningAreaFilter
     filter_backends = [
         DjangoFilterBackend,
@@ -105,11 +103,11 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         "acres",
         "completed_at",
     ]
+    pagination_class = pagination.LimitOffsetPagination
     serializer_class = ScenarioSerializer
     serializer_classes = {
         "list": ListScenarioSerializer,
     }
-    # TODO: acres, budget, status, completion date?
     filterset_class = ScenarioFilter
     filter_backends = [ScenarioOrderingFilter]
 
