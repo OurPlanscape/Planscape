@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 def validate_planning_area(request: Request) -> Response:
     serializer = ValidatePlanningAreaSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    geometry = coerce_geometry(serializer.validated_data.get("geometry"))
+    geometry = serializer.validated_data.get("geometry")
     data = {"area_acres": get_acreage(geometry)}
     out_serializer = ValidatePlanningAreaOutputSerializer(instance=data)
     return Response(out_serializer.data)

@@ -118,21 +118,18 @@ class ValidatePlanningAreaSerializer(gis_serializers.GeoModelSerializer):
     geometry = gis_serializers.GeometryField()
 
     def validate_geometry(self, geometry):
-        if not isinstance(geometry, GEOSGeometry):
-            geometry = GEOSGeometry(
-                geometry,
-                srid=settings.CRS_INTERNAL_REPRESENTATION,
-            )
+        try:
+            geometry = coerce_geometry(geometry)
+        except (InvalidGeometry, ValueError) as valEx:
+            raise serializers.ValidationError(str(valEx))
+
+        if not geometry.valid:
+            raise serializers.ValidationError(str(geometry.valid_reason))
 
         if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
             geometry = geometry.transform(
                 settings.CRS_INTERNAL_REPRESENTATION, clone=True
             )
-
-        try:
-            geometry = coerce_geometry(geometry)
-        except (InvalidGeometry, ValueError) as valEx:
-            raise serializers.ValidationError(str(valEx))
 
         return geometry
 
