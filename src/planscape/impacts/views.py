@@ -1,5 +1,7 @@
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema
+from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import TreatmentPlan, TreatmentPrescription
 from impacts.permissions import (
     TreatmentPlanViewPermission,
@@ -34,6 +36,7 @@ class TreatmentPlanViewSet(
         "scenario__planning_area",
         "created_by",
     )
+    filterset_class = TreatmentPlanFilterSet
     permission_classes = [TreatmentPlanViewPermission]
     serializer_class = TreatmentPlanSerializer
     serializer_classes = {
@@ -50,6 +53,12 @@ class TreatmentPlanViewSet(
         except KeyError:
             return self.serializer_class
 
+    @extend_schema(
+        request=CreateTreatmentPlanSerializer,
+        responses={
+            201: TreatmentPlanSerializer,
+        },
+    )
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -67,6 +76,7 @@ class TreatmentPlanViewSet(
             **serializer.validated_data,
         )
 
+    @extend_schema(responses={201: TreatmentPlanSerializer})
     @action(detail=True, methods=["post"])
     def clone(self, request, pk=None):
         treatment_plan = self.get_object()

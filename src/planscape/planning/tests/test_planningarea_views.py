@@ -9,7 +9,13 @@ from rest_framework.test import APITransactionTestCase
 from collaboration.models import Role, Permissions
 from collaboration.tests.helpers import create_collaborator_record
 from planning.geometry import coerce_geojson
-from planning.models import PlanningArea, Scenario, ScenarioResult, PlanningAreaNote
+from planning.models import (
+    PlanningArea,
+    RegionChoices,
+    Scenario,
+    ScenarioResult,
+    PlanningAreaNote,
+)
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planning.tests.helpers import (
     _create_test_user_set,
@@ -781,6 +787,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
             user=self.owner_user,
             name="Owned By Owner 1 plan",
             geometry=storable_geometry,
+            region_name=RegionChoices.SIERRA_NEVADA,
         )
         create_collaborator_record(
             self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR

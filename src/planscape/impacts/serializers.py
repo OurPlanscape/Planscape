@@ -7,24 +7,39 @@ from impacts.models import (
     TreatmentPrescriptionType,
 )
 from planning.models import ProjectArea, Scenario
-from stands.models import Stand
+from planning.services import get_acreage
+from stands.models import Stand, area_from_size
 
 
-class CreateTreatmentPlanSerializer(serializers.Serializer):
+class TxPrescriptionProjectAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectArea
+        fields = (
+            "id",
+            "uuid",
+            "name",
+        )
+
+
+class CreateTreatmentPlanSerializer(serializers.ModelSerializer):
     created_by = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
-    scenario = UUIDRelatedField(
-        uuid_field="uuid",
-        queryset=Scenario.objects.all(),
-    )
-    name = serializers.CharField()
+
+    class Meta:
+        model = TreatmentPlan
+        fields = (
+            "created_by",
+            "scenario",
+            "name",
+        )
 
 
 class TreatmentPlanSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPlan
         fields = (
+            "id",
             "uuid",
             "created_at",
             "created_by",
@@ -44,6 +59,7 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentPlan
         fields = (
+            "id",
             "uuid",
             "created_at",
             "creator_name",
@@ -61,9 +77,20 @@ class TreatmentPlanUpdateSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
+    project_area = TxPrescriptionProjectAreaSerializer()
+    area_acres = serializers.SerializerMethodField()
+
+    def get_area_acres(self, instance: TreatmentPrescription) -> float:
+        # this path is much faster
+        if instance.stand:
+            return area_from_size(instance.stand.size)
+
+        return get_acreage(instance.geometry)
+
     class Meta:
         model = TreatmentPrescription
         fields = (
+            "id",
             "uuid",
             "created_at",
             "created_by",
@@ -74,6 +101,7 @@ class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
             "stand",
             "action",
             "geometry",
+            "area_acres",
         )
 
 
@@ -100,14 +128,17 @@ class TreamentPrescriptionUpsertSerializer(serializers.Serializer):
     )
 
 
-class TreatmentPrescriptionListSerializer(serializers.ModelSerializer):
+class TreatmentPrescriptionListSerializer(TreatmentPrescriptionSerializer):
     class Meta:
         model = TreatmentPrescription
         fields = (
+            "id",
             "uuid",
             "created_at",
             "created_by",
             "updated_at",
+            "project_area",
             "action",
             "stand",
+            "area_acres",
         )

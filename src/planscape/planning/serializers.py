@@ -259,6 +259,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (
             "id",
+            "uuid",
             "updated_at",
             "created_at",
             "planning_area",
@@ -291,6 +292,7 @@ class ScenarioSerializer(
     class Meta:
         fields = (
             "id",
+            "uuid",
             "updated_at",
             "created_at",
             "planning_area",
@@ -367,3 +369,17 @@ class ListCreatorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "email", "full_name")
+
+
+class ProjectAreaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectArea
+        fields = (
+            "id",
+            "uuid",
+            "scenario",
+            "name",
+            "origin",
+            "data",
+            "geometry",
+        )

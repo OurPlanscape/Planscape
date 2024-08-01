@@ -184,19 +184,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
 
-    @action(methods=["get"], detail=True)
-    def treatment_plans(self, request, pk=None):
-        scenario = self.get_object()
-        treatments = TreatmentPlan.objects.filter(scenario_id=scenario.pk)
-        paginator = LimitOffsetPagination()
-        # Paginate the queryset
-        page = paginator.paginate_queryset(treatments, request)
-        if page is not None:
-            serializer = TreatmentPlanListSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-        serializer = TreatmentPlanListSerializer(treatments, many=True)
-        return Response(serializer.data)
-
 
 # TODO: migrate this to an action inside the planning area viewset
 class CreatorViewSet(ReadOnlyModelViewSet):
