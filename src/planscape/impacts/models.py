@@ -1,10 +1,18 @@
 from collections import defaultdict
+from typing import Optional
 from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from planning.models import ProjectArea, Scenario
+from planscape.typing import UserType
 from stands.models import Stand
-from core.models import CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin
+from core.models import (
+    AliveObjectsManager,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    DeletedAtMixin,
+    UUIDMixin,
+)
 
 
 User = get_user_model()
@@ -15,6 +23,17 @@ class TreatmentPlanStatus(models.TextChoices):
     RUNNING = "RUNNING", "Running"
     SUCCESS = "SUCCESS", "Suceess"
     FAILURE = "FAILURE", "Failure"
+
+
+class TreatmentPlanManager(AliveObjectsManager):
+    def list_by_user(self, user: Optional[UserType]):
+        if not user:
+            return self.get_queryset().none()
+        # this will become super slow when the database get's bigger
+        scenarios = Scenario.objects.list_by_user(user=user).values_list(
+            "id", flat=True
+        )
+        return self.get_queryset().filter(scenario_id__in=scenarios)
 
 
 class TreatmentPlan(
@@ -39,6 +58,8 @@ class TreatmentPlan(
         default=TreatmentPlanStatus.PENDING,
     )
     name = models.CharField(max_length=256)
+
+    objects = TreatmentPlanManager()
 
     class Meta:
         verbose_name = "Treatment Plan"
