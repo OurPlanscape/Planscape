@@ -64,6 +64,7 @@ export class UploadProjectAreasModalComponent {
   planning_area_name = 'Planning Area';
   file: File | null = null;
   uploadStatus: 'default' | 'failed' | 'running' | 'uploaded' = 'default';
+  standSize = 'Medium';
   uploadError?: string | null = null;
   alertMessage?: string | null = null;
   geometries: GeoJsonObject | null = null;
@@ -102,6 +103,7 @@ export class UploadProjectAreasModalComponent {
   }
 
   // TODO: file removal click...
+
   canSubmit(): boolean {
     return this.uploadProjectsForm.valid && this.geometries !== null;
   }

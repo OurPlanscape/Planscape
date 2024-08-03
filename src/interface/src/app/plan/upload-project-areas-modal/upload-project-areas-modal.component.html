@@ -44,12 +44,15 @@
 
       <div>
         <div class="field-label">
-          Select a stand size<mat-icon class="stands-info-icon" color="primary"
+          <div>
+            Select a stand size<span class="optional-label">Optional</span>
+          </div>
+          <mat-icon class="stands-info-icon" color="primary"
             >info_outline</mat-icon
           >
         </div>
         <mat-form-field class="stand-picker-field" appearance="outline">
-          <mat-select panelClass="" name="standSize">
+          <mat-select name="standSize" formControlName="standSize">
             <mat-option class="nav-page-item" value="Small"
               >Small (10 acres)</mat-option
             >
@@ -57,7 +60,7 @@
               >Medium (100 acres)</mat-option
             >
             <mat-option class="nav-page-item" value="Large"
-              >Large (?? acres)</mat-option
+              >Large (500 acres)</mat-option
             >
           </mat-select>
         </mat-form-field>

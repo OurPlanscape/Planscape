@@ -36,6 +36,12 @@
     line-height: 30px;
   }
 
+  .optional-label {
+    font-style: italic;
+    padding-left: 4px;
+    color: $color-text-gray;
+  }
+
   .modal-alert {
     @include xs-label();
     color: $color-main-blue;
