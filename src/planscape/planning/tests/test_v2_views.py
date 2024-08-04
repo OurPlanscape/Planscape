@@ -806,7 +806,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
 
-        self.la_county_geo = _load_geojson_fixture("la_county.geojson")
+        self.la_region = _load_geojson_fixture("la_region.geojson")
         self.la_features = _load_geojson_fixture("la_features.geojson")
         self.bayarea_geo = _load_geojson_fixture("bayarea.geojson")
 

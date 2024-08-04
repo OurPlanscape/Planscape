@@ -67,16 +67,28 @@ def json_to_geometry(geojson):
     return GEOSGeometry(geom, srid=4326)
 
 
-def is_inside(larger_geometry, smaller_geometry):
-    larger_geom = None
-    smaller_geom = None
+def create_geos_geometry(geojson_data):
+    if isinstance(geojson_data, str):
+        geojson_data = json.loads(geojson_data)
+    geometry = geojson_data["features"][0]["geometry"]
+    geometry_json = json.dumps(geometry)
+    try:
+        geos_geom = GEOSGeometry(geometry_json)
+        if geos_geom.srid is None:
+            geos_geom.srid = 4326
+        return geos_geom
+    except Exception as e:
+        logger.error(f"Could not convert to GEOSGeometry: {e}")
+        raise e
 
+
+def is_inside(larger_geometry, smaller_geometry):
     try:
         larger_geom = GEOSGeometry(larger_geometry)
         if larger_geom.srid != 4326:
             larger_geom = larger_geom.transform(4326, clone=True)
     except Exception as e:
-        logger.error(f"Could not convert larger shape to compare containment {e}")
+        logger.error(f"Error in is_inside function: {e}")
         raise e
     try:
         smaller_geom = GEOSGeometry(smaller_geometry)
