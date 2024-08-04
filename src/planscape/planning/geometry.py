@@ -62,17 +62,26 @@ def get_acreage(geometry: GEOSGeometry):
     return acres
 
 
+def json_to_geometry(geojson):
+    geom = json.dumps(geojson["features"][0]["geometry"])
+    return GEOSGeometry(geom, srid=4326)
+
+
 def is_inside(larger_geometry, smaller_geometry):
     larger_geom = None
     smaller_geom = None
 
     try:
-        larger_geom = GEOSGeometry(larger_geometry, srid=4326) 
+        larger_geom = GEOSGeometry(larger_geometry)
+        if larger_geom.srid != 4326:
+            larger_geom = larger_geom.transform(4326, clone=True)
     except Exception as e:
         logger.error(f"Could not convert larger shape to compare containment {e}")
         raise e
     try:
-        smaller_geom = GEOSGeometry(smaller_geometry, srid=4236)
+        smaller_geom = GEOSGeometry(smaller_geometry)
+        if smaller_geom.srid != 4326:
+            smaller_geom = smaller_geom.transform(4326, clone=True)
     except Exception as e:
         logger.error(f"Could not convert smaller shape to compare containment {e}")
         raise e

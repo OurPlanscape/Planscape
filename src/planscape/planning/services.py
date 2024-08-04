@@ -107,7 +107,7 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
 def feature_to_project_area(idx: int, user: UserType, scenario: Scenario, feature):
     try:
         project_area = {
-            "geometry": coerce_geometry(feature),
+            "geometry": GEOSGeometry(feature, 4269),
             "name": f"{scenario.name} project:{idx}",
             "created_by": user.pk,
             "scenario": scenario.pk,
@@ -133,45 +133,43 @@ def create_scenario_from_upload(
     stand_size: str,
     uploaded_geom,
 ) -> Scenario:
-    
-    scenario = Scenario.objects.create(
-        user, 
-    )
 
-    # TODO: refactor
-    # ALSO TODO: what other configs do we need to set as default?
-    # or should we use a different serializer for validation?
+    scenario = create_scenario(user, planning_area=planningarea, name=scenario_name)
 
-    scenario.configuration["stand_size"] = stand_size
-    scenario.configuration["weights"] = []
-    scenario.configuration["est_cost"] = 1
-    scenario.configuration["excluded_areas"] = []
-    scenario.configuration["stand_thresholds"] = []
-    scenario.configuration["global_thresholds"] = []
-    scenario.configuration["scenario_priorities"] = [
-        "probability_of_fire_severity_high"
-    ]
-    # TODO: we shouldn't hardcode this?
-    scenario.configuration["max_treatment_area_ratio"] = 100
-    scenario.configuration["scenario_output_fields"] = [
-        "probability_of_fire_severity_high",
-        "total_fuel_exposed_to_fire",
-        "dead_and_down_carbon",
-        "structure_exposure",
-        "damage_potential_wui",
-        "standing_dead_and_ladder_fuels",
-        "available_standing_biomass",
-        "sawtimber_biomass",
-        "california_spotted_owl_habitat",
-    ]
+    # # TODO: refactor
+    # # ALSO TODO: what other configs do we need to set as default?
+    # # or should we use a different serializer for validation?
 
-    scenario.status = ScenarioStatus.ACTIVE
+    # scenario.configuration["stand_size"] = stand_size
+    # scenario.configuration["weights"] = []
+    # scenario.configuration["est_cost"] = 1
+    # scenario.configuration["excluded_areas"] = []
+    # scenario.configuration["stand_thresholds"] = []
+    # scenario.configuration["global_thresholds"] = []
+    # scenario.configuration["scenario_priorities"] = [
+    #     "probability_of_fire_severity_high"
+    # ]
+    # # TODO: we shouldn't hardcode this?
+    # scenario.configuration["max_treatment_area_ratio"] = 100
+    # scenario.configuration["scenario_output_fields"] = [
+    #     "probability_of_fire_severity_high",
+    #     "total_fuel_exposed_to_fire",
+    #     "dead_and_down_carbon",
+    #     "structure_exposure",
+    #     "damage_potential_wui",
+    #     "standing_dead_and_ladder_fuels",
+    #     "available_standing_biomass",
+    #     "sawtimber_biomass",
+    #     "california_spotted_owl_habitat",
+    # ]
 
-    scenario.save()
-    scenario_result = ScenarioResult.objects.create(scenario=scenario)
-    # TODO: and here? should this be default?
-    scenario_result.status = ScenarioResultStatus.SUCCESS
-    scenario_result.save()
+    # scenario.status = ScenarioStatus.ACTIVE
+
+    # scenario.save()
+    # scenario_result = ScenarioResult.objects.create(scenario=scenario)
+    # # TODO: and here? should this be default?
+    # scenario_result.status = ScenarioResultStatus.SUCCESS
+    # scenario_result.save()
 
     action.send(
         user,

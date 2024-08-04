@@ -94,7 +94,8 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
     @action(methods=["POST"], detail=True)
     def upload_shapefiles(self, request, pk=None):
-        uploaded_geom = {**request.data["geometry"]}
+        print(f"Here is the geometry from the request: {request.data['geometry']}")
+        uploaded_geom = request.data["geometry"]
         pa = PlanningArea.objects.get(pk=pk)
 
         # Ensure that planning area contains the uploaded geometry
