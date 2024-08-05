@@ -2,7 +2,8 @@
   [matMenuTriggerFor]="menu"
   mat-icon-button
   aria-label="more options"
-  class="more-menu-button">
+  class="more-menu-button"
+  (click)="stopClickEvent($event)">
   <mat-icon>more_vert</mat-icon>
 </button>
 <mat-menu #menu="matMenu" class="planning-area-menu">
