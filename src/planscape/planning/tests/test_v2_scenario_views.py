@@ -98,6 +98,21 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
+    def test_retrieve_scenario_shared_plan(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("id"), self.scenario.id)
+
     def test_list_scenario(self):
         self.client.force_authenticate(self.owner_user)
         response = self.client.get(
