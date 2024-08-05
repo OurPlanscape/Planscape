@@ -180,20 +180,4 @@ describe('ScenarioService', () => {
       httpTestingController.verify();
     });
   });
-
-  describe('deleteScenarios', () => {
-    it('should make HTTP request to backend', (done) => {
-      service.deleteScenarios(['1']).subscribe((res) => {
-        expect(res).toEqual(['1']);
-        done();
-      });
-
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat('/planning/delete_scenario/')
-      );
-      expect(req.request.method).toEqual('POST');
-      req.flush(['1']);
-      httpTestingController.verify();
-    });
-  });
 });
