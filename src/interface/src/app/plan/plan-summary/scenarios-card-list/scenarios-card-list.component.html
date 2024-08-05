@@ -2,4 +2,6 @@
   *ngFor="let s of scenarios"
   [name]="s.name"
   [creator]="s.creator"
-  status="Done"></sg-scenario-card>
+  [areas]="s.max_treatment_area"
+  [created_at]="s.created_at"
+  [status]="s.scenario_result?.status"></sg-scenario-card>

@@ -20,7 +20,8 @@ import { ButtonComponent } from '../button/button.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
-export type ScenarioStatus = 'Running' | 'Done' | 'Failed';
+import { ScenarioResultStatus } from '@types';
+
 /**
  * Scenario Card for displaying scenario data in a results list
  */
@@ -43,34 +44,48 @@ export type ScenarioStatus = 'Running' | 'Done' | 'Failed';
   styleUrl: './scenario-card.component.scss',
 })
 export class ScenarioCardComponent {
-  @Input() status: ScenarioStatus = 'Running';
+  @Input() status: ScenarioResultStatus | undefined = 'SUCCESS';
   @Input() name = '';
-  @Input() areas = 0;
+  @Input() areas? = 0;
   @Input() budget = 0;
   @Input() treatmentPlansCount = 0;
   @Input() creator?: string | undefined = '';
-  @Input() created_at = '';
+  @Input() created_at? = '';
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
   @Output() archiveScenario = new EventEmitter();
 
-  readonly chipsStatus: Record<ScenarioStatus, StatusChipStatus> = {
-    Done: 'success',
-    Running: 'running',
-    Failed: 'failed',
+  readonly chipsStatus: Record<ScenarioResultStatus, StatusChipStatus> = {
+    FAILURE: 'failed',
+    LOADING: 'running',
+    RUNNING: 'running',
+    NOT_STARTED: 'running',
+    PANIC: 'failed',
+    PENDING: 'running',
+    SUCCESS: 'success',
+    TIMED_OUT: 'failed',
   };
 
   hasFailed(): boolean {
-    return this.status === 'Failed';
+    if (this.status) {
+      return this.chipsStatus[this.status] == 'failed';
+    }
+    return false;
   }
 
   isRunning(): boolean {
-    return this.status === 'Running';
+    if (this.status) {
+      return this.chipsStatus[this.status] == 'running';
+    }
+    return false;
   }
 
   isDone(): boolean {
-    return this.status === 'Done';
+    if (this.status) {
+      return this.chipsStatus[this.status] == 'success';
+    }
+    return false;
   }
 
   @HostBinding('class.disabled-content')
@@ -79,6 +94,9 @@ export class ScenarioCardComponent {
   }
 
   getChipStatus(): StatusChipStatus {
-    return this.chipsStatus[this.status];
+    if (this.status) {
+      return this.chipsStatus[this.status];
+    }
+    return 'failed';
   }
 }

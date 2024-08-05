@@ -39,6 +39,9 @@
     gap: 1em;
     align-items: center;
   }
+  .scenario-name {
+    @include h4();
+  }
   .controls-section {
     display: flex;
     flex-direction: row;

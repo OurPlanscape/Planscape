@@ -21,6 +21,8 @@ import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
+  max_treatment_area?: number;
+  created_at?: string;
 }
 
 @UntilDestroy()
@@ -57,6 +59,7 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   private pollForChanges() {
+    return;
     // we might want to check if any scenario is still pending in order to poll
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
@@ -69,7 +72,7 @@ export class SavedScenariosComponent implements OnInit {
       .pipe(take(1))
       .subscribe((scenarios) => {
         this.totalScenarios = scenarios.length;
-
+        console.log('here is one:', scenarios[0]);
         this.scenariosForUser = this.showOnlyMyScenarios
           ? scenarios.filter((s) => s.user === this.user$.value?.id)
           : scenarios;
