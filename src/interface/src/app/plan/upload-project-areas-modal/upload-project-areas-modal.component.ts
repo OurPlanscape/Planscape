@@ -63,7 +63,8 @@ export class UploadProjectAreasModalComponent {
   uploadProjectsForm: FormGroup;
   planning_area_name = 'Planning Area';
   file: File | null = null;
-  uploadStatus: 'default' | 'failed' | 'running' | 'uploaded' = 'default';
+  uploadElementStatus: 'default' | 'failed' | 'running' | 'uploaded' =
+    'default';
   standSize = 'Medium';
   uploadError?: string | null = null;
   alertMessage?: string | null = null;
@@ -84,16 +85,15 @@ export class UploadProjectAreasModalComponent {
 
   handleFileEvent(file: File | undefined): void {
     this.uploadError = null;
-    this.uploadStatus = 'running';
+    this.uploadElementStatus = 'running';
 
     if (file !== undefined) {
-      this.uploadStatus = 'uploaded';
+      this.uploadElementStatus = 'uploaded';
       this.file = file;
-      this.uploadProjectsForm.patchValue({ file: file });
       this.convertToGeoJson(this.file);
     } else {
       // User clicked to remove file
-      this.uploadStatus = 'default';
+      this.uploadElementStatus = 'default';
       this.file = null;
     }
   }
@@ -122,9 +122,11 @@ export class UploadProjectAreasModalComponent {
         // Note: this has to be set to a value in order for the 'create' button to be enabled
         this.geometries = geojson;
       } else {
+        this.uploadElementStatus = 'failed';
         this.uploadError = 'The file cannot be converted to GeoJSON.';
       }
     } catch (e) {
+      this.uploadElementStatus = 'failed';
       this.uploadError =
         'The zip file does not appear to contain a valid shapefile.';
     }
@@ -143,7 +145,7 @@ export class UploadProjectAreasModalComponent {
         this.uploadProjectsForm.get('standSize')?.value
       );
     } else {
-      this.uploadStatus = 'failed';
+      this.uploadElementStatus = 'failed';
       this.uploadError = 'A file was not uploaded.';
     }
     this.uploadData();

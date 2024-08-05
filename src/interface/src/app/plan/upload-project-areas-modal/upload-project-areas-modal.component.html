@@ -37,6 +37,7 @@
         <div class="field-label">Upload a project area</div>
         <div class="file-upload-input">
           <sg-file-upload
+            [uploadStatus]="uploadElementStatus"
             (fileEvent)="handleFileEvent($event)"
             supportedFileInfo="zip archive must contain DPF, SHP, SPX, CPG, PRJ files." />
         </div>
