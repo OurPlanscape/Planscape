@@ -119,7 +119,7 @@
     <tr
       mat-row
       *matRowDef="let row; columns: columns | keyPipe"
-      (click)="viewPlan(row, $event)"></tr>
+      (click)="viewPlan(row)"></tr>
   </table>
 
   <sg-paginator

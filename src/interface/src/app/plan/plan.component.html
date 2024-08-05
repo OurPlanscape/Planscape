@@ -1,7 +1,15 @@
 <app-nav-bar
   (goBack)="goBack()"
   [breadcrumbs]="(breadcrumbs$ | async) || []"
-  [area]="(area$ | async) || 'SCENARIOS'"></app-nav-bar>
+  [area]="(area$ | async) || 'SCENARIOS'">
+  <ng-container *appFeatureFlag="'new_planning_area'">
+    <ng-container *ngIf="(area$ | async) === 'SCENARIOS'">
+      <app-planning-area-titlebar-menu
+        *ngIf="currentPlan$ | async; let currentPlan"
+        [plan]="currentPlan"></app-planning-area-titlebar-menu>
+    </ng-container>
+  </ng-container>
+</app-nav-bar>
 <div class="root-container">
   <app-resource-unavailable
     *ngIf="planNotFound"
