@@ -62,41 +62,35 @@ def get_acreage(geometry: GEOSGeometry):
     return acres
 
 
-def json_to_geometry(geojson):
-    geom = json.dumps(geojson["features"][0]["geometry"])
-    return GEOSGeometry(geom, srid=4326)
+# TODO: make this work more like the coerce_geometry function, but not union
+def geojson_to_geosgeometry(geojson_data):
+    # the geojson could be a few different things...
 
-
-def create_geos_geometry(geojson_data):
+    # if this is a string, convert it to a dict
     if isinstance(geojson_data, str):
         geojson_data = json.loads(geojson_data)
+
+    # if this is a feature collection
+    # ...
+
+    # if this is a feature...
+
     geometry = geojson_data["features"][0]["geometry"]
     geometry_json = json.dumps(geometry)
     try:
         geos_geom = GEOSGeometry(geometry_json)
-        if geos_geom.srid is None:
-            geos_geom.srid = 4326
+        if geos_geom.srid != 4326:
+            geos_geom.transform(4326, clone=True)
         return geos_geom
+
     except Exception as e:
         logger.error(f"Could not convert to GEOSGeometry: {e}")
         raise e
 
 
-def is_inside(larger_geometry, smaller_geometry):
-    try:
-        larger_geom = GEOSGeometry(larger_geometry)
-        if larger_geom.srid != 4326:
-            larger_geom = larger_geom.transform(4326, clone=True)
-    except Exception as e:
-        logger.error(f"Error in is_inside function: {e}")
-        raise e
-    try:
-        smaller_geom = GEOSGeometry(smaller_geometry)
-        if smaller_geom.srid != 4326:
-            smaller_geom = smaller_geom.transform(4326, clone=True)
-    except Exception as e:
-        logger.error(f"Could not convert smaller shape to compare containment {e}")
-        raise e
+def is_inside(larger_geometry, smaller_geometry) -> bool:
+    larger_geom = geojson_to_geosgeometry(larger_geometry)
+    smaller_geom = geojson_to_geosgeometry(smaller_geometry)
 
     return larger_geom.contains(smaller_geom)
 

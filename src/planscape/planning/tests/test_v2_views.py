@@ -5,7 +5,6 @@ from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
-from planning.geometry import json_to_geometry
 from planning.models import RegionChoices
 from planning.tests.factories import PlanningAreaFactory, UserFactory
 from planning.tests.helpers import (
@@ -873,7 +872,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
             }
         }
 
-        la_geom = json.dumps(self.la_county_geo["features"][0]["geometry"])
+        la_geom = json.dumps(self.la_region["geometry"])
         self.planning_area = PlanningAreaFactory(
             user=self.owner_user,
             geometry=MultiPolygon(GEOSGeometry(la_geom)),
@@ -917,7 +916,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
     def test_create_uncontained_geometry(self):
         self.client.force_authenticate(self.owner_user)
         payload = {
-            "geometry": json.dumps(self.bayarea_geo["features"][0]["geometry"]),
+            "geometry": json.dumps(self.bayarea_geo),
             "name": "new scenario",
             "stand_size": "SMALL",
         }
