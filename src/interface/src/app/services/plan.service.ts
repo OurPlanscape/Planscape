@@ -141,7 +141,7 @@ export class PlanService {
       .pipe(map((result) => Math.round(result.area_acres)));
   }
 
-  //TODO: Probably move this its own service..
+  //TODO: This might be better in its own Service file
   uploadGeometryForNewScenario(
     shape: GeoJsonObject,
     scenarioName: string,

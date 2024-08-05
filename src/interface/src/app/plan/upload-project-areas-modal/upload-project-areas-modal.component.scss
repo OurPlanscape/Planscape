@@ -15,10 +15,6 @@
     width: 100%;
   }
 
-  ::ng-deep .input-container {
-    width: unset !important; // TODO: solve this to remove !important
-  }
-
   .file-upload-input {
     width: 100%;
   }

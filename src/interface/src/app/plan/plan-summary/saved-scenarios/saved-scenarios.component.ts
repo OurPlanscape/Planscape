@@ -213,10 +213,9 @@ export class SavedScenariosComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe((data) => {
-        if (data?.deletedAccount) {
-          this.router.navigate(['login']);
-        }
+      .subscribe((response) => {
+        // TODO: handle response.
+        // if scenario was created, open another dialog
       });
   }
 }

@@ -86,23 +86,17 @@ export class UploadProjectAreasModalComponent {
     this.uploadError = null;
     this.uploadStatus = 'running';
 
-    if (file) {
+    if (file !== undefined) {
       this.uploadStatus = 'uploaded';
       this.file = file;
       this.uploadProjectsForm.patchValue({ file: file });
       this.convertToGeoJson(this.file);
-    } else if (file === undefined) {
+    } else {
       // User clicked to remove file
       this.uploadStatus = 'default';
       this.file = null;
-    } else {
-      // Unexpected issue
-      this.uploadStatus = 'failed';
-      this.uploadError = 'Could not upload file.';
     }
   }
-
-  // TODO: file removal click...
 
   canSubmit(): boolean {
     return this.uploadProjectsForm.valid && this.geometries !== null;
@@ -114,7 +108,6 @@ export class UploadProjectAreasModalComponent {
 
   async convertToGeoJson(file: File) {
     const reader = new FileReader();
-    //TODO: account for wrong file type, as well as other errors
     const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
       reader.onload = () => {
         resolve(reader.result as ArrayBuffer);
@@ -126,6 +119,7 @@ export class UploadProjectAreasModalComponent {
         fileAsArrayBuffer
       )) as GeoJSON.GeoJSON;
       if (geojson.type == 'FeatureCollection') {
+        // Note: this has to be set to a value in order for the 'create' button to be enabled
         this.geometries = geojson;
       } else {
         this.uploadError = 'The file cannot be converted to GeoJSON.';
@@ -136,14 +130,10 @@ export class UploadProjectAreasModalComponent {
     }
   }
 
-  handleCreateForm() {
+  handleCreateButton() {
     if (this.file) {
       const formData = new FormData();
-
-      // Append file data
       formData.append('file', this.file, this.file.name);
-
-      // Append additional form data
       formData.append(
         'scenarioName',
         this.uploadProjectsForm.get('scenarioName')?.value
@@ -156,11 +146,6 @@ export class UploadProjectAreasModalComponent {
       this.uploadStatus = 'failed';
       this.uploadError = 'A file was not uploaded.';
     }
-
-    // TODO: upon submission -- handle the following errors:
-    //  - files in zip are not in the right format
-    //  - project area not within the planning areas
-    //  - something else...
     this.uploadData();
   }
 
@@ -176,13 +161,14 @@ export class UploadProjectAreasModalComponent {
         .pipe(take(1))
         .subscribe({
           next: (response) => {
-            this.closeModal();
-            // TODO: show...some sort of successful feedback?
-            //  navigate to the scenario page?
+            this.dialogRef.close({ response: response });
           },
           error: (err: any) => {
-            if (err.error) {
+            if (err.error.error !== undefined) {
               this.uploadError = err.error.error;
+            } else {
+              this.uploadError =
+                'An unknown error occured when trying to create a scenario.';
             }
           },
         });
