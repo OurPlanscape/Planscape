@@ -41,6 +41,8 @@ import { PlanRoutingModule } from './plan-routing.module';
 import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
+import { ScenarioCardComponent } from '../../styleguide/scenario-card/scenario-card.component';
+import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/scenarios-card-list.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -92,6 +94,8 @@ import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-t
     ButtonComponent,
     DeleteDialogComponent,
     PlanningAreaTitlebarMenuComponent,
+    ScenarioCardComponent,
+    ScenariosCardListComponent,
   ],
 })
 export class PlanModule {}

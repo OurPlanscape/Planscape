@@ -10,7 +10,6 @@ import {
   MatLegacyDialog as MatDialog,
   MatLegacyDialogRef as MatDialogRef,
 } from '@angular/material/legacy-dialog';
-
 import { canAddScenario } from '../../permissions';
 import {
   SNACK_BOTTOM_NOTICE_CONFIG,

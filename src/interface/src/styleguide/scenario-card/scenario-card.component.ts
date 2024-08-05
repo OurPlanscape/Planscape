@@ -48,7 +48,7 @@ export class ScenarioCardComponent {
   @Input() areas = 0;
   @Input() budget = 0;
   @Input() treatmentPlansCount = 0;
-  @Input() creator = '';
+  @Input() creator?: string | undefined = '';
   @Input() created_at = '';
 
   @Output() openScenario = new EventEmitter();
