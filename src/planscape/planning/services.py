@@ -23,6 +23,7 @@ from planning.models import (
     ScenarioStatus,
 )
 from planning.tasks import async_forsys_run
+from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 from django.contrib.auth.models import AbstractUser
@@ -156,9 +157,12 @@ def get_max_treatable_stand_count(
 
 
 def get_acreage(geometry: GEOSGeometry) -> float:
-    epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
-    acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
-    return acres
+    try:
+        epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
+        acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
+        return acres
+    except Exception:
+        raise InvalidGeometry("Could not reproject geometry")
 
 
 def validate_scenario_treatment_ratio(

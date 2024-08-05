@@ -1,4 +1,5 @@
 import json
+from django.conf import settings
 from typing import Any, Dict, Union
 from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 
@@ -59,6 +60,13 @@ def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeome
             geometry = operation(geometry)
     except Exception:
         raise InvalidGeometry("Geometry is invalid and cannot be processed.")
+
+    try:
+        _ = geometry.transform(settings.AREA_SRID, clone=True)
+    except Exception:
+        raise InvalidGeometry(
+            ("Geometry could not be reprojected , thus it's invalid.")
+        )
 
     if not geometry.valid:
         raise InvalidGeometry("Geometry is invalid and cannot be used.")
