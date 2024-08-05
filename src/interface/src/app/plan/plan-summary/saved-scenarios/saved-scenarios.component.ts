@@ -72,7 +72,6 @@ export class SavedScenariosComponent implements OnInit {
       .pipe(take(1))
       .subscribe((scenarios) => {
         this.totalScenarios = scenarios.length;
-        console.log('here is one:', scenarios[0]);
         this.scenariosForUser = this.showOnlyMyScenarios
           ? scenarios.filter((s) => s.user === this.user$.value?.id)
           : scenarios;
