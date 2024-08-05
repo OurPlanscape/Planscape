@@ -214,7 +214,7 @@ export class SavedScenariosComponent implements OnInit {
       })
       .afterClosed()
       .subscribe((response) => {
-        // TODO: handle response.
+        // TODO: Placeholder -- handle response.
         // if scenario was created, open another dialog
       });
   }
