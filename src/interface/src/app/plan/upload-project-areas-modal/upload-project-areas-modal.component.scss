@@ -1,0 +1,53 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  .upload-scenario-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding-left: 15px;
+    padding-right: 20px;
+    padding-top: 10px;
+  }
+
+  ::ng-deep .input-wrapper {
+    width: 100%;
+  }
+
+  .file-upload-input {
+    width: 100%;
+  }
+
+  .stand-picker-field {
+    width: 100%;
+  }
+
+  .field-label {
+    height: 28px;
+    color: $color-dark-gray;
+    flex-direction: row;
+    display: flex;
+    justify-content: space-between;
+    line-height: 30px;
+  }
+
+  .optional-label {
+    font-style: italic;
+    padding-left: 4px;
+    color: $color-text-gray;
+  }
+
+  .modal-alert {
+    @include xs-label();
+    color: $color-main-blue;
+    width: 100%;
+    height: 48px;
+    background-color: $color-soft-light-blue;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 1em;
+    padding-left: 1em;
+  }
+}

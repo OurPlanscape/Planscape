@@ -38,6 +38,7 @@
     mat-raised-button
     type="button"
     [variant]="secondaryButtonVariant"
+    [disabled]="secondaryButtonDisabled"
     (click)="handleSecondaryButton()">
     {{ secondaryButtonText }}
   </button>
@@ -48,6 +49,7 @@
     mat-raised-button
     type="button"
     [variant]="primaryButtonVariant"
+    [disabled]="primaryButtonDisabled"
     (click)="handlePrimaryButton()">
     {{ primaryButtonText }}
   </button>

@@ -26,9 +26,10 @@ import {
 import { CurrencyPipe } from '@angular/common';
 import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
 import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+  MatDialog,
+  MatDialogRef,
+  MatDialogModule,
+} from '@angular/material/dialog';
 
 import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
@@ -90,6 +91,7 @@ describe('SavedScenariosComponent', () => {
         HttpClientTestingModule,
         LegacyMaterialModule,
         MatTableModule,
+        MatDialogModule,
         NoopAnimationsModule,
         FeaturesModule,
       ],
