@@ -59,10 +59,10 @@ export class ScenarioCardComponent {
   readonly chipsStatus: Record<ScenarioResultStatus, StatusChipStatus> = {
     FAILURE: 'failed',
     LOADING: 'running',
-    RUNNING: 'running',
     NOT_STARTED: 'running',
     PANIC: 'failed',
     PENDING: 'running',
+    RUNNING: 'running',
     SUCCESS: 'success',
     TIMED_OUT: 'failed',
   };

@@ -181,15 +181,6 @@
               highlightScenario($event)
             "></app-scenarios-card-list>
 
-          <!-- <app-scenarios-table-list
-            *ngIf="activeScenarios.length > 0"
-            [scenarios]="activeScenarios"
-            [highlightedScenarioRow]="highlightedScenarioRow"
-            (viewScenario)="viewScenario()"
-            (selectScenario)="
-              highlightScenario($event)
-            "></app-scenarios-table-list> -->
-
           <div class="empty-state" *ngIf="activeScenarios.length === 0">
             No active scenarios
           </div>
@@ -197,37 +188,19 @@
       </mat-tab>
       <mat-tab label="ARCHIVED">
         <mat-card-content>
-          <app-scenarios-table-list
+          <app-scenarios-card-list
             *ngIf="archivedScenarios.length > 0"
             [scenarios]="archivedScenarios"
             [highlightedScenarioRow]="highlightedScenarioRow"
             (viewScenario)="viewScenario()"
             (selectScenario)="
               highlightScenario($event)
-            "></app-scenarios-table-list>
+            "></app-scenarios-card-list>
           <div class="empty-state" *ngIf="archivedScenarios.length === 0">
             No scenarios in Archived.
           </div>
         </mat-card-content>
       </mat-tab>
     </mat-tab-group>
-
-    <mat-card-actions align="end">
-      <button
-        sg-button
-        *ngIf="showArchiveScenario"
-        [disabled]="!canArchiveScenario"
-        (click)="toggleScenarioStatus(selectedTabIndex === 0)"
-        [icon]="selectedTabIndex === 0 ? 'archive' : 'unarchive'">
-        {{ selectedTabIndex === 0 ? 'Archive' : 'Restore' }}
-      </button>
-      <button
-        sg-button
-        [disabled]="highlightedScenarioRow === null"
-        (click)="viewScenario()"
-        icon="description">
-        View scenario
-      </button>
-    </mat-card-actions>
   </app-section-loader>
 </div>
