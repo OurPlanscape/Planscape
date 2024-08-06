@@ -47,7 +47,7 @@ export class ScenarioCardComponent {
   @Input() status: ScenarioResultStatus | undefined = 'SUCCESS';
   @Input() name = '';
   @Input() areas? = 0;
-  @Input() budget = 0;
+  @Input() budget? = 0;
   @Input() treatmentPlansCount = 0;
   @Input() creator?: string | undefined = '';
   @Input() created_at? = '';

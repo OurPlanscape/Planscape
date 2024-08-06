@@ -23,6 +23,7 @@ export interface ScenarioRow extends Scenario {
   selected?: boolean;
   max_treatment_area?: number;
   created_at?: string;
+  max_budget?: number;
 }
 
 @UntilDestroy()
