@@ -3,26 +3,31 @@
 
 :host {
   @include xs-label();
-  box-sizing: border-box;
-  height: 140px;
-  left: 0px;
-  right: 0px;
-  top: 40px;
-  background: #ffffff;
+  align-items: center;
+  background-color: white;
+  border-radius: 4px;
   border: 1px solid $color-soft-gray;
   box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
-  border-radius: 4px;
+  box-sizing: border-box;
   display: inline-flex;
-  padding: 8px 12px;
-  justify-content: center;
-  align-items: center;
-  width: 100%;
-  background-color: white;
   flex-direction: column;
   gap: 1em;
+  height: 140px;
+  justify-content: center;
+  left: 0px;
+  padding: 8px 12px;
+  right: 0px;
+  top: 40px;
+  width: 100%;
+
+  &:hover {
+    background-color: $color-light-gray;
+  }
 
   &.disabled-content {
     color: $color-text-gray;
+    border: 1px solid $color-soft-gray;
+    background-color: white;
   }
 
   .title-row {

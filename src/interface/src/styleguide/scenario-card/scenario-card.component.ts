@@ -22,6 +22,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { ScenarioResultStatus } from '@types';
 
+export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
+
 /**
  * Scenario Card for displaying scenario data in a results list
  */
@@ -67,6 +69,17 @@ export class ScenarioCardComponent {
     TIMED_OUT: 'failed',
   };
 
+  readonly chipLabel: Record<ScenarioResultStatus, ScenarioResultLabel> = {
+    FAILURE: 'Failed',
+    LOADING: 'Running',
+    NOT_STARTED: 'Running',
+    PANIC: 'Failed',
+    PENDING: 'Running',
+    RUNNING: 'Running',
+    SUCCESS: 'Done',
+    TIMED_OUT: 'Failed',
+  };
+
   hasFailed(): boolean {
     if (this.status) {
       return this.chipsStatus[this.status] == 'failed';
@@ -98,5 +111,12 @@ export class ScenarioCardComponent {
       return this.chipsStatus[this.status];
     }
     return 'failed';
+  }
+
+  getChipLabel(): ScenarioResultLabel {
+    if (this.status) {
+      return this.chipLabel[this.status];
+    }
+    return 'Failed';
   }
 }

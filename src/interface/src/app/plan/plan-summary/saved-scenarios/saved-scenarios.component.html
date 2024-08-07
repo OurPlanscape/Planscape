@@ -44,14 +44,11 @@
         mat-align-tabs="start"
         (selectedTabChange)="tabChange($event)">
         <mat-tab label="ACTIVE">
-          what is this?
-
           <mat-card-content>
             <div class="empty-state" *ngIf="activeScenarios.length === 0">
               No active scenarios
             </div>
           </mat-card-content>
-
           <mat-card-content>
             <app-scenarios-table-list
               *ngIf="activeScenarios.length > 0"

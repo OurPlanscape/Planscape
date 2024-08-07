@@ -1,3 +1,6 @@
+@import 'mixins';
+@import 'colors';
+
 :host {
   display: flex;
   flex-wrap: wrap;

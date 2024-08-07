@@ -243,6 +243,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     updated_at = serializers.DateTimeField(required=False)
     created_at = serializers.DateTimeField(required=False)
     creator = serializers.CharField(source="creator_name", read_only=True)
+    planning_area_count = serializers.IntegerField(read_only=True, required=False)
     scenario_result = ScenarioResultSerializer(
         required=False,
         read_only=True,
