@@ -24,6 +24,7 @@ export interface ScenarioRow extends Scenario {
   max_treatment_area?: number;
   created_at?: string;
   max_budget?: number;
+  tx_plan_count?: number | undefined;
 }
 
 @UntilDestroy()

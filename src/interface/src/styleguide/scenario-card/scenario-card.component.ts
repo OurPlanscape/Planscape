@@ -50,7 +50,7 @@ export class ScenarioCardComponent {
   @Input() name = '';
   @Input() areas? = 0;
   @Input() budget? = 0;
-  @Input() treatmentPlansCount = 0;
+  @Input() treatmentPlansCount?: number | undefined = 0;
   @Input() creator?: string | undefined = '';
   @Input() created_at? = '';
 
