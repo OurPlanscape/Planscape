@@ -120,7 +120,7 @@ describe('ScenarioService', () => {
       };
 
       service.createScenario(scenario).subscribe((res) => {
-        expect(res).toEqual('1');
+        expect(res).toEqual({ ...scenario, id: '1' });
       });
 
       tick();
@@ -133,7 +133,7 @@ describe('ScenarioService', () => {
         configuration: backendConfig,
         status: 'ACTIVE',
       });
-      req.flush('1');
+      req.flush({ ...scenario, id: '1' });
 
       httpTestingController.verify();
     }));
