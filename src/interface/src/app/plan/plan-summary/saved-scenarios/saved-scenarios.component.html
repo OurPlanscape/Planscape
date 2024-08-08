@@ -164,6 +164,11 @@
       (change)="fetchScenarios()">
       Show only my scenarios
     </mat-slide-toggle>
+    <mat-select>
+      Sort by
+      <mat-option value="-created_at">Created Date (newest first)</mat-option>
+      <mat-option value="created_at">Created Date (oldest first)</mat-option>
+    </mat-select>
     <mat-tab-group
       mat-align-tabs="start"
       (selectedTabChange)="tabChange($event)">
