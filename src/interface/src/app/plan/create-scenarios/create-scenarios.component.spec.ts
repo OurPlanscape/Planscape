@@ -38,7 +38,6 @@ describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
   let fakePlanStateService: PlanStateService;
-  let fakeScenarioService: ScenarioService;
 
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
@@ -90,26 +89,23 @@ describe('CreateScenariosComponent', () => {
 
     fakeGetScenario = new BehaviorSubject(fakeScenario);
 
-    fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
-      'ScenarioService',
-      {
-        createScenario: of('1'),
-        getScenario: of(fakeScenario),
-        getScenariosForPlan: of([
-          {
-            id: '1',
-            name: 'name',
-            planning_area: '1',
-            createdTimestamp: 100,
-            configuration: {
-              id: 1,
-              max_budget: 200,
-            },
-            status: 'ACTIVE',
-          },
-        ]),
-      }
-    );
+    const demoScenario: Scenario = {
+        id: '1',
+        name: 'name',
+        planning_area: '1',
+        configuration: {
+          max_budget: 200,
+        },
+        status: 'ACTIVE',
+      },
+      fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
+        'ScenarioService',
+        {
+          createScenario: of(demoScenario),
+          getScenario: of(fakeScenario),
+          getScenariosForPlan: of([demoScenario]),
+        }
+      );
     fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
       'PlanStateService',
       {
