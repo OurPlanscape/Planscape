@@ -699,6 +699,8 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(201, response.status_code)
         self.assertEqual(1, PlanningArea.objects.count())
+        data = response.json()
+        self.assertIsNotNone(data.get("id"))
 
 
 class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
