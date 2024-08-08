@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, Observable, take } from 'rxjs';
+import { catchError, Observable } from 'rxjs';
 import { Scenario, ScenarioConfig } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -56,25 +56,6 @@ export class ScenarioService {
     return this.http.post<number>(url, {
       withCredentials: true,
     });
-  }
-
-  /** Updates a scenario with new notes. */
-  updateScenarioNotes(scenario: Scenario): Observable<number> {
-    const url = environment.backend_endpoint.concat(
-      '/planning/update_scenario/'
-    );
-    return this.http
-      .patch<number>(
-        url,
-        {
-          id: scenario.id,
-          notes: scenario.notes,
-        },
-        {
-          withCredentials: true,
-        }
-      )
-      .pipe(take(1));
   }
 
   downloadCsvData(scenarioId: string): Observable<any> {

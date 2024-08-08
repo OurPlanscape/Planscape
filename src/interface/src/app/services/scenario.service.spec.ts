@@ -8,7 +8,6 @@ import {
 } from '@angular/common/http/testing';
 import { PlanService } from './plan.service';
 import { of } from 'rxjs';
-import { environment } from '../../environments/environment';
 
 describe('ScenarioService', () => {
   let service: ScenarioService;
@@ -137,41 +136,5 @@ describe('ScenarioService', () => {
 
       httpTestingController.verify();
     }));
-  });
-
-  describe('updateScenarioNotes', () => {
-    it('should make HTTP request to backend', () => {
-      const scenarioConfig: ScenarioConfig = {
-        est_cost: undefined,
-        max_budget: undefined,
-        min_distance_from_road: undefined,
-        max_slope: undefined,
-        max_treatment_area_ratio: undefined,
-        treatment_question: undefined,
-      };
-      const scenario: Scenario = {
-        id: '1',
-        name: 'name',
-        planning_area: '1',
-        configuration: scenarioConfig,
-        notes: 'hello',
-        status: 'ACTIVE',
-      };
-
-      service.updateScenarioNotes(scenario).subscribe((res) => {
-        expect(res).toEqual(1);
-      });
-
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat('/planning/update_scenario/')
-      );
-      expect(req.request.body).toEqual({
-        id: scenario.id,
-        notes: scenario.notes,
-      });
-      expect(req.request.method).toEqual('PATCH');
-      req.flush(1);
-      httpTestingController.verify();
-    });
   });
 });
