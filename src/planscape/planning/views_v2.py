@@ -74,7 +74,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = PlanningArea.objects.list_for_api(user=user)
+        qs = PlanningArea.objects.list_for_api(user=user).select_related("user")
         return qs
 
     def create(self, request, *args, **kwargs):
@@ -127,7 +127,10 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = Scenario.objects.list_by_user(user=user)
+        qs = Scenario.objects.list_by_user(user=user).select_related(
+            "planning_area",
+            "user",
+        )
         return qs
 
     def create(self, request, *args, **kwargs):
