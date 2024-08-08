@@ -9,11 +9,6 @@ import { MapService } from './map.service';
 import { MOCK_FEATURE_COLLECTION, MOCK_PLAN } from './mocks';
 import { environment } from '../../environments/environment';
 
-// TODO Make test for getting scenario results
-// TODO Make test for call to create project area
-// TODO Make test for call to bulk create project area
-// TODO 'createPlan' => it('should update state when response is a success' test once ProjectConfig Interface is replaced
-
 describe('PlanService', () => {
   let httpTestingController: HttpTestingController;
   let service: PlanService;
@@ -31,36 +26,12 @@ describe('PlanService', () => {
 
   describe('deletePlan', () => {
     it('should make HTTP post request to DB for a single ID', () => {
-      service.deletePlan(['1']).subscribe((res) => {
-        expect(res).toEqual('1');
-      });
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat(
-          '/planning/delete_planning_area/?id=1'
-        )
-      );
+      service.deletePlan(1).subscribe(() => {});
+      const req = httpTestingController.expectOne(service.v2basePath + '1');
 
-      expect(req.request.method).toEqual('POST');
-      expect(req.request.body['id']).toEqual(['1']);
+      expect(req.request.method).toEqual('DELETE');
 
       req.flush('1');
-      httpTestingController.verify();
-    });
-
-    it('should make HTTP post request to DB for multiple IDs', () => {
-      service.deletePlan(['1', '2', '3']).subscribe((res) => {
-        expect(res).toEqual('[1,2,3]');
-      });
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat(
-          '/planning/delete_planning_area/?id=1,2,3'
-        )
-      );
-
-      expect(req.request.method).toEqual('POST');
-      expect(req.request.body['id']).toEqual(['1', '2', '3']);
-
-      req.flush('[1,2,3]');
       httpTestingController.verify();
     });
   });
@@ -71,11 +42,7 @@ describe('PlanService', () => {
         expect(res).toEqual(mockPlan);
       });
 
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat(
-          '/planning/get_planning_area_by_id/?id=1'
-        )
-      );
+      const req = httpTestingController.expectOne(service.v2basePath + '1');
       req.flush(mockPlan);
       httpTestingController.verify();
     });

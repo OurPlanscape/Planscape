@@ -169,7 +169,7 @@ export class PlanningAreasDataSource extends DataSource<PreviewPlan> {
   }
 
   deletePlan(planId: number) {
-    return this.planService.deletePlan([String(planId)]).pipe(
+    return this.planService.deletePlan(planId).pipe(
       tap(() => {
         // reload data after removing plan
         this.loadData();
