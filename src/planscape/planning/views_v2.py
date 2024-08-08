@@ -15,6 +15,7 @@ from planning.filters import (
 from planning.models import PlanningArea, ProjectArea, Scenario
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
+    CreatePlanningAreaSerializer,
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
@@ -50,6 +51,12 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         "updated_at",
         "user",
     ]
+    serializer_class = PlanningAreaSerializer
+    serializer_classes = {
+        "create": CreatePlanningAreaSerializer,
+        "list": ListPlanningAreaSerializer,
+        "retrieve": PlanningAreaSerializer,
+    }
     pagination_class = pagination.LimitOffsetPagination
     filterset_class = PlanningAreaFilter
     filter_backends = [
@@ -59,9 +66,10 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     ]
 
     def get_serializer_class(self):
-        if self.action == "list":
-            return ListPlanningAreaSerializer
-        return PlanningAreaSerializer
+        return (
+            self.serializer_classes.get(self.action, self.serializer_class)
+            or self.serializer_class
+        )
 
     def get_queryset(self):
         user = self.request.user
@@ -71,12 +79,14 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        data = {
-            "user": request.user,
-            **serializer.validated_data,
-        }
-        planning_area = create_planning_area(**data)
-        out_serializer = PlanningAreaSerializer(instance=planning_area)
+
+        planning_area = create_planning_area(**serializer.validated_data)
+        out_serializer = PlanningAreaSerializer(
+            instance=planning_area,
+            context={
+                "request": request,
+            },
+        )
         headers = self.get_success_headers(out_serializer.data)
         return Response(
             serializer.data,
