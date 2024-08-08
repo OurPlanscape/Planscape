@@ -40,12 +40,19 @@
   font-weight: 600;
   line-height: 32px;
   text-align: left;
-
   padding: 16px;
   padding-bottom: 10px;
   padding-top: 10px;
   border-bottom: 1px solid $color-soft-gray;
   height: 64px;
+
+  // short header
+  &.short {
+    height: 20px;
+    padding: 20px;
+    padding-bottom: 20px;
+    padding-bottom: 0;
+  }
 
   .leading-icon {
     &.info {
@@ -143,6 +150,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
+  &.centered {
+    justify-content: center;
+  }
 }
-
-

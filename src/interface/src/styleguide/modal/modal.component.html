@@ -1,4 +1,4 @@
-<section class="header" *ngIf="hasHeader">
+<section class="header" *ngIf="hasHeader" [ngClass]="{ short: shortHeader }">
   <div class="header-title">
     <mat-icon
       *ngIf="leadingIcon"
@@ -31,7 +31,10 @@
   }">
   <ng-content select="[modalBodyContent]"> </ng-content>
 </main>
-<section class="footer" *ngIf="hasFooter">
+<section
+  class="footer"
+  *ngIf="hasFooter"
+  [ngClass]="{ centered: centerFooter }">
   <button
     *ngIf="hasSecondaryButton"
     sg-button
