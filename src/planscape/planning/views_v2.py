@@ -16,6 +16,7 @@ from planning.models import PlanningArea, ProjectArea, Scenario
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     CreatePlanningAreaSerializer,
+    CreateScenarioSerializer,
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
@@ -87,9 +88,10 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
                 "request": request,
             },
         )
+        breakpoint()
         headers = self.get_success_headers(out_serializer.data)
         return Response(
-            serializer.data,
+            out_serializer.data,
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
@@ -116,6 +118,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     serializer_class = ScenarioSerializer
     serializer_classes = {
         "list": ListScenarioSerializer,
+        "create": CreateScenarioSerializer,
     }
     filterset_class = ScenarioFilter
     filter_backends = [
@@ -132,13 +135,12 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(
-            user=self.request.user,
             **serializer.validated_data,
         )
         out_serializer = ScenarioSerializer(instance=scenario)
         headers = self.get_success_headers(out_serializer.data)
         return Response(
-            serializer.data,
+            out_serializer.data,
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
