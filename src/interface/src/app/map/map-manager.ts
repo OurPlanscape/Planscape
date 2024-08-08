@@ -428,8 +428,8 @@ export class MapManager {
 
   /**
    * Converts drawingLayer to GeoJSON. If there are multiple polygons drawn,
-   * creates and returns MultiPolygon type GeoJSON. Otherwise, returns a Polygon
-   * type GeoJSON.
+   * creates and returns MultiPolygon Geometry. Otherwise, returns a Polygon
+   * Geometry.
    */
   convertToPlanningArea(): Geometry {
     const drawnGeoJson = this.drawingLayer.toGeoJSON() as FeatureCollection;

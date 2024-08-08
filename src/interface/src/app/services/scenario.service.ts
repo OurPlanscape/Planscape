@@ -31,14 +31,12 @@ export class ScenarioService {
   }
 
   /** Creates a scenario in the backend. Returns scenario ID. */
-  createScenario(scenarioParameters: any): Observable<any> {
+  createScenario(scenarioParameters: any): Observable<Scenario> {
     scenarioParameters['configuration'] = this.convertConfigToScenario(
       scenarioParameters['configuration']
     );
     return this.http
-      .post<{
-        id: number;
-      }>(this.v2Path, scenarioParameters, {
+      .post<Scenario>(this.v2Path, scenarioParameters, {
         withCredentials: true,
       })
       .pipe(
