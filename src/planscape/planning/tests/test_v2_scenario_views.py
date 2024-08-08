@@ -1,6 +1,5 @@
 import copy
-import json
-from django.contrib.auth.models import User
+from unittest import mock
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
@@ -40,7 +39,8 @@ class CreateScenarioTest(APITransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
 
-    def test_create_scenario(self):
+    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
+    def test_create_scenario(self, _forsys_run):
         self.client.force_authenticate(self.user)
         data = {
             "planning_area": self.planning_area.pk,
