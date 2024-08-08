@@ -88,6 +88,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
                 "request": request,
             },
         )
+        breakpoint()
         headers = self.get_success_headers(out_serializer.data)
         return Response(
             out_serializer.data,
