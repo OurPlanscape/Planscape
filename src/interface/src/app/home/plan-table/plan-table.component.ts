@@ -77,7 +77,7 @@ export class PlanTableComponent implements OnInit {
     if (!this.selectedPlan) {
       return;
     }
-    const planIdsToDelete: string[] = [String(this.selectedPlan.id)];
+    const id = this.selectedPlan.id;
     const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
       DeleteDialogComponent,
       {
@@ -91,10 +91,7 @@ export class PlanTableComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.planService
-            .deletePlan(planIdsToDelete)
-            .subscribe((_) => this.refresh());
-
+          this.planService.deletePlan(id).subscribe((_) => this.refresh());
           this.snackbar.open(
             `Successfully deleted plan: ${this.selectedPlan?.name}`,
             'Dismiss',

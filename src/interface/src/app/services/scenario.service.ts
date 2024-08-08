@@ -38,13 +38,9 @@ export class ScenarioService {
     return this.http
       .post<{
         id: number;
-      }>(
-        environment.backend_endpoint + '/planning/create_scenario/',
-        scenarioParameters,
-        {
-          withCredentials: true,
-        }
-      )
+      }>(this.v2Path, scenarioParameters, {
+        withCredentials: true,
+      })
       .pipe(
         catchError((error) => {
           const message =

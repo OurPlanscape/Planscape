@@ -68,11 +68,7 @@ describe('ScenarioService', () => {
         expect(res).toEqual(scenario);
       });
       tick();
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat(
-          '/planning/get_scenario_by_id/?id=1'
-        )
-      );
+      const req = httpTestingController.expectOne(service.v2Path + '1');
       expect(req.request.method).toEqual('GET');
       req.flush(scenario);
     }));
@@ -128,9 +124,7 @@ describe('ScenarioService', () => {
       });
 
       tick();
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat('/planning/create_scenario/')
-      );
+      const req = httpTestingController.expectOne(service.v2Path);
       expect(req.request.method).toEqual('POST');
 
       expect(req.request.body).toEqual({
