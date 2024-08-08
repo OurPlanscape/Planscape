@@ -5,12 +5,13 @@ from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
-from planning.models import RegionChoices
+from planning.models import PlanningArea, RegionChoices
 from planning.tests.factories import PlanningAreaFactory
 from planning.tests.helpers import (
     _create_scenario,
     reset_permissions,
 )
+from planscape.tests.factories import UserFactory
 
 
 class CreatorsTest(APITransactionTestCase):
@@ -667,6 +668,37 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             525377875.28772503,
         ]
         self.assertListEqual(acres, expected_acres)
+
+
+class CreatePlanningAreaTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.valid_data = {
+            "region_name": "sierra-nevada",
+            "name": "my dear planning area",
+            "geometry": {
+                "coordinates": [
+                    [
+                        [-120.27761490835294, 39.15564209283124],
+                        [-120.27761490835294, 39.038416306024885],
+                        [-120.16134706569323, 39.038416306024885],
+                        [-120.16134706569323, 39.15564209283124],
+                        [-120.27761490835294, 39.15564209283124],
+                    ]
+                ],
+                "type": "Polygon",
+            },
+        }
+
+    def test_create_returns_200(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:planningareas-list"),
+            self.valid_data,
+            format="json",
+        )
+        self.assertEqual(201, response.status_code)
+        self.assertEqual(1, PlanningArea.objects.count())
 
 
 class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
