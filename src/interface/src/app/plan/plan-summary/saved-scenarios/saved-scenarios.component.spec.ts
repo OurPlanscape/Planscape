@@ -25,17 +25,12 @@ import {
 } from '@shared';
 import { CurrencyPipe } from '@angular/common';
 import { MatLegacyTableModule as MatTableModule } from '@angular/material/legacy-table';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
 
 import { AuthService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { FeaturesModule } from '../../../features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
 import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';
-import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
 
 const SCENARIO_ROW: ScenarioRow = {
   id: '1',
@@ -79,7 +74,6 @@ describe('SavedScenariosComponent', () => {
             status: 'ACTIVE',
           },
         ]),
-        deleteScenarios: of(['1']),
       },
       {}
     );
@@ -124,21 +118,6 @@ describe('SavedScenariosComponent', () => {
     expect(fakeScenarioService.getScenariosForPlan).toHaveBeenCalledOnceWith(1);
 
     expect(component.activeScenarios.length).toEqual(1);
-  });
-
-  it('should delete selected scenarios', () => {
-    fixture.detectChanges();
-    component.highlightedScenarioRow = SCENARIO_ROW;
-
-    const dialog = TestBed.inject(MatDialog);
-    spyOn(dialog, 'open').and.returnValue({
-      afterClosed: () => of(true),
-    } as MatDialogRef<DeleteDialogComponent>);
-
-    component.confirmDeleteScenario();
-    fixture.detectChanges();
-
-    expect(fakeScenarioService.deleteScenarios).toHaveBeenCalledOnceWith(['1']);
   });
 
   it('clicking new configuration button should call service and navigate', fakeAsync(async () => {

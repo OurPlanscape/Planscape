@@ -109,10 +109,7 @@ export function createMultiPolygonFeatureCollection(
     );
   });
 
-  return {
-    type: 'FeatureCollection',
-    features: [newFeature],
-  } as FeatureCollection;
+  return newFeature.geometry;
 }
 
 export function regionMapCenters(region: Region): L.LatLngTuple {

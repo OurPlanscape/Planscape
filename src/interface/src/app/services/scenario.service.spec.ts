@@ -8,7 +8,6 @@ import {
 } from '@angular/common/http/testing';
 import { PlanService } from './plan.service';
 import { of } from 'rxjs';
-import { environment } from '../../environments/environment';
 
 describe('ScenarioService', () => {
   let service: ScenarioService;
@@ -68,11 +67,7 @@ describe('ScenarioService', () => {
         expect(res).toEqual(scenario);
       });
       tick();
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat(
-          '/planning/get_scenario_by_id/?id=1'
-        )
-      );
+      const req = httpTestingController.expectOne(service.v2Path + '1');
       expect(req.request.method).toEqual('GET');
       req.flush(scenario);
     }));
@@ -124,13 +119,11 @@ describe('ScenarioService', () => {
       };
 
       service.createScenario(scenario).subscribe((res) => {
-        expect(res).toEqual('1');
+        expect(res).toEqual({ ...scenario, id: '1' });
       });
 
       tick();
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat('/planning/create_scenario/')
-      );
+      const req = httpTestingController.expectOne(service.v2Path);
       expect(req.request.method).toEqual('POST');
 
       expect(req.request.body).toEqual({
@@ -139,61 +132,9 @@ describe('ScenarioService', () => {
         configuration: backendConfig,
         status: 'ACTIVE',
       });
-      req.flush('1');
+      req.flush({ ...scenario, id: '1' });
 
       httpTestingController.verify();
     }));
-  });
-
-  describe('updateScenarioNotes', () => {
-    it('should make HTTP request to backend', () => {
-      const scenarioConfig: ScenarioConfig = {
-        est_cost: undefined,
-        max_budget: undefined,
-        min_distance_from_road: undefined,
-        max_slope: undefined,
-        max_treatment_area_ratio: undefined,
-        treatment_question: undefined,
-      };
-      const scenario: Scenario = {
-        id: '1',
-        name: 'name',
-        planning_area: '1',
-        configuration: scenarioConfig,
-        notes: 'hello',
-        status: 'ACTIVE',
-      };
-
-      service.updateScenarioNotes(scenario).subscribe((res) => {
-        expect(res).toEqual(1);
-      });
-
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat('/planning/update_scenario/')
-      );
-      expect(req.request.body).toEqual({
-        id: scenario.id,
-        notes: scenario.notes,
-      });
-      expect(req.request.method).toEqual('PATCH');
-      req.flush(1);
-      httpTestingController.verify();
-    });
-  });
-
-  describe('deleteScenarios', () => {
-    it('should make HTTP request to backend', (done) => {
-      service.deleteScenarios(['1']).subscribe((res) => {
-        expect(res).toEqual(['1']);
-        done();
-      });
-
-      const req = httpTestingController.expectOne(
-        environment.backend_endpoint.concat('/planning/delete_scenario/')
-      );
-      expect(req.request.method).toEqual('POST');
-      req.flush(['1']);
-      httpTestingController.verify();
-    });
   });
 });
