@@ -18,20 +18,19 @@ export type ModalDialogVariant = 'success' | 'error' | 'pending' | 'alert';
 })
 export class ModalConfirmationDialogComponent {
   /**
-   * The status
+   * The variant of the dialog
    */
   @Input() infoType: ModalDialogVariant = 'alert';
-
   /**
-   * The status
+   * Icon to display, if not one of the defaults for this variant
    */
   @Input() dialogIcon?: string | null;
   /**
-   * Headline
+   * The content of the headling
    */
   @Input() headline?: string | null = '';
   /**
-   * Message
+   * The smaller message to display
    */
   @Input() message?: string | null = '';
   readonly IconByVariant: Record<ModalDialogVariant, string | null> = {
