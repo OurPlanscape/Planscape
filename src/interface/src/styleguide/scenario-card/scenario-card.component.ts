@@ -53,10 +53,12 @@ export class ScenarioCardComponent {
   @Input() treatmentPlansCount?: number | undefined = 0;
   @Input() creator?: string | undefined = '';
   @Input() created_at? = '';
+  @Input() selected?: boolean = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
   @Output() archiveScenario = new EventEmitter();
+  @Output() clicked = new EventEmitter();
 
   readonly chipsStatus: Record<ScenarioResultStatus, StatusChipStatus> = {
     FAILURE: 'failed',
@@ -106,6 +108,11 @@ export class ScenarioCardComponent {
     return this.isRunning();
   }
 
+  @HostBinding('class.selected')
+  get isSelected() {
+    return this.selected;
+  }
+
   getChipStatus(): StatusChipStatus {
     if (this.status) {
       return this.chipsStatus[this.status];
@@ -118,5 +125,9 @@ export class ScenarioCardComponent {
       return this.chipLabel[this.status];
     }
     return 'Failed';
+  }
+
+  handleClick(event: Event) {
+    this.clicked.emit(event);
   }
 }

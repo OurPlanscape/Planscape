@@ -22,12 +22,19 @@
 
   &:hover {
     background-color: $color-light-gray;
+    cursor: pointer;
+  }
+
+  &.selected {
+    border: 1px $color-original-purple solid;
+    background-color: white;
   }
 
   &.disabled-content {
     color: $color-text-gray;
     border: 1px solid $color-soft-gray;
     background-color: white;
+    cursor: default;
   }
 
   .title-row {
@@ -46,6 +53,10 @@
   }
   .scenario-name {
     @include h4();
+    width: 200px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
   }
   .controls-section {
     display: flex;

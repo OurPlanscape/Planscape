@@ -19,7 +19,6 @@ import {
 export class ScenariosCardListComponent {
   @Input() scenarios: ScenarioRow[] = [];
   @Input() highlightedScenarioRow: ScenarioRow | null = null;
-  @Output() viewScenario = new EventEmitter();
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
 
   hasResults(scenario: Scenario) {
@@ -29,13 +28,14 @@ export class ScenariosCardListComponent {
     );
   }
 
+  clickedScenario(row: ScenarioRow): void {
+    // TODO: still determining the behavior of clicking this vs selecting in drop-down
+    this.highlightedScenarioRow = row;
+    this.selectScenario.emit(row);
+  }
+
   calculateTotals(results: ScenarioResult) {
     const projectAreas = parseResultsToProjectAreas(results);
     return parseResultsToTotals(projectAreas);
-  }
-
-  highlightScenario(row: ScenarioRow): void {
-    this.highlightedScenarioRow = row;
-    this.selectScenario.emit(row);
   }
 }
