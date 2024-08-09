@@ -150,7 +150,9 @@
   align-items: center;
   justify-content: flex-end;
   gap: 16px;
+
   &.centered {
     justify-content: center;
+    gap: 8px;
   }
 }

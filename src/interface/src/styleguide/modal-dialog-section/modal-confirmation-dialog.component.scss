@@ -19,7 +19,13 @@
     justify-content: left;
     text-align: left;
     padding: 2em;
-    height: 120px;
+    padding-top: 2em;
+    padding-bottom: 2em;
+    height: 80px;
+    margin: 0;
+    padding-top: 0px;
+    padding-bottom: 0px;
+
     .message {
       text-align: left;
     }

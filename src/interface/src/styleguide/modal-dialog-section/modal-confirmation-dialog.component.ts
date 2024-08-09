@@ -6,8 +6,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 export type ModalDialogVariant = 'success' | 'error' | 'pending' | 'alert';
 
 /**
- * Modal Info Box
- * A component to be used within the modal body to express various states
+ * Modal Confirmation Dialog
+ * A component that can be used within the modal body as a confirmation dialog
  */
 @Component({
   selector: 'sg-modal-confirmation-dialog',
@@ -41,9 +41,9 @@ export class ModalConfirmationDialogComponent {
     alert: null,
   };
 
+  // if there isn't one specified, use the default
   displayIcon() {
     if (!this.dialogIcon) {
-      // if there isn't one specified, use the default
       return this.IconByVariant[this.infoType];
     }
     return this.dialogIcon;
