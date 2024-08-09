@@ -22,12 +22,12 @@
     height: 120px;
   }
   &.error {
-    color: red;
+    color: $color-dark-red;
     justify-content: center;
     text-align: center;
   }
   &.success {
-    color: green;
+    color: $color-brand-green;
   }
 
   .headline {
