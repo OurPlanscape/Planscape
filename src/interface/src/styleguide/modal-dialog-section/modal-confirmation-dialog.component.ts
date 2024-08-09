@@ -30,7 +30,7 @@ export class ModalConfirmationDialogComponent {
    */
   @Input() headline?: string | null = '';
   /**
-   * The smaller message to display
+   * The message content to display
    */
   @Input() message?: string | null = '';
   readonly IconByVariant: Record<ModalDialogVariant, string | null> = {
@@ -40,7 +40,7 @@ export class ModalConfirmationDialogComponent {
     alert: null,
   };
 
-  // if there isn't one specified, use the default
+  // if there an icon specified, use the default for the dialog variant
   displayIcon() {
     if (!this.dialogIcon) {
       return this.IconByVariant[this.infoType];
