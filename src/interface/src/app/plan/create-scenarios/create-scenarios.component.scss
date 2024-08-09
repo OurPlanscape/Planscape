@@ -50,6 +50,7 @@
 .create-scenarios-inner-wrapper {
   display: flex;
   flex-direction: column;
+  padding: 0 20px 10px;
 }
 
 .step-label-header {
@@ -86,14 +87,14 @@
     padding: 0 32px;
   }
 
-  ::ng-deep .mat-tab-body {
-    padding-bottom: 10px;
-  }
-
-  ::ng-deep .mat-tab-body-content {
-    padding: 0 20px;
-
-  }
+  //::ng-deep .mat-tab-body {
+  //  padding-bottom: 10px;
+  //}
+  //
+  //::ng-deep .mat-tab-body-content {
+  //  padding: 0 20px;
+  //
+  //}
 }
 
 
@@ -134,4 +135,25 @@
 
 .hidden {
   display: none;
+}
+
+sg-treatment-card {
+  margin: 10px 16px 0;
+}
+
+.results-container {
+  padding: 0 20px 10px;
+}
+
+.treatment-footer {
+  background-color: white;
+  padding: 16px 0;
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+}
+
+.new-treatment {
+  margin: 0 16px 0 auto;
 }
