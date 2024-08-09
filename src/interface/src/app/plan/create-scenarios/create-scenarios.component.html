@@ -99,13 +99,13 @@
         <mat-tab label="Treatments" *ngIf="showTreatmentsTab">
           <sg-treatment-card
             name="Placeholder treatment"
-            [routerLink]="['treatment', 1]"></sg-treatment-card>
+            (view)="goToTreatment(1)"></sg-treatment-card>
           <sg-treatment-card
             name="Placeholder treatment"
-            [routerLink]="['treatment', 2]"></sg-treatment-card>
+            (view)="goToTreatment(2)"></sg-treatment-card>
           <sg-treatment-card
             name="Placeholder treatment"
-            [routerLink]="['treatment', 3]"></sg-treatment-card>
+            (view)="goToTreatment(3)"></sg-treatment-card>
 
           <section class="treatment-footer">
             <button

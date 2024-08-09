@@ -2,6 +2,7 @@ import {
   Component,
   EventEmitter,
   HostBinding,
+  HostListener,
   Input,
   Output,
 } from '@angular/core';
@@ -46,5 +47,15 @@ export class TreatmentCardComponent {
   @HostBinding('class.disabled')
   get isDisabled() {
     return this.status === 'Running';
+  }
+
+  @HostListener('click')
+  viewTreatment() {
+    this.view.emit();
+  }
+
+  stopEventPropagation(event: Event) {
+    event.stopPropagation();
+    return false;
   }
 }

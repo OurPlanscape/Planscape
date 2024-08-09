@@ -11,7 +11,7 @@ import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { PlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -77,7 +77,8 @@ export class CreateScenariosComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService,
     private goalOverlayService: GoalOverlayService,
-    private metricsService: MetricsService
+    private metricsService: MetricsService,
+    private route: ActivatedRoute
   ) {}
 
   createForms() {
@@ -329,6 +330,10 @@ export class CreateScenariosComponent implements OnInit {
       this.scenarioState === 'SUCCESS' &&
       this.featureService.isFeatureEnabled('treatments')
     );
+  }
+
+  goToTreatment(id: number) {
+    this.router.navigate(['treatment', id], { relativeTo: this.route });
   }
 }
 
