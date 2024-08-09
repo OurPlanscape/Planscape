@@ -20,6 +20,9 @@
     text-align: left;
     padding: 2em;
     height: 120px;
+    .message {
+      text-align: left;
+    }
   }
   &.error {
     color: $color-dark-red;
@@ -42,9 +45,6 @@
     font-weight: 400;
     line-height: 22px;
     text-align: center;
-    &.alert {
-      text-align: left;
-    }
   }
 
   .centered-icon {

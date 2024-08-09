@@ -195,6 +195,21 @@ export const WithoutHeader: Story = {
   }),
 };
 
+export const CenteredFooter: Story = {
+  args: {
+    ...Default,
+    title: 'This has a centered footer',
+    centerFooter: true,
+  },
+  render: (args) => ({
+    props: args,
+    template: `<div ${containerStyle}>
+      <sg-modal ${argsToTemplate(args)}>
+        <div modalBodyContent>Are you sure you want to delete this?</div>
+      </sg-modal><div>`,
+  }),
+};
+
 export const WithScrollableContent: Story = {
   args: {
     ...Default,
