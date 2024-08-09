@@ -45,6 +45,7 @@ export class SavedScenariosComponent implements OnInit {
   scenariosForUser: ScenarioRow[] = [];
   selectedTabIndex = 0;
   totalScenarios = 0;
+  sortSelection = 'created_at';
 
   constructor(
     private route: ActivatedRoute,
@@ -68,9 +69,13 @@ export class SavedScenariosComponent implements OnInit {
       .subscribe(() => this.fetchScenarios());
   }
 
+  handleSortChange() {
+    this.fetchScenarios();
+  }
+
   fetchScenarios(): void {
     this.scenarioService
-      .getScenariosForPlan(this.plan?.id!)
+      .getScenariosForPlan(this.plan?.id!, this.sortSelection)
       .pipe(take(1))
       .subscribe((scenarios) => {
         this.totalScenarios = scenarios.length;

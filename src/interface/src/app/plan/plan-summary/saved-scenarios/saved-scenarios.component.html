@@ -157,18 +157,28 @@
         ? 'Click “New scenario” to start creating your scenarios.'
         : ''
     ">
-    <mat-slide-toggle
-      color="primary"
-      class="slide-toggle-my-scenarios"
-      [(ngModel)]="showOnlyMyScenarios"
-      (change)="fetchScenarios()">
-      Show only my scenarios
-    </mat-slide-toggle>
-    <mat-select>
-      Sort by
-      <mat-option value="-created_at">Created Date (newest first)</mat-option>
-      <mat-option value="created_at">Created Date (oldest first)</mat-option>
-    </mat-select>
+    <div class="scenario-list-controls">
+      <mat-slide-toggle
+        color="primary"
+        class="slide-toggle-my-scenarios"
+        [(ngModel)]="showOnlyMyScenarios"
+        (change)="fetchScenarios()">
+        Show only my scenarios
+      </mat-slide-toggle>
+      <div>
+        <mat-select
+          class="sort-select"
+          [(ngModel)]="sortSelection"
+          (selectionChange)="handleSortChange()">
+          <mat-option value="-created_at">
+            Sort by Created Date (newest first)
+          </mat-option>
+          <mat-option value="created_at">
+            Sort by Created Date (oldest first)
+          </mat-option>
+        </mat-select>
+      </div>
+    </div>
     <mat-tab-group
       mat-align-tabs="start"
       (selectedTabChange)="tabChange($event)">
