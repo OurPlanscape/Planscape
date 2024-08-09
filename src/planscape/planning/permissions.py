@@ -21,7 +21,7 @@ class ScenarioViewPermission(PlanscapePermission):
                 pa_id = request.data.get("planning_area") or None
                 if not pa_id:
                     return False
-                planning_area = PlanningArea.objects.get("planning_area")
+                planning_area = PlanningArea.objects.get(id=pa_id)
                 return PlanningAreaPermission.can_add_scenario(
                     request.user, planning_area
                 )
