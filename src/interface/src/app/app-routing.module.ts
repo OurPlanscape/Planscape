@@ -111,6 +111,13 @@ const routes: Routes = [
           import('./plan/plan.module').then((m) => m.PlanModule),
       },
       {
+        path: 'scenario/:id',
+        loadChildren: () =>
+          import('./treatments/treatments.module').then(
+            (m) => m.TreatmentsModule
+          ),
+      },
+      {
         path: 'account',
         loadChildren: () =>
           import('./account/account.module').then((m) => m.AccountModule),
