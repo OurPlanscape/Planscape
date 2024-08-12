@@ -1,5 +1,4 @@
 import { RouterModule, Routes } from '@angular/router';
-
 import { TreatmentOverviewComponent } from './treatment-overview/treatment-overview.component';
 import { ProjectAreaComponent } from './project-area/project-area.component';
 import { NgModule } from '@angular/core';
