@@ -205,3 +205,63 @@ class TxPrescriptionListTest(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(data["count"], 2)
+
+
+class TxPrescriptionDeleteTest(APITransactionTestCase):
+    def setUp(self):
+        self.tx_plan = TreatmentPlanFactory.create()
+        self.alt_tx_plan = TreatmentPlanFactory.create()
+        self.client.force_authenticate(user=self.tx_plan.scenario.user)
+
+        self.txrx_owned_list = TreatmentPrescriptionFactory.create_batch(
+            10, treatment_plan=self.tx_plan
+        )
+        # plans for a different user
+        self.txrx_other_list = TreatmentPrescriptionFactory.create_batch(
+            10, treatment_plan=self.alt_tx_plan
+        )
+
+    def test_batch_delete_tx_rx(self):
+        payload = {"ids": [txrx.id for txrx in self.txrx_owned_list]}
+        response = self.client.post(
+            reverse(
+                "api:impacts:tx-prescriptions-batch-delete",
+                kwargs={"tx_plan_pk": self.tx_plan.pk},
+            ),
+            data=payload,
+            format="json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["result"][0], 10)
+
+    def test_batch_delete_nonowned_tx_rx(self):
+        payload = {"ids": [txrx.id for txrx in self.txrx_other_list]}
+        response = self.client.post(
+            reverse(
+                "api:impacts:tx-prescriptions-batch-delete",
+                kwargs={"tx_plan_pk": self.alt_tx_plan.pk},
+            ),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    # Testing a request to delete various ids that don't match the treatment plan id
+    # TODO: current behavior is to only delete items matching the given tx_plan and quietly ignore the rest
+    def test_batch_delete_mixed_tx_rx(self):
+        owned_ids = [txrx.id for txrx in self.txrx_owned_list]
+        other_ids = [txrx.id for txrx in self.txrx_other_list]
+
+        payload = {"ids": owned_ids + other_ids}
+        response = self.client.post(
+            reverse(
+                "api:impacts:tx-prescriptions-batch-delete",
+                kwargs={"tx_plan_pk": self.tx_plan.pk},
+            ),
+            data=payload,
+            format="json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["result"][0], 10)
