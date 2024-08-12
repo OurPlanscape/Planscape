@@ -6,6 +6,7 @@ import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
+import { MatDialog } from '@angular/material/dialog';
 
 import { canAddScenario } from '../../permissions';
 import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
@@ -40,7 +41,8 @@ export class SavedScenariosComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private snackbar: MatSnackBar,
-    private scenarioService: ScenarioService
+    private scenarioService: ScenarioService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -171,7 +173,7 @@ export class SavedScenariosComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe((response) => {
+      .subscribe(() => {
         // TODO: Placeholder -- handle response.
         // if scenario was created, open another dialog
       });
