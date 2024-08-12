@@ -1,5 +1,5 @@
 import { RouterModule, Routes } from '@angular/router';
-import { NewTreatmentComponent } from './new-treatment/new-treatment.component';
+
 import { TreatmentOverviewComponent } from './treatment-overview/treatment-overview.component';
 import { ProjectAreaComponent } from './project-area/project-area.component';
 import { NgModule } from '@angular/core';
@@ -7,11 +7,6 @@ import { NgModule } from '@angular/core';
 const routes: Routes = [
   {
     path: '',
-    title: 'New Treatment Plan',
-    component: NewTreatmentComponent,
-  },
-  {
-    path: ':treatment-id',
     title: 'Treatment plan overview',
     children: [
       {
