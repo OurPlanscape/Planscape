@@ -41,6 +41,8 @@ import { PlanRoutingModule } from './plan-routing.module';
 import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
 import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/upload-project-areas-modal.component';
+import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
+
 /** Components used in the plan flow. */
 @NgModule({
   declarations: [
@@ -91,6 +93,7 @@ import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/u
     ButtonComponent,
     DeleteDialogComponent,
     UploadProjectAreasModalComponent,
+    PlanningAreaTitlebarMenuComponent,
   ],
 })
 export class PlanModule {}

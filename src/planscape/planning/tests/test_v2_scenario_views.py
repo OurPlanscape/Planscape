@@ -1,6 +1,5 @@
 import copy
-import json
-from django.contrib.auth.models import User
+from unittest import mock
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
@@ -18,6 +17,41 @@ from planning.tests.factories import (
     ScenarioFactory,
     ScenarioResultFactory,
 )
+
+
+class CreateScenarioTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.configuration = {
+            "question_id": 1,
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
+
+    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
+    def test_create_scenario(self, _forsys_run):
+        self.client.force_authenticate(self.user)
+        data = {
+            "planning_area": self.planning_area.pk,
+            "name": "Hello Scenario!",
+            "configuration": self.configuration,
+        }
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"), data, format="json"
+        )
+        self.assertEqual(response.status_code, 201)
+        self.assertIsNotNone(response.json().get("id"))
 
 
 class ListScenariosForPlanningAreaTest(APITransactionTestCase):
@@ -97,6 +131,21 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
+
+    def test_retrieve_scenario_shared_plan(self):
+        self.client.force_authenticate(self.viewer_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("id"), self.scenario.id)
 
     def test_list_scenario(self):
         self.client.force_authenticate(self.owner_user)

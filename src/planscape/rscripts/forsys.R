@@ -262,7 +262,7 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
         ps.id = {scenario_id}
     )
     SELECT
-      ST_Transform(ST_Union(rr.geometry), 5070) as \"geometry\"
+      ST_Transform(ST_Union(ST_Buffer(rr.geometry, 0)), 5070) as \"geometry\"
     FROM restrictions_restriction rr, plan_scenario
     WHERE
       type IN ({restrictions*}) AND

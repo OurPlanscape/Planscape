@@ -21,7 +21,7 @@ class ScenarioViewPermission(PlanscapePermission):
                 pa_id = request.data.get("planning_area") or None
                 if not pa_id:
                     return False
-                planning_area = PlanningArea.objects.get("planning_area")
+                planning_area = PlanningArea.objects.get(id=pa_id)
                 return PlanningAreaPermission.can_add_scenario(
                     request.user, planning_area
                 )
@@ -31,4 +31,11 @@ class ScenarioViewPermission(PlanscapePermission):
 
     def has_object_permission(self, request, view, object):
         planning_area = object.planning_area
-        return PlanningAreaPermission.can_change(request.user, planning_area)
+        match view.action:
+            case "update" | "partial_update":
+                method = PlanningAreaPermission.can_change
+            case "destroy":
+                method = PlanningAreaPermission.can_remove
+            case _:
+                method = PlanningAreaPermission.can_view
+        return method(request.user, planning_area)

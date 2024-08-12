@@ -13,9 +13,11 @@
 :host {
   width: 200px;
   display: block;
+
   &.small {
     width: 140px;
   }
+
   &.large {
     width: 300px;
   }
@@ -85,6 +87,7 @@
 .button-content {
   display: flex;
   flex-direction: row;
+  align-items: center;
   width: 100%;
   max-width: 100%;
   justify-content: space-between;

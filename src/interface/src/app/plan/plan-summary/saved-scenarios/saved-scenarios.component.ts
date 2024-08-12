@@ -6,16 +6,10 @@ import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
-import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 import { canAddScenario } from '../../permissions';
-import {
-  SNACK_BOTTOM_NOTICE_CONFIG,
-  SNACK_ERROR_CONFIG,
-  SNACK_NOTICE_CONFIG,
-} from '@shared';
+import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
-import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 
 export interface ScenarioRow extends Scenario {
@@ -46,7 +40,6 @@ export class SavedScenariosComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private snackbar: MatSnackBar,
-    private dialog: MatDialog,
     private scenarioService: ScenarioService
   ) {}
 
@@ -125,41 +118,6 @@ export class SavedScenariosComponent implements OnInit {
     });
   }
 
-  confirmDeleteScenario(): void {
-    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
-      DeleteDialogComponent,
-      {
-        data: {
-          name: '"' + this.highlightedScenarioRow?.name + '"',
-        },
-      }
-    );
-    dialogRef
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this.deleteScenario([this.highlightedScenarioRow?.id!]);
-        }
-      });
-  }
-
-  private deleteScenario(ids: string[]) {
-    this.scenarioService.deleteScenarios(ids).subscribe({
-      next: (deletedIds) => {
-        this.snackbar.open(
-          `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`,
-          'Dismiss',
-          SNACK_NOTICE_CONFIG
-        );
-        this.fetchScenarios();
-      },
-      error: (err) => {
-        this.snackbar.open(`Error: ${err}`, 'Dismiss', SNACK_ERROR_CONFIG);
-      },
-    });
-  }
-
   highlightScenario(row: ScenarioRow): void {
     this.highlightedScenarioRow = row;
   }
@@ -168,7 +126,7 @@ export class SavedScenariosComponent implements OnInit {
     const id = this.highlightedScenarioRow?.id;
 
     if (id) {
-      this.scenarioService.toggleScenarioStatus(Number(id), archive).subscribe({
+      this.scenarioService.toggleScenarioStatus(Number(id)).subscribe({
         next: () => {
           this.snackbar.open(
             `"${this.highlightedScenarioRow?.name}" has been ${

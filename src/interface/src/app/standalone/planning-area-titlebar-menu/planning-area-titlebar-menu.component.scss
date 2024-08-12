@@ -1,0 +1,17 @@
+@import "colors";
+
+.delete {
+  mat-icon {
+    color: currentColor;
+  }
+
+  color: $color-error;
+}
+
+.more-options {
+  top: -1px;
+}
+
+::ng-deep .planning-area-menu {
+  min-width: 200px;
+}

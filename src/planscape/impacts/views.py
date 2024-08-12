@@ -32,12 +32,7 @@ class TreatmentPlanViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = TreatmentPlan.objects.all().select_related(
-        "scenario",
-        "scenario__planning_area",
-        "created_by",
-    )
-    pagination_class = LimitOffsetPagination
+    queryset = TreatmentPlan.objects.none()
     filterset_class = TreatmentPlanFilterSet
     permission_classes = [TreatmentPlanViewPermission]
     serializer_class = TreatmentPlanSerializer
@@ -48,6 +43,15 @@ class TreatmentPlanViewSet(
         "update": TreatmentPlanUpdateSerializer,
         "partial_update": TreatmentPlanUpdateSerializer,
     }
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = TreatmentPlan.objects.list_by_user(user=user).select_related(
+            "scenario",
+            "scenario__planning_area",
+            "created_by",
+        )
+        return qs
 
     def get_serializer_class(self):
         try:
