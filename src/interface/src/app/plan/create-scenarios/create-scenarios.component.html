@@ -95,27 +95,8 @@
               [scenarioState]="scenarioState"></app-scenario-failure>
           </div>
         </mat-tab>
-
-        <mat-tab label="Treatments" *ngIf="showTreatmentsTab">
-          <sg-treatment-card
-            name="Placeholder treatment"
-            (view)="goToTreatment(1)"></sg-treatment-card>
-          <sg-treatment-card
-            name="Placeholder treatment"
-            (view)="goToTreatment(2)"></sg-treatment-card>
-          <sg-treatment-card
-            name="Placeholder treatment"
-            (view)="goToTreatment(3)"></sg-treatment-card>
-
-          <section class="treatment-footer">
-            <button
-              sg-button
-              variant="primary"
-              icon="add"
-              class="new-treatment">
-              New Treatment Plan
-            </button>
-          </section>
+        <mat-tab label="Treatments" *ngIf="showTreatmentsTab && scenarioId">
+          <app-treatments-tab [scenarioId]="scenarioId"></app-treatments-tab>
         </mat-tab>
       </mat-tab-group>
     </div>

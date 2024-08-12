@@ -42,6 +42,7 @@ import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
+import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -71,6 +72,7 @@ import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatmen
     ScenarioTooltipComponent,
     ScenariosTableListComponent,
     SetPrioritiesComponent,
+    TreatmentsTabComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
