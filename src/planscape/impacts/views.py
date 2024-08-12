@@ -96,6 +96,10 @@ class TreatmentPlanViewSet(
             status=status.HTTP_201_CREATED,
         )
 
+    @action(methods=["get"], detail=True)
+    def summary(self, request, pk=None):
+        pass
+
 
 class TreatmentPrescriptionViewSet(
     mixins.CreateModelMixin,

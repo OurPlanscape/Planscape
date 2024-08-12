@@ -1,15 +1,22 @@
-from typing import List, Type, Dict, Union, Tuple
+from collections import defaultdict
+from itertools import groupby
+from typing import List, Type, Dict, Union, Tuple, Any
 from django.db import transaction
+from django.db.models import Count
+from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.models import (
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
     TreatmentPrescriptionType,
     get_prescription_type,
+    TxPlanSummary,
+    ProjectAreaSummary,
+    TxPrescriptionSummaryItem,
 )
 from planning.models import ProjectArea, Scenario
 from actstream import action as actstream_action
-from stands.models import Stand
+from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
 from planscape.typing import UserType
 
 TreatmentPlanType = Type[TreatmentPlan]
@@ -133,3 +140,57 @@ def clone_treatment_plan(
     )
 
     return (cloned_plan, cloned_prescriptions)
+
+
+def generate_tx_plan_summary(
+    treatment_plan: TreatmentPlanType,
+) -> Dict[str, Any]:
+    scenario = treatment_plan.scenario
+    plan_area = scenario.planning_area
+    stand_size = scenario.configuration["stand_size"]
+    stand_area = STAND_AREA_ACRES[stand_size]
+
+    prescriptions = (
+        TreatmentPrescription.objects.filter(treatment_plan=treatment_plan)
+        .values(
+            "project_area__id",
+            "type",
+            "action",
+        )
+        .annotate(stand_ids=ArrayAgg("stand__id"), treated_stand_count=Count("stand"))
+        .order_by("project_area__id")
+    )
+    project_areas = {}
+    for project in ProjectArea.objects.filter(scenario=scenario):
+        stand_project_qs = Stand.objects.filter(
+            size=stand_size,
+            geometry__intersects=project.geometry,
+        )
+        project_areas[project.id] = {
+            "project_area_id": project.id,
+            "project_area_name": project.name,
+            "total_stand_count": stand_project_qs.count(),
+            "prescriptions": [
+                {
+                    "action": p["action"],
+                    "type": p["type"],
+                    "treated_stand_count": p["treated_stand_count"],
+                    "area_acres": p["treated_stand_count"] * stand_area,
+                }
+                for p in filter(
+                    lambda p: p["project_area__id"] == project.id,
+                    prescriptions,
+                )
+            ],
+        }
+
+    data = {
+        "planning_area_id": plan_area.id,
+        "planning_area_name": plan_area.name,
+        "scenario_id": scenario.id,
+        "scenario_name": scenario.name,
+        "treatment_plan_id": treatment_plan.pk,
+        "treatment_plan_name": treatment_plan.name,
+        "project_areas": list(project_areas.values()),
+    }
+    return data

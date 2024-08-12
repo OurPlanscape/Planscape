@@ -1,14 +1,18 @@
 from django.test import TransactionTestCase
-
 from impacts.models import (
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
 )
-from impacts.services import clone_treatment_plan, upsert_treatment_prescriptions
+from impacts.services import (
+    clone_treatment_plan,
+    upsert_treatment_prescriptions,
+    generate_tx_plan_summary,
+)
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
-from planning.tests.factories import ProjectAreaFactory
+from planning.tests.factories import ProjectAreaFactory, ScenarioFactory
+from stands.models import StandSizeChoices
 from stands.tests.factories import StandFactory
 
 
@@ -110,3 +114,66 @@ class CloneTreatmentPlanTest(TransactionTestCase):
         self.assertEqual(TreatmentPlan.objects.all().count(), 2)
         self.assertEqual(TreatmentPrescription.objects.all().count(), 10)
         self.assertNotEqual(new_plan.pk, self.treatment_plan.pk)
+
+
+class SummaryTest(TransactionTestCase):
+    def setUp(self):
+        pass
+
+    def test_summary_is_returned_correctly(self):
+        scenario = ScenarioFactory.create(
+            configuration={"stand_size": StandSizeChoices.SMALL}
+        )
+        tx_plan = TreatmentPlanFactory.create(scenario=scenario)
+        proj1 = ProjectAreaFactory(scenario=tx_plan.scenario)
+        proj2 = ProjectAreaFactory(scenario=tx_plan.scenario)
+        proj2 = ProjectAreaFactory(scenario=tx_plan.scenario)
+        presc1 = TreatmentPrescriptionFactory.create_batch(
+            size=4,
+            treatment_plan=tx_plan,
+            project_area=proj1,
+            action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
+            stand__size=StandSizeChoices.SMALL,
+        )
+        presc2 = TreatmentPrescriptionFactory.create_batch(
+            size=5,
+            treatment_plan=tx_plan,
+            project_area=proj2,
+            action=TreatmentPrescriptionAction.HEAVY_THINNING_BIOMASS,
+            stand__size=StandSizeChoices.SMALL,
+        )
+        presc3 = TreatmentPrescriptionFactory.create_batch(
+            size=5,
+            treatment_plan=tx_plan,
+            project_area=proj2,
+            action=TreatmentPrescriptionAction.MODERATE_MASTICATION_PLUS_RX_FIRE,
+            stand__size=StandSizeChoices.SMALL,
+        )
+        summary = generate_tx_plan_summary(tx_plan)
+        self.assertIsNotNone(summary)
+        self.assertIn("planning_area_id", summary)
+        self.assertIn("planning_area_name", summary)
+        self.assertIn("project_areas", summary)
+        self.assertIn("scenario_id", summary)
+        self.assertIn("scenario_name", summary)
+        self.assertIn("treatment_plan_id", summary)
+        self.assertIn("treatment_plan_name", summary)
+        self.assertEqual(len(summary["project_areas"]), 3)
+
+        proj_area_1 = list(
+            filter(lambda x: x["project_area_id"] == 1, summary["project_areas"])
+        )[0]
+        proj_area_2 = list(
+            filter(lambda x: x["project_area_id"] == 2, summary["project_areas"])
+        )[0]
+        proj_area_3 = list(
+            filter(lambda x: x["project_area_id"] == 3, summary["project_areas"])
+        )[0]
+        self.assertIn("prescriptions", proj_area_1)
+        self.assertEqual(len(proj_area_1["prescriptions"]), 1)
+
+        self.assertIn("prescriptions", proj_area_2)
+        self.assertEqual(len(proj_area_2["prescriptions"]), 0)
+
+        self.assertIn("prescriptions", proj_area_3)
+        self.assertEqual(len(proj_area_3["prescriptions"]), 2)
