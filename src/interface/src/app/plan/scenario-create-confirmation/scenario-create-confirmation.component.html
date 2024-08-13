@@ -1,8 +1,12 @@
 <sg-modal
+  title=""
   [shortHeader]="true"
   [showBorders]="false"
   [centerFooter]="true"
-  primaryButtonText="Proceed To Treatment Plan">
+  primaryButtonText="Proceed To Treatment Plan"
+  (clickedPrimary)="goToTreatmentPlans()"
+  (clickedSecondary)="closeModal()"
+  (clickedClose)="closeModal()">
   <div modalBodyContent>
     <sg-modal-confirmation-dialog
       infoType="success"

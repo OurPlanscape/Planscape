@@ -12,7 +12,7 @@ import { canAddScenario } from '../../permissions';
 import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
-
+import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
 }
@@ -164,6 +164,19 @@ export class SavedScenariosComponent implements OnInit {
     return isValidTotalArea(this.plan.area_acres);
   }
 
+  openConfirmationDialog(): void {
+    this.dialog
+      .open(ScenarioCreateConfirmationComponent, {})
+      .afterClosed()
+      .subscribe((response) => {
+        this.goToTreatmentPlans();
+      });
+  }
+
+  goToTreatmentPlans(): void {
+    // TODO: route to next page
+  }
+
   openUploadDialog(): void {
     this.dialog
       .open(UploadProjectAreasModalComponent, {
@@ -173,9 +186,9 @@ export class SavedScenariosComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe(() => {
-        // TODO: Placeholder -- handle response.
-        // if scenario was created, open another dialog
+      .subscribe((response) => {
+        // TODO: if there's not an error...we open the confirmation dialog
+        this.openConfirmationDialog();
       });
   }
 }
