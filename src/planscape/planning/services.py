@@ -5,7 +5,7 @@ import zipfile
 import fiona
 from datetime import date, time, datetime
 from pathlib import Path
-from typing import Any, Dict, Tuple, Type
+from typing import Any, Dict, Tuple, Type, Union
 from django.conf import settings
 from django.db import transaction
 from fiona.crs import from_epsg
@@ -31,6 +31,7 @@ from actstream import action
 
 logger = logging.getLogger(__name__)
 UserType = Type[AbstractUser]
+LooseGeomType = Union[Dict[str, Any] | GEOSGeometry]
 
 
 @transaction.atomic()
@@ -38,11 +39,17 @@ def create_planning_area(
     user: UserType,
     name: str,
     region_name: str,
-    geojson: Dict[str, Any],
+    geometry: LooseGeomType = None,
     notes: str = None,
 ) -> PlanningArea:
     """Canonical method to create a new planning area."""
-    geometry = coerce_geojson(geojson)
+
+    # FIXME: this code path is temporary. once we migrate to v2
+    # we can deprecate the `LooseGeomType` because serializers
+    # will take care of the conversion correctly
+    if not isinstance(geometry, GEOSGeometry):
+        geometry = coerce_geojson(geometry)
+
     planning_area = PlanningArea.objects.create(
         user=user,
         name=name,

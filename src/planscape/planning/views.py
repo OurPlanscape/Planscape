@@ -119,8 +119,8 @@ def create_planning_area(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
         # Get the geometry of the planning area.
-        geojson = body.get("geometry")
-        if geojson is None:
+        geometry = body.get("geometry")
+        if geometry is None:
             return Response(
                 {"message": "Must specify the planning area geometry."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -130,7 +130,7 @@ def create_planning_area(request: Request) -> Response:
             user=user,
             name=name,
             region_name=region_name,
-            geojson=geojson,
+            geometry=geometry,
             notes=notes,
         )
         serializer = PlanningAreaSerializer(

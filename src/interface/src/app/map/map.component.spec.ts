@@ -651,7 +651,7 @@ describe('MapComponent', () => {
         {
           maxWidth: '560px',
           data: {
-            shape: { type: 'FeatureCollection', features: [] },
+            shape: undefined,
             totalArea: 0,
           },
         }

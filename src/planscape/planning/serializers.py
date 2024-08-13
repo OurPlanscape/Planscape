@@ -70,10 +70,9 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
         model = PlanningArea
 
 
-class PlanningAreaSerializer(
-    ListPlanningAreaSerializer,
-    gis_serializers.GeoModelSerializer,
-):
+class CreatePlanningAreaSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
     def validate_geometry(self, geometry):
         if not isinstance(geometry, GEOSGeometry):
             geometry = GEOSGeometry(
@@ -94,9 +93,23 @@ class PlanningAreaSerializer(
         return geometry
 
     class Meta:
+        model = PlanningArea
+        fields = (
+            "user",
+            "name",
+            "region_name",
+            "geometry",
+            "notes",
+        )
+
+
+class PlanningAreaSerializer(
+    ListPlanningAreaSerializer,
+    gis_serializers.GeoModelSerializer,
+):
+    class Meta:
         fields = (
             "id",
-            "planning_area",
             "user",
             "name",
             "notes",
@@ -184,14 +197,16 @@ class ConfigurationSerializer(serializers.Serializer):
         required=False,
     )
     max_slope = serializers.FloatField(
-        min_value=1,
+        min_value=0,
         max_value=100,
         allow_null=True,
+        required=False,
     )
     min_distance_from_road = serializers.FloatField(
-        min_value=1,
+        min_value=0,
         max_value=100000,
         allow_null=True,
+        required=False,
     )
     stand_size = serializers.ChoiceField(choices=StandSizeChoices.choices)
     excluded_areas = serializers.ListField(
@@ -275,6 +290,20 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "tx_plan_count",
         )
         model = Scenario
+
+
+class CreateScenarioSerializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Scenario
+        fields = (
+            "user",
+            "planning_area",
+            "name",
+            "notes",
+            "configuration",
+        )
 
 
 class ScenarioSerializer(

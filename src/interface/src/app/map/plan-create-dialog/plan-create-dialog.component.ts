@@ -8,11 +8,12 @@ import { PlanService, SessionService } from '@services';
 import { firstValueFrom } from 'rxjs';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { Region } from '@types';
+import { Region, regionToString } from '@types';
 import { isValidTotalArea } from '../../plan/plan-helpers';
+import { Geometry } from 'geojson';
 
 export interface PlanCreateDialogData {
-  shape: GeoJSON.GeoJSON;
+  shape: Geometry;
   totalArea: number;
 }
 
@@ -69,12 +70,12 @@ export class PlanCreateDialogComponent {
     }
   }
 
-  private createPlan(name: string, shape: GeoJSON.GeoJSON, region: Region) {
+  private createPlan(name: string, geometry: Geometry, region: Region) {
     this.planService
       .createPlan({
         name: name,
-        region_name: region,
-        geometry: shape,
+        region_name: regionToString(region),
+        geometry: geometry,
       })
       .subscribe({
         next: (result) => {

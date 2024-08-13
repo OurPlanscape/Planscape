@@ -21,32 +21,22 @@ import { BehaviorSubject, of } from 'rxjs';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { DialogModule } from '@angular/cdk/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { Region } from '@types';
+import { Region, regionToString } from '@types';
+import { Geometry } from 'geojson';
 
 describe('PlanCreateDialogComponent', () => {
   let component: PlanCreateDialogComponent;
   let fixture: ComponentFixture<PlanCreateDialogComponent>;
-  const fakeGeoJson: GeoJSON.GeoJSON = {
-    type: 'FeatureCollection',
-    features: [
-      {
-        type: 'Feature',
-        geometry: {
-          type: 'MultiPolygon',
-          coordinates: [
-            [
-              [
-                [10, 20],
-                [10, 30],
-                [15, 15],
-              ],
-            ],
-          ],
-        },
-        properties: {
-          shape_name: 'Test',
-        },
-      },
+  const fakeGeometry: Geometry = {
+    type: 'MultiPolygon',
+    coordinates: [
+      [
+        [
+          [10, 20],
+          [10, 30],
+          [15, 15],
+        ],
+      ],
     ],
   };
 
@@ -76,7 +66,7 @@ describe('PlanCreateDialogComponent', () => {
         {
           provide: MAT_DIALOG_DATA,
           useValue: {
-            shape: fakeGeoJson,
+            shape: fakeGeometry,
             totalArea: 1000,
           } as PlanCreateDialogData,
         },
@@ -157,8 +147,8 @@ describe('PlanCreateDialogComponent', () => {
       tick();
       expect(planService.createPlan).toHaveBeenCalledWith({
         name: 'some plan',
-        region_name: Region.SIERRA_NEVADA,
-        geometry: fakeGeoJson,
+        region_name: regionToString(Region.SIERRA_NEVADA),
+        geometry: fakeGeometry,
       });
     }));
   });
@@ -166,7 +156,7 @@ describe('PlanCreateDialogComponent', () => {
   describe('total area warning', () => {
     it('should show warning if total area is not valid', async () => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
-        useValue: { shape: fakeGeoJson, totalArea: 99 },
+        useValue: { shape: fakeGeometry, totalArea: 99 },
       });
       createComponent();
 
@@ -179,7 +169,7 @@ describe('PlanCreateDialogComponent', () => {
 
     it('should not show warning if total area is valid', () => {
       TestBed.overrideProvider(MAT_DIALOG_DATA, {
-        useValue: { shape: fakeGeoJson, totalArea: 100 },
+        useValue: { shape: fakeGeometry, totalArea: 100 },
       });
       createComponent();
       const info = fixture.debugElement.query(
