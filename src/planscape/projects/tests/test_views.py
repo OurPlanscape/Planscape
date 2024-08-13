@@ -76,7 +76,7 @@ class ProjectViewSetTest(TransactionTestCase):
     def test_retrieve_project(self):
         url = reverse(
             "api:projects:projects-detail",
-            args=[self.public_project.uuid],
+            args=[self.public_project.id],
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
@@ -85,7 +85,7 @@ class ProjectViewSetTest(TransactionTestCase):
     def test_retrieve_nonexistent_project(self):
         url = reverse(
             "api:projects:projects-detail",
-            args=[str(uuid4())],
+            args=[str(999999)],
         )
         response = self.client.get(url)
         self.assertEqual(response.status_code, 404)

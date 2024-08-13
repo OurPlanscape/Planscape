@@ -20,4 +20,3 @@ class MetricsViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     ordering_fields = ["name", "created_at"]
     filterset_class = MetricFilterSet
     serializer_class = MetricSerializer
-    lookup_field = "uuid"

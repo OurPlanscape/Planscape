@@ -47,12 +47,10 @@ class MetricSerializerTest(APITestCase):
     def test_metric_serializer(self):
         serializer = MetricSerializer(instance=self.metric)
         data = serializer.data
-        self.assertEqual(data["uuid"], str(self.metric.uuid))
-        self.assertEqual(
-            data["organization"], str(self.metric.project.organization.uuid)
-        )
-        self.assertEqual(data["project"], str(self.metric.project.uuid))
-        self.assertEqual(data["dataset"]["uuid"], str(self.metric.dataset.uuid))
+        self.assertEqual(data["id"], self.metric.id)
+        self.assertEqual(data["organization"], self.metric.project.organization.id)
+        self.assertEqual(data["project"], self.metric.project.id)
+        self.assertEqual(data["dataset"]["id"], self.metric.dataset.id)
         self.assertEqual(data["name"], self.metric.name)
         self.assertEqual(data["display_name"], self.metric.display_name)
         self.assertEqual(data["capabilities"], self.metric.capabilities)
