@@ -52,7 +52,6 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   private pollForChanges() {
-    return;
     // we might want to check if any scenario is still pending in order to poll
     interval(POLLING_INTERVAL)
       .pipe(untilDestroyed(this))
