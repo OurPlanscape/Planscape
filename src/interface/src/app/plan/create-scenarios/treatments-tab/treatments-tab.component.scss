@@ -1,17 +1,56 @@
+@import "colors";
+@import "mixins";
+
+$footer-size: 72px;
 
 .treatment-footer {
   background-color: white;
   padding: 16px 0;
-  position: absolute;
+  box-sizing: border-box;
   bottom: 0;
   width: 100%;
   text-align: right;
+  height: $footer-size;
+  position: absolute;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 .new-treatment {
-  margin: 0 16px 0 auto;
+  margin: 0 16px;
 }
 
 sg-treatment-card {
   margin: 10px 16px 0;
 }
+
+.loader, .empty-state {
+  text-align: center;
+  height: calc(100% - $footer-size);
+  width: 100%;
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.empty-state {
+  color: $color-md-gray;
+
+  mat-icon {
+    color: $color-text-gray;
+    width: 48px;
+    height: 48px;
+    font-size: 48px;
+    line-height: 48px;
+  }
+
+  .empty-state__title {
+    @include standard-input-label();
+    color: $color-black;
+    margin-bottom: 4px;
+  }
+}
+
+
