@@ -6,6 +6,7 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 8px;
+  width: 100%;
 }
 
 .field-label-box {
@@ -34,7 +35,6 @@
   justify-content: space-between;
   align-items: center;
   background-color: $color-light-gray;
-  width: 452px;
   height: 40px;
   padding: 8px 8px 8px 14px;
   border-radius: 4px;
@@ -109,6 +109,7 @@
 
 .status-icon {
   color: $color-black;
+  line-height: 0;
 }
 
 :host.running .status-icon {

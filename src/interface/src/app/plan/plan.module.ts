@@ -40,6 +40,7 @@ import { MapLayerSelectDialogComponent } from './map-layer-select-dialog/map-lay
 import { PlanRoutingModule } from './plan-routing.module';
 import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
+import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/upload-project-areas-modal.component';
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 import { ScenarioCardComponent } from '../../styleguide/scenario-card/scenario-card.component';
 import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/scenarios-card-list.component';
@@ -93,6 +94,7 @@ import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/s
     SharedModule,
     ButtonComponent,
     DeleteDialogComponent,
+    UploadProjectAreasModalComponent,
     PlanningAreaTitlebarMenuComponent,
     ScenarioCardComponent,
     ScenariosCardListComponent,
