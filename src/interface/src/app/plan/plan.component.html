@@ -32,7 +32,6 @@
     </div>
     <div *appFeatureFlag="'new_planning_area'">
       <div class="plan-summary-panel" *ngIf="showOverview$ | async">
-        <div class="notes-header">Notes</div>
         <app-area-notes [plan]="plan"></app-area-notes>
       </div>
     </div>

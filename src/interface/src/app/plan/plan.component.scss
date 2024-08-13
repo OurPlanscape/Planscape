@@ -13,20 +13,12 @@
   box-sizing: border-box;
   display: block;
   width: 300px;
-
+  height: 100%;
   ::ng-deep .mat-tab-body-wrapper {
     height: 100%;
   }
 }
 
-.notes-header {
-  @include h4();
-  width: 100%;
-  padding: 16px 229px 16px 16px;
-
-  gap: 8px;
-  border-bottom: 1px $color-soft-gray solid;
-}
 
 .plan-progress-panel {
   background-color: white;

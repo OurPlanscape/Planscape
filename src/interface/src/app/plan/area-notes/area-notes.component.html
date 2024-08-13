@@ -1,3 +1,4 @@
+<div class="notes-header" *appFeatureFlag="'new_planning_area'">Notes</div>
 <div class="notes">
   <div *ngFor="let note of notes" class="note">
     <div class="note-head">
@@ -26,14 +27,14 @@
     </div>
   </div>
 </div>
-<mat-form-field appearance="outline">
+<mat-form-field appearance="outline" class="add-note-field">
   <textarea
     (keydown.enter)="addNote($event)"
     [(ngModel)]="note"
     [disabled]="saving"
     cdkTextareaAutosize
     matInput
-    placeholder="add a note">
+    placeholder="Add a note">
   </textarea>
   <mat-spinner diameter="20" matSuffix *ngIf="saving"></mat-spinner>
   <svg

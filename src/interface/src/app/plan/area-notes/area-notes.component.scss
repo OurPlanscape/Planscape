@@ -34,9 +34,20 @@
 
 }
 
+.notes-header {
+  @include h4();
+  width: 100%;
+  padding: 16px 229px 16px 16px;
+  gap: 8px;
+  border-bottom: 1px $color-soft-gray solid;
+}
+
+
 .notes {
-  flex: 1;
   overflow-y: auto;
+  .grow {
+    flex-grow: 1;
+  }
 }
 
 .note {
@@ -64,6 +75,12 @@
     cursor: pointer;
     color: $color-standard-blue;
   }
+}
+
+.add-note-field {
+  height: 70px;
+  flex-shrink: 0;
+  border-top: 1px $color-soft-gray solid;
 }
 
 textarea {
