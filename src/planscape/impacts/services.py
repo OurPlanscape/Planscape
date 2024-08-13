@@ -1,6 +1,6 @@
 from collections import defaultdict
 from itertools import groupby
-from typing import List, Type, Dict, Union, Tuple, Any
+from typing import List, Optional, Type, Dict, Union, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -142,16 +142,24 @@ def clone_treatment_plan(
     return (cloned_plan, cloned_prescriptions)
 
 
-def generate_tx_plan_summary(
+def generate_summary(
     treatment_plan: TreatmentPlanType,
+    project_area: Optional[ProjectArea] = None,
 ) -> Dict[str, Any]:
     scenario = treatment_plan.scenario
     plan_area = scenario.planning_area
     stand_size = scenario.configuration["stand_size"]
     stand_area = STAND_AREA_ACRES[stand_size]
 
+    pa_filter = {"scenario": scenario}
+    tp_filter = {"treatment_plan": treatment_plan}
+
+    if project_area:
+        pa_filter = {**pa_filter, "id": project_area.id}
+        tp_filter = {**tp_filter, "project_area": project_area}
+
     prescriptions = (
-        TreatmentPrescription.objects.filter(treatment_plan=treatment_plan)
+        TreatmentPrescription.objects.filter(**tp_filter)
         .values(
             "project_area__id",
             "type",
@@ -161,7 +169,8 @@ def generate_tx_plan_summary(
         .order_by("project_area__id")
     )
     project_areas = {}
-    for project in ProjectArea.objects.filter(scenario=scenario):
+    project_area_queryset = ProjectArea.objects.filter(**pa_filter)
+    for project in project_area_queryset:
         stand_project_qs = Stand.objects.filter(
             size=stand_size,
             geometry__intersects=project.geometry,

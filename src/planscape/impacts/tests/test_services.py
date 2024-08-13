@@ -8,7 +8,7 @@ from impacts.models import (
 from impacts.services import (
     clone_treatment_plan,
     upsert_treatment_prescriptions,
-    generate_tx_plan_summary,
+    generate_summary,
 )
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
 from planning.tests.factories import ProjectAreaFactory, ScenarioFactory
@@ -118,38 +118,37 @@ class CloneTreatmentPlanTest(TransactionTestCase):
 
 class SummaryTest(TransactionTestCase):
     def setUp(self):
-        pass
-
-    def test_summary_is_returned_correctly(self):
-        scenario = ScenarioFactory.create(
+        self.scenario = ScenarioFactory.create(
             configuration={"stand_size": StandSizeChoices.SMALL}
         )
-        tx_plan = TreatmentPlanFactory.create(scenario=scenario)
-        proj1 = ProjectAreaFactory(scenario=tx_plan.scenario)
-        proj2 = ProjectAreaFactory(scenario=tx_plan.scenario)
-        proj2 = ProjectAreaFactory(scenario=tx_plan.scenario)
-        presc1 = TreatmentPrescriptionFactory.create_batch(
+        self.tx_plan = TreatmentPlanFactory.create(scenario=self.scenario)
+        self.proj1 = ProjectAreaFactory(scenario=self.tx_plan.scenario)
+        self.proj2 = ProjectAreaFactory(scenario=self.tx_plan.scenario)
+        self.proj3 = ProjectAreaFactory(scenario=self.tx_plan.scenario)
+        self.presc1 = TreatmentPrescriptionFactory.create_batch(
             size=4,
-            treatment_plan=tx_plan,
-            project_area=proj1,
+            treatment_plan=self.tx_plan,
+            project_area=self.proj1,
             action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
             stand__size=StandSizeChoices.SMALL,
         )
-        presc2 = TreatmentPrescriptionFactory.create_batch(
+        self.presc2 = TreatmentPrescriptionFactory.create_batch(
             size=5,
-            treatment_plan=tx_plan,
-            project_area=proj2,
+            treatment_plan=self.tx_plan,
+            project_area=self.proj2,
             action=TreatmentPrescriptionAction.HEAVY_THINNING_BIOMASS,
             stand__size=StandSizeChoices.SMALL,
         )
-        presc3 = TreatmentPrescriptionFactory.create_batch(
+        self.presc3 = TreatmentPrescriptionFactory.create_batch(
             size=5,
-            treatment_plan=tx_plan,
-            project_area=proj2,
+            treatment_plan=self.tx_plan,
+            project_area=self.proj3,
             action=TreatmentPrescriptionAction.MODERATE_MASTICATION_PLUS_RX_FIRE,
             stand__size=StandSizeChoices.SMALL,
         )
-        summary = generate_tx_plan_summary(tx_plan)
+
+    def test_summary_is_returned_correctly(self):
+        summary = generate_summary(self.tx_plan, project_area=None)
         self.assertIsNotNone(summary)
         self.assertIn("planning_area_id", summary)
         self.assertIn("planning_area_name", summary)
@@ -161,19 +160,61 @@ class SummaryTest(TransactionTestCase):
         self.assertEqual(len(summary["project_areas"]), 3)
 
         proj_area_1 = list(
-            filter(lambda x: x["project_area_id"] == 1, summary["project_areas"])
+            filter(
+                lambda x: x["project_area_id"] == self.proj1.id,
+                summary["project_areas"],
+            )
         )[0]
         proj_area_2 = list(
-            filter(lambda x: x["project_area_id"] == 2, summary["project_areas"])
+            filter(
+                lambda x: x["project_area_id"] == self.proj2.id,
+                summary["project_areas"],
+            )
         )[0]
         proj_area_3 = list(
-            filter(lambda x: x["project_area_id"] == 3, summary["project_areas"])
+            filter(
+                lambda x: x["project_area_id"] == self.proj3.id,
+                summary["project_areas"],
+            )
         )[0]
         self.assertIn("prescriptions", proj_area_1)
         self.assertEqual(len(proj_area_1["prescriptions"]), 1)
-
         self.assertIn("prescriptions", proj_area_2)
-        self.assertEqual(len(proj_area_2["prescriptions"]), 0)
+        self.assertEqual(len(proj_area_2["prescriptions"]), 1)
 
         self.assertIn("prescriptions", proj_area_3)
-        self.assertEqual(len(proj_area_3["prescriptions"]), 2)
+        self.assertEqual(len(proj_area_3["prescriptions"]), 1)
+
+    def test_summary_is_returned_correctly_filter_by_project_area(self):
+        summary = generate_summary(self.tx_plan, project_area=self.proj1)
+        self.assertIsNotNone(summary)
+        self.assertIn("planning_area_id", summary)
+        self.assertIn("planning_area_name", summary)
+        self.assertIn("project_areas", summary)
+        self.assertIn("scenario_id", summary)
+        self.assertIn("scenario_name", summary)
+        self.assertIn("treatment_plan_id", summary)
+        self.assertIn("treatment_plan_name", summary)
+        self.assertEqual(len(summary["project_areas"]), 1)
+        proj_area_1 = list(
+            filter(
+                lambda x: x["project_area_id"] == self.proj1.id,
+                summary["project_areas"],
+            )
+        )[0]
+        proj_area_2 = list(
+            filter(
+                lambda x: x["project_area_id"] == self.proj2.id,
+                summary["project_areas"],
+            )
+        )
+        proj_area_3 = list(
+            filter(
+                lambda x: x["project_area_id"] == self.proj3.id,
+                summary["project_areas"],
+            )
+        )
+        self.assertIn("prescriptions", proj_area_1)
+        self.assertEqual(len(proj_area_1["prescriptions"]), 1)
+        self.assertEqual(proj_area_2, [])
+        self.assertEqual(proj_area_3, [])
