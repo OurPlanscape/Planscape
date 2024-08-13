@@ -6,10 +6,12 @@ import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
+import { MatDialog } from '@angular/material/dialog';
 
 import { canAddScenario } from '../../permissions';
 import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
+import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -39,7 +41,8 @@ export class SavedScenariosComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private snackbar: MatSnackBar,
-    private scenarioService: ScenarioService
+    private scenarioService: ScenarioService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -159,5 +162,20 @@ export class SavedScenariosComponent implements OnInit {
       return false;
     }
     return isValidTotalArea(this.plan.area_acres);
+  }
+
+  openUploadDialog(): void {
+    this.dialog
+      .open(UploadProjectAreasModalComponent, {
+        data: {
+          planning_area_name: this.plan?.name,
+          planId: this.plan?.id,
+        },
+      })
+      .afterClosed()
+      .subscribe(() => {
+        // TODO: Placeholder -- handle response.
+        // if scenario was created, open another dialog
+      });
   }
 }
