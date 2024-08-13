@@ -15,19 +15,28 @@
     *ngIf="planNotFound"
     resource="plan"></app-resource-unavailable>
   <ng-container *ngIf="currentPlan$ | async as plan">
-    <div class="plan-summary-panel" *ngIf="showOverview$ | async">
-      <mat-tab-group
-        mat-align-tabs="start"
-        mat-stretch-tabs
-        disablePagination="true">
-        <mat-tab label="ABOUT">
-          <app-area-details [plan]="plan"></app-area-details>
-        </mat-tab>
-        <mat-tab label="NOTES">
-          <app-area-notes [plan]="plan"></app-area-notes>
-        </mat-tab>
-      </mat-tab-group>
+    <div *appFeatureFlag="'new_planning_area'; hide: true">
+      <div class="plan-summary-panel" *ngIf="showOverview$ | async">
+        <mat-tab-group
+          mat-align-tabs="start"
+          mat-stretch-tabs
+          disablePagination="true">
+          <mat-tab label="ABOUT">
+            <app-area-details [plan]="plan"></app-area-details>
+          </mat-tab>
+          <mat-tab label="NOTES">
+            <app-area-notes [plan]="plan"></app-area-notes>
+          </mat-tab>
+        </mat-tab-group>
+      </div>
     </div>
+    <div *appFeatureFlag="'new_planning_area'">
+      <div class="plan-summary-panel" *ngIf="showOverview$ | async">
+        <div class="notes-header">Notes</div>
+        <app-area-notes [plan]="plan"></app-area-notes>
+      </div>
+    </div>
+
     <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>
     <div
       class="plan-content"

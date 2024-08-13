@@ -1,4 +1,5 @@
 @import 'variables';
+@import 'mixins';
 
 .root-container {
   display: flex;
@@ -18,6 +19,14 @@
   }
 }
 
+.notes-header {
+  @include h4();
+  width: 100%;
+  padding: 16px 229px 16px 16px;
+
+  gap: 8px;
+  border-bottom: 1px $color-soft-gray solid;
+}
 
 .plan-progress-panel {
   background-color: white;
