@@ -13,8 +13,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import {
-  MAT_DIALOG_DATA,
   MatDialogModule,
+  MAT_DIALOG_DATA,
   MatDialogRef,
 } from '@angular/material/dialog';
 import { ButtonComponent, ButtonVariant } from '../button/button.component';
@@ -61,6 +61,10 @@ export class ModalComponent {
    */
   @Input() primaryButtonText?: string = 'Done';
   /**
+   * Optional attribute to enable/disable the right-most bottom button
+   */
+  @Input() primaryButtonDisabled: boolean = false;
+  /**
    * Optional alternative style variant for the right-most bottom button
    */
   @Input() primaryButtonVariant: ButtonVariant = 'primary';
@@ -68,6 +72,10 @@ export class ModalComponent {
    * Show/hide left-most bottom button
    */
   @Input() hasSecondaryButton = true;
+  /**
+   * Optional attribute to enable/disable the left-most bottom button
+   */
+  @Input() secondaryButtonDisabled: boolean = false;
   /**
    * Optional alternative text for the left-most bottom button
    */
@@ -108,7 +116,6 @@ export class ModalComponent {
    * Whether or not to use default padding for the projected content
    */
   @Input() padBody? = false;
-
   /**
    * Whether or not to show the borders on header and footer
    */

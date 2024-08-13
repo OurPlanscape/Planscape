@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { map, Observable, take } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   CreatePlanPayload,
   Creator,
@@ -8,7 +8,7 @@ import {
   Plan,
   PreviewPlan,
 } from '@types';
-import { GeoJSON } from 'geojson';
+import { GeoJSON, GeoJsonObject } from 'geojson';
 import { environment } from '../../environments/environment';
 import { Params } from '@angular/router';
 
@@ -16,7 +16,7 @@ import { Params } from '@angular/router';
   providedIn: 'root',
 })
 export class PlanService {
-  private readonly v2basePath = '/v2/planningareas/';
+  readonly v2basePath = environment.backend_endpoint + '/v2/planningareas/';
 
   constructor(private http: HttpClient) {}
 
@@ -28,56 +28,28 @@ export class PlanService {
 
   /** Makes a request to the backend to create a plan and updates state. */
   createPlan(payload: CreatePlanPayload): Observable<Plan> {
-    return this.http.post<Plan>(
-      environment.backend_endpoint + '/planning/create_planning_area/',
-      payload,
-      {
-        withCredentials: true,
-      }
-    );
+    return this.http.post<Plan>(this.v2basePath, payload, {
+      withCredentials: true,
+    });
   }
 
   /** Makes a request to the backend to delete a plan with the given ID. */
-  deletePlan(planIds: string[]): Observable<string>;
-  deletePlan(planId: number): Observable<string>;
-  deletePlan(planIdsOrId: string[] | number): Observable<string> {
-    let ids: string[];
-
-    if (typeof planIdsOrId === 'number') {
-      ids = [planIdsOrId.toString()];
-    } else {
-      ids = planIdsOrId;
-    }
-
-    return this.http.post<string>(
-      environment.backend_endpoint.concat(
-        '/planning/delete_planning_area/?id=',
-        ids.toString()
-      ),
-      {
-        id: ids,
-      },
-      {
-        withCredentials: true,
-      }
-    );
+  deletePlan(planId: number): Observable<void> {
+    return this.http.delete<void>(this.v2basePath + planId, {
+      withCredentials: true,
+    });
   }
 
   /** Makes a request to the backend to fetch a plan with the given ID. */
   getPlan(planId: string): Observable<Plan> {
-    return this.http.get<Plan>(
-      environment.backend_endpoint.concat(
-        '/planning/get_planning_area_by_id/?id=',
-        planId
-      ),
-      {
-        withCredentials: true,
-      }
-    );
+    return this.http.get<Plan>(this.v2basePath + planId, {
+      withCredentials: true,
+    });
   }
 
   /** Makes a request to the backend for a list of all plans owned by a user.
    *  If the user is not provided, return all plans with owner=null.
+   *  @deprecated use getPlanPreviews
    */
   listPlansByUser(): Observable<PreviewPlan[]> {
     let url = environment.backend_endpoint.concat(
@@ -89,43 +61,17 @@ export class PlanService {
   }
 
   getPlanPreviews(params: Params) {
-    let url = environment.backend_endpoint.concat(this.v2basePath);
-
-    return this.http.get<Pagination<PreviewPlan>>(url, {
+    return this.http.get<Pagination<PreviewPlan>>(this.v2basePath, {
       withCredentials: true,
       params: params,
     });
   }
 
   getCreators() {
-    let url = environment.backend_endpoint.concat(
-      '/v2/planningareas/creators/'
-    );
+    let url = this.v2basePath + 'creators/';
     return this.http.get<Creator[]>(url, {
       withCredentials: true,
     });
-  }
-
-  /** Updates a planning area with new parameters. */
-  updatePlanningArea(
-    planningAreaConfig: Plan,
-    planId: number
-  ): Observable<number> {
-    const url = environment.backend_endpoint.concat(
-      '/planning/update_planning_area/'
-    );
-    return this.http
-      .patch<number>(
-        url,
-        {
-          id: planId,
-          notes: planningAreaConfig.notes,
-        },
-        {
-          withCredentials: true,
-        }
-      )
-      .pipe(take(1));
   }
 
   getTotalArea(shape: GeoJSON) {
@@ -139,5 +85,27 @@ export class PlanService {
         { geometry: shape }
       )
       .pipe(map((result) => Math.round(result.area_acres)));
+  }
+
+  //TODO: This might be better in its own Service file
+  uploadGeometryForNewScenario(
+    shape: GeoJsonObject,
+    scenarioName: string,
+    standSize: string,
+    planId: string
+  ) {
+    return this.http.post(
+      environment.backend_endpoint.concat(
+        '/v2/planningareas/' + planId + '/upload_shapefiles/'
+      ),
+      {
+        geometry: shape,
+        name: scenarioName,
+        stand_size: standSize,
+      },
+      {
+        withCredentials: true,
+      }
+    );
   }
 }
