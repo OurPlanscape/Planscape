@@ -1,5 +1,5 @@
-@import "colors";
-@import "mixins";
+@import 'colors';
+@import 'mixins';
 
 :host {
   display: flex;
@@ -10,7 +10,6 @@
   ::ng-deep .mat-form-field-wrapper {
     margin: 0;
     padding: 8px;
-
   }
 
   ::ng-deep {
@@ -31,7 +30,6 @@
     padding: 2px;
     top: 2px;
   }
-
 }
 
 .notes-header {
@@ -42,18 +40,14 @@
   border-bottom: 1px $color-soft-gray solid;
 }
 
-
 .notes {
   overflow-y: auto;
-  .grow {
-    flex-grow: 1;
-  }
+  flex-grow: 1;
 }
 
 .note {
   padding: 16px;
   color: $color-black;
-
 }
 
 .note-head {
@@ -93,7 +87,6 @@ textarea {
 }
 
 .delete-note-button {
-
   .delete-icon {
     color: $color-error;
     line-height: 20px;
@@ -101,5 +94,5 @@ textarea {
   }
 
   color: $color-error;
-  @include regular-paragraph()
+  @include regular-paragraph();
 }
