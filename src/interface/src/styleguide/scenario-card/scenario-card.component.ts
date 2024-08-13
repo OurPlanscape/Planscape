@@ -20,9 +20,19 @@ import { ButtonComponent } from '../button/button.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
-import { ScenarioResultStatus } from '@types';
 
 export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
+
+// redefining this works, but including it kills storybook?
+export type ScenarioResultStatus =
+  | 'LOADING' // when loading results
+  | 'NOT_STARTED' // Added by FE when the scenario is not created yet.
+  | 'PENDING' // Scenario created, in queue
+  | 'RUNNING' // Scenario created, being processed
+  | 'SUCCESS' // Run completed successfully
+  | 'FAILURE' // Run failed;
+  | 'PANIC' // Run failed; panic
+  | 'TIMED_OUT'; // Run failed; timed out
 
 /**
  * Scenario Card for displaying scenario data in a results list

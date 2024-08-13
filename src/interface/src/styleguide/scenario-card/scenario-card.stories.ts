@@ -33,23 +33,23 @@ export const Default: Story = {
   },
 };
 
-// export const Running: Story = {
-//   args: {
-//     ...Default.args,
-//     status: 'RUNNING',
-//   },
-// };
+export const Running: Story = {
+  args: {
+    ...Default.args,
+    status: 'RUNNING',
+  },
+};
 
-// export const Done: Story = {
-//   args: {
-//     ...Default.args,
-//     status: 'SUCCESS',
-//   },
-// };
+export const Done: Story = {
+  args: {
+    ...Default.args,
+    status: 'SUCCESS',
+  },
+};
 
-// export const Failed: Story = {
-//   args: {
-//     ...Default.args,
-//     status: 'FAILURE',
-//   },
-// };
+export const Failed: Story = {
+  args: {
+    ...Default.args,
+    status: 'FAILURE',
+  },
+};
