@@ -1,8 +1,9 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TreatmentPlan, TreatmentsService } from '@services/treatments.service';
+import { TreatmentsService } from '@services/treatments.service';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { SNACK_ERROR_CONFIG } from '@shared';
+import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { TreatmentPlan } from '@types';
 
 @Component({
   selector: 'app-treatments-tab',
@@ -45,9 +46,7 @@ export class TreatmentsTabComponent implements OnInit {
       .createTreatmentPlan(Number(this.scenarioId), 'New Treatment Plan')
       .subscribe({
         next: (result) => {
-          this.router.navigate(['treatment', result.id], {
-            relativeTo: this.route,
-          });
+          this.goToTreatment(result.id);
         },
         error: () => {
           this.creatingTreatment = false;
@@ -62,5 +61,26 @@ export class TreatmentsTabComponent implements OnInit {
 
   goToTreatment(id: number) {
     this.router.navigate(['treatment', id], { relativeTo: this.route });
+  }
+
+  deleteTreatment(treatment: TreatmentPlan) {
+    this.treatmentsService.deleteTreatmentPlan(treatment.id).subscribe({
+      next: () => {
+        this.treatments = this.treatments.filter((t) => t.id != treatment.id);
+        this.state = this.treatments.length > 0 ? 'loaded' : 'empty';
+        this.matSnackBar.open(
+          `Deleted Treatment Plan '${treatment.name}'`,
+          'Dismiss',
+          SNACK_NOTICE_CONFIG
+        );
+      },
+      error: () => {
+        this.matSnackBar.open(
+          `[Error] Cannot delete treatment plan '${treatment.name}'`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      },
+    });
   }
 }

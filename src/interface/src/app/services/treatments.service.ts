@@ -1,16 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-// TODO don't love this.
-import { TreatmentCardStatus } from '../../styleguide/treatment-card/treatment-card.component';
-
-export interface TreatmentPlan {
-  id: number;
-  name: string;
-  status: TreatmentCardStatus;
-  created_at: string;
-  creator_name: string;
-}
+import { TreatmentPlan } from '@types';
 
 @Injectable({
   providedIn: 'root',

@@ -9,6 +9,7 @@
     [createdAt]="treatment.created_at"
     [creator]="treatment.creator_name"
     (view)="goToTreatment(treatment.id)"
+    (delete)="deleteTreatment(treatment)"
     *ngFor="let treatment of treatments"></sg-treatment-card>
 </div>
 
