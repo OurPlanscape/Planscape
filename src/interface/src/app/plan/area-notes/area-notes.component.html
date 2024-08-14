@@ -65,17 +65,23 @@
 </mat-form-field>
 
 <!-- new, featureflagged form-field -->
-<div *appFeatureFlag="'new_planning_area'" class="notes">
-  <div *ngFor="let note of notes" class="note grow">
-    <div class="note-head">
-      <div>{{ note.user_name }}</div>
-      <div class="date">{{ note.created_at | date }}</div>
+<div *appFeatureFlag="'new_planning_area'" class="notes grow">
+  <div *ngFor="let note of notes" class="note-enclosed">
+    <div class="note-left">
+      <div class="note-head">
+        <div>{{ note.user_name }}</div>
+        <div class="date">{{ note.created_at | date }}</div>
+      </div>
+      <div class="note-content">
+        {{ note.content }}
+      </div>
+    </div>
+    <div class="note-right">
       <button
         *ngIf="canDelete(note)"
         mat-icon-button
         [matMenuTriggerFor]="menu"
-        aria-label="more note options"
-        style="float: right; position: absolute; right: 4px">
+        aria-label="more note options">
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
@@ -87,9 +93,6 @@
           <span>Delete</span>
         </button>
       </mat-menu>
-    </div>
-    <div class="note-content">
-      {{ note.content }}
     </div>
   </div>
 </div>

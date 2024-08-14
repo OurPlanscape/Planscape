@@ -32,7 +32,7 @@
   }
 }
 
-.notes-header {
+.notes-header { // fflagged section
   @include h4();
   width: 100%;
   padding: 16px 229px 16px 16px;
@@ -43,9 +43,8 @@
 .notes {
   overflow-y: auto;
   flex: 1;
-  .grow {
+  .grow { // fflagged section
     flex-grow: 1;
-    flex: unset;
   }
 }
 
@@ -54,7 +53,22 @@
   color: $color-black;
 }
 
-.note-head {
+.note-right {
+  width: 28px;
+}
+
+
+
+.note-enclosed { // fflagged section
+  padding: 16px;
+  color: $color-black;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between
+}
+
+
+.note-head { // fflagged section
   @include small-input-label();
   display: flex;
   gap: 8px;
