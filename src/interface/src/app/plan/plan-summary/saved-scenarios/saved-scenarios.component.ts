@@ -168,8 +168,10 @@ export class SavedScenariosComponent implements OnInit {
     this.dialog
       .open(ScenarioCreateConfirmationComponent, {})
       .afterClosed()
-      .subscribe((response) => {
-        this.goToTreatmentPlans();
+      .subscribe((response: any) => {
+        if (response) {
+          this.goToTreatmentPlans();
+        }
       });
   }
 
@@ -186,9 +188,11 @@ export class SavedScenariosComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe((response) => {
-        // TODO: if there's not an error...we open the confirmation dialog
-        this.openConfirmationDialog();
+      .subscribe((response: any) => {
+        if (response) {
+          // if there's not an error...we open the confirmation dialog
+          this.openConfirmationDialog();
+        }
       });
   }
 }

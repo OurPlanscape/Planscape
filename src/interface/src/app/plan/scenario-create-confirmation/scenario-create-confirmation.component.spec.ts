@@ -15,8 +15,8 @@ describe('ScenarioCreateConfirmationComponent', () => {
       imports: [ScenarioCreateConfirmationComponent, MatDialogModule],
       declarations: [],
       providers: [
-        { provide: MatDialogRef, useValue: {} }, // Mock or stub MatDialogRef
-        { provide: MAT_DIALOG_DATA, useValue: {} }, // Mock or stub the data
+        { provide: MatDialogRef, useValue: {} },
+        { provide: MAT_DIALOG_DATA, useValue: {} },
       ],
     }).compileComponents();
 
