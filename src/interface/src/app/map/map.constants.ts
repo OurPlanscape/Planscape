@@ -1,4 +1,5 @@
 import * as L from 'leaflet';
+import '@geoman-io/leaflet-geoman-free';
 
 export enum AreaCreationAction {
   NONE = 0,
