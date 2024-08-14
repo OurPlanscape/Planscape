@@ -19,6 +19,7 @@ from impacts.serializers import (
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
     TreamentPrescriptionUpsertSerializer,
+    TreatmentPrescriptionBatchDeleteSerializer,
 )
 from impacts.services import (
     clone_treatment_plan,
@@ -173,31 +174,19 @@ class TreatmentPrescriptionViewSet(
     def perform_create(self, serializer):
         return upsert_treatment_prescriptions(**serializer.validated_data)
 
-    # current implementation requires a tx_plan_id -- do we want to provide a non-nested option?
     @action(detail=False, methods=["post"])
-    def batch_delete(self, request, tx_plan_pk=None):
-        ids = request.data.get("ids", [])
+    def delete_prescriptions(self, request, tx_plan_pk=None):
+        serializer = TreatmentPrescriptionBatchDeleteSerializer(data=request.data)
 
-        if not isinstance(ids, list):
+        if not serializer.is_valid():
             return response.Response(
-                {"error": "Invalid input. Expected a list of IDs."},
-                status=status.HTTP_400_BAD_REQUEST,
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
             )
 
+        stand_ids = serializer.validated_data.get("stand_ids", [])
+
         delete_result = TreatmentPrescription.objects.filter(
-            id__in=ids, treatment_plan_id=tx_plan_pk
+            stand_id__in=stand_ids, treatment_plan_id=tx_plan_pk
         ).delete()
-
-        # Alt approach...?
-        # collect all proposed deletions...
-        # proposed_deleted = TreatmentPrescription.objects.filter(id__in=ids)
-        # get all treatment plans related to these..
-        # manually check for perms on each plan...
-
-        # deletable_ids = []
-        # for plans in proposed_deleted_plans:
-        #     if TreatmentPlanPermission.can_remove(request.user, txrx.treatment_plan):
-        #         deletable_ids.append(txrx.id)
-        # delete_result = TreatmentPrescription.objects.filter(id__in=deletable_ids).delete()
 
         return response.Response({"result": delete_result}, status=status.HTTP_200_OK)

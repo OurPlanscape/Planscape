@@ -138,6 +138,12 @@ class TreatmentPrescriptionListSerializer(TreatmentPrescriptionSerializer):
         )
 
 
+class TreatmentPrescriptionBatchDeleteSerializer(serializers.Serializer):
+    stand_ids = serializers.ListField(
+        child=serializers.IntegerField(), allow_empty=False
+    )
+
+
 class SummarySerializer(serializers.Serializer):
     project_area = serializers.PrimaryKeyRelatedField(
         queryset=ProjectArea.objects.all(),
