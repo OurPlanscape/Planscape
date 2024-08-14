@@ -15,6 +15,7 @@ import {
   redirectResolver,
 } from '@services';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
+import { createFeatureGuard } from './features/feature.guard';
 
 const routes: Routes = [
   {
@@ -111,10 +112,20 @@ const routes: Routes = [
           import('./plan/plan.module').then((m) => m.PlanModule),
       },
       {
+        // follow the route structure of plan, but without nesting modules and components
+        path: 'plan/:planId/config/:scenarioId/treatment/:treatmentId',
+        canActivate: [AuthGuard, createFeatureGuard('treatments')],
+        loadChildren: () =>
+          import('./treatments/treatments.module').then(
+            (m) => m.TreatmentsModule
+          ),
+      },
+      {
         path: 'account',
         loadChildren: () =>
           import('./account/account.module').then((m) => m.AccountModule),
       },
+      { path: '**', redirectTo: 'home', pathMatch: 'full' },
     ],
   },
 ];

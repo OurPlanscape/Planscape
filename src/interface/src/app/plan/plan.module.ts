@@ -44,6 +44,8 @@ import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/u
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 import { ScenarioCardComponent } from '../../styleguide/scenario-card/scenario-card.component';
 import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/scenarios-card-list.component';
+import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
+import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -73,6 +75,7 @@ import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/s
     ScenarioTooltipComponent,
     ScenariosTableListComponent,
     SetPrioritiesComponent,
+    TreatmentsTabComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
@@ -98,6 +101,7 @@ import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/s
     PlanningAreaTitlebarMenuComponent,
     ScenarioCardComponent,
     ScenariosCardListComponent,
+    TreatmentCardComponent,
   ],
 })
 export class PlanModule {}

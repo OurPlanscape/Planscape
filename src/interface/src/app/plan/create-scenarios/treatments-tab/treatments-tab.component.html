@@ -1,0 +1,33 @@
+<div class="loader" *ngIf="state === 'loading'">
+  <mat-spinner diameter="48"></mat-spinner>
+</div>
+
+<div class="treatments" *ngIf="state === 'loaded'">
+  <sg-treatment-card
+    [name]="treatment.name"
+    [status]="treatment.status"
+    [createdAt]="treatment.created_at"
+    [creator]="treatment.creator_name"
+    (view)="goToTreatment(treatment.id)"
+    (delete)="deleteTreatment(treatment)"
+    *ngFor="let treatment of treatments"></sg-treatment-card>
+</div>
+
+<section class="empty-state" *ngIf="state === 'empty'">
+  <mat-icon class="material-symbols-outlined">create_new_folder</mat-icon>
+  <div class="empty-state__title">No Treatment Plans Yet</div>
+  <div>Click “New Treatment plan” to start creating treatment plans</div>
+</section>
+
+<section class="treatment-footer">
+  <mat-spinner diameter="24" *ngIf="creatingTreatment"></mat-spinner>
+  <button
+    sg-button
+    variant="primary"
+    icon="add"
+    class="new-treatment"
+    [disabled]="creatingTreatment"
+    (click)="createTreatment()">
+    New Treatment Plan
+  </button>
+</section>
