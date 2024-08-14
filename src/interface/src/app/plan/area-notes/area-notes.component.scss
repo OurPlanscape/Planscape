@@ -35,15 +35,20 @@
 .notes {
   overflow-y: auto;
   flex: 1;
-  .grow { // fflagged section
-    flex-grow: 1;
-  }
 }
 
 .note {
   padding: 16px;
   color: $color-black;
 }
+
+.note-head {
+  @include small-input-label();
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
 .date {
   color: $color-md-gray;
   font-weight: 400;
@@ -57,8 +62,6 @@
     color: $color-standard-blue;
   }
 }
-
-
 
 textarea {
   resize: none;
@@ -89,18 +92,15 @@ textarea {
   border-bottom: 1px $color-soft-gray solid;
 }
 
+.notes .grow { // fflagged section
+  flex-grow: 1;
+}
+
 .note-right {
   width: 28px;
 }
 
-.note-head {
-  @include small-input-label();
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.add-note-field { 
+.add-note-field {
   height: 70px;
   flex-shrink: 0;
   border-top: 1px $color-soft-gray solid;
@@ -111,5 +111,5 @@ textarea {
   color: $color-black;
   display: flex;
   flex-direction: row;
-  justify-content: space-between
+  justify-content: space-between;
 }
