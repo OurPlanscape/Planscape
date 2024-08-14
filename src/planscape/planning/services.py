@@ -7,7 +7,7 @@ import fiona
 
 from datetime import date, time, datetime
 from pathlib import Path
-from typing import Any, Dict, Tuple, Type
+from typing import Any, Dict, Tuple, Type, Union
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.db import transaction
@@ -27,6 +27,7 @@ from planning.models import (
 )
 from planning.serializers import ProjectAreaSerializer
 from planning.tasks import async_forsys_run
+from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 from django.contrib.auth.models import AbstractUser
@@ -34,6 +35,7 @@ from actstream import action
 
 logger = logging.getLogger(__name__)
 UserType = Type[AbstractUser]
+LooseGeomType = Union[Dict[str, Any] | GEOSGeometry]
 
 
 @transaction.atomic()
@@ -41,11 +43,17 @@ def create_planning_area(
     user: UserType,
     name: str,
     region_name: str,
-    geojson: Dict[str, Any],
+    geometry: LooseGeomType = None,
     notes: str = None,
 ) -> PlanningArea:
     """Canonical method to create a new planning area."""
-    geometry = coerce_geojson(geojson)
+
+    # FIXME: this code path is temporary. once we migrate to v2
+    # we can deprecate the `LooseGeomType` because serializers
+    # will take care of the conversion correctly
+    if not isinstance(geometry, GEOSGeometry):
+        geometry = coerce_geojson(geometry)
+
     planning_area = PlanningArea.objects.create(
         user=user,
         name=name,
@@ -251,6 +259,15 @@ def get_max_treatable_stand_count(
 ) -> int:
     stand_area = area_from_size(stand_size)
     return math.floor(max_treatable_area / stand_area)
+
+
+def get_acreage(geometry: GEOSGeometry) -> float:
+    try:
+        epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
+        acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
+        return acres
+    except Exception:
+        raise InvalidGeometry("Could not reproject geometry")
 
 
 def validate_scenario_treatment_ratio(

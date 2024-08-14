@@ -43,7 +43,7 @@ class DatasetGoalSerializer(serializers.ModelSerializer):
 
 class MetricUsageSerializer(serializers.ModelSerializer):
     metric = MetricGoalSerializer()
-    dataset = DatasetGoalSerializer(source="metric.dataset")
+    dataset = DatasetGoalSerializer(source="metric.dataset", read_only=True)
 
     class Meta:
         model = MetricUsage
@@ -59,8 +59,8 @@ class MetricUsageSerializer(serializers.ModelSerializer):
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
-    organization = serializers.UUIDField(
-        source="project.organization.uuid", read_only=True
+    organization = serializers.PrimaryKeyRelatedField(
+        source="project.organization", read_only=True
     )
 
     metric_usages = MetricUsageSerializer(
@@ -68,12 +68,12 @@ class TreatmentGoalSerializer(serializers.ModelSerializer):
         read_only=True,
     )
 
-    project = serializers.UUIDField(source="project.uuid", read_only=True)
+    project = serializers.PrimaryKeyRelatedField(read_only=True)
 
     class Meta:
         model = TreatmentGoal
         fields = (
-            "uuid",
+            "id",
             "created_at",
             "created_by",
             "updated_at",

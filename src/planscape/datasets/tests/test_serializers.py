@@ -27,8 +27,8 @@ class DatasetSerializerTest(APITestCase):
     def test_dataset_serializer(self):
         serializer = DatasetSerializer(instance=self.dataset)
         data = serializer.data
-        self.assertEqual(data["uuid"], str(self.dataset.uuid))
-        self.assertEqual(data["organization"], str(self.dataset.organization.uuid))
+        self.assertEqual(data["id"], self.dataset.id)
+        self.assertEqual(data["organization"], self.dataset.organization.id)
         self.assertEqual(data["name"], self.dataset.name)
         self.assertEqual(data["type"], self.dataset.type)
         self.assertEqual(data["blob_status"], self.dataset.blob_status)
@@ -37,8 +37,8 @@ class DatasetSerializerTest(APITestCase):
     def test_dataset_detail_serializer(self):
         serializer = DatasetDetailSerializer(instance=self.dataset)
         data = serializer.data
-        self.assertEqual(data["uuid"], str(self.dataset.uuid))
-        self.assertEqual(data["organization"], str(self.dataset.organization.uuid))
+        self.assertEqual(data["id"], self.dataset.id)
+        self.assertEqual(data["organization"], self.dataset.organization.id)
         self.assertEqual(data["name"], self.dataset.name)
         self.assertEqual(data["type"], self.dataset.type)
         self.assertEqual(data["blob_status"], self.dataset.blob_status)

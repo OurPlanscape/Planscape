@@ -113,6 +113,13 @@ def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeome
     except Exception:
         raise InvalidGeometry("Geometry is invalid and cannot be processed.")
 
+    try:
+        _ = geometry.transform(settings.AREA_SRID, clone=True)
+    except Exception:
+        raise InvalidGeometry(
+            ("Geometry could not be reprojected , thus it's invalid.")
+        )
+
     if not geometry.valid:
         raise InvalidGeometry("Geometry is invalid and cannot be used.")
     if geometry.geom_type != "MultiPolygon":

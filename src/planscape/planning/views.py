@@ -63,7 +63,7 @@ logger = logging.getLogger(__name__)
 def validate_planning_area(request: Request) -> Response:
     serializer = ValidatePlanningAreaSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-    geometry = coerce_geometry(serializer.validated_data.get("geometry"))
+    geometry = serializer.validated_data.get("geometry")
     data = {"area_acres": get_acreage(geometry)}
     out_serializer = ValidatePlanningAreaOutputSerializer(instance=data)
     return Response(out_serializer.data)
@@ -119,8 +119,8 @@ def create_planning_area(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
         # Get the geometry of the planning area.
-        geojson = body.get("geometry")
-        if geojson is None:
+        geometry = body.get("geometry")
+        if geometry is None:
             return Response(
                 {"message": "Must specify the planning area geometry."},
                 status=status.HTTP_400_BAD_REQUEST,
@@ -130,7 +130,7 @@ def create_planning_area(request: Request) -> Response:
             user=user,
             name=name,
             region_name=region_name,
-            geojson=geojson,
+            geometry=geometry,
             notes=notes,
         )
         serializer = PlanningAreaSerializer(

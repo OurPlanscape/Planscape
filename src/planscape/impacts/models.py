@@ -1,10 +1,19 @@
 from collections import defaultdict
+from dataclasses import dataclass, field
+from typing import List, Optional
 from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from planning.models import ProjectArea, Scenario
+from planscape.typing import UserType
 from stands.models import Stand
-from core.models import CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin
+from core.models import (
+    AliveObjectsManager,
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    DeletedAtMixin,
+    UUIDMixin,
+)
 
 
 User = get_user_model()
@@ -15,6 +24,17 @@ class TreatmentPlanStatus(models.TextChoices):
     RUNNING = "RUNNING", "Running"
     SUCCESS = "SUCCESS", "Suceess"
     FAILURE = "FAILURE", "Failure"
+
+
+class TreatmentPlanManager(AliveObjectsManager):
+    def list_by_user(self, user: Optional[UserType]):
+        if not user:
+            return self.get_queryset().none()
+        # this will become super slow when the database get's bigger
+        scenarios = Scenario.objects.list_by_user(user=user).values_list(
+            "id", flat=True
+        )
+        return self.get_queryset().filter(scenario_id__in=scenarios)
 
 
 class TreatmentPlan(
@@ -39,6 +59,8 @@ class TreatmentPlan(
         default=TreatmentPlanStatus.PENDING,
     )
     name = models.CharField(max_length=256)
+
+    objects = TreatmentPlanManager()
 
     class Meta:
         verbose_name = "Treatment Plan"
@@ -194,3 +216,29 @@ class TreatmentPrescription(
     class Meta:
         verbose_name = "Treatment Prescription"
         verbose_name_plural = "Treatment Prescriptions"
+
+
+@dataclass
+class TxPrescriptionSummaryItem:
+    type: TreatmentPrescriptionType
+    action: TreatmentPrescriptionAction
+    area_acres: float
+    stand_ids: List[int] = field(repr=False)
+
+
+@dataclass
+class ProjectAreaSummary:
+    id: int
+    name: str
+    prescriptions: List[TxPrescriptionSummaryItem]
+
+
+@dataclass
+class TxPlanSummary:
+    planning_area: int
+    planning_area_name: str
+    scenario: int
+    scenario_name: str
+    treatment_plan: int
+    treatment_plan_name: str
+    project_areas: List[ProjectAreaSummary]

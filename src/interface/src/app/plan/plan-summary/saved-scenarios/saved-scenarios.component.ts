@@ -6,19 +6,12 @@ import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 import { canAddScenario } from '../../permissions';
-import {
-  SNACK_BOTTOM_NOTICE_CONFIG,
-  SNACK_ERROR_CONFIG,
-  SNACK_NOTICE_CONFIG,
-} from '@shared';
+import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
-import { DeleteDialogComponent } from '../../../standalone/delete-dialog/delete-dialog.component';
+import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -48,8 +41,8 @@ export class SavedScenariosComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private snackbar: MatSnackBar,
-    private dialog: MatDialog,
-    private scenarioService: ScenarioService
+    private scenarioService: ScenarioService,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -127,41 +120,6 @@ export class SavedScenariosComponent implements OnInit {
     });
   }
 
-  confirmDeleteScenario(): void {
-    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
-      DeleteDialogComponent,
-      {
-        data: {
-          name: '"' + this.highlightedScenarioRow?.name + '"',
-        },
-      }
-    );
-    dialogRef
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this.deleteScenario([this.highlightedScenarioRow?.id!]);
-        }
-      });
-  }
-
-  private deleteScenario(ids: string[]) {
-    this.scenarioService.deleteScenarios(ids).subscribe({
-      next: (deletedIds) => {
-        this.snackbar.open(
-          `Deleted scenario${deletedIds.length > 1 ? 's' : ''}`,
-          'Dismiss',
-          SNACK_NOTICE_CONFIG
-        );
-        this.fetchScenarios();
-      },
-      error: (err) => {
-        this.snackbar.open(`Error: ${err}`, 'Dismiss', SNACK_ERROR_CONFIG);
-      },
-    });
-  }
-
   highlightScenario(row: ScenarioRow): void {
     this.highlightedScenarioRow = row;
   }
@@ -170,7 +128,7 @@ export class SavedScenariosComponent implements OnInit {
     const id = this.highlightedScenarioRow?.id;
 
     if (id) {
-      this.scenarioService.toggleScenarioStatus(Number(id), archive).subscribe({
+      this.scenarioService.toggleScenarioStatus(Number(id)).subscribe({
         next: () => {
           this.snackbar.open(
             `"${this.highlightedScenarioRow?.name}" has been ${
@@ -204,5 +162,20 @@ export class SavedScenariosComponent implements OnInit {
       return false;
     }
     return isValidTotalArea(this.plan.area_acres);
+  }
+
+  openUploadDialog(): void {
+    this.dialog
+      .open(UploadProjectAreasModalComponent, {
+        data: {
+          planning_area_name: this.plan?.name,
+          planId: this.plan?.id,
+        },
+      })
+      .afterClosed()
+      .subscribe(() => {
+        // TODO: Placeholder -- handle response.
+        // if scenario was created, open another dialog
+      });
   }
 }

@@ -1,6 +1,9 @@
+from django.db.models.base import ValidationError
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
 from drf_spectacular.utils import extend_schema
+from rest_framework.views import Response
 from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import TreatmentPlan, TreatmentPrescription
 from impacts.permissions import (
@@ -9,6 +12,7 @@ from impacts.permissions import (
 )
 from impacts.serializers import (
     CreateTreatmentPlanSerializer,
+    SummarySerializer,
     TreatmentPlanListSerializer,
     TreatmentPlanUpdateSerializer,
     TreatmentPlanSerializer,
@@ -19,6 +23,7 @@ from impacts.serializers import (
 from impacts.services import (
     clone_treatment_plan,
     create_treatment_plan,
+    generate_summary,
     upsert_treatment_prescriptions,
 )
 
@@ -31,11 +36,7 @@ class TreatmentPlanViewSet(
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
-    queryset = TreatmentPlan.objects.all().select_related(
-        "scenario",
-        "scenario__planning_area",
-        "created_by",
-    )
+    queryset = TreatmentPlan.objects.none()
     filterset_class = TreatmentPlanFilterSet
     permission_classes = [TreatmentPlanViewPermission]
     serializer_class = TreatmentPlanSerializer
@@ -46,6 +47,15 @@ class TreatmentPlanViewSet(
         "update": TreatmentPlanUpdateSerializer,
         "partial_update": TreatmentPlanUpdateSerializer,
     }
+
+    def get_queryset(self):
+        user = self.request.user
+        qs = TreatmentPlan.objects.list_by_user(user=user).select_related(
+            "scenario",
+            "scenario__planning_area",
+            "created_by",
+        )
+        return qs
 
     def get_serializer_class(self):
         try:
@@ -90,6 +100,24 @@ class TreatmentPlanViewSet(
             status=status.HTTP_201_CREATED,
         )
 
+    @action(methods=["get"], detail=True)
+    def summary(self, request, pk=None):
+        instance = self.get_object()
+
+        serializer = SummarySerializer(
+            data=request.query_params,
+            context={
+                "treatment_plan": instance,
+            },
+        )
+        serializer.is_valid(raise_exception=True)
+        project_area = serializer.validated_data.get("project_area")
+        summary = generate_summary(
+            treatment_plan=instance,
+            project_area=project_area,
+        )
+        return Response(data=summary, status=status.HTTP_200_OK)
+
 
 class TreatmentPrescriptionViewSet(
     mixins.CreateModelMixin,
@@ -107,6 +135,7 @@ class TreatmentPrescriptionViewSet(
     permission_classes = [
         TreatmentPrescriptionViewPermission,
     ]
+    pagination_class = LimitOffsetPagination
     serializer_class = TreatmentPrescriptionSerializer
     serializer_classes = {
         "list": TreatmentPrescriptionListSerializer,

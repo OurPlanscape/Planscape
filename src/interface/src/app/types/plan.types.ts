@@ -1,4 +1,5 @@
 import { Region } from './region.types';
+import { Geometry } from 'geojson';
 
 export interface Plan {
   area_acres: number;
@@ -20,9 +21,9 @@ export interface Plan {
 export type PreviewPlan = Omit<Plan, 'geometry' | 'area_m2'>;
 
 export interface CreatePlanPayload {
-  geometry: GeoJSON.GeoJSON;
+  geometry: Geometry;
   name: string;
-  region_name: Region;
+  region_name: string;
 }
 
 export interface BackendProjectArea {

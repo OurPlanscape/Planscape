@@ -80,7 +80,7 @@ describe('PlanningAreasComponent', () => {
   it('should navigate to plan on viewPlan', () => {
     const plan = { id: 123 } as any;
     spyOn(router, 'navigate');
-    component.viewPlan(plan, new MouseEvent('click'));
+    component.viewPlan(plan);
     expect(router.navigate).toHaveBeenCalledWith(['plan', plan.id]);
   });
 

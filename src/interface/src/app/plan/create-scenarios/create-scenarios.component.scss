@@ -50,6 +50,7 @@
 .create-scenarios-inner-wrapper {
   display: flex;
   flex-direction: column;
+  padding: 0 20px 10px;
 }
 
 .step-label-header {
@@ -84,15 +85,6 @@
 
   ::ng-deep mat-tab-header {
     padding: 0 32px;
-  }
-
-  ::ng-deep .mat-tab-body {
-    padding-bottom: 10px;
-  }
-
-  ::ng-deep .mat-tab-body-content {
-    padding: 0 20px;
-
   }
 }
 
@@ -134,4 +126,8 @@
 
 .hidden {
   display: none;
+}
+
+.results-container {
+  padding: 0 20px 10px;
 }

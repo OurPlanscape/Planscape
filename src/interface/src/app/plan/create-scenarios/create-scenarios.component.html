@@ -43,7 +43,7 @@
               [showWarning]="
                 scenarioState !== 'SUCCESS'
               "></app-constraints-panel>
-            <div class="flex-row gap-12">
+            <div class="flex-row gap-12" *ngIf="!scenarioResults">
               <button
                 mat-raised-button
                 color="primary"
@@ -64,32 +64,39 @@
           </div>
         </mat-tab>
         <mat-tab label="Results">
-          <ng-container *ngIf="scenarioState === 'LOADING'"></ng-container>
-          <app-scenario-not-started
-            *ngIf="scenarioState === 'NOT_STARTED'"></app-scenario-not-started>
-          <app-scenario-pending
-            *ngIf="scenarioState === 'PENDING'"></app-scenario-pending>
-          <app-scenario-pending
-            *ngIf="scenarioState === 'RUNNING'"></app-scenario-pending>
-          <app-scenario-results
-            *ngIf="scenarioState === 'SUCCESS'"
-            [results]="scenarioResults"
-            [scenarioChartData]="scenarioChartData"
-            [priorities]="priorities"
-            [scenarioName]="scenarioNameFormField?.value"
-            [scenarioId]="scenarioId!">
-          </app-scenario-results>
-          <app-scenario-failure
-            *ngIf="
-              scenarioState === 'FAILURE' ||
-              scenarioState === 'PANIC' ||
-              scenarioState === 'TIMED_OUT'
-            "
-            (goBack)="goBackToPlanning()"
-            (tryAgain)="goToConfig()"
-            [scenarioName]="scenarioNameFormField?.value"
-            [scenarioId]="scenarioId!"
-            [scenarioState]="scenarioState"></app-scenario-failure>
+          <div class="results-container">
+            <ng-container *ngIf="scenarioState === 'LOADING'"></ng-container>
+            <app-scenario-not-started
+              *ngIf="
+                scenarioState === 'NOT_STARTED'
+              "></app-scenario-not-started>
+            <app-scenario-pending
+              *ngIf="scenarioState === 'PENDING'"></app-scenario-pending>
+            <app-scenario-pending
+              *ngIf="scenarioState === 'RUNNING'"></app-scenario-pending>
+            <app-scenario-results
+              *ngIf="scenarioState === 'SUCCESS'"
+              [results]="scenarioResults"
+              [scenarioChartData]="scenarioChartData"
+              [priorities]="priorities"
+              [scenarioName]="scenarioNameFormField?.value"
+              [scenarioId]="scenarioId!">
+            </app-scenario-results>
+            <app-scenario-failure
+              *ngIf="
+                scenarioState === 'FAILURE' ||
+                scenarioState === 'PANIC' ||
+                scenarioState === 'TIMED_OUT'
+              "
+              (goBack)="goBackToPlanning()"
+              (tryAgain)="goToConfig()"
+              [scenarioName]="scenarioNameFormField?.value"
+              [scenarioId]="scenarioId!"
+              [scenarioState]="scenarioState"></app-scenario-failure>
+          </div>
+        </mat-tab>
+        <mat-tab label="Treatments" *ngIf="showTreatmentsTab && scenarioId">
+          <app-treatments-tab [scenarioId]="scenarioId"></app-treatments-tab>
         </mat-tab>
       </mat-tab-group>
     </div>

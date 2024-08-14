@@ -1,5 +1,4 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { RouterLink } from '@angular/router';
@@ -19,12 +18,13 @@ import {
   MatDialogRef,
 } from '@angular/material/dialog';
 import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-planning-area.component';
+import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 
 @Component({
   selector: 'app-planning-area-menu',
   standalone: true,
   imports: [
-    MatButtonModule,
+    MatLegacyButtonModule,
     MatIconModule,
     MatMenuModule,
     RouterLink,
@@ -46,6 +46,11 @@ export class PlanningAreaMenuComponent {
 
   get shareEnabled() {
     return canViewCollaborators(this.plan);
+  }
+
+  stopClickEvent(event: MouseEvent) {
+    event.stopPropagation();
+    return false;
   }
 
   sharePlan() {

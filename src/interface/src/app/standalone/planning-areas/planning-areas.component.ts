@@ -144,13 +144,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     this.dataSource.changePageSize(size);
   }
 
-  viewPlan(plan: PreviewPlan, event: MouseEvent) {
-    const { target } = event;
-    if (target instanceof HTMLElement) {
-      if (target.classList.contains('mat-mdc-button-touch-target')) {
-        return false;
-      }
-    }
+  viewPlan(plan: PreviewPlan) {
     this.router.navigate(['plan', plan.id]);
     return;
   }
