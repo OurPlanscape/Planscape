@@ -32,14 +32,6 @@
   }
 }
 
-.notes-header { // fflagged section
-  @include h4();
-  width: 100%;
-  padding: 16px 229px 16px 16px;
-  gap: 8px;
-  border-bottom: 1px $color-soft-gray solid;
-}
-
 .notes {
   overflow-y: auto;
   flex: 1;
@@ -52,29 +44,6 @@
   padding: 16px;
   color: $color-black;
 }
-
-.note-right {
-  width: 28px;
-}
-
-
-
-.note-enclosed { // fflagged section
-  padding: 16px;
-  color: $color-black;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between
-}
-
-
-.note-head { // fflagged section
-  @include small-input-label();
-  display: flex;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
 .date {
   color: $color-md-gray;
   font-weight: 400;
@@ -89,11 +58,7 @@
   }
 }
 
-.add-note-field {
-  height: 70px;
-  flex-shrink: 0;
-  border-top: 1px $color-soft-gray solid;
-}
+
 
 textarea {
   resize: none;
@@ -113,4 +78,38 @@ textarea {
 
   color: $color-error;
   @include regular-paragraph();
+}
+
+// feature flagged additions
+.notes-header {
+  @include h4();
+  width: 100%;
+  padding: 16px 229px 16px 16px;
+  gap: 8px;
+  border-bottom: 1px $color-soft-gray solid;
+}
+
+.note-right {
+  width: 28px;
+}
+
+.note-head {
+  @include small-input-label();
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.add-note-field { 
+  height: 70px;
+  flex-shrink: 0;
+  border-top: 1px $color-soft-gray solid;
+}
+
+.note-enclosed {
+  padding: 16px;
+  color: $color-black;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between
 }
