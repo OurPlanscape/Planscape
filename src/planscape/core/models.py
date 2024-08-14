@@ -40,7 +40,7 @@ class DeletedAtMixin(models.Model):
         """
         hard_delete = kwargs.get("hard_delete", False)
         if hard_delete:
-            super().delete()
+            super().delete(*args, **kwargs)
         else:
             try:
                 self.deleted_at = timezone.now()
