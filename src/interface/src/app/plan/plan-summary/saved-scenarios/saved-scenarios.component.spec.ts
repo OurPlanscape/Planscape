@@ -117,8 +117,10 @@ describe('SavedScenariosComponent', () => {
 
   it('should call service for list of scenarios', () => {
     fixture.detectChanges();
-    expect(fakeScenarioService.getScenariosForPlan).toHaveBeenCalledOnceWith(1);
-
+    expect(fakeScenarioService.getScenariosForPlan).toHaveBeenCalledOnceWith(
+      1,
+      'created_at'
+    );
     expect(component.activeScenarios.length).toEqual(1);
   });
 
