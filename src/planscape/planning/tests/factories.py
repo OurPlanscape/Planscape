@@ -42,6 +42,9 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
     uuid = factory.Faker("uuid4")
 
     status = ScenarioStatus.ACTIVE
+
+    configuration = factory.LazyAttribute(lambda x: dict())
+
     result_status = ScenarioResultStatus.PENDING
 
 
