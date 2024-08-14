@@ -26,7 +26,7 @@ class TxPlanViewSetTest(APITransactionTestCase):
             format="json",
         )
         data = response.json()
-        tx_plan = TreatmentPlan.objects.get(uuid=data.get("uuid"))
+        tx_plan = TreatmentPlan.objects.get(id=data.get("id"))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(1, TreatmentPlan.objects.all().count())
         self.assertEqual(

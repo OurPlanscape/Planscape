@@ -6,15 +6,14 @@ from organizations.models import Organization
 
 
 class DatasetSerializer(serializers.ModelSerializer):
-    organization = UUIDRelatedField(
-        uuid_field="uuid",
+    organization = serializers.PrimaryKeyRelatedField(
         queryset=Organization.objects.all(),
     )
 
     class Meta:
         model = Dataset
         fields = (
-            "uuid",
+            "id",
             "organization",
             "name",
             "type",
@@ -27,7 +26,7 @@ class DatasetDetailSerializer(DatasetSerializer):
     class Meta:
         model = Dataset
         fields = (
-            "uuid",
+            "id",
             "created_at",
             "created_by",
             "updated_at",

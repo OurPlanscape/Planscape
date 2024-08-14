@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.relations import PrimaryKeyRelatedField
 
 from core.fields import UUIDRelatedField
 from impacts.models import (
@@ -16,7 +17,6 @@ class TxPrescriptionProjectAreaSerializer(serializers.ModelSerializer):
         model = ProjectArea
         fields = (
             "id",
-            "uuid",
             "name",
         )
 
@@ -40,7 +40,6 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
         model = TreatmentPlan
         fields = (
             "id",
-            "uuid",
             "created_at",
             "created_by",
             "updated_at",
@@ -60,7 +59,6 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
         model = TreatmentPlan
         fields = (
             "id",
-            "uuid",
             "created_at",
             "creator_name",
             "updated_at",
@@ -91,7 +89,6 @@ class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
         model = TreatmentPrescription
         fields = (
             "id",
-            "uuid",
             "created_at",
             "created_by",
             "updated_at",
@@ -110,13 +107,11 @@ class TreamentPrescriptionUpsertSerializer(serializers.Serializer):
         default=serializers.CurrentUserDefault(),
     )
 
-    treatment_plan = UUIDRelatedField(
-        uuid_field="uuid",
+    treatment_plan = PrimaryKeyRelatedField(
         queryset=TreatmentPlan.objects.all(),
     )
 
-    project_area = UUIDRelatedField(
-        uuid_field="uuid",
+    project_area = PrimaryKeyRelatedField(
         queryset=ProjectArea.objects.all(),
     )
 
@@ -133,7 +128,6 @@ class TreatmentPrescriptionListSerializer(TreatmentPrescriptionSerializer):
         model = TreatmentPrescription
         fields = (
             "id",
-            "uuid",
             "created_at",
             "created_by",
             "updated_at",
