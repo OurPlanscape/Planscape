@@ -40,7 +40,10 @@ import { MapLayerSelectDialogComponent } from './map-layer-select-dialog/map-lay
 import { PlanRoutingModule } from './plan-routing.module';
 import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
+import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/upload-project-areas-modal.component';
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
+import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
+import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -70,6 +73,7 @@ import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-t
     ScenarioTooltipComponent,
     ScenariosTableListComponent,
     SetPrioritiesComponent,
+    TreatmentsTabComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
@@ -91,7 +95,9 @@ import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-t
     SharedModule,
     ButtonComponent,
     DeleteDialogComponent,
+    UploadProjectAreasModalComponent,
     PlanningAreaTitlebarMenuComponent,
+    TreatmentCardComponent,
   ],
 })
 export class PlanModule {}

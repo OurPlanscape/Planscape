@@ -17,7 +17,6 @@ class ProjectViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     ordering_fields = ["name", "display_name", "created_at"]
     filterset_class = ProjectFilterSet
     serializer_class = ProjectSerializer
-    lookup_field = "uuid"
 
     def get_queryset(self):
         # TODO: we need to customize

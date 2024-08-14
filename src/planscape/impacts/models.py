@@ -1,5 +1,6 @@
 from collections import defaultdict
-from typing import Optional
+from dataclasses import dataclass, field
+from typing import List, Optional
 from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -215,3 +216,29 @@ class TreatmentPrescription(
     class Meta:
         verbose_name = "Treatment Prescription"
         verbose_name_plural = "Treatment Prescriptions"
+
+
+@dataclass
+class TxPrescriptionSummaryItem:
+    type: TreatmentPrescriptionType
+    action: TreatmentPrescriptionAction
+    area_acres: float
+    stand_ids: List[int] = field(repr=False)
+
+
+@dataclass
+class ProjectAreaSummary:
+    id: int
+    name: str
+    prescriptions: List[TxPrescriptionSummaryItem]
+
+
+@dataclass
+class TxPlanSummary:
+    planning_area: int
+    planning_area_name: str
+    scenario: int
+    scenario_name: str
+    treatment_plan: int
+    treatment_plan_name: str
+    project_areas: List[ProjectAreaSummary]
