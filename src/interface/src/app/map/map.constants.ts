@@ -1,5 +1,4 @@
 import * as L from 'leaflet';
-import '@geoman-io/leaflet-geoman-free';
 
 export enum AreaCreationAction {
   NONE = 0,
@@ -28,18 +27,6 @@ export const LEGEND = {
     '#74afa5',
     '#508295',
   ],
-};
-
-export const GEOMAN_DRAW_OPTIONS: L.PM.ToolbarOptions = {
-  cutPolygon: false,
-  drawCircle: false,
-  drawMarker: false,
-  drawCircleMarker: false,
-  drawPolyline: false,
-  drawRectangle: false,
-  drawText: false,
-  rotateMode: false,
-  position: 'bottomright',
 };
 
 export const NORMAL_STYLES: L.PathOptions = {
