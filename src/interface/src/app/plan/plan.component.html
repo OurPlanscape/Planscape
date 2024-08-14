@@ -31,7 +31,7 @@
       </div>
     </div>
     <div *appFeatureFlag="'new_planning_area'">
-      <div class="plan-summary-panel" *ngIf="showOverview$ | async">
+      <div class="plan-summary-panel full-height" *ngIf="showOverview$ | async">
         <app-area-notes [plan]="plan"></app-area-notes>
       </div>
     </div>
