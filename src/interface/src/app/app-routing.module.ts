@@ -113,7 +113,7 @@ const routes: Routes = [
       },
       {
         // follow the route structure of plan, but without nesting modules and components
-        path: 'plan/:planId/config/:scenarioId/treatment/:treatment-id',
+        path: 'plan/:planId/config/:scenarioId/treatment/:treatmentId',
         canActivate: [AuthGuard, createFeatureGuard('treatments')],
         loadChildren: () =>
           import('./treatments/treatments.module').then(
