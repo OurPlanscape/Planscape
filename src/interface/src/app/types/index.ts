@@ -7,5 +7,7 @@ export * from './plan.types';
 export * from './region.types';
 export * from './scenario.types';
 export * from './user.types';
+export * from './treatment.types';
+
 // TODO this is wrong
 export { FrontendConstants } from '../map/map.constants';
