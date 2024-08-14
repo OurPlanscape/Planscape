@@ -9,13 +9,10 @@ class MetricFilterSet(filters.FilterSet):
     organization = filters.ModelChoiceFilter(
         queryset=Organization.objects.all(),
         field_name="project__organization",
-        to_field_name="uuid",
     )
 
     project = filters.ModelChoiceFilter(
         queryset=Project.objects.all(),
-        field_name="project",
-        to_field_name="uuid",
     )
 
     category = filters.ModelChoiceFilter(queryset=Category.objects.all())

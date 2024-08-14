@@ -323,6 +323,13 @@ export class CreateScenariosComponent implements OnInit {
   get constrainsForm() {
     return this.forms.get('constrains');
   }
+
+  get showTreatmentsTab() {
+    return (
+      this.scenarioState === 'SUCCESS' &&
+      this.featureService.isFeatureEnabled('treatments')
+    );
+  }
 }
 
 function scenarioNameMustBeNew(

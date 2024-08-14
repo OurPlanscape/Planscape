@@ -7,12 +7,11 @@ from datasets.serializers import DatasetSerializer
 
 
 class MetricSerializer(serializers.ModelSerializer):
-    organization = serializers.UUIDField(
-        source="project.organization.uuid", read_only=True, default=None
+    organization = serializers.PrimaryKeyRelatedField(
+        source="project.organization.id", read_only=True, default=None
     )
 
-    project = UUIDRelatedField(
-        uuid_field="uuid",
+    project = serializers.PrimaryKeyRelatedField(
         queryset=Project.objects.all(),
     )
 
@@ -21,7 +20,7 @@ class MetricSerializer(serializers.ModelSerializer):
     class Meta:
         model = Metric
         fields = (
-            "uuid",
+            "id",
             "created_at",
             "created_by",
             "updated_at",

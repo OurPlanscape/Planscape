@@ -63,7 +63,7 @@ class MetricsViewSetTest(APITransactionTestCase):
 
     def test_retrieve_metric(self):
         response = self.client.get(
-            reverse("api:metrics:metrics-detail", args=[self.metric.uuid])
+            reverse("api:metrics:metrics-detail", args=[self.metric.id])
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["name"], self.metric.name)
@@ -76,7 +76,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         url = reverse("api:metrics:metrics-list")
         response = self.client.get(
             url,
-            {"organization": self.organization.uuid},
+            {"organization": self.organization.id},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
@@ -87,7 +87,7 @@ class MetricsViewSetTest(APITransactionTestCase):
         url = reverse("api:metrics:metrics-list")
         response = self.client.get(
             url,
-            {"project": str(self.project.uuid)},
+            {"project": str(self.project.id)},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
