@@ -136,3 +136,25 @@ class TreatmentPrescriptionListSerializer(TreatmentPrescriptionSerializer):
             "stand",
             "area_acres",
         )
+
+
+class SummarySerializer(serializers.Serializer):
+    project_area = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectArea.objects.all(),
+        required=False,
+    )
+
+    def validate_project_area(self, project_area):
+        """
+        Validates if the project area selected belongs to
+        the same scenario as the treatment plan.
+        """
+        treatment_plan = self.context.get("treatment_plan", None) or None
+
+        if project_area and treatment_plan:
+            if treatment_plan.scenario.pk != project_area.scenario.pk:
+                raise serializers.ValidationError(
+                    "Project Area does not belong to the same Scenario as Treatment Plan."
+                )
+
+        return project_area
