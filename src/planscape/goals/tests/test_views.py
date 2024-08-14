@@ -172,7 +172,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         url = reverse("api:goals:treatment_goals-list")
         response = self.client.get(
             url,
-            {"organization": self.organization.uuid},
+            {"organization": self.organization.id},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
@@ -183,7 +183,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         url = reverse("api:goals:treatment_goals-list")
         response = self.client.get(
             url,
-            {"project": str(self.project.uuid)},
+            {"project": self.project.id},
         )
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data.get("results")), 1)
