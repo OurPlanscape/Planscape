@@ -4,16 +4,17 @@ import { ActivatedRoute } from '@angular/router';
 import { JsonPipe } from '@angular/common';
 import { TreatmentPlan } from '@types';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
+import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
-  imports: [JsonPipe, TreatmentMapComponent],
+  imports: [JsonPipe, TreatmentMapComponent, TreatmentSummaryComponent],
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent implements OnInit {
-  treatmentPlanId = Number(this.route.snapshot.paramMap.get('treatmentId'));
+  treatmentPlanId: number = this.route.snapshot.data['treatmentId'];
   treatmentPlan: TreatmentPlan | null = null;
 
   constructor(

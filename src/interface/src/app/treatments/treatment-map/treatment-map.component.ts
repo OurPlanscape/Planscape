@@ -54,10 +54,6 @@ export class TreatmentMapComponent {
 
   constructor() {}
 
-  // -----------------------------------------------------------------
-  // Map events
-  // -----------------------------------------------------------------
-
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {
       return;
