@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { TreatmentPlan } from '@types';
@@ -20,7 +20,7 @@ import { PrescriptionActionsComponent } from '../prescription-actions/prescripti
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
 })
-export class ProjectAreaComponent {
+export class ProjectAreaComponent implements OnInit {
   treatmentPlanId: number = this.route.snapshot.data['treatmentId'];
   projectAreaId: number = this.route.snapshot.data['projectAreaId'];
 
