@@ -31,7 +31,7 @@ BEGIN
       SELECT
         ss.id as "id",
         ss.size as "stand_size",
-        NULL as "treatment_plan_id",
+        (query_params->>'treatment_plan_id') as "treatment_plan_id",
         (query_params->>'project_area_id')::int as "project_area_id",
         NULL as "type",
         NULL as "action",
