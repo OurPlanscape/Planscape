@@ -142,7 +142,6 @@ def create_scenario_from_upload(
     stand_size: str,
     uploaded_geom,
 ) -> Scenario:
-
     # TODO: Are there config defaults we need to set on the scenario
     scenario = create_scenario(
         user, planning_area=planningarea, name=scenario_name, stand_size=stand_size
