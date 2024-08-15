@@ -58,7 +58,11 @@ export class TreatmentMapComponent {
     if (event.originalEvent.button === 2) {
       return;
     }
+    if (this.mapDragging) {
+      return;
+    }
     this.isDragging = true;
+
     this.start = event;
     this.mapLibreMap.getCanvas().style.cursor = 'crosshair';
   }
