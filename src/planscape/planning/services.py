@@ -115,23 +115,20 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
 def feature_to_project_area(idx: int, user: UserType, scenario: Scenario, feature):
     try:
         project_area = {
-            "geometry": coerce_geometry(feature),
+            # TODO: create function to coerce geoms that this can't...
+            "geometry": GEOSGeometry(feature, 4269),
             "name": f"{scenario.name} project:{idx}",
             "created_by": user.pk,
             "scenario": scenario.pk,
         }
-        serializer = ProjectAreaSerializer(data=project_area)
-        serializer.is_valid(raise_exception=True)
-        proj_area_obj = serializer.save()
+        proj_area_obj = ProjectArea.objects.create(**project_area)
+
         action.send(
             user,
             verb="created",
             action_object=proj_area_obj,
             target=scenario,
         )
-    except ValidationError as ve:
-        logger.error(f"Validation error with {ve}")
-        raise ve
     except Exception as e:
         logger.error(f"Unable to create project area for {scenario.name} {e}")
         raise e
@@ -145,50 +142,10 @@ def create_scenario_from_upload(
     stand_size: str,
     uploaded_geom,
 ) -> Scenario:
-    scenario = Scenario.objects.create(
-        planning_area=planningarea, name=scenario_name, user=user
-    )
 
-    # TODO: refactor
-    # ALSO TODO: what other configs do we need to set as default?
-    # or should we use a different serializer for validation?
-
-    scenario.configuration["stand_size"] = stand_size
-    scenario.configuration["weights"] = []
-    scenario.configuration["est_cost"] = 1
-    scenario.configuration["excluded_areas"] = []
-    scenario.configuration["stand_thresholds"] = []
-    scenario.configuration["global_thresholds"] = []
-    scenario.configuration["scenario_priorities"] = [
-        "probability_of_fire_severity_high"
-    ]
-    # TODO: we shouldn't hardcode this?
-    scenario.configuration["max_treatment_area_ratio"] = 100
-    scenario.configuration["scenario_output_fields"] = [
-        "probability_of_fire_severity_high",
-        "total_fuel_exposed_to_fire",
-        "dead_and_down_carbon",
-        "structure_exposure",
-        "damage_potential_wui",
-        "standing_dead_and_ladder_fuels",
-        "available_standing_biomass",
-        "sawtimber_biomass",
-        "california_spotted_owl_habitat",
-    ]
-
-    scenario.status = ScenarioStatus.ACTIVE
-
-    scenario.save()
-    scenario_result = ScenarioResult.objects.create(scenario=scenario)
-    # TODO: and here? should this be default?
-    scenario_result.status = ScenarioResultStatus.SUCCESS
-    scenario_result.save()
-
-    action.send(
-        user,
-        verb="created",
-        action_object=scenario,
-        target=scenario.planning_area,
+    # TODO: Are there config defaults we need to set on the scenario
+    scenario = create_scenario(
+        user, planning_area=planningarea, name=scenario_name, stand_size=stand_size
     )
 
     # this handles a format provided by shpjs when a shapefile has multiple features
@@ -202,7 +159,7 @@ def create_scenario_from_upload(
         for idx, f in enumerate(uploaded_geom["features"], 1):
             feature_to_project_area(idx, user, scenario, f["geometry"])
 
-    # TODO: should we run forsys yet?
+    # TODO: should we run forsys for this scenario?
     # async_forsys_run.delay(scenario.pk)
     return scenario
 

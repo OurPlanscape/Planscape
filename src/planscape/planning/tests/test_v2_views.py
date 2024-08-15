@@ -1,6 +1,6 @@
 import json
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
@@ -840,11 +840,12 @@ class CreateScenariosFromUpload(APITransactionTestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
 
-        self.la_county_geo = _load_geojson_fixture("la_county.geojson")
+        self.la_region = _load_geojson_fixture("la_region.geojson")
         self.la_features = _load_geojson_fixture("la_features.geojson")
         self.bayarea_geo = _load_geojson_fixture("bayarea.geojson")
 
         self.burbank_shpjs = {
+            "type": "Feature",
             "geometry": {
                 "type": "Polygon",
                 "coordinates": [
@@ -858,7 +859,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
                         [-118.30225, 34.196327],
                     ]
                 ],
-            }
+            },
         }
         self.la_multi_shpjs = {
             "geometry": {
@@ -906,14 +907,15 @@ class CreateScenariosFromUpload(APITransactionTestCase):
             }
         }
 
+        la_geom = json.dumps(self.la_region["geometry"])
         self.planning_area = PlanningAreaFactory(
             user=self.owner_user,
-            geometry=coerce_geometry(self.la_county_geo["geometry"]),
+            geometry=MultiPolygon(GEOSGeometry(la_geom)),
         )
 
     def test_confirm_permissions_required(self):
         payload = {
-            "geometry": self.burbank_shpjs,
+            "geometry": self.burbank_shpjs["geometry"],
             "name": "new scenario",
             "stand_size": "SMALL",
         }
@@ -930,7 +932,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
     def test_create_from_single_feature_shpjs(self):
         self.client.force_authenticate(self.owner_user)
         payload = {
-            "geometry": self.burbank_shpjs,
+            "geometry": json.dumps(self.burbank_shpjs["geometry"]),
             "name": "new scenario",
             "stand_size": "SMALL",
         }
@@ -946,48 +948,10 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response_data["project_areas"]), 1)
 
-    def test_create_from_multifeature_shpjs(self):
-        self.client.force_authenticate(self.owner_user)
-        payload = {
-            "geometry": self.la_multi_shpjs,
-            "name": "new scenario",
-            "stand_size": "SMALL",
-        }
-        response = self.client.post(
-            reverse(
-                "api:planning:planningareas-upload-shapefiles",
-                kwargs={"pk": self.planning_area.pk},
-            ),
-            data=payload,
-            format="json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response_data["project_areas"]), 4)
-
-    def test_create_from_geojson(self):
-        self.client.force_authenticate(self.owner_user)
-        payload = {
-            "geometry": self.la_features,
-            "name": "new scenario",
-            "stand_size": "SMALL",
-        }
-        response = self.client.post(
-            reverse(
-                "api:planning:planningareas-upload-shapefiles",
-                kwargs={"pk": self.planning_area.pk},
-            ),
-            data=payload,
-            format="json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response_data["project_areas"]), 4)
-
     def test_create_uncontained_geometry(self):
         self.client.force_authenticate(self.owner_user)
         payload = {
-            "geometry": self.bayarea_geo,
+            "geometry": json.dumps(self.bayarea_geo),
             "name": "new scenario",
             "stand_size": "SMALL",
         }

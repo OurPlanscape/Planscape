@@ -1,5 +1,4 @@
 import copy
-import json
 from unittest import mock
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
