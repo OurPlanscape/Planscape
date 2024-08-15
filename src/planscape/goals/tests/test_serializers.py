@@ -83,11 +83,11 @@ class TreatmentGoalSerializerTest(TransactionTestCase):
         """Test the TreatmentGoalSerializer data"""
         serializer = TreatmentGoalSerializer(instance=self.treatment_goal)
         data = serializer.data
-        self.assertEqual(data["uuid"], str(self.treatment_goal.uuid))
+        self.assertEqual(data["id"], self.treatment_goal.id)
         self.assertEqual(data["created_by"], self.user.id)
         self.assertEqual(data["deleted_at"], self.treatment_goal.deleted_at)
-        self.assertEqual(data["organization"], str(self.organization.uuid))
-        self.assertEqual(data["project"], str(self.project.uuid))
+        self.assertEqual(data["organization"], self.organization.id)
+        self.assertEqual(data["project"], self.project.id)
         self.assertEqual(data["name"], self.treatment_goal.name)
         self.assertEqual(data["summary"], self.treatment_goal.summary)
         self.assertEqual(data["description"], self.treatment_goal.description)

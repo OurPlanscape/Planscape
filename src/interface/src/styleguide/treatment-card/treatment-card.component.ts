@@ -2,6 +2,7 @@ import {
   Component,
   EventEmitter,
   HostBinding,
+  HostListener,
   Input,
   Output,
 } from '@angular/core';
@@ -10,8 +11,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { DatePipe } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-
-export type TreatmentCardStatus = 'In Progress' | 'Done' | 'Running' | 'Failed';
+import { TreatmentStatus } from '@types';
 
 @Component({
   selector: 'sg-treatment-card',
@@ -30,21 +30,31 @@ export class TreatmentCardComponent {
   @Input() name = '';
   @Input() creator = '';
   @Input() createdAt = '';
-  @Input() status: TreatmentCardStatus = 'In Progress';
+  @Input() status: TreatmentStatus = 'PENDING';
 
   @Output() view = new EventEmitter();
   @Output() duplicate = new EventEmitter();
   @Output() delete = new EventEmitter();
 
-  readonly chipsStatus: Record<TreatmentCardStatus, StatusChipStatus> = {
-    'In Progress': 'inProgress',
-    Done: 'success',
-    Running: 'running',
-    Failed: 'failed',
+  readonly chipsStatus: Record<TreatmentStatus, StatusChipStatus> = {
+    PENDING: 'inProgress',
+    SUCCESS: 'success',
+    RUNNING: 'running',
+    FAILURE: 'failed',
   };
 
   @HostBinding('class.disabled')
   get isDisabled() {
-    return this.status === 'Running';
+    return this.status === 'RUNNING';
+  }
+
+  @HostListener('click')
+  viewTreatment() {
+    this.view.emit();
+  }
+
+  stopEventPropagation(event: Event) {
+    event.stopPropagation();
+    return false;
   }
 }

@@ -23,7 +23,6 @@ import {
   BOUNDARY_LAYER_HOVER_STYLES,
   BOUNDARY_LAYER_NORMAL_STYLES,
   DRAWING_STYLES,
-  GEOMAN_DRAW_OPTIONS,
   HOVER_STYLES,
   NORMAL_STYLES,
 } from './map.constants';
@@ -42,6 +41,18 @@ import { environment } from '../../environments/environment';
 
 // Set to true so that layers are not editable by default
 L.PM.setOptIn(true);
+
+const GEOMAN_DRAW_OPTIONS: L.PM.ToolbarOptions = {
+  cutPolygon: false,
+  drawCircle: false,
+  drawMarker: false,
+  drawCircleMarker: false,
+  drawPolyline: false,
+  drawRectangle: false,
+  drawText: false,
+  rotateMode: false,
+  position: 'bottomright',
+};
 
 /**
  * Helper class to manage initialization and modification of Leaflet maps.
