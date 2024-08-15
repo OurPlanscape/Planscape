@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapControlsComponent } from './map-controls.component';
+import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 
 describe('MapControlsComponent', () => {
   let component: MapControlsComponent;
@@ -8,10 +9,10 @@ describe('MapControlsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapControlsComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapControlsComponent],
+      providers: [SelectedStandsState],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapControlsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

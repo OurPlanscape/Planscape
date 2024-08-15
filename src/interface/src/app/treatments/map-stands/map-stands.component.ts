@@ -1,4 +1,4 @@
-import { Component, Input, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
 import {
   LayerComponent,
   VectorSourceComponent,
@@ -13,6 +13,7 @@ import {
 import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-map-stands',
@@ -20,7 +21,7 @@ import { getBoundingBox } from '../maplibre.helper';
   imports: [LayerComponent, VectorSourceComponent, AsyncPipe],
   templateUrl: './map-stands.component.html',
 })
-export class MapStandsComponent {
+export class MapStandsComponent implements OnChanges {
   @Input() treatmentPlanId = 0;
   @Input() projectAreaId: number | null = null;
   @Input() mapLibreMap!: MapLibreMap;
@@ -31,9 +32,9 @@ export class MapStandsComponent {
   selectedStands$ = this.mapStandsService.selectedStands$;
   private initialSelectedStands: number[] = [];
 
-  // todo figure out host thing
   readonly tilesUrl =
-    'http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}';
+    environment.martin_server +
+    'project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}';
 
   readonly layers = {
     outline: 'outline-layer',
@@ -44,7 +45,6 @@ export class MapStandsComponent {
   constructor(private mapStandsService: SelectedStandsState) {}
 
   get vectorLayerUrl() {
-    //return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=2710`;
     return (
       this.tilesUrl +
       `?treatment_plan_id=${this.treatmentPlanId}${
@@ -71,7 +71,6 @@ export class MapStandsComponent {
     this.mapStandsService.toggleStand(standId);
   }
 
-  // update and change only when needed.
   paint: LayerSpecification['paint'] = {
     'fill-outline-color': '#000',
     'fill-color': this.getFillColors() as any,

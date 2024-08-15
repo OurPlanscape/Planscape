@@ -9,6 +9,7 @@ export const environment = {
   tile_endpoint: 'https://dev-geo.planscape.org/geoserver/', // Replace with actual URL
   download_endpoint: '', // Replace with actual URL
   stadiamaps_key: '',
+  martin_server: 'https://dev.planscape.org/tiles/',
 };
 
 /*
