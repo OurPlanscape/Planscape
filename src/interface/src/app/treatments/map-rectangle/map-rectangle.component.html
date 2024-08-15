@@ -4,7 +4,7 @@
 <mgl-layer
   id="selection-rectangle"
   type="line"
-  source="rectangle-source"
+  [source]="sourceName"
   [paint]="{
     'line-color': '#007dff',
     'line-width': 1
@@ -12,7 +12,7 @@
 <mgl-layer
   id="selection-rectangle-fill"
   type="fill"
-  source="rectangle-source"
+  [source]="sourceName"
   [paint]="{
     'fill-color': '#007dff',
     'fill-opacity': 0.1
