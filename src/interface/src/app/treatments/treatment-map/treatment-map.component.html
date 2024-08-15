@@ -1,0 +1,40 @@
+<div>
+  <button (click)="toggleMapDrag()">
+    Toggle map drag {{ mapDragging ? 'off' : 'on' }}
+  </button>
+
+  <button (click)="assignTreatment('treatment-1')">Assign treatment 1</button>
+  <button (click)="assignTreatment('treatment-2')">Assign treatment 2</button>
+  <button (click)="assignTreatment('treatment-3')">Assign treatment 3</button>
+  <button (click)="clearTreatments()">clear all</button>
+</div>
+
+<section>
+  <mgl-map
+    (mapLoad)="maplibreMap = $event"
+    [style]="
+      'https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=' + key
+    "
+    [zoom]="[7]"
+    [center]="[-122.5, 37]"
+    [dragPan]="mapDragging"
+    [boxZoom]="false"
+    [interactive]="true"
+    [pitchWithRotate]="false"
+    (mapMouseDown)="onMapMouseDown($event)"
+    (mapMouseMove)="onMapMouseMove($event)"
+    (mapMouseUp)="onMapMouseUp($event)">
+    <app-map-stands
+      [maplibreMap]="maplibreMap"
+      [projectAreaId]="projectAreaId"
+      [treatmentPlanId]="treatmentPlanId"
+      [treatedStands]="treatedStands"
+      [selectStart]="start ? start.point : null"
+      [selectEnd]="end ? end.point : null"></app-map-stands>
+
+    <app-map-rectangle
+      [maplibreMap]="maplibreMap"
+      [start]="start ? start.lngLat : null"
+      [end]="end ? end.lngLat : null"></app-map-rectangle>
+  </mgl-map>
+</section>
