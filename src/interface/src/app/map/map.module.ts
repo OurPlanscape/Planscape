@@ -42,6 +42,6 @@ import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-d
     ReactiveFormsModule,
     FeaturesModule,
   ],
-  exports: [MapComponent],
+  exports: [MapComponent, MapConfigSummaryComponent],
 })
 export class MapModule {}

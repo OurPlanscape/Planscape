@@ -18,9 +18,11 @@ import { Polygon } from 'geojson';
   templateUrl: './map-rectangle.component.html',
 })
 export class MapRectangleComponent implements OnChanges {
-  @Input() maplibreMap!: MapLibreMap;
+  @Input() mapLibreMap!: MapLibreMap;
   @Input() start!: LngLat | null;
   @Input() end!: LngLat | null;
+
+  readonly sourceName = 'rectangle-source';
 
   rectangleGeometry: Polygon = {
     type: 'Polygon',
@@ -50,7 +52,7 @@ export class MapRectangleComponent implements OnChanges {
 
   private updateRectangleGeometry(cords: number[][][]) {
     this.rectangleGeometry.coordinates = cords;
-    (this.maplibreMap.getSource('rectangle-source') as GeoJSONSource)?.setData(
+    (this.mapLibreMap.getSource(this.sourceName) as GeoJSONSource)?.setData(
       this.rectangleGeometry
     );
   }

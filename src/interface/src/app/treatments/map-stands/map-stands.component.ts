@@ -12,19 +12,7 @@ import {
 
 import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
-
-export type StandAssigment =
-  | 'selected'
-  | 'treatment-1'
-  | 'treatment-2'
-  | 'treatment-3';
-
-export const StandColors: Record<StandAssigment, string> = {
-  selected: '#0066ff',
-  'treatment-1': '#f8f802',
-  'treatment-2': '#d27601',
-  'treatment-3': '#ee0d0d',
-};
+import { getBoundingBox } from '../maplibre.helper';
 
 @Component({
   selector: 'app-map-stands',
@@ -33,11 +21,12 @@ export const StandColors: Record<StandAssigment, string> = {
   templateUrl: './map-stands.component.html',
 })
 export class MapStandsComponent {
-  @Input() projectAreaId: number | null = null;
   @Input() treatmentPlanId = 0;
-  @Input() maplibreMap!: MapLibreMap;
+  @Input() projectAreaId: number | null = null;
+  @Input() mapLibreMap!: MapLibreMap;
   @Input() selectStart!: Point | null;
   @Input() selectEnd!: Point | null;
+  @Input() treatedStands: { id: number; assigment: string }[] = [];
 
   selectedStands$ = this.mapStandsService.selectedStands$;
   private initialSelectedStands: number[] = [];
@@ -45,8 +34,6 @@ export class MapStandsComponent {
   // todo figure out host thing
   readonly tilesUrl =
     'http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}';
-
-  @Input() treatedStands: { id: number; assigment: StandAssigment }[] = [];
 
   readonly layers = {
     outline: 'outline-layer',
@@ -57,13 +44,13 @@ export class MapStandsComponent {
   constructor(private mapStandsService: SelectedStandsState) {}
 
   get vectorLayerUrl() {
-    return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=2710`;
-    // return (
-    //   this.tilesUrl +
-    //   `?treatment_plan_id=${this.treatmentPlanId}${
-    //     this.projectAreaId ? `&project_area_id=${this.projectAreaId}` : ''
-    //   }`
-    // );
+    //return `http://localhost:4200/planscape-backend/tiles/project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}?&project_area_id=2710`;
+    return (
+      this.tilesUrl +
+      `?treatment_plan_id=${this.treatmentPlanId}${
+        this.projectAreaId ? `&project_area_id=${this.projectAreaId}` : ''
+      }`
+    );
   }
 
   private updateSelectedStands(selectedStands: number[]) {
@@ -71,11 +58,12 @@ export class MapStandsComponent {
   }
 
   clickOnLayer(event: MapMouseEvent) {
+    // do not react to right clicks
     if (event.originalEvent.button === 2) {
       return;
     }
 
-    const features = this.maplibreMap.queryRenderedFeatures(event.point, {
+    const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
       layers: [this.layers.stands],
     });
 
@@ -101,7 +89,7 @@ export class MapStandsComponent {
     ];
 
     this.treatedStands.forEach((stand) => {
-      matchExpression.push(stand.id, StandColors[stand.assigment]);
+      matchExpression.push(stand.id, '#ff0000'); // TODO ACTUAL COLOR ASSIGMENT
     });
     matchExpression.push(defaultColor);
 
@@ -115,13 +103,12 @@ export class MapStandsComponent {
       ];
       return;
     }
-
-    const bbox = this.getBoundingBox(this.selectStart, this.selectEnd);
-    const features = this.maplibreMap.queryRenderedFeatures(bbox, {
+    const newStands: number[] = [];
+    const bbox = getBoundingBox(this.selectStart, this.selectEnd);
+    const features = this.mapLibreMap.queryRenderedFeatures(bbox, {
       layers: [this.layers.stands],
     });
 
-    const newStands: number[] = [];
     let id: any;
     features.forEach((feature) => {
       id = feature.properties['id'];
@@ -138,18 +125,6 @@ export class MapStandsComponent {
     ]);
 
     this.updateSelectedStands(Array.from(combinedStands));
-  }
-
-  private getBoundingBox(
-    startPoint: Point,
-    endPoint: Point
-  ): [[number, number], [number, number]] {
-    const start = [startPoint.x, startPoint.y];
-    const end = [endPoint.x, endPoint.y];
-    return [
-      [Math.min(start[0], end[0]), Math.min(start[1], end[1])],
-      [Math.max(start[0], end[0]), Math.max(start[1], end[1])],
-    ];
   }
 
   ngOnChanges(changes: SimpleChanges) {
