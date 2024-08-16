@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Params } from '@angular/router';
 import { RedirectData } from '@services/redirect.service';
+import { Region } from '@types';
 
 export abstract class BaseStorageService<T> {
   protected constructor(private key: string) {}
@@ -37,5 +38,14 @@ export class LoginRedirectStorageService extends BaseStorageService<RedirectData
 export class HomeParametersStorageService extends BaseStorageService<Params> {
   constructor() {
     super('homeParameters');
+  }
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class RegionStorageService extends BaseStorageService<Region> {
+  constructor() {
+    super('region');
   }
 }

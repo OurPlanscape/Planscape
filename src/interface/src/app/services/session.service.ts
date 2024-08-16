@@ -6,6 +6,7 @@ import {
   defaultMapConfigsDictionary,
   defaultMapViewOptions,
 } from '../map/map.helper';
+import { RegionStorageService } from '@services/local-storage.service';
 
 /** How often the user's session should be saved to local storage (in ms). */
 const SESSION_SAVE_INTERVAL = 600;
@@ -31,7 +32,7 @@ export class SessionService {
   readonly mapViewOptions$ = new BehaviorSubject<MapViewOptions | null>(null);
   readonly region$ = new BehaviorSubject<Region | null>(null);
 
-  constructor() {
+  constructor(private regionStorageService: RegionStorageService) {
     const storedMapConfigs = localStorage.getItem('mapConfigs');
     if (storedMapConfigs && this.validateSavedMapConfigs(storedMapConfigs)) {
       this.mapConfigs$.next(JSON.parse(storedMapConfigs));
@@ -43,9 +44,9 @@ export class SessionService {
     ) {
       this.mapViewOptions$.next(JSON.parse(storedMapViewOptions));
     }
-    const savedRegion = localStorage.getItem('region');
+    const savedRegion = this.regionStorageService.getItem();
     if (!!savedRegion) {
-      this.setRegion(savedRegion as Region);
+      this.setRegion(savedRegion);
     } else {
       this.setRegion(Region.SIERRA_NEVADA);
     }
@@ -78,10 +79,10 @@ export class SessionService {
    */
   setRegion(value: Region) {
     if (Object.values(Region).includes(value)) {
-      localStorage.setItem('region', value);
+      this.regionStorageService.setItem(value);
       this.region$.next(value);
     } else {
-      localStorage.setItem('region', Region.SIERRA_NEVADA);
+      this.regionStorageService.setItem(Region.SIERRA_NEVADA);
       this.region$.next(Region.SIERRA_NEVADA);
     }
   }
