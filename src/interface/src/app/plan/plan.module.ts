@@ -99,5 +99,6 @@ import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatm
     PlanningAreaTitlebarMenuComponent,
     TreatmentCardComponent,
   ],
+  exports: [ProjectAreasComponent],
 })
 export class PlanModule {}

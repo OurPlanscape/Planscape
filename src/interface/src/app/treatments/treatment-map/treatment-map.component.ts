@@ -16,6 +16,8 @@ import { SelectedStandsState } from './selected-stands.state';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { environment } from '../../../environments/environment';
 
+import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+
 @Component({
   selector: 'app-treatment-map',
   standalone: true,
@@ -31,6 +33,7 @@ import { environment } from '../../../environments/environment';
     MapStandsComponent,
     MapRectangleComponent,
     MapControlsComponent,
+    MapProjectAreasComponent,
   ],
   providers: [SelectedStandsState],
   templateUrl: './treatment-map.component.html',
@@ -41,8 +44,10 @@ export class TreatmentMapComponent {
   readonly key = environment.stadiamaps_key;
 
   // ew, not sure if I want to do prop drilling here or set up something else (provider?)
+  // also should treatmentPlanId be null?
   @Input() projectAreaId: number | null = null;
   @Input() treatmentPlanId = 0;
+  @Input() scenarioId = 0;
 
   treatedStands: { id: number; assigment: string }[] = [];
 

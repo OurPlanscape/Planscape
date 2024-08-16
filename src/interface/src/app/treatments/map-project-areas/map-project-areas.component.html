@@ -1,0 +1,42 @@
+<mgl-geojson-source id="scenarioProjectAreas">
+  <mgl-feature
+    *ngFor="let feature of shapes; index as i"
+    [geometry]="feature.geometry"
+    [properties]="{
+      color: color(feature.properties?.['proj_id'] || 0),
+      proj_id: feature.properties?.['proj_id'] || ''
+    }"></mgl-feature>
+</mgl-geojson-source>
+<mgl-layer
+  id="map-project-areas-line"
+  type="line"
+  source="scenarioProjectAreas"
+  [paint]="{
+    'line-color': '#333',
+    'line-width': 2
+  }"></mgl-layer>
+
+<mgl-layer
+  id="map-project-areas-fill"
+  type="fill"
+  source="scenarioProjectAreas"
+  [paint]="{
+    'fill-color': ['get', 'color'],
+    'fill-opacity': 0.4
+  }"></mgl-layer>
+
+<mgl-layer
+  id="map-project-areas-labels"
+  type="symbol"
+  source="scenarioProjectAreas"
+  [layout]="{
+    'text-field': ['get', 'proj_id'],
+    'text-size': 14,
+    'text-anchor': 'center',
+    'text-justify': 'center'
+  }"
+  [paint]="{
+    'text-color': '#000',
+    'text-halo-color': '#fff',
+    'text-halo-width': 2
+  }"></mgl-layer>
