@@ -5,6 +5,7 @@ import { Inject, Injectable, InjectionToken } from '@angular/core';
 import { RegionsWithString } from '@types';
 import { filter } from 'rxjs/operators';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { LocalStorageService } from '@services/local-storage.service';
 
 // Injection token used as default sorting options for this service
 export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
@@ -28,6 +29,7 @@ export class QueryParamsService {
     private route: ActivatedRoute,
     private router: Router,
     private location: Location,
+    private localStorageService: LocalStorageService,
     @Inject(DEFAULT_SORT_OPTIONS) private defaultSort: Sort
   ) {
     router.events
@@ -37,7 +39,7 @@ export class QueryParamsService {
       )
       .subscribe((s) => {
         const currentParams = this.getCurrentParams();
-        localStorage.setItem('planTable', JSON.stringify(currentParams));
+        this.localStorageService.setItem('planTable', currentParams);
       });
   }
 
@@ -56,10 +58,6 @@ export class QueryParamsService {
       })
       .toString();
 
-    localStorage.setItem(
-      'planTable',
-      JSON.stringify({ ...currentParams, ...options })
-    );
     this.location.go(currentUrl);
   }
 
