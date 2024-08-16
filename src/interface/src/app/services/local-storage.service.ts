@@ -7,7 +7,11 @@ export abstract class BaseStorageService<T> {
   protected constructor(private key: string) {}
 
   setItem(value: T) {
-    localStorage.setItem(this.key, JSON.stringify(value));
+    if (typeof value === 'string') {
+      localStorage.setItem(this.key, value);
+    } else {
+      localStorage.setItem(this.key, JSON.stringify(value));
+    }
   }
 
   getItem(): T | null {
@@ -15,7 +19,12 @@ export abstract class BaseStorageService<T> {
     if (!item) {
       return null;
     }
-    return JSON.parse(item) as T;
+
+    try {
+      return JSON.parse(item) as T;
+    } catch (e) {
+      return item as unknown as T;
+    }
   }
 
   removeItem() {
