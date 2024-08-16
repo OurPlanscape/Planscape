@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { Params } from '@angular/router';
 import { RedirectData } from '@services/redirect.service';
 
-abstract class BaseStorageService<T> {
+export abstract class BaseStorageService<T> {
   protected constructor(private key: string) {}
 
   setItem(value: T) {
