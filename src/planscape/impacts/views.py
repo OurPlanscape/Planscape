@@ -19,6 +19,7 @@ from impacts.serializers import (
     TreatmentPlanSerializer,
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
+    TreatmentPrescriptionBatchDeleteSerializer,
     UpsertTreamentPrescriptionSerializer,
 )
 from impacts.services import (
@@ -191,3 +192,20 @@ class TreatmentPrescriptionViewSet(
 
     def perform_create(self, serializer):
         return upsert_treatment_prescriptions(**serializer.validated_data)
+
+    @action(detail=False, methods=["post"])
+    def delete_prescriptions(self, request, tx_plan_pk=None):
+        serializer = TreatmentPrescriptionBatchDeleteSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return response.Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        stand_ids = serializer.validated_data.get("stand_ids", [])
+
+        delete_result = TreatmentPrescription.objects.filter(
+            stand_id__in=stand_ids, treatment_plan_id=tx_plan_pk
+        ).delete()
+
+        return response.Response({"result": delete_result}, status=status.HTTP_200_OK)
