@@ -39,7 +39,7 @@ export class QueryParamsService {
       )
       .subscribe((s) => {
         const currentParams = this.getCurrentParams();
-        this.localStorageService.setItem('planTable', currentParams);
+        this.localStorageService.setItem('homeParameters', currentParams);
       });
   }
 

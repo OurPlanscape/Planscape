@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 
 // available keys
-type LocalStorageKey = 'planTable';
+type LocalStorageKey = 'homeParameters';
 
 @Injectable({
   providedIn: 'root',

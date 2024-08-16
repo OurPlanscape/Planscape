@@ -48,7 +48,7 @@ export class NavBarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.params = this.localStorageService.getItem('planTable');
+    this.params = this.localStorageService.getItem('homeParameters');
   }
 
   print() {
