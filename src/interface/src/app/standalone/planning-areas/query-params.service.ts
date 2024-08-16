@@ -58,10 +58,6 @@ export class QueryParamsService {
       })
       .toString();
 
-    localStorage.setItem(
-      'planTable',
-      JSON.stringify({ ...currentParams, ...options })
-    );
     this.location.go(currentUrl);
   }
 
