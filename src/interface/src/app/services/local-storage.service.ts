@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Params } from '@angular/router';
 import { RedirectData } from '@services/redirect.service';
-import { Region } from '@types';
+import { MapConfig, MapViewOptions, Region } from '@types';
 
 export abstract class BaseStorageService<T> {
   protected constructor(private key: string) {}
@@ -56,5 +56,26 @@ export class HomeParametersStorageService extends BaseStorageService<Params> {
 export class RegionStorageService extends BaseStorageService<Region> {
   constructor() {
     super('region');
+  }
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class MapViewOptionsStorageService extends BaseStorageService<MapViewOptions> {
+  constructor() {
+    super('mapViewOptions');
+  }
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class MapConfigsStorageService extends BaseStorageService<Record<
+  Region,
+  MapConfig[]
+> | null> {
+  constructor() {
+    super('mapConfigs');
   }
 }
