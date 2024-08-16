@@ -13,13 +13,20 @@ export class ScenarioService {
 
   constructor(private http: HttpClient) {}
 
-  /** Fetches the scenarios for a plan from the backend. */
-  getScenariosForPlan(planId: number): Observable<Scenario[]> {
+  /** Fetches the scenarios for a plan from the backend.
+   *  Includes an optional ordering param
+   */
+  getScenariosForPlan(
+    planId: number,
+    ordering?: string
+  ): Observable<Scenario[]> {
+    const params: any = { planning_area: planId };
+    if (ordering !== undefined) {
+      params.ordering = ordering;
+    }
     return this.http.get<Scenario[]>(this.v2Path, {
       withCredentials: true,
-      params: {
-        planning_area: planId,
-      },
+      params: params,
     });
   }
 
