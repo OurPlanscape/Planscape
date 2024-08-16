@@ -77,7 +77,7 @@ import {
 import { getPlanPath } from '../plan/plan-helpers';
 import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
 import { Location } from '@angular/common';
-import { LocalStorageService } from '@services/local-storage.service';
+import { HomeParametersStorageService } from '@services/local-storage.service';
 
 @UntilDestroy()
 @Component({
@@ -188,7 +188,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private route: ActivatedRoute,
     private shareMapService: ShareMapService,
     private location: Location,
-    private localStorageService: LocalStorageService
+    private homeParametersStorageService: HomeParametersStorageService
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -808,7 +808,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   backHome() {
     this.router.navigate(['home'], {
-      queryParams: this.localStorageService.getItem('homeParameters'),
+      queryParams: this.homeParametersStorageService.getItem(),
     });
   }
 }

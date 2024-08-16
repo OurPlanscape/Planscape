@@ -13,7 +13,7 @@ import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-pla
 import { ActivatedRoute, Params } from '@angular/router';
 import { map, of } from 'rxjs';
 import { canViewCollaborators } from '../../plan/permissions';
-import { LocalStorageService } from '@services/local-storage.service';
+import { HomeParametersStorageService } from '@services/local-storage.service';
 
 export interface Breadcrumb {
   name: string;
@@ -44,11 +44,11 @@ export class NavBarComponent implements OnInit {
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private planStateService: PlanStateService,
-    private localStorageService: LocalStorageService
+    private homeParametersStorageService: HomeParametersStorageService
   ) {}
 
   ngOnInit(): void {
-    this.params = this.localStorageService.getItem('homeParameters');
+    this.params = this.homeParametersStorageService.getItem();
   }
 
   print() {
