@@ -14,7 +14,6 @@ from planning.services import (
 )
 from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
 from stands.models import Stand, StandSizeChoices
-from planning.tests.helpers import _load_geojson_fixture
 
 
 class MaxTreatableAreaTest(TestCase):

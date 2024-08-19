@@ -4,7 +4,6 @@ from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from collaboration.services import get_role, get_permissions
 from planning.geometry import coerce_geometry
-
 from planning.models import (
     PlanningArea,
     ProjectArea,
