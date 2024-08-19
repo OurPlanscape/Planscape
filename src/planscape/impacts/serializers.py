@@ -102,7 +102,7 @@ class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
         )
 
 
-class TreamentPrescriptionUpsertSerializer(serializers.Serializer):
+class UpsertTreamentPrescriptionSerializer(serializers.Serializer):
     created_by = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
@@ -138,6 +138,12 @@ class TreatmentPrescriptionListSerializer(TreatmentPrescriptionSerializer):
         )
 
 
+class TreatmentPrescriptionBatchDeleteSerializer(serializers.Serializer):
+    stand_ids = serializers.ListField(
+        child=serializers.IntegerField(), allow_empty=False
+    )
+
+
 class SummarySerializer(serializers.Serializer):
     project_area = serializers.PrimaryKeyRelatedField(
         queryset=ProjectArea.objects.all(),
@@ -158,3 +164,30 @@ class SummarySerializer(serializers.Serializer):
                 )
 
         return project_area
+
+
+# serializers used only for documentation
+class OutputPrescriptionSummarySerializer(serializers.Serializer):
+    action = serializers.CharField()
+    type = serializers.CharField()
+    area_acres = serializers.FloatField()
+    treated_stand_count = serializers.IntegerField()
+
+
+class OutputProjectAreaSummarySerializer(serializers.Serializer):
+    project_area_id = serializers.IntegerField()
+    project_area_name = serializers.CharField()
+    total_stand_count = serializers.IntegerField()
+    prescriptions = serializers.ListField(child=OutputPrescriptionSummarySerializer())
+
+
+class OutputSummarySerializer(serializers.Serializer):
+    planning_area_id = serializers.IntegerField()
+    planning_area_name = serializers.CharField()
+    scenario_id = serializers.IntegerField()
+    scenario_name = serializers.CharField()
+    treatment_plan_id = serializers.IntegerField()
+    treatment_plan_name = serializers.CharField()
+    project_areas = serializers.ListSerializer(
+        child=OutputProjectAreaSummarySerializer()
+    )
