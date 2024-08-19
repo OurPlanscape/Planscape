@@ -1,4 +1,3 @@
-<div class="notes-header">Notes</div>
 <div class="notes">
   <div *ngFor="let note of notes" class="note">
     <div class="note-head">
@@ -27,9 +26,7 @@
     </div>
   </div>
 </div>
-<mat-form-field
-  appearance="outline"
-  *appFeatureFlag="'new_planning_area'; hide: true">
+<mat-form-field appearance="outline">
   <textarea
     (keydown.enter)="addNote($event)"
     [(ngModel)]="note"
