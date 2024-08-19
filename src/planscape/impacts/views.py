@@ -1,7 +1,9 @@
+from django.db.models.base import ValidationError
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from drf_spectacular.utils import extend_schema
+from rest_framework.views import Response
 from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import TreatmentPlan, TreatmentPrescription
 from impacts.permissions import (
@@ -10,16 +12,20 @@ from impacts.permissions import (
 )
 from impacts.serializers import (
     CreateTreatmentPlanSerializer,
+    OutputSummarySerializer,
+    SummarySerializer,
     TreatmentPlanListSerializer,
     TreatmentPlanUpdateSerializer,
     TreatmentPlanSerializer,
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
-    TreamentPrescriptionUpsertSerializer,
+    TreatmentPrescriptionBatchDeleteSerializer,
+    UpsertTreamentPrescriptionSerializer,
 )
 from impacts.services import (
     clone_treatment_plan,
     create_treatment_plan,
+    generate_summary,
     upsert_treatment_prescriptions,
 )
 
@@ -83,7 +89,11 @@ class TreatmentPlanViewSet(
         )
 
     @extend_schema(responses={201: TreatmentPlanSerializer})
-    @action(detail=True, methods=["post"])
+    @action(
+        detail=True,
+        methods=["post"],
+        filterset_class=None,
+    )
     def clone(self, request, pk=None):
         treatment_plan = self.get_object()
         cloned_plan, cloned_prescriptions = clone_treatment_plan(
@@ -95,6 +105,34 @@ class TreatmentPlanViewSet(
             serializer.data,
             status=status.HTTP_201_CREATED,
         )
+
+    @extend_schema(
+        parameters=[
+            SummarySerializer,
+        ],
+        responses={200: OutputSummarySerializer},
+    )
+    @action(
+        methods=["get"],
+        detail=True,
+        filterset_class=None,
+    )
+    def summary(self, request, pk=None):
+        instance = self.get_object()
+
+        serializer = SummarySerializer(
+            data=request.query_params,
+            context={
+                "treatment_plan": instance,
+            },
+        )
+        serializer.is_valid(raise_exception=True)
+        project_area = serializer.validated_data.get("project_area")
+        summary = generate_summary(
+            treatment_plan=instance,
+            project_area=project_area,
+        )
+        return Response(data=summary, status=status.HTTP_200_OK)
 
 
 class TreatmentPrescriptionViewSet(
@@ -117,7 +155,7 @@ class TreatmentPrescriptionViewSet(
     serializer_class = TreatmentPrescriptionSerializer
     serializer_classes = {
         "list": TreatmentPrescriptionListSerializer,
-        "create": TreamentPrescriptionUpsertSerializer,
+        "create": UpsertTreamentPrescriptionSerializer,
         "retrieve": TreatmentPrescriptionSerializer,
     }
 
@@ -134,6 +172,10 @@ class TreatmentPrescriptionViewSet(
             treatment_plan_id=tx_plan_pk,
         )
 
+    @extend_schema(
+        request=UpsertTreamentPrescriptionSerializer,
+        responses={201: TreatmentPrescriptionSerializer},
+    )
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -150,3 +192,20 @@ class TreatmentPrescriptionViewSet(
 
     def perform_create(self, serializer):
         return upsert_treatment_prescriptions(**serializer.validated_data)
+
+    @action(detail=False, methods=["post"])
+    def delete_prescriptions(self, request, tx_plan_pk=None):
+        serializer = TreatmentPrescriptionBatchDeleteSerializer(data=request.data)
+
+        if not serializer.is_valid():
+            return response.Response(
+                serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
+
+        stand_ids = serializer.validated_data.get("stand_ids", [])
+
+        delete_result = TreatmentPrescription.objects.filter(
+            stand_id__in=stand_ids, treatment_plan_id=tx_plan_pk
+        ).delete()
+
+        return response.Response({"result": delete_result}, status=status.HTTP_200_OK)

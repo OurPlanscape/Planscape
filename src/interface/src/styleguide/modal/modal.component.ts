@@ -101,9 +101,17 @@ export class ModalComponent {
    */
   @Input() hasHeader? = true;
   /**
+   * Short header
+   */
+  @Input() shortHeader? = false;
+  /**
    * Whether or not to show the footer at all
    */
   @Input() hasFooter? = true;
+  /**
+   * Whether the buttons should be centered
+   */
+  @Input() centerFooter? = false;
   /**
    * Whether or not to use default padding for the projected content
    */

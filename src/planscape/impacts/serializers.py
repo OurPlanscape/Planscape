@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.relations import PrimaryKeyRelatedField
 
 from core.fields import UUIDRelatedField
 from impacts.models import (
@@ -16,7 +17,6 @@ class TxPrescriptionProjectAreaSerializer(serializers.ModelSerializer):
         model = ProjectArea
         fields = (
             "id",
-            "uuid",
             "name",
         )
 
@@ -40,7 +40,6 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
         model = TreatmentPlan
         fields = (
             "id",
-            "uuid",
             "created_at",
             "created_by",
             "updated_at",
@@ -60,7 +59,6 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
         model = TreatmentPlan
         fields = (
             "id",
-            "uuid",
             "created_at",
             "creator_name",
             "updated_at",
@@ -91,7 +89,6 @@ class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
         model = TreatmentPrescription
         fields = (
             "id",
-            "uuid",
             "created_at",
             "created_by",
             "updated_at",
@@ -105,18 +102,16 @@ class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
         )
 
 
-class TreamentPrescriptionUpsertSerializer(serializers.Serializer):
+class UpsertTreamentPrescriptionSerializer(serializers.Serializer):
     created_by = serializers.HiddenField(
         default=serializers.CurrentUserDefault(),
     )
 
-    treatment_plan = UUIDRelatedField(
-        uuid_field="uuid",
+    treatment_plan = PrimaryKeyRelatedField(
         queryset=TreatmentPlan.objects.all(),
     )
 
-    project_area = UUIDRelatedField(
-        uuid_field="uuid",
+    project_area = PrimaryKeyRelatedField(
         queryset=ProjectArea.objects.all(),
     )
 
@@ -133,7 +128,6 @@ class TreatmentPrescriptionListSerializer(TreatmentPrescriptionSerializer):
         model = TreatmentPrescription
         fields = (
             "id",
-            "uuid",
             "created_at",
             "created_by",
             "updated_at",
@@ -142,3 +136,58 @@ class TreatmentPrescriptionListSerializer(TreatmentPrescriptionSerializer):
             "stand",
             "area_acres",
         )
+
+
+class TreatmentPrescriptionBatchDeleteSerializer(serializers.Serializer):
+    stand_ids = serializers.ListField(
+        child=serializers.IntegerField(), allow_empty=False
+    )
+
+
+class SummarySerializer(serializers.Serializer):
+    project_area = serializers.PrimaryKeyRelatedField(
+        queryset=ProjectArea.objects.all(),
+        required=False,
+    )
+
+    def validate_project_area(self, project_area):
+        """
+        Validates if the project area selected belongs to
+        the same scenario as the treatment plan.
+        """
+        treatment_plan = self.context.get("treatment_plan", None) or None
+
+        if project_area and treatment_plan:
+            if treatment_plan.scenario.pk != project_area.scenario.pk:
+                raise serializers.ValidationError(
+                    "Project Area does not belong to the same Scenario as Treatment Plan."
+                )
+
+        return project_area
+
+
+# serializers used only for documentation
+class OutputPrescriptionSummarySerializer(serializers.Serializer):
+    action = serializers.CharField()
+    type = serializers.CharField()
+    area_acres = serializers.FloatField()
+    treated_stand_count = serializers.IntegerField()
+
+
+class OutputProjectAreaSummarySerializer(serializers.Serializer):
+    project_area_id = serializers.IntegerField()
+    project_area_name = serializers.CharField()
+    total_stand_count = serializers.IntegerField()
+    prescriptions = serializers.ListField(child=OutputPrescriptionSummarySerializer())
+
+
+class OutputSummarySerializer(serializers.Serializer):
+    planning_area_id = serializers.IntegerField()
+    planning_area_name = serializers.CharField()
+    scenario_id = serializers.IntegerField()
+    scenario_name = serializers.CharField()
+    treatment_plan_id = serializers.IntegerField()
+    treatment_plan_name = serializers.CharField()
+    project_areas = serializers.ListSerializer(
+        child=OutputProjectAreaSummarySerializer()
+    )

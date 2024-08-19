@@ -99,7 +99,7 @@ class TreatmentPlanViewPermission(PlanscapePermission):
                 return TreatmentPlanPermission.can_remove(request.user, object)
             case "clone":
                 return TreatmentPlanPermission.can_clone(request.user, object)
-            case "retrieve":
+            case "retrieve" | "summary":
                 return TreatmentPlanPermission.can_view(request.user, object)
             case _:
                 return TreatmentPlanPermission.can_change(request.user, object)
@@ -114,6 +114,8 @@ class TreatmentPrescriptionViewPermission(PlanscapePermission):
         match view.action:
             case "create":
                 return TreatmentPlanPermission.can_add_scenario(request.user, tx_plan)
+            case "batch_delete":
+                return TreatmentPlanPermission.can_remove(request.user, tx_plan)
             case _:
                 return TreatmentPlanPermission.can_view(request.user, tx_plan)
 

@@ -6,19 +6,20 @@
   <button
     [matMenuTriggerFor]="menu"
     aria-label="more options"
-    class="more-menu-button">
+    class="more-menu-button"
+    (click)="stopEventPropagation($event)">
     <mat-icon>more_vert</mat-icon>
   </button>
   <mat-menu #menu="matMenu" class="more-treatment-menu">
-    <button mat-menu-item>
+    <button mat-menu-item (click)="view.emit()">
       <mat-icon class="material-symbols-outlined">file_open_outlined</mat-icon>
       <span>Open</span>
     </button>
-    <button mat-menu-item>
+    <button mat-menu-item (click)="duplicate.emit()">
       <mat-icon class="material-symbols-outlined">file_copy_outlined</mat-icon>
       <span>Duplicate</span>
     </button>
-    <button mat-menu-item class="delete">
+    <button mat-menu-item class="delete" (click)="delete.emit()">
       <mat-icon class="material-symbols-outlined">delete_outlined</mat-icon>
       <span>Delete</span>
     </button>

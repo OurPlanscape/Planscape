@@ -1,8 +1,11 @@
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, NavigationStart, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { Sort } from '@angular/material/sort';
 import { Inject, Injectable, InjectionToken } from '@angular/core';
 import { RegionsWithString } from '@types';
+import { filter } from 'rxjs/operators';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { HomeParametersStorageService } from '@services/local-storage.service';
 
 // Injection token used as default sorting options for this service
 export const DEFAULT_SORT_OPTIONS = new InjectionToken<Sort>(
@@ -17,6 +20,7 @@ export interface QueryParams extends Partial<Sort> {
   creators?: string;
 }
 
+@UntilDestroy()
 @Injectable()
 export class QueryParamsService {
   readonly defaultLimit = 10;
@@ -25,8 +29,19 @@ export class QueryParamsService {
     private route: ActivatedRoute,
     private router: Router,
     private location: Location,
+    private homeParametersStorageService: HomeParametersStorageService,
     @Inject(DEFAULT_SORT_OPTIONS) private defaultSort: Sort
-  ) {}
+  ) {
+    router.events
+      .pipe(
+        untilDestroyed(this),
+        filter((event) => event instanceof NavigationStart)
+      )
+      .subscribe((s) => {
+        const currentParams = this.getCurrentParams();
+        this.homeParametersStorageService.setItem(currentParams);
+      });
+  }
 
   /**
    * this method changes the URL *without* reloading the page.
@@ -35,9 +50,7 @@ export class QueryParamsService {
    */
   updateUrl(options: QueryParams) {
     // Parse the current path parameters
-    const urlTree = this.router.parseUrl(this.location.path());
-    const currentParams = urlTree.queryParams;
-
+    const currentParams = this.getCurrentParams();
     const currentUrl = this.router
       .createUrlTree([], {
         relativeTo: this.route,
@@ -86,5 +99,10 @@ export class QueryParamsService {
       return creators.split(',').map((id: string) => parseInt(id, 10));
     }
     return [];
+  }
+
+  private getCurrentParams() {
+    const urlTree = this.router.parseUrl(this.location.path());
+    return urlTree.queryParams;
   }
 }
