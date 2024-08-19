@@ -1,19 +1,22 @@
 import { Injectable } from '@angular/core';
+import { LoginRedirectStorageService } from '@services/local-storage.service';
 
 export interface RedirectData {
   url: string;
-  userHash?: string;
+  userHash: string | null;
 }
 
 @Injectable({
   providedIn: 'root',
 })
 export class RedirectService {
-  readonly key = 'loginRedirect';
+  constructor(
+    private loginRedirectStorageService: LoginRedirectStorageService
+  ) {}
 
   setRedirect(url: string, user?: string) {
     const userHash = user ? Buffer.from(user).toString('base64') : null;
-    localStorage.setItem(this.key, JSON.stringify({ url, userHash }));
+    this.loginRedirectStorageService.setItem({ url, userHash });
   }
 
   private getUrl(): string | null {
@@ -33,15 +36,11 @@ export class RedirectService {
   }
 
   private getRedirectData(): RedirectData | null {
-    const redirectData = localStorage.getItem(this.key);
-    if (redirectData) {
-      return JSON.parse(redirectData);
-    }
-    return null;
+    return this.loginRedirectStorageService.getItem();
   }
 
   removeRedirect() {
-    localStorage.removeItem(this.key);
+    this.loginRedirectStorageService.removeItem();
   }
 
   shouldRedirect(userEmail: string) {
@@ -53,6 +52,4 @@ export class RedirectService {
     }
     return savedUrl || false;
   }
-
-  constructor() {}
 }
