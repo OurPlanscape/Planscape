@@ -138,7 +138,6 @@ def create_scenario_from_upload(
     scenario_data,
     uploaded_geom,
 ) -> Scenario:
-
     scenario = Scenario.objects.create(**scenario_data)
 
     action.send(
