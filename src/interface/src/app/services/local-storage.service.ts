@@ -3,7 +3,7 @@ import { Params } from '@angular/router';
 import { RedirectData } from '@services/redirect.service';
 import { MapConfig, MapViewOptions, Region } from '@types';
 
-export abstract class BaseStorageService<T> {
+export abstract class BaseLocalStorageService<T> {
   protected constructor(private key: string) {}
 
   setItem(value: T) {
@@ -35,7 +35,7 @@ export abstract class BaseStorageService<T> {
 @Injectable({
   providedIn: 'root',
 })
-export class LoginRedirectStorageService extends BaseStorageService<RedirectData> {
+export class LoginRedirectStorageService extends BaseLocalStorageService<RedirectData> {
   constructor() {
     super('loginRedirect');
   }
@@ -44,7 +44,7 @@ export class LoginRedirectStorageService extends BaseStorageService<RedirectData
 @Injectable({
   providedIn: 'root',
 })
-export class HomeParametersStorageService extends BaseStorageService<Params> {
+export class HomeParametersStorageService extends BaseLocalStorageService<Params> {
   constructor() {
     super('homeParameters');
   }
@@ -53,7 +53,7 @@ export class HomeParametersStorageService extends BaseStorageService<Params> {
 @Injectable({
   providedIn: 'root',
 })
-export class RegionStorageService extends BaseStorageService<Region> {
+export class RegionStorageService extends BaseLocalStorageService<Region> {
   constructor() {
     super('region');
   }
@@ -62,7 +62,7 @@ export class RegionStorageService extends BaseStorageService<Region> {
 @Injectable({
   providedIn: 'root',
 })
-export class MapViewOptionsStorageService extends BaseStorageService<MapViewOptions> {
+export class MapViewOptionsStorageService extends BaseLocalStorageService<MapViewOptions> {
   constructor() {
     super('mapViewOptions');
   }
@@ -71,7 +71,7 @@ export class MapViewOptionsStorageService extends BaseStorageService<MapViewOpti
 @Injectable({
   providedIn: 'root',
 })
-export class MapConfigsStorageService extends BaseStorageService<Record<
+export class MapConfigsStorageService extends BaseLocalStorageService<Record<
   Region,
   MapConfig[]
 > | null> {
