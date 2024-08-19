@@ -46,12 +46,12 @@ export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
   styleUrl: './scenario-card.component.scss',
 })
 export class ScenarioCardComponent {
-  @Input() status: ScenarioResultStatus | undefined = 'SUCCESS';
+  @Input() status: ScenarioResultStatus = 'SUCCESS';
   @Input() name = '';
   @Input() areas? = 0;
   @Input() budget? = 0;
-  @Input() treatmentPlansCount?: number | undefined = 0;
-  @Input() creator?: string | undefined = '';
+  @Input() treatmentPlansCount?: number = 0;
+  @Input() creator?: string = '';
   @Input() created_at? = '';
   @Input() selected?: boolean = false;
 
