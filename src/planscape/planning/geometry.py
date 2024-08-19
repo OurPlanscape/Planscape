@@ -1,9 +1,6 @@
 import json
 import logging
 from django.conf import settings
-from shapely import wkt
-from shapely.ops import unary_union
-from shapely.geometry import shape
 from typing import Any, Dict, Union
 from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 
@@ -54,19 +51,6 @@ GEOMETRY_OPERATIONS = [
     to_multipolygon,
     drop_z,
 ]
-
-
-def get_acreage(geometry: GEOSGeometry):
-    epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
-    acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
-    return acres
-
-
-def is_inside(larger_geometry, smaller_geometry) -> bool:
-    larger_geom = geojson_to_geosgeometry(larger_geometry)
-    smaller_geom = geojson_to_geosgeometry(smaller_geometry)
-
-    return larger_geom.contains(smaller_geom)
 
 
 def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeometry:

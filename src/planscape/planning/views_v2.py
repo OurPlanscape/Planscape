@@ -14,7 +14,6 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioOrderingFilter,
 )
-from planning.geometry import is_inside
 from planning.models import PlanningArea, ProjectArea, Scenario, User
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (

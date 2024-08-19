@@ -12,7 +12,6 @@ from planning.tests.helpers import (
     _create_scenario,
     reset_permissions,
     _load_geojson_fixture,
-    _load_wkt_fixture,
 )
 from planscape.tests.factories import UserFactory
 

@@ -15,7 +15,7 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from rest_framework.serializers import ValidationError
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from planning.geometry import coerce_geojson, coerce_geometry, get_acreage
+from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
     PlanningAreaType,
