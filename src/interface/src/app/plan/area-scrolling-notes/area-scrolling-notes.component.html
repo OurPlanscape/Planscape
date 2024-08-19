@@ -1,15 +1,21 @@
 <div class="notes-header">Notes</div>
 <div class="notes">
-  <div *ngFor="let note of notes" class="note">
-    <div class="note-head">
-      <div>{{ note.user_name }}</div>
-      <div class="date">{{ note.created_at | date }}</div>
+  <div *ngFor="let note of notes" class="note-enclosed">
+    <div class="note-left">
+      <div class="note-head">
+        <div>{{ note.user_name }}</div>
+        <div class="date">{{ note.created_at | date }}</div>
+      </div>
+      <div class="note-content">
+        {{ note.content }}
+      </div>
+    </div>
+    <div class="note-right">
       <button
         *ngIf="canDelete(note)"
         mat-icon-button
         [matMenuTriggerFor]="menu"
-        aria-label="more note options"
-        style="float: right; position: absolute; right: 4px">
+        aria-label="more note options">
         <mat-icon>more_vert</mat-icon>
       </button>
       <mat-menu #menu="matMenu">
@@ -22,14 +28,12 @@
         </button>
       </mat-menu>
     </div>
-    <div class="note-content">
-      {{ note.content }}
-    </div>
   </div>
 </div>
 <mat-form-field
+  *appFeatureFlag="'new_planning_area'"
   appearance="outline"
-  *appFeatureFlag="'new_planning_area'; hide: true">
+  class="add-note-field">
   <textarea
     (keydown.enter)="addNote($event)"
     [(ngModel)]="note"
