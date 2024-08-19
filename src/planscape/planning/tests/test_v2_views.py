@@ -840,10 +840,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
 class CreateScenariosFromUpload(APITransactionTestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
-
-        self.la_county_geom = _load_wkt_fixture("greaterLA.wkt.txt")
-
-        self.la_geojson = json.dumps(_load_geojson_fixture("aroundLA.geojson"))
+        self.la_geojson = json.dumps(_load_geojson_fixture("around_LA.geojson"))
 
         self.planning_area = PlanningAreaFactory(
             user=self.owner_user, geometry=MultiPolygon(GEOSGeometry(self.la_geojson))
