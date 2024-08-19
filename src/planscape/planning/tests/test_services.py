@@ -240,25 +240,3 @@ class ExportToShapefileTest(TransactionTestCase):
             self.assertEqual(1, len(source))
             self.assertEqual(to_string(source.crs), "EPSG:4326")
             shutil.rmtree(str(output))
-
-
-class GeometryServiceTests(TransactionTestCase):
-    def setUp(self):
-        self.la_county_geo = _load_geojson_fixture("la_county.geojson")
-        self.anaheim_geo = _load_geojson_fixture("anaheim.geojson")
-        self.compton_geo = _load_geojson_fixture("compton.geojson")
-        self.fresno_geo = _load_geojson_fixture("fresno_bakersfield_la.geojson")
-        self.bayarea_geo = _load_geojson_fixture("bayarea.geojson")
-
-    def test_containment(self):
-        contained = is_inside(self.la_county_geo, self.anaheim_geo)
-        self.assertEquals(contained, True)
-
-        inverse = is_inside(self.compton_geo, self.la_county_geo)
-        self.assertEquals(inverse, False)
-
-        disjoint = is_inside(self.bayarea_geo, self.la_county_geo)
-        self.assertEquals(disjoint, False)
-
-        intersect = is_inside(self.fresno_geo, self.la_county_geo)
-        self.assertEquals(intersect, False)

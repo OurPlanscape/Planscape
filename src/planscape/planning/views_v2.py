@@ -1,5 +1,7 @@
 import logging
+import json
 from django.contrib.auth import get_user_model
+from django.contrib.gis.geos import GEOSGeometry
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins, permissions, pagination
 from rest_framework.decorators import action
@@ -25,6 +27,7 @@ from planning.serializers import (
     ProjectAreaSerializer,
     ScenarioSerializer,
     ListCreatorSerializer,
+    UploadedScenarioSerializer,
 )
 from planning.services import (
     create_planning_area,
@@ -169,36 +172,69 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
 
-    @action(methods=["POST"], detail=True)
-    def upload_shapefiles(self, request, *args, **kwargs):
+    @action(methods=["POST"], detail=False)
+    def upload_shapefiles(self, request, pk=None, *args, **kwargs):
         # stuff we expect
         stand_size = request.data["stand_size"]
+
+        # TODO: cleanup dict vs string here
+
         uploaded_geom = request.data["geometry"]
+        if isinstance(uploaded_geom, str):
+            uploaded_geojson = json.loads(uploaded_geom)
+        else:
+            uploaded_geojson = uploaded_geom
+        uploaded_geos = None
+
+        # TODO: refactor this to a service
+        if "features" in uploaded_geojson:
+            geometries = [
+                GEOSGeometry(json.dumps(feature["geometry"]))
+                for feature in uploaded_geojson["features"]
+            ]
+            # Combine all polygons into a single polygon or multipolygon
+            combined_geometry = geometries[0]
+            for geom in geometries[1:]:
+                combined_geometry = combined_geometry.union(geom)
+                uploaded_geos = GEOSGeometry(combined_geometry, srid=4326)
+        else:
+            uploaded_geos = GEOSGeometry(uploaded_geom, srid=4326)
+
         scenario_name = request.data["name"]
         planning_area_pk = request.data["planning_area"]
 
         pa = PlanningArea.objects.get(pk=planning_area_pk)
 
-        # TODO: validate geometry from within a serializer..?
-        # Ensure that planning area contains the uploaded geometry
-        if not is_inside(pa.geometry, uploaded_geom):
+        # TODO: validate uploaded geom w serializer
+
+        if uploaded_geos.geom_type == "MultiPolygon":
+            uploaded_geos = uploaded_geos.union(uploaded_geos)
+
+        if not pa.geometry.contains(uploaded_geos):
             return Response(
-                {"error": "Uploaded geometry is not contained by planning area"},
+                {
+                    "error": "The uploaded geometry is not within the selected planning area."
+                },
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
-        scenario_serializer = CreateScenarioSerializer(data=request.data)
+        scenario_data = {
+            "name": scenario_name,
+            "planning_area": pa.pk,
+            "user": request.user.pk,
+            "configuration": {"stand_size": stand_size},
+        }
+
+        scenario_serializer = UploadedScenarioSerializer(data=scenario_data)
         scenario_serializer.is_valid(raise_exception=True)
 
         # now we create a scenario
-        scenario = create_scenario_from_upload(
-            user=self.request.user,
-            planningarea=pa,
-            scenario_name=scenario_name,
-            stand_size=stand_size,
-            uploaded_geom=uploaded_geom,
+        new_scenario = create_scenario_from_upload(
+            scenario_data=scenario_serializer.validated_data,
+            uploaded_geom=uploaded_geojson,
         )
-        out_serializer = ScenarioProjectAreasSerializer(instance=scenario)
+
+        out_serializer = ScenarioProjectAreasSerializer(instance=new_scenario)
         headers = self.get_success_headers(out_serializer.data)
         return Response(
             out_serializer.data,

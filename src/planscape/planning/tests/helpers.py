@@ -42,6 +42,13 @@ def _load_geojson_fixture(filename):
         return json.load(file)
 
 
+def _load_wkt_fixture(filename):
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    fixture_path = os.path.join(current_dir, "../fixtures", filename)
+    with open(fixture_path, "r") as file:
+        return file.read()
+
+
 def _create_test_user_set():
     owner_user = User.objects.create(
         username="area_owner",

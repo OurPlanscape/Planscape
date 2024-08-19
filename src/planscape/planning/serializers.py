@@ -300,6 +300,19 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
         )
 
 
+class UploadedScenarioSerializer(serializers.ModelSerializer):
+    # user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Scenario
+        fields = (
+            "user",
+            "planning_area",
+            "name",
+            "configuration",
+        )
+
+
 class ScenarioSerializer(
     ListScenarioSerializer,
     serializers.ModelSerializer,

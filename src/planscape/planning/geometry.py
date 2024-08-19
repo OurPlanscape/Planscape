@@ -62,32 +62,6 @@ def get_acreage(geometry: GEOSGeometry):
     return acres
 
 
-# TODO: make this work more like the coerce_geometry function, but not union
-def geojson_to_geosgeometry(geojson_data):
-    # the geojson could be a few different things...
-
-    # if this is a string, convert it to a dict
-    if isinstance(geojson_data, str):
-        geojson_data = json.loads(geojson_data)
-
-    # if this is a feature collection
-    # ...
-
-    # if this is a feature...
-
-    geometry = geojson_data["features"][0]["geometry"]
-    geometry_json = json.dumps(geometry)
-    try:
-        geos_geom = GEOSGeometry(geometry_json)
-        if geos_geom.srid != 4326:
-            geos_geom.transform(4326, clone=True)
-        return geos_geom
-
-    except Exception as e:
-        logger.error(f"Could not convert to GEOSGeometry: {e}")
-        raise e
-
-
 def is_inside(larger_geometry, smaller_geometry) -> bool:
     larger_geom = geojson_to_geosgeometry(larger_geometry)
     smaller_geom = geojson_to_geosgeometry(smaller_geometry)

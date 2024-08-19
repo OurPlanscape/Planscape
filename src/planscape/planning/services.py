@@ -9,7 +9,7 @@ from datetime import date, time, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple, Type, Union
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
@@ -112,19 +112,18 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
     return scenario
 
 
-def feature_to_project_area(idx: int, user: UserType, scenario: Scenario, feature):
+def feature_to_project_area(idx: int, user_id: int, scenario, feature):
     try:
         project_area = {
-            # TODO: create function to coerce geoms that this can't...
-            "geometry": GEOSGeometry(feature, 4269),
+            "geometry": MultiPolygon(GEOSGeometry(feature)),
             "name": f"{scenario.name} project:{idx}",
-            "created_by": user.pk,
-            "scenario": scenario.pk,
+            "created_by": user_id,
+            "scenario": scenario,
         }
         proj_area_obj = ProjectArea.objects.create(**project_area)
 
         action.send(
-            user,
+            user_id,
             verb="created",
             action_object=proj_area_obj,
             target=scenario,
@@ -136,30 +135,35 @@ def feature_to_project_area(idx: int, user: UserType, scenario: Scenario, featur
 
 @transaction.atomic()
 def create_scenario_from_upload(
-    user: UserType,
-    planningarea: PlanningArea,
-    scenario_name: str,
-    stand_size: str,
+    scenario_data,
     uploaded_geom,
 ) -> Scenario:
-    # TODO: Are there config defaults we need to set on the scenario
-    scenario = create_scenario(
-        user, planning_area=planningarea, name=scenario_name, stand_size=stand_size
+
+    scenario = Scenario.objects.create(**scenario_data)
+
+    action.send(
+        scenario.user,
+        verb="created",
+        action_object=scenario,
+        target=scenario.planning_area,
     )
 
-    # this handles a format provided by shpjs when a shapefile has multiple features
-    if "geometry" in uploaded_geom and "coordinates" in uploaded_geom["geometry"]:
-        for idx, f in enumerate(uploaded_geom["geometry"]["coordinates"], 1):
-            feature_obj = {"type": "Polygon", "coordinates": [f]}
-            feature_to_project_area(idx, user, scenario, feature_obj)
+    if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
+        feature_to_project_area(1, scenario.user, scenario, json.dumps(uploaded_geom))
+
+    # # this handles a format provided by shpjs when a shapefile has multiple features
+    # if "geometry" in uploaded_geom and "coordinates" in uploaded_geom["geometry"]:
+    #     for idx, f in enumerate(uploaded_geom["geometry"]["coordinates"], 1):
+    #         feature_obj = {"type": "Polygon", "coordinates": [f]}
+    #         feature_to_project_area(idx, scenario.user, scenario, feature_obj)
 
     # this handles a more standard FeatureCollection
     if "features" in uploaded_geom:
         for idx, f in enumerate(uploaded_geom["features"], 1):
-            feature_to_project_area(idx, user, scenario, f["geometry"])
+            feature_to_project_area(
+                idx, scenario.user, scenario, json.dumps(f["geometry"])
+            )
 
-    # TODO: should we run forsys for this scenario?
-    # async_forsys_run.delay(scenario.pk)
     return scenario
 
 
