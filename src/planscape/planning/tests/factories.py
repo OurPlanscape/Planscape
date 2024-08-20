@@ -5,6 +5,7 @@ from planning.models import (
     ProjectArea,
     ProjectAreaOrigin,
     Scenario,
+    ScenarioOrigin,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -38,6 +39,10 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
     user = factory.SelfAttribute("planning_area.user")
 
     name = factory.Sequence(lambda x: "scenario %s" % x)
+
+    origin = factory.Iterator(
+        [ScenarioOrigin.OPTIMIZATION, ScenarioOrigin.USER_CREATED]
+    )
 
     uuid = factory.Faker("uuid4")
 
