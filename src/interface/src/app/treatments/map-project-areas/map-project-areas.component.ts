@@ -1,56 +1,43 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { ScenarioService } from '@services';
-import { Feature, FeatureCollection, Geometry } from 'geojson';
+import { Component, Input } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
   LayerComponent,
+  VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { NgForOf } from '@angular/common';
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
-import { bbox } from '@turf/bbox';
 import { Map as MapLibreMap } from 'maplibre-gl';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-map-project-areas',
   standalone: true,
-  imports: [FeatureComponent, GeoJSONSourceComponent, NgForOf, LayerComponent],
+  imports: [
+    FeatureComponent,
+    GeoJSONSourceComponent,
+    NgForOf,
+    LayerComponent,
+    VectorSourceComponent,
+  ],
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
-export class MapProjectAreasComponent implements OnInit {
+export class MapProjectAreasComponent {
   @Input() scenarioId!: number;
+  @Input() treatmentPlanId!: number;
   @Input() mapLibreMap!: MapLibreMap;
-  shapes: Feature[] = [];
 
-  constructor(private scenarioService: ScenarioService) {}
+  readonly tilesUrl = environment.martin_server + 'project_areas/{z}/{x}/{y}';
 
-  color(i: number) {
-    return getColorForProjectPosition(i);
+  get vectorLayerUrl() {
+    return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
   }
 
-  ngOnInit(): void {
-    // todo move this to the consumer? always asume scenarioId
-    if (this.scenarioId) {
-      this.scenarioService
-        .getScenario(this.scenarioId.toString())
-        .subscribe((scenario) => {
-          if (scenario.scenario_result?.result.features) {
-            const featureCollection = scenario.scenario_result?.result;
-            this.shapes = featureCollection.features as any as Feature<
-              Geometry,
-              { proj_id: number }
-            >[];
+  constructor() {}
 
-            const boundingBox = bbox(
-              featureCollection as any as FeatureCollection
-            );
-            this.mapLibreMap.fitBounds([
-              [boundingBox[0], boundingBox[1]],
-              [boundingBox[2], boundingBox[3]],
-            ]);
-          }
-        });
-    }
+  color(i: number) {
+    console.log('the nnumer is :', i);
+    return getColorForProjectPosition(i);
   }
 }
