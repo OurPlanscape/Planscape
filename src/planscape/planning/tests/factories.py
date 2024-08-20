@@ -62,10 +62,6 @@ class ProjectAreaFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda x: "project area %s" % x)
 
-    origin = factory.Iterator(
-        [ProjectAreaOrigin.OPTIMIZATION, ProjectAreaOrigin.USER_CREATED]
-    )
-
     geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 
     class Meta:
