@@ -21,6 +21,7 @@ from planning.models import (
     PlanningAreaType,
     ProjectArea,
     Scenario,
+    ScenarioOrigin,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -94,8 +95,11 @@ def delete_planning_area(
 
 @transaction.atomic()
 def create_scenario(user: UserType, **kwargs) -> Scenario:
+    # precedence here to the `kwargs`. if you supply `origin` here
+    # your origin will be used instead of this default one.
     data = {
         "user": user,
+        "origin": ScenarioOrigin.SYSTEM,
         "result_status": ScenarioResultStatus.PENDING,
         **kwargs,
     }

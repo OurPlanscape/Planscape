@@ -3,7 +3,12 @@
     <mat-icon color="primary">arrow_back</mat-icon>
   </button>
   <span class="breadcrumb">
-    <a [routerLink]="'/home'">Planning Areas</a>
+    <a
+      [routerLink]="['/home']"
+      [queryParams]="params"
+      queryParamsHandling="merge"
+      >Planning Areas</a
+    >
 
     <ng-container *ngFor="let breadcrumb of breadcrumbs">
       /
