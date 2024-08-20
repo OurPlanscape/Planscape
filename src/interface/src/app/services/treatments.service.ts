@@ -3,6 +3,17 @@ import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { TreatmentPlan } from '@types';
 
+interface ProjectArea {
+  project_area_id: number;
+  project_area_name: string;
+  total_stand_count: number;
+  prescriptions: [];
+}
+
+export interface Summary {
+  project_areas: ProjectArea[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -38,6 +49,12 @@ export class TreatmentsService {
 
   getTreatmentPlan(id: number) {
     return this.http.get<TreatmentPlan>(this.baseUrl + id, {
+      withCredentials: true,
+    });
+  }
+
+  getTreatmentPlanSummary(id: number) {
+    return this.http.get<Summary>(this.baseUrl + id + '/summary', {
       withCredentials: true,
     });
   }
