@@ -1,17 +1,8 @@
 import logging
-import json
-import os
-from datetime import datetime
 from typing import Any
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
-from django.contrib.auth.models import User
-from celery import group, chain, shared_task
-from planning.models import PlanningArea, Scenario
-from planning.tasks import async_forsys_run
-from planning.e2e.tasks import review_results
-from planning.e2e.validation import load_schema
 from planning.e2e.scenario_test import E2EScenarioTest
 
 log = logging.getLogger(__name__)
