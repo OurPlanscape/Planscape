@@ -1,13 +1,22 @@
 import { Component, Inject } from '@angular/core';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+
 import { FormMessageType, Invite, INVITE_ROLE, User } from '@types';
-import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
+import { SharedModule, SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { AuthService, InvitesService, PlanStateService } from '@services';
 import { filter, map, shareReplay, switchMap, tap } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
+import { ChipInputComponent } from '../chip-input/chip-input.component';
+import { MatLegacyMenuModule } from '@angular/material/legacy-menu';
+import { MatLegacyInputModule } from '@angular/material/legacy-input';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 
 const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
   Viewer: 'Viewer',
@@ -15,13 +24,22 @@ const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
   Owner: 'Owner',
 };
 
-/**
- * @deprecated use standalone instead
- */
 @Component({
   selector: 'app-share-plan-dialog',
   templateUrl: './share-plan-dialog.component.html',
   styleUrls: ['./share-plan-dialog.component.scss'],
+  standalone: true,
+  imports: [
+    MatIconModule,
+    SharedModule,
+    ChipInputComponent,
+    MatLegacyMenuModule,
+    MatLegacyInputModule,
+    CommonModule,
+    FormsModule,
+    MatDialogModule,
+    MatLegacyButtonModule,
+  ],
 })
 export class SharePlanDialogComponent {
   constructor(

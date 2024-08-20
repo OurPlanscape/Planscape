@@ -1,0 +1,217 @@
+@import "mixins";
+@import "colors";
+
+:host {
+  display: block;
+  width: 530px;
+}
+
+.main {
+  // material overrides
+  ::ng-deep {
+    .mat-form-field-infix {
+      border-top-width: 0;
+    }
+
+    .mat-form-field-appearance-outline .mat-form-field-wrapper {
+      padding: 0;
+    }
+
+    .mat-button-wrapper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+  }
+
+  ::ng-deep .message-box {
+    margin: 16px;
+  }
+
+
+}
+
+.invitations-form {
+  display: grid;
+  grid-template-columns: 1fr 142px;
+  align-items: flex-start;
+  gap: 16px 12px;
+  margin: 16px;
+
+  position: relative;
+
+  &::after {
+    content: "";
+    display: block;
+    left: 0;
+    border-bottom: 1px solid $color-soft-gray;
+    position: absolute;
+    right: 0;
+    bottom: -16px;
+  }
+}
+
+.invite-message {
+  grid-column: 1/3;
+
+  textarea {
+    resize: none;
+  }
+
+  ::ng-deep {
+    .mat-form-field-outline-start,
+    .mat-form-field-outline-end {
+      background-color: $color-light-gray;
+    }
+
+    .mat-form-field-flex {
+      height: 100px;
+    }
+  }
+}
+
+
+.header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid $color-soft-gray;
+
+  h2 {
+    @include top-level-label();
+    margin: 0 auto 0 0;
+  }
+
+  button + h2 {
+    margin-left: 8px;
+  }
+
+  button {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    line-height: 0;
+    cursor: pointer;
+    height: auto;
+    width: auto;
+  }
+
+  button + button {
+    margin-left: 8px;
+  }
+}
+
+.invite-role {
+  @include small-input-label();
+  border: 1px solid $color-dark-gray;
+  line-height: 38px;
+}
+
+.invited-users-list {
+  padding: 16px;
+  color: $color-black;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  max-height: 300px; // TODO confirm value
+  overflow-y: scroll;
+
+
+  h3 {
+    @include small-input-label();
+    margin: 0;
+    color: $color-dark-gray;
+  }
+
+  ::ng-deep.mat-button {
+    padding: 0 0 0 8px;
+    line-height: 0;
+  }
+
+
+}
+
+.menu-divider {
+  border-top: 1px solid $color-fields-gray;
+}
+
+.footer {
+  border-top: 1px solid $color-soft-gray;
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 16px;
+}
+
+
+.invited-user {
+  @include small-input-label();
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  button {
+    line-height: 24px;
+  }
+
+  .name {
+    color: $color-black;
+  }
+
+  span {
+    color: $color-text-gray;
+  }
+
+  ::ng-deep .mat-menu-trigger .mat-button-wrapper {
+    vertical-align: middle;
+  }
+
+  .non-editable {
+    color: $color-text-gray;
+  }
+
+}
+
+.help {
+  color: $color-black;
+
+  h4 {
+    @include small-input-label();
+    font-weight: 600;
+    margin: 24px 0 0;
+  }
+
+  p {
+    margin: 0 0 8px;
+  }
+}
+
+.help-content {
+  margin: 24px 16px;
+}
+
+
+.menu-roles {
+  .mat-icon {
+    margin: 0;
+  }
+
+  .spacer {
+    display: inline-block;
+    width: 32px;
+  }
+}
+
+// the menu is on the cdk overlay layer, so we need to go outside this component
+// and look for the class used on the menu
+::ng-deep .list-menu .mat-menu-content {
+  padding: 0;
+}
+
+.loading {
+  padding-bottom: 20px;
+}

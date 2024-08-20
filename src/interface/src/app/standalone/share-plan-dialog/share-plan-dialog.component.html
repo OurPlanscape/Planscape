@@ -1,0 +1,163 @@
+<div class="main" *ngIf="!showHelp">
+  <section class="header">
+    <button
+      mat-icon-button
+      (click)="startOver()"
+      aria-label="back"
+      *ngIf="showMessageBox">
+      <mat-icon class="back-btn" (click)="showHelp = false"
+        >arrow_back
+      </mat-icon>
+    </button>
+    <h2>Share {{ data.planningAreaName }}</h2>
+    <button mat-icon-button (click)="showHelp = true" aria-label="help">
+      <mat-icon class="help-btn">help_outlined</mat-icon>
+    </button>
+    <button mat-icon-button (click)="close()" aria-label="close">
+      <mat-icon class="close-btn">close</mat-icon>
+    </button>
+  </section>
+
+  <app-form-message
+    [messageType]="errorType"
+    *ngIf="invalidEmail"
+    title="Invalid email"
+    message="An email must contain a single @">
+  </app-form-message>
+
+  <form class="invitations-form">
+    <app-chip-input
+      [emails]="emails"
+      [placeholder]="showMessageBox ? '' : 'enter email'"
+      (addEmail)="addEmail($event)"
+      (removeEmail)="removeEmail($event)"
+      (isInvalid)="invalidEmail = $event"></app-chip-input>
+
+    <button mat-button [matMenuTriggerFor]="roleMenu" class="invite-role">
+      {{ selectedRole }}
+      <mat-icon>arrow_drop_down</mat-icon>
+    </button>
+    <mat-menu
+      #roleMenu="matMenu"
+      class="list-menu list-input"
+      xPosition="before">
+      <button
+        mat-menu-item
+        *ngFor="let role of roles"
+        class="menu-roles"
+        (click)="changeInvitationsRole(role)">
+        <span class="spacer">
+          <mat-icon *ngIf="role === selectedRole">check_small</mat-icon>
+        </span>
+        {{ role }}
+      </button>
+    </mat-menu>
+
+    <mat-form-field
+      appearance="outline"
+      class="invite-message"
+      *ngIf="showMessageBox">
+      <textarea
+        matInput
+        placeholder="Message"
+        [(ngModel)]="message"
+        name="questionText"></textarea>
+    </mat-form-field>
+  </form>
+  <app-section-loader
+    [isLoading]="isLoading"
+    [hasData]="true"
+    [ngClass]="{ loading: isLoading }">
+    <section class="invited-users-list" *ngIf="!showMessageBox">
+      <h3>People with access</h3>
+      <div class="invited-user" *ngIf="showCreator$ | async">
+        <div class="name">{{ planCreator$ | async }}</div>
+        <div class="non-editable">Creator</div>
+      </div>
+      <div class="invited-user">
+        <div class="name">{{ fullname$ | async }} <span>(You)</span></div>
+        <div class="non-editable">{{ userRole$ | async }}</div>
+      </div>
+      <div *ngFor="let invite of invites$ | async" class="invited-user">
+        <div class="name">{{ invite.collaborator_name || invite.email }}</div>
+        <button mat-button [matMenuTriggerFor]="menu">
+          {{ invite.role }}
+          <mat-icon>arrow_drop_down</mat-icon>
+        </button>
+        <mat-menu #menu="matMenu" class="list-menu" xPosition="before">
+          <button
+            mat-menu-item
+            *ngFor="let role of roles"
+            class="menu-roles"
+            (click)="changeRole(invite, role)">
+            <span class="spacer">
+              <mat-icon *ngIf="role === invite.role">check_small</mat-icon>
+            </span>
+            {{ role }}
+          </button>
+          <button
+            mat-menu-item
+            class="menu-divider"
+            (click)="resendCode(invite)">
+            Resend Code
+          </button>
+          <button mat-menu-item (click)="removeAccess(invite)">
+            Remove Access
+          </button>
+        </mat-menu>
+      </div>
+    </section>
+  </app-section-loader>
+
+  <section class="footer">
+    <button
+      class="action"
+      mat-flat-button
+      type="button"
+      color="primary"
+      [disabled]="submitting"
+      (click)="emails.length > 0 ? invite() : close()">
+      {{ emails.length > 0 ? 'INVITE' : 'DONE' }}
+    </button>
+  </section>
+</div>
+
+<div class="help" *ngIf="showHelp">
+  <section class="header">
+    <button mat-icon-button (click)="showHelp = true" aria-label="back">
+      <mat-icon class="back-btn" (click)="showHelp = false"
+        >arrow_back
+      </mat-icon>
+    </button>
+
+    <h2>Help</h2>
+    <button mat-icon-button (click)="showHelp = true" aria-label="help">
+      <mat-icon class="close-btn" (click)="close()">close</mat-icon>
+    </button>
+  </section>
+  <section class="help-content">
+    <h4>How do I restrict permission to access a planning area?</h4>
+    <p>
+      When you share a planning area with someone, you can choose their
+      permission level.
+    </p>
+
+    <h4>Owner:</h4>
+    <p>
+      People who created the planning area. The owner can choose who can
+      collaborate or only view the scenarios of a planning area.
+    </p>
+
+    <h4>Collaborator:</h4>
+    <p>
+      Collaborators can create and archive scenarios of a planning area shared
+      with them, but they cannot share the planning area/scenarios with others.
+    </p>
+
+    <h4>Viewer:</h4>
+    <p>
+      Viewers can view a planning area, but they can’t create or archive
+      scenarios, and share the planning area with others.
+    </p>
+  </section>
+</div>

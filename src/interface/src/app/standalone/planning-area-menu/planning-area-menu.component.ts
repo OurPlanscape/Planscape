@@ -11,7 +11,7 @@ import { take } from 'rxjs';
 import { SNACK_NOTICE_CONFIG } from '@shared';
 import { AuthService, PlanService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
+
 import {
   MatDialog,
   MatDialogModule,
@@ -19,6 +19,7 @@ import {
 } from '@angular/material/dialog';
 import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-planning-area.component';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { SharePlanDialogComponent } from '../share-plan-dialog/share-plan-dialog.component';
 
 @Component({
   selector: 'app-planning-area-menu',
