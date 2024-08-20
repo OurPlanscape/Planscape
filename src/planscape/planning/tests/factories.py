@@ -40,9 +40,7 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda x: "scenario %s" % x)
 
-    origin = factory.Iterator(
-        [ScenarioOrigin.OPTIMIZATION, ScenarioOrigin.USER_CREATED]
-    )
+    origin = factory.Iterator([ScenarioOrigin.SYSTEM, ScenarioOrigin.USER])
 
     uuid = factory.Faker("uuid4")
 

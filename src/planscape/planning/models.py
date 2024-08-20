@@ -156,9 +156,9 @@ class ScenarioManager(AliveObjectsManager):
 
 class ScenarioOrigin(models.TextChoices):
     # project comes from optimization algorithm, such as forsys
-    OPTIMIZATION = "OPTIMIZATION", "Optimization"
+    SYSTEM = "SYSTEM", "System"
     # project comes from direct user creation / import
-    USER_CREATED = "USER_CREATED", "User Created"
+    USER = "USER", "User"
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):

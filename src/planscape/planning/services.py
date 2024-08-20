@@ -95,7 +95,7 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
     # your origin will be used instead of this default one.
     data = {
         "user": user,
-        "origin": ScenarioOrigin.OPTIMIZATION,
+        "origin": ScenarioOrigin.SYSTEM,
         "result_status": ScenarioResultStatus.PENDING,
         **kwargs,
     }

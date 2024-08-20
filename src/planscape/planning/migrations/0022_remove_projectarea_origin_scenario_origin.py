@@ -5,7 +5,7 @@ def set_origin(apps, schema_editor):
     from planning.models import ScenarioOrigin
 
     Scenario = apps.get_model("planning", "Scenario")
-    Scenario.objects.all().update(origin=ScenarioOrigin.OPTIMIZATION)
+    Scenario.objects.all().update(origin=ScenarioOrigin.SYSTEM)
 
 
 class Migration(migrations.Migration):
@@ -23,8 +23,8 @@ class Migration(migrations.Migration):
             name="origin",
             field=models.CharField(
                 choices=[
-                    ("OPTIMIZATION", "Optimization"),
-                    ("USER_CREATED", "User Created"),
+                    ("SYSTEM", "System"),
+                    ("USER", "User"),
                 ],
                 null=True,
             ),
