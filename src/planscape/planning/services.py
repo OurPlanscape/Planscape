@@ -128,6 +128,9 @@ def feature_to_project_area(idx: int, user_id: int, scenario, feature):
             action_object=proj_area_obj,
             target=scenario,
         )
+
+        return proj_area_obj
+
     except Exception as e:
         logger.error(f"Unable to create project area for {scenario.name} {e}")
         raise e
@@ -148,7 +151,11 @@ def create_scenario_from_upload(
     )
 
     if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
-        feature_to_project_area(1, scenario.user, scenario, json.dumps(uploaded_geom))
+        new_feature = feature_to_project_area(
+            1, scenario.user, scenario, json.dumps(uploaded_geom)
+        )
+        uploaded_geom.setdefault("properties", {})
+        uploaded_geom["properties"]["project_id"] = new_feature.pk
 
     # # this handles a format provided by shpjs when a shapefile has multiple features
     # if "geometry" in uploaded_geom and "coordinates" in uploaded_geom["geometry"]:
@@ -159,9 +166,16 @@ def create_scenario_from_upload(
     # this handles a more standard FeatureCollection
     if "features" in uploaded_geom:
         for idx, f in enumerate(uploaded_geom["features"], 1):
-            feature_to_project_area(
+            print(f"do we have...mutliple feature? {f}")
+            new_feature = feature_to_project_area(
                 idx, scenario.user, scenario, json.dumps(f["geometry"])
             )
+            # TODO: add new feature details back to uploaded_geom
+            f.setdefault("properties", {})
+            f["properties"]["project_id"] = new_feature.pk
+
+    # Store updated in ScenarioResult.result
+    ScenarioResult.objects.create(scenario=scenario, result=uploaded_geom)
 
     return scenario
 

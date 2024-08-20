@@ -173,11 +173,9 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     @action(methods=["POST"], detail=False)
     def upload_shapefiles(self, request, pk=None, *args, **kwargs):
-        # stuff we expect
         stand_size = request.data["stand_size"]
 
         # TODO: cleanup dict vs string here
-
         uploaded_geom = request.data["geometry"]
         if isinstance(uploaded_geom, str):
             uploaded_geojson = json.loads(uploaded_geom)
@@ -222,6 +220,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             "planning_area": pa.pk,
             "user": request.user.pk,
             "configuration": {"stand_size": stand_size},
+            ## TODO: add an origin (e.g., uploaded)
         }
 
         scenario_serializer = UploadedScenarioSerializer(data=scenario_data)
