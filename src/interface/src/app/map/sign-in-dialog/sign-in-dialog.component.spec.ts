@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 
 import { SignInDialogComponent } from './sign-in-dialog.component';
+import { MatDialogRef } from '@angular/material/dialog';
 
 describe('SignInCardComponent', () => {
   let component: SignInDialogComponent;

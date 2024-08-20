@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { MatDialogRef } from '@angular/material/dialog';
 
 /**  Component for reset password confirmation dialog. */
 @Component({
