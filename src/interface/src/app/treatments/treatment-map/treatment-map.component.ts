@@ -40,7 +40,7 @@ export class TreatmentMapComponent {
   mapLibreMap!: MapLibreMap;
   readonly key = environment.stadiamaps_key;
 
-  // ew, not sure if I want to do prop drilling here or set up something else (provider?)
+  // TODO: should we keep using prop drilling here? Consider using a provider service to hold these values
   @Input() projectAreaId: number | null = null;
   @Input() treatmentPlanId = 0;
 
