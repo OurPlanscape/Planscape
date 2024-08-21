@@ -60,47 +60,33 @@ export class ScenarioCardComponent {
   @Output() archiveScenario = new EventEmitter();
   @Output() clicked = new EventEmitter();
 
-  readonly chipsStatus: Record<ScenarioResultStatus, StatusChipStatus> = {
-    FAILURE: 'failed',
-    LOADING: 'running',
-    NOT_STARTED: 'running',
-    PANIC: 'failed',
-    PENDING: 'running',
-    RUNNING: 'running',
-    SUCCESS: 'success',
-    TIMED_OUT: 'failed',
-  };
-
-  readonly chipLabel: Record<ScenarioResultStatus, ScenarioResultLabel> = {
-    FAILURE: 'Failed',
-    LOADING: 'Running',
-    NOT_STARTED: 'Running',
-    PANIC: 'Failed',
-    PENDING: 'Running',
-    RUNNING: 'Running',
-    SUCCESS: 'Done',
-    TIMED_OUT: 'Failed',
+  readonly chipsStatus: Record<
+    ScenarioResultStatus,
+    { status: StatusChipStatus; label: ScenarioResultLabel }
+  > = {
+    FAILURE: { status: 'failed', label: 'Failed' },
+    LOADING: { status: 'running', label: 'Running' },
+    NOT_STARTED: { status: 'running', label: 'Running' },
+    PANIC: { status: 'failed', label: 'Failed' },
+    PENDING: { status: 'running', label: 'Running' },
+    RUNNING: { status: 'running', label: 'Running' },
+    SUCCESS: { status: 'success', label: 'Done' },
+    TIMED_OUT: { status: 'failed', label: 'Failed' },
   };
 
   hasFailed(): boolean {
-    if (this.status) {
-      return this.chipsStatus[this.status] == 'failed';
-    }
-    return false;
+    const failedValues = ['LOADING', 'NOT_STARTED', 'PENDING', 'RUNNING'];
+    return failedValues.includes(this.status);
   }
 
   isRunning(): boolean {
-    if (this.status) {
-      return this.chipsStatus[this.status] == 'running';
-    }
-    return false;
+    const runningValues = ['LOADING', 'NOT_STARTED', 'PENDING', 'RUNNING'];
+    return runningValues.includes(this.status);
   }
 
   isDone(): boolean {
-    if (this.status) {
-      return this.chipsStatus[this.status] == 'success';
-    }
-    return false;
+    const doneValues = ['SUCCESS'];
+    return doneValues.includes(this.status);
   }
 
   @HostBinding('class.disabled-content')
@@ -108,21 +94,16 @@ export class ScenarioCardComponent {
     return this.isRunning();
   }
 
-  @HostBinding('class.selected')
-  get isSelected() {
-    return this.selected;
-  }
-
   getChipStatus(): StatusChipStatus {
     if (this.status) {
-      return this.chipsStatus[this.status];
+      return this.chipsStatus[this.status].status;
     }
     return 'failed';
   }
 
   getChipLabel(): ScenarioResultLabel {
     if (this.status) {
-      return this.chipLabel[this.status];
+      return this.chipsStatus[this.status].label;
     }
     return 'Failed';
   }

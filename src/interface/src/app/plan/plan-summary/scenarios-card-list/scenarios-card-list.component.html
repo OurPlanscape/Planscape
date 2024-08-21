@@ -1,12 +1,11 @@
 <sg-scenario-card
   *ngFor="let s of scenarios"
-  [selected]="highlightedScenarioRow?.id === s.id"
   [name]="s.name"
   [creator]="s.creator"
   [areas]="s.max_treatment_area"
   [created_at]="s.created_at"
   [budget]="s.max_budget"
   [treatmentPlansCount]="s.tx_plan_count"
-  [status]="s.scenario_result?.status"
+  [status]="s.scenario_result?.status || 'PENDING'"
   (click)="clickedScenario(s)">
 </sg-scenario-card>
