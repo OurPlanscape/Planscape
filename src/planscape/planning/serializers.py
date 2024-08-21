@@ -321,6 +321,7 @@ class ScenarioSerializer(
             "created_at",
             "planning_area",
             "name",
+            "origin",
             "notes",
             "configuration",
             "scenario_result",
@@ -370,7 +371,6 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
             "id",
             "scenario",
             "name",
-            "origin",
             "data",
             "geometry",
         )

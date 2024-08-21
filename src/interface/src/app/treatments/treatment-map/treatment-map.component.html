@@ -1,0 +1,30 @@
+<app-map-controls
+  [mapDragging]="mapDragging"
+  (toggleDrag)="mapDragging = $event"></app-map-controls>
+<mgl-map
+  (mapLoad)="mapLibreMap = $event"
+  [style]="
+    'https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=' + key
+  "
+  [zoom]="[10]"
+  [center]="[-120, 37]"
+  [dragPan]="mapDragging"
+  [minZoom]="7"
+  [boxZoom]="false"
+  [interactive]="true"
+  [pitchWithRotate]="false"
+  (mapMouseDown)="onMapMouseDown($event)"
+  (mapMouseMove)="onMapMouseMove($event)"
+  (mapMouseUp)="onMapMouseUp($event)">
+  <app-map-stands
+    [mapLibreMap]="mapLibreMap"
+    [projectAreaId]="projectAreaId"
+    [treatmentPlanId]="treatmentPlanId"
+    [selectStart]="start ? start.point : null"
+    [selectEnd]="end ? end.point : null"></app-map-stands>
+
+  <app-map-rectangle
+    [mapLibreMap]="mapLibreMap"
+    [start]="start ? start.lngLat : null"
+    [end]="end ? end.lngLat : null"></app-map-rectangle>
+</mgl-map>
