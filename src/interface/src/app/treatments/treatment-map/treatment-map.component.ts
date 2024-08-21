@@ -15,6 +15,7 @@ import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component'
 import { SelectedStandsState } from './selected-stands.state';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { environment } from '../../../environments/environment';
+import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 
 @Component({
   selector: 'app-treatment-map',
@@ -31,6 +32,7 @@ import { environment } from '../../../environments/environment';
     MapStandsComponent,
     MapRectangleComponent,
     MapControlsComponent,
+    MapProjectAreasComponent,
   ],
   providers: [SelectedStandsState],
   templateUrl: './treatment-map.component.html',
@@ -43,6 +45,7 @@ export class TreatmentMapComponent {
   // TODO: should we keep using prop drilling here? Consider using a provider service to hold these values
   @Input() projectAreaId: number | null = null;
   @Input() treatmentPlanId = 0;
+  @Input() scenarioId = 0;
 
   treatedStands: { id: number; assigment: string }[] = [];
 
