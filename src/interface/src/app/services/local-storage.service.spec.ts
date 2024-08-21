@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { BaseStorageService } from '@services/local-storage.service';
+import { BaseLocalStorageService } from '@services/local-storage.service';
 
 interface TestData {
   key1: string;
@@ -7,7 +7,7 @@ interface TestData {
 }
 
 // A test class that extends BaseStorageService
-class TestStorageService extends BaseStorageService<TestData> {
+class TestStorageService extends BaseLocalStorageService<TestData> {
   constructor() {
     super('testKey');
   }

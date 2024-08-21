@@ -6,6 +6,11 @@ import {
   defaultMapConfigsDictionary,
   defaultMapViewOptions,
 } from '../map/map.helper';
+import {
+  MapConfigsStorageService,
+  MapViewOptionsStorageService,
+  RegionStorageService,
+} from '@services/local-storage.service';
 
 /** How often the user's session should be saved to local storage (in ms). */
 const SESSION_SAVE_INTERVAL = 600;
@@ -31,21 +36,25 @@ export class SessionService {
   readonly mapViewOptions$ = new BehaviorSubject<MapViewOptions | null>(null);
   readonly region$ = new BehaviorSubject<Region | null>(null);
 
-  constructor() {
-    const storedMapConfigs = localStorage.getItem('mapConfigs');
+  constructor(
+    private regionStorageService: RegionStorageService,
+    private mapViewOptionsStorageService: MapViewOptionsStorageService,
+    private mapConfigsStorageService: MapConfigsStorageService
+  ) {
+    const storedMapConfigs = this.mapConfigsStorageService.getItem();
     if (storedMapConfigs && this.validateSavedMapConfigs(storedMapConfigs)) {
-      this.mapConfigs$.next(JSON.parse(storedMapConfigs));
+      this.mapConfigs$.next(storedMapConfigs);
     }
-    const storedMapViewOptions = localStorage.getItem('mapViewOptions');
+    const storedMapViewOptions = this.mapViewOptionsStorageService.getItem();
     if (
       storedMapViewOptions &&
       this.validateSavedMapViewOptions(storedMapViewOptions)
     ) {
-      this.mapViewOptions$.next(JSON.parse(storedMapViewOptions));
+      this.mapViewOptions$.next(storedMapViewOptions);
     }
-    const savedRegion = localStorage.getItem('region');
+    const savedRegion = this.regionStorageService.getItem();
     if (!!savedRegion) {
-      this.setRegion(savedRegion as Region);
+      this.setRegion(savedRegion);
     } else {
       this.setRegion(Region.SIERRA_NEVADA);
     }
@@ -53,22 +62,22 @@ export class SessionService {
 
   /** Emits the map configs and saves them in local storage. */
   setMapConfigs(value: MapConfig[], region?: Region) {
-    var regionIndex: Region | null = region || this.region$.getValue();
+    let regionIndex: Region | null = region || this.region$.getValue();
     if (!regionIndex) {
       regionIndex = Region.SIERRA_NEVADA;
     }
-    var mapConf: Record<Region, MapConfig[]> | null =
+    let mapConf: Record<Region, MapConfig[]> | null =
       this.mapConfigs$.getValue();
     if (mapConf && regionIndex) {
       mapConf![regionIndex] = value;
     }
     this.mapConfigs$.next(mapConf);
-    localStorage.setItem('mapConfigs', JSON.stringify(mapConf));
+    this.mapConfigsStorageService.setItem(mapConf);
   }
 
   /** Emits the map view options and saves them in local storage. */
   setMapViewOptions(value: MapViewOptions) {
-    localStorage.setItem('mapViewOptions', JSON.stringify(value));
+    this.mapViewOptionsStorageService.setItem(value);
     this.mapViewOptions$.next(value);
   }
 
@@ -78,19 +87,18 @@ export class SessionService {
    */
   setRegion(value: Region) {
     if (Object.values(Region).includes(value)) {
-      localStorage.setItem('region', value);
+      this.regionStorageService.setItem(value);
       this.region$.next(value);
     } else {
-      localStorage.setItem('region', Region.SIERRA_NEVADA);
+      this.regionStorageService.setItem(Region.SIERRA_NEVADA);
       this.region$.next(Region.SIERRA_NEVADA);
     }
   }
 
   /** Validates the map configs loaded from local storage to ensure all required fields
    *  are present. */
-  private validateSavedMapConfigs(data: string): boolean {
-    const configs: any[] = JSON.parse(data);
-    for (var regionConfig of Object.values(configs)) {
+  private validateSavedMapConfigs(data: Record<Region, MapConfig[]>): boolean {
+    for (var regionConfig of Object.values(data)) {
       for (var mapConfig of Object.values(regionConfig)) {
         if (!this.instanceOfMapConfig(mapConfig)) {
           console.error('not valid config ' + JSON.stringify(mapConfig));
@@ -98,7 +106,7 @@ export class SessionService {
         }
       }
     }
-    for (var region of Object.keys(configs)) {
+    for (var region of Object.keys(data)) {
       if (!Object.values(Region).includes(region as unknown as Region)) {
         console.error('Config key not valid Region ' + region);
         return false;
@@ -118,10 +126,9 @@ export class SessionService {
 
   /** Validates the map view options loaded from local storage to ensure all required fields
    *  are present. */
-  private validateSavedMapViewOptions(data: string): boolean {
-    const mapViewOptions: MapViewOptions = JSON.parse(data);
+  private validateSavedMapViewOptions(data: MapViewOptions): boolean {
     return (
-      Object.keys(mapViewOptions).sort().join(',') ===
+      Object.keys(data).sort().join(',') ===
       Object.keys(defaultMapViewOptions()).sort().join(',')
     );
   }

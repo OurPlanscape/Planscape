@@ -817,7 +817,6 @@ upsert_project_area <- function(
       created_by_id,
       scenario_id,
       name,
-      origin,
       data,
       geometry
     ) VALUES (
@@ -827,7 +826,6 @@ upsert_project_area <- function(
       {created_by_id},
       {scenario_id},
       {name},
-      'OPTIMIZATION',
       {data},
       ST_Multi(ST_Transform(ST_GeomFromGeoJSON({geometry}), 4269))
     )
