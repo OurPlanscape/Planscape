@@ -23,6 +23,7 @@ export class AreaNotesComponent implements OnInit {
   @Input() plan!: Plan;
   notes: Note[] = [];
   note = '';
+  saving = false;
 
   ngOnInit() {
     this.loadNotes();
@@ -33,8 +34,6 @@ export class AreaNotesComponent implements OnInit {
       .getNotes(this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
-
-  saving = false;
 
   openDeleteNoteDialog(note: Note) {
     const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
