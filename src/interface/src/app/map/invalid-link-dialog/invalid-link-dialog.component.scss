@@ -2,9 +2,9 @@
 @import "colors";
 
 :host {
+  @include legacy-dialog-margin();
   display: block;
   max-width: 535px;
-  margin: 24px;
 }
 
 h4 {

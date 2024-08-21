@@ -1,6 +1,7 @@
+@import "mixins";
+
 :host {
-  margin: 24px;
-  display: block;
+  @include legacy-dialog-margin();
 }
 
 .delete-account-dialog {
