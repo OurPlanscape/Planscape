@@ -1,10 +1,9 @@
 @import "colors";
+@import "mixins";
 
 :host {
-  display: block;
-  min-width: 480px;
+  @include legacy-dialog-margin();
   position: relative;
-  margin: 24px;
 }
 
 section {

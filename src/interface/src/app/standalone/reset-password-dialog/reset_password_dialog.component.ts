@@ -8,6 +8,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 @Component({
   selector: 'app-reset-password-dialog',
   templateUrl: './reset_password_dialog.component.html',
+  styleUrls: ['./reset-password.component.scss'],
   standalone: true,
   imports: [CommonModule, LegacyMaterialModule],
 })
