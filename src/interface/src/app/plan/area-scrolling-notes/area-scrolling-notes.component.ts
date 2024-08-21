@@ -8,11 +8,11 @@ import { AuthService, Note, PlanNotesService } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 
 @Component({
-  selector: 'app-area-notes',
-  templateUrl: './area-notes.component.html',
-  styleUrls: ['./area-notes.component.scss'],
+  selector: 'app-area-scrolling-notes',
+  templateUrl: './area-scrolling-notes.component.html',
+  styleUrls: ['./area-scrolling-notes.component.scss'],
 })
-export class AreaNotesComponent implements OnInit {
+export class AreaScrollingNotesComponent implements OnInit {
   constructor(
     private planNotesService: PlanNotesService,
     private dialog: MatDialog,
@@ -23,7 +23,6 @@ export class AreaNotesComponent implements OnInit {
   @Input() plan!: Plan;
   notes: Note[] = [];
   note = '';
-  saving = false;
 
   ngOnInit() {
     this.loadNotes();
@@ -34,6 +33,8 @@ export class AreaNotesComponent implements OnInit {
       .getNotes(this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
+
+  saving = false;
 
   openDeleteNoteDialog(note: Note) {
     const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
