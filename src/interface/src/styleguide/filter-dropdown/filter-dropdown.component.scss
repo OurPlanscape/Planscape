@@ -237,16 +237,20 @@
 
 .button-box {
   flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: flex-end;
+  align-items: flex-end;
   gap: 8px;
   display: flex;
+  width: 120px;
+}
+
+.clear-all-area {
+  width: 120px;
 }
 
 .clear-all-text {
   @include xs-label();
   cursor: pointer;
-  text-transform: uppercase;
   color: $color-text-gray;
   padding: 10px;
   text-align: left;
@@ -254,6 +258,6 @@
   background-color: inherit;
 }
 
-.clear-all-text:hover {
-  color: black;
+.clear-all-text:hover:not(:disabled) {
+  color: $color-standard-blue;
 }
