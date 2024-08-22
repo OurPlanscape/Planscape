@@ -9,7 +9,7 @@ from datetime import date, time, datetime
 from pathlib import Path
 from typing import Any, Dict, Tuple, Type, Union
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
@@ -26,7 +26,6 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
 )
-from planning.serializers import ProjectAreaSerializer
 from planning.tasks import async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices, area_from_size
@@ -116,6 +115,27 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
     return scenario
 
 
+def union_geojson(uploaded_geojson):
+    geometries = []
+    if "features" in uploaded_geojson:
+        for feature in uploaded_geojson["features"]:
+            try:
+                geom = GEOSGeometry(json.dumps(feature["geometry"]), srid=4326)
+                if isinstance(geom, (Polygon, MultiPolygon)):
+                    geometries.append(geom)
+            except Exception as e:
+                print(f"Error processing feature: {e}")
+    else:
+        geometries.append(GEOSGeometry(json.dumps(uploaded_geojson), srid=4326))
+    if not geometries:
+        raise ValueError("No valid polygon geometries found")
+    unioned_geometry = geometries[0]
+    for geom in geometries[1:]:
+        unioned_geometry = unioned_geometry.union(geom)
+
+    return unioned_geometry
+
+
 def feature_to_project_area(idx: int, user_id: int, scenario, feature):
     try:
         project_area = {
@@ -154,6 +174,7 @@ def create_scenario_from_upload(
         target=scenario.planning_area,
     )
 
+    # handle just a polygon
     if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
         new_feature = feature_to_project_area(
             1, scenario.user, scenario, json.dumps(uploaded_geom)
@@ -161,16 +182,9 @@ def create_scenario_from_upload(
         uploaded_geom.setdefault("properties", {})
         uploaded_geom["properties"]["project_id"] = new_feature.pk
 
-    # # this handles a format provided by shpjs when a shapefile has multiple features
-    # if "geometry" in uploaded_geom and "coordinates" in uploaded_geom["geometry"]:
-    #     for idx, f in enumerate(uploaded_geom["geometry"]["coordinates"], 1):
-    #         feature_obj = {"type": "Polygon", "coordinates": [f]}
-    #         feature_to_project_area(idx, scenario.user, scenario, feature_obj)
-
     # this handles a more standard FeatureCollection
     if "features" in uploaded_geom:
         for idx, f in enumerate(uploaded_geom["features"], 1):
-            print(f"do we have...mutliple feature? {f}")
             new_feature = feature_to_project_area(
                 idx, scenario.user, scenario, json.dumps(f["geometry"])
             )
@@ -178,7 +192,7 @@ def create_scenario_from_upload(
             f.setdefault("properties", {})
             f["properties"]["project_id"] = new_feature.pk
 
-    # Store updated in ScenarioResult.result
+    # Store geometry with added properties into ScenarioResult.result
     ScenarioResult.objects.create(scenario=scenario, result=uploaded_geom)
 
     return scenario

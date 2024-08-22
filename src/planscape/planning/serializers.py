@@ -14,6 +14,7 @@ from planning.models import (
     User,
     UserPrefs,
 )
+from planning.services import get_acreage
 from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices
 
@@ -351,7 +352,6 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
             "uuid",
             "scenario",
             "name",
-            "origin",
             "data",
             "geometry",
             "created_by",
