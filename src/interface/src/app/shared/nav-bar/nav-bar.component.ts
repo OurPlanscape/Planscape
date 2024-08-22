@@ -7,13 +7,14 @@ import {
   Output,
 } from '@angular/core';
 import { PlanStateService, WINDOW } from '@services';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+
 import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
 import { ActivatedRoute, Params } from '@angular/router';
 import { map, of } from 'rxjs';
 import { canViewCollaborators } from '../../plan/permissions';
 import { HomeParametersStorageService } from '@services/local-storage.service';
+import { MatDialog } from '@angular/material/dialog';
 
 export interface Breadcrumb {
   name: string;
