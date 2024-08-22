@@ -65,6 +65,7 @@ cypress-test:
 
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
+	cd src/planscape && python3 manage.py install_layers
 
 load-conditions:
 	cd src/planscape && python3 manage.py load_conditions
@@ -149,6 +150,7 @@ docker-makemigrations:
 
 docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
+	./src/planscape/bin/run.sh python manage.py install_layers
 
 .PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
 
