@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION martin_dynamic_stands(z integer, x integer, y integer, query_params json)
+CREATE OR REPLACE FUNCTION martin_stands_by_tx_plan(z integer, x integer, y integer, query_params json)
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
@@ -34,7 +34,7 @@ BEGIN
     WHERE tp.id = (query_params->>'treatment_plan_id')::int
   );
 
-  SELECT INTO p_mvt ST_AsMVT(tile, 'dynamic_stands', 4096, 'geom') FROM (
+  SELECT INTO p_mvt ST_AsMVT(tile, 'stands_by_tx_plan', 4096, 'geom') FROM (
 
     SELECT
       ss.id as "id",

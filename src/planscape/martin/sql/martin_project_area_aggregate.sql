@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION martin_dynamic_project_area(z integer, x integer, y integer, query_params json)
+CREATE OR REPLACE FUNCTION martin_project_area_aggregate(z integer, x integer, y integer, query_params json)
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
@@ -32,7 +32,7 @@ BEGIN
         ss.size = p_stand_size
   );
 
-  SELECT INTO p_mvt ST_AsMVT(tile, 'project_area', 4096, 'geom') FROM (
+  SELECT INTO p_mvt ST_AsMVT(tile, 'project_area_aggregate', 4096, 'geom') FROM (
     SELECT
       (query_params->>'project_area_id')::int as "id",
       ST_AsMVTGeom(

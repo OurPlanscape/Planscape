@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION martin_dynamic_project_areas(z integer, x integer, y integer, query_params json)
+CREATE OR REPLACE FUNCTION martin_project_areas_by_scenario(z integer, x integer, y integer, query_params json)
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
@@ -6,7 +6,7 @@ DECLARE
   p_stand_size varchar;
 BEGIN
 
-  SELECT INTO p_mvt ST_AsMVT(tile, 'dynamic_project_areas', 4096, 'geom') FROM (
+  SELECT INTO p_mvt ST_AsMVT(tile, 'project_areas_by_scenario', 4096, 'geom') FROM (
 
     SELECT
       pa.id as "id",
