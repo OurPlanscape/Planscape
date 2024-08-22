@@ -5,11 +5,19 @@ import { JsonPipe } from '@angular/common';
 import { TreatmentPlan } from '@types';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
-  imports: [JsonPipe, TreatmentMapComponent, TreatmentSummaryComponent],
+  imports: [
+    JsonPipe,
+    TreatmentMapComponent,
+    TreatmentSummaryComponent,
+    MapBaseLayerComponent,
+  ],
+  providers: [MapConfigState],
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',
 })

@@ -3,9 +3,7 @@
   (toggleDrag)="mapDragging = $event"></app-map-controls>
 <mgl-map
   (mapLoad)="mapLibreMap = $event"
-  [style]="
-    'https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=' + key
-  "
+  [style]="esri"
   [zoom]="[10]"
   [center]="[-120, 37]"
   [dragPan]="mapDragging"

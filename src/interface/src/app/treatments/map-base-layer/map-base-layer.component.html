@@ -1,0 +1,4 @@
+<h4>Map Base</h4>
+<button *ngFor="let t of terrainTypes" [value]="t" (click)="updateBaseLayer(t)">
+  {{ t }}
+</button>

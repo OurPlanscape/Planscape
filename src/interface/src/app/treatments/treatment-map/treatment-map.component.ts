@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   DraggableDirective,
   FeatureComponent,
@@ -9,13 +9,14 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
+import { Map as MapLibreMap, MapMouseEvent, MapOptions } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { SelectedStandsState } from './selected-stands.state';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { environment } from '../../../environments/environment';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+import { MapConfigState } from './map-config.state';
 
 @Component({
   selector: 'app-treatment-map',
@@ -34,6 +35,7 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
     MapControlsComponent,
     MapProjectAreasComponent,
     NgIf,
+    AsyncPipe,
   ],
   providers: [SelectedStandsState],
   templateUrl: './treatment-map.component.html',
@@ -56,7 +58,9 @@ export class TreatmentMapComponent {
   start: MapMouseEvent | null = null;
   end: MapMouseEvent | null = null;
 
-  constructor() {}
+  styleUrl = this.mapConfigState.baseLayerUrl$;
+
+  constructor(private mapConfigState: MapConfigState) {}
 
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {
@@ -83,4 +87,26 @@ export class TreatmentMapComponent {
     this.start = null;
     this.end = null;
   }
+
+  esri: MapOptions['style'] = {
+    version: 8,
+    sources: {
+      'esri-world-imagery': {
+        type: 'raster',
+        tiles: [
+          'https://services.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
+        ],
+        tileSize: 256,
+      },
+    },
+    layers: [
+      {
+        id: 'esri-world-imagery-layer',
+        type: 'raster',
+        source: 'esri-world-imagery',
+        minzoom: 0,
+        maxzoom: 22,
+      },
+    ],
+  };
 }
