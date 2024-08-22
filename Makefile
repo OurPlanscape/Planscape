@@ -46,7 +46,7 @@ taggit:
 	echo "Completed taggit"
 
 install-dependencies-frontend:
-	cd src/interface && npm install --legacy-peer-deps
+	cd src/interface && npm install
 
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out

@@ -11,7 +11,7 @@ WORKDIR /src/interface
 COPY ./package.json ./package-lock.json /src/interface/
 
 # Install angular
-RUN npm install --legacy-peer-deps
+RUN npm install
 
 # Copy app files
 COPY . /src/interface
