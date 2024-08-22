@@ -5,10 +5,6 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
 
 import {
   PlanCreateDialogComponent,
@@ -23,6 +19,7 @@ import { DialogModule } from '@angular/cdk/dialog';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Region, regionToString } from '@types';
 import { Geometry } from 'geojson';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 describe('PlanCreateDialogComponent', () => {
   let component: PlanCreateDialogComponent;
