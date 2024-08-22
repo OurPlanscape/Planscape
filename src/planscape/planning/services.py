@@ -188,7 +188,6 @@ def create_scenario_from_upload(
             new_feature = feature_to_project_area(
                 idx, scenario.user, scenario, json.dumps(f["geometry"])
             )
-            # TODO: add new feature details back to uploaded_geom
             f.setdefault("properties", {})
             f["properties"]["project_id"] = new_feature.pk
 

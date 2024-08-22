@@ -14,7 +14,7 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioOrderingFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario, User
+from planning.models import PlanningArea, ProjectArea, Scenario, ScenarioOrigin, User
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     CreatePlanningAreaSerializer,
@@ -189,7 +189,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         # Union features and confirm that they're inside the planning area
         uploaded_geos = union_geojson(uploaded_geom)
         pa = PlanningArea.objects.get(pk=planning_area_pk)
-        # TODO: check if it's inside pa.geometry
+        # check if it's inside pa.geometry
         if not pa.geometry.contains(uploaded_geos):
             return Response(
                 {
@@ -203,7 +203,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             "planning_area": pa.pk,
             "user": request.user.pk,
             "configuration": {"stand_size": stand_size},
-            ## TODO: add an origin (e.g., uploaded)
+            "origin": ScenarioOrigin.USER,
         }
 
         scenario_serializer = UploadedScenarioSerializer(data=scenario_data)
