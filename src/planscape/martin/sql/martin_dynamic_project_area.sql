@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION martin_project_area_outline(z integer, x integer, y integer, query_params json)
+CREATE OR REPLACE FUNCTION martin_dynamic_project_area(z integer, x integer, y integer, query_params json)
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
@@ -8,7 +8,12 @@ DECLARE
 BEGIN
 
   SELECT INTO p_project_area (
-    SELECT geometry FROM planning_projectarea WHERE id = (query_params->>'project_area_id')::int
+    SELECT 
+      geometry 
+    FROM planning_projectarea pa
+    WHERE 
+      id = (query_params->>'project_area_id')::int AND
+      pa.deleted_at IS NULL
   );
 
   SELECT INTO p_stand_size (
@@ -27,7 +32,7 @@ BEGIN
         ss.size = p_stand_size
   );
 
-  SELECT INTO p_mvt ST_AsMVT(tile, 'project_area_outline', 4096, 'geom') FROM (
+  SELECT INTO p_mvt ST_AsMVT(tile, 'project_area', 4096, 'geom') FROM (
     SELECT
       (query_params->>'project_area_id')::int as "id",
       ST_AsMVTGeom(
