@@ -27,7 +27,6 @@ from planning.serializers import (
     ScenarioSerializer,
     ListCreatorSerializer,
     UploadedScenarioSerializer,
-    UploadedFeatureCollectionSerializer,
 )
 from planning.services import (
     create_planning_area,
