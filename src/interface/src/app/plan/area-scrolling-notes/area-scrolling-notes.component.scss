@@ -33,8 +33,9 @@
 }
 
 .notes {
-  flex: 1;
   overflow-y: auto;
+  flex: 1;
+  flex-grow: 1;
 }
 
 .note {
@@ -81,4 +82,30 @@ textarea {
 
   color: $color-error;
   @include regular-paragraph();
+}
+
+.notes-header {
+  @include h4();
+  width: 100%;
+  padding: 16px 229px 16px 16px;
+  gap: 8px;
+  border-bottom: 1px $color-soft-gray solid;
+}
+
+.note-right {
+  width: 28px;
+}
+
+.add-note-field {
+  height: 70px;
+  flex-shrink: 0;
+  border-top: 1px $color-soft-gray solid;
+}
+
+.note-enclosed {
+  padding: 16px;
+  color: $color-black;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }

@@ -189,6 +189,21 @@
   --mat-option-label-text-line-height: 24px;
   --mat-option-label-text-tracking: 0.03125em;
   --mat-option-label-text-weight: 400;
+  justify-content: flex-end;
+}
+
+::ng-deep .paginator-select-panel .mat-mdc-option .mdc-list-item__primary-text {
+  margin-right: 0;
+}
+
+::ng-deep .paginator-select-panel .mat-mdc-option .mat-pseudo-checkbox {
+  order: -1;
+  margin-right: 8px;
+  margin-left: 0;
+}
+
+::ng-deep .paginator-select-panel .mat-option-text {
+  flex-grow: 1;
 }
 
 ::ng-deep .picker-field .mdc-notched-outline .mdc-notched-outline__trailing,
