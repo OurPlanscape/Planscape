@@ -3,7 +3,11 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { MapOptions } from 'maplibre-gl';
 
-type StadiaBaseMap = 'stadiaSmooth' | 'stamenTerrain' | 'stadiaSatellite';
+type StadiaBaseMap =
+  | 'stadiaSmooth'
+  | 'stamenTerrain'
+  | 'stadiaSatellite'
+  | 'stadiaOutdoors';
 type ArcgisBaseMap = 'arcgisTopographic' | 'arcgisImagery' | 'arcgisGray';
 type ArcgisRest = 'restTerrain' | 'restSatellite';
 type StadiaRest = 'stadiaRest';
@@ -46,6 +50,8 @@ export const baseLayerStyles: Record<BaseLayerType, MapOptions['style']> = {
     stadiaMaps + 'stamen_terrain.json?api_key=' + environment.stadiamaps_key,
   stadiaSatellite:
     stadiaMaps + 'alidade_satellite.json?api_key=' + environment.stadiamaps_key,
+  stadiaOutdoors:
+    stadiaMaps + 'outdoors.json?api_key=' + environment.stadiamaps_key,
 
   arcgisTopographic: arcgis + 'topographic?token=' + environment.arcgis_key,
   arcgisImagery: arcgis + 'imagery?token=' + environment.arcgis_key,
@@ -61,7 +67,7 @@ export const baseLayerStyles: Record<BaseLayerType, MapOptions['style']> = {
   ),
   stadiaRest: rasterSource(
     'stadia',
-    'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png'
+    'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}@2x.png'
   ),
 };
 
