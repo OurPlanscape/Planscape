@@ -4,13 +4,23 @@
   class="sg-expander-panel">
   <mat-expansion-panel-header class="header-content">
     <div class="icon-and-title">
-      <mat-icon class="color: orange;">hexagon_outline</mat-icon>
+      <mat-icon>hexagon_outline</mat-icon>
       <div>{{ title }}</div>
     </div>
     <div class="right-content">
       <div class="stand-count">1/11</div>
-      <mat-icon>hexagon_outline</mat-icon>
+      <mat-icon class="material-symbols-outlined">hexagon_outline</mat-icon>
     </div>
   </mat-expansion-panel-header>
-  <div>Internal content</div>
+
+  <div class="rx-detail">
+    <mat-icon class="material-symbols-outlined">medication_outline</mat-icon>
+    <span class="rx-detail-name">Total:</span
+    ><span class="rx-detail-value">100 acres</span>
+  </div>
+
+  <div class="treatment-detail">
+    <span class="treatment-detail-name">Total:</span
+    ><span class="treatment-detail-value">100 acres</span>
+  </div>
 </mat-expansion-panel>

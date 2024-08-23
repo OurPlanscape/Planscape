@@ -5,6 +5,10 @@
   padding: 0 20px 0 8px;
 }
 
+::ng-deep .sg-expander-panel .mat-expansion-panel-header {
+  --mat-expansion-header-expanded-state-height: 48px;
+}
+
 ::ng-deep .sg-expander-panel .mat-expansion-panel-header .mat-content {
   display: flex;
   justify-content: space-between;
@@ -12,6 +16,10 @@
   align-items: center;
   cursor: pointer;
   width: 100%;
+}
+
+::ng-deep .sg-expander-panel .mat-expansion-panel-header .mat-expansion-indicator {
+  padding-bottom: 6px;
 }
 
 .icon-and-title {
@@ -34,3 +42,44 @@
   gap: 4px;
   padding-right: 8px;
 }
+
+.treatment-detail {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 0 48px 0 48px;
+
+}
+
+.treatment-detail-name {
+  @include xs-label();
+
+}
+
+.treatment-detail-value {
+  @include small-paragraph();
+}
+
+
+
+.rx-detail {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 0 48px 0 48px;
+
+}
+
+.rx-detail-name {
+  @include xs-label();
+
+}
+
+
+
