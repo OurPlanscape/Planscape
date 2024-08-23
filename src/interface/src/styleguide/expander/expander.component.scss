@@ -1,0 +1,36 @@
+@import 'mixins';
+@import 'colors';
+
+.header-content {
+  padding: 0 20px 0 8px;
+}
+
+::ng-deep .sg-expander-panel .mat-expansion-panel-header .mat-content {
+  display: flex;
+  justify-content: space-between;
+  flex-direction: row;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+}
+
+.icon-and-title {
+  @include xs-label();
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.right-content {
+  @include xs-label();
+  color: $color-md-gray;
+  width: 60px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding-right: 8px;
+}

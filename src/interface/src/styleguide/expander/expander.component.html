@@ -1,0 +1,16 @@
+<mat-expansion-panel
+  (opened)="toggleState()"
+  (closed)="toggleState()"
+  class="sg-expander-panel">
+  <mat-expansion-panel-header class="header-content">
+    <div class="icon-and-title">
+      <mat-icon class="color: orange;">hexagon_outline</mat-icon>
+      <div>{{ title }}</div>
+    </div>
+    <div class="right-content">
+      <div class="stand-count">1/11</div>
+      <mat-icon>hexagon_outline</mat-icon>
+    </div>
+  </mat-expansion-panel-header>
+  <div>Internal content</div>
+</mat-expansion-panel>
