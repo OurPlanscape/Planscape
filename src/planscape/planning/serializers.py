@@ -309,6 +309,8 @@ class UploadedScenarioSerializer(serializers.ModelSerializer):
             "user",
             "planning_area",
             "name",
+            "user",
+            "origin",
             "configuration",
         )
 
@@ -366,6 +368,7 @@ class ScenarioProjectAreasSerializer(serializers.ModelSerializer):
             "id",
             "updated_at",
             "created_at",
+            "origin",
             "planning_area",
             "name",
             "notes",

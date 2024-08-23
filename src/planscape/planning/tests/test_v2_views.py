@@ -6,7 +6,7 @@ from rest_framework.test import APITransactionTestCase
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
 from planning.geometry import coerce_geometry
-from planning.models import PlanningArea, RegionChoices
+from planning.models import PlanningArea, RegionChoices, ScenarioResult
 from planning.tests.factories import PlanningAreaFactory, UserFactory
 from planning.tests.helpers import (
     _create_scenario,
@@ -862,6 +862,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
             data=payload,
             format="json",
         )
+
         self.assertEqual(response.status_code, 401)
 
     def test_create_from_single_feature_shpjs(self):
@@ -883,6 +884,9 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response_data["project_areas"]), 1)
 
+        result_record = ScenarioResult.objects.get(scenario=response_data["id"])
+        self.assertIn("project_id", result_record.result["properties"])
+
     def test_create_from_multi_feature_shpjs(self):
         self.client.force_authenticate(self.owner_user)
         payload = {
@@ -901,6 +905,15 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, 201)
         self.assertEqual(len(response_data["project_areas"]), 2)
+        self.assertEqual(response_data["origin"], "USER")
+
+        result_record = ScenarioResult.objects.get(scenario=response_data["id"])
+        # assert that we have multiple features
+        self.assertEqual(len(result_record.result["features"]), 2)
+
+        # test that all features contain the expected properties
+        for f in result_record.result["features"]:
+            self.assertIn("project_id", f["properties"])
 
     def test_create_uncontained_geometry(self):
         self.client.force_authenticate(self.owner_user)
