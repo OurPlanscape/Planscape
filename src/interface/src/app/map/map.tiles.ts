@@ -6,7 +6,7 @@ export function terrainTiles() {
   return L.tileLayer(
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}',
     {
-      maxZoom: 13,
+      maxNativeZoom: 13,
       attribution:
         'Tiles &copy; Esri &mdash; Source: USGS, Esri, TANA, DeLorme, and NPS',
       zIndex: 0,
