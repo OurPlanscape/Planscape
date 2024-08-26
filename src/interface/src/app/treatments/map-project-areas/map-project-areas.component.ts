@@ -25,7 +25,6 @@ import { environment } from '../../../environments/environment';
 })
 export class MapProjectAreasComponent {
   @Input() scenarioId!: number;
-  @Input() treatmentPlanId!: number;
   @Input() mapLibreMap!: MapLibreMap;
 
   readonly layerName = 'project_areas_by_scenario';

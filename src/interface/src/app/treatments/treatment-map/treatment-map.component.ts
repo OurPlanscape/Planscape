@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { JsonPipe, NgForOf } from '@angular/common';
+import { JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   DraggableDirective,
   FeatureComponent,
@@ -33,6 +33,7 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
     MapRectangleComponent,
     MapControlsComponent,
     MapProjectAreasComponent,
+    NgIf,
   ],
   providers: [SelectedStandsState],
   templateUrl: './treatment-map.component.html',
@@ -45,7 +46,7 @@ export class TreatmentMapComponent {
   // TODO: should we keep using prop drilling here? Consider using a provider service to hold these values
   @Input() projectAreaId: number | null = null;
   @Input() treatmentPlanId = 0;
-  @Input() scenarioId = 0;
+  @Input() scenarioId: number | null = null;
 
   treatedStands: { id: number; assigment: string }[] = [];
 
