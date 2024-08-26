@@ -34,7 +34,7 @@ export class MapStandsComponent implements OnChanges {
 
   readonly tilesUrl =
     environment.martin_server +
-    'project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}';
+    'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
 
   readonly layers = {
     outline: 'outline-layer',

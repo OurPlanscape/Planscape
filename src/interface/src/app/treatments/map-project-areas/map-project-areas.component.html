@@ -6,7 +6,7 @@
   id="map-project-areas-line"
   type="line"
   source="scenarioProjectAreas"
-  sourceLayer="project_areas"
+  [sourceLayer]="layerName"
   [paint]="{
     'line-color': '#333',
     'line-width': 2
@@ -16,19 +16,16 @@
   id="map-project-areas-fill"
   type="fill"
   source="scenarioProjectAreas"
-  sourceLayer="project_areas"
-  [paint]="{
-    'fill-color': ['get', 'color'],
-    'fill-opacity': 0.4
-  }"></mgl-layer>
+  [sourceLayer]="layerName"
+  [paint]="paint"></mgl-layer>
 
 <mgl-layer
   id="map-project-areas-labels"
   type="symbol"
   source="scenarioProjectAreas"
-  sourceLayer="project_areas"
+  [sourceLayer]="layerName"
   [layout]="{
-    'text-field': ['get', 'id'],
+    'text-field': ['get', 'rank'],
     'text-size': 14,
     'text-anchor': 'center',
     'text-justify': 'center'

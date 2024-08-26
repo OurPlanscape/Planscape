@@ -7,7 +7,7 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 import { NgForOf } from '@angular/common';
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { LayerSpecification, Map as MapLibreMap } from 'maplibre-gl';
 import { environment } from '../../../environments/environment';
 
 @Component({
@@ -28,15 +28,32 @@ export class MapProjectAreasComponent {
   @Input() treatmentPlanId!: number;
   @Input() mapLibreMap!: MapLibreMap;
 
-  constructor() {}
+  readonly layerName = 'project_areas_by_scenario';
+  readonly tilesUrl =
+    environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
 
-  color(i: number) {
-    return getColorForProjectPosition(i);
-  }
+  constructor() {}
 
   get vectorLayerUrl() {
     return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
   }
 
-  readonly tilesUrl = environment.martin_server + 'project_areas/{z}/{x}/{y}';
+  paint: LayerSpecification['paint'] = {
+    'fill-outline-color': '#000',
+    'fill-color': this.getFillColors() as any,
+    'fill-opacity': 0.5,
+  };
+
+  getFillColors() {
+    const defaultColor = '#00000050';
+    const matchExpression: (number | string | string[])[] = [
+      'match',
+      ['get', 'rank'],
+    ];
+    for (let i = 1; i < 11; i++) {
+      matchExpression.push(i.toString(), getColorForProjectPosition(i));
+    }
+    matchExpression.push(defaultColor);
+    return matchExpression;
+  }
 }
