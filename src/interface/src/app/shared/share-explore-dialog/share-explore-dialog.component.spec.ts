@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ShareExploreDialogComponent } from './share-explore-dialog.component';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MockProvider } from 'ng-mocks';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { ShareMapService } from '@services';
+import { MatDialogRef } from '@angular/material/dialog';
 
 describe('ShareExploreDialogComponent', () => {
   let component: ShareExploreDialogComponent;

@@ -23,9 +23,10 @@ import { getColorForProjectPosition } from '../plan-helpers';
 import polylabel from 'polylabel';
 import { environment } from '../../../environments/environment';
 import { MapLayerSelectDialogComponent } from '../map-layer-select-dialog/map-layer-select-dialog.component';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+
 import { satelliteTiles, terrainTiles } from 'src/app/map/map.tiles';
 import { MapLayerControlComponent } from './map-layer-control/map-layer-control-component';
+import { MatDialog } from '@angular/material/dialog';
 
 // Needed to keep references to div elements to remove
 export interface MapRef {

@@ -1,4 +1,5 @@
 @import 'variables';
+@import 'mixins';
 
 .root-container {
   display: flex;
@@ -16,8 +17,13 @@
   ::ng-deep .mat-tab-body-wrapper {
     height: 100%;
   }
+
 }
 
+//feature flagged style
+.full-height {
+    height: 100%;
+}
 
 .plan-progress-panel {
   background-color: white;

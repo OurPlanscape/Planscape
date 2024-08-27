@@ -1,9 +1,6 @@
 import { Component, Inject } from '@angular/core';
-import {
-  MatLegacyDialogRef as MatDialogRef,
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-} from '@angular/material/legacy-dialog';
 import { BaseLayerType } from '@types';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-map-layer-select-dialog',
@@ -12,6 +9,7 @@ import { BaseLayerType } from '@types';
 })
 export class MapLayerSelectDialogComponent {
   disableDeleteButton = false;
+
   constructor(
     @Inject(MatDialogRef)
     private dialogRef: MatDialogRef<MapLayerSelectDialogComponent>,
@@ -20,6 +18,7 @@ export class MapLayerSelectDialogComponent {
       selectedLayer: number;
     }
   ) {}
+
   givenLayer = this.data.selectedLayer;
   currentLayer = this.givenLayer;
   baseLayerTypes: number[] = [
@@ -28,6 +27,7 @@ export class MapLayerSelectDialogComponent {
     BaseLayerType.Satellite,
   ];
   readonly BaseLayerType = BaseLayerType;
+
   cancel(): void {
     this.dialogRef.close(undefined);
   }
