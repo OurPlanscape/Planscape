@@ -16,6 +16,7 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
 export class TreatmentOverviewComponent implements OnInit {
   treatmentPlanId: number = this.route.snapshot.data['treatmentId'];
   treatmentPlan: TreatmentPlan | null = null;
+  scenarioId: number = this.route.snapshot.data['scenarioId'];
 
   constructor(
     private treatmentsService: TreatmentsService,
