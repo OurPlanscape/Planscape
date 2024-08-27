@@ -8,7 +8,7 @@
     'line-color': 'black',
     'line-width': 3
   }"
-  sourceLayer="project_area_outline"></mgl-layer>
+  sourceLayer="project_area_aggregate"></mgl-layer>
 
 <mgl-layer
   [id]="layers.stands"
@@ -16,7 +16,7 @@
   source="stands"
   [paint]="paint"
   (layerMouseDown)="clickOnLayer($event)"
-  sourceLayer="treatment_plan_prescriptions"></mgl-layer>
+  sourceLayer="stands_by_tx_plan"></mgl-layer>
 
 <mgl-layer
   [id]="layers.selectedStands"
@@ -26,7 +26,7 @@
     'fill-color': '#007dff',
     'fill-opacity': 0.2
   }"
-  sourceLayer="treatment_plan_prescriptions"
+  sourceLayer="stands_by_tx_plan"
   [filter]="[
     'in',
     ['get', 'id'],
