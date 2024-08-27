@@ -5,7 +5,6 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { NgForOf } from '@angular/common';
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
 import { LayerSpecification, Map as MapLibreMap } from 'maplibre-gl';
 import { environment } from '../../../environments/environment';
@@ -16,7 +15,6 @@ import { environment } from '../../../environments/environment';
   imports: [
     FeatureComponent,
     GeoJSONSourceComponent,
-    NgForOf,
     LayerComponent,
     VectorSourceComponent,
   ],
