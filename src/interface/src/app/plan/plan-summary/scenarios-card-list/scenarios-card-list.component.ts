@@ -17,8 +17,10 @@ import {
   styleUrl: './scenarios-card-list.component.scss',
 })
 export class ScenariosCardListComponent {
+  selectedCard: ScenarioRow | null = null;
   @Input() scenarios: ScenarioRow[] = [];
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
+  @Output() clickedScenario = new EventEmitter<ScenarioRow>();
 
   hasResults(scenario: Scenario) {
     return (
@@ -27,12 +29,17 @@ export class ScenariosCardListComponent {
     );
   }
 
-  clickedScenario(row: ScenarioRow): void {
+  handleClickedScenario(row: ScenarioRow): void {
+    this.selectedCard = row;
     this.selectScenario.emit(row);
   }
 
   calculateTotals(results: ScenarioResult) {
     const projectAreas = parseResultsToProjectAreas(results);
     return parseResultsToTotals(projectAreas);
+  }
+
+  isSelected(s: ScenarioRow): boolean {
+    return this.selectedCard == s;
   }
 }

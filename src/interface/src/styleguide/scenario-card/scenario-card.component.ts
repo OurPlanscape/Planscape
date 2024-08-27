@@ -53,7 +53,7 @@ export class ScenarioCardComponent {
   @Input() treatmentPlansCount?: number = 0;
   @Input() creator?: string = '';
   @Input() created_at? = '';
-  @Input() selected?: boolean = false;
+  @Input() selected: boolean = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
@@ -92,6 +92,11 @@ export class ScenarioCardComponent {
   @HostBinding('class.disabled-content')
   get disabledContent() {
     return this.isRunning();
+  }
+
+  @HostBinding('class.selected')
+  get isSelected() {
+    return this.selected;
   }
 
   getChipStatus(): StatusChipStatus {
