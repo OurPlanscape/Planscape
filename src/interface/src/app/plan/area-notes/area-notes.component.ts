@@ -4,11 +4,11 @@ import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
 import { Plan } from '@types';
-import { AuthService, Note, NotesService } from '@services';
+import { AuthService, Note, NotesService, NotesModelName } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 
-const NOTES_MODEL = 'planning_area';
+const NOTES_MODEL: NotesModelName = 'planning_area';
 
 @Component({
   selector: 'app-area-notes',

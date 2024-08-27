@@ -4,10 +4,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
 import { Plan } from '@types';
-import { AuthService, Note, NotesService } from '@services';
+import { AuthService, Note, NotesModelName, NotesService } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 
-const NOTES_MODEL = 'planning_area';
+const NOTES_MODEL: NotesModelName = 'planning_area';
 
 @Component({
   selector: 'app-area-scrolling-notes',

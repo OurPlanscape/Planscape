@@ -10,38 +10,28 @@ export interface Note {
   created_at: string;
 }
 
+export type NotesModelName = 'planning_area';
+
 export interface NoteModel {
   name: string;
   urlMultiple: (modelObjectId: number) => string;
   urlSingle: (modelObjectId: number, noteId: number) => string;
 }
 
-const noteModels: NoteModel[] = [
+const noteEndpoints: Record<
+  NotesModelName,
   {
-    name: 'planning_area',
-    urlMultiple: (planningAreaId: number) =>
-      `/planning/planning_area/${planningAreaId}/note`,
-    urlSingle: (planningAreaId: number, noteId: number) =>
-      `/planning/planning_area/${planningAreaId}/note/${noteId}`,
+    multipleUrl: (objectId: number) => string;
+    singleUrl: (objectId: number, noteId: number) => string;
+  }
+> = {
+  planning_area: {
+    multipleUrl: (objectId: number) =>
+      `/planning/planning_area/${objectId}/note`,
+    singleUrl: (objectId: number, noteId: number) =>
+      `/planning/planning_area/${objectId}/note/${noteId}`,
   },
-];
-
-function getMultipleUrl(
-  modelName: string,
-  modelObjectId: number
-): string | undefined {
-  const model = noteModels.find((m) => m.name === modelName);
-  return model ? model.urlMultiple(modelObjectId) : undefined;
-}
-
-function getSingleUrl(
-  modelName: string,
-  modelObjectId: number,
-  noteId: number
-): string | undefined {
-  const model = noteModels.find((m) => m.name === modelName);
-  return model ? model.urlSingle(modelObjectId, noteId) : undefined;
-}
+};
 
 @Injectable({
   providedIn: 'root',
@@ -49,8 +39,9 @@ function getSingleUrl(
 export class NotesService {
   constructor(private http: HttpClient) {}
 
-  getNotes(modelName: string, objectId: number) {
-    const url = getMultipleUrl(modelName, objectId);
+  getNotes(modelName: NotesModelName, objectId: number) {
+    const endpoints = noteEndpoints[modelName];
+    const url = endpoints.multipleUrl(objectId);
     if (!url) {
       throw new Error(`Model ${modelName} not found`);
     }
@@ -59,8 +50,9 @@ export class NotesService {
     });
   }
 
-  addNote(modelName: string, objectId: number, note: string) {
-    const url = getMultipleUrl(modelName, objectId);
+  addNote(modelName: NotesModelName, objectId: number, note: string) {
+    const endpoints = noteEndpoints[modelName];
+    const url = endpoints.multipleUrl(objectId);
     if (!url) {
       throw new Error(`Model ${modelName} not found`);
     }
@@ -73,8 +65,10 @@ export class NotesService {
     );
   }
 
-  deleteNote(modelName: string, objectId: number, noteId: number) {
-    const url = getSingleUrl(modelName, objectId, noteId);
+  deleteNote(modelName: NotesModelName, objectId: number, noteId: number) {
+    const endpoints = noteEndpoints[modelName];
+    const url = endpoints.multipleUrl(objectId);
+
     if (!url) {
       throw new Error(`Model ${modelName} not found`);
     }
