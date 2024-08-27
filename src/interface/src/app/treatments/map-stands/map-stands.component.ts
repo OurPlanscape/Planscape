@@ -32,9 +32,10 @@ export class MapStandsComponent implements OnChanges {
   selectedStands$ = this.mapStandsService.selectedStands$;
   private initialSelectedStands: number[] = [];
 
+  // TODO project_area_aggregate only applies when looking at a specific project area
   readonly tilesUrl =
     environment.martin_server +
-    'project_area_outline,treatment_plan_prescriptions/{z}/{x}/{y}';
+    'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
 
   readonly layers = {
     outline: 'outline-layer',

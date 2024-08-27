@@ -41,7 +41,8 @@ export interface ScenarioResult {
   status: ScenarioResultStatus;
   completed_at: string;
   result: {
-    features: FeatureCollection[];
+    // this is the FeatureCollection[]
+    features: FeatureCollection[]; // TODO this is actually Features[]
     type: string;
   };
 }
