@@ -118,6 +118,7 @@ const routes: Routes = [
         canActivate: [AuthGuard, createFeatureGuard('treatments')],
         resolve: {
           treatmentId: numberResolver('treatmentId', ''),
+          scenarioId: numberResolver('scenarioId', ''),
         },
         loadChildren: () =>
           import('./treatments/treatments.module').then(
