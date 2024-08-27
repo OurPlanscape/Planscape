@@ -4,8 +4,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
 import { Plan } from '@types';
-import { AuthService, Note, PlanNotesService } from '@services';
+import { AuthService, Note, NotesModelName, NotesService } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+
+const NOTES_MODEL: NotesModelName = 'planning_area';
 
 @Component({
   selector: 'app-area-scrolling-notes',
@@ -14,7 +16,7 @@ import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 })
 export class AreaScrollingNotesComponent implements OnInit {
   constructor(
-    private planNotesService: PlanNotesService,
+    private notesService: NotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private authService: AuthService
@@ -29,8 +31,8 @@ export class AreaScrollingNotesComponent implements OnInit {
   }
 
   loadNotes() {
-    this.planNotesService
-      .getNotes(this.plan?.id)
+    this.notesService
+      .getNotes(NOTES_MODEL, this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
 
@@ -43,23 +45,25 @@ export class AreaScrollingNotesComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.planNotesService.deleteNote(this.plan.id, note.id).subscribe({
-            next: () => {
-              this.snackbar.open(
-                `Deleted note`,
-                'Dismiss',
-                SNACK_NOTICE_CONFIG
-              );
-              this.loadNotes();
-            },
-            error: (err) => {
-              this.snackbar.open(
-                `Error: ${err.statusText}`,
-                'Dismiss',
-                SNACK_ERROR_CONFIG
-              );
-            },
-          });
+          this.notesService
+            .deleteNote(NOTES_MODEL, this.plan.id, note.id)
+            .subscribe({
+              next: () => {
+                this.snackbar.open(
+                  `Deleted note`,
+                  'Dismiss',
+                  SNACK_NOTICE_CONFIG
+                );
+                this.loadNotes();
+              },
+              error: (err) => {
+                this.snackbar.open(
+                  `Error: ${err.statusText}`,
+                  'Dismiss',
+                  SNACK_ERROR_CONFIG
+                );
+              },
+            });
         }
       });
   }
@@ -67,8 +71,8 @@ export class AreaScrollingNotesComponent implements OnInit {
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
-      this.planNotesService
-        .addNote(this.plan.id, this.note)
+      this.notesService
+        .addNote(NOTES_MODEL, this.plan.id, this.note)
         .subscribe((note) => {
           // add the note
           this.notes.unshift(note);
