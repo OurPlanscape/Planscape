@@ -10,28 +10,63 @@ export interface Note {
   created_at: string;
 }
 
+export interface NoteModel {
+  name: string;
+  urlMultiple: (modelObjectId: number) => string;
+  urlSingle: (modelObjectId: number, noteId: number) => string;
+}
+
+const noteModels: NoteModel[] = [
+  {
+    name: 'planning_area',
+    urlMultiple: (planningAreaId: number) =>
+      `/planning/planning_area/${planningAreaId}/note`,
+    urlSingle: (planningAreaId: number, noteId: number) =>
+      `/planning/planning_area/${planningAreaId}/note/${noteId}`,
+  },
+];
+
+function getMultipleUrl(
+  modelName: string,
+  modelObjectId: number
+): string | undefined {
+  const model = noteModels.find((m) => m.name === modelName);
+  return model ? model.urlMultiple(modelObjectId) : undefined;
+}
+
+function getSingleUrl(
+  modelName: string,
+  modelObjectId: number,
+  noteId: number
+): string | undefined {
+  const model = noteModels.find((m) => m.name === modelName);
+  return model ? model.urlSingle(modelObjectId, noteId) : undefined;
+}
+
 @Injectable({
   providedIn: 'root',
 })
-export class PlanNotesService {
+export class ModelNotesService {
   constructor(private http: HttpClient) {}
+  model: string = 'planning_area';
 
-  getNotes(planningAreaId: number) {
-    return this.http.get<Note[]>(
-      environment.backend_endpoint.concat(
-        `/planning/planning_area/${planningAreaId}/note`
-      ),
-      {
-        withCredentials: true,
-      }
-    );
+  getNotes(modelName: string, objectId: number) {
+    const url = getMultipleUrl(modelName, objectId);
+    if (!url) {
+      throw new Error(`Model ${modelName} not found`);
+    }
+    return this.http.get<Note[]>(environment.backend_endpoint.concat(url), {
+      withCredentials: true,
+    });
   }
 
-  addNote(planningAreaId: number, note: string) {
+  addNote(modelName: string, objectId: number, note: string) {
+    const url = getMultipleUrl(modelName, objectId);
+    if (!url) {
+      throw new Error(`Model ${modelName} not found`);
+    }
     return this.http.post<Note>(
-      environment.backend_endpoint.concat(
-        `/planning/planning_area/${planningAreaId}/note`
-      ),
+      environment.backend_endpoint.concat(url),
       { content: note },
       {
         withCredentials: true,
@@ -39,14 +74,13 @@ export class PlanNotesService {
     );
   }
 
-  deleteNote(planningAreaId: number, noteId: number) {
-    return this.http.delete<Note>(
-      environment.backend_endpoint.concat(
-        `/planning/planning_area/${planningAreaId}/note/${noteId}`
-      ),
-      {
-        withCredentials: true,
-      }
-    );
+  deleteNote(modelName: string, objectId: number, noteId: number) {
+    const url = getSingleUrl(modelName, objectId, noteId);
+    if (!url) {
+      throw new Error(`Model ${modelName} not found`);
+    }
+    return this.http.delete<Note>(environment.backend_endpoint.concat(url), {
+      withCredentials: true,
+    });
   }
 }

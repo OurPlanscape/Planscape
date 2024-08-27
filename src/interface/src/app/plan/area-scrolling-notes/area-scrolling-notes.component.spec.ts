@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AuthService, PlanNotesService } from '@services';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
-import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
+import { AuthService, ModelNotesService } from '@services';
+import { MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { AreaScrollingNotesComponent } from './area-scrolling-notes.component';
 import { MockProvider } from 'ng-mocks';
@@ -21,7 +21,7 @@ describe('AreaScrollingNotesComponent', () => {
           provide: AuthService,
           useValue: fakeAuthService,
         },
-        MockProvider(PlanNotesService, {
+        MockProvider(ModelNotesService, {
           getNotes: () => of([]),
         }),
       ],
