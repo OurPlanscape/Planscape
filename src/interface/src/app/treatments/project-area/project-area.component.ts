@@ -9,6 +9,7 @@ import { PrescriptionActionsComponent } from '../prescription-actions/prescripti
 import { MatDividerModule } from '@angular/material/divider';
 import { NotesSidebarComponent } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { NotesModelName } from '@services';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @Component({
   selector: 'app-project-area',
@@ -21,6 +22,7 @@ import { NotesModelName } from '@services';
     PrescriptionActionsComponent,
     MatDividerModule,
     NotesSidebarComponent,
+    MatTabsModule,
   ],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',

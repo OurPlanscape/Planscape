@@ -69,10 +69,13 @@ textarea {
   overflow: hidden;
 }
 
-.delete-note-menu {
-  width: 100px;
+.more-menu-button {
+  background: none;
+  border: none;
 }
-
+.more-menu-button:hover {
+  background: $color-light-gray;
+}
 .delete-note-button {
   .delete-icon {
     color: $color-error;
@@ -82,6 +85,10 @@ textarea {
 
   color: $color-error;
   @include regular-paragraph();
+}
+
+.delete-note-menu {
+  width: 100px;
 }
 
 .notes-header {

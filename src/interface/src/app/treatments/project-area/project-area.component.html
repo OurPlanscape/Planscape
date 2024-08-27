@@ -1,19 +1,26 @@
-<p>Project Area</p>
-
 <div class="root-container">
   <ng-container>
     <div class="summary-panel">
       <div>
-        <sg-notes-sidebar
-          [objectId]="projectAreaId"
-          [notesModel]="notesModel"></sg-notes-sidebar>
+        <mat-tab-group
+          mat-align-tabs="start"
+          mat-stretch-tabs
+          disablePagination="true">
+          <mat-tab label="TREATMENTS">
+            <div>Hello, Treatments!</div>
+          </mat-tab>
+          <mat-tab label="NOTES">
+            <sg-notes-sidebar
+              [objectId]="projectAreaId"
+              [notesModel]="notesModel"></sg-notes-sidebar>
+          </mat-tab>
+        </mat-tab-group>
       </div>
     </div>
 
     <mat-divider [vertical]="true"></mat-divider>
     <div class="content-area">
       <ng-container>
-        <div class="content-panel"></div>
         <div class="map-container">
           <app-prescription-actions></app-prescription-actions>
           <app-treatment-map
