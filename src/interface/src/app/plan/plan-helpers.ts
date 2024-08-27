@@ -11,8 +11,6 @@ import {
 } from './project-areas/project-areas.component';
 import { DEFAULT_AREA_COLOR, PROJECT_AREA_COLORS } from '@shared';
 
-export const NOTE_SAVE_INTERVAL = 5000;
-
 export const POLLING_INTERVAL = 3000;
 
 // sizes in hectares
@@ -25,10 +23,10 @@ export const STAND_SIZES: Record<string, number> = {
 export function parseResultsToProjectAreas(
   results: ScenarioResult
 ): ProjectAreaReport[] {
-  return results.result.features.map((featureCollection, i) => {
+  return results.result.features.map((featureCollection) => {
     const props = featureCollection.properties;
     return {
-      id: i + 1,
+      rank: props.treatment_rank,
       acres: props.area_acres,
       percentTotal: props.pct_area,
       estimatedCost: props.total_cost,
@@ -55,15 +53,11 @@ export function parseResultsToTotals(
   );
 }
 
-/**
- *
- * @param position rank position (1 based index) of scenario projection
- */
-export function getColorForProjectPosition(position: number) {
-  if (position < 1) {
+export function getColorForProjectPosition(rank: number) {
+  if (rank < 1) {
     return DEFAULT_AREA_COLOR;
   }
-  return PROJECT_AREA_COLORS[(position - 1) % PROJECT_AREA_COLORS.length];
+  return PROJECT_AREA_COLORS[(rank - 1) % PROJECT_AREA_COLORS.length];
 }
 
 export function findQuestionOnTreatmentGoalsConfig(
