@@ -6,7 +6,7 @@ import {
 import { PROJECT_AREA_COLORS } from '@shared';
 
 export interface ProjectAreaReport {
-  id: number;
+  rank: number;
   acres: number;
   percentTotal: number;
   estimatedCost: number;
