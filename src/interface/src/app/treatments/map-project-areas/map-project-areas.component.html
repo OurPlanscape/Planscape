@@ -1,0 +1,37 @@
+<mgl-vector-source
+  id="scenarioProjectAreas"
+  [tiles]="[vectorLayerUrl]"></mgl-vector-source>
+
+<mgl-layer
+  id="map-project-areas-line"
+  type="line"
+  source="scenarioProjectAreas"
+  [sourceLayer]="layerName"
+  [paint]="{
+    'line-color': '#333',
+    'line-width': 2
+  }"></mgl-layer>
+
+<mgl-layer
+  id="map-project-areas-fill"
+  type="fill"
+  source="scenarioProjectAreas"
+  [sourceLayer]="layerName"
+  [paint]="paint"></mgl-layer>
+
+<mgl-layer
+  id="map-project-areas-labels"
+  type="symbol"
+  source="scenarioProjectAreas"
+  [sourceLayer]="layerName"
+  [layout]="{
+    'text-field': ['get', 'rank'],
+    'text-size': 14,
+    'text-anchor': 'center',
+    'text-justify': 'center'
+  }"
+  [paint]="{
+    'text-color': '#000',
+    'text-halo-color': '#fff',
+    'text-halo-width': 2
+  }"></mgl-layer>
