@@ -32,7 +32,10 @@
     </div>
     <div *appFeatureFlag="'new_planning_area'">
       <div class="plan-summary-panel full-height" *ngIf="showOverview$ | async">
-        <app-area-scrolling-notes [plan]="plan"></app-area-scrolling-notes>
+        <!-- <app-area-scrolling-notes [plan]="plan"></app-area-scrolling-notes> -->
+        <sg-notes-sidebar
+          [objectId]="plan.id"
+          [notesModel]="notesModel"></sg-notes-sidebar>
       </div>
     </div>
 

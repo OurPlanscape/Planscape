@@ -8,9 +8,10 @@ export interface Note {
   user_name: string;
   content: string;
   created_at: string;
+  can_delete?: boolean;
 }
 
-export type NotesModelName = 'planning_area';
+export type NotesModelName = 'planning_area' | 'project_area';
 
 export interface NoteModel {
   name: string;
@@ -26,6 +27,12 @@ const noteEndpoints: Record<
   }
 > = {
   planning_area: {
+    multipleUrl: (objectId: number) =>
+      `/planning/planning_area/${objectId}/note`,
+    singleUrl: (objectId: number, noteId: number) =>
+      `/planning/planning_area/${objectId}/note/${noteId}`,
+  },
+  project_area: {
     multipleUrl: (objectId: number) =>
       `/planning/planning_area/${objectId}/note`,
     singleUrl: (objectId: number, noteId: number) =>

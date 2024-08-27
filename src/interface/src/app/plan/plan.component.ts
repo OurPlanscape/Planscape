@@ -19,7 +19,7 @@ import {
   take,
   takeUntil,
 } from 'rxjs';
-
+import { NotesModelName } from '@services';
 import { Plan, User } from '@types';
 import { AuthService, PlanStateService, ScenarioService } from '@services';
 import { Breadcrumb } from '@shared';
@@ -32,6 +32,7 @@ import { HomeParametersStorageService } from '@services/local-storage.service';
   styleUrls: ['./plan.component.scss'],
 })
 export class PlanComponent implements OnInit, OnDestroy {
+  notesModel: NotesModelName = 'planning_area';
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
   planOwner$ = new Observable<User | null>();
 

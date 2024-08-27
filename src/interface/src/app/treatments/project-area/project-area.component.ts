@@ -7,6 +7,8 @@ import { ActivatedRoute } from '@angular/router';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 import { MatDividerModule } from '@angular/material/divider';
+import { NotesSidebarComponent } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
+import { NotesModelName } from '@services';
 
 @Component({
   selector: 'app-project-area',
@@ -18,6 +20,7 @@ import { MatDividerModule } from '@angular/material/divider';
     AsyncPipe,
     PrescriptionActionsComponent,
     MatDividerModule,
+    NotesSidebarComponent,
   ],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
@@ -27,6 +30,7 @@ export class ProjectAreaComponent implements OnInit {
   projectAreaId: number = this.route.snapshot.data['projectAreaId'];
 
   treatmentPlan: TreatmentPlan | null = null;
+  notesModel: NotesModelName = 'project_area';
 
   constructor(
     private treatmentsService: TreatmentsService,

@@ -3,7 +3,11 @@
 <div class="root-container">
   <ng-container>
     <div class="summary-panel">
-      <div>NOTES NOTES NOTES</div>
+      <div>
+        <sg-notes-sidebar
+          [objectId]="projectAreaId"
+          [notesModel]="notesModel"></sg-notes-sidebar>
+      </div>
     </div>
 
     <mat-divider [vertical]="true"></mat-divider>

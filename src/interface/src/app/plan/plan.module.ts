@@ -43,6 +43,7 @@ import { ButtonComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
 import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/upload-project-areas-modal.component';
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
+import { NotesSidebarComponent } from '../../styleguide/notes-sidebar/notes-sidebar.component';
 import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
 import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
 
@@ -100,6 +101,7 @@ import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatm
     UploadProjectAreasModalComponent,
     PlanningAreaTitlebarMenuComponent,
     TreatmentCardComponent,
+    NotesSidebarComponent,
   ],
 })
 export class PlanModule {}
