@@ -20,6 +20,7 @@
 //  you can delete this line and instead use:
 //    `@include mat.legacy-typography-hierarchy(mat.define-legacy-typography-config());`
 @include mat.all-legacy-component-typographies($planscape-typography);
+@include mat.all-component-typographies($planscape-typography);
 @include mat.legacy-core();
 
 // Include theme styles for core and each component used in your app.

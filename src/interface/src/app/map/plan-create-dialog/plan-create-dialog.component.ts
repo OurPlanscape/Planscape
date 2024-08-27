@@ -1,7 +1,3 @@
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Component, Inject } from '@angular/core';
 import { PlanService, SessionService } from '@services';
@@ -11,6 +7,7 @@ import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack
 import { Region, regionToString } from '@types';
 import { isValidTotalArea } from '../../plan/plan-helpers';
 import { Geometry } from 'geojson';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 export interface PlanCreateDialogData {
   shape: Geometry;

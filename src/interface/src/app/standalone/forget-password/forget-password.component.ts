@@ -8,7 +8,6 @@ import {
 import { Router } from '@angular/router';
 
 import { AuthService } from '@services';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { ResetPasswordDialogComponent } from '../reset-password-dialog/reset_password_dialog.component';
 
 import {
@@ -20,6 +19,7 @@ import { FormMessageType } from '@types';
 import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AboutComponent } from '../about/about.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-forget-password',

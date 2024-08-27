@@ -1,0 +1,9 @@
+@import "mixins";
+
+:host {
+  @include legacy-dialog-margin();
+}
+
+.mdc-dialog__content {
+  padding: 0 0 32px;
+}

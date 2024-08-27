@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-delete-note-dialog',
@@ -8,6 +8,7 @@ import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dia
 })
 export class DeleteNoteDialogComponent {
   disableDeleteButton = false;
+
   constructor(private dialogRef: MatDialogRef<DeleteNoteDialogComponent>) {}
 
   cancel(): void {

@@ -2,10 +2,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DeleteAccountComponent } from './delete-account.component';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+
 import { MockProvider } from 'ng-mocks';
 import { AuthService } from '@services';
 import { Router } from '@angular/router';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('DeleteAccountComponent', () => {
   let component: DeleteAccountComponent;

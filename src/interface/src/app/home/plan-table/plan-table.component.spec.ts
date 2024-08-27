@@ -6,13 +6,14 @@ import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dia
 import { FeaturesModule } from '../../features/features.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { MOCK_PLAN } from '@services/mocks';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
+
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MockComponent } from 'ng-mocks';
 import { Plan } from '@types';
 import { PlanTableComponent } from './plan-table.component';
 import { Router } from '@angular/router';
 import { SectionLoaderComponent } from '@shared';
+import { MatDialog } from '@angular/material/dialog';
 
 describe('PlanTableComponent', () => {
   const fakePlan1: Plan = MOCK_PLAN;
