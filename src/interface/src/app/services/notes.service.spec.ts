@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { NotesService } from './plan-notes.service';
+import { NotesService } from './notes.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('NotesService', () => {
