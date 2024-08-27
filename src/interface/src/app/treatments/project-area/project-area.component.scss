@@ -1,0 +1,36 @@
+
+
+
+.summary-panel {
+    background-color: white;
+    box-sizing: border-box;
+    display: block;
+    width: 300px;
+    height: 100%;
+
+    ::ng-deep .mat-tab-body-wrapper {
+      height: 100%;
+    }
+
+  }
+
+  .content-area {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+  }
+  
+
+  .content-panel {
+    overflow: auto;
+    width: 45%;
+    min-width: 450px;
+    max-width: 800px;
+  }
+
+  .plan-map-container {
+    height: 100%;
+    flex: 1;
+    z-index: 1;
+    position: relative;
+  }

@@ -6,6 +6,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute } from '@angular/router';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
+import { MatDividerModule } from '@angular/material/divider';
 
 @Component({
   selector: 'app-project-area',
@@ -16,6 +17,7 @@ import { PrescriptionActionsComponent } from '../prescription-actions/prescripti
     JsonPipe,
     AsyncPipe,
     PrescriptionActionsComponent,
+    MatDividerModule,
   ],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',

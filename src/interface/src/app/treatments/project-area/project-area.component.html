@@ -1,5 +1,22 @@
 <p>Project Area</p>
-<app-prescription-actions></app-prescription-actions>
-<app-treatment-map
-  [treatmentPlanId]="treatmentPlanId"
-  [projectAreaId]="projectAreaId"></app-treatment-map>
+
+<div class="root-container">
+  <ng-container>
+    <div class="summary-panel">
+      <div>NOTES NOTES NOTES</div>
+    </div>
+
+    <mat-divider [vertical]="true"></mat-divider>
+    <div class="content-area">
+      <ng-container>
+        <div class="content-panel"></div>
+        <div class="map-container">
+          <app-prescription-actions></app-prescription-actions>
+          <app-treatment-map
+            [treatmentPlanId]="treatmentPlanId"
+            [projectAreaId]="projectAreaId"></app-treatment-map>
+        </div>
+      </ng-container>
+    </div>
+  </ng-container>
+</div>
