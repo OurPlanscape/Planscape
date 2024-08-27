@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AuthService, ModelNotesService } from '@services';
+import { AuthService, NotesService } from '@services';
 
 import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
 
@@ -22,7 +22,7 @@ describe('AreaNotesComponent', () => {
           provide: AuthService,
           useValue: fakeAuthService,
         },
-        MockProvider(ModelNotesService, {
+        MockProvider(NotesService, {
           getNotes: () => of([]),
         }),
       ],

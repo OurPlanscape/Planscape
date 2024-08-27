@@ -46,9 +46,8 @@ function getSingleUrl(
 @Injectable({
   providedIn: 'root',
 })
-export class ModelNotesService {
+export class NotesService {
   constructor(private http: HttpClient) {}
-  model: string = 'planning_area';
 
   getNotes(modelName: string, objectId: number) {
     const url = getMultipleUrl(modelName, objectId);

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AuthService, ModelNotesService } from '@services';
+import { AuthService, NotesService } from '@services';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
@@ -21,7 +21,7 @@ describe('AreaScrollingNotesComponent', () => {
           provide: AuthService,
           useValue: fakeAuthService,
         },
-        MockProvider(ModelNotesService, {
+        MockProvider(NotesService, {
           getNotes: () => of([]),
         }),
       ],

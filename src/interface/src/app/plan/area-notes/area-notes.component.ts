@@ -4,7 +4,7 @@ import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
 import { Plan } from '@types';
-import { AuthService, Note, ModelNotesService } from '@services';
+import { AuthService, Note, NotesService } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -17,7 +17,7 @@ const NOTES_MODEL = 'planning_area';
 })
 export class AreaNotesComponent implements OnInit {
   constructor(
-    private modelNotesService: ModelNotesService,
+    private notesService: NotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private authService: AuthService
@@ -33,7 +33,7 @@ export class AreaNotesComponent implements OnInit {
   }
 
   loadNotes() {
-    this.modelNotesService
+    this.notesService
       .getNotes(NOTES_MODEL, this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
@@ -45,7 +45,7 @@ export class AreaNotesComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.modelNotesService
+          this.notesService
             .deleteNote(NOTES_MODEL, this.plan.id, note.id)
             .subscribe({
               next: () => {
@@ -71,7 +71,7 @@ export class AreaNotesComponent implements OnInit {
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
-      this.modelNotesService
+      this.notesService
         .addNote(NOTES_MODEL, this.plan.id, this.note)
         .subscribe((note) => {
           // add the note
