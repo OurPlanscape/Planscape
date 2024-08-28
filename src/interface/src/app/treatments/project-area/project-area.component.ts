@@ -10,11 +10,13 @@ import { MatDividerModule } from '@angular/material/divider';
 import { NotesSidebarComponent } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { NotesModelName } from '@services';
 import { MatTabsModule } from '@angular/material/tabs';
+import { SharedModule } from '@shared';
 
 @Component({
   selector: 'app-project-area',
   standalone: true,
   imports: [
+    SharedModule,
     TreatmentMapComponent,
     TreatmentSummaryComponent,
     JsonPipe,

@@ -7,12 +7,12 @@
   overflow: hidden;
   height: 100%;
 
-  ::ng-deep .mat-form-field-wrapper {
-    margin: 0;
-    padding: 8px;
-  }
-
   ::ng-deep {
+    .mat-form-field-wrapper {
+      margin: 0;
+      padding: 8px;
+    }
+
     .mat-form-field-outline-start,
     .mat-form-field-outline-end {
       background-color: $color-light-gray;
@@ -23,6 +23,10 @@
       border-top: 0;
       top: -2px;
       padding-top: 21px;
+    }
+
+    .mat-mdc-form-field-icon-suffix {
+      padding: 0 8px 0 8px;
     }
   }
 
@@ -99,20 +103,30 @@ textarea {
   border-bottom: 1px $color-soft-gray solid;
 }
 
-.note-right {
-  width: 28px;
-}
-
-.add-note-field {
-  height: 70px;
-  flex-shrink: 0;
-  border-top: 1px $color-soft-gray solid;
-}
-
 .note-enclosed {
   padding: 16px;
   color: $color-black;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+}
+
+.note-right {
+  width: 28px;
+}
+
+.add-note-box {
+  border-top: 1px $color-soft-gray solid;
+  height: 70px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 10px;
+}
+
+
+.add-note-field {
+  flex-shrink: 0;
+  height: 50px;
+  width: 280px;
 }

@@ -74,7 +74,7 @@ export class NotesService {
 
   deleteNote(modelName: NotesModelName, objectId: number, noteId: number) {
     const endpoints = noteEndpoints[modelName];
-    const url = endpoints.multipleUrl(objectId);
+    const url = endpoints.singleUrl(objectId, noteId);
 
     if (!url) {
       throw new Error(`Model ${modelName} not found`);

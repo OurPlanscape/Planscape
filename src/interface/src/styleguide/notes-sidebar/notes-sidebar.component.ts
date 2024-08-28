@@ -35,7 +35,7 @@ export class NotesSidebarComponent implements OnInit {
     private snackbar: MatSnackBar,
     private authService: AuthService
   ) {}
-
+  @Input() showHeader = false;
   @Input() notesModel!: NotesModelName;
   @Input() objectId!: number;
   notes: Note[] = [];

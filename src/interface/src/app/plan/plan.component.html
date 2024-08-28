@@ -34,6 +34,7 @@
       <div class="plan-summary-panel full-height" *ngIf="showOverview$ | async">
         <!-- <app-area-scrolling-notes [plan]="plan"></app-area-scrolling-notes> -->
         <sg-notes-sidebar
+          [showHeader]="true"
           [objectId]="plan.id"
           [notesModel]="notesModel"></sg-notes-sidebar>
       </div>

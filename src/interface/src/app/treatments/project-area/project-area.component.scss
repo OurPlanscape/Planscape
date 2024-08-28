@@ -9,34 +9,36 @@
 }
 
 .summary-panel {
-    box-sizing: border-box;
-    display: block;
-    width: 300px;
+  box-sizing: border-box;
+  display: block;
+  width: 300px;
+  height: 100%;
+
+  ::ng-deep .mat-tab-body-wrapper {
     height: 100%;
-    
-    ::ng-deep .mat-tab-body-wrapper {
-      height: 100%;
-    }
-
   }
+}
 
-  .content-area {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
-  }
-  
+.summary-tab-group {
+  height: 100%;
+}
 
-  .content-panel {
-    overflow: auto;
-    width: 45%;
-    min-width: 450px;
-    max-width: 800px;
-  }
+.content-area {
+  display: flex;
+  flex: 1;
+  flex-direction: row;
+}
 
-  .map-container {
-    height: 100%;
-    flex: 1;
-    z-index: 1;
-    position: relative;
-  }
+.content-panel {
+  overflow: auto;
+  width: 45%;
+  min-width: 450px;
+  max-width: 800px;
+}
+
+.map-container {
+  height: 100%;
+  flex: 1;
+  z-index: 1;
+  position: relative;
+}
