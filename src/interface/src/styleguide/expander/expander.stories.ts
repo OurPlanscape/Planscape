@@ -14,7 +14,7 @@ const meta: Meta<ExpanderComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<sg-expander ${argsToTemplate(args)}></sg-expander>`,
+    template: ` <div style="width:400px;background-color:light-gray;"><sg-expander ${argsToTemplate(args)}></sg-expander></div>`,
   }),
 };
 

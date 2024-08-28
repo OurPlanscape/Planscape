@@ -1,12 +1,29 @@
 @import 'mixins';
 @import 'colors';
 
-.header-content {
-  padding: 0 20px 0 8px;
-}
-
-::ng-deep .sg-expander-panel .mat-expansion-panel-header {
+:host {
+  --mat-expansion-header-hover-state-layer-color: $color-white;
+  --mat-expansion-header-focus-state-layer-color: $color-white;
   --mat-expansion-header-expanded-state-height: 48px;
+  --mat-expansion-header-hover-state-layer-color: $color-white;
+
+  ::ng-deep .mat-expansion-panel {
+    box-shadow: none;
+    border: 1px $color-text-gray solid;
+  }
+  ::ng-deep .mat-expansion-panel:not([class*='mat-elevation-z']) {
+    box-shadow: none;
+    border: 1px $color-text-gray solid;
+  }
+  ::ng-deep .mat-expansion-panel:hover {
+    border: 1px $color-original-purple solid;
+    background-color: $color-white;
+  }
+  ::ng-deep .sg-expander-panel.selected {
+    border: 1px $color-original-purple solid;
+    background-color: $color-soft-purple;
+    --mat-expansion-container-background-color: $color-soft-purple;
+  }
 }
 
 ::ng-deep .sg-expander-panel .mat-expansion-panel-header .mat-content {
@@ -18,8 +35,22 @@
   width: 100%;
 }
 
-::ng-deep .sg-expander-panel .mat-expansion-panel-header .mat-expansion-indicator {
+::ng-deep
+  .sg-expander-panel
+  .mat-expansion-panel-header
+  .mat-expansion-indicator {
   padding-bottom: 6px;
+}
+
+::ng-deep .sg-expander-panel .mat-expansion-panel-body {
+  padding: 0 24px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.header-content {
+  padding: 0 20px 0 8px;
 }
 
 .icon-and-title {
@@ -34,13 +65,13 @@
 .right-content {
   @include xs-label();
   color: $color-md-gray;
-  width: 60px;
+  width: 100px;
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  padding-right: 8px;
+  justify-content: right;
+  gap: 8px;
+  padding-right: 18px;
 }
 
 .treatment-detail {
@@ -50,20 +81,27 @@
   flex-direction: row;
   justify-content: flex-start;
   gap: 4px;
-  padding: 0 48px 0 48px;
-
+  padding: 0 24px 0 24px;
 }
 
 .treatment-detail-name {
   @include xs-label();
-
+  font-weight: 600;
+  line-height: 14px;
+  text-align: left;
 }
 
 .treatment-detail-value {
   @include small-paragraph();
 }
 
+.stand-count {
+  color: $color-dark-gray;
+}
 
+.treatment-hexagon {
+  color: $color-dark-gray;
+}
 
 .rx-detail {
   height: 22px;
@@ -72,14 +110,9 @@
   flex-direction: row;
   justify-content: flex-start;
   gap: 4px;
-  padding: 0 48px 0 48px;
-
+  padding: 0 0 0 24px;
 }
 
 .rx-detail-name {
   @include xs-label();
-
 }
-
-
-
