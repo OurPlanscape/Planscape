@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
+import { NgForOf } from '@angular/common';
 import {
   baseLayerStyles,
   BaseLayerType,
-  MapConfigState,
-} from '../treatment-map/map-config.state';
-import { NgForOf } from '@angular/common';
+  DEFAULT_BASE_MAP,
+} from '../treatment-map/map-base-layers';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-map-base-layer',
@@ -15,6 +16,7 @@ import { NgForOf } from '@angular/common';
 })
 export class MapBaseLayerComponent {
   baseLayers = Object.keys(baseLayerStyles) as BaseLayerType[];
+  readonly defaultLayer = DEFAULT_BASE_MAP;
 
   constructor(private mapConfigState: MapConfigState) {}
 
