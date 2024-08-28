@@ -324,7 +324,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     this.projectAreasLayer = L.geoJSON(shapes, {
       style: (shape) => ({
         color: '#000',
-        fillColor: getColorForProjectPosition(shape?.properties.proj_id),
+        fillColor: getColorForProjectPosition(shape?.properties.treatment_rank),
         fillOpacity: 0.4,
         weight: 1.5,
       }),
@@ -333,7 +333,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         if (feature.geometry.type === 'Polygon') {
           center = polylabel(feature.geometry.coordinates, 0.0005);
           addTooltipAtCenter(
-            feature.properties.proj_id.toString(),
+            feature.properties.treatment_rank.toString(),
             center,
             this.map
           );
@@ -341,7 +341,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
           feature.geometry.coordinates.forEach((positions) => {
             center = polylabel(positions, 0.005);
             addTooltipAtCenter(
-              feature.properties.proj_id.toString(),
+              feature.properties.treatment_rank.toString(),
               center,
               this.map
             );
