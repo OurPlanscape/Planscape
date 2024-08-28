@@ -7,6 +7,7 @@ from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
     ProjectArea,
+    ProjectAreaNote,
     Scenario,
     ScenarioResult,
     SharedLink,
@@ -374,3 +375,17 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
             "data",
             "geometry",
         )
+
+
+class ProjectAreaNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "content",
+            "project_area",
+            "user_id",
+            "user_name",
+        )
+        model = ProjectAreaNote

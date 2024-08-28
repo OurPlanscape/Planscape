@@ -315,6 +315,35 @@ class ProjectArea(
         ]
 
 
+class ProjectAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    project_area = models.ForeignKey(
+        ProjectArea,
+        related_name="project_area",
+        on_delete=models.CASCADE,
+    )
+    user = models.ForeignKey(
+        User,
+        related_name="projectarea_notes",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    content = models.TextField(null=True)
+
+    def user_name(self):
+        return self.user.get_full_name()
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "user",
+                ]
+            )
+        ]
+        ordering = ["user", "-created_at"]
+
+
 PlanningAreaType = Type[PlanningArea]
 PlanningAreaNoteType = Type[PlanningAreaNote]
 ScenarioType = Type[Scenario]

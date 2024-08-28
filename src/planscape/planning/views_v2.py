@@ -12,17 +12,18 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioOrderingFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario
+from planning.models import PlanningArea, ProjectArea, ProjectAreaNote, Scenario
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     CreatePlanningAreaSerializer,
     CreateScenarioSerializer,
-    PlanningAreaSerializer,
+    ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    PlanningAreaSerializer,
+    ProjectAreaNoteSerializer,
     ProjectAreaSerializer,
     ScenarioSerializer,
-    ListCreatorSerializer,
 )
 from planning.services import (
     create_planning_area,
@@ -187,3 +188,15 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_classes = {
         "retrieve": ProjectAreaSerializer,
     }
+
+
+class ProjectAreaNotesViewSet(
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = ProjectAreaNote.objects.all()
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    serializer_class = ProjectAreaNoteSerializer

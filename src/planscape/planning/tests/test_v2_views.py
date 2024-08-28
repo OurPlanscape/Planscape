@@ -3,15 +3,18 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
+from rest_framework import status
+
 from collaboration.tests.helpers import create_collaborator_record
 from collaboration.models import Permissions, Role
-from planning.models import PlanningArea, RegionChoices
-from planning.tests.factories import PlanningAreaFactory
+from planning.models import PlanningArea, RegionChoices, ProjectAreaNote
+from planning.tests.factories import PlanningAreaFactory, ProjectAreaFactory
 from planning.tests.helpers import (
     _create_scenario,
     reset_permissions,
 )
 from planscape.tests.factories import UserFactory
+from impacts.tests.factories import TreatmentPlanFactory
 
 
 class CreatorsTest(APITransactionTestCase):
@@ -832,3 +835,71 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertCountEqual(
             the_area["permissions"], ["view_planningarea", "view_scenario"]
         )
+
+
+class ProjectAreaNoteTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.other_user = UserFactory()
+        self.treatment_plan = TreatmentPlanFactory.create()
+        self.project_area = ProjectAreaFactory.create(
+            created_by_id=self.user.pk, scenario=self.treatment_plan.scenario
+        )
+
+    def test_create_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = json.dumps(
+            {
+                "content": "Here is a note about a project area.",
+                "project_area": self.project_area.pk,
+                "user": self.user,
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "api:planning:project-area-notes-list",
+            ),
+            new_note,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 201)
+        created_note = response.json()
+        self.assertEqual(
+            created_note["content"], "Here is a note about a project area."
+        )
+
+    def test_get_notes(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse("api:planning:project-area-notes-list"),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+    def test_delete_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:planning:project-area-notes-detail",
+                kwargs={"pk": new_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_nonexistent_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:planning:project-area-notes-detail",
+                kwargs={"pk": (new_note.pk + 1)},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
