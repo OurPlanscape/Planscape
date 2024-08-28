@@ -36,6 +36,48 @@
   }
 }
 
+::ng-deep .summary-panel .mat-mdc-tab-body-wrapper {
+  height: 100%;
+}
+
+.no-notes-view {
+  overflow-y: auto;
+  flex: 1;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-notes-blurb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  gap: 8px;
+}
+
+.add-notes-icon {
+  width: 30px;
+  height: 30px;
+  font-size: 30px;
+  color: $color-text-gray;
+}
+
+.no-notes-header {
+  @include xs-label();
+  color: $color-black;
+  text-align: center;
+}
+
+.no-notes-text {
+  @include small-paragraph();
+  color: $color-md-gray;
+  text-align: center;
+}
+
 .notes {
   overflow-y: auto;
   flex: 1;
@@ -123,7 +165,6 @@ textarea {
   justify-content: center;
   padding-top: 10px;
 }
-
 
 .add-note-field {
   flex-shrink: 0;

@@ -38,6 +38,9 @@ export class NotesSidebarComponent implements OnInit {
   @Input() showHeader = false;
   @Input() notesModel!: NotesModelName;
   @Input() objectId!: number;
+  @Input() noNotesTitleText = 'No Notes Yet';
+  @Input() noNotesDetailText =
+    'Start adding notes to help your team learn more about this section.';
   notes: Note[] = [];
   note = '';
 
@@ -98,6 +101,10 @@ export class NotesSidebarComponent implements OnInit {
         });
     }
     event.preventDefault();
+  }
+
+  hasNotes(): boolean {
+    return this.notes.length > 0;
   }
 
   canDelete(note: Note) {

@@ -1,5 +1,16 @@
 <div class="notes-header" *ngIf="showHeader">Notes</div>
-<div class="notes">
+<div *ngIf="!hasNotes()" class="no-notes-view">
+  <div class="no-notes-blurb">
+    <mat-icon class="add-notes-icon material-symbols-outlined"
+      >add_notes</mat-icon
+    >
+    <div class="no-notes-header">{{ noNotesTitleText }}</div>
+    <div class="no-notes-text">
+      {{ noNotesDetailText }}
+    </div>
+  </div>
+</div>
+<div class="notes" *ngIf="hasNotes()">
   <div *ngFor="let note of notes" class="note-enclosed">
     <div class="note-left">
       <div class="note-head">
