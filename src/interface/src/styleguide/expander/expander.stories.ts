@@ -32,12 +32,7 @@ type Story = StoryObj<ExpanderComponent>;
 
 export const Default: Story = {
   args: {
-    title: 'Explicit Title',
-    treatmentType: 'No Treatment',
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
+    treatmentType: 'Moderate thin & Pile burn',
     standCount: '11',
   },
 };
@@ -93,5 +88,13 @@ export const TreatmentMasticationAndFireSelected: Story = {
     rxDetails: [],
     standCount: '5',
     selected: true,
+  },
+};
+
+export const OverriddenTitle: Story = {
+  args: {
+    title: 'Special Title',
+    treatmentType: 'Moderate thin & Pile burn',
+    standCount: '11',
   },
 };
