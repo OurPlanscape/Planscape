@@ -1,4 +1,5 @@
 <mat-expansion-panel
+  [ngClass]="{ selected: isSelected }"
   (opened)="toggleState()"
   (closed)="toggleState()"
   class="sg-expander-panel">
@@ -23,6 +24,6 @@
 
   <div class="treatment-detail">
     <span class="treatment-detail-name">Total:</span
-    ><span class="treatment-detail-value">100 acres</span>
+    ><span class="treatment-detail-value">{{ totalAcres }} acres</span>
   </div>
 </mat-expansion-panel>

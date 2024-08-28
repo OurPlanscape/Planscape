@@ -1,31 +1,51 @@
-import { Component, HostBinding, Input } from '@angular/core';
-import { NgIf, NgFor } from '@angular/common';
+import { Component, Input } from '@angular/core';
+import { NgIf, NgFor, NgClass } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 
+export interface rxType {
+  name: string;
+  year: number;
+}
 @Component({
   selector: 'sg-expander',
   standalone: true,
-  imports: [MatExpansionModule, MatIconModule, NgIf, NgFor],
+  imports: [MatExpansionModule, MatIconModule, NgClass, NgIf, NgFor],
   templateUrl: './expander.component.html',
   styleUrl: './expander.component.scss',
 })
+/**
+ * Expander component
+ * A component to be used in the treatments panel to show treatment details
+ */
 export class ExpanderComponent {
-  @Input() title = 'Hello, World!';
-  @Input() standCount: number = 0;
+  /**
+   * The title text
+   */
+  @Input() title = '';
+  /**
+   * A number or ratio indicating stand count
+   */
+  @Input() standCount: string = '0';
+  /**
+   * Whether or not this is the selected expander
+   */
   @Input() selected = false;
-
-  @Input() rxDetails = [
-    { name: 'Moderate mastication & Pile burn', year: 0 },
-    { name: 'Prescribed fire', year: 0 },
-  ];
+  /**
+   * Total number of acres
+   */
+  @Input() totalAcres = 100;
+  /**
+   * A list of prescriptions {name: string, year: number}
+   */
+  @Input() rxDetails: rxType[] = [];
   openState = false;
 
   toggleState() {
     this.openState = !this.openState;
   }
 
-  @HostBinding('class.selected')
+  // TODO: solve HostBinding...
   get isSelected() {
     return this.selected;
   }

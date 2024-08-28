@@ -9,22 +9,26 @@
 
   ::ng-deep .mat-expansion-panel {
     box-shadow: none;
-    border: 1px $color-text-gray solid;
+    border: 1px $color-light-gray solid;
+    border-radius: 0;
+  }
+  ::ng-deep .mat-expansion-panel.selected {
+    border: 1px $color-original-purple solid;
+    background-color: $color-soft-purple;
+    // --mat-expansion-container-background-color: $color-soft-purple;
   }
   ::ng-deep .mat-expansion-panel:not([class*='mat-elevation-z']) {
     box-shadow: none;
-    border: 1px $color-text-gray solid;
+    border: 1px $color-light-gray solid;
+    border-radius: 0;
   }
-  ::ng-deep .mat-expansion-panel:hover {
+  ::ng-deep .mat-expansion-panel:hover:not([class*='selected']) {
     border: 1px $color-original-purple solid;
     background-color: $color-white;
   }
-  ::ng-deep .sg-expander-panel.selected {
-    border: 1px $color-original-purple solid;
-    background-color: $color-soft-purple;
-    --mat-expansion-container-background-color: $color-soft-purple;
-  }
+  
 }
+
 
 ::ng-deep .sg-expander-panel .mat-expansion-panel-header .mat-content {
   display: flex;
@@ -40,6 +44,13 @@
   .mat-expansion-panel-header
   .mat-expansion-indicator {
   padding-bottom: 6px;
+}
+
+::ng-deep
+  .sg-expander-panel
+  .mat-expansion-panel-header
+  .mat-expansion-indicator::after {
+  color: $color-black;
 }
 
 ::ng-deep .sg-expander-panel .mat-expansion-panel-body {
@@ -59,7 +70,8 @@
   align-items: center;
   flex-direction: row;
   justify-content: space-between;
-  gap: 10px;
+  gap: 8px;
+  margin-left: 4px;
 }
 
 .right-content {
@@ -71,7 +83,7 @@
   align-items: center;
   justify-content: right;
   gap: 8px;
-  padding-right: 18px;
+  padding-right: 10px;
 }
 
 .treatment-detail {
@@ -114,5 +126,10 @@
 }
 
 .rx-detail-name {
-  @include xs-label();
+  @include small-paragraph();
+}
+
+.rx-detail-value {
+  @include small-paragraph();
+  color: $color-md-gray;
 }
