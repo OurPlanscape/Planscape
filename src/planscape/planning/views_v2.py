@@ -31,6 +31,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
+    create_projectarea_note,
 )
 
 User = get_user_model()
@@ -200,3 +201,20 @@ class ProjectAreaNotesViewSet(
     queryset = ProjectAreaNote.objects.all()
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = ProjectAreaNoteSerializer
+
+    def create(self, request, *args, **kwargs):
+        print(f"Here is the request data {request.data}")
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        print(f"Here is what we got from the serializer: {serializer}")
+        note = create_projectarea_note(
+            self.request.user,
+            **serializer.validated_data,
+        )
+        out_serializer = ProjectAreaNoteSerializer(instance=note)
+        headers = self.get_success_headers(out_serializer.data)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )

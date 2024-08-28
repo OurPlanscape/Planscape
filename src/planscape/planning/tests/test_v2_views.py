@@ -845,6 +845,12 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         self.project_area = ProjectAreaFactory.create(
             created_by_id=self.user.pk, scenario=self.treatment_plan.scenario
         )
+        self.other_project_area = ProjectAreaFactory.create(
+            created_by_id=self.user.pk, scenario=self.treatment_plan.scenario
+        )
+        self.other_user_project_area = ProjectAreaFactory.create(
+            created_by_id=self.other_user.pk, scenario=self.treatment_plan.scenario
+        )
 
     def test_create_note(self):
         self.client.force_authenticate(self.user)
@@ -852,7 +858,6 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             {
                 "content": "Here is a note about a project area.",
                 "project_area": self.project_area.pk,
-                "user": self.user,
             }
         )
         response = self.client.post(
@@ -863,17 +868,57 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, 201)
-        created_note = response.json()
+        response_data = response.json()
         self.assertEqual(
-            created_note["content"], "Here is a note about a project area."
+            response_data["content"], "Here is a note about a project area."
         )
+        self.assertEqual(response_data["user_id"], self.user.pk)
 
-    def test_get_notes(self):
+    def test_get_notes_by_user(self):
         self.client.force_authenticate(self.user)
+        new_note1 = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a note"
+        )
+        new_note2 = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a second note"
+        )
+        new_note3 = ProjectAreaNote.objects.create(
+            project_area=self.project_area,
+            user=self.other_user,
+            content="I am a third note",
+        )
         response = self.client.get(
             reverse("api:planning:project-area-notes-list"),
             content_type="application/json",
         )
+        response_data = response.json()
+        print(f"Here is the get note response: {response_data}")
+        self.assertEqual(response.status_code, 200)
+
+    def test_get_notes_for_project_area(self):
+        self.client.force_authenticate(self.user)
+        new_note1 = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a note"
+        )
+        new_note2 = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a second note"
+        )
+        new_note3 = ProjectAreaNote.objects.create(
+            project_area=self.project_area,
+            user=self.other_user,
+            content="I am a third note",
+        )
+        new_note4 = ProjectAreaNote.objects.create(
+            project_area=self.other_project_area,
+            user=self.other_user,
+            content="I am a third note",
+        )
+        response = self.client.get(
+            reverse("api:planning:project-area-notes-list"),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        print(f"Here is the get note response: {response_data}")
         self.assertEqual(response.status_code, 200)
 
     def test_delete_note(self):
