@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { AuthService } from '@services';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { Router } from '@angular/router';
 import { DeleteAccountDialogComponent } from '../delete-account-dialog/delete-account-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-delete-account',

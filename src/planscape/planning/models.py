@@ -154,6 +154,13 @@ class ScenarioManager(AliveObjectsManager):
         return self.get_queryset().filter(planning_area__id__in=planning_areas)
 
 
+class ScenarioOrigin(models.TextChoices):
+    # project comes from optimization algorithm, such as forsys
+    SYSTEM = "SYSTEM", "System"
+    # project comes from direct user creation / import
+    USER = "USER", "User"
+
+
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     planning_area = models.ForeignKey(
         PlanningArea,
@@ -165,6 +172,11 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     )
 
     name = models.CharField(max_length=120)
+
+    origin = models.CharField(
+        choices=ScenarioOrigin.choices,
+        null=True,
+    )
 
     notes = models.TextField(null=True)
 
@@ -286,11 +298,6 @@ class ProjectArea(
 
     name = models.CharField(max_length=128)
 
-    origin = models.CharField(
-        choices=ProjectAreaOrigin.choices,
-        default=ProjectAreaOrigin.OPTIMIZATION,
-        help_text="Determines where this project area came from.",
-    )
     data = models.JSONField(null=True)
 
     geometry = models.MultiPolygonField(

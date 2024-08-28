@@ -1,5 +1,6 @@
 import { AreaDetailsComponent } from './area-details/area-details.component';
 import { AreaNotesComponent } from './area-notes/area-notes.component';
+import { AreaScrollingNotesComponent } from './area-scrolling-notes/area-scrolling-notes.component';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
@@ -52,6 +53,7 @@ import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatm
   declarations: [
     AreaDetailsComponent,
     AreaNotesComponent,
+    AreaScrollingNotesComponent,
     ConstraintsPanelComponent,
     CreateScenariosComponent,
     DeleteNoteDialogComponent,

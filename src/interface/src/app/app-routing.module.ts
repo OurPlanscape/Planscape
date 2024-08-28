@@ -16,6 +16,7 @@ import {
 } from '@services';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
 import { createFeatureGuard } from './features/feature.guard';
+import { numberResolver } from './resolvers/number.resolver';
 
 const routes: Routes = [
   {
@@ -115,6 +116,10 @@ const routes: Routes = [
         // follow the route structure of plan, but without nesting modules and components
         path: 'plan/:planId/config/:scenarioId/treatment/:treatmentId',
         canActivate: [AuthGuard, createFeatureGuard('treatments')],
+        resolve: {
+          treatmentId: numberResolver('treatmentId', ''),
+          scenarioId: numberResolver('scenarioId', ''),
+        },
         loadChildren: () =>
           import('./treatments/treatments.module').then(
             (m) => m.TreatmentsModule

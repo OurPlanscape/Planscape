@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { InvalidLinkDialogComponent } from './invalid-link-dialog.component';
-import { MatLegacyDialogRef as MatDialogRef } from '@angular/material/legacy-dialog';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { MatDialogRef } from '@angular/material/dialog';
 
 describe('InvalidLinkDialogComponent', () => {
   let component: InvalidLinkDialogComponent;

@@ -23,7 +23,6 @@ import { FeaturesModule } from './features/features.module';
 import { HomeComponent } from './home/home.component';
 import { JwtInterceptor, WINDOW_PROVIDERS } from '@services';
 import { MapModule } from './map/map.module';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
 
 import { LegacyMaterialModule } from './material/legacy-material.module';
 
@@ -37,6 +36,7 @@ import { environment } from 'src/environments/environment';
 import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.component';
 import { LegacyPlanningAreasComponent } from './home/legacy-planning-areas/legacy-planning-areas.component';
 import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
+import { MatDialogModule } from '@angular/material/dialog';
 
 @NgModule({
   declarations: [

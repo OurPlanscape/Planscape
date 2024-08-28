@@ -1,7 +1,7 @@
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { MatLegacyDialogModule as MatDialogModule } from '@angular/material/legacy-dialog';
+
 import { ActivatedRoute, Router } from '@angular/router';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { of } from 'rxjs';
@@ -9,6 +9,7 @@ import { of } from 'rxjs';
 import { AuthService, PasswordResetToken } from '@services';
 import { PasswordResetComponent } from './password-reset.component';
 import { MatLegacyInputModule as MatInputModule } from '@angular/material/legacy-input';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('PasswordResetComponent', () => {
   let component: PasswordResetComponent;
