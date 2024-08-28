@@ -3,29 +3,19 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
 import { MapOptions } from 'maplibre-gl';
 
-type StadiaBaseMap =
-  | 'stadiaSmooth'
-  | 'stamenTerrain'
-  | 'stadiaSatellite'
-  | 'stadiaOutdoors';
-type ArcgisBaseMap = 'arcgisTopographic' | 'arcgisImagery' | 'arcgisGray';
-type ArcgisRest = 'restTerrain' | 'restSatellite';
-type StadiaRest = 'stadiaRest';
+type StadiaBaseMap = 'road';
+type ArcgisRest = 'terrain' | 'satellite';
 
-const DEFAULT_BASE_MAP: StadiaBaseMap = 'stadiaSmooth';
-export type BaseLayerType =
-  | StadiaBaseMap
-  | ArcgisRest
-  | StadiaRest
-  | ArcgisBaseMap;
-
-const stadiaMaps = 'https://tiles.stadiamaps.com/styles/';
-const arcgis =
-  'https://basemapstyles-api.arcgis.com/arcgis/rest/services/styles/v2/styles/arcgis/';
+const DEFAULT_BASE_MAP: StadiaBaseMap = 'road';
+export type BaseLayerType = StadiaBaseMap | ArcgisRest;
 
 function rasterSource(sourceName: string, url: string): MapOptions['style'] {
   return {
     version: 8,
+    metadata: {
+      'mapbox:autocomposite': true,
+    },
+    glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
     sources: {
       [sourceName]: {
         type: 'raster',
@@ -44,30 +34,17 @@ function rasterSource(sourceName: string, url: string): MapOptions['style'] {
 }
 
 export const baseLayerStyles: Record<BaseLayerType, MapOptions['style']> = {
-  stadiaSmooth:
-    stadiaMaps + 'alidade_smooth.json?api_key=' + environment.stadiamaps_key,
-  stamenTerrain:
-    stadiaMaps + 'stamen_terrain.json?api_key=' + environment.stadiamaps_key,
-  stadiaSatellite:
-    stadiaMaps + 'alidade_satellite.json?api_key=' + environment.stadiamaps_key,
-  stadiaOutdoors:
-    stadiaMaps + 'outdoors.json?api_key=' + environment.stadiamaps_key,
+  road:
+    'https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=' +
+    environment.stadiamaps_key,
 
-  arcgisTopographic: arcgis + 'topographic?token=' + environment.arcgis_key,
-  arcgisImagery: arcgis + 'imagery?token=' + environment.arcgis_key,
-  arcgisGray: arcgis + 'light-gray?token=' + environment.arcgis_key,
-
-  restTerrain: rasterSource(
+  terrain: rasterSource(
     'worldTerrain',
     'https://services.arcgisonline.com/ArcGIS/rest/services/World_Terrain_Base/MapServer/tile/{z}/{y}/{x}'
   ),
-  restSatellite: rasterSource(
+  satellite: rasterSource(
     'restSatellite',
     'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'
-  ),
-  stadiaRest: rasterSource(
-    'stadia',
-    'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}@2x.png'
   ),
 };
 

@@ -1,4 +1,14 @@
-<h4>Map Base</h4>
-<button *ngFor="let t of terrainTypes" [value]="t" (click)="updateBaseLayer(t)">
-  {{ t }}
-</button>
+<details open>
+  <summary>Map Base</summary>
+  <div class="base-options">
+    <div *ngFor="let t of baseLayers" class="base-option">
+      <input
+        type="radio"
+        [value]="t"
+        [id]="'layer-' + t"
+        name="baseLayer"
+        (click)="updateBaseLayer(t)" />
+      <label [for]="'layer-' + t">{{ t }}</label>
+    </div>
+  </div>
+</details>

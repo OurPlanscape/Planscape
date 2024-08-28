@@ -14,7 +14,7 @@ import { NgForOf } from '@angular/common';
   styleUrl: './map-base-layer.component.scss',
 })
 export class MapBaseLayerComponent {
-  terrainTypes = Object.keys(baseLayerStyles) as BaseLayerType[];
+  baseLayers = Object.keys(baseLayerStyles) as BaseLayerType[];
 
   constructor(private mapConfigState: MapConfigState) {}
 
