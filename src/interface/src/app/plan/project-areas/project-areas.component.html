@@ -34,8 +34,8 @@
     <tr *ngFor="let area of areas">
       <td
         class="area-id"
-        [style.border-left-color]="getColorByPosition(area.id)">
-        {{ area.id }}
+        [style.border-left-color]="getColorByPosition(area.rank)">
+        {{ area.rank }}
       </td>
       <td data-id="acres">{{ area.acres | number: '1.0-0' }}</td>
       <td data-id="percentTotal">{{ area.percentTotal | percent: '1.0-2' }}</td>
