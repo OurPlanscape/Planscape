@@ -4,9 +4,14 @@
   (closed)="toggleState()"
   class="sg-expander-panel">
   <mat-expansion-panel-header class="header-content">
-    <div class="icon-and-title">
-      <mat-icon>hexagon</mat-icon>
-      <div>{{ title }}</div>
+    <div class="left-content">
+      <sg-treatment-type-icon
+        *ngIf="treatmentType"
+        [treatmentColor]="treatmentIconType()"></sg-treatment-type-icon>
+      <sg-sequence-icon
+        *ngIf="sequenceNumber"
+        [sequenceNum]="sequenceNumber"></sg-sequence-icon>
+      <div>{{ titleText() }}</div>
     </div>
     <div class="right-content">
       <div class="stand-count">{{ standCount }}</div>

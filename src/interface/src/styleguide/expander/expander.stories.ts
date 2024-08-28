@@ -32,10 +32,66 @@ type Story = StoryObj<ExpanderComponent>;
 
 export const Default: Story = {
   args: {
-    title: 'Moderate Mastication',
+    title: 'Explicit Title',
+    treatmentType: 'No Treatment',
     rxDetails: [
       { name: 'Moderate mastication & Pile burn', year: 0 },
       { name: 'Prescribed fire', year: 0 },
     ],
+    standCount: '11',
+  },
+};
+
+export const Sequence1: Story = {
+  args: {
+    sequenceNumber: 1,
+    rxDetails: [
+      { name: 'Moderate mastication & Pile burn', year: 0 },
+      { name: 'Prescribed fire', year: 0 },
+    ],
+    standCount: '1/11',
+  },
+};
+export const Sequence5: Story = {
+  args: {
+    sequenceNumber: 5,
+    rxDetails: [
+      { name: 'Moderate mastication & Pile burn', year: 0 },
+      { name: 'Prescribed fire', year: 0 },
+    ],
+    standCount: '5/11',
+  },
+};
+
+export const TreatmentModerateMastication: Story = {
+  args: {
+    treatmentType: 'Moderate mastication',
+    rxDetails: [],
+    standCount: '8',
+  },
+};
+
+export const TreatmentHeavyMastication: Story = {
+  args: {
+    treatmentType: 'Heavy mastication',
+    rxDetails: [],
+    standCount: '600',
+  },
+};
+
+export const TreatmentPrescribedFire: Story = {
+  args: {
+    treatmentType: 'Prescribed fire',
+    rxDetails: [],
+    standCount: '5',
+  },
+};
+
+export const TreatmentMasticationAndFireSelected: Story = {
+  args: {
+    treatmentType: 'Mastication & RX fire',
+    rxDetails: [],
+    standCount: '5',
+    selected: true,
   },
 };

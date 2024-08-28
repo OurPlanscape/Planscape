@@ -21,7 +21,6 @@ export type TreatmentIconColor =
   styleUrl: './treatment-type-icon.component.scss',
 })
 export class TreatmentTypeIconComponent {
-  @Input() sequenceNum: number | null = null;
   @Input() treatmentColor: TreatmentIconColor | null = null;
 
   //TODO: consider dynamically updating the fill for SVGs, instead
@@ -38,24 +37,10 @@ export class TreatmentTypeIconComponent {
     pink: 'treatment_pink.svg',
   };
 
-  readonly sequenceIcons: Record<number, string> = {
-    1: 'sequence_1.svg',
-    2: 'sequence_2.svg',
-    3: 'sequence_3.svg',
-    4: 'sequence_4.svg',
-    5: 'sequence_5.svg',
-    6: 'sequence_6.svg',
-    7: 'sequence_7.svg',
-    8: 'sequence_8.svg',
-  };
-
   iconName() {
-    if (this.sequenceNum !== null) {
-      return this.sequenceIcons[this.sequenceNum];
-    } else if (this.treatmentColor !== null) {
+    if (this.treatmentColor !== null) {
       return this.treatmentIcons[this.treatmentColor];
-    } else {
-      return 'treatment_none';
     }
+    return 'treatment_none';
   }
 }
