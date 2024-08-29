@@ -5,14 +5,14 @@ import {
   Input,
   Output,
 } from '@angular/core';
-import { NgForOf } from '@angular/common';
+import { NgClass, NgForOf, NgIf } from '@angular/common';
 
 export type OptionType = { value: string | number; text: string } | string;
 
 @Component({
   selector: 'sg-expander-section',
   standalone: true,
-  imports: [NgForOf],
+  imports: [NgForOf, NgIf, NgClass],
   templateUrl: './expander-section.component.html',
   styleUrl: './expander-section.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,

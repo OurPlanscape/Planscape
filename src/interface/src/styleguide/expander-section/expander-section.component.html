@@ -1,15 +1,15 @@
-<details [open]="isOpen">
-  <summary>{{ title }}</summary>
-  <div class="base-options">
-    <div *ngFor="let t of options" class="base-option">
-      <input
-        type="radio"
-        [value]="getValue(t)"
-        [id]="'layer-' + getValue(t)"
-        [name]="groupName"
-        [checked]="t === defaultOption"
-        (click)="optionSelected.emit(t)" />
-      <label [for]="'layer-' + getValue(t)">{{ getText(t) }}</label>
-    </div>
+<div class="title" [ngClass]="{ open: isOpen }" (click)="isOpen = !isOpen">
+  {{ title }}
+</div>
+<div class="base-options" *ngIf="isOpen">
+  <div *ngFor="let t of options" class="base-option">
+    <input
+      type="radio"
+      [value]="getValue(t)"
+      [id]="'layer-' + getValue(t)"
+      [name]="groupName"
+      [checked]="t === defaultOption"
+      (click)="optionSelected.emit(t)" />
+    <label [for]="'layer-' + getValue(t)">{{ getText(t) }}</label>
   </div>
-</details>
+</div>
