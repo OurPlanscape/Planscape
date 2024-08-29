@@ -32,7 +32,7 @@ export type TreatmentType =
  * NOTE: this expects *either* a treatmentType OR a sequenceNumber to determine appearance
  */
 @Component({
-  selector: 'sg-expander',
+  selector: 'sg-treatment-expander',
   standalone: true,
   imports: [
     MatExpansionModule,
@@ -43,10 +43,10 @@ export type TreatmentType =
     SequenceIconComponent,
     TreatmentTypeIconComponent,
   ],
-  templateUrl: './expander.component.html',
-  styleUrl: './expander.component.scss',
+  templateUrl: './treatment-expander.component.html',
+  styleUrl: './treatment-expander.component.scss',
 })
-export class ExpanderComponent {
+export class TreatmentExpanderComponent {
   /**
    * Optional title text -- explicitly overrides the derived title
    */

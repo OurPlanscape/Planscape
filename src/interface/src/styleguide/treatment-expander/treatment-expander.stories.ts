@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { ExpanderComponent } from './expander.component';
+import { TreatmentExpanderComponent } from './treatment-expander.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
 const containerStyle = `style="display: flex;
@@ -12,9 +12,9 @@ const containerStyle = `style="display: flex;
   padding: 10px;
   flex-direction: column;"`;
 
-const meta: Meta<ExpanderComponent> = {
-  title: 'Components/Expander',
-  component: ExpanderComponent,
+const meta: Meta<TreatmentExpanderComponent> = {
+  title: 'Components/Treatment Expander',
+  component: TreatmentExpanderComponent,
   decorators: [
     applicationConfig({
       providers: [provideAnimations()],
@@ -23,12 +23,12 @@ const meta: Meta<ExpanderComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div ${containerStyle}><div style="width:400px;"><sg-expander ${argsToTemplate(args)}></sg-expander></div>`,
+    template: `<div ${containerStyle}><div style="width:400px;"><sg-treatment-expander ${argsToTemplate(args)}></sg-treatment-expander></div>`,
   }),
 };
 
 export default meta;
-type Story = StoryObj<ExpanderComponent>;
+type Story = StoryObj<TreatmentExpanderComponent>;
 
 export const Default: Story = {
   args: {
