@@ -13,7 +13,7 @@ export interface rxType {
   year: number;
 }
 
-//TODO: This should live in a central place, but I'm also sure how we should map these
+//TODO: This should live in a central place and possibly map to something that's not a string?
 export type TreatmentType =
   | 'No Treatment'
   | 'Moderate thin & Biomass removal'
@@ -77,8 +77,7 @@ export class TreatmentExpanderComponent {
   @Input() rxDetails: rxType[] = [];
   openState = false;
 
-  //TODO: Among other things, it would seem less fragile to define FE constants
-  // rather than using these strings
+  // Retaining colors here, so the icon component can remain as agnostic as possible
   readonly treatmentIcons: Record<TreatmentType, TreatmentIconColor> = {
     'No Treatment': 'none',
     'Moderate thin & Biomass removal': 'blue',
@@ -116,7 +115,6 @@ export class TreatmentExpanderComponent {
     return 'none';
   }
 
-  // TODO: solve HostBinding...
   get isSelected() {
     return this.selected;
   }
