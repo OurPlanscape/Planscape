@@ -9,7 +9,9 @@
 }
 
 .placeholder-navbar {
+  @include h3();
   height: $navbar-height;
+  padding: 10px;
 }
 
 .summary-panel {
