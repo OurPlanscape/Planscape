@@ -11,7 +11,7 @@
 .placeholder-navbar {
   @include h3();
   height: $navbar-height;
-  padding: 10px;
+  padding: 0 10px 0 10px;
 }
 
 .summary-panel {
