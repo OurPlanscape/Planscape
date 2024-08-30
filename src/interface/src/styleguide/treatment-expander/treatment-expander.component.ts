@@ -7,24 +7,12 @@ import {
   TreatmentIconColor,
 } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
+import { TreatmentType } from '@types';
 
 export interface rxType {
   name: string;
   year: number;
 }
-
-//TODO: This should live in a central place and possibly map to something that's not a string?
-export type TreatmentType =
-  | 'No Treatment'
-  | 'Moderate thin & Biomass removal'
-  | 'Heavy thin & Biomass removal'
-  | 'Moderate thin & Pile burn'
-  | 'Heavy thin & Pile burn'
-  | 'Moderate mastication'
-  | 'Heavy mastication'
-  | 'Prescribed fire'
-  | 'Heavy thin & RX fire'
-  | 'Mastication & RX fire';
 
 /**
  * Expander component
