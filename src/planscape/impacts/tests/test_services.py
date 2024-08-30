@@ -52,7 +52,7 @@ class UpsertTreatmentPrescriptionTest(TransactionTestCase):
             treatment_plan=self.treatment_plan,
             project_area=self.project_area,
             stands=[self.stand1],
-            action_type=TreatmentPrescriptionAction.HEAVY_THINNING_BURN,
+            action=TreatmentPrescriptionAction.HEAVY_THINNING_BURN,
             created_by=user,
         )
 
@@ -78,7 +78,7 @@ class UpsertTreatmentPrescriptionTest(TransactionTestCase):
             treatment_plan=self.treatment_plan,
             project_area=self.project_area,
             stands=[self.stand2],
-            action_type=TreatmentPrescriptionAction.HEAVY_THINNING_BURN,
+            action=TreatmentPrescriptionAction.HEAVY_THINNING_BURN,
             created_by=user,
         )
 
