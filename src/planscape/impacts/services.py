@@ -55,16 +55,16 @@ def upsert_treatment_prescriptions(
     treatment_plan: TreatmentPlanType,
     project_area: ProjectAreaType,
     stands: List[StandType],
-    action_type: ActionType,
+    action: ActionType,
     created_by: UserType,
 ) -> List[TreatmentPrescriptionEntityType]:
-    def upsert(treatment_plan, project_area, stand, action_type, user):
+    def upsert(treatment_plan, project_area, stand, action, user):
         upsert_defaults = {
-            "type": get_prescription_type(action_type),
+            "type": get_prescription_type(action),
             "created_by": user,
             "updated_by": user,
             "geometry": stand.geometry,
-            "action": action_type,
+            "action": action,
         }
         instance, created = TreatmentPrescription.objects.update_or_create(
             treatment_plan=treatment_plan,
@@ -81,7 +81,7 @@ def upsert_treatment_prescriptions(
             lambda stand: upsert(
                 treatment_plan=treatment_plan,
                 project_area=project_area,
-                action_type=action_type,
+                action=action,
                 user=created_by,
                 stand=stand,
             ),
