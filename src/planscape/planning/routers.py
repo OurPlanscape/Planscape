@@ -1,6 +1,6 @@
 from planning.views_v2 import (
     PlanningAreaViewSet,
-    ProjectAreaNotesViewSet,
+    ProjectAreaNoteViewSet,
     ScenarioViewSet,
     CreatorViewSet,
     ProjectAreaViewSet,
@@ -25,7 +25,7 @@ router.register(
 )
 router.register("project-areas", ProjectAreaViewSet, basename="project-areas")
 router.register(
-    r"project-area-notes",
-    ProjectAreaNotesViewSet,
-    basename="project-area-notes",
+    r"projectarea-notes",
+    ProjectAreaNoteViewSet,
+    basename="projectarea-notes",
 )

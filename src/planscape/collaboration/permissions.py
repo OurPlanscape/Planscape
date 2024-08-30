@@ -1,6 +1,12 @@
 from collaboration.utils import check_for_permission, is_creator
 from impacts.models import TreatmentPlan, TreatmentPrescription
-from planning.models import PlanningArea, PlanningAreaNote, Scenario
+from planning.models import (
+    PlanningArea,
+    PlanningAreaNote,
+    Scenario,
+    ProjectAreaNote,
+    ProjectArea,
+)
 from django.contrib.auth.models import User
 
 
@@ -137,3 +143,37 @@ class ScenarioPermission(CheckPermissionMixin):
         planning_creator = is_creator(user, scenario.planning_area)
         scenario_creator = scenario.user.pk == user.pk
         return any([planning_creator, scenario_creator])
+
+
+# TODO: not sure if the ProjectAreaNoteViewPermission needs this
+# or if we can just make use of PlanningArea perms here
+class ProjectAreaNotePermission(CheckPermissionMixin):
+    @staticmethod
+    # TODO: prefetch planning area for this project area?
+    def can_view(user: User, project_area_note: ProjectAreaNote):
+        if is_creator(user, project_area_note.project_area):
+            return True
+        return check_for_permission(
+            user.id, project_area_note.project_area, "view_planningarea"
+        )
+
+    @staticmethod
+    def can_add(user: User, project_area: ProjectArea):
+        planning_area = project_area.scenario.planning_area
+        if is_creator(user, planning_area):
+            return True
+        return check_for_permission(user.id, planning_area, "view_planningarea")
+
+    # we need to implement this, I believe?
+    @staticmethod
+    def can_change(user: User, project_area_note: ProjectAreaNote):
+        planning_area = project_area_note.project_area.scenario.planning_area
+        return is_creator(user, planning_area) or is_creator(user, planning_area)
+
+    # creators of the planning area or authors of notes can remove a note
+    @staticmethod
+    def can_remove(user: User, project_area: ProjectArea):
+        print(f"we are getting called to remove a thing? {project_area}")
+        print(f" Do we actually have the planning area? {planning_area}")
+        planning_area = project_area.scenario.planning_area
+        return is_creator(user, planning_area) or is_creator(user, project_area)

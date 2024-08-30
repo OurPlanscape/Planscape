@@ -13,7 +13,11 @@ from planning.filters import (
     ScenarioOrderingFilter,
 )
 from planning.models import PlanningArea, ProjectArea, ProjectAreaNote, Scenario
-from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
+from planning.permissions import (
+    PlanningAreaViewPermission,
+    ScenarioViewPermission,
+    ProjectAreaNoteViewPermission,
+)
 from planning.serializers import (
     CreatePlanningAreaSerializer,
     CreateScenarioSerializer,
@@ -191,22 +195,20 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     }
 
 
-class ProjectAreaNotesViewSet(
+class ProjectAreaNoteViewSet(
     mixins.ListModelMixin,
-    mixins.RetrieveModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = ProjectAreaNote.objects.all()
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [ProjectAreaNoteViewPermission]
     serializer_class = ProjectAreaNoteSerializer
 
     def create(self, request, *args, **kwargs):
-        print(f"Here is the request data {request.data}")
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        print(f"Here is what we got from the serializer: {serializer}")
+
         note = create_projectarea_note(
             self.request.user,
             **serializer.validated_data,
@@ -218,3 +220,18 @@ class ProjectAreaNotesViewSet(
             status=status.HTTP_201_CREATED,
             headers=headers,
         )
+
+    # TODO: get for projectarea using pk...
+    # ensure that user has projectarea / planningarea permission first
+    def get_queryset(self):
+        project_area_id = self.request.query_params.get("project_area_pk")
+        print(f" Do we have a project area: {project_area_id}")
+        if project_area_id:
+            return (
+                super()
+                .get_queryset()
+                .filter(project_area_id=project_area_id)
+                .select_related("project_area__scenario__planning_area")
+            )
+        else:
+            return super().get_queryset()
