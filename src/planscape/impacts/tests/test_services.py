@@ -179,6 +179,8 @@ class SummaryTest(TransactionTestCase):
         )[0]
         self.assertIn("prescriptions", proj_area_1)
         self.assertEqual(len(proj_area_1["prescriptions"]), 1)
+        stands1 = proj_area_1["prescriptions"][0]["stand_ids"]
+        self.assertGreater(len(stands1), 0)
         self.assertIn("prescriptions", proj_area_2)
         self.assertEqual(len(proj_area_2["prescriptions"]), 1)
 
