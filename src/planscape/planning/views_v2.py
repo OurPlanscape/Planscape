@@ -1,7 +1,6 @@
 import logging
 import json
 from django.contrib.auth import get_user_model
-from django.contrib.gis.geos import GEOSGeometry
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins, permissions, pagination
 from rest_framework.decorators import action
@@ -189,7 +188,8 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         # Union features and confirm that they're inside the planning area
         uploaded_geos = union_geojson(uploaded_geom)
         pa = PlanningArea.objects.get(pk=planning_area_pk)
-        # check if it's inside pa.geometry
+
+        # check if the uploaded geom is inside pa.geometry
         if not pa.geometry.contains(uploaded_geos):
             return Response(
                 {

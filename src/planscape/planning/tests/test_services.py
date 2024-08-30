@@ -1,5 +1,4 @@
 from datetime import date, datetime
-import json
 import shutil
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase

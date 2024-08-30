@@ -1,12 +1,9 @@
 import json
-import logging
 from django.conf import settings
 from typing import Any, Dict, Union
 from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 
 from planscape.exceptions import InvalidGeometry
-
-logger = logging.getLogger(__name__)
 
 
 def coerce_geojson(geojson: Dict[str, Any]) -> GEOSGeometry:

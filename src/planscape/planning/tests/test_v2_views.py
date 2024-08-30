@@ -890,7 +890,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
     def test_create_from_multi_feature_shpjs(self):
         self.client.force_authenticate(self.owner_user)
         payload = {
-            "geometry": json.dumps(self.pasadena_pomona["geometry"]),
+            "geometry": json.dumps(self.pasadena_pomona),
             "name": "new scenario",
             "stand_size": "SMALL",
             "planning_area": self.planning_area.pk,
@@ -918,7 +918,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
     def test_create_uncontained_geometry(self):
         self.client.force_authenticate(self.owner_user)
         payload = {
-            "geometry": json.dumps(self.sandiego["geometry"]),
+            "geometry": json.dumps(self.sandiego),
             "name": "new scenario",
             "stand_size": "SMALL",
             "planning_area": self.planning_area.pk,

@@ -301,8 +301,6 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
 
 
 class UploadedScenarioSerializer(serializers.ModelSerializer):
-    # user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
     class Meta:
         model = Scenario
         fields = (
@@ -422,3 +420,48 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
             "geometry",
             "created_by",
         )
+
+
+class GeometrySerializer(serializers.Serializer):
+    type = serializers.CharField()
+    coordinates = serializers.ListField()
+
+    def validate(self, data):
+        try:
+            geom = GEOSGeometry(str(data))
+            if geom.geom_type not in ["Polygon", "MultiPolygon"]:
+                raise serializers.ValidationError(
+                    "Geometry must be Polygon or MultiPolygon"
+                )
+        except Exception as e:
+            raise serializers.ValidationError(f"Invalid geometry: {str(e)}")
+        return data
+
+
+class FeatureSerializer(serializers.Serializer):
+    type = serializers.CharField()
+    geometry = GeometrySerializer()
+    properties = serializers.JSONField(required=False)
+
+
+class FeatureCollectionSerializer(serializers.Serializer):
+    type = serializers.CharField()
+    features = FeatureSerializer(many=True)
+
+
+class FlexibleGeoJSONSerializer(serializers.Serializer):
+    def to_internal_value(self, data):
+        if isinstance(data, dict):
+            if data.get("type") == "FeatureCollection":
+                serializer = FeatureCollectionSerializer(data=data)
+            elif data.get("type") == "Feature":
+                serializer = FeatureSerializer(data=data)
+            else:
+                serializer = GeometrySerializer(data=data)
+        else:
+            raise serializers.ValidationError("Invalid GeoJSON")
+
+        if serializer.is_valid():
+            return serializer.validated_data
+        else:
+            raise serializers.ValidationError(serializer.errors)

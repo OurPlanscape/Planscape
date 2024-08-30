@@ -13,7 +13,6 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
-from rest_framework.serializers import ValidationError
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from planning.geometry import coerce_geojson
 from planning.models import (
