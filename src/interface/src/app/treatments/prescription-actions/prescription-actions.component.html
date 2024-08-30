@@ -1,5 +1,7 @@
 <div *ngIf="prescriptions$ | async; let prescriptions" class="prescriptions">
-  <button *ngFor="let action of prescriptions.SINGLE | keyvalue" [value]="">
+  <button
+    *ngFor="let action of prescriptions.SINGLE | keyvalue"
+    (click)="applyTreatments(action.key)">
     {{ action.value }}
   </button>
 </div>

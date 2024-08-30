@@ -12,7 +12,6 @@ import {
 import { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
-import { SelectedStandsState } from './selected-stands.state';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { environment } from '../../../environments/environment';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
@@ -37,7 +36,6 @@ import { MapConfigState } from './map-config.state';
     NgIf,
     AsyncPipe,
   ],
-  providers: [SelectedStandsState],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
 })

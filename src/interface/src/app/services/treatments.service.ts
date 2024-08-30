@@ -58,4 +58,24 @@ export class TreatmentsService {
       withCredentials: true,
     });
   }
+
+  setTreatments(
+    treatmentPlanId: number,
+    projectAreaId: number,
+    action: string,
+    standIds: number[]
+  ) {
+    return this.http.post(
+      this.baseUrl + treatmentPlanId + '/treatment_prescriptions/',
+      {
+        project_area: projectAreaId,
+        action: action,
+        stands: standIds,
+        treatment_plan: treatmentPlanId,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
 }

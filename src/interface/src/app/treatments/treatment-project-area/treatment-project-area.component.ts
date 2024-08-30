@@ -6,9 +6,10 @@ import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute } from '@angular/router';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
+import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 
 @Component({
-  selector: 'app-project-area',
+  selector: 'app-treatment-project-area',
   standalone: true,
   imports: [
     TreatmentMapComponent,
@@ -17,10 +18,11 @@ import { PrescriptionActionsComponent } from '../prescription-actions/prescripti
     AsyncPipe,
     PrescriptionActionsComponent,
   ],
-  templateUrl: './project-area.component.html',
-  styleUrl: './project-area.component.scss',
+  providers: [SelectedStandsState],
+  templateUrl: './treatment-project-area.component.html',
+  styleUrl: './treatment-project-area.component.scss',
 })
-export class ProjectAreaComponent implements OnInit {
+export class TreatmentProjectAreaComponent implements OnInit {
   treatmentPlanId: number = this.route.snapshot.data['treatmentId'];
   projectAreaId: number = this.route.snapshot.data['projectAreaId'];
 

@@ -1,8 +1,9 @@
 import { RouterModule, Routes } from '@angular/router';
 import { TreatmentOverviewComponent } from './treatment-overview/treatment-overview.component';
-import { ProjectAreaComponent } from './project-area/project-area.component';
+
 import { NgModule } from '@angular/core';
 import { numberResolver } from '../resolvers/number.resolver';
+import { TreatmentProjectAreaComponent } from './treatment-project-area/treatment-project-area.component';
 
 const routes: Routes = [
   {
@@ -18,7 +19,7 @@ const routes: Routes = [
       {
         path: 'project-area/:projectAreaId',
         title: 'Project area overview',
-        component: ProjectAreaComponent,
+        component: TreatmentProjectAreaComponent,
         resolve: {
           projectAreaId: numberResolver('projectAreaId', ''),
         },

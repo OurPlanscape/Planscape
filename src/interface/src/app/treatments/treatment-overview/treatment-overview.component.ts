@@ -7,17 +7,20 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
+
   imports: [
     JsonPipe,
     TreatmentMapComponent,
     TreatmentSummaryComponent,
     MapBaseLayerComponent,
   ],
-  providers: [MapConfigState],
+  providers: [MapConfigState, SelectedStandsState],
+
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',
 })
