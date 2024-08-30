@@ -1,14 +1,13 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
 
-export type OptionType = { value: string | number; text: string } | string;
-
+/**
+ * The expander section component shows a title with a control to expand and collapse
+ * inner content.
+ * This component accepts html via content projection.
+ * Its content can be any arbitrary html, or you can provide `<sg-expander-item>` to display
+ * a list of radio buttons with optional tooltips.
+ */
 @Component({
   selector: 'sg-expander-section',
   standalone: true,
@@ -17,25 +16,7 @@ export type OptionType = { value: string | number; text: string } | string;
   styleUrl: './expander-section.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class ExpanderSectionComponent<T extends OptionType> {
+export class ExpanderSectionComponent {
   @Input() isOpen?: boolean;
   @Input() title: string = '';
-  @Input() groupName = '';
-  @Input() options: T[] = [];
-  @Input() defaultOption?: T;
-  @Output() optionSelected = new EventEmitter<T>();
-
-  getValue(item: OptionType) {
-    if (typeof item === 'string') {
-      return item;
-    }
-    return item.value;
-  }
-
-  getText(item: OptionType) {
-    if (typeof item === 'string') {
-      return item;
-    }
-    return item.text;
-  }
 }

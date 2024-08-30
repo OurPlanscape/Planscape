@@ -28,23 +28,3 @@
 .base-options {
   padding: 16px 14px;
 }
-
-.base-option {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  text-transform: capitalize;
-
-  input {
-    margin: 0;
-    width: 20px;
-    cursor: pointer;
-  }
-
-  label {
-    @include small-paragraph();
-    cursor: pointer;
-
-  }
-}
