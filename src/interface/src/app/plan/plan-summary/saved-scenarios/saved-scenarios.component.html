@@ -191,10 +191,7 @@
           <app-scenarios-card-list
             *ngIf="activeScenarios.length > 0"
             [scenarios]="activeScenarios"
-            (viewScenario)="viewScenario()"
-            (selectScenario)="
-              highlightScenario($event)
-            "></app-scenarios-card-list>
+            (viewScenario)="viewScenario()"></app-scenarios-card-list>
 
           <div class="empty-state" *ngIf="activeScenarios.length === 0">
             No active scenarios
@@ -206,10 +203,7 @@
           <app-scenarios-card-list
             *ngIf="archivedScenarios.length > 0"
             [scenarios]="archivedScenarios"
-            (viewScenario)="viewScenario()"
-            (selectScenario)="
-              highlightScenario($event)
-            "></app-scenarios-card-list>
+            (viewScenario)="viewScenario()"></app-scenarios-card-list>
           <div class="empty-state" *ngIf="archivedScenarios.length === 0">
             No scenarios in Archived.
           </div>

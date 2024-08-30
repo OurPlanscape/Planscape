@@ -30,8 +30,13 @@ export class ScenariosCardListComponent {
   }
 
   handleClickedScenario(row: ScenarioRow): void {
-    this.selectedCard = row;
-    this.selectScenario.emit(row);
+    if (
+      row.scenario_result?.status === 'FAILURE' ||
+      row.scenario_result?.status === 'SUCCESS'
+    ) {
+      this.selectedCard = row;
+      this.selectScenario.emit(row);
+    }
   }
 
   calculateTotals(results: ScenarioResult) {
