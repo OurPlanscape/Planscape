@@ -11,10 +11,7 @@ import {
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
-import {
-  MatLegacyDialog as MatDialog,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ActivatedRoute, Router } from '@angular/router';
 import { featureCollection, point } from '@turf/helpers';
@@ -57,6 +54,7 @@ import {
 import * as esri from 'esri-leaflet';
 import { MockProvider } from 'ng-mocks';
 import { MOCK_FEATURE_COLLECTION, MOCK_PLAN } from '@services/mocks';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 describe('MapComponent', () => {
   let component: MapComponent;

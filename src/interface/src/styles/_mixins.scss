@@ -108,3 +108,11 @@ Declare mixins based on styleguide and apply to classes
   color: $color-text-gray;
   border: 1px $color-text-gray solid;
 }
+
+// mixin to back fill some differences between material dialog styles.
+// remove once we moved all dialogs to use our styleguide modal component
+@mixin legacy-dialog-margin {
+  min-width: 480px;
+  display: block;
+  margin: 24px;
+}

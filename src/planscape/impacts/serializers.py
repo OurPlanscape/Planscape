@@ -5,6 +5,7 @@ from core.fields import UUIDRelatedField
 from impacts.models import (
     TreatmentPlan,
     TreatmentPrescription,
+    TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
 )
 from planning.models import ProjectArea, Scenario
@@ -115,7 +116,7 @@ class UpsertTreamentPrescriptionSerializer(serializers.Serializer):
         queryset=ProjectArea.objects.all(),
     )
 
-    action = serializers.ChoiceField(choices=TreatmentPrescriptionType.choices)
+    action = serializers.ChoiceField(choices=TreatmentPrescriptionAction.choices)
 
     stands = serializers.PrimaryKeyRelatedField(
         queryset=Stand.objects.all(),

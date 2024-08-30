@@ -1,3 +1,9 @@
+@import "mixins";
+
+:host {
+  @include legacy-dialog-margin();
+}
+
 .delete-account-dialog {
   align-items: center;
   display: flex;

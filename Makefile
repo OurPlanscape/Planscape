@@ -46,7 +46,7 @@ taggit:
 	echo "Completed taggit"
 
 install-dependencies-frontend:
-	cd src/interface && npm install --legacy-peer-deps
+	cd src/interface && npm install
 
 compile-angular:
 	cd src/interface && npm run build -- --configuration production --output-path=./dist/out
@@ -65,6 +65,7 @@ cypress-test:
 
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
+	cd src/planscape && python3 manage.py install_layers
 
 load-conditions:
 	cd src/planscape && python3 manage.py load_conditions
@@ -149,6 +150,7 @@ docker-makemigrations:
 
 docker-migrate:
 	./src/planscape/bin/run.sh python manage.py migrate
+	./src/planscape/bin/run.sh python manage.py install_layers
 
 .PHONY: all docker-build docker-test docker-run docker-shell docker-makemigrations docker-migrate
 
