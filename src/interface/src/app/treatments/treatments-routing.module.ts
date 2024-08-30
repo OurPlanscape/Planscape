@@ -4,16 +4,24 @@ import { TreatmentOverviewComponent } from './treatment-overview/treatment-overv
 import { NgModule } from '@angular/core';
 import { numberResolver } from '../resolvers/number.resolver';
 import { TreatmentProjectAreaComponent } from './treatment-project-area/treatment-project-area.component';
+import { TreatmentsState } from './treatments.state';
+import { SelectedStandsState } from './treatment-map/selected-stands.state';
+import { TreatedStandsState } from './treatment-map/treated-stands.state';
+import { treatmentStateResolver } from './treatment-state.resolver';
 
 const routes: Routes = [
   {
     path: '',
     title: 'Treatment plan overview',
+    providers: [TreatmentsState, SelectedStandsState, TreatedStandsState],
     children: [
       {
         path: '',
         title: 'Treatment plan overview',
         component: TreatmentOverviewComponent,
+        resolve: {
+          initializeStates: treatmentStateResolver,
+        },
       },
       { path: 'project-area', redirectTo: '', pathMatch: 'full' },
       {
@@ -22,6 +30,7 @@ const routes: Routes = [
         component: TreatmentProjectAreaComponent,
         resolve: {
           projectAreaId: numberResolver('projectAreaId', ''),
+          initializeStates: treatmentStateResolver,
         },
       },
     ],
