@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-
 export interface Note {
   id: number;
   user_id: number;
@@ -19,68 +18,58 @@ export interface NoteModel {
   urlSingle: (modelObjectId: number, noteId: number) => string;
 }
 
-const noteEndpoints: Record<
-  NotesModelName,
-  {
-    multipleUrl: (objectId: number) => string;
-    singleUrl: (objectId: number, noteId: number) => string;
-  }
-> = {
-  planning_area: {
-    multipleUrl: (objectId: number) =>
-      `/planning/planning_area/${objectId}/note`,
-    singleUrl: (objectId: number, noteId: number) =>
-      `/planning/planning_area/${objectId}/note/${noteId}`,
-  },
-  project_area: {
-    multipleUrl: (objectId: number) =>
-      `/planning/planning_area/${objectId}/note`,
-    singleUrl: (objectId: number, noteId: number) =>
-      `/planning/planning_area/${objectId}/note/${noteId}`,
-  },
-};
-
 @Injectable({
   providedIn: 'root',
 })
-export class NotesService {
+export abstract class BaseNotesService {
   constructor(private http: HttpClient) {}
 
-  getNotes(modelName: NotesModelName, objectId: number) {
-    const endpoints = noteEndpoints[modelName];
-    const url = endpoints.multipleUrl(objectId);
-    if (!url) {
-      throw new Error(`Model ${modelName} not found`);
-    }
-    return this.http.get<Note[]>(environment.backend_endpoint.concat(url), {
-      withCredentials: true,
-    });
-  }
+  protected abstract multipleUrl: (objectId: number) => string;
+  protected abstract singleUrl: (objectId: number, noteId: number) => string;
+  protected abstract modelName: NotesModelName;
 
-  addNote(modelName: NotesModelName, objectId: number, note: string) {
-    const endpoints = noteEndpoints[modelName];
-    const url = endpoints.multipleUrl(objectId);
-    if (!url) {
-      throw new Error(`Model ${modelName} not found`);
-    }
-    return this.http.post<Note>(
-      environment.backend_endpoint.concat(url),
-      { content: note },
+  getNotes(objectId: number) {
+    return this.http.get<Note[]>(
+      environment.backend_endpoint.concat(this.multipleUrl(objectId)),
       {
         withCredentials: true,
       }
     );
   }
 
-  deleteNote(modelName: NotesModelName, objectId: number, noteId: number) {
-    const endpoints = noteEndpoints[modelName];
-    const url = endpoints.singleUrl(objectId, noteId);
-
-    if (!url) {
-      throw new Error(`Model ${modelName} not found`);
-    }
-    return this.http.delete<Note>(environment.backend_endpoint.concat(url), {
-      withCredentials: true,
-    });
+  addNote(objectId: number, noteContent: string) {
+    return this.http.post<Note>(
+      environment.backend_endpoint.concat(this.multipleUrl(objectId)),
+      { content: noteContent },
+      {
+        withCredentials: true,
+      }
+    );
   }
+
+  deleteNote(objectId: number, noteId: number) {
+    return this.http.delete<Note>(
+      environment.backend_endpoint.concat(this.singleUrl(objectId, noteId)),
+      {
+        withCredentials: true,
+      }
+    );
+  }
+}
+
+@Injectable()
+export class PlanningAreaNotesService extends BaseNotesService {
+  protected modelName: NotesModelName = 'planning_area';
+  protected multipleUrl = (objectId: number) =>
+    `/planning/planning_area/${objectId}/note`;
+  protected singleUrl = (objectId: number, noteId: number) =>
+    `/planning/planning_area/${objectId}/note/${noteId}`;
+}
+@Injectable()
+export class ProjectAreaNotesService extends BaseNotesService {
+  protected modelName: NotesModelName = 'planning_area';
+  protected multipleUrl = (objectId: number) =>
+    `/project_area_note/${objectId}/note`;
+  protected singleUrl = (objectId: number, noteId: number) =>
+    `/project_area_note/${objectId}/note/${noteId}`;
 }

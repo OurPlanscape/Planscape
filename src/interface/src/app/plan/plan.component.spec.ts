@@ -6,7 +6,11 @@ import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from '@types';
 
 import { LegacyMaterialModule } from '../material/legacy-material.module';
-import { AuthService, PlanStateService } from '@services';
+import {
+  AuthService,
+  PlanStateService,
+  PlanningAreaNotesService,
+} from '@services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
@@ -20,7 +24,7 @@ describe('PlanComponent', () => {
   let component: PlanComponent;
   let fixture: ComponentFixture<PlanComponent>;
   let mockAuthService: Partial<AuthService>;
-
+  let mockNotesService: PlanningAreaNotesService;
   const fakeGeoJson: GeoJSON.GeoJSON = {
     type: 'FeatureCollection',
     features: [
@@ -60,6 +64,18 @@ describe('PlanComponent', () => {
 
     mockAuthService = {};
 
+    mockNotesService = jasmine.createSpyObj('PlanningAreaNotesService', [
+      'getNotes',
+      'addNote',
+      'deleteNote',
+    ]);
+    Object.assign(mockNotesService, {
+      modelName: 'planning_area',
+      multipleUrl: 'mock-multiple-url',
+      singleUrl: 'mock-single-url',
+    });
+    (mockNotesService.getNotes as jasmine.Spy).and.returnValue(of([]));
+
     const fakeService = jasmine.createSpyObj(
       'PlanStateService',
       {
@@ -94,6 +110,7 @@ describe('PlanComponent', () => {
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: AuthService, useValue: mockAuthService },
         { provide: PlanStateService, useValue: fakeService },
+        { provide: PlanningAreaNotesService, useValue: mockNotesService },
       ],
     }).compileComponents();
 

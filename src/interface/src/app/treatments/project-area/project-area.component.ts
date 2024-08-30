@@ -8,7 +8,11 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
 import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 import { MatDividerModule } from '@angular/material/divider';
 import { NotesSidebarComponent } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
-import { NotesModelName } from '@services';
+import {
+  BaseNotesService,
+  NotesModelName,
+  ProjectAreaNotesService,
+} from '@services';
 import { MatTabsModule } from '@angular/material/tabs';
 import { SharedModule } from '@shared';
 
@@ -28,6 +32,7 @@ import { SharedModule } from '@shared';
   ],
   templateUrl: './project-area.component.html',
   styleUrl: './project-area.component.scss',
+  providers: [{ provide: BaseNotesService, useClass: ProjectAreaNotesService }],
 })
 export class ProjectAreaComponent implements OnInit {
   treatmentPlanId: number = this.route.snapshot.data['treatmentId'];

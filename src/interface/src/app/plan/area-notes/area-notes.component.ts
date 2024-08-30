@@ -4,11 +4,9 @@ import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
 import { Plan } from '@types';
-import { AuthService, Note, NotesService, NotesModelName } from '@services';
+import { AuthService, Note, PlanningAreaNotesService } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
-
-const NOTES_MODEL: NotesModelName = 'planning_area';
 
 @Component({
   selector: 'app-area-notes',
@@ -17,7 +15,7 @@ const NOTES_MODEL: NotesModelName = 'planning_area';
 })
 export class AreaNotesComponent implements OnInit {
   constructor(
-    private notesService: NotesService,
+    private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private authService: AuthService
@@ -34,7 +32,7 @@ export class AreaNotesComponent implements OnInit {
 
   loadNotes() {
     this.notesService
-      .getNotes(NOTES_MODEL, this.plan?.id)
+      .getNotes(this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
 
@@ -45,25 +43,23 @@ export class AreaNotesComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.notesService
-            .deleteNote(NOTES_MODEL, this.plan.id, note.id)
-            .subscribe({
-              next: () => {
-                this.snackbar.open(
-                  `Deleted note`,
-                  'Dismiss',
-                  SNACK_NOTICE_CONFIG
-                );
-                this.loadNotes();
-              },
-              error: (err) => {
-                this.snackbar.open(
-                  `Error: ${err.statusText}`,
-                  'Dismiss',
-                  SNACK_ERROR_CONFIG
-                );
-              },
-            });
+          this.notesService.deleteNote(this.plan.id, note.id).subscribe({
+            next: () => {
+              this.snackbar.open(
+                `Deleted note`,
+                'Dismiss',
+                SNACK_NOTICE_CONFIG
+              );
+              this.loadNotes();
+            },
+            error: (err) => {
+              this.snackbar.open(
+                `Error: ${err.statusText}`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
         }
       });
   }
@@ -71,16 +67,14 @@ export class AreaNotesComponent implements OnInit {
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
-      this.notesService
-        .addNote(NOTES_MODEL, this.plan.id, this.note)
-        .subscribe((note) => {
-          // add the note
-          this.notes.unshift(note);
-          // but then refresh as well.
-          this.loadNotes();
-          this.saving = false;
-          this.note = '';
-        });
+      this.notesService.addNote(this.plan.id, this.note).subscribe((note) => {
+        // add the note
+        this.notes.unshift(note);
+        // but then refresh as well.
+        this.loadNotes();
+        this.saving = false;
+        this.note = '';
+      });
     }
     event.preventDefault();
   }

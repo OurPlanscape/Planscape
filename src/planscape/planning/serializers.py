@@ -173,6 +173,29 @@ class PlanningAreaNoteSerializer(serializers.ModelSerializer):
         model = PlanningAreaNote
 
 
+class PlanningAreaNoteListSerializer(serializers.ModelSerializer):
+    can_delete = serializers.SerializerMethodField()
+
+    def get_can_delete(self, obj):
+        user = self.context.get("user")
+        if user:
+            return (user == obj.user) or (user == obj.planning_area.user)
+        return False
+
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "content",
+            "planning_area",
+            "user_id",
+            "user_name",
+            "can_delete",
+        )
+        model = PlanningAreaNote
+
+
 class ScenarioResultSerializer(serializers.ModelSerializer):
     class Meta:
         fields = (

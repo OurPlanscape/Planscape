@@ -1,9 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DeleteNoteDialogComponent } from '../../app/plan/delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
-import { AuthService, Note, NotesModelName, NotesService } from '@services';
+import { Note, NotesModelName, BaseNotesService } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,10 +30,9 @@ import { MatInputModule } from '@angular/material/input';
 })
 export class NotesSidebarComponent implements OnInit {
   constructor(
-    private notesService: NotesService,
+    private notesService: BaseNotesService,
     private dialog: MatDialog,
-    private snackbar: MatSnackBar,
-    private authService: AuthService
+    private snackbar: MatSnackBar
   ) {}
   @Input() showHeader = false;
   @Input() notesModel!: NotesModelName;
@@ -41,6 +40,8 @@ export class NotesSidebarComponent implements OnInit {
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =
     'Start adding notes to help your team learn more about this section.';
+
+  @Output() handleNoteResponse = new EventEmitter<boolean>();
   notes: Note[] = [];
   note = '';
 
@@ -49,9 +50,15 @@ export class NotesSidebarComponent implements OnInit {
   }
 
   loadNotes() {
-    this.notesService
-      .getNotes(this.notesModel, this.objectId)
-      .subscribe((notes) => (this.notes = notes));
+    this.notesService.getNotes(this.objectId).subscribe({
+      next: (notes) => {
+        this.notes = notes;
+        this.handleNoteResponse.emit(true);
+      },
+      error: () => {
+        this.handleNoteResponse.emit(false);
+      },
+    });
   }
 
   saving = false;
@@ -63,25 +70,23 @@ export class NotesSidebarComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.notesService
-            .deleteNote(this.notesModel, this.objectId, note.id)
-            .subscribe({
-              next: () => {
-                this.snackbar.open(
-                  `Deleted note`,
-                  'Dismiss',
-                  SNACK_NOTICE_CONFIG
-                );
-                this.loadNotes();
-              },
-              error: (err) => {
-                this.snackbar.open(
-                  `Error: ${err.statusText}`,
-                  'Dismiss',
-                  SNACK_ERROR_CONFIG
-                );
-              },
-            });
+          this.notesService.deleteNote(this.objectId, note.id).subscribe({
+            next: () => {
+              this.snackbar.open(
+                `Deleted note`,
+                'Dismiss',
+                SNACK_NOTICE_CONFIG
+              );
+              this.loadNotes();
+            },
+            error: (err) => {
+              this.snackbar.open(
+                `Error: ${err.statusText}`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
         }
       });
   }
@@ -89,16 +94,14 @@ export class NotesSidebarComponent implements OnInit {
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
-      this.notesService
-        .addNote(this.notesModel, this.objectId, this.note)
-        .subscribe((note) => {
-          // add the note
-          this.notes.unshift(note);
-          // but then refresh as well.
-          this.loadNotes();
-          this.saving = false;
-          this.note = '';
-        });
+      this.notesService.addNote(this.objectId, this.note).subscribe((note) => {
+        // add the note
+        this.notes.unshift(note);
+        // but then refresh as well.
+        this.loadNotes();
+        this.saving = false;
+        this.note = '';
+      });
     }
     event.preventDefault();
   }
@@ -108,7 +111,6 @@ export class NotesSidebarComponent implements OnInit {
   }
 
   canDelete(note: Note) {
-    const userId = this.authService.loggedInUser$.value?.id;
-    return note.user_id === userId; // || this.plan.user === userId;
+    return note.can_delete;
   }
 }

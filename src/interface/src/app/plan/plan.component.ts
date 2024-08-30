@@ -19,7 +19,11 @@ import {
   take,
   takeUntil,
 } from 'rxjs';
-import { NotesModelName } from '@services';
+import {
+  NotesModelName,
+  BaseNotesService,
+  PlanningAreaNotesService,
+} from '@services';
 import { Plan, User } from '@types';
 import { AuthService, PlanStateService, ScenarioService } from '@services';
 import { Breadcrumb } from '@shared';
@@ -30,6 +34,9 @@ import { HomeParametersStorageService } from '@services/local-storage.service';
   selector: 'app-plan',
   templateUrl: './plan.component.html',
   styleUrls: ['./plan.component.scss'],
+  providers: [
+    { provide: BaseNotesService, useClass: PlanningAreaNotesService },
+  ],
 })
 export class PlanComponent implements OnInit, OnDestroy {
   notesModel: NotesModelName = 'planning_area';
