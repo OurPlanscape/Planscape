@@ -7,7 +7,20 @@ interface ProjectArea {
   project_area_id: number;
   project_area_name: string;
   total_stand_count: number;
-  prescriptions: [];
+  prescriptions: Prescription[];
+}
+
+interface Prescription {
+  action: string;
+  area_acres: number;
+  treated_stand_count: number;
+  type: string;
+  stand_ids: number[];
+}
+
+export interface TreatedStand {
+  id: number;
+  action: string;
 }
 
 export interface Summary {
@@ -53,9 +66,11 @@ export class TreatmentsService {
     });
   }
 
-  getTreatmentPlanSummary(id: number) {
+  getTreatmentPlanSummary(id: number, projectArea?: number) {
     return this.http.get<Summary>(this.baseUrl + id + '/summary', {
       withCredentials: true,
+      params:
+        projectArea !== undefined ? { project_area: projectArea } : undefined,
     });
   }
 

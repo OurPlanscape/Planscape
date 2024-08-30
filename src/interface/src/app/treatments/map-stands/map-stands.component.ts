@@ -14,6 +14,7 @@ import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
+import { TreatedStand } from '@services/treatments.service';
 
 @Component({
   selector: 'app-map-stands',
@@ -27,7 +28,7 @@ export class MapStandsComponent implements OnChanges {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() selectStart!: Point | null;
   @Input() selectEnd!: Point | null;
-  @Input() treatedStands: { id: number; assigment: string }[] = [];
+  @Input() treatedStands: TreatedStand[] = [];
 
   selectedStands$ = this.mapStandsService.selectedStands$;
   private initialSelectedStands: number[] = [];

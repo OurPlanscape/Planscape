@@ -7,6 +7,7 @@ import { ActivatedRoute } from '@angular/router';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 
 @Component({
   selector: 'app-treatment-project-area',
@@ -18,7 +19,7 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
     AsyncPipe,
     PrescriptionActionsComponent,
   ],
-  providers: [SelectedStandsState],
+  providers: [SelectedStandsState, TreatedStandsState],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
 })
