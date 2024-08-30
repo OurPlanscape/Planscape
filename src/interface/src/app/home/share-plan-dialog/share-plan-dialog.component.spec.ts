@@ -3,16 +3,14 @@ import { SharePlanDialogComponent } from './share-plan-dialog.component';
 import { MatLegacySnackBarModule as MatSnackBarModule } from '@angular/material/legacy-snack-bar';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MockComponents, MockProvider } from 'ng-mocks';
-import {
-  MAT_LEGACY_DIALOG_DATA as MAT_DIALOG_DATA,
-  MatLegacyDialogRef as MatDialogRef,
-} from '@angular/material/legacy-dialog';
+
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { AuthService, InvitesService, PlanStateService } from '@services';
 import { BehaviorSubject, NEVER, of } from 'rxjs';
 import { User } from '@types';
 import { ChipInputComponent } from '../chip-input/chip-input.component';
 import { SectionLoaderComponent } from '@shared';
+import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 describe('SharePlanDialogComponent', () => {
   let component: SharePlanDialogComponent;

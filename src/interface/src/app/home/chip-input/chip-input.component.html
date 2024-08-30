@@ -13,6 +13,7 @@
       [placeholder]="placeholder"
       [matChipInputFor]="chipList"
       [matChipInputAddOnBlur]="true"
-      (matChipInputTokenEnd)="addIfValid($event)" />
+      (matChipInputTokenEnd)="addIfValid($event)"
+      [matChipInputSeparatorKeyCodes]="[13, 32]" />
   </mat-chip-list>
 </mat-form-field>

@@ -5,6 +5,7 @@ from planning.models import (
     ProjectArea,
     ProjectAreaOrigin,
     Scenario,
+    ScenarioOrigin,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
@@ -39,6 +40,8 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
 
     name = factory.Sequence(lambda x: "scenario %s" % x)
 
+    origin = factory.Iterator([ScenarioOrigin.SYSTEM, ScenarioOrigin.USER])
+
     uuid = factory.Faker("uuid4")
 
     status = ScenarioStatus.ACTIVE
@@ -61,10 +64,6 @@ class ProjectAreaFactory(factory.django.DjangoModelFactory):
     scenario = factory.SubFactory(ScenarioFactory)
 
     name = factory.Sequence(lambda x: "project area %s" % x)
-
-    origin = factory.Iterator(
-        [ProjectAreaOrigin.OPTIMIZATION, ProjectAreaOrigin.USER_CREATED]
-    )
 
     geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 

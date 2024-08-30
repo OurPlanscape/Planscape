@@ -1,3 +1,6 @@
-<p>Treatment Plan overview</p>
+<app-treatment-summary
+  [treatmentPlanId]="treatmentPlanId"></app-treatment-summary>
 
-<pre>{{ treatmentPlan | json }}</pre>
+<app-treatment-map
+  [treatmentPlanId]="treatmentPlanId"
+  [scenarioId]="scenarioId"></app-treatment-map>

@@ -7,7 +7,6 @@ import {
 } from '@angular/forms';
 import { ActivatedRoute, Data, Router, RouterModule } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
-import { MatLegacyDialog as MatDialog } from '@angular/material/legacy-dialog';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { FormMessageType } from '@types';
 import { AuthService, PasswordResetToken } from '@services';
@@ -20,6 +19,7 @@ import { PasswordStateMatcher } from '../../validators/error-matchers';
 import { passwordsMustMatchValidator } from '../../validators/passwords';
 import { PasswordConfirmationDialogComponent } from '../password-confirmation-dialog/password-confirmation-dialog.component';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
+import { MatDialog } from '@angular/material/dialog';
 
 @UntilDestroy()
 @Component({
