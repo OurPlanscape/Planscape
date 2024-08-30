@@ -185,6 +185,7 @@ def generate_summary(
                     "type": p["type"],
                     "treated_stand_count": p["treated_stand_count"],
                     "area_acres": p["treated_stand_count"] * stand_area,
+                    "stand_ids": p["stand_ids"],
                 }
                 for p in filter(
                     lambda p: p["project_area__id"] == project.id,
