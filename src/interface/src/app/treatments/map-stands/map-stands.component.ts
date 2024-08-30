@@ -15,6 +15,7 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
 import { TreatedStand } from '@services/treatments.service';
+import { PrescriptionAction, SEQUENCE_COLORS } from '../prescriptions';
 
 @Component({
   selector: 'app-map-stands',
@@ -90,7 +91,10 @@ export class MapStandsComponent implements OnChanges {
     ];
 
     this.treatedStands.forEach((stand) => {
-      matchExpression.push(stand.id, '#ff0000'); // TODO ACTUAL COLOR ASSIGMENT
+      matchExpression.push(
+        stand.id,
+        SEQUENCE_COLORS[stand.action as PrescriptionAction]
+      ); // TODO ACTUAL COLOR ASSIGMENT
     });
     matchExpression.push(defaultColor);
 

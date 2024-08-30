@@ -1,6 +1,8 @@
 <div *ngIf="summary">
-  <div *ngFor="let projectArea of summary.project_areas">
-    <a [routerLink]="['project-area', projectArea.project_area_id]">
+  <div class="project-areas">
+    <a
+      *ngFor="let projectArea of summary.project_areas"
+      [routerLink]="['project-area', projectArea.project_area_id]">
       {{ projectArea.project_area_name }}
     </a>
   </div>
