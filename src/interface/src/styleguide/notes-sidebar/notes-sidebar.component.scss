@@ -13,16 +13,19 @@
       padding: 8px;
     }
 
+    .mat-mdc-form-field-flex {
+      height: 50px;
+    }
+
     .mat-form-field-outline-start,
     .mat-form-field-outline-end {
       background-color: $color-light-gray;
     }
 
-    .mat-form-field-infix {
-      padding-bottom: 10px;
-      border-top: 0;
-      top: -2px;
-      padding-top: 21px;
+    .mat-mdc-text-field-wrapper.mdc-text-field--outlined
+      .mat-mdc-form-field-infix {
+      padding-top: 10px;
+      padding-bottom: 16px;
     }
 
     .mat-mdc-form-field-icon-suffix {
@@ -159,7 +162,7 @@ textarea {
 
 .add-note-box {
   border-top: 1px $color-soft-gray solid;
-  height: 70px;
+  height: 64px;
   display: flex;
   flex-direction: row;
   justify-content: center;

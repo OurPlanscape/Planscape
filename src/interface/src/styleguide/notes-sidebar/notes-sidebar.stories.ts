@@ -77,6 +77,15 @@ const exampleNotes = [
     created_at: '2024-05-01',
     can_delete: true,
   },
+  {
+    id: 3,
+    user_id: 10,
+    user_name: 'Another Commenter',
+    content:
+      'Still more commenting. Still more commenting. Still more commenting. ',
+    created_at: '2024-05-01',
+    can_delete: false,
+  },
 ];
 
 type Story = StoryObj<NotesSidebarComponent>;
@@ -99,6 +108,27 @@ export const NoNotes: Story = {
     notesModel: 'planning_area',
     objectId: 1,
     notes: [],
+    noNotesTitleText: 'No Notes Yet',
+    noNotesDetailText:
+      'Start adding notes to help your team learn more about this section.',
+  },
+};
+
+export const OneNote: Story = {
+  args: {
+    showHeader: false,
+    notesModel: 'planning_area',
+    objectId: 1,
+    notes: [
+      {
+        id: 2,
+        user_id: 11,
+        user_name: 'Just a Commenter',
+        content: 'Here is some content',
+        created_at: '2024-02-01',
+        can_delete: true,
+      },
+    ],
     noNotesTitleText: 'No Notes Yet',
     noNotesDetailText:
       'Start adding notes to help your team learn more about this section.',
