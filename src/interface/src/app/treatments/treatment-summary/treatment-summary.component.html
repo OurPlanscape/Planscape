@@ -1,4 +1,4 @@
-<div *ngIf="summary">
+<div *ngIf="summary$ | async; let summary">
   <div class="project-areas">
     <a
       *ngFor="let projectArea of summary.project_areas"

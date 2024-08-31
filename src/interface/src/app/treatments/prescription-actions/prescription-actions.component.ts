@@ -8,8 +8,8 @@ import {
   NgIf,
 } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
-import { TreatmentsService } from '@services/treatments.service';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
+import { TreatmentsState } from '../treatments.state';
 
 @Component({
   selector: 'app-prescription-actions',
@@ -25,15 +25,22 @@ export class PrescriptionActionsComponent {
 
   constructor(
     private lookupService: LookupService,
-    private treatmentsService: TreatmentsService,
+    private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState
   ) {}
 
   applyTreatments(action: string) {
     const stands = this.selectedStandsState.getSelectedStands();
-    console.log(stands);
-    return this.treatmentsService
-      .setTreatments(this.treatmentPlanId, this.projectAreaId, action, stands)
-      .subscribe();
+    this.selectedStandsState.clearStands();
+    return this.treatmentsState
+      .updateTreatedStands(
+        this.treatmentPlanId,
+        this.projectAreaId,
+        action,
+        stands
+      )
+      .subscribe(() => {
+        // TODO clear after
+      });
   }
 }

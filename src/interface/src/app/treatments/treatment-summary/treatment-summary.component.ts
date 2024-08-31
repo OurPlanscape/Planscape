@@ -1,12 +1,7 @@
-import { Component, Input, OnInit } from '@angular/core';
-import {
-  Summary,
-  TreatedStand,
-  TreatmentsService,
-} from '@services/treatments.service';
-import { JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { Component, Input } from '@angular/core';
+import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { TreatmentsState } from '../treatments.state';
 
 /**
  * placeholder component to display project areas.
@@ -15,41 +10,15 @@ import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 @Component({
   selector: 'app-treatment-summary',
   standalone: true,
-  imports: [JsonPipe, NgForOf, NgIf, RouterLink],
+  imports: [JsonPipe, NgForOf, NgIf, RouterLink, AsyncPipe],
   templateUrl: './treatment-summary.component.html',
   styleUrl: './treatment-summary.component.scss',
 })
-export class TreatmentSummaryComponent implements OnInit {
+export class TreatmentSummaryComponent {
   @Input() treatmentPlanId!: number;
   @Input() projectAreaId?: number;
 
-  summary: Summary | null = null;
+  summary$ = this.treatmentsState.summary$;
 
-  constructor(
-    private treatmentsService: TreatmentsService,
-    private treatedStandsState: TreatedStandsState
-  ) {}
-
-  ngOnInit(): void {
-    if (this.treatmentPlanId) {
-      this.treatmentsService
-        .getTreatmentPlanSummary(this.treatmentPlanId, this.projectAreaId)
-        .subscribe((summary) => this.processSummary(summary));
-    }
-  }
-
-  processSummary(summary: Summary) {
-    this.summary = summary;
-    // now process the treated stands
-    const treatedStands: TreatedStand[] = this.summary.project_areas.flatMap(
-      (pa) =>
-        pa.prescriptions.flatMap((prescription) =>
-          // treated stands, at least action + stand id
-          prescription.stand_ids.map((standId) => {
-            return { id: standId, action: prescription.action };
-          })
-        )
-    );
-    this.treatedStandsState.updateTreatedStands(treatedStands);
-  }
+  constructor(private treatmentsState: TreatmentsState) {}
 }
