@@ -35,6 +35,7 @@ export class NotesSidebarComponent implements OnInit {
     private snackbar: MatSnackBar
   ) {}
   @Input() showHeader = false;
+  @Input() notes: Note[] = [];
   @Input() notesModel!: NotesModelName;
   @Input() objectId!: number;
   @Input() noNotesTitleText = 'No Notes Yet';
@@ -42,7 +43,6 @@ export class NotesSidebarComponent implements OnInit {
     'Start adding notes to help your team learn more about this section.';
 
   @Output() handleNoteResponse = new EventEmitter<boolean>();
-  notes: Note[] = [];
   note = '';
 
   ngOnInit() {
@@ -62,6 +62,8 @@ export class NotesSidebarComponent implements OnInit {
   }
 
   saving = false;
+
+  // TODO: decouple the notesService from this component?
 
   openDeleteNoteDialog(note: Note) {
     const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
