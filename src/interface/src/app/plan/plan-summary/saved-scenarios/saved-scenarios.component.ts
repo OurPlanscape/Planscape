@@ -15,10 +15,7 @@ import { UploadProjectAreasModalComponent } from '../../upload-project-areas-mod
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
-  max_treatment_area?: number;
   created_at?: string;
-  max_budget?: number;
-  tx_plan_count?: number | undefined;
 }
 
 @UntilDestroy()
