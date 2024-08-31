@@ -39,8 +39,6 @@ export class PrescriptionActionsComponent {
         action,
         stands
       )
-      .subscribe(() => {
-        // TODO clear after
-      });
+      .subscribe();
   }
 }

@@ -6,7 +6,12 @@ import {
 } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { BehaviorSubject, tap } from 'rxjs';
+import { TreatmentPlan } from '@types';
 
+/**
+ * Class that holds data of the current state, and makes it available
+ * through observables.
+ */
 @Injectable()
 export class TreatmentsState {
   constructor(
@@ -15,20 +20,31 @@ export class TreatmentsState {
   ) {}
 
   private _summary$ = new BehaviorSubject<Summary | null>(null);
+  private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
+
   public summary$ = this._summary$.asObservable();
+  public treatmentPlan = this._treatmentPlan.asObservable();
 
   loadSummary(treatmentPlanId: number, projectAreaId?: number) {
     this.treatmentsService
       .getTreatmentPlanSummary(treatmentPlanId, projectAreaId)
-      .subscribe((summary) => this.processSummary(summary));
+      .subscribe((summary) => {
+        this._summary$.next(summary);
+        this.setTreatedStandsFromSummary(summary);
+      });
   }
 
-  processSummary(summary: Summary) {
-    this._summary$.next(summary);
-    // now process the treated stands
+  loadTreatmentPlan(treatmentPlanId: number) {
+    return this.treatmentsService
+      .getTreatmentPlan(Number(treatmentPlanId))
+      .subscribe((treatmentPlan) => {
+        this._treatmentPlan.next(treatmentPlan);
+      });
+  }
+
+  private setTreatedStandsFromSummary(summary: Summary) {
     const treatedStands: TreatedStand[] = summary.project_areas.flatMap((pa) =>
       pa.prescriptions.flatMap((prescription) =>
-        // treated stands, at least action + stand id
         prescription.stand_ids.map((standId) => {
           return { id: standId, action: prescription.action };
         })

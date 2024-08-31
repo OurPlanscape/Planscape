@@ -1,9 +1,16 @@
+<<<<<<< HEAD
 <div class="left-side">
   <app-treatment-summary
     [treatmentPlanId]="treatmentPlanId"></app-treatment-summary>
 
   <app-map-base-layer></app-map-base-layer>
 </div>
+=======
+<div>{{ treatmentPlan$ | async | json }}</div>
+
+<app-treatment-summary
+  [treatmentPlanId]="treatmentPlanId"></app-treatment-summary>
+>>>>>>> 091b970c (cleanup and comments)
 
 <app-treatment-map
   [treatmentPlanId]="treatmentPlanId"
