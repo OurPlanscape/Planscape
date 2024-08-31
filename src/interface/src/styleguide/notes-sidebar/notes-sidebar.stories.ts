@@ -40,7 +40,7 @@ const meta: Meta<NotesSidebarComponent> = {
   ],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div style="width:300px;border:1px black solid;"><sg-notes-sidebar ${argsToTemplate(args)}>
+    template: `<div style="width:300px;height:400px;border:1px black solid;"><sg-notes-sidebar ${argsToTemplate(args)}>
           </sg-notes-sidebar></div>`,
   }),
 };

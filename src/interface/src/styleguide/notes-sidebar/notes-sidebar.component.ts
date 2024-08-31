@@ -49,6 +49,7 @@ export class NotesSidebarComponent implements OnInit {
     this.loadNotes();
   }
 
+  // TODO: let the parent do this
   loadNotes() {
     this.notesService.getNotes(this.objectId).subscribe({
       next: (notes) => {
@@ -96,6 +97,7 @@ export class NotesSidebarComponent implements OnInit {
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
+      // TODO: emit this event and let the parent reload
       this.notesService.addNote(this.objectId, this.note).subscribe((note) => {
         // add the note
         this.notes.unshift(note);

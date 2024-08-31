@@ -164,6 +164,8 @@ textarea {
   flex-direction: row;
   justify-content: center;
   padding-top: 10px;
+  align-self: flex-end;
+  width: 100%;
 }
 
 .add-note-field {
