@@ -225,7 +225,6 @@ class ProjectAreaNoteViewSet(
     # ensure that user has projectarea / planningarea permission first
     def get_queryset(self):
         project_area_id = self.request.query_params.get("project_area_pk")
-        print(f" Do we have a project area: {project_area_id}")
         if project_area_id:
             return (
                 super()

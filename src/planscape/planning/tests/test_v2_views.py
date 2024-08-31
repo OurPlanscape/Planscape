@@ -878,13 +878,14 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             new_note,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 201)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response_data = response.json()
         self.assertEqual(
             response_data["content"], "Here is a note about a project area."
         )
         self.assertEqual(response_data["user_id"], self.user.pk)
 
+    # this fails if a user is projectarea owner, but not planningarea owner or note owner
     def test_create_note_as_projectarea_owner(self):
         self.client.force_authenticate(self.other_user)
         new_note = json.dumps(
@@ -900,7 +901,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             new_note,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_create_note_without_permission(self):
         self.client.force_authenticate(self.other_user)
@@ -917,7 +918,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             new_note,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_notes_for_project_area(self):
         self.client.force_authenticate(self.user)
@@ -944,35 +945,47 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             content_type="application/json",
         )
         response_data = response.json()
-        print(f"Here is the get note response: {response_data}")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response_data), 3)
 
-    # TODO:
-    # def test_delete_note(self):
-    #     self.client.force_authenticate(self.user)
-    #     new_note = ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user
-    #     )
-    #     response = self.client.delete(
-    #         reverse(
-    #             "api:planning:projectarea-notes-detail",
-    #             kwargs={"pk": new_note.pk},
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+    def test_delete_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:planning:projectarea-notes-detail",
+                kwargs={"pk": new_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    # def test_delete_nonexistent_note(self):
-    #     self.client.force_authenticate(self.user)
-    #     new_note = ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user
-    #     )
-    #     response = self.client.delete(
-    #         reverse(
-    #             "api:planning:projectarea-notes-detail",
-    #             kwargs={"pk": (new_note.pk + 1)},
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_delete_nonexistent_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:planning:projectarea-notes-detail",
+                kwargs={"pk": (new_note.pk + 1)},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_note_no_permissions(self):
+        self.client.force_authenticate(self.other_user)
+        new_note = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:planning:projectarea-notes-detail",
+                kwargs={"pk": new_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

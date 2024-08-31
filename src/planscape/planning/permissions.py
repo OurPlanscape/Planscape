@@ -56,23 +56,13 @@ class ProjectAreaNoteViewPermission(PlanscapePermission):
                 project_area = ProjectArea.objects.get(id=project_area_id)
                 return ProjectAreaNotePermission.can_add(request.user, project_area)
             case _:
-                # scenario filters this on the queryset
+                # TODO: review if this is necessary
                 return True
 
     def has_object_permission(self, request, view, object):
-        project_area = object.project_area
-        print(f" We have a project_area? {project_area}")
-        print(
-            f" We are trying to get object permission for this view action: {view.action}"
-        )
-
         match view.action:
-            case "update" | "partial_update":
-                # TODO: we should never get here for a note
-                method = ProjectAreaNotePermission.can_change
             case "destroy":
-                print(f"we got here, were trying to remove something...")
                 method = ProjectAreaNotePermission.can_remove
             case _:
                 method = ProjectAreaNotePermission.can_view
-        return method(request.user, project_area)
+        return method(request.user, object)

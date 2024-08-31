@@ -149,7 +149,6 @@ class ScenarioPermission(CheckPermissionMixin):
 # or if we can just make use of PlanningArea perms here
 class ProjectAreaNotePermission(CheckPermissionMixin):
     @staticmethod
-    # TODO: prefetch planning area for this project area?
     def can_view(user: User, project_area_note: ProjectAreaNote):
         if is_creator(user, project_area_note.project_area):
             return True
@@ -164,16 +163,8 @@ class ProjectAreaNotePermission(CheckPermissionMixin):
             return True
         return check_for_permission(user.id, planning_area, "view_planningarea")
 
-    # we need to implement this, I believe?
+    # TODO: should the owner of the project area be able to remove notes, also?
     @staticmethod
-    def can_change(user: User, project_area_note: ProjectAreaNote):
+    def can_remove(user: User, project_area_note: ProjectAreaNote):
         planning_area = project_area_note.project_area.scenario.planning_area
-        return is_creator(user, planning_area) or is_creator(user, planning_area)
-
-    # creators of the planning area or authors of notes can remove a note
-    @staticmethod
-    def can_remove(user: User, project_area: ProjectArea):
-        print(f"we are getting called to remove a thing? {project_area}")
-        print(f" Do we actually have the planning area? {planning_area}")
-        planning_area = project_area.scenario.planning_area
-        return is_creator(user, planning_area) or is_creator(user, project_area)
+        return is_creator(user, planning_area) or is_creator(user, project_area_note)
