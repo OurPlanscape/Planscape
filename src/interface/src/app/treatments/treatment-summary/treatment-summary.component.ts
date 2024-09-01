@@ -15,9 +15,6 @@ import { TreatmentsState } from '../treatments.state';
   styleUrl: './treatment-summary.component.scss',
 })
 export class TreatmentSummaryComponent {
-  treatmentPlanId = this.treatmentsState.getTreatmentPlanId();
-  projectAreaId = this.treatmentsState.getProjectAreaId();
-
   summary$ = this.treatmentsState.summary$;
 
   constructor(private treatmentsState: TreatmentsState) {}

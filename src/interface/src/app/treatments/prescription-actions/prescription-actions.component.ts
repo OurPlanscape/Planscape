@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { LookupService } from '@services/lookup.service';
 import {
   AsyncPipe,
@@ -19,8 +19,6 @@ import { TreatmentsState } from '../treatments.state';
   styleUrl: './prescription-actions.component.scss',
 })
 export class PrescriptionActionsComponent {
-  @Input() treatmentPlanId!: number;
-  @Input() projectAreaId!: number;
   prescriptions$ = this.lookupService.getPrescriptions();
 
   constructor(

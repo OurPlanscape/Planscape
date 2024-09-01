@@ -48,6 +48,9 @@ export class TreatmentsState {
   }
 
   loadSummary() {
+    // TODO caching
+    this._summary$.next(null);
+    this.treatedStandsState.setTreatedStands([]);
     this.treatmentsService
       .getTreatmentPlanSummary(
         this.getTreatmentPlanId(),
@@ -60,6 +63,8 @@ export class TreatmentsState {
   }
 
   loadTreatmentPlan() {
+    // TODO caching
+    this._treatmentPlan.next(null);
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
       .subscribe((treatmentPlan) => {

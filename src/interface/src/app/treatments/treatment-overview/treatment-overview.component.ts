@@ -24,7 +24,6 @@ import { TreatmentsState } from '../treatments.state';
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  treatmentPlanId: number = this.route.snapshot.data['treatmentId'];
   scenarioId: number = this.route.snapshot.data['scenarioId'];
 
   treatmentPlan$ = this.treatmentsState.treatmentPlan;

@@ -1,3 +1,5 @@
+// placeholder for adding colors based on prescription actions
+
 export type PrescriptionAction =
   | 'MODERATE_THINNING_BIOMASS'
   | 'HEAVY_THINNING_BIOMASS'
