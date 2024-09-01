@@ -387,8 +387,6 @@ class ProjectAreaNoteSerializer(serializers.ModelSerializer):
             "project_area",
             "user_id",
             "user_name",
-            # TODO: add this with serializer method field
-            # "can_delete",
         )
         model = ProjectAreaNote
 

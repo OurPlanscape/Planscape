@@ -945,7 +945,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             content_type="application/json",
         )
         response_data = response.json()
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response_data), 3)
         for rec in response_data:
             self.assertIn("can_delete", rec)
@@ -963,7 +963,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             {"project_area_pk": self.project_area.pk},
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_get_notes_without_project_area(self):
         self.client.force_authenticate(self.user)
@@ -977,7 +977,37 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             reverse("api:planning:projectarea-notes-list"),
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_single_note(self):
+        self.client.force_authenticate(self.user)
+        visible_note = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am just one note"
+        )
+        response = self.client.get(
+            reverse(
+                "api:planning:projectarea-notes-detail", kwargs={"pk": visible_note.pk}
+            ),
+            {"project_area_pk": self.project_area.pk},
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["content"], "I am just one note")
+
+    def test_get_single_note_no_perms(self):
+        self.client.force_authenticate(self.other_user)
+        visible_note = ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a note"
+        )
+        response = self.client.get(
+            reverse(
+                "api:planning:projectarea-notes-detail", kwargs={"pk": visible_note.pk}
+            ),
+            {"project_area_pk": self.project_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_delete_note(self):
         self.client.force_authenticate(self.user)

@@ -200,6 +200,7 @@ class ProjectAreaNoteViewSet(
     mixins.ListModelMixin,
     mixins.CreateModelMixin,
     mixins.DestroyModelMixin,
+    mixins.RetrieveModelMixin,
     viewsets.GenericViewSet,
 ):
     queryset = ProjectAreaNote.objects.all()

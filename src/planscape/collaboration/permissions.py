@@ -150,11 +150,11 @@ class ScenarioPermission(CheckPermissionMixin):
 class ProjectAreaNotePermission(CheckPermissionMixin):
     @staticmethod
     def can_view(user: User, project_area_note: ProjectAreaNote):
-        if is_creator(user, project_area_note.project_area):
+        # depends on planning_area view permission
+        planning_area = project_area_note.project_area.scenario.planning_area
+        if is_creator(user, planning_area):
             return True
-        return check_for_permission(
-            user.id, project_area_note.project_area, "view_planningarea"
-        )
+        return check_for_permission(user.id, planning_area, "view_planningarea")
 
     @staticmethod
     def can_add(user: User, project_area: ProjectArea):
