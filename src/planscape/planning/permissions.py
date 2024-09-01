@@ -67,9 +67,12 @@ class ProjectAreaNoteViewPermission(PlanscapePermission):
                 planning_area = project_area.scenario.planning_area
                 return PlanningAreaPermission.can_view(request.user, planning_area)
 
-            case _:
-                # TODO: review if this is necessary
+            case "destroy" | "retrieve":
+                # fallthrough to has_object_permissions
                 return True
+
+            case "update" | "partial_update" | _:
+                return False  # operations unsupported
 
     def has_object_permission(self, request, view, object):
         match view.action:
