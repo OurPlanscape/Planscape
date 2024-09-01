@@ -3,19 +3,19 @@ import { inject } from '@angular/core';
 import { TreatmentsState } from './treatments.state';
 
 /**
- * Resolves that kickoff loading data via TreatmentsState.
- * @param route
- * @param state
+ * Resolver that kickoff loading data via TreatmentsState.
  */
 export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
   const treatmentsState = inject(TreatmentsState);
   const treatmentPlanId = Number(route.paramMap.get('treatmentId'));
   const projectAreaId = route.paramMap.get('projectAreaId');
 
-  treatmentsState.loadSummary(
-    treatmentPlanId,
+  treatmentsState.setTreatmentPlanId(treatmentPlanId);
+  treatmentsState.setProjectAreaId(
     projectAreaId ? Number(projectAreaId) : undefined
   );
-  treatmentsState.loadTreatmentPlan(treatmentPlanId);
+
+  treatmentsState.loadSummary();
+  treatmentsState.loadTreatmentPlan();
   return true;
 };

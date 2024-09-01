@@ -32,13 +32,6 @@ export class PrescriptionActionsComponent {
   applyTreatments(action: string) {
     const stands = this.selectedStandsState.getSelectedStands();
     this.selectedStandsState.clearStands();
-    return this.treatmentsState
-      .updateTreatedStands(
-        this.treatmentPlanId,
-        this.projectAreaId,
-        action,
-        stands
-      )
-      .subscribe();
+    return this.treatmentsState.updateTreatedStands(action, stands).subscribe();
   }
 }

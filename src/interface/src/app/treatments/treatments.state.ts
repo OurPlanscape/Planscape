@@ -19,24 +19,49 @@ export class TreatmentsState {
     private treatedStandsState: TreatedStandsState
   ) {}
 
+  private _treatmentPlanId: number | undefined = undefined;
+  private _projectAreaId: number | undefined = undefined;
+
   private _summary$ = new BehaviorSubject<Summary | null>(null);
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
 
   public summary$ = this._summary$.asObservable();
   public treatmentPlan = this._treatmentPlan.asObservable();
 
-  loadSummary(treatmentPlanId: number, projectAreaId?: number) {
+  getTreatmentPlanId(): number {
+    if (this._treatmentPlanId === undefined) {
+      throw new Error('no treatment plan id!');
+    }
+    return this._treatmentPlanId;
+  }
+
+  setTreatmentPlanId(value: number) {
+    this._treatmentPlanId = value;
+  }
+
+  getProjectAreaId(): number | undefined {
+    return this._projectAreaId;
+  }
+
+  setProjectAreaId(value: number | undefined) {
+    this._projectAreaId = value;
+  }
+
+  loadSummary() {
     this.treatmentsService
-      .getTreatmentPlanSummary(treatmentPlanId, projectAreaId)
+      .getTreatmentPlanSummary(
+        this.getTreatmentPlanId(),
+        this.getProjectAreaId()
+      )
       .subscribe((summary) => {
         this._summary$.next(summary);
         this.setTreatedStandsFromSummary(summary);
       });
   }
 
-  loadTreatmentPlan(treatmentPlanId: number) {
+  loadTreatmentPlan() {
     return this.treatmentsService
-      .getTreatmentPlan(Number(treatmentPlanId))
+      .getTreatmentPlan(this.getTreatmentPlanId())
       .subscribe((treatmentPlan) => {
         this._treatmentPlan.next(treatmentPlan);
       });
@@ -53,19 +78,18 @@ export class TreatmentsState {
     this.treatedStandsState.setTreatedStands(treatedStands);
   }
 
-  updateTreatedStands(
-    treatmentPlanId: number,
-    projectAreaId: number,
-    action: string,
-    standIds: number[]
-  ) {
+  updateTreatedStands(action: string, standIds: number[]) {
+    const projectAreaId = this.getProjectAreaId();
+    if (projectAreaId === undefined) {
+      throw new Error('Project area Id is required to update stands');
+    }
     // const currentTreatedStands = this.treatedStandsState.getTreatedStands();
     this.treatedStandsState.updateTreatedStands(
       standIds.map((standId) => ({ id: standId, action: action }))
     );
     // TODO return to currentTreatedStands on error.
     return this.treatmentsService
-      .setTreatments(treatmentPlanId, projectAreaId, action, standIds)
+      .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
       .pipe(tap((s) => {}));
   }
 }

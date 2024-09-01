@@ -17,9 +17,7 @@
   (mapMouseUp)="onMapMouseUp($event)">
   <app-map-stands
     [mapLibreMap]="mapLibreMap"
-    [projectAreaId]="projectAreaId"
     [treatedStands]="(treatedStands$ | async) || []"
-    [treatmentPlanId]="treatmentPlanId"
     [selectStart]="start ? start.point : null"
     [selectEnd]="end ? end.point : null"></app-map-stands>
 

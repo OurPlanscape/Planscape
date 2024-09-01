@@ -16,6 +16,7 @@ import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
 import { TreatedStand } from '@services/treatments.service';
 import { PrescriptionAction, SEQUENCE_COLORS } from '../prescriptions';
+import { TreatmentsState } from '../treatments.state';
 
 @Component({
   selector: 'app-map-stands',
@@ -24,14 +25,15 @@ import { PrescriptionAction, SEQUENCE_COLORS } from '../prescriptions';
   templateUrl: './map-stands.component.html',
 })
 export class MapStandsComponent implements OnChanges {
-  @Input() treatmentPlanId = 0;
-  @Input() projectAreaId: number | null = null;
   @Input() mapLibreMap!: MapLibreMap;
   @Input() selectStart!: Point | null;
   @Input() selectEnd!: Point | null;
   @Input() treatedStands: TreatedStand[] = [];
 
-  selectedStands$ = this.mapStandsService.selectedStands$;
+  treatmentPlanId = this.treatmentsState.getTreatmentPlanId();
+  projectAreaId = this.treatmentsState.getProjectAreaId();
+
+  selectedStands$ = this.selectedStandsState.selectedStands$;
   private initialSelectedStands: number[] = [];
 
   // TODO project_area_aggregate only applies when looking at a specific project area
@@ -45,7 +47,10 @@ export class MapStandsComponent implements OnChanges {
     selectedStands: 'stands-layer-selected',
   };
 
-  constructor(private mapStandsService: SelectedStandsState) {}
+  constructor(
+    private selectedStandsState: SelectedStandsState,
+    private treatmentsState: TreatmentsState
+  ) {}
 
   get vectorLayerUrl() {
     return (
@@ -57,7 +62,7 @@ export class MapStandsComponent implements OnChanges {
   }
 
   private updateSelectedStands(selectedStands: number[]) {
-    this.mapStandsService.updateSelectedStands(selectedStands);
+    this.selectedStandsState.updateSelectedStands(selectedStands);
   }
 
   clickOnLayer(event: MapMouseEvent) {
@@ -71,7 +76,7 @@ export class MapStandsComponent implements OnChanges {
     });
 
     const standId = features[0].properties['id'];
-    this.mapStandsService.toggleStand(standId);
+    this.selectedStandsState.toggleStand(standId);
   }
 
   paint: LayerSpecification['paint'] = {
@@ -104,7 +109,7 @@ export class MapStandsComponent implements OnChanges {
   selectStandsWithinRectangle(): void {
     if (!this.selectStart || !this.selectEnd) {
       this.initialSelectedStands = [
-        ...this.mapStandsService.getSelectedStands(),
+        ...this.selectedStandsState.getSelectedStands(),
       ];
       return;
     }

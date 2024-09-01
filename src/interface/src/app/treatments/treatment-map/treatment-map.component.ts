@@ -19,6 +19,7 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
 import { MapConfigState } from './map-config.state';
 
 import { TreatedStandsState } from './treated-stands.state';
+import { TreatmentsState } from '../treatments.state';
 
 @Component({
   selector: 'app-treatment-map',
@@ -46,9 +47,9 @@ export class TreatmentMapComponent {
   mapLibreMap!: MapLibreMap;
   readonly key = environment.stadiamaps_key;
 
-  // TODO: should we keep using prop drilling here? Consider using a provider service to hold these values
-  @Input() projectAreaId: number | null = null;
-  @Input() treatmentPlanId = 0;
+  treatmentPlanId = this.treatmentsState.getTreatmentPlanId();
+  projectAreaId = this.treatmentsState.getProjectAreaId();
+
   @Input() scenarioId: number | null = null;
 
   mapDragging = true;
@@ -62,8 +63,13 @@ export class TreatmentMapComponent {
   treatedStands$ = this.treatedStandsState.treatedStands$;
 
   constructor(
+<<<<<<< HEAD
     private mapConfigState: MapConfigState,
     private treatedStandsState: TreatedStandsState
+=======
+    private treatedStandsState: TreatedStandsState,
+    private treatmentsState: TreatmentsState
+>>>>>>> 712d2ac6 (moved treatment and project area ids to state)
   ) {}
 
   onMapMouseDown(event: MapMouseEvent): void {
