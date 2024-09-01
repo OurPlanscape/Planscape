@@ -5,6 +5,7 @@ from collaboration.permissions import (
     ProjectAreaNotePermission,
 )
 from planning.models import PlanningArea, ProjectArea
+from rest_framework.exceptions import ValidationError
 
 
 class PlanningAreaViewPermission(PlanscapePermission):
@@ -55,6 +56,17 @@ class ProjectAreaNoteViewPermission(PlanscapePermission):
                     return False
                 project_area = ProjectArea.objects.get(id=project_area_id)
                 return ProjectAreaNotePermission.can_add(request.user, project_area)
+
+            case "list":
+                project_area_id = request.query_params.get("project_area_pk") or None
+                if not project_area_id:
+                    raise ValidationError(f"Missing required project_area_pk")
+                project_area = ProjectArea.objects.select_related(
+                    "scenario", "scenario__planning_area"
+                ).get(id=project_area_id)
+                planning_area = project_area.scenario.planning_area
+                return PlanningAreaPermission.can_view(request.user, planning_area)
+
             case _:
                 # TODO: review if this is necessary
                 return True

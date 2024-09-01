@@ -922,19 +922,19 @@ class ProjectAreaNoteTest(APITransactionTestCase):
 
     def test_get_notes_for_project_area(self):
         self.client.force_authenticate(self.user)
-        new_note1 = ProjectAreaNote.objects.create(
+        ProjectAreaNote.objects.create(
             project_area=self.project_area, user=self.user, content="I am a note"
         )
-        new_note2 = ProjectAreaNote.objects.create(
+        ProjectAreaNote.objects.create(
             project_area=self.project_area, user=self.user, content="I am a second note"
         )
-        new_note3 = ProjectAreaNote.objects.create(
+        ProjectAreaNote.objects.create(
             project_area=self.project_area,
             user=self.other_user,
             content="I am a third note",
         )
         # creating a note for a separate project area, so it shouldnt be in results
-        new_note4 = ProjectAreaNote.objects.create(
+        ProjectAreaNote.objects.create(
             project_area=self.other_project_area,
             user=self.other_user,
             content="I am a third note",
@@ -947,6 +947,37 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response_data), 3)
+        for rec in response_data:
+            self.assertIn("can_delete", rec)
+
+    def test_get_notes_for_unauthorized_user(self):
+        self.client.force_authenticate(self.other_user)
+        ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a note"
+        )
+        ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a second note"
+        )
+        response = self.client.get(
+            reverse("api:planning:projectarea-notes-list"),
+            {"project_area_pk": self.project_area.pk},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+
+    def test_get_notes_without_project_area(self):
+        self.client.force_authenticate(self.user)
+        ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a note"
+        )
+        ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a second note"
+        )
+        response = self.client.get(
+            reverse("api:planning:projectarea-notes-list"),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 400)
 
     def test_delete_note(self):
         self.client.force_authenticate(self.user)

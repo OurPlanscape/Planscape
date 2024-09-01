@@ -26,6 +26,7 @@ from planning.serializers import (
     ListScenarioSerializer,
     PlanningAreaSerializer,
     ProjectAreaNoteSerializer,
+    ProjectAreaNoteListSerializer,
     ProjectAreaSerializer,
     ScenarioSerializer,
 )
@@ -221,16 +222,21 @@ class ProjectAreaNoteViewSet(
             headers=headers,
         )
 
-    # TODO: get for projectarea using pk...
-    # ensure that user has projectarea / planningarea permission first
-    def get_queryset(self):
-        project_area_id = self.request.query_params.get("project_area_pk")
-        if project_area_id:
-            return (
-                super()
-                .get_queryset()
-                .filter(project_area_id=project_area_id)
-                .select_related("project_area__scenario__planning_area")
+    def list(self, request, *args, **kwargs):
+        # Get the project_area_pk from the request query parameters
+        project_area_pk = request.query_params.get("project_area_pk")
+
+        # If project_area_pk is provided, filter the queryset
+        if not project_area_pk:
+            return Response(
+                {"error": "projectarea.pk is a required attribute"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
-        else:
-            return super().get_queryset()
+        queryset = (
+            self.get_queryset()
+            .select_related("project_area__scenario__planning_area")
+            .filter(project_area__pk=project_area_pk)
+        )
+
+        serializer = ProjectAreaNoteListSerializer(queryset, many=True)
+        return Response(serializer.data)
