@@ -19,10 +19,7 @@ export class TreatedStandsState {
       (currentStand) => !stands.some((stand) => stand.id === currentStand.id)
     );
 
-    // Add the new stands
     const updatedStands = [...filteredStands, ...stands];
-
-    // Update the BehaviorSubject
     this._treatedStands$.next(updatedStands);
   }
 
@@ -32,5 +29,13 @@ export class TreatedStandsState {
 
   getTreatedStands() {
     return this._treatedStands$.value;
+  }
+
+  removeTreatments(standId: number[]) {
+    const currentStands = this.getTreatedStands();
+    const filteredStands = currentStands.filter(
+      (currentStand) => !standId.some((standId) => standId === currentStand.id)
+    );
+    this._treatedStands$.next(filteredStands);
   }
 }

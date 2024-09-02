@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
@@ -10,7 +10,6 @@ import { TreatmentsState } from '../treatments.state';
   selector: 'app-treatment-overview',
   standalone: true,
   imports: [
-    JsonPipe,
     AsyncPipe,
     TreatmentMapComponent,
     TreatmentSummaryComponent,

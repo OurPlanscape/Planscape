@@ -32,4 +32,10 @@ export class PrescriptionActionsComponent {
     this.selectedStandsState.clearStands();
     return this.treatmentsState.updateTreatedStands(action, stands).subscribe();
   }
+
+  removeTreatments() {
+    const stands = this.selectedStandsState.getSelectedStands();
+    this.selectedStandsState.clearStands();
+    this.treatmentsState.removeTreatments(stands).subscribe();
+  }
 }

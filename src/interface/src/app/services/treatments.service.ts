@@ -69,4 +69,19 @@ export class TreatmentsService {
       }
     );
   }
+
+  removeTreatments(treatmentPlanId: number, standIds: number[]) {
+    return this.http.post(
+      this.baseUrl +
+        treatmentPlanId +
+        '/treatment_prescriptions/delete_prescriptions/',
+      {
+        stand_ids: standIds,
+        treatment_plan: treatmentPlanId,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
 }

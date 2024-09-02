@@ -26,6 +26,7 @@ describe('TreatmentsState', () => {
 
     spyOn(treatedStandsState, 'setTreatedStands').and.callThrough();
     spyOn(treatedStandsState, 'updateTreatedStands').and.callThrough();
+    spyOn(treatedStandsState, 'removeTreatments').and.callThrough();
   });
 
   it('should be created', () => {
@@ -160,6 +161,51 @@ describe('TreatmentsState', () => {
     service.updateTreatedStands('cut', [2, 3]).subscribe({
       error: (err) => {
         expect(err.message).toBe('Update failed');
+      },
+    });
+
+    expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith(
+      originalStands
+    );
+  });
+
+  it('should remove treated stands and call the service', () => {
+    service.setTreatmentPlanId(123);
+    service.setProjectAreaId(456);
+    const originalStands: TreatedStand[] = [
+      { id: 1, action: 'cut' },
+      { id: 2, action: 'cut' },
+      { id: 3, action: 'burn' },
+    ];
+    spyOn(treatedStandsState, 'getTreatedStands').and.returnValue(
+      originalStands
+    );
+    spyOn(treatmentsService, 'setTreatments').and.returnValue(of({}));
+    spyOn(treatmentsService, 'removeTreatments').and.returnValue(of({}));
+
+    service.removeTreatments([1, 3]);
+
+    expect(treatmentsService.removeTreatments).toHaveBeenCalledWith(
+      123,
+      [1, 3]
+    );
+  });
+
+  it('should revert treated stands on remove error', () => {
+    service.setTreatmentPlanId(123);
+    service.setProjectAreaId(456);
+
+    const originalStands: TreatedStand[] = [{ id: 1, action: 'cut' }];
+    spyOn(treatedStandsState, 'getTreatedStands').and.returnValue(
+      originalStands
+    );
+    spyOn(treatmentsService, 'removeTreatments').and.returnValue(
+      throwError(() => new Error('Remove failed'))
+    );
+
+    service.removeTreatments([2, 3]).subscribe({
+      error: (err) => {
+        expect(err.message).toBe('Remove failed');
       },
     });
 

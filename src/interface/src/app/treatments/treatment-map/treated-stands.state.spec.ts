@@ -81,4 +81,22 @@ describe('TreatedStandsState', () => {
       { id: 3, action: 'Treatment D' },
     ]);
   });
+
+  it('should remove treated stands', () => {
+    const initialStands: TreatedStand[] = [
+      { id: 1, action: 'Treatment A' },
+      { id: 2, action: 'Treatment B' },
+      { id: 3, action: 'Treatment C' },
+      { id: 4, action: 'Treatment D' },
+    ];
+    service.setTreatedStands(initialStands);
+
+    const stands = [2, 4];
+    service.removeTreatments(stands);
+
+    expect(service.getTreatedStands()).toEqual([
+      { id: 1, action: 'Treatment A' },
+      { id: 3, action: 'Treatment C' },
+    ]);
+  });
 });

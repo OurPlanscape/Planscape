@@ -98,4 +98,18 @@ export class TreatmentsState {
         })
       );
   }
+
+  removeTreatments(standIds: number[]) {
+    const currentTreatedStands = this.treatedStandsState.getTreatedStands();
+    this.treatedStandsState.removeTreatments(standIds);
+    return this.treatmentsService
+      .removeTreatments(this.getTreatmentPlanId(), standIds)
+      .pipe(
+        catchError((error) => {
+          // rolls back to previous treated stands
+          this.treatedStandsState.setTreatedStands(currentTreatedStands);
+          throw error;
+        })
+      );
+  }
 }
