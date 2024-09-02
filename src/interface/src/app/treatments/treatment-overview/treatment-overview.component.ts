@@ -22,7 +22,7 @@ import { TreatmentsState } from '../treatments.state';
 export class TreatmentOverviewComponent {
   scenarioId: number = this.route.snapshot.data['scenarioId'];
 
-  treatmentPlan$ = this.treatmentsState.treatmentPlan;
+  treatmentPlan$ = this.treatmentsState.treatmentPlan$;
 
   constructor(
     private route: ActivatedRoute,

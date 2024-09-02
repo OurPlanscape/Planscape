@@ -1,12 +1,8 @@
 import { Injectable } from '@angular/core';
-import {
-  Summary,
-  TreatedStand,
-  TreatmentsService,
-} from '@services/treatments.service';
+import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { BehaviorSubject, tap } from 'rxjs';
-import { TreatmentPlan } from '@types';
+import { BehaviorSubject, catchError } from 'rxjs';
+import { Summary, TreatedStand, TreatmentPlan } from '@types';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -26,7 +22,7 @@ export class TreatmentsState {
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
 
   public summary$ = this._summary$.asObservable();
-  public treatmentPlan = this._treatmentPlan.asObservable();
+  public treatmentPlan$ = this._treatmentPlan.asObservable();
 
   getTreatmentPlanId(): number {
     if (this._treatmentPlanId === undefined) {
@@ -88,13 +84,18 @@ export class TreatmentsState {
     if (projectAreaId === undefined) {
       throw new Error('Project area Id is required to update stands');
     }
-    // const currentTreatedStands = this.treatedStandsState.getTreatedStands();
+    const currentTreatedStands = this.treatedStandsState.getTreatedStands();
     this.treatedStandsState.updateTreatedStands(
       standIds.map((standId) => ({ id: standId, action: action }))
     );
-    // TODO return to currentTreatedStands on error.
     return this.treatmentsService
       .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
-      .pipe(tap((s) => {}));
+      .pipe(
+        catchError((error) => {
+          // rolls back to previous treated stands
+          this.treatedStandsState.setTreatedStands(currentTreatedStands);
+          throw error;
+        })
+      );
   }
 }

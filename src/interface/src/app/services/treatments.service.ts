@@ -1,31 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { TreatmentPlan } from '@types';
-
-interface ProjectArea {
-  project_area_id: number;
-  project_area_name: string;
-  total_stand_count: number;
-  prescriptions: Prescription[];
-}
-
-interface Prescription {
-  action: string;
-  area_acres: number;
-  treated_stand_count: number;
-  type: string;
-  stand_ids: number[];
-}
-
-export interface TreatedStand {
-  id: number;
-  action: string;
-}
-
-export interface Summary {
-  project_areas: ProjectArea[];
-}
+import { Summary, TreatmentPlan } from '@types';
 
 @Injectable({
   providedIn: 'root',

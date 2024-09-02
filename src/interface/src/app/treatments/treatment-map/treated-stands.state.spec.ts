@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
-import { TreatedStand } from '@services/treatments.service';
 import { TreatedStandsState } from './treated-stands.state';
+import { TreatedStand } from '@types';
 
 describe('TreatedStandsState', () => {
   let service: TreatedStandsState;

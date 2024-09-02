@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { TreatedStand } from '@services/treatments.service';
+
+import { TreatedStand } from '@types';
 
 /**
  * Manages the stands that have treatment, to be displayed on the map.

@@ -14,9 +14,9 @@ import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
-import { TreatedStand } from '@services/treatments.service';
 import { PrescriptionAction, SEQUENCE_COLORS } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
+import { TreatedStand } from '@types';
 
 @Component({
   selector: 'app-map-stands',
