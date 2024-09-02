@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { AsyncPipe, JsonPipe } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
@@ -15,6 +15,7 @@ import { TreatmentsState } from '../treatments.state';
     TreatmentMapComponent,
     TreatmentSummaryComponent,
     MapBaseLayerComponent,
+    NgIf,
   ],
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',

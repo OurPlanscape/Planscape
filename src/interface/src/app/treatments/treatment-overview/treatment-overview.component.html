@@ -1,5 +1,9 @@
 <div class="left-side">
-  <div>{{ treatmentPlan$ | async | json }}</div>
+  <div *ngIf="treatmentPlan$ | async; let treatmentPlan">
+    {{ treatmentPlan.id }}. {{ treatmentPlan.name }}
+    <div>{{ treatmentPlan.status }}</div>
+  </div>
+
   <app-treatment-summary></app-treatment-summary>
   <app-map-base-layer></app-map-base-layer>
 </div>
