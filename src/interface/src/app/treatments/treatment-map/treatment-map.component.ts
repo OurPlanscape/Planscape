@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   DraggableDirective,
   FeatureComponent,
@@ -16,6 +16,7 @@ import { SelectedStandsState } from './selected-stands.state';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { environment } from '../../../environments/environment';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+import { MapConfigState } from './map-config.state';
 
 @Component({
   selector: 'app-treatment-map',
@@ -34,6 +35,7 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
     MapControlsComponent,
     MapProjectAreasComponent,
     NgIf,
+    AsyncPipe,
   ],
   providers: [SelectedStandsState],
   templateUrl: './treatment-map.component.html',
@@ -56,7 +58,9 @@ export class TreatmentMapComponent {
   start: MapMouseEvent | null = null;
   end: MapMouseEvent | null = null;
 
-  constructor() {}
+  styleUrl$ = this.mapConfigState.baseLayerUrl$;
+
+  constructor(private mapConfigState: MapConfigState) {}
 
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {
