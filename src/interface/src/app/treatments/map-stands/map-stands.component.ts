@@ -99,7 +99,7 @@ export class MapStandsComponent implements OnChanges {
       matchExpression.push(
         stand.id,
         SEQUENCE_COLORS[stand.action as PrescriptionAction]
-      ); // TODO ACTUAL COLOR ASSIGMENT
+      );
     });
     matchExpression.push(defaultColor);
 

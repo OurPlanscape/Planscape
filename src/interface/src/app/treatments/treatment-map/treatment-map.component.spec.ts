@@ -1,8 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { TreatmentMapComponent } from './treatment-map.component';
-import { MockProvider } from 'ng-mocks';
+import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { MapConfigState } from './map-config.state';
+import { TreatedStandsState } from './treated-stands.state';
+import { MapStandsComponent } from '../map-stands/map-stands.component';
+import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
+import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+import { SelectedStandsState } from './selected-stands.state';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
@@ -11,7 +15,16 @@ describe('TreatmentMapComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TreatmentMapComponent],
-      providers: [MockProvider(MapConfigState)],
+      providers: [
+        MockProviders(MapConfigState, TreatedStandsState, SelectedStandsState),
+      ],
+      declarations: [
+        MockDeclarations(
+          MapStandsComponent,
+          MapRectangleComponent,
+          MapProjectAreasComponent
+        ),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentMapComponent);

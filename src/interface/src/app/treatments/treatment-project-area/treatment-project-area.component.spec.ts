@@ -1,9 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { MockDeclarations, MockProviders } from 'ng-mocks';
-
 import { TreatmentProjectAreaComponent } from './treatment-project-area.component';
-
 import { TreatmentsService } from '@services/treatments.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { LookupService } from '@services/lookup.service';
