@@ -4,9 +4,6 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
-import { MapConfigState } from '../treatment-map/map-config.state';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { TreatmentsState } from '../treatments.state';
 
 @Component({
@@ -19,7 +16,6 @@ import { TreatmentsState } from '../treatments.state';
     TreatmentSummaryComponent,
     MapBaseLayerComponent,
   ],
-  providers: [MapConfigState, SelectedStandsState, TreatedStandsState],
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',
 })

@@ -8,12 +8,18 @@ import { TreatmentsState } from './treatments.state';
 import { SelectedStandsState } from './treatment-map/selected-stands.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { treatmentStateResolver } from './treatment-state.resolver';
+import { MapConfigState } from './treatment-map/map-config.state';
 
 const routes: Routes = [
   {
     path: '',
     title: 'Treatment plan overview',
-    providers: [TreatmentsState, SelectedStandsState, TreatedStandsState],
+    providers: [
+      TreatmentsState,
+      SelectedStandsState,
+      TreatedStandsState,
+      MapConfigState,
+    ],
     children: [
       {
         path: '',

@@ -15,9 +15,7 @@ import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component'
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { environment } from '../../../environments/environment';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
-
 import { MapConfigState } from './map-config.state';
-
 import { TreatedStandsState } from './treated-stands.state';
 
 @Component({

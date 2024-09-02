@@ -7,6 +7,7 @@ import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { SelectedStandsState } from './selected-stands.state';
+import { CommonModule } from '@angular/common';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
@@ -14,7 +15,7 @@ describe('TreatmentMapComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentMapComponent],
+      imports: [TreatmentMapComponent, CommonModule],
       providers: [
         MockProviders(MapConfigState, TreatedStandsState, SelectedStandsState),
       ],

@@ -1,6 +1,7 @@
 <div class="left-side">
+  <div>{{ treatmentPlan$ | async | json }}</div>
   <app-treatment-summary></app-treatment-summary>
   <app-map-base-layer></app-map-base-layer>
 </div>
-<div>{{ treatmentPlan$ | async | json }}</div>
+
 <app-treatment-map [scenarioId]="scenarioId"></app-treatment-map>

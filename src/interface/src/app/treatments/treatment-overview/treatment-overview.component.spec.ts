@@ -7,6 +7,7 @@ import { TreatmentsState } from '../treatments.state';
 
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 describe('TreatmentOverviewComponent', () => {
   let component: TreatmentOverviewComponent;
@@ -16,7 +17,11 @@ describe('TreatmentOverviewComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TreatmentOverviewComponent, RouterTestingModule],
       declarations: [
-        MockDeclarations(TreatmentSummaryComponent, TreatmentMapComponent),
+        MockDeclarations(
+          TreatmentSummaryComponent,
+          TreatmentMapComponent,
+          MapBaseLayerComponent
+        ),
       ],
       providers: [MockProviders(TreatmentsState)],
     }).compileComponents();
