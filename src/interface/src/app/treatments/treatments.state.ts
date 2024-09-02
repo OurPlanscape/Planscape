@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { BehaviorSubject, catchError } from 'rxjs';
-import { Summary, TreatedStand, TreatmentPlan } from '@types';
+import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -18,7 +18,7 @@ export class TreatmentsState {
   private _treatmentPlanId: number | undefined = undefined;
   private _projectAreaId: number | undefined = undefined;
 
-  private _summary$ = new BehaviorSubject<Summary | null>(null);
+  private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
 
   public summary$ = this._summary$.asObservable();
@@ -68,7 +68,7 @@ export class TreatmentsState {
       });
   }
 
-  private setTreatedStandsFromSummary(summary: Summary) {
+  private setTreatedStandsFromSummary(summary: TreatmentSummary) {
     const treatedStands: TreatedStand[] = summary.project_areas.flatMap((pa) =>
       pa.prescriptions.flatMap((prescription) =>
         prescription.stand_ids.map((standId) => {

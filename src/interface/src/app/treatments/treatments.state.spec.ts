@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { of, throwError } from 'rxjs';
-import { Summary, TreatedStand, TreatmentPlan } from '@types';
+import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
 import { TreatmentsState } from './treatments.state';
 import { MockProvider } from 'ng-mocks';
 
@@ -53,7 +53,7 @@ describe('TreatmentsState', () => {
   });
 
   it('should load summary and set treated stands', () => {
-    const mockSummary: Summary = {
+    const mockSummary: TreatmentSummary = {
       project_areas: [
         {
           project_area_id: 1,

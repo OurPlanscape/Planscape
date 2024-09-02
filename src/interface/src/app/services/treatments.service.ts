@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Summary, TreatmentPlan } from '@types';
+import { TreatmentPlan, TreatmentSummary } from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -43,7 +43,7 @@ export class TreatmentsService {
   }
 
   getTreatmentPlanSummary(id: number, projectArea?: number) {
-    return this.http.get<Summary>(this.baseUrl + id + '/summary', {
+    return this.http.get<TreatmentSummary>(this.baseUrl + id + '/summary', {
       withCredentials: true,
       params:
         projectArea !== undefined ? { project_area: projectArea } : undefined,

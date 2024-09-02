@@ -28,6 +28,6 @@ export interface TreatedStand {
   action: string;
 }
 
-export interface Summary {
+export interface TreatmentSummary {
   project_areas: TreatmentProjectArea[];
 }
