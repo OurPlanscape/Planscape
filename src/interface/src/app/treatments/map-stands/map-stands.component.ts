@@ -14,7 +14,7 @@ import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
-import { PrescriptionAction, SEQUENCE_COLORS } from '../prescriptions';
+import { PrescriptionSingleAction, SEQUENCE_COLORS } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
 import { TreatedStand } from '@types';
 
@@ -98,7 +98,7 @@ export class MapStandsComponent implements OnChanges {
     this.treatedStands.forEach((stand) => {
       matchExpression.push(
         stand.id,
-        SEQUENCE_COLORS[stand.action as PrescriptionAction]
+        SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
       );
     });
     matchExpression.push(defaultColor);

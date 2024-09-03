@@ -1,6 +1,6 @@
 // placeholder for adding colors based on prescription actions
 
-export type PrescriptionAction =
+export type PrescriptionSingleAction =
   | 'MODERATE_THINNING_BIOMASS'
   | 'HEAVY_THINNING_BIOMASS'
   | 'MODERATE_THINNING_BURN'
@@ -11,7 +11,21 @@ export type PrescriptionAction =
   | 'HEAVY_THINNING_RX_FIRE'
   | 'MASTICATION_RX_FIRE';
 
-export const SEQUENCE_COLORS: Record<PrescriptionAction, string> = {
+export type PrescriptionSequenceAction =
+  | 'MODERATE_THINNING_BURN_PLUS_RX_FIRE'
+  | 'MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN'
+  | 'HEAVY_THINNING_BURN_PLUS_RX_FIRE'
+  | 'HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN'
+  | 'RX_FIRE_PLUS_RX_FIRE'
+  | 'MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION'
+  | 'HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE'
+  | 'MODERATE_MASTICATION_PLUS_RX_FIRE';
+
+export type PrescriptionAction =
+  | PrescriptionSingleAction
+  | PrescriptionSequenceAction;
+
+export const SEQUENCE_COLORS: Record<PrescriptionSingleAction, string> = {
   MODERATE_THINNING_BIOMASS: '#3A86FF',
   HEAVY_THINNING_BIOMASS: '#8338EC',
   MODERATE_THINNING_BURN: '#F77F00',
