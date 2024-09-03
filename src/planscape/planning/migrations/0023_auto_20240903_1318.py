@@ -42,4 +42,4 @@ class Migration(migrations.Migration):
         ("planning", "0022_remove_projectarea_origin_scenario_origin"),
     ]
 
-    operations = []
+    operations = [migrations.RunPython(copy_project_areas)]
