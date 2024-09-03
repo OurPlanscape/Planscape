@@ -1,7 +1,7 @@
 import json
 from django.db import migrations, models
 from planning.models import ScenarioResultStatus
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 
 
 def copy_project_areas(apps, schema_editor):
@@ -20,11 +20,14 @@ def copy_project_areas(apps, schema_editor):
     def create_project_areas(scenario):
         geojson = scenario.results.result
         features = geojson.get("features", []) or []
+        projects = []
         for f in features:
             properties = f.get("properties")
-            geom = GEOSGeometry(json.dumps(f.get("geometry")))
             name = properties.get("proj_id")
-            ProjectArea.objects.create(
+            geom = GEOSGeometry(json.dumps(f.get("geometry")))
+            if geom.geom_type == "Polygon":
+                geom = MultiPolygon([geom], srid=geom.srid)
+            project = ProjectArea.objects.create(
                 created_by=scenario.user,
                 created_at=scenario.created_at,
                 scenario=scenario,
@@ -32,6 +35,9 @@ def copy_project_areas(apps, schema_editor):
                 data=properties,
                 geometry=geom,
             )
+            projects.append(project)
+
+        return projects
 
     for scenario in scenarios_without_project_areas:
         create_project_areas(scenario)
