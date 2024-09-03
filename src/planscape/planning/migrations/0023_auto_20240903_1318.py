@@ -9,7 +9,7 @@ def copy_project_areas(apps, schema_editor):
     Scenario = apps.get_model("planning", "Scenario")
 
     scenarios_without_project_areas = (
-        Scenario.objects.annotate(project_area_count=models.Count("project_areas"))
+        Scenario.objects.annotate(project_areas_count=models.Count("project_areas"))
         .filter(
             project_areas_count__lte=0,
             results__status=ScenarioResultStatus.SUCCESS,
