@@ -10,6 +10,10 @@ export interface Scenario {
   scenario_result?: ScenarioResult;
   status: SCENARIO_STATUS;
   user?: number;
+  max_treatment_area?: number;
+  created_at?: string;
+  max_budget?: number;
+  tx_plan_count?: number | undefined;
 }
 
 /**
