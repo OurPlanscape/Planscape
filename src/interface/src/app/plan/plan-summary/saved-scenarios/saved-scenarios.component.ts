@@ -15,6 +15,7 @@ import { UploadProjectAreasModalComponent } from '../../upload-project-areas-mod
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
+  created_at?: string;
 }
 
 @UntilDestroy()
@@ -68,7 +69,6 @@ export class SavedScenariosComponent implements OnInit {
       .pipe(take(1))
       .subscribe((scenarios) => {
         this.totalScenarios = scenarios.length;
-
         this.scenariosForUser = this.showOnlyMyScenarios
           ? scenarios.filter((s) => s.user === this.user$.value?.id)
           : scenarios;
