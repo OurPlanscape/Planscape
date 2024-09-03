@@ -216,6 +216,13 @@ class TreatmentPrescription(
     class Meta:
         verbose_name = "Treatment Prescription"
         verbose_name_plural = "Treatment Prescriptions"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["treatment_plan", "stand"],
+                include=["type", "action"],
+                name="treatment_prescription_treatment_plan_unique_constraint",
+            )
+        ]
 
 
 @dataclass
