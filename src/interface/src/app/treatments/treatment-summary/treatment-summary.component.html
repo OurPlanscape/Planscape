@@ -1,5 +1,3 @@
-<p>treatment-summary works!</p>
-
 <div *ngIf="summary">
   <div *ngFor="let projectArea of summary.project_areas">
     <a [routerLink]="['project-area', projectArea.project_area_id]">

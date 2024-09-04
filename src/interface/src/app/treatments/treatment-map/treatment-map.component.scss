@@ -1,4 +1,16 @@
+:host {
+  width: 100%;
+  position: relative;
+}
+
 mgl-map {
   width: 100%;
-  height: 600px;
+  height: 100%;
+}
+
+app-map-controls {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 20;
 }

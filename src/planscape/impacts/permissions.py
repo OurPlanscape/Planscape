@@ -113,7 +113,10 @@ class TreatmentPrescriptionViewPermission(PlanscapePermission):
         tx_plan = get_object_or_404(TreatmentPlan, id=tx_plan_pk)
         match view.action:
             case "create":
-                return TreatmentPlanPermission.can_add_scenario(request.user, tx_plan)
+                return TreatmentPlanPermission.can_change(
+                    request.user,
+                    tx_plan,
+                )
             case "batch_delete":
                 return TreatmentPlanPermission.can_remove(request.user, tx_plan)
             case _:
