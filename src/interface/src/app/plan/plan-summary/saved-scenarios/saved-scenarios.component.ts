@@ -125,6 +125,12 @@ export class SavedScenariosComponent implements OnInit {
     });
   }
 
+  navigateToScenario(clickedScenario: ScenarioRow): void {
+    this.router.navigate(['config', clickedScenario.id], {
+      relativeTo: this.route,
+    });
+  }
+
   highlightScenario(row: ScenarioRow): void {
     this.highlightedScenarioRow = row;
   }
