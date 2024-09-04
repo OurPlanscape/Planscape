@@ -157,6 +157,7 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("scenario_name", summary)
         self.assertIn("treatment_plan_id", summary)
         self.assertIn("treatment_plan_name", summary)
+        self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 3)
 
         proj_area_1 = list(
@@ -197,6 +198,7 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("scenario_name", summary)
         self.assertIn("treatment_plan_id", summary)
         self.assertIn("treatment_plan_name", summary)
+        self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 1)
         proj_area_1 = list(
             filter(
