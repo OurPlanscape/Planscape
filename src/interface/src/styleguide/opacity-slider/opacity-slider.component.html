@@ -1,0 +1,10 @@
+<mat-card class="slider-card">
+  <div class="slider-label">{{ title }}</div>
+  <mat-slider
+    class="slider-control"
+    min="{{ minValue }}"
+    max="{{ maxValue }}"
+    step="{{ step }}">
+    <input matSliderThumb value="{{ value }}" />
+  </mat-slider>
+</mat-card>
