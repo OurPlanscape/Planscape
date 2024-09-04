@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatSliderModule } from '@angular/material/slider';
+import { MatSliderModule, MatSliderDragEvent } from '@angular/material/slider';
 
 /**
  * Modal Info Box
@@ -29,5 +29,7 @@ export class OpacitySliderComponent {
    * Iniiial value
    */
   @Input() value = 50;
+  // TODO: passthrough for these
   @Output() valueChange = new EventEmitter<number>();
+  @Output() dragEnd = new EventEmitter<MatSliderDragEvent>();
 }

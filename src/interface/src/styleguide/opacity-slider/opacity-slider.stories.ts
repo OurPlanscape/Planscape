@@ -14,7 +14,7 @@ const meta: Meta<OpacitySliderComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<sg-opacity-slider ${argsToTemplate(args)}></sg-opacity-slider>`,
+    template: `<div style="width:280px"><sg-opacity-slider ${argsToTemplate(args)}></sg-opacity-slider></div>`,
   }),
 };
 
