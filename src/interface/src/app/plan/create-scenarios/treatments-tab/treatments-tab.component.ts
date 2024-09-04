@@ -83,4 +83,24 @@ export class TreatmentsTabComponent implements OnInit {
       },
     });
   }
+
+  duplicateTreatment(treatment: TreatmentPlan) {
+    this.treatmentsService.duplicateTreatmentPlan(treatment.id).subscribe({
+      next: (t) => {
+        this.treatments = [...this.treatments, t];
+        this.matSnackBar.open(
+          `Duplicated Treatment Plan '${treatment.name}'`,
+          'Dismiss',
+          SNACK_NOTICE_CONFIG
+        );
+      },
+      error: () => {
+        this.matSnackBar.open(
+          `[Error] Cannot duplicate treatment plan '${treatment.name}'`,
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      },
+    });
+  }
 }
