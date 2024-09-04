@@ -1,8 +1,7 @@
-from collections import defaultdict
-from itertools import groupby
 from typing import List, Optional, Type, Dict, Union, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
+from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.models import (
     TreatmentPlan,
@@ -10,13 +9,10 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionType,
     get_prescription_type,
-    TxPlanSummary,
-    ProjectAreaSummary,
-    TxPrescriptionSummaryItem,
 )
 from planning.models import ProjectArea, Scenario
 from actstream import action as actstream_action
-from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.models import STAND_AREA_ACRES, Stand
 from planscape.typing import UserType
 
 TreatmentPlanType = Type[TreatmentPlan]
@@ -170,6 +166,9 @@ def generate_summary(
     )
     project_areas = {}
     project_area_queryset = ProjectArea.objects.filter(**pa_filter)
+    project_areas_geometry = project_area_queryset.all().aggregate(
+        geometry=UnionOp("geometry")
+    )["geometry"]
     for project in project_area_queryset:
         stand_project_qs = Stand.objects.filter(
             size=stand_size,
@@ -202,5 +201,6 @@ def generate_summary(
         "treatment_plan_id": treatment_plan.pk,
         "treatment_plan_name": treatment_plan.name,
         "project_areas": list(project_areas.values()),
+        "extent": project_areas_geometry.extent,
     }
     return data
