@@ -36,6 +36,12 @@ export class TreatmentsService {
     });
   }
 
+  duplicateTreatmentPlan(id: number) {
+    return this.http.post<TreatmentPlan>(this.baseUrl + id + '/clone/', {
+      withCredentials: true,
+    });
+  }
+
   getTreatmentPlan(id: number) {
     return this.http.get<TreatmentPlan>(this.baseUrl + id, {
       withCredentials: true,
