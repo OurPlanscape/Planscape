@@ -28,7 +28,6 @@
     [end]="end ? end.lngLat : null"></app-map-rectangle>
 
   <app-map-project-areas
-    *ngIf="scenarioId"
     [mapLibreMap]="mapLibreMap"
-    [scenarioId]="scenarioId"></app-map-project-areas>
+    *ngIf="showMapProjectAreas$ | async"></app-map-project-areas>
 </mgl-map>

@@ -19,6 +19,7 @@ export class TreatmentsState {
 
   private _treatmentPlanId: number | undefined = undefined;
   private _projectAreaId: number | undefined = undefined;
+  private _scenarioId: number | undefined = undefined;
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
@@ -26,7 +27,7 @@ export class TreatmentsState {
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
 
-  getTreatmentPlanId(): number {
+  getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
       throw new Error('no treatment plan id!');
     }
@@ -37,12 +38,23 @@ export class TreatmentsState {
     this._treatmentPlanId = value;
   }
 
-  getProjectAreaId(): number | undefined {
+  getProjectAreaId() {
     return this._projectAreaId;
   }
 
   setProjectAreaId(value: number | undefined) {
     this._projectAreaId = value;
+  }
+
+  getScenarioId(): number {
+    if (this._scenarioId === undefined) {
+      throw new Error('no _scenario id!');
+    }
+    return this._scenarioId;
+  }
+
+  setScenarioId(value: number) {
+    this._scenarioId = value;
   }
 
   loadSummary() {

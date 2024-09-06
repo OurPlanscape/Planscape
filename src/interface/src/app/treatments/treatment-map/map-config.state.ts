@@ -19,11 +19,18 @@ export class MapConfigState {
     .asObservable()
     .pipe(filter((m): m is Extent => !!m));
 
+  private _showProjectAreas$ = new BehaviorSubject(true);
+  public showProjectAreas$ = this._showProjectAreas$.asObservable();
+
   updateBaseLayer(layer: BaseLayerType) {
     this._baseLayer$.next(layer);
   }
 
   updateMapCenter(pos: any) {
     this._mapCenter$.next(pos);
+  }
+
+  updateShowProjectAreas(value: boolean) {
+    this._showProjectAreas$.next(value);
   }
 }

@@ -28,6 +28,9 @@ const routes: Routes = [
         resolve: {
           initializeStates: treatmentStateResolver,
         },
+        data: {
+          showMapProjectAreas: true,
+        },
       },
       { path: 'project-area', redirectTo: '', pathMatch: 'full' },
       {
@@ -37,6 +40,9 @@ const routes: Routes = [
         resolve: {
           projectAreaId: numberResolver('projectAreaId', ''),
           initializeStates: treatmentStateResolver,
+        },
+        data: {
+          showMapProjectAreas: false,
         },
       },
     ],

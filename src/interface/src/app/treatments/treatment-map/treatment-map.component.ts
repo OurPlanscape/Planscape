@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   DraggableDirective,
@@ -45,8 +45,6 @@ export class TreatmentMapComponent {
   mapLibreMap!: MapLibreMap;
   readonly key = environment.stadiamaps_key;
 
-  @Input() scenarioId: number | null = null;
-
   mapDragging = true;
 
   private isDragging = false;
@@ -59,6 +57,8 @@ export class TreatmentMapComponent {
 
   // this is not great, as I need to clean up the previous bounds$ value...hmmmm
   bounds$ = this.mapConfigState.mapCenter$.pipe(filter((c) => !!c));
+
+  showMapProjectAreas$ = this.mapConfigState.showProjectAreas$;
 
   constructor(
     private mapConfigState: MapConfigState,
