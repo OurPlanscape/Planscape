@@ -17,6 +17,7 @@ import { environment } from '../../../environments/environment';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { MapConfigState } from './map-config.state';
 import { TreatedStandsState } from './treated-stands.state';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-treatment-map',
@@ -55,6 +56,9 @@ export class TreatmentMapComponent {
   styleUrl$ = this.mapConfigState.baseLayerUrl$;
 
   treatedStands$ = this.treatedStandsState.treatedStands$;
+
+  // this is not great, as I need to clean up the previous bounds$ value...hmmmm
+  bounds$ = this.mapConfigState.mapCenter$.pipe(filter((c) => !!c));
 
   constructor(
     private mapConfigState: MapConfigState,
