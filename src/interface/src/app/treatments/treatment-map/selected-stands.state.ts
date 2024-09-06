@@ -1,6 +1,9 @@
 import { BehaviorSubject } from 'rxjs';
 import { Injectable } from '@angular/core';
 
+/**
+ * Manages the selected stands on a map
+ */
 @Injectable()
 export class SelectedStandsState {
   private _selectedStands$ = new BehaviorSubject<number[]>([]);
