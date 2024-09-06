@@ -8,6 +8,7 @@ import {
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
 import { LayerSpecification, Map as MapLibreMap } from 'maplibre-gl';
 import { environment } from '../../../environments/environment';
+import { TreatmentsState } from '../treatments.state';
 
 @Component({
   selector: 'app-map-project-areas',
@@ -22,14 +23,14 @@ import { environment } from '../../../environments/environment';
   styleUrl: './map-project-areas.component.scss',
 })
 export class MapProjectAreasComponent {
-  @Input() scenarioId!: number;
+  scenarioId = this.treatmentsState.getScenarioId();
   @Input() mapLibreMap!: MapLibreMap;
 
   readonly layerName = 'project_areas_by_scenario';
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
 
-  constructor() {}
+  constructor(private treatmentsState: TreatmentsState) {}
 
   get vectorLayerUrl() {
     return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
