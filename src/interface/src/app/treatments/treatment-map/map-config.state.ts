@@ -5,6 +5,8 @@ import {
   BaseLayerType,
   DEFAULT_BASE_MAP,
 } from './map-base-layers';
+import { Extent } from '@types';
+import { filter } from 'rxjs/operators';
 
 @Injectable()
 export class MapConfigState {
@@ -12,7 +14,16 @@ export class MapConfigState {
   baseLayer$ = this._baseLayer$.asObservable();
   baseLayerUrl$ = this.baseLayer$.pipe(map((b) => baseLayerStyles[b]));
 
+  private _mapCenter$ = new BehaviorSubject<Extent | null>(null);
+  mapCenter$ = this._mapCenter$
+    .asObservable()
+    .pipe(filter((m): m is Extent => !!m));
+
   updateBaseLayer(layer: BaseLayerType) {
     this._baseLayer$.next(layer);
+  }
+
+  updateMapCenter(pos: any) {
+    this._mapCenter$.next(pos);
   }
 }

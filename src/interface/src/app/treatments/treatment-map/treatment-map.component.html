@@ -2,10 +2,11 @@
   [mapDragging]="mapDragging"
   (toggleDrag)="mapDragging = $event"></app-map-controls>
 <mgl-map
+  *ngIf="bounds$ | async"
   (mapLoad)="mapLibreMap = $event"
   [style]="(styleUrl$ | async) || ''"
-  [zoom]="[10]"
-  [center]="[-120, 37]"
+  [fitBounds]="(bounds$ | async) || undefined"
+  [fitBoundsOptions]="{ padding: 20 }"
   [dragPan]="mapDragging"
   [minZoom]="7"
   [maxZoom]="17"
