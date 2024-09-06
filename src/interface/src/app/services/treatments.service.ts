@@ -1,18 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { TreatmentPlan } from '@types';
-
-interface ProjectArea {
-  project_area_id: number;
-  project_area_name: string;
-  total_stand_count: number;
-  prescriptions: [];
-}
-
-export interface Summary {
-  project_areas: ProjectArea[];
-}
+import { TreatmentPlan, TreatmentSummary } from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -59,9 +48,46 @@ export class TreatmentsService {
     });
   }
 
-  getTreatmentPlanSummary(id: number) {
-    return this.http.get<Summary>(this.baseUrl + id + '/summary', {
+  getTreatmentPlanSummary(id: number, projectArea?: number) {
+    return this.http.get<TreatmentSummary>(this.baseUrl + id + '/summary', {
       withCredentials: true,
+      params:
+        projectArea !== undefined ? { project_area: projectArea } : undefined,
     });
+  }
+
+  setTreatments(
+    treatmentPlanId: number,
+    projectAreaId: number,
+    action: string,
+    standIds: number[]
+  ) {
+    return this.http.post(
+      this.baseUrl + treatmentPlanId + '/treatment_prescriptions/',
+      {
+        project_area: projectAreaId,
+        action: action,
+        stands: standIds,
+        treatment_plan: treatmentPlanId,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  removeTreatments(treatmentPlanId: number, standIds: number[]) {
+    return this.http.post(
+      this.baseUrl +
+        treatmentPlanId +
+        '/treatment_prescriptions/delete_prescriptions/',
+      {
+        stand_ids: standIds,
+        treatment_plan: treatmentPlanId,
+      },
+      {
+        withCredentials: true,
+      }
+    );
   }
 }

@@ -1,27 +1,21 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { Summary, TreatmentsService } from '@services/treatments.service';
-import { JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { Component } from '@angular/core';
+import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { TreatmentsState } from '../treatments.state';
 
+/**
+ * placeholder component to display project areas.
+ * To be replaced with project area expander
+ */
 @Component({
   selector: 'app-treatment-summary',
   standalone: true,
-  imports: [JsonPipe, NgForOf, NgIf, RouterLink],
+  imports: [JsonPipe, NgForOf, NgIf, RouterLink, AsyncPipe],
   templateUrl: './treatment-summary.component.html',
   styleUrl: './treatment-summary.component.scss',
 })
-export class TreatmentSummaryComponent implements OnInit {
-  @Input() treatmentPlanId!: number;
+export class TreatmentSummaryComponent {
+  summary$ = this.treatmentsState.summary$;
 
-  summary: Summary | null = null;
-
-  constructor(private treatmentsService: TreatmentsService) {}
-
-  ngOnInit(): void {
-    if (this.treatmentPlanId) {
-      this.treatmentsService
-        .getTreatmentPlanSummary(this.treatmentPlanId)
-        .subscribe((r) => (this.summary = r));
-    }
-  }
+  constructor(private treatmentsState: TreatmentsState) {}
 }
