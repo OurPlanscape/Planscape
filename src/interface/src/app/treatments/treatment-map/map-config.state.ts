@@ -22,6 +22,9 @@ export class MapConfigState {
   private _showProjectAreas$ = new BehaviorSubject(true);
   public showProjectAreas$ = this._showProjectAreas$.asObservable();
 
+  private _showTreatmentStands$ = new BehaviorSubject(true);
+  public showTreatmentStands$ = this._showTreatmentStands$.asObservable();
+
   updateBaseLayer(layer: BaseLayerType) {
     this._baseLayer$.next(layer);
   }
@@ -32,5 +35,14 @@ export class MapConfigState {
 
   updateShowProjectAreas(value: boolean) {
     this._showProjectAreas$.next(value);
+  }
+
+  updateShowTreatmentStands(value: boolean) {
+    this._showTreatmentStands$.next(value);
+  }
+
+  toggleShowTreatmentStands() {
+    const value = this._showTreatmentStands$.value;
+    this._showTreatmentStands$.next(!value);
   }
 }

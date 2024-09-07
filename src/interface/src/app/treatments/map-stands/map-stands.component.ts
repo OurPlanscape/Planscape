@@ -30,9 +30,6 @@ export class MapStandsComponent implements OnChanges {
   @Input() selectEnd!: Point | null;
   @Input() treatedStands: TreatedStand[] = [];
 
-  treatmentPlanId = this.treatmentsState.getTreatmentPlanId();
-  projectAreaId = this.treatmentsState.getProjectAreaId();
-
   selectedStands$ = this.selectedStandsState.selectedStands$;
   private initialSelectedStands: number[] = [];
 
@@ -53,10 +50,11 @@ export class MapStandsComponent implements OnChanges {
   ) {}
 
   get vectorLayerUrl() {
+    const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
       this.tilesUrl +
-      `?treatment_plan_id=${this.treatmentPlanId}${
-        this.projectAreaId ? `&project_area_id=${this.projectAreaId}` : ''
+      `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}${
+        projectAreaId ? `&project_area_id=${projectAreaId}` : ''
       }`
     );
   }

@@ -20,6 +20,7 @@ export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
 
   // update config on map, based on route data
   mapConfig.updateShowProjectAreas(route.data['showMapProjectAreas']);
+  mapConfig.updateShowTreatmentStands(route.data['showTreatmentStands']);
 
   treatmentsState.setTreatmentPlanId(treatmentPlanId);
   treatmentsState.setScenarioId(scenarioId);

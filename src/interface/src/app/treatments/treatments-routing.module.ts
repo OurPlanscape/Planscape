@@ -32,6 +32,7 @@ const routes: Routes = [
         },
         data: {
           showMapProjectAreas: true,
+          showTreatmentStands: false,
         },
       },
       { path: 'project-area', redirectTo: '', pathMatch: 'full' },
@@ -45,6 +46,7 @@ const routes: Routes = [
         },
         data: {
           showMapProjectAreas: false,
+          showTreatmentStands: true,
         },
       },
     ],

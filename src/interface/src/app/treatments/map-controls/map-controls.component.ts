@@ -1,6 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { NgForOf } from '@angular/common';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-map-controls',
@@ -15,7 +16,10 @@ export class MapControlsComponent {
   @Input() mapDragging = false;
   @Output() toggleDrag = new EventEmitter<boolean>();
 
-  constructor(private selectedStandsState: SelectedStandsState) {}
+  constructor(
+    private selectedStandsState: SelectedStandsState,
+    private mapConfigState: MapConfigState
+  ) {}
 
   clearTreatments() {
     this.selectedStandsState.clearStands();
@@ -24,5 +28,9 @@ export class MapControlsComponent {
   toggleMapDrag() {
     this.mapDragging = !this.mapDragging;
     this.toggleDrag.emit(this.mapDragging);
+  }
+
+  toggleShowStands() {
+    this.mapConfigState.toggleShowTreatmentStands();
   }
 }
