@@ -17,7 +17,7 @@ import { environment } from '../../../environments/environment';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { MapConfigState } from './map-config.state';
 import { TreatedStandsState } from './treated-stands.state';
-import { filter } from 'rxjs/operators';
+import { distinctUntilChanged, map, withLatestFrom } from 'rxjs';
 
 @Component({
   selector: 'app-treatment-map',
@@ -55,10 +55,16 @@ export class TreatmentMapComponent {
 
   treatedStands$ = this.treatedStandsState.treatedStands$;
 
-  // this is not great, as I need to clean up the previous bounds$ value...hmmmm
-  bounds$ = this.mapConfigState.mapCenter$.pipe(filter((c) => !!c));
+  // this is not great, as I need to clean up the previous bounds$ value...sometimes.
+  bounds$ = this.mapConfigState.mapCenter$;
 
-  showMapProjectAreas$ = this.mapConfigState.showProjectAreas$;
+  showMapProjectAreas$ = this.bounds$.pipe(
+    distinctUntilChanged(),
+    withLatestFrom(this.mapConfigState.showProjectAreas$),
+    map(([bounds, showAreas]) => showAreas) // Pass only the showProjectAreas$ value forward
+  );
+
+  showTreatmentStands$ = this.mapConfigState.showTreatmentStands$;
 
   constructor(
     private mapConfigState: MapConfigState,
