@@ -9,9 +9,14 @@ import { MapConfigState } from './treatment-map/map-config.state';
 export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
   const treatmentsState = inject(TreatmentsState);
   const mapConfig = inject(MapConfigState);
-  const treatmentPlanId = Number(route.paramMap.get('treatmentId'));
+
+  const paramMap = route.parent?.paramMap;
+  if (!paramMap) {
+    return false;
+  }
+  const treatmentPlanId = Number(paramMap.get('treatmentId'));
   const projectAreaId = route.paramMap.get('projectAreaId');
-  const scenarioId = Number(route.paramMap.get('scenarioId'));
+  const scenarioId = Number(paramMap.get('scenarioId'));
 
   // update config on map, based on route data
   mapConfig.updateShowProjectAreas(route.data['showMapProjectAreas']);

@@ -9,6 +9,7 @@ import { SelectedStandsState } from './treatment-map/selected-stands.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { treatmentStateResolver } from './treatment-state.resolver';
 import { MapConfigState } from './treatment-map/map-config.state';
+import { TreatmentLayoutComponent } from './treatment-layout/treatment-layout.component';
 
 const routes: Routes = [
   {
@@ -20,6 +21,7 @@ const routes: Routes = [
       TreatedStandsState,
       MapConfigState,
     ],
+    component: TreatmentLayoutComponent,
     children: [
       {
         path: '',
