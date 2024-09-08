@@ -17,6 +17,7 @@ import { environment } from '../../../environments/environment';
 import { PrescriptionSingleAction, SEQUENCE_COLORS } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
 import { TreatedStand } from '@types';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-map-stands',
@@ -46,7 +47,8 @@ export class MapStandsComponent implements OnChanges {
 
   constructor(
     private selectedStandsState: SelectedStandsState,
-    private treatmentsState: TreatmentsState
+    private treatmentsState: TreatmentsState,
+    private mapConfigState: MapConfigState
   ) {}
 
   get vectorLayerUrl() {
@@ -150,5 +152,13 @@ export class MapStandsComponent implements OnChanges {
       //select stands
       this.selectStandsWithinRectangle();
     }
+  }
+
+  setCursor() {
+    this.mapConfigState.setCursor('pointer');
+  }
+
+  resetCursor() {
+    this.mapConfigState.resetCursor();
   }
 }

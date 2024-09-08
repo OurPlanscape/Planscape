@@ -19,11 +19,18 @@ export class MapConfigState {
     .asObservable()
     .pipe(filter((m): m is Extent => !!m));
 
-  private _showProjectAreas$ = new BehaviorSubject(true);
-  public showProjectAreas$ = this._showProjectAreas$.asObservable();
+  private _showProjectAreasLayer$ = new BehaviorSubject(true);
+  public showProjectAreasLayer$ = this._showProjectAreasLayer$.asObservable();
 
-  private _showTreatmentStands$ = new BehaviorSubject(true);
-  public showTreatmentStands$ = this._showTreatmentStands$.asObservable();
+  private _showTreatmentStandsLayer$ = new BehaviorSubject(true);
+  public showTreatmentStandsLayer$ =
+    this._showTreatmentStandsLayer$.asObservable();
+
+  private _boxSelectionEnabled$ = new BehaviorSubject(false);
+  public boxSelectionEnabled$ = this._boxSelectionEnabled$.asObservable();
+
+  private _cursor$ = new BehaviorSubject('');
+  public cursor$ = this._cursor$.asObservable();
 
   updateBaseLayer(layer: BaseLayerType) {
     this._baseLayer$.next(layer);
@@ -34,15 +41,33 @@ export class MapConfigState {
   }
 
   updateShowProjectAreas(value: boolean) {
-    this._showProjectAreas$.next(value);
+    this._showProjectAreasLayer$.next(value);
   }
 
   updateShowTreatmentStands(value: boolean) {
-    this._showTreatmentStands$.next(value);
+    this._showTreatmentStandsLayer$.next(value);
   }
 
   toggleShowTreatmentStands() {
-    const value = this._showTreatmentStands$.value;
-    this._showTreatmentStands$.next(!value);
+    const value = this._showTreatmentStandsLayer$.value;
+    this._showTreatmentStandsLayer$.next(!value);
+  }
+
+  toggleBoxSelectionEnabled() {
+    const value = this._boxSelectionEnabled$.value;
+    this._boxSelectionEnabled$.next(!value);
+    this.resetCursor();
+  }
+
+  getBoxSelectionEnabled() {
+    return this._boxSelectionEnabled$.value;
+  }
+
+  setCursor(value: string) {
+    this._cursor$.next(value);
+  }
+
+  resetCursor() {
+    this._cursor$.next(this._boxSelectionEnabled$.value ? 'crosshair' : '');
   }
 }
