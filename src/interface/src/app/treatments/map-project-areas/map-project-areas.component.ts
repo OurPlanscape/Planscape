@@ -6,9 +6,14 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
-import { LayerSpecification, Map as MapLibreMap } from 'maplibre-gl';
+import {
+  LayerSpecification,
+  Map as MapLibreMap,
+  MapMouseEvent,
+} from 'maplibre-gl';
 import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-map-project-areas',
@@ -30,7 +35,11 @@ export class MapProjectAreasComponent {
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
 
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   get vectorLayerUrl() {
     return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
@@ -53,5 +62,28 @@ export class MapProjectAreasComponent {
     }
     matchExpression.push(defaultColor);
     return matchExpression;
+  }
+
+  goToProjectArea(event: MapMouseEvent) {
+    const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
+      layers: ['map-project-areas-fill'],
+    });
+
+    const projectAreaId = features[0].properties['id'];
+    this.router
+      .navigate(['project-area', projectAreaId], {
+        relativeTo: this.route,
+      })
+      .then(() => {
+        this.mapLibreMap.getCanvas().style.cursor = '';
+      });
+  }
+
+  setCursor() {
+    this.mapLibreMap.getCanvas().style.cursor = 'pointer';
+  }
+
+  resetCursor() {
+    this.mapLibreMap.getCanvas().style.cursor = '';
   }
 }

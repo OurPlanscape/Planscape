@@ -1,13 +1,11 @@
-<app-map-controls
-  [mapDragging]="mapDragging"
-  (toggleDrag)="mapDragging = $event"></app-map-controls>
+<app-map-controls></app-map-controls>
 <mgl-map
   *ngIf="bounds$ | async; let bounds"
   (mapLoad)="mapLibreMap = $event"
-  [style]="(styleUrl$ | async) || ''"
+  [style]="(baseLayerUrl$ | async) || ''"
   [fitBounds]="bounds"
   [fitBoundsOptions]="{ padding: 20 }"
-  [dragPan]="mapDragging"
+  [dragPan]="!(boxSelectionEnabled$ | async)"
   [minZoom]="7"
   [maxZoom]="17"
   [boxZoom]="false"
@@ -20,13 +18,13 @@
     *ngIf="showTreatmentStands$ | async"
     [mapLibreMap]="mapLibreMap"
     [treatedStands]="(treatedStands$ | async) || []"
-    [selectStart]="start ? start.point : null"
-    [selectEnd]="end ? end.point : null"></app-map-stands>
+    [selectStart]="mouseStart ? mouseStart.point : null"
+    [selectEnd]="mouseEnd ? mouseEnd.point : null"></app-map-stands>
 
   <app-map-rectangle
     [mapLibreMap]="mapLibreMap"
-    [start]="start ? start.lngLat : null"
-    [end]="end ? end.lngLat : null"></app-map-rectangle>
+    [start]="mouseStart ? mouseStart.lngLat : null"
+    [end]="mouseEnd ? mouseEnd.lngLat : null"></app-map-rectangle>
 
   <app-map-project-areas
     [mapLibreMap]="mapLibreMap"
