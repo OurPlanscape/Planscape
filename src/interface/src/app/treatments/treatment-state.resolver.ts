@@ -1,7 +1,8 @@
-import { ResolveFn } from '@angular/router';
+import { ResolveFn, Router } from '@angular/router';
 import { inject } from '@angular/core';
 import { TreatmentsState } from './treatments.state';
 import { MapConfigState } from './treatment-map/map-config.state';
+import { catchError } from 'rxjs';
 
 /**
  * Resolver that kickoff loading data via TreatmentsState.
@@ -9,6 +10,7 @@ import { MapConfigState } from './treatment-map/map-config.state';
 export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
   const treatmentsState = inject(TreatmentsState);
   const mapConfig = inject(MapConfigState);
+  const router = inject(Router);
 
   const paramMap = route.parent?.paramMap;
   if (!paramMap) {
@@ -28,7 +30,24 @@ export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
     projectAreaId ? Number(projectAreaId) : undefined
   );
 
-  treatmentsState.loadSummary();
-  treatmentsState.loadTreatmentPlan();
+  treatmentsState
+    .loadSummary()
+    .pipe(
+      catchError((error) => {
+        router.navigate(['/']);
+        throw error;
+      })
+    )
+    .subscribe();
+
+  treatmentsState
+    .loadTreatmentPlan()
+    .pipe(
+      catchError((error) => {
+        router.navigate(['/']);
+        throw error;
+      })
+    )
+    .subscribe();
   return true;
 };

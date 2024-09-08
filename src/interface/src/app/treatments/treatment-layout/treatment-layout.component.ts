@@ -1,9 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-  OnDestroy,
-  OnInit,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 
@@ -15,14 +10,6 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
   styleUrl: './treatment-layout.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TreatmentLayoutComponent implements OnInit, OnDestroy {
+export class TreatmentLayoutComponent {
   constructor() {}
-
-  ngOnInit(): void {
-    console.log('treatment layout my guy');
-  }
-
-  ngOnDestroy() {
-    console.log('TreatmentsLayoutComponent Destroyed');
-  }
 }

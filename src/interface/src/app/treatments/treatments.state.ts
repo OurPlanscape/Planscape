@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { BehaviorSubject, catchError } from 'rxjs';
+import { BehaviorSubject, catchError, map } from 'rxjs';
 import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
 
@@ -66,11 +66,14 @@ export class TreatmentsState {
         this.getTreatmentPlanId(),
         this.getProjectAreaId()
       )
-      .subscribe((summary) => {
-        this._summary$.next(summary);
-        this.setTreatedStandsFromSummary(summary);
-        this.mapConfigState.updateMapCenter(summary.extent);
-      });
+      .pipe(
+        map((summary) => {
+          this._summary$.next(summary);
+          this.setTreatedStandsFromSummary(summary);
+          this.mapConfigState.updateMapCenter(summary.extent);
+          return true;
+        })
+      );
   }
 
   loadTreatmentPlan() {
@@ -78,9 +81,12 @@ export class TreatmentsState {
     this._treatmentPlan.next(null);
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
-      .subscribe((treatmentPlan) => {
-        this._treatmentPlan.next(treatmentPlan);
-      });
+      .pipe(
+        map((treatmentPlan) => {
+          this._treatmentPlan.next(treatmentPlan);
+          return true;
+        })
+      );
   }
 
   private setTreatedStandsFromSummary(summary: TreatmentSummary) {
