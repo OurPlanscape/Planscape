@@ -20,7 +20,7 @@ export class ScenariosCardListComponent {
   selectedCard: ScenarioRow | null = null;
   @Input() scenarios: ScenarioRow[] = [];
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
-  @Output() clickedScenario = new EventEmitter<ScenarioRow>();
+  @Output() viewScenario = new EventEmitter<ScenarioRow>();
 
   hasResults(scenario: Scenario) {
     return (
@@ -31,11 +31,11 @@ export class ScenariosCardListComponent {
 
   handleClickedScenario(row: ScenarioRow): void {
     if (
-      row.scenario_result?.status === 'FAILURE' ||
-      row.scenario_result?.status === 'SUCCESS'
+      row.scenario_result &&
+      ['SUCCESS', 'FAILURE', 'PANIC'].includes(row.scenario_result.status)
     ) {
       this.selectedCard = row;
-      this.selectScenario.emit(row);
+      this.viewScenario.emit(row);
     }
   }
 
