@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TreatmentLayoutComponent } from './treatment-layout.component';
+import { MockDeclarations } from 'ng-mocks';
+import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 
 describe('TreatmentLayoutComponent', () => {
   let component: TreatmentLayoutComponent;
@@ -8,10 +10,10 @@ describe('TreatmentLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentLayoutComponent]
-    })
-    .compileComponents();
-    
+      imports: [TreatmentLayoutComponent],
+      declarations: [MockDeclarations(TreatmentMapComponent)],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(TreatmentLayoutComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

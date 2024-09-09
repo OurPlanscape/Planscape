@@ -12,7 +12,8 @@ export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
   const mapConfig = inject(MapConfigState);
   const router = inject(Router);
 
-  const paramMap = route.parent?.paramMap;
+  const paramMap = route.parent?.paramMap || route.paramMap;
+
   if (!paramMap) {
     return false;
   }
@@ -21,8 +22,12 @@ export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
   const scenarioId = Number(paramMap.get('scenarioId'));
 
   // update config on map, based on route data
-  mapConfig.updateShowProjectAreas(route.data['showMapProjectAreas']);
-  mapConfig.updateShowTreatmentStands(route.data['showTreatmentStands']);
+  mapConfig.updateShowProjectAreas(
+    route.data?.['showMapProjectAreas'] || false
+  );
+  mapConfig.updateShowTreatmentStands(
+    route.data?.['showTreatmentStands'] || false
+  );
 
   treatmentsState.setTreatmentPlanId(treatmentPlanId);
   treatmentsState.setScenarioId(scenarioId);
