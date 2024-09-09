@@ -11,6 +11,7 @@ const routes: Routes = [
     title: 'Plan Details',
     component: PlanComponent,
     canActivate: [AuthGuard],
+
     children: [
       {
         path: 'config',
