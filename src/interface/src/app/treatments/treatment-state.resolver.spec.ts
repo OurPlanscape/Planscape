@@ -2,14 +2,22 @@ import { TestBed } from '@angular/core/testing';
 import { treatmentStateResolver } from './treatment-state.resolver';
 import { TreatmentsState } from './treatments.state';
 import { ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { MapConfigState } from './treatment-map/map-config.state';
 import { MockProvider } from 'ng-mocks';
+import { of } from 'rxjs';
 
 describe('treatmentStateResolver', () => {
   let treatmentsState: TreatmentsState;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [MockProvider(TreatmentsState)],
+      providers: [
+        MockProvider(MapConfigState),
+        MockProvider(TreatmentsState, {
+          loadSummary: () => of(true),
+          loadTreatmentPlan: () => of(true),
+        }),
+      ],
     });
 
     treatmentsState = TestBed.inject(TreatmentsState);
