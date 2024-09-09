@@ -1,11 +1,10 @@
-<app-map-controls></app-map-controls>
 <mgl-map
   *ngIf="bounds$ | async; let bounds"
   (mapLoad)="mapLibreMap = $event"
   [style]="(baseLayerUrl$ | async) || ''"
   [fitBounds]="bounds"
   [fitBoundsOptions]="{ padding: 20 }"
-  [dragPan]="!(boxSelectionEnabled$ | async)"
+  [dragPan]="!(standSelectionEnabled$ | async)"
   [minZoom]="7"
   [maxZoom]="17"
   [boxZoom]="false"
@@ -14,6 +13,9 @@
   (mapMouseDown)="onMapMouseDown($event)"
   (mapMouseMove)="onMapMouseMove($event)"
   (mapMouseUp)="onMapMouseUp($event)">
+  <app-map-controls
+    *ngIf="showMapControls$ | async"
+    [mapLibreMap]="mapLibreMap"></app-map-controls>
   <app-map-stands
     *ngIf="showTreatmentStands$ | async"
     [mapLibreMap]="mapLibreMap"
