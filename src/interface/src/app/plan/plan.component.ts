@@ -36,7 +36,6 @@ export class PlanComponent implements OnInit, OnDestroy {
   planOwner$ = new Observable<User | null>();
 
   showOverview$ = new BehaviorSubject<boolean>(false);
-
   area$ = this.showOverview$.pipe(
     map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
   );
@@ -58,6 +57,8 @@ export class PlanComponent implements OnInit, OnDestroy {
   ]).pipe(
     map(([plan, scenario]) => {
       const path = this.getPathFromSnapshot();
+      const scenarioId = this.route.children[0]?.snapshot.params['id'];
+
       const crumbs: Breadcrumb[] = [
         {
           name: plan.name,
@@ -67,7 +68,7 @@ export class PlanComponent implements OnInit, OnDestroy {
       if (scenario === undefined) {
         return crumbs;
       }
-      if (path === 'config' && !scenario) {
+      if (path === 'config' && !scenarioId) {
         crumbs.push({ name: 'New Scenario' });
       }
       if (scenario) {
@@ -115,10 +116,10 @@ export class PlanComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const path = this.getPathFromSnapshot();
     this.planStateService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
+        const path = this.getPathFromSnapshot();
         if (state.currentScenarioId || path === 'config') {
           this.showOverview$.next(false);
         } else {
