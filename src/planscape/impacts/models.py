@@ -235,20 +235,20 @@ class ImpactVariableAggregation(models.TextChoices):
 
 
 class ImpactVariable(models.TextChoices):
-    CROWN_BULK_DENSITY = "CROWN_BULK_DENSITY", "Crown Bulk DEnsity"
-    CANOPY_BASE_HEIGHT = "CANOPY_BASE_HEIGHT", "Canopy Base Height"
-    CANOPY_COVER = "CANOPY_COVER", "Canopy Cover"
-    FUEL_BED_FUEL_MODEL = "FUEL_BED_FUEL_MODEL", "Fuel Bed/Fuel Model"
+    CROWN_BULK_DENSITY = "CBD", "Crown Bulk Density"
+    CANOPY_BASE_HEIGHT = "CBH", "Canopy Base Height"
+    CANOPY_COVER = "CC", "Canopy Cover"
+    FUEL_BED_FUEL_MODEL = "FBFM", "Fuel Bed/Fuel Model"
     LARGE_TREE_BIOMASS = "LARGE_TREE_BIOMASS", "Large Tree Biomass"
     MERCH_BIOMASS = "MERCH_BIOMASS", "Merch Biomass"
     MORTALITY = "MORTALITY", "Mortality"
     NON_MERCH_BIOMASS = "NON_MERCH_BIOMASS", "Non Merch Biomass"
     POTENTIAL_SMOKE = "POTENTIAL_SMOKE", "Potential Smoke"
-    PROBABILITY_TORCHING = "PROBABILITY_TORCHING", "Probabiliy of Torching"
-    QUADRATIC_MEAN_DIAMETER = "QUADRATIC_MEAN_DIAMETER", "Quadratic Mean Diameter"
-    STAND_DENSITY_INDEX = "STAND_DENSITY_INDEX", "Stand Density Index"
-    TOTAL_HEIGHT = "TOTAL_HEIGHT", "Total Height"
-    TOTAL_FLAME_SEVERITY = "TOTAL_FLAME_SEVERITY", "Total Flame Severity"
+    PROBABILITY_TORCHING = "PTORCH", "Probabiliy of Torching"
+    QUADRATIC_MEAN_DIAMETER = "QMD", "Quadratic Mean Diameter"
+    STAND_DENSITY_INDEX = "SDI", "Stand Density Index"
+    TOTAL_HEIGHT = "TH", "Total Height"
+    TOTAL_FLAME_SEVERITY = "TOT_FLAME_SEV", "Total Flame Severity"
     TOTAL_CARBON = "TOTAL_CARBON", "Total Carbon"
 
     AGGREGATIONS = {
@@ -281,6 +281,10 @@ class ImpactVariable(models.TextChoices):
     @classmethod
     def get_aggregation(cls, impact_variable: Self) -> ImpactVariableAggregation:
         return cls.AGGREGATIONS[impact_variable]
+
+    @classmethod
+    def s3_path(cls, impact_variable: Self, year: int, prescription) -> str:
+        return f"s3://{settings.S3_BUCKET}/rasters/impacts/"
 
 
 class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
