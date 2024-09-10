@@ -2,12 +2,12 @@ import { Component, Input } from '@angular/core';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import {
-  TreatmentTypeIconComponent,
-  TreatmentIconColor,
-} from '../treatment-type-icon/treatment-type-icon.component';
+import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
-import { TreatmentType } from '@types';
+import {
+  PrescriptionSingleAction,
+  USER_FACING_RX_STRING,
+} from '../../app/treatments/prescriptions';
 
 export interface rxType {
   name: string;
@@ -42,7 +42,7 @@ export class TreatmentExpanderComponent {
   /**
    * A treatment type (Optional)
    */
-  @Input() treatmentType: TreatmentType | null = null;
+  @Input() treatmentType: PrescriptionSingleAction | null = null;
   /**
    * A treatment sequence number  (Optional)
    */
@@ -65,20 +65,6 @@ export class TreatmentExpanderComponent {
   @Input() rxDetails: rxType[] = [];
   openState = false;
 
-  // Retaining colors here, so the icon component can remain as agnostic as possible
-  readonly treatmentIcons: Record<TreatmentType, TreatmentIconColor> = {
-    'No Treatment': 'none',
-    'Moderate thin & Biomass removal': 'blue',
-    'Heavy thin & Biomass removal': 'purple',
-    'Moderate thin & Pile burn': 'orange',
-    'Heavy thin & Pile burn': 'yellow',
-    'Moderate mastication': 'junglegreen',
-    'Heavy mastication': 'limegreen',
-    'Prescribed fire': 'red',
-    'Heavy thin & RX fire': 'brown',
-    'Mastication & RX fire': 'pink',
-  };
-
   toggleState() {
     this.openState = !this.openState;
   }
@@ -89,18 +75,18 @@ export class TreatmentExpanderComponent {
     if (this.title !== null) {
       return this.title;
     } else if (this.treatmentType !== null) {
-      return this.treatmentType;
+      return USER_FACING_RX_STRING[this.treatmentType];
     } else if (this.sequenceNumber !== null) {
       return `Sequence ${this.sequenceNumber}`;
     }
     return 'None';
   }
 
-  treatmentIconType() {
+  treatmentIconType(): PrescriptionSingleAction | null {
     if (this.treatmentType !== null) {
-      return this.treatmentIcons[this.treatmentType];
+      return this.treatmentType;
     }
-    return 'none';
+    return null;
   }
 
   get isSelected() {

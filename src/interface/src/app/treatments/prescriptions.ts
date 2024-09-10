@@ -1,6 +1,7 @@
 // placeholder for adding colors based on prescription actions
 
 export type PrescriptionSingleAction =
+  | 'NO_TREATMENT'
   | 'MODERATE_THINNING_BIOMASS'
   | 'HEAVY_THINNING_BIOMASS'
   | 'MODERATE_THINNING_BURN'
@@ -26,6 +27,7 @@ export type PrescriptionAction =
   | PrescriptionSequenceAction;
 
 export const SEQUENCE_COLORS: Record<PrescriptionSingleAction, string> = {
+  NO_TREATMENT: '#000000',
   MODERATE_THINNING_BIOMASS: '#3A86FF',
   HEAVY_THINNING_BIOMASS: '#8338EC',
   MODERATE_THINNING_BURN: '#F77F00',
@@ -35,4 +37,18 @@ export const SEQUENCE_COLORS: Record<PrescriptionSingleAction, string> = {
   RX_FIRE: '#EF233C',
   HEAVY_THINNING_RX_FIRE: '#780000',
   MASTICATION_RX_FIRE: '#FB6F92',
+};
+
+//TODO: Remove this mapping if we can just get this from the lookup endpoint
+export const USER_FACING_RX_STRING: Record<PrescriptionSingleAction, string> = {
+  NO_TREATMENT: 'No Treatment',
+  MODERATE_THINNING_BIOMASS: 'Moderate thin & Biomass removal',
+  HEAVY_THINNING_BIOMASS: 'Heavy thin & Biomass removal',
+  MODERATE_THINNING_BURN: 'Moderate thin & Pile burn',
+  HEAVY_THINNING_BURN: 'Heavy thin & Pile burn',
+  MODERATE_MASTICATION: 'Moderate mastication',
+  HEAVY_MASTICATION: 'Heavy mastication',
+  RX_FIRE: 'Prescribed fire',
+  HEAVY_THINNING_RX_FIRE: 'Heavy thin & RX fire',
+  MASTICATION_RX_FIRE: 'Mastication & RX fire',
 };

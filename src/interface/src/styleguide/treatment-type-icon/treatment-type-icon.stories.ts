@@ -17,57 +17,58 @@ type Story = StoryObj<TreatmentTypeIconComponent>;
 
 export const Default: Story = {
   args: {
-    treatmentColor: 'none',
+    treatment: 'NO_TREATMENT',
   },
 };
+
 export const TreatmentNone: Story = {
   args: {
-    treatmentColor: 'none',
+    treatment: 'NO_TREATMENT',
   },
 };
 export const TreatmentBlue: Story = {
   args: {
-    treatmentColor: 'blue',
+    treatment: 'MODERATE_THINNING_BIOMASS',
   },
 };
 export const TreatmentPurple: Story = {
   args: {
-    treatmentColor: 'purple',
+    treatment: 'HEAVY_THINNING_BIOMASS',
   },
 };
 export const TreatmentOrange: Story = {
   args: {
-    treatmentColor: 'orange',
+    treatment: 'HEAVY_THINNING_BIOMASS',
   },
 };
 export const TreatmentYellow: Story = {
   args: {
-    treatmentColor: 'yellow',
+    treatment: 'HEAVY_THINNING_BURN',
   },
 };
 export const TreatmentJungleGreen: Story = {
   args: {
-    treatmentColor: 'junglegreen',
+    treatment: 'MODERATE_MASTICATION',
   },
 };
 export const TreatmentLimeGreen: Story = {
   args: {
-    treatmentColor: 'limegreen',
+    treatment: 'HEAVY_MASTICATION',
   },
 };
 export const TreatmentRed: Story = {
   args: {
-    treatmentColor: 'red',
+    treatment: 'RX_FIRE',
   },
 };
 export const TreatmentBrown: Story = {
   args: {
-    treatmentColor: 'brown',
+    treatment: 'HEAVY_THINNING_RX_FIRE',
   },
 };
 
 export const TreatmentPink: Story = {
   args: {
-    treatmentColor: 'pink',
+    treatment: 'MASTICATION_RX_FIRE',
   },
 };

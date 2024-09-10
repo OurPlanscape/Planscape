@@ -32,7 +32,7 @@ type Story = StoryObj<TreatmentExpanderComponent>;
 
 export const Default: Story = {
   args: {
-    treatmentType: 'Moderate thin & Pile burn',
+    treatmentType: 'MODERATE_THINNING_BURN',
     standCount: '11',
   },
 };
@@ -60,7 +60,7 @@ export const Sequence5: Story = {
 
 export const TreatmentModerateMastication: Story = {
   args: {
-    treatmentType: 'Moderate mastication',
+    treatmentType: 'MODERATE_MASTICATION',
     rxDetails: [],
     standCount: '8',
   },
@@ -68,15 +68,15 @@ export const TreatmentModerateMastication: Story = {
 
 export const TreatmentHeavyMastication: Story = {
   args: {
-    treatmentType: 'Heavy mastication',
+    treatmentType: 'HEAVY_MASTICATION',
     rxDetails: [],
     standCount: '600',
   },
 };
 
-export const TreatmentPrescribedFire: Story = {
+export const TreatmentHeavyThinning: Story = {
   args: {
-    treatmentType: 'Prescribed fire',
+    treatmentType: 'HEAVY_THINNING_BURN',
     rxDetails: [],
     standCount: '5',
   },
@@ -84,7 +84,7 @@ export const TreatmentPrescribedFire: Story = {
 
 export const TreatmentMasticationAndFireSelected: Story = {
   args: {
-    treatmentType: 'Mastication & RX fire',
+    treatmentType: 'MASTICATION_RX_FIRE',
     rxDetails: [],
     standCount: '5',
     selected: true,
@@ -94,7 +94,7 @@ export const TreatmentMasticationAndFireSelected: Story = {
 export const OverriddenTitle: Story = {
   args: {
     title: 'Special Title',
-    treatmentType: 'Moderate thin & Pile burn',
+    treatmentType: 'MODERATE_THINNING_BURN',
     standCount: '11',
   },
 };
