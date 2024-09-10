@@ -7,7 +7,6 @@ export interface TreatmentPlan {
   created_at: string;
   creator_name: string;
 }
-
 interface TreatmentProjectArea {
   project_area_id: number;
   project_area_name: string;
@@ -30,4 +29,7 @@ export interface TreatedStand {
 
 export interface TreatmentSummary {
   project_areas: TreatmentProjectArea[];
+  extent: Extent;
 }
+
+export type Extent = [number, number, number, number];

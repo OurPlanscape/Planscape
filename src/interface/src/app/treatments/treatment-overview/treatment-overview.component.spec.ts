@@ -4,9 +4,7 @@ import { TreatmentOverviewComponent } from './treatment-overview.component';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsState } from '../treatments.state';
-
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
-import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 describe('TreatmentOverviewComponent', () => {
@@ -17,11 +15,7 @@ describe('TreatmentOverviewComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TreatmentOverviewComponent, RouterTestingModule],
       declarations: [
-        MockDeclarations(
-          TreatmentSummaryComponent,
-          TreatmentMapComponent,
-          MapBaseLayerComponent
-        ),
+        MockDeclarations(TreatmentSummaryComponent, MapBaseLayerComponent),
       ],
       providers: [MockProviders(TreatmentsState)],
     }).compileComponents();

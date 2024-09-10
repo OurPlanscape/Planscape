@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapProjectAreasComponent } from './map-project-areas.component';
-import { MockDeclarations } from 'ng-mocks';
+import { MockDeclarations, MockProvider } from 'ng-mocks';
 import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
+import { TreatmentsState } from '../treatments.state';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('MapProjectAreasComponent', () => {
   let component: MapProjectAreasComponent;
@@ -13,7 +15,8 @@ describe('MapProjectAreasComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapProjectAreasComponent],
+      imports: [MapProjectAreasComponent, RouterTestingModule],
+      providers: [MockProvider(TreatmentsState)],
       declarations: MockDeclarations(VectorSourceComponent, LayerComponent),
     }).compileComponents();
 

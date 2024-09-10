@@ -4,7 +4,8 @@ import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { of, throwError } from 'rxjs';
 import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
 import { TreatmentsState } from './treatments.state';
-import { MockProvider } from 'ng-mocks';
+import { MockProviders } from 'ng-mocks';
+import { MapConfigState } from './treatment-map/map-config.state';
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;
@@ -15,8 +16,7 @@ describe('TreatmentsState', () => {
     TestBed.configureTestingModule({
       providers: [
         TreatmentsState,
-        MockProvider(TreatmentsService),
-        MockProvider(TreatedStandsState),
+        MockProviders(MapConfigState, TreatedStandsState, TreatmentsService),
       ],
     });
 
@@ -77,6 +77,7 @@ describe('TreatmentsState', () => {
           ],
         },
       ],
+      extent: [1, 2, 3, 4],
     };
 
     spyOn(treatmentsService, 'getTreatmentPlanSummary').and.returnValue(
@@ -84,7 +85,7 @@ describe('TreatmentsState', () => {
     );
 
     service.setTreatmentPlanId(123);
-    service.loadSummary();
+    service.loadSummary().subscribe();
 
     expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith([]);
     expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith([
@@ -113,7 +114,7 @@ describe('TreatmentsState', () => {
     );
 
     service.setTreatmentPlanId(123);
-    service.loadTreatmentPlan();
+    service.loadTreatmentPlan().subscribe();
 
     service.treatmentPlan$.subscribe((treatmentPlan) => {
       expect(treatmentPlan).toEqual(mockTreatmentPlan);
