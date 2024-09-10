@@ -25,8 +25,9 @@ export const Default: Story = {
   args: {},
 };
 
-export const Running: Story = {
+export const ChangedLabel: Story = {
   args: {
     ...Default.args,
+    title: 'Arbitrary Title',
   },
 };

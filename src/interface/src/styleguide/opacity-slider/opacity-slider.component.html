@@ -5,6 +5,12 @@
     min="{{ minValue }}"
     max="{{ maxValue }}"
     step="{{ step }}">
-    <input matSliderThumb value="{{ value }}" />
+    <input
+      matSliderThumb
+      [(ngModel)]="sliderValue"
+      #slider
+      (ngModelChange)="onSliderChange()"
+      (dragEnd)="onDragEnd($event)"
+      (dragStart)="onDragStart($event)" />
   </mat-slider>
 </mat-card>
