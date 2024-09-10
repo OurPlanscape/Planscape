@@ -1,8 +1,9 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { BehaviorSubject, catchError } from 'rxjs';
+import { BehaviorSubject, catchError, map } from 'rxjs';
 import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
+import { MapConfigState } from './treatment-map/map-config.state';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -12,11 +13,13 @@ import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
 export class TreatmentsState {
   constructor(
     private treatmentsService: TreatmentsService,
-    private treatedStandsState: TreatedStandsState
+    private treatedStandsState: TreatedStandsState,
+    private mapConfigState: MapConfigState
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
   private _projectAreaId: number | undefined = undefined;
+  private _scenarioId: number | undefined = undefined;
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
@@ -24,7 +27,7 @@ export class TreatmentsState {
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
 
-  getTreatmentPlanId(): number {
+  getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
       throw new Error('no treatment plan id!');
     }
@@ -35,7 +38,7 @@ export class TreatmentsState {
     this._treatmentPlanId = value;
   }
 
-  getProjectAreaId(): number | undefined {
+  getProjectAreaId() {
     return this._projectAreaId;
   }
 
@@ -43,19 +46,34 @@ export class TreatmentsState {
     this._projectAreaId = value;
   }
 
+  getScenarioId(): number {
+    if (this._scenarioId === undefined) {
+      throw new Error('no _scenario id!');
+    }
+    return this._scenarioId;
+  }
+
+  setScenarioId(value: number) {
+    this._scenarioId = value;
+  }
+
   loadSummary() {
     // TODO caching
     this._summary$.next(null);
     this.treatedStandsState.setTreatedStands([]);
-    this.treatmentsService
+    return this.treatmentsService
       .getTreatmentPlanSummary(
         this.getTreatmentPlanId(),
         this.getProjectAreaId()
       )
-      .subscribe((summary) => {
-        this._summary$.next(summary);
-        this.setTreatedStandsFromSummary(summary);
-      });
+      .pipe(
+        map((summary) => {
+          this._summary$.next(summary);
+          this.setTreatedStandsFromSummary(summary);
+          this.mapConfigState.updateMapCenter(summary.extent);
+          return true;
+        })
+      );
   }
 
   loadTreatmentPlan() {
@@ -63,9 +81,12 @@ export class TreatmentsState {
     this._treatmentPlan.next(null);
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
-      .subscribe((treatmentPlan) => {
-        this._treatmentPlan.next(treatmentPlan);
-      });
+      .pipe(
+        map((treatmentPlan) => {
+          this._treatmentPlan.next(treatmentPlan);
+          return true;
+        })
+      );
   }
 
   private setTreatedStandsFromSummary(summary: TreatmentSummary) {

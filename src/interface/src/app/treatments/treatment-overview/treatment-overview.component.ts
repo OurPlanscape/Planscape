@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
@@ -20,12 +19,7 @@ import { TreatmentsState } from '../treatments.state';
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  scenarioId: number = this.route.snapshot.data['scenarioId'];
-
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
 
-  constructor(
-    private route: ActivatedRoute,
-    private treatmentsState: TreatmentsState
-  ) {}
+  constructor(private treatmentsState: TreatmentsState) {}
 }
