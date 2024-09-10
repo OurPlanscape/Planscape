@@ -1,8 +1,7 @@
-from collections import defaultdict
-from itertools import groupby
 from typing import List, Optional, Type, Dict, Union, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
+from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.models import (
     TreatmentPlan,
@@ -10,13 +9,10 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionType,
     get_prescription_type,
-    TxPlanSummary,
-    ProjectAreaSummary,
-    TxPrescriptionSummaryItem,
 )
 from planning.models import ProjectArea, Scenario
 from actstream import action as actstream_action
-from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.models import STAND_AREA_ACRES, Stand
 from planscape.typing import UserType
 
 TreatmentPlanType = Type[TreatmentPlan]
@@ -55,16 +51,16 @@ def upsert_treatment_prescriptions(
     treatment_plan: TreatmentPlanType,
     project_area: ProjectAreaType,
     stands: List[StandType],
-    action_type: ActionType,
+    action: ActionType,
     created_by: UserType,
 ) -> List[TreatmentPrescriptionEntityType]:
-    def upsert(treatment_plan, project_area, stand, action_type, user):
+    def upsert(treatment_plan, project_area, stand, action, user):
         upsert_defaults = {
-            "type": get_prescription_type(action_type),
+            "type": get_prescription_type(action),
             "created_by": user,
             "updated_by": user,
             "geometry": stand.geometry,
-            "action": action_type,
+            "action": action,
         }
         instance, created = TreatmentPrescription.objects.update_or_create(
             treatment_plan=treatment_plan,
@@ -81,7 +77,7 @@ def upsert_treatment_prescriptions(
             lambda stand: upsert(
                 treatment_plan=treatment_plan,
                 project_area=project_area,
-                action_type=action_type,
+                action=action,
                 user=created_by,
                 stand=stand,
             ),
@@ -170,6 +166,9 @@ def generate_summary(
     )
     project_areas = {}
     project_area_queryset = ProjectArea.objects.filter(**pa_filter)
+    project_areas_geometry = project_area_queryset.all().aggregate(
+        geometry=UnionOp("geometry")
+    )["geometry"]
     for project in project_area_queryset:
         stand_project_qs = Stand.objects.filter(
             size=stand_size,
@@ -185,6 +184,7 @@ def generate_summary(
                     "type": p["type"],
                     "treated_stand_count": p["treated_stand_count"],
                     "area_acres": p["treated_stand_count"] * stand_area,
+                    "stand_ids": p["stand_ids"],
                 }
                 for p in filter(
                     lambda p: p["project_area__id"] == project.id,
@@ -201,5 +201,6 @@ def generate_summary(
         "treatment_plan_id": treatment_plan.pk,
         "treatment_plan_name": treatment_plan.name,
         "project_areas": list(project_areas.values()),
+        "extent": project_areas_geometry.extent,
     }
     return data

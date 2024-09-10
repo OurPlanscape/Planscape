@@ -7,15 +7,26 @@ export interface TreatmentPlan {
   created_at: string;
   creator_name: string;
 }
+interface TreatmentProjectArea {
+  project_area_id: number;
+  project_area_name: string;
+  total_stand_count: number;
+  prescriptions: Prescription[];
+}
 
-export type TreatmentType =
-  | 'No Treatment'
-  | 'Moderate thin & Biomass removal'
-  | 'Heavy thin & Biomass removal'
-  | 'Moderate thin & Pile burn'
-  | 'Heavy thin & Pile burn'
-  | 'Moderate mastication'
-  | 'Heavy mastication'
-  | 'Prescribed fire'
-  | 'Heavy thin & RX fire'
-  | 'Mastication & RX fire';
+export interface Prescription {
+  action: string;
+  area_acres: number;
+  treated_stand_count: number;
+  type: string;
+  stand_ids: number[];
+}
+
+export interface TreatedStand {
+  id: number;
+  action: string;
+}
+
+export interface TreatmentSummary {
+  project_areas: TreatmentProjectArea[];
+}

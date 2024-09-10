@@ -74,7 +74,7 @@ import { combineLatest, map } from 'rxjs';
     QueryParamsService,
     {
       provide: DEFAULT_SORT_OPTIONS,
-      useValue: { active: 'name', direction: 'asc' },
+      useValue: { active: 'latest_updated', direction: 'desc' },
     },
     {
       provide: PlanningAreasDataSource,

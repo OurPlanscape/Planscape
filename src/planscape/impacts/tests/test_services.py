@@ -52,7 +52,7 @@ class UpsertTreatmentPrescriptionTest(TransactionTestCase):
             treatment_plan=self.treatment_plan,
             project_area=self.project_area,
             stands=[self.stand1],
-            action_type=TreatmentPrescriptionAction.HEAVY_THINNING_BURN,
+            action=TreatmentPrescriptionAction.HEAVY_THINNING_BURN,
             created_by=user,
         )
 
@@ -78,7 +78,7 @@ class UpsertTreatmentPrescriptionTest(TransactionTestCase):
             treatment_plan=self.treatment_plan,
             project_area=self.project_area,
             stands=[self.stand2],
-            action_type=TreatmentPrescriptionAction.HEAVY_THINNING_BURN,
+            action=TreatmentPrescriptionAction.HEAVY_THINNING_BURN,
             created_by=user,
         )
 
@@ -95,15 +95,15 @@ class CloneTreatmentPlanTest(TransactionTestCase):
         self.stand1 = StandFactory.create()
         self.stand2 = StandFactory.create()
         self.stand3 = StandFactory.create()
-        self.prescriptions = TreatmentPrescriptionFactory.create_batch(
-            size=5,
-            **{
-                "treatment_plan": self.treatment_plan,
-                "project_area": self.project_area,
-                "stand": self.stand1,
-                "geometry": self.stand1.geometry,
-            },
-        )
+        for stand in [self.stand1, self.stand2, self.stand3]:
+            self.prescriptions = TreatmentPrescriptionFactory.create(
+                **{
+                    "treatment_plan": self.treatment_plan,
+                    "project_area": self.project_area,
+                    "stand": stand,
+                    "geometry": self.stand1.geometry,
+                },
+            )
 
     def test_clone_treatment_plan(self):
         new_plan, new_prescriptions = clone_treatment_plan(
@@ -112,7 +112,7 @@ class CloneTreatmentPlanTest(TransactionTestCase):
         )
 
         self.assertEqual(TreatmentPlan.objects.all().count(), 2)
-        self.assertEqual(TreatmentPrescription.objects.all().count(), 10)
+        self.assertEqual(TreatmentPrescription.objects.all().count(), 6)
         self.assertNotEqual(new_plan.pk, self.treatment_plan.pk)
 
 
@@ -157,6 +157,7 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("scenario_name", summary)
         self.assertIn("treatment_plan_id", summary)
         self.assertIn("treatment_plan_name", summary)
+        self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 3)
 
         proj_area_1 = list(
@@ -179,6 +180,8 @@ class SummaryTest(TransactionTestCase):
         )[0]
         self.assertIn("prescriptions", proj_area_1)
         self.assertEqual(len(proj_area_1["prescriptions"]), 1)
+        stands1 = proj_area_1["prescriptions"][0]["stand_ids"]
+        self.assertGreater(len(stands1), 0)
         self.assertIn("prescriptions", proj_area_2)
         self.assertEqual(len(proj_area_2["prescriptions"]), 1)
 
@@ -195,6 +198,7 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("scenario_name", summary)
         self.assertIn("treatment_plan_id", summary)
         self.assertIn("treatment_plan_name", summary)
+        self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 1)
         proj_area_1 = list(
             filter(
