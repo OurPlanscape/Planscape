@@ -6,7 +6,7 @@ import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 /**
  * Opacity Slider
- * A component to be used within the modal body to express various states
+ * A component containing a slider and a label
  */
 @Component({
   selector: 'sg-opacity-slider',
