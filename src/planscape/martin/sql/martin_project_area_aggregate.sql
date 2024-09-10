@@ -32,14 +32,27 @@ BEGIN
         ss.size = p_stand_size
   );
 
-  SELECT INTO p_mvt ST_AsMVT(tile, 'project_area_aggregate', 4096, 'geom') FROM (
+  SELECT INTO p_mvt ST_AsMVT(compose.*) FROM (
     SELECT
+      'project_area_aggregate' as "layer",
       (query_params->>'project_area_id')::int as "id",
       ST_AsMVTGeom(
-          ST_Transform(p_stand_geometries, 3857),
-          ST_TileEnvelope(z, x, y),
-          4096, 64, true) AS geom
-  ) as tile WHERE geom IS NOT NULL;
+        ST_Transform(p_stand_geometries, 3857),
+        ST_TileEnvelope(z, x, y),
+        4096, 64, true) 
+      AS geom
 
+    UNION
+
+    SELECT
+     'project_area_aggregate_label' as "layer",
+      (query_params->>'project_area_id')::int as "id",
+      ST_AsMVTGeom(
+        ST_Transform(ST_PointOnSurface(p_stand_geometries), 3857),
+        ST_TileEnvelope(z, x, y),
+        4096, 64, true)
+      AS geom
+  ) as compose WHERE geom is NOT NULL;
+    
   RETURN p_mvt;
 END $$ LANGUAGE plpgsql IMMUTABLE STRICT PARALLEL SAFE;
