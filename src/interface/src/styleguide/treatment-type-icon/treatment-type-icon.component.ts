@@ -12,7 +12,6 @@ export class TreatmentTypeIconComponent {
   @Input() treatment: PrescriptionSingleAction | null = null;
 
   readonly treatmentIcons: Record<PrescriptionSingleAction, string> = {
-    NO_TREATMENT: 'treatment_none.svg',
     MODERATE_THINNING_BIOMASS: 'treatment_blue.svg',
     HEAVY_THINNING_BIOMASS: 'treatment_purple.svg',
     MODERATE_THINNING_BURN: 'treatment_orange.svg',
@@ -28,6 +27,6 @@ export class TreatmentTypeIconComponent {
     if (this.treatment !== null) {
       return this.treatmentIcons[this.treatment];
     }
-    return 'treatment_none';
+    return 'treatment_none.svg';
   }
 }

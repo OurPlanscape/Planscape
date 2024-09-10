@@ -17,13 +17,13 @@ type Story = StoryObj<TreatmentTypeIconComponent>;
 
 export const Default: Story = {
   args: {
-    treatment: 'NO_TREATMENT',
+    treatment: null,
   },
 };
 
 export const TreatmentNone: Story = {
   args: {
-    treatment: 'NO_TREATMENT',
+    treatment: null,
   },
 };
 export const TreatmentBlue: Story = {

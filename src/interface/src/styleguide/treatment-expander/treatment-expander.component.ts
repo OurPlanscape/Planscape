@@ -79,7 +79,7 @@ export class TreatmentExpanderComponent {
     } else if (this.sequenceNumber !== null) {
       return `Sequence ${this.sequenceNumber}`;
     }
-    return 'None';
+    return 'No Treatment';
   }
 
   treatmentIconType(): PrescriptionSingleAction | null {
