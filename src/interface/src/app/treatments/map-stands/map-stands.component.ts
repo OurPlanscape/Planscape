@@ -14,6 +14,9 @@ import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
+import { PrescriptionSingleAction, SEQUENCE_COLORS } from '../prescriptions';
+import { TreatmentsState } from '../treatments.state';
+import { TreatedStand } from '@types';
 
 @Component({
   selector: 'app-map-stands',
@@ -22,14 +25,15 @@ import { environment } from '../../../environments/environment';
   templateUrl: './map-stands.component.html',
 })
 export class MapStandsComponent implements OnChanges {
-  @Input() treatmentPlanId = 0;
-  @Input() projectAreaId: number | null = null;
   @Input() mapLibreMap!: MapLibreMap;
   @Input() selectStart!: Point | null;
   @Input() selectEnd!: Point | null;
-  @Input() treatedStands: { id: number; assigment: string }[] = [];
+  @Input() treatedStands: TreatedStand[] = [];
 
-  selectedStands$ = this.mapStandsService.selectedStands$;
+  treatmentPlanId = this.treatmentsState.getTreatmentPlanId();
+  projectAreaId = this.treatmentsState.getProjectAreaId();
+
+  selectedStands$ = this.selectedStandsState.selectedStands$;
   private initialSelectedStands: number[] = [];
 
   // TODO project_area_aggregate only applies when looking at a specific project area
@@ -43,7 +47,10 @@ export class MapStandsComponent implements OnChanges {
     selectedStands: 'stands-layer-selected',
   };
 
-  constructor(private mapStandsService: SelectedStandsState) {}
+  constructor(
+    private selectedStandsState: SelectedStandsState,
+    private treatmentsState: TreatmentsState
+  ) {}
 
   get vectorLayerUrl() {
     return (
@@ -55,7 +62,7 @@ export class MapStandsComponent implements OnChanges {
   }
 
   private updateSelectedStands(selectedStands: number[]) {
-    this.mapStandsService.updateSelectedStands(selectedStands);
+    this.selectedStandsState.updateSelectedStands(selectedStands);
   }
 
   clickOnLayer(event: MapMouseEvent) {
@@ -69,7 +76,7 @@ export class MapStandsComponent implements OnChanges {
     });
 
     const standId = features[0].properties['id'];
-    this.mapStandsService.toggleStand(standId);
+    this.selectedStandsState.toggleStand(standId);
   }
 
   paint: LayerSpecification['paint'] = {
@@ -89,7 +96,10 @@ export class MapStandsComponent implements OnChanges {
     ];
 
     this.treatedStands.forEach((stand) => {
-      matchExpression.push(stand.id, '#ff0000'); // TODO ACTUAL COLOR ASSIGMENT
+      matchExpression.push(
+        stand.id,
+        SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
+      );
     });
     matchExpression.push(defaultColor);
 
@@ -99,7 +109,7 @@ export class MapStandsComponent implements OnChanges {
   selectStandsWithinRectangle(): void {
     if (!this.selectStart || !this.selectEnd) {
       this.initialSelectedStands = [
-        ...this.mapStandsService.getSelectedStands(),
+        ...this.selectedStandsState.getSelectedStands(),
       ];
       return;
     }
