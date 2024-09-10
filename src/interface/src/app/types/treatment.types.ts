@@ -29,4 +29,7 @@ export interface TreatedStand {
 
 export interface TreatmentSummary {
   project_areas: TreatmentProjectArea[];
+  extent: Extent;
 }
+
+export type Extent = [number, number, number, number];

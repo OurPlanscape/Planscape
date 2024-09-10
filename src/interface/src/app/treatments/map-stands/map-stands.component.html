@@ -16,6 +16,8 @@
   source="stands"
   [paint]="paint"
   (layerMouseDown)="clickOnLayer($event)"
+  (layerMouseEnter)="setCursor()"
+  (layerMouseLeave)="resetCursor()"
   sourceLayer="stands_by_tx_plan"></mgl-layer>
 
 <mgl-layer

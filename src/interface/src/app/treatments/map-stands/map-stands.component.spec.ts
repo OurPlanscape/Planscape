@@ -8,6 +8,7 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { TreatmentsState } from '../treatments.state';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 describe('MapStandsComponent', () => {
   let component: MapStandsComponent;
@@ -16,7 +17,9 @@ describe('MapStandsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MapStandsComponent],
-      providers: [MockProviders(SelectedStandsState, TreatmentsState)],
+      providers: [
+        MockProviders(SelectedStandsState, TreatmentsState, MapConfigState),
+      ],
       declarations: MockDeclarations(VectorSourceComponent, LayerComponent),
     }).compileComponents();
 

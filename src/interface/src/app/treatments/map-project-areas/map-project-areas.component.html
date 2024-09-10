@@ -16,6 +16,9 @@
   id="map-project-areas-fill"
   type="fill"
   source="scenarioProjectAreas"
+  (layerClick)="goToProjectArea($event)"
+  (layerMouseEnter)="setCursor()"
+  (layerMouseLeave)="resetCursor()"
   [sourceLayer]="layerName"
   [paint]="paint"></mgl-layer>
 

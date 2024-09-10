@@ -17,6 +17,7 @@ import { environment } from '../../../environments/environment';
 import { PrescriptionSingleAction, SEQUENCE_COLORS } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
 import { TreatedStand } from '@types';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-map-stands',
@@ -29,9 +30,6 @@ export class MapStandsComponent implements OnChanges {
   @Input() selectStart!: Point | null;
   @Input() selectEnd!: Point | null;
   @Input() treatedStands: TreatedStand[] = [];
-
-  treatmentPlanId = this.treatmentsState.getTreatmentPlanId();
-  projectAreaId = this.treatmentsState.getProjectAreaId();
 
   selectedStands$ = this.selectedStandsState.selectedStands$;
   private initialSelectedStands: number[] = [];
@@ -49,14 +47,16 @@ export class MapStandsComponent implements OnChanges {
 
   constructor(
     private selectedStandsState: SelectedStandsState,
-    private treatmentsState: TreatmentsState
+    private treatmentsState: TreatmentsState,
+    private mapConfigState: MapConfigState
   ) {}
 
   get vectorLayerUrl() {
+    const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
       this.tilesUrl +
-      `?treatment_plan_id=${this.treatmentPlanId}${
-        this.projectAreaId ? `&project_area_id=${this.projectAreaId}` : ''
+      `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}${
+        projectAreaId ? `&project_area_id=${projectAreaId}` : ''
       }`
     );
   }
@@ -152,5 +152,13 @@ export class MapStandsComponent implements OnChanges {
       //select stands
       this.selectStandsWithinRectangle();
     }
+  }
+
+  setCursor() {
+    this.mapConfigState.setCursor('pointer');
+  }
+
+  resetCursor() {
+    this.mapConfigState.resetCursor();
   }
 }
