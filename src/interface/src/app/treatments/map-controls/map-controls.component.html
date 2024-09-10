@@ -1,4 +1,5 @@
 <button (click)="toggleMapDrag()">
-  {{ mapDragging ? 'select stands' : 'drag map' }}
+  {{ (boxSelectionEnabled$ | async) ? 'drag map' : 'select stands' }}
 </button>
 <button (click)="clearTreatments()">clear selection</button>
+<button (click)="toggleShowStands()">Show/hide stands</button>
