@@ -1,0 +1,173 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100%;
+
+  ::ng-deep {
+    .mat-form-field-wrapper {
+      margin: 0;
+      padding: 8px;
+    }
+
+    .mat-mdc-form-field-flex {
+      height: 50px;
+    }
+
+    .mat-form-field-outline-start,
+    .mat-form-field-outline-end {
+      background-color: $color-light-gray;
+    }
+
+    .mat-mdc-text-field-wrapper.mdc-text-field--outlined
+      .mat-mdc-form-field-infix {
+      padding-top: 10px;
+      padding-bottom: 16px;
+    }
+
+    .mat-mdc-form-field-icon-suffix {
+      padding: 0 8px 0 8px;
+    }
+  }
+}
+
+::ng-deep .summary-panel .mat-mdc-tab-body-wrapper {
+  height: 100%;
+}
+
+.no-notes-view {
+  overflow-y: auto;
+  flex: 1;
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.no-notes-blurb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 80%;
+  gap: 8px;
+}
+
+.add-notes-icon {
+  width: 30px;
+  height: 30px;
+  font-size: 30px;
+  color: $color-text-gray;
+}
+
+.no-notes-header {
+  @include xs-label();
+  color: $color-black;
+  text-align: center;
+}
+
+.no-notes-text {
+  @include small-paragraph();
+  color: $color-md-gray;
+  text-align: center;
+}
+
+.notes {
+  overflow-y: auto;
+  flex: 1;
+  flex-grow: 1;
+}
+
+.note {
+  padding: 16px;
+  color: $color-black;
+}
+
+.note-head {
+  @include small-input-label();
+  display: flex;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.date {
+  color: $color-md-gray;
+  font-weight: 400;
+}
+
+.arrow-up {
+  color: #767575;
+
+  &.active {
+    cursor: pointer;
+    color: $color-standard-blue;
+  }
+}
+
+textarea {
+  resize: none;
+  overflow: hidden;
+}
+
+.more-menu-button {
+  background: none;
+  border: none;
+}
+.more-menu-button:hover {
+  background: $color-light-gray;
+}
+.delete-note-button {
+  .delete-icon {
+    color: $color-error;
+    line-height: 20px;
+    width: 20px;
+  }
+
+  color: $color-error;
+  @include regular-paragraph();
+}
+
+.delete-note-menu {
+  width: 100px;
+}
+
+.notes-header {
+  @include h4();
+  width: 100%;
+  padding: 16px 229px 16px 16px;
+  gap: 8px;
+  border-bottom: 1px $color-soft-gray solid;
+}
+
+.note-enclosed {
+  padding: 16px;
+  color: $color-black;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.note-right {
+  width: 28px;
+}
+
+.add-note-box {
+  border-top: 1px $color-soft-gray solid;
+  height: 64px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  padding-top: 10px;
+  align-self: flex-end;
+  width: 100%;
+}
+
+.add-note-field {
+  flex-shrink: 0;
+  height: 50px;
+  width: 280px;
+}
