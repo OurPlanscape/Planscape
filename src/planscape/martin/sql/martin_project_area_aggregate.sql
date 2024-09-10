@@ -35,10 +35,7 @@ BEGIN
   SELECT INTO p_mvt ST_AsMVT(compose.*) FROM (
     SELECT
       'project_area_aggregate' as "layer",
-      pa.id as "id",
-      pa.scenario_id::int as "scenario_id",
-      pa.name as "name",
-      COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank' as "rank",
+      (query_params->>'project_area_id')::int as "id",
       ST_AsMVTGeom(
         ST_Transform(p_stand_geometries, 3857),
         ST_TileEnvelope(z, x, y),
@@ -49,10 +46,7 @@ BEGIN
 
     SELECT
      'project_area_aggregate_label' as "layer",
-      pa.id as "id",
-      pa.scenario_id::int as "scenario_id",
-      pa.name as "name",
-      COALESCE(pa.data, '{}'::jsonb) ->> 'treatment_rank' as "rank",
+      (query_params->>'project_area_id')::int as "id",
       ST_AsMVTGeom(
         ST_Transform(ST_PointOnSurface(p_stand_geometries), 3857),
         ST_TileEnvelope(z, x, y),
