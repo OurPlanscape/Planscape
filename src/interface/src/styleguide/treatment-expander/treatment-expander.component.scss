@@ -1,0 +1,123 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  --mat-expansion-header-hover-state-layer-color: $color-white;
+  --mat-expansion-header-focus-state-layer-color: $color-white;
+  --mat-expansion-header-expanded-state-height: 48px;
+
+  ::ng-deep {
+    .mat-expansion-panel {
+      box-shadow: none;
+      border: 1px $color-light-gray solid;
+      border-radius: 0;
+    }
+
+    .mat-expansion-panel.selected {
+      border-color: $color-soft-purple;
+      background-color: $color-soft-purple;
+    }
+
+    .mat-expansion-panel:not([class*='mat-elevation-z']) {
+      box-shadow: none;
+    }
+
+    .mat-expansion-panel:hover:not([class*='selected']) {
+      border-color: $color-original-purple;
+      background-color: $color-white;
+    }
+  }
+}
+
+.sg-expander-panel {
+  ::ng-deep {
+    .mat-expansion-panel-header .mat-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      width: 100%;
+    }
+
+    .mat-expansion-panel-header .mat-expansion-indicator {
+      padding-bottom: 6px;
+    }
+
+    .mat-expansion-panel-header .mat-expansion-indicator::after {
+      color: $color-black;
+    }
+
+    .mat-expansion-panel-body {
+      padding: 0 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+}
+
+.header-content {
+  padding: 0 20px 0 8px;
+}
+
+.left-content {
+  @include xs-label();
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-left: 4px;
+  line-height: 0;
+}
+
+.right-content {
+  @include xs-label();
+  color: $color-md-gray;
+  width: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: right;
+  gap: 8px;
+  padding-right: 10px;
+}
+
+.treatment-detail {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 24px;
+}
+
+.treatment-detail-name {
+  @include xs-label();
+  font-weight: 600;
+  line-height: 14px;
+  text-align: left;
+}
+
+.treatment-detail-value {
+  @include small-paragraph();
+}
+
+.stand-count,
+.treatment-hexagon {
+  color: $color-dark-gray;
+}
+
+.rx-detail {
+  height: 22px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding-left: 24px;
+}
+
+.rx-detail-name {
+  @include small-paragraph();
+}
+
+.rx-detail-value {
+  @include small-paragraph();
+  color: $color-md-gray;
+}

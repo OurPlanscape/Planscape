@@ -1,28 +1,32 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
-import { NgForOf } from '@angular/common';
+import { AsyncPipe, NgForOf } from '@angular/common';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-map-controls',
   standalone: true,
-  imports: [NgForOf],
+  imports: [NgForOf, AsyncPipe],
   templateUrl: './map-controls.component.html',
   styleUrl: './map-controls.component.scss',
 })
 export class MapControlsComponent {
-  // placeholder for map controls
+  boxSelectionEnabled$ = this.mapConfigState.boxSelectionEnabled$;
 
-  @Input() mapDragging = false;
-  @Output() toggleDrag = new EventEmitter<boolean>();
-
-  constructor(private selectedStandsState: SelectedStandsState) {}
+  constructor(
+    private selectedStandsState: SelectedStandsState,
+    private mapConfigState: MapConfigState
+  ) {}
 
   clearTreatments() {
     this.selectedStandsState.clearStands();
   }
 
   toggleMapDrag() {
-    this.mapDragging = !this.mapDragging;
-    this.toggleDrag.emit(this.mapDragging);
+    this.mapConfigState.toggleBoxSelectionEnabled();
+  }
+
+  toggleShowStands() {
+    this.mapConfigState.toggleShowTreatmentStands();
   }
 }
