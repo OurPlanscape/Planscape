@@ -2,13 +2,13 @@
   <div class="slider-label">{{ title }}</div>
   <mat-slider
     class="slider-control"
-    min="{{ minValue }}"
-    max="{{ maxValue }}"
-    step="{{ step }}">
+    [min]="minValue"
+    [max]="maxValue"
+    [step]="step">
     <input
+      #slider
       matSliderThumb
       [(ngModel)]="sliderValue"
-      #slider
       (ngModelChange)="onSliderChange()"
       (dragEnd)="onDragEnd($event)"
       (dragStart)="onDragStart($event)" />

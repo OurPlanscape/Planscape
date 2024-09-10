@@ -31,3 +31,13 @@ export const ChangedLabel: Story = {
     title: 'Arbitrary Title',
   },
 };
+
+export const Decimals: Story = {
+  args: {
+    ...Default.args,
+    minValue: 0,
+    maxValue: 1,
+    step: 0.01,
+    title: 'Decimals',
+  },
+};

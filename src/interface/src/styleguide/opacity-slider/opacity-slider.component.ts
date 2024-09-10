@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 /**
- * Modal Info Box
+ * Opacity Slider
  * A component to be used within the modal body to express various states
  */
 @Component({
