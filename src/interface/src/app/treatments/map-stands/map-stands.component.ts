@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChange,
+  SimpleChanges,
+} from '@angular/core';
 import {
   LayerComponent,
   VectorSourceComponent,
@@ -67,7 +73,10 @@ export class MapStandsComponent implements OnChanges {
 
   clickOnLayer(event: MapMouseEvent) {
     // do not react to right clicks
-    if (event.originalEvent.button === 2) {
+    if (
+      event.originalEvent.button === 2 ||
+      !this.mapConfigState.isStandSelectionEnabled()
+    ) {
       return;
     }
 
@@ -108,9 +117,6 @@ export class MapStandsComponent implements OnChanges {
 
   selectStandsWithinRectangle(): void {
     if (!this.selectStart || !this.selectEnd) {
-      this.initialSelectedStands = [
-        ...this.selectedStandsState.getSelectedStands(),
-      ];
       return;
     }
     const newStands: number[] = [];
@@ -147,6 +153,13 @@ export class MapStandsComponent implements OnChanges {
         'fill-opacity': 0.5,
       };
     }
+
+    if (this.isMouseDownChange(changes['selectStart'])) {
+      this.initialSelectedStands = [
+        ...this.selectedStandsState.getSelectedStands(),
+      ];
+      this.selectedStandsState.saveHistory(this.initialSelectedStands);
+    }
     // finds selected stands when the select bounding box changes
     if (changes['selectStart'] || changes['selectEnd']) {
       //select stands
@@ -155,10 +168,16 @@ export class MapStandsComponent implements OnChanges {
   }
 
   setCursor() {
-    this.mapConfigState.setCursor('pointer');
+    if (this.mapConfigState.isStandSelectionEnabled()) {
+      this.mapConfigState.setCursor('pointer');
+    }
   }
 
   resetCursor() {
     this.mapConfigState.resetCursor();
+  }
+
+  private isMouseDownChange(change: SimpleChange) {
+    return change?.currentValue && !change?.previousValue;
   }
 }
