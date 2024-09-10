@@ -5,7 +5,7 @@
   [style]="(baseLayerUrl$ | async) || ''"
   [fitBounds]="bounds"
   [fitBoundsOptions]="{ padding: 20 }"
-  [dragPan]="!(boxSelectionEnabled$ | async)"
+  [dragPan]="(boxSelectionEnabled$ | async) === false"
   [minZoom]="7"
   [maxZoom]="17"
   [boxZoom]="false"
