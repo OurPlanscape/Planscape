@@ -229,6 +229,9 @@ class ImpactVariableAggregation(models.TextChoices):
     SUM = "SUM", "Sum"
     MEAN = "MEAN", "Mean"
     COUNT = "COUNT", "Count"
+    MAX = "MAX", "Max"
+    MIN = "MIN", "Min"
+    MAJORITY = "MAJORITY", "Majority"
 
 
 class ImpactVariable(models.TextChoices):

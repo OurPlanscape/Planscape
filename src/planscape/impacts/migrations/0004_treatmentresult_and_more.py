@@ -61,7 +61,14 @@ class Migration(migrations.Migration):
                 (
                     "aggregation",
                     models.CharField(
-                        choices=[("SUM", "Sum"), ("MEAN", "Mean"), ("COUNT", "Count")]
+                        choices=[
+                            ("SUM", "Sum"),
+                            ("MEAN", "Mean"),
+                            ("COUNT", "Count"),
+                            ("MAX", "Max"),
+                            ("MIN", "Min"),
+                            ("MAJORITY", "Majority"),
+                        ]
                     ),
                 ),
                 ("year", models.IntegerField(default=0)),
