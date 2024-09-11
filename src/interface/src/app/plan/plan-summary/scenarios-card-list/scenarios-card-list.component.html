@@ -2,9 +2,15 @@
   *ngFor="let s of scenarios"
   [name]="s.name"
   [creator]="s.creator"
-  [areas]="s.max_treatment_area"
+  [areas]="
+    hasResults(s) ? calculateTotals(s.scenario_result!).acres : undefined
+  "
   [created_at]="s.created_at"
-  [budget]="s.max_budget"
+  [budget]="
+    hasResults(s)
+      ? calculateTotals(s.scenario_result!).estimatedCost
+      : undefined
+  "
   [treatmentPlansCount]="s.tx_plan_count"
   [status]="s.scenario_result?.status || 'PENDING'"
   (click)="handleClickedScenario(s)"
