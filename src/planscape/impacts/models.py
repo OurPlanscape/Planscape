@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import Optional
+from typing import Dict, List, Optional
 from typing_extensions import Self
 from django.contrib.gis.db import models
 from django.conf import settings
@@ -129,6 +129,29 @@ class TreatmentPrescriptionAction(models.TextChoices):
         "MODERATE_MASTICATION_PLUS_RX_FIRE",
         "Moderate Mastication (year 0), Prescribed Fire (year 10)",
     )
+
+    @classmethod
+    def get_file_mapping(cls, action: Self) -> str:
+        data = {
+            cls.MODERATE_THINNING_BIOMASS: "Treatment_1",
+            cls.HEAVY_THINNING_BIOMASS: "Treatment_2",
+            cls.MODERATE_THINNING_BURN: "Treatment_3",
+            cls.HEAVY_THINNING_BURN: "Treatment_4",
+            cls.MODERATE_MASTICATION: "Treatment_5",
+            cls.HEAVY_MASTICATION: "Treatment_6",
+            cls.RX_FIRE: "Treatment_7",
+            cls.HEAVY_THINNING_RX_FIRE: "Treatment_8",
+            cls.MASTICATION_RX_FIRE: "Treatment_9",
+            cls.MODERATE_THINNING_BURN_PLUS_RX_FIRE: "Seq_1",
+            cls.MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: "Seq_2",
+            cls.HEAVY_THINNING_BURN_PLUS_RX_FIRE: "Seq_3",
+            cls.HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: "Seq_4",
+            cls.RX_FIRE_PLUS_RX_FIRE: "Seq_5",
+            cls.MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: "Seq_6",
+            cls.HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: "Seq_7",
+            cls.MODERATE_MASTICATION_PLUS_RX_FIRE: "Seq_8",
+        }
+        return data[action]
 
     @classmethod
     def json(cls):
@@ -279,12 +302,23 @@ class ImpactVariable(models.TextChoices):
     }
 
     @classmethod
-    def get_aggregation(cls, impact_variable: Self) -> ImpactVariableAggregation:
+    def get_aggregations(cls, impact_variable) -> List[ImpactVariableAggregation]:
         return cls.AGGREGATIONS[impact_variable]
 
     @classmethod
-    def s3_path(cls, impact_variable: Self, year: int, prescription) -> str:
-        return f"s3://{settings.S3_BUCKET}/rasters/impacts/"
+    def s3_path(
+        cls,
+        impact_variable: Self,
+        year: int,
+        action: Optional[TreatmentPrescriptionAction] = None,
+    ) -> str:
+        treatment_name = (
+            TreatmentPrescriptionAction.get_file_mapping(action)
+            if action
+            else "Baseline"
+        )
+        variable = str(impact_variable).lower()
+        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{treatment_name}_{year}_{variable}_3857_COG.tif"
 
 
 class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
