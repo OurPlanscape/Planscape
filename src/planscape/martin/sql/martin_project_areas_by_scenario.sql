@@ -39,7 +39,8 @@ BEGIN
         ST_TileEnvelope(z, x, y),
         4096, 64, true) AS "geom"
     FROM base
-    WHERE geom IS NOT NULL
+    WHERE 
+      ST_PointOnSurface(base.geom) && ST_TileEnvelope(z, x, y, margin => (64.0 / 4096))
   ) 
   SELECT INTO p_mvt (
     (SELECT ST_AsMVT(mvtpoly.*, 'project_areas_by_scenario') FROM mvtpoly WHERE geom IS NOT NULL) ||
