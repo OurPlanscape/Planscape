@@ -178,6 +178,8 @@ def generate_summary(
             "project_area_id": project.id,
             "project_area_name": project.name,
             "total_stand_count": stand_project_qs.count(),
+            "extent": project.geometry.extent,
+            "centroid": project.geometry.point_on_surface,
             "prescriptions": [
                 {
                     "action": p["action"],
