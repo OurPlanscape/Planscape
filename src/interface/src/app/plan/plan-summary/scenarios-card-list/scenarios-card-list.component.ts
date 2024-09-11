@@ -1,9 +1,9 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor } from '@angular/common';
-
 import { ScenarioRow } from '../saved-scenarios/saved-scenarios.component';
 import { Scenario, ScenarioResult } from '@types';
 import { ScenarioCardComponent } from '../../../../styleguide/scenario-card/scenario-card.component';
+import { SharedModule } from '@shared';
 import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
@@ -12,7 +12,7 @@ import {
 @Component({
   selector: 'app-scenarios-card-list',
   standalone: true,
-  imports: [ScenarioCardComponent, NgFor],
+  imports: [ScenarioCardComponent, NgFor, SharedModule],
   templateUrl: './scenarios-card-list.component.html',
   styleUrl: './scenarios-card-list.component.scss',
 })

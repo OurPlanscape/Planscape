@@ -2,14 +2,14 @@
   *ngFor="let s of scenarios"
   [name]="s.name"
   [creator]="s.creator"
-  [areas]="
-    hasResults(s) ? calculateTotals(s.scenario_result!).acres : undefined
-  "
+  [areas]="s.scenario_result?.result?.features?.length"
   [created_at]="s.created_at"
   [budget]="
     hasResults(s)
-      ? calculateTotals(s.scenario_result!).estimatedCost
-      : undefined
+      ? '' +
+        (calculateTotals(s.scenario_result!).estimatedCost
+          | currencyInK: '1.0-0')
+      : 'N/A'
   "
   [treatmentPlansCount]="s.tx_plan_count"
   [status]="s.scenario_result?.status || 'PENDING'"
