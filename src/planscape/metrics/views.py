@@ -14,11 +14,8 @@ from projects.models import ProjectVisibility
     ),
     retrieve=extend_schema(
         description="Detail project's metrics  that needs to be processed and will be used by the system",
-        responses={
-            200: MetricSerializer,
-            404: None
-        }
-    )
+        responses={200: MetricSerializer, 404: None},
+    ),
 )
 class MetricsViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = Metric.objects.filter(
