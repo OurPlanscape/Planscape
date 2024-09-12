@@ -10,10 +10,10 @@ from projects.models import ProjectVisibility
 
 @extend_schema_view(
     list=extend_schema(
-        description="List project's metrics that needs to be processed and will be used by the system"
+        description="List project's metrics that needs to be processed and will be used by the system."
     ),
     retrieve=extend_schema(
-        description="Detail project's metrics  that needs to be processed and will be used by the system",
+        description="Detail project's metrics  that needs to be processed and will be used by the system.",
         responses={200: MetricSerializer, 404: None},
     ),
 )
