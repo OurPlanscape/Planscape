@@ -257,6 +257,15 @@ class ImpactVariableAggregation(models.TextChoices):
     MAJORITY = "MAJORITY", "Majority"
 
 
+AVAILABLE_YEARS = (
+    2024,
+    2029,
+    2034,
+    2039,
+    2044,
+)
+
+
 class ImpactVariable(models.TextChoices):
     CROWN_BULK_DENSITY = "CBD", "Crown Bulk Density"
     CANOPY_BASE_HEIGHT = "CBH", "Canopy Base Height"
@@ -274,43 +283,48 @@ class ImpactVariable(models.TextChoices):
     TOTAL_FLAME_SEVERITY = "TOT_FLAME_SEV", "Total Flame Severity"
     TOTAL_CARBON = "TOTAL_CARBON", "Total Carbon"
 
-    AGGREGATIONS = {
-        CROWN_BULK_DENSITY: [ImpactVariableAggregation.MEAN],
-        CANOPY_BASE_HEIGHT: [ImpactVariableAggregation.MEAN],
-        CANOPY_COVER: [ImpactVariableAggregation.MEAN],
-        FUEL_BED_FUEL_MODEL: [],
-        LARGE_TREE_BIOMASS: [
-            ImpactVariableAggregation.SUM,
-            ImpactVariableAggregation.MEAN,
-        ],
-        MERCH_BIOMASS: [ImpactVariableAggregation.SUM, ImpactVariableAggregation.MEAN],
-        MORTALITY: [],
-        NON_MERCH_BIOMASS: [
-            ImpactVariableAggregation.SUM,
-            ImpactVariableAggregation.MEAN,
-        ],
-        POTENTIAL_SMOKE: [
-            ImpactVariableAggregation.SUM,
-            ImpactVariableAggregation.MEAN,
-        ],
-        PROBABILITY_TORCHING: [ImpactVariableAggregation.MEAN],
-        QUADRATIC_MEAN_DIAMETER: [ImpactVariableAggregation.MEAN],
-        STAND_DENSITY_INDEX: [ImpactVariableAggregation.MEAN],
-        TOTAL_HEIGHT: [ImpactVariableAggregation.MEAN],
-        TOTAL_FLAME_SEVERITY: [ImpactVariableAggregation.MEAN],
-        TOTAL_CARBON: [ImpactVariableAggregation.SUM, ImpactVariableAggregation.MEAN],
-    }
-
     @classmethod
     def get_aggregations(cls, impact_variable) -> List[ImpactVariableAggregation]:
-        return cls.AGGREGATIONS[impact_variable]
+        AGGREGATIONS = {
+            cls.CROWN_BULK_DENSITY: [ImpactVariableAggregation.MEAN],
+            cls.CANOPY_BASE_HEIGHT: [ImpactVariableAggregation.MEAN],
+            cls.CANOPY_COVER: [ImpactVariableAggregation.MEAN],
+            cls.FUEL_BED_FUEL_MODEL: [],
+            cls.LARGE_TREE_BIOMASS: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+            cls.MERCH_BIOMASS: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+            cls.MORTALITY: [],
+            cls.NON_MERCH_BIOMASS: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+            cls.POTENTIAL_SMOKE: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+            cls.PROBABILITY_TORCHING: [ImpactVariableAggregation.MEAN],
+            cls.QUADRATIC_MEAN_DIAMETER: [ImpactVariableAggregation.MEAN],
+            cls.STAND_DENSITY_INDEX: [ImpactVariableAggregation.MEAN],
+            cls.TOTAL_HEIGHT: [ImpactVariableAggregation.MEAN],
+            cls.TOTAL_FLAME_SEVERITY: [ImpactVariableAggregation.MEAN],
+            cls.TOTAL_CARBON: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+        }
+        return list([x.lower() for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
-    def s3_path(
+    def get_impact_raster(
         cls,
         impact_variable: Self,
+        action: Optional[TreatmentPrescriptionAction],
         year: int,
-        action: Optional[TreatmentPrescriptionAction] = None,
     ) -> str:
         treatment_name = (
             TreatmentPrescriptionAction.get_file_mapping(action)

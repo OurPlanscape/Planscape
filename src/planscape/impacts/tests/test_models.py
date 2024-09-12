@@ -11,7 +11,11 @@ class TestImpactVariable(TestCase):
         variable = ImpactVariable.CANOPY_BASE_HEIGHT
         year = 2024
         action = TreatmentPrescriptionAction.MASTICATION_RX_FIRE
-        s3_path = ImpactVariable.s3_path(variable, year, action)
+        s3_path = ImpactVariable.get_impact_raster(
+            impact_variable=variable,
+            action=action,
+            year=year,
+        )
         self.assertEqual(
             s3_path,
             "s3://planscape-control-dev/rasters/impacts/Treatment_9_2024_cbh_3857_COG.tif",
@@ -21,7 +25,11 @@ class TestImpactVariable(TestCase):
         variable = ImpactVariable.CANOPY_BASE_HEIGHT
         year = 2024
         action = None
-        s3_path = ImpactVariable.s3_path(variable, year, action)
+        s3_path = ImpactVariable.get_impact_raster(
+            impact_variable=variable,
+            action=action,
+            year=year,
+        )
         self.assertEqual(
             s3_path,
             "s3://planscape-control-dev/rasters/impacts/Baseline_2024_cbh_3857_COG.tif",
