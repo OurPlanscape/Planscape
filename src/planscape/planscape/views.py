@@ -8,6 +8,7 @@ from impacts.models import TreatmentPrescriptionAction
 from planscape.serializers import (
     LookupKeysSerializer,
     TreatmentPrescriptionActionSerializer,
+    BaseErrorMessageSerializer,
 )
 
 
@@ -32,7 +33,10 @@ class LookupViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
 
     @extend_schema(
         description="Lookup fields details",
-        responses={200: TreatmentPrescriptionActionSerializer, 404: None},
+        responses={
+            200: TreatmentPrescriptionActionSerializer,
+            404: BaseErrorMessageSerializer,
+        },
         examples=[
             OpenApiExample(
                 "Treatment Prescription Action description",

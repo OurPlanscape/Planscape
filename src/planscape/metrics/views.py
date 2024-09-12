@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from metrics.filters import MetricFilterSet
 from metrics.models import Metric
 from metrics.serializers import MetricSerializer
+from planscape.serializers import BaseErrorMessageSerializer
 from projects.models import ProjectVisibility
 
 
@@ -14,7 +15,7 @@ from projects.models import ProjectVisibility
     ),
     retrieve=extend_schema(
         description="Detail project's metrics  that needs to be processed and will be used by the system.",
-        responses={200: MetricSerializer, 404: None},
+        responses={200: MetricSerializer, 404: BaseErrorMessageSerializer},
     ),
 )
 class MetricsViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
