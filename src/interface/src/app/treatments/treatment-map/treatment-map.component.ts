@@ -6,10 +6,11 @@ import {
   GeoJSONSourceComponent,
   LayerComponent,
   MapComponent,
+  PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
+import { LngLat, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
@@ -18,6 +19,7 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
 import { MapConfigState } from './map-config.state';
 import { TreatedStandsState } from './treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MatIconModule } from '@angular/material/icon';
 
 @UntilDestroy()
 @Component({
@@ -38,6 +40,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     MapProjectAreasComponent,
     NgIf,
     AsyncPipe,
+    MatIconModule,
+    PopupComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -59,6 +63,7 @@ export class TreatmentMapComponent {
   showMapProjectAreas$ = this.mapConfigState.showProjectAreasLayer$;
   showTreatmentStands$ = this.mapConfigState.showTreatmentStandsLayer$;
   showMapControls$ = this.mapConfigState.showMapControls$;
+  mouseLngLat: LngLat | null = null;
 
   constructor(
     private mapConfigState: MapConfigState,
@@ -87,6 +92,12 @@ export class TreatmentMapComponent {
   }
 
   onMapMouseMove(event: MapMouseEvent): void {
+    if (this.mapConfigState.isStandSelectionEnabled()) {
+      this.mouseLngLat = event.lngLat;
+    } else {
+      this.mouseLngLat = null;
+    }
+
     if (!this.drawingSelection) return;
     this.mouseEnd = event;
   }

@@ -3,6 +3,7 @@ import {
   FeatureComponent,
   GeoJSONSourceComponent,
   LayerComponent,
+  PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
@@ -14,6 +15,8 @@ import {
 import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MatIconModule } from '@angular/material/icon';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-map-project-areas',
@@ -23,13 +26,19 @@ import { ActivatedRoute, Router } from '@angular/router';
     GeoJSONSourceComponent,
     LayerComponent,
     VectorSourceComponent,
+    PopupComponent,
+    MatIconModule,
+    NgForOf,
+    NgIf,
+    AsyncPipe,
   ],
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
 export class MapProjectAreasComponent {
-  scenarioId = this.treatmentsState.getScenarioId();
   @Input() mapLibreMap!: MapLibreMap;
+  scenarioId = this.treatmentsState.getScenarioId();
+  summary$ = this.treatmentsState.summary$;
 
   readonly layerName = 'project_areas_by_scenario';
   readonly tilesUrl =

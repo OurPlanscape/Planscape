@@ -14,3 +14,29 @@ app-map-controls {
   left: 10px;
   z-index: 20;
 }
+
+::ng-deep {
+  .tooltip {
+    border-radius: 4px;
+    box-shadow: 0px 6px 10px 0px rgba(0, 0, 0, 0.20);
+
+    .maplibregl-popup-content {
+      padding: 8px;
+    }
+
+    .maplibregl-popup-tip {
+      display: none;
+    }
+
+    .tooltip-content {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .no-select {
+      user-select: none;
+    }
+
+  }
+}

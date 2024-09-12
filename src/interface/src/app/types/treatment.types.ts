@@ -1,3 +1,5 @@
+import { Point } from 'geojson';
+
 export type TreatmentStatus = 'FAILURE' | 'PENDING' | 'RUNNING' | 'SUCCESS';
 
 export interface TreatmentPlan {
@@ -12,6 +14,8 @@ interface TreatmentProjectArea {
   project_area_name: string;
   total_stand_count: number;
   prescriptions: Prescription[];
+  extent: Extent;
+  centroid: Point;
 }
 
 export interface Prescription {
