@@ -291,7 +291,7 @@ class CalculateImpactsTest(TransactionTestCase):
 
     @mock.patch(
         "impacts.services.ImpactVariable.get_impact_raster",
-        return_value="impacts/tests/test_data/test.tif",
+        return_value="impacts/tests/test_data/test_raster.tif",
     )
     def test_calculate_impacts_returns_data(self, _get_impact_raster):
         """Test that this function is performing work correctly. we don't
