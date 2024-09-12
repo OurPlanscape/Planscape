@@ -17,7 +17,6 @@ import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { environment } from '../../../environments/environment';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { MapConfigState } from './map-config.state';
-import { TreatedStandsState } from './treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
@@ -56,9 +55,6 @@ export class TreatmentMapComponent {
   mouseStart: MapMouseEvent | null = null;
   mouseEnd: MapMouseEvent | null = null;
 
-  // TODO remove and do this directly on treatment-stands
-  treatedStands$ = this.treatedStandsState.treatedStands$;
-
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
   bounds$ = this.mapConfigState.mapCenter$;
@@ -67,10 +63,7 @@ export class TreatmentMapComponent {
   showMapControls$ = this.mapConfigState.showMapControls$;
   mouseLngLat: LngLat | null = null;
 
-  constructor(
-    private mapConfigState: MapConfigState,
-    private treatedStandsState: TreatedStandsState
-  ) {
+  constructor(private mapConfigState: MapConfigState) {
     // update cursor on map
     this.mapConfigState.cursor$
       .pipe(untilDestroyed(this))

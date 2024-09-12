@@ -19,7 +19,6 @@
   <app-map-stands
     *ngIf="showTreatmentStands$ | async"
     [mapLibreMap]="mapLibreMap"
-    [treatedStands]="(treatedStands$ | async) || []"
     [selectStart]="mouseStart ? mouseStart.point : null"
     [selectEnd]="mouseEnd ? mouseEnd.point : null"></app-map-stands>
 

@@ -22,9 +22,13 @@ import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
 import { PrescriptionSingleAction, SEQUENCE_COLORS } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
-import { TreatedStand } from '@types';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { TreatedStand } from '@types';
+import { distinctUntilChanged } from 'rxjs';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-map-stands',
   standalone: true,
@@ -35,9 +39,9 @@ export class MapStandsComponent implements OnChanges {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() selectStart!: Point | null;
   @Input() selectEnd!: Point | null;
-  @Input() treatedStands: TreatedStand[] = [];
 
   selectedStands$ = this.selectedStandsState.selectedStands$;
+  treatedStands$ = this.treatedStandsState.treatedStands$;
   private initialSelectedStands: number[] = [];
 
   // TODO project_area_aggregate only applies when looking at a specific project area
@@ -54,8 +58,19 @@ export class MapStandsComponent implements OnChanges {
   constructor(
     private selectedStandsState: SelectedStandsState,
     private treatmentsState: TreatmentsState,
+    private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState
-  ) {}
+  ) {
+    this.treatedStands$
+      .pipe(distinctUntilChanged(), untilDestroyed(this))
+      .subscribe((treatedStands) => {
+        this.paint = {
+          'fill-outline-color': '#000',
+          'fill-color': this.generateFillColors(treatedStands) as any,
+          'fill-opacity': 0.5,
+        };
+      });
+  }
 
   get vectorLayerUrl() {
     const projectAreaId = this.treatmentsState.getProjectAreaId();
@@ -90,13 +105,13 @@ export class MapStandsComponent implements OnChanges {
 
   paint: LayerSpecification['paint'] = {
     'fill-outline-color': '#000',
-    'fill-color': this.getFillColors() as any,
+    'fill-color': '#00000050',
     'fill-opacity': 0.5,
   };
 
-  getFillColors() {
+  private generateFillColors(stands: TreatedStand[]) {
     const defaultColor = '#00000050';
-    if (this.treatedStands.length === 0) {
+    if (stands.length === 0) {
       return defaultColor;
     }
     const matchExpression: (number | string | string[])[] = [
@@ -104,7 +119,7 @@ export class MapStandsComponent implements OnChanges {
       ['get', 'id'],
     ];
 
-    this.treatedStands.forEach((stand) => {
+    stands.forEach((stand) => {
       matchExpression.push(
         stand.id,
         SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
@@ -144,16 +159,6 @@ export class MapStandsComponent implements OnChanges {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    // update map colors when the treatedStands change
-    if (changes['treatedStands']) {
-      // update map filter
-      this.paint = {
-        'fill-outline-color': '#000',
-        'fill-color': this.getFillColors() as any,
-        'fill-opacity': 0.5,
-      };
-    }
-
     if (this.isMouseDownChange(changes['selectStart'])) {
       this.initialSelectedStands = [
         ...this.selectedStandsState.getSelectedStands(),
