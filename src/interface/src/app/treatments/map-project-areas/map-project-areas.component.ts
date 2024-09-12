@@ -9,14 +9,25 @@ import {
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
 import {
   LayerSpecification,
+  LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
+  Point,
 } from 'maplibre-gl';
 import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
+import {
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  Subject,
+} from 'rxjs';
+import { Prescription, TreatmentProjectArea } from '@types';
 
 @Component({
   selector: 'app-map-project-areas',
@@ -31,6 +42,8 @@ import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
     NgForOf,
     NgIf,
     AsyncPipe,
+    MapTooltipComponent,
+    JsonPipe,
   ],
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
@@ -39,6 +52,20 @@ export class MapProjectAreasComponent {
   @Input() mapLibreMap!: MapLibreMap;
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
+  mouseLngLat: LngLat | null = null;
+
+  activeProjectAreaId$ = new Subject<number>();
+  activeProjectArea$: Observable<TreatmentProjectArea | undefined> =
+    combineLatest([
+      this.summary$,
+      this.activeProjectAreaId$.pipe(distinctUntilChanged()),
+    ]).pipe(
+      map(([summary, projectAreaId]) => {
+        return summary?.project_areas.find(
+          (p) => p.project_area_id === projectAreaId
+        );
+      })
+    );
 
   readonly layerName = 'project_areas_by_scenario';
   readonly tilesUrl =
@@ -74,11 +101,8 @@ export class MapProjectAreasComponent {
   }
 
   goToProjectArea(event: MapMouseEvent) {
-    const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
-      layers: ['map-project-areas-fill'],
-    });
+    const projectAreaId = this.getProjectAreaIdFromFeatures(event.point);
 
-    const projectAreaId = features[0].properties['id'];
     this.router
       .navigate(['project-area', projectAreaId], {
         relativeTo: this.route,
@@ -92,7 +116,32 @@ export class MapProjectAreasComponent {
     this.mapLibreMap.getCanvas().style.cursor = 'pointer';
   }
 
-  resetCursor() {
+  setProjectAreaTooltip(e: MapMouseEvent) {
+    this.mouseLngLat = e.lngLat;
+    const newId = this.getProjectAreaIdFromFeatures(e.point);
+
+    if (newId) {
+      this.activeProjectAreaId$.next(newId);
+    }
+  }
+
+  resetCursorAndTooltip(e: MapMouseEvent) {
     this.mapLibreMap.getCanvas().style.cursor = '';
+    this.mouseLngLat = null;
+  }
+
+  private getProjectAreaIdFromFeatures(point: Point): number | null {
+    const features = this.mapLibreMap.queryRenderedFeatures(point, {
+      layers: ['map-project-areas-fill'],
+    });
+
+    return features[0].properties['id'];
+  }
+
+  getPrescriptionStandCount(prescriptions: Prescription[]) {
+    return prescriptions.reduce((total: number, prescription) => {
+      total = total + prescription.treated_stand_count;
+      return total;
+    }, 0);
   }
 }

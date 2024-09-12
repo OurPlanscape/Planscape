@@ -32,18 +32,7 @@
     [mapLibreMap]="mapLibreMap"
     *ngIf="showMapProjectAreas$ | async"></app-map-project-areas>
 
-  <mgl-popup
-    *ngIf="mouseLngLat"
-    [lngLat]="mouseLngLat"
-    [closeButton]="false"
-    [closeOnClick]="false"
-    [anchor]="'top'"
-    [offset]="20"
-    maxWidth="none"
-    className="tooltip">
-    <div class="tooltip-content no-select">
-      click to apply treatment on single stand or drag to apply on multiple
-      stands
-    </div>
-  </mgl-popup>
+  <app-map-tooltip [lngLat]="mouseLngLat" *ngIf="mouseLngLat">
+    click to apply treatment on single stand or drag to apply on multiple stands
+  </app-map-tooltip>
 </mgl-map>

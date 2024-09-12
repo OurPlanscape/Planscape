@@ -20,6 +20,7 @@ import { MapConfigState } from './map-config.state';
 import { TreatedStandsState } from './treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
+import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 
 @UntilDestroy()
 @Component({
@@ -42,6 +43,7 @@ import { MatIconModule } from '@angular/material/icon';
     AsyncPipe,
     MatIconModule,
     PopupComponent,
+    MapTooltipComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',

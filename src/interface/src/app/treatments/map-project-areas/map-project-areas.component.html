@@ -18,7 +18,8 @@
   source="scenarioProjectAreas"
   (layerClick)="goToProjectArea($event)"
   (layerMouseEnter)="setCursor()"
-  (layerMouseLeave)="resetCursor()"
+  (layerMouseMove)="setProjectAreaTooltip($event)"
+  (layerMouseLeave)="resetCursorAndTooltip($event)"
   [sourceLayer]="layerName"
   [paint]="paint"></mgl-layer>
 
@@ -39,23 +40,12 @@
     'text-halo-width': 2
   }"></mgl-layer>
 
-<ng-container *ngIf="summary$ | async; let summary">
-  <mgl-popup
-    *ngFor="let projectArea of summary.project_areas"
-    [lngLat]="[
-      projectArea.centroid.coordinates[0],
-      projectArea.centroid.coordinates[1]
-    ]"
-    [closeButton]="false"
-    [closeOnClick]="false"
-    [anchor]="'left'"
-    [offset]="40"
-    className="tooltip">
-    <div class="tooltip-content">
-      <mat-icon class="material-symbols-outlined">note_stack</mat-icon>
-      0
-      <mat-icon class="material-symbols-outlined">medication</mat-icon>
-      0/40
-    </div>
-  </mgl-popup>
-</ng-container>
+<app-map-tooltip [lngLat]="mouseLngLat" *ngIf="mouseLngLat">
+  <ng-container *ngIf="activeProjectArea$ | async; let activeProjectArea">
+    <mat-icon class="material-symbols-outlined">note_stack</mat-icon>
+    0
+    <mat-icon class="material-symbols-outlined">medication</mat-icon>
+    {{ getPrescriptionStandCount(activeProjectArea.prescriptions) }} /
+    {{ activeProjectArea.total_stand_count }}
+  </ng-container>
+</app-map-tooltip>

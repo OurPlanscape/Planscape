@@ -9,7 +9,8 @@ export interface TreatmentPlan {
   created_at: string;
   creator_name: string;
 }
-interface TreatmentProjectArea {
+
+export interface TreatmentProjectArea {
   project_area_id: number;
   project_area_name: string;
   total_stand_count: number;
