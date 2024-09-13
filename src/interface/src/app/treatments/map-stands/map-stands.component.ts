@@ -2,6 +2,7 @@ import {
   Component,
   Input,
   OnChanges,
+  OnInit,
   SimpleChange,
   SimpleChanges,
 } from '@angular/core';
@@ -35,13 +36,28 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   imports: [LayerComponent, VectorSourceComponent, AsyncPipe],
   templateUrl: './map-stands.component.html',
 })
-export class MapStandsComponent implements OnChanges {
+export class MapStandsComponent implements OnChanges, OnInit {
+  /**
+   * The instance of mapLibreMap used with this component.
+   * Must be provided while using this component.
+   */
   @Input() mapLibreMap!: MapLibreMap;
+  /**
+   * the starting Point of the stand selection while dragging.
+   * Null if the user is not dragging to select stands.
+   */
   @Input() selectStart!: Point | null;
+  /**
+   * the end Point of the stand selection while dragging.
+   * Null if the user is not dragging to select stands.
+   */
   @Input() selectEnd!: Point | null;
 
   selectedStands$ = this.selectedStandsState.selectedStands$;
   treatedStands$ = this.treatedStandsState.treatedStands$;
+  /**
+   * Reference to the selected stands before the user starts dragging for stand selection
+   */
   private initialSelectedStands: number[] = [];
 
   // TODO project_area_aggregate only applies when looking at a specific project area
@@ -50,9 +66,24 @@ export class MapStandsComponent implements OnChanges {
     'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
 
   readonly layers = {
-    outline: 'outline-layer',
-    stands: 'stands-layer',
-    selectedStands: 'stands-layer-selected',
+    outline: {
+      name: 'outline-layer',
+      sourceLayer: 'project_area_aggregate',
+    },
+    stands: {
+      name: 'stands-layer',
+      sourceLayer: 'stands_by_tx_plan',
+    },
+    selectedStands: {
+      name: 'stands-layer-selected',
+      sourceLayer: 'stands_by_tx_plan',
+    },
+  };
+
+  paint: LayerSpecification['paint'] = {
+    'fill-outline-color': '#000',
+    'fill-color': '#00000050',
+    'fill-opacity': 0.5,
   };
 
   constructor(
@@ -72,6 +103,10 @@ export class MapStandsComponent implements OnChanges {
       });
   }
 
+  ngOnInit(): void {
+    this.selectedStandsState.reset();
+  }
+
   get vectorLayerUrl() {
     const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
@@ -82,80 +117,17 @@ export class MapStandsComponent implements OnChanges {
     );
   }
 
-  private updateSelectedStands(selectedStands: number[]) {
-    this.selectedStandsState.updateSelectedStands(selectedStands);
-  }
-
-  clickOnLayer(event: MapMouseEvent) {
+  clickOnStand(event: MapMouseEvent) {
     // do not react to right clicks
+    // or disable click if stand selection is not enabled
     if (
       event.originalEvent.button === 2 ||
       !this.mapConfigState.isStandSelectionEnabled()
     ) {
       return;
     }
-
-    const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
-      layers: [this.layers.stands],
-    });
-
-    const standId = features[0].properties['id'];
+    const standId = this.getStandIdFromStandsLayer(event.point)[0];
     this.selectedStandsState.toggleStand(standId);
-  }
-
-  paint: LayerSpecification['paint'] = {
-    'fill-outline-color': '#000',
-    'fill-color': '#00000050',
-    'fill-opacity': 0.5,
-  };
-
-  private generateFillColors(stands: TreatedStand[]) {
-    const defaultColor = '#00000050';
-    if (stands.length === 0) {
-      return defaultColor;
-    }
-    const matchExpression: (number | string | string[])[] = [
-      'match',
-      ['get', 'id'],
-    ];
-
-    stands.forEach((stand) => {
-      matchExpression.push(
-        stand.id,
-        SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
-      );
-    });
-    matchExpression.push(defaultColor);
-
-    return matchExpression;
-  }
-
-  selectStandsWithinRectangle(): void {
-    if (!this.selectStart || !this.selectEnd) {
-      return;
-    }
-    const newStands: number[] = [];
-    const bbox = getBoundingBox(this.selectStart, this.selectEnd);
-    const features = this.mapLibreMap.queryRenderedFeatures(bbox, {
-      layers: [this.layers.stands],
-    });
-
-    let id: any;
-    features.forEach((feature) => {
-      id = feature.properties['id'];
-      const stand = this.initialSelectedStands.find((sId) => sId === id);
-      if (stand) {
-      } else {
-        newStands.push(id);
-      }
-    });
-
-    const combinedStands = new Set([
-      ...this.initialSelectedStands,
-      ...newStands,
-    ]);
-
-    this.updateSelectedStands(Array.from(combinedStands));
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -184,5 +156,58 @@ export class MapStandsComponent implements OnChanges {
 
   private isMouseDownChange(change: SimpleChange) {
     return change?.currentValue && !change?.previousValue;
+  }
+
+  private generateFillColors(stands: TreatedStand[]) {
+    const defaultColor = '#00000050';
+    if (stands.length === 0) {
+      return defaultColor;
+    }
+    const matchExpression: (number | string | string[])[] = [
+      'match',
+      ['get', 'id'],
+    ];
+
+    stands.forEach((stand) => {
+      matchExpression.push(
+        stand.id,
+        SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
+      );
+    });
+    matchExpression.push(defaultColor);
+
+    return matchExpression;
+  }
+
+  private getStandIdFromStandsLayer(
+    query: Parameters<typeof this.mapLibreMap.queryRenderedFeatures>[0]
+  ): number[] {
+    const features = this.mapLibreMap.queryRenderedFeatures(query, {
+      layers: [this.layers.stands.name],
+    });
+
+    return features.map((feature) => feature.properties['id']);
+  }
+
+  private selectStandsWithinRectangle(): void {
+    if (!this.selectStart || !this.selectEnd) {
+      return;
+    }
+
+    const bbox = getBoundingBox(this.selectStart, this.selectEnd);
+
+    const newStands = this.getStandIdFromStandsLayer(bbox).filter(
+      // filter out existing stands
+      (id) => !this.initialSelectedStands.includes(id)
+    );
+
+    // Combine the new stands with the existing ones
+    const combinedStands = new Set([
+      ...this.initialSelectedStands,
+      ...newStands,
+    ]);
+
+    // Update the state with the combined array of selected stands
+    this.selectedStandsState.updateSelectedStands(Array.from(combinedStands));
   }
 }
