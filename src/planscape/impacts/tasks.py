@@ -57,7 +57,7 @@ def async_set_failure(treatment_plan_pk: int) -> Tuple[bool, int]:
 
 
 @app.task()
-def async_calculate_persist_impacts_treament_plan(
+def async_calculate_persist_impacts_treatment_plan(
     treatment_plan_pk: int,
 ) -> Tuple[bool, int]:
     treatment_plan = TreatmentPlan.objects.select_for_update().get(pk=treatment_plan_pk)
