@@ -2,7 +2,7 @@ import logging
 import itertools
 import json
 from rasterstats import zonal_stats
-from typing import Iterable, List, Optional, Type, Dict, Union, Tuple, Any
+from typing import Iterable, List, Optional, Sequence, Type, Dict, Union, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
 from django.contrib.gis.db.models import Union as UnionOp
@@ -10,6 +10,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
+    ImpactVariableAggregation,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
@@ -33,6 +34,7 @@ TreatmentPrescriptionEntityType = Type[TreatmentPrescription]
 TreatmentPlanCloneResultType = Tuple[
     TreatmentPlanType, List[TreatmentPrescriptionEntityType]
 ]
+TTreatmentResult = Type[TreatmentResult]
 
 
 @transaction.atomic()
@@ -224,6 +226,7 @@ def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
         "id": prescription.pk,
         "properties": {
             "treatment_plan_id": prescription.treatment_plan.pk,
+            "treatment_prescription_id": prescription.pk,
             "project_area_id": prescription.project_area.pk,
             "stand_id": prescription.stand.pk,
             "type": prescription.type,
@@ -233,6 +236,70 @@ def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
 
 
 IMPACTS_RASTER_NODATA = -999
+
+
+def to_treatment_results(
+    result: Dict[str, Any],
+    variable: ImpactVariable,
+    year: int,
+) -> List[TreatmentResult]:
+    """Transforms the result/output of rasterstats (a zonal statistic record)
+    into multiple TreamentResults. If a variable has more than one aggregament,
+    this method will produce more than one result per stand.
+    """
+    properties: Dict[str, Any] = result.get("properties", {})
+    treament_plan_id = properties.get("treatment_plan_id")
+    tx_prescription_id = properties.get("treatment_prescription_id")
+    aggregations = ImpactVariable.get_aggregations(variable)
+    return list(
+        [
+            TreatmentResult.objects.update_or_create(
+                treament_plan_id=treament_plan_id,
+                treament_prescription_id=tx_prescription_id,
+                variable=variable,
+                aggregation=agg,
+                year=year,
+                defaults={
+                    "value": properties.get(agg.lower()),
+                },
+            )[0]
+            for agg in aggregations
+        ]
+    )
+
+
+def calculate_impacts_treatment_plan(
+    treatment_plan: TreatmentPlan,
+    years: Iterable[int] = AVAILABLE_YEARS,
+):
+    calculation_matrix = get_calculation_matrix(
+        treatment_plan=treatment_plan, years=years
+    )
+    for variable, action, year in calculation_matrix:
+        zonal_statistics = calculate_impacts(
+            treatment_plan=treatment_plan,
+            variable=variable,
+            action=action,
+            year=year,
+        )
+        # calculate baselines
+        treatment_results = persist_impacts(
+            zonal_statistics=zonal_statistics,
+            variable=variable,
+            year=year,
+        )
+
+
+def persist_impacts(
+    zonal_statistics: List[Dict[str, Any]],
+    variable: ImpactVariable,
+    year: int,
+) -> List[TreatmentResult]:
+    return list(
+        itertools.chain.from_iterable(
+            map(lambda r: to_treatment_results(r, variable, year), zonal_statistics)
+        )
+    )
 
 
 def calculate_impacts(
