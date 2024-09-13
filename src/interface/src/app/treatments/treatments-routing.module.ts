@@ -47,6 +47,7 @@ const routes: Routes = [
         data: {
           showMapProjectAreas: false,
           showTreatmentStands: true,
+          showMapControls: true,
         },
       },
     ],

@@ -29,6 +29,8 @@ export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
     route.data?.['showTreatmentStands'] || false
   );
 
+  mapConfig.setShowMapControls(route.data?.['showMapControls'] || false);
+
   treatmentsState.setTreatmentPlanId(treatmentPlanId);
   treatmentsState.setScenarioId(scenarioId);
   treatmentsState.setProjectAreaId(

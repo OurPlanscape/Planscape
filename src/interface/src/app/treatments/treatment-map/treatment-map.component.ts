@@ -54,10 +54,11 @@ export class TreatmentMapComponent {
   treatedStands$ = this.treatedStandsState.treatedStands$;
 
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
-  boxSelectionEnabled$ = this.mapConfigState.boxSelectionEnabled$;
+  standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
   bounds$ = this.mapConfigState.mapCenter$;
   showMapProjectAreas$ = this.mapConfigState.showProjectAreasLayer$;
   showTreatmentStands$ = this.mapConfigState.showTreatmentStandsLayer$;
+  showMapControls$ = this.mapConfigState.showMapControls$;
 
   constructor(
     private mapConfigState: MapConfigState,
@@ -77,10 +78,11 @@ export class TreatmentMapComponent {
     if (event.originalEvent.button === 2) {
       return;
     }
-    if (!this.mapConfigState.getBoxSelectionEnabled()) {
+    if (!this.mapConfigState.isStandSelectionEnabled()) {
       return;
     }
     this.drawingSelection = true;
+
     this.mouseStart = event;
   }
 
