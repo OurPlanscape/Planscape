@@ -8,3 +8,7 @@ class LookupKeysSerializer(serializers.ListSerializer):
 class TreatmentPrescriptionActionSerializer(serializers.Serializer):
     SEQUENCE = serializers.JSONField()
     SINGLE = serializers.JSONField()
+
+
+class BaseErrorMessageSerializer(serializers.Serializer):
+    detail = serializers.CharField(help_text="Error details.")

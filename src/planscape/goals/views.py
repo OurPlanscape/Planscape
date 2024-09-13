@@ -5,6 +5,7 @@ from drf_spectacular.utils import extend_schema_view, extend_schema
 from goals.filters import TreatmentGoalFilterSet
 from goals.models import TreatmentGoal
 from goals.serializers import TreatmentGoalSerializer
+from planscape.serializers import BaseErrorMessageSerializer
 from projects.models import ProjectVisibility
 
 
@@ -12,7 +13,7 @@ from projects.models import ProjectVisibility
     list=extend_schema(description="List treatment goals."),
     retrieve=extend_schema(
         description="Detail a treatment goal.",
-        responses={200: TreatmentGoalSerializer, 404: None},
+        responses={200: TreatmentGoalSerializer, 404: BaseErrorMessageSerializer},
     ),
 )
 class TreatmentGoalViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
