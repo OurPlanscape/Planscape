@@ -63,19 +63,23 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         related_name="planning_areas",
         on_delete=models.CASCADE,
         null=True,
+        help_text="User ID that created the Planning Area.",
     )
 
     region_name: models.CharField = models.CharField(
-        max_length=120, choices=RegionChoices.choices
+        max_length=120,
+        choices=RegionChoices.choices,
+        help_text="Region choice name of the Planning Area.",
     )
 
-    name = models.CharField(max_length=120)
+    name = models.CharField(max_length=120, help_text="Name of the Planning Area.")
 
-    notes = models.TextField(null=True)
+    notes = models.TextField(null=True, help_text="Notes of the Planning Area.")
 
     geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
         null=True,
+        help_text="Geometry of the Planning Area represented by polygons.",
     )
 
     def creator_name(self):

@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
@@ -36,6 +37,13 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
+@extend_schema_view(
+    list=extend_schema(description="List Planning Area."),
+    retrieve=extend_schema(description="Detail a Planning Area."),
+    destroy=extend_schema(description="Delete a Planning Area."),
+    update=extend_schema(description="Update Planning Area."),
+    partial_update=extend_schema(description="Update Planning Area."),
+)
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     # this member is configured for instrospection and swagger automcatic generation
     queryset = PlanningArea.objects.none()
@@ -77,6 +85,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         qs = PlanningArea.objects.list_for_api(user=user).select_related("user")
         return qs
 
+    @extend_schema(description="Create Planning Area.")
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

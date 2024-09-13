@@ -20,18 +20,38 @@ from stands.models import StandSizeChoices
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
-    scenario_count = serializers.IntegerField(read_only=True, required=False)
-    region_name = serializers.SerializerMethodField()
+    scenario_count = serializers.IntegerField(
+        read_only=True,
+        required=False,
+        help_text="Number of scenarios executed on the Planning Area.",
+    )
+    region_name = serializers.SerializerMethodField(
+        help_text="Region choice name of the Planning Area."
+    )
     # latest_updated takes into account the plan's scenario's updated timestamps and should
     # be used by clients rather than the row-level updated_at field.
-    latest_updated = serializers.SerializerMethodField()
-    notes = serializers.CharField(required=False)
-    created_at = serializers.DateTimeField(required=False)
+    latest_updated = serializers.SerializerMethodField(
+        help_text="Last update date and time in UTC."
+    )
+    notes = serializers.CharField(
+        required=False, help_text="Notes of the Planning Area."
+    )
+    created_at = serializers.DateTimeField(
+        required=False, help_text="Creation date and time in UTC."
+    )
 
-    area_acres = serializers.SerializerMethodField()
-    creator = serializers.CharField(source="creator_name")
-    permissions = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
+    area_acres = serializers.SerializerMethodField(
+        help_text="Area of the Planning Area represented in Acres."
+    )
+    creator = serializers.CharField(
+        source="creator_name", help_text="User ID that created the Planning Area."
+    )
+    permissions = serializers.SerializerMethodField(
+        help_text="Requester permissions for the Planning Area."
+    )
+    role = serializers.SerializerMethodField(
+        help_text="Requester role in the Planning Area."
+    )
 
     def get_region_name(self, instance):
         return instance.get_region_name_display()
