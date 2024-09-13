@@ -1,3 +1,4 @@
+import json
 from typing import List, Optional, Type, Dict, Union, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
@@ -178,6 +179,8 @@ def generate_summary(
             "project_area_id": project.id,
             "project_area_name": project.name,
             "total_stand_count": stand_project_qs.count(),
+            "extent": project.geometry.extent,
+            "centroid": json.loads(project.geometry.point_on_surface.json),
             "prescriptions": [
                 {
                     "action": p["action"],

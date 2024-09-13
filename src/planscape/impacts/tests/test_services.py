@@ -179,13 +179,21 @@ class SummaryTest(TransactionTestCase):
             )
         )[0]
         self.assertIn("prescriptions", proj_area_1)
+        self.assertIn("centroid", proj_area_1)
+        self.assertIn("type", proj_area_1.get("centroid"))
+        self.assertIn("coordinates", proj_area_1.get("centroid"))
+        self.assertIn("extent", proj_area_1)
         self.assertEqual(len(proj_area_1["prescriptions"]), 1)
         stands1 = proj_area_1["prescriptions"][0]["stand_ids"]
         self.assertGreater(len(stands1), 0)
         self.assertIn("prescriptions", proj_area_2)
+        self.assertIn("centroid", proj_area_2)
+        self.assertIn("extent", proj_area_2)
         self.assertEqual(len(proj_area_2["prescriptions"]), 1)
 
         self.assertIn("prescriptions", proj_area_3)
+        self.assertIn("centroid", proj_area_3)
+        self.assertIn("extent", proj_area_3)
         self.assertEqual(len(proj_area_3["prescriptions"]), 1)
 
     def test_summary_is_returned_correctly_filter_by_project_area(self):

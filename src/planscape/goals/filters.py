@@ -9,11 +9,17 @@ class TreatmentGoalFilterSet(filters.FilterSet):
     organization = filters.ModelChoiceFilter(
         queryset=Organization.objects.all(),
         field_name="project__organization",
+        help_text="Organization ID.",
     )
 
     project = filters.ModelChoiceFilter(
         queryset=Project.objects.all(),
         field_name="project",
+        help_text="Project ID.",
+    )
+
+    name = filters.CharFilter(
+        help_text="Name of the treatment goal. Equivalent to short_question_text."
     )
 
     class Meta:
