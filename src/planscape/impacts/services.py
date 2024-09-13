@@ -217,14 +217,6 @@ def generate_summary(
     return data
 
 
-def calculate_base_impacts(
-    treatment_plan: TreatmentPlan,
-    action: TreatmentPrescriptionAction,
-    variable: ImpactVariable,
-) -> List[TreatmentResult]:
-    pass
-
-
 def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
     geometry = prescription.geometry.transform(3857, clone=True)
     return {
