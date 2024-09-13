@@ -4,7 +4,14 @@ from projects.models import Project
 
 
 class ProjectFilterSet(filters.FilterSet):
-    capabilities = CharArrayFilter(lookup_expr="contains")
+    capabilities = CharArrayFilter(
+        lookup_expr="contains",
+        help_text="Capabilities. Multiple values may be separated by commas.",
+    )
+
+    name = filters.CharFilter(help_text="Project's name.")
+
+    display_name = filters.CharFilter(help_text="Project's display name.")
 
     class Meta:
         model = Project
