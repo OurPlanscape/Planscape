@@ -1,4 +1,5 @@
 import logging
+from typing import List, Tuple
 from django.db import transaction
 from celery import chord
 from impacts.models import (
@@ -16,16 +17,26 @@ log = logging.getLogger(__name__)
 
 @app.task()
 def async_calculate_persist_impacts(
-    treament_plan_pk: int,
+    treatment_plan_pk: int,
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
-) -> None:
-    pass
+) -> List[int]:
+    treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
+    zonal_stats = calculate_impacts(
+        treatment_plan=treatment_plan,
+        variable=variable,
+        action=action,
+        year=year,
+    )
+    results = persist_impacts(
+        zonal_statistics=zonal_stats, variable=variable, year=year
+    )
+    return list([x.pk for x in results])
 
 
 @app.task()
-def async_set_success(treatment_plan_pk: int):
+def async_set_success(treatment_plan_pk: int) -> Tuple[bool, int]:
     treatment_plan = TreatmentPlan.objects.select_for_update().get(pk=treatment_plan_pk)
     with transaction.atomic():
         treatment_plan.status = TreatmentPlanStatus.SUCCESS
@@ -35,7 +46,7 @@ def async_set_success(treatment_plan_pk: int):
 
 
 @app.task()
-def async_set_failure(treatment_plan_pk: int):
+def async_set_failure(treatment_plan_pk: int) -> Tuple[bool, int]:
     treatment_plan = TreatmentPlan.objects.select_for_update().get(pk=treatment_plan_pk)
     with transaction.atomic():
         treatment_plan.status = TreatmentPlanStatus.FAILURE
@@ -46,7 +57,9 @@ def async_set_failure(treatment_plan_pk: int):
 
 
 @app.task()
-def async_calculate_persist_impacts_treament_plan(treatment_plan_pk: int) -> None:
+def async_calculate_persist_impacts_treament_plan(
+    treatment_plan_pk: int,
+) -> Tuple[bool, int]:
     treatment_plan = TreatmentPlan.objects.select_for_update().get(pk=treatment_plan_pk)
     with transaction.atomic():
         treatment_plan.status = TreatmentPlanStatus.RUNNING
@@ -69,4 +82,8 @@ def async_calculate_persist_impacts_treament_plan(treatment_plan_pk: int) -> Non
         )
         for variable, action, year in matrix
     ]
-    result = chord(tasks)(callback)
+    log.info(f"Firing {len(tasks)} to calculate impacts!")
+    async_result = chord(tasks)(callback)
+    succedeed_huh, treatment_plan = async_result.get()
+    log.info(f"Impacts calculated for {treatment_plan} returned {succedeed_huh}.")
+    return succedeed_huh, treatment_plan.pk

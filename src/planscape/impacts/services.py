@@ -268,28 +268,6 @@ def to_treatment_results(
     )
 
 
-def calculate_impacts_treatment_plan(
-    treatment_plan: TreatmentPlan,
-    years: Iterable[int] = AVAILABLE_YEARS,
-):
-    calculation_matrix = get_calculation_matrix(
-        treatment_plan=treatment_plan, years=years
-    )
-    for variable, action, year in calculation_matrix:
-        zonal_statistics = calculate_impacts(
-            treatment_plan=treatment_plan,
-            variable=variable,
-            action=action,
-            year=year,
-        )
-        # calculate baselines
-        treatment_results = persist_impacts(
-            zonal_statistics=zonal_statistics,
-            variable=variable,
-            year=year,
-        )
-
-
 def persist_impacts(
     zonal_statistics: List[Dict[str, Any]],
     variable: ImpactVariable,
