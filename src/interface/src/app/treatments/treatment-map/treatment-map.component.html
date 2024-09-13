@@ -10,10 +10,10 @@
   [boxZoom]="false"
   [interactive]="true"
   [pitchWithRotate]="false"
-  (idle)="onIdle($event)"
+  (sourceData)="onSourceData($event)"
   (mapMouseDown)="onMapMouseDown($event)"
   (mapMouseMove)="onMapMouseMove($event)"
-  (mapMouseUp)="onMapMouseUp($event)">
+  (mapMouseUp)="onMapMouseUp()">
   <app-map-controls
     *ngIf="showMapControls$ | async"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
@@ -30,7 +30,7 @@
 
   <app-map-project-areas
     [mapLibreMap]="mapLibreMap"
-    *ngIf="showMapProjectAreas$ | async"></app-map-project-areas>
+    [visible]="(showMapProjectAreas$ | async) || false"></app-map-project-areas>
 
   <app-map-tooltip [lngLat]="mouseLngLat" *ngIf="mouseLngLat">
     click to apply treatment on single stand or drag to apply on multiple stands

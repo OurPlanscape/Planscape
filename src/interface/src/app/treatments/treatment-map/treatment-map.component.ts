@@ -10,7 +10,12 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import { LngLat, Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
+import {
+  LngLat,
+  Map as MapLibreMap,
+  MapMouseEvent,
+  MapSourceDataEvent,
+} from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
@@ -20,7 +25,7 @@ import { MapConfigState } from './map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { distinctUntilChanged, map, Subject, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -59,19 +64,9 @@ export class TreatmentMapComponent {
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
   bounds$ = this.mapConfigState.mapCenter$;
+  standsLoaded = new BehaviorSubject(false);
 
-  //showMapProjectAreas$ = this.mapConfigState.showProjectAreasLayer$;
-
-  private mapIdle$ = new Subject<boolean>();
-
-  // TODO determine the best way to transition between states
-  // showMapProjectAreas$ = this.mapIdle$.pipe(
-  //   withLatestFrom(this.mapConfigState.showProjectAreasLayer$),
-  //   map(([idle, showAreas]) => showAreas) // Pass only the showProjectAreas$ value forward
-  // );
-
-  showMapProjectAreas$ = this.bounds$.pipe(
-    distinctUntilChanged(),
+  showMapProjectAreas$ = this.standsLoaded.pipe(
     withLatestFrom(this.mapConfigState.showProjectAreasLayer$),
     map(([bounds, showAreas]) => showAreas) // Pass only the showProjectAreas$ value forward
   );
@@ -79,10 +74,6 @@ export class TreatmentMapComponent {
   showTreatmentStands$ = this.mapConfigState.showTreatmentStandsLayer$;
   showMapControls$ = this.mapConfigState.showMapControls$;
   mouseLngLat: LngLat | null = null;
-
-  onIdle(event: any) {
-    this.mapIdle$.next(true);
-  }
 
   constructor(private mapConfigState: MapConfigState) {
     // update cursor on map
@@ -118,10 +109,17 @@ export class TreatmentMapComponent {
     this.mouseEnd = event;
   }
 
-  onMapMouseUp(event: MapMouseEvent): void {
+  onMapMouseUp(): void {
     if (!this.drawingSelection) return;
     this.drawingSelection = false;
     this.mouseStart = null;
     this.mouseEnd = null;
+  }
+
+  onSourceData(event: MapSourceDataEvent) {
+    if (event.sourceId === 'stands' && event.isSourceLoaded) {
+      console.log('event: ', event);
+      this.standsLoaded.next(true);
+    }
   }
 }

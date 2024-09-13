@@ -50,6 +50,7 @@ import { Prescription, TreatmentProjectArea } from '@types';
 })
 export class MapProjectAreasComponent {
   @Input() mapLibreMap!: MapLibreMap;
+  @Input() visible = true;
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
@@ -84,7 +85,7 @@ export class MapProjectAreasComponent {
   paint: LayerSpecification['paint'] = {
     'fill-outline-color': '#000',
     'fill-color': this.getFillColors() as any,
-    'fill-opacity': 0.5,
+    'fill-opacity': this.visible ? 0.5 : 0,
   };
 
   getFillColors() {
@@ -97,7 +98,7 @@ export class MapProjectAreasComponent {
       matchExpression.push(i.toString(), getColorForProjectPosition(i));
     }
     matchExpression.push(defaultColor);
-    return matchExpression;
+    return matchExpression as any;
   }
 
   goToProjectArea(event: MapMouseEvent) {
@@ -152,5 +153,9 @@ export class MapProjectAreasComponent {
       total = total + prescription.treated_stand_count;
       return total;
     }, 0);
+  }
+
+  visibility() {
+    return this.visible ? 'visible' : 'none';
   }
 }

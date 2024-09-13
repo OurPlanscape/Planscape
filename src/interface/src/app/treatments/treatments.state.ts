@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { BehaviorSubject, catchError, map } from 'rxjs';
+import { BehaviorSubject, catchError, map, of } from 'rxjs';
 import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
 
@@ -58,27 +58,31 @@ export class TreatmentsState {
   }
 
   loadSummary() {
-    // TODO caching
-    this._summary$.next(null);
-    this.treatedStandsState.setTreatedStands([]);
+    // if I already have data avoid this and center?
+    const summary = this._summary$.value;
+    const projectAreaId = this.getProjectAreaId();
+    if (summary && !projectAreaId) {
+      this.mapConfigState.updateMapCenter(summary.extent);
+      return of(true);
+    }
+
     return this.treatmentsService
-      .getTreatmentPlanSummary(
-        this.getTreatmentPlanId(),
-        this.getProjectAreaId()
-      )
+      .getTreatmentPlanSummary(this.getTreatmentPlanId())
       .pipe(
         map((summary) => {
           this._summary$.next(summary);
           this.setTreatedStandsFromSummary(summary);
-          this.mapConfigState.updateMapCenter(summary.extent);
+          if (projectAreaId) {
+            this.selectProjectArea(projectAreaId);
+          } else {
+            this.mapConfigState.updateMapCenter(summary.extent);
+          }
           return true;
         })
       );
   }
 
   loadTreatmentPlan() {
-    // TODO caching
-    this._treatmentPlan.next(null);
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
       .pipe(
@@ -87,6 +91,12 @@ export class TreatmentsState {
           return true;
         })
       );
+  }
+
+  reset() {
+    this._summary$.next(null);
+    this.treatedStandsState.setTreatedStands([]);
+    this._treatmentPlan.next(null);
   }
 
   private setTreatedStandsFromSummary(summary: TreatmentSummary) {
