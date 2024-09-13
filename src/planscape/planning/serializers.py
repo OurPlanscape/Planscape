@@ -274,10 +274,18 @@ class ConfigurationSerializer(serializers.Serializer):
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):
-    notes = serializers.CharField(required=False)
-    updated_at = serializers.DateTimeField(required=False)
-    created_at = serializers.DateTimeField(required=False)
-    creator = serializers.CharField(source="creator_name", read_only=True)
+    notes = serializers.CharField(required=False, help_text="Notes of the Scenario.")
+    updated_at = serializers.DateTimeField(
+        required=False, help_text="Last update date and time in UTC."
+    )
+    created_at = serializers.DateTimeField(
+        required=False, help_text="Scenario creation date and time in UTC."
+    )
+    creator = serializers.CharField(
+        source="creator_name",
+        read_only=True,
+        help_text="Name of the creator of the Scenario.",
+    )
     tx_plan_count = serializers.SerializerMethodField()
     scenario_result = ScenarioResultSerializer(
         required=False,

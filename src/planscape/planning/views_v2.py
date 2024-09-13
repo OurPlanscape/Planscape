@@ -111,6 +111,13 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(description="List Scenarios."),
+    retrieve=extend_schema(description="Detail a Scenario."),
+    destroy=extend_schema(description="Delete a Scenario."),
+    update=extend_schema(description="Update Scenario."),
+    partial_update=extend_schema(description="Update Scenario."),
+)
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.none()
     permission_classes = [ScenarioViewPermission]
@@ -142,6 +149,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         )
         return qs
 
+    @extend_schema(description="Create a Scenario.")
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -168,6 +176,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             or self.serializer_class
         )
 
+    @extend_schema(description="Toggle status of a Scenario.")
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, pk=None):
         scenario = self.get_object()

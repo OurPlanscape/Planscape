@@ -107,10 +107,14 @@ class ScenarioOrderingFilter(OrderingFilter):
 
 
 class ScenarioFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")
+    name = filters.CharFilter(
+        lookup_expr="icontains",
+        help_text="Case insensitive search for name of Scenarios.",
+    )
     planning_area = filters.ModelChoiceFilter(
         field_name="planning_area",
         queryset=get_planning_areas_for_filter,
+        help_text="ID of the Planning Area.",
     )
 
     class Meta:

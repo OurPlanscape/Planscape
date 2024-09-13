@@ -170,34 +170,45 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         PlanningArea,
         related_name="scenarios",
         on_delete=models.CASCADE,
+        help_text="Planning Area ID.",
     )
     user = models.ForeignKey(
-        User, related_name="scenarios", on_delete=models.CASCADE, null=True, blank=True
+        User,
+        related_name="scenarios",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="User ID that created the Scenario.",
     )
 
-    name = models.CharField(max_length=120)
+    name = models.CharField(max_length=120, help_text="Name of the Scenario.")
 
     origin = models.CharField(
-        choices=ScenarioOrigin.choices,
-        null=True,
+        choices=ScenarioOrigin.choices, null=True, help_text="Scenario Origin."
     )
 
-    notes = models.TextField(null=True)
+    notes = models.TextField(null=True, help_text="Scenario notes.")
 
-    configuration = models.JSONField(default=dict)
+    configuration = models.JSONField(default=dict, help_text="Scenario configuration.")
 
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        help_text="Scenarion Universally Unique Identifier.",
+    )
 
     status = models.CharField(
         choices=ScenarioStatus.choices,
         max_length=32,
         default=ScenarioStatus.ACTIVE,
+        help_text="Scenario status.",
     )
 
     result_status = models.CharField(
         max_length=32,
         choices=ScenarioResultStatus.choices,
         null=True,
+        help_text="Result status of the Scenario.",
     )
 
     def creator_name(self):
