@@ -1,14 +1,21 @@
+import logging
+import itertools
 import json
-from typing import List, Optional, Type, Dict, Union, Tuple, Any
+from rasterstats import zonal_stats
+from typing import Iterable, List, Optional, Type, Dict, Union, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.models import (
+    AVAILABLE_YEARS,
+    ImpactVariable,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
+    TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
+    TreatmentResult,
     get_prescription_type,
 )
 from planning.models import ProjectArea, Scenario
@@ -16,6 +23,7 @@ from actstream import action as actstream_action
 from stands.models import STAND_AREA_ACRES, Stand
 from planscape.typing import UserType
 
+log = logging.getLogger(__name__)
 TreatmentPlanType = Type[TreatmentPlan]
 ScenarioType = Type[Scenario]
 StandType = Type[Stand]
@@ -207,3 +215,77 @@ def generate_summary(
         "extent": project_areas_geometry.extent,
     }
     return data
+
+
+def calculate_base_impacts(
+    treatment_plan: TreatmentPlan,
+    action: TreatmentPrescriptionAction,
+    variable: ImpactVariable,
+) -> List[TreatmentResult]:
+    pass
+
+
+def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
+    geometry = prescription.geometry.transform(3857, clone=True)
+    return {
+        "type": "Feature",
+        "id": prescription.pk,
+        "properties": {
+            "treatment_plan_id": prescription.treatment_plan.pk,
+            "project_area_id": prescription.project_area.pk,
+            "stand_id": prescription.stand.pk,
+            "type": prescription.type,
+        },
+        "geometry": json.loads(geometry.json),
+    }
+
+
+IMPACTS_RASTER_NODATA = -999
+
+
+def calculate_impacts(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    action: TreatmentPrescriptionAction,
+    year: int,
+) -> List[Dict[str, Any]]:
+    prescriptions = treatment_plan.tx_prescriptions.filter(
+        action=action
+    ).select_related("stand", "treatment_plan", "project_area")
+    if year not in AVAILABLE_YEARS:
+        raise ValueError(f"Year {year} not supported")
+
+    raster_path = ImpactVariable.get_impact_raster(
+        impact_variable=variable,
+        action=action,
+        year=year,
+    )
+    prescription_stands = list(map(to_geojson, prescriptions))
+    agg = ImpactVariable.get_aggregations(variable)
+    log.info(f"Calculating raster stats for {variable} with aggregations {agg}")
+    return zonal_stats(
+        prescription_stands,
+        raster_path,
+        stats=agg,
+        band=1,
+        nodata=IMPACTS_RASTER_NODATA,
+        geojson_out=True,
+    )
+
+
+def get_calculation_matrix(
+    treatment_plan: TreatmentPlan,
+    years: Optional[Iterable[int]] = None,
+) -> List[Tuple]:
+    actions = list(
+        [
+            TreatmentPrescriptionAction[x]
+            for x in treatment_plan.tx_prescriptions.values_list(
+                "action", flat=True
+            ).distinct()
+        ]
+    )
+    if not years:
+        years = AVAILABLE_YEARS
+    variables = list(ImpactVariable)
+    return list(itertools.product(variables, actions, years))
