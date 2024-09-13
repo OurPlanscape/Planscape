@@ -118,7 +118,6 @@ export class TreatmentMapComponent {
 
   onSourceData(event: MapSourceDataEvent) {
     if (event.sourceId === 'stands' && event.isSourceLoaded) {
-      console.log('event: ', event);
       this.standsLoaded.next(true);
     }
   }
