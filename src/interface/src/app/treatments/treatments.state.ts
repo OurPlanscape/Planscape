@@ -144,7 +144,6 @@ export class TreatmentsState {
       );
   }
 
-  // TODO rename this
   selectProjectArea(projectAreaId: number) {
     const summary = this._summary$.value;
 

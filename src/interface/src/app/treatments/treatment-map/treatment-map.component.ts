@@ -64,16 +64,18 @@ export class TreatmentMapComponent {
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
   bounds$ = this.mapConfigState.mapCenter$;
-  standsLoaded = new BehaviorSubject(false);
+  standsLoaded$ = new BehaviorSubject(false);
 
-  showMapProjectAreas$ = this.standsLoaded.pipe(
+  showMapProjectAreas$ = this.standsLoaded$.pipe(
     withLatestFrom(this.mapConfigState.showProjectAreasLayer$),
     map(([bounds, showAreas]) => showAreas) // Pass only the showProjectAreas$ value forward
   );
 
   showTreatmentStands$ = this.mapConfigState.showTreatmentStandsLayer$;
   showMapControls$ = this.mapConfigState.showMapControls$;
-  mouseLngLat: LngLat | null = null;
+  treatmentTooltipLngLat: LngLat | null = null;
+
+  standsSourceLayerId = 'stands';
 
   constructor(private mapConfigState: MapConfigState) {
     // update cursor on map
@@ -100,9 +102,9 @@ export class TreatmentMapComponent {
 
   onMapMouseMove(event: MapMouseEvent): void {
     if (this.mapConfigState.isStandSelectionEnabled()) {
-      this.mouseLngLat = event.lngLat;
+      this.treatmentTooltipLngLat = event.lngLat;
     } else {
-      this.mouseLngLat = null;
+      this.treatmentTooltipLngLat = null;
     }
 
     if (!this.drawingSelection) return;
@@ -117,8 +119,8 @@ export class TreatmentMapComponent {
   }
 
   onSourceData(event: MapSourceDataEvent) {
-    if (event.sourceId === 'stands' && event.isSourceLoaded) {
-      this.standsLoaded.next(true);
+    if (event.sourceId === this.standsSourceLayerId && event.isSourceLoaded) {
+      this.standsLoaded$.next(true);
     }
   }
 }

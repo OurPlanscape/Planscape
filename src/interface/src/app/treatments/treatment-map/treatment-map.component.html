@@ -19,6 +19,7 @@
     [mapLibreMap]="mapLibreMap"></app-map-controls>
   <app-map-stands
     *ngIf="showTreatmentStands$ | async"
+    [sourceId]="standsSourceLayerId"
     [mapLibreMap]="mapLibreMap"
     [selectStart]="mouseStart ? mouseStart.point : null"
     [selectEnd]="mouseEnd ? mouseEnd.point : null"></app-map-stands>
@@ -32,7 +33,9 @@
     [mapLibreMap]="mapLibreMap"
     [visible]="(showMapProjectAreas$ | async) || false"></app-map-project-areas>
 
-  <app-map-tooltip [lngLat]="mouseLngLat" *ngIf="mouseLngLat">
+  <app-map-tooltip
+    [lngLat]="treatmentTooltipLngLat"
+    *ngIf="treatmentTooltipLngLat">
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
 </mgl-map>

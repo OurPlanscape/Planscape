@@ -53,6 +53,11 @@ export class MapStandsComponent implements OnChanges, OnInit {
    */
   @Input() selectEnd!: Point | null;
 
+  /**
+   * The id to be applied on the source vector layer
+   */
+  @Input() sourceId = 'stands';
+
   selectedStands$ = this.selectedStandsState.selectedStands$;
   treatedStands$ = this.treatedStandsState.treatedStands$;
   /**
