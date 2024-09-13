@@ -70,8 +70,8 @@ def async_calculate_persist_impacts_treatment_plan(
         treatment_plan=treatment_plan,
         years=AVAILABLE_YEARS,
     )
-    callback = async_set_success.s(treatment_plan_pk=treatment_plan_pk).on_error(
-        async_set_failure.s(treatment_plan_pk=treatment_plan_pk)
+    callback = async_set_success.si(treatment_plan_pk=treatment_plan_pk).on_error(
+        async_set_failure.si(treatment_plan_pk=treatment_plan_pk)
     )
     tasks = [
         async_calculate_persist_impacts.si(
