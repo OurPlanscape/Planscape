@@ -10,6 +10,7 @@
   [boxZoom]="false"
   [interactive]="true"
   [pitchWithRotate]="false"
+  (idle)="onIdle($event)"
   (mapMouseDown)="onMapMouseDown($event)"
   (mapMouseMove)="onMapMouseMove($event)"
   (mapMouseUp)="onMapMouseUp($event)">

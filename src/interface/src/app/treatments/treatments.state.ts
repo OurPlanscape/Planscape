@@ -133,4 +133,22 @@ export class TreatmentsState {
         })
       );
   }
+
+  // TODO rename this
+  selectProjectArea(projectAreaId: number) {
+    const summary = this._summary$.value;
+
+    if (!summary) {
+      throw Error('no summary');
+    }
+    const projectArea = summary.project_areas.find(
+      (pa) => pa.project_area_id === projectAreaId
+    );
+    if (!summary) {
+      throw Error('no project area');
+    }
+    this.setProjectAreaId(projectAreaId);
+    this.mapConfigState.updateShowTreatmentStands(true);
+    this.mapConfigState.updateMapCenter(projectArea?.extent);
+  }
 }

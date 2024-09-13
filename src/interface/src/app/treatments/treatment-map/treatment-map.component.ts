@@ -20,6 +20,7 @@ import { MapConfigState } from './map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
+import { distinctUntilChanged, map, Subject, withLatestFrom } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -58,10 +59,30 @@ export class TreatmentMapComponent {
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
   bounds$ = this.mapConfigState.mapCenter$;
-  showMapProjectAreas$ = this.mapConfigState.showProjectAreasLayer$;
+
+  //showMapProjectAreas$ = this.mapConfigState.showProjectAreasLayer$;
+
+  private mapIdle$ = new Subject<boolean>();
+
+  // TODO determine the best way to transition between states
+  // showMapProjectAreas$ = this.mapIdle$.pipe(
+  //   withLatestFrom(this.mapConfigState.showProjectAreasLayer$),
+  //   map(([idle, showAreas]) => showAreas) // Pass only the showProjectAreas$ value forward
+  // );
+
+  showMapProjectAreas$ = this.bounds$.pipe(
+    distinctUntilChanged(),
+    withLatestFrom(this.mapConfigState.showProjectAreasLayer$),
+    map(([bounds, showAreas]) => showAreas) // Pass only the showProjectAreas$ value forward
+  );
+
   showTreatmentStands$ = this.mapConfigState.showTreatmentStandsLayer$;
   showMapControls$ = this.mapConfigState.showMapControls$;
   mouseLngLat: LngLat | null = null;
+
+  onIdle(event: any) {
+    this.mapIdle$.next(true);
+  }
 
   constructor(private mapConfigState: MapConfigState) {
     // update cursor on map

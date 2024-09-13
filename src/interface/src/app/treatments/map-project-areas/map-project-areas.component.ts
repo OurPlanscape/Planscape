@@ -102,6 +102,11 @@ export class MapProjectAreasComponent {
 
   goToProjectArea(event: MapMouseEvent) {
     const projectAreaId = this.getProjectAreaIdFromFeatures(event.point);
+    if (projectAreaId) {
+      this.treatmentsState.selectProjectArea(projectAreaId);
+    }
+
+    this.mouseLngLat = null;
 
     this.router
       .navigate(['project-area', projectAreaId], {
@@ -117,6 +122,10 @@ export class MapProjectAreasComponent {
   }
 
   setProjectAreaTooltip(e: MapMouseEvent) {
+    // if I have a project area ID im transitioning to the project area view.
+    if (this.treatmentsState.getProjectAreaId()) {
+      return;
+    }
     this.mouseLngLat = e.lngLat;
     const newId = this.getProjectAreaIdFromFeatures(e.point);
 
