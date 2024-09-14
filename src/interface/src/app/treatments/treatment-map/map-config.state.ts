@@ -14,8 +14,8 @@ export class MapConfigState {
   baseLayer$ = this._baseLayer$.asObservable();
   baseLayerUrl$ = this.baseLayer$.pipe(map((b) => baseLayerStyles[b]));
 
-  private _mapCenter$ = new BehaviorSubject<Extent | null>(null);
-  mapCenter$ = this._mapCenter$
+  private _mapExtent$ = new BehaviorSubject<Extent | null>(null);
+  mapExtent$ = this._mapExtent$
     .asObservable()
     .pipe(filter((m): m is Extent => !!m));
 
@@ -40,7 +40,7 @@ export class MapConfigState {
   }
 
   updateMapCenter(pos: any) {
-    this._mapCenter$.next(pos);
+    this._mapExtent$.next(pos);
   }
 
   updateShowProjectAreas(value: boolean) {

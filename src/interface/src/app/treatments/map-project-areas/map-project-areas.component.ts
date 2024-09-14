@@ -154,8 +154,4 @@ export class MapProjectAreasComponent {
       return total;
     }, 0);
   }
-
-  visibility() {
-    return this.visible ? 'visible' : 'none';
-  }
 }

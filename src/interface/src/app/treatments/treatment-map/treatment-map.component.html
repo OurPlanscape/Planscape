@@ -1,5 +1,5 @@
 <mgl-map
-  *ngIf="bounds$ | async; let bounds"
+  *ngIf="mapExtent$ | async; let bounds"
   (mapLoad)="mapLibreMap = $event"
   [style]="(baseLayerUrl$ | async) || ''"
   [fitBounds]="bounds"

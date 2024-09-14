@@ -2,7 +2,12 @@ import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { BehaviorSubject, catchError, map, of } from 'rxjs';
-import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
+import {
+  TreatedStand,
+  TreatmentPlan,
+  TreatmentProjectArea,
+  TreatmentSummary,
+} from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
 
 /**
@@ -57,26 +62,44 @@ export class TreatmentsState {
     this._scenarioId = value;
   }
 
-  loadSummary() {
-    // if I already have data avoid this and center?
-    const summary = this._summary$.value;
+  loadSummaryForProjectArea() {
     const projectAreaId = this.getProjectAreaId();
-    if (summary && !projectAreaId) {
-      this.mapConfigState.updateMapCenter(summary.extent);
-      return of(true);
+    const summary = this._summary$.value;
+    // if summary is already loaded, select project area and return
+    if (!projectAreaId) {
+      throw new Error('must provide projectAreaId');
     }
 
+    if (summary && projectAreaId) {
+      return of(true);
+    }
+    // if we don't have summary fetch data
     return this.treatmentsService
       .getTreatmentPlanSummary(this.getTreatmentPlanId())
       .pipe(
         map((summary) => {
           this._summary$.next(summary);
-          this.setTreatedStandsFromSummary(summary);
-          if (projectAreaId) {
-            this.selectProjectArea(projectAreaId);
-          } else {
-            this.mapConfigState.updateMapCenter(summary.extent);
-          }
+          this.setTreatedStandsFromSummary(summary.project_areas);
+          this.selectProjectArea(projectAreaId);
+          return true;
+        })
+      );
+  }
+
+  loadSummary() {
+    const summary = this._summary$.value;
+    // if I already have summary center the map before fetching
+    if (summary) {
+      this.mapConfigState.updateMapCenter(summary.extent);
+    }
+    //fetch summary
+    return this.treatmentsService
+      .getTreatmentPlanSummary(this.getTreatmentPlanId())
+      .pipe(
+        map((summary) => {
+          this._summary$.next(summary);
+          this.setTreatedStandsFromSummary(summary.project_areas);
+          this.mapConfigState.updateMapCenter(summary.extent);
           return true;
         })
       );
@@ -99,8 +122,8 @@ export class TreatmentsState {
     this._treatmentPlan.next(null);
   }
 
-  private setTreatedStandsFromSummary(summary: TreatmentSummary) {
-    const treatedStands: TreatedStand[] = summary.project_areas.flatMap((pa) =>
+  private setTreatedStandsFromSummary(projectAreas: TreatmentProjectArea[]) {
+    const treatedStands: TreatedStand[] = projectAreas.flatMap((pa) =>
       pa.prescriptions.flatMap((prescription) =>
         prescription.stand_ids.map((standId) => {
           return { id: standId, action: prescription.action };
@@ -153,11 +176,12 @@ export class TreatmentsState {
     const projectArea = summary.project_areas.find(
       (pa) => pa.project_area_id === projectAreaId
     );
-    if (!summary) {
+    if (!projectArea) {
       throw Error('no project area');
     }
     this.setProjectAreaId(projectAreaId);
     this.mapConfigState.updateShowTreatmentStands(true);
     this.mapConfigState.updateMapCenter(projectArea?.extent);
+    this.setTreatedStandsFromSummary([projectArea]);
   }
 }
