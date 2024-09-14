@@ -45,12 +45,14 @@
     'text-halo-width': 2
   }"></mgl-layer>
 
-<app-map-tooltip [lngLat]="mouseLngLat" *ngIf="mouseLngLat">
-  <ng-container *ngIf="activeProjectArea$ | async; let activeProjectArea">
+<ng-container *ngIf="mouseLngLat">
+  <app-map-tooltip
+    [lngLat]="mouseLngLat"
+    *ngIf="activeProjectArea$ | async; let activeProjectArea">
     <mat-icon class="material-symbols-outlined">note_stack</mat-icon>
     0
     <mat-icon class="material-symbols-outlined">medication</mat-icon>
     {{ getPrescriptionStandCount(activeProjectArea.prescriptions) }} /
     {{ activeProjectArea.total_stand_count }}
-  </ng-container>
-</app-map-tooltip>
+  </app-map-tooltip>
+</ng-container>

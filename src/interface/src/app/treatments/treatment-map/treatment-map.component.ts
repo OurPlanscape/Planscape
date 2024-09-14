@@ -118,6 +118,10 @@ export class TreatmentMapComponent {
     this.mouseEnd = null;
   }
 
+  onMapMouseOut() {
+    this.treatmentTooltipLngLat = null;
+  }
+
   onSourceData(event: MapSourceDataEvent) {
     if (event.sourceId === this.standsSourceLayerId && event.isSourceLoaded) {
       this.standsLoaded$.next(true);

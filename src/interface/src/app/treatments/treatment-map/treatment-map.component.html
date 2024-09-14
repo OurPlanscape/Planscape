@@ -13,7 +13,8 @@
   (sourceData)="onSourceData($event)"
   (mapMouseDown)="onMapMouseDown($event)"
   (mapMouseMove)="onMapMouseMove($event)"
-  (mapMouseUp)="onMapMouseUp()">
+  (mapMouseUp)="onMapMouseUp()"
+  (mapMouseOut)="onMapMouseOut()">
   <app-map-controls
     *ngIf="showMapControls$ | async"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
