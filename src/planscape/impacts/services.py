@@ -254,8 +254,8 @@ def to_treatment_results(
     return list(
         [
             TreatmentResult.objects.update_or_create(
-                treament_plan_id=treament_plan_id,
-                treament_prescription_id=tx_prescription_id,
+                treatment_plan_id=treament_plan_id,
+                treatment_prescription_id=tx_prescription_id,
                 variable=variable,
                 aggregation=agg,
                 year=year,
