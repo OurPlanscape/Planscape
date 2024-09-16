@@ -41,7 +41,7 @@ def async_set_success(treatment_plan_pk: int) -> Tuple[bool, int]:
     with transaction.atomic():
         treatment_plan.status = TreatmentPlanStatus.SUCCESS
         treatment_plan.save()
-        log.info(f"Treatment plan {treatment_plan_pk} FAILED.")
+        log.info(f"Treatment plan {treatment_plan_pk} SUCCEEDED.")
     return (True, treatment_plan_pk)
 
 
