@@ -253,11 +253,11 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mode
     run_details = models.JSONField(null=True)
 
     started_at = models.DateTimeField(
-        null=True, help_text="Start of the Forsys run, in UTC timezone"
+        null=True, help_text="Start of the Forsys run, in UTC timezone."
     )
 
     completed_at = models.DateTimeField(
-        null=True, help_text="End of the Forsys run, in UTC timezone"
+        null=True, help_text="End of the Forsys run, in UTC timezone."
     )
 
     class Meta:
@@ -311,12 +311,13 @@ class ProjectArea(
         on_delete=models.RESTRICT,
     )
 
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, help_text="Name of the Project Area.")
 
-    data = models.JSONField(null=True)
+    data = models.JSONField(null=True, help_text="Project Area metadata.")
 
     geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
+        help_text="Geometry of the Project Area.",
     )
 
     class Meta:
