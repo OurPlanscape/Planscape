@@ -313,7 +313,7 @@ class ProjectArea(
 
     name = models.CharField(max_length=128, help_text="Name of the Project Area.")
 
-    data = models.JSONField(null=True, help_text="Project Area metadata.")
+    data = models.JSONField(null=True, help_text="Project Area data from Forsys.")
 
     geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,

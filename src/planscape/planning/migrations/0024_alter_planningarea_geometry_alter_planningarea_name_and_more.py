@@ -61,7 +61,7 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="projectarea",
             name="data",
-            field=models.JSONField(help_text="Project Area metadata.", null=True),
+            field=models.JSONField(help_text="Project Area data from Forsys.", null=True),
         ),
         migrations.AlterField(
             model_name="projectarea",
