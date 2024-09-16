@@ -1,0 +1,26 @@
+:host {
+  display: flex;
+  height: 100%;
+
+  ::ng-deep .mat-mdc-tab-group {
+    height: 100%;
+  }
+  
+  ::ng-deep .mat-mdc-tab-body-wrapper {
+    height: 100%;
+  }
+
+.left-side {
+  width: 280px;
+}
+
+.summary-panel {
+  box-sizing: border-box;
+  display: block;
+  width: 300px;
+  height: 100%;
+
+}
+
+
+}

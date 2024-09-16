@@ -5,17 +5,11 @@ import {
   argsToTemplate,
 } from '@storybook/angular';
 import { NotesSidebarComponent } from './notes-sidebar.component';
-import {
-  MatDialogModule,
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-} from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClientModule } from '@angular/common/http'; // Add this import
-import { BaseNotesService, ProjectAreaNotesService } from '@services';
 
 const meta: Meta<NotesSidebarComponent> = {
   title: 'Components/Notes Sidebar',
@@ -25,17 +19,12 @@ const meta: Meta<NotesSidebarComponent> = {
     moduleMetadata({
       imports: [
         HttpClientModule,
-        MatDialogModule,
         BrowserAnimationsModule,
         MatProgressSpinnerModule,
         NotesSidebarComponent,
         MatSnackBarModule,
       ],
-      providers: [
-        { provide: MAT_DIALOG_DATA, useValue: {} },
-        { provide: MatDialogRef, useValue: {} },
-        { provide: BaseNotesService, useValue: ProjectAreaNotesService },
-      ],
+      providers: [],
     }),
   ],
   render: ({ ...args }) => ({
@@ -93,8 +82,6 @@ type Story = StoryObj<NotesSidebarComponent>;
 export const Default: Story = {
   args: {
     showHeader: false,
-    notesModel: 'planning_area',
-    objectId: 1,
     notes: exampleNotes,
     noNotesTitleText: 'No Notes Yet',
     noNotesDetailText:
@@ -105,8 +92,6 @@ export const Default: Story = {
 export const NoNotes: Story = {
   args: {
     showHeader: false,
-    notesModel: 'planning_area',
-    objectId: 1,
     notes: [],
     noNotesTitleText: 'No Notes Yet',
     noNotesDetailText:
@@ -117,8 +102,6 @@ export const NoNotes: Story = {
 export const OneNote: Story = {
   args: {
     showHeader: false,
-    notesModel: 'planning_area',
-    objectId: 1,
     notes: [
       {
         id: 2,

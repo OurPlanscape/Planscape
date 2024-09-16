@@ -31,19 +31,23 @@ export class AreaNotesComponent implements OnInit {
   }
 
   loadNotes() {
+    const planId = this.plan?.id.toString();
     this.notesService
-      .getNotes(this.plan?.id)
+      .getNotes(planId)
       .subscribe((notes) => (this.notes = notes));
   }
 
   openDeleteNoteDialog(note: Note) {
+    const planId = this.plan?.id.toString();
+    const noteId = note.id.toString();
+
     const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
     dialogRef
       .afterClosed()
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.notesService.deleteNote(this.plan.id, note.id).subscribe({
+          this.notesService.deleteNote(planId, noteId).subscribe({
             next: () => {
               this.snackbar.open(
                 `Deleted note`,
@@ -65,9 +69,11 @@ export class AreaNotesComponent implements OnInit {
   }
 
   addNote(event: Event) {
+    const planId = this.plan?.id.toString();
+
     if (this.note) {
       this.saving = true;
-      this.notesService.addNote(this.plan.id, this.note).subscribe((note) => {
+      this.notesService.addNote(planId, this.note).subscribe((note) => {
         // add the note
         this.notes.unshift(note);
         // but then refresh as well.

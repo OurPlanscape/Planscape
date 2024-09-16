@@ -281,6 +281,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
     updated_at = serializers.DateTimeField(required=False)
     created_at = serializers.DateTimeField(required=False)
     creator = serializers.CharField(source="creator_name", read_only=True)
+    tx_plan_count = serializers.SerializerMethodField()
     scenario_result = ScenarioResultSerializer(
         required=False,
         read_only=True,
@@ -290,6 +291,9 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="configuration.max_treatment_area_ratio"
     )
     max_budget = serializers.ReadOnlyField(source="configuration.max_budget")
+
+    def get_tx_plan_count(self, obj):
+        return obj.tx_plans.count()
 
     class Meta:
         fields = (
@@ -305,6 +309,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "creator",
             "status",
             "scenario_result",
+            "tx_plan_count",
         )
         model = Scenario
 

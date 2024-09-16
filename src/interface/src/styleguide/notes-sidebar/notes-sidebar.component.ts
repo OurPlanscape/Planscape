@@ -1,10 +1,13 @@
-import { Component, Input, OnInit, Output, EventEmitter } from '@angular/core';
-import { MatDialog } from '@angular/material/dialog';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { DeleteNoteDialogComponent } from '../../app/plan/delete-note-dialog/delete-note-dialog.component';
-import { take } from 'rxjs';
-import { Note, NotesModelName, BaseNotesService } from '@services';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import {
+  Component,
+  Input,
+  Output,
+  HostBinding,
+  EventEmitter,
+  SimpleChanges,
+  OnChanges,
+} from '@angular/core';
+import { Note } from '@services';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -12,6 +15,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { MatInputModule } from '@angular/material/input';
+
+export type NotesSidebarState = 'SAVING' | 'READY';
 
 @Component({
   standalone: true,
@@ -28,86 +33,36 @@ import { MatInputModule } from '@angular/material/input';
     MatInputModule,
   ],
 })
-export class NotesSidebarComponent implements OnInit {
-  constructor(
-    private notesService: BaseNotesService,
-    private dialog: MatDialog,
-    private snackbar: MatSnackBar
-  ) {}
+export class NotesSidebarComponent implements OnChanges {
+  constructor() {}
   @Input() showHeader = false;
+  @Input() notesState: NotesSidebarState = 'READY';
   @Input() notes: Note[] = [];
-  @Input() notesModel!: NotesModelName;
-  @Input() objectId!: number;
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =
     'Start adding notes to help your team learn more about this section.';
 
-  @Output() handleNoteResponse = new EventEmitter<boolean>();
-  note = '';
+  @Output() createNote = new EventEmitter<string>();
+  @Output() deleteNote = new EventEmitter<Note>();
 
-  ngOnInit() {
-    this.loadNotes();
+  newNoteText = '';
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['notes']) {
+      this.notesState = 'READY';
+    }
   }
 
-  // TODO: let the parent do this
-  loadNotes() {
-    this.notesService.getNotes(this.objectId).subscribe({
-      next: (notes) => {
-        this.notes = notes;
-        this.handleNoteResponse.emit(true);
-      },
-      error: () => {
-        this.handleNoteResponse.emit(false);
-      },
-    });
-  }
-
-  saving = false;
-
-  // TODO: decouple the notesService from this component?
-
-  openDeleteNoteDialog(note: Note) {
-    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
-    dialogRef
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((confirmed) => {
-        if (confirmed) {
-          this.notesService.deleteNote(this.objectId, note.id).subscribe({
-            next: () => {
-              this.snackbar.open(
-                `Deleted note`,
-                'Dismiss',
-                SNACK_NOTICE_CONFIG
-              );
-              this.loadNotes();
-            },
-            error: (err) => {
-              this.snackbar.open(
-                `Error: ${err.statusText}`,
-                'Dismiss',
-                SNACK_ERROR_CONFIG
-              );
-            },
-          });
-        }
-      });
+  requestToDelete(note: Note) {
+    this.deleteNote.emit(note);
   }
 
   addNote(event: Event) {
-    if (this.note) {
-      this.saving = true;
-      // TODO: emit this event and let the parent reload
-      this.notesService.addNote(this.objectId, this.note).subscribe((note) => {
-        // add the note
-        this.notes.unshift(note);
-        // but then refresh as well.
-        this.loadNotes();
-        this.saving = false;
-        this.note = '';
-      });
+    if (this.newNoteText) {
+      event.preventDefault();
+      this.createNote.emit(this.newNoteText);
+      this.newNoteText = '';
     }
-    event.preventDefault();
   }
 
   hasNotes(): boolean {
@@ -116,5 +71,13 @@ export class NotesSidebarComponent implements OnInit {
 
   canDelete(note: Note) {
     return note.can_delete;
+  }
+
+  @HostBinding('class.saving') get isSaving() {
+    return this.notesState === 'SAVING';
+  }
+
+  @HostBinding('class.ready') get isReady() {
+    return this.notesState === 'READY';
   }
 }

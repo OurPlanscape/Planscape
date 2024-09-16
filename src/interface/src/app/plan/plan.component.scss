@@ -13,11 +13,6 @@
   box-sizing: border-box;
   display: block;
   width: 300px;
-
-  ::ng-deep .mat-tab-body-wrapper {
-    height: 100%;
-  }
-
 }
 
 //feature flagged style

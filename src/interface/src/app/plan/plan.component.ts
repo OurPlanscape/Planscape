@@ -19,84 +19,36 @@ import {
   take,
   takeUntil,
 } from 'rxjs';
-import {
-  NotesModelName,
-  BaseNotesService,
-  PlanningAreaNotesService,
-} from '@services';
+import { PlanningAreaNotesService } from '@services';
 import { Plan, User } from '@types';
 import { AuthService, PlanStateService, ScenarioService } from '@services';
 import { Breadcrumb } from '@shared';
 import { getPlanPath } from './plan-helpers';
 import { HomeParametersStorageService } from '@services/local-storage.service';
+import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
+import { Note } from '@services';
+import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
+import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-plan',
   templateUrl: './plan.component.html',
   styleUrls: ['./plan.component.scss'],
-  providers: [
-    { provide: BaseNotesService, useClass: PlanningAreaNotesService },
-  ],
+  providers: [PlanningAreaNotesService],
 })
 export class PlanComponent implements OnInit, OnDestroy {
-  notesModel: NotesModelName = 'planning_area';
-  currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  planOwner$ = new Observable<User | null>();
-
-  showOverview$ = new BehaviorSubject<boolean>(false);
-
-  area$ = this.showOverview$.pipe(
-    map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
-  );
-
-  scenario$ = this.planStateService.planState$.pipe(
-    switchMap((state) => {
-      if (state.currentScenarioId) {
-        return this.scenarioService.getScenario(state.currentScenarioId);
-      }
-      return of(null);
-    }),
-    catchError((e) => {
-      return of(undefined);
-    })
-  );
-  breadcrumbs$ = combineLatest([
-    this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
-    this.scenario$,
-  ]).pipe(
-    map(([plan, scenario]) => {
-      const path = this.getPathFromSnapshot();
-      const crumbs: Breadcrumb[] = [
-        {
-          name: plan.name,
-          path: path === 'config' ? getPlanPath(plan.id) : undefined,
-        },
-      ];
-      if (scenario === undefined) {
-        return crumbs;
-      }
-      if (path === 'config' && !scenario) {
-        crumbs.push({ name: 'New Scenario' });
-      }
-      if (scenario) {
-        crumbs.push({ name: scenario.name || '' });
-      }
-      return crumbs;
-    })
-  );
-
-  private readonly destroy$ = new Subject<void>();
-
-  planId = this.route.snapshot.paramMap.get('id');
-  planNotFound: boolean = !this.planId;
-
   constructor(
     private authService: AuthService,
     private planStateService: PlanStateService,
     private route: ActivatedRoute,
     private router: Router,
     private scenarioService: ScenarioService,
-    private homeParametersStorageService: HomeParametersStorageService
+    private homeParametersStorageService: HomeParametersStorageService,
+    private notesService: PlanningAreaNotesService,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar
   ) {
     // TODO: Move everything in the constructor to ngOnInit
 
@@ -122,11 +74,64 @@ export class PlanComponent implements OnInit, OnDestroy {
     );
   }
 
+  currentPlan$ = new BehaviorSubject<Plan | null>(null);
+  planOwner$ = new Observable<User | null>();
+  private readonly destroy$ = new Subject<void>();
+
+  planId = this.route.snapshot.paramMap.get('id');
+  planNotFound: boolean = !this.planId;
+
+  sidebarNotes: Note[] = [];
+  notesSidebarState: NotesSidebarState = 'READY';
+
+  showOverview$ = new BehaviorSubject<boolean>(false);
+  area$ = this.showOverview$.pipe(
+    map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
+  );
+
+  scenario$ = this.planStateService.planState$.pipe(
+    switchMap((state) => {
+      if (state.currentScenarioId) {
+        return this.scenarioService.getScenario(state.currentScenarioId);
+      }
+      return of(null);
+    }),
+    catchError((e) => {
+      return of(undefined);
+    })
+  );
+  breadcrumbs$ = combineLatest([
+    this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
+    this.scenario$,
+  ]).pipe(
+    map(([plan, scenario]) => {
+      const path = this.getPathFromSnapshot();
+      const scenarioId = this.route.children[0]?.snapshot.params['id'];
+
+      const crumbs: Breadcrumb[] = [
+        {
+          name: plan.name,
+          path: path === 'config' ? getPlanPath(plan.id) : undefined,
+        },
+      ];
+      if (scenario === undefined) {
+        return crumbs;
+      }
+      if (path === 'config' && !scenarioId) {
+        crumbs.push({ name: 'New Scenario' });
+      }
+      if (scenario) {
+        crumbs.push({ name: scenario.name || '' });
+      }
+      return crumbs;
+    })
+  );
+
   ngOnInit() {
-    const path = this.getPathFromSnapshot();
     this.planStateService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
+        const path = this.getPathFromSnapshot();
         if (state.currentScenarioId || path === 'config') {
           this.showOverview$.next(false);
         } else {
@@ -140,6 +145,9 @@ export class PlanComponent implements OnInit, OnDestroy {
       .subscribe((event: NavigationEvent) => {
         this.updatePlanStateFromRoute();
       });
+
+    // TODO: add featureflag
+    this.loadNotes();
   }
 
   ngOnDestroy(): void {
@@ -181,6 +189,55 @@ export class PlanComponent implements OnInit, OnDestroy {
       });
     } else {
       this.backToOverview();
+    }
+  }
+
+  //notes handling functions
+  addNote(comment: string) {
+    this.notesSidebarState = 'SAVING';
+    if (this.planId) {
+      this.notesService.addNote(this.planId, comment).subscribe((note) => {
+        this.sidebarNotes.unshift(note);
+        this.loadNotes();
+      });
+    }
+    this.notesSidebarState = 'READY';
+  }
+
+  handleNoteDelete(n: Note) {
+    const noteId = n.id.toString();
+    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed: boolean) => {
+        if (confirmed && this.planId) {
+          this.notesService.deleteNote(this.planId, noteId).subscribe({
+            next: () => {
+              this.snackbar.open(
+                `Deleted note`,
+                'Dismiss',
+                SNACK_NOTICE_CONFIG
+              );
+              this.loadNotes();
+            },
+            error: (err) => {
+              this.snackbar.open(
+                `Error: ${err.statusText}`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
+        }
+      });
+  }
+
+  loadNotes() {
+    if (this.planId) {
+      this.notesService.getNotes(this.planId).subscribe((notes) => {
+        this.sidebarNotes = notes;
+      });
     }
   }
 }

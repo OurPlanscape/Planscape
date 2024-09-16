@@ -33,7 +33,7 @@
       <mat-menu #menu="matMenu">
         <button
           mat-menu-item
-          (click)="openDeleteNoteDialog(note)"
+          (click)="requestToDelete(note)"
           class="delete-note-button">
           <mat-icon class="delete-icon">delete_outline</mat-icon>
           <span>Delete</span>
@@ -50,15 +50,18 @@
     <textarea
       class="add-note-textarea"
       (keydown.enter)="addNote($event)"
-      [(ngModel)]="note"
-      [disabled]="saving"
-      cdkTextareaAutosize
+      [(ngModel)]="newNoteText"
+      [disabled]="notesState === 'SAVING'"
       matInput
       placeholder="Add a note">
     </textarea>
-    <mat-spinner diameter="20" matSuffix *ngIf="saving"></mat-spinner>
+    <mat-spinner
+      class="spinner-class"
+      diameter="20"
+      matSuffix
+      *ngIf="notesState === 'SAVING'"></mat-spinner>
     <svg
-      *ngIf="!saving"
+      *ngIf="notesState === 'READY'"
       xmlns="http://www.w3.org/2000/svg"
       width="24"
       height="24"
@@ -66,7 +69,7 @@
       fill="none"
       class="arrow-up"
       (click)="addNote($event)"
-      [ngClass]="{ active: !!note }"
+      [ngClass]="{ active: !!newNoteText }"
       matSuffix>
       <g clip-path="url(#clip0_229_19311)">
         <path

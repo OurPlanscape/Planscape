@@ -26,16 +26,18 @@
       .mat-mdc-form-field-infix {
       padding-top: 10px;
       padding-bottom: 16px;
+      height: 2em;
+    }
+
+    .mdc-text-field--no-label:not(.mdc-text-field--textarea)
+      .mat-mdc-form-field-input-control.mdc-text-field__input,
+    .mat-mdc-text-field-wrapper .mat-mdc-form-field-input-control {
+      height: 2em;
     }
 
     .mat-mdc-form-field-icon-suffix {
       padding: 0 8px 0 8px;
     }
-  }
-
-  mat-spinner {
-    padding: 2px;
-    top: 2px;
   }
 }
 
@@ -113,11 +115,6 @@
   }
 }
 
-textarea {
-  resize: none;
-  overflow: hidden;
-}
-
 .more-menu-button {
   background: none;
   border: none;
@@ -174,5 +171,11 @@ textarea {
 .add-note-field {
   flex-shrink: 0;
   height: 50px;
-  width: 280px;
+  width: 94%;
+}
+
+.add-note-textarea {
+  height: 40px;
+  overflow-y: scroll;
+  resize: none;
 }

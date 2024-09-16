@@ -1,24 +1,29 @@
-from collections import defaultdict
-from itertools import groupby
-from typing import List, Optional, Type, Dict, Union, Tuple, Any
+import logging
+import itertools
+import json
+from rasterstats import zonal_stats
+from typing import Iterable, List, Optional, Type, Dict, Union, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
+from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.models import (
+    AVAILABLE_YEARS,
+    ImpactVariable,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
+    TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
+    TreatmentResult,
     get_prescription_type,
-    TxPlanSummary,
-    ProjectAreaSummary,
-    TxPrescriptionSummaryItem,
 )
 from planning.models import ProjectArea, Scenario
 from actstream import action as actstream_action
-from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.models import STAND_AREA_ACRES, Stand
 from planscape.typing import UserType
 
+log = logging.getLogger(__name__)
 TreatmentPlanType = Type[TreatmentPlan]
 ScenarioType = Type[Scenario]
 StandType = Type[Stand]
@@ -55,16 +60,16 @@ def upsert_treatment_prescriptions(
     treatment_plan: TreatmentPlanType,
     project_area: ProjectAreaType,
     stands: List[StandType],
-    action_type: ActionType,
+    action: ActionType,
     created_by: UserType,
 ) -> List[TreatmentPrescriptionEntityType]:
-    def upsert(treatment_plan, project_area, stand, action_type, user):
+    def upsert(treatment_plan, project_area, stand, action, user):
         upsert_defaults = {
-            "type": get_prescription_type(action_type),
+            "type": get_prescription_type(action),
             "created_by": user,
             "updated_by": user,
             "geometry": stand.geometry,
-            "action": action_type,
+            "action": action,
         }
         instance, created = TreatmentPrescription.objects.update_or_create(
             treatment_plan=treatment_plan,
@@ -81,7 +86,7 @@ def upsert_treatment_prescriptions(
             lambda stand: upsert(
                 treatment_plan=treatment_plan,
                 project_area=project_area,
-                action_type=action_type,
+                action=action,
                 user=created_by,
                 stand=stand,
             ),
@@ -170,6 +175,9 @@ def generate_summary(
     )
     project_areas = {}
     project_area_queryset = ProjectArea.objects.filter(**pa_filter)
+    project_areas_geometry = project_area_queryset.all().aggregate(
+        geometry=UnionOp("geometry")
+    )["geometry"]
     for project in project_area_queryset:
         stand_project_qs = Stand.objects.filter(
             size=stand_size,
@@ -179,12 +187,15 @@ def generate_summary(
             "project_area_id": project.id,
             "project_area_name": project.name,
             "total_stand_count": stand_project_qs.count(),
+            "extent": project.geometry.extent,
+            "centroid": json.loads(project.geometry.point_on_surface.json),
             "prescriptions": [
                 {
                     "action": p["action"],
                     "type": p["type"],
                     "treated_stand_count": p["treated_stand_count"],
                     "area_acres": p["treated_stand_count"] * stand_area,
+                    "stand_ids": p["stand_ids"],
                 }
                 for p in filter(
                     lambda p: p["project_area__id"] == project.id,
@@ -201,5 +212,72 @@ def generate_summary(
         "treatment_plan_id": treatment_plan.pk,
         "treatment_plan_name": treatment_plan.name,
         "project_areas": list(project_areas.values()),
+        "extent": project_areas_geometry.extent,
     }
     return data
+
+
+def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
+    geometry = prescription.geometry.transform(3857, clone=True)
+    return {
+        "type": "Feature",
+        "id": prescription.pk,
+        "properties": {
+            "treatment_plan_id": prescription.treatment_plan.pk,
+            "project_area_id": prescription.project_area.pk,
+            "stand_id": prescription.stand.pk,
+            "type": prescription.type,
+        },
+        "geometry": json.loads(geometry.json),
+    }
+
+
+IMPACTS_RASTER_NODATA = -999
+
+
+def calculate_impacts(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    action: TreatmentPrescriptionAction,
+    year: int,
+) -> List[Dict[str, Any]]:
+    prescriptions = treatment_plan.tx_prescriptions.filter(
+        action=action
+    ).select_related("stand", "treatment_plan", "project_area")
+    if year not in AVAILABLE_YEARS:
+        raise ValueError(f"Year {year} not supported")
+
+    raster_path = ImpactVariable.get_impact_raster(
+        impact_variable=variable,
+        action=action,
+        year=year,
+    )
+    prescription_stands = list(map(to_geojson, prescriptions))
+    agg = ImpactVariable.get_aggregations(variable)
+    log.info(f"Calculating raster stats for {variable} with aggregations {agg}")
+    return zonal_stats(
+        prescription_stands,
+        raster_path,
+        stats=agg,
+        band=1,
+        nodata=IMPACTS_RASTER_NODATA,
+        geojson_out=True,
+    )
+
+
+def get_calculation_matrix(
+    treatment_plan: TreatmentPlan,
+    years: Optional[Iterable[int]] = None,
+) -> List[Tuple]:
+    actions = list(
+        [
+            TreatmentPrescriptionAction[x]
+            for x in treatment_plan.tx_prescriptions.values_list(
+                "action", flat=True
+            ).distinct()
+        ]
+    )
+    if not years:
+        years = AVAILABLE_YEARS
+    variables = list(ImpactVariable)
+    return list(itertools.product(variables, actions, years))

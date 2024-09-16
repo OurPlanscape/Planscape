@@ -4,7 +4,7 @@ import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from '@types';
-
+import { MatDialogModule } from '@angular/material/dialog';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
 import {
   AuthService,
@@ -19,6 +19,7 @@ import { MockComponent } from 'ng-mocks';
 import { NavBarComponent } from '@shared';
 import { MOCK_PLAN } from '@services/mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
@@ -99,6 +100,8 @@ describe('PlanComponent', () => {
         PlanModule,
         RouterTestingModule.withRoutes([]),
         NoopAnimationsModule,
+        MatDialogModule,
+        MatSnackBar,
       ],
       declarations: [
         PlanComponent,

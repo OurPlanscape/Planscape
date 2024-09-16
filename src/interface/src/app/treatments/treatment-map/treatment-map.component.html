@@ -1,35 +1,34 @@
-<app-map-controls
-  [mapDragging]="mapDragging"
-  (toggleDrag)="mapDragging = $event"></app-map-controls>
 <mgl-map
+  *ngIf="bounds$ | async; let bounds"
   (mapLoad)="mapLibreMap = $event"
-  [style]="
-    'https://tiles.stadiamaps.com/styles/alidade_smooth.json?api_key=' + key
-  "
-  [zoom]="[10]"
-  [center]="[-120, 37]"
-  [dragPan]="mapDragging"
+  [style]="(baseLayerUrl$ | async) || ''"
+  [fitBounds]="bounds"
+  [fitBoundsOptions]="{ padding: 20 }"
+  [dragPan]="(standSelectionEnabled$ | async) === false"
   [minZoom]="7"
+  [maxZoom]="17"
   [boxZoom]="false"
   [interactive]="true"
   [pitchWithRotate]="false"
   (mapMouseDown)="onMapMouseDown($event)"
   (mapMouseMove)="onMapMouseMove($event)"
   (mapMouseUp)="onMapMouseUp($event)">
+  <app-map-controls
+    *ngIf="showMapControls$ | async"
+    [mapLibreMap]="mapLibreMap"></app-map-controls>
   <app-map-stands
+    *ngIf="showTreatmentStands$ | async"
     [mapLibreMap]="mapLibreMap"
-    [projectAreaId]="projectAreaId"
-    [treatmentPlanId]="treatmentPlanId"
-    [selectStart]="start ? start.point : null"
-    [selectEnd]="end ? end.point : null"></app-map-stands>
+    [treatedStands]="(treatedStands$ | async) || []"
+    [selectStart]="mouseStart ? mouseStart.point : null"
+    [selectEnd]="mouseEnd ? mouseEnd.point : null"></app-map-stands>
 
   <app-map-rectangle
     [mapLibreMap]="mapLibreMap"
-    [start]="start ? start.lngLat : null"
-    [end]="end ? end.lngLat : null"></app-map-rectangle>
+    [start]="mouseStart ? mouseStart.lngLat : null"
+    [end]="mouseEnd ? mouseEnd.lngLat : null"></app-map-rectangle>
 
   <app-map-project-areas
-    *ngIf="scenarioId"
     [mapLibreMap]="mapLibreMap"
-    [scenarioId]="scenarioId"></app-map-project-areas>
+    *ngIf="showMapProjectAreas$ | async"></app-map-project-areas>
 </mgl-map>

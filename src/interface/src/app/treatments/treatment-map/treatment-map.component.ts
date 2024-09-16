@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { Component } from '@angular/core';
+import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   DraggableDirective,
   FeatureComponent,
@@ -12,11 +12,14 @@ import {
 import { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
-import { SelectedStandsState } from './selected-stands.state';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { environment } from '../../../environments/environment';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+import { MapConfigState } from './map-config.state';
+import { TreatedStandsState } from './treated-stands.state';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
   standalone: true,
@@ -34,53 +37,64 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
     MapControlsComponent,
     MapProjectAreasComponent,
     NgIf,
+    AsyncPipe,
   ],
-  providers: [SelectedStandsState],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
 })
 export class TreatmentMapComponent {
-  mapLibreMap!: MapLibreMap;
   readonly key = environment.stadiamaps_key;
+  mapLibreMap!: MapLibreMap;
 
-  // TODO: should we keep using prop drilling here? Consider using a provider service to hold these values
-  @Input() projectAreaId: number | null = null;
-  @Input() treatmentPlanId = 0;
-  @Input() scenarioId: number | null = null;
+  private drawingSelection = false;
+  mouseStart: MapMouseEvent | null = null;
+  mouseEnd: MapMouseEvent | null = null;
 
-  treatedStands: { id: number; assigment: string }[] = [];
+  // TODO remove and do this directly on treatment-stands
+  treatedStands$ = this.treatedStandsState.treatedStands$;
 
-  mapDragging = true;
+  baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
+  standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
+  bounds$ = this.mapConfigState.mapCenter$;
+  showMapProjectAreas$ = this.mapConfigState.showProjectAreasLayer$;
+  showTreatmentStands$ = this.mapConfigState.showTreatmentStandsLayer$;
+  showMapControls$ = this.mapConfigState.showMapControls$;
 
-  private isDragging = false;
-  start: MapMouseEvent | null = null;
-  end: MapMouseEvent | null = null;
-
-  constructor() {}
+  constructor(
+    private mapConfigState: MapConfigState,
+    private treatedStandsState: TreatedStandsState
+  ) {
+    // update cursor on map
+    this.mapConfigState.cursor$
+      .pipe(untilDestroyed(this))
+      .subscribe((cursor) => {
+        if (this.mapLibreMap) {
+          this.mapLibreMap.getCanvas().style.cursor = cursor;
+        }
+      });
+  }
 
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {
       return;
     }
-    if (this.mapDragging) {
+    if (!this.mapConfigState.isStandSelectionEnabled()) {
       return;
     }
-    this.isDragging = true;
+    this.drawingSelection = true;
 
-    this.start = event;
-    this.mapLibreMap.getCanvas().style.cursor = 'crosshair';
+    this.mouseStart = event;
   }
 
   onMapMouseMove(event: MapMouseEvent): void {
-    if (!this.isDragging) return;
-    this.end = event;
+    if (!this.drawingSelection) return;
+    this.mouseEnd = event;
   }
 
   onMapMouseUp(event: MapMouseEvent): void {
-    if (!this.isDragging) return;
-    this.isDragging = false;
-    this.mapLibreMap.getCanvas().style.cursor = '';
-    this.start = null;
-    this.end = null;
+    if (!this.drawingSelection) return;
+    this.drawingSelection = false;
+    this.mouseStart = null;
+    this.mouseEnd = null;
   }
 }

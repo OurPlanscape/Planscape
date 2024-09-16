@@ -422,3 +422,5 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+S3_BUCKET = config("S3_BUCKET", "planscape-control-dev")

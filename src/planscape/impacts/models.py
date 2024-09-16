@@ -1,6 +1,6 @@
 from collections import defaultdict
-from dataclasses import dataclass, field
-from typing import List, Optional
+from typing import Dict, List, Optional
+from typing_extensions import Self
 from django.contrib.gis.db import models
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -131,6 +131,29 @@ class TreatmentPrescriptionAction(models.TextChoices):
     )
 
     @classmethod
+    def get_file_mapping(cls, action: Self) -> str:
+        data = {
+            cls.MODERATE_THINNING_BIOMASS: "Treatment_1",
+            cls.HEAVY_THINNING_BIOMASS: "Treatment_2",
+            cls.MODERATE_THINNING_BURN: "Treatment_3",
+            cls.HEAVY_THINNING_BURN: "Treatment_4",
+            cls.MODERATE_MASTICATION: "Treatment_5",
+            cls.HEAVY_MASTICATION: "Treatment_6",
+            cls.RX_FIRE: "Treatment_7",
+            cls.HEAVY_THINNING_RX_FIRE: "Treatment_8",
+            cls.MASTICATION_RX_FIRE: "Treatment_9",
+            cls.MODERATE_THINNING_BURN_PLUS_RX_FIRE: "Seq_1",
+            cls.MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: "Seq_2",
+            cls.HEAVY_THINNING_BURN_PLUS_RX_FIRE: "Seq_3",
+            cls.HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: "Seq_4",
+            cls.RX_FIRE_PLUS_RX_FIRE: "Seq_5",
+            cls.MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: "Seq_6",
+            cls.HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: "Seq_7",
+            cls.MODERATE_MASTICATION_PLUS_RX_FIRE: "Seq_8",
+        }
+        return data[action]
+
+    @classmethod
     def json(cls):
         output = defaultdict(dict)
         for key, item in dict(cls.choices).items():
@@ -216,29 +239,133 @@ class TreatmentPrescription(
     class Meta:
         verbose_name = "Treatment Prescription"
         verbose_name_plural = "Treatment Prescriptions"
+        constraints = [
+            models.UniqueConstraint(
+                fields=["treatment_plan", "stand"],
+                include=["type", "action"],
+                name="treatment_prescription_treatment_plan_unique_constraint",
+            )
+        ]
 
 
-@dataclass
-class TxPrescriptionSummaryItem:
-    type: TreatmentPrescriptionType
-    action: TreatmentPrescriptionAction
-    area_acres: float
-    stand_ids: List[int] = field(repr=False)
+class ImpactVariableAggregation(models.TextChoices):
+    SUM = "SUM", "Sum"
+    MEAN = "MEAN", "Mean"
+    COUNT = "COUNT", "Count"
+    MAX = "MAX", "Max"
+    MIN = "MIN", "Min"
+    MAJORITY = "MAJORITY", "Majority"
 
 
-@dataclass
-class ProjectAreaSummary:
-    id: int
-    name: str
-    prescriptions: List[TxPrescriptionSummaryItem]
+AVAILABLE_YEARS = (
+    2024,
+    2029,
+    2034,
+    2039,
+    2044,
+)
 
 
-@dataclass
-class TxPlanSummary:
-    planning_area: int
-    planning_area_name: str
-    scenario: int
-    scenario_name: str
-    treatment_plan: int
-    treatment_plan_name: str
-    project_areas: List[ProjectAreaSummary]
+class ImpactVariable(models.TextChoices):
+    CROWN_BULK_DENSITY = "CBD", "Crown Bulk Density"
+    CANOPY_BASE_HEIGHT = "CBH", "Canopy Base Height"
+    CANOPY_COVER = "CC", "Canopy Cover"
+    FUEL_BED_FUEL_MODEL = "FBFM", "Fuel Bed/Fuel Model"
+    LARGE_TREE_BIOMASS = "LARGE_TREE_BIOMASS", "Large Tree Biomass"
+    MERCH_BIOMASS = "MERCH_BIOMASS", "Merch Biomass"
+    MORTALITY = "MORTALITY", "Mortality"
+    NON_MERCH_BIOMASS = "NON_MERCH_BIOMASS", "Non Merch Biomass"
+    POTENTIAL_SMOKE = "POTENTIAL_SMOKE", "Potential Smoke"
+    PROBABILITY_TORCHING = "PTORCH", "Probabiliy of Torching"
+    QUADRATIC_MEAN_DIAMETER = "QMD", "Quadratic Mean Diameter"
+    STAND_DENSITY_INDEX = "SDI", "Stand Density Index"
+    TOTAL_HEIGHT = "TH", "Total Height"
+    TOTAL_FLAME_SEVERITY = "TOT_FLAME_SEV", "Total Flame Severity"
+    TOTAL_CARBON = "TOTAL_CARBON", "Total Carbon"
+
+    @classmethod
+    def get_aggregations(cls, impact_variable) -> List[ImpactVariableAggregation]:
+        AGGREGATIONS = {
+            cls.CROWN_BULK_DENSITY: [ImpactVariableAggregation.MEAN],
+            cls.CANOPY_BASE_HEIGHT: [ImpactVariableAggregation.MEAN],
+            cls.CANOPY_COVER: [ImpactVariableAggregation.MEAN],
+            cls.FUEL_BED_FUEL_MODEL: [],
+            cls.LARGE_TREE_BIOMASS: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+            cls.MERCH_BIOMASS: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+            cls.MORTALITY: [],
+            cls.NON_MERCH_BIOMASS: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+            cls.POTENTIAL_SMOKE: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+            cls.PROBABILITY_TORCHING: [ImpactVariableAggregation.MEAN],
+            cls.QUADRATIC_MEAN_DIAMETER: [ImpactVariableAggregation.MEAN],
+            cls.STAND_DENSITY_INDEX: [ImpactVariableAggregation.MEAN],
+            cls.TOTAL_HEIGHT: [ImpactVariableAggregation.MEAN],
+            cls.TOTAL_FLAME_SEVERITY: [ImpactVariableAggregation.MEAN],
+            cls.TOTAL_CARBON: [
+                ImpactVariableAggregation.SUM,
+                ImpactVariableAggregation.MEAN,
+            ],
+        }
+        return list([x.lower() for x in AGGREGATIONS[impact_variable]])
+
+    @classmethod
+    def get_impact_raster(
+        cls,
+        impact_variable: Self,
+        action: Optional[TreatmentPrescriptionAction],
+        year: int,
+    ) -> str:
+        treatment_name = (
+            TreatmentPrescriptionAction.get_file_mapping(action)
+            if action
+            else "Baseline"
+        )
+        variable = str(impact_variable).lower()
+        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{treatment_name}_{year}_{variable}_3857_COG.tif"
+
+
+class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
+    treatment_plan = models.ForeignKey(
+        TreatmentPlan,
+        on_delete=models.RESTRICT,
+        related_name="results",
+    )
+    treatment_prescription = models.ForeignKey(
+        TreatmentPrescription, on_delete=models.RESTRICT, related_name="results"
+    )
+    variable = models.CharField(choices=ImpactVariable.choices)
+    aggregation = models.CharField(choices=ImpactVariableAggregation.choices)
+    year = models.IntegerField(default=0)
+    value = models.FloatField(
+        help_text="Value extracted for the prescription stand, based on variable, year and variable aggreation type."
+    )
+    delta = models.FloatField(
+        help_text="Delta between this years value and base year value. From 0-1, null for base years.",
+        null=True,
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                # given a specific treatment prescription, we can only have a single value for the same
+                # variable, aggregationa and year
+                fields=[
+                    "treatment_prescription",
+                    "variable",
+                    "aggregation",
+                    "year",
+                ],
+                name="treatment_result_unique_constraint",
+            )
+        ]

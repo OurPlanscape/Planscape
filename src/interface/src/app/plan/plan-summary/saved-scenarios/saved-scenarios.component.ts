@@ -13,8 +13,10 @@ import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
+
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
+  created_at?: string;
 }
 
 @UntilDestroy()
@@ -68,7 +70,6 @@ export class SavedScenariosComponent implements OnInit {
       .pipe(take(1))
       .subscribe((scenarios) => {
         this.totalScenarios = scenarios.length;
-
         this.scenariosForUser = this.showOnlyMyScenarios
           ? scenarios.filter((s) => s.user === this.user$.value?.id)
           : scenarios;
@@ -121,6 +122,12 @@ export class SavedScenariosComponent implements OnInit {
 
   viewScenario(): void {
     this.router.navigate(['config', this.highlightedScenarioRow?.id], {
+      relativeTo: this.route,
+    });
+  }
+
+  navigateToScenario(clickedScenario: ScenarioRow): void {
+    this.router.navigate(['config', clickedScenario.id], {
       relativeTo: this.route,
     });
   }

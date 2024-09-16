@@ -1,8 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { PrescriptionActionsComponent } from './prescription-actions.component';
-import { MockProvider } from 'ng-mocks';
+import { MockProviders } from 'ng-mocks';
 import { LookupService } from '@services/lookup.service';
+import { TreatmentsState } from '../treatments.state';
+import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 
 describe('PrescriptionActionsComponent', () => {
   let component: PrescriptionActionsComponent;
@@ -11,7 +12,9 @@ describe('PrescriptionActionsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [PrescriptionActionsComponent],
-      providers: [MockProvider(LookupService)],
+      providers: [
+        MockProviders(LookupService, TreatmentsState, SelectedStandsState),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(PrescriptionActionsComponent);

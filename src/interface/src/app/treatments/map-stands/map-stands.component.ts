@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import {
+  Component,
+  Input,
+  OnChanges,
+  SimpleChange,
+  SimpleChanges,
+} from '@angular/core';
 import {
   LayerComponent,
   VectorSourceComponent,
@@ -14,6 +20,10 @@ import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
+import { PrescriptionSingleAction, SEQUENCE_COLORS } from '../prescriptions';
+import { TreatmentsState } from '../treatments.state';
+import { TreatedStand } from '@types';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-map-stands',
@@ -22,14 +32,12 @@ import { environment } from '../../../environments/environment';
   templateUrl: './map-stands.component.html',
 })
 export class MapStandsComponent implements OnChanges {
-  @Input() treatmentPlanId = 0;
-  @Input() projectAreaId: number | null = null;
   @Input() mapLibreMap!: MapLibreMap;
   @Input() selectStart!: Point | null;
   @Input() selectEnd!: Point | null;
-  @Input() treatedStands: { id: number; assigment: string }[] = [];
+  @Input() treatedStands: TreatedStand[] = [];
 
-  selectedStands$ = this.mapStandsService.selectedStands$;
+  selectedStands$ = this.selectedStandsState.selectedStands$;
   private initialSelectedStands: number[] = [];
 
   // TODO project_area_aggregate only applies when looking at a specific project area
@@ -43,24 +51,32 @@ export class MapStandsComponent implements OnChanges {
     selectedStands: 'stands-layer-selected',
   };
 
-  constructor(private mapStandsService: SelectedStandsState) {}
+  constructor(
+    private selectedStandsState: SelectedStandsState,
+    private treatmentsState: TreatmentsState,
+    private mapConfigState: MapConfigState
+  ) {}
 
   get vectorLayerUrl() {
+    const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
       this.tilesUrl +
-      `?treatment_plan_id=${this.treatmentPlanId}${
-        this.projectAreaId ? `&project_area_id=${this.projectAreaId}` : ''
+      `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}${
+        projectAreaId ? `&project_area_id=${projectAreaId}` : ''
       }`
     );
   }
 
   private updateSelectedStands(selectedStands: number[]) {
-    this.mapStandsService.updateSelectedStands(selectedStands);
+    this.selectedStandsState.updateSelectedStands(selectedStands);
   }
 
   clickOnLayer(event: MapMouseEvent) {
     // do not react to right clicks
-    if (event.originalEvent.button === 2) {
+    if (
+      event.originalEvent.button === 2 ||
+      !this.mapConfigState.isStandSelectionEnabled()
+    ) {
       return;
     }
 
@@ -69,7 +85,7 @@ export class MapStandsComponent implements OnChanges {
     });
 
     const standId = features[0].properties['id'];
-    this.mapStandsService.toggleStand(standId);
+    this.selectedStandsState.toggleStand(standId);
   }
 
   paint: LayerSpecification['paint'] = {
@@ -89,7 +105,10 @@ export class MapStandsComponent implements OnChanges {
     ];
 
     this.treatedStands.forEach((stand) => {
-      matchExpression.push(stand.id, '#ff0000'); // TODO ACTUAL COLOR ASSIGMENT
+      matchExpression.push(
+        stand.id,
+        SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
+      );
     });
     matchExpression.push(defaultColor);
 
@@ -98,9 +117,6 @@ export class MapStandsComponent implements OnChanges {
 
   selectStandsWithinRectangle(): void {
     if (!this.selectStart || !this.selectEnd) {
-      this.initialSelectedStands = [
-        ...this.mapStandsService.getSelectedStands(),
-      ];
       return;
     }
     const newStands: number[] = [];
@@ -137,10 +153,31 @@ export class MapStandsComponent implements OnChanges {
         'fill-opacity': 0.5,
       };
     }
+
+    if (this.isMouseDownChange(changes['selectStart'])) {
+      this.initialSelectedStands = [
+        ...this.selectedStandsState.getSelectedStands(),
+      ];
+      this.selectedStandsState.saveHistory(this.initialSelectedStands);
+    }
     // finds selected stands when the select bounding box changes
     if (changes['selectStart'] || changes['selectEnd']) {
       //select stands
       this.selectStandsWithinRectangle();
     }
+  }
+
+  setCursor() {
+    if (this.mapConfigState.isStandSelectionEnabled()) {
+      this.mapConfigState.setCursor('pointer');
+    }
+  }
+
+  resetCursor() {
+    this.mapConfigState.resetCursor();
+  }
+
+  private isMouseDownChange(change: SimpleChange) {
+    return change?.currentValue && !change?.previousValue;
   }
 }

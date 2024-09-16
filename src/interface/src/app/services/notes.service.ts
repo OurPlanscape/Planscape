@@ -12,23 +12,17 @@ export interface Note {
 
 export type NotesModelName = 'planning_area' | 'project_area';
 
-export interface NoteModel {
-  name: string;
-  urlMultiple: (modelObjectId: number) => string;
-  urlSingle: (modelObjectId: number, noteId: number) => string;
-}
-
 @Injectable({
   providedIn: 'root',
 })
 export abstract class BaseNotesService {
   constructor(private http: HttpClient) {}
 
-  protected abstract multipleUrl: (objectId: number) => string;
-  protected abstract singleUrl: (objectId: number, noteId: number) => string;
+  protected abstract multipleUrl: (objectId: string) => string;
+  protected abstract singleUrl: (objectId: string, noteId: string) => string;
   protected abstract modelName: NotesModelName;
 
-  getNotes(objectId: number) {
+  getNotes(objectId: string) {
     return this.http.get<Note[]>(
       environment.backend_endpoint.concat(this.multipleUrl(objectId)),
       {
@@ -37,7 +31,7 @@ export abstract class BaseNotesService {
     );
   }
 
-  addNote(objectId: number, noteContent: string) {
+  addNote(objectId: string, noteContent: string) {
     return this.http.post<Note>(
       environment.backend_endpoint.concat(this.multipleUrl(objectId)),
       { content: noteContent },
@@ -47,7 +41,7 @@ export abstract class BaseNotesService {
     );
   }
 
-  deleteNote(objectId: number, noteId: number) {
+  deleteNote(objectId: string, noteId: string) {
     return this.http.delete<Note>(
       environment.backend_endpoint.concat(this.singleUrl(objectId, noteId)),
       {
@@ -60,16 +54,16 @@ export abstract class BaseNotesService {
 @Injectable()
 export class PlanningAreaNotesService extends BaseNotesService {
   protected modelName: NotesModelName = 'planning_area';
-  protected multipleUrl = (objectId: number) =>
+  protected multipleUrl = (objectId: string) =>
     `/planning/planning_area/${objectId}/note`;
-  protected singleUrl = (objectId: number, noteId: number) =>
+  protected singleUrl = (objectId: string, noteId: string) =>
     `/planning/planning_area/${objectId}/note/${noteId}`;
 }
 @Injectable()
 export class ProjectAreaNotesService extends BaseNotesService {
   protected modelName: NotesModelName = 'planning_area';
-  protected multipleUrl = (objectId: number) =>
+  protected multipleUrl = (objectId: string) =>
     `/project_area_note/${objectId}/note`;
-  protected singleUrl = (objectId: number, noteId: number) =>
+  protected singleUrl = (objectId: string, noteId: string) =>
     `/project_area_note/${objectId}/note/${noteId}`;
 }

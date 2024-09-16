@@ -7,3 +7,29 @@ export interface TreatmentPlan {
   created_at: string;
   creator_name: string;
 }
+interface TreatmentProjectArea {
+  project_area_id: number;
+  project_area_name: string;
+  total_stand_count: number;
+  prescriptions: Prescription[];
+}
+
+export interface Prescription {
+  action: string;
+  area_acres: number;
+  treated_stand_count: number;
+  type: string;
+  stand_ids: number[];
+}
+
+export interface TreatedStand {
+  id: number;
+  action: string;
+}
+
+export interface TreatmentSummary {
+  project_areas: TreatmentProjectArea[];
+  extent: Extent;
+}
+
+export type Extent = [number, number, number, number];
