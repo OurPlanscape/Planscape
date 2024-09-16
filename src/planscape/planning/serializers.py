@@ -286,16 +286,20 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         read_only=True,
         help_text="Name of the creator of the Scenario.",
     )
-    tx_plan_count = serializers.SerializerMethodField()
+    tx_plan_count = serializers.SerializerMethodField(help_text="Number of treatments.")
     scenario_result = ScenarioResultSerializer(
         required=False,
         read_only=True,
         source="results",
+        help_text="Results of the scenario.",
     )
     max_treatment_area = serializers.ReadOnlyField(
-        source="configuration.max_treatment_area_ratio"
+        source="configuration.max_treatment_area_ratio",
+        help_text="Max Treatment Area Ratio.",
     )
-    max_budget = serializers.ReadOnlyField(source="configuration.max_budget")
+    max_budget = serializers.ReadOnlyField(
+        source="configuration.max_budget", help_text="Max budget."
+    )
 
     def get_tx_plan_count(self, obj):
         return obj.tx_plans.count()
@@ -387,7 +391,9 @@ class UserPrefsSerializer(serializers.ModelSerializer):
 
 
 class ListCreatorSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField(
+        help_text="Name of the creator of the Scenario.",
+    )
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"

@@ -186,6 +186,10 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
 
 # TODO: migrate this to an action inside the planning area viewset
+@extend_schema_view(
+    list=extend_schema(description="List creators of Planning Areas."),
+    retrieve=extend_schema(description="Retrieve the creator of a Planning Areas."),
+)
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
     permission_classes = [PlanningAreaViewPermission]
@@ -198,6 +202,9 @@ class CreatorViewSet(ReadOnlyModelViewSet):
         return User.objects.filter(planning_areas__id__in=pas).distinct()
 
 
+@extend_schema_view(
+    retrieve=extend_schema(description="Project Area of a Planning Areas.")
+)
 class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = ProjectArea.objects.all()
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
