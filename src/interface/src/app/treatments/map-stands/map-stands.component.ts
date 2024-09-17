@@ -2,7 +2,6 @@ import {
   Component,
   Input,
   OnChanges,
-  OnInit,
   SimpleChange,
   SimpleChanges,
 } from '@angular/core';
@@ -36,7 +35,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   imports: [LayerComponent, VectorSourceComponent, AsyncPipe],
   templateUrl: './map-stands.component.html',
 })
-export class MapStandsComponent implements OnChanges, OnInit {
+export class MapStandsComponent implements OnChanges {
   /**
    * The instance of mapLibreMap used with this component.
    * Must be provided while using this component.
@@ -106,10 +105,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
           'fill-opacity': 0.5,
         };
       });
-  }
-
-  ngOnInit(): void {
-    this.selectedStandsState.reset();
   }
 
   get vectorLayerUrl() {
