@@ -122,7 +122,7 @@ class Migration(migrations.Migration):
             model_name="treatmentprescription",
             name="geometry",
             field=django.contrib.gis.db.models.fields.PolygonField(
-                help_text="Geomeotry of the Tratment Prescription.", srid=4269
+                help_text="Geometry of the Treatment Prescription.", srid=4269
             ),
         ),
         migrations.AlterField(
