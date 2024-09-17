@@ -7,7 +7,7 @@ os.environ.setdefault("DJANGO_SETTINGS_MODULE", "planscape.settings")
 
 app = Celery("proj")
 app.config_from_object("django.conf:settings", namespace="CELERY")
-app.autodiscover_tasks(["planning", "planning.e2e", "planning.e2e.scenario_test"])
+app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     "run-periodic-task": {
