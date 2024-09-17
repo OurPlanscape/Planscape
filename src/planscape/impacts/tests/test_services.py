@@ -8,6 +8,7 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
+    TreatmentResult,
 )
 from impacts.services import (
     calculate_impacts,
@@ -15,6 +16,10 @@ from impacts.services import (
     get_calculation_matrix,
     upsert_treatment_prescriptions,
     generate_summary,
+)
+from impacts.tasks import (
+    async_calculate_persist_impacts,
+    async_calculate_persist_impacts_treatment_plan,
 )
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
 from planning.tests.factories import ProjectAreaFactory, ScenarioFactory
@@ -314,3 +319,59 @@ class CalculateImpactsTest(TransactionTestCase):
         action = TreatmentPrescriptionAction.HEAVY_MASTICATION
         with self.assertRaises(ValueError):
             calculate_impacts(self.plan, variable, action, 1)
+
+
+class AsyncCalculatePersistImpactsTestCase(TransactionTestCase):
+    def load_stands(self):
+        with open("impacts/tests/test_data/stands.geojson") as fp:
+            geojson = json.loads(fp.read())
+
+        features = geojson.get("features")
+        return list(
+            [
+                Stand.objects.create(
+                    geometry=GEOSGeometry(json.dumps(f.get("geometry")), srid=4326),
+                    size="LARGE",
+                    area_m2=1,
+                )
+                for f in features
+            ]
+        )
+
+    def setUp(self):
+        self.stands = self.load_stands()
+        self.plan = TreatmentPlanFactory.create()
+        self.prescriptions = list(
+            [
+                TreatmentPrescriptionFactory.create(
+                    treatment_plan=self.plan,
+                    stand=stand,
+                    action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                    geometry=stand.geometry,
+                )
+                for stand in self.stands
+            ]
+        )
+
+    @mock.patch(
+        "impacts.services.ImpactVariable.get_impact_raster",
+        return_value="impacts/tests/test_data/test_raster.tif",
+    )
+    def test_calculate_impacts_returns_data(self, _get_impact_raster):
+        """Test that this function is performing work correctly. we don't
+        really care about the returned values right now, only that it works.
+        """
+        with self.settings(
+            CELERY_ALWAYS_EAGER=True,
+            CELERY_TASK_STORE_EAGER_RESULT=True,
+            CELERY_TASK_IGNORE_RESULT=False,
+        ):
+            self.assertEquals(TreatmentResult.objects.count(), 0)
+            matrix = get_calculation_matrix(self.plan)
+            variable, action, year = matrix[0]
+            result = async_calculate_persist_impacts(
+                self.plan.pk, variable, action, year
+            )
+            self.assertIsNotNone(result)
+            self.assertGreater(TreatmentResult.objects.count(), 0)
+            self.assertEquals(len(self.stands), TreatmentResult.objects.count())
