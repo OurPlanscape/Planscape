@@ -11,7 +11,7 @@ app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     "run-periodic-task": {
-        "task": "e2e.scenario_test.run_e2e_test",
+        "task": "e2e.tasks.run_e2e_test",
         "schedule": crontab(hour=0, minute=0),  # runs daily at midnight
     },
 }
