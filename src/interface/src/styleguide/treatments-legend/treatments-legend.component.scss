@@ -1,0 +1,60 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  width: 300px;
+  background-color: $color-white;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  .legend-body {
+    width: 300px;
+    background-color: $color-white;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .legend-section {
+    background-color: $color-white;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 280px; //TODO: unfix this?
+  }
+
+  .legend-header {
+    @include xs-label();
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    gap: 8px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .header-icon {
+    color: $color-md-gray;
+  }
+
+  .legend-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: left;
+    height: 22px;
+    gap: 8px;
+    width: 100%;
+    align-items: center;
+  }
+
+  .legend-text {
+    @include standard-input-label();
+    color: $color-dark-gray;
+    font-family: Public Sans;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+    text-align: left;
+  }
+}

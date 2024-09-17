@@ -1,0 +1,34 @@
+<div>Treatment Legend</div>
+
+<div class="legend-body">
+  <div class="legend-row">
+    <sg-treatment-type-icon [treatment]="null"></sg-treatment-type-icon>
+    <div class="legend-text">No Treatment</div>
+  </div>
+  <mat-expansion-panel class="sg-expander-panel">
+    <mat-expansion-panel-header class="legend-header">
+      <mat-icon class="header-icon medication_outline"
+        >medication_outline</mat-icon
+      >
+      Treatment
+    </mat-expansion-panel-header>
+    <div class="legend-section">
+      <div class="legend-row" *ngFor="let tx of singleTreatments">
+        <sg-treatment-type-icon [treatment]="tx"></sg-treatment-type-icon>
+        <div class="legend-text">{{ getLabel(tx) }}</div>
+      </div>
+    </div>
+  </mat-expansion-panel>
+
+  <mat-expansion-panel class="sg-expander-panel">
+    <mat-expansion-panel-header class="legend-header">
+      <mat-icon class="header-icon">repeat</mat-icon>Treatment Sequencing
+    </mat-expansion-panel-header>
+    <div class="legend-section">
+      <div *ngFor="let seq of sequences">
+        <sg-treatment-type-icon></sg-treatment-type-icon>
+      </div>
+    </div>
+  </mat-expansion-panel>
+  <div class="legend-section"></div>
+</div>
