@@ -75,6 +75,11 @@ describe('TreatmentsState', () => {
               stand_ids: [4, 5],
             },
           ],
+          extent: [1, 2, 3, 4],
+          centroid: {
+            type: 'Point',
+            coordinates: [],
+          },
         },
       ],
       extent: [1, 2, 3, 4],
@@ -87,7 +92,6 @@ describe('TreatmentsState', () => {
     service.setTreatmentPlanId(123);
     service.loadSummary().subscribe();
 
-    expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith([]);
     expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith([
       { id: 1, action: 'cut' },
       { id: 2, action: 'cut' },

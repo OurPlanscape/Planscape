@@ -52,4 +52,9 @@ export class SelectedStandsState {
       this._history.push(stands);
     }
   }
+
+  reset() {
+    this._history = [];
+    this._selectedStands$.next([]);
+  }
 }

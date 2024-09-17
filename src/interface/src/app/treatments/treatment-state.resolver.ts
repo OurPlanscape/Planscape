@@ -29,6 +29,10 @@ export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
     route.data?.['showTreatmentStands'] || false
   );
 
+  mapConfig.setStandSelectionEnabled(
+    route.data?.['showTreatmentStands'] || false
+  );
+
   mapConfig.setShowMapControls(route.data?.['showMapControls'] || false);
 
   treatmentsState.setTreatmentPlanId(treatmentPlanId);
@@ -36,16 +40,27 @@ export const treatmentStateResolver: ResolveFn<boolean> = (route, state) => {
   treatmentsState.setProjectAreaId(
     projectAreaId ? Number(projectAreaId) : undefined
   );
-
-  treatmentsState
-    .loadSummary()
-    .pipe(
-      catchError((error) => {
-        router.navigate(['/']);
-        throw error;
-      })
-    )
-    .subscribe();
+  if (projectAreaId) {
+    treatmentsState
+      .loadSummaryForProjectArea()
+      .pipe(
+        catchError((error) => {
+          router.navigate(['/']);
+          throw error;
+        })
+      )
+      .subscribe();
+  } else {
+    treatmentsState
+      .loadSummary()
+      .pipe(
+        catchError((error) => {
+          router.navigate(['/']);
+          throw error;
+        })
+      )
+      .subscribe();
+  }
 
   treatmentsState
     .loadTreatmentPlan()

@@ -51,11 +51,11 @@ export class MapControlsComponent {
   }
 
   toggleRxSelection() {
-    this.mapConfigState.enableBoxSelection();
+    this.mapConfigState.setStandSelectionEnabled(true);
   }
 
   togglePan() {
-    this.mapConfigState.disableBoxSelection();
+    this.mapConfigState.setStandSelectionEnabled(false);
   }
 
   undoLastAction() {

@@ -8,7 +8,7 @@
   source="scenarioProjectAreas"
   [sourceLayer]="layerName"
   [paint]="{
-    'line-color': '#333',
+    'line-color': visible ? '#333' : 'transparent',
     'line-width': 2
   }"></mgl-layer>
 
@@ -18,16 +18,22 @@
   source="scenarioProjectAreas"
   (layerClick)="goToProjectArea($event)"
   (layerMouseEnter)="setCursor()"
-  (layerMouseLeave)="resetCursor()"
+  (layerMouseMove)="setProjectAreaTooltip($event)"
+  (layerMouseLeave)="resetCursorAndTooltip($event)"
   [sourceLayer]="layerName"
-  [paint]="paint"></mgl-layer>
+  [paint]="{
+    'fill-outline-color': '#000',
+    'fill-color': getFillColors(),
+    'fill-opacity': visible ? 0.5 : 0
+  }"></mgl-layer>
 
 <mgl-layer
   id="map-project-areas-labels"
   type="symbol"
   source="scenarioProjectAreas"
-  [sourceLayer]="layerName"
+  [sourceLayer]="'project_areas_by_scenario_label'"
   [layout]="{
+    visibility: visible ? 'visible' : 'none',
     'text-field': ['get', 'rank'],
     'text-size': 14,
     'text-anchor': 'center',
@@ -38,3 +44,13 @@
     'text-halo-color': '#fff',
     'text-halo-width': 2
   }"></mgl-layer>
+
+<ng-container *ngIf="mouseLngLat">
+  <app-map-tooltip
+    [lngLat]="mouseLngLat"
+    *ngIf="activeProjectArea$ | async; let activeProjectArea">
+    <mat-icon class="material-symbols-outlined">medication</mat-icon>
+    {{ getPrescriptionStandCount(activeProjectArea.prescriptions) }} /
+    {{ activeProjectArea.total_stand_count }}
+  </app-map-tooltip>
+</ng-container>

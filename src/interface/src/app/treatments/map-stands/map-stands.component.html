@@ -1,34 +1,36 @@
-<mgl-vector-source id="stands" [tiles]="[vectorLayerUrl]"></mgl-vector-source>
+<mgl-vector-source
+  [id]="sourceId"
+  [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
 <mgl-layer
-  [id]="layers.outline"
+  [id]="layers.outline.name"
   type="line"
   source="stands"
   [paint]="{
     'line-color': 'black',
     'line-width': 3
   }"
-  sourceLayer="project_area_aggregate"></mgl-layer>
+  [sourceLayer]="layers.outline.sourceLayer"></mgl-layer>
 
 <mgl-layer
-  [id]="layers.stands"
+  [id]="layers.stands.name"
   type="fill"
   source="stands"
   [paint]="paint"
-  (layerMouseDown)="clickOnLayer($event)"
+  (layerMouseDown)="clickOnStand($event)"
   (layerMouseEnter)="setCursor()"
   (layerMouseLeave)="resetCursor()"
-  sourceLayer="stands_by_tx_plan"></mgl-layer>
+  [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
 
 <mgl-layer
-  [id]="layers.selectedStands"
+  [id]="layers.selectedStands.name"
   type="fill"
   source="stands"
   [paint]="{
     'fill-color': '#007dff',
     'fill-opacity': 0.2
   }"
-  sourceLayer="stands_by_tx_plan"
+  [sourceLayer]="layers.selectedStands.sourceLayer"
   [filter]="[
     'in',
     ['get', 'id'],

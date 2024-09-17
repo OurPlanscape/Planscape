@@ -16,6 +16,7 @@ describe('treatmentStateResolver', () => {
         MockProvider(TreatmentsState, {
           loadSummary: () => of(true),
           loadTreatmentPlan: () => of(true),
+          loadSummaryForProjectArea: () => of(true),
         }),
       ],
     });
@@ -24,7 +25,34 @@ describe('treatmentStateResolver', () => {
     spyOn(treatmentsState, 'setTreatmentPlanId').and.callThrough();
     spyOn(treatmentsState, 'setProjectAreaId').and.callThrough();
     spyOn(treatmentsState, 'loadSummary').and.callThrough();
+    spyOn(treatmentsState, 'loadSummaryForProjectArea').and.callThrough();
     spyOn(treatmentsState, 'loadTreatmentPlan').and.callThrough();
+  });
+
+  it('should resolve and call TreatmentsState methods correctly', () => {
+    const route = {
+      paramMap: {
+        get: jasmine.createSpy('get').and.callFake((key: string) => {
+          switch (key) {
+            case 'treatmentId':
+              return '123';
+            default:
+              return null;
+          }
+        }),
+      },
+    } as unknown as ActivatedRouteSnapshot;
+
+    const state = {} as RouterStateSnapshot;
+
+    TestBed.runInInjectionContext(() => {
+      const result = treatmentStateResolver(route, state);
+
+      expect(treatmentsState.setTreatmentPlanId).toHaveBeenCalledWith(123);
+      expect(treatmentsState.loadSummary).toHaveBeenCalled();
+      expect(treatmentsState.loadTreatmentPlan).toHaveBeenCalled();
+      expect(result).toBe(true);
+    });
   });
 
   it('should resolve and call TreatmentsState methods correctly', () => {
@@ -50,7 +78,7 @@ describe('treatmentStateResolver', () => {
 
       expect(treatmentsState.setTreatmentPlanId).toHaveBeenCalledWith(123);
       expect(treatmentsState.setProjectAreaId).toHaveBeenCalledWith(456);
-      expect(treatmentsState.loadSummary).toHaveBeenCalled();
+      expect(treatmentsState.loadSummaryForProjectArea).toHaveBeenCalled();
       expect(treatmentsState.loadTreatmentPlan).toHaveBeenCalled();
       expect(result).toBe(true);
     });
@@ -78,7 +106,6 @@ describe('treatmentStateResolver', () => {
       const result = treatmentStateResolver(route, state);
 
       expect(treatmentsState.setTreatmentPlanId).toHaveBeenCalledWith(123);
-      expect(treatmentsState.setProjectAreaId).toHaveBeenCalledWith(undefined);
       expect(treatmentsState.loadSummary).toHaveBeenCalled();
       expect(treatmentsState.loadTreatmentPlan).toHaveBeenCalled();
       expect(result).toBe(true);
