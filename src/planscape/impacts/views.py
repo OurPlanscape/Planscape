@@ -261,7 +261,7 @@ class TreatmentPrescriptionViewSet(
             200: TreatmentPrescriptionBatchDeleteResponseSerializer,
             400: BaseErrorMessageSerializer,
             404: BaseErrorMessageSerializer,
-        }
+        },
     )
     @action(detail=False, methods=["post"])
     def delete_prescriptions(self, request, tx_plan_pk=None):
