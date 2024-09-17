@@ -17,15 +17,18 @@ class TreatmentPlanFilterSet(filters.FilterSet):
     scenario = filters.ModelChoiceFilter(
         field_name="scenario",
         queryset=get_scenarios_for_filter,
+        help_text="Scenario ID.",
     )
     name = filters.CharFilter(
         field_name="name",
         lookup_expr="icontains",
+        help_text="Treatment Name.",
     )
     status = filters.ChoiceFilter(
         choices=TreatmentPlanStatus.choices,
         field_name="status",
         lookup_expr="iexact",
+        help_text="Treatment status choice (exact).",
     )
 
     class Meta:

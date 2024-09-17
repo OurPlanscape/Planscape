@@ -48,17 +48,20 @@ class TreatmentPlan(
         User,
         related_name="tx_plans",
         on_delete=models.RESTRICT,
+        help_text="User ID that created Treatment Plan.",
     )
     scenario = models.ForeignKey(
         Scenario,
         related_name="tx_plans",
         on_delete=models.RESTRICT,
+        help_text="Scenario ID.",
     )
     status = models.CharField(
         choices=TreatmentPlanStatus.choices,
         default=TreatmentPlanStatus.PENDING,
+        help_text="Status of Treatment Plan (choice).",
     )
-    name = models.CharField(max_length=256)
+    name = models.CharField(max_length=256, help_text="Name of Treatment Plan.")
 
     objects = TreatmentPlanManager()
 
@@ -196,12 +199,14 @@ class TreatmentPrescription(
         User,
         related_name="created_tx_prescriptions",
         on_delete=models.RESTRICT,
+        help_text="User ID that created Treatment Prescription.",
     )
 
     updated_by = models.ForeignKey(
         User,
         related_name="updated_tx_prescriptions",
         on_delete=models.RESTRICT,
+        help_text="User ID that updated Treatment Prescription.",
     )
 
     treatment_plan = models.ForeignKey(
@@ -209,20 +214,26 @@ class TreatmentPrescription(
         related_name="tx_prescriptions",
         on_delete=models.RESTRICT,
         null=True,
+        help_text="Treatment Plan ID.",
     )
 
     project_area = models.ForeignKey(
         ProjectArea,
         related_name="tx_prescriptions",
         on_delete=models.RESTRICT,
+        help_text="Project Area ID.",
     )
 
     type = models.CharField(
         choices=TreatmentPrescriptionType.choices,
         default=TreatmentPrescriptionType.SINGLE,
+        help_text="Type of Treatment Prescription (choice).",
     )
 
-    action = models.CharField(choices=TreatmentPrescriptionAction.choices)
+    action = models.CharField(
+        choices=TreatmentPrescriptionAction.choices,
+        help_text="Action of Treatment Prescription (choice).",
+    )
 
     # I still can't decide if it's best for us to clone the stand geometry
     # or to have a direct reference to it. I think cloning makes sense because
@@ -232,9 +243,13 @@ class TreatmentPrescription(
         related_name="tx_prescriptions",
         on_delete=models.SET_NULL,
         null=True,
+        help_text="Stand which Treatment Prescription will be applied.",
     )
 
-    geometry = models.PolygonField(srid=settings.CRS_INTERNAL_REPRESENTATION)
+    geometry = models.PolygonField(
+        srid=settings.CRS_INTERNAL_REPRESENTATION,
+        help_text="Geometry of the Treatment Prescription.",
+    )
 
     class Meta:
         verbose_name = "Treatment Prescription"
@@ -340,13 +355,22 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         TreatmentPlan,
         on_delete=models.RESTRICT,
         related_name="results",
+        help_text="Treatment Plan ID.",
     )
     treatment_prescription = models.ForeignKey(
-        TreatmentPrescription, on_delete=models.RESTRICT, related_name="results"
+        TreatmentPrescription,
+        on_delete=models.RESTRICT,
+        related_name="results",
+        help_text="Treatment Prescription ID.",
     )
-    variable = models.CharField(choices=ImpactVariable.choices)
-    aggregation = models.CharField(choices=ImpactVariableAggregation.choices)
-    year = models.IntegerField(default=0)
+    variable = models.CharField(
+        choices=ImpactVariable.choices, help_text="Impact Variable (choice)."
+    )
+    aggregation = models.CharField(
+        choices=ImpactVariableAggregation.choices,
+        help_text="Impact Variable Aggregation (choice).",
+    )
+    year = models.IntegerField(default=0, help_text="Number of year for the result.")
     value = models.FloatField(
         help_text="Value extracted for the prescription stand, based on variable, year and variable aggreation type."
     )
