@@ -105,7 +105,7 @@ class Migration(migrations.Migration):
                         "Moderate Mastication (year 0), Prescribed Fire (year 10)",
                     ),
                 ],
-                help_text="Action of Tratment Prescription (choice).",
+                help_text="Action of Treatment Prescription (choice).",
             ),
         ),
         migrations.AlterField(

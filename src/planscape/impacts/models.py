@@ -232,7 +232,7 @@ class TreatmentPrescription(
 
     action = models.CharField(
         choices=TreatmentPrescriptionAction.choices,
-        help_text="Action of Tratment Prescription (choice).",
+        help_text="Action of Treatment Prescription (choice).",
     )
 
     # I still can't decide if it's best for us to clone the stand geometry

@@ -99,7 +99,7 @@ class TreatmentPlanViewSet(
             return self.serializer_class
 
     @extend_schema(
-        description="Create Tratment Plan.",
+        description="Create Treatment Plan.",
         request=CreateTreatmentPlanSerializer,
         responses={
             201: TreatmentPlanSerializer,
@@ -234,7 +234,7 @@ class TreatmentPrescriptionViewSet(
         )
 
     @extend_schema(
-        description="Create a Tretment Prescription.",
+        description="Create a Treatment Prescription.",
         request=UpsertTreamentPrescriptionSerializer,
         responses={201: TreatmentPrescriptionSerializer},
     )

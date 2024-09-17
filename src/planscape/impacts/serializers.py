@@ -50,7 +50,7 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
 
 class TreatmentPlanListSerializer(serializers.ModelSerializer):
     creator_name = serializers.SerializerMethodField(
-        help_text="Name of the Creator of the Tratment Plan."
+        help_text="Name of the Creator of the Treatment Plan."
     )
 
     def get_creator_name(self, instance):
