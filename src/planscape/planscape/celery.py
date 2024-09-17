@@ -11,11 +11,7 @@ app.autodiscover_tasks()
 
 app.conf.beat_schedule = {
     "run-periodic-task": {
-<<<<<<< HEAD
         "task": "e2e.tasks.run_e2e_test",
-=======
-        "task": "e2e.scenario_test.run_e2e_test",
->>>>>>> 442df816 (fix celery stuff)
         "schedule": crontab(hour=0, minute=0),  # runs daily at midnight
     },
 }
