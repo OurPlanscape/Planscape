@@ -2,7 +2,7 @@ from django.db.models.base import ValidationError
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.views import Response
 from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import TreatmentPlan, TreatmentPrescription
@@ -28,8 +28,38 @@ from impacts.services import (
     generate_summary,
     upsert_treatment_prescriptions,
 )
+from planscape.serializers import BaseErrorMessageSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(description="List Treatment Plans."),
+    retrieve=extend_schema(
+        description="Retrieve Treatment Plans.",
+        responses={
+            200: TreatmentPlanSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+    update=extend_schema(
+        description="Update Treatment Plans.",
+        responses={
+            200: TreatmentPlanUpdateSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+    partial_update=extend_schema(
+        description="Update Treatment Plans.",
+        responses={
+            200: TreatmentPlanUpdateSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+    destroy=extend_schema(description="Deletes a Treatment Plan.",
+        responses={
+            204: None,
+            404: BaseErrorMessageSerializer,
+        },),
+)
 class TreatmentPlanViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -66,6 +96,7 @@ class TreatmentPlanViewSet(
             return self.serializer_class
 
     @extend_schema(
+        description="Create Tratment Plan.",
         request=CreateTreatmentPlanSerializer,
         responses={
             201: TreatmentPlanSerializer,
@@ -88,7 +119,13 @@ class TreatmentPlanViewSet(
             **serializer.validated_data,
         )
 
-    @extend_schema(responses={201: TreatmentPlanSerializer})
+    @extend_schema(
+        description="Clones a Treatment Plan.",
+        responses={
+            201: TreatmentPlanSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    )
     @action(
         detail=True,
         methods=["post"],
@@ -107,10 +144,14 @@ class TreatmentPlanViewSet(
         )
 
     @extend_schema(
+        description="Summary of a Treatment Plan.",
         parameters=[
             SummarySerializer,
         ],
-        responses={200: OutputSummarySerializer},
+        responses={
+            200: OutputSummarySerializer,
+            404: BaseErrorMessageSerializer,
+        },
     )
     @action(
         methods=["get"],
