@@ -7,6 +7,7 @@ from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from planscape.serializers import BaseErrorMessageSerializer
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
@@ -39,10 +40,22 @@ logger = logging.getLogger(__name__)
 
 @extend_schema_view(
     list=extend_schema(description="List Planning Area."),
-    retrieve=extend_schema(description="Detail a Planning Area."),
-    destroy=extend_schema(description="Delete a Planning Area."),
-    update=extend_schema(description="Update Planning Area."),
-    partial_update=extend_schema(description="Update Planning Area."),
+    retrieve=extend_schema(
+        description="Detail a Planning Area.",
+        responses={200: PlanningAreaSerializer, 404: BaseErrorMessageSerializer},
+    ),
+    destroy=extend_schema(
+        description="Delete a Planning Area.",
+        responses={204: None, 404: BaseErrorMessageSerializer},
+    ),
+    update=extend_schema(
+        description="Update Planning Area.",
+        responses={200: PlanningAreaSerializer, 404: BaseErrorMessageSerializer},
+    ),
+    partial_update=extend_schema(
+        description="Update Planning Area.",
+        responses={200: PlanningAreaSerializer, 404: BaseErrorMessageSerializer},
+    ),
 )
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     # this member is configured for instrospection and swagger automcatic generation
@@ -113,10 +126,22 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
 
 @extend_schema_view(
     list=extend_schema(description="List Scenarios."),
-    retrieve=extend_schema(description="Detail a Scenario."),
-    destroy=extend_schema(description="Delete a Scenario."),
-    update=extend_schema(description="Update Scenario."),
-    partial_update=extend_schema(description="Update Scenario."),
+    retrieve=extend_schema(
+        description="Detail a Scenario.",
+        responses={200: ScenarioSerializer, 404: BaseErrorMessageSerializer},
+    ),
+    destroy=extend_schema(
+        description="Delete a Scenario.",
+        responses={204: None, 404: BaseErrorMessageSerializer},
+    ),
+    update=extend_schema(
+        description="Update Scenario.",
+        responses={200: ScenarioSerializer, 404: BaseErrorMessageSerializer},
+    ),
+    partial_update=extend_schema(
+        description="Update Scenario.",
+        responses={200: ScenarioSerializer, 404: BaseErrorMessageSerializer},
+    ),
 )
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.none()
