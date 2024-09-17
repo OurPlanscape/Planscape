@@ -1,14 +1,12 @@
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from core.fields import UUIDRelatedField
 from impacts.models import (
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
-    TreatmentPrescriptionType,
 )
-from planning.models import ProjectArea, Scenario
+from planning.models import ProjectArea
 from planning.services import get_acreage
 from stands.models import Stand, area_from_size
 
@@ -51,7 +49,9 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPlanListSerializer(serializers.ModelSerializer):
-    creator_name = serializers.SerializerMethodField()
+    creator_name = serializers.SerializerMethodField(
+        help_text="Name of the Creator of the Treatment Plan."
+    )
 
     def get_creator_name(self, instance):
         return instance.created_by.get_full_name()
@@ -76,8 +76,8 @@ class TreatmentPlanUpdateSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPrescriptionSerializer(serializers.ModelSerializer):
-    project_area = TxPrescriptionProjectAreaSerializer()
-    area_acres = serializers.SerializerMethodField()
+    project_area = TxPrescriptionProjectAreaSerializer(help_text="Project Area.")
+    area_acres = serializers.SerializerMethodField(help_text="Area in acres.")
 
     def get_area_acres(self, instance: TreatmentPrescription) -> float:
         # this path is much faster
@@ -109,18 +109,19 @@ class UpsertTreamentPrescriptionSerializer(serializers.Serializer):
     )
 
     treatment_plan = PrimaryKeyRelatedField(
-        queryset=TreatmentPlan.objects.all(),
+        queryset=TreatmentPlan.objects.all(), help_text="Treatment Plan ID."
     )
 
     project_area = PrimaryKeyRelatedField(
-        queryset=ProjectArea.objects.all(),
+        queryset=ProjectArea.objects.all(), help_text="Project Area ID."
     )
 
-    action = serializers.ChoiceField(choices=TreatmentPrescriptionAction.choices)
+    action = serializers.ChoiceField(
+        choices=TreatmentPrescriptionAction.choices, help_text="Action choice text."
+    )
 
     stands = serializers.PrimaryKeyRelatedField(
-        queryset=Stand.objects.all(),
-        many=True,
+        queryset=Stand.objects.all(), many=True, help_text="Stands IDs."
     )
 
 
@@ -141,14 +142,19 @@ class TreatmentPrescriptionListSerializer(TreatmentPrescriptionSerializer):
 
 class TreatmentPrescriptionBatchDeleteSerializer(serializers.Serializer):
     stand_ids = serializers.ListField(
-        child=serializers.IntegerField(), allow_empty=False
+        child=serializers.IntegerField(), allow_empty=False, help_text="Stands IDs."
+    )
+
+
+class TreatmentPrescriptionBatchDeleteResponseSerializer(serializers.Serializer):
+    result = serializers.ListField(
+        child=serializers.IntegerField(), help_text="Deleted stands IDs."
     )
 
 
 class SummarySerializer(serializers.Serializer):
     project_area = serializers.PrimaryKeyRelatedField(
-        queryset=ProjectArea.objects.all(),
-        required=False,
+        queryset=ProjectArea.objects.all(), required=False, help_text="Project Area ID."
     )
 
     def validate_project_area(self, project_area):
@@ -169,26 +175,28 @@ class SummarySerializer(serializers.Serializer):
 
 # serializers used only for documentation
 class OutputPrescriptionSummarySerializer(serializers.Serializer):
-    action = serializers.CharField()
-    type = serializers.CharField()
-    area_acres = serializers.FloatField()
-    treated_stand_count = serializers.IntegerField()
+    action = serializers.CharField(help_text="Action for Prescription.")
+    type = serializers.CharField(help_text="Type of Prescription.")
+    area_acres = serializers.FloatField(help_text="Area in Acres.")
+    treated_stand_count = serializers.IntegerField(help_text="Total of treated stands.")
 
 
 class OutputProjectAreaSummarySerializer(serializers.Serializer):
-    project_area_id = serializers.IntegerField()
-    project_area_name = serializers.CharField()
-    total_stand_count = serializers.IntegerField()
-    prescriptions = serializers.ListField(child=OutputPrescriptionSummarySerializer())
+    project_area_id = serializers.IntegerField(help_text="Project Area ID.")
+    project_area_name = serializers.CharField(help_text="Project Area Name.")
+    total_stand_count = serializers.IntegerField(help_text="Total of stands.")
+    prescriptions = serializers.ListField(
+        child=OutputPrescriptionSummarySerializer(), help_text="Prescriptions."
+    )
 
 
 class OutputSummarySerializer(serializers.Serializer):
-    planning_area_id = serializers.IntegerField()
-    planning_area_name = serializers.CharField()
-    scenario_id = serializers.IntegerField()
-    scenario_name = serializers.CharField()
-    treatment_plan_id = serializers.IntegerField()
-    treatment_plan_name = serializers.CharField()
+    planning_area_id = serializers.IntegerField(help_text="Planning Area ID.")
+    planning_area_name = serializers.CharField(help_text="Planning Area Name.")
+    scenario_id = serializers.IntegerField(help_text="Scenario ID.")
+    scenario_name = serializers.CharField(help_text="Scenario Name.")
+    treatment_plan_id = serializers.IntegerField(help_text="Treatment Plan ID.")
+    treatment_plan_name = serializers.CharField(help_text="Treatment Plan Name.")
     project_areas = serializers.ListSerializer(
-        child=OutputProjectAreaSummarySerializer()
+        child=OutputProjectAreaSummarySerializer(), help_text="Project Areas."
     )
