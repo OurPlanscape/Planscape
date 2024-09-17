@@ -1,14 +1,12 @@
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
 
-from core.fields import UUIDRelatedField
 from impacts.models import (
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
-    TreatmentPrescriptionType,
 )
-from planning.models import ProjectArea, Scenario
+from planning.models import ProjectArea
 from planning.services import get_acreage
 from stands.models import Stand, area_from_size
 
