@@ -144,6 +144,11 @@ class TreatmentPrescriptionBatchDeleteSerializer(serializers.Serializer):
         child=serializers.IntegerField(), allow_empty=False
     )
 
+class TreatmentPrescriptionBatchDeleteResponseSerializer(serializers.Serializer):
+    result = serializers.ListField(
+        child=serializers.IntegerField(), allow_empty=False
+    )
+
 
 class SummarySerializer(serializers.Serializer):
     project_area = serializers.PrimaryKeyRelatedField(

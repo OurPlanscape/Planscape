@@ -20,6 +20,7 @@ from impacts.serializers import (
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
     TreatmentPrescriptionBatchDeleteSerializer,
+    TreatmentPrescriptionBatchDeleteResponseSerializer,
     UpsertTreamentPrescriptionSerializer,
 )
 from impacts.services import (
@@ -54,11 +55,13 @@ from planscape.serializers import BaseErrorMessageSerializer
             404: BaseErrorMessageSerializer,
         },
     ),
-    destroy=extend_schema(description="Deletes a Treatment Plan.",
+    destroy=extend_schema(
+        description="Deletes a Treatment Plan.",
         responses={
             204: None,
             404: BaseErrorMessageSerializer,
-        },),
+        },
+    ),
 )
 class TreatmentPlanViewSet(
     mixins.CreateModelMixin,
@@ -176,6 +179,23 @@ class TreatmentPlanViewSet(
         return Response(data=summary, status=status.HTTP_200_OK)
 
 
+@extend_schema_view(
+    list=extend_schema(description="List Treatment Prescriptions."),
+    retrieve=extend_schema(
+        description="Retrieve a Treatment Prescriptions.",
+        responses={
+            200: TreatmentPrescriptionSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+    destroy=extend_schema(
+        description="Delete a Treatment Prescriptions.",
+        responses={
+            204: None,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+)
 class TreatmentPrescriptionViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -214,6 +234,7 @@ class TreatmentPrescriptionViewSet(
         )
 
     @extend_schema(
+        description="Create a Tretment Prescription.",
         request=UpsertTreamentPrescriptionSerializer,
         responses={201: TreatmentPrescriptionSerializer},
     )
@@ -234,6 +255,14 @@ class TreatmentPrescriptionViewSet(
     def perform_create(self, serializer):
         return upsert_treatment_prescriptions(**serializer.validated_data)
 
+    @extend_schema(
+        description="Delete Prescriptions from Treatment Precriptions.",
+        responses={
+            200: TreatmentPrescriptionBatchDeleteResponseSerializer,
+            400: BaseErrorMessageSerializer,
+            404: BaseErrorMessageSerializer,
+        }
+    )
     @action(detail=False, methods=["post"])
     def delete_prescriptions(self, request, tx_plan_pk=None):
         serializer = TreatmentPrescriptionBatchDeleteSerializer(data=request.data)
