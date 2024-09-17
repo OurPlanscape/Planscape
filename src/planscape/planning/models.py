@@ -63,19 +63,23 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         related_name="planning_areas",
         on_delete=models.CASCADE,
         null=True,
+        help_text="User ID that created the Planning Area.",
     )
 
     region_name: models.CharField = models.CharField(
-        max_length=120, choices=RegionChoices.choices
+        max_length=120,
+        choices=RegionChoices.choices,
+        help_text="Region choice name of the Planning Area.",
     )
 
-    name = models.CharField(max_length=120)
+    name = models.CharField(max_length=120, help_text="Name of the Planning Area.")
 
-    notes = models.TextField(null=True)
+    notes = models.TextField(null=True, help_text="Notes of the Planning Area.")
 
     geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
         null=True,
+        help_text="Geometry of the Planning Area represented by polygons.",
     )
 
     def creator_name(self):
@@ -166,34 +170,45 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         PlanningArea,
         related_name="scenarios",
         on_delete=models.CASCADE,
+        help_text="Planning Area ID.",
     )
     user = models.ForeignKey(
-        User, related_name="scenarios", on_delete=models.CASCADE, null=True, blank=True
+        User,
+        related_name="scenarios",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="User ID that created the Scenario.",
     )
 
-    name = models.CharField(max_length=120)
+    name = models.CharField(max_length=120, help_text="Name of the Scenario.")
 
     origin = models.CharField(
-        choices=ScenarioOrigin.choices,
-        null=True,
+        choices=ScenarioOrigin.choices, null=True, help_text="Scenario Origin."
     )
 
-    notes = models.TextField(null=True)
+    notes = models.TextField(null=True, help_text="Scenario notes.")
 
-    configuration = models.JSONField(default=dict)
+    configuration = models.JSONField(default=dict, help_text="Scenario configuration.")
 
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        help_text="Scenarion Universally Unique Identifier.",
+    )
 
     status = models.CharField(
         choices=ScenarioStatus.choices,
         max_length=32,
         default=ScenarioStatus.ACTIVE,
+        help_text="Scenario status.",
     )
 
     result_status = models.CharField(
         max_length=32,
         choices=ScenarioResultStatus.choices,
         null=True,
+        help_text="Result status of the Scenario.",
     )
 
     def creator_name(self):
@@ -238,11 +253,11 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mode
     run_details = models.JSONField(null=True)
 
     started_at = models.DateTimeField(
-        null=True, help_text="Start of the Forsys run, in UTC timezone"
+        null=True, help_text="Start of the Forsys run, in UTC timezone."
     )
 
     completed_at = models.DateTimeField(
-        null=True, help_text="End of the Forsys run, in UTC timezone"
+        null=True, help_text="End of the Forsys run, in UTC timezone."
     )
 
     class Meta:
@@ -296,12 +311,13 @@ class ProjectArea(
         on_delete=models.RESTRICT,
     )
 
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, help_text="Name of the Project Area.")
 
-    data = models.JSONField(null=True)
+    data = models.JSONField(null=True, help_text="Project Area data from Forsys.")
 
     geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
+        help_text="Geometry of the Project Area.",
     )
 
     class Meta:
