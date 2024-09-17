@@ -1,9 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TreatmentLayoutComponent } from './treatment-layout.component';
-import { MockDeclarations, MockProvider } from 'ng-mocks';
+import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentsState } from '../treatments.state';
+import { RouterTestingModule } from '@angular/router/testing';
+import { TreatmentsService } from '@services/treatments.service';
 
 describe('TreatmentLayoutComponent', () => {
   let component: TreatmentLayoutComponent;
@@ -11,8 +13,8 @@ describe('TreatmentLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentLayoutComponent],
-      providers: [MockProvider(TreatmentsState)],
+      imports: [TreatmentLayoutComponent, RouterTestingModule],
+      providers: [MockProviders(TreatmentsState, TreatmentsService)],
       declarations: [MockDeclarations(TreatmentMapComponent)],
     }).compileComponents();
 

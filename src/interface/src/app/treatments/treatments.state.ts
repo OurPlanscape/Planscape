@@ -39,16 +39,8 @@ export class TreatmentsState {
     return this._treatmentPlanId;
   }
 
-  setTreatmentPlanId(value: number) {
-    this._treatmentPlanId = value;
-  }
-
   getProjectAreaId() {
     return this._projectAreaId;
-  }
-
-  setProjectAreaId(value: number | undefined) {
-    this._projectAreaId = value;
   }
 
   getScenarioId(): number {
@@ -58,8 +50,14 @@ export class TreatmentsState {
     return this._scenarioId;
   }
 
-  setScenarioId(value: number) {
-    this._scenarioId = value;
+  setInitialState(opts: {
+    scenarioId: number;
+    treatmentId: number;
+    projectAreaId: number | undefined;
+  }) {
+    this._scenarioId = opts.scenarioId;
+    this._treatmentPlanId = opts.treatmentId;
+    this._projectAreaId = opts.projectAreaId;
   }
 
   loadSummaryForProjectArea() {
@@ -114,12 +112,6 @@ export class TreatmentsState {
           return true;
         })
       );
-  }
-
-  reset() {
-    this._summary$.next(null);
-    this.treatedStandsState.setTreatedStands([]);
-    this._treatmentPlan.next(null);
   }
 
   private setTreatedStandsFromSummary(projectAreas: TreatmentProjectArea[]) {
@@ -179,7 +171,7 @@ export class TreatmentsState {
     if (!projectArea) {
       throw Error('no project area');
     }
-    this.setProjectAreaId(projectAreaId);
+    this._projectAreaId = projectAreaId;
     this.mapConfigState.updateShowTreatmentStands(true);
     this.mapConfigState.updateMapCenter(projectArea?.extent);
     this.setTreatedStandsFromSummary([projectArea]);

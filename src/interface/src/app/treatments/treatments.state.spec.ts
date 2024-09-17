@@ -40,15 +40,28 @@ describe('TreatmentsState', () => {
   });
 
   it('should return the treatment plan ID if it is set', () => {
-    service.setTreatmentPlanId(123);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: undefined,
+    });
     expect(service.getTreatmentPlanId()).toBe(123);
   });
 
   it('should set and get the project area ID', () => {
-    service.setProjectAreaId(456);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
     expect(service.getProjectAreaId()).toBe(456);
 
-    service.setProjectAreaId(undefined);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: undefined,
+    });
+
     expect(service.getProjectAreaId()).toBeUndefined();
   });
 
@@ -88,8 +101,12 @@ describe('TreatmentsState', () => {
     spyOn(treatmentsService, 'getTreatmentPlanSummary').and.returnValue(
       of(mockSummary)
     );
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: undefined,
+    });
 
-    service.setTreatmentPlanId(123);
     service.loadSummary().subscribe();
 
     expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith([
@@ -117,7 +134,11 @@ describe('TreatmentsState', () => {
       of(mockTreatmentPlan)
     );
 
-    service.setTreatmentPlanId(123);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: undefined,
+    });
     service.loadTreatmentPlan().subscribe();
 
     service.treatmentPlan$.subscribe((treatmentPlan) => {
@@ -132,9 +153,11 @@ describe('TreatmentsState', () => {
   });
 
   it('should update treated stands and call the service', () => {
-    service.setTreatmentPlanId(123);
-    service.setProjectAreaId(456);
-
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
     spyOn(treatmentsService, 'setTreatments').and.returnValue(of({}));
 
     service.updateTreatedStands('cut', [1, 2]);
@@ -152,8 +175,11 @@ describe('TreatmentsState', () => {
   });
 
   it('should revert treated stands on update error', () => {
-    service.setTreatmentPlanId(123);
-    service.setProjectAreaId(456);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
 
     const originalStands: TreatedStand[] = [{ id: 1, action: 'cut' }];
     spyOn(treatedStandsState, 'getTreatedStands').and.returnValue(
@@ -175,8 +201,11 @@ describe('TreatmentsState', () => {
   });
 
   it('should remove treated stands and call the service', () => {
-    service.setTreatmentPlanId(123);
-    service.setProjectAreaId(456);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
     const originalStands: TreatedStand[] = [
       { id: 1, action: 'cut' },
       { id: 2, action: 'cut' },
@@ -197,8 +226,11 @@ describe('TreatmentsState', () => {
   });
 
   it('should revert treated stands on remove error', () => {
-    service.setTreatmentPlanId(123);
-    service.setProjectAreaId(456);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
 
     const originalStands: TreatedStand[] = [{ id: 1, action: 'cut' }];
     spyOn(treatedStandsState, 'getTreatedStands').and.returnValue(
