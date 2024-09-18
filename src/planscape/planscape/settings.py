@@ -31,12 +31,13 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 
 
 # Application definition
-planscape_apps = [
+PLANSCAPE_APPS = [
     "boundary",
     "collaboration",
     "conditions",
     "core",
     "datasets",
+    "e2e",
     "goals",
     "impacts",
     "martin",
@@ -71,7 +72,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "drf_spectacular",
-] + planscape_apps
+] + PLANSCAPE_APPS
 
 # Middleware order matters because of layering dependencies
 # https://docs.djangoproject.com/en/4.2/topics/http/middleware/#activating-middleware
@@ -391,7 +392,8 @@ CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
-    "'planning.e2e.*": {"queue": "default"},
+    "impacts.tasks.*": {"queue": "impacts"},
+    "e2e.tasks.*": {"queue": "default"},
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)

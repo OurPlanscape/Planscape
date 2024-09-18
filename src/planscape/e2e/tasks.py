@@ -1,17 +1,20 @@
+from datetime import datetime
+from django.contrib.auth import get_user_model
+import os
 import logging
 import json
-import os
-from datetime import datetime
+import sentry_sdk
 
-from django.conf import settings
-from django.contrib.auth.models import User
-from celery import group, chain, shared_task
+from celery import chain, group, shared_task
+
 from planning.models import PlanningArea, Scenario
 from planning.tasks import async_forsys_run
-from planning.e2e.tasks import review_results
-from planning.e2e.validation import load_schema
+from planscape.celery import app
+from e2e.validation import load_schema, validation_results
+from django.conf import settings
 
 log = logging.getLogger(__name__)
+User = get_user_model()
 
 
 @shared_task
@@ -153,3 +156,26 @@ class E2EScenarioTest:
         for f in self.final_results:
             log.info(f"{json.loads(f)}")
             print(f"{json.loads(f)}")
+
+
+@app.task(max_retries=3, retry_backoff=True)
+def review_results(sid, validation_schema) -> object:
+    try:
+        scenario = Scenario.objects.get(id=sid)
+        res = scenario.results.result
+        if scenario.results.status != "SUCCESS":
+            error_message = (
+                f"Forsys FAILED to process scenario: {scenario.id} {scenario.name}"
+            )
+            sentry_sdk.capture_message(error_message)
+            return json.dumps(
+                {
+                    "result": "FAILED",
+                    "scenario_id": sid,
+                    "details": error_message,
+                }
+            )
+        return validation_results(sid, validation_schema, res)
+    except Exception:
+        log.error("ERROR: Could not get a scenario result for scenario id %s", sid)
+        raise
