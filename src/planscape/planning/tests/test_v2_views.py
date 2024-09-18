@@ -8,10 +8,7 @@ from collaboration.tests.factories import UserObjectRoleFactory
 from collaboration.models import Permissions, Role
 from planning.models import PlanningArea, RegionChoices
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
-from planning.tests.helpers import (
-    _create_scenario,
-    reset_permissions,
-)
+from planning.tests.helpers import reset_permissions
 from planscape.tests.factories import UserFactory
 
 
@@ -23,31 +20,21 @@ class CreatorsTest(APITransactionTestCase):
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
-        self.user_a = User.objects.create(
+        self.user_a = UserFactory.create(
             username="user a", first_name="user", last_name="a"
         )
-        self.user_a.set_password("12345")
-        self.user_a.save()
-        self.user_b = User.objects.create(
+        self.user_b = UserFactory.create(
             username="user b", first_name="user", last_name="b"
         )
-        self.user_b.set_password("12345")
-        self.user_b.save()
-        self.user_c = User.objects.create(
+        self.user_c = UserFactory.create(
             username="user c", first_name="user", last_name="c"
         )
-        self.user_c.set_password("12345")
-        self.user_c.save()
-        self.user_d = User.objects.create(
+        self.user_d = UserFactory.create(
             username="user d", first_name="user", last_name="d"
         )
-        self.user_d.set_password("12345")
-        self.user_d.save()
-        self.user_e = User.objects.create(
+        self.user_e = UserFactory.create(
             username="user e", first_name="user", last_name="e"
         )
-        self.user_e.set_password("12345")
-        self.user_e.save()
         self.test_pa_user_a = PlanningAreaFactory.create_batch(
             size=11,
             user=self.user_a,
@@ -129,17 +116,11 @@ class CreatorsTest(APITransactionTestCase):
 
 class GetPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.user = UserFactory.create(username="testuser")
 
-        self.user2 = User.objects.create(username="otherowner")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.user2 = UserFactory.create(username="otherowner")
 
-        self.emptyuser = User.objects.create(username="emptyuser")
-        self.emptyuser.set_password("12345")
-        self.emptyuser.save()
+        self.emptyuser = UserFactory.create(username="emptyuser")
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -429,17 +410,11 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
 class ListPlanningAreaSortingTest(APITransactionTestCase):
     def setUp(self):
-        self.user1 = User.objects.create(username="testuser")
-        self.user1.set_password("12345")
-        self.user1.save()
+        self.user1 = UserFactory.create(username="testuser")
 
-        self.user2 = User.objects.create(username="otherowner")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.user2 = UserFactory.create(username="otherowner")
 
-        self.emptyuser = User.objects.create(username="emptyuser")
-        self.emptyuser.set_password("12345")
-        self.emptyuser.save()
+        self.emptyuser = UserFactory.create(username="emptyuser")
 
         self.geometry1 = {
             "type": "MultiPolygon",
@@ -767,32 +742,26 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         if Permissions.objects.count() == 0:
             reset_permissions()
 
-        self.creator_user = User.objects.create(
+        self.creator_user = UserFactory.create(
             username="makerofthings",
             email="creator@test.test",
             first_name="Creaty",
             last_name="Creatington",
         )
-        self.creator_user.set_password("12345")
-        self.creator_user.save()
 
-        self.collab_user = User.objects.create(
+        self.collab_user = UserFactory.create(
             username="collaboratorofthings",
             email="collab@test.test",
             first_name="Collaby",
             last_name="Collabington",
         )
-        self.collab_user.set_password("12345")
-        self.collab_user.save()
 
-        self.viewer_user = User.objects.create(
+        self.viewer_user = UserFactory.create(
             username="viewerofthings",
             email="viewer@test.test",
             first_name="Viewy",
             last_name="Viewington",
         )
-        self.viewer_user.set_password("12345")
-        self.viewer_user.save()
 
         self.geometry = {
             "type": "MultiPolygon",
