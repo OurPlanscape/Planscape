@@ -11,6 +11,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AfterDuplicateTreatmentDialogComponent } from '../after-duplicate-treatment-dialog/after-duplicate-treatment-dialog.component';
 import { TreatmentPlan } from '@types';
+import { DuplicateTreatmentErrorDialogComponent } from '../duplicate-treatment-error-dialog/duplicate-treatment-error-dialog.component';
 
 @Component({
   selector: 'app-treatment-navbar-menu',
@@ -76,12 +77,23 @@ export class TreatmentNavbarMenuComponent {
           this.openAfterDuplicateTreatmentDialog(newPlan);
         },
         error: () => {
-          this.matSnackBar.open(
-            `[Error] Cannot duplicate treatment plan`,
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
+          this.openDuplicateTreatmentErrorDialog();
         },
+      });
+  }
+
+  openDuplicateTreatmentErrorDialog() {
+    this.dialog
+      .open(DuplicateTreatmentErrorDialogComponent, {
+        data: { name: this.treatmentPlanName },
+      })
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          //try again
+          this.duplicateTreatmentPlan();
+        }
       });
   }
 
