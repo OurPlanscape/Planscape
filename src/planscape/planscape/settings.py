@@ -391,7 +391,8 @@ CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
-    "'planning.e2e.*": {"queue": "default"},
+    "impacts.tasks.*": {"queue": "impacts"},
+    "e2e.tasks.*": {"queue": "default"},
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
