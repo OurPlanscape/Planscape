@@ -1,12 +1,11 @@
 from datetime import datetime
-from itertools import chain
 from django.contrib.auth import get_user_model
 import os
 import logging
 import json
 import sentry_sdk
 
-from celery import group, shared_task
+from celery import chain, group, shared_task
 
 from planning.models import PlanningArea, Scenario
 from planning.tasks import async_forsys_run
