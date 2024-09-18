@@ -6,8 +6,7 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
-from collaboration.tests.helpers import create_collaborator_record
-from collaboration.models import Permissions, Role
+from collaboration.models import Permissions
 from planning.models import Scenario, ScenarioResult, ScenarioResultStatus
 from planning.tests.factories import PlanningAreaFactory
 from planning.tests.helpers import (
@@ -36,20 +35,17 @@ class CreateScenarioTest(APITransactionTestCase):
         }
         self.stored_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = PlanningAreaFactory.create(
-            user=self.owner_user, name="test plan", geometry=self.stored_geometry
+            user=self.owner_user,
+            name="test plan",
+            geometry=self.stored_geometry,
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
 
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2, name="test plan 2", geometry=self.stored_geometry
         )
 
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
-        )
         self.configuration = {
             "question_id": 1,
             "weights": [],
@@ -341,7 +337,10 @@ class UpdateScenarioTest(APITransactionTestCase):
         self.old_notes = "Truly, you have a dizzying intellect."
         self.old_name = "Man in black"
         self.planning_area = PlanningAreaFactory.create(
-            user=self.owner_user, name="test plan"
+            user=self.owner_user,
+            name="test plan",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.scenario = _create_scenario(
             self.planning_area, self.old_name, "{}", self.owner_user, self.old_notes
@@ -355,14 +354,6 @@ class UpdateScenarioTest(APITransactionTestCase):
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
         self.assertEqual(Scenario.objects.count(), 2)
@@ -898,7 +889,10 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = PlanningAreaFactory.create(
-            user=self.owner_user, name="test plan"
+            user=self.owner_user,
+            name="test plan",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.configuration = {
             "question_id": 1,
@@ -945,13 +939,6 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
@@ -1085,7 +1072,10 @@ class GetScenarioTest(APITransactionTestCase):
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = PlanningAreaFactory.create(
-            user=self.owner_user, name="test plan"
+            user=self.owner_user,
+            name="test plan",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.scenario = _create_scenario(
             self.planning_area,
@@ -1105,13 +1095,6 @@ class GetScenarioTest(APITransactionTestCase):
             "test scenario2",
             self.configuration,
             user=self.owner_user2,
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
         self.assertEqual(Scenario.objects.count(), 2)
         self.assertEqual(ScenarioResult.objects.count(), 2)
@@ -1210,7 +1193,10 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = PlanningAreaFactory.create(
-            user=self.owner_user, name="test plan"
+            user=self.owner_user,
+            name="test plan",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.scenario = _create_scenario(
             self.planning_area, "test scenario", "{}", user=self.owner_user
@@ -1245,12 +1231,6 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         )
         self.scenario2_result.status = ScenarioResultStatus.SUCCESS
         self.scenario2_result.save()
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
-        )
         self.assertEqual(Scenario.objects.count(), 2)
         self.assertEqual(ScenarioResult.objects.count(), 2)
 
@@ -1374,7 +1354,10 @@ class DeleteScenarioTest(APITransactionTestCase):
         }
         self.storable_geometry = GEOSGeometry(json.dumps(self.geometry))
         self.planning_area = PlanningAreaFactory.create(
-            user=self.owner_user, name="test plan"
+            user=self.owner_user,
+            name="test plan",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.scenario = _create_scenario(
             self.planning_area, "test scenario", "{}", user=self.owner_user
@@ -1395,13 +1378,6 @@ class DeleteScenarioTest(APITransactionTestCase):
         )
         self.owner_user2scenario = _create_scenario(
             self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
         )
 
         self.assertEqual(Scenario.objects.count(), 4)

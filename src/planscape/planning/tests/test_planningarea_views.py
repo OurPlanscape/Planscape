@@ -7,7 +7,6 @@ from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
 from collaboration.models import Role, Permissions
-from collaboration.tests.helpers import create_collaborator_record
 from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
@@ -339,34 +338,22 @@ class DeletePlanningAreaTest(APITransactionTestCase):
             user=self.owner_user,
             name="Owned by owner1-First",
             geometry=None,
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user,
             name="Owned by owner1-Second",
             geometry=None,
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area1, Role.COLLABORATOR
-        )
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area1, Role.VIEWER
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
-        )
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.planning_area3 = PlanningAreaFactory.create(
             user=self.owner_user2,
             name="Owned by owner2-First",
             geometry=None,
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area3, Role.COLLABORATOR
-        )
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area3, Role.VIEWER
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
 
     def test_delete(self):
@@ -526,22 +513,15 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
             name=self.old_name,
             geometry=storable_geometry,
             notes=self.old_notes,
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
 
         self.planning_area2 = PlanningAreaFactory.create(
-            user=self.owner_user2, name="Owned By Owner 2 plan"
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
-        )
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
+            user=self.owner_user2,
+            name="Owned By Owner 2 plan",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.new_name = "Inigo"
         self.new_notes = "I am not left handed."
@@ -817,24 +797,16 @@ class GetPlanningAreaTest(APITransactionTestCase):
             name="Owned By Owner 1 plan",
             geometry=storable_geometry,
             region_name=RegionChoices.SIERRA_NEVADA,
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
 
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2,
             name="Owned By Owner 2 plan",
             geometry=storable_geometry,
-        )
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area2, Role.COLLABORATOR
-        )
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area2, Role.VIEWER
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
 
     def test_get_planning_area(self):
@@ -1174,23 +1146,13 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
             user=self.creator_user,
             name="Area Shared with Viewer",
             geometry=stored_geometry,
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.planning_area_notshared = PlanningAreaFactory.create(
             user=self.creator_user,
             name="Not Shared Area",
             geometry=stored_geometry,
-        )
-        create_collaborator_record(
-            self.creator_user,
-            self.collab_user,
-            self.planning_area_w_collab,
-            Role.COLLABORATOR,
-        )
-        create_collaborator_record(
-            self.creator_user,
-            self.viewer_user,
-            self.planning_area_w_viewer,
-            Role.VIEWER,
         )
 
     def test_planningareas_list_for_creator(self):
@@ -1260,20 +1222,11 @@ class CreatePlanningAreaNote(APITransactionTestCase):
         self.collab_user = self.test_users["collaborator"]
         self.viewer_user = self.test_users["viewer"]
 
-        self.planningarea = PlanningArea.objects.create(
-            user=self.owner_user, region_name="foo"
-        )
-        create_collaborator_record(
-            self.owner_user,
-            self.collab_user,
-            self.planningarea,
-            Role.COLLABORATOR,
-        )
-        create_collaborator_record(
-            self.owner_user,
-            self.viewer_user,
-            self.planningarea,
-            Role.VIEWER,
+        self.planningarea = PlanningAreaFactory.create(
+            user=self.owner_user,
+            region_name="foo",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
 
     def test_create_note_for_planningarea(self):
@@ -1344,8 +1297,11 @@ class GetPlanningAreaNotes(APITransactionTestCase):
         self.viewer_user = self.test_users["viewer"]
         self.unassociated_user = self.test_users["owner2"]  # no perms for Planning Area
 
-        self.planningarea = PlanningArea.objects.create(
-            user=self.owner_user, region_name="foo"
+        self.planningarea = PlanningAreaFactory.create(
+            user=self.owner_user,
+            region_name="foo",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.note = PlanningAreaNote.objects.create(
             user=self.owner_user,
@@ -1361,18 +1317,6 @@ class GetPlanningAreaNotes(APITransactionTestCase):
             user=self.viewer_user,
             planning_area=self.planningarea,
             content="Viewer comment, just commenting",
-        )
-        create_collaborator_record(
-            self.owner_user,
-            self.collab_user,
-            self.planningarea,
-            Role.COLLABORATOR,
-        )
-        create_collaborator_record(
-            self.owner_user,
-            self.viewer_user,
-            self.planningarea,
-            Role.VIEWER,
         )
 
     def test_get_all_notes_for_a_planningarea(self):
@@ -1473,8 +1417,11 @@ class DeletePlanningAreaNotes(APITransactionTestCase):
         self.viewer_user = self.test_users["viewer"]
         self.unassociated_user = self.test_users["owner2"]  # no perms for Planning Area
 
-        self.planningarea = PlanningArea.objects.create(
-            user=self.owner_user, region_name="foo"
+        self.planningarea = PlanningAreaFactory.create(
+            user=self.owner_user,
+            region_name="foo",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
         self.owner_note = PlanningAreaNote.objects.create(
             user=self.owner_user,
@@ -1490,18 +1437,6 @@ class DeletePlanningAreaNotes(APITransactionTestCase):
             user=self.viewer_user,
             planning_area=self.planningarea,
             content="Viewer comment, just commenting",
-        )
-        create_collaborator_record(
-            self.owner_user,
-            self.collab_user,
-            self.planningarea,
-            Role.COLLABORATOR,
-        )
-        create_collaborator_record(
-            self.owner_user,
-            self.viewer_user,
-            self.planningarea,
-            Role.VIEWER,
         )
 
     def test_delete_note_as_owner(self):

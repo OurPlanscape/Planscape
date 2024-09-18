@@ -3,13 +3,14 @@ from django.contrib.gis.geos import Polygon, MultiPolygon
 from planning.models import (
     PlanningArea,
     ProjectArea,
-    ProjectAreaOrigin,
     Scenario,
     ScenarioOrigin,
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
 )
+from collaboration.models import Role
+from collaboration.tests.factories import UserObjectRoleFactory
 from planscape.tests.factories import UserFactory
 
 
@@ -28,6 +29,48 @@ class PlanningAreaFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: "planning area %s" % n)
 
     geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
+
+    @factory.post_generation
+    def owners(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        for owner_user in extracted:
+            UserObjectRoleFactory(
+                inviter=self.user,
+                collaborator=owner_user,
+                email=owner_user.email,
+                role=Role.OWNER,
+                associated_model=self,
+            )
+
+    @factory.post_generation
+    def collaborators(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        for collab_user in extracted:
+            UserObjectRoleFactory(
+                inviter=self.user,
+                collaborator=collab_user,
+                email=collab_user.email,
+                role=Role.COLLABORATOR,
+                associated_model=self,
+            )
+
+    @factory.post_generation
+    def viewers(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        for viewer_user in extracted:
+            UserObjectRoleFactory(
+                inviter=self.user,
+                collaborator=viewer_user,
+                email=viewer_user.email,
+                role=Role.VIEWER,
+                associated_model=self,
+            )
 
 
 class ScenarioFactory(factory.django.DjangoModelFactory):
