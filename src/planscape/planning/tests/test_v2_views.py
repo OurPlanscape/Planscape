@@ -4,7 +4,6 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 
-# from collaboration.tests.helpers import create_collaborator_record
 from collaboration.tests.factories import UserObjectRoleFactory
 from collaboration.models import Permissions, Role
 from planning.models import PlanningArea, RegionChoices
@@ -98,12 +97,6 @@ class CreatorsTest(APITransactionTestCase):
     # Test - if planning areas are shared w/ logged in user,
     # then any creator in that list will appear
     def test_list_creators_shared(self):
-        # create_collaborator_record(
-        #     self.user_b,
-        #     self.user_a,
-        #     self.test_pa_user_b[0],
-        #     Role.COLLABORATOR,
-        # )
         UserObjectRoleFactory(
             inviter=self.user_b,
             collaborator=self.user_a,
@@ -112,12 +105,6 @@ class CreatorsTest(APITransactionTestCase):
             associated_model=self.test_pa_user_b[0],
         )
 
-        # create_collaborator_record(
-        #     self.user_e,
-        #     self.user_a,
-        #     self.test_pa_user_e[0],
-        #     Role.COLLABORATOR,
-        # )
         UserObjectRoleFactory(
             inviter=self.user_e,
             collaborator=self.user_a,
@@ -358,12 +345,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
     def test_filter_planning_areas_multiple_users_some_shared(self):
         # This allows user2 to see all 13 of their own areas, plus 10 from self.user
         for pa in self.test_pa_sn:
-            # create_collaborator_record(
-            #     self.user,
-            #     self.user2,
-            #     pa,
-            #     Role.COLLABORATOR,
-            # )
             UserObjectRoleFactory(
                 inviter=self.user,
                 collaborator=self.user2,
@@ -385,12 +366,6 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
     def test_filter_planning_areas_by_multiple_user_ids(self):
         # share user2's planning area with user
-        # create_collaborator_record(
-        #     self.user2,
-        #     self.user,
-        #     self.test_pa_user2_nc[0],
-        #     Role.COLLABORATOR,
-        # )
         UserObjectRoleFactory(
             inviter=self.user2,
             collaborator=self.user,
@@ -558,7 +533,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
         )
 
         # user1 can see all of user2 PA records as a collaborator
-        # create_collaborator_record(self.user2, self.user1, self.pa7, Role.COLLABORATOR)
         UserObjectRoleFactory(
             inviter=self.user2,
             collaborator=self.user1,
@@ -566,7 +540,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             role=Role.COLLABORATOR,
             associated_model=self.pa7,
         )
-        # create_collaborator_record(self.user2, self.user1, self.pa8, Role.COLLABORATOR)
         UserObjectRoleFactory(
             inviter=self.user2,
             collaborator=self.user1,
@@ -574,7 +547,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             role=Role.COLLABORATOR,
             associated_model=self.pa8,
         )
-        # create_collaborator_record(self.user2, self.user1, self.pa9, Role.COLLABORATOR)
         UserObjectRoleFactory(
             inviter=self.user2,
             collaborator=self.user1,
@@ -582,7 +554,6 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             role=Role.COLLABORATOR,
             associated_model=self.pa9,
         )
-        # create_collaborator_record(self.user2, self.user1, self.pa10, Role.COLLABORATOR)
         UserObjectRoleFactory(
             inviter=self.user2,
             collaborator=self.user1,
@@ -816,12 +787,6 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
             name="Not Shared Area",
             geometry=stored_geometry,
         )
-        # create_collaborator_record(
-        #     self.creator_user,
-        #     self.collab_user,
-        #     self.planning_area_w_collab,
-        #     Role.COLLABORATOR,
-        # )
         UserObjectRoleFactory(
             inviter=self.creator_user,
             collaborator=self.collab_user,
@@ -829,12 +794,6 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
             role=Role.COLLABORATOR,
             associated_model=self.planning_area_w_collab,
         )
-        # create_collaborator_record(
-        #     self.creator_user,
-        #     self.viewer_user,
-        #     self.planning_area_w_viewer,
-        #     Role.VIEWER,
-        # )
         UserObjectRoleFactory(
             inviter=self.creator_user,
             collaborator=self.viewer_user,
