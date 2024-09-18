@@ -7,7 +7,7 @@ from rest_framework.test import APITransactionTestCase
 from collaboration.tests.factories import UserObjectRoleFactory
 from collaboration.models import Permissions, Role
 from planning.models import PlanningArea, RegionChoices
-from planning.tests.factories import PlanningAreaFactory
+from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planning.tests.helpers import (
     _create_scenario,
     reset_permissions,
@@ -186,26 +186,40 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.planning_area6 = self.test_pa_sn[4]
         self.planning_area7 = self.test_pa_sn[4]
 
-        self.scenario1_1 = _create_scenario(
-            self.planning_area1, "test pa1 scenario1 ", "{}", self.user, ""
+        self.scenario1_1 = ScenarioFactory(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario1",
+            user=self.user,
         )
-        self.scenario1_2 = _create_scenario(
-            self.planning_area1, "test pa1 scenario2", "{}", self.user, ""
+        self.scenario1_2 = ScenarioFactory(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario2",
+            user=self.user,
         )
-        self.scenario1_3 = _create_scenario(
-            self.planning_area1, "test pa1 scenario3", "{}", self.user, ""
+        self.scenario1_3 = ScenarioFactory(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario3",
+            user=self.user,
         )
-        self.scenario3_1 = _create_scenario(
-            self.planning_area3, "test pa3 scenario1", "{}", self.user, ""
+        self.scenario3_1 = ScenarioFactory(
+            planning_area=self.planning_area3,
+            name="test pa3 scenario1",
+            user=self.user,
         )
-        self.scenario4_1 = _create_scenario(
-            self.planning_area4, "test pa4 scenario1 ", "{}", self.user, ""
+        self.scenario4_1 = ScenarioFactory(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario1",
+            user=self.user,
         )
-        self.scenario4_2 = _create_scenario(
-            self.planning_area4, "test pa4 scenario2", "{}", self.user, ""
+        self.scenario4_2 = ScenarioFactory(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario2",
+            user=self.user,
         )
-        self.scenario4_3 = _create_scenario(
-            self.planning_area4, "test pa4 scenario3", "{}", self.user, ""
+        self.scenario4_3 = ScenarioFactory(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario3",
+            user=self.user,
         )
 
     def test_list_planning_areas(self):
@@ -510,26 +524,40 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             region_name=RegionChoices.CENTRAL_COAST,
         )
 
-        self.scenario1_1 = _create_scenario(
-            self.pa1, "test pa1 scenario1 ", "{}", self.user1, ""
+        self.scenario1_1 = ScenarioFactory(
+            planning_area=self.pa1,
+            name="test pa1 scenario1",
+            user=self.user1,
         )
-        self.scenario1_2 = _create_scenario(
-            self.pa1, "test pa1 scenario2", "{}", self.user1, ""
+        self.scenario1_2 = ScenarioFactory(
+            planning_area=self.pa1,
+            name="test pa1 scenario2",
+            user=self.user1,
         )
-        self.scenario1_3 = _create_scenario(
-            self.pa1, "test pa1 scenario3", "{}", self.user1, ""
+        self.scenario1_3 = ScenarioFactory(
+            planning_area=self.pa1,
+            name="test pa1 scenario3",
+            user=self.user1,
         )
-        self.scenario3_1 = _create_scenario(
-            self.pa3, "test pa3 scenario1", "{}", self.user1, ""
+        self.scenario3_1 = ScenarioFactory(
+            planning_area=self.pa3,
+            name="test pa3 scenario1",
+            user=self.user1,
         )
-        self.scenario4_1 = _create_scenario(
-            self.pa4, "test pa4 scenario1 ", "{}", self.user1, ""
+        self.scenario4_1 = ScenarioFactory(
+            planning_area=self.pa4,
+            name="test pa4 scenario1",
+            user=self.user1,
         )
-        self.scenario4_2 = _create_scenario(
-            self.pa4, "test pa4 scenario2", "{}", self.user1, ""
+        self.scenario4_2 = ScenarioFactory(
+            planning_area=self.pa4,
+            name="test pa4 scenario2",
+            user=self.user1,
         )
-        self.scenario4_3 = _create_scenario(
-            self.pa4, "test pa4 scenario3", "{}", self.user1, ""
+        self.scenario4_3 = ScenarioFactory(
+            planning_area=self.pa4,
+            name="test pa4 scenario3",
+            user=self.user1,
         )
 
         # user1 can see all of user2 PA records as a collaborator

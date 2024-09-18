@@ -1,12 +1,11 @@
 import json
 from unittest import mock
 from django.db import connection
-from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.test import APITransactionTestCase
-from collaboration.models import Role, Permissions
+from collaboration.models import Permissions
 from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
@@ -16,18 +15,14 @@ from planning.models import (
     PlanningAreaNote,
 )
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
-from planning.tests.helpers import (
-    _create_test_user_set,
-    reset_permissions,
-)
+from planning.tests.helpers import reset_permissions
+from planscape.tests.factories import UserFactory
 from planning.tests.test_geometry import read_shapefile, to_geometry
 
 
 class CreatePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.user = UserFactory.create(username="testuser")
 
         self.token = RefreshToken.for_user(self.user).access_token
 
@@ -289,50 +284,40 @@ class CreatePlanningAreaTest(APITransactionTestCase):
 
 class DeletePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.owner_user = User.objects.create(
+        self.owner_user = UserFactory.create(
             username="area_owner",
             first_name="Oliver",
             last_name="Owner",
             email="owner1@test.test",
         )
-        self.owner_user.set_password("12345")
-        self.owner_user.save()
 
-        self.owner_user2 = User.objects.create(
+        self.owner_user2 = UserFactory.create(
             username="area2_owner",
             first_name="Olga",
             last_name="Owner",
             email="owner2@test.test",
         )
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
 
-        self.collab_user = User.objects.create(
+        self.collab_user = UserFactory.create(
             username="area_collab",
             first_name="Chris",
             last_name="Collab",
             email="collab@test.test",
         )
-        self.collab_user.set_password("12345")
-        self.collab_user.save()
 
-        self.viewer_user = User.objects.create(
+        self.viewer_user = UserFactory.create(
             username="area_viewer",
             first_name="Veronica",
             last_name="Viewer",
             email="viewer@test.test",
         )
-        self.viewer_user.set_password("12345")
-        self.viewer_user.save()
 
-        self.unprivileged_user = User.objects.create(
+        self.unprivileged_user = UserFactory.create(
             username="justauser",
             first_name="Ned",
             last_name="Nobody",
             email="user@test.test",
         )
-        self.unprivileged_user.set_password("12345")
-        self.unprivileged_user.save()
 
         self.planning_area1 = PlanningAreaFactory.create(
             user=self.owner_user,
@@ -456,50 +441,40 @@ class DeletePlanningAreaTest(APITransactionTestCase):
 
 class UpdatePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.owner_user = User.objects.create(
+        self.owner_user = UserFactory.create(
             username="area_owner",
             first_name="Oliver",
             last_name="Owner",
             email="owner1@test.test",
         )
-        self.owner_user.set_password("12345")
-        self.owner_user.save()
 
-        self.owner_user2 = User.objects.create(
+        self.owner_user2 = UserFactory.create(
             username="area2_owner",
             first_name="Olga",
             last_name="Owner",
             email="owner2@test.test",
         )
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
 
-        self.collab_user = User.objects.create(
+        self.collab_user = UserFactory.create(
             username="area_collab",
             first_name="Chris",
             last_name="Collab",
             email="collab@test.test",
         )
-        self.collab_user.set_password("12345")
-        self.collab_user.save()
 
-        self.viewer_user = User.objects.create(
+        self.viewer_user = UserFactory.create(
             username="area_viewer",
             first_name="Veronica",
             last_name="Viewer",
             email="viewer@test.test",
         )
-        self.viewer_user.set_password("12345")
-        self.viewer_user.save()
 
-        self.unprivileged_user = User.objects.create(
+        self.unprivileged_user = UserFactory.create(
             username="justauser",
             first_name="Ned",
             last_name="Nobody",
             email="user@test.test",
         )
-        self.unprivileged_user.set_password("12345")
-        self.unprivileged_user.save()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -742,50 +717,40 @@ class GetPlanningAreaTest(APITransactionTestCase):
         if not Permissions.objects.exists():
             reset_permissions()
 
-        self.owner_user = User.objects.create(
+        self.owner_user = UserFactory.create(
             username="area_owner",
             first_name="Oliver",
             last_name="Owner",
             email="owner1@test.test",
         )
-        self.owner_user.set_password("12345")
-        self.owner_user.save()
 
-        self.owner_user2 = User.objects.create(
+        self.owner_user2 = UserFactory.create(
             username="area2_owner",
             first_name="Olga",
             last_name="Owner",
             email="owner2@test.test",
         )
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
 
-        self.collab_user = User.objects.create(
+        self.collab_user = UserFactory.create(
             username="area_collab",
             first_name="Chris",
             last_name="Collab",
             email="collab@test.test",
         )
-        self.collab_user.set_password("12345")
-        self.collab_user.save()
 
-        self.viewer_user = User.objects.create(
+        self.viewer_user = UserFactory.create(
             username="area_viewer",
             first_name="Veronica",
             last_name="Viewer",
             email="viewer@test.test",
         )
-        self.viewer_user.set_password("12345")
-        self.viewer_user.save()
 
-        self.unprivileged_user = User.objects.create(
+        self.unprivileged_user = UserFactory.create(
             username="justauser",
             first_name="Ned",
             last_name="Nobody",
             email="user@test.test",
         )
-        self.unprivileged_user.set_password("12345")
-        self.unprivileged_user.save()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -909,9 +874,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
 class ListPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.user = UserFactory.create(username="testuser")
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -992,9 +955,7 @@ class ListPlanningAreaTest(APITransactionTestCase):
             notes="",
         )
 
-        self.user2 = User.objects.create(username="otherowner")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.user2 = UserFactory.create(username="otherowner")
         self.geometry = {
             "type": "MultiPolygon",
             "coordinates": [[[[1, 2], [2, 3], [3, 4], [1, 2]]]],
@@ -1006,9 +967,7 @@ class ListPlanningAreaTest(APITransactionTestCase):
             geometry=stored_geometry,
         )
 
-        self.emptyuser = User.objects.create(username="emptyuser")
-        self.emptyuser.set_password("12345")
-        self.emptyuser.save()
+        self.emptyuser = UserFactory.create(username="emptyuser")
 
     def test_list_planning_areas(self):
         self.client.force_authenticate(self.user)
@@ -1104,32 +1063,26 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         if Permissions.objects.count() == 0:
             reset_permissions()
 
-        self.creator_user = User.objects.create(
+        self.creator_user = UserFactory.create(
             username="makerofthings",
             email="creator@test.test",
             first_name="Creaty",
             last_name="Creatington",
         )
-        self.creator_user.set_password("12345")
-        self.creator_user.save()
 
-        self.collab_user = User.objects.create(
+        self.collab_user = UserFactory.create(
             username="collaboratorofthings",
             email="collab@test.test",
             first_name="Collaby",
             last_name="Collabington",
         )
-        self.collab_user.set_password("12345")
-        self.collab_user.save()
 
-        self.viewer_user = User.objects.create(
+        self.viewer_user = UserFactory.create(
             username="viewerofthings",
             email="viewer@test.test",
             first_name="Viewy",
             last_name="Viewington",
         )
-        self.viewer_user.set_password("12345")
-        self.viewer_user.save()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -1217,10 +1170,9 @@ class CreatePlanningAreaNote(APITransactionTestCase):
     def setUp(self):
         if Permissions.objects.count() == 0:
             reset_permissions()
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
+        self.owner_user = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
 
         self.planningarea = PlanningAreaFactory.create(
             user=self.owner_user,
@@ -1291,11 +1243,10 @@ class GetPlanningAreaNotes(APITransactionTestCase):
         if Permissions.objects.count() == 0:
             reset_permissions()
 
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unassociated_user = self.test_users["owner2"]  # no perms for Planning Area
+        self.owner_user = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unassociated_user = UserFactory()  # no perms for Planning Area
 
         self.planningarea = PlanningAreaFactory.create(
             user=self.owner_user,
@@ -1411,11 +1362,10 @@ class DeletePlanningAreaNotes(APITransactionTestCase):
         if Permissions.objects.count() == 0:
             reset_permissions()
 
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unassociated_user = self.test_users["owner2"]  # no perms for Planning Area
+        self.owner_user = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unassociated_user = UserFactory()  # no perms for Planning Area
 
         self.planningarea = PlanningAreaFactory.create(
             user=self.owner_user,
@@ -1502,9 +1452,7 @@ class DeletePlanningAreaNotes(APITransactionTestCase):
 # for the main unit tests.
 class EndtoEndPlanningAreaAndScenarioTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.user = UserFactory.create(username="testuser")
         self.internal_geometry = {
             "type": "MultiPolygon",
             "coordinates": [
