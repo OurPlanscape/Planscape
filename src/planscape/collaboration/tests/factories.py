@@ -16,11 +16,8 @@ class UserObjectRoleFactory(factory.django.DjangoModelFactory):
     role = Role.VIEWER
     inviter = factory.SubFactory(UserFactory)
 
-    # used to build `content_type`and `object_pk` during creation
-    associated_model = models.Model
-
     @classmethod
-    def _create(cls, model_class, associated_model, *args, **kwargs):
+    def _create(cls, model_class, associated_model: models.Model, *args, **kwargs):
         content_type = ContentType.objects.get_for_model(associated_model)
 
         manager = cls._get_manager(model_class)
