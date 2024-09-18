@@ -5,7 +5,6 @@ from rest_framework.test import APITransactionTestCase
 from unittest import mock
 from collaboration.models import UserObjectRole, Role
 from collaboration.tests.factories import UserObjectRoleFactory
-from collaboration.tests.helpers import create_collaborator_record
 from planning.models import PlanningArea
 from planning.tests.helpers import _create_test_user_set
 

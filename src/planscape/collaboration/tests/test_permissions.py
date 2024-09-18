@@ -8,6 +8,7 @@ from collaboration.permissions import (
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
 from planning.models import PlanningArea, Scenario
+from planning.tests.factories import PlanningAreaFactory
 
 
 class PermissionsTest(TestCase):
@@ -288,74 +289,48 @@ class PlanningAreaPermisssionsTest(TestCase):
         self.invitee = self.setUser("test-invitee")
 
         # create multiple planning areas...
-        self.planning_area_created = PlanningArea.objects.create(
+        self.planning_area_created = PlanningAreaFactory.create(
             user=self.invitee,
             name="User Created This Planning Area",
             region_name="sierra-nevada",
             geometry=None,
             notes="",
         )
-        self.planning_area_created.save()
 
-        self.planning_area_owned = PlanningArea.objects.create(
+        self.planning_area_owned = PlanningAreaFactory.create(
             user=self.user,
             name="User is an Owner of This Area",
             region_name="sierra-nevada",
             geometry=None,
             notes="",
-        )
-        self.planning_area_owned.save()
-
-        UserObjectRoleFactory(
-            inviter=self.user,
-            collaborator=self.invitee,
-            email=self.invitee.email,
-            role=Role.OWNER,
-            associated_model=self.planning_area_owned,
+            owners=[self.invitee],
         )
 
-        self.planning_area_editable = PlanningArea.objects.create(
+        self.planning_area_editable = PlanningAreaFactory.create(
             user=self.user,
             name="User Can Edit This Area",
             region_name="sierra-nevada",
             geometry=None,
             notes="",
-        )
-        self.planning_area_editable.save()
-
-        UserObjectRoleFactory(
-            inviter=self.user,
-            collaborator=self.invitee,
-            email=self.invitee.email,
-            role=Role.COLLABORATOR,
-            associated_model=self.planning_area_editable,
+            collaborators=[self.invitee],
         )
 
-        self.planning_area_viewable = PlanningArea.objects.create(
+        self.planning_area_viewable = PlanningAreaFactory.create(
             user=self.user,
             name="User Can View This Area",
             region_name="sierra-nevada",
             geometry=None,
             notes="",
-        )
-        self.planning_area_viewable.save()
-
-        UserObjectRoleFactory(
-            inviter=self.user,
-            collaborator=self.invitee,
-            email=self.invitee.email,
-            role=Role.VIEWER,
-            associated_model=self.planning_area_viewable,
+            viewers=[self.invitee],
         )
 
-        self.planning_area_noperms = PlanningArea.objects.create(
+        self.planning_area_noperms = PlanningAreaFactory.create(
             user=self.user,
             name="User Has no Access to Area",
             region_name="sierra-nevada",
             geometry=None,
             notes="",
         )
-        self.planning_area_noperms.save()
 
     def setUser(self, username):
         user = User.objects.create(username=username)
