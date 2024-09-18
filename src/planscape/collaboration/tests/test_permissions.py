@@ -6,7 +6,7 @@ from collaboration.permissions import (
     ScenarioPermission,
 )
 from collaboration.models import Role
-from collaboration.tests.helpers import create_collaborator_record
+from collaboration.tests.factories import UserObjectRoleFactory
 from planning.models import PlanningArea, Scenario
 
 
@@ -40,7 +40,13 @@ class PermissionsTest(TestCase):
         return user
 
     def create_collaborator_record(self, role: Role):
-        create_collaborator_record(self.user, self.invitee, self.planning_area, role)
+        UserObjectRoleFactory(
+            inviter=self.user,
+            collaborator=self.invitee,
+            email=self.invitee.email,
+            role=role,
+            associated_model=self.planning_area,
+        )
 
     # Viewing Planning Area
 
@@ -299,8 +305,13 @@ class PlanningAreaPermisssionsTest(TestCase):
             notes="",
         )
         self.planning_area_owned.save()
-        create_collaborator_record(
-            self.user, self.invitee, self.planning_area_owned, Role.OWNER
+
+        UserObjectRoleFactory(
+            inviter=self.user,
+            collaborator=self.invitee,
+            email=self.invitee.email,
+            role=Role.OWNER,
+            associated_model=self.planning_area_owned,
         )
 
         self.planning_area_editable = PlanningArea.objects.create(
@@ -311,8 +322,13 @@ class PlanningAreaPermisssionsTest(TestCase):
             notes="",
         )
         self.planning_area_editable.save()
-        create_collaborator_record(
-            self.user, self.invitee, self.planning_area_editable, Role.COLLABORATOR
+
+        UserObjectRoleFactory(
+            inviter=self.user,
+            collaborator=self.invitee,
+            email=self.invitee.email,
+            role=Role.COLLABORATOR,
+            associated_model=self.planning_area_editable,
         )
 
         self.planning_area_viewable = PlanningArea.objects.create(
@@ -323,8 +339,13 @@ class PlanningAreaPermisssionsTest(TestCase):
             notes="",
         )
         self.planning_area_viewable.save()
-        create_collaborator_record(
-            self.user, self.invitee, self.planning_area_viewable, Role.VIEWER
+
+        UserObjectRoleFactory(
+            inviter=self.user,
+            collaborator=self.invitee,
+            email=self.invitee.email,
+            role=Role.VIEWER,
+            associated_model=self.planning_area_viewable,
         )
 
         self.planning_area_noperms = PlanningArea.objects.create(

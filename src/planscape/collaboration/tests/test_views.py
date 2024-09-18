@@ -1,10 +1,10 @@
 import json
 from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from unittest import mock
 from collaboration.models import UserObjectRole, Role
+from collaboration.tests.factories import UserObjectRoleFactory
 from collaboration.tests.helpers import create_collaborator_record
 from planning.models import PlanningArea
 from planning.tests.helpers import _create_test_user_set
@@ -140,8 +140,13 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
         self.planningarea = PlanningArea.objects.create(
             user=self.owner, region_name="foo"
         )
-        self.user_object_role = create_collaborator_record(
-            self.owner, self.invitee, self.planningarea, Role.VIEWER
+
+        self.user_object_role = UserObjectRoleFactory(
+            inviter=self.owner,
+            collaborator=self.invitee,
+            email=self.invitee.email,
+            role=Role.VIEWER,
+            associated_model=self.planningarea,
         )
 
     def test_update_role_from_viewer_to_collaborator(self):
@@ -252,11 +257,20 @@ class DeleteInviteTest(APITransactionTestCase):
         self.planningarea = PlanningArea.objects.create(
             user=self.owner, region_name="foo"
         )
-        self.user_object_role_collab = create_collaborator_record(
-            self.owner, self.collab_user, self.planningarea, Role.COLLABORATOR
+        self.user_object_role_collab = UserObjectRoleFactory(
+            inviter=self.owner,
+            collaborator=self.collab_user,
+            email=self.collab_user.email,
+            role=Role.COLLABORATOR,
+            associated_model=self.planningarea,
         )
-        self.user_object_role_viewer = create_collaborator_record(
-            self.owner, self.invitee, self.planningarea, Role.VIEWER
+
+        self.user_object_role_viewer = UserObjectRoleFactory(
+            inviter=self.owner,
+            collaborator=self.invitee,
+            email=self.invitee.email,
+            role=Role.VIEWER,
+            associated_model=self.planningarea,
         )
 
     def test_delete_collab_invite_as_owner(self):

@@ -2,7 +2,7 @@ import copy
 from unittest import mock
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
-from collaboration.tests.helpers import create_collaborator_record
+from collaboration.tests.factories import UserObjectRoleFactory
 from collaboration.models import Permissions, Role
 from planning.models import (
     Scenario,
@@ -122,13 +122,22 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.scenario_res = ScenarioResultFactory(scenario=self.owner_user2scenario)
 
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
+        UserObjectRoleFactory(
+            inviter=self.owner_user,
+            collaborator=self.collab_user,
+            email=self.collab_user.email,
+            role=Role.COLLABORATOR,
+            associated_model=self.planning_area,
         )
 
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
+        UserObjectRoleFactory(
+            inviter=self.owner_user,
+            collaborator=self.viewer_user,
+            email=self.viewer_user.email,
+            role=Role.VIEWER,
+            associated_model=self.planning_area,
         )
+
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
 
