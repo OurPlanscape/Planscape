@@ -21,6 +21,10 @@ import { SharedModule } from '@shared';
 
 import { ButtonComponent } from '@styleguide';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatIconModule } from '@angular/material/icon';
+import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { MatMenuModule } from '@angular/material/menu';
+import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
 
 @UntilDestroy()
 @Component({
@@ -35,6 +39,10 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
     SharedModule,
     ButtonComponent,
     MatSlideToggleModule,
+    MatIconModule,
+    MatLegacyButtonModule,
+    MatMenuModule,
+    TreatmentNavbarMenuComponent,
   ],
   providers: [
     TreatmentsState,
@@ -49,6 +57,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 export class TreatmentLayoutComponent {
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
   summary$ = this.treatmentsState.summary$;
+  treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -135,13 +144,23 @@ export class TreatmentLayoutComponent {
 
   goBack() {
     const summary = this.treatmentsState.getCurrentSummary();
-    if (summary) {
-      let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
-      if (this.treatmentsState.getProjectAreaId()) {
-        url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
-      }
-      this.router.navigate([url]);
+    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+    if (this.treatmentsState.getProjectAreaId()) {
+      url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
     }
+    this.router.navigate([url]);
+  }
+
+  redirectToScenario() {
+    const summary = this.treatmentsState.getCurrentSummary();
+    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+    this.router.navigate([url]);
+  }
+
+  redirectToNewPlan(planId: number) {
+    const summary = this.treatmentsState.getCurrentSummary();
+    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${planId}`;
+    this.router.navigate([url]);
   }
 }
 

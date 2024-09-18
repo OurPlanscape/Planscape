@@ -186,6 +186,10 @@ export class TreatmentsState {
   }
 
   getCurrentSummary() {
-    return this._summary$.value;
+    const summary = this._summary$.value;
+    if (!summary) {
+      throw new Error('no summary loaded');
+    }
+    return summary;
   }
 }

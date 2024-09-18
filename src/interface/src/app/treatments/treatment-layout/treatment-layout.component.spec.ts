@@ -7,6 +7,7 @@ import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsService } from '@services/treatments.service';
 import { NavBarComponent, SharedModule } from '@shared';
+import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
 
 describe('TreatmentLayoutComponent', () => {
   let component: TreatmentLayoutComponent;
@@ -16,7 +17,13 @@ describe('TreatmentLayoutComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TreatmentLayoutComponent, RouterTestingModule, SharedModule],
       providers: [MockProviders(TreatmentsState, TreatmentsService)],
-      declarations: [MockDeclarations(TreatmentMapComponent, NavBarComponent)],
+      declarations: [
+        MockDeclarations(
+          TreatmentMapComponent,
+          NavBarComponent,
+          TreatmentNavbarMenuComponent
+        ),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentLayoutComponent);

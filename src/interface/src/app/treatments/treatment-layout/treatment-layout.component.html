@@ -2,6 +2,12 @@
   (goBack)="goBack()"
   [breadcrumbs]="(breadcrumbs$ | async) || []"
   [area]="'TREATMENTS'">
+  <app-treatment-navbar-menu
+    [treatmentPlanName]="(treatmentPlanName$ | async) || ''"
+    (treatmentPlanDeleted)="redirectToScenario()"
+    (goToDuplicatedPlan)="
+      redirectToNewPlan($event)
+    "></app-treatment-navbar-menu>
 </app-nav-bar>
 <section class="treatment">
   <div class="left-side">
