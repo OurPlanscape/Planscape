@@ -82,7 +82,7 @@ deploy-backend: install-dependencies-backend migrate restart
 deploy-all: deploy-backend deploy-frontend
 
 start-celery:
-	${SYS_CTL} start celery-* --no-block
+	${SYS_CTL} start celery-* --all
 
 stop-celery:
 	${SYS_CTL} stop celery-* --all
