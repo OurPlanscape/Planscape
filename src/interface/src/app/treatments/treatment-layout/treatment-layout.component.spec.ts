@@ -6,6 +6,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsService } from '@services/treatments.service';
+import { NavBarComponent, SharedModule } from '@shared';
 
 describe('TreatmentLayoutComponent', () => {
   let component: TreatmentLayoutComponent;
@@ -13,9 +14,9 @@ describe('TreatmentLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentLayoutComponent, RouterTestingModule],
+      imports: [TreatmentLayoutComponent, RouterTestingModule, SharedModule],
       providers: [MockProviders(TreatmentsState, TreatmentsService)],
-      declarations: [MockDeclarations(TreatmentMapComponent)],
+      declarations: [MockDeclarations(TreatmentMapComponent, NavBarComponent)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentLayoutComponent);

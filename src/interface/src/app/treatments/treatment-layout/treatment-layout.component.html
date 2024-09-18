@@ -1,4 +1,24 @@
-<div class="left-side">
-  <router-outlet></router-outlet>
-</div>
-<app-treatment-map></app-treatment-map>
+<app-nav-bar
+  (goBack)="goBack()"
+  [breadcrumbs]="(breadcrumbs$ | async) || []"
+  [area]="'TREATMENTS'">
+</app-nav-bar>
+<section class="treatment">
+  <div class="left-side">
+    <router-outlet></router-outlet>
+  </div>
+  <div class="right-side">
+    <app-treatment-map></app-treatment-map>
+    <section class="right-side-footer">
+      <ng-container *ngIf="activeProjectArea$ | async; else treatment">
+        <button sg-button variant="primary" class="footer-primary">Done</button>
+      </ng-container>
+      <ng-template #treatment>
+        <mat-slide-toggle>View Treatment Layers</mat-slide-toggle>
+        <button sg-button variant="primary" class="footer-primary">
+          Run Impacts
+        </button>
+      </ng-template>
+    </section>
+  </div>
+</section>

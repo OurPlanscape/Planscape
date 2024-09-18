@@ -32,6 +32,11 @@ export class TreatmentsState {
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
 
+  private _activeProjectArea$ =
+    new BehaviorSubject<TreatmentProjectArea | null>(null);
+
+  public activeProjectArea$ = this._activeProjectArea$.asObservable();
+
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
       throw new Error('no treatment plan id!');
@@ -86,6 +91,8 @@ export class TreatmentsState {
 
   loadSummary() {
     const summary = this._summary$.value;
+    // remove active project area
+    this._activeProjectArea$.next(null);
     // if I already have summary center the map before fetching
     if (summary) {
       this.mapConfigState.updateMapCenter(summary.extent);
@@ -174,6 +181,11 @@ export class TreatmentsState {
     this._projectAreaId = projectAreaId;
     this.mapConfigState.updateShowTreatmentStands(true);
     this.mapConfigState.updateMapCenter(projectArea?.extent);
+    this._activeProjectArea$.next(projectArea);
     this.setTreatedStandsFromSummary([projectArea]);
+  }
+
+  getCurrentSummary() {
+    return this._summary$.value;
   }
 }
