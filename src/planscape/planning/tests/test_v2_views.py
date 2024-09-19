@@ -1,13 +1,17 @@
 import json
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITransactionTestCase, APITestCase
 
 from collaboration.tests.factories import UserObjectRoleFactory
-from collaboration.models import Permissions, Role
+from collaboration.models import Role
+from impacts.permissions import (
+    VIEWER_PERMISSIONS,
+    COLLABORATOR_PERMISSIONS,
+    OWNER_PERMISSIONS,
+)
 from planning.models import PlanningArea, RegionChoices
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
-from planning.tests.helpers import reset_permissions
 from planscape.tests.factories import UserFactory
 
 
@@ -736,11 +740,8 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertIsNotNone(data.get("id"))
 
 
-class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
+class ListPlanningAreasWithPermissionsTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.creator_user = UserFactory.create(
             username="makerofthings",
             email="creator@test.test",
@@ -806,16 +807,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
             content_type="application/json",
         )
         planning_areas = json.loads(response.content)
-        expected_perms = [
-            "view_planningarea",
-            "view_scenario",
-            "add_scenario",
-            "change_scenario",
-            "view_collaborator",
-            "add_collaborator",
-            "delete_collaborator",
-            "change_collaborator",
-        ]
+        expected_perms = OWNER_PERMISSIONS
 
         self.assertEqual(planning_areas["count"], 3)
         self.assertEqual(planning_areas["results"][0]["role"], "Creator")
@@ -844,7 +836,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertEqual(the_area["role"], "Collaborator")
         self.assertCountEqual(
             the_area["permissions"],
-            ["view_planningarea", "view_scenario", "add_scenario"],
+            COLLABORATOR_PERMISSIONS,
         )
 
     def test_planningareas_list_for_viewer(self):
@@ -858,6 +850,4 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertEqual(planning_areas["count"], 1)
         the_area = planning_areas["results"][0]
         self.assertEqual(the_area["role"], "Viewer")
-        self.assertCountEqual(
-            the_area["permissions"], ["view_planningarea", "view_scenario"]
-        )
+        self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)

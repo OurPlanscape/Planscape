@@ -4,8 +4,12 @@ from django.db import connection
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework_simplejwt.tokens import RefreshToken
-from rest_framework.test import APITransactionTestCase
-from collaboration.models import Permissions
+from rest_framework.test import APITransactionTestCase, APITestCase
+from impacts.permissions import (
+    VIEWER_PERMISSIONS,
+    COLLABORATOR_PERMISSIONS,
+    OWNER_PERMISSIONS,
+)
 from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
@@ -15,7 +19,6 @@ from planning.models import (
     PlanningAreaNote,
 )
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
-from planning.tests.helpers import reset_permissions
 from planscape.tests.factories import UserFactory
 from planning.tests.test_geometry import read_shapefile, to_geometry
 
@@ -712,11 +715,8 @@ class UpdatePlanningAreaTest(APITransactionTestCase):
         self.assertJSONEqual(response.content, {"message": "Name must be defined"})
 
 
-class GetPlanningAreaTest(APITransactionTestCase):
+class GetPlanningAreaTest(APITestCase):
     def setUp(self):
-        if not Permissions.objects.exists():
-            reset_permissions()
-
         self.owner_user = UserFactory.create(
             username="area_owner",
             first_name="Oliver",
@@ -815,7 +815,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(returned_planning_area["role"], "Collaborator")
         self.assertCountEqual(
             returned_planning_area["permissions"],
-            ["view_planningarea", "view_scenario", "add_scenario"],
+            COLLABORATOR_PERMISSIONS,
         )
         self.assertIsNotNone(returned_planning_area["created_at"])
 
@@ -834,7 +834,7 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(returned_planning_area["role"], "Viewer")
         self.assertCountEqual(
             returned_planning_area["permissions"],
-            ["view_planningarea", "view_scenario"],
+            VIEWER_PERMISSIONS,
         )
         self.assertIsNotNone(returned_planning_area["created_at"])
 
@@ -1058,11 +1058,8 @@ class ListPlanningAreaTest(APITransactionTestCase):
         self.assertEqual(len(response.json()), 0)
 
 
-class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
+class ListPlanningAreasWithPermissionsTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.creator_user = UserFactory.create(
             username="makerofthings",
             email="creator@test.test",
@@ -1116,16 +1113,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
             content_type="application/json",
         )
         planning_areas = json.loads(response.content)
-        expected_perms = [
-            "view_planningarea",
-            "view_scenario",
-            "add_scenario",
-            "change_scenario",
-            "view_collaborator",
-            "add_collaborator",
-            "delete_collaborator",
-            "change_collaborator",
-        ]
+        expected_perms = OWNER_PERMISSIONS
         self.assertEqual(len(planning_areas), 3)
         self.assertEqual(planning_areas[0]["role"], "Creator")
         self.assertEqual(planning_areas[1]["role"], "Creator")
@@ -1147,7 +1135,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertEqual(the_area["role"], "Collaborator")
         self.assertCountEqual(
             the_area["permissions"],
-            ["view_planningarea", "view_scenario", "add_scenario"],
+            COLLABORATOR_PERMISSIONS,
         )
 
     def test_planningareas_list_for_viewer(self):
@@ -1161,15 +1149,11 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertEqual(len(planning_areas), 1)
         the_area = planning_areas[0]
         self.assertEqual(the_area["role"], "Viewer")
-        self.assertCountEqual(
-            the_area["permissions"], ["view_planningarea", "view_scenario"]
-        )
+        self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
 
 
-class CreatePlanningAreaNote(APITransactionTestCase):
+class CreatePlanningAreaNote(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
         self.owner_user = UserFactory()
         self.collab_user = UserFactory()
         self.viewer_user = UserFactory()
@@ -1238,11 +1222,8 @@ class CreatePlanningAreaNote(APITransactionTestCase):
         self.assertEqual(response.status_code, 401)
 
 
-class GetPlanningAreaNotes(APITransactionTestCase):
+class GetPlanningAreaNotes(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory()
         self.collab_user = UserFactory()
         self.viewer_user = UserFactory()
@@ -1357,11 +1338,8 @@ class GetPlanningAreaNotes(APITransactionTestCase):
         self.assertEqual(response.status_code, 401)
 
 
-class DeletePlanningAreaNotes(APITransactionTestCase):
+class DeletePlanningAreaNotes(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory()
         self.collab_user = UserFactory()
         self.viewer_user = UserFactory()

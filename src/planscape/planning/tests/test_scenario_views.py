@@ -4,20 +4,15 @@ from unittest import mock
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
-from collaboration.models import Permissions
+from rest_framework.test import APITransactionTestCase, APITestCase
 from planning.models import Scenario, ScenarioResult, ScenarioResultStatus
 from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planscape.tests.factories import UserFactory
-from planning.tests.helpers import reset_permissions
 
 
 # TODO: add more tests when we start parsing configurations.
-class CreateScenarioTest(APITransactionTestCase):
+class CreateScenarioTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory()
         self.owner_user2 = UserFactory()
         self.collab_user = UserFactory()
@@ -313,11 +308,8 @@ class CreateScenarioTest(APITransactionTestCase):
         )
 
 
-class UpdateScenarioTest(APITransactionTestCase):
+class UpdateScenarioTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory()
         self.owner_user2 = UserFactory()
         self.collab_user = UserFactory()
@@ -881,11 +873,8 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
 
-class ListScenariosForPlanningAreaTest(APITransactionTestCase):
+class ListScenariosForPlanningAreaTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory()
         self.owner_user2 = UserFactory()
         self.collab_user = UserFactory()
@@ -1052,11 +1041,8 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
 
 
-class GetScenarioTest(APITransactionTestCase):
+class GetScenarioTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory()
         self.owner_user2 = UserFactory()
         self.collab_user = UserFactory()
@@ -1185,12 +1171,10 @@ class GetScenarioTest(APITransactionTestCase):
         )
 
 
-class GetScenarioDownloadTest(APITransactionTestCase):
+class GetScenarioDownloadTest(APITestCase):
     def setUp(self):
         super().setUp()
         self.set_verbose = True
-        if Permissions.objects.count() == 0:
-            reset_permissions()
 
         self.owner_user = UserFactory()
         self.owner_user2 = UserFactory()
@@ -1353,11 +1337,8 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
 
-class DeleteScenarioTest(APITransactionTestCase):
+class DeleteScenarioTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory()
         self.owner_user2 = UserFactory()
         self.collab_user = UserFactory()
