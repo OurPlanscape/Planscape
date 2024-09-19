@@ -325,7 +325,9 @@ def calculate_impacts(
 
 
 def calculate_delta(value: float, base: float) -> float:
-    return (value - base) / (base + 1)
+    if not base:
+        base = 1
+    return (value - base) / base
 
 
 def calculate_deltas(
