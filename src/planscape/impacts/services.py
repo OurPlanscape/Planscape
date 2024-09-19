@@ -324,6 +324,10 @@ def calculate_impacts(
     return calculate_deltas(baseline_stats, variable_stats, agg)
 
 
+def calculate_delta(value: float, base: float) -> float:
+    return (value - (base + 1)) / (base + 1)
+
+
 def calculate_deltas(
     baseline_zonal_stats,
     variable_zonal_stats,
@@ -337,7 +341,10 @@ def calculate_deltas(
         stand_id = variable_props.get("stand_id")
         baseline_props = baseline_dict.get(stand_id).get("properties")
         deltas = {
-            f"delta_{agg}": variable_props.get(agg) / baseline_props.get(agg)
+            f"delta_{agg}": calculate_delta(
+                variable_props.get(agg),
+                baseline_props.get(agg),
+            )
             for agg in aggregations
         }
         variable_zonal_stats[i]["properties"] = {**variable_props, **deltas}
