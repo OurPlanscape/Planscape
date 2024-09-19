@@ -61,7 +61,7 @@ services:
     volumes:
       - .:/usr/src/app
   db:
-    image: postgis/postgis:15-3.4
+    image: postgis/postgis:15-3.4-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
