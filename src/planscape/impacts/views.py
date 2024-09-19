@@ -153,6 +153,7 @@ class TreatmentPlanViewSet(
         description="Runs a Treatment Plan.",
         responses={
             201: TreatmentPlanSerializer,
+            400: BaseErrorMessageSerializer,
             404: BaseErrorMessageSerializer,
         },
     )
@@ -168,7 +169,7 @@ class TreatmentPlanViewSet(
                 f"User requested to run treatment plan {treatment_plan.pk} while it's {treatment_plan.status}."
             )
             return response.Response(
-                {"message": "You can't run the same treatment plan twice."},
+                {"detail": "You can't run the same treatment plan twice."},
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
