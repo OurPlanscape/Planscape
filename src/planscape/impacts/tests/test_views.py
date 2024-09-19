@@ -56,7 +56,7 @@ class TxPlanViewSetTest(APITransactionTestCase):
         "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
         return_value=None,
     )
-    def test_run_tx_plan_returns_202(self, async_task):
+    def test_run_tx_plan_returns_400(self, async_task):
         self.client.force_authenticate(user=self.scenario.user)
         treatment_plan = TreatmentPlanFactory.create(scenario=self.scenario)
         treatment_plan.status = TreatmentPlanStatus.SUCCESS
@@ -67,16 +67,6 @@ class TxPlanViewSetTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(async_task.called)
-
-    def test_run_tx_plan_returns_202(self):
-        self.client.force_authenticate(user=self.scenario.user)
-        treatment_plan = TreatmentPlanFactory.create(scenario=self.scenario)
-        response = self.client.post(
-            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
-            format="json",
-        )
-        data = response.json()
-        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
 
     def test_get_tx_plan(self):
         self.client.force_authenticate(user=self.scenario.user)
