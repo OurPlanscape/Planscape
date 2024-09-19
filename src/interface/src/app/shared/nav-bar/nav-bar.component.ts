@@ -28,7 +28,8 @@ export interface Breadcrumb {
 })
 export class NavBarComponent implements OnInit {
   @Input() breadcrumbs: Breadcrumb[] = [];
-  @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' = 'EXPLORE';
+  @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' | 'TREATMENTS' =
+    'EXPLORE';
   @Output() goBack = new EventEmitter<void>();
 
   params: Params | null = null;

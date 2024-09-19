@@ -96,6 +96,12 @@ describe('TreatmentsState', () => {
         },
       ],
       extent: [1, 2, 3, 4],
+      planning_area_id: 1,
+      planning_area_name: 'Test',
+      scenario_id: 2,
+      scenario_name: 'Test Scenario',
+      treatment_plan_id: 3,
+      treatment_plan_name: 'Test Treatment Plan',
     };
 
     spyOn(treatmentsService, 'getTreatmentPlanSummary').and.returnValue(

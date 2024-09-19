@@ -35,6 +35,12 @@ export interface TreatedStand {
 export interface TreatmentSummary {
   project_areas: TreatmentProjectArea[];
   extent: Extent;
+  planning_area_id: number;
+  planning_area_name: string;
+  scenario_id: number;
+  scenario_name: string;
+  treatment_plan_id: number;
+  treatment_plan_name: string;
 }
 
 export type Extent = [number, number, number, number];

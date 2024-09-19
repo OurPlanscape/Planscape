@@ -8,18 +8,42 @@ import {
 } from '@angular/router';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentsState } from '../treatments.state';
+
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import { catchError } from 'rxjs';
+import { catchError, combineLatest, map } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { FeaturesModule } from '../../features/features.module';
+import { SharedModule } from '@shared';
+
+import { ButtonComponent } from '@styleguide';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatIconModule } from '@angular/material/icon';
+import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { MatMenuModule } from '@angular/material/menu';
+import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-layout',
   standalone: true,
-  imports: [RouterOutlet, TreatmentMapComponent],
+  imports: [
+    RouterOutlet,
+    TreatmentMapComponent,
+    AsyncPipe,
+    NgIf,
+    FeaturesModule,
+    SharedModule,
+    ButtonComponent,
+    MatSlideToggleModule,
+    MatIconModule,
+    MatLegacyButtonModule,
+    MatMenuModule,
+    TreatmentNavbarMenuComponent,
+  ],
   providers: [
     TreatmentsState,
     SelectedStandsState,
@@ -31,6 +55,10 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TreatmentLayoutComponent {
+  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
+  summary$ = this.treatmentsState.summary$;
+  treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
+
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfig: MapConfigState,
@@ -81,6 +109,58 @@ export class TreatmentLayoutComponent {
       this.router.navigate(['/']);
       throw error;
     });
+  }
+
+  breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
+    map(([projectArea, summary]) => {
+      if (!summary) {
+        return [];
+      }
+      const crumbs = [
+        {
+          name: summary.planning_area_name,
+          path: `/plan/${summary.planning_area_id}`,
+        },
+        {
+          name: summary.scenario_name,
+          path: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
+        },
+        {
+          name: summary.treatment_plan_name,
+          path: projectArea
+            ? `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`
+            : '',
+        },
+      ];
+      if (projectArea) {
+        crumbs.push({
+          name: projectArea.project_area_name,
+          path: '',
+        });
+      }
+      return crumbs;
+    })
+  );
+
+  goBack() {
+    const summary = this.treatmentsState.getCurrentSummary();
+    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+    if (this.treatmentsState.getProjectAreaId()) {
+      url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
+    }
+    this.router.navigate([url]);
+  }
+
+  redirectToScenario() {
+    const summary = this.treatmentsState.getCurrentSummary();
+    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+    this.router.navigate([url]);
+  }
+
+  redirectToNewPlan(planId: number) {
+    const summary = this.treatmentsState.getCurrentSummary();
+    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${planId}`;
+    this.router.navigate([url]);
   }
 }
 
