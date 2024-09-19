@@ -103,6 +103,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
                     "name",
                 ],
                 name="unique_planning_area",
+                condition=Q(deleted_at=None),
             )
         ]
         ordering = ["user", "-created_at"]
