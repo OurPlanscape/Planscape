@@ -1,13 +1,16 @@
 import multiprocessing
 import os
-from pathlib import Path
-from datetime import timedelta
 import sys
+import logging
+from datetime import timedelta
+from pathlib import Path
+
+import boto3
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import config
-from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
 
 TESTING_MODE = "test" in sys.argv
@@ -429,3 +432,8 @@ S3_BUCKET = config("S3_BUCKET", "planscape-control-dev")
 AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
 AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
+os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
+os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
+os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
+
+boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)

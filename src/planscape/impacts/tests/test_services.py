@@ -295,10 +295,16 @@ class CalculateImpactsTest(TransactionTestCase):
         )
 
     @mock.patch(
-        "impacts.services.ImpactVariable.get_impact_raster",
+        "impacts.services.ImpactVariable.get_impact_raster_path",
         return_value="impacts/tests/test_data/test_raster.tif",
     )
-    def test_calculate_impacts_returns_data(self, _get_impact_raster):
+    @mock.patch(
+        "impacts.services.ImpactVariable.get_baseline_raster_path",
+        return_value="impacts/tests/test_data/test_raster.tif",
+    )
+    def test_calculate_impacts_returns_data(
+        self, _get_impact_raster_path, _get_baseline_raster_path
+    ):
         """Test that this function is performing work correctly. we don't
         really care about the returned values right now, only that it works.
         """
@@ -354,10 +360,16 @@ class AsyncCalculatePersistImpactsTestCase(TransactionTestCase):
         )
 
     @mock.patch(
-        "impacts.services.ImpactVariable.get_impact_raster",
+        "impacts.services.ImpactVariable.get_impact_raster_path",
         return_value="impacts/tests/test_data/test_raster.tif",
     )
-    def test_calculate_impacts_returns_data(self, _get_impact_raster):
+    @mock.patch(
+        "impacts.services.ImpactVariable.get_baseline_raster_path",
+        return_value="impacts/tests/test_data/test_raster.tif",
+    )
+    def test_calculate_impacts_returns_data(
+        self, _get_impact_raster, _get_baseline_raster
+    ):
         """Test that this function is performing work correctly. we don't
         really care about the returned values right now, only that it works.
         """

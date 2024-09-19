@@ -335,7 +335,12 @@ class ImpactVariable(models.TextChoices):
         return list([x.lower() for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
-    def get_impact_raster(
+    def get_baseline_raster_path(cls, impact_variable: Self, year: int) -> str:
+        name = f"Baseline_{year}_{impact_variable.lower()}_3857_COG.tif"
+        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{name}"
+
+    @classmethod
+    def get_impact_raster_path(
         cls,
         impact_variable: Self,
         action: Optional[TreatmentPrescriptionAction],

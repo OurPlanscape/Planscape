@@ -261,6 +261,7 @@ def to_treatment_results(
                 year=year,
                 defaults={
                     "value": properties.get(agg.lower()),
+                    "delta": properties.get(f"delta_{agg.lower()}"),
                 },
             )[0]
             for agg in aggregations
@@ -292,15 +293,27 @@ def calculate_impacts(
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
 
-    raster_path = ImpactVariable.get_impact_raster(
+    raster_path = ImpactVariable.get_impact_raster_path(
         impact_variable=variable,
         action=action,
+        year=year,
+    )
+    baseline_path = ImpactVariable.get_baseline_raster_path(
+        impact_variable=variable,
         year=year,
     )
     prescription_stands = list(map(to_geojson, prescriptions))
     agg = ImpactVariable.get_aggregations(variable)
     log.info(f"Calculating raster stats for {variable} with aggregations {agg}")
-    return zonal_stats(
+    baseline_stats = zonal_stats(
+        prescription_stands,
+        baseline_path,
+        stats=agg,
+        band=1,
+        nodata=IMPACTS_RASTER_NODATA,
+        geojson_out=True,
+    )
+    variable_stats = zonal_stats(
         prescription_stands,
         raster_path,
         stats=agg,
@@ -308,6 +321,34 @@ def calculate_impacts(
         nodata=IMPACTS_RASTER_NODATA,
         geojson_out=True,
     )
+    return calculate_deltas(baseline_stats, variable_stats, agg)
+
+
+def calculate_delta(value: float, base: float) -> float:
+    return (value - (base + 1)) / (base + 1)
+
+
+def calculate_deltas(
+    baseline_zonal_stats,
+    variable_zonal_stats,
+    aggregations: List[ImpactVariableAggregation],
+):
+    baseline_dict = {
+        f.get("properties", {}).get("stand_id"): f for f in baseline_zonal_stats
+    }
+    for i, f in enumerate(variable_zonal_stats):
+        variable_props = f.get("properties", {})
+        stand_id = variable_props.get("stand_id")
+        baseline_props = baseline_dict.get(stand_id).get("properties")
+        deltas = {
+            f"delta_{agg}": calculate_delta(
+                variable_props.get(agg),
+                baseline_props.get(agg),
+            )
+            for agg in aggregations
+        }
+        variable_zonal_stats[i]["properties"] = {**variable_props, **deltas}
+    return variable_zonal_stats
 
 
 def get_calculation_matrix(

@@ -87,4 +87,4 @@ def async_calculate_persist_impacts_treatment_plan(
     async_result = chord(tasks)(callback)
     succedeed_huh, treatment_plan = async_result.get()
     log.info(f"Impacts calculated for {treatment_plan} returned {succedeed_huh}.")
-    return succedeed_huh, treatment_plan.pk
+    return succedeed_huh, treatment_plan

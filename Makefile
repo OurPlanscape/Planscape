@@ -6,8 +6,6 @@ USER_ID = $(shell id -u)
 
 # User Systemd Service (see: ~/.config/systemd/user/planscape.service)
 SERVICE=planscape
-CELERY_FORSYS=celery-forsys-worker
-CELERY_DEFAULT=celery-default-worker
 
 # Directory which NGINX serves up for planscape
 PUBLIC_WWW_DIR=/var/www/html/planscape/
@@ -84,16 +82,13 @@ deploy-backend: install-dependencies-backend migrate restart
 deploy-all: deploy-backend deploy-frontend
 
 start-celery:
-	${SYS_CTL} start ${CELERY_DEFAULT} --no-block
-	${SYS_CTL} start ${CELERY_FORSYS} --no-block
+	${SYS_CTL} start celery-* --all
 
 stop-celery:
-	${SYS_CTL} stop ${CELERY_DEFAULT}
-	${SYS_CTL} stop ${CELERY_FORSYS}
+	${SYS_CTL} stop celery-* --all
 
 status-celery:
-	${SYS_CTL} status ${CELERY_DEFAULT}
-	${SYS_CTL} status ${CELERY_FORSYS}
+	${SYS_CTL} status celery-* --all
 
 start:
 	${SYS_CTL} start ${SERVICE}
