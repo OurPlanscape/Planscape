@@ -2,32 +2,22 @@ import json
 import os
 from unittest import mock
 from django.conf import settings
-from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
-from collaboration.models import Permissions
+from rest_framework.test import APITransactionTestCase, APITestCase
 from planning.models import Scenario, ScenarioResult, ScenarioResultStatus
-from planning.tests.factories import PlanningAreaFactory
-from planning.tests.helpers import (
-    _create_scenario,
-    _create_test_user_set,
-    reset_permissions,
-)
+from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
+from planscape.tests.factories import UserFactory
 
 
 # TODO: add more tests when we start parsing configurations.
-class CreateScenarioTest(APITransactionTestCase):
+class CreateScenarioTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unprivileged_user = self.test_users["unprivileged"]
+        self.owner_user = UserFactory()
+        self.owner_user2 = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unprivileged_user = UserFactory()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -318,16 +308,12 @@ class CreateScenarioTest(APITransactionTestCase):
         )
 
 
-class UpdateScenarioTest(APITransactionTestCase):
+class UpdateScenarioTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
+        self.owner_user = UserFactory()
+        self.owner_user2 = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -342,18 +328,23 @@ class UpdateScenarioTest(APITransactionTestCase):
             collaborators=[self.collab_user],
             viewers=[self.viewer_user],
         )
-        self.scenario = _create_scenario(
-            self.planning_area, self.old_name, "{}", self.owner_user, self.old_notes
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            name=self.old_name,
+            user=self.owner_user,
+            notes=self.old_notes,
+            with_scenario_result=True,
         )
 
-        self.owner_user2 = User.objects.create(username="testuser2")
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
+        self.owner_user2 = UserFactory.create(username="testuser2")
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2, name="test plan2"
         )
-        self.owner_user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
+        self.owner_user2scenario = ScenarioFactory(
+            planning_area=self.planning_area2,
+            name="test user2scenario",
+            user=self.owner_user2,
+            with_scenario_result=True,
         )
 
         self.assertEqual(Scenario.objects.count(), 2)
@@ -605,9 +596,8 @@ class UpdateScenarioTest(APITransactionTestCase):
 
 class UpdateScenarioResultTest(APITransactionTestCase):
     def setUp(self):
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
+        self.owner_user = UserFactory()
+        self.owner_user2 = UserFactory()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -617,14 +607,23 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.planning_area = PlanningAreaFactory.create(
             user=self.owner_user, name="test plan"
         )
-        self.scenario = _create_scenario(
-            self.planning_area, "test scenario", "{}", user=self.owner_user
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario",
+            user=self.owner_user,
+            with_scenario_result=True,
         )
-        self.scenario2 = _create_scenario(
-            self.planning_area, "test scenario2", "{}", user=self.owner_user
+        self.scenario2 = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario2",
+            user=self.owner_user,
+            with_scenario_result=True,
         )
-        self.scenario3 = _create_scenario(
-            self.planning_area, "test scenario3", "{}", user=self.owner_user
+        self.scenario3 = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario3",
+            user=self.owner_user,
+            with_scenario_result=True,
         )
         self.empty_planning_area = PlanningAreaFactory.create(
             user=self.owner_user, name="empty test plan"
@@ -633,8 +632,11 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2, name="test plan2"
         )
-        self.owner_user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", self.owner_user2
+        self.owner_user2scenario = ScenarioFactory(
+            planning_area=self.planning_area2,
+            name="test user2scenario",
+            user=self.owner_user2,
+            with_scenario_result=True,
         )
 
         self.assertEqual(Scenario.objects.count(), 4)
@@ -871,17 +873,13 @@ class UpdateScenarioResultTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
 
-class ListScenariosForPlanningAreaTest(APITransactionTestCase):
+class ListScenariosForPlanningAreaTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unprivileged_user = self.test_users["unprivileged"]
+        self.owner_user = UserFactory()
+        self.owner_user2 = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unprivileged_user = UserFactory()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -909,36 +907,40 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
             "scenario_output_fields": ["out1"],
             "max_treatment_area_ratio": 40000,
         }
-        self.scenario = _create_scenario(
-            self.planning_area,
-            "test scenario",
-            self.configuration,
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario",
             user=self.owner_user,
+            configuration=self.configuration,
+            with_scenario_result=True,
         )
-        self.scenario2 = _create_scenario(
-            self.planning_area,
-            "test scenario2",
-            self.configuration,
+        self.scenario2 = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario2",
             user=self.owner_user,
+            configuration=self.configuration,
+            with_scenario_result=True,
         )
-        self.scenario3 = _create_scenario(
-            self.planning_area,
-            "test scenario3",
-            self.configuration,
+        self.scenario3 = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario3",
             user=self.owner_user,
+            configuration=self.configuration,
+            with_scenario_result=True,
         )
         self.empty_planning_area = PlanningAreaFactory.create(
             user=self.owner_user, name="empty test plan"
         )
 
-        self.owner_user2 = User.objects.create(username="testuser2")
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
+        self.owner_user2 = UserFactory.create(username="testuser2")
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2, name="test plan2"
         )
-        self.owner_user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
+        self.owner_user2scenario = ScenarioFactory(
+            planning_area=self.planning_area2,
+            name="test user2scenario",
+            user=self.owner_user2,
+            with_scenario_result=True,
         )
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
@@ -1039,17 +1041,13 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
 
 
-class GetScenarioTest(APITransactionTestCase):
+class GetScenarioTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unprivileged_user = self.test_users["unprivileged"]
+        self.owner_user = UserFactory()
+        self.owner_user2 = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unprivileged_user = UserFactory()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -1077,24 +1075,24 @@ class GetScenarioTest(APITransactionTestCase):
             collaborators=[self.collab_user],
             viewers=[self.viewer_user],
         )
-        self.scenario = _create_scenario(
-            self.planning_area,
-            "test scenario",
-            self.configuration,
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario",
             user=self.owner_user,
+            configuration=self.configuration,
+            with_scenario_result=True,
         )
 
-        self.owner_user2 = User.objects.create(username="testuser2")
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
+        self.owner_user2 = UserFactory.create(username="testuser2")
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2, name="test plan2"
         )
-        self.scenario2 = _create_scenario(
-            self.planning_area2,
-            "test scenario2",
-            self.configuration,
+        self.scenario2 = ScenarioFactory(
+            planning_area=self.planning_area2,
+            name="test scenario2",
             user=self.owner_user2,
+            configuration=self.configuration,
+            with_scenario_result=True,
         )
         self.assertEqual(Scenario.objects.count(), 2)
         self.assertEqual(ScenarioResult.objects.count(), 2)
@@ -1173,19 +1171,16 @@ class GetScenarioTest(APITransactionTestCase):
         )
 
 
-class GetScenarioDownloadTest(APITransactionTestCase):
+class GetScenarioDownloadTest(APITestCase):
     def setUp(self):
         super().setUp()
         self.set_verbose = True
-        if Permissions.objects.count() == 0:
-            reset_permissions()
 
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unprivileged_user = self.test_users["unprivileged"]
+        self.owner_user = UserFactory()
+        self.owner_user2 = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unprivileged_user = UserFactory()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -1198,8 +1193,11 @@ class GetScenarioDownloadTest(APITransactionTestCase):
             collaborators=[self.collab_user],
             viewers=[self.viewer_user],
         )
-        self.scenario = _create_scenario(
-            self.planning_area, "test scenario", "{}", user=self.owner_user
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario",
+            user=self.owner_user,
+            with_scenario_result=True,
         )
 
         # set scenario result status to success
@@ -1222,8 +1220,11 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2, name="test plan2"
         )
-        self.scenario2 = _create_scenario(
-            self.planning_area2, "test scenario2", "{}", user=self.owner_user2
+        self.scenario2 = ScenarioFactory(
+            planning_area=self.planning_area2,
+            name="test scenario2",
+            user=self.owner_user2,
+            with_scenario_result=True,
         )
         # set scenario result status to success
         self.scenario2_result = ScenarioResult.objects.get(
@@ -1336,17 +1337,13 @@ class GetScenarioDownloadTest(APITransactionTestCase):
         self.assertRegex(str(response.content), r"does not exist")
 
 
-class DeleteScenarioTest(APITransactionTestCase):
+class DeleteScenarioTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
-        self.test_users = _create_test_user_set()
-        self.owner_user = self.test_users["owner"]
-        self.owner_user2 = self.test_users["owner2"]
-        self.collab_user = self.test_users["collaborator"]
-        self.viewer_user = self.test_users["viewer"]
-        self.unprivileged_user = self.test_users["unprivileged"]
+        self.owner_user = UserFactory()
+        self.owner_user2 = UserFactory()
+        self.collab_user = UserFactory()
+        self.viewer_user = UserFactory()
+        self.unprivileged_user = UserFactory()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -1359,25 +1356,35 @@ class DeleteScenarioTest(APITransactionTestCase):
             collaborators=[self.collab_user],
             viewers=[self.viewer_user],
         )
-        self.scenario = _create_scenario(
-            self.planning_area, "test scenario", "{}", user=self.owner_user
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario",
+            user=self.owner_user,
+            with_scenario_result=True,
         )
-        self.scenario2 = _create_scenario(
-            self.planning_area, "test scenario2", "{}", user=self.owner_user
+        self.scenario2 = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario2",
+            user=self.owner_user,
+            with_scenario_result=True,
         )
-        self.scenario3 = _create_scenario(
-            self.planning_area, "test scenario3", "{}", user=self.owner_user
+        self.scenario3 = ScenarioFactory(
+            planning_area=self.planning_area,
+            name="test scenario3",
+            user=self.owner_user,
+            with_scenario_result=True,
         )
 
-        self.owner_user2 = User.objects.create(username="testuser2")
-        self.owner_user2.set_password("12345")
-        self.owner_user2.save()
+        self.owner_user2 = UserFactory.create(username="testuser2")
         self.planning_area2 = PlanningAreaFactory.create(
             user=self.owner_user2,
             name="test plan2",
         )
-        self.owner_user2scenario = _create_scenario(
-            self.planning_area2, "test user2scenario", "{}", user=self.owner_user2
+        self.owner_user2scenario = ScenarioFactory(
+            planning_area=self.planning_area2,
+            name="test user2scenario",
+            user=self.owner_user2,
+            with_scenario_result=True,
         )
 
         self.assertEqual(Scenario.objects.count(), 4)

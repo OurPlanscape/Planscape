@@ -1,14 +1,11 @@
 import copy
 from unittest import mock
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITransactionTestCase, APITestCase
 from collaboration.models import Permissions
 from planning.models import (
     Scenario,
     ScenarioResult,
-)
-from planning.tests.helpers import (
-    reset_permissions,
 )
 from planscape.tests.factories import UserFactory
 from planning.tests.factories import (
@@ -53,11 +50,8 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertIsNotNone(response.json().get("id"))
 
 
-class ListScenariosForPlanningAreaTest(APITransactionTestCase):
+class ListScenariosForPlanningAreaTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory.create()
         self.owner_user2 = UserFactory.create(username="test_user2")
         self.collab_user = UserFactory.create(username="collab_user")

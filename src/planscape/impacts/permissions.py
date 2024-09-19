@@ -9,9 +9,12 @@ from planscape.typing import UserType
 from planning.models import ScenarioType
 
 VIEWER_PERMISSIONS = [
+    "view_planningarea",
+    "view_scenario",
     "view_tx_plan",
 ]
 COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
+    "add_scenario",
     "add_tx_plan",
     "clone_tx_plan",
     "edit_tx_plan",
@@ -20,6 +23,11 @@ COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "remove_tx_prescription",
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
+    "change_scenario",
+    "view_collaborator",
+    "add_collaborator",
+    "delete_collaborator",
+    "change_collaborator",
     "run_tx",
 ]
 PERMISSIONS = {

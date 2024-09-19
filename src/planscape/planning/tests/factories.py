@@ -93,6 +93,14 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
 
     result_status = ScenarioResultStatus.PENDING
 
+    @factory.post_generation
+    def with_scenario_result(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted == True:
+            ScenarioResultFactory(scenario=self)
+
 
 class ScenarioResultFactory(factory.django.DjangoModelFactory):
     class Meta:

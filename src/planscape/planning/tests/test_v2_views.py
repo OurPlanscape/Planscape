@@ -1,17 +1,17 @@
 import json
-from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITransactionTestCase, APITestCase
 
 from collaboration.tests.factories import UserObjectRoleFactory
-from collaboration.models import Permissions, Role
-from planning.models import PlanningArea, RegionChoices
-from planning.tests.factories import PlanningAreaFactory
-from planning.tests.helpers import (
-    _create_scenario,
-    reset_permissions,
+from collaboration.models import Role
+from impacts.permissions import (
+    VIEWER_PERMISSIONS,
+    COLLABORATOR_PERMISSIONS,
+    OWNER_PERMISSIONS,
 )
+from planning.models import PlanningArea, RegionChoices
+from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
 from planscape.tests.factories import UserFactory
 
 
@@ -23,31 +23,21 @@ class CreatorsTest(APITransactionTestCase):
         }
         stored_geometry = GEOSGeometry(json.dumps(self.geometry))
 
-        self.user_a = User.objects.create(
+        self.user_a = UserFactory.create(
             username="user a", first_name="user", last_name="a"
         )
-        self.user_a.set_password("12345")
-        self.user_a.save()
-        self.user_b = User.objects.create(
+        self.user_b = UserFactory.create(
             username="user b", first_name="user", last_name="b"
         )
-        self.user_b.set_password("12345")
-        self.user_b.save()
-        self.user_c = User.objects.create(
+        self.user_c = UserFactory.create(
             username="user c", first_name="user", last_name="c"
         )
-        self.user_c.set_password("12345")
-        self.user_c.save()
-        self.user_d = User.objects.create(
+        self.user_d = UserFactory.create(
             username="user d", first_name="user", last_name="d"
         )
-        self.user_d.set_password("12345")
-        self.user_d.save()
-        self.user_e = User.objects.create(
+        self.user_e = UserFactory.create(
             username="user e", first_name="user", last_name="e"
         )
-        self.user_e.set_password("12345")
-        self.user_e.save()
         self.test_pa_user_a = PlanningAreaFactory.create_batch(
             size=11,
             user=self.user_a,
@@ -129,17 +119,11 @@ class CreatorsTest(APITransactionTestCase):
 
 class GetPlanningAreaTest(APITransactionTestCase):
     def setUp(self):
-        self.user = User.objects.create(username="testuser")
-        self.user.set_password("12345")
-        self.user.save()
+        self.user = UserFactory.create(username="testuser")
 
-        self.user2 = User.objects.create(username="otherowner")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.user2 = UserFactory.create(username="otherowner")
 
-        self.emptyuser = User.objects.create(username="emptyuser")
-        self.emptyuser.set_password("12345")
-        self.emptyuser.save()
+        self.emptyuser = UserFactory.create(username="emptyuser")
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -186,26 +170,40 @@ class GetPlanningAreaTest(APITransactionTestCase):
         self.planning_area6 = self.test_pa_sn[4]
         self.planning_area7 = self.test_pa_sn[4]
 
-        self.scenario1_1 = _create_scenario(
-            self.planning_area1, "test pa1 scenario1 ", "{}", self.user, ""
+        self.scenario1_1 = ScenarioFactory(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario1",
+            user=self.user,
         )
-        self.scenario1_2 = _create_scenario(
-            self.planning_area1, "test pa1 scenario2", "{}", self.user, ""
+        self.scenario1_2 = ScenarioFactory(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario2",
+            user=self.user,
         )
-        self.scenario1_3 = _create_scenario(
-            self.planning_area1, "test pa1 scenario3", "{}", self.user, ""
+        self.scenario1_3 = ScenarioFactory(
+            planning_area=self.planning_area1,
+            name="test pa1 scenario3",
+            user=self.user,
         )
-        self.scenario3_1 = _create_scenario(
-            self.planning_area3, "test pa3 scenario1", "{}", self.user, ""
+        self.scenario3_1 = ScenarioFactory(
+            planning_area=self.planning_area3,
+            name="test pa3 scenario1",
+            user=self.user,
         )
-        self.scenario4_1 = _create_scenario(
-            self.planning_area4, "test pa4 scenario1 ", "{}", self.user, ""
+        self.scenario4_1 = ScenarioFactory(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario1",
+            user=self.user,
         )
-        self.scenario4_2 = _create_scenario(
-            self.planning_area4, "test pa4 scenario2", "{}", self.user, ""
+        self.scenario4_2 = ScenarioFactory(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario2",
+            user=self.user,
         )
-        self.scenario4_3 = _create_scenario(
-            self.planning_area4, "test pa4 scenario3", "{}", self.user, ""
+        self.scenario4_3 = ScenarioFactory(
+            planning_area=self.planning_area4,
+            name="test pa4 scenario3",
+            user=self.user,
         )
 
     def test_list_planning_areas(self):
@@ -415,17 +413,11 @@ class GetPlanningAreaTest(APITransactionTestCase):
 
 class ListPlanningAreaSortingTest(APITransactionTestCase):
     def setUp(self):
-        self.user1 = User.objects.create(username="testuser")
-        self.user1.set_password("12345")
-        self.user1.save()
+        self.user1 = UserFactory.create(username="testuser")
 
-        self.user2 = User.objects.create(username="otherowner")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.user2 = UserFactory.create(username="otherowner")
 
-        self.emptyuser = User.objects.create(username="emptyuser")
-        self.emptyuser.set_password("12345")
-        self.emptyuser.save()
+        self.emptyuser = UserFactory.create(username="emptyuser")
 
         self.geometry1 = {
             "type": "MultiPolygon",
@@ -510,26 +502,40 @@ class ListPlanningAreaSortingTest(APITransactionTestCase):
             region_name=RegionChoices.CENTRAL_COAST,
         )
 
-        self.scenario1_1 = _create_scenario(
-            self.pa1, "test pa1 scenario1 ", "{}", self.user1, ""
+        self.scenario1_1 = ScenarioFactory(
+            planning_area=self.pa1,
+            name="test pa1 scenario1",
+            user=self.user1,
         )
-        self.scenario1_2 = _create_scenario(
-            self.pa1, "test pa1 scenario2", "{}", self.user1, ""
+        self.scenario1_2 = ScenarioFactory(
+            planning_area=self.pa1,
+            name="test pa1 scenario2",
+            user=self.user1,
         )
-        self.scenario1_3 = _create_scenario(
-            self.pa1, "test pa1 scenario3", "{}", self.user1, ""
+        self.scenario1_3 = ScenarioFactory(
+            planning_area=self.pa1,
+            name="test pa1 scenario3",
+            user=self.user1,
         )
-        self.scenario3_1 = _create_scenario(
-            self.pa3, "test pa3 scenario1", "{}", self.user1, ""
+        self.scenario3_1 = ScenarioFactory(
+            planning_area=self.pa3,
+            name="test pa3 scenario1",
+            user=self.user1,
         )
-        self.scenario4_1 = _create_scenario(
-            self.pa4, "test pa4 scenario1 ", "{}", self.user1, ""
+        self.scenario4_1 = ScenarioFactory(
+            planning_area=self.pa4,
+            name="test pa4 scenario1",
+            user=self.user1,
         )
-        self.scenario4_2 = _create_scenario(
-            self.pa4, "test pa4 scenario2", "{}", self.user1, ""
+        self.scenario4_2 = ScenarioFactory(
+            planning_area=self.pa4,
+            name="test pa4 scenario2",
+            user=self.user1,
         )
-        self.scenario4_3 = _create_scenario(
-            self.pa4, "test pa4 scenario3", "{}", self.user1, ""
+        self.scenario4_3 = ScenarioFactory(
+            planning_area=self.pa4,
+            name="test pa4 scenario3",
+            user=self.user1,
         )
 
         # user1 can see all of user2 PA records as a collaborator
@@ -734,37 +740,28 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertIsNotNone(data.get("id"))
 
 
-class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
+class ListPlanningAreasWithPermissionsTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
-        self.creator_user = User.objects.create(
+        self.creator_user = UserFactory.create(
             username="makerofthings",
             email="creator@test.test",
             first_name="Creaty",
             last_name="Creatington",
         )
-        self.creator_user.set_password("12345")
-        self.creator_user.save()
 
-        self.collab_user = User.objects.create(
+        self.collab_user = UserFactory.create(
             username="collaboratorofthings",
             email="collab@test.test",
             first_name="Collaby",
             last_name="Collabington",
         )
-        self.collab_user.set_password("12345")
-        self.collab_user.save()
 
-        self.viewer_user = User.objects.create(
+        self.viewer_user = UserFactory.create(
             username="viewerofthings",
             email="viewer@test.test",
             first_name="Viewy",
             last_name="Viewington",
         )
-        self.viewer_user.set_password("12345")
-        self.viewer_user.save()
 
         self.geometry = {
             "type": "MultiPolygon",
@@ -810,16 +807,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
             content_type="application/json",
         )
         planning_areas = json.loads(response.content)
-        expected_perms = [
-            "view_planningarea",
-            "view_scenario",
-            "add_scenario",
-            "change_scenario",
-            "view_collaborator",
-            "add_collaborator",
-            "delete_collaborator",
-            "change_collaborator",
-        ]
+        expected_perms = OWNER_PERMISSIONS
 
         self.assertEqual(planning_areas["count"], 3)
         self.assertEqual(planning_areas["results"][0]["role"], "Creator")
@@ -848,7 +836,7 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertEqual(the_area["role"], "Collaborator")
         self.assertCountEqual(
             the_area["permissions"],
-            ["view_planningarea", "view_scenario", "add_scenario"],
+            COLLABORATOR_PERMISSIONS,
         )
 
     def test_planningareas_list_for_viewer(self):
@@ -862,6 +850,4 @@ class ListPlanningAreasWithPermissionsTest(APITransactionTestCase):
         self.assertEqual(planning_areas["count"], 1)
         the_area = planning_areas["results"][0]
         self.assertEqual(the_area["role"], "Viewer")
-        self.assertCountEqual(
-            the_area["permissions"], ["view_planningarea", "view_scenario"]
-        )
+        self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
