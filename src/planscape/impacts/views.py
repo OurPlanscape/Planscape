@@ -1,11 +1,11 @@
-from django.db.models.base import ValidationError
+import logging
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.views import Response
 from impacts.filters import TreatmentPlanFilterSet
-from impacts.models import TreatmentPlan, TreatmentPrescription
+from impacts.models import TreatmentPlan, TreatmentPlanStatus, TreatmentPrescription
 from impacts.permissions import (
     TreatmentPlanViewPermission,
     TreatmentPrescriptionViewPermission,
@@ -29,7 +29,10 @@ from impacts.services import (
     generate_summary,
     upsert_treatment_prescriptions,
 )
+from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from planscape.serializers import BaseErrorMessageSerializer
+
+log = logging.getLogger(__name__)
 
 
 @extend_schema_view(
@@ -144,6 +147,40 @@ class TreatmentPlanViewSet(
         return response.Response(
             serializer.data,
             status=status.HTTP_201_CREATED,
+        )
+
+    @extend_schema(
+        description="Runs a Treatment Plan.",
+        responses={
+            201: TreatmentPlanSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        filterset_class=None,
+    )
+    def run(self, request, pk=None):
+        treatment_plan = self.get_object()
+        if treatment_plan.status != TreatmentPlanStatus.PENDING:
+            log.warning(
+                f"User requested to run treatment plan {treatment_plan.pk} while it's {treatment_plan.status}."
+            )
+            return response.Response(
+                {"message": "You can't run the same treatment plan twice."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        async_calculate_persist_impacts_treatment_plan.delay(
+            treatment_plan_pk=treatment_plan.pk
+        )
+
+        treatment_plan.refresh_from_db()
+        serializer = TreatmentPlanSerializer(instance=treatment_plan)
+        return response.Response(
+            serializer.data,
+            status=status.HTTP_202_ACCEPTED,
         )
 
     @extend_schema(
