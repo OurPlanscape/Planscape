@@ -19,6 +19,4 @@ import { RouterLink } from '@angular/router';
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
 })
-export class TreatmentProjectAreaComponent {
-  constructor() {}
-}
+export class TreatmentProjectAreaComponent {}

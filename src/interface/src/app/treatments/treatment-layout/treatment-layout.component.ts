@@ -25,6 +25,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { MatMenuModule } from '@angular/material/menu';
 import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
+import { ApplyTreatmentComponent } from '../apply-treatment/apply-treatment.component';
 
 @UntilDestroy()
 @Component({
@@ -43,6 +44,7 @@ import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment
     MatLegacyButtonModule,
     MatMenuModule,
     TreatmentNavbarMenuComponent,
+    ApplyTreatmentComponent,
   ],
   providers: [
     TreatmentsState,
@@ -58,6 +60,7 @@ export class TreatmentLayoutComponent {
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
+  showApplyTreatments$ = this.treatmentsState.showApplyTreatmentsDialog$;
 
   constructor(
     private treatmentsState: TreatmentsState,

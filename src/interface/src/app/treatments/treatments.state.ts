@@ -37,6 +37,10 @@ export class TreatmentsState {
 
   public activeProjectArea$ = this._activeProjectArea$.asObservable();
 
+  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
+  public showApplyTreatmentsDialog$ =
+    this._showApplyTreatmentsDialog$.asObservable();
+
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
       throw new Error('no treatment plan id!');
@@ -183,6 +187,7 @@ export class TreatmentsState {
     this.mapConfigState.updateMapCenter(projectArea?.extent);
     this._activeProjectArea$.next(projectArea);
     this.setTreatedStandsFromSummary([projectArea]);
+    this.setShowApplyTreatmentsDialog(true);
   }
 
   getCurrentSummary() {
@@ -191,5 +196,9 @@ export class TreatmentsState {
       throw new Error('no summary loaded');
     }
     return summary;
+  }
+
+  setShowApplyTreatmentsDialog(value: boolean) {
+    this._showApplyTreatmentsDialog$.next(value);
   }
 }

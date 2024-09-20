@@ -1,0 +1,27 @@
+@import "colors";
+
+.prescription {
+  display: block;
+}
+
+.label {
+  margin-bottom: 8px;
+  color: $color-dark-gray;
+}
+
+.item {
+  margin-bottom: 16px;
+}
+
+.modal-body {
+  padding: 16px;
+}
+
+.full-size {
+  width: 100%;
+}
+
+sg-modal {
+  height: 100%;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.10), 0px 2px 2px 0px rgba(0, 0, 0, 0.10);
+}

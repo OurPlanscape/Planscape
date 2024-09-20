@@ -9,9 +9,12 @@
   max-height: 700px;
   border-radius: 4px;
   justify-content: space-between;
+
+
   &.small {
-    width: 400px;
+    width: 460px;
   }
+
   &.large {
     width: 100%;
   }
@@ -125,7 +128,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 16px;
+  gap: 8px;
 
   &.centered {
     justify-content: center;

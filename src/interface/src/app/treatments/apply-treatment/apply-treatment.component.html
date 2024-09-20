@@ -1,0 +1,53 @@
+<sg-modal
+  title="Apply Treatment"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="apply()"
+  (clickedSecondary)="cancel()"
+  [scrollableContent]="true"
+  primaryButtonText="Apply"
+  width="small">
+  <div modalBodyContent class="modal-body">
+    <form [formGroup]="prescriptionForm">
+      <div class="label">Project Area</div>
+      <div class="item">{{ (projectArea$ | async)?.project_area_name }}</div>
+
+      <div class="label">Treatment Prescription</div>
+      <div class="item">
+        <mat-form-field appearance="outline" class="full-size">
+          <mat-select formControlName="sequenceType">
+            <mat-option
+              *ngFor="let type of sequenceTypes | keyvalue: originalOrder"
+              [value]="type.key"
+              >{{ type.value }}</mat-option
+            >
+          </mat-select>
+        </mat-form-field>
+      </div>
+      <div class="prescriptions">
+        <mat-radio-group formControlName="prescriptionAction">
+          <mat-radio-button
+            class="prescription"
+            *ngFor="
+              let action of prescriptions.SINGLE | keyvalue: originalOrder
+            "
+            [value]="action.key"
+            >{{ action.value }}</mat-radio-button
+          >
+        </mat-radio-group>
+
+        <mat-radio-group>
+          <mat-radio-button
+            class="prescription"
+            *ngFor="
+              let action of prescriptions.SEQUENCE | keyvalue: originalOrder;
+              let i = index
+            "
+            [value]="action.key"
+            >Sequence {{ i + 1 }}
+            <div *ngFor="let detail of action.value">{{ detail }}</div>
+          </mat-radio-button>
+        </mat-radio-group>
+      </div>
+    </form>
+  </div>
+</sg-modal>
