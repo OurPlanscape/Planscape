@@ -5,6 +5,8 @@
   --mat-expansion-header-hover-state-layer-color: $color-white;
   --mat-expansion-header-focus-state-layer-color: $color-white;
   --mat-expansion-header-expanded-state-height: 48px;
+  width: 100%;
+  display: block;
 
   ::ng-deep {
     .mat-expansion-panel {
@@ -110,7 +112,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  padding-left: 24px;
+  // padding-left: 24px;
 }
 
 .rx-detail-name {

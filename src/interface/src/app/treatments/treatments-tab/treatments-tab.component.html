@@ -1,0 +1,25 @@
+<div *ngIf="hasTreatments() === false" class="no-treatments-blurb">
+  <mat-icon class="no-treatments-icon material-symbols-outlined"
+    >medication</mat-icon
+  >
+  <div class="no-treatments-header">No Treatments Yet</div>
+  <div class="no-treatments-text">Start applying treatments to each stand</div>
+</div>
+
+<div *ngIf="hasTreatments() === true">
+  <div class="side-search-container">
+    <sg-search-bar></sg-search-bar>
+  </div>
+  <div class="slider-container">
+    <sg-opacity-slider></sg-opacity-slider>
+  </div>
+  <sg-treatment-expander
+    *ngFor="let tx of treatments"
+    [title]="tx.title ?? null"
+    [treatmentType]="tx.treatmentType ?? null"
+    [sequenceNumber]="tx.sequenceNumber ?? null"
+    [rxDetails]="tx.rxDetails"
+    [totalAcres]="300"
+    [standCount]="tx.standCount">
+  </sg-treatment-expander>
+</div>

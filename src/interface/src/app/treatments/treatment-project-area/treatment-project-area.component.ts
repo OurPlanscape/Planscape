@@ -4,6 +4,8 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 import { RouterLink } from '@angular/router';
+import { MatTabsModule } from '@angular/material/tabs';
+import { TreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
 
 @Component({
   selector: 'app-treatment-project-area',
@@ -11,10 +13,12 @@ import { RouterLink } from '@angular/router';
   imports: [
     TreatmentMapComponent,
     TreatmentSummaryComponent,
+    MatTabsModule,
     JsonPipe,
     AsyncPipe,
     PrescriptionActionsComponent,
     RouterLink,
+    TreatmentsTabComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',

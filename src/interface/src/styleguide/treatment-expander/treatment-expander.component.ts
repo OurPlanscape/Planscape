@@ -50,7 +50,7 @@ export class TreatmentExpanderComponent {
   /**
    * A number or ratio indicating stand count
    */
-  @Input() standCount: string = '0';
+  @Input() standCount?: string | number = '0';
   /**
    * Whether or not this is the selected expander
    */
@@ -62,7 +62,7 @@ export class TreatmentExpanderComponent {
   /**
    * A list of prescriptions {name: string, year: number}
    */
-  @Input() rxDetails: rxType[] = [];
+  @Input() rxDetails?: rxType[] = [];
   openState = false;
 
   toggleState() {

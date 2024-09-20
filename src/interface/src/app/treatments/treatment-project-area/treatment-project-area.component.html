@@ -1,3 +1,13 @@
 <p>Project Area</p>
 <a routerLink="../..">Back</a>
-<app-prescription-actions></app-prescription-actions>
+<mat-tab-group
+  class="summary-tab-group"
+  mat-align-tabs="start"
+  disablePagination="true">
+  <mat-tab label="TREATMENTS">
+    <div>
+      <app-treatments-tab> </app-treatments-tab>
+    </div>
+  </mat-tab>
+  <mat-tab label="NOTES"> </mat-tab>
+</mat-tab-group>
