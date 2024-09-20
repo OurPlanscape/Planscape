@@ -18,6 +18,33 @@ export type TreatmentRecord = {
   standCount?: string | number;
 };
 
+/*
+example response from summary...
+
+  "planning_area_id": 0,
+  "planning_area_name": "string",
+  "scenario_id": 0,
+  "scenario_name": "string",
+  "treatment_plan_id": 0,
+  "treatment_plan_name": "string",
+  "project_areas": [
+    {
+      "project_area_id": 0,
+      "project_area_name": "string",
+      "total_stand_count": 0,
+      "prescriptions": [
+        {
+          "action": "string",
+          "type": "string",
+          "area_acres": 0,
+          "treated_stand_count": 0
+        }
+      ]
+    }
+  ]
+}
+*/
+
 const exampleTreatments: TreatmentRecord[] = [
   {
     treatmentType: 'HEAVY_THINNING_BURN',
