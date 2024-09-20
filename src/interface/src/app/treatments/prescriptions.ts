@@ -25,7 +25,7 @@ export type PrescriptionAction =
   | PrescriptionSingleAction
   | PrescriptionSequenceAction;
 
-export const SEQUENCE_COLORS: Record<PrescriptionSingleAction, string> = {
+export const SEQUENCE_COLORS: Record<PrescriptionAction, string> = {
   MODERATE_THINNING_BIOMASS: '#3A86FF',
   HEAVY_THINNING_BIOMASS: '#8338EC',
   MODERATE_THINNING_BURN: '#F77F00',
@@ -35,6 +35,14 @@ export const SEQUENCE_COLORS: Record<PrescriptionSingleAction, string> = {
   RX_FIRE: '#EF233C',
   HEAVY_THINNING_RX_FIRE: '#780000',
   MASTICATION_RX_FIRE: '#FB6F92',
+  MODERATE_THINNING_BURN_PLUS_RX_FIRE: '#005',
+  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: '#033',
+  HEAVY_THINNING_BURN_PLUS_RX_FIRE: '#050',
+  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: '#330',
+  RX_FIRE_PLUS_RX_FIRE: '#300',
+  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: '#333',
+  HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: '#555',
+  MODERATE_MASTICATION_PLUS_RX_FIRE: '#177',
 };
 
 //TODO: Remove this mapping if we can just get this from the lookup endpoint

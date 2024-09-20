@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ModalComponent } from '../../../styleguide/modal/modal.component';
 import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
-import { AsyncPipe, KeyValuePipe, NgForOf } from '@angular/common';
+import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { KeyPipe } from '../../standalone/key.pipe';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatLegacyOptionModule } from '@angular/material/legacy-core';
@@ -31,6 +31,7 @@ import { TreatmentsState } from '../treatments.state';
     ReactiveFormsModule,
     MatLegacyFormFieldModule,
     AsyncPipe,
+    NgIf,
   ],
   templateUrl: './apply-treatment.component.html',
   styleUrl: './apply-treatment.component.scss',
@@ -75,6 +76,10 @@ export class ApplyTreatmentComponent {
   originalOrder = (): number => {
     return 0; // Keep the original insertion order
   };
+
+  get selectedSequenceType(): keyof typeof PRESCRIPTIONS {
+    return this.prescriptionForm.get('sequenceType')?.value || 'SINGLE';
+  }
 
   private applyTreatments(action: PrescriptionAction) {
     const stands = this.selectedStandsState.getSelectedStands();
