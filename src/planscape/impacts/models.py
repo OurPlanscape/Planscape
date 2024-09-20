@@ -285,7 +285,7 @@ class ImpactVariable(models.TextChoices):
     CROWN_BULK_DENSITY = "CBD", "Crown Bulk Density"
     CANOPY_BASE_HEIGHT = "CBH", "Canopy Base Height"
     CANOPY_COVER = "CC", "Canopy Cover"
-    FUEL_BED_FUEL_MODEL = "FBFM", "Fuel Bed/Fuel Model"
+    FIRE_BEHAVIOR_FUEL_MODEL = "FBFM", "Fire Behavior/Fuel Model"
     LARGE_TREE_BIOMASS = "LARGE_TREE_BIOMASS", "Large Tree Biomass"
     MERCH_BIOMASS = "MERCH_BIOMASS", "Merch Biomass"
     MORTALITY = "MORTALITY", "Mortality"
@@ -304,7 +304,7 @@ class ImpactVariable(models.TextChoices):
             cls.CROWN_BULK_DENSITY: [ImpactVariableAggregation.MEAN],
             cls.CANOPY_BASE_HEIGHT: [ImpactVariableAggregation.MEAN],
             cls.CANOPY_COVER: [ImpactVariableAggregation.MEAN],
-            cls.FUEL_BED_FUEL_MODEL: [],
+            cls.FIRE_BEHAVIOR_FUEL_MODEL: [],
             cls.LARGE_TREE_BIOMASS: [
                 ImpactVariableAggregation.SUM,
                 ImpactVariableAggregation.MEAN,
