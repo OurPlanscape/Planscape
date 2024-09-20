@@ -56,6 +56,7 @@ django-treebeard = "^4.7.1"
 django-activity-stream = "^2.0.0"
 celery-types = "^0.22.0"
 django-types = "^0.19.1"
+django-stubs-ext = "^5.0.4"
 
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"
@@ -101,4 +102,20 @@ python_files = "tests.py test_*.py *_tests.py"
 [tool.mypy]
 python_version = "3.10"
 warn_return_any = true
-exclude = ['tests']
+exclude = [
+    'base',
+    'boundary',
+    'conditions',
+    'config',
+    'existing_projects',
+    'goals',
+    'impacts',
+    'metrics',
+    'organizations',
+    'planning',
+    'projects',
+    'restrictions',
+    'stands',
+    'testing',
+    'tests',
+]
