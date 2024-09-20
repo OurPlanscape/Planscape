@@ -10,9 +10,15 @@
   border-radius: 4px;
   justify-content: space-between;
   &.small {
-    width: 400px;
+    width: 460px;
+  }
+  &.medium {
+    width: 560px;
   }
   &.large {
+    width: 720px;
+  }
+  &.jumbo {
     width: 100%;
   }
 

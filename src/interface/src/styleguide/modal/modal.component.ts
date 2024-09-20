@@ -42,7 +42,7 @@ export class ModalComponent {
   /**
    * Set horizontal size variant of the modal
    */
-  @Input() width: 'small' | 'regular' | 'large' = 'regular';
+  @Input() width: 'small' | 'medium' | 'large' | 'jumbo' = 'medium';
   /**
    * Optional Material icon name at left of header
    */
@@ -149,9 +149,21 @@ export class ModalComponent {
     this.clickedPrimary.emit();
   }
 
-  @HostBinding('class.large')
+  @HostBinding('class.small')
   get isSmall() {
+    return this.width === 'small';
+  }
+  @HostBinding('class.medium')
+  get isMedium() {
+    return this.width === 'medium';
+  }
+  @HostBinding('class.large')
+  get isLarge() {
     return this.width === 'large';
+  }
+  @HostBinding('class.jumbo')
+  get isJumbo() {
+    return this.width === 'jumbo';
   }
 
   @HostBinding('class.no-border')
