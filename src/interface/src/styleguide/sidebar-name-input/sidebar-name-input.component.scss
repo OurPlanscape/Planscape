@@ -1,0 +1,12 @@
+@import 'colors';
+@import 'mixins';
+
+.heading-line {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.title {
+  @include small-input-label();
+}
