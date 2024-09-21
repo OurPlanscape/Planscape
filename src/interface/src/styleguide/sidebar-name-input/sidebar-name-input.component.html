@@ -1,8 +1,14 @@
 <div class="heading-line">
   <div class="title">{{ title }}</div>
-  <div class="icon"><mat-icon>info</mat-icon></div>
+  <div class="icon">
+    <mat-icon class="material-symbols-outlined" color="primary">info</mat-icon>
+  </div>
 </div>
-
-<sg-input-field [disabled]="false" size="small">
-  <input sgInput placeholder="..." value="..." />
+<sg-input-field [disabled]="false" size="regular" class="name-input">
+  <input
+    sgInput
+    placeholder="..."
+    [(ngModel)]="textValue"
+    (blur)="emitTextValue($event)"
+    (keyup.enter)="emitTextValue($event)" />
 </sg-input-field>

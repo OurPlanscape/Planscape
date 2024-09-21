@@ -14,7 +14,8 @@ const meta: Meta<SidebarNameInputComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<sg-sidebar-name-input ${argsToTemplate(args)}></sg-sidebar-name-input>`,
+    template: `<div style="width:100%;height:200px;background-color:#aaaaaa;">
+    <div style="width:400px"><sg-sidebar-name-input ${argsToTemplate(args)}></sg-sidebar-name-input></div></div>`,
   }),
 };
 
@@ -23,7 +24,7 @@ type Story = StoryObj<SidebarNameInputComponent>;
 
 export const Default: Story = {
   args: {
-    name: 'hello',
-    title: 'ok',
+    textValue: '',
+    title: 'Treatment Plan Name',
   },
 };

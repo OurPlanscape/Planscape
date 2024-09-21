@@ -1,12 +1,29 @@
 @import 'colors';
 @import 'mixins';
 
-.heading-line {
+:host {
+  background-color: $color-white;
   display: flex;
-  flex-direction: row;
-  justify-content: space-between;
+  flex-direction: column;
+  width: 100%;
+  border: 1px black solid;
+  padding: 10px;
+
+  .heading-line {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .title {
+    @include small-input-label();
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+    text-align: left;
+  }
 }
 
-.title {
-  @include small-input-label();
+::ng-deep .input-wrapper {
+  width: 100%;
 }
