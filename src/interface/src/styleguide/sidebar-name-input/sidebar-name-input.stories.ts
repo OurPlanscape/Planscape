@@ -25,6 +25,22 @@ type Story = StoryObj<SidebarNameInputComponent>;
 export const Default: Story = {
   args: {
     textValue: '',
-    title: 'Treatment Plan Name',
+    title: 'Treatment plan name',
+  },
+};
+
+export const WithError: Story = {
+  args: {
+    textValue: '',
+    title: 'Treatment plan name',
+    errorMessage: 'This name already exists',
+  },
+};
+
+export const HelpText: Story = {
+  args: {
+    textValue: '',
+    title: 'Treatment plan name',
+    helpText: 'Clicking this does something',
   },
 };

@@ -2,13 +2,7 @@
 // emit change event
 
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import {
-  //     DatePipe,
-  //     CurrencyPipe,
-  NgIf,
-  //     NgSwitch,
-  //     NgClass,
-} from '@angular/common';
+import { NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { InputFieldComponent } from '@styleguide';
 // import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
@@ -34,6 +28,7 @@ import { MatIconModule } from '@angular/material/icon';
 export class SidebarNameInputComponent {
   @Input() textValue = '';
   @Input() title = '';
+  @Input() helpText = '';
   @Input() errorMessage: string | null = null;
   @Output() textValueUpdated = new EventEmitter<string>();
 

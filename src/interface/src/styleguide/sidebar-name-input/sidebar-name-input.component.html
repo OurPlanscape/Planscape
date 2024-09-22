@@ -1,7 +1,9 @@
 <div class="heading-line">
   <div class="title">{{ title }}</div>
   <div class="icon">
-    <mat-icon class="material-symbols-outlined" color="primary">info</mat-icon>
+    <mat-icon *ngIf="helpText" class="material-symbols-outlined" color="primary"
+      >info</mat-icon
+    >
   </div>
 </div>
 <sg-input-field [disabled]="false" size="regular" class="name-input">
@@ -12,3 +14,6 @@
     (blur)="emitTextValue($event)"
     (keyup.enter)="emitTextValue($event)" />
 </sg-input-field>
+<div class="error-blurb" *ngIf="errorMessage">
+  {{ errorMessage }}
+</div>

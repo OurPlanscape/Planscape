@@ -6,7 +6,6 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  border: 1px black solid;
   padding: 10px;
 
   .heading-line {
@@ -22,8 +21,16 @@
     line-height: 22px;
     text-align: left;
   }
+  .error-blurb {
+    @include small-input-label();
+    color: $color-dark-red;
+  }
 }
 
 ::ng-deep .input-wrapper {
   width: 100%;
+}
+
+::ng-deep .focus-within {
+  border-width: 1px;
 }
