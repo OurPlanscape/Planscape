@@ -29,7 +29,9 @@ export class SidebarNameInputComponent {
   @Input() textValue = '';
   @Input() title = '';
   @Input() helpText = '';
+  @Input() placeholderText: string | null = '';
   @Input() errorMessage: string | null = null;
+
   @Output() textValueUpdated = new EventEmitter<string>();
 
   emitTextValue(e: Event) {

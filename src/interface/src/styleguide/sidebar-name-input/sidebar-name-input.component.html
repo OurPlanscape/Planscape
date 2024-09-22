@@ -1,5 +1,5 @@
 <div class="heading-line">
-  <div class="title">{{ title }}</div>
+  <div *ngIf="title" class="title">{{ title }}</div>
   <div class="icon">
     <mat-icon *ngIf="helpText" class="material-symbols-outlined" color="primary"
       >info</mat-icon
@@ -9,7 +9,7 @@
 <sg-input-field [disabled]="false" size="regular" class="name-input">
   <input
     sgInput
-    placeholder="..."
+    [placeholder]="placeholderText"
     [(ngModel)]="textValue"
     (blur)="emitTextValue($event)"
     (keyup.enter)="emitTextValue($event)" />

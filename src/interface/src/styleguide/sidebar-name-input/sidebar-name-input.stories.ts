@@ -37,6 +37,12 @@ export const WithError: Story = {
   },
 };
 
+export const NoTitle: Story = {
+  args: {
+    textValue: '',
+  },
+};
+
 export const HelpText: Story = {
   args: {
     textValue: '',
