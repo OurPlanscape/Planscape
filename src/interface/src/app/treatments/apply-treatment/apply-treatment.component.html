@@ -3,12 +3,13 @@
   (clickedClose)="cancel()"
   (clickedPrimary)="apply()"
   (clickedSecondary)="cancel()"
-  [scrollableContent]="true"
-  [primaryButtonDisabled]="!selectedPrescription"
+  [primaryButtonDisabled]="
+    !(selectedPrescription && (hasSelectedStands$ | async))
+  "
   primaryButtonText="Apply"
   width="small">
-  <div modalBodyContent class="modal-body">
-    <form [formGroup]="prescriptionForm">
+  <form [formGroup]="prescriptionForm" modalBodyContent class="modal-body">
+    <div class="form-fixed">
       <div class="label">Project Area</div>
       <div class="project-area-name">
         {{ (projectArea$ | async)?.project_area_name }}
@@ -16,7 +17,7 @@
 
       <div class="label">Treatment Prescription</div>
       <div class="item">
-        <mat-form-field appearance="outline" class="full-size">
+        <mat-form-field appearance="outline" class="sequence-type">
           <mat-select
             formControlName="sequenceType"
             (selectionChange)="resetPrescription()">
@@ -28,39 +29,38 @@
           </mat-select>
         </mat-form-field>
       </div>
-      <div class="prescriptions">
-        <mat-radio-group
-          formControlName="prescriptionAction"
-          *ngIf="selectedSequenceType === 'SINGLE'">
-          <mat-radio-button
-            class="prescription"
-            *ngFor="
-              let action of prescriptions.SINGLE | keyvalue: originalOrder
-            "
-            [value]="action.key"
-            >{{ action.value }}</mat-radio-button
-          >
-        </mat-radio-group>
+    </div>
 
-        <mat-radio-group
-          formControlName="prescriptionAction"
-          *ngIf="selectedSequenceType === 'SEQUENCE'">
-          <ng-container
-            *ngFor="
-              let action of prescriptions.SEQUENCE | keyvalue: originalOrder;
-              let i = index
-            ">
-            <mat-radio-button class="prescription-sequence" [value]="action.key"
-              >Sequence {{ i + 1 }}
-            </mat-radio-button>
-            <div class="sequence-details">
-              <div *ngFor="let detail of action.value" class="sequence-detail">
-                {{ detail }}
-              </div>
+    <div class="prescriptions">
+      <mat-radio-group
+        formControlName="prescriptionAction"
+        *ngIf="selectedSequenceType === 'SINGLE'">
+        <mat-radio-button
+          class="prescription"
+          *ngFor="let action of prescriptions.SINGLE | keyvalue: originalOrder"
+          [value]="action.key"
+          >{{ action.value }}</mat-radio-button
+        >
+      </mat-radio-group>
+
+      <mat-radio-group
+        formControlName="prescriptionAction"
+        *ngIf="selectedSequenceType === 'SEQUENCE'">
+        <ng-container
+          *ngFor="
+            let action of prescriptions.SEQUENCE | keyvalue: originalOrder;
+            let i = index
+          ">
+          <mat-radio-button class="prescription-sequence" [value]="action.key"
+            >Sequence {{ i + 1 }}
+          </mat-radio-button>
+          <div class="sequence-details">
+            <div *ngFor="let detail of action.value" class="sequence-detail">
+              {{ detail }}
             </div>
-          </ng-container>
-        </mat-radio-group>
-      </div>
-    </form>
-  </div>
+          </div>
+        </ng-container>
+      </mat-radio-group>
+    </div>
+  </form>
 </sg-modal>

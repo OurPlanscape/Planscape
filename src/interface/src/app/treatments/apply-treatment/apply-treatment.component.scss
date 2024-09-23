@@ -5,6 +5,15 @@
   margin-bottom: 8px;
 }
 
+.form-fixed {
+  padding: 0 16px;
+}
+
+.prescriptions {
+  padding: 16px;
+  overflow-y: auto;
+}
+
 .prescription-sequence {
   display: block;
 }
@@ -19,16 +28,60 @@
 }
 
 .modal-body {
-  padding: 16px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
 }
 
-.full-size {
+.sequence-type {
   width: 100%;
+
+  // all these overrides are to make the dropdown look centered and aligned
+  ::ng-deep {
+    .mat-form-field-infix {
+      border-top: 0;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0;
+    }
+
+    .mat-select-arrow-wrapper {
+      align-items: end;
+    }
+
+    .mat-form-field-outline {
+      top: 0;
+    }
+
+  }
+
+
 }
 
 sg-modal {
   height: 100%;
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.10), 0px 2px 2px 0px rgba(0, 0, 0, 0.10);
+
+  ::ng-deep {
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      overflow-y: hidden;
+    }
+
+    .header {
+      padding-block: 0;
+      flex-shrink: 0;
+    }
+
+    .footer {
+      flex-shrink: 0;
+      height: initial;
+    }
+
+  }
+
 }
 
 
@@ -57,6 +110,10 @@ sg-modal {
   margin-bottom: 16px;
   border-bottom: 1px solid $color-soft-gray;
   color: $color-dark-gray;
+}
+
+.sequence-details:last-child {
+  border-bottom: none;
 }
 
 .sequence-detail {

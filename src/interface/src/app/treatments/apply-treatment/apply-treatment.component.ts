@@ -38,6 +38,7 @@ import { TreatmentsState } from '../treatments.state';
 })
 export class ApplyTreatmentComponent {
   projectArea$ = this.treatmentsState.activeProjectArea$;
+  hasSelectedStands$ = this.selectedStandsState.hasSelectedStands$;
 
   readonly sequenceTypes: Record<keyof typeof PRESCRIPTIONS, string> = {
     SINGLE: 'Single',
