@@ -5,6 +5,7 @@ from planning.models import (
     TPlanningAreaNote,
     TScenario,
 )
+from django.contrib.auth.models import AbstractUser
 
 
 class CheckPermissionMixin:
@@ -27,11 +28,11 @@ class CheckPermissionMixin:
 
 class PlanningAreaPermission(CheckPermissionMixin):
     @staticmethod
-    def can_view(user: TUser, planning_area: TPlanningArea):
+    def can_view(user: AbstractUser, planning_area: TPlanningArea):
         if is_creator(user, planning_area):
             return True
 
-        return check_for_permission(user.id, planning_area, "view_planningarea")
+        return check_for_permission(user.pk, planning_area, "view_planningarea")
 
     @staticmethod
     def can_add(user: TUser, planning_area: TPlanningArea):
