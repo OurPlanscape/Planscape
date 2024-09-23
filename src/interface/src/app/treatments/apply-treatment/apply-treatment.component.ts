@@ -73,12 +73,23 @@ export class ApplyTreatmentComponent {
     this.treatmentsState.setShowApplyTreatmentsDialog(false);
   }
 
+  // sorting function to ensure that the keyvalue pipe lists objects in their original order
   originalOrder = (): number => {
     return 0; // Keep the original insertion order
   };
 
+  resetPrescription() {
+    this.prescriptionForm
+      .get('prescriptionAction')
+      ?.reset(null, { emitEvent: false });
+  }
+
   get selectedSequenceType(): keyof typeof PRESCRIPTIONS {
     return this.prescriptionForm.get('sequenceType')?.value || 'SINGLE';
+  }
+
+  get selectedPrescription() {
+    return this.prescriptionForm.get('prescriptionAction')?.value;
   }
 
   private applyTreatments(action: PrescriptionAction) {

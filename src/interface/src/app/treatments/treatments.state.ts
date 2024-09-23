@@ -187,7 +187,6 @@ export class TreatmentsState {
     this.mapConfigState.updateMapCenter(projectArea?.extent);
     this._activeProjectArea$.next(projectArea);
     this.setTreatedStandsFromSummary([projectArea]);
-    this.setShowApplyTreatmentsDialog(true);
   }
 
   getCurrentSummary() {

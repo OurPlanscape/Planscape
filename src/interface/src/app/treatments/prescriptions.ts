@@ -1,5 +1,4 @@
-// placeholder for adding colors based on prescription actions
-
+// Single prescription keys
 export type PrescriptionSingleAction =
   | 'MODERATE_THINNING_BIOMASS'
   | 'HEAVY_THINNING_BIOMASS'
@@ -11,6 +10,7 @@ export type PrescriptionSingleAction =
   | 'HEAVY_THINNING_RX_FIRE'
   | 'MASTICATION_RX_FIRE';
 
+// Sequenced prescription keys
 export type PrescriptionSequenceAction =
   | 'MODERATE_THINNING_BURN_PLUS_RX_FIRE'
   | 'MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN'
@@ -21,10 +21,12 @@ export type PrescriptionSequenceAction =
   | 'HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE'
   | 'MODERATE_MASTICATION_PLUS_RX_FIRE';
 
+// All possible prescription keys
 export type PrescriptionAction =
   | PrescriptionSingleAction
   | PrescriptionSequenceAction;
 
+// Color assigment for all prescriptions
 export const SEQUENCE_COLORS: Record<PrescriptionAction, string> = {
   MODERATE_THINNING_BIOMASS: '#3A86FF',
   HEAVY_THINNING_BIOMASS: '#8338EC',
@@ -45,19 +47,7 @@ export const SEQUENCE_COLORS: Record<PrescriptionAction, string> = {
   MODERATE_MASTICATION_PLUS_RX_FIRE: '#177',
 };
 
-//TODO: Remove this mapping if we can just get this from the lookup endpoint
-export const USER_FACING_RX_STRING: Record<PrescriptionSingleAction, string> = {
-  MODERATE_THINNING_BIOMASS: 'Moderate thin & Biomass removal',
-  HEAVY_THINNING_BIOMASS: 'Heavy thin & Biomass removal',
-  MODERATE_THINNING_BURN: 'Moderate thin & Pile burn',
-  HEAVY_THINNING_BURN: 'Heavy thin & Pile burn',
-  MODERATE_MASTICATION: 'Moderate mastication',
-  HEAVY_MASTICATION: 'Heavy mastication',
-  RX_FIRE: 'Prescribed fire',
-  HEAVY_THINNING_RX_FIRE: 'Heavy thin & RX fire',
-  MASTICATION_RX_FIRE: 'Mastication & RX fire',
-};
-
+// User facing names for single actions
 const SINGLE_ACTIONS: Record<PrescriptionSingleAction, string> = {
   MODERATE_THINNING_BIOMASS: 'Moderate Thinning & Biomass Removal',
   HEAVY_THINNING_BIOMASS: 'Heavy Thinning & Biomass Removal',
@@ -69,7 +59,7 @@ const SINGLE_ACTIONS: Record<PrescriptionSingleAction, string> = {
   HEAVY_THINNING_RX_FIRE: 'Heavy Thinning & Prescribed Fire',
   MASTICATION_RX_FIRE: 'Mastication & Prescribed Fire',
 };
-
+// User facing names for sequence actions
 const SEQUENCE_ACTIONS: Record<PrescriptionSequenceAction, string[]> = {
   MODERATE_THINNING_BURN_PLUS_RX_FIRE: [
     'Moderate Thinning & Pile Burn (year 0)',
@@ -89,7 +79,7 @@ const SEQUENCE_ACTIONS: Record<PrescriptionSequenceAction, string[]> = {
   ],
   RX_FIRE_PLUS_RX_FIRE: [
     'Prescribed Fire (year 0)',
-    ' Prescribed Fire (year 10)',
+    'Prescribed Fire (year 10)',
   ],
   MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: [
     'Moderate Mastication (year 0)',
@@ -104,6 +94,7 @@ const SEQUENCE_ACTIONS: Record<PrescriptionSequenceAction, string[]> = {
     'Prescribed Fire (year 10)',
   ],
 };
+// User facing names for all prescriptions
 export const PRESCRIPTIONS = {
   SINGLE: SINGLE_ACTIONS,
   SEQUENCE: SEQUENCE_ACTIONS,

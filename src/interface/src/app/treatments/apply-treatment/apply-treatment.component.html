@@ -4,6 +4,7 @@
   (clickedPrimary)="apply()"
   (clickedSecondary)="cancel()"
   [scrollableContent]="true"
+  [primaryButtonDisabled]="!selectedPrescription"
   primaryButtonText="Apply"
   width="small">
   <div modalBodyContent class="modal-body">
@@ -16,7 +17,9 @@
       <div class="label">Treatment Prescription</div>
       <div class="item">
         <mat-form-field appearance="outline" class="full-size">
-          <mat-select formControlName="sequenceType">
+          <mat-select
+            formControlName="sequenceType"
+            (selectionChange)="resetPrescription()">
             <mat-option
               *ngFor="let type of sequenceTypes | keyvalue: originalOrder"
               [value]="type.key"
@@ -42,16 +45,20 @@
         <mat-radio-group
           formControlName="prescriptionAction"
           *ngIf="selectedSequenceType === 'SEQUENCE'">
-          <mat-radio-button
-            class="prescription"
+          <ng-container
             *ngFor="
               let action of prescriptions.SEQUENCE | keyvalue: originalOrder;
               let i = index
-            "
-            [value]="action.key"
-            >Sequence {{ i + 1 }}
-            <div *ngFor="let detail of action.value">{{ detail }}</div>
-          </mat-radio-button>
+            ">
+            <mat-radio-button class="prescription-sequence" [value]="action.key"
+              >Sequence {{ i + 1 }}
+            </mat-radio-button>
+            <div class="sequence-details">
+              <div *ngFor="let detail of action.value" class="sequence-detail">
+                {{ detail }}
+              </div>
+            </div>
+          </ng-container>
         </mat-radio-group>
       </div>
     </form>
