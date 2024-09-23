@@ -1,20 +1,22 @@
 from collections import defaultdict
-from typing import Dict, List, Optional
-from typing_extensions import Self
-from django.contrib.gis.db import models
-from django.conf import settings
-from django.contrib.auth import get_user_model
-from planning.models import ProjectArea, Scenario
-from planscape.typing import UserType
-from stands.models import Stand
+from typing import List, Optional, Tuple, Type
+
 from core.models import (
     AliveObjectsManager,
     CreatedAtMixin,
-    UpdatedAtMixin,
     DeletedAtMixin,
+    UpdatedAtMixin,
     UUIDMixin,
 )
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.gis.db import models
+from django_stubs_ext.db.models import TypedModelMeta
+from planning.models import ProjectArea, Scenario
+from stands.models import Stand
+from typing_extensions import Self
 
+from planscape.typing import TUser
 
 User = get_user_model()
 
@@ -27,7 +29,7 @@ class TreatmentPlanStatus(models.TextChoices):
 
 
 class TreatmentPlanManager(AliveObjectsManager):
-    def list_by_user(self, user: Optional[UserType]):
+    def list_by_user(self, user: Optional[TUser]):
         if not user:
             return self.get_queryset().none()
         # this will become super slow when the database get's bigger
@@ -65,7 +67,7 @@ class TreatmentPlan(
 
     objects = TreatmentPlanManager()
 
-    class Meta:
+    class Meta(TypedModelMeta):
         verbose_name = "Treatment Plan"
         verbose_name_plural = "Treatment Plans"
 
@@ -251,7 +253,7 @@ class TreatmentPrescription(
         help_text="Geometry of the Treatment Prescription.",
     )
 
-    class Meta:
+    class Meta(TypedModelMeta):
         verbose_name = "Treatment Prescription"
         verbose_name_plural = "Treatment Prescriptions"
         constraints = [
@@ -384,7 +386,7 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
     )
 
-    class Meta:
+    class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
                 # given a specific treatment prescription, we can only have a single value for the same
@@ -398,3 +400,10 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
                 name="treatment_result_unique_constraint",
             )
         ]
+
+
+TTreatmentPlan = Type[TreatmentPlan]
+TAction = Type[TreatmentPrescriptionType]
+TTreatmentPrescriptionEntity = Type[TreatmentPrescription]
+TTreatmentPlanCloneResult = Tuple[TTreatmentPlan, List[TTreatmentPrescriptionEntity]]
+TTreatmentResult = Type[TreatmentResult]
