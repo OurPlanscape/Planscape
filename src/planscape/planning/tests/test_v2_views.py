@@ -1,21 +1,17 @@
 import json
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
+from rest_framework.test import APITransactionTestCase, APITestCase
 from collaboration.models import Role
-from planning.tests.helpers import _load_geojson_fixture
-from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
 from collaboration.tests.factories import UserObjectRoleFactory
-from collaboration.models import Role
 from impacts.permissions import (
     VIEWER_PERMISSIONS,
     COLLABORATOR_PERMISSIONS,
     OWNER_PERMISSIONS,
 )
 from planning.models import PlanningArea, RegionChoices, ScenarioResult
-from planning.tests.factories import PlanningAreaFactory, ScenarioFactory
-from planscape.tests.factories import UserFactory
+from planning.tests.factories import PlanningAreaFactory, ScenarioFactory, UserFactory
+from planning.tests.helpers import _load_geojson_fixture
 
 
 class CreatorsTest(APITransactionTestCase):
