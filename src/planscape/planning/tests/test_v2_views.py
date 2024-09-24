@@ -2,7 +2,6 @@ import json
 from django.contrib.gis.geos import GEOSGeometry
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase, APITestCase
-
 from collaboration.tests.factories import UserObjectRoleFactory
 from collaboration.models import Role
 from impacts.permissions import (
