@@ -163,7 +163,6 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
 
 @transaction.atomic()
 def create_scenario_from_upload(validated_data, user) -> Scenario:
-
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
     scenario = Scenario.objects.create(
         name=validated_data["name"],
