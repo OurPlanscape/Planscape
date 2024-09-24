@@ -1,12 +1,24 @@
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.pagination import LimitOffsetPagination
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
 from projects.filters import ProjectFilterSet
 from projects.models import Project, ProjectVisibility
 from projects.serializers import ProjectSerializer
+from planscape.serializers import BaseErrorMessageSerializer
 
 
+@extend_schema_view(
+    list=extend_schema(description="List projects."),
+    retrieve=extend_schema(
+        description="List projects.",
+        responses={
+            200: ProjectSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+)
 class ProjectViewSet(ListModelMixin, RetrieveModelMixin, GenericViewSet):
     queryset = Project.objects.filter(
         visibility=ProjectVisibility.PUBLIC

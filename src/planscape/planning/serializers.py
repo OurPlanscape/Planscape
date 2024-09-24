@@ -1,3 +1,4 @@
+import json
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
@@ -14,24 +15,44 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.services import get_acreage
+from planning.services import get_acreage, union_geojson
 from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
-    scenario_count = serializers.IntegerField(read_only=True, required=False)
-    region_name = serializers.SerializerMethodField()
+    scenario_count = serializers.IntegerField(
+        read_only=True,
+        required=False,
+        help_text="Number of scenarios executed on the Planning Area.",
+    )
+    region_name = serializers.SerializerMethodField(
+        help_text="Region choice name of the Planning Area."
+    )
     # latest_updated takes into account the plan's scenario's updated timestamps and should
     # be used by clients rather than the row-level updated_at field.
-    latest_updated = serializers.SerializerMethodField()
-    notes = serializers.CharField(required=False)
-    created_at = serializers.DateTimeField(required=False)
+    latest_updated = serializers.SerializerMethodField(
+        help_text="Last update date and time in UTC."
+    )
+    notes = serializers.CharField(
+        required=False, help_text="Notes of the Planning Area."
+    )
+    created_at = serializers.DateTimeField(
+        required=False, help_text="Creation date and time in UTC."
+    )
 
-    area_acres = serializers.SerializerMethodField()
-    creator = serializers.CharField(source="creator_name")
-    permissions = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
+    area_acres = serializers.SerializerMethodField(
+        help_text="Area of the Planning Area represented in Acres."
+    )
+    creator = serializers.CharField(
+        source="creator_name", help_text="User ID that created the Planning Area."
+    )
+    permissions = serializers.SerializerMethodField(
+        help_text="Requester permissions for the Planning Area."
+    )
+    role = serializers.SerializerMethodField(
+        help_text="Requester role in the Planning Area."
+    )
 
     def get_region_name(self, instance):
         return instance.get_region_name_display()
@@ -254,19 +275,35 @@ class ConfigurationSerializer(serializers.Serializer):
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):
-    notes = serializers.CharField(required=False)
-    updated_at = serializers.DateTimeField(required=False)
-    created_at = serializers.DateTimeField(required=False)
-    creator = serializers.CharField(source="creator_name", read_only=True)
+    notes = serializers.CharField(required=False, help_text="Notes of the Scenario.")
+    updated_at = serializers.DateTimeField(
+        required=False, help_text="Last update date and time in UTC."
+    )
+    created_at = serializers.DateTimeField(
+        required=False, help_text="Scenario creation date and time in UTC."
+    )
+    creator = serializers.CharField(
+        source="creator_name",
+        read_only=True,
+        help_text="Name of the creator of the Scenario.",
+    )
+    tx_plan_count = serializers.SerializerMethodField(help_text="Number of treatments.")
     scenario_result = ScenarioResultSerializer(
         required=False,
         read_only=True,
         source="results",
+        help_text="Results of the scenario.",
     )
     max_treatment_area = serializers.ReadOnlyField(
-        source="configuration.max_treatment_area_ratio"
+        source="configuration.max_treatment_area_ratio",
+        help_text="Max Treatment Area Ratio.",
     )
-    max_budget = serializers.ReadOnlyField(source="configuration.max_budget")
+    max_budget = serializers.ReadOnlyField(
+        source="configuration.max_budget", help_text="Max budget."
+    )
+
+    def get_tx_plan_count(self, obj):
+        return obj.tx_plans.count()
 
     class Meta:
         fields = (
@@ -282,6 +319,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "creator",
             "status",
             "scenario_result",
+            "tx_plan_count",
         )
         model = Scenario
 
@@ -296,19 +334,6 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
             "planning_area",
             "name",
             "notes",
-            "configuration",
-        )
-
-
-class UploadedScenarioSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Scenario
-        fields = (
-            "user",
-            "planning_area",
-            "name",
-            "user",
-            "origin",
             "configuration",
         )
 
@@ -358,7 +383,7 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
         )
 
 
-class ScenarioProjectAreasSerializer(serializers.ModelSerializer):
+class ScenarioAndProjectAreasSerializer(serializers.ModelSerializer):
     project_areas = ProjectAreaSerializer(many=True, read_only=True)
 
     class Meta:
@@ -399,7 +424,9 @@ class UserPrefsSerializer(serializers.ModelSerializer):
 
 
 class ListCreatorSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField(
+        help_text="Name of the creator of the Scenario.",
+    )
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"
@@ -422,46 +449,90 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
         )
 
 
-class GeometrySerializer(serializers.Serializer):
-    type = serializers.CharField()
-    coordinates = serializers.ListField()
+class GeoJSONSerializer(serializers.Serializer):
+    geometry = serializers.CharField(required=False)
+    features = serializers.ListField(child=serializers.JSONField(), required=False)
+    type = serializers.ChoiceField(
+        choices=[
+            "Feature",
+            "FeatureCollection",
+            "GeometryCollection",
+            "LineString",
+            "MultiLineString",
+            "MultiPoint",
+            "MultiPolygon",
+            "Point",
+            "Polygon",
+        ]
+    )
 
     def validate(self, data):
-        try:
-            geom = GEOSGeometry(str(data))
-            if geom.geom_type not in ["Polygon", "MultiPolygon"]:
-                raise serializers.ValidationError(
-                    "Geometry must be Polygon or MultiPolygon"
-                )
-        except Exception as e:
-            raise serializers.ValidationError(f"Invalid geometry: {str(e)}")
+        geojson_type = data.get("type")
+        if geojson_type == "Feature":
+            self._validate_feature(data)
+        elif geojson_type == "FeatureCollection":
+            self._validate_feature_collection(data)
+        elif "geometry" in data:
+            self._validate_geometry(data["geometry"])
         return data
 
+    def _validate_feature(self, data):
+        if "geometry" not in data:
+            raise serializers.ValidationError("Feature must have a geometry field.")
+        if "features" in data:
+            raise serializers.ValidationError("Feature cannot have a features field.")
+        self._validate_geometry(data["geometry"])
 
-class FeatureSerializer(serializers.Serializer):
-    type = serializers.CharField()
-    geometry = GeometrySerializer()
-    properties = serializers.JSONField(required=False)
+    def _validate_feature_collection(self, data):
+        if "features" not in data:
+            raise serializers.ValidationError(
+                "FeatureCollection must have a features field."
+            )
+        if "geometry" in data:
+            raise serializers.ValidationError(
+                "FeatureCollection cannot have a geometry field."
+            )
+        for feature in data["features"]:
+            if "geometry" in feature:
+                self._validate_geometry(feature["geometry"])
+
+    def _validate_geometry(self, value):
+        try:
+            GEOSGeometry(json.dumps(value) if isinstance(value, dict) else value)
+        except Exception as e:
+            raise serializers.ValidationError(f"Invalid geometry: {str(e)}")
 
 
-class FeatureCollectionSerializer(serializers.Serializer):
-    type = serializers.CharField()
-    features = FeatureSerializer(many=True)
+class UploadedScenarioDataSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=100, required=True)
+    stand_size = serializers.ChoiceField(
+        choices=["SMALL", "MEDIUM", "LARGE"], required=False
+    )
+    planning_area = serializers.IntegerField(min_value=1, required=True)
+    geometry = serializers.JSONField(required=True)
 
+    def validate(self, data):
+        geometry = data.get("geometry")
+        planning_area_id = data.get("planning_area")
+        validated_geometry = self.validate_geometry(geometry)
 
-class FlexibleGeoJSONSerializer(serializers.Serializer):
-    def to_internal_value(self, data):
-        if isinstance(data, dict):
-            if data.get("type") == "FeatureCollection":
-                serializer = FeatureCollectionSerializer(data=data)
-            elif data.get("type") == "Feature":
-                serializer = FeatureSerializer(data=data)
-            else:
-                serializer = GeometrySerializer(data=data)
-        else:
-            raise serializers.ValidationError("Invalid GeoJSON")
+        if not self._is_inside_planning_area(validated_geometry, planning_area_id):
+            raise serializers.ValidationError(
+                "The uploaded geometry is not within the selected planning area."
+            )
 
-        if serializer.is_valid():
-            return serializer.validated_data
-        else:
-            raise serializers.ValidationError(serializer.errors)
+        data["geometry"] = validated_geometry
+        return data
+
+    def validate_geometry(self, value):
+        geojson_serializer = GeoJSONSerializer(data=json.loads(value))
+        geojson_serializer.is_valid(raise_exception=True)
+        return value
+
+    def _is_inside_planning_area(self, geometry, planning_area_id):
+        uploaded_geos = union_geojson(json.loads(geometry))
+        try:
+            planning_area = PlanningArea.objects.get(pk=planning_area_id)
+        except PlanningArea.DoesNotExist:
+            raise serializers.ValidationError("Planning area does not exist.")
+        return planning_area.geometry.contains(uploaded_geos)

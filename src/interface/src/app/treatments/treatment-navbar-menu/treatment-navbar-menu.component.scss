@@ -1,0 +1,9 @@
+@import "colors";
+
+.delete {
+  color: $color-error;
+
+  mat-icon {
+    color: $color-error;
+  }
+}

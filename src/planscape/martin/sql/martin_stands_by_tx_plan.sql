@@ -48,7 +48,7 @@ BEGIN
     FROM stands_stand ss
     WHERE 
         ss.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269) AND
-        ss.geometry && p_intersecting_area AND ST_Intersects(ss.geometry, p_intersecting_area) AND
+        ss.geometry && p_intersecting_area AND ST_Within(ST_Centroid(ss.geometry), p_intersecting_area) AND
         ss.size = p_stand_size
   ) as tile WHERE geom IS NOT NULL;
 

@@ -7,17 +7,18 @@ import fiona
 
 from datetime import date, time, datetime
 from pathlib import Path
-from typing import Any, Dict, Tuple, Type, Union
+from typing import Any, Dict, Optional, Tuple, Type, Union
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from planscape.typing import TLooseGeom, TUser
 from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
-    PlanningAreaType,
+    TPlanningArea,
     ProjectArea,
     Scenario,
     ScenarioOrigin,
@@ -29,21 +30,18 @@ from planning.tasks import async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
-from django.contrib.auth.models import AbstractUser
 from actstream import action
 
 logger = logging.getLogger(__name__)
-UserType = Type[AbstractUser]
-LooseGeomType = Union[Dict[str, Any] | GEOSGeometry]
 
 
 @transaction.atomic()
 def create_planning_area(
-    user: UserType,
+    user: TUser,
     name: str,
     region_name: str,
-    geometry: LooseGeomType = None,
-    notes: str = None,
+    geometry: TLooseGeom = None,
+    notes: Optional[str] = None,
 ) -> PlanningArea:
     """Canonical method to create a new planning area."""
 
@@ -66,8 +64,8 @@ def create_planning_area(
 
 @transaction.atomic
 def delete_planning_area(
-    user: UserType,
-    planning_area: PlanningAreaType,
+    user: TUser,
+    planning_area: TPlanningArea,
 ):
     if not PlanningAreaPermission.can_remove(user, planning_area):
         logger.error(f"User {user} has no permission to delete {planning_area.pk}")
@@ -92,7 +90,7 @@ def delete_planning_area(
 
 
 @transaction.atomic()
-def create_scenario(user: UserType, **kwargs) -> Scenario:
+def create_scenario(user: TUser, **kwargs) -> Scenario:
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
     data = {
@@ -135,11 +133,15 @@ def union_geojson(uploaded_geojson):
     return unioned_geometry
 
 
-def feature_to_project_area(idx: int, user_id: int, scenario, feature):
+def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
     try:
+        area_name = f"{scenario.name} project area"
+        if idx is not None:
+            area_name += f":{idx}"
+
         project_area = {
             "geometry": MultiPolygon(GEOSGeometry(feature)),
-            "name": f"{scenario.name} project:{idx}",
+            "name": area_name,
             "created_by": user_id,
             "scenario": scenario,
         }
@@ -160,32 +162,37 @@ def feature_to_project_area(idx: int, user_id: int, scenario, feature):
 
 
 @transaction.atomic()
-def create_scenario_from_upload(
-    scenario_data,
-    uploaded_geom,
-) -> Scenario:
-    scenario = Scenario.objects.create(**scenario_data)
+def create_scenario_from_upload(validated_data, user) -> Scenario:
 
+    planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
+    scenario = Scenario.objects.create(
+        name=validated_data["name"],
+        planning_area=planning_area,
+        user=user,
+        configuration={"stand_size": validated_data["stand_size"]},
+        origin=ScenarioOrigin.USER,
+    )
     action.send(
         scenario.user,
         verb="created",
         action_object=scenario,
         target=scenario.planning_area,
     )
-
-    # handle just a polygon
+    # Create project areas from features...
+    uploaded_geom = json.loads(validated_data["geometry"])
+    # handle just one polygon
     if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
         new_feature = feature_to_project_area(
-            1, scenario.user, scenario, json.dumps(uploaded_geom)
+            scenario.user, scenario, json.dumps(uploaded_geom)
         )
         uploaded_geom.setdefault("properties", {})
         uploaded_geom["properties"]["project_id"] = new_feature.pk
 
-    # this handles a more standard FeatureCollection
+        # handles a FeatureCollection
     if "features" in uploaded_geom:
         for idx, f in enumerate(uploaded_geom["features"], 1):
             new_feature = feature_to_project_area(
-                idx, scenario.user, scenario, json.dumps(f["geometry"])
+                scenario.user, scenario, json.dumps(f["geometry"]), idx
             )
             f.setdefault("properties", {})
             f["properties"]["project_id"] = new_feature.pk
@@ -198,7 +205,7 @@ def create_scenario_from_upload(
 
 @transaction.atomic
 def delete_scenario(
-    user: UserType,
+    user: TUser,
     scenario: Type[Scenario],
 ):
     if not ScenarioPermission.can_remove(user, scenario):
@@ -355,7 +362,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
 
 @transaction.atomic()
-def toggle_scenario_status(scenario: Scenario, user: UserType) -> Scenario:
+def toggle_scenario_status(scenario: Scenario, user: TUser) -> Scenario:
     new_status = (
         ScenarioStatus.ACTIVE
         if scenario.status == ScenarioStatus.ARCHIVED

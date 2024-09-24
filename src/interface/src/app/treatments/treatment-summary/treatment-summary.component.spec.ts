@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TreatmentSummaryComponent } from './treatment-summary.component';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentsService } from '@services/treatments.service';
+import { TreatmentsState } from '../treatments.state';
 
 describe('TreatmentSummaryComponent', () => {
   let component: TreatmentSummaryComponent;
@@ -11,7 +11,7 @@ describe('TreatmentSummaryComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TreatmentSummaryComponent],
-      providers: [MockProvider(TreatmentsService)],
+      providers: [MockProvider(TreatmentsState)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentSummaryComponent);

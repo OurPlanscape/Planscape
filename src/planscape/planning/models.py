@@ -17,14 +17,16 @@ from django.contrib.gis.db import models
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
-from planscape.typing import UserType
+from django_stubs_ext.db.models import TypedModelMeta
 from utils.uuid_utils import generate_short_uuid
+
+from planscape.typing import TUser
 
 User = get_user_model()
 
 
 class PlanningAreaManager(AliveObjectsManager):
-    def list_by_user(self, user: UserType) -> QuerySet:
+    def list_by_user(self, user: TUser) -> QuerySet:
         content_type_pk = ContentType.objects.get(model="planningarea").pk
         qs = super().get_queryset()
         filtered_qs = qs.filter(
@@ -37,7 +39,7 @@ class PlanningAreaManager(AliveObjectsManager):
         )
         return filtered_qs
 
-    def list_for_api(self, user: UserType) -> QuerySet:
+    def list_for_api(self, user: TUser) -> QuerySet:
         queryset = PlanningArea.objects.list_by_user(user)
         return (
             queryset.annotate(scenario_count=Count("scenarios", distinct=True))
@@ -63,27 +65,31 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         related_name="planning_areas",
         on_delete=models.CASCADE,
         null=True,
+        help_text="User ID that created the Planning Area.",
     )
 
     region_name: models.CharField = models.CharField(
-        max_length=120, choices=RegionChoices.choices
+        max_length=120,
+        choices=RegionChoices.choices,
+        help_text="Region choice name of the Planning Area.",
     )
 
-    name = models.CharField(max_length=120)
+    name = models.CharField(max_length=120, help_text="Name of the Planning Area.")
 
-    notes = models.TextField(null=True)
+    notes = models.TextField(null=True, help_text="Notes of the Planning Area.")
 
     geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
         null=True,
+        help_text="Geometry of the Planning Area represented by polygons.",
     )
 
-    def creator_name(self):
+    def creator_name(self) -> str:
         return self.user.get_full_name()
 
     objects = PlanningAreaManager()
 
-    class Meta:
+    class Meta(TypedModelMeta):
         indexes = [
             models.Index(
                 fields=[
@@ -99,6 +105,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
                     "name",
                 ],
                 name="unique_planning_area",
+                condition=Q(deleted_at=None),
             )
         ]
         ordering = ["user", "-created_at"]
@@ -107,7 +114,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
 class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
     planning_area = models.ForeignKey(
         PlanningArea,
-        related_name="planning_area",
+        related_name="planning_area_notes",
         on_delete=models.CASCADE,
     )
     user = models.ForeignKey(
@@ -115,10 +122,10 @@ class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
     content = models.TextField(null=True)
 
-    def user_name(self):
+    def user_name(self) -> str:
         return self.user.get_full_name()
 
-    class Meta:
+    class Meta(TypedModelMeta):
         indexes = [
             models.Index(
                 fields=[
@@ -144,7 +151,7 @@ class ScenarioResultStatus(models.TextChoices):
 
 
 class ScenarioManager(AliveObjectsManager):
-    def list_by_user(self, user: Optional[UserType]):
+    def list_by_user(self, user: Optional[TUser]):
         if not user:
             return self.get_queryset().none()
         # this will become super slow when the database get's bigger
@@ -166,48 +173,59 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         PlanningArea,
         related_name="scenarios",
         on_delete=models.CASCADE,
+        help_text="Planning Area ID.",
     )
     user = models.ForeignKey(
-        User, related_name="scenarios", on_delete=models.CASCADE, null=True, blank=True
+        User,
+        related_name="scenarios",
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        help_text="User ID that created the Scenario.",
     )
 
-    name = models.CharField(max_length=120)
+    name = models.CharField(max_length=120, help_text="Name of the Scenario.")
 
     origin = models.CharField(
-        choices=ScenarioOrigin.choices,
-        null=True,
+        choices=ScenarioOrigin.choices, null=True, help_text="Scenario Origin."
     )
 
-    notes = models.TextField(null=True)
+    notes = models.TextField(null=True, help_text="Scenario notes.")
 
-    configuration = models.JSONField(default=dict)
+    configuration = models.JSONField(default=dict, help_text="Scenario configuration.")
 
-    uuid = models.UUIDField(default=uuid.uuid4, unique=True)
+    uuid = models.UUIDField(
+        default=uuid.uuid4,
+        unique=True,
+        help_text="Scenarion Universally Unique Identifier.",
+    )
 
     status = models.CharField(
         choices=ScenarioStatus.choices,
         max_length=32,
         default=ScenarioStatus.ACTIVE,
+        help_text="Scenario status.",
     )
 
     result_status = models.CharField(
         max_length=32,
         choices=ScenarioResultStatus.choices,
         null=True,
+        help_text="Result status of the Scenario.",
     )
 
-    def creator_name(self):
+    def creator_name(self) -> str:
         return self.user.get_full_name()
 
-    def get_shapefile_folder(self):
+    def get_shapefile_folder(self) -> Path:
         return Path(settings.OUTPUT_DIR) / "shapefile" / Path(str(self.uuid))
 
-    def get_forsys_folder(self):
+    def get_forsys_folder(self) -> Path:
         return Path(settings.OUTPUT_DIR) / Path(str(self.uuid))
 
     objects = ScenarioManager()
 
-    class Meta:
+    class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
                 fields=[
@@ -238,14 +256,14 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mode
     run_details = models.JSONField(null=True)
 
     started_at = models.DateTimeField(
-        null=True, help_text="Start of the Forsys run, in UTC timezone"
+        null=True, help_text="Start of the Forsys run, in UTC timezone."
     )
 
     completed_at = models.DateTimeField(
-        null=True, help_text="End of the Forsys run, in UTC timezone"
+        null=True, help_text="End of the Forsys run, in UTC timezone."
     )
 
-    class Meta:
+    class Meta(TypedModelMeta):
         ordering = ["scenario", "-created_at"]
 
 
@@ -261,7 +279,7 @@ class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
 
     view_state = models.JSONField()
 
-    class Meta:
+    class Meta(TypedModelMeta):
         ordering = ["-created_at", "user"]
 
 
@@ -296,15 +314,16 @@ class ProjectArea(
         on_delete=models.RESTRICT,
     )
 
-    name = models.CharField(max_length=128)
+    name = models.CharField(max_length=128, help_text="Name of the Project Area.")
 
-    data = models.JSONField(null=True)
+    data = models.JSONField(null=True, help_text="Project Area data from Forsys.")
 
     geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
+        help_text="Geometry of the Project Area.",
     )
 
-    class Meta:
+    class Meta(TypedModelMeta):
         verbose_name = "Project Area"
         verbose_name_plural = "Project Areas"
         constraints = [
@@ -315,7 +334,8 @@ class ProjectArea(
         ]
 
 
-PlanningAreaType = Type[PlanningArea]
-PlanningAreaNoteType = Type[PlanningAreaNote]
-ScenarioType = Type[Scenario]
-ScenarioResultType = Type[ScenarioResult]
+TPlanningArea = Type[PlanningArea]
+TPlanningAreaNote = Type[PlanningAreaNote]
+TScenario = Type[Scenario]
+TScenarioResult = Type[ScenarioResult]
+TProjectArea = Type[ProjectArea]

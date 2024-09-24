@@ -1,0 +1,6 @@
+<div class="title" [ngClass]="{ open: isOpen }" (click)="isOpen = !isOpen">
+  {{ title }}
+</div>
+<div class="base-options" *ngIf="isOpen">
+  <ng-content></ng-content>
+</div>
