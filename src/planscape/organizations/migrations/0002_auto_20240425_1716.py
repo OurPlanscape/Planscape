@@ -1,11 +1,12 @@
 from django.db import migrations
 from django.conf import settings
 from django.contrib.auth import get_user_model
-from organizations.models import Organization
+
+# from organizations.models import Organization
 
 
 def create_admin_user_and_org(apps, schema_editor):
-
+    Organization = apps.get_model("organizations", "Organization")
     User = get_user_model()
     admin = User.objects.create(
         username="admin",
@@ -18,11 +19,11 @@ def create_admin_user_and_org(apps, schema_editor):
     )
     admin.set_unusable_password()
     admin.save()
-    _ = Organization.objects.create(
-        uuid=settings.ADMIN_ORG_UUID,
-        created_by=admin,
-        name="SIG-GIS",
-    )
+    # _ = Organization.objects.create(
+    #     uuid=settings.ADMIN_ORG_UUID,
+    #     created_by=admin,
+    #     name="SIG-GIS",
+    # )
 
 
 class Migration(migrations.Migration):

@@ -7,7 +7,6 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 
 
 def get_geometry(region_name):
-
     filename = f"projects/migrations/{region_name}.geojson"
     with open(filename) as file_handle:
         raw = file_handle.read()
@@ -53,23 +52,7 @@ def data():
 
 
 def create_projects(apps, schema_editor):
-    User = apps.get_model("auth", "User")
-    Organization = apps.get_model("organizations", "Organization")
-    Project = apps.get_model("projects", "Project")
-
-    user = User.objects.get(email="admin@planscape.org")
-    organization = Organization.objects.get(uuid=settings.ADMIN_ORG_UUID)
-
-    for name, display_name, vis in data():
-        geometry = get_geometry(name)
-        _ = Project.objects.create(
-            organization=organization,
-            created_by=user,
-            name=name,
-            display_name=display_name,
-            visibility=vis,
-            geometry=geometry,
-        )
+    pass
 
 
 class Migration(migrations.Migration):
