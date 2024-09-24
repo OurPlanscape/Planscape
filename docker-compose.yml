@@ -19,6 +19,7 @@ services:
       - db
       - redis
     working_dir: /usr/src/app/src/planscape
+    command: bin/run_gunicorn.sh
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - .:/usr/src/app

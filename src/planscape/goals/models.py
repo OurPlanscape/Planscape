@@ -3,7 +3,6 @@ from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
 from core.models import CreatedAtMixin, DeletedAtMixin, UUIDMixin, UpdatedAtMixin
 from metrics.models import Metric
-from organizations.models import Organization
 from projects.models import Project
 from treebeard.mp_tree import MP_Node
 

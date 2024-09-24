@@ -1,13 +1,10 @@
 <div class="title-row">
   <div class="title-section">
-    <h4>
-      {{ name }}
-    </h4>
-
+    <div class="scenario-name">{{ name }}</div>
     <sg-status-chip
       *ngIf="status"
       [status]="getChipStatus()"
-      [label]="status"></sg-status-chip>
+      [label]="getChipLabel()"></sg-status-chip>
     <div *ngIf="hasFailed()" class="failed-message">
       <mat-icon class="error-icon">error</mat-icon>
       Create a new scenario to proceed to treatment plan
@@ -44,17 +41,17 @@
   <div class="detail-column">
     <div class="detail-header">Creator</div>
     <div class="detail-info">
-      {{ creator }}
+      {{ creator ?? 'N/A' }}
     </div>
   </div>
   <ng-container *ngIf="!isRunning()">
     <div class="detail-column">
       <div class="detail-header">Areas</div>
-      <div class="detail-info">{{ areas }}</div>
+      <div class="detail-info">{{ areas ?? 'N/A' }}</div>
     </div>
     <div class="detail-column">
       <div class="detail-header">Est Budget</div>
-      <div class="detail-info">{{ budget | currency }}</div>
+      <div class="detail-info">{{ (budget | currency) ?? 'N/A' }}</div>
     </div>
     <div class="detail-column">
       <div class="detail-header">Treatment Plans</div>
@@ -63,7 +60,7 @@
     <div class="detail-column">
       <div class="detail-header">Created</div>
       <div class="detail-info">
-        {{ created_at | date: 'MMM d, y, h:mm:ss a ' }}
+        {{ created_at | date: "MMMM d, y 'at' h:mm a" }}
       </div>
     </div>
   </ng-container>

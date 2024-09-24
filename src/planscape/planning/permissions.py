@@ -49,9 +49,10 @@ class ProjectAreaNoteViewPermission(PlanscapePermission):
     def has_permission(self, request, view):
         if not self.is_authenticated(request):
             return False
+
+        project_area_id = request.data.get("project_area") or None
         match view.action:
             case "create":
-                project_area_id = request.data.get("project_area") or None
                 if not project_area_id:
                     return False
                 project_area = ProjectArea.objects.get(id=project_area_id)

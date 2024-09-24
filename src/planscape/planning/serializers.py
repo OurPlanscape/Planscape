@@ -21,18 +21,38 @@ from stands.models import StandSizeChoices
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
-    scenario_count = serializers.IntegerField(read_only=True, required=False)
-    region_name = serializers.SerializerMethodField()
+    scenario_count = serializers.IntegerField(
+        read_only=True,
+        required=False,
+        help_text="Number of scenarios executed on the Planning Area.",
+    )
+    region_name = serializers.SerializerMethodField(
+        help_text="Region choice name of the Planning Area."
+    )
     # latest_updated takes into account the plan's scenario's updated timestamps and should
     # be used by clients rather than the row-level updated_at field.
-    latest_updated = serializers.SerializerMethodField()
-    notes = serializers.CharField(required=False)
-    created_at = serializers.DateTimeField(required=False)
+    latest_updated = serializers.SerializerMethodField(
+        help_text="Last update date and time in UTC."
+    )
+    notes = serializers.CharField(
+        required=False, help_text="Notes of the Planning Area."
+    )
+    created_at = serializers.DateTimeField(
+        required=False, help_text="Creation date and time in UTC."
+    )
 
-    area_acres = serializers.SerializerMethodField()
-    creator = serializers.CharField(source="creator_name")
-    permissions = serializers.SerializerMethodField()
-    role = serializers.SerializerMethodField()
+    area_acres = serializers.SerializerMethodField(
+        help_text="Area of the Planning Area represented in Acres."
+    )
+    creator = serializers.CharField(
+        source="creator_name", help_text="User ID that created the Planning Area."
+    )
+    permissions = serializers.SerializerMethodField(
+        help_text="Requester permissions for the Planning Area."
+    )
+    role = serializers.SerializerMethodField(
+        help_text="Requester role in the Planning Area."
+    )
 
     def get_region_name(self, instance):
         return instance.get_region_name_display()
@@ -255,19 +275,35 @@ class ConfigurationSerializer(serializers.Serializer):
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):
-    notes = serializers.CharField(required=False)
-    updated_at = serializers.DateTimeField(required=False)
-    created_at = serializers.DateTimeField(required=False)
-    creator = serializers.CharField(source="creator_name", read_only=True)
+    notes = serializers.CharField(required=False, help_text="Notes of the Scenario.")
+    updated_at = serializers.DateTimeField(
+        required=False, help_text="Last update date and time in UTC."
+    )
+    created_at = serializers.DateTimeField(
+        required=False, help_text="Scenario creation date and time in UTC."
+    )
+    creator = serializers.CharField(
+        source="creator_name",
+        read_only=True,
+        help_text="Name of the creator of the Scenario.",
+    )
+    tx_plan_count = serializers.SerializerMethodField(help_text="Number of treatments.")
     scenario_result = ScenarioResultSerializer(
         required=False,
         read_only=True,
         source="results",
+        help_text="Results of the scenario.",
     )
     max_treatment_area = serializers.ReadOnlyField(
-        source="configuration.max_treatment_area_ratio"
+        source="configuration.max_treatment_area_ratio",
+        help_text="Max Treatment Area Ratio.",
     )
-    max_budget = serializers.ReadOnlyField(source="configuration.max_budget")
+    max_budget = serializers.ReadOnlyField(
+        source="configuration.max_budget", help_text="Max budget."
+    )
+
+    def get_tx_plan_count(self, obj):
+        return obj.tx_plans.count()
 
     class Meta:
         fields = (
@@ -283,6 +319,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "creator",
             "status",
             "scenario_result",
+            "tx_plan_count",
         )
         model = Scenario
 
@@ -355,7 +392,9 @@ class UserPrefsSerializer(serializers.ModelSerializer):
 
 
 class ListCreatorSerializer(serializers.ModelSerializer):
-    full_name = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField(
+        help_text="Name of the creator of the Scenario.",
+    )
 
     def get_full_name(self, obj):
         return f"{obj.first_name} {obj.last_name}"

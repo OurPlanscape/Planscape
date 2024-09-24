@@ -1,3 +1,4 @@
+from unittest import mock
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 from django.forms.models import model_to_dict
@@ -5,7 +6,7 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
-from impacts.models import TreatmentPlan
+from impacts.models import TreatmentPlan, TreatmentPlanStatus
 from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
@@ -36,6 +37,36 @@ class TxPlanViewSetTest(APITransactionTestCase):
             data.get("created_by"),
             tx_plan.created_by.id,
         )
+
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_returns_202(self, async_task):
+        self.client.force_authenticate(user=self.scenario.user)
+        treatment_plan = TreatmentPlanFactory.create(scenario=self.scenario)
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(async_task.called)
+
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_returns_400(self, async_task):
+        self.client.force_authenticate(user=self.scenario.user)
+        treatment_plan = TreatmentPlanFactory.create(scenario=self.scenario)
+        treatment_plan.status = TreatmentPlanStatus.SUCCESS
+        treatment_plan.save()
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(async_task.called)
 
     def test_get_tx_plan(self):
         self.client.force_authenticate(user=self.scenario.user)

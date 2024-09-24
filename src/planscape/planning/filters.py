@@ -4,7 +4,7 @@ from django.db.models import F, Func, Value, ExpressionWrapper, FloatField, Quer
 from django.contrib.gis.db.models.functions import Area, Transform
 from django.conf import settings
 from planscape.filters import MultipleValueFilter
-from planning.models import PlanningArea, Scenario, RegionChoices
+from planning.models import PlanningArea, Scenario, RegionChoices, ProjectAreaNote
 from rest_framework.request import Request
 from rest_framework.filters import OrderingFilter
 from django.db.models.functions import Coalesce
@@ -53,11 +53,18 @@ class PlanningAreaOrderingFilter(OrderingFilter):
 
 
 class PlanningAreaFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")
+    name = filters.CharFilter(
+        lookup_expr="icontains",
+        help_text="Case insensitive search for name of the Planning Area.",
+    )
     region_name = filters.MultipleChoiceFilter(
         choices=RegionChoices.choices,
     )
-    creator = MultipleValueFilter(field_name="user_id", given_param="creator")
+    creator = MultipleValueFilter(
+        field_name="user_id",
+        given_param="creator",
+        help_text="Creator(s) ID(s) of Planning Area(s)",
+    )
 
     class Meta:
         model = PlanningArea
@@ -100,12 +107,24 @@ class ScenarioOrderingFilter(OrderingFilter):
 
 
 class ScenarioFilter(filters.FilterSet):
-    name = filters.CharFilter(lookup_expr="icontains")
+    name = filters.CharFilter(
+        lookup_expr="icontains",
+        help_text="Case insensitive search for name of Scenarios.",
+    )
     planning_area = filters.ModelChoiceFilter(
         field_name="planning_area",
         queryset=get_planning_areas_for_filter,
+        help_text="ID of the Planning Area.",
     )
 
     class Meta:
         model = Scenario
         fields = ["name", "planning_area"]
+
+
+class ProjectAreaNoteFilterSet(filters.FilterSet):
+    project_area = filters.NumberFilter(field_name="project_area__pk")
+
+    class Meta:
+        model = ProjectAreaNote
+        fields = ["project_area"]

@@ -1,55 +1,59 @@
 from collaboration.utils import check_for_permission, is_creator
 from impacts.models import TreatmentPlan, TreatmentPrescription
 from planning.models import (
-    PlanningArea,
-    PlanningAreaNote,
-    Scenario,
     ProjectAreaNote,
     ProjectArea,
 )
 from django.contrib.auth.models import User
+from planscape.typing import TUser
+from planning.models import (
+    TPlanningArea,
+    TPlanningAreaNote,
+    TScenario,
+)
+from django.contrib.auth.models import AbstractUser
 
 
 class CheckPermissionMixin:
     @staticmethod
-    def can_view():
+    def can_view(*args, **kwargs) -> bool:
         raise NotImplementedError("Subclasses must implement can_add.")
 
     @staticmethod
-    def can_add():
+    def can_add(*args, **kwargs) -> bool:
         raise NotImplementedError("Subclasses must implement can_add.")
 
     @staticmethod
-    def can_change():
+    def can_change(*args, **kwargs) -> bool:
         raise NotImplementedError("Subclasses must implement can_add.")
 
     @staticmethod
-    def can_remove():
+    def can_remove(*args, **kwargs) -> bool:
         raise NotImplementedError("Subclasses must implement can_remove.")
 
 
 class PlanningAreaPermission(CheckPermissionMixin):
     @staticmethod
-    def can_view(user: User, planning_area: PlanningArea):
+    def can_view(user: AbstractUser, planning_area: TPlanningArea):
         if is_creator(user, planning_area):
             return True
 
-        return check_for_permission(user.id, planning_area, "view_planningarea")
+        return check_for_permission(user.pk, planning_area, "view_planningarea")
 
     @staticmethod
-    def can_add(user: User, planning_area: PlanningArea):
+    def can_add(user: TUser, planning_area: TPlanningArea):
         return is_creator(user, planning_area)
 
     @staticmethod
-    def can_change(user: User, planning_area: PlanningArea):
+    def can_change(user: TUser, planning_area: TPlanningArea):
         return is_creator(user, planning_area)
 
     @staticmethod
-    def can_remove(user: User, planning_area: PlanningArea):
+    def can_remove(user: TUser, planning_area: TPlanningArea):
         return is_creator(user, planning_area)
 
     @staticmethod
-    def can_add_scenario(user: User, planning_area: PlanningArea):
+    def can_add_scenario(user: TUser, planning_area: TPlanningArea):
         if is_creator(user, planning_area):
             return True
 
@@ -58,88 +62,120 @@ class PlanningAreaPermission(CheckPermissionMixin):
 
 class PlanningAreaNotePermission(CheckPermissionMixin):
     @staticmethod
-    def can_view(user: User, planning_area_note: PlanningAreaNote):
+    def can_view(user: TUser, planning_area_note: TPlanningAreaNote):
         if is_creator(user, planning_area_note.planning_area):
             return True
         return check_for_permission(
-            user.id, planning_area_note.planning_area, "view_planningarea"
+            user.id,
+            planning_area_note.planning_area,
+            "view_planningarea",
         )
 
     @staticmethod
-    def can_add(user: User, planning_area_note: PlanningAreaNote):
-        planning_area = planning_area_note.planning_area
+    def can_add(user: TUser, planning_area_note: TPlanningAreaNote):
+        planning_area: TPlanningArea = planning_area_note.planning_area
         if is_creator(user, planning_area):
             return True
-        return check_for_permission(user.id, planning_area, "view_planningarea")
+        return check_for_permission(
+            user.id,
+            planning_area,
+            "view_planningarea",
+        )
 
     @staticmethod
-    def can_change(user: User, planning_area_note: PlanningAreaNote):
+    def can_change(user: TUser, planning_area_note: TPlanningAreaNote):
         return is_creator(user, planning_area_note.planning_area) or is_creator(
             user, planning_area_note
         )
 
     # creators of the planning area or authors of notes can remove a note
     @staticmethod
-    def can_remove(user: User, planning_area_note: PlanningAreaNote):
-        return is_creator(user, planning_area_note.planning_area) or is_creator(
-            user, planning_area_note
+    def can_remove(user: TUser, planning_area_note: TPlanningAreaNote):
+        creator_pa = is_creator(
+            user,
+            planning_area_note.planning_area,
         )
+        creator_note = is_creator(
+            user,
+            planning_area_note,
+        )
+        return any([creator_pa, creator_note])
 
 
 class CollaboratorPermission(CheckPermissionMixin):
     @staticmethod
-    def can_view(user: User, planning_area: PlanningArea):
+    def can_view(user: TUser, planning_area: TPlanningArea) -> bool:
         if is_creator(user, planning_area):
             return True
 
-        return check_for_permission(user.id, planning_area, "view_collaborator")
+        return check_for_permission(
+            user.id,
+            planning_area,
+            "view_collaborator",
+        )
 
     @staticmethod
-    def can_add(user: User, planning_area: PlanningArea):
+    def can_add(user: TUser, planning_area: TPlanningArea) -> bool:
         if is_creator(user, planning_area):
             return True
 
-        return check_for_permission(user.id, planning_area, "add_collaborator")
+        return check_for_permission(
+            user.id,
+            planning_area,
+            "add_collaborator",
+        )
 
     @staticmethod
-    def can_change(user: User, planning_area: PlanningArea):
+    def can_change(user: TUser, planning_area: TPlanningArea) -> bool:
         if is_creator(user, planning_area):
             return True
 
-        return check_for_permission(user.id, planning_area, "change_collaborator")
+        return check_for_permission(
+            user.id,
+            planning_area,
+            "change_collaborator",
+        )
 
     @staticmethod
-    def can_remove(user: User, planning_area: PlanningArea):
+    def can_remove(user: TUser, planning_area: TPlanningArea) -> bool:
         if is_creator(user, planning_area):
             return True
 
-        return check_for_permission(user.id, planning_area, "delete_collaborator")
+        return check_for_permission(
+            user.id,
+            planning_area,
+            "delete_collaborator",
+        )
 
 
 class ScenarioPermission(CheckPermissionMixin):
     @staticmethod
-    def can_view(user: User, scenario: Scenario):
+    def can_view(user: TUser, scenario: TScenario):
         if is_creator(user, scenario.planning_area):
             return True
 
-        return check_for_permission(user.id, scenario.planning_area, "view_scenario")
+        return check_for_permission(
+            user.id,
+            scenario.planning_area,
+            "view_scenario",
+        )
 
     @staticmethod
-    def can_add(user: User, scenario: Scenario):
+    def can_add(user: TUser, scenario: TScenario):
         if is_creator(user, scenario.planning_area):
             return True
 
         return check_for_permission(user.id, scenario.planning_area, "add_scenario")
 
     @staticmethod
-    def can_change(user: User, scenario: Scenario):
+    def can_change(user: TUser, scenario: TScenario):
         if is_creator(user, scenario.planning_area) or scenario.user.pk == user.pk:
             return True
 
         return check_for_permission(user.id, scenario.planning_area, "change_scenario")
 
     @staticmethod
-    def can_remove(user: User, scenario: Scenario):
+    def can_remove(user: TUser, scenario: TScenario):
         planning_creator = is_creator(user, scenario.planning_area)
         scenario_creator = scenario.user.pk == user.pk
         return any([planning_creator, scenario_creator])

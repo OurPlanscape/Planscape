@@ -6,11 +6,14 @@ from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from planscape.serializers import BaseErrorMessageSerializer
 from planning.filters import (
     PlanningAreaFilter,
     ScenarioFilter,
     PlanningAreaOrderingFilter,
     ScenarioOrderingFilter,
+    ProjectAreaNoteFilterSet,
 )
 from planning.models import PlanningArea, ProjectArea, ProjectAreaNote, Scenario
 from planning.permissions import (
@@ -43,6 +46,25 @@ User = get_user_model()
 logger = logging.getLogger(__name__)
 
 
+@extend_schema_view(
+    list=extend_schema(description="List Planning Area."),
+    retrieve=extend_schema(
+        description="Detail a Planning Area.",
+        responses={200: PlanningAreaSerializer, 404: BaseErrorMessageSerializer},
+    ),
+    destroy=extend_schema(
+        description="Delete a Planning Area.",
+        responses={204: None, 404: BaseErrorMessageSerializer},
+    ),
+    update=extend_schema(
+        description="Update Planning Area.",
+        responses={200: PlanningAreaSerializer, 404: BaseErrorMessageSerializer},
+    ),
+    partial_update=extend_schema(
+        description="Update Planning Area.",
+        responses={200: PlanningAreaSerializer, 404: BaseErrorMessageSerializer},
+    ),
+)
 class PlanningAreaViewSet(viewsets.ModelViewSet):
     # this member is configured for instrospection and swagger automcatic generation
     queryset = PlanningArea.objects.none()
@@ -84,6 +106,7 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         qs = PlanningArea.objects.list_for_api(user=user).select_related("user")
         return qs
 
+    @extend_schema(description="Create Planning Area.")
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -109,6 +132,25 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         )
 
 
+@extend_schema_view(
+    list=extend_schema(description="List Scenarios."),
+    retrieve=extend_schema(
+        description="Detail a Scenario.",
+        responses={200: ScenarioSerializer, 404: BaseErrorMessageSerializer},
+    ),
+    destroy=extend_schema(
+        description="Delete a Scenario.",
+        responses={204: None, 404: BaseErrorMessageSerializer},
+    ),
+    update=extend_schema(
+        description="Update Scenario.",
+        responses={200: ScenarioSerializer, 404: BaseErrorMessageSerializer},
+    ),
+    partial_update=extend_schema(
+        description="Update Scenario.",
+        responses={200: ScenarioSerializer, 404: BaseErrorMessageSerializer},
+    ),
+)
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.none()
     permission_classes = [ScenarioViewPermission]
@@ -140,6 +182,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         )
         return qs
 
+    @extend_schema(description="Create a Scenario.")
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -166,6 +209,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             or self.serializer_class
         )
 
+    @extend_schema(description="Toggle status of a Scenario.")
     @action(methods=["post"], detail=True)
     def toggle_status(self, request, pk=None):
         scenario = self.get_object()
@@ -175,6 +219,10 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
 
 # TODO: migrate this to an action inside the planning area viewset
+@extend_schema_view(
+    list=extend_schema(description="List creators of Planning Areas."),
+    retrieve=extend_schema(description="Retrieve the creator of a Planning Areas."),
+)
 class CreatorViewSet(ReadOnlyModelViewSet):
     queryset = User.objects.none()
     permission_classes = [PlanningAreaViewPermission]
@@ -187,6 +235,9 @@ class CreatorViewSet(ReadOnlyModelViewSet):
         return User.objects.filter(planning_areas__id__in=pas).distinct()
 
 
+@extend_schema_view(
+    retrieve=extend_schema(description="Project Area of a Planning Areas.")
+)
 class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = ProjectArea.objects.all()
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -206,6 +257,11 @@ class ProjectAreaNoteViewSet(
     queryset = ProjectAreaNote.objects.all()
     permission_classes = [ProjectAreaNoteViewPermission]
     serializer_class = ProjectAreaNoteSerializer
+    serializer_classes = {
+        "list": ProjectAreaNoteListSerializer,
+    }
+    filterset_class = ProjectAreaNoteFilterSet
+    filter_backends = [DjangoFilterBackend]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -223,21 +279,18 @@ class ProjectAreaNoteViewSet(
             headers=headers,
         )
 
-    def list(self, request, *args, **kwargs):
-        # Get the project_area_pk from the request query parameters
-        project_area_pk = request.query_params.get("project_area_pk")
-
-        # If project_area_pk is provided, filter the queryset
-        if not project_area_pk:
-            return Response(
-                {"error": "projectarea.pk is a required attribute"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-        queryset = (
-            self.get_queryset()
-            .select_related("project_area__scenario__planning_area")
-            .filter(project_area__pk=project_area_pk)
+    def get_serializer_class(self):
+        return (
+            self.serializer_classes.get(self.action, self.serializer_class)
+            or self.serializer_class
         )
 
-        serializer = ProjectAreaNoteListSerializer(queryset, many=True)
-        return Response(serializer.data)
+    def get_queryset(self):
+        user = self.request.user
+        queryset = ProjectAreaNote.objects.select_related("project_area")
+
+        project_area_pk = self.request.query_params.get("project_area_pk")
+        if project_area_pk:
+            queryset = queryset.filter(project_area__pk=project_area_pk)
+
+        return queryset
