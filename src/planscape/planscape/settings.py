@@ -7,11 +7,14 @@ from pathlib import Path
 
 import boto3
 import sentry_sdk
+import django_stubs_ext
 from corsheaders.defaults import default_headers
 from decouple import config
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
+
+django_stubs_ext.monkeypatch()
 
 TESTING_MODE = "test" in sys.argv
 LOGLEVEL = config("LOGLEVEL", default="INFO", cast=str)
@@ -39,15 +42,10 @@ PLANSCAPE_APPS = [
     "collaboration",
     "conditions",
     "core",
-    "datasets",
     "e2e",
-    "goals",
     "impacts",
     "martin",
-    "metrics",
-    "organizations",
     "planning",
-    "projects",
     "restrictions",
     "stands",
     "users",
