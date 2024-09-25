@@ -140,7 +140,13 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
             area_name += f":{idx}"
 
         project_area = {
-            "geometry": MultiPolygon(GEOSGeometry(feature)),
+            "geometry": MultiPolygon(
+                [
+                    GEOSGeometry(feature, srid=4326).transform(
+                        settings.CRS_INTERNAL_REPRESENTATION, clone=True
+                    )
+                ]
+            ),
             "name": area_name,
             "created_by": user_id,
             "scenario": scenario,
@@ -164,6 +170,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
 @transaction.atomic()
 def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
+    uploaded_geom = validated_data["geometry"]
     scenario = Scenario.objects.create(
         name=validated_data["name"],
         planning_area=planning_area,
@@ -178,7 +185,6 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         target=scenario.planning_area,
     )
     # Create project areas from features...
-    uploaded_geom = json.loads(validated_data["geometry"])
     # handle just one polygon
     if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
         new_feature = feature_to_project_area(
@@ -187,7 +193,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         uploaded_geom.setdefault("properties", {})
         uploaded_geom["properties"]["project_id"] = new_feature.pk
 
-        # handles a FeatureCollection
+    # handle a FeatureCollection
     if "features" in uploaded_geom:
         for idx, f in enumerate(uploaded_geom["features"], 1):
             new_feature = feature_to_project_area(

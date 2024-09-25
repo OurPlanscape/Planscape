@@ -450,8 +450,6 @@ class ProjectAreaSerializer(serializers.ModelSerializer):
 
 
 class GeoJSONSerializer(serializers.Serializer):
-    geometry = serializers.CharField(required=False)
-    features = serializers.ListField(child=serializers.JSONField(), required=False)
     type = serializers.ChoiceField(
         choices=[
             "Feature",
@@ -465,6 +463,16 @@ class GeoJSONSerializer(serializers.Serializer):
             "Polygon",
         ]
     )
+    bbox = serializers.ListField(child=serializers.FloatField(), required=False)
+    coordinates = serializers.ListField(
+        child=serializers.ListField(
+            child=serializers.ListField(child=serializers.FloatField())
+        ),
+        required=False,
+    )
+    geometry = serializers.JSONField(required=False)
+    features = serializers.ListField(child=serializers.JSONField(), required=False)
+    properties = serializers.JSONField(required=False)
 
     def validate(self, data):
         geojson_type = data.get("type")
@@ -472,8 +480,15 @@ class GeoJSONSerializer(serializers.Serializer):
             self._validate_feature(data)
         elif geojson_type == "FeatureCollection":
             self._validate_feature_collection(data)
-        elif "geometry" in data:
-            self._validate_geometry(data["geometry"])
+        elif geojson_type in [
+            "Polygon",
+            "MultiPolygon",
+            "LineString",
+            "MultiLineString",
+            "Point",
+            "MultiPoint",
+        ]:
+            self._validate_geometry(data)
         return data
 
     def _validate_feature(self, data):
@@ -502,6 +517,9 @@ class GeoJSONSerializer(serializers.Serializer):
         except Exception as e:
             raise serializers.ValidationError(f"Invalid geometry: {str(e)}")
 
+    def to_representation(self, instance):
+        return instance
+
 
 class UploadedScenarioDataSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
@@ -514,23 +532,20 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
     def validate(self, data):
         geometry = data.get("geometry")
         planning_area_id = data.get("planning_area")
-        validated_geometry = self.validate_geometry(geometry)
 
-        if not self._is_inside_planning_area(validated_geometry, planning_area_id):
+        if not self._is_inside_planning_area(geometry, planning_area_id):
             raise serializers.ValidationError(
                 "The uploaded geometry is not within the selected planning area."
             )
-
-        data["geometry"] = validated_geometry
         return data
 
     def validate_geometry(self, value):
         geojson_serializer = GeoJSONSerializer(data=json.loads(value))
         geojson_serializer.is_valid(raise_exception=True)
-        return value
+        return geojson_serializer.validated_data
 
     def _is_inside_planning_area(self, geometry, planning_area_id):
-        uploaded_geos = union_geojson(json.loads(geometry))
+        uploaded_geos = union_geojson(geometry)
         try:
             planning_area = PlanningArea.objects.get(pk=planning_area_id)
         except PlanningArea.DoesNotExist:
