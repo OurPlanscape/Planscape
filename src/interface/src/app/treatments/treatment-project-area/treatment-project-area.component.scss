@@ -8,6 +8,17 @@
   width: 100%;
 }
 
+:host {
+
+  ::ng-deep .mat-mdc-tab-group {
+    height: 100%;
+  }
+
+  ::ng-deep .mat-mdc-tab-body-wrapper {
+    height: 100%;
+  }
+}
+
 .placeholder-navbar {
   @include h3();
   height: $navbar-height;

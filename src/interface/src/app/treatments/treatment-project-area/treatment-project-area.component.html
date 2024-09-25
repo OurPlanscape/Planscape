@@ -1,3 +1,17 @@
-<p>Project Area</p>
-<a routerLink="../..">Back</a>
-<app-prescription-actions></app-prescription-actions>
+<mat-tab-group
+  class="summary-tab-group"
+  mat-align-tabs="start"
+  disablePagination="true">
+  <mat-tab label="TREATMENTS">
+    <div>Treatments treatments treatments!</div>
+  </mat-tab>
+  <mat-tab label="NOTES">
+    <sg-notes-sidebar
+      [notes]="notes"
+      [notesState]="notesSidebarState"
+      (createNote)="addNote($event)"
+      (deleteNote)="handleNoteDelete($event)"
+      noNotesTitleText="No Project Area Notes Yet"
+      noNotesDetailText="Start adding notes to help your team learn more about this project area."></sg-notes-sidebar>
+  </mat-tab>
+</mat-tab-group>
