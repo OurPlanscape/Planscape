@@ -1,11 +1,11 @@
 from django.db import migrations
+from django.contrib.auth import get_user_model
+from organizations.models import Organization, OrganizationType
 
-from organizations.models import OrganizationType
+User = get_user_model()
 
 
 def create_sig(apps, schema_editor):
-    Organization = apps.get_model("organizations", "Organization")
-    User = apps.get_model("auth", "User")
     user_defaults = {
         "first_name": "Admin",
         "last_name": "Planscape",
@@ -17,7 +17,9 @@ def create_sig(apps, schema_editor):
         email="admin@planscape.org",
         defaults=user_defaults,
     )
-    _sig_gis, _created = Organization.objects.update_or_create(
+    user.set_unusable_password()
+    user.save()
+    _ = Organization.objects.update_or_create(
         created_by=user,
         name="Spatial Informatics Group",
         type=OrganizationType.COMMERCIAL,
@@ -33,6 +35,7 @@ def delete_sig(apps, schema_editor):
 class Migration(migrations.Migration):
     dependencies = [
         ("auth", "0012_alter_user_first_name_max_length"),
+        ("password_policies", "0005_alter_passwordrecord_options"),
         ("organizations", "0001_initial"),
     ]
 
