@@ -464,12 +464,7 @@ class GeoJSONSerializer(serializers.Serializer):
         ]
     )
     bbox = serializers.ListField(child=serializers.FloatField(), required=False)
-    coordinates = serializers.ListField(
-        child=serializers.ListField(
-            child=serializers.ListField(child=serializers.FloatField())
-        ),
-        required=False,
-    )
+    coordinates = serializers.ListField(required=False)
     geometry = serializers.JSONField(required=False)
     features = serializers.ListField(child=serializers.JSONField(), required=False)
     properties = serializers.JSONField(required=False)
@@ -516,9 +511,6 @@ class GeoJSONSerializer(serializers.Serializer):
             GEOSGeometry(json.dumps(value) if isinstance(value, dict) else value)
         except Exception as e:
             raise serializers.ValidationError(f"Invalid geometry: {str(e)}")
-
-    def to_representation(self, instance):
-        return instance
 
 
 class UploadedScenarioDataSerializer(serializers.Serializer):
