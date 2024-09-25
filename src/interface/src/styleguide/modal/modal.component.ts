@@ -4,7 +4,6 @@ import {
   ElementRef,
   EventEmitter,
   HostBinding,
-  Inject,
   Input,
   Output,
 } from '@angular/core';
@@ -12,11 +11,7 @@ import { CommonModule, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
-import {
-  MatDialogModule,
-  MAT_DIALOG_DATA,
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { MatDialogModule } from '@angular/material/dialog';
 import { ButtonComponent, ButtonVariant } from '../button/button.component';
 
 @Component({
@@ -128,10 +123,7 @@ export class ModalComponent {
   @ContentChild('tooltipContentDiv', { static: false })
   tooltipContentDiv?: ElementRef | null = null;
 
-  constructor(
-    @Inject(MAT_DIALOG_DATA) public data: { name: string },
-    public dialogRef: MatDialogRef<ModalComponent>
-  ) {}
+  constructor() {}
 
   get hasTooltipContent(): boolean {
     return !!this.tooltipContentDiv;
@@ -149,8 +141,13 @@ export class ModalComponent {
     this.clickedPrimary.emit();
   }
 
-  @HostBinding('class.large')
+  @HostBinding('class.small')
   get isSmall() {
+    return this.width === 'small';
+  }
+
+  @HostBinding('class.large')
+  get isLarge() {
     return this.width === 'large';
   }
 
