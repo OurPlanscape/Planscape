@@ -45,6 +45,7 @@ PLANSCAPE_APPS = [
     "e2e",
     "impacts",
     "martin",
+    "organizations",
     "planning",
     "restrictions",
     "stands",
@@ -411,7 +412,6 @@ REPORT_RECIPIENT_EMAIL = config("REPORT_RECIPIENT_EMAIL", default=DEFAULT_FROM_E
 
 AREA_SRID = 5070
 CONVERSION_SQM_ACRES = 4046.8564213562374
-ADMIN_ORG_UUID = "6eb11079-e007-4776-98e8-29af9167241a"
 
 ACTSTREAM_SETTINGS = {
     "USE_JSONFIELD": True,
