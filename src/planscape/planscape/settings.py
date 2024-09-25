@@ -45,6 +45,7 @@ PLANSCAPE_APPS = [
     "e2e",
     "impacts",
     "martin",
+    "organizations",
     "planning",
     "restrictions",
     "stands",
