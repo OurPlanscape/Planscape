@@ -1,0 +1,12 @@
+<mgl-popup
+  [lngLat]="lngLat"
+  [closeButton]="false"
+  [closeOnClick]="false"
+  [anchor]="'top'"
+  [offset]="20"
+  maxWidth="none"
+  className="tooltip">
+  <div class="tooltip-content no-select">
+    <ng-content></ng-content>
+  </div>
+</mgl-popup>

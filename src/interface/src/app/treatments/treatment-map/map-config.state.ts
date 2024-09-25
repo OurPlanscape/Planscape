@@ -14,8 +14,8 @@ export class MapConfigState {
   baseLayer$ = this._baseLayer$.asObservable();
   baseLayerUrl$ = this.baseLayer$.pipe(map((b) => baseLayerStyles[b]));
 
-  private _mapCenter$ = new BehaviorSubject<Extent | null>(null);
-  mapCenter$ = this._mapCenter$
+  private _mapExtent$ = new BehaviorSubject<Extent | null>(null);
+  mapExtent$ = this._mapExtent$
     .asObservable()
     .pipe(filter((m): m is Extent => !!m));
 
@@ -40,7 +40,7 @@ export class MapConfigState {
   }
 
   updateMapCenter(pos: any) {
-    this._mapCenter$.next(pos);
+    this._mapExtent$.next(pos);
   }
 
   updateShowProjectAreas(value: boolean) {
@@ -51,18 +51,8 @@ export class MapConfigState {
     this._showTreatmentStandsLayer$.next(value);
   }
 
-  toggleShowTreatmentStands() {
-    const value = this._showTreatmentStandsLayer$.value;
-    this._showTreatmentStandsLayer$.next(!value);
-  }
-
-  enableBoxSelection() {
-    this._standSelectionEnabled$.next(true);
-    this.resetCursor();
-  }
-
-  disableBoxSelection() {
-    this._standSelectionEnabled$.next(false);
+  setStandSelectionEnabled(value: boolean) {
+    this._standSelectionEnabled$.next(value);
     this.resetCursor();
   }
 

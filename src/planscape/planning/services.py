@@ -5,17 +5,18 @@ import zipfile
 import fiona
 from datetime import date, time, datetime
 from pathlib import Path
-from typing import Any, Dict, Tuple, Type, Union
+from typing import Any, Dict, Optional, Tuple, Type, Union
 from django.conf import settings
 from django.db import transaction
 from fiona.crs import from_epsg
 from django.contrib.gis.geos import GEOSGeometry
 from django.utils.timezone import now
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from planscape.typing import TLooseGeom, TUser
 from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
-    PlanningAreaType,
+    TPlanningArea,
     ProjectArea,
     Scenario,
     ScenarioOrigin,
@@ -27,21 +28,18 @@ from planning.tasks import async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
-from django.contrib.auth.models import AbstractUser
 from actstream import action
 
 logger = logging.getLogger(__name__)
-UserType = Type[AbstractUser]
-LooseGeomType = Union[Dict[str, Any] | GEOSGeometry]
 
 
 @transaction.atomic()
 def create_planning_area(
-    user: UserType,
+    user: TUser,
     name: str,
     region_name: str,
-    geometry: LooseGeomType = None,
-    notes: str = None,
+    geometry: TLooseGeom = None,
+    notes: Optional[str] = None,
 ) -> PlanningArea:
     """Canonical method to create a new planning area."""
 
@@ -64,8 +62,8 @@ def create_planning_area(
 
 @transaction.atomic
 def delete_planning_area(
-    user: UserType,
-    planning_area: PlanningAreaType,
+    user: TUser,
+    planning_area: TPlanningArea,
 ):
     if not PlanningAreaPermission.can_remove(user, planning_area):
         logger.error(f"User {user} has no permission to delete {planning_area.pk}")
@@ -90,7 +88,7 @@ def delete_planning_area(
 
 
 @transaction.atomic()
-def create_scenario(user: UserType, **kwargs) -> Scenario:
+def create_scenario(user: TUser, **kwargs) -> Scenario:
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
     data = {
@@ -114,7 +112,7 @@ def create_scenario(user: UserType, **kwargs) -> Scenario:
 
 @transaction.atomic
 def delete_scenario(
-    user: UserType,
+    user: TUser,
     scenario: Type[Scenario],
 ):
     if not ScenarioPermission.can_remove(user, scenario):
@@ -272,7 +270,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
 
 @transaction.atomic()
-def toggle_scenario_status(scenario: Scenario, user: UserType) -> Scenario:
+def toggle_scenario_status(scenario: Scenario, user: TUser) -> Scenario:
     new_status = (
         ScenarioStatus.ACTIVE
         if scenario.status == ScenarioStatus.ARCHIVED

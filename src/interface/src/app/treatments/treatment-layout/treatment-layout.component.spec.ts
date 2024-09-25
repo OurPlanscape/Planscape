@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TreatmentLayoutComponent } from './treatment-layout.component';
-import { MockDeclarations } from 'ng-mocks';
+import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { MatSnackBar } from '@angular/material/snack-bar';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { TreatmentsState } from '../treatments.state';
+import { RouterTestingModule } from '@angular/router/testing';
+import { TreatmentsService } from '@services/treatments.service';
+import { NavBarComponent, SharedModule } from '@shared';
+import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
 
 describe('TreatmentLayoutComponent', () => {
   let component: TreatmentLayoutComponent;
@@ -13,13 +15,15 @@ describe('TreatmentLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        TreatmentLayoutComponent,
-        HttpClientTestingModule,
-        MatSnackBar,
-        BrowserAnimationsModule,
+      imports: [TreatmentLayoutComponent, RouterTestingModule, SharedModule],
+      providers: [MockProviders(TreatmentsState, TreatmentsService)],
+      declarations: [
+        MockDeclarations(
+          TreatmentMapComponent,
+          NavBarComponent,
+          TreatmentNavbarMenuComponent
+        ),
       ],
-      declarations: [MockDeclarations(TreatmentMapComponent)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentLayoutComponent);

@@ -1,23 +1,17 @@
 import json
-from django.contrib.auth.models import User
-from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
 from unittest import mock
 from collaboration.models import UserObjectRole, Role
-from collaboration.tests.helpers import create_collaborator_record
+from collaboration.tests.factories import UserObjectRoleFactory
 from planning.models import PlanningArea
-from planning.tests.helpers import _create_test_user_set
+from planscape.tests.factories import UserFactory
 
 
 class CreateSharedLinkTest(APITransactionTestCase):
     def setUp(self):
-        self.user1 = User.objects.create(username="testuser1")
-        self.user1.set_password("12345")
-        self.user1.save()
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.user1 = UserFactory(username="testuser1")
+        self.user2 = UserFactory(username="testuser2")
         self.pa1 = PlanningArea.objects.create(user=self.user1, region_name="foo")
         self.pa2 = PlanningArea.objects.create(user=self.user2, region_name="foo")
 
@@ -84,12 +78,8 @@ class CreateSharedLinkTest(APITransactionTestCase):
 
 class GetInvitationsTest(APITransactionTestCase):
     def setUp(self):
-        self.user1 = User.objects.create(username="testuser1")
-        self.user1.set_password("12345")
-        self.user1.save()
-        self.user2 = User.objects.create(username="testuser2")
-        self.user2.set_password("12345")
-        self.user2.save()
+        self.user1 = UserFactory(username="testuser1")
+        self.user2 = UserFactory(username="testuser2")
         self.pa1 = PlanningArea.objects.create(user=self.user1, region_name="foo")
         self.pa2 = PlanningArea.objects.create(user=self.user2, region_name="foo")
 
@@ -132,16 +122,20 @@ class GetInvitationsTest(APITransactionTestCase):
 
 class UpdateCollaboratorRoleTest(APITransactionTestCase):
     def setUp(self):
-        self.test_users = _create_test_user_set()
-        self.owner = self.test_users["owner"]
-        self.collab_user = self.test_users["collaborator"]
-        self.invitee = self.test_users["viewer"]
+        self.owner = UserFactory()
+        self.collab_user = UserFactory()
+        self.invitee = UserFactory()
 
         self.planningarea = PlanningArea.objects.create(
             user=self.owner, region_name="foo"
         )
-        self.user_object_role = create_collaborator_record(
-            self.owner, self.invitee, self.planningarea, Role.VIEWER
+
+        self.user_object_role = UserObjectRoleFactory(
+            inviter=self.owner,
+            collaborator=self.invitee,
+            email=self.invitee.email,
+            role=Role.VIEWER,
+            associated_model=self.planningarea,
         )
 
     def test_update_role_from_viewer_to_collaborator(self):
@@ -244,19 +238,27 @@ class UpdateCollaboratorRoleTest(APITransactionTestCase):
 
 class DeleteInviteTest(APITransactionTestCase):
     def setUp(self):
-        self.test_users = _create_test_user_set()
-        self.owner = self.test_users["owner"]
-        self.collab_user = self.test_users["collaborator"]
-        self.invitee = self.test_users["viewer"]
+        self.owner = UserFactory()
+        self.collab_user = UserFactory()
+        self.invitee = UserFactory()
 
         self.planningarea = PlanningArea.objects.create(
             user=self.owner, region_name="foo"
         )
-        self.user_object_role_collab = create_collaborator_record(
-            self.owner, self.collab_user, self.planningarea, Role.COLLABORATOR
+        self.user_object_role_collab = UserObjectRoleFactory(
+            inviter=self.owner,
+            collaborator=self.collab_user,
+            email=self.collab_user.email,
+            role=Role.COLLABORATOR,
+            associated_model=self.planningarea,
         )
-        self.user_object_role_viewer = create_collaborator_record(
-            self.owner, self.invitee, self.planningarea, Role.VIEWER
+
+        self.user_object_role_viewer = UserObjectRoleFactory(
+            inviter=self.owner,
+            collaborator=self.invitee,
+            email=self.invitee.email,
+            role=Role.VIEWER,
+            associated_model=self.planningarea,
         )
 
     def test_delete_collab_invite_as_owner(self):

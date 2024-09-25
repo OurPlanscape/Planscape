@@ -1,21 +1,30 @@
-<div class="left-side">
-  <router-outlet></router-outlet>
-  <mat-tab-group
-    class="summary-tab-group"
-    mat-align-tabs="start"
-    disablePagination="true">
-    <mat-tab label="TREATMENTS">
-      <div>Treatments treatments treatments!</div>
-    </mat-tab>
-    <mat-tab label="NOTES">
-      <sg-notes-sidebar
-        [notes]="notes"
-        [notesState]="notesSidebarState"
-        (createNote)="addNote($event)"
-        (deleteNote)="handleNoteDelete($event)"
-        noNotesTitleText="No Project Area Notes Yet"
-        noNotesDetailText="Start adding notes to help your team learn more about this project area."></sg-notes-sidebar>
-    </mat-tab>
-  </mat-tab-group>
-</div>
-<app-treatment-map></app-treatment-map>
+<app-nav-bar
+  (goBack)="goBack()"
+  [breadcrumbs]="(breadcrumbs$ | async) || []"
+  [area]="'TREATMENTS'">
+  <app-treatment-navbar-menu
+    [treatmentPlanName]="(treatmentPlanName$ | async) || ''"
+    (treatmentPlanDeleted)="redirectToScenario()"
+    (goToDuplicatedPlan)="
+      redirectToNewPlan($event)
+    "></app-treatment-navbar-menu>
+</app-nav-bar>
+<section class="treatment">
+  <div class="left-side">
+    <router-outlet></router-outlet>
+  </div>
+  <div class="right-side">
+    <app-treatment-map></app-treatment-map>
+    <section class="right-side-footer">
+      <ng-container *ngIf="activeProjectArea$ | async; else treatment">
+        <button sg-button variant="primary" class="footer-primary">Done</button>
+      </ng-container>
+      <ng-template #treatment>
+        <mat-slide-toggle>View Treatment Layers</mat-slide-toggle>
+        <button sg-button variant="primary" class="footer-primary">
+          Run Impacts
+        </button>
+      </ng-template>
+    </section>
+  </div>
+</section>
