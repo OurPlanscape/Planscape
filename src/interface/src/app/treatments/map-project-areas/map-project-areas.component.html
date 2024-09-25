@@ -16,10 +16,10 @@
   id="map-project-areas-fill"
   type="fill"
   source="scenarioProjectAreas"
-  (layerClick)="goToProjectArea($event)"
-  (layerMouseEnter)="setCursor()"
-  (layerMouseMove)="setProjectAreaTooltip($event)"
-  (layerMouseLeave)="resetCursorAndTooltip($event)"
+  (layerClick)="visible ? goToProjectArea($event) : null"
+  (layerMouseEnter)="visible ? setCursor() : null"
+  (layerMouseMove)="visible ? setProjectAreaTooltip($event) : null"
+  (layerMouseLeave)="visible ? resetCursorAndTooltip($event) : null"
   [sourceLayer]="layerName"
   [paint]="{
     'fill-outline-color': '#000',
