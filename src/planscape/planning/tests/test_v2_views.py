@@ -1,23 +1,26 @@
 import json
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.urls import reverse
+from rest_framework import status
 from rest_framework.test import APITransactionTestCase, APITestCase
-from collaboration.tests.factories import UserObjectRoleFactory
 from collaboration.models import Role
+from collaboration.tests.factories import UserObjectRoleFactory
 from impacts.permissions import (
     VIEWER_PERMISSIONS,
     COLLABORATOR_PERMISSIONS,
     OWNER_PERMISSIONS,
 )
 from impacts.tests.factories import TreatmentPlanFactory
-from planning.models import PlanningArea, RegionChoices, ProjectAreaNote
+from planning.models import PlanningArea, RegionChoices, ProjectAreaNote, ScenarioResult
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
     ProjectAreaFactory,
+    UserFactory,
 )
 from planscape.tests.factories import UserFactory
 from rest_framework import status
+from planning.tests.helpers import _load_geojson_fixture
 
 
 class CreatorsTest(APITransactionTestCase):
@@ -1067,3 +1070,103 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class CreateScenariosFromUpload(APITransactionTestCase):
+    def setUp(self):
+        self.owner_user = UserFactory.create()
+        self.la_geojson = json.dumps(_load_geojson_fixture("around_LA.geojson"))
+
+        self.planning_area = PlanningAreaFactory(
+            user=self.owner_user, geometry=MultiPolygon(GEOSGeometry(self.la_geojson))
+        )
+        self.pasadena_pomona = _load_geojson_fixture("near_pasadena_pomona.geojson")
+        self.sandiego = _load_geojson_fixture("sandiego.geojson")
+        self.riverside = _load_geojson_fixture("riverside.geojson")
+
+    def test_confirm_permissions_required(self):
+        payload = {
+            "geometry": json.dumps(self.riverside),
+            "name": "new scenario",
+            "stand_size": "SMALL",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse(
+                "api:planning:scenarios-upload-shapefiles",
+            ),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 401)
+
+    def test_create_from_single_feature_shpjs(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.riverside),
+            "name": "new scenario",
+            "stand_size": "SMALL",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse(
+                "api:planning:scenarios-upload-shapefiles",
+            ),
+            data=payload,
+            format="json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(response_data["project_areas"]), 1)
+
+        result_record = ScenarioResult.objects.get(scenario=response_data["id"])
+        self.assertIn("project_id", result_record.result["properties"])
+
+    def test_create_from_multi_feature_shpjs(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.pasadena_pomona),
+            "name": "new scenario",
+            "stand_size": "SMALL",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse(
+                "api:planning:scenarios-upload-shapefiles",
+            ),
+            data=payload,
+            format="json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(response_data["project_areas"]), 2)
+        self.assertEqual(response_data["origin"], "USER")
+
+        result_record = ScenarioResult.objects.get(scenario=response_data["id"])
+        # assert that we have multiple features
+        self.assertEqual(len(result_record.result["features"]), 2)
+
+        # test that all features contain the expected properties
+        for f in result_record.result["features"]:
+            self.assertIn("project_id", f["properties"])
+
+    def test_create_uncontained_geometry(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.sandiego),
+            "name": "new scenario",
+            "stand_size": "SMALL",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse(
+                "api:planning:scenarios-upload-shapefiles",
+            ),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEquals(
+            b'{"global":["The uploaded geometry is not within the selected planning area."]}',
+            response.content,
+        )
