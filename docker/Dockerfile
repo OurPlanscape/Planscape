@@ -22,8 +22,7 @@ RUN apt-get update && \
     libcurl4-openssl-dev libssl-dev \
     postgresql-client \
     python3-pip \
-    pkgconf \
-    r-base-core r-recommended r-base r-base-dev
+    r-base r-base-dev
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
