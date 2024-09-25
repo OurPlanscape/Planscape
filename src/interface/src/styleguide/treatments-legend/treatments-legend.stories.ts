@@ -1,8 +1,19 @@
-import type { Meta, StoryObj } from '@storybook/angular';
-import { applicationConfig, argsToTemplate } from '@storybook/angular';
+import {
+  argsToTemplate,
+  moduleMetadata,
+  Meta,
+  StoryObj,
+} from '@storybook/angular';
 import { TreatmentsLegendComponent } from './treatments-legend.component';
-import { provideAnimations } from '@angular/platform-browser/animations';
 import { PrescriptionSingleAction } from 'src/app/treatments/prescriptions';
+import { ModalComponent } from '../modal/modal.component';
+import { ModalInfoComponent } from '../modal-info-box/modal-info.component';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const containerStyle = `style="display: flex;
   width: 100%;
@@ -28,15 +39,24 @@ const mockSingleTreatments: PrescriptionSingleAction[] = [
 const meta: Meta<TreatmentsLegendComponent> = {
   title: 'Components/Treatments Legend',
   component: TreatmentsLegendComponent,
+  tags: ['autodocs'],
   decorators: [
-    applicationConfig({
-      providers: [provideAnimations()],
+    moduleMetadata({
+      imports: [
+        ModalComponent,
+        MatDialogModule,
+        BrowserAnimationsModule,
+        ModalInfoComponent,
+      ],
+      providers: [
+        { provide: MAT_DIALOG_DATA, useValue: {} },
+        { provide: MatDialogRef, useValue: {} },
+      ],
     }),
   ],
-  tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div ${containerStyle}><div style="width:400px;"><sg-treatments-legend ${argsToTemplate(args)}></sg-treatments-legend></div>`,
+    template: `<div ${containerStyle}><div style="width:400px;height:1000px;"><sg-treatments-legend ${argsToTemplate(args)}></sg-treatments-legend></div>`,
   }),
 };
 

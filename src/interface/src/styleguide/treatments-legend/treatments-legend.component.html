@@ -1,34 +1,49 @@
-<div>Treatment Legend</div>
+<sg-modal
+  class="treatment-legend"
+  title="Treatment Legend"
+  [width]="small"
+  [hasFooter]="false"
+  [shortHeader]="true"
+  [scrollableContent]="false">
+  <div modalBodyContent class="legend-body">
+    <div class="legend-no-expander">
+      <div class="no-treatment-row legend-row">
+        <sg-treatment-type-icon [treatment]="null"></sg-treatment-type-icon>
+        <div class="legend-text">No Treatment</div>
+      </div>
+    </div>
+    <mat-expansion-panel class="sg-expander-panel">
+      <mat-expansion-panel-header class="legend-expander-heading">
+        <div class="expander-heading-content">
+          <mat-icon class="material-symbols-outlined expander-heading-icon"
+            >medication_outline</mat-icon
+          >
+          Single Treatment
+        </div>
+      </mat-expansion-panel-header>
+      <div class="legend-section">
+        <div class="legend-row" *ngFor="let tx of singleTreatments">
+          <sg-treatment-type-icon [treatment]="tx"></sg-treatment-type-icon>
+          <div class="legend-text">{{ getSingleTreatmentLabel(tx) }}</div>
+        </div>
+      </div>
+    </mat-expansion-panel>
 
-<div class="legend-body">
-  <div class="legend-row">
-    <sg-treatment-type-icon [treatment]="null"></sg-treatment-type-icon>
-    <div class="legend-text">No Treatment</div>
+    <mat-expansion-panel class="sg-expander-panel">
+      <mat-expansion-panel-header class="legend-expander-heading">
+        <div class="expander-heading-content">
+          <mat-icon class="material-symbols-outlined expander-heading-icon"
+            >repeat</mat-icon
+          >Treatment Sequencing
+        </div>
+      </mat-expansion-panel-header>
+      <div class="legend-section">
+        <div class="legend-row" *ngFor="let seq of sequences">
+          <sg-sequence-icon [sequenceNum]="seq"></sg-sequence-icon>
+          <div class="legend-text">{{ getSequenceLabel(seq) }}</div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+    <div class="legend-section"></div>
   </div>
-  <mat-expansion-panel class="sg-expander-panel">
-    <mat-expansion-panel-header class="legend-header">
-      <mat-icon class="header-icon medication_outline"
-        >medication_outline</mat-icon
-      >
-      Treatment
-    </mat-expansion-panel-header>
-    <div class="legend-section">
-      <div class="legend-row" *ngFor="let tx of singleTreatments">
-        <sg-treatment-type-icon [treatment]="tx"></sg-treatment-type-icon>
-        <div class="legend-text">{{ getLabel(tx) }}</div>
-      </div>
-    </div>
-  </mat-expansion-panel>
-
-  <mat-expansion-panel class="sg-expander-panel">
-    <mat-expansion-panel-header class="legend-header">
-      <mat-icon class="header-icon">repeat</mat-icon>Treatment Sequencing
-    </mat-expansion-panel-header>
-    <div class="legend-section">
-      <div *ngFor="let seq of sequences">
-        <sg-treatment-type-icon></sg-treatment-type-icon>
-      </div>
-    </div>
-  </mat-expansion-panel>
-  <div class="legend-section"></div>
-</div>
+</sg-modal>

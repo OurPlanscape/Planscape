@@ -1,60 +1,84 @@
 @import 'mixins';
 @import 'colors';
 
-:host {
-  width: 300px;
+.treatment-legend {
+  width: 314px;
+
+  ::ng-deep .header-title {
+    @include xs-label();
+  }
+}
+
+.legend-body {
+  width: 314px;
+  background-color: $color-white;
+  display: flex;
+  flex-direction: column;
+}
+
+.legend-section {
   background-color: $color-white;
   display: flex;
   flex-direction: column;
   gap: 10px;
+  width: 280px; //TODO: unfix this?
+}
 
-  .legend-body {
-    width: 300px;
-    background-color: $color-white;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
+.legend-expander-heading {
+  @include xs-label();
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  gap: 8px;
+  align-items: center;
+}
 
-  .legend-section {
-    background-color: $color-white;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 280px; //TODO: unfix this?
-  }
+.expander-heading-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}
 
-  .legend-header {
-    @include xs-label();
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
-    gap: 8px;
-    width: 100%;
-    align-items: center;
-  }
+.legend-no-expander {
+  height: 48px;
+  flex-direction: row;
+  align-items: center;
+  display: flex;
+}
 
-  .header-icon {
-    color: $color-md-gray;
-  }
+.no-treatment-row {
+  height: 40px;
+  padding-left: 24px;
+  align-items: center;
+}
 
-  .legend-row {
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
-    height: 22px;
-    gap: 8px;
-    width: 100%;
-    align-items: center;
-  }
+.expander-heading-icon {
+  color: $color-md-gray;
+  background-repeat: no-repeat;
+  display: inline-block;
+  fill: currentColor;
+  height: 22px;
+  width: 22px;
+  overflow: hidden;
+  font-size: 22px;
+}
 
-  .legend-text {
-    @include standard-input-label();
-    color: $color-dark-gray;
-    font-family: Public Sans;
-    font-size: 14px;
-    font-weight: 500;
-    line-height: 22px;
-    text-align: left;
-  }
+.legend-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  height: 22px;
+  gap: 8px;
+  width: 100%;
+}
+
+.legend-text {
+  @include standard-input-label();
+  color: $color-dark-gray;
+  font-family: Public Sans;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+  text-align: left;
 }
