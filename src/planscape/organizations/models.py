@@ -44,3 +44,9 @@ class Organization(
     class Meta(TypedModelMeta):
         verbose_name = "Organization"
         verbose_name_plural = "Organizations"
+        constraints = [
+            models.UniqueConstraint(
+                fields=("name",),
+                name="organization_name_unique",
+            )
+        ]
