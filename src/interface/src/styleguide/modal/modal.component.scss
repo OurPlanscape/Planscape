@@ -16,10 +16,10 @@
     width: 520px;
   }
   &.large {
-    width: 580px;
-  }
-  &.jumbo {
     width: 730px;
+  }
+  &.full {
+    width: 100%;
   }
 
   &.no-border {
@@ -131,7 +131,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 16px;
+  gap: 8px;
 
   &.centered {
     justify-content: center;
