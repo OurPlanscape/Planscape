@@ -6,6 +6,7 @@ import zipfile
 import fiona
 
 from datetime import date, time, datetime
+from functools import partial
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Type, Union
 from django.conf import settings
@@ -178,11 +179,14 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         configuration={"stand_size": validated_data["stand_size"]},
         origin=ScenarioOrigin.USER,
     )
-    action.send(
-        scenario.user,
-        verb="created",
-        action_object=scenario,
-        target=scenario.planning_area,
+    transaction.on_commit(
+        partial(
+            action.send,
+            sender=scenario.user,
+            verb="created",
+            action_object=scenario,
+            target=scenario.planning_area,
+        )
     )
     # Create project areas from features...
     # handle just one polygon
