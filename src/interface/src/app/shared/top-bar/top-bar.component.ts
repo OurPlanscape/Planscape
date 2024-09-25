@@ -40,6 +40,8 @@ export class TopBarComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.router.routeReuseStrategy.shouldReuseRoute = () => false;
+
     this.router.events.subscribe((event) => {
       this.sidebarOpen = false;
       this.removeBodyClass();

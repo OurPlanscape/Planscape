@@ -26,5 +26,8 @@
         </button>
       </ng-template>
     </section>
+
+    <app-apply-treatment
+      *ngIf="showApplyTreatments$ | async"></app-apply-treatment>
   </div>
 </section>

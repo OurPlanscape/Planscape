@@ -37,6 +37,10 @@ export class TreatmentsState {
 
   public activeProjectArea$ = this._activeProjectArea$.asObservable();
 
+  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
+  public showApplyTreatmentsDialog$ =
+    this._showApplyTreatmentsDialog$.asObservable();
+
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
       throw new Error('no treatment plan id!');
@@ -191,5 +195,9 @@ export class TreatmentsState {
       throw new Error('no summary loaded');
     }
     return summary;
+  }
+
+  setShowApplyTreatmentsDialog(value: boolean) {
+    this._showApplyTreatmentsDialog$.next(value);
   }
 }
