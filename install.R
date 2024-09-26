@@ -1,4 +1,4 @@
-repos <- "http://cran.us.r-project.org"
+repos <- "https://cloud.r-project.org/"
 if (!require("remotes")) install.packages("remotes", repos=repos)
 if (!require("pacman")) install.packages("pacman", repos=repos)
 library(remotes)
