@@ -1,4 +1,5 @@
 import logging
+import json
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins, permissions, pagination
@@ -14,7 +15,7 @@ from planning.filters import (
     PlanningAreaOrderingFilter,
     ScenarioOrderingFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario
+from planning.models import PlanningArea, ProjectArea, Scenario, ScenarioOrigin, User
 from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     CreatePlanningAreaSerializer,
@@ -22,9 +23,11 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    ScenarioAndProjectAreasSerializer,
     ProjectAreaSerializer,
     ScenarioSerializer,
     ListCreatorSerializer,
+    UploadedScenarioDataSerializer,
 )
 from planning.services import (
     create_planning_area,
@@ -32,6 +35,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
+    create_scenario_from_upload,
 )
 
 User = get_user_model()
@@ -208,6 +212,21 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         toggle_scenario_status(scenario, self.request.user)
         serializer = ScenarioSerializer(instance=scenario)
         return Response(data=serializer.data)
+
+    @action(methods=["POST"], detail=False)
+    def upload_shapefiles(self, request, pk=None, *args, **kwargs):
+        serializer = UploadedScenarioDataSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        new_scenario = create_scenario_from_upload(
+            validated_data=serializer.validated_data,
+            user=request.user,
+        )
+        out_serializer = ScenarioAndProjectAreasSerializer(instance=new_scenario)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+        )
 
 
 # TODO: migrate this to an action inside the planning area viewset
