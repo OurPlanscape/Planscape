@@ -9,6 +9,8 @@
   max-height: 700px;
   border-radius: 4px;
   justify-content: space-between;
+
+
   &.small {
     width: 460px;
   }
@@ -36,6 +38,7 @@
 .header {
   @include h4();
   display: flex;
+  flex-shrink: 0;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -132,6 +135,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 8px;
+  flex-shrink: 0;
 
   &.centered {
     justify-content: center;

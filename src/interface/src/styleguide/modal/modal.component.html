@@ -11,8 +11,8 @@
   <div class="title-buttons">
     <button>
       <mat-icon *ngIf="hasTooltipContent" [matMenuTriggerFor]="tooltipMenu"
-        >help_outline</mat-icon
-      >
+        >help_outline
+      </mat-icon>
       <mat-menu #tooltipMenu="matMenu" class="tooltip-menu">
         <ng-content class="tooltip-content" select="[tooltipContent]">
         </ng-content>

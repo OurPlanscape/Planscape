@@ -107,7 +107,6 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
   ngAfterViewInit(): void {
     if (this.map != undefined) this.map.remove();
-
     this.map = L.map(this.mapId ? this.mapId : 'map', {
       center: [...regionMapCenters(this.selectedRegion$.getValue()!)],
       zoom: FrontendConstants.MAP_INITIAL_ZOOM,
@@ -159,10 +158,17 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         weight: 3,
       },
     }).addTo(this.map);
-    this.map.fitBounds(this.drawingLayer.getBounds(), {
-      paddingTopLeft: this.mapPadding,
-      animate: false,
-    });
+
+    // force the map fitbounds to happen on the next tick.
+    // not ideal, but fixes some issues until we refactor this component.
+    setTimeout(() => {
+      if (this.drawingLayer) {
+        this.map.fitBounds(this.drawingLayer.getBounds(), {
+          paddingTopLeft: this.mapPadding,
+          animate: false,
+        });
+      }
+    }, 10);
   }
 
   /** Creates a basemap layer using the Stadia.AlidadeSmooth tiles. */
