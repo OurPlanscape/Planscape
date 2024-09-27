@@ -7,7 +7,7 @@ import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component'
 import { ModalComponent } from '../modal/modal.component';
 import {
   PrescriptionSingleAction,
-  USER_FACING_RX_STRING,
+  PRESCRIPTIONS,
 } from '../../app/treatments/prescriptions';
 
 /**
@@ -15,7 +15,7 @@ import {
  * A component that displays a set of treatments, along with an icon
  */
 @Component({
-  selector: 'app-treatments-legend',
+  selector: 'sg-treatments-legend',
   standalone: true,
   imports: [
     MatExpansionModule,
@@ -42,7 +42,7 @@ export class TreatmentsLegendComponent {
   }
 
   getSingleTreatmentLabel(tx_key: PrescriptionSingleAction): string {
-    return USER_FACING_RX_STRING[tx_key];
+    return PRESCRIPTIONS.SINGLE[tx_key];
   }
   getSequenceLabel(seq: number) {
     return `Sequence ${seq}`;
