@@ -17,7 +17,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 const containerStyle = `style="display: flex;
   width: 100%;
-  height: 180px;
+  height: 800px;
   background-color: lightgray;
   align-items: center;
   justify-content: start;
@@ -56,7 +56,7 @@ const meta: Meta<TreatmentsLegendComponent> = {
   ],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div ${containerStyle}><div style="width:400px;height:1000px;"><sg-treatments-legend ${argsToTemplate(args)}></sg-treatments-legend></div>`,
+    template: `<div ${containerStyle}><div style="width:400px;"><sg-treatments-legend ${argsToTemplate(args)}></sg-treatments-legend></div>`,
   }),
 };
 
