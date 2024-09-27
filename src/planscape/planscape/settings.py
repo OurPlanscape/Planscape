@@ -1,14 +1,20 @@
 import multiprocessing
 import os
-from pathlib import Path
-from datetime import timedelta
 import sys
+import logging
+from datetime import timedelta
+from pathlib import Path
+
+import boto3
 import sentry_sdk
+import django_stubs_ext
 from corsheaders.defaults import default_headers
 from decouple import config
-from sentry_sdk.integrations.django import DjangoIntegration
 from sentry_sdk.integrations.celery import CeleryIntegration
+from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
+
+django_stubs_ext.monkeypatch()
 
 TESTING_MODE = "test" in sys.argv
 LOGLEVEL = config("LOGLEVEL", default="INFO", cast=str)
@@ -31,19 +37,16 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
 
 
 # Application definition
-planscape_apps = [
+PLANSCAPE_APPS = [
     "boundary",
     "collaboration",
     "conditions",
     "core",
-    "datasets",
-    "goals",
+    "e2e",
     "impacts",
     "martin",
-    "metrics",
     "organizations",
     "planning",
-    "projects",
     "restrictions",
     "stands",
     "users",
@@ -71,7 +74,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "drf_spectacular",
-] + planscape_apps
+] + PLANSCAPE_APPS
 
 # Middleware order matters because of layering dependencies
 # https://docs.djangoproject.com/en/4.2/topics/http/middleware/#activating-middleware
@@ -391,7 +394,8 @@ CELERY_TASK_AUTODISCOVER = True
 
 CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
-    "'planning.e2e.*": {"queue": "default"},
+    "impacts.tasks.*": {"queue": "impacts"},
+    "e2e.tasks.*": {"queue": "default"},
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
@@ -408,7 +412,6 @@ REPORT_RECIPIENT_EMAIL = config("REPORT_RECIPIENT_EMAIL", default=DEFAULT_FROM_E
 
 AREA_SRID = 5070
 CONVERSION_SQM_ACRES = 4046.8564213562374
-ADMIN_ORG_UUID = "6eb11079-e007-4776-98e8-29af9167241a"
 
 ACTSTREAM_SETTINGS = {
     "USE_JSONFIELD": True,
@@ -422,3 +425,13 @@ SPECTACULAR_SETTINGS = {
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
 }
+
+S3_BUCKET = config("S3_BUCKET", "planscape-control-dev")
+AWS_ACCESS_KEY_ID = config("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
+AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
+os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
+os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
+os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
+
+boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)

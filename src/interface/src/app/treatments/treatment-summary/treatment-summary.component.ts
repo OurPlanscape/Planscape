@@ -18,4 +18,8 @@ export class TreatmentSummaryComponent {
   summary$ = this.treatmentsState.summary$;
 
   constructor(private treatmentsState: TreatmentsState) {}
+
+  setActiveProjectArea(projectAreaId: number) {
+    this.treatmentsState.selectProjectArea(projectAreaId);
+  }
 }

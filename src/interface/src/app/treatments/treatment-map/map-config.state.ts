@@ -14,8 +14,8 @@ export class MapConfigState {
   baseLayer$ = this._baseLayer$.asObservable();
   baseLayerUrl$ = this.baseLayer$.pipe(map((b) => baseLayerStyles[b]));
 
-  private _mapCenter$ = new BehaviorSubject<Extent | null>(null);
-  mapCenter$ = this._mapCenter$
+  private _mapExtent$ = new BehaviorSubject<Extent | null>(null);
+  mapExtent$ = this._mapExtent$
     .asObservable()
     .pipe(filter((m): m is Extent => !!m));
 
@@ -26,18 +26,21 @@ export class MapConfigState {
   public showTreatmentStandsLayer$ =
     this._showTreatmentStandsLayer$.asObservable();
 
-  private _boxSelectionEnabled$ = new BehaviorSubject(false);
-  public boxSelectionEnabled$ = this._boxSelectionEnabled$.asObservable();
+  private _standSelectionEnabled$ = new BehaviorSubject(false);
+  public standSelectionEnabled$ = this._standSelectionEnabled$.asObservable();
 
   private _cursor$ = new BehaviorSubject('');
   public cursor$ = this._cursor$.asObservable();
+
+  private _showMapControls$ = new BehaviorSubject(false);
+  public showMapControls$ = this._showMapControls$.asObservable();
 
   updateBaseLayer(layer: BaseLayerType) {
     this._baseLayer$.next(layer);
   }
 
   updateMapCenter(pos: any) {
-    this._mapCenter$.next(pos);
+    this._mapExtent$.next(pos);
   }
 
   updateShowProjectAreas(value: boolean) {
@@ -49,18 +52,17 @@ export class MapConfigState {
   }
 
   toggleShowTreatmentStands() {
-    const value = this._showTreatmentStandsLayer$.value;
-    this._showTreatmentStandsLayer$.next(!value);
+    const visible = this._showTreatmentStandsLayer$.value;
+    this._showTreatmentStandsLayer$.next(!visible);
   }
 
-  toggleBoxSelectionEnabled() {
-    const value = this._boxSelectionEnabled$.value;
-    this._boxSelectionEnabled$.next(!value);
+  setStandSelectionEnabled(value: boolean) {
+    this._standSelectionEnabled$.next(value);
     this.resetCursor();
   }
 
-  getBoxSelectionEnabled() {
-    return this._boxSelectionEnabled$.value;
+  isStandSelectionEnabled() {
+    return this._standSelectionEnabled$.value;
   }
 
   setCursor(value: string) {
@@ -68,6 +70,10 @@ export class MapConfigState {
   }
 
   resetCursor() {
-    this._cursor$.next(this._boxSelectionEnabled$.value ? 'crosshair' : '');
+    this._cursor$.next(this._standSelectionEnabled$.value ? 'crosshair' : '');
+  }
+
+  setShowMapControls(value: boolean) {
+    this._showMapControls$.next(value);
   }
 }

@@ -1,5 +1,48 @@
-<button (click)="toggleMapDrag()">
-  {{ (boxSelectionEnabled$ | async) ? 'drag map' : 'select stands' }}
-</button>
-<button (click)="clearTreatments()">clear selection</button>
-<button (click)="toggleShowStands()">Show/hide stands</button>
+<mgl-control position="top-left">
+  <div class="controls">
+    <button
+      type="button"
+      (click)="zoomIn()"
+      matTooltip="Zoom In"
+      matTooltipPosition="right">
+      <mat-icon class="material-symbols-outlined">zoom_in</mat-icon>
+    </button>
+    <button
+      type="button"
+      (click)="zoomOut()"
+      matTooltip="Zoom Out"
+      matTooltipPosition="right">
+      <mat-icon class="material-symbols-outlined">zoom_out</mat-icon>
+    </button>
+    <button
+      type="button"
+      [ngClass]="{ active: (standSelectionEnabled$ | async) }"
+      (click)="toggleRxSelection()"
+      matTooltip="RX Selection Tool"
+      matTooltipPosition="right">
+      <mat-icon class="material-symbols-outlined">arrow_selector_tool</mat-icon>
+    </button>
+    <button
+      type="button"
+      (click)="togglePan()"
+      [ngClass]="{ active: (standSelectionEnabled$ | async) === false }"
+      matTooltip="Pan"
+      matTooltipPosition="right">
+      <mat-icon class="material-symbols-outlined">pan_tool</mat-icon>
+    </button>
+    <button
+      type="button"
+      (click)="undoLastAction()"
+      matTooltip="Undo Last Action"
+      matTooltipPosition="right">
+      <mat-icon class="material-symbols-outlined">undo</mat-icon>
+    </button>
+    <button
+      type="button"
+      (click)="clearAll()"
+      matTooltip="Clear All"
+      matTooltipPosition="right">
+      <mat-icon class="material-symbols-outlined">ink_eraser</mat-icon>
+    </button>
+  </div>
+</mgl-control>

@@ -9,10 +9,18 @@
   max-height: 700px;
   border-radius: 4px;
   justify-content: space-between;
+
+
   &.small {
-    width: 400px;
+    width: 460px;
+  }
+  &.medium {
+    width: 520px;
   }
   &.large {
+    width: 730px;
+  }
+  &.full {
     width: 100%;
   }
 
@@ -30,6 +38,7 @@
 .header {
   @include h4();
   display: flex;
+  flex-shrink: 0;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
@@ -125,7 +134,8 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 16px;
+  gap: 8px;
+  flex-shrink: 0;
 
   &.centered {
     justify-content: center;

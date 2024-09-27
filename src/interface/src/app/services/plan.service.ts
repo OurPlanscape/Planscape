@@ -95,13 +95,12 @@ export class PlanService {
     planId: string
   ) {
     return this.http.post(
-      environment.backend_endpoint.concat(
-        '/v2/planningareas/' + planId + '/upload_shapefiles/'
-      ),
+      environment.backend_endpoint.concat('/v2/scenarios/upload_shapefiles/'),
       {
         geometry: shape,
         name: scenarioName,
         stand_size: standSize,
+        planning_area: planId,
       },
       {
         withCredentials: true,

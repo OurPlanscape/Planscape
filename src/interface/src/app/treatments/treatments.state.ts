@@ -1,8 +1,13 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { BehaviorSubject, catchError, map } from 'rxjs';
-import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
+import { BehaviorSubject, catchError, map, of } from 'rxjs';
+import {
+  TreatedStand,
+  TreatmentPlan,
+  TreatmentProjectArea,
+  TreatmentSummary,
+} from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
 
 /**
@@ -18,14 +23,25 @@ export class TreatmentsState {
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
-  private _projectAreaId: number | undefined = undefined;
   private _scenarioId: number | undefined = undefined;
+
+  private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
+  public projectAreaId$ = this._projectAreaId$.asObservable();
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
 
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
+
+  private _activeProjectArea$ =
+    new BehaviorSubject<TreatmentProjectArea | null>(null);
+
+  public activeProjectArea$ = this._activeProjectArea$.asObservable();
+
+  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
+  public showApplyTreatmentsDialog$ =
+    this._showApplyTreatmentsDialog$.asObservable();
 
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
@@ -34,16 +50,8 @@ export class TreatmentsState {
     return this._treatmentPlanId;
   }
 
-  setTreatmentPlanId(value: number) {
-    this._treatmentPlanId = value;
-  }
-
   getProjectAreaId() {
-    return this._projectAreaId;
-  }
-
-  setProjectAreaId(value: number | undefined) {
-    this._projectAreaId = value;
+    return this._projectAreaId$.value;
   }
 
   getScenarioId(): number {
@@ -53,23 +61,55 @@ export class TreatmentsState {
     return this._scenarioId;
   }
 
-  setScenarioId(value: number) {
-    this._scenarioId = value;
+  setInitialState(opts: {
+    scenarioId: number;
+    treatmentId: number;
+    projectAreaId: number | undefined;
+  }) {
+    this._scenarioId = opts.scenarioId;
+    this._treatmentPlanId = opts.treatmentId;
+    this._projectAreaId$.next(opts.projectAreaId);
   }
 
-  loadSummary() {
-    // TODO caching
-    this._summary$.next(null);
-    this.treatedStandsState.setTreatedStands([]);
+  loadSummaryForProjectArea() {
+    const projectAreaId = this.getProjectAreaId();
+    const summary = this._summary$.value;
+    // if summary is already loaded, select project area and return
+    if (!projectAreaId) {
+      throw new Error('must provide projectAreaId');
+    }
+
+    if (summary && projectAreaId) {
+      return of(true);
+    }
+    // if we don't have summary fetch data
     return this.treatmentsService
-      .getTreatmentPlanSummary(
-        this.getTreatmentPlanId(),
-        this.getProjectAreaId()
-      )
+      .getTreatmentPlanSummary(this.getTreatmentPlanId())
       .pipe(
         map((summary) => {
           this._summary$.next(summary);
-          this.setTreatedStandsFromSummary(summary);
+          this.setTreatedStandsFromSummary(summary.project_areas);
+          this.selectProjectArea(projectAreaId);
+          return true;
+        })
+      );
+  }
+
+  loadSummary() {
+    const summary = this._summary$.value;
+    // remove active project area
+    this._activeProjectArea$.next(null);
+    // if I already have summary center the map before fetching
+    if (summary) {
+      this.mapConfigState.updateMapCenter(summary.extent);
+    }
+    //fetch summary
+    return this.treatmentsService
+      .getTreatmentPlanSummary(this.getTreatmentPlanId())
+      .pipe(
+        map((summary) => {
+          this._summary$.next(summary);
+          this.setTreatedStandsFromSummary(summary.project_areas);
           this.mapConfigState.updateMapCenter(summary.extent);
           return true;
         })
@@ -77,8 +117,6 @@ export class TreatmentsState {
   }
 
   loadTreatmentPlan() {
-    // TODO caching
-    this._treatmentPlan.next(null);
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
       .pipe(
@@ -89,8 +127,8 @@ export class TreatmentsState {
       );
   }
 
-  private setTreatedStandsFromSummary(summary: TreatmentSummary) {
-    const treatedStands: TreatedStand[] = summary.project_areas.flatMap((pa) =>
+  private setTreatedStandsFromSummary(projectAreas: TreatmentProjectArea[]) {
+    const treatedStands: TreatedStand[] = projectAreas.flatMap((pa) =>
       pa.prescriptions.flatMap((prescription) =>
         prescription.stand_ids.map((standId) => {
           return { id: standId, action: prescription.action };
@@ -132,5 +170,37 @@ export class TreatmentsState {
           throw error;
         })
       );
+  }
+
+  selectProjectArea(projectAreaId: number) {
+    const summary = this._summary$.value;
+
+    if (!summary) {
+      throw Error('no summary');
+    }
+    const projectArea = summary.project_areas.find(
+      (pa) => pa.project_area_id === projectAreaId
+    );
+    if (!projectArea) {
+      throw Error('no project area');
+    }
+
+    this._projectAreaId$.next(projectAreaId);
+    this.mapConfigState.updateShowTreatmentStands(true);
+    this.mapConfigState.updateMapCenter(projectArea?.extent);
+    this._activeProjectArea$.next(projectArea);
+    this.setTreatedStandsFromSummary([projectArea]);
+  }
+
+  getCurrentSummary() {
+    const summary = this._summary$.value;
+    if (!summary) {
+      throw new Error('no summary loaded');
+    }
+    return summary;
+  }
+
+  setShowApplyTreatmentsDialog(value: boolean) {
+    this._showApplyTreatmentsDialog$.next(value);
   }
 }

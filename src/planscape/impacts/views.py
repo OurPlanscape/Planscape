@@ -1,11 +1,11 @@
-from django.db.models.base import ValidationError
+import logging
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.views import Response
 from impacts.filters import TreatmentPlanFilterSet
-from impacts.models import TreatmentPlan, TreatmentPrescription
+from impacts.models import TreatmentPlan, TreatmentPlanStatus, TreatmentPrescription
 from impacts.permissions import (
     TreatmentPlanViewPermission,
     TreatmentPrescriptionViewPermission,
@@ -20,6 +20,7 @@ from impacts.serializers import (
     TreatmentPrescriptionSerializer,
     TreatmentPrescriptionListSerializer,
     TreatmentPrescriptionBatchDeleteSerializer,
+    TreatmentPrescriptionBatchDeleteResponseSerializer,
     UpsertTreamentPrescriptionSerializer,
 )
 from impacts.services import (
@@ -28,8 +29,43 @@ from impacts.services import (
     generate_summary,
     upsert_treatment_prescriptions,
 )
+from impacts.tasks import async_calculate_persist_impacts_treatment_plan
+from planscape.serializers import BaseErrorMessageSerializer
+
+log = logging.getLogger(__name__)
 
 
+@extend_schema_view(
+    list=extend_schema(description="List Treatment Plans."),
+    retrieve=extend_schema(
+        description="Retrieve Treatment Plans.",
+        responses={
+            200: TreatmentPlanSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+    update=extend_schema(
+        description="Update Treatment Plans.",
+        responses={
+            200: TreatmentPlanUpdateSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+    partial_update=extend_schema(
+        description="Update Treatment Plans.",
+        responses={
+            200: TreatmentPlanUpdateSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+    destroy=extend_schema(
+        description="Deletes a Treatment Plan.",
+        responses={
+            204: None,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+)
 class TreatmentPlanViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -66,6 +102,7 @@ class TreatmentPlanViewSet(
             return self.serializer_class
 
     @extend_schema(
+        description="Create Treatment Plan.",
         request=CreateTreatmentPlanSerializer,
         responses={
             201: TreatmentPlanSerializer,
@@ -88,7 +125,13 @@ class TreatmentPlanViewSet(
             **serializer.validated_data,
         )
 
-    @extend_schema(responses={201: TreatmentPlanSerializer})
+    @extend_schema(
+        description="Clones a Treatment Plan.",
+        responses={
+            201: TreatmentPlanSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    )
     @action(
         detail=True,
         methods=["post"],
@@ -107,10 +150,49 @@ class TreatmentPlanViewSet(
         )
 
     @extend_schema(
+        description="Runs a Treatment Plan.",
+        responses={
+            201: TreatmentPlanSerializer,
+            400: BaseErrorMessageSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    )
+    @action(
+        detail=True,
+        methods=["post"],
+        filterset_class=None,
+    )
+    def run(self, request, pk=None):
+        treatment_plan = self.get_object()
+        if treatment_plan.status != TreatmentPlanStatus.PENDING:
+            log.warning(
+                f"User requested to run treatment plan {treatment_plan.pk} while it's {treatment_plan.status}."
+            )
+            return response.Response(
+                {"detail": "You can't run the same treatment plan twice."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        async_calculate_persist_impacts_treatment_plan.delay(
+            treatment_plan_pk=treatment_plan.pk
+        )
+
+        treatment_plan.refresh_from_db()
+        serializer = TreatmentPlanSerializer(instance=treatment_plan)
+        return response.Response(
+            serializer.data,
+            status=status.HTTP_202_ACCEPTED,
+        )
+
+    @extend_schema(
+        description="Summary of a Treatment Plan.",
         parameters=[
             SummarySerializer,
         ],
-        responses={200: OutputSummarySerializer},
+        responses={
+            200: OutputSummarySerializer,
+            404: BaseErrorMessageSerializer,
+        },
     )
     @action(
         methods=["get"],
@@ -135,6 +217,23 @@ class TreatmentPlanViewSet(
         return Response(data=summary, status=status.HTTP_200_OK)
 
 
+@extend_schema_view(
+    list=extend_schema(description="List Treatment Prescriptions."),
+    retrieve=extend_schema(
+        description="Retrieve a Treatment Prescriptions.",
+        responses={
+            200: TreatmentPrescriptionSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+    destroy=extend_schema(
+        description="Delete a Treatment Prescriptions.",
+        responses={
+            204: None,
+            404: BaseErrorMessageSerializer,
+        },
+    ),
+)
 class TreatmentPrescriptionViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
@@ -173,6 +272,7 @@ class TreatmentPrescriptionViewSet(
         )
 
     @extend_schema(
+        description="Create a Treatment Prescription.",
         request=UpsertTreamentPrescriptionSerializer,
         responses={201: TreatmentPrescriptionSerializer},
     )
@@ -193,6 +293,14 @@ class TreatmentPrescriptionViewSet(
     def perform_create(self, serializer):
         return upsert_treatment_prescriptions(**serializer.validated_data)
 
+    @extend_schema(
+        description="Delete Prescriptions from Treatment Precriptions.",
+        responses={
+            200: TreatmentPrescriptionBatchDeleteResponseSerializer,
+            400: BaseErrorMessageSerializer,
+            404: BaseErrorMessageSerializer,
+        },
+    )
     @action(detail=False, methods=["post"])
     def delete_prescriptions(self, request, tx_plan_pk=None):
         serializer = TreatmentPrescriptionBatchDeleteSerializer(data=request.data)

@@ -1,19 +1,21 @@
+from typing import Dict, Tuple
 from uuid import uuid4
 from django.db import models
 from django.utils import timezone
+from django_stubs_ext.db.models import TypedModelMeta
 
 
 class CreatedAtMixin(models.Model):
     created_at = models.DateTimeField(auto_now_add=True, null=True)
 
-    class Meta:
+    class Meta(TypedModelMeta):
         abstract = True
 
 
 class UpdatedAtMixin(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
+    class Meta(TypedModelMeta):
         abstract = True
 
 
@@ -32,7 +34,7 @@ class DeletedAtMixin(models.Model):
         null=True,
     )
 
-    def delete(self, *args, **kwargs):
+    def delete(self, *args, **kwargs) -> Tuple[int, Dict[str, int]]:
         """
         Overrides delete method to support soft-deletes
         and hard-deletes.
@@ -40,21 +42,23 @@ class DeletedAtMixin(models.Model):
         """
         hard_delete = kwargs.get("hard_delete", False)
         if hard_delete:
-            super().delete(*args, **kwargs)
+            return super().delete(*args, **kwargs)
         else:
             try:
                 self.deleted_at = timezone.now()
                 self.save()
+                model_name = f"{self._meta.app_label}.{self._meta.object_name}"
+                return 1, {model_name: 1}
             except Exception:
                 self.deleted_at = None
                 raise
 
-    class Meta:
+    class Meta(TypedModelMeta):
         abstract = True
 
 
 class UUIDMixin(models.Model):
     uuid = models.UUIDField(default=uuid4, db_index=True)
 
-    class Meta:
+    class Meta(TypedModelMeta):
         abstract = True

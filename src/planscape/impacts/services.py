@@ -1,38 +1,41 @@
+import logging
+import itertools
 import json
-from typing import List, Optional, Type, Dict, Union, Tuple, Any
+from rasterstats import zonal_stats
+from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.models import (
+    AVAILABLE_YEARS,
+    ImpactVariable,
+    ImpactVariableAggregation,
+    TAction,
+    TTreatmentPlan,
+    TTreatmentPlanCloneResult,
+    TTreatmentPrescriptionEntity,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
-    TreatmentPrescriptionType,
+    TreatmentPrescriptionAction,
+    TreatmentResult,
     get_prescription_type,
 )
-from planning.models import ProjectArea, Scenario
+from planning.models import ProjectArea, TProjectArea, TScenario
 from actstream import action as actstream_action
-from stands.models import STAND_AREA_ACRES, Stand
-from planscape.typing import UserType
+from stands.models import STAND_AREA_ACRES, TStand, Stand
+from planscape.typing import TUser
 
-TreatmentPlanType = Type[TreatmentPlan]
-ScenarioType = Type[Scenario]
-StandType = Type[Stand]
-ActionType = Type[TreatmentPrescriptionType]
-ProjectAreaType = Type[ProjectArea]
-TreatmentPrescriptionEntityType = Type[TreatmentPrescription]
-TreatmentPlanCloneResultType = Tuple[
-    TreatmentPlanType, List[TreatmentPrescriptionEntityType]
-]
+log = logging.getLogger(__name__)
 
 
 @transaction.atomic()
 def create_treatment_plan(
-    scenario: ScenarioType,
+    scenario: TScenario,
     name: str,
-    created_by: UserType,
-) -> TreatmentPlanType:
+    created_by: TUser,
+) -> TTreatmentPlan:
     # question: should we add a constraint on
     # treament plan to prevent users from creating
     # treamentplans with for the same scenario with the
@@ -49,12 +52,12 @@ def create_treatment_plan(
 
 @transaction.atomic()
 def upsert_treatment_prescriptions(
-    treatment_plan: TreatmentPlanType,
-    project_area: ProjectAreaType,
-    stands: List[StandType],
-    action: ActionType,
-    created_by: UserType,
-) -> List[TreatmentPrescriptionEntityType]:
+    treatment_plan: TTreatmentPlan,
+    project_area: TProjectArea,
+    stands: List[TStand],
+    action: TAction,
+    created_by: TUser,
+) -> List[TreatmentPrescription]:
     def upsert(treatment_plan, project_area, stand, action, user):
         upsert_defaults = {
             "type": get_prescription_type(action),
@@ -90,9 +93,9 @@ def upsert_treatment_prescriptions(
 
 @transaction.atomic()
 def clone_treatment_prescription(
-    tx_prescription: TreatmentPrescriptionEntityType,
-    new_treatment_plan: TreatmentPlanType,
-    user: UserType,
+    tx_prescription: TTreatmentPrescriptionEntity,
+    new_treatment_plan: TTreatmentPlan,
+    user: TUser,
 ):
     return TreatmentPrescription.objects.create(
         created_by=user,
@@ -112,9 +115,9 @@ def get_cloned_name(name: str) -> str:
 
 @transaction.atomic()
 def clone_treatment_plan(
-    treatment_plan: TreatmentPlanType,
-    user: UserType,
-) -> TreatmentPlanCloneResultType:
+    treatment_plan: TTreatmentPlan,
+    user: TUser,
+) -> TTreatmentPlanCloneResult:
     cloned_plan = TreatmentPlan.objects.create(
         created_by=user,
         scenario=treatment_plan.scenario,
@@ -140,7 +143,7 @@ def clone_treatment_plan(
 
 
 def generate_summary(
-    treatment_plan: TreatmentPlanType,
+    treatment_plan: TTreatmentPlan,
     project_area: Optional[ProjectArea] = None,
 ) -> Dict[str, Any]:
     scenario = treatment_plan.scenario
@@ -207,3 +210,155 @@ def generate_summary(
         "extent": project_areas_geometry.extent,
     }
     return data
+
+
+def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
+    geometry = prescription.geometry.transform(3857, clone=True)
+    return {
+        "type": "Feature",
+        "id": prescription.pk,
+        "properties": {
+            "treatment_plan_id": prescription.treatment_plan.pk,
+            "treatment_prescription_id": prescription.pk,
+            "project_area_id": prescription.project_area.pk,
+            "stand_id": prescription.stand.pk,
+            "type": prescription.type,
+        },
+        "geometry": json.loads(geometry.json),
+    }
+
+
+IMPACTS_RASTER_NODATA = -999
+
+
+def to_treatment_results(
+    result: Dict[str, Any],
+    variable: ImpactVariable,
+    year: int,
+) -> List[TreatmentResult]:
+    """Transforms the result/output of rasterstats (a zonal statistic record)
+    into multiple TreamentResults. If a variable has more than one aggregament,
+    this method will produce more than one result per stand.
+    """
+    properties: Dict[str, Any] = result.get("properties", {})
+    treament_plan_id = properties.get("treatment_plan_id")
+    tx_prescription_id = properties.get("treatment_prescription_id")
+    aggregations = ImpactVariable.get_aggregations(variable)
+    return list(
+        [
+            TreatmentResult.objects.update_or_create(
+                treatment_plan_id=treament_plan_id,
+                treatment_prescription_id=tx_prescription_id,
+                variable=variable,
+                aggregation=agg,
+                year=year,
+                defaults={
+                    "value": properties.get(agg.lower()),
+                    "delta": properties.get(f"delta_{agg.lower()}"),
+                },
+            )[0]
+            for agg in aggregations
+        ]
+    )
+
+
+def persist_impacts(
+    zonal_statistics: List[Dict[str, Any]],
+    variable: ImpactVariable,
+    year: int,
+) -> List[TreatmentResult]:
+    return list(
+        itertools.chain.from_iterable(
+            map(lambda r: to_treatment_results(r, variable, year), zonal_statistics)
+        )
+    )
+
+
+def calculate_impacts(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    action: TreatmentPrescriptionAction,
+    year: int,
+) -> List[Dict[str, Any]]:
+    prescriptions = treatment_plan.tx_prescriptions.filter(
+        action=action
+    ).select_related("stand", "treatment_plan", "project_area")
+    if year not in AVAILABLE_YEARS:
+        raise ValueError(f"Year {year} not supported")
+
+    raster_path = ImpactVariable.get_impact_raster_path(
+        impact_variable=variable,
+        action=action,
+        year=year,
+    )
+    baseline_path = ImpactVariable.get_baseline_raster_path(
+        impact_variable=variable,
+        year=year,
+    )
+    prescription_stands = list(map(to_geojson, prescriptions))
+    agg = ImpactVariable.get_aggregations(variable)
+    log.info(f"Calculating raster stats for {variable} with aggregations {agg}")
+    baseline_stats = zonal_stats(
+        prescription_stands,
+        baseline_path,
+        stats=agg,
+        band=1,
+        nodata=IMPACTS_RASTER_NODATA,
+        geojson_out=True,
+    )
+    variable_stats = zonal_stats(
+        prescription_stands,
+        raster_path,
+        stats=agg,
+        band=1,
+        nodata=IMPACTS_RASTER_NODATA,
+        geojson_out=True,
+    )
+    return calculate_deltas(baseline_stats, variable_stats, agg)
+
+
+def calculate_delta(value: float, base: float) -> float:
+    if not base:
+        base = 1
+    return (value - base) / base
+
+
+def calculate_deltas(
+    baseline_zonal_stats,
+    variable_zonal_stats,
+    aggregations: List[ImpactVariableAggregation],
+):
+    baseline_dict = {
+        f.get("properties", {}).get("stand_id"): f for f in baseline_zonal_stats
+    }
+    for i, f in enumerate(variable_zonal_stats):
+        variable_props = f.get("properties", {})
+        stand_id = variable_props.get("stand_id")
+        baseline_props = baseline_dict.get(stand_id).get("properties")
+        deltas = {
+            f"delta_{agg}": calculate_delta(
+                variable_props.get(agg),
+                baseline_props.get(agg),
+            )
+            for agg in aggregations
+        }
+        variable_zonal_stats[i]["properties"] = {**variable_props, **deltas}
+    return variable_zonal_stats
+
+
+def get_calculation_matrix(
+    treatment_plan: TreatmentPlan,
+    years: Optional[Iterable[int]] = None,
+) -> List[Tuple]:
+    actions = list(
+        [
+            TreatmentPrescriptionAction[x]
+            for x in treatment_plan.tx_prescriptions.values_list(
+                "action", flat=True
+            ).distinct()
+        ]
+    )
+    if not years:
+        years = AVAILABLE_YEARS
+    variables = list(ImpactVariable)
+    return list(itertools.product(variables, actions, years))

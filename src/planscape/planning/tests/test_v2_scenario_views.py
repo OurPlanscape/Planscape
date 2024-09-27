@@ -1,15 +1,11 @@
 import copy
 from unittest import mock
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase
-from collaboration.tests.helpers import create_collaborator_record
-from collaboration.models import Permissions, Role
+from rest_framework.test import APITransactionTestCase, APITestCase
+from collaboration.models import Permissions
 from planning.models import (
     Scenario,
     ScenarioResult,
-)
-from planning.tests.helpers import (
-    reset_permissions,
 )
 from planscape.tests.factories import UserFactory
 from planning.tests.factories import (
@@ -54,11 +50,8 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertIsNotNone(response.json().get("id"))
 
 
-class ListScenariosForPlanningAreaTest(APITransactionTestCase):
+class ListScenariosForPlanningAreaTest(APITestCase):
     def setUp(self):
-        if Permissions.objects.count() == 0:
-            reset_permissions()
-
         self.owner_user = UserFactory.create()
         self.owner_user2 = UserFactory.create(username="test_user2")
         self.collab_user = UserFactory.create(username="collab_user")
@@ -66,7 +59,10 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         self.unprivileged_user = UserFactory.create(username="guest")
 
         self.planning_area = PlanningAreaFactory.create(
-            user=self.owner_user, name="test plan"
+            user=self.owner_user,
+            name="test plan",
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
         )
 
         self.empty_planning_area = PlanningAreaFactory.create(
@@ -122,13 +118,6 @@ class ListScenariosForPlanningAreaTest(APITransactionTestCase):
         )
         self.scenario_res = ScenarioResultFactory(scenario=self.owner_user2scenario)
 
-        create_collaborator_record(
-            self.owner_user, self.collab_user, self.planning_area, Role.COLLABORATOR
-        )
-
-        create_collaborator_record(
-            self.owner_user, self.viewer_user, self.planning_area, Role.VIEWER
-        )
         self.assertEqual(Scenario.objects.count(), 4)
         self.assertEqual(ScenarioResult.objects.count(), 4)
 

@@ -1,0 +1,123 @@
+@import "colors";
+
+.prescription {
+  display: block;
+  margin-bottom: 8px;
+}
+
+.form-fixed {
+  padding: 16px 16px 0;
+}
+
+.prescriptions {
+  padding: 16px;
+  overflow-y: auto;
+}
+
+.prescription-sequence {
+  display: block;
+}
+
+.label {
+  margin-bottom: 8px;
+  color: $color-dark-gray;
+}
+
+.project-area-name {
+  margin-bottom: 16px;
+}
+
+.modal-body {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sequence-type {
+  width: 100%;
+
+  // all these overrides are to make the dropdown look centered and aligned
+  ::ng-deep {
+    .mat-form-field-infix {
+      border-top: 0;
+      height: 50px;
+      display: flex;
+      align-items: center;
+      padding: 0;
+    }
+
+    .mat-select-arrow-wrapper {
+      align-items: end;
+    }
+
+    .mat-form-field-outline {
+      top: 0;
+    }
+
+  }
+
+
+}
+
+sg-modal {
+  height: 100%;
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.10), 0px 2px 2px 0px rgba(0, 0, 0, 0.10);
+
+  ::ng-deep {
+    .modal-body {
+      display: flex;
+      flex-direction: column;
+      overflow-y: hidden;
+    }
+
+    .header {
+      padding-block: 0;
+    }
+
+    .footer {
+      height: initial;
+    }
+
+  }
+
+}
+
+
+:host ::ng-deep {
+  .mat-mdc-radio-button .mdc-radio {
+    padding: 0;
+  }
+
+  .mat-mdc-radio-button .mdc-form-field {
+    width: 100%;
+
+    label {
+      width: 100%;
+    }
+
+  }
+
+  .mdc-form-field > label {
+    padding-left: 8px;
+  }
+}
+
+.sequence-details {
+  padding-left: 28px;
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid $color-soft-gray;
+  color: $color-dark-gray;
+}
+
+.sequence-details:last-child {
+  border-bottom: none;
+}
+
+.sequence-detail {
+  margin: 4px 0;
+}
+
+.prescription-sequence ::ng-deep label {
+  font-weight: bold;
+}

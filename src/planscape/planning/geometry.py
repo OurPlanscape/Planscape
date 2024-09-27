@@ -1,8 +1,8 @@
 import json
 from django.conf import settings
-from typing import Any, Dict, Union
+from typing import Any, Dict, Optional, Union
 from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
-
+from planscape.typing import TLooseGeom
 from planscape.exceptions import InvalidGeometry
 
 
@@ -35,7 +35,7 @@ def to_multipolygon(geometry: GEOSGeometry) -> GEOSGeometry:
     return MultiPolygon([geometry], srid=geometry.srid)
 
 
-def from_geojson(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeometry:
+def from_geojson(geometry: TLooseGeom) -> GEOSGeometry:
     if isinstance(geometry, GEOSGeometry):
         return geometry
 
@@ -50,7 +50,7 @@ GEOMETRY_OPERATIONS = [
 ]
 
 
-def coerce_geometry(geometry: Union[Dict[str, Any] | GEOSGeometry]) -> GEOSGeometry:
+def coerce_geometry(geometry: TLooseGeom) -> GEOSGeometry:
     """This function takes in a GeoJSON
     geometry and tries to coerce it to
     a valid GEOSGeometry.
