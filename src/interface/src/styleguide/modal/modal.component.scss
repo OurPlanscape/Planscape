@@ -14,8 +14,13 @@
   &.small {
     width: 460px;
   }
-
+  &.medium {
+    width: 520px;
+  }
   &.large {
+    width: 730px;
+  }
+  &.full {
     width: 100%;
   }
 
