@@ -1,12 +1,13 @@
-<h1>Delete {{ data.name }} ?</h1>
-<p>Are you sure?</p>
-<p class="warning">
-  <b>Warning</b>
-  : This operation cannot be reversed.
-</p>
-<div class="button-row">
-  <button mat-raised-button (click)="cancel()">CANCEL</button>
-  <button mat-raised-button (click)="confirm()" color="error" cdkFocusInitial>
-    YES, DELETE
-  </button>
-</div>
+<sg-modal
+  [title]="'Delete ' + data.name + '?'"
+  primaryButtonVariant="negative"
+  primaryButtonText="Delete"
+  [showBorders]="false"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="confirm()"
+  (clickedSecondary)="cancel()">
+  <div modalBodyContent class="padded">
+    <b>Warning</b>
+    : This operation cannot be reversed.
+  </div>
+</sg-modal>

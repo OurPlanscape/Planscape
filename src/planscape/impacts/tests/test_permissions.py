@@ -1,24 +1,13 @@
-from django.test import TransactionTestCase
+from django.test import TestCase
 
-from collaboration.models import Permissions, Role, UserObjectRole
+from collaboration.models import Role, UserObjectRole
 from collaboration.services import get_content_type
 from impacts.tests.factories import TreatmentPlanFactory
 from impacts.permissions import PERMISSIONS, TreatmentPlanPermission
 from planscape.tests.factories import UserFactory
 
 
-class TreatmentPlanPermissionTest(TransactionTestCase):
-    def setUp(self) -> None:
-        for role, permissions in PERMISSIONS.items():
-            list(
-                map(
-                    lambda p: Permissions.objects.update_or_create(
-                        role=role, permission=p
-                    ),
-                    permissions,
-                )
-            )
-
+class TreatmentPlanPermissionTest(TestCase):
     def test_creator_can_do_anything(self):
         tx_plan = TreatmentPlanFactory.create()
         user = tx_plan.scenario.user

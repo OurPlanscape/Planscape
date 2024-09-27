@@ -40,15 +40,28 @@ describe('TreatmentsState', () => {
   });
 
   it('should return the treatment plan ID if it is set', () => {
-    service.setTreatmentPlanId(123);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: undefined,
+    });
     expect(service.getTreatmentPlanId()).toBe(123);
   });
 
   it('should set and get the project area ID', () => {
-    service.setProjectAreaId(456);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
     expect(service.getProjectAreaId()).toBe(456);
 
-    service.setProjectAreaId(undefined);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: undefined,
+    });
+
     expect(service.getProjectAreaId()).toBeUndefined();
   });
 
@@ -75,19 +88,33 @@ describe('TreatmentsState', () => {
               stand_ids: [4, 5],
             },
           ],
+          extent: [1, 2, 3, 4],
+          centroid: {
+            type: 'Point',
+            coordinates: [],
+          },
         },
       ],
       extent: [1, 2, 3, 4],
+      planning_area_id: 1,
+      planning_area_name: 'Test',
+      scenario_id: 2,
+      scenario_name: 'Test Scenario',
+      treatment_plan_id: 3,
+      treatment_plan_name: 'Test Treatment Plan',
     };
 
     spyOn(treatmentsService, 'getTreatmentPlanSummary').and.returnValue(
       of(mockSummary)
     );
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: undefined,
+    });
 
-    service.setTreatmentPlanId(123);
     service.loadSummary().subscribe();
 
-    expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith([]);
     expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith([
       { id: 1, action: 'cut' },
       { id: 2, action: 'cut' },
@@ -113,7 +140,11 @@ describe('TreatmentsState', () => {
       of(mockTreatmentPlan)
     );
 
-    service.setTreatmentPlanId(123);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: undefined,
+    });
     service.loadTreatmentPlan().subscribe();
 
     service.treatmentPlan$.subscribe((treatmentPlan) => {
@@ -128,9 +159,11 @@ describe('TreatmentsState', () => {
   });
 
   it('should update treated stands and call the service', () => {
-    service.setTreatmentPlanId(123);
-    service.setProjectAreaId(456);
-
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
     spyOn(treatmentsService, 'setTreatments').and.returnValue(of({}));
 
     service.updateTreatedStands('cut', [1, 2]);
@@ -148,8 +181,11 @@ describe('TreatmentsState', () => {
   });
 
   it('should revert treated stands on update error', () => {
-    service.setTreatmentPlanId(123);
-    service.setProjectAreaId(456);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
 
     const originalStands: TreatedStand[] = [{ id: 1, action: 'cut' }];
     spyOn(treatedStandsState, 'getTreatedStands').and.returnValue(
@@ -171,8 +207,11 @@ describe('TreatmentsState', () => {
   });
 
   it('should remove treated stands and call the service', () => {
-    service.setTreatmentPlanId(123);
-    service.setProjectAreaId(456);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
     const originalStands: TreatedStand[] = [
       { id: 1, action: 'cut' },
       { id: 2, action: 'cut' },
@@ -193,8 +232,11 @@ describe('TreatmentsState', () => {
   });
 
   it('should revert treated stands on remove error', () => {
-    service.setTreatmentPlanId(123);
-    service.setProjectAreaId(456);
+    service.setInitialState({
+      scenarioId: 1,
+      treatmentId: 123,
+      projectAreaId: 456,
+    });
 
     const originalStands: TreatedStand[] = [{ id: 1, action: 'cut' }];
     spyOn(treatedStandsState, 'getTreatedStands').and.returnValue(

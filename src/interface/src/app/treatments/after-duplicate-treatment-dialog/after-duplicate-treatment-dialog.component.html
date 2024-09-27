@@ -1,0 +1,13 @@
+<sg-modal
+  [title]="'Open the copy of ' + data.name"
+  primaryButtonText="Open the copy"
+  secondaryButtonText="Stay On This Plan"
+  [showBorders]="false"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="confirm()"
+  (clickedSecondary)="cancel()">
+  <div modalBodyContent class="padded">
+    All changes you made for {{ data.name }} are auto-saved. Do you want to open
+    the duplicated plan?
+  </div>
+</sg-modal>

@@ -11,7 +11,7 @@ class TestImpactVariable(TestCase):
         variable = ImpactVariable.CANOPY_BASE_HEIGHT
         year = 2024
         action = TreatmentPrescriptionAction.MASTICATION_RX_FIRE
-        s3_path = ImpactVariable.get_impact_raster(
+        s3_path = ImpactVariable.get_impact_raster_path(
             impact_variable=variable,
             action=action,
             year=year,
@@ -25,7 +25,7 @@ class TestImpactVariable(TestCase):
         variable = ImpactVariable.CANOPY_BASE_HEIGHT
         year = 2024
         action = None
-        s3_path = ImpactVariable.get_impact_raster(
+        s3_path = ImpactVariable.get_impact_raster_path(
             impact_variable=variable,
             action=action,
             year=year,

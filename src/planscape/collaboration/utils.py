@@ -1,14 +1,18 @@
+from typing import Any, Union
 from collaboration.models import UserObjectRole, Permissions
-from planning.models import PlanningArea
+from planscape.typing import TUser
+from planning.models import TPlanningArea, TPlanningAreaNote, TScenario
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
+
+TCreatable = Union[TPlanningArea, TPlanningAreaNote, TScenario]
 
 
-def is_creator(user: User, planning_area: PlanningArea):
-    return planning_area.user.pk == user.pk
+def is_creator(user: AbstractUser, instance: TCreatable) -> bool:
+    return instance.user == user
 
 
-def check_for_permission(user_id, model, permission):
+def check_for_permission(user_id: int, model: Any, permission_name: str) -> bool:
     if user_id is None:
         return False
     try:
@@ -18,7 +22,7 @@ def check_for_permission(user_id, model, permission):
             content_type_id=content_type.pk,
             object_pk=model.pk,
         )
-        Permissions.objects.get(role=entry.role, permission=permission)
+        Permissions.objects.get(role=entry.role, permission=permission_name)
         return True
     except (UserObjectRole.DoesNotExist, Permissions.DoesNotExist):
         return False

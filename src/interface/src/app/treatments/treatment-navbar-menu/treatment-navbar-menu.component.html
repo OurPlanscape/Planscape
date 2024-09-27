@@ -1,0 +1,17 @@
+<button
+  [matMenuTriggerFor]="menu"
+  mat-icon-button
+  aria-label="more options"
+  class="more-options">
+  <mat-icon>more_vert</mat-icon>
+</button>
+<mat-menu #menu="matMenu" class="planning-area-menu">
+  <button mat-menu-item (click)="duplicateTreatmentPlan()">
+    <mat-icon class="material-symbols-outlined">file_copy_outlined</mat-icon>
+    <span>Duplicate Plan</span>
+  </button>
+  <button mat-menu-item class="delete" (click)="deleteTreatmentPlan()">
+    <mat-icon class="material-symbols-outlined">delete_outlined</mat-icon>
+    <span>Delete</span>
+  </button>
+</mat-menu>
