@@ -12,7 +12,7 @@ import { PrescriptionSingleAction, PRESCRIPTIONS } from '../prescriptions';
  * A component that displays a set of treatments, along with an icon
  */
 @Component({
-  selector: 'app-treatments-legend',
+  selector: 'app-treatment-legend',
   standalone: true,
   imports: [
     MatExpansionModule,
@@ -24,19 +24,16 @@ import { PrescriptionSingleAction, PRESCRIPTIONS } from '../prescriptions';
     SequenceIconComponent,
     TreatmentTypeIconComponent,
   ],
-  templateUrl: './treatments-legend.component.html',
-  styleUrl: './treatments-legend.component.scss',
+  templateUrl: './treatment-legend.component.html',
+  styleUrl: './treatment-legend.component.scss',
 })
-export class TreatmentsLegendComponent {
+export class TreatmentLegendComponent {
   constructor() {}
-
-  openState = false;
-  @Input() singleTreatments: PrescriptionSingleAction[] = [];
-  @Input() sequences: number[] = [1, 2, 3, 4, 5, 6, 7, 8]; // TODO: make dynamic
-
-  loadAvailableTreatments(): void {
-    // TODO: read this from local types instead of lookups?
-  }
+  //TODO: Originally thought we'd optionally let the consumer set these, but maybe we can remove Input()
+  @Input() singleTreatments: PrescriptionSingleAction[] = Object.keys(
+    PRESCRIPTIONS.SINGLE
+  ) as PrescriptionSingleAction[];
+  @Input() sequences: number[] = [...Array(8).keys()].map((n) => (n = n + 1));
 
   getSingleTreatmentLabel(tx_key: PrescriptionSingleAction): string {
     return PRESCRIPTIONS.SINGLE[tx_key];

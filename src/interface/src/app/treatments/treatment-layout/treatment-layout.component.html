@@ -16,11 +16,16 @@
   <div class="right-side">
     <app-treatment-map></app-treatment-map>
     <section class="right-side-footer">
-      <ng-container *ngIf="activeProjectArea$ | async; else treatment">
+      <ng-container *ngIf="projectAreaId$ | async; else treatment">
         <button sg-button variant="primary" class="footer-primary">Done</button>
       </ng-container>
       <ng-template #treatment>
-        <mat-slide-toggle>View Treatment Layers</mat-slide-toggle>
+        <mat-slide-toggle
+          color="primary"
+          [checked]="(showTreatmentLayer$ | async) || false"
+          (change)="toggleShowTreatmentLayers()"
+          >View Treatment Layers
+        </mat-slide-toggle>
         <button sg-button variant="primary" class="footer-primary">
           Run Impacts
         </button>
@@ -29,5 +34,8 @@
 
     <app-apply-treatment
       *ngIf="showApplyTreatments$ | async"></app-apply-treatment>
+
+    <app-treatment-legend
+      *ngIf="(showTreatmentLegend$ | async) || false"></app-treatment-legend>
   </div>
 </section>
