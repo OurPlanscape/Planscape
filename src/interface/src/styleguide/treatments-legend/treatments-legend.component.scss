@@ -9,6 +9,7 @@
     @include xs-label();
   }
   ::ng-deep .modal-body {
+    padding-top: 4px;
     padding-bottom: 4px;
   }
   ::ng-deep .mat-expansion-panel {
