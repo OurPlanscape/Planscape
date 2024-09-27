@@ -5,7 +5,6 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
 import { ModalComponent } from '../modal/modal.component';
-
 import {
   PrescriptionSingleAction,
   USER_FACING_RX_STRING,
@@ -16,7 +15,7 @@ import {
  * A component that displays a set of treatments, along with an icon
  */
 @Component({
-  selector: 'sg-treatments-legend',
+  selector: 'app-treatments-legend',
   standalone: true,
   imports: [
     MatExpansionModule,
