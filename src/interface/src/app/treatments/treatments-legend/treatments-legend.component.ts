@@ -2,20 +2,17 @@ import { Component, Input } from '@angular/core';
 import { NgIf, NgFor, NgClass } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
-import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
-import { ModalComponent } from '../modal/modal.component';
-import {
-  PrescriptionSingleAction,
-  PRESCRIPTIONS,
-} from '../../app/treatments/prescriptions';
+import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { SequenceIconComponent } from '../../../styleguide/sequence-icon/sequence-icon.component';
+import { ModalComponent } from '../../../styleguide/modal/modal.component';
+import { PrescriptionSingleAction, PRESCRIPTIONS } from '../prescriptions';
 
 /**
  * Treatment Legend
  * A component that displays a set of treatments, along with an icon
  */
 @Component({
-  selector: 'sg-treatments-legend',
+  selector: 'app-treatments-legend',
   standalone: true,
   imports: [
     MatExpansionModule,
