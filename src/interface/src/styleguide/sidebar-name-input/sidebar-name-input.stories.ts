@@ -43,10 +43,10 @@ export const NoTitle: Story = {
   },
 };
 
-export const HelpText: Story = {
+export const TooltipText: Story = {
   args: {
     textValue: '',
     title: 'Treatment plan name',
-    helpText: 'Clicking this does something',
+    tooltipContent: 'Clicking this does something',
   },
 };

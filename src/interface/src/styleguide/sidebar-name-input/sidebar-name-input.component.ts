@@ -8,7 +8,9 @@ import { InputFieldComponent } from '@styleguide';
 // import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
 import { InputDirective } from '../input/input.directive';
 import { MatIconModule } from '@angular/material/icon';
-
+import { MatMenuModule } from '@angular/material/menu';
+import { MatButtonModule } from '@angular/material/button';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 /**
  * Component for setting name
  */
@@ -16,11 +18,14 @@ import { MatIconModule } from '@angular/material/icon';
   selector: 'sg-sidebar-name-input',
   standalone: true,
   imports: [
-    NgIf,
     FormsModule,
     InputFieldComponent,
     InputDirective,
+    MatButtonModule,
     MatIconModule,
+    MatMenuModule,
+    MatProgressSpinnerModule,
+    NgIf,
   ],
   templateUrl: './sidebar-name-input.component.html',
   styleUrl: './sidebar-name-input.component.scss',
@@ -28,13 +33,14 @@ import { MatIconModule } from '@angular/material/icon';
 export class SidebarNameInputComponent {
   @Input() textValue = '';
   @Input() title = '';
-  @Input() helpText = '';
   @Input() placeholderText: string | null = '';
   @Input() errorMessage: string | null = null;
-
+  @Input() tooltipContent: string | null = null;
+  @Input() saving = false;
   @Output() textValueUpdated = new EventEmitter<string>();
 
   emitTextValue(e: Event) {
+    this.saving = true;
     this.textValueUpdated.emit(this.textValue);
   }
 }
