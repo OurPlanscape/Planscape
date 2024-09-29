@@ -123,12 +123,10 @@ export class TreatmentsState {
 
   // TODO: allow us to set other values, besides name?
   updateTreatmentPlanName(name: string) {
-    if (!this._treatmentPlan.value) {
-      throw new Error('Treatment plan not available!');
-    }
+    const payload = { name: name };
     return this.treatmentsService.updateTreatmentPlan(
       this.getTreatmentPlanId(),
-      { name: name }
+      payload
     );
   }
 

@@ -9,10 +9,16 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core';
-import { NgIf } from '@angular/common';
+import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms'; // Import FormsModule
 import { InputFieldComponent } from '@styleguide';
-import { debounceTime, distinctUntilChanged, Subject } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  Subject,
+  Observable,
+  BehaviorSubject,
+} from 'rxjs';
 import { InputDirective } from '../input/input.directive';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -28,6 +34,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   selector: 'sg-sidebar-name-input',
   standalone: true,
   imports: [
+    CommonModule,
     FormsModule,
     InputFieldComponent,
     InputDirective,
@@ -46,7 +53,9 @@ export class SidebarNameInputComponent implements OnInit, OnDestroy {
   @Input() placeholderText: string | null = '';
   @Input() errorMessage: string | null = null;
   @Input() tooltipContent: string | null = null;
-  @Input() saving = false;
+  @Input() savingStatus$: Observable<boolean> = new BehaviorSubject<boolean>(
+    false
+  );
   @Output() textValueUpdated = new EventEmitter<string>();
   @Input() debounceInterval = 800;
   private textValueUpdatedSubject = new Subject<string>();
@@ -60,7 +69,6 @@ export class SidebarNameInputComponent implements OnInit, OnDestroy {
         untilDestroyed(this)
       )
       .subscribe((textValue: string) => {
-        this.saving = true;
         this.textValueUpdated.emit(this.textValue);
       });
   }

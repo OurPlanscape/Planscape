@@ -5,6 +5,7 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
 import { SidebarNameInputComponent } from '@styleguide';
+import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
@@ -21,17 +22,22 @@ import { SidebarNameInputComponent } from '@styleguide';
 })
 export class TreatmentOverviewComponent {
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
+  savingStatus$ = new BehaviorSubject<boolean>(false);
   savingName = false;
   errorSavingName: string | null = null;
   constructor(private treatmentsState: TreatmentsState) {}
 
+  saveStatus() {
+    return this.savingName;
+  }
+
   handleNameChange(name: string) {
-    this.savingName = true;
+    this.savingStatus$.next(true);
 
     this.treatmentsState.updateTreatmentPlanName(name).subscribe({
-      next: () => {
+      next: (result) => {
         //TODO: reload the name? the entire plan?
-        this.savingName = false;
+        this.savingStatus$.next(false);
       },
       // TODO: set this via the component form instead?
       error: (err) => {
@@ -40,7 +46,7 @@ export class TreatmentOverviewComponent {
         } else {
           this.errorSavingName = 'Could not update the name.';
         }
-        this.savingName = false;
+        this.savingStatus$.next(false);
       },
     });
   }

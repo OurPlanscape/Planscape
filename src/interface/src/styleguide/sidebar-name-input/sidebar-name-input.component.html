@@ -22,7 +22,10 @@
       (ngModelChange)="clearError()"
       (blur)="emitTextValue($event)"
       (keyup.enter)="emitTextValue($event)" />
-    <mat-spinner diameter="20" matSuffix *ngIf="saving"></mat-spinner>
+    <mat-spinner
+      diameter="20"
+      matSuffix
+      *ngIf="savingStatus$ | async"></mat-spinner>
   </sg-input-field>
   <div class="error-blurb">
     <span *ngIf="errorMessage">{{ errorMessage }}</span>

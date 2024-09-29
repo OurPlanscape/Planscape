@@ -4,7 +4,7 @@
 </div>
 <sg-sidebar-name-input
   title="Treatment Plan Name"
-  [saving]="savingName"
+  [savingStatus$]="savingStatus$"
   [errorMessage]="errorSavingName"
   (textValueUpdated)="handleNameChange($event)"></sg-sidebar-name-input>
 <app-treatment-summary></app-treatment-summary>

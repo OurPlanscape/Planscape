@@ -30,11 +30,9 @@ export class TreatmentsService {
     });
   }
 
-  // TODO: only send an object of changed fields?
-  updateTreatmentPlan(treatmentPlanId: number, changedFields: object) {
-    return this.http.patch<TreatmentPlan>(this.baseUrl + treatmentPlanId, {
+  updateTreatmentPlan(id: number, changedFields: object) {
+    return this.http.patch<TreatmentPlan>(this.baseUrl + id, changedFields, {
       withCredentials: true,
-      params: changedFields,
     });
   }
 
