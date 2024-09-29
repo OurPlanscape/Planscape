@@ -17,6 +17,7 @@
     align-items: center;
     justify-content: center;
     height: 40px;
+    padding: 20px 10px 10px 10px;
 }
 
 .no-treatments-view {
@@ -56,6 +57,11 @@
     @include small-paragraph();
     color: $color-md-gray;
     text-align: center;
+  }
+
+  ::ng-deep .input-wrapper {
+    width: 100%;
+    background-color: $color-soft-gray;
   }
 
 }

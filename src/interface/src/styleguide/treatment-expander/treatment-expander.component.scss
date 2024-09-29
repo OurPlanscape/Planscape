@@ -70,17 +70,23 @@
   gap: 8px;
   margin-left: 4px;
   line-height: 0;
+  flex: 1;
+}
+
+.treatment-type-text {
+  width: 100%;
+  text-overflow: ellipsis;
 }
 
 .right-content {
   @include xs-label();
   color: $color-md-gray;
-  width: 100px;
   display: flex;
   align-items: center;
   justify-content: right;
   gap: 8px;
   padding-right: 10px;
+  flex: 0 0 0;
 }
 
 .treatment-detail {

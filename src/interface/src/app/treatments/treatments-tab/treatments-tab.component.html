@@ -8,7 +8,9 @@
 
 <div *ngIf="hasTreatments() === true">
   <div class="side-search-container">
-    <sg-search-bar></sg-search-bar>
+    <sg-search-bar
+      searchPlaceholder="Search treatment prescriptions"
+      [inputHeight]="'regular'"></sg-search-bar>
   </div>
   <div class="slider-container">
     <sg-opacity-slider
@@ -18,7 +20,7 @@
   </div>
   <sg-treatment-expander
     *ngFor="let tx of treatments"
-    [treatmentType]="tx.action ?? null"
+    [treatmentType]="tx.action"
     [totalAcres]="300"
     [standCount]="tx.treated_stand_count">
   </sg-treatment-expander>

@@ -43,7 +43,7 @@ export class TreatmentExpanderComponent {
   /**
    * A treatment type (Optional)
    */
-  @Input() treatmentType: PrescriptionAction | null = null;
+  @Input() treatmentType: PrescriptionAction | string | null = null;
   /**
    * A treatment sequence number  (Optional)
    */
@@ -76,7 +76,9 @@ export class TreatmentExpanderComponent {
     if (this.title !== null) {
       return this.title;
     } else if (this.treatmentType !== null) {
-      return PRESCRIPTIONS.SINGLE[this.treatmentType];
+      const action: PrescriptionSingleAction = this
+        .treatmentType as PrescriptionSingleAction;
+      return PRESCRIPTIONS.SINGLE[action];
     } else if (this.sequenceNumber !== null) {
       return `Sequence ${this.sequenceNumber}`;
     }
@@ -84,8 +86,10 @@ export class TreatmentExpanderComponent {
   }
 
   treatmentIconType(): PrescriptionSingleAction | null {
+    // try to coerce the treatmentType into a PrescriptionSingleAction...
+
     if (this.treatmentType !== null) {
-      return this.treatmentType;
+      return this.treatmentType as PrescriptionSingleAction;
     }
     return null;
   }
