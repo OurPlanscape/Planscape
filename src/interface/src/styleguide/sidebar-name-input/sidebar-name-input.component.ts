@@ -39,8 +39,11 @@ export class SidebarNameInputComponent {
   @Input() saving = false;
   @Output() textValueUpdated = new EventEmitter<string>();
 
+  clearError() {
+    this.errorMessage = null;
+  }
+
   emitTextValue(e: Event) {
-    this.saving = true;
     this.textValueUpdated.emit(this.textValue);
   }
 }

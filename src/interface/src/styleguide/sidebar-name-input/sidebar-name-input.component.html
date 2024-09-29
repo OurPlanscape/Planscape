@@ -19,6 +19,7 @@
       sgInput
       [placeholder]="placeholderText"
       [(ngModel)]="textValue"
+      (ngModelChange)="clearError()"
       (blur)="emitTextValue($event)"
       (keyup.enter)="emitTextValue($event)" />
     <mat-spinner diameter="20" matSuffix *ngIf="saving"></mat-spinner>

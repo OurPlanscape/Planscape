@@ -121,6 +121,17 @@ export class TreatmentsState {
       );
   }
 
+  // TODO: allow us to set other values, besides name?
+  updateTreatmentPlanName(name: string) {
+    if (!this._treatmentPlan.value) {
+      throw new Error('Treatment plan not available!');
+    }
+    return this.treatmentsService.updateTreatmentPlan(
+      this.getTreatmentPlanId(),
+      { name: name }
+    );
+  }
+
   private setTreatedStandsFromSummary(projectAreas: TreatmentProjectArea[]) {
     const treatedStands: TreatedStand[] = projectAreas.flatMap((pa) =>
       pa.prescriptions.flatMap((prescription) =>

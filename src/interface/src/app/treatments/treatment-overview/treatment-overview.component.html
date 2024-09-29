@@ -2,5 +2,9 @@
   {{ treatmentPlan.id }}. {{ treatmentPlan.name }}
   <div>{{ treatmentPlan.status }}</div>
 </div>
-
+<sg-sidebar-name-input
+  title="Treatment Plan Name"
+  [saving]="savingName"
+  [errorMessage]="errorSavingName"
+  (textValueUpdated)="handleNameChange($event)"></sg-sidebar-name-input>
 <app-treatment-summary></app-treatment-summary>
