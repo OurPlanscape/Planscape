@@ -3,7 +3,7 @@ import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentProjectAreaComponent } from './treatment-project-area.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { RouterTestingModule } from '@angular/router/testing';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 
 describe('ProjectAreaComponent', () => {
@@ -12,7 +12,11 @@ describe('ProjectAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentProjectAreaComponent, RouterTestingModule],
+      imports: [
+        BrowserAnimationsModule,
+        TreatmentProjectAreaComponent,
+        RouterTestingModule,
+      ],
       providers: [MockProviders(TreatmentsService)],
       declarations: [MockDeclarations(TreatmentMapComponent)],
     }).compileComponents();
