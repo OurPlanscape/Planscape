@@ -8,71 +8,44 @@ import { MatIconModule } from '@angular/material/icon';
 import { InputDirective } from '../../../styleguide/input/input.directive';
 import { InputFieldComponent } from '../../../styleguide/input/input-field.component';
 import { Prescription } from '@types';
+import { PRESCRIPTIONS, PrescriptionSingleAction } from '../prescriptions';
 
-// TODO: Does this Type exist somewhere else?
-
-/*
-example response from summary...
-
-  "planning_area_id": 0,
-  "planning_area_name": "string",
-  "scenario_id": 0,
-  "scenario_name": "string",
-  "treatment_plan_id": 0,
-  "treatment_plan_name": "string",
-  "project_areas": [
-    {
-      "project_area_id": 0,
-      "project_area_name": "string",
-      "total_stand_count": 0,
-      "prescriptions": [
-        {
-          "action": "string",
-          "type": "string",
-          "area_acres": 0,
-          "treated_stand_count": 0
-        }
-      ]
-    }
-  ]
-}
-*/
-
+// TODO: remove
 const examplePrescriptions: Prescription[] = [
   {
     action: 'HEAVY_THINNING_BURN',
     type: 'SINGLE',
     area_acres: 12000,
-    treated_stand_count: 0,
+    treated_stand_count: 34,
     stand_ids: [],
   },
   {
     action: 'MODERATE_THINNING_BURN',
     type: 'SINGLE',
     area_acres: 30,
-    treated_stand_count: 0,
+    treated_stand_count: 18,
     stand_ids: [],
   },
   {
-    action: '',
+    action: 'HEAVY_THINNING_BIOMASS',
     type: 'SINGLE',
-    area_acres: 0,
-    treated_stand_count: 0,
+    area_acres: 110,
+    treated_stand_count: 15,
     stand_ids: [],
   },
   {
-    action: '',
+    action: 'HEAVY_THINNING_RX_FIRE',
     type: 'SINGLE',
     area_acres: 0,
-    treated_stand_count: 0,
+    treated_stand_count: 265,
     stand_ids: [],
   },
   {
-    action: '',
+    action: 'MASTICATION_RX_FIRE',
     type: 'SINGLE',
-    area_acres: 0,
-    treated_stand_count: 0,
-    stand_ids: [],
+    area_acres: 86,
+    treated_stand_count: 1111,
+    stand_ids: [1, 2, 4, 5],
   },
 ];
 
@@ -93,8 +66,9 @@ const examplePrescriptions: Prescription[] = [
   styleUrl: './treatments-tab.component.scss',
 })
 export class ProjectAreaTreatmentsTabComponent {
-  @Input() treatments = examplePrescriptions;
+  @Input() treatments: Prescription[] = examplePrescriptions;
   layerOpacity: number = 100; // TODO: raise this up to state?
+  searchString: string = '';
 
   hasTreatments() {
     return this.treatments.length > 0;
@@ -102,6 +76,22 @@ export class ProjectAreaTreatmentsTabComponent {
 
   handleOpacityChange(opacity: number) {
     this.layerOpacity = opacity;
+  }
+
+  // TODO: only do this if an angular filter isn't an option
+  displayedTreatments(): Prescription[] {
+    const needle = this.searchString.toLowerCase();
+    return this.treatments.filter(
+      (p) =>
+        p.action.toLowerCase().includes(needle) ||
+        PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction].includes(
+          needle
+        )
+    );
+  }
+
+  setSearchString(searchString: string) {
+    this.searchString = searchString;
   }
 
   // TODO: what does this data shape really look like?

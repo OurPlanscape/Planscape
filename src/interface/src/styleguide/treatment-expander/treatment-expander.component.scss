@@ -39,6 +39,7 @@
       align-items: center;
       cursor: pointer;
       width: 100%;
+      gap: 4px;
     }
 
     .mat-expansion-panel-header .mat-expansion-indicator {
@@ -75,7 +76,7 @@
 
 .treatment-type-text {
   width: 100%;
-  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .right-content {
@@ -84,8 +85,8 @@
   display: flex;
   align-items: center;
   justify-content: right;
-  gap: 8px;
-  padding-right: 10px;
+  gap: 4px;
+  padding-right: 6px;
   flex: 0 0 0;
 }
 
@@ -111,6 +112,10 @@
 .stand-count,
 .treatment-hexagon {
   color: $color-dark-gray;
+}
+
+.stand-count {
+  text-justify: right;
 }
 
 .rx-detail {

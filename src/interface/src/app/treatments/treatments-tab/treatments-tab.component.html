@@ -10,7 +10,8 @@
   <div class="side-search-container">
     <sg-search-bar
       searchPlaceholder="Search treatment prescriptions"
-      [inputHeight]="'regular'"></sg-search-bar>
+      [inputHeight]="'regular'"
+      (searchString)="setSearchString($event)"></sg-search-bar>
   </div>
   <div class="slider-container">
     <sg-opacity-slider
@@ -19,9 +20,9 @@
       (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
   </div>
   <sg-treatment-expander
-    *ngFor="let tx of treatments"
+    *ngFor="let tx of displayedTreatments()"
     [treatmentType]="tx.action"
-    [totalAcres]="300"
+    [totalAcres]="tx.area_acres"
     [standCount]="tx.treated_stand_count">
   </sg-treatment-expander>
 </div>
