@@ -1,3 +1,4 @@
+from typing import Optional, Type
 from django.contrib.gis.db import models
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth import get_user_model
@@ -16,6 +17,7 @@ class Role(models.TextChoices):
 
 
 class Permissions(models.Model):
+    id: int
     role = models.CharField(
         choices=Role.choices,
         max_length=16,
@@ -37,6 +39,7 @@ class UserObjectRole(CreatedAtMixin, UpdatedAtMixin, models.Model):
     email = models.CharField(max_length=120)
     # the user that is being added as collaborator
     # might be empty if no user is found with the email
+    collaborator_id: Optional[int]
     collaborator = models.ForeignKey(
         User,
         related_name="object_roles",
@@ -50,6 +53,7 @@ class UserObjectRole(CreatedAtMixin, UpdatedAtMixin, models.Model):
         default=Role.VIEWER,
     )
     # the user that invited the collaborator
+    invited_id: Optional[int]
     inviter = models.ForeignKey(
         User,
         related_name="invites",
@@ -57,8 +61,10 @@ class UserObjectRole(CreatedAtMixin, UpdatedAtMixin, models.Model):
         null=False,
     )
     # use content types to potentially save other things that are not only planning_areas
+    content_type_id: Optional[int]
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_pk = models.PositiveIntegerField()
+    content_object_id: Optional[int]
     content_object = GenericForeignKey("content_type", "object_pk")
 
     class Meta:
@@ -73,3 +79,7 @@ class UserObjectRole(CreatedAtMixin, UpdatedAtMixin, models.Model):
                 name="unique_collaborator",
             )
         ]
+
+
+TPermission = Type[Permissions]
+TUserObjectRole = Type[UserObjectRole]

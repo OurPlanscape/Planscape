@@ -25,7 +25,7 @@
     <button
       type="button"
       (click)="togglePan()"
-      [ngClass]="{ active: !(standSelectionEnabled$ | async) }"
+      [ngClass]="{ active: (standSelectionEnabled$ | async) === false }"
       matTooltip="Pan"
       matTooltipPosition="right">
       <mat-icon class="material-symbols-outlined">pan_tool</mat-icon>

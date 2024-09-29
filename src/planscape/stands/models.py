@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Type, Union
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import QuerySet
@@ -104,3 +104,7 @@ class StandMetric(CreatedAtMixin, models.Model):
                 name="unique_stand_metric",
             )
         ]
+
+
+TStand = Type[Stand]
+TStandMetric = Type[StandMetric]
