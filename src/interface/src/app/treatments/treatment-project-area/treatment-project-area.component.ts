@@ -5,7 +5,7 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
 import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 import { RouterLink } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
-import { TreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
+import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
 
 @Component({
   selector: 'app-treatment-project-area',
@@ -18,7 +18,7 @@ import { TreatmentsTabComponent } from '../treatments-tab/treatments-tab.compone
     AsyncPipe,
     PrescriptionActionsComponent,
     RouterLink,
-    TreatmentsTabComponent,
+    ProjectAreaTreatmentsTabComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',

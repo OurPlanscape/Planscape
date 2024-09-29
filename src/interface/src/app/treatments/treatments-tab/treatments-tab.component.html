@@ -11,15 +11,15 @@
     <sg-search-bar></sg-search-bar>
   </div>
   <div class="slider-container">
-    <sg-opacity-slider></sg-opacity-slider>
+    <sg-opacity-slider
+      title="Treatment opacity"
+      [sliderValue]="layerOpacity"
+      (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
   </div>
   <sg-treatment-expander
     *ngFor="let tx of treatments"
-    [title]="tx.title ?? null"
-    [treatmentType]="tx.treatmentType ?? null"
-    [sequenceNumber]="tx.sequenceNumber ?? null"
-    [rxDetails]="tx.rxDetails"
+    [treatmentType]="tx.action ?? null"
     [totalAcres]="300"
-    [standCount]="tx.standCount">
+    [standCount]="tx.treated_stand_count">
   </sg-treatment-expander>
 </div>

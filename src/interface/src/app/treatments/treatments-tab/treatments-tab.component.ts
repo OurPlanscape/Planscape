@@ -5,18 +5,11 @@ import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opaci
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
 import { TreatmentExpanderComponent } from 'src/styleguide/treatment-expander/treatment-expander.component';
 import { MatIconModule } from '@angular/material/icon';
-import { PrescriptionSingleAction } from '../prescriptions';
 import { InputDirective } from '../../../styleguide/input/input.directive';
 import { InputFieldComponent } from '../../../styleguide/input/input-field.component';
+import { Prescription } from '@types';
 
 // TODO: Does this Type exist somewhere else?
-export type TreatmentRecord = {
-  rxDetails?: any[]; // TODO: should establish this as a type?
-  treatmentType?: PrescriptionSingleAction;
-  sequenceNumber?: number;
-  title?: string;
-  standCount?: string | number;
-};
 
 /*
 example response from summary...
@@ -45,51 +38,46 @@ example response from summary...
 }
 */
 
-const exampleTreatments: TreatmentRecord[] = [
+const examplePrescriptions: Prescription[] = [
   {
-    treatmentType: 'HEAVY_THINNING_BURN',
-    standCount: 11,
+    action: 'HEAVY_THINNING_BURN',
+    type: 'SINGLE',
+    area_acres: 12000,
+    treated_stand_count: 0,
+    stand_ids: [],
   },
   {
-    standCount: 11,
-    treatmentType: 'MODERATE_THINNING_BURN',
+    action: 'MODERATE_THINNING_BURN',
+    type: 'SINGLE',
+    area_acres: 30,
+    treated_stand_count: 0,
+    stand_ids: [],
   },
   {
-    standCount: '11/200',
-    sequenceNumber: 1,
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
+    action: '',
+    type: 'SINGLE',
+    area_acres: 0,
+    treated_stand_count: 0,
+    stand_ids: [],
   },
   {
-    standCount: '11/200',
-    sequenceNumber: 2,
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
+    action: '',
+    type: 'SINGLE',
+    area_acres: 0,
+    treated_stand_count: 0,
+    stand_ids: [],
   },
   {
-    sequenceNumber: 3,
-    standCount: '11/200',
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
-  },
-  {
-    sequenceNumber: 4,
-    standCount: '8/200',
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
+    action: '',
+    type: 'SINGLE',
+    area_acres: 0,
+    treated_stand_count: 0,
+    stand_ids: [],
   },
 ];
 
 @Component({
-  selector: 'app-treatments-tab',
+  selector: 'app-project-area-tx-tab',
   standalone: true,
   imports: [
     InputDirective,
@@ -104,14 +92,21 @@ const exampleTreatments: TreatmentRecord[] = [
   templateUrl: './treatments-tab.component.html',
   styleUrl: './treatments-tab.component.scss',
 })
-export class TreatmentsTabComponent {
-  @Input() treatments = exampleTreatments;
+export class ProjectAreaTreatmentsTabComponent {
+  @Input() treatments = examplePrescriptions;
+  layerOpacity: number = 100; // TODO: raise this up to state?
 
   hasTreatments() {
     return this.treatments.length > 0;
   }
 
+  handleOpacityChange(opacity: number) {
+    this.layerOpacity = opacity;
+  }
+
   // TODO: what does this data shape really look like?
   // what daunting type mapping has to happen?
-  loadTreatments() {}
+  loadTreatments() {
+    // this.treatments =
+  }
 }

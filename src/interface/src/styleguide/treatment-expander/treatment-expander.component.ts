@@ -5,8 +5,8 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
 import {
+  PrescriptionAction,
   PrescriptionSingleAction,
-  USER_FACING_RX_STRING,
 } from '../../app/treatments/prescriptions';
 
 export interface rxType {
@@ -42,7 +42,7 @@ export class TreatmentExpanderComponent {
   /**
    * A treatment type (Optional)
    */
-  @Input() treatmentType: PrescriptionSingleAction | null = null;
+  @Input() treatmentType: PrescriptionAction | null = null;
   /**
    * A treatment sequence number  (Optional)
    */
