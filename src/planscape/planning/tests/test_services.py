@@ -4,7 +4,6 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 import fiona
 from fiona.crs import to_string
-
 from planning.services import (
     export_to_shapefile,
     get_max_treatable_area,

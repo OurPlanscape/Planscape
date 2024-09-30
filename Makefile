@@ -61,6 +61,9 @@ deploy-storybook: install-dependencies-frontend build-storybook
 cypress-test:
 	cd src/interface && npm run cypress:run
 
+mypy:
+	mypy . --strict --ignore-missing-imports | grep src/ | wc -l
+
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
 	cd src/planscape && python3 manage.py install_layers

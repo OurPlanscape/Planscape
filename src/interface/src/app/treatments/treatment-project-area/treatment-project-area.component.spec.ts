@@ -3,9 +3,8 @@ import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentProjectAreaComponent } from './treatment-project-area.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { RouterTestingModule } from '@angular/router/testing';
-import { LookupService } from '@services/lookup.service';
+
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 
 describe('ProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -14,10 +13,8 @@ describe('ProjectAreaComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [TreatmentProjectAreaComponent, RouterTestingModule],
-      providers: [MockProviders(TreatmentsService, LookupService)],
-      declarations: [
-        MockDeclarations(TreatmentMapComponent, PrescriptionActionsComponent),
-      ],
+      providers: [MockProviders(TreatmentsService)],
+      declarations: [MockDeclarations(TreatmentMapComponent)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentProjectAreaComponent);
