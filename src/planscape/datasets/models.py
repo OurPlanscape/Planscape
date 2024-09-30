@@ -97,7 +97,7 @@ class GeometryType(models.TextChoices):
     MULTIPOINT = "MULTIPOINT", "MultiPoint"
     LINESTRING = "LINESTRING", "LineString"
     MULTILINESTRING = "MULTILINESTRING", "MultiLineString"
-    POLYGON = "POLYGON", "MultiPolygon"
+    POLYGON = "POLYGON", "Polygon"
     MULTIPOLYGON = "MULTIPOLYGON", "MultiPolygon"
 
 
