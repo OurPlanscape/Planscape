@@ -3,7 +3,6 @@ import { ActivatedRoute } from '@angular/router';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { Note } from '@services';
 import { ProjectAreaNotesService } from '@services';
-import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 import { MatDividerModule } from '@angular/material/divider';
 import {
   NotesSidebarComponent,
@@ -20,6 +19,7 @@ import { take } from 'rxjs';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-project-area',
@@ -31,11 +31,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     TreatmentSummaryComponent,
     JsonPipe,
     AsyncPipe,
-    PrescriptionActionsComponent,
     MatDividerModule,
     NotesSidebarComponent,
     MatTabsModule,
     MatDialogModule,
+    RouterLink,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',

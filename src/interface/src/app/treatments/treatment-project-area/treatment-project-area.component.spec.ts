@@ -3,7 +3,7 @@ import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentProjectAreaComponent } from './treatment-project-area.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { RouterTestingModule } from '@angular/router/testing';
-import { LookupService } from '@services/lookup.service';
+
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -23,7 +23,7 @@ describe('ProjectAreaComponent', () => {
         MatSnackBar,
         BrowserAnimationsModule,
       ],
-      providers: [MockProviders(TreatmentsService, LookupService)],
+      providers: [MockProviders(TreatmentsService)],
       declarations: [
         MockDeclarations(TreatmentMapComponent, PrescriptionActionsComponent),
       ],

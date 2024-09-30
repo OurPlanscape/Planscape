@@ -3,7 +3,6 @@ import logging
 import os
 from base.region_name import display_name_to_region
 from django.conf import settings
-from planning.geometry import coerce_geometry
 from django.db import transaction
 from django.db import IntegrityError
 from django.db.models import Count, Max

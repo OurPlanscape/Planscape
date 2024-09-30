@@ -51,6 +51,11 @@ export class MapConfigState {
     this._showTreatmentStandsLayer$.next(value);
   }
 
+  toggleShowTreatmentStands() {
+    const visible = this._showTreatmentStandsLayer$.value;
+    this._showTreatmentStandsLayer$.next(!visible);
+  }
+
   setStandSelectionEnabled(value: boolean) {
     this._standSelectionEnabled$.next(value);
     this.resetCursor();

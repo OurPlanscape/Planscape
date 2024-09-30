@@ -133,6 +133,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     }
     const standId = this.getStandIdFromStandsLayer(event.point)[0];
     this.selectedStandsState.toggleStand(standId);
+    this.treatmentsState.setShowApplyTreatmentsDialog(true);
   }
 
   ngOnChanges(changes: SimpleChanges) {
@@ -142,10 +143,15 @@ export class MapStandsComponent implements OnChanges, OnInit {
       ];
       this.selectedStandsState.saveHistory(this.initialSelectedStands);
     }
+
     // finds selected stands when the select bounding box changes
     if (changes['selectStart'] || changes['selectEnd']) {
       //select stands
       this.selectStandsWithinRectangle();
+    }
+    // if we end up dragging, show treatment apply dialog
+    if (this.isMouseEndEvent(changes['selectEnd'])) {
+      this.treatmentsState.setShowApplyTreatmentsDialog(true);
     }
   }
 
@@ -161,6 +167,10 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   private isMouseDownChange(change: SimpleChange) {
     return change?.currentValue && !change?.previousValue;
+  }
+
+  private isMouseEndEvent(change: SimpleChange) {
+    return change?.previousValue && !change?.currentValue;
   }
 
   private generateFillColors(stands: TreatedStand[]) {
