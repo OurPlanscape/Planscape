@@ -1,4 +1,4 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
 
 /**
@@ -8,6 +8,9 @@ import { Injectable } from '@angular/core';
 export class SelectedStandsState {
   private _selectedStands$ = new BehaviorSubject<number[]>([]);
   selectedStands$ = this._selectedStands$.asObservable();
+  hasSelectedStands$ = this.selectedStands$.pipe(
+    map((stands) => stands.length > 0)
+  );
   private _history: number[][] = [];
 
   updateSelectedStands(stands: number[]) {

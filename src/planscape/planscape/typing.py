@@ -1,4 +1,6 @@
-from typing import Type
+from typing import Any, Dict, Type, Union
 from django.contrib.auth.models import AbstractUser
+from django.contrib.gis.geos import GEOSGeometry
 
-UserType = Type[AbstractUser]
+TUser = Type[AbstractUser]
+TLooseGeom = Union[Dict[str, Any], GEOSGeometry, None]

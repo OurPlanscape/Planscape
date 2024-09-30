@@ -23,8 +23,10 @@ export class TreatmentsState {
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
-  private _projectAreaId: number | undefined = undefined;
   private _scenarioId: number | undefined = undefined;
+
+  private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
+  public projectAreaId$ = this._projectAreaId$.asObservable();
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
@@ -37,6 +39,10 @@ export class TreatmentsState {
 
   public activeProjectArea$ = this._activeProjectArea$.asObservable();
 
+  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
+  public showApplyTreatmentsDialog$ =
+    this._showApplyTreatmentsDialog$.asObservable();
+
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
       throw new Error('no treatment plan id!');
@@ -45,7 +51,7 @@ export class TreatmentsState {
   }
 
   getProjectAreaId() {
-    return this._projectAreaId;
+    return this._projectAreaId$.value;
   }
 
   getScenarioId(): number {
@@ -62,7 +68,7 @@ export class TreatmentsState {
   }) {
     this._scenarioId = opts.scenarioId;
     this._treatmentPlanId = opts.treatmentId;
-    this._projectAreaId = opts.projectAreaId;
+    this._projectAreaId$.next(opts.projectAreaId);
   }
 
   loadSummaryForProjectArea() {
@@ -185,7 +191,8 @@ export class TreatmentsState {
     if (!projectArea) {
       throw Error('no project area');
     }
-    this._projectAreaId = projectAreaId;
+
+    this._projectAreaId$.next(projectAreaId);
     this.mapConfigState.updateShowTreatmentStands(true);
     this.mapConfigState.updateMapCenter(projectArea?.extent);
     this._activeProjectArea$.next(projectArea);
@@ -198,5 +205,9 @@ export class TreatmentsState {
       throw new Error('no summary loaded');
     }
     return summary;
+  }
+
+  setShowApplyTreatmentsDialog(value: boolean) {
+    this._showApplyTreatmentsDialog$.next(value);
   }
 }
