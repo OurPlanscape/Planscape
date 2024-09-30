@@ -4,7 +4,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
-
+import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
@@ -12,6 +12,7 @@ import { TreatmentsState } from '../treatments.state';
     AsyncPipe,
     TreatmentMapComponent,
     TreatmentSummaryComponent,
+    TreatmentPlanTabsComponent,
     MapBaseLayerComponent,
     NgIf,
   ],

@@ -1,11 +1,14 @@
-<div class="">
-  <span class="about-label"># of Project areas</span>
-  <span>{{ numProjectAreas }}</span>
-</div>
-<div>
-  <span class="about-label">Acres</span><span>{{ numAcres }}</span>
-</div>
-<div>
-  <span class="about-label">Stand size</span>
-  <span>{{ standSize }} </span>
+<div class="about-items">
+  <div class="about-row">
+    <div class="about-label"># of Project areas</div>
+    <div class="about-info">{{ numProjectAreas | number: '1.0-0' }}</div>
+  </div>
+  <div class="about-row">
+    <div class="about-label">Acres</div>
+    <div class="about-info">{{ numAcres | number: '1.0-0' }}</div>
+  </div>
+  <div class="about-row">
+    <div class="about-label">Stand size</div>
+    <div class="about-info">{{ standSize }}</div>
+  </div>
 </div>
