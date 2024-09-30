@@ -74,6 +74,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "drf_spectacular",
+    "mptt",
 ] + PLANSCAPE_APPS
 
 # Middleware order matters because of layering dependencies
