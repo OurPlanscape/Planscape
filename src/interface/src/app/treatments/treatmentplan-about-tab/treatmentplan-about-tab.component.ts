@@ -9,9 +9,7 @@ import { DecimalPipe } from '@angular/common';
   styleUrl: './treatmentplan-about-tab.component.scss',
 })
 export class TreatmentplanAboutTabComponent {
-  @Input() numProjectAreas?: number = 1000;
-  @Input() numAcres?: number = 2400000;
-  @Input() standSize?: string = 'SMALL';
-
-  loadTreatmentPlan(): void {}
+  @Input() numProjectAreas?: number;
+  @Input() numAcres?: number;
+  @Input() standSize?: 'SMALL' | 'MEDIUM' | 'LARGE';
 }
