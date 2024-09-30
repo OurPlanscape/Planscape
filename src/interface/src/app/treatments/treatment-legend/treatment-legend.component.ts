@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { NgIf, NgFor, NgClass, KeyValuePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -31,10 +31,14 @@ import { PRESCRIPTIONS } from '../prescriptions';
 export class TreatmentLegendComponent {
   readonly singlePrescriptions = PRESCRIPTIONS.SINGLE;
   readonly sequences: number[] = [...Array(8).keys()].map((n) => (n = n + 1));
-
+  @Output() closeRequest = new EventEmitter();
   constructor() {}
 
   originalOrder = (): number => {
     return 0;
   };
+
+  handleClose() {
+    this.closeRequest.emit();
+  }
 }
