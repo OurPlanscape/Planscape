@@ -22,7 +22,8 @@ export abstract class BaseNotesService {
   protected abstract singleUrl: (objectId: string, noteId: string) => string;
   protected abstract modelName: NotesModelName;
 
-  getNotes(objectId: string) {
+  getNotes(objectId: string | number) {
+    objectId = objectId.toString();
     return this.http.get<Note[]>(
       environment.backend_endpoint.concat(this.multipleUrl(objectId)),
       {
@@ -31,7 +32,8 @@ export abstract class BaseNotesService {
     );
   }
 
-  addNote(objectId: string, noteContent: string) {
+  addNote(objectId: string | number, noteContent: string | number) {
+    objectId = objectId.toString();
     return this.http.post<Note>(
       environment.backend_endpoint.concat(this.multipleUrl(objectId)),
       { content: noteContent },
@@ -41,7 +43,9 @@ export abstract class BaseNotesService {
     );
   }
 
-  deleteNote(objectId: string, noteId: string) {
+  deleteNote(objectId: string | number, noteId: string | number) {
+    objectId = objectId.toString();
+    noteId = noteId.toString();
     return this.http.delete<Note>(
       environment.backend_endpoint.concat(this.singleUrl(objectId, noteId)),
       {

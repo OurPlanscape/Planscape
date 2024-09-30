@@ -205,14 +205,13 @@ export class PlanComponent implements OnInit, OnDestroy {
   }
 
   handleNoteDelete(n: Note) {
-    const noteId = n.id.toString();
     const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
     dialogRef
       .afterClosed()
       .pipe(take(1))
       .subscribe((confirmed: boolean) => {
         if (confirmed && this.planId) {
-          this.notesService.deleteNote(this.planId, noteId).subscribe({
+          this.notesService.deleteNote(this.planId, n.id).subscribe({
             next: () => {
               this.snackbar.open(
                 `Deleted note`,

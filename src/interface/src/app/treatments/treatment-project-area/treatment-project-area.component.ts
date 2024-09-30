@@ -70,9 +70,8 @@ export class TreatmentProjectAreaComponent implements OnInit {
 
   //notes handling functions
   addNote(comment: string) {
-    const projId = this.projectId.toString();
     this.notesSidebarState = 'SAVING';
-    this.notesService.addNote(projId, comment).subscribe((note) => {
+    this.notesService.addNote(this.projectId, comment).subscribe((note) => {
       this.notes.unshift(note);
       this.loadNotes();
     });
@@ -81,14 +80,12 @@ export class TreatmentProjectAreaComponent implements OnInit {
 
   handleNoteDelete(n: Note) {
     const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
-    const projId = this.projectId.toString();
-    const noteId = n.id.toString();
     dialogRef
       .afterClosed()
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.notesService.deleteNote(projId, noteId).subscribe({
+          this.notesService.deleteNote(this.projectId, n.id).subscribe({
             next: () => {
               this.snackbar.open(
                 `Deleted note`,
@@ -110,8 +107,7 @@ export class TreatmentProjectAreaComponent implements OnInit {
   }
 
   loadNotes() {
-    const projId = this.projectId.toString();
-    this.notesService.getNotes(projId).subscribe((notes) => {
+    this.notesService.getNotes(this.projectId).subscribe((notes) => {
       this.notes = notes;
     });
   }
