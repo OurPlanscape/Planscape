@@ -42,6 +42,7 @@ PLANSCAPE_APPS = [
     "collaboration",
     "conditions",
     "core",
+    "datasets",
     "e2e",
     "impacts",
     "martin",
