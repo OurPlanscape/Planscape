@@ -22,9 +22,11 @@
         </div>
       </mat-expansion-panel-header>
       <div class="legend-section">
-        <div class="legend-row" *ngFor="let tx of singleTreatments">
-          <sg-treatment-type-icon [treatment]="tx"></sg-treatment-type-icon>
-          <div class="legend-text">{{ getSingleTreatmentLabel(tx) }}</div>
+        <div
+          class="legend-row"
+          *ngFor="let tx of singlePrescriptions | keyvalue: originalOrder">
+          <sg-treatment-type-icon [treatment]="tx.key"></sg-treatment-type-icon>
+          <div class="legend-text">{{ tx.value }}</div>
         </div>
       </div>
     </mat-expansion-panel>
@@ -39,7 +41,7 @@
       <div class="legend-section">
         <div class="legend-row" *ngFor="let seq of sequences">
           <sg-sequence-icon [sequenceNum]="seq"></sg-sequence-icon>
-          <div class="legend-text">{{ getSequenceLabel(seq) }}</div>
+          <div class="legend-text">{{ 'Sequence' + seq }}</div>
         </div>
       </div>
     </mat-expansion-panel>
