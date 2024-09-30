@@ -49,7 +49,7 @@ class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
     created_by_id: int
     created_by = models.ForeignKey(
         User,
-        related_name="created_datasets",
+        related_name="created_categories",
         on_delete=models.RESTRICT,
     )
 
