@@ -1,97 +1,163 @@
-from django.contrib.postgres.fields import ArrayField
 from django.contrib.auth import get_user_model
-from django.contrib.gis.db import models
+from django.core.validators import URLValidator
 from django.conf import settings
-from core.models import CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, UUIDMixin
-from organizations.models import Organization
+from django.contrib.gis.db import models
+from django_stubs_ext.db.models import TypedModelMeta
+from treebeard.mp_tree import MP_Node
 
+from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
+from core.schemes import SUPPORTED_SCHEMES
 
 User = get_user_model()
 
 
-class DatasetType(models.TextChoices):
+class VisibilityOptions(models.TextChoices):
+    PRIVATE = "PRIVATE", "Private"
+    PUBLIC = "PUBLIC", "Public"
+
+
+class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+    id: int
+
+    created_by_id: int
+    created_by = models.ForeignKey(
+        User,
+        related_name="created_datasets",
+        on_delete=models.RESTRICT,
+    )
+
+    name = models.CharField(max_length=128)
+    description = models.TextField(
+        null=True,
+    )
+    visibility = models.CharField(
+        choices=VisibilityOptions.choices,
+        default=VisibilityOptions.PRIVATE,
+    )
+    version = models.CharField(
+        null=True,
+    )
+
+    class Meta(TypedModelMeta):
+        verbose_name = "Dataset"
+        verbose_name_plural = "Datasets"
+
+
+class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
+    id: int
+
+    created_by_id: int
+    created_by = models.ForeignKey(
+        User,
+        related_name="created_categories",
+        on_delete=models.RESTRICT,
+    )
+
+    dataset_id: int
+    dataset = models.ForeignKey(
+        Dataset,
+        related_name="categories",
+        on_delete=models.RESTRICT,
+    )
+
+    order = models.IntegerField(
+        default=0,
+        help_text="If necessary, changing the order allows the users to configure what categories appears first.",
+    )
+
+    node_order_by = [
+        "order",
+        "name",
+    ]
+
+    name = models.CharField(
+        max_length=128,
+    )
+
+    class Meta(TypedModelMeta):
+        verbose_name = "Category"
+        verbose_name_plural = "Categories"
+
+
+class DataLayerType(models.TextChoices):
     VECTOR = "VECTOR", "Vector"
     RASTER = "RASTER", "Raster"
 
 
-class DatasetBlobStatus(models.TextChoices):
-    """
-    Represents an enumeration of possible dataset blob statuses.
-    This is about the life-cycle of the dataset.
-    """
-
-    FAILED = "FAILED", "Failed"
-    PENDING_UPLOAD = "PENDING_UPLOAD", "Pending Upload"
+class DataLayerStatus(models.TextChoices):
     READY = "READY", "Ready"
+    PENDING = "PENDING", "Pending"
+    FAILED = "FAILED", "Failed"
 
 
-class Dataset(
-    UUIDMixin,
-    CreatedAtMixin,
-    UpdatedAtMixin,
-    DeletedAtMixin,
-    models.Model,
-):
-    """
-    Represents a GIS dataset that can be used in a metric
-    or in a restriction area.
-    """
+class GeometryType(models.TextChoices):
+    NO_GEOM = "NO_GEOM", "No Geometry Field"
+    RASTER = "RASTER", "Raster"
+    POINT = "POINT", "Point"
+    MULTIPOINT = "MULTIPOINT", "MultiPoint"
+    LINESTRING = "LINESTRING", "LineString"
+    MULTILINESTRING = "MULTILINESTRING", "MultiLineString"
+    POLYGON = "POLYGON", "Polygon"
+    MULTIPOLYGON = "MULTIPOLYGON", "MultiPolygon"
 
+
+class DataLayer(models.Model):
+    id: int
+
+    created_by_id: int
     created_by = models.ForeignKey(
         User,
+        related_name="created_datalayers",
         on_delete=models.RESTRICT,
-        related_name="created_datasets",
     )
 
-    organization = models.ForeignKey(
-        Organization,
+    dataset_id: int
+    dataset = models.ForeignKey(
+        Dataset,
+        related_name="datalayers",
         on_delete=models.RESTRICT,
-        related_name="datasets",
     )
 
     name = models.CharField(max_length=256)
 
     type = models.CharField(
-        choices=DatasetType.choices,
+        choices=DataLayerType.choices,
+        null=True,
     )
 
-    blob_status = models.CharField(
-        choices=DatasetBlobStatus.choices,
-        default=DatasetBlobStatus.PENDING_UPLOAD,
+    geometry_type = models.CharField(
+        choices=GeometryType.choices,
+        null=True,
+    )
+
+    status = models.CharField(
+        choices=DataLayerStatus.choices,
+        default=DataLayerStatus.PENDING,
+        help_text="Status of the file relative to our system.",
     )
 
     info = models.JSONField(
         null=True,
-        help_text="Contains the result of ogrinfo or gdalinfo in this dataset. This has important information on how the dataset behaves. Can only be obtained after the dataset is in storage.",
+        help_text="output of gdalinfo or ogrinfo.",
     )
 
-    url = models.URLField(
-        max_length=512,
-        help_text="URL of the dataset in storage. Most like an s3 url.",
+    url = models.CharField(
+        max_length=1024,
+        validators=[URLValidator(schemes=SUPPORTED_SCHEMES)],
+        null=True,
     )
 
     geometry = models.PolygonField(
-        srid=settings.CRS_INTERNAL_REPRESENTATION,
-        help_text="Bounding Box of the dataset",
+        srid=settings.DEFAULT_CRS,
+        help_text="Represents the polygon that encompasses the datalayer. It can be null.",
         null=True,
     )
 
-    operations = ArrayField(
-        models.CharField(max_length=64),
-        help_text="List of the operations this dataset passed through. Operations at the head of the list were applied last.",
-        null=True,
-    )
+    # right now we have the following metadata fields for rasters, which can be different
+    # from vectors. to support both formats cleanly, a JSON field, with a custom validator
+    # that depends on the type of the datalyer might be appropriate
+    metadata = models.JSONField(null=True)
 
-    data_units = models.CharField(max_length=128, null=True)
-
-    provider = models.CharField(max_length=256, null=True)
-
-    source = models.CharField(max_length=256, null=True)
-
-    source_url = models.URLField(max_length=512, null=True)
-
-    reference_url = models.URLField(max_length=512, null=True)
-
-    class Meta:
-        verbose_name = "Dataset"
-        verbose_name_plural = "Datasets"
+    class Meta(TypedModelMeta):
+        verbose_name = "Datalayer"
+        verbose_name_plural = "Datalayers"

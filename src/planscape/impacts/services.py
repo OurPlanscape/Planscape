@@ -2,7 +2,7 @@ import logging
 import itertools
 import json
 from rasterstats import zonal_stats
-from typing import Iterable, List, Optional, Sequence, Type, Dict, Union, Tuple, Any
+from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
 from django.db.models import Count
 from django.contrib.gis.db.models import Union as UnionOp
@@ -11,38 +11,31 @@ from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
+    TAction,
+    TTreatmentPlan,
+    TTreatmentPlanCloneResult,
+    TTreatmentPrescriptionEntity,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
-    TreatmentPrescriptionType,
     TreatmentResult,
     get_prescription_type,
 )
-from planning.models import ProjectArea, Scenario
+from planning.models import ProjectArea, TProjectArea, TScenario
 from actstream import action as actstream_action
-from stands.models import STAND_AREA_ACRES, Stand
-from planscape.typing import UserType
+from stands.models import STAND_AREA_ACRES, TStand, Stand
+from planscape.typing import TUser
 
 log = logging.getLogger(__name__)
-TreatmentPlanType = Type[TreatmentPlan]
-ScenarioType = Type[Scenario]
-StandType = Type[Stand]
-ActionType = Type[TreatmentPrescriptionType]
-ProjectAreaType = Type[ProjectArea]
-TreatmentPrescriptionEntityType = Type[TreatmentPrescription]
-TreatmentPlanCloneResultType = Tuple[
-    TreatmentPlanType, List[TreatmentPrescriptionEntityType]
-]
-TTreatmentResult = Type[TreatmentResult]
 
 
 @transaction.atomic()
 def create_treatment_plan(
-    scenario: ScenarioType,
+    scenario: TScenario,
     name: str,
-    created_by: UserType,
-) -> TreatmentPlanType:
+    created_by: TUser,
+) -> TTreatmentPlan:
     # question: should we add a constraint on
     # treament plan to prevent users from creating
     # treamentplans with for the same scenario with the
@@ -59,12 +52,12 @@ def create_treatment_plan(
 
 @transaction.atomic()
 def upsert_treatment_prescriptions(
-    treatment_plan: TreatmentPlanType,
-    project_area: ProjectAreaType,
-    stands: List[StandType],
-    action: ActionType,
-    created_by: UserType,
-) -> List[TreatmentPrescriptionEntityType]:
+    treatment_plan: TTreatmentPlan,
+    project_area: TProjectArea,
+    stands: List[TStand],
+    action: TAction,
+    created_by: TUser,
+) -> List[TreatmentPrescription]:
     def upsert(treatment_plan, project_area, stand, action, user):
         upsert_defaults = {
             "type": get_prescription_type(action),
@@ -100,9 +93,9 @@ def upsert_treatment_prescriptions(
 
 @transaction.atomic()
 def clone_treatment_prescription(
-    tx_prescription: TreatmentPrescriptionEntityType,
-    new_treatment_plan: TreatmentPlanType,
-    user: UserType,
+    tx_prescription: TTreatmentPrescriptionEntity,
+    new_treatment_plan: TTreatmentPlan,
+    user: TUser,
 ):
     return TreatmentPrescription.objects.create(
         created_by=user,
@@ -122,9 +115,9 @@ def get_cloned_name(name: str) -> str:
 
 @transaction.atomic()
 def clone_treatment_plan(
-    treatment_plan: TreatmentPlanType,
-    user: UserType,
-) -> TreatmentPlanCloneResultType:
+    treatment_plan: TTreatmentPlan,
+    user: TUser,
+) -> TTreatmentPlanCloneResult:
     cloned_plan = TreatmentPlan.objects.create(
         created_by=user,
         scenario=treatment_plan.scenario,
@@ -150,7 +143,7 @@ def clone_treatment_plan(
 
 
 def generate_summary(
-    treatment_plan: TreatmentPlanType,
+    treatment_plan: TTreatmentPlan,
     project_area: Optional[ProjectArea] = None,
 ) -> Dict[str, Any]:
     scenario = treatment_plan.scenario

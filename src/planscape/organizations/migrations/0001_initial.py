@@ -35,11 +35,28 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("uuid", models.UUIDField(db_index=True, default=uuid.uuid4)),
-                ("name", models.CharField(max_length=128)),
+                ("name", models.CharField(max_length=256)),
+                (
+                    "type",
+                    models.CharField(
+                        choices=[
+                            ("ACADEMIC", "Academic"),
+                            ("GOVERNMENT", "Government"),
+                            ("COMMERCIAL", "Commercial"),
+                            ("PRIVATE_LANDOWNERS", "Private Landowners"),
+                            ("TRIBAL", "Tribal"),
+                            ("COLLABORATIVES", "Collaboratives"),
+                            ("OTHER", "Other"),
+                        ]
+                    ),
+                ),
+                ("type_other", models.CharField(null=True)),
+                ("website", models.URLField(null=True)),
                 (
                     "created_by",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.RESTRICT,
+                        related_name="created_organizations",
                         to=settings.AUTH_USER_MODEL,
                     ),
                 ),

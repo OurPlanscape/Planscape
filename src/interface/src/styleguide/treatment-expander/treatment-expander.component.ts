@@ -1,12 +1,12 @@
 import { Component, Input } from '@angular/core';
-import { NgIf, NgFor, NgClass } from '@angular/common';
+import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
 import {
+  PRESCRIPTIONS,
   PrescriptionSingleAction,
-  USER_FACING_RX_STRING,
 } from '../../app/treatments/prescriptions';
 
 export interface rxType {
@@ -75,7 +75,7 @@ export class TreatmentExpanderComponent {
     if (this.title !== null) {
       return this.title;
     } else if (this.treatmentType !== null) {
-      return USER_FACING_RX_STRING[this.treatmentType];
+      return PRESCRIPTIONS.SINGLE[this.treatmentType];
     } else if (this.sequenceNumber !== null) {
       return `Sequence ${this.sequenceNumber}`;
     }

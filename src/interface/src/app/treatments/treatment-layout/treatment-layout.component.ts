@@ -20,11 +20,14 @@ import { FeaturesModule } from '../../features/features.module';
 import { SharedModule } from '@shared';
 
 import { ButtonComponent } from '@styleguide';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+
 import { MatIconModule } from '@angular/material/icon';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { MatMenuModule } from '@angular/material/menu';
 import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
+import { ApplyTreatmentComponent } from '../apply-treatment/apply-treatment.component';
+import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
+import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 
 @UntilDestroy()
 @Component({
@@ -38,11 +41,13 @@ import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment
     FeaturesModule,
     SharedModule,
     ButtonComponent,
-    MatSlideToggleModule,
+    MatLegacySlideToggleModule,
     MatIconModule,
     MatLegacyButtonModule,
     MatMenuModule,
     TreatmentNavbarMenuComponent,
+    ApplyTreatmentComponent,
+    TreatmentLegendComponent,
   ],
   providers: [
     TreatmentsState,
@@ -56,8 +61,17 @@ import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment
 })
 export class TreatmentLayoutComponent {
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
+  projectAreaId$ = this.treatmentsState.projectAreaId$;
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
+  showApplyTreatments$ = this.treatmentsState.showApplyTreatmentsDialog$;
+  showTreatmentLayer$ = this.mapConfig.showTreatmentStandsLayer$;
+  showTreatmentLegend$ = combineLatest([
+    this.treatmentsState.projectAreaId$.pipe(map((activeArea) => !!activeArea)),
+    this.showTreatmentLayer$,
+  ]).pipe(
+    map(([activeArea, showTreatmentLayer]) => !activeArea && showTreatmentLayer)
+  );
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -161,6 +175,10 @@ export class TreatmentLayoutComponent {
     const summary = this.treatmentsState.getCurrentSummary();
     let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${planId}`;
     this.router.navigate([url]);
+  }
+
+  toggleShowTreatmentLayers() {
+    this.mapConfig.toggleShowTreatmentStands();
   }
 }
 
