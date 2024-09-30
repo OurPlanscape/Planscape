@@ -5,7 +5,6 @@ import { TreatmentsService } from '@services/treatments.service';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { PrescriptionActionsComponent } from '../prescription-actions/prescription-actions.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -24,9 +23,7 @@ describe('ProjectAreaComponent', () => {
         BrowserAnimationsModule,
       ],
       providers: [MockProviders(TreatmentsService)],
-      declarations: [
-        MockDeclarations(TreatmentMapComponent, PrescriptionActionsComponent),
-      ],
+      declarations: [MockDeclarations(TreatmentMapComponent)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentProjectAreaComponent);
