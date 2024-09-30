@@ -5,6 +5,7 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
 import { SidebarNameInputComponent } from '@styleguide';
+import { TreatmentPlan } from '@types';
 import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-treatment-overview',
@@ -33,8 +34,10 @@ export class TreatmentOverviewComponent {
 
   handleNameChange(name: string) {
     this.savingStatus$.next(true);
-
-    this.treatmentsState.updateTreatmentPlanName(name).subscribe({
+    const partialTreatmentPlan: Partial<TreatmentPlan> = {
+      name: name,
+    };
+    this.treatmentsState.updateTreatmentPlan(partialTreatmentPlan).subscribe({
       next: (result) => {
         //TODO: reload the name? the entire plan?
         this.savingStatus$.next(false);

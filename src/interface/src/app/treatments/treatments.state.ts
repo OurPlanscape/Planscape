@@ -121,12 +121,10 @@ export class TreatmentsState {
       );
   }
 
-  // TODO: allow us to set other values, besides name?
-  updateTreatmentPlanName(name: string) {
-    const payload = { name: name };
+  updateTreatmentPlan(treatmentPlan: Partial<TreatmentPlan>) {
     return this.treatmentsService.updateTreatmentPlan(
       this.getTreatmentPlanId(),
-      payload
+      treatmentPlan
     );
   }
 

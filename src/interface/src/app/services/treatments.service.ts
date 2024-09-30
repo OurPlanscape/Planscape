@@ -30,7 +30,7 @@ export class TreatmentsService {
     });
   }
 
-  updateTreatmentPlan(id: number, changedFields: object) {
+  updateTreatmentPlan(id: number, changedFields: Partial<TreatmentPlan>) {
     return this.http.patch<TreatmentPlan>(this.baseUrl + id, changedFields, {
       withCredentials: true,
     });
