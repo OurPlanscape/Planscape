@@ -10,7 +10,9 @@
   border-radius: 4px;
   justify-content: space-between;
 
-
+  &.xsmall {
+    width: 340px;
+  }
   &.small {
     width: 460px;
   }
