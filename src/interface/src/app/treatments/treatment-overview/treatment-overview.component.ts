@@ -42,7 +42,6 @@ export class TreatmentOverviewComponent {
         //TODO: reload the name? the entire plan?
         this.savingStatus$.next(false);
       },
-      // TODO: set this via the component form instead?
       error: (err) => {
         if (err.error.detail) {
           this.errorSavingName = err.error.detail;
