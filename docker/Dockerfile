@@ -1,4 +1,4 @@
-FROM python:3.10-bullseye
+FROM python:3.10-bookworm
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
@@ -8,7 +8,7 @@ RUN apt-get update && \
     git curl wget software-properties-common && \
     gpg --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7' && \
     gpg --armor --export '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7' | tee /etc/apt/trusted.gpg.d/cran_debian_key.asc && \
-    add-apt-repository "deb http://cloud.r-project.org/bin/linux/debian bullseye-cran40/"
+    add-apt-repository "deb http://cloud.r-project.org/bin/linux/debian bookworm-cran40/"
 
 RUN apt-get update && \
     apt-get -y install \
