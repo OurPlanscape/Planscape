@@ -4,6 +4,7 @@ services:
   _planscape:
     image: planscape
     command: ["echo", "build done"]
+    platform: linux/amd64
     build:
       context: .
       dockerfile: docker/Dockerfile
