@@ -35,11 +35,21 @@ export class QueryParamsService {
     router.events
       .pipe(
         untilDestroyed(this),
-        filter((event) => event instanceof NavigationStart)
+        filter(
+          (event): event is NavigationStart => event instanceof NavigationStart
+        )
       )
-      .subscribe((s) => {
-        const currentParams = this.getCurrentParams();
-        this.homeParametersStorageService.setItem(currentParams);
+      .subscribe((event: NavigationStart) => {
+        console.log(event.url);
+        if (event.url === '/home') {
+          //reset parameters
+          console.log('reset');
+          this.homeParametersStorageService.setItem({});
+        } else {
+          // save parameters when leaving
+          const currentParams = this.getCurrentParams();
+          this.homeParametersStorageService.setItem(currentParams);
+        }
       });
   }
 
