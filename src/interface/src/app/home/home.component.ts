@@ -1,9 +1,9 @@
-import { Component, HostBinding } from '@angular/core';
+import { ChangeDetectorRef, Component, HostBinding } from '@angular/core';
 import { AuthService } from '@services';
 import { FeatureService } from '../features/feature.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { filter } from 'rxjs/operators';
-import { NavigationStart, Router } from '@angular/router';
+import { NavigationEnd, NavigationStart, Router } from '@angular/router';
 
 @UntilDestroy()
 @Component({
@@ -18,22 +18,28 @@ export class HomeComponent {
   constructor(
     private authService: AuthService,
     private featureService: FeatureService,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     this.router.events
       .pipe(
         untilDestroyed(this),
         filter(
-          (event): event is NavigationStart => event instanceof NavigationStart
+          (event) =>
+            event instanceof NavigationStart || event instanceof NavigationEnd
         )
       )
-      .subscribe((event: NavigationStart) => {
-        if (event.url === '/home') {
-          //reset parameters
+      .subscribe((event) => {
+        if (event instanceof NavigationStart && event.url === '/home') {
+          // Navigation starts: Hide the component
           this.showPlanningAreas = false;
-          setTimeout(() => {
-            this.showPlanningAreas = true;
-          }, 0);
+          this.cdr.detectChanges(); // Trigger view update to ensure the component is hidden
+        }
+
+        if (event instanceof NavigationEnd && event.url === '/home') {
+          // Navigation ends: Re-show the component
+          this.showPlanningAreas = true;
+          this.cdr.detectChanges(); // Trigger view update to ensure the component is shown
         }
       });
   }

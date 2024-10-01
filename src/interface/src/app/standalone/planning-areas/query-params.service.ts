@@ -40,10 +40,8 @@ export class QueryParamsService {
         )
       )
       .subscribe((event: NavigationStart) => {
-        console.log(event.url);
         if (event.url === '/home') {
           //reset parameters
-          console.log('reset');
           this.homeParametersStorageService.setItem({});
         } else {
           // save parameters when leaving
