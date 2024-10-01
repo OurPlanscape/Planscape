@@ -1,0 +1,29 @@
+<mat-expansion-panel
+  [ngClass]="{ selected: isSelected }"
+  (opened)="toggleState()"
+  (closed)="toggleState()"
+  class="sg-expander-panel">
+  <mat-expansion-panel-header class="header-content">
+    <div class="left-content">
+      <img src="svg/icons/project-area-icon.svg" />
+      <div>{{ titleText() }}</div>
+    </div>
+    <div class="right-content">
+      <div class="stand-count">{{ standCount }}</div>
+      <mat-icon class="material-symbols-outlined treatment-hexagon"
+        >hexagon_outline</mat-icon
+      >
+    </div>
+  </mat-expansion-panel-header>
+
+  <div class="rx-detail" *ngFor="let rx of rxDetails">
+    <mat-icon class="material-symbols-outlined">medication_outline</mat-icon>
+    <span class="rx-detail-name">{{ rx.name }}</span
+    ><span class="rx-detail-value">{{ '(Year ' + rx.year + ')' }}</span>
+  </div>
+
+  <div class="treatment-detail">
+    <span class="treatment-detail-name">Total:</span
+    ><span class="treatment-detail-value">{{ totalAcres }} acres</span>
+  </div>
+</mat-expansion-panel>
