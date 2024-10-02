@@ -17,7 +17,7 @@
     max-width: 140px;
   }
   &.medium {
-    max-width: 300px;
+    max-width: 280px;
   }
   &.large {
     max-width: 380px;
@@ -49,13 +49,11 @@
 
   &:hover {
     border-color: $color-text-gray;
-    color: $color-original-purple;
     background: $color-soft-gray;
   }
 
   &:active {
     border-width: 1px;
-    color: $color-original-purple;
     background: $color-soft-gray;
   }
 }
