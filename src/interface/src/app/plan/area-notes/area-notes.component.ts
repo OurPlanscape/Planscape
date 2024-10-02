@@ -4,7 +4,7 @@ import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack
 import { DeleteNoteDialogComponent } from '../delete-note-dialog/delete-note-dialog.component';
 import { take } from 'rxjs';
 import { Plan } from '@types';
-import { AuthService, Note, PlanNotesService } from '@services';
+import { AuthService, Note, PlanningAreaNotesService } from '@services';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 
@@ -15,7 +15,7 @@ import { MatDialog } from '@angular/material/dialog';
 })
 export class AreaNotesComponent implements OnInit {
   constructor(
-    private planNotesService: PlanNotesService,
+    private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private authService: AuthService
@@ -31,7 +31,7 @@ export class AreaNotesComponent implements OnInit {
   }
 
   loadNotes() {
-    this.planNotesService
+    this.notesService
       .getNotes(this.plan?.id)
       .subscribe((notes) => (this.notes = notes));
   }
@@ -43,7 +43,7 @@ export class AreaNotesComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.planNotesService.deleteNote(this.plan.id, note.id).subscribe({
+          this.notesService.deleteNote(this.plan?.id, note.id).subscribe({
             next: () => {
               this.snackbar.open(
                 `Deleted note`,
@@ -67,16 +67,14 @@ export class AreaNotesComponent implements OnInit {
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
-      this.planNotesService
-        .addNote(this.plan.id, this.note)
-        .subscribe((note) => {
-          // add the note
-          this.notes.unshift(note);
-          // but then refresh as well.
-          this.loadNotes();
-          this.saving = false;
-          this.note = '';
-        });
+      this.notesService.addNote(this.plan?.id, this.note).subscribe((note) => {
+        // add the note
+        this.notes.unshift(note);
+        // but then refresh as well.
+        this.loadNotes();
+        this.saving = false;
+        this.note = '';
+      });
     }
     event.preventDefault();
   }

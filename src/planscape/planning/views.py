@@ -33,6 +33,7 @@ from planning.serializers import (
     ScenarioSerializer,
     SharedLinkSerializer,
     PlanningAreaNoteSerializer,
+    PlanningAreaNoteListSerializer,
     ValidatePlanningAreaOutputSerializer,
     ValidatePlanningAreaSerializer,
 )
@@ -982,8 +983,10 @@ class PlanningAreaNotes(APIView):
                 )
                 if not PlanningAreaNotePermission.can_view(user, planningareanote):
                     return Response(status=status.HTTP_403_FORBIDDEN)
-                serializer = PlanningAreaNoteSerializer(
-                    instance=planningareanote, many=False
+                serializer = PlanningAreaNoteListSerializer(
+                    instance=planningareanote,
+                    many=False,
+                    context={"request": request, "user": user},
                 )
                 return Response(serializer.data)
 
@@ -997,7 +1000,11 @@ class PlanningAreaNotes(APIView):
                 notes = PlanningAreaNote.objects.filter(
                     planning_area=planningarea_pk
                 ).order_by("-created_at")
-                serializer = PlanningAreaNoteSerializer(instance=notes, many=True)
+                serializer = PlanningAreaNoteListSerializer(
+                    instance=notes,
+                    many=True,
+                    context={"request": request, "user": user},
+                )
                 return Response(serializer.data)
 
         except PlanningArea.DoesNotExist as pa_dne:

@@ -19,21 +19,70 @@ import {
   take,
   takeUntil,
 } from 'rxjs';
-
+import { PlanningAreaNotesService } from '@services';
 import { Plan, User } from '@types';
 import { AuthService, PlanStateService, ScenarioService } from '@services';
 import { Breadcrumb } from '@shared';
 import { getPlanPath } from './plan-helpers';
 import { HomeParametersStorageService } from '@services/local-storage.service';
+import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
+import { Note } from '@services';
+import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
+import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-plan',
   templateUrl: './plan.component.html',
   styleUrls: ['./plan.component.scss'],
+  providers: [PlanningAreaNotesService],
 })
 export class PlanComponent implements OnInit, OnDestroy {
+  constructor(
+    private authService: AuthService,
+    private planStateService: PlanStateService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private scenarioService: ScenarioService,
+    private homeParametersStorageService: HomeParametersStorageService,
+    private notesService: PlanningAreaNotesService,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar
+  ) {
+    // TODO: Move everything in the constructor to ngOnInit
+
+    if (this.planId === null) {
+      this.planNotFound = true;
+      return;
+    }
+    const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
+
+    plan$.subscribe({
+      next: (plan) => {
+        this.currentPlan$.next(plan);
+      },
+      error: (error) => {
+        this.planNotFound = true;
+      },
+    });
+
+    this.planOwner$ = plan$.pipe(
+      concatMap((plan) => {
+        return this.authService.getUser(plan.user);
+      })
+    );
+  }
+
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
   planOwner$ = new Observable<User | null>();
+  private readonly destroy$ = new Subject<void>();
+
+  planId = this.route.snapshot.paramMap.get('id');
+  planNotFound: boolean = !this.planId;
+
+  sidebarNotes: Note[] = [];
+  notesSidebarState: NotesSidebarState = 'READY';
 
   showOverview$ = new BehaviorSubject<boolean>(false);
   area$ = this.showOverview$.pipe(
@@ -78,43 +127,6 @@ export class PlanComponent implements OnInit, OnDestroy {
     })
   );
 
-  private readonly destroy$ = new Subject<void>();
-
-  planId = this.route.snapshot.paramMap.get('id');
-  planNotFound: boolean = !this.planId;
-
-  constructor(
-    private authService: AuthService,
-    private planStateService: PlanStateService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private scenarioService: ScenarioService,
-    private homeParametersStorageService: HomeParametersStorageService
-  ) {
-    // TODO: Move everything in the constructor to ngOnInit
-
-    if (this.planId === null) {
-      this.planNotFound = true;
-      return;
-    }
-    const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
-
-    plan$.subscribe({
-      next: (plan) => {
-        this.currentPlan$.next(plan);
-      },
-      error: (error) => {
-        this.planNotFound = true;
-      },
-    });
-
-    this.planOwner$ = plan$.pipe(
-      concatMap((plan) => {
-        return this.authService.getUser(plan.user);
-      })
-    );
-  }
-
   ngOnInit() {
     this.planStateService.planState$
       .pipe(takeUntil(this.destroy$))
@@ -133,6 +145,9 @@ export class PlanComponent implements OnInit, OnDestroy {
       .subscribe((event: NavigationEvent) => {
         this.updatePlanStateFromRoute();
       });
+
+    // TODO: add featureflag
+    this.loadNotes();
   }
 
   ngOnDestroy(): void {
@@ -174,6 +189,54 @@ export class PlanComponent implements OnInit, OnDestroy {
       });
     } else {
       this.backToOverview();
+    }
+  }
+
+  //notes handling functions
+  addNote(comment: string) {
+    this.notesSidebarState = 'SAVING';
+    if (this.planId) {
+      this.notesService.addNote(this.planId, comment).subscribe((note) => {
+        this.sidebarNotes.unshift(note);
+        this.loadNotes();
+      });
+    }
+    this.notesSidebarState = 'READY';
+  }
+
+  handleNoteDelete(n: Note) {
+    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed: boolean) => {
+        if (confirmed && this.planId) {
+          this.notesService.deleteNote(this.planId, n.id).subscribe({
+            next: () => {
+              this.snackbar.open(
+                `Deleted note`,
+                'Dismiss',
+                SNACK_NOTICE_CONFIG
+              );
+              this.loadNotes();
+            },
+            error: (err) => {
+              this.snackbar.open(
+                `Error: ${err.statusText}`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
+        }
+      });
+  }
+
+  loadNotes() {
+    if (this.planId) {
+      this.notesService.getNotes(this.planId).subscribe((notes) => {
+        this.sidebarNotes = notes;
+      });
     }
   }
 }

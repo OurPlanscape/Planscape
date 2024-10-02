@@ -13,6 +13,6 @@ export * from './password-reset.resolver';
 export * from './redirect.guard';
 export * from './redirect.resolver';
 export * from './window.service';
-export * from './plan-notes.service';
+export * from './notes.service';
 export * from './file-saver.service';
 export * from './jwt-interceptor.service';

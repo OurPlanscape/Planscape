@@ -5,6 +5,9 @@ import { TreatmentsService } from '@services/treatments.service';
 import { RouterTestingModule } from '@angular/router/testing';
 
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -12,7 +15,13 @@ describe('ProjectAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentProjectAreaComponent, RouterTestingModule],
+      imports: [
+        TreatmentProjectAreaComponent,
+        HttpClientTestingModule,
+        RouterTestingModule,
+        MatSnackBar,
+        BrowserAnimationsModule,
+      ],
       providers: [MockProviders(TreatmentsService)],
       declarations: [MockDeclarations(TreatmentMapComponent)],
     }).compileComponents();
