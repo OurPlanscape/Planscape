@@ -4,8 +4,10 @@
 .treatment-legend {
   position: absolute;
   background: white;
+  max-height: 80%; // TODO: add media query for this?
   top: 20px;
   right: 10px;
+  margin-bottom: 30%;
   box-shadow:
     0px 4px 4px 0px rgba(0, 0, 0, 0.1),
     0px 2px 2px 0px rgba(0, 0, 0, 0.1);
@@ -13,9 +15,11 @@
   ::ng-deep .header-title {
     @include xs-label();
   }
+
   ::ng-deep .modal-body {
     padding-top: 4px;
     padding-bottom: 2px;
+    overflow-y: scroll;
   }
   ::ng-deep .mat-expansion-panel {
     box-shadow: none;
@@ -25,10 +29,10 @@
   padding: 0 24px 8px;
 }
   sg-modal {
-    max-height: none;
+    // max-height: 100%;
     width: 400px;
     .small {
-      width: 400px;
+      width: 320px;
     }
   }
 }
@@ -38,6 +42,7 @@
   background-color: $color-white;
   display: flex;
   flex-direction: column;
+  padding-top: 2px;
 }
 
 .legend-section {
