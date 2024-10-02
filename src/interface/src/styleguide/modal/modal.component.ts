@@ -80,15 +80,15 @@ export class ModalComponent {
    */
   @Input() secondaryButtonVariant: ButtonVariant = 'ghost';
   /**
-   * Whether or not to show the close button in the header
+   *  If the body has scrollable content
    */
   @Input() scrollableContent? = false;
   /**
-   * Whether or not to show the tooltip button in the header
+   * Whether or not to show the close button in the header
    */
   @Input() showClose? = true;
   /**
-   * Whether or not to show the header at all
+   * Whether or not to show the tooltip button in the header
    */
   @Input() showToolTip? = false;
   /**
