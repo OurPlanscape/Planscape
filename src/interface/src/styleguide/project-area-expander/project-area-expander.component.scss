@@ -121,3 +121,21 @@
   @include small-paragraph();
   color: $color-md-gray;
 }
+
+.rx-section {
+  display: flex;
+  flex-direction: column;
+}
+.rx-submenu {
+  border: none;
+  --mat-expansion-header-expanded-state-height: 30px;
+  --mat-expansion-header-collapsed-state-height: 30px;
+}
+
+.rx-submenu-header {
+  height: 48px;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+}

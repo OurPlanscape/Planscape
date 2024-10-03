@@ -9,7 +9,7 @@ import { PrescriptionSingleAction } from '../../app/treatments/prescriptions';
   styleUrl: './treatment-type-icon.component.scss',
 })
 export class TreatmentTypeIconComponent {
-  @Input() treatment: PrescriptionSingleAction | null = null;
+  @Input() treatment: PrescriptionSingleAction | string | null = null;
 
   readonly treatmentIcons: Record<PrescriptionSingleAction, string> = {
     MODERATE_THINNING_BIOMASS: 'treatment_blue.svg',
@@ -25,7 +25,13 @@ export class TreatmentTypeIconComponent {
 
   iconName() {
     if (this.treatment !== null) {
-      return this.treatmentIcons[this.treatment];
+      console.log(
+        'treatment',
+        this.treatment,
+        ' and...what is the icon? ',
+        this.treatmentIcons[this.treatment as PrescriptionSingleAction]
+      );
+      return this.treatmentIcons[this.treatment as PrescriptionSingleAction];
     }
     return 'treatment_none.svg';
   }
