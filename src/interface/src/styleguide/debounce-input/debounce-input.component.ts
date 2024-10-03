@@ -31,7 +31,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
  */
 @UntilDestroy()
 @Component({
-  selector: 'sg-sidebar-name-input',
+  selector: 'sg-debounce-input',
   standalone: true,
   imports: [
     CommonModule,
@@ -44,10 +44,10 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     MatProgressSpinnerModule,
     NgIf,
   ],
-  templateUrl: './sidebar-name-input.component.html',
-  styleUrl: './sidebar-name-input.component.scss',
+  templateUrl: './debounce-input.component.html',
+  styleUrl: './debounce-input.component.scss',
 })
-export class SidebarNameInputComponent implements OnInit, OnDestroy {
+export class DebounceInputComponent implements OnInit, OnDestroy {
   @Input() textValue = '';
   @Input() title = '';
   @Input() placeholderText: string | null = '';
@@ -58,7 +58,7 @@ export class SidebarNameInputComponent implements OnInit, OnDestroy {
   );
   @Output() textValueUpdated = new EventEmitter<string>();
   @Input() debounceInterval = 800;
-  private textValueUpdatedSubject = new Subject<string>();
+  readonly textValueUpdatedSubject = new Subject<string>();
 
   ngOnInit() {
     const debounceInterval = Number(this.debounceInterval);

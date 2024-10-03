@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
-import { SidebarNameInputComponent } from './sidebar-name-input.component';
+import { DebounceInputComponent } from './debounce-input.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
-const meta: Meta<SidebarNameInputComponent> = {
-  title: 'Components/Sidebar Name Component',
-  component: SidebarNameInputComponent,
+const meta: Meta<DebounceInputComponent> = {
+  title: 'Components/Debounce Input',
+  component: DebounceInputComponent,
   decorators: [
     applicationConfig({
       providers: [provideAnimations()],
@@ -15,12 +15,12 @@ const meta: Meta<SidebarNameInputComponent> = {
   render: ({ ...args }) => ({
     props: args,
     template: `<div style="width:100%;height:200px;background-color:#aaaaaa;">
-    <div style="width:400px"><sg-sidebar-name-input ${argsToTemplate(args)}></sg-sidebar-name-input></div></div>`,
+    <div style="width:400px"><sg-debounce-input ${argsToTemplate(args)}></sg-debounce-input></div></div>`,
   }),
 };
 
 export default meta;
-type Story = StoryObj<SidebarNameInputComponent>;
+type Story = StoryObj<DebounceInputComponent>;
 
 export const Default: Story = {
   args: {

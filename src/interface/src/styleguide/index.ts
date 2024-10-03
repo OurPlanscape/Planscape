@@ -7,4 +7,4 @@ export * from './paginator/paginator.component';
 export * from './expander-section/expander-section.component';
 export * from './modal/modal.component';
 export * from './modal-dialog-section/modal-confirmation-dialog.component';
-export * from './sidebar-name-input/sidebar-name-input.component';
+export * from './debounce-input/debounce-input.component';
