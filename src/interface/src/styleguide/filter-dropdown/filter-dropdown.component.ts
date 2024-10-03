@@ -179,6 +179,10 @@ export class FilterDropdownComponent<T> implements OnInit {
   get isSmall() {
     return this.size === 'small';
   }
+  @HostBinding('class.medium')
+  get isMedium() {
+    return this.size === 'medium';
+  }
   @HostBinding('class.large')
   get isLarge() {
     return this.size === 'large';
