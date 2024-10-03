@@ -128,14 +128,15 @@
 }
 .rx-submenu {
   border: none;
-  --mat-expansion-header-expanded-state-height: 30px;
+  --mat-expansion-header-expanded-state-height: 40px;
   --mat-expansion-header-collapsed-state-height: 30px;
 }
 
 .rx-submenu-header {
-  height: 48px;
+  height: var(--mat-expansion-header-expanded-state-height);
   display: flex;
   flex-direction: row;
   justify-content: left;
   align-items: center;
+  gap: 6px;
 }
