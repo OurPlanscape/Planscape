@@ -4,13 +4,15 @@
 .treatment-legend {
   position: absolute;
   background: white;
-  max-height: 80%; // TODO: add media query for this?
-  top: 20px;
+  top: 10px;
   right: 10px;
-  margin-bottom: 30%;
   box-shadow:
     0px 4px 4px 0px rgba(0, 0, 0, 0.1),
     0px 2px 2px 0px rgba(0, 0, 0, 0.1);
+
+    max-height: calc(100% - 100px);
+    z-index: 1000;
+
 
   ::ng-deep .header-title {
     @include xs-label();
@@ -21,19 +23,13 @@
     padding-bottom: 2px;
     overflow-y: scroll;
   }
+
   ::ng-deep .mat-expansion-panel {
     box-shadow: none;
   }
 
-::ng-deep .mat-expansion-panel-body {
-  padding: 0 24px 8px;
-}
-  sg-modal {
-    // max-height: 100%;
-    width: 400px;
-    .small {
-      width: 320px;
-    }
+  ::ng-deep .mat-expansion-panel-body {
+    padding: 0 24px 8px;
   }
 }
 
@@ -58,6 +54,11 @@
   --mat-expansion-header-collapsed-state-height: 40px;
   --mat-expansion-header-hover-state-layer-color: $color-white;
   border-radius: 0px;
+}
+
+.treatment-legend .mat-expansion-panel.expanded:first-of-type,
+.treatment-legend .mat-expansion-panel.expanded:last-of-type {
+  bottom: 200px;
 }
 
 .legend-expander-heading {
@@ -118,4 +119,3 @@
   line-height: 24px;
   text-align: left;
 }
-
