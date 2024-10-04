@@ -7,7 +7,7 @@ import { Point } from 'geojson';
 
 const containerStyle = `style="display: flex;
   width: 100%;
-  height: 180px;
+  height: 400px;
   background-color: lightgray;
   align-items: center;
   justify-content: start;
