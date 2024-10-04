@@ -22,20 +22,16 @@
       <mat-expansion-panel-header class="rx-submenu-header">
         <div class="rx-submenu-header">
           <sg-treatment-type-icon
+            class="rx-icon"
             [treatment]="rx.action"></sg-treatment-type-icon>
           <div class="rx-detail-name">{{ titleText(rx.action) }}</div>
         </div>
       </mat-expansion-panel-header>
-      <div></div>
-      <div class="treatment-detail">
-        <span class="treatment-detail-name">Stands: </span
-        ><span class="treatment-detail-value">{{
-          rx.treated_stand_count
-        }}</span>
-        <span class="treatment-detail-name">Total: </span
-        ><span class="treatment-detail-value">{{
-          rx.treated_stand_count
-        }}</span>
+      <div class="rx-details">
+        <span class="rx-detail-name">Stands: </span
+        ><span class="rx-detail-value">{{ rx.treated_stand_count }}</span>
+        <span class="rx-detail-name">Total: </span
+        ><span class="rx-detail-value">{{ rx.treated_stand_count }}</span>
       </div>
     </mat-expansion-panel>
   </div>
