@@ -57,6 +57,7 @@ django-activity-stream = "^2.0.0"
 celery-types = "^0.22.0"
 django-types = "^0.19.1"
 django-stubs-ext = "^5.0.4"
+whitenoise = "^6.7.0"
 
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"
