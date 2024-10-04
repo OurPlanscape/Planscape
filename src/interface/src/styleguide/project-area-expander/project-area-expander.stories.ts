@@ -14,17 +14,6 @@ const containerStyle = `style="display: flex;
   padding: 10px;
   flex-direction: column;"`;
 
-export type PrescriptionSingleAction =
-  | 'MODERATE_THINNING_BIOMASS'
-  | 'HEAVY_THINNING_BIOMASS'
-  | 'MODERATE_THINNING_BURN'
-  | 'HEAVY_THINNING_BURN'
-  | 'MODERATE_MASTICATION'
-  | 'HEAVY_MASTICATION'
-  | 'RX_FIRE'
-  | 'HEAVY_THINNING_RX_FIRE'
-  | 'MASTICATION_RX_FIRE';
-
 const sampleExtent: Extent = [1, 2, 3, 4];
 const samplePoint: Point = { type: 'Point', coordinates: [] };
 const sampleProjectAreaResult = {
@@ -36,35 +25,56 @@ const sampleProjectAreaResult = {
       action: 'MODERATE_THINNING_BIOMASS',
       area_acres: 100,
       treated_stand_count: 3,
-      type: 'type1',
+      type: 'SINGLE',
       stand_ids: [1, 2, 3],
     },
     {
       action: 'HEAVY_THINNING_BIOMASS',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'type2',
+      type: 'SINGLE',
       stand_ids: [4, 5],
     },
     {
       action: 'HEAVY_MASTICATION',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'type2',
+      type: 'SINGLE',
       stand_ids: [4, 5],
     },
     {
       action: 'MASTICATION_RX_FIRE',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'type2',
+      type: 'SINGLE',
       stand_ids: [4, 5],
     },
     {
       action: 'HEAVY_THINNING_BURN',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'type2',
+      type: 'SINGLE',
+      stand_ids: [4, 5],
+    },
+    {
+      action: 'RX_FIRE_PLUS_RX_FIRE',
+      area_acres: 50,
+      treated_stand_count: 2,
+      type: 'SEQUENCE',
+      stand_ids: [4, 5],
+    },
+    {
+      action: 'MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION',
+      area_acres: 50,
+      treated_stand_count: 2,
+      type: 'SEQUENCE',
+      stand_ids: [4, 5],
+    },
+    {
+      action: 'HEAVY_THINNING_BURN_PLUS_RX_FIRE',
+      area_acres: 50,
+      treated_stand_count: 2,
+      type: 'SEQUENCE',
       stand_ids: [4, 5],
     },
   ],

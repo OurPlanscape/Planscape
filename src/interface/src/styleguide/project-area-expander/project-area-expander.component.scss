@@ -128,3 +128,18 @@
   align-items: center;
   gap: 6px;
 }
+
+.sequence-treatment-line {
+  @include small-paragraph();
+  padding-left: 36px;
+  display: flex;
+  flex-direction: row;
+  color: $color-black;
+}
+
+.sequence-icon {
+  color: $color-md-gray;
+  width: 20px;
+  font-size: 14px;
+  line-height: 20px;
+}
