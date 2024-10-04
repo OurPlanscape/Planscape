@@ -135,11 +135,12 @@
   display: flex;
   flex-direction: row;
   color: $color-black;
+  gap: 4px;
 }
 
 .sequence-icon {
   color: $color-md-gray;
   width: 20px;
-  font-size: 14px;
+  font-size: 20px;
   line-height: 20px;
 }

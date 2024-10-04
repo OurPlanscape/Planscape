@@ -64,7 +64,7 @@ const sampleProjectAreaResult = {
       stand_ids: [4, 5],
     },
     {
-      action: 'MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION',
+      action: 'MODERATE_MASTICATION_PLUS_RX_FIRE',
       area_acres: 50,
       treated_stand_count: 2,
       type: 'SEQUENCE',
