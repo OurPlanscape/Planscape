@@ -66,6 +66,7 @@ mypy:
 
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
+	cd src/planscape && python3 manage.py collectstatic --no-input
 	cd src/planscape && python3 manage.py install_layers
 
 load-conditions:
@@ -136,7 +137,7 @@ docker-build:
 docker-test:
 	./src/planscape/bin/run.sh python manage.py test $(TEST)
 
-docker-run: docker-build docker-migrate
+docker-run: docker-build
 	docker compose up
 
 docker-shell:
