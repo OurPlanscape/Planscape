@@ -38,14 +38,14 @@
   background-color: $color-white;
   display: flex;
   flex-direction: column;
-  padding-top: 2px;
-}
+  
+  padding-top: 4px;}
 
 .legend-section {
   background-color: $color-white;
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .legend-expander-panel {
