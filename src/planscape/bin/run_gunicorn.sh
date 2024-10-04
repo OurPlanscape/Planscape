@@ -8,7 +8,7 @@ CORN_WORKERS=4
 app_name="planscape"
 
 echo "Running migrations & collectstatic"
-# cd src/planscape && python manage.py migrate --no-input
+python3 manage.py migrate --no-input
 python3 manage.py collectstatic --no-input
 echo "migrated"
 
