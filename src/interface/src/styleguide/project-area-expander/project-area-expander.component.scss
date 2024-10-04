@@ -12,8 +12,7 @@
       border: 1px $color-light-gray solid;
       border-radius: 0;
     }
-
-    .mat-expansion-panel.selected {
+    X .mat-expansion-panel.selected {
       border-color: $color-soft-purple;
       background-color: $color-soft-purple;
     }
@@ -29,7 +28,7 @@
   }
 }
 
-.sg-expander-panel {
+.project-area-expander-panel {
   ::ng-deep {
     .mat-expansion-panel-header .mat-content {
       display: flex;
@@ -48,10 +47,10 @@
     }
 
     .mat-expansion-panel-body {
-      padding: 0 24px 16px;
+      padding: 0 14px 0;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
   }
 }
@@ -81,36 +80,20 @@
   padding-right: 10px;
 }
 
-.treatment-detail {
-  height: 22px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 0 24px;
-}
-
-.treatment-detail-name {
-  @include xs-label();
-  font-weight: 600;
-  line-height: 14px;
-  text-align: left;
-}
-
-.treatment-detail-value {
-  @include small-paragraph();
-}
-
 .stand-count,
 .treatment-hexagon {
   color: $color-dark-gray;
 }
 
-.rx-detail {
-  height: 22px;
+.rx-details {
+  @include xs-label();
+  height: 24px;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding-left: 24px;
+  padding-left: 40px;
+  padding-top: 4px;
+  padding-bottom: 10px;
 }
 
 .rx-detail-name {
@@ -120,4 +103,28 @@
 .rx-detail-value {
   @include small-paragraph();
   color: $color-md-gray;
+}
+
+.rx-section {
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 20px;
+}
+.rx-icon {
+  height: 24px;
+}
+
+.rx-submenu {
+  border: none;
+  --mat-expansion-header-expanded-state-height: 34px;
+  --mat-expansion-header-collapsed-state-height: 34px;
+}
+
+.rx-submenu-header {
+  height: var(--mat-expansion-header-expanded-state-height);
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+  gap: 6px;
 }

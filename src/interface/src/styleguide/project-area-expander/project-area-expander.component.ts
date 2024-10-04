@@ -4,9 +4,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
-
+import { TreatmentProjectArea } from '@types';
+import { PRESCRIPTIONS } from 'src/app/treatments/prescriptions';
+import { PrescriptionSingleAction } from './project-area-expander.stories';
 /**
- * Expander component
+ * Project Area Expander component
  * A component to be used in the Project Area panel to show project area details
  */
 @Component({
@@ -31,9 +33,9 @@ export class ProjectAreaExpanderComponent {
   @Input() title: string | null = null;
   openState = false;
   /**
-   * A collection of treatments, with series of details within
+   * A TreatmentProjectArea record, with an array of prescriptions
    */
-  @Input() treatments: any[] | null = null;
+  @Input() projectArea!: TreatmentProjectArea;
 
   toggleState() {
     this.openState = !this.openState;
@@ -41,7 +43,11 @@ export class ProjectAreaExpanderComponent {
 
   // If a title is explicity set, use that.
   // Otherwise, determine title from either treatment type or sequence num
-  titleText(): string | null {
-    return this.title;
+  titleText(prescriptionAction: string): string | null {
+    const title = prescriptionAction as PrescriptionSingleAction;
+    if (title !== null) {
+      return PRESCRIPTIONS.SINGLE[title];
+    }
+    return '';
   }
 }
