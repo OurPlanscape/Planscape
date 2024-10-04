@@ -66,6 +66,7 @@ mypy:
 
 migrate:
 	cd src/planscape && python3 manage.py migrate --no-input
+	cd src/planscape && python3 manage.py collectstatic --no-input
 	cd src/planscape && python3 manage.py install_layers
 
 load-conditions:
