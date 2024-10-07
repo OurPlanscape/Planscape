@@ -3,16 +3,6 @@
   [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
 <mgl-layer
-  [id]="layers.projectAreaOutline.name"
-  type="line"
-  source="stands"
-  [paint]="{
-    'line-color': '#4A4A4A',
-    'line-width': 3
-  }"
-  [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>
-
-<mgl-layer
   [id]="layers.stands.name"
   type="fill"
   source="stands"
@@ -46,3 +36,13 @@
     ['get', 'id'],
     ['literal', selectedStands$ | async]
   ]"></mgl-layer>
+
+<mgl-layer
+  [id]="layers.projectAreaOutline.name"
+  type="line"
+  source="stands"
+  [paint]="{
+    'line-color': '#4A4A4A',
+    'line-width': 4
+  }"
+  [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>
