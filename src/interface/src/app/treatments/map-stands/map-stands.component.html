@@ -3,14 +3,14 @@
   [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
 <mgl-layer
-  [id]="layers.outline.name"
+  [id]="layers.projectAreaOutline.name"
   type="line"
   source="stands"
   [paint]="{
-    'line-color': 'black',
+    'line-color': '#4A4A4A',
     'line-width': 3
   }"
-  [sourceLayer]="layers.outline.sourceLayer"></mgl-layer>
+  [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>
 
 <mgl-layer
   [id]="layers.stands.name"
@@ -21,6 +21,16 @@
   (layerMouseEnter)="setCursor()"
   (layerMouseLeave)="resetCursor()"
   [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
+
+<mgl-layer
+  [id]="layers.standsOutline.name"
+  type="line"
+  source="stands"
+  [paint]="{
+    'line-color': '#4A4A4A',
+    'line-width': 1
+  }"
+  [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
 
 <mgl-layer
   [id]="layers.selectedStands.name"

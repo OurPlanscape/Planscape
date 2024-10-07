@@ -10,6 +10,8 @@ import { TreatedStand } from '@types';
 export class TreatedStandsState {
   private _treatedStands$ = new BehaviorSubject<TreatedStand[]>([]);
   treatedStands$ = this._treatedStands$.asObservable();
+  private _opacity$ = new BehaviorSubject(0.5);
+  public opacity$ = this._opacity$.asObservable();
 
   updateTreatedStands(stands: TreatedStand[]) {
     const currentStands = this.getTreatedStands();
@@ -37,5 +39,9 @@ export class TreatedStandsState {
       (currentStand) => !standId.some((standId) => standId === currentStand.id)
     );
     this._treatedStands$.next(filteredStands);
+  }
+
+  setOpacity(value: number) {
+    this._opacity$.next(value);
   }
 }

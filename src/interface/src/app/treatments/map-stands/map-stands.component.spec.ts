@@ -20,13 +20,11 @@ describe('MapStandsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [MapStandsComponent],
       providers: [
-        MockProviders(
-          SelectedStandsState,
-          TreatmentsState,
-          MapConfigState,
-          TreatedStandsState
-        ),
-        MockProvider(TreatedStandsState, { treatedStands$: of([]) }),
+        MockProviders(SelectedStandsState, TreatmentsState, MapConfigState),
+        MockProvider(TreatedStandsState, {
+          treatedStands$: of([]),
+          opacity$: of(1),
+        }),
       ],
       declarations: MockDeclarations(VectorSourceComponent, LayerComponent),
     }).compileComponents();

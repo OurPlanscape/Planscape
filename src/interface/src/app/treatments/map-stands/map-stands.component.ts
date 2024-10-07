@@ -26,7 +26,7 @@ import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { TreatedStand } from '@types';
-import { distinctUntilChanged } from 'rxjs';
+import { combineLatest, distinctUntilChanged } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()
@@ -71,9 +71,13 @@ export class MapStandsComponent implements OnChanges, OnInit {
     'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
 
   readonly layers = {
-    outline: {
+    projectAreaOutline: {
       name: 'outline-layer',
       sourceLayer: 'project_area_aggregate',
+    },
+    standsOutline: {
+      name: 'stands-outline-layer',
+      sourceLayer: 'stands_by_tx_plan',
     },
     stands: {
       name: 'stands-layer',
@@ -86,8 +90,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
   };
 
   paint: LayerSpecification['paint'] = {
-    'fill-outline-color': '#000',
-    'fill-color': '#00000050',
+    'fill-color': '#F6F6F650',
     'fill-opacity': 0.5,
   };
 
@@ -97,13 +100,15 @@ export class MapStandsComponent implements OnChanges, OnInit {
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState
   ) {
-    this.treatedStands$
-      .pipe(distinctUntilChanged(), untilDestroyed(this))
-      .subscribe((treatedStands) => {
+    combineLatest([
+      this.treatedStands$.pipe(distinctUntilChanged()),
+      this.treatedStandsState.opacity$.pipe(distinctUntilChanged()),
+    ])
+      .pipe(untilDestroyed(this))
+      .subscribe(([treatedStands, opacity]) => {
         this.paint = {
-          'fill-outline-color': '#000',
           'fill-color': this.generateFillColors(treatedStands) as any,
-          'fill-opacity': 0.5,
+          'fill-opacity': opacity,
         };
       });
   }
@@ -174,7 +179,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
   }
 
   private generateFillColors(stands: TreatedStand[]) {
-    const defaultColor = '#00000050';
+    const defaultColor = '#F6F6F650';
     if (stands.length === 0) {
       return defaultColor;
     }
