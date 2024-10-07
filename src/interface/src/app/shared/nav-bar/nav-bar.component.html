@@ -1,13 +1,10 @@
 <div class="nav-bar mat-elevation-z2">
-  <button mat-icon-button (click)="goBack.emit()" class="back-button">
-    <mat-icon color="primary">arrow_back</mat-icon>
-  </button>
   <span class="breadcrumb">
     <a
       [routerLink]="['/home']"
       [queryParams]="params"
       queryParamsHandling="merge"
-      >Planning Areas</a
+      >{{ firstBreadcrumb$ | async }}</a
     >
 
     <ng-container *ngFor="let breadcrumb of breadcrumbs">

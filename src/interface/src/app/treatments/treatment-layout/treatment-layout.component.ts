@@ -156,15 +156,6 @@ export class TreatmentLayoutComponent {
     })
   );
 
-  goBack() {
-    const summary = this.treatmentsState.getCurrentSummary();
-    let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
-    if (this.treatmentsState.getProjectAreaId()) {
-      url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
-    }
-    this.router.navigate([url]);
-  }
-
   redirectToScenario() {
     const summary = this.treatmentsState.getCurrentSummary();
     let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;

@@ -1,14 +1,14 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavBarComponent } from './nav-bar.component';
-import { PlanStateService, WINDOW } from '@services';
+import { AuthService, PlanStateService, WINDOW } from '@services';
 import { By } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { RouterTestingModule } from '@angular/router/testing';
 import { FeaturesModule } from '../../features/features.module';
 import { MockProvider } from 'ng-mocks';
-import { NEVER } from 'rxjs';
+import { NEVER, of } from 'rxjs';
 
 describe('NavBarComponent', () => {
   let component: NavBarComponent;
@@ -34,6 +34,9 @@ describe('NavBarComponent', () => {
             print: () => {},
           },
         },
+        MockProvider(AuthService, {
+          isLoggedIn$: of(true),
+        }),
         MockProvider(PlanStateService, {
           getPlan: () => NEVER,
         }),
