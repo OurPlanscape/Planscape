@@ -3,7 +3,7 @@ from rest_framework import serializers
 from datasets.models import Category, Dataset, DataLayer
 
 
-class CategorySerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer[Category]):
     class Meta:
         model = Category
         fields = (
@@ -20,7 +20,7 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class CategoryEmbbedSerializer(serializers.ModelSerializer):
-    parent = serializers.SerializerMethodField()
+    parent = serializers.SerializerMethodField()  # type: ignore
     depth = serializers.IntegerField(
         source="get_depth",
         read_only=True,
@@ -43,7 +43,7 @@ class CategoryEmbbedSerializer(serializers.ModelSerializer):
         )
 
 
-class DatasetSerializer(serializers.ModelSerializer):
+class DatasetSerializer(serializers.ModelSerializer[Dataset]):
     class Meta:
         model = Dataset
         fields = (
@@ -60,7 +60,7 @@ class DatasetSerializer(serializers.ModelSerializer):
         )
 
 
-class DataLayerSerializer(serializers.ModelSerializer):
+class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
 
     class Meta:
@@ -84,25 +84,14 @@ class DataLayerSerializer(serializers.ModelSerializer):
         )
 
 
-class CreateDataLayerSerializer(serializers.ModelSerializer):
-    category = CategoryEmbbedSerializer()
-
+class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     class Meta:
         model = DataLayer
         fields = (
             "id",
-            "created_at",
-            "updated_at",
-            "deleted_at",
             "created_by",
             "organization",
             "dataset",
             "category",
             "name",
-            "type",
-            "geometry_type",
-            "status",
-            "url",
-            "info",
-            "metadata",
         )
