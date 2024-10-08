@@ -113,9 +113,10 @@ export class ProjectAreaTreatmentsTabComponent {
     return this.prescriptions.filter(
       (p) =>
         p.action.toLowerCase().includes(needle) ||
-        PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
-          .toLowerCase()
-          .includes(needle)
+        (p.type === 'SINGLE' &&
+          PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
+            .toLowerCase()
+            .includes(needle))
     );
   }
 

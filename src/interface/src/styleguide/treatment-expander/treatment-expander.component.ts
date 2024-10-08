@@ -61,7 +61,7 @@ export class TreatmentExpanderComponent {
   /**
    * A number or ratio indicating stand count
    */
-  @Input() treatedStandCount?: string | number = '0';
+  @Input() treatedStandCount?: number;
   /***
    * Area Acres
    */
@@ -116,6 +116,10 @@ export class TreatmentExpanderComponent {
       return this.action as PrescriptionSingleAction;
     }
     return null;
+  }
+
+  totalStands(): number {
+    return this.standIds.length;
   }
 
   get isSelected() {

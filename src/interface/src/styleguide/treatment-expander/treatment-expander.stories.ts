@@ -41,7 +41,7 @@ type Story = StoryObj<TreatmentExpanderComponent>;
 export const Default: Story = {
   args: {
     action: 'MODERATE_THINNING_BURN',
-    treatedStandCount: '11',
+    treatedStandCount: 11,
     standIds: [1, 2, 3, 8, 10],
     areaAcres: 117,
     treatmentType: 'SINGLE',
@@ -53,11 +53,12 @@ export const Sequence1: Story = {
     sequenceNumber: 1,
     treatmentType: 'SEQUENCE',
     areaAcres: 117,
+    standIds: [1, 2, 3, 8, 10],
     rxDetails: [
       { name: 'Moderate mastication & Pile burn', year: 0 },
       { name: 'Prescribed fire', year: 0 },
     ],
-    treatedStandCount: '1/11',
+    treatedStandCount: 1,
   },
 };
 export const Sequence5: Story = {
@@ -65,7 +66,8 @@ export const Sequence5: Story = {
     sequenceNumber: 5,
     treatmentType: 'SEQUENCE',
     areaAcres: 117,
-    treatedStandCount: '5/11',
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 5,
   },
 };
 
@@ -74,7 +76,8 @@ export const TreatmentModerateMastication: Story = {
     treatmentType: 'SINGLE',
     action: 'MODERATE_MASTICATION',
     areaAcres: 117,
-    treatedStandCount: '8',
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 8,
   },
 };
 
@@ -83,7 +86,8 @@ export const TreatmentHeavyMastication: Story = {
     treatmentType: 'SINGLE',
     action: 'HEAVY_MASTICATION',
     areaAcres: 117,
-    treatedStandCount: '600',
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 600,
   },
 };
 
@@ -92,7 +96,8 @@ export const TreatmentHeavyThinning: Story = {
     treatmentType: 'SINGLE',
     action: 'HEAVY_THINNING_BURN',
     areaAcres: 117,
-    treatedStandCount: '5',
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 5,
   },
 };
 
@@ -100,7 +105,8 @@ export const TreatmentMasticationAndFireSelected: Story = {
   args: {
     treatmentType: 'SINGLE',
     action: 'MASTICATION_RX_FIRE',
-    treatedStandCount: '5',
+    treatedStandCount: 17,
+    standIds: [1, 2, 3, 8, 10],
     areaAcres: 117,
     selected: true,
   },
@@ -112,6 +118,7 @@ export const OverriddenTitle: Story = {
     title: 'Special Title',
     action: 'MODERATE_THINNING_BURN',
     areaAcres: 117,
-    treatedStandCount: '11',
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 11,
   },
 };

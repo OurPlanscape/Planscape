@@ -14,7 +14,14 @@
       <div class="treatment-type-text">{{ titleText() }}</div>
     </div>
     <div class="right-content">
-      <div class="stand-count">{{ treatedStandCount }}</div>
+      <div class="stand-count" *ngIf="treatmentType === 'SINGLE'">
+        <!-- TODO: is this right? -->
+        {{ treatedStandCount }}
+      </div>
+      <div class="stand-count" *ngIf="treatmentType === 'SEQUENCE'">
+        {{ treatedStandCount + '/' + totalStands() }}
+      </div>
+
       <mat-icon class="material-symbols-outlined treatment-hexagon"
         >hexagon_outline</mat-icon
       >
