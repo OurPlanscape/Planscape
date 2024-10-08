@@ -7,6 +7,7 @@ from treebeard.mp_tree import MP_Node
 
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
 from core.schemes import SUPPORTED_SCHEMES
+from organizations.models import Organization
 
 User = get_user_model()
 
@@ -24,6 +25,14 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         User,
         related_name="created_datasets",
         on_delete=models.RESTRICT,
+    )
+
+    organization_id: int
+    organization = models.ForeignKey(
+        Organization,
+        related_name="datasets",
+        on_delete=models.RESTRICT,
+        null=True,
     )
 
     name = models.CharField(max_length=128)
@@ -51,6 +60,14 @@ class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
         User,
         related_name="created_categories",
         on_delete=models.RESTRICT,
+    )
+
+    organization_id: int
+    organization = models.ForeignKey(
+        Organization,
+        related_name="categories",
+        on_delete=models.RESTRICT,
+        null=True,
     )
 
     dataset_id: int
@@ -101,7 +118,7 @@ class GeometryType(models.TextChoices):
     MULTIPOLYGON = "MULTIPOLYGON", "MultiPolygon"
 
 
-class DataLayer(models.Model):
+class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
     created_by_id: int
@@ -111,11 +128,27 @@ class DataLayer(models.Model):
         on_delete=models.RESTRICT,
     )
 
+    organization_id: int
+    organization = models.ForeignKey(
+        Organization,
+        related_name="datalayers",
+        on_delete=models.RESTRICT,
+        null=True,
+    )
+
     dataset_id: int
     dataset = models.ForeignKey(
         Dataset,
         related_name="datalayers",
         on_delete=models.RESTRICT,
+    )
+
+    category_id: int
+    category = models.ForeignKey(
+        Category,
+        related_name="datalayers",
+        on_delete=models.RESTRICT,
+        null=True,
     )
 
     name = models.CharField(max_length=256)
