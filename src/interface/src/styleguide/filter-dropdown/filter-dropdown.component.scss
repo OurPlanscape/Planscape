@@ -11,15 +11,16 @@
 }
 
 :host {
-  width: 200px;
   display: block;
 
   &.small {
-    width: 140px;
+    max-width: 140px;
   }
-
+  &.medium {
+    max-width: 240px;
+  }
   &.large {
-    width: 300px;
+    max-width: 380px;
   }
 }
 
@@ -48,13 +49,11 @@
 
   &:hover {
     border-color: $color-text-gray;
-    color: $color-original-purple;
     background: $color-soft-gray;
   }
 
   &:active {
     border-width: 1px;
-    color: $color-original-purple;
     background: $color-soft-gray;
   }
 }
@@ -130,8 +129,7 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  min-width: 60px;
-  width: 60px;
+  max-width: 60px;
   align-items: center;
 }
 
