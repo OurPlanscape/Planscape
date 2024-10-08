@@ -5,8 +5,11 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
 import { TreatmentProjectArea } from '@types';
-import { PRESCRIPTIONS } from 'src/app/treatments/prescriptions';
-import { PrescriptionSingleAction } from './project-area-expander.stories';
+import {
+  PRESCRIPTIONS,
+  PrescriptionSingleAction,
+  PrescriptionSequenceAction,
+} from 'src/app/treatments/prescriptions';
 /**
  * Project Area Expander component
  * A component to be used in the Project Area panel to show project area details
@@ -43,11 +46,21 @@ export class ProjectAreaExpanderComponent {
 
   // If a title is explicity set, use that.
   // Otherwise, determine title from either treatment type or sequence num
-  titleText(prescriptionAction: string): string | null {
-    const title = prescriptionAction as PrescriptionSingleAction;
+  titleText(action: string): string | null {
+    //
+    let title = action as PrescriptionSingleAction;
     if (title !== null) {
       return PRESCRIPTIONS.SINGLE[title];
     }
     return '';
+  }
+
+  sequenceActions(action: string): string[] {
+    let title = action as PrescriptionSequenceAction;
+    console.log('given title');
+    if (title !== null) {
+      return PRESCRIPTIONS.SEQUENCE[title];
+    }
+    return [];
   }
 }
