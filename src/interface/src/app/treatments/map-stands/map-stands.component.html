@@ -6,7 +6,7 @@
   [id]="layers.stands.name"
   type="fill"
   source="stands"
-  [paint]="paint"
+  [paint]="layers.stands.paint"
   (layerMouseDown)="clickOnStand($event)"
   (layerMouseEnter)="setCursor()"
   (layerMouseLeave)="resetCursor()"
@@ -16,20 +16,14 @@
   [id]="layers.standsOutline.name"
   type="line"
   source="stands"
-  [paint]="{
-    'line-color': '#4A4A4A',
-    'line-width': 1
-  }"
+  [paint]="layers.standsOutline.paint"
   [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
 
 <mgl-layer
   [id]="layers.selectedStands.name"
   type="fill"
   source="stands"
-  [paint]="{
-    'fill-color': '#007dff',
-    'fill-opacity': 0.2
-  }"
+  [paint]="layers.selectedStands.paint"
   [sourceLayer]="layers.selectedStands.sourceLayer"
   [filter]="[
     'in',
@@ -41,8 +35,5 @@
   [id]="layers.projectAreaOutline.name"
   type="line"
   source="stands"
-  [paint]="{
-    'line-color': '#4A4A4A',
-    'line-width': 4
-  }"
+  [paint]="layers.projectAreaOutline.paint"
   [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>

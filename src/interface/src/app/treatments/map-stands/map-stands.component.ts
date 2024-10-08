@@ -10,24 +10,30 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import {
-  LayerSpecification,
-  Map as MapLibreMap,
-  MapMouseEvent,
-  Point,
-} from 'maplibre-gl';
+import { Map as MapLibreMap, MapMouseEvent, Point } from 'maplibre-gl';
 
 import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
-import { PrescriptionSingleAction, SEQUENCE_COLORS } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { TreatedStand } from '@types';
 import { combineLatest, distinctUntilChanged } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import {
+  BASE_STANDS_PAINT,
+  generatePaintForTreatedStands,
+  PROJECT_AREA_OUTLINE_PAINT,
+  SELECTED_STANDS_PAINT,
+  STANDS_CELL_PAINT,
+} from '../map.styles';
+
+type MapLayerData = {
+  readonly name: string;
+  readonly sourceLayer: string;
+  paint: any; // Only paint is mutable
+};
 
 @UntilDestroy()
 @Component({
@@ -70,29 +76,33 @@ export class MapStandsComponent implements OnChanges, OnInit {
     environment.martin_server +
     'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
 
-  readonly layers = {
+  readonly layers: Record<
+    'projectAreaOutline' | 'standsOutline' | 'stands' | 'selectedStands',
+    MapLayerData
+  > = {
     projectAreaOutline: {
       name: 'outline-layer',
       sourceLayer: 'project_area_aggregate',
+      paint: PROJECT_AREA_OUTLINE_PAINT,
     },
     standsOutline: {
       name: 'stands-outline-layer',
       sourceLayer: 'stands_by_tx_plan',
+      paint: STANDS_CELL_PAINT,
     },
     stands: {
       name: 'stands-layer',
       sourceLayer: 'stands_by_tx_plan',
+      paint: BASE_STANDS_PAINT,
     },
     selectedStands: {
       name: 'stands-layer-selected',
       sourceLayer: 'stands_by_tx_plan',
+      paint: SELECTED_STANDS_PAINT,
     },
   };
 
-  paint: LayerSpecification['paint'] = {
-    'fill-color': '#F6F6F650',
-    'fill-opacity': 0.5,
-  };
+  //paint: LayerSpecification['paint'] = BASE_STANDS_PAINT;
 
   constructor(
     private selectedStandsState: SelectedStandsState,
@@ -106,10 +116,10 @@ export class MapStandsComponent implements OnChanges, OnInit {
     ])
       .pipe(untilDestroyed(this))
       .subscribe(([treatedStands, opacity]) => {
-        this.paint = {
-          'fill-color': this.generateFillColors(treatedStands) as any,
-          'fill-opacity': opacity,
-        };
+        this.layers.stands.paint = generatePaintForTreatedStands(
+          treatedStands,
+          opacity
+        );
       });
   }
 
@@ -176,27 +186,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   private isMouseEndEvent(change: SimpleChange) {
     return change?.previousValue && !change?.currentValue;
-  }
-
-  private generateFillColors(stands: TreatedStand[]) {
-    const defaultColor = '#F6F6F650';
-    if (stands.length === 0) {
-      return defaultColor;
-    }
-    const matchExpression: (number | string | string[])[] = [
-      'match',
-      ['get', 'id'],
-    ];
-
-    stands.forEach((stand) => {
-      matchExpression.push(
-        stand.id,
-        SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
-      );
-    });
-    matchExpression.push(defaultColor);
-
-    return matchExpression;
   }
 
   private getStandIdFromStandsLayer(
