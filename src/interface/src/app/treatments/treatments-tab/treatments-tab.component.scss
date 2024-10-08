@@ -6,7 +6,8 @@
     flex-direction: column;
     align-items: center;
     height: 100%;
-    justify-content: center;
+    justify-content: left;
+    overflow-y: scroll;
 
 .slider-container {
     padding: 10px;

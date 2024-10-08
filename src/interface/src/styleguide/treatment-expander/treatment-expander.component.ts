@@ -5,9 +5,9 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
 import {
-  PrescriptionAction,
   PrescriptionSingleAction,
   PRESCRIPTIONS,
+  PrescriptionSequenceAction,
 } from '../../app/treatments/prescriptions';
 
 export interface rxType {
@@ -18,7 +18,6 @@ export interface rxType {
 /**
  * Expander component
  * A component to be used in the treatments panel to show treatment details
- * NOTE: this expects *either* a treatmentType OR a sequenceNumber to determine appearance
  */
 @Component({
   selector: 'sg-treatment-expander',
@@ -36,14 +35,25 @@ export interface rxType {
   styleUrl: './treatment-expander.component.scss',
 })
 export class TreatmentExpanderComponent {
+  // we are actually given...
+  // action
+  // area_acres
+  // treated_stand_count
+  // stand_ids
+  // type
+
   /**
    * Optional title text -- explicitly overrides the derived title
    */
   @Input() title: string | null = null;
   /**
-   * A treatment type (Optional)
+   * A treatment type
    */
-  @Input() treatmentType: PrescriptionAction | string | null = null;
+  @Input() treatmentType!: string;
+  /**
+   * A treatment action
+   */
+  @Input() action?: string;
   /**
    * A treatment sequence number  (Optional)
    */
@@ -51,11 +61,15 @@ export class TreatmentExpanderComponent {
   /**
    * A number or ratio indicating stand count
    */
-  @Input() standCount?: string | number = '0';
-  /**
-   * Whether or not this is the selected expander
+  @Input() treatedStandCount?: string | number = '0';
+  /***
+   * Area Acres
    */
-  @Input() selected = false;
+  @Input() areaAcres?: number;
+  /***
+   * Stand Ids
+   */
+  @Input() standIds: number[] = [];
   /**
    * Total number of acres
    */
@@ -64,10 +78,20 @@ export class TreatmentExpanderComponent {
    * A list of prescriptions {name: string, year: number}
    */
   @Input() rxDetails?: rxType[] = [];
+  /**
+   * Whether or not this is the selected expander
+   */
+  @Input() selected = false;
   openState = false;
 
   toggleState() {
     this.openState = !this.openState;
+  }
+
+  sequenceDetails(): string[] {
+    if (this.treatmentType === 'SEQUENCE') {
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
+    } else return [];
   }
 
   // If a title is explicity set, use that.
@@ -75,21 +99,21 @@ export class TreatmentExpanderComponent {
   titleText(): string {
     if (this.title !== null) {
       return this.title;
-    } else if (this.treatmentType !== null) {
+    } else if (this.treatmentType === 'SINGLE') {
       const action: PrescriptionSingleAction = this
-        .treatmentType as PrescriptionSingleAction;
+        .action as PrescriptionSingleAction;
       return PRESCRIPTIONS.SINGLE[action];
-    } else if (this.sequenceNumber !== null) {
+    } else if (this.treatmentType === 'SEQUENCE') {
       return `Sequence ${this.sequenceNumber}`;
     }
     return 'No Treatment';
   }
 
   treatmentIconType(): PrescriptionSingleAction | null {
+    // we only call this for single treatments
     // try to coerce the treatmentType into a PrescriptionSingleAction...
-
-    if (this.treatmentType !== null) {
-      return this.treatmentType as PrescriptionSingleAction;
+    if (this.action !== null) {
+      return this.action as PrescriptionSingleAction;
     }
     return null;
   }

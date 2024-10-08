@@ -30,71 +30,88 @@ const meta: Meta<TreatmentExpanderComponent> = {
 export default meta;
 type Story = StoryObj<TreatmentExpanderComponent>;
 
+// {
+//   action: 'MODERATE_THINNING_BIOMASS',
+//   area_acres: 100,
+//   treated_stand_count: 3,
+//   type: 'SINGLE',
+//   stand_ids: [1, 2, 3, 8, 10],
+// },
+
 export const Default: Story = {
   args: {
-    treatmentType: 'MODERATE_THINNING_BURN',
-    standCount: '11',
+    action: 'MODERATE_THINNING_BURN',
+    treatedStandCount: '11',
+    standIds: [1, 2, 3, 8, 10],
+    areaAcres: 117,
+    treatmentType: 'SINGLE',
   },
 };
 
 export const Sequence1: Story = {
   args: {
     sequenceNumber: 1,
+    treatmentType: 'SEQUENCE',
+    areaAcres: 117,
     rxDetails: [
       { name: 'Moderate mastication & Pile burn', year: 0 },
       { name: 'Prescribed fire', year: 0 },
     ],
-    standCount: '1/11',
+    treatedStandCount: '1/11',
   },
 };
 export const Sequence5: Story = {
   args: {
     sequenceNumber: 5,
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
-    standCount: '5/11',
+    treatmentType: 'SEQUENCE',
+    areaAcres: 117,
+    treatedStandCount: '5/11',
   },
 };
 
 export const TreatmentModerateMastication: Story = {
   args: {
-    treatmentType: 'MODERATE_MASTICATION',
-    rxDetails: [],
-    standCount: '8',
+    treatmentType: 'SINGLE',
+    action: 'MODERATE_MASTICATION',
+    areaAcres: 117,
+    treatedStandCount: '8',
   },
 };
 
 export const TreatmentHeavyMastication: Story = {
   args: {
-    treatmentType: 'HEAVY_MASTICATION',
-    rxDetails: [],
-    standCount: '600',
+    treatmentType: 'SINGLE',
+    action: 'HEAVY_MASTICATION',
+    areaAcres: 117,
+    treatedStandCount: '600',
   },
 };
 
 export const TreatmentHeavyThinning: Story = {
   args: {
-    treatmentType: 'HEAVY_THINNING_BURN',
-    rxDetails: [],
-    standCount: '5',
+    treatmentType: 'SINGLE',
+    action: 'HEAVY_THINNING_BURN',
+    areaAcres: 117,
+    treatedStandCount: '5',
   },
 };
 
 export const TreatmentMasticationAndFireSelected: Story = {
   args: {
-    treatmentType: 'MASTICATION_RX_FIRE',
-    rxDetails: [],
-    standCount: '5',
+    treatmentType: 'SINGLE',
+    action: 'MASTICATION_RX_FIRE',
+    treatedStandCount: '5',
+    areaAcres: 117,
     selected: true,
   },
 };
 
 export const OverriddenTitle: Story = {
   args: {
+    treatmentType: 'SINGLE',
     title: 'Special Title',
-    treatmentType: 'MODERATE_THINNING_BURN',
-    standCount: '11',
+    action: 'MODERATE_THINNING_BURN',
+    areaAcres: 117,
+    treatedStandCount: '11',
   },
 };

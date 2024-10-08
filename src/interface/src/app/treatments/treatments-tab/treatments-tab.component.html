@@ -22,8 +22,10 @@
   </div>
   <sg-treatment-expander
     *ngFor="let tx of displayedTreatments()"
-    [treatmentType]="tx.action"
-    [totalAcres]="tx.area_acres"
-    [standCount]="tx.treated_stand_count">
+    [treatmentType]="tx.type"
+    [action]="tx.action"
+    [areaAcres]="tx.area_acres"
+    [treatedStandCount]="tx.treated_stand_count">
+    {{ tx.type }}
   </sg-treatment-expander>
 </div>
