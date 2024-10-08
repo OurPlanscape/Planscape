@@ -59,9 +59,8 @@
     text-align: center;
   }
 
-  ::ng-deep .input-wrapper {
+  ::ng-deep .search-bar .input-wrapper {
     width: 100%;
-    background-color: $color-soft-gray;
+    background-color: $color-light-gray;
   }
-
 }

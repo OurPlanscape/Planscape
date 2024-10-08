@@ -9,6 +9,7 @@
 <div *ngIf="hasTreatments() === true">
   <div class="side-search-container">
     <sg-search-bar
+      class="search-bar"
       searchPlaceholder="Search treatment prescriptions"
       [inputHeight]="'regular'"
       (searchString)="setSearchString($event)"></sg-search-bar>
