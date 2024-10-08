@@ -55,10 +55,6 @@ export class TreatmentExpanderComponent {
    */
   @Input() action?: string;
   /**
-   * A treatment sequence number  (Optional)
-   */
-  @Input() sequenceNumber: number | null = null;
-  /**
    * A number or ratio indicating stand count
    */
   @Input() treatedStandCount?: number;
@@ -90,7 +86,9 @@ export class TreatmentExpanderComponent {
 
   sequenceDetails(): string[] {
     if (this.treatmentType === 'SEQUENCE') {
-      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
+      const attributes =
+        PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
+      return attributes.details;
     } else return [];
   }
 
@@ -104,7 +102,9 @@ export class TreatmentExpanderComponent {
         .action as PrescriptionSingleAction;
       return PRESCRIPTIONS.SINGLE[action];
     } else if (this.treatmentType === 'SEQUENCE') {
-      return `Sequence ${this.sequenceNumber}`;
+      const rxDetails =
+        PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
+      return rxDetails.name;
     }
     return 'No Treatment';
   }

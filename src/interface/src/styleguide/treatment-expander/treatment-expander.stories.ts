@@ -50,7 +50,7 @@ export const Default: Story = {
 
 export const Sequence1: Story = {
   args: {
-    sequenceNumber: 1,
+    action: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
     treatmentType: 'SEQUENCE',
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
@@ -63,7 +63,7 @@ export const Sequence1: Story = {
 };
 export const Sequence5: Story = {
   args: {
-    sequenceNumber: 5,
+    action: 'RX_FIRE_PLUS_RX_FIRE',
     treatmentType: 'SEQUENCE',
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],

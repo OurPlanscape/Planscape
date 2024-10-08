@@ -94,13 +94,13 @@ const exampleSummary = {
 })
 export class ProjectAreaTreatmentsTabComponent {
   //TODO: either get this from template input or directly from state?
-  @Input() prescriptions: Prescription[] = exampleSummary.prescriptions;
+  @Input() prescriptions?: Prescription[] = exampleSummary.prescriptions;
 
   layerOpacity: number = 100;
   searchString: string = '';
 
   hasTreatments() {
-    return this.prescriptions.length > 0;
+    return this.prescriptions && this.prescriptions?.length > 0;
   }
 
   handleOpacityChange(opacity: number) {
@@ -110,6 +110,9 @@ export class ProjectAreaTreatmentsTabComponent {
   displayedTreatments(): Prescription[] {
     const needle = this.searchString.toLowerCase();
     //handle text searches
+    if (!this.prescriptions) {
+      return [];
+    }
     return this.prescriptions.filter(
       (p) =>
         p.action.toLowerCase().includes(needle) ||

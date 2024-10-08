@@ -10,12 +10,11 @@
         [treatment]="treatmentIconType()"></sg-treatment-type-icon>
       <sg-sequence-icon
         *ngIf="treatmentType === 'SEQUENCE'"
-        [sequenceNum]="sequenceNumber"></sg-sequence-icon>
+        [action]="action"></sg-sequence-icon>
       <div class="treatment-type-text">{{ titleText() }}</div>
     </div>
     <div class="right-content">
       <div class="stand-count" *ngIf="treatmentType === 'SINGLE'">
-        <!-- TODO: is this right? -->
         {{ treatedStandCount }}
       </div>
       <div class="stand-count" *ngIf="treatmentType === 'SEQUENCE'">
