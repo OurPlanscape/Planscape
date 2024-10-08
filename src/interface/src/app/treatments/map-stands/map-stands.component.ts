@@ -10,7 +10,12 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { Map as MapLibreMap, MapMouseEvent, Point } from 'maplibre-gl';
+import {
+  LayerSpecification,
+  Map as MapLibreMap,
+  MapMouseEvent,
+  Point,
+} from 'maplibre-gl';
 
 import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
@@ -32,7 +37,7 @@ import {
 type MapLayerData = {
   readonly name: string;
   readonly sourceLayer: string;
-  paint: any; // Only paint is mutable
+  paint: LayerSpecification['paint'];
 };
 
 @UntilDestroy()
@@ -101,8 +106,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
       paint: SELECTED_STANDS_PAINT,
     },
   };
-
-  //paint: LayerSpecification['paint'] = BASE_STANDS_PAINT;
 
   constructor(
     private selectedStandsState: SelectedStandsState,
