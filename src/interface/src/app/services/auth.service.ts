@@ -167,6 +167,10 @@ export class AuthService {
     );
   }
 
+  getAuthCookie() {
+    return this.cookieService.get('my-app-auth');
+  }
+
   /**
    * removes the cookies for tokens
    */
