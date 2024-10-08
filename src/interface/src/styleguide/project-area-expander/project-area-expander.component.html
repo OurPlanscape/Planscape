@@ -9,7 +9,9 @@
       <div>{{ projectArea.project_area_name }}</div>
     </div>
     <div class="right-content">
-      <div class="stand-count">{{ projectArea.total_stand_count }}</div>
+      <div class="stand-count">
+        {{ treatedStandCount() + '/' + projectArea.total_stand_count }}
+      </div>
       <mat-icon class="material-symbols-outlined treatment-hexagon"
         >hexagon_outline</mat-icon
       >
@@ -50,7 +52,7 @@
         <span class="rx-detail-name">Stands: </span
         ><span class="rx-detail-value">{{ rx.treated_stand_count }}</span>
         <span class="rx-detail-name">Total: </span
-        ><span class="rx-detail-value">{{ rx.treated_stand_count }}</span>
+        ><span class="rx-detail-value">{{ rx.stand_ids.length }}</span>
       </div>
     </mat-expansion-panel>
   </div>

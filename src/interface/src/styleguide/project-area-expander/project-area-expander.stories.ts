@@ -19,14 +19,14 @@ const samplePoint: Point = { type: 'Point', coordinates: [] };
 const sampleProjectAreaResult = {
   project_area_id: 1,
   project_area_name: 'Project Area 1',
-  total_stand_count: 10,
+  total_stand_count: 20,
   prescriptions: [
     {
       action: 'MODERATE_THINNING_BIOMASS',
       area_acres: 100,
       treated_stand_count: 3,
       type: 'SINGLE',
-      stand_ids: [1, 2, 3],
+      stand_ids: [1, 2, 3, 8, 10],
     },
     {
       action: 'HEAVY_THINNING_BIOMASS',
@@ -38,7 +38,7 @@ const sampleProjectAreaResult = {
     {
       action: 'HEAVY_MASTICATION',
       area_acres: 50,
-      treated_stand_count: 2,
+      treated_stand_count: 1,
       type: 'SINGLE',
       stand_ids: [4, 5],
     },

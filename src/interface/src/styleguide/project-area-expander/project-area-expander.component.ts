@@ -34,6 +34,8 @@ export class ProjectAreaExpanderComponent {
    * Optional title text -- explicitly overrides the derived title
    */
   @Input() title: string | null = null;
+  @Input() isSelected: boolean = false;
+
   openState = false;
   /**
    * A TreatmentProjectArea record, with an array of prescriptions
@@ -55,9 +57,16 @@ export class ProjectAreaExpanderComponent {
     return '';
   }
 
+  //TODO: sequence number
+
+  treatedStandCount(): number {
+    return this.projectArea.prescriptions
+      .map((record) => record.treated_stand_count)
+      .reduce((acc, count) => acc + count, 0);
+  }
+
   sequenceActions(action: string): string[] {
     let title = action as PrescriptionSequenceAction;
-    console.log('given title');
     if (title !== null) {
       return PRESCRIPTIONS.SEQUENCE[title];
     }
