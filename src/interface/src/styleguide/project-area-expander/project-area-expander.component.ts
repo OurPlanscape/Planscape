@@ -34,7 +34,10 @@ export class ProjectAreaExpanderComponent {
    * Optional title text -- explicitly overrides the derived title
    */
   @Input() title: string | null = null;
-  @Input() isSelected: boolean = false;
+  /**
+   * Whether or not this is the selected expander
+   */
+  @Input() selected = false;
 
   openState = false;
   /**
@@ -71,5 +74,9 @@ export class ProjectAreaExpanderComponent {
       return PRESCRIPTIONS.SEQUENCE[title];
     }
     return [];
+  }
+
+  get isSelected() {
+    return this.selected;
   }
 }
