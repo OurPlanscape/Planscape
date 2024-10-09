@@ -30,7 +30,7 @@ import { PRESCRIPTIONS } from '../prescriptions';
 })
 export class TreatmentLegendComponent {
   readonly singlePrescriptions = PRESCRIPTIONS.SINGLE;
-  readonly sequences: number[] = [...Array(8).keys()].map((n) => (n = n + 1));
+  readonly sequencePrescriptions = PRESCRIPTIONS.SEQUENCE;
   @Output() closeRequest = new EventEmitter();
   constructor() {}
 

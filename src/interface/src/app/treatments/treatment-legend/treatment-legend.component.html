@@ -40,9 +40,11 @@
         </div>
       </mat-expansion-panel-header>
       <div class="legend-section">
-        <div class="legend-row" *ngFor="let seq of sequences">
-          <sg-sequence-icon [sequenceNum]="seq"></sg-sequence-icon>
-          <div class="legend-text">{{ 'Sequence' + seq }}</div>
+        <div
+          class="legend-row"
+          *ngFor="let seq of sequencePrescriptions | keyvalue: originalOrder">
+          <sg-sequence-icon [action]="seq.key"></sg-sequence-icon>
+          <div class="legend-text">{{ seq.value.name }}</div>
         </div>
       </div>
     </mat-expansion-panel>
