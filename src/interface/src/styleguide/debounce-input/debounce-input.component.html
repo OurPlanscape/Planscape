@@ -1,0 +1,33 @@
+<div class="name-input-component">
+  <div class="heading-line">
+    <div *ngIf="title" class="title">{{ title }}</div>
+    <button
+      mat-icon-button
+      class="tooltip-button"
+      *ngIf="tooltipContent"
+      [matMenuTriggerFor]="tooltipMenu">
+      <mat-icon class="material-symbols-outlined" color="primary">
+        info_outline</mat-icon
+      >
+    </button>
+    <mat-menu class="tooltip-menu" #tooltipMenu="matMenu">
+      {{ tooltipContent }}
+    </mat-menu>
+  </div>
+  <sg-input-field [disabled]="false" size="regular" class="name-input">
+    <input
+      sgInput
+      [placeholder]="placeholderText"
+      [(ngModel)]="textValue"
+      (ngModelChange)="clearError()"
+      (blur)="emitTextValue($event)"
+      (keyup.enter)="emitTextValue($event)" />
+    <mat-spinner
+      diameter="20"
+      matSuffix
+      *ngIf="savingStatus$ | async"></mat-spinner>
+  </sg-input-field>
+  <div class="error-blurb">
+    <span *ngIf="errorMessage">{{ errorMessage }}</span>
+  </div>
+</div>
