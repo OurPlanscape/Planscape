@@ -1,0 +1,51 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  background-color: $color-white;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: 10px;
+  padding-bottom: 2px;
+  box-sizing: border-box;
+
+  .heading-line {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    height: 28px;
+  }
+
+  .title {
+    @include small-input-label();
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 22px;
+    text-align: left;
+    height: 22px;
+  }
+  .error-blurb {
+    @include small-input-label();
+    color: $color-dark-red;
+    height: 24px;
+  }
+}
+
+::ng-deep .name-input-component input {
+  width: 100%;
+}
+
+::ng-deep .name-input-component .input-wrapper {
+  width: 100%;
+  border-width: 2px;
+}
+
+::ng-deep .name-input-component .focus-within {
+  border-width: 1px;
+}
+
+::ng-deep .tooltip-menu .mat-mdc-menu-content {
+  padding: 4px;
+}
