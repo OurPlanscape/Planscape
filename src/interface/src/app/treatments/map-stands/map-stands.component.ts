@@ -24,7 +24,7 @@ import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { combineLatest, distinctUntilChanged } from 'rxjs';
+import { combineLatest, distinctUntilChanged, map, Observable } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   BASE_STANDS_PAINT,
@@ -37,7 +37,8 @@ import {
 type MapLayerData = {
   readonly name: string;
   readonly sourceLayer: string;
-  paint: LayerSpecification['paint'];
+  paint?: LayerSpecification['paint'];
+  paint$?: Observable<any>;
 };
 
 @UntilDestroy()
@@ -75,6 +76,16 @@ export class MapStandsComponent implements OnChanges, OnInit {
    * Reference to the selected stands before the user starts dragging for stand selection
    */
   private initialSelectedStands: number[] = [];
+  opacity$ = this.treatedStandsState.opacity$.pipe(distinctUntilChanged());
+
+  outlineOpacity$ = this.opacity$.pipe(
+    map((value) => {
+      const minOutput = 0.3;
+      const clampedValue = Math.max(0, Math.min(value, 1));
+      // Perform linear interpolation
+      return minOutput + clampedValue * (1 - minOutput);
+    })
+  );
 
   // TODO project_area_aggregate only applies when looking at a specific project area
   readonly tilesUrl =
@@ -88,12 +99,20 @@ export class MapStandsComponent implements OnChanges, OnInit {
     projectAreaOutline: {
       name: 'outline-layer',
       sourceLayer: 'project_area_aggregate',
-      paint: PROJECT_AREA_OUTLINE_PAINT,
+      paint$: this.outlineOpacity$.pipe(
+        map((opacity) => {
+          return { ...PROJECT_AREA_OUTLINE_PAINT, 'line-opacity': opacity };
+        })
+      ),
     },
     standsOutline: {
       name: 'stands-outline-layer',
       sourceLayer: 'stands_by_tx_plan',
-      paint: STANDS_CELL_PAINT,
+      paint$: this.outlineOpacity$.pipe(
+        map((opacity) => {
+          return { ...STANDS_CELL_PAINT, 'line-opacity': opacity };
+        })
+      ),
     },
     stands: {
       name: 'stands-layer',
@@ -115,7 +134,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
   ) {
     combineLatest([
       this.treatedStands$.pipe(distinctUntilChanged()),
-      this.treatedStandsState.opacity$.pipe(distinctUntilChanged()),
+      this.opacity$,
     ])
       .pipe(untilDestroyed(this))
       .subscribe(([treatedStands, opacity]) => {

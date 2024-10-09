@@ -16,7 +16,7 @@
   [id]="layers.standsOutline.name"
   type="line"
   source="stands"
-  [paint]="layers.standsOutline.paint"
+  [paint]="layers.standsOutline.paint$ | async"
   [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
 
 <mgl-layer
@@ -35,5 +35,5 @@
   [id]="layers.projectAreaOutline.name"
   type="line"
   source="stands"
-  [paint]="layers.projectAreaOutline.paint"
+  [paint]="layers.projectAreaOutline.paint$ | async"
   [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>

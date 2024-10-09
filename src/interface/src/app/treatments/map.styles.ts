@@ -34,6 +34,12 @@ export const BASE_STANDS_PAINT = {
   'fill-opacity': 0.5,
 };
 
+export const LABEL_PAINT = {
+  'text-color': BASE_COLORS.black,
+  'text-halo-color': BASE_COLORS.white,
+  'text-halo-width': 2,
+};
+
 export function generatePaintForTreatedStands(
   stands: TreatedStand[],
   opacity: number
