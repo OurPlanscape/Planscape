@@ -8,7 +8,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { InputDirective } from '../../../styleguide/input/input.directive';
 import { InputFieldComponent } from '../../../styleguide/input/input-field.component';
 import { Prescription } from '@types';
-import { PRESCRIPTIONS, PrescriptionSingleAction } from '../prescriptions';
+import {
+  PRESCRIPTIONS,
+  PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+} from '../prescriptions';
 
 const exampleSummary = {
   project_area_id: 1,
@@ -93,7 +97,7 @@ const exampleSummary = {
   styleUrl: './treatments-tab.component.scss',
 })
 export class ProjectAreaTreatmentsTabComponent {
-  //TODO: either get this from template input or directly from state?
+  //TODO: either get this from template input or directly from state
   @Input() prescriptions?: Prescription[] = exampleSummary.prescriptions;
 
   layerOpacity: number = 100;
@@ -118,6 +122,10 @@ export class ProjectAreaTreatmentsTabComponent {
         p.action.toLowerCase().includes(needle) ||
         (p.type === 'SINGLE' &&
           PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
+            .toLowerCase()
+            .includes(needle)) ||
+        (p.type === 'SEQUENCE' &&
+          PRESCRIPTIONS.SEQUENCE[p.action as PrescriptionSequenceAction].name
             .toLowerCase()
             .includes(needle))
     );

@@ -6,7 +6,7 @@
   <div class="no-treatments-text">Start applying treatments to each stand</div>
 </div>
 
-<div *ngIf="hasTreatments() === true">
+<div *ngIf="hasTreatments() === true" class="treatments-tab-content">
   <div class="side-search-container">
     <sg-search-bar
       class="search-bar"
@@ -20,13 +20,15 @@
       [sliderValue]="layerOpacity"
       (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
   </div>
-  <sg-treatment-expander
-    *ngFor="let tx of displayedTreatments()"
-    [treatmentType]="tx.type"
-    [action]="tx.action"
-    [areaAcres]="tx.area_acres"
-    [treatedStandCount]="tx.treated_stand_count"
-    [standIds]="tx.stand_ids">
-    {{ tx.type }}
-  </sg-treatment-expander>
+  <div class="expanders-container">
+    <sg-treatment-expander
+      *ngFor="let tx of displayedTreatments()"
+      [treatmentType]="tx.type"
+      [action]="tx.action"
+      [areaAcres]="tx.area_acres"
+      [treatedStandCount]="tx.treated_stand_count"
+      [standIds]="tx.stand_ids">
+      {{ tx.type }}
+    </sg-treatment-expander>
+  </div>
 </div>
