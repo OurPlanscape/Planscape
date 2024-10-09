@@ -92,6 +92,7 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "created_by",
             "organization",
             "dataset",
+            "status",
             "category",
             "name",
         )

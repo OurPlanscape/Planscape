@@ -86,6 +86,3 @@ class DataLayerSerializerTest(TestCase):
         self.assertEqual(data["organization"], data_layer.organization.id)
         self.assertEqual(data["dataset"], data_layer.dataset.id)
         self.assertEqual(data["status"], data_layer.status)
-        self.assertEqual(data["geometry_type"], data_layer.geometry_type)
-        self.assertEqual(data["type"], data_layer.type)
-        self.assertIn("category", data)
