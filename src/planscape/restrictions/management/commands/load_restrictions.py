@@ -25,6 +25,13 @@ class Command(BaseCommand):
             help="If set to false, the command will not remove previous restrictions data.",
         )
 
+        parser.add_argument(
+            "--validate",
+            default=True,
+            action="store_true",
+            help="if set to false, the command will not validate the data",
+        )
+
     def clear(self, type):
         counts = Restriction.objects.filter(type=type).delete()
         self.stdout.write(f"Deleted {counts} for {type}")
