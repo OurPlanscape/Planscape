@@ -17,46 +17,46 @@ type Story = StoryObj<SequenceIconComponent>;
 
 export const Default: Story = {
   args: {
-    sequenceNum: 1,
+    action: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
   },
 };
 export const Sequence1: Story = {
   args: {
-    sequenceNum: 1,
+    action: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
   },
 };
 export const Sequence2: Story = {
   args: {
-    sequenceNum: 2,
+    action: 'MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN',
   },
 };
 export const Sequence3: Story = {
   args: {
-    sequenceNum: 3,
+    action: 'HEAVY_THINNING_BURN_PLUS_RX_FIRE',
   },
 };
 export const Sequence4: Story = {
   args: {
-    sequenceNum: 4,
+    action: 'HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN',
   },
 };
 export const Sequence5: Story = {
   args: {
-    sequenceNum: 5,
+    action: 'RX_FIRE_PLUS_RX_FIRE',
   },
 };
 export const Sequence6: Story = {
   args: {
-    sequenceNum: 6,
+    action: 'MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION',
   },
 };
 export const Sequence7: Story = {
   args: {
-    sequenceNum: 7,
+    action: 'HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE',
   },
 };
 export const Sequence8: Story = {
   args: {
-    sequenceNum: 8,
+    action: 'MODERATE_MASTICATION_PLUS_RX_FIRE',
   },
 };
