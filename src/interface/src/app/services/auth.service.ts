@@ -37,6 +37,8 @@ export interface PasswordResetToken {
   providedIn: 'root',
 })
 export class AuthService {
+  private readonly authTokenKey = 'my-app-auth';
+  private readonly authTokenRefreshKey = 'my-refresh-token';
   loggedInStatus$ = new BehaviorSubject<boolean | null>(null);
   isLoggedIn$: Observable<boolean | null> = this.loggedInStatus$;
   loggedInUser$ = new BehaviorSubject<User | null | undefined>(undefined);
@@ -142,7 +144,7 @@ export class AuthService {
     return this.http
       .post(
         this.API_ROOT.concat('token/refresh/'),
-        { refresh: this.cookieService.get('my-refresh-token') },
+        { refresh: this.cookieService.get(this.authTokenRefreshKey) },
         { withCredentials: true }
       )
       .pipe(
@@ -167,12 +169,16 @@ export class AuthService {
     );
   }
 
+  getAuthCookie() {
+    return this.cookieService.get(this.authTokenKey);
+  }
+
   /**
    * removes the cookies for tokens
    */
   removeCookie() {
-    this.cookieService.delete('my-refresh-token');
-    this.cookieService.delete('my-app-auth');
+    this.cookieService.delete(this.authTokenRefreshKey);
+    this.cookieService.delete(this.authTokenKey);
   }
 
   public getLoggedInUser(): Observable<User> {

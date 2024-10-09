@@ -300,10 +300,6 @@ export class CreateScenariosComponent implements OnInit {
     this.planStateService.updateStateWithShapes(shapes);
   }
 
-  goBackToPlanning() {
-    this.router.navigate(['plan', this.plan$.value?.id]);
-  }
-
   goToConfig() {
     this.router.navigate(['plan', this.plan$.value?.id, 'config']);
   }

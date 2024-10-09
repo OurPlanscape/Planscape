@@ -7,8 +7,9 @@ CORN_WORKERS=4
 
 app_name="planscape"
 
-echo "Running migrations"
-# cd src/planscape && python manage.py migrate --no-input
+echo "Running migrations & collectstatic"
+python3 manage.py migrate --no-input
+python3 manage.py collectstatic --no-input
 echo "migrated"
 
 echo "Starting gunicorn for production"
