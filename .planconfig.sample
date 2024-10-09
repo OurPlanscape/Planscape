@@ -1,0 +1,5 @@
+[planscape]
+env = "dev"
+org = 1
+email = "myuser"
+password = "mypass"
