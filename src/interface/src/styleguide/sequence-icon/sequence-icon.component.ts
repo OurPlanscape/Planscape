@@ -1,4 +1,5 @@
 import { Component, Input } from '@angular/core';
+import { PrescriptionSequenceAction } from '../../app/treatments/prescriptions';
 
 @Component({
   selector: 'sg-sequence-icon',
@@ -8,22 +9,22 @@ import { Component, Input } from '@angular/core';
   styleUrl: './sequence-icon.component.scss',
 })
 export class SequenceIconComponent {
-  @Input() sequenceNum: number | null = null;
+  @Input() action?: PrescriptionSequenceAction | string;
 
-  readonly sequenceIcons: Record<number, string> = {
-    1: 'sequence_1.svg',
-    2: 'sequence_2.svg',
-    3: 'sequence_3.svg',
-    4: 'sequence_4.svg',
-    5: 'sequence_5.svg',
-    6: 'sequence_6.svg',
-    7: 'sequence_7.svg',
-    8: 'sequence_8.svg',
+  readonly sequenceIcons: Record<PrescriptionSequenceAction, string> = {
+    MODERATE_THINNING_BURN_PLUS_RX_FIRE: 'sequence_1.svg',
+    MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: 'sequence_2.svg',
+    HEAVY_THINNING_BURN_PLUS_RX_FIRE: 'sequence_3.svg',
+    HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: 'sequence_4.svg',
+    RX_FIRE_PLUS_RX_FIRE: 'sequence_5.svg',
+    MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: 'sequence_6.svg',
+    HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: 'sequence_7.svg',
+    MODERATE_MASTICATION_PLUS_RX_FIRE: 'sequence_8.svg',
   };
 
   iconName() {
-    if (this.sequenceNum !== null) {
-      return this.sequenceIcons[this.sequenceNum];
+    if (this.action !== undefined) {
+      return this.sequenceIcons[this.action as PrescriptionSequenceAction];
     }
     return 'treatment_none.svg';
   }
