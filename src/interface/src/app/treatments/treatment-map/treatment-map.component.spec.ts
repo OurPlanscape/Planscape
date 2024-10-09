@@ -9,6 +9,7 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
 import { SelectedStandsState } from './selected-stands.state';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
+import { AuthService } from '@services';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
@@ -18,7 +19,7 @@ describe('TreatmentMapComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TreatmentMapComponent, CommonModule],
       providers: [
-        MockProviders(TreatedStandsState, SelectedStandsState),
+        MockProviders(TreatedStandsState, SelectedStandsState, AuthService),
         MockProvider(MapConfigState, { cursor$: of('') }),
       ],
       declarations: [

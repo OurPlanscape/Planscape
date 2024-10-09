@@ -1,12 +1,5 @@
-import {
-  Component,
-  EventEmitter,
-  Inject,
-  Input,
-  OnInit,
-  Output,
-} from '@angular/core';
-import { PlanStateService, WINDOW } from '@services';
+import { Component, Inject, Input, OnInit } from '@angular/core';
+import { AuthService, PlanStateService, WINDOW } from '@services';
 
 import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
@@ -30,7 +23,6 @@ export class NavBarComponent implements OnInit {
   @Input() breadcrumbs: Breadcrumb[] = [];
   @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' | 'TREATMENTS' =
     'EXPLORE';
-  @Output() goBack = new EventEmitter<void>();
 
   params: Params | null = null;
 
@@ -41,12 +33,17 @@ export class NavBarComponent implements OnInit {
           .pipe(map((plan) => canViewCollaborators(plan)))
       : of(false);
 
+  firstBreadcrumb$ = this.authService.isLoggedIn$.pipe(
+    map((loggedIn) => (loggedIn ? 'Planning Areas' : 'Welcome'))
+  );
+
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private planStateService: PlanStateService,
-    private homeParametersStorageService: HomeParametersStorageService
+    private homeParametersStorageService: HomeParametersStorageService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {

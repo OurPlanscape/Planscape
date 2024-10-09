@@ -1,7 +1,25 @@
 import os
 import subprocess
+from pathlib import Path
+from typing import Any, Dict
 
+import toml
 from django.conf import settings
+
+
+def options_from_file() -> Dict[str, Any]:
+    """This method reads from a standard .planconfig file
+    located at the root of the project to gather details
+    for CLI executions.
+    """
+    repo_root = Path.cwd().parent.parent
+    config_file = repo_root / ".planconfig"
+    if not config_file.exists():
+        return {}
+
+    with open(str(config_file), "r") as f:
+        config = toml.load(f)
+        return config["planscape"]
 
 
 def raster2pgpsql(

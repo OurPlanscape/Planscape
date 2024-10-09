@@ -1,5 +1,4 @@
 <app-nav-bar
-  (goBack)="goBack()"
   [breadcrumbs]="(breadcrumbs$ | async) || []"
   [area]="(area$ | async) || 'SCENARIOS'">
   <ng-container *appFeatureFlag="'new_planning_area'">

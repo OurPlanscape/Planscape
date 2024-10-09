@@ -183,3 +183,7 @@ Session.vim
 .nx/
 .zed/**
 requirements.txt
+static/
+compiled-static/
+
+.planconfig
