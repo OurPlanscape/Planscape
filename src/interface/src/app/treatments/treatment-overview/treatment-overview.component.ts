@@ -33,13 +33,15 @@ export class TreatmentOverviewComponent {
   }
 
   handleNameChange(name: string) {
+    if (name.length < 1) {
+      return;
+    }
     this.savingStatus$.next(true);
     const partialTreatmentPlan: Partial<TreatmentPlan> = {
       name: name,
     };
     this.treatmentsState.updateTreatmentPlan(partialTreatmentPlan).subscribe({
       next: (result) => {
-        //TODO: reload the name? the entire plan?
         this.savingStatus$.next(false);
       },
       error: (err) => {

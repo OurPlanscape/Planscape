@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { BehaviorSubject, catchError, map, of } from 'rxjs';
+import { BehaviorSubject, catchError, map, of, tap } from 'rxjs';
 import {
   TreatedStand,
   TreatmentPlan,
@@ -128,10 +128,13 @@ export class TreatmentsState {
   }
 
   updateTreatmentPlan(treatmentPlan: Partial<TreatmentPlan>) {
-    return this.treatmentsService.updateTreatmentPlan(
-      this.getTreatmentPlanId(),
-      treatmentPlan
-    );
+    return this.treatmentsService
+      .updateTreatmentPlan(this.getTreatmentPlanId(), treatmentPlan)
+      .pipe(
+        tap((updatedTreatmentPlan: TreatmentPlan) => {
+          this._treatmentPlan.next(updatedTreatmentPlan);
+        })
+      );
   }
 
   private setTreatedStandsFromSummary(projectAreas: TreatmentProjectArea[]) {
