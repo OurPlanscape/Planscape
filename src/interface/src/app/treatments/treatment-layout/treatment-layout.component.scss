@@ -1,4 +1,5 @@
 @import "colors";
+@import "variables";
 
 :host {
   display: flex;
@@ -8,7 +9,8 @@
 
 .treatment {
   display: flex;
-  height: 100%;
+  height: calc(100% - $toolbar-height);
+
 }
 
 .left-side {
