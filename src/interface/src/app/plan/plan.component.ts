@@ -24,7 +24,6 @@ import { Plan, User } from '@types';
 import { AuthService, PlanStateService, ScenarioService } from '@services';
 import { Breadcrumb } from '@shared';
 import { getPlanPath } from './plan-helpers';
-import { HomeParametersStorageService } from '@services/local-storage.service';
 
 @Component({
   selector: 'app-plan',
@@ -88,8 +87,7 @@ export class PlanComponent implements OnInit, OnDestroy {
     private planStateService: PlanStateService,
     private route: ActivatedRoute,
     private router: Router,
-    private scenarioService: ScenarioService,
-    private homeParametersStorageService: HomeParametersStorageService
+    private scenarioService: ScenarioService
   ) {
     // TODO: Move everything in the constructor to ngOnInit
 
@@ -165,15 +163,5 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   backToOverview() {
     this.router.navigate(['plan', this.currentPlan$.value!.id]);
-  }
-
-  goBack() {
-    if (this.showOverview$.value) {
-      this.router.navigate(['home'], {
-        queryParams: this.homeParametersStorageService.getItem(),
-      });
-    } else {
-      this.backToOverview();
-    }
   }
 }

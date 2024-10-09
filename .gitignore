@@ -185,3 +185,5 @@ Session.vim
 requirements.txt
 static/
 compiled-static/
+
+.planconfig
