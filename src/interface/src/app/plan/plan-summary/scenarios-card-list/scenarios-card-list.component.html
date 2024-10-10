@@ -5,11 +5,7 @@
   [areas]="s.scenario_result?.result?.features?.length"
   [created_at]="s.created_at"
   [budget]="
-    hasResults(s)
-      ? '' +
-        (calculateTotals(s.scenario_result!).estimatedCost
-          | currencyInK: '1.0-0')
-      : 'N/A'
+    hasResults(s) ? calculateTotals(s.scenario_result!).estimatedCost : null
   "
   [treatmentPlansCount]="s.tx_plan_count"
   [status]="s.scenario_result?.status || 'PENDING'"

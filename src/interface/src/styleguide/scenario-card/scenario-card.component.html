@@ -51,7 +51,7 @@
     </div>
     <div class="detail-column">
       <div class="detail-header">Est Budget</div>
-      <div class="detail-info">{{ budget }}</div>
+      <div class="detail-info">{{ (budget | currency) ?? 'N/A' }}</div>
     </div>
     <div class="detail-column">
       <div class="detail-header">Treatment Plans</div>

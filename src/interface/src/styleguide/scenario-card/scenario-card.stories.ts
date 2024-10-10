@@ -28,7 +28,7 @@ export const Default: Story = {
     status: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
-    budget: '1234567',
+    budget: 1234567,
     treatmentPlansCount: 5,
   },
 };
