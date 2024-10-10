@@ -1,6 +1,5 @@
 <div *ngIf="treatmentPlan$ | async; let treatmentPlan">
   {{ treatmentPlan.id }}. {{ treatmentPlan.name }}
-  <div>{{ treatmentPlan.status }}</div>
 </div>
 <sg-debounce-input
   title="Treatment Plan Name"
