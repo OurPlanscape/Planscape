@@ -5,7 +5,7 @@ from core.base_commands import PlanscapeCommand
 
 
 class Command(PlanscapeCommand):
-    entity = "DataLayers"
+    entity = "Datasets"
 
     def add_subcommands(self, parser: CommandParser) -> None:
         subp = parser.add_subparsers()
@@ -18,7 +18,7 @@ class Command(PlanscapeCommand):
 
     def list(self, token, **kwargs):
         base_url = self.get_base_url(**kwargs)
-        list_url = base_url + "/v2/datalayers"
+        list_url = base_url + "/v2/datasets"
         headers = self.get_headers(token, **kwargs)
         response = requests.get(
             list_url,
