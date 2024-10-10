@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MockProviders } from 'ng-mocks';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ProjectAreaTreatmentsTabComponent } from './treatments-tab.component';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 
 describe('ProjectAreaTreatmentsTabComponent', () => {
   let component: ProjectAreaTreatmentsTabComponent;
@@ -9,6 +11,7 @@ describe('ProjectAreaTreatmentsTabComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [BrowserAnimationsModule, ProjectAreaTreatmentsTabComponent],
+      providers: [MockProviders(TreatedStandsState)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ProjectAreaTreatmentsTabComponent);

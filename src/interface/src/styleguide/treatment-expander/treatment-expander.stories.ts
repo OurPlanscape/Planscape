@@ -46,10 +46,6 @@ export const Sequence1: Story = {
     treatmentType: 'SEQUENCE',
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
     treatedStandCount: 1,
   },
 };
