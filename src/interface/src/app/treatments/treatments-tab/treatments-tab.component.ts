@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
 //TODO: fix path?
 import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opacity-slider.component';
@@ -8,78 +8,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { InputDirective } from '../../../styleguide/input/input.directive';
 import { InputFieldComponent } from '../../../styleguide/input/input-field.component';
 import { Prescription } from '@types';
-import {
-  PRESCRIPTIONS,
-  PrescriptionSequenceAction,
-  PrescriptionSingleAction,
-} from '../prescriptions';
+import { map, combineLatest, Observable } from 'rxjs';
+// import {
+//   PRESCRIPTIONS,
+//   PrescriptionSequenceAction,
+//   PrescriptionSingleAction,
+// } from '../prescriptions';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-
-const exampleSummary = {
-  project_area_id: 1,
-  project_area_name: 'Project Area 1',
-  total_stand_count: 20,
-  prescriptions: [
-    {
-      action: 'MODERATE_THINNING_BIOMASS',
-      area_acres: 100,
-      treated_stand_count: 3,
-      type: 'SINGLE',
-      stand_ids: [1, 2, 3, 8, 10],
-    },
-    {
-      action: 'HEAVY_THINNING_BIOMASS',
-      area_acres: 50,
-      treated_stand_count: 2,
-      type: 'SINGLE',
-      stand_ids: [4, 5],
-    },
-    {
-      action: 'HEAVY_MASTICATION',
-      area_acres: 50,
-      treated_stand_count: 1,
-      type: 'SINGLE',
-      stand_ids: [4, 5],
-    },
-    {
-      action: 'MASTICATION_RX_FIRE',
-      area_acres: 50,
-      treated_stand_count: 2,
-      type: 'SINGLE',
-      stand_ids: [4, 5],
-    },
-    {
-      action: 'HEAVY_THINNING_BURN',
-      area_acres: 50,
-      treated_stand_count: 2,
-      type: 'SINGLE',
-      stand_ids: [4, 5],
-    },
-    {
-      action: 'RX_FIRE_PLUS_RX_FIRE',
-      area_acres: 50,
-      treated_stand_count: 2,
-      type: 'SEQUENCE',
-      stand_ids: [4, 5],
-    },
-    {
-      action: 'MODERATE_MASTICATION_PLUS_RX_FIRE',
-      area_acres: 50,
-      treated_stand_count: 2,
-      type: 'SEQUENCE',
-      stand_ids: [4, 5],
-    },
-    {
-      action: 'HEAVY_THINNING_BURN_PLUS_RX_FIRE',
-      area_acres: 50,
-      treated_stand_count: 2,
-      type: 'SEQUENCE',
-      stand_ids: [4, 5],
-    },
-  ],
-  extent: [],
-  centroid: {},
-};
+import { TreatmentsState } from '../treatments.state';
 
 @Component({
   selector: 'app-project-area-tx-tab',
@@ -99,46 +35,66 @@ const exampleSummary = {
   styleUrl: './treatments-tab.component.scss',
 })
 export class ProjectAreaTreatmentsTabComponent {
-  constructor(private treatedStandsState: TreatedStandsState) {}
-
+  constructor(
+    private treatedStandsState: TreatedStandsState,
+    private treatmentsState: TreatmentsState
+  ) {}
   opacity = this.treatedStandsState.opacity$;
-
-  //TODO: either get this from template input or directly from state
-  @Input() prescriptions?: Prescription[] = exampleSummary.prescriptions;
-
-  layerOpacity: number = 100;
+  summary$ = this.treatmentsState.summary$;
+  projId$ = this.treatmentsState.projectAreaId$;
   searchString: string = '';
 
-  hasTreatments() {
-    return this.prescriptions && this.prescriptions?.length > 0;
-  }
+  prescriptions$: Observable<Prescription[]> = combineLatest([
+    this.treatmentsState.summary$,
+    this.treatmentsState.projectAreaId$,
+  ]).pipe(
+    map(([summaryData, currentProjectId]) => {
+      const filteredProjects = summaryData?.project_areas?.filter(
+        (project) => project.project_area_id === currentProjectId
+      );
+      return filteredProjects && filteredProjects.length > 0
+        ? filteredProjects[0].prescriptions
+        : [];
+    })
+  );
 
   handleOpacityChange(opacity: number) {
-    this.layerOpacity = opacity;
     this.treatedStandsState.setOpacity(opacity);
-  }
-
-  displayedTreatments(): Prescription[] {
-    const needle = this.searchString.toLowerCase();
-    //handle text searches
-    if (!this.prescriptions) {
-      return [];
-    }
-    return this.prescriptions.filter(
-      (p) =>
-        p.action.toLowerCase().includes(needle) ||
-        (p.type === 'SINGLE' &&
-          PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
-            .toLowerCase()
-            .includes(needle)) ||
-        (p.type === 'SEQUENCE' &&
-          PRESCRIPTIONS.SEQUENCE[p.action as PrescriptionSequenceAction].name
-            .toLowerCase()
-            .includes(needle))
-    );
   }
 
   setSearchString(searchString: string) {
     this.searchString = searchString;
   }
+
+  // filteredPrescriptions$: Observable<Prescription[]> = combineLatest([
+  //   this.prescriptions$,
+  //   this.searchString,
+  // ]).pipe(
+  //   map(([prescriptions, searchString]) =>
+  //     this.filterPrescriptions(prescriptions, searchString)
+  //   )
+  // );
+
+  // private filterPrescriptions(
+  //   prescriptions: Prescription[],
+  //   searchString: string
+  // ): Prescription[] {
+  //   const needle = searchString.toLowerCase();
+  //   console.log('here is the needle?:', needle);
+  //   if (!prescriptions || needle === '') {
+  //     return prescriptions;
+  //   }
+  //   return prescriptions.filter(
+  //     (p) =>
+  //       p.action.toLowerCase().includes(needle) ||
+  //       (p.type === 'SINGLE' &&
+  //         PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
+  //           .toLowerCase()
+  //           .includes(needle)) ||
+  //       (p.type === 'SEQUENCE' &&
+  //         PRESCRIPTIONS.SEQUENCE[p.action as PrescriptionSequenceAction].name
+  //           .toLowerCase()
+  //           .includes(needle))
+  //   );
+  // }
 }

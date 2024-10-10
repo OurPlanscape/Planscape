@@ -78,4 +78,7 @@
     width: 100%;
     background-color: $color-light-gray;
   }
+  ::ng-deep .search-bar input {
+    width: 100%;
+  }
 }
