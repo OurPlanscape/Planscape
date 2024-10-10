@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
+import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 import { DebounceInputComponent } from '@styleguide';
 import { TreatmentPlan } from '@types';
 import { BehaviorSubject } from 'rxjs';
@@ -13,7 +13,7 @@ import { BehaviorSubject } from 'rxjs';
   imports: [
     AsyncPipe,
     TreatmentMapComponent,
-    TreatmentSummaryComponent,
+    TreatmentPlanTabsComponent,
     MapBaseLayerComponent,
     DebounceInputComponent,
     NgIf,

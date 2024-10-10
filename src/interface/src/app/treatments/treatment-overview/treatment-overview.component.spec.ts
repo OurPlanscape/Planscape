@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatmentOverviewComponent } from './treatment-overview.component';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -13,7 +13,11 @@ describe('TreatmentOverviewComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentOverviewComponent, RouterTestingModule],
+      imports: [
+        TreatmentOverviewComponent,
+        RouterTestingModule,
+        BrowserAnimationsModule,
+      ],
       declarations: [
         MockDeclarations(TreatmentSummaryComponent, MapBaseLayerComponent),
       ],

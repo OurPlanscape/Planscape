@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -44,6 +44,7 @@ export class ProjectAreaExpanderComponent {
    * A TreatmentProjectArea record, with an array of prescriptions
    */
   @Input() projectArea!: TreatmentProjectArea;
+  @Output() hoverEvent = new EventEmitter<boolean>();
 
   toggleState() {
     this.openState = !this.openState;
@@ -62,6 +63,10 @@ export class ProjectAreaExpanderComponent {
       }
     }
     return '';
+  }
+
+  handleHover($event: Event) {
+    this.hoverEvent.emit(true);
   }
 
   treatedStandCount(): number {
