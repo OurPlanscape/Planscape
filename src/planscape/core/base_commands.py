@@ -15,6 +15,19 @@ class PlanscapeCommand(BaseCommand):
     entity = "DataLayers"
 
     def add_subcommands(self, parser: CommandParser) -> None:
+        """You can add subcommands here. You should use subparsers for this, like so:
+        >>> subparsers = parser.add_subparsers()
+        >>> subcommand = subparsers.add_parser("my_subcommand")
+        >>> subcommand.add_argument("foo", type=str)
+        >>> subcommand.set_defaults(func=self.foo)
+
+        The code above demonstrates how to hook a function defined
+        in this class to the subcommand, using the `set_defaults`
+        method.
+
+        This WILL NOT work without this. The `handle` django method
+        will levarage this ArgParse machinery and without it, it will fail.
+        """
         pass
 
     def add_arguments(self, parser: CommandParser) -> None:
@@ -99,5 +112,10 @@ class PlanscapeCommand(BaseCommand):
 
         options = {**cli_options, "token": token}
 
-        subcommand = getattr(self, cli_options.get("subcommand", "list") or "list")
+        subcommand = options.get("func")
+        if not subcommand:
+            self.stderr.write(
+                "CLI incorrectly configured. Check your parsers and subparsers!"
+            )
+            return
         subcommand(**options)
