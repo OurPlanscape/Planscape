@@ -96,12 +96,12 @@ export class TreatmentsState {
   }
 
   loadSummary() {
-    const summary = this._summary$.value;
+    const previousSummary = this._summary$.value;
     // remove active project area
     this._activeProjectArea$.next(null);
     // if I already have summary center the map before fetching
-    if (summary) {
-      this.mapConfigState.updateMapCenter(summary.extent);
+    if (previousSummary) {
+      this.mapConfigState.updateMapCenter(previousSummary.extent);
     }
     //fetch summary
     return this.treatmentsService
@@ -110,7 +110,10 @@ export class TreatmentsState {
         map((summary) => {
           this._summary$.next(summary);
           this.setTreatedStandsFromSummary(summary.project_areas);
-          this.mapConfigState.updateMapCenter(summary.extent);
+          // center if we didn't have a previous summary
+          if (!previousSummary) {
+            this.mapConfigState.updateMapCenter(summary.extent);
+          }
           return true;
         })
       );

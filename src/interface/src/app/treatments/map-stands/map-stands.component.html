@@ -3,36 +3,37 @@
   [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
 <mgl-layer
-  [id]="layers.outline.name"
-  type="line"
-  source="stands"
-  [paint]="{
-    'line-color': 'black',
-    'line-width': 3
-  }"
-  [sourceLayer]="layers.outline.sourceLayer"></mgl-layer>
-
-<mgl-layer
   [id]="layers.stands.name"
   type="fill"
   source="stands"
-  [paint]="paint"
+  [paint]="layers.stands.paint"
   (layerMouseDown)="clickOnStand($event)"
   (layerMouseEnter)="setCursor()"
   (layerMouseLeave)="resetCursor()"
   [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
 
 <mgl-layer
+  [id]="layers.standsOutline.name"
+  type="line"
+  source="stands"
+  [paint]="layers.standsOutline.paint$ | async"
+  [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
+
+<mgl-layer
   [id]="layers.selectedStands.name"
   type="fill"
   source="stands"
-  [paint]="{
-    'fill-color': '#007dff',
-    'fill-opacity': 0.2
-  }"
+  [paint]="layers.selectedStands.paint"
   [sourceLayer]="layers.selectedStands.sourceLayer"
   [filter]="[
     'in',
     ['get', 'id'],
     ['literal', selectedStands$ | async]
   ]"></mgl-layer>
+
+<mgl-layer
+  [id]="layers.projectAreaOutline.name"
+  type="line"
+  source="stands"
+  [paint]="layers.projectAreaOutline.paint$ | async"
+  [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>
