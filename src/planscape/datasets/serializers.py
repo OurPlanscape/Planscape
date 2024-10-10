@@ -84,6 +84,21 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         )
 
 
+class CreateDatasetSerializer(serializers.ModelSerializer[DataLayer]):
+    created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "created_by",
+            "organization",
+            "name",
+            "visibility",
+            "version",
+        )
+
+
 class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
 

@@ -34,7 +34,7 @@ class PlanscapeCommand(BaseCommand):
         self.add_subcommands(parser)
         parser.add_argument("--email", type=str)
         parser.add_argument("--password", type=str)
-        parser.add_argument("--org", type=str)
+        parser.add_argument("--org", type=int)
         parser.add_argument(
             "--env",
             type=str,

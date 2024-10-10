@@ -5,13 +5,33 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework import status
 from core.serializers import MultiSerializerMixin
-from datasets.models import DataLayer
+from datasets.models import DataLayer, Dataset
 from datasets.serializers import (
     CreateDataLayerSerializer,
+    CreateDatasetSerializer,
     DataLayerCreatedSerializer,
     DataLayerSerializer,
+    DatasetSerializer,
 )
 from datasets.services import create_datalayer
+
+
+class AdminDatasetViewSet(
+    ListModelMixin,
+    RetrieveModelMixin,
+    MultiSerializerMixin,
+    CreateModelMixin,
+    GenericViewSet,
+):
+    queryset = Dataset.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = DatasetSerializer
+    serializer_classes = {
+        "list": DatasetSerializer,
+        "create": CreateDatasetSerializer,
+        "retrieve": DatasetSerializer,
+    }
+    pagination_class = LimitOffsetPagination
 
 
 class AdminDataLayerViewSet(
