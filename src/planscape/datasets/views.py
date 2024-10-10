@@ -1,7 +1,7 @@
 from rest_framework.viewsets import GenericViewSet
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import IsAdminUser
-
+from rest_framework.pagination import LimitOffsetPagination
 from core.serializers import MultiSerializerMixin
 from datasets.models import DataLayer
 from datasets.serializers import CreateDataLayerSerializer, DataLayerSerializer
@@ -21,3 +21,4 @@ class AdminDataLayerViewSet(
         "create": CreateDataLayerSerializer,
         "retrieve": DataLayerSerializer,
     }
+    pagination_class = LimitOffsetPagination
