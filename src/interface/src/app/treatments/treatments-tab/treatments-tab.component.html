@@ -26,7 +26,6 @@
         [sliderValue]="(opacity | async) || 0"
         (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
     </div>
-    <div>rxcount? {{ (prescriptions$ | async)?.length }}</div>
     <div class="expanders-container">
       <sg-treatment-expander
         *ngFor="let tx of prescriptions"
