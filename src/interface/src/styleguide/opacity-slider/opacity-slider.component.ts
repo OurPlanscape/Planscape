@@ -25,7 +25,7 @@ export class OpacitySliderComponent {
   /**
    * Title
    */
-  @Input() title = 'Layer opacity';
+  @Input() title = 'Treatment opacity';
 
   /**
    * Lowest value setting of slider
