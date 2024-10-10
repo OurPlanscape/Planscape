@@ -2,6 +2,7 @@
   [ngClass]="{ selected: isSelected }"
   (opened)="toggleState()"
   (closed)="toggleState()"
+  (mouseover)="handleHover($event)"
   class="project-area-expander-panel">
   <mat-expansion-panel-header class="header-content">
     <div class="left-content">
@@ -17,7 +18,11 @@
       >
     </div>
   </mat-expansion-panel-header>
-  <div class="rx-section">
+  <div class="empty-treatments" *ngIf="projectArea.prescriptions.length === 0">
+    No treatments
+  </div>
+
+  <div class="rx-section" *ngIf="projectArea.prescriptions.length > 0">
     <mat-expansion-panel
       class="rx-submenu"
       *ngFor="let rx of projectArea.prescriptions">

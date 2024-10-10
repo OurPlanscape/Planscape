@@ -81,6 +81,14 @@ const sampleProjectAreaResult = {
   extent: sampleExtent,
   centroid: samplePoint,
 };
+const areaWithNoTreatments = {
+  project_area_id: 1,
+  project_area_name: 'Project Area 2',
+  total_stand_count: 20,
+  prescriptions: [],
+  extent: sampleExtent,
+  centroid: samplePoint,
+};
 
 const meta: Meta<ProjectAreaExpanderComponent> = {
   title: 'Components/Project Area Expander',
@@ -103,5 +111,11 @@ type Story = StoryObj<ProjectAreaExpanderComponent>;
 export const Default: Story = {
   args: {
     projectArea: sampleProjectAreaResult,
+  },
+};
+
+export const EmptyTreatments: Story = {
+  args: {
+    projectArea: areaWithNoTreatments,
   },
 };

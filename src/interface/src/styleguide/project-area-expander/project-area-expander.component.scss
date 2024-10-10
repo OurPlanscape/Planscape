@@ -91,6 +91,11 @@
   color: $color-dark-gray;
 }
 
+.empty-treatments {
+  @include italic-sm();
+  height: 36px;
+}
+
 .rx-details {
   @include xs-label();
   height: 24px;
