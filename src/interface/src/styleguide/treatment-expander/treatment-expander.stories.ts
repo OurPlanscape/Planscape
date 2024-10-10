@@ -32,60 +32,55 @@ type Story = StoryObj<TreatmentExpanderComponent>;
 
 export const Default: Story = {
   args: {
-    treatmentType: 'MODERATE_THINNING_BURN',
+    action: 'MODERATE_THINNING_BURN',
+    treatmentType: 'SINGLE',
     standCount: '11',
   },
 };
 
 export const Sequence1: Story = {
   args: {
-    sequenceNumber: 1,
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
+    treatmentType: 'SEQUENCE',
+    action: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
     standCount: '1/11',
   },
 };
 export const Sequence5: Story = {
   args: {
-    sequenceNumber: 5,
-    rxDetails: [
-      { name: 'Moderate mastication & Pile burn', year: 0 },
-      { name: 'Prescribed fire', year: 0 },
-    ],
+    treatmentType: 'SEQUENCE',
+    action: 'RX_FIRE_PLUS_RX_FIRE',
     standCount: '5/11',
   },
 };
 
 export const TreatmentModerateMastication: Story = {
   args: {
-    treatmentType: 'MODERATE_MASTICATION',
-    rxDetails: [],
+    action: 'MODERATE_MASTICATION',
+    treatmentType: 'SINGLE',
     standCount: '8',
   },
 };
 
 export const TreatmentHeavyMastication: Story = {
   args: {
-    treatmentType: 'HEAVY_MASTICATION',
-    rxDetails: [],
+    action: 'HEAVY_MASTICATION',
+    treatmentType: 'SINGLE',
     standCount: '600',
   },
 };
 
 export const TreatmentHeavyThinning: Story = {
   args: {
-    treatmentType: 'HEAVY_THINNING_BURN',
-    rxDetails: [],
+    action: 'HEAVY_THINNING_BURN',
+    treatmentType: 'SINGLE',
     standCount: '5',
   },
 };
 
 export const TreatmentMasticationAndFireSelected: Story = {
   args: {
-    treatmentType: 'MASTICATION_RX_FIRE',
-    rxDetails: [],
+    action: 'MASTICATION_RX_FIRE',
+    treatmentType: 'SINGLE',
     standCount: '5',
     selected: true,
   },
@@ -94,7 +89,8 @@ export const TreatmentMasticationAndFireSelected: Story = {
 export const OverriddenTitle: Story = {
   args: {
     title: 'Special Title',
-    treatmentType: 'MODERATE_THINNING_BURN',
+    action: 'MODERATE_THINNING_BURN',
+    treatmentType: 'SINGLE',
     standCount: '11',
   },
 };

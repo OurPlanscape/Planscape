@@ -153,6 +153,15 @@
         "storybook": {
           "builder": "@storybook/angular:start-storybook",
           "options": {
+            "assets": [
+              "src/favicon.ico",
+              "src/assets",
+              {
+                "glob": "**/*",
+                "input": "node_modules/leaflet/dist/images/",
+                "output": "./assets"
+              }
+            ],
             "configDir": ".storybook",
             "compodoc": true,
             "compodocArgs": [
