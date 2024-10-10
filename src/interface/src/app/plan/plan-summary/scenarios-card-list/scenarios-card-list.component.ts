@@ -29,6 +29,10 @@ export class ScenariosCardListComponent {
     );
   }
 
+  getAreas(scenario: Scenario) {
+    return scenario.scenario_result?.result?.features?.length;
+  }
+
   handleClickedScenario(row: ScenarioRow): void {
     if (
       row.scenario_result &&

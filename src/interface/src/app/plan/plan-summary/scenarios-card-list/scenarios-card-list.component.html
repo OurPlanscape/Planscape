@@ -2,7 +2,7 @@
   *ngFor="let s of scenarios"
   [name]="s.name"
   [creator]="s.creator"
-  [areas]="s.scenario_result?.result?.features?.length"
+  [areas]="getAreas(s)"
   [created_at]="s.created_at"
   [budget]="
     hasResults(s) ? calculateTotals(s.scenario_result!).estimatedCost : null
