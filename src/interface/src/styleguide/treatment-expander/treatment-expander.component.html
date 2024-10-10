@@ -6,11 +6,11 @@
   <mat-expansion-panel-header class="header-content">
     <div class="left-content">
       <sg-treatment-type-icon
-        *ngIf="treatmentType"
+        *ngIf="treatmentType === 'SINGLE'"
         [treatment]="treatmentIconType()"></sg-treatment-type-icon>
       <sg-sequence-icon
-        *ngIf="sequenceNumber"
-        [sequenceNum]="sequenceNumber"></sg-sequence-icon>
+        *ngIf="treatmentType === 'SEQUENCE'"
+        [action]="action"></sg-sequence-icon>
       <div>{{ titleText() }}</div>
     </div>
     <div class="right-content">
@@ -21,10 +21,9 @@
     </div>
   </mat-expansion-panel-header>
 
-  <div class="rx-detail" *ngFor="let rx of rxDetails">
+  <div class="rx-detail" *ngFor="let seqDetail of sequenceDetails()">
     <mat-icon class="material-symbols-outlined">medication_outline</mat-icon>
-    <span class="rx-detail-name">{{ rx.name }}</span
-    ><span class="rx-detail-value">{{ '(Year ' + rx.year + ')' }}</span>
+    <span class="rx-detail-name">{{ seqDetail }}</span>
   </div>
 
   <div class="treatment-detail">

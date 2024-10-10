@@ -6,13 +6,9 @@ import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-typ
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
 import {
   PRESCRIPTIONS,
+  PrescriptionSequenceAction,
   PrescriptionSingleAction,
 } from '../../app/treatments/prescriptions';
-
-export interface rxType {
-  name: string;
-  year: number;
-}
 
 /**
  * Expander component
@@ -40,9 +36,13 @@ export class TreatmentExpanderComponent {
    */
   @Input() title: string | null = null;
   /**
-   * A treatment type (Optional)
+   * A treatment type
    */
-  @Input() treatmentType: PrescriptionSingleAction | null = null;
+  @Input() treatmentType: 'SINGLE' | 'SEQUENCE' | null = null;
+  /**
+   * A treatment action
+   */
+  @Input() action!: string;
   /**
    * A treatment sequence number  (Optional)
    */
@@ -59,10 +59,7 @@ export class TreatmentExpanderComponent {
    * Total number of acres
    */
   @Input() totalAcres = 100;
-  /**
-   * A list of prescriptions {name: string, year: number}
-   */
-  @Input() rxDetails: rxType[] = [];
+
   openState = false;
 
   toggleState() {
@@ -74,17 +71,26 @@ export class TreatmentExpanderComponent {
   titleText(): string {
     if (this.title !== null) {
       return this.title;
-    } else if (this.treatmentType !== null) {
-      return PRESCRIPTIONS.SINGLE[this.treatmentType];
-    } else if (this.sequenceNumber !== null) {
-      return `Sequence ${this.sequenceNumber}`;
+    } else if (this.treatmentType === 'SINGLE') {
+      return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
+    } else if (this.treatmentType === 'SEQUENCE') {
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+        .name;
     }
     return 'No Treatment';
   }
 
+  sequenceDetails(): string[] {
+    if (this.treatmentType === 'SEQUENCE') {
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+        .details;
+    }
+    return [];
+  }
+
   treatmentIconType(): PrescriptionSingleAction | null {
-    if (this.treatmentType !== null) {
-      return this.treatmentType;
+    if (this.action !== null) {
+      return this.action as PrescriptionSingleAction;
     }
     return null;
   }

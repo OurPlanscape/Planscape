@@ -17,13 +17,13 @@ type Story = StoryObj<TreatmentTypeIconComponent>;
 
 export const Default: Story = {
   args: {
-    treatment: null,
+    treatment: 'HEAVY_THINNING_BIOMASS',
   },
 };
 
 export const TreatmentNone: Story = {
   args: {
-    treatment: null,
+    treatment: 'HEAVY_THINNING_BIOMASS',
   },
 };
 export const TreatmentBlue: Story = {
