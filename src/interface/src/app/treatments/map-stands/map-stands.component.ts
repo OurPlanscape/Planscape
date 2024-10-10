@@ -21,13 +21,25 @@ import { AsyncPipe } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
-import { PrescriptionSingleAction, SEQUENCE_COLORS } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { TreatedStand } from '@types';
-import { distinctUntilChanged } from 'rxjs';
+import { combineLatest, distinctUntilChanged, map, Observable } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import {
+  BASE_STANDS_PAINT,
+  generatePaintForTreatedStands,
+  PROJECT_AREA_OUTLINE_PAINT,
+  SELECTED_STANDS_PAINT,
+  STANDS_CELL_PAINT,
+} from '../map.styles';
+
+type MapLayerData = {
+  readonly name: string;
+  readonly sourceLayer: string;
+  paint?: LayerSpecification['paint'];
+  paint$?: Observable<any>;
+};
 
 @UntilDestroy()
 @Component({
@@ -64,31 +76,54 @@ export class MapStandsComponent implements OnChanges, OnInit {
    * Reference to the selected stands before the user starts dragging for stand selection
    */
   private initialSelectedStands: number[] = [];
+  opacity$ = this.treatedStandsState.opacity$.pipe(distinctUntilChanged());
+
+  outlineOpacity$ = this.opacity$.pipe(
+    map((value) => {
+      const minOutput = 0.3;
+      const clampedValue = Math.max(0, Math.min(value, 1));
+      // Perform linear interpolation
+      return minOutput + clampedValue * (1 - minOutput);
+    })
+  );
 
   // TODO project_area_aggregate only applies when looking at a specific project area
   readonly tilesUrl =
     environment.martin_server +
     'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
 
-  readonly layers = {
-    outline: {
+  readonly layers: Record<
+    'projectAreaOutline' | 'standsOutline' | 'stands' | 'selectedStands',
+    MapLayerData
+  > = {
+    projectAreaOutline: {
       name: 'outline-layer',
       sourceLayer: 'project_area_aggregate',
+      paint$: this.outlineOpacity$.pipe(
+        map((opacity) => {
+          return { ...PROJECT_AREA_OUTLINE_PAINT, 'line-opacity': opacity };
+        })
+      ),
+    },
+    standsOutline: {
+      name: 'stands-outline-layer',
+      sourceLayer: 'stands_by_tx_plan',
+      paint$: this.outlineOpacity$.pipe(
+        map((opacity) => {
+          return { ...STANDS_CELL_PAINT, 'line-opacity': opacity };
+        })
+      ),
     },
     stands: {
       name: 'stands-layer',
       sourceLayer: 'stands_by_tx_plan',
+      paint: BASE_STANDS_PAINT,
     },
     selectedStands: {
       name: 'stands-layer-selected',
       sourceLayer: 'stands_by_tx_plan',
+      paint: SELECTED_STANDS_PAINT,
     },
-  };
-
-  paint: LayerSpecification['paint'] = {
-    'fill-outline-color': '#000',
-    'fill-color': '#00000050',
-    'fill-opacity': 0.5,
   };
 
   constructor(
@@ -97,14 +132,16 @@ export class MapStandsComponent implements OnChanges, OnInit {
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState
   ) {
-    this.treatedStands$
-      .pipe(distinctUntilChanged(), untilDestroyed(this))
-      .subscribe((treatedStands) => {
-        this.paint = {
-          'fill-outline-color': '#000',
-          'fill-color': this.generateFillColors(treatedStands) as any,
-          'fill-opacity': 0.5,
-        };
+    combineLatest([
+      this.treatedStands$.pipe(distinctUntilChanged()),
+      this.opacity$,
+    ])
+      .pipe(untilDestroyed(this))
+      .subscribe(([treatedStands, opacity]) => {
+        this.layers.stands.paint = generatePaintForTreatedStands(
+          treatedStands,
+          opacity
+        );
       });
   }
 
@@ -171,27 +208,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   private isMouseEndEvent(change: SimpleChange) {
     return change?.previousValue && !change?.currentValue;
-  }
-
-  private generateFillColors(stands: TreatedStand[]) {
-    const defaultColor = '#00000050';
-    if (stands.length === 0) {
-      return defaultColor;
-    }
-    const matchExpression: (number | string | string[])[] = [
-      'match',
-      ['get', 'id'],
-    ];
-
-    stands.forEach((stand) => {
-      matchExpression.push(
-        stand.id,
-        SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
-      );
-    });
-    matchExpression.push(defaultColor);
-
-    return matchExpression;
   }
 
   private getStandIdFromStandsLayer(

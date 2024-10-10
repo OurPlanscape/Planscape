@@ -27,6 +27,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
 import { AuthService } from '@services';
+import { TreatmentsState } from '../treatments.state';
 
 @UntilDestroy()
 @Component({
@@ -126,7 +127,8 @@ export class TreatmentMapComponent {
 
   constructor(
     private mapConfigState: MapConfigState,
-    private authService: AuthService
+    private authService: AuthService,
+    private treatmentsState: TreatmentsState
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -158,6 +160,8 @@ export class TreatmentMapComponent {
     }
 
     if (!this.dragStandsSelection) return;
+    // hide the treatment dialog while dragging
+    this.treatmentsState.setShowApplyTreatmentsDialog(false);
     this.mouseEnd = event;
   }
 
