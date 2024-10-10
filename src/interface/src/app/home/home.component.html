@@ -3,5 +3,7 @@
 <ng-container *ngIf="loggedIn$ | async">
   <app-legacy-planning-areas
     *appFeatureFlag="'new_home'; hide: true"></app-legacy-planning-areas>
-  <app-planning-areas *appFeatureFlag="'new_home'"></app-planning-areas>
+  <ng-container *appFeatureFlag="'new_home'">
+    <app-planning-areas *ngIf="showPlanningAreas"></app-planning-areas>
+  </ng-container>
 </ng-container>

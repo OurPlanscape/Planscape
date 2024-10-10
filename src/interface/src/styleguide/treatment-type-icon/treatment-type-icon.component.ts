@@ -24,8 +24,9 @@ export class TreatmentTypeIconComponent {
   };
 
   iconName() {
+    const treatmentType = this.treatment as PrescriptionSingleAction;
     if (this.treatment !== null) {
-      return this.treatmentIcons[this.treatment as PrescriptionSingleAction];
+      return this.treatmentIcons[treatmentType];
     }
     return 'treatment_none.svg';
   }
