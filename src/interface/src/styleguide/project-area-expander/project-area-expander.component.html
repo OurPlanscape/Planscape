@@ -6,7 +6,7 @@
   <mat-expansion-panel-header class="header-content">
     <div class="left-content">
       <img src="svg/icons/project-area-icon.svg" />
-      <div>{{ projectArea.project_area_name }}</div>
+      <div>{{ title ? title : projectArea.project_area_name }}</div>
     </div>
     <div class="right-content">
       <div class="stand-count">
@@ -28,25 +28,29 @@
           <sg-treatment-type-icon
             class="rx-icon"
             [treatment]="rx.action"></sg-treatment-type-icon>
-          <div class="rx-detail-name">{{ titleText(rx.action) }}</div>
+          <div class="rx-detail-name">
+            {{ headingTitleText(rx.action, rx.type) }}
+          </div>
         </div>
 
         <div class="rx-submenu-header sequence" *ngIf="rx.type === 'SEQUENCE'">
           <sg-sequence-icon
-            [sequenceNum]="1"
+            [action]="rx.action"
             class="rx-icon"></sg-sequence-icon>
           <div class="rx-detail-name">
-            {{ 'Sequence ' }}
+            {{ headingTitleText(rx.action, rx.type) }}
           </div>
         </div>
       </mat-expansion-panel-header>
-      <div
-        *ngFor="let seqDetail of sequenceActions(rx.action)"
-        class="sequence-treatment-line">
-        <mat-icon class="material-symbols-outlined sequence-icon"
-          >medication</mat-icon
-        >
-        <span class="sequence-treatment-name">{{ seqDetail }}</span>
+      <div *ngIf="rx.type === 'SEQUENCE'">
+        <div
+          *ngFor="let seqDetail of sequenceActions(rx.action)"
+          class="sequence-treatment-line">
+          <mat-icon class="material-symbols-outlined sequence-icon"
+            >medication</mat-icon
+          >
+          <span class="sequence-treatment-name">{{ seqDetail }}</span>
+        </div>
       </div>
       <div class="rx-details">
         <span class="rx-detail-name">Stands: </span

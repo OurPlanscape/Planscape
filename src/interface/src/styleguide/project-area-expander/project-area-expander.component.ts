@@ -49,18 +49,20 @@ export class ProjectAreaExpanderComponent {
     this.openState = !this.openState;
   }
 
-  // If a title is explicity set, use that.
-  // Otherwise, determine title from either treatment type or sequence num
-  titleText(action: string): string | null {
-    //
-    let title = action as PrescriptionSingleAction;
-    if (title !== null) {
-      return PRESCRIPTIONS.SINGLE[title];
+  headingTitleText(action: string, type: string): string | null {
+    if (type === 'SINGLE') {
+      let title = action as PrescriptionSingleAction;
+      if (title !== null) {
+        return PRESCRIPTIONS.SINGLE[title];
+      }
+    } else if (type === 'SEQUENCE') {
+      let title = action as PrescriptionSequenceAction;
+      if (title !== null) {
+        return PRESCRIPTIONS.SEQUENCE[title].name;
+      }
     }
     return '';
   }
-
-  //TODO: sequence number
 
   treatedStandCount(): number {
     return this.projectArea.prescriptions
@@ -71,7 +73,7 @@ export class ProjectAreaExpanderComponent {
   sequenceActions(action: string): string[] {
     let title = action as PrescriptionSequenceAction;
     if (title !== null) {
-      return PRESCRIPTIONS.SEQUENCE[title];
+      return PRESCRIPTIONS.SEQUENCE[title].details;
     }
     return [];
   }
