@@ -59,7 +59,7 @@ export class TreatmentExpanderComponent {
    */
   @Input() totalAcres = 100;
   /***
-   * Area Acres
+   * Whether this component is selected, for styling
    */
   @Input() selected = false;
   openState = false;

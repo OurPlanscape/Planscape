@@ -1,5 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { PrescriptionSequenceAction } from '../../app/treatments/prescriptions';
+
 @Component({
   selector: 'sg-sequence-icon',
   standalone: true,
