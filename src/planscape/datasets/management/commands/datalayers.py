@@ -20,7 +20,7 @@ class Command(PlanscapeCommand):
 
     def list(self, token, **kwargs):
         base_url = self.get_base_url(**kwargs)
-        list_url = base_url + "/v2/planningareas"
+        list_url = base_url + "/v2/datalayers"
         headers = self.get_headers(token, **kwargs)
         response = requests.get(
             list_url,

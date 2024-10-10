@@ -1,5 +1,5 @@
 from pprint import pprint
-from typing import Any, Dict, Tuple
+from typing import Any, Dict, Optional, Tuple
 from django.core.management.base import BaseCommand, CommandParser
 import requests
 from utils.cli_utils import options_from_file
@@ -36,7 +36,7 @@ class PlanscapeCommand(BaseCommand):
         env = kwargs.get("env", "dev") or "dev"
         return f"https://{env}.planscape.org/planscape-backend/"
 
-    def get_token(self, email, password, options) -> str:
+    def get_token(self, email, password, options) -> Optional[str]:
         base_url = self.get_base_url(**options)
         login_url = base_url + "dj-rest-auth/login/"
         data = {"email": email, "password": password}
@@ -88,10 +88,13 @@ class PlanscapeCommand(BaseCommand):
         password = cli_options.get("password")
         if not is_valid:
             self.stderr.write("Invalid options.")
+        try:
+            token = self.get_token(email, password, options)
+        except Exception:
+            token = None
 
-        token = self.get_token(email, password, options)
         if not token:
-            self.stderr.write("Could not fetch token.")
+            self.stderr.write("Could not fetch token. Double check your credentials.")
             return
 
         options = {**cli_options, "token": token}
