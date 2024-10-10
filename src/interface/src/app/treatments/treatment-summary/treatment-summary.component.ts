@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
+import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
 
 /**
  * placeholder component to display project areas.
@@ -10,7 +11,14 @@ import { TreatmentsState } from '../treatments.state';
 @Component({
   selector: 'app-treatment-summary',
   standalone: true,
-  imports: [JsonPipe, NgForOf, NgIf, RouterLink, AsyncPipe],
+  imports: [
+    JsonPipe,
+    NgForOf,
+    NgIf,
+    RouterLink,
+    AsyncPipe,
+    ProjectAreaExpanderComponent,
+  ],
   templateUrl: './treatment-summary.component.html',
   styleUrl: './treatment-summary.component.scss',
 })
