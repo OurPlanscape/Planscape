@@ -2,12 +2,12 @@
 @import 'colors';
 
 :host {
-  height: 100%;
   display: flex;
-  flex-wrap: wrap;
   flex-direction: column;
-  justify-content: space-between;
+  justify-content: start;
   gap: 20px;
+  padding-top: 20px;
+  padding-bottom: 200px;
   overflow-x: hidden;
-  overflow-y: scroll; 
+  overflow-y: scroll;
 }

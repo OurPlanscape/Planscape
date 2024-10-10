@@ -5,6 +5,8 @@
 
 .saved-scenarios-wrapper {
   position: relative;
+  height: 100%;
+  overflow-y: hidden;
 }
 
 .scenario-list-controls {
