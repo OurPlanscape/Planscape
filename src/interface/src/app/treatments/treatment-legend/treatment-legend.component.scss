@@ -1,7 +1,121 @@
-:host {
+@import 'mixins';
+@import 'colors';
+
+.treatment-legend {
   position: absolute;
   background: white;
   top: 10px;
   right: 10px;
-  padding: 20px;
+  box-shadow:
+    0px 4px 4px 0px rgba(0, 0, 0, 0.1),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.1);
+
+    max-height: calc(100% - 100px);
+    z-index: 1000;
+
+
+  ::ng-deep .header-title {
+    @include xs-label();
+  }
+
+  ::ng-deep .modal-body {
+    padding-top: 4px;
+    padding-bottom: 2px;
+    overflow-y: scroll;
+  }
+
+  ::ng-deep .mat-expansion-panel {
+    box-shadow: none;
+  }
+
+  ::ng-deep .mat-expansion-panel-body {
+    padding: 0 24px 8px;
+  }
+}
+
+.legend-body {
+  width: 100%;
+  background-color: $color-white;
+  display: flex;
+  flex-direction: column;
+  
+  padding-top: 4px;}
+
+.legend-section {
+  background-color: $color-white;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.legend-expander-panel {
+  --mat-expansion-header-indicator-color: $color-black;
+  --mat-expansion-header-expanded-state-height: 40px;
+  --mat-expansion-header-collapsed-state-height: 40px;
+  --mat-expansion-header-hover-state-layer-color: $color-white;
+  border-radius: 0px;
+}
+
+.treatment-legend .mat-expansion-panel.expanded:first-of-type,
+.treatment-legend .mat-expansion-panel.expanded:last-of-type {
+  bottom: 200px;
+}
+
+.legend-expander-heading {
+  @include xs-label();
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  gap: 6px;
+  align-items: center;
+}
+
+.expander-heading-content {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+}
+
+.legend-no-expander {
+  height: 30px;
+  flex-direction: row;
+  align-items: center;
+  display: flex;
+}
+
+.no-treatment-row {
+  height: 40px;
+  padding-left: 24px;
+  align-items: center;
+}
+
+.expander-heading-icon {
+  color: $color-md-gray;
+  background-repeat: no-repeat;
+  display: inline-block;
+  fill: currentColor;
+  height: 22px;
+  width: 22px;
+  overflow: hidden;
+  font-size: 22px;
+}
+
+.legend-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  height: 22px;
+  gap: 6px;
+  width: 100%;
+}
+
+.legend-text {
+  @include standard-input-label();
+  color: $color-dark-gray;
+  font-family: Public Sans;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 24px;
+  text-align: left;
 }

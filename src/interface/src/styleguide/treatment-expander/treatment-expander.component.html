@@ -27,9 +27,9 @@
     </div>
   </mat-expansion-panel-header>
 
-  <div class="rx-detail" *ngFor="let rx of sequenceDetails()">
+  <div class="rx-detail" *ngFor="let seqDetail of sequenceDetails()">
     <mat-icon class="material-symbols-outlined">medication_outline</mat-icon>
-    <span class="rx-detail-name">{{ rx }}</span>
+    <span class="rx-detail-name">{{ seqDetail }}</span>
   </div>
 
   <div class="treatment-detail">

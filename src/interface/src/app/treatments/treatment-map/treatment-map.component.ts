@@ -15,6 +15,7 @@ import {
   Map as MapLibreMap,
   MapMouseEvent,
   MapSourceDataEvent,
+  RequestTransformFunction,
 } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
@@ -25,6 +26,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
+import { AuthService } from '@services';
+import { TreatmentsState } from '../treatments.state';
 
 @UntilDestroy()
 @Component({
@@ -122,7 +125,11 @@ export class TreatmentMapComponent {
    */
   standsSourceLayerId = 'stands';
 
-  constructor(private mapConfigState: MapConfigState) {
+  constructor(
+    private mapConfigState: MapConfigState,
+    private authService: AuthService,
+    private treatmentsState: TreatmentsState
+  ) {
     // update cursor on map
     this.mapConfigState.cursor$
       .pipe(untilDestroyed(this))
@@ -153,6 +160,8 @@ export class TreatmentMapComponent {
     }
 
     if (!this.dragStandsSelection) return;
+    // hide the treatment dialog while dragging
+    this.treatmentsState.setShowApplyTreatmentsDialog(false);
     this.mouseEnd = event;
   }
 
@@ -172,4 +181,17 @@ export class TreatmentMapComponent {
       this.standsLoaded$.next(true);
     }
   }
+
+  transformRequest: RequestTransformFunction = (url, resourceType) => {
+    // add auth cookie to our tiles requests
+    if (resourceType === 'Tile' && url.includes('planscape.org')) {
+      return {
+        url: url, // Keep the URL unchanged
+        headers: {
+          Authorization: 'Bearer ' + this.authService.getAuthCookie(),
+        },
+      };
+    }
+    return { url }; // Return unchanged if not applying headers
+  };
 }

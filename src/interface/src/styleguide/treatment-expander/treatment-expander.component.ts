@@ -5,15 +5,10 @@ import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
 import {
-  PrescriptionSingleAction,
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
+  PrescriptionSingleAction,
 } from '../../app/treatments/prescriptions';
-
-export interface rxType {
-  name: string;
-  year: number;
-}
 
 /**
  * Expander component
@@ -49,11 +44,11 @@ export class TreatmentExpanderComponent {
   /**
    * A treatment type
    */
-  @Input() treatmentType!: string;
+  @Input() treatmentType: 'SINGLE' | 'SEQUENCE' | null = null;
   /**
    * A treatment action
    */
-  @Input() action?: string;
+  @Input() action!: string;
   /**
    * A number or ratio indicating stand count
    */
@@ -70,12 +65,8 @@ export class TreatmentExpanderComponent {
    * Total number of acres
    */
   @Input() totalAcres = 100;
-  /**
-   * A list of prescriptions {name: string, year: number}
-   */
-  @Input() rxDetails?: rxType[] = [];
-  /**
-   * Whether or not this is the selected expander
+  /***
+   * Area Acres
    */
   @Input() selected = false;
   openState = false;
@@ -84,34 +75,29 @@ export class TreatmentExpanderComponent {
     this.openState = !this.openState;
   }
 
-  sequenceDetails(): string[] {
-    if (this.treatmentType === 'SEQUENCE') {
-      const attributes =
-        PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
-      return attributes.details;
-    } else return [];
-  }
-
   // If a title is explicity set, use that.
   // Otherwise, determine title from either treatment type or sequence num
   titleText(): string {
     if (this.title !== null) {
       return this.title;
     } else if (this.treatmentType === 'SINGLE') {
-      const action: PrescriptionSingleAction = this
-        .action as PrescriptionSingleAction;
-      return PRESCRIPTIONS.SINGLE[action];
+      return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
     } else if (this.treatmentType === 'SEQUENCE') {
-      const rxDetails =
-        PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
-      return rxDetails.name;
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+        .name;
     }
     return 'No Treatment';
   }
 
+  sequenceDetails(): string[] {
+    if (this.treatmentType === 'SEQUENCE') {
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+        .details;
+    }
+    return [];
+  }
+
   treatmentIconType(): PrescriptionSingleAction | null {
-    // we only call this for single treatments
-    // try to coerce the treatmentType into a PrescriptionSingleAction...
     if (this.action !== null) {
       return this.action as PrescriptionSingleAction;
     }

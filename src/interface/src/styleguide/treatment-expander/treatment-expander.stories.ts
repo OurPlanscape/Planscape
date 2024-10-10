@@ -30,14 +30,6 @@ const meta: Meta<TreatmentExpanderComponent> = {
 export default meta;
 type Story = StoryObj<TreatmentExpanderComponent>;
 
-// {
-//   action: 'MODERATE_THINNING_BIOMASS',
-//   area_acres: 100,
-//   treated_stand_count: 3,
-//   type: 'SINGLE',
-//   stand_ids: [1, 2, 3, 8, 10],
-// },
-
 export const Default: Story = {
   args: {
     action: 'MODERATE_THINNING_BURN',
