@@ -1,4 +1,8 @@
-.project-areas {
-    height: 100%;
-    overflow-y: scroll;
+:host {
+  height: 100%;
+  display: block;
+
+  .debug-link {
+    height: 20px;
+  }
 }
