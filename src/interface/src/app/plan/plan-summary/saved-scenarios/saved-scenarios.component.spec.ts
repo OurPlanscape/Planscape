@@ -119,7 +119,7 @@ describe('SavedScenariosComponent', () => {
     fixture.detectChanges();
     expect(fakeScenarioService.getScenariosForPlan).toHaveBeenCalledOnceWith(
       1,
-      'created_at'
+      '-created_at'
     );
     expect(component.activeScenarios.length).toEqual(1);
   });
