@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { TreatmentsService } from '@services/treatments.service';
+import { TreatmentsState } from '../treatments.state';
 
 describe('ProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -22,6 +23,7 @@ describe('ProjectAreaComponent', () => {
       providers: [
         MockProviders(TreatedStandsState),
         MockProviders(TreatmentsService),
+        MockProviders(TreatmentsState),
       ],
       declarations: [MockDeclarations(TreatmentMapComponent)],
     }).compileComponents();
