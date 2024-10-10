@@ -30,13 +30,6 @@ import {
   styleUrl: './treatment-expander.component.scss',
 })
 export class TreatmentExpanderComponent {
-  // we are actually given...
-  // action
-  // area_acres
-  // treated_stand_count
-  // stand_ids
-  // type
-
   /**
    * Optional title text -- explicitly overrides the derived title
    */
@@ -44,7 +37,7 @@ export class TreatmentExpanderComponent {
   /**
    * A treatment type
    */
-  @Input() treatmentType: 'SINGLE' | 'SEQUENCE' | null = null;
+  @Input() treatmentType: string | null = null;
   /**
    * A treatment action
    */

@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { NgIf, NgFor } from '@angular/common';
+import { CommonModule, NgIf, NgFor } from '@angular/common';
 //TODO: fix path?
 import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opacity-slider.component';
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
@@ -13,6 +13,7 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
 } from '../prescriptions';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 
 const exampleSummary = {
   project_area_id: 1,
@@ -84,6 +85,7 @@ const exampleSummary = {
   selector: 'app-project-area-tx-tab',
   standalone: true,
   imports: [
+    CommonModule,
     InputDirective,
     InputFieldComponent,
     MatIconModule,
@@ -97,6 +99,10 @@ const exampleSummary = {
   styleUrl: './treatments-tab.component.scss',
 })
 export class ProjectAreaTreatmentsTabComponent {
+  constructor(private treatedStandsState: TreatedStandsState) {}
+
+  opacity = this.treatedStandsState.opacity$;
+
   //TODO: either get this from template input or directly from state
   @Input() prescriptions?: Prescription[] = exampleSummary.prescriptions;
 
@@ -109,6 +115,7 @@ export class ProjectAreaTreatmentsTabComponent {
 
   handleOpacityChange(opacity: number) {
     this.layerOpacity = opacity;
+    this.treatedStandsState.setOpacity(opacity);
   }
 
   displayedTreatments(): Prescription[] {
