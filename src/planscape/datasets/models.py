@@ -121,6 +121,10 @@ class GeometryType(models.TextChoices):
 class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
+    uuid = models.UUIDField(
+        null=True,
+    )
+
     created_by_id: int
     created_by = models.ForeignKey(
         User,
