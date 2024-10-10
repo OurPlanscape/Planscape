@@ -37,7 +37,7 @@ export class SavedScenariosComponent implements OnInit {
   scenariosForUser: ScenarioRow[] = [];
   selectedTabIndex = 0;
   totalScenarios = 0;
-  sortSelection = 'created_at';
+  sortSelection = '-created_at';
 
   constructor(
     private route: ActivatedRoute,
