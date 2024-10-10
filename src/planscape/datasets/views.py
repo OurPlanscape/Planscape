@@ -7,7 +7,7 @@ from datasets.models import DataLayer
 from datasets.serializers import CreateDataLayerSerializer, DataLayerSerializer
 
 
-class CLIDataLayerViewSet(
+class AdminDataLayerViewSet(
     ListModelMixin,
     RetrieveModelMixin,
     MultiSerializerMixin,

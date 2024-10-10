@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatmentLayoutComponent } from './treatment-layout.component';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
@@ -15,7 +15,12 @@ describe('TreatmentLayoutComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentLayoutComponent, RouterTestingModule, SharedModule],
+      imports: [
+        BrowserAnimationsModule,
+        TreatmentLayoutComponent,
+        RouterTestingModule,
+        SharedModule,
+      ],
       providers: [MockProviders(TreatmentsState, TreatmentsService)],
       declarations: [
         MockDeclarations(

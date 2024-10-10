@@ -1,1 +1,52 @@
-<p>TODO: treatment legend.</p>
+<sg-modal
+  class="treatment-legend"
+  title="Treatment Legend"
+  [hasFooter]="false"
+  [shortHeader]="true"
+  [scrollableContent]="false"
+  width="xsmall"
+  (clickedClose)="handleClose()">
+  <div modalBodyContent class="legend-body">
+    <div class="legend-no-expander">
+      <div class="no-treatment-row legend-row">
+        <sg-treatment-type-icon [treatment]="null"></sg-treatment-type-icon>
+        <div class="legend-text">No Treatment</div>
+      </div>
+    </div>
+    <mat-expansion-panel class="legend-expander-panel">
+      <mat-expansion-panel-header class="legend-expander-heading">
+        <div class="expander-heading-content">
+          <mat-icon class="material-symbols-outlined expander-heading-icon"
+            >medication_outline</mat-icon
+          >
+          Single Treatment
+        </div>
+      </mat-expansion-panel-header>
+      <div class="legend-section">
+        <div
+          class="legend-row"
+          *ngFor="let tx of singlePrescriptions | keyvalue: originalOrder">
+          <sg-treatment-type-icon [treatment]="tx.key"></sg-treatment-type-icon>
+          <div class="legend-text">{{ tx.value }}</div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+    <mat-expansion-panel class="legend-expander-panel">
+      <mat-expansion-panel-header class="legend-expander-heading">
+        <div class="expander-heading-content">
+          <mat-icon class="material-symbols-outlined expander-heading-icon"
+            >repeat</mat-icon
+          >Treatment Sequencing
+        </div>
+      </mat-expansion-panel-header>
+      <div class="legend-section">
+        <div
+          class="legend-row"
+          *ngFor="let seq of sequencePrescriptions | keyvalue: originalOrder">
+          <sg-sequence-icon [action]="seq.key"></sg-sequence-icon>
+          <div class="legend-text">{{ seq.value.name }}</div>
+        </div>
+      </div>
+    </mat-expansion-panel>
+  </div>
+</sg-modal>

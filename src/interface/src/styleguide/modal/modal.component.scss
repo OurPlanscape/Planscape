@@ -10,7 +10,9 @@
   border-radius: 4px;
   justify-content: space-between;
 
-
+  &.xsmall {
+    width: 340px;
+  }
   &.small {
     width: 460px;
   }
@@ -56,9 +58,6 @@
   // short header
   &.short {
     height: 20px;
-    padding: 20px;
-    padding-bottom: 20px;
-    padding-bottom: 0;
   }
 
   .leading-icon {
@@ -115,7 +114,6 @@
   align-items: center;
   gap: 16px;
 }
-
 
 .modal-body {
   &.padded {
