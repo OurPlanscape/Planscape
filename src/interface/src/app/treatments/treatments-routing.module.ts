@@ -1,10 +1,20 @@
-import { RouterModule, Routes } from '@angular/router';
+import { Data, RouterModule, Routes } from '@angular/router';
 import { TreatmentOverviewComponent } from './treatment-overview/treatment-overview.component';
 
 import { NgModule } from '@angular/core';
 import { numberResolver } from '../resolvers/number.resolver';
 import { TreatmentProjectAreaComponent } from './treatment-project-area/treatment-project-area.component';
 import { TreatmentLayoutComponent } from './treatment-layout/treatment-layout.component';
+
+// Possible routing params
+export interface TreatmentRoutingData extends Data {
+  scenarioId: number;
+  treatmentId: number;
+  projectAreaId?: number;
+  showMapProjectAreas?: boolean;
+  showTreatmentStands?: boolean;
+  showMapControls?: boolean;
+}
 
 const routes: Routes = [
   {

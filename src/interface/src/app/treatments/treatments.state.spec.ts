@@ -1,11 +1,57 @@
 import { TestBed } from '@angular/core/testing';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { of, throwError } from 'rxjs';
-import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
 import { TreatmentsState } from './treatments.state';
 import { MockProviders } from 'ng-mocks';
 import { MapConfigState } from './treatment-map/map-config.state';
+import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
+import { firstValueFrom, of, throwError } from 'rxjs';
+
+const mockSummary: TreatmentSummary = {
+  project_areas: [
+    {
+      project_area_id: 1,
+      project_area_name: 'Area 1',
+      total_stand_count: 10,
+      prescriptions: [
+        {
+          action: 'cut',
+          area_acres: 100,
+          treated_stand_count: 3,
+          type: 'SINGLE',
+          stand_ids: [1, 2, 3],
+        },
+        {
+          action: 'burn',
+          area_acres: 50,
+          treated_stand_count: 2,
+          type: 'SEQUENCE',
+          stand_ids: [4, 5],
+        },
+      ],
+      extent: [1, 2, 3, 4],
+      centroid: {
+        type: 'Point',
+        coordinates: [],
+      },
+    },
+  ],
+  extent: [1, 2, 3, 4],
+  planning_area_id: 1,
+  planning_area_name: 'Test',
+  scenario_id: 2,
+  scenario_name: 'Test Scenario',
+  treatment_plan_id: 3,
+  treatment_plan_name: 'Test Treatment Plan',
+};
+
+const mockTreatmentPlan: TreatmentPlan = {
+  id: 123,
+  name: 'Plan 1',
+  status: 'SUCCESS',
+  created_at: '2024-01-01T00:00:00Z',
+  creator_name: 'John Doe',
+};
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;
@@ -27,6 +73,13 @@ describe('TreatmentsState', () => {
     spyOn(treatedStandsState, 'setTreatedStands').and.callThrough();
     spyOn(treatedStandsState, 'updateTreatedStands').and.callThrough();
     spyOn(treatedStandsState, 'removeTreatments').and.callThrough();
+
+    spyOn(treatmentsService, 'getTreatmentPlanSummary').and.returnValue(
+      of(mockSummary)
+    );
+    spyOn(treatmentsService, 'getTreatmentPlan').and.returnValue(
+      of(mockTreatmentPlan)
+    );
   });
 
   it('should be created', () => {
@@ -39,127 +92,65 @@ describe('TreatmentsState', () => {
     );
   });
 
-  it('should return the treatment plan ID if it is set', () => {
-    service.setInitialState({
-      scenarioId: 1,
-      treatmentId: 123,
-      projectAreaId: undefined,
-    });
-    expect(service.getTreatmentPlanId()).toBe(123);
-  });
+  describe('loadTreatmentByRouteData', () => {
+    describe('set initial data', () => {
+      it('should save data', () => {
+        service.loadTreatmentByRouteData({
+          scenarioId: 1,
+          treatmentId: 123,
+          projectAreaId: undefined,
+        });
+        expect(service.getTreatmentPlanId()).toBe(123);
+        expect(service.getScenarioId()).toBe(1);
+        expect(service.getProjectAreaId()).toBe(undefined);
+      });
 
-  it('should set and get the project area ID', () => {
-    service.setInitialState({
-      scenarioId: 1,
-      treatmentId: 123,
-      projectAreaId: 456,
-    });
-    expect(service.getProjectAreaId()).toBe(456);
-
-    service.setInitialState({
-      scenarioId: 1,
-      treatmentId: 123,
-      projectAreaId: undefined,
-    });
-
-    expect(service.getProjectAreaId()).toBeUndefined();
-  });
-
-  it('should load summary and set treated stands', () => {
-    const mockSummary: TreatmentSummary = {
-      project_areas: [
-        {
-          project_area_id: 1,
-          project_area_name: 'Area 1',
-          total_stand_count: 10,
-          prescriptions: [
-            {
-              action: 'cut',
-              area_acres: 100,
-              treated_stand_count: 3,
-              type: 'SINGLE',
-              stand_ids: [1, 2, 3],
-            },
-            {
-              action: 'burn',
-              area_acres: 50,
-              treated_stand_count: 2,
-              type: 'SEQUENCE',
-              stand_ids: [4, 5],
-            },
-          ],
-          extent: [1, 2, 3, 4],
-          centroid: {
-            type: 'Point',
-            coordinates: [],
-          },
-        },
-      ],
-      extent: [1, 2, 3, 4],
-      planning_area_id: 1,
-      planning_area_name: 'Test',
-      scenario_id: 2,
-      scenario_name: 'Test Scenario',
-      treatment_plan_id: 3,
-      treatment_plan_name: 'Test Treatment Plan',
-    };
-
-    spyOn(treatmentsService, 'getTreatmentPlanSummary').and.returnValue(
-      of(mockSummary)
-    );
-    service.setInitialState({
-      scenarioId: 1,
-      treatmentId: 123,
-      projectAreaId: undefined,
+      it('should set project area if provided', () => {
+        service.loadTreatmentByRouteData({
+          scenarioId: 1,
+          treatmentId: 123,
+          projectAreaId: 456,
+        });
+        expect(service.getProjectAreaId()).toBe(456);
+      });
     });
 
-    service.loadSummary().subscribe();
-
-    expect(treatedStandsState.setTreatedStands).toHaveBeenCalledWith([
-      { id: 1, action: 'cut' },
-      { id: 2, action: 'cut' },
-      { id: 3, action: 'cut' },
-      { id: 4, action: 'burn' },
-      { id: 5, action: 'burn' },
-    ]);
-    service.summary$.subscribe((summary) => {
+    it('should load summary', async () => {
+      await firstValueFrom(
+        service.loadTreatmentByRouteData({
+          scenarioId: 1,
+          treatmentId: 123,
+          projectAreaId: undefined,
+        })
+      );
+      expect(treatmentsService.getTreatmentPlanSummary).toHaveBeenCalled();
+      const summary = await firstValueFrom(service.summary$);
       expect(summary).toEqual(mockSummary);
     });
-  });
 
-  it('should load treatment plan and update the observable', () => {
-    const mockTreatmentPlan: TreatmentPlan = {
-      id: 123,
-      name: 'Plan 1',
-      status: 'SUCCESS',
-      created_at: '2024-01-01T00:00:00Z',
-      creator_name: 'John Doe',
-    };
-
-    spyOn(treatmentsService, 'getTreatmentPlan').and.returnValue(
-      of(mockTreatmentPlan)
-    );
-
-    service.setInitialState({
-      scenarioId: 1,
-      treatmentId: 123,
-      projectAreaId: undefined,
-    });
-    service.loadTreatmentPlan().subscribe();
-
-    service.treatmentPlan$.subscribe((treatmentPlan) => {
-      expect(treatmentPlan).toEqual(mockTreatmentPlan);
+    it('should load treatment plan', async () => {
+      await firstValueFrom(
+        service.loadTreatmentByRouteData({
+          scenarioId: 1,
+          treatmentId: 123,
+          projectAreaId: undefined,
+        })
+      );
+      expect(treatmentsService.getTreatmentPlan).toHaveBeenCalled();
+      const plan = await firstValueFrom(service.treatmentPlan$);
+      expect(plan).toEqual(mockTreatmentPlan);
     });
   });
 
+  //
   it('should throw an error if project area ID is not set when updating treated stands', () => {
     expect(() => service.updateTreatedStands('cut', [1, 2])).toThrowError(
       'Project area Id is required to update stands'
     );
   });
-
+  //
   it('should update treated stands and call the service', () => {
-    service.setInitialState({
+    service.loadTreatmentByRouteData({
       scenarioId: 1,
       treatmentId: 123,
       projectAreaId: 456,
@@ -181,7 +172,7 @@ describe('TreatmentsState', () => {
   });
 
   it('should revert treated stands on update error', () => {
-    service.setInitialState({
+    service.loadTreatmentByRouteData({
       scenarioId: 1,
       treatmentId: 123,
       projectAreaId: 456,
@@ -207,7 +198,7 @@ describe('TreatmentsState', () => {
   });
 
   it('should remove treated stands and call the service', () => {
-    service.setInitialState({
+    service.loadTreatmentByRouteData({
       scenarioId: 1,
       treatmentId: 123,
       projectAreaId: 456,
@@ -232,7 +223,7 @@ describe('TreatmentsState', () => {
   });
 
   it('should revert treated stands on remove error', () => {
-    service.setInitialState({
+    service.loadTreatmentByRouteData({
       scenarioId: 1,
       treatmentId: 123,
       projectAreaId: 456,

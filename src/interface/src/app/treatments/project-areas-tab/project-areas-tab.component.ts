@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentSummary } from '@types';
 import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
@@ -30,7 +30,11 @@ export class ProjectAreasTabComponent {
   filteredProjectAreas$ = this.projectAreas$;
   searchString: string = '';
 
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
 
   doSearch(searchString: string) {
     this.searchString = searchString;
@@ -48,8 +52,8 @@ export class ProjectAreasTabComponent {
   }
 
   setActiveProjectArea(projectAreaId: number) {
-    this.treatmentsState.selectProjectArea(projectAreaId);
-    //TODO: route
-    //[routerLink]="['project-area', projectArea.project_area_id]"
+    this.router.navigate(['project-area', projectAreaId], {
+      relativeTo: this.route,
+    });
   }
 }

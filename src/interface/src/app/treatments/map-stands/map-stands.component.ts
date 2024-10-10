@@ -7,6 +7,7 @@ import {
   SimpleChanges,
 } from '@angular/core';
 import {
+  ImageComponent,
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
@@ -17,7 +18,7 @@ import {
   Point,
 } from 'maplibre-gl';
 
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgForOf } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
@@ -28,11 +29,13 @@ import { combineLatest, distinctUntilChanged, map, Observable } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   BASE_STANDS_PAINT,
+  generatePaintForSequencedStands,
   generatePaintForTreatedStands,
   PROJECT_AREA_OUTLINE_PAINT,
   SELECTED_STANDS_PAINT,
   STANDS_CELL_PAINT,
 } from '../map.styles';
+import { SEQUENCE_ACTIONS } from '../prescriptions';
 
 type MapLayerData = {
   readonly name: string;
@@ -45,7 +48,13 @@ type MapLayerData = {
 @Component({
   selector: 'app-map-stands',
   standalone: true,
-  imports: [LayerComponent, VectorSourceComponent, AsyncPipe],
+  imports: [
+    LayerComponent,
+    VectorSourceComponent,
+    AsyncPipe,
+    ImageComponent,
+    NgForOf,
+  ],
   templateUrl: './map-stands.component.html',
 })
 export class MapStandsComponent implements OnChanges, OnInit {
@@ -72,16 +81,22 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   selectedStands$ = this.selectedStandsState.selectedStands$;
   treatedStands$ = this.treatedStandsState.treatedStands$;
+  sequencedStandsId$ = this.treatedStandsState.sequenceStandsIds$;
   /**
    * Reference to the selected stands before the user starts dragging for stand selection
    */
   private initialSelectedStands: number[] = [];
-  opacity$ = this.treatedStandsState.opacity$.pipe(distinctUntilChanged());
+  opacity$ = this.mapConfigState.treatedStandsOpacity$.pipe(
+    distinctUntilChanged()
+  );
 
-  outlineOpacity$ = this.opacity$.pipe(
-    map((value) => {
-      const minOutput = 0.3;
-      const clampedValue = Math.max(0, Math.min(value, 1));
+  outlineOpacity$ = combineLatest([
+    this.mapConfigState.showTreatmentStandsLayer$.pipe(distinctUntilChanged()),
+    this.opacity$,
+  ]).pipe(
+    map(([visible, opacity]) => {
+      const minOutput = visible ? 0.3 : 0;
+      const clampedValue = Math.max(0, Math.min(opacity, 1));
       // Perform linear interpolation
       return minOutput + clampedValue * (1 - minOutput);
     })
@@ -93,7 +108,11 @@ export class MapStandsComponent implements OnChanges, OnInit {
     'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
 
   readonly layers: Record<
-    'projectAreaOutline' | 'standsOutline' | 'stands' | 'selectedStands',
+    | 'projectAreaOutline'
+    | 'standsOutline'
+    | 'stands'
+    | 'selectedStands'
+    | 'sequenceStands',
     MapLayerData
   > = {
     projectAreaOutline: {
@@ -119,6 +138,14 @@ export class MapStandsComponent implements OnChanges, OnInit {
       sourceLayer: 'stands_by_tx_plan',
       paint: BASE_STANDS_PAINT,
     },
+    sequenceStands: {
+      name: 'stands-sequence-layer',
+      sourceLayer: 'stands_by_tx_plan',
+      paint: {
+        'fill-pattern': 'sequence1',
+        'fill-opacity': 1,
+      },
+    },
     selectedStands: {
       name: 'stands-layer-selected',
       sourceLayer: 'stands_by_tx_plan',
@@ -140,6 +167,10 @@ export class MapStandsComponent implements OnChanges, OnInit {
       .subscribe(([treatedStands, opacity]) => {
         this.layers.stands.paint = generatePaintForTreatedStands(
           treatedStands,
+          opacity
+        );
+        this.layers.sequenceStands.paint = generatePaintForSequencedStands(
+          treatedStands.filter((stand) => stand.action in SEQUENCE_ACTIONS),
           opacity
         );
       });

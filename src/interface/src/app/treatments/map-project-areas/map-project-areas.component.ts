@@ -28,6 +28,14 @@ import {
   Subject,
 } from 'rxjs';
 import { Prescription, TreatmentProjectArea } from '@types';
+import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
+
+type MapLayerData = {
+  readonly name: string;
+  readonly sourceLayer: string;
+  paint?: LayerSpecification['paint'];
+  color?: string;
+};
 
 @Component({
   selector: 'app-map-project-areas',
@@ -51,6 +59,8 @@ import { Prescription, TreatmentProjectArea } from '@types';
 export class MapProjectAreasComponent {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
+  @Input() withFill = true;
+
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
@@ -68,9 +78,28 @@ export class MapProjectAreasComponent {
       })
     );
 
-  readonly layerName = 'project_areas_by_scenario';
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
+
+  readonly layers: Record<
+    'projectAreasOutline' | 'projectAreasFill' | 'projectAreaLabels',
+    MapLayerData
+  > = {
+    projectAreasOutline: {
+      name: 'map-project-areas-line',
+      sourceLayer: 'project_areas_by_scenario',
+      color: BASE_COLORS['dark'],
+    },
+    projectAreasFill: {
+      name: 'map-project-areas-fill',
+      sourceLayer: 'project_areas_by_scenario',
+    },
+    projectAreaLabels: {
+      name: 'map-project-areas-labels',
+      sourceLayer: 'project_areas_by_scenario_label',
+      paint: LABEL_PAINT,
+    },
+  };
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -83,13 +112,12 @@ export class MapProjectAreasComponent {
   }
 
   paint: LayerSpecification['paint'] = {
-    'fill-outline-color': '#000',
     'fill-color': this.getFillColors() as any,
     'fill-opacity': this.visible ? 0.5 : 0,
   };
 
   getFillColors() {
-    const defaultColor = '#00000050';
+    const defaultColor = BASE_COLORS['dark'];
     const matchExpression: (number | string | string[])[] = [
       'match',
       ['get', 'rank'],
@@ -103,10 +131,6 @@ export class MapProjectAreasComponent {
 
   goToProjectArea(event: MapMouseEvent) {
     const projectAreaId = this.getProjectAreaIdFromFeatures(event.point);
-    if (projectAreaId) {
-      this.treatmentsState.selectProjectArea(projectAreaId);
-    }
-
     this.mouseLngLat = null;
 
     this.router

@@ -8,6 +8,8 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
+import { MapConfigState } from '../treatment-map/map-config.state';
+import { of } from 'rxjs';
 
 describe('MapProjectAreasComponent', () => {
   let component: MapProjectAreasComponent;
@@ -16,7 +18,12 @@ describe('MapProjectAreasComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MapProjectAreasComponent, RouterTestingModule],
-      providers: [MockProvider(TreatmentsState)],
+      providers: [
+        MockProvider(TreatmentsState),
+        MockProvider(MapConfigState, {
+          showTreatmentStandsLayer$: of(false),
+        }),
+      ],
       declarations: MockDeclarations(VectorSourceComponent, LayerComponent),
     }).compileComponents();
 

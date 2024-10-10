@@ -14,7 +14,9 @@
     <app-treatment-map></app-treatment-map>
     <section class="right-side-footer">
       <ng-container *ngIf="projectAreaId$ | async; else treatment">
-        <button sg-button variant="primary" class="footer-primary">Done</button>
+        <a sg-button variant="primary" class="footer-primary" routerLink="./">
+          Done
+        </a>
       </ng-container>
       <ng-template #treatment>
         <mat-slide-toggle

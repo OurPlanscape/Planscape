@@ -2,28 +2,20 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentProjectAreaComponent } from './treatment-project-area.component';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { TreatmentsService } from '@services/treatments.service';
+import { MapConfigState } from '../treatment-map/map-config.state';
+import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 
-describe('ProjectAreaComponent', () => {
+describe('TreatmentProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
   let fixture: ComponentFixture<TreatmentProjectAreaComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [
-        BrowserAnimationsModule,
-        TreatmentProjectAreaComponent,
-        RouterTestingModule,
-        TreatmentProjectAreaComponent,
-      ],
+      imports: [TreatmentProjectAreaComponent, RouterTestingModule],
       providers: [
-        MockProviders(TreatedStandsState),
-        MockProviders(TreatmentsService),
-        MockProviders(TreatmentsState),
+        MockProviders(MapConfigState, SelectedStandsState, TreatmentsState),
       ],
       declarations: [MockDeclarations(TreatmentMapComponent)],
     }).compileComponents();
