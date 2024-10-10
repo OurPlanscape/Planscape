@@ -11,9 +11,7 @@ import { TreatmentsState } from '../treatments.state';
   styleUrl: './treatmentplan-about-tab.component.scss',
 })
 export class TreatmentplanAboutTabComponent {
-  constructor(private treatmentsState: TreatmentsState) {
-    console.log('Summary?', this.summary$);
-  }
+  constructor(private treatmentsState: TreatmentsState) {}
 
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   summary$ = this.treatmentsState.summary$;
