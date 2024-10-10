@@ -5,6 +5,9 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
+import { DebounceInputComponent } from '@styleguide';
+import { TreatmentPlan } from '@types';
+import { BehaviorSubject } from 'rxjs';
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
@@ -14,6 +17,7 @@ import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-pla
     TreatmentSummaryComponent,
     TreatmentPlanTabsComponent,
     MapBaseLayerComponent,
+    DebounceInputComponent,
     NgIf,
   ],
   templateUrl: './treatment-overview.component.html',
@@ -21,6 +25,35 @@ import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-pla
 })
 export class TreatmentOverviewComponent {
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
-
+  savingStatus$ = new BehaviorSubject<boolean>(false);
+  savingName = false;
+  errorSavingName: string | null = null;
   constructor(private treatmentsState: TreatmentsState) {}
+
+  saveStatus() {
+    return this.savingName;
+  }
+
+  handleNameChange(name: string) {
+    if (name.length < 1) {
+      return;
+    }
+    this.savingStatus$.next(true);
+    const partialTreatmentPlan: Partial<TreatmentPlan> = {
+      name: name,
+    };
+    this.treatmentsState.updateTreatmentPlan(partialTreatmentPlan).subscribe({
+      next: (result) => {
+        this.savingStatus$.next(false);
+      },
+      error: (err) => {
+        if (err.error.detail) {
+          this.errorSavingName = err.error.detail;
+        } else {
+          this.errorSavingName = 'Could not update the name.';
+        }
+        this.savingStatus$.next(false);
+      },
+    });
+  }
 }

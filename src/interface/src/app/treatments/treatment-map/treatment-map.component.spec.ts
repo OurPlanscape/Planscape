@@ -10,6 +10,10 @@ import { SelectedStandsState } from './selected-stands.state';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
 
+import { AuthService } from '@services';
+
+import { TreatmentsState } from '../treatments.state';
+
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
   let fixture: ComponentFixture<TreatmentMapComponent>;
@@ -18,7 +22,12 @@ describe('TreatmentMapComponent', () => {
     await TestBed.configureTestingModule({
       imports: [TreatmentMapComponent, CommonModule],
       providers: [
-        MockProviders(TreatedStandsState, SelectedStandsState),
+        MockProviders(
+          TreatedStandsState,
+          SelectedStandsState,
+          AuthService,
+          TreatmentsState
+        ),
         MockProvider(MapConfigState, { cursor$: of('') }),
       ],
       declarations: [

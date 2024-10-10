@@ -1,7 +1,4 @@
-<app-nav-bar
-  (goBack)="goBack()"
-  [breadcrumbs]="(breadcrumbs$ | async) || []"
-  [area]="'TREATMENTS'">
+<app-nav-bar [breadcrumbs]="(breadcrumbs$ | async) || []" [area]="'TREATMENTS'">
   <app-treatment-navbar-menu
     [treatmentPlanName]="(treatmentPlanName$ | async) || ''"
     (treatmentPlanDeleted)="redirectToScenario()"

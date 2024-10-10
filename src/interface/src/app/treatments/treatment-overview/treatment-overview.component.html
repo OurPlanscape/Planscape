@@ -2,5 +2,10 @@
   {{ treatmentPlan.id }}. {{ treatmentPlan.name }}
   <div>{{ treatmentPlan.status }}</div>
 </div>
+<sg-debounce-input
+  title="Treatment Plan Name"
+  [savingStatus$]="savingStatus$"
+  [errorMessage]="errorSavingName"
+  (textValueUpdated)="handleNameChange($event)"></sg-debounce-input>
 <app-treatment-summary></app-treatment-summary>
 <app-treatment-plan-tabs></app-treatment-plan-tabs>

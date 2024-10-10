@@ -51,11 +51,13 @@
             let action of prescriptions.SEQUENCE | keyvalue: originalOrder;
             let i = index
           ">
-          <mat-radio-button class="prescription-sequence" [value]="action.key"
-            >Sequence {{ i + 1 }}
+          <mat-radio-button class="prescription-sequence" [value]="action.key">
+            {{ action.value.name }}
           </mat-radio-button>
           <div class="sequence-details">
-            <div *ngFor="let detail of action.value" class="sequence-detail">
+            <div
+              *ngFor="let detail of action.value.details"
+              class="sequence-detail">
               {{ detail }}
             </div>
           </div>

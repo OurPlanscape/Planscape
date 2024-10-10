@@ -18,7 +18,11 @@
         </ng-content>
       </mat-menu>
     </button>
-    <button mat-icon-button (click)="handleCloseButton()" aria-label="close">
+    <button
+      mat-icon-button
+      (click)="handleCloseButton()"
+      aria-label="close"
+      *ngIf="showClose">
       <mat-icon class="close-btn">close</mat-icon>
     </button>
   </div>

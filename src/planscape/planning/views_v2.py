@@ -1,5 +1,4 @@
 import logging
-import json
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, status, mixins, permissions, pagination
@@ -14,15 +13,25 @@ from planning.filters import (
     ScenarioFilter,
     PlanningAreaOrderingFilter,
     ScenarioOrderingFilter,
+    ProjectAreaNoteFilterSet,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario, ScenarioOrigin, User
-from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
+from planning.models import PlanningArea, ProjectArea, ProjectAreaNote, Scenario
+from planning.permissions import (
+    PlanningAreaViewPermission,
+    ScenarioViewPermission,
+    ProjectAreaNoteViewPermission,
+)
 from planning.serializers import (
     CreatePlanningAreaSerializer,
     CreateScenarioSerializer,
-    PlanningAreaSerializer,
+    ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    PlanningAreaSerializer,
+    ProjectAreaNoteSerializer,
+    ProjectAreaNoteListSerializer,
+    ProjectAreaSerializer,
+    ScenarioSerializer,
     ScenarioAndProjectAreasSerializer,
     ProjectAreaSerializer,
     ScenarioSerializer,
@@ -35,6 +44,7 @@ from planning.services import (
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
+    create_projectarea_note,
     create_scenario_from_upload,
 )
 
@@ -256,3 +266,52 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_classes = {
         "retrieve": ProjectAreaSerializer,
     }
+
+
+class ProjectAreaNoteViewSet(
+    mixins.ListModelMixin,
+    mixins.CreateModelMixin,
+    mixins.DestroyModelMixin,
+    mixins.RetrieveModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = ProjectAreaNote.objects.all()
+    permission_classes = [ProjectAreaNoteViewPermission]
+    serializer_class = ProjectAreaNoteSerializer
+    serializer_classes = {
+        "list": ProjectAreaNoteListSerializer,
+    }
+    filterset_class = ProjectAreaNoteFilterSet
+    filter_backends = [DjangoFilterBackend]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        note = create_projectarea_note(
+            self.request.user,
+            **serializer.validated_data,
+        )
+        out_serializer = ProjectAreaNoteSerializer(instance=note)
+        headers = self.get_success_headers(out_serializer.data)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
+
+    def get_serializer_class(self):
+        return (
+            self.serializer_classes.get(self.action, self.serializer_class)
+            or self.serializer_class
+        )
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = ProjectAreaNote.objects.select_related("project_area")
+
+        project_area_pk = self.request.query_params.get("project_area_pk")
+        if project_area_pk:
+            queryset = queryset.filter(project_area__pk=project_area_pk)
+
+        return queryset
