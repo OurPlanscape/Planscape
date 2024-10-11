@@ -70,6 +70,7 @@ export class ApplyTreatmentComponent {
     const action = this.prescriptionForm.get('prescriptionAction')?.value;
     if (action) {
       this.applyTreatments(action);
+      this.treatmentsState.loadSummaryDataOnly();
     }
     this.treatmentsState.setShowApplyTreatmentsDialog(false);
   }

@@ -119,6 +119,16 @@ export class TreatmentsState {
       );
   }
 
+  // simpler, no side-effect summary loader...
+  // TODO: refactor this one and the one above this
+  loadSummaryDataOnly() {
+    this.treatmentsService
+      .getTreatmentPlanSummary(this.getTreatmentPlanId())
+      .subscribe((summary) => {
+        this._summary$.next(summary);
+      });
+  }
+
   loadTreatmentPlan() {
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
