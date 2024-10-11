@@ -187,23 +187,31 @@
       mat-align-tabs="start"
       (selectedTabChange)="tabChange($event)">
       <mat-tab label="ACTIVE">
-        <app-scenarios-card-list
-          *ngIf="activeScenarios.length > 0"
-          [scenarios]="activeScenarios"
-          (viewScenario)="navigateToScenario($event)"></app-scenarios-card-list>
+        <mat-card-content>
+          <app-scenarios-card-list
+            *ngIf="activeScenarios.length > 0"
+            [scenarios]="activeScenarios"
+            (viewScenario)="
+              navigateToScenario($event)
+            "></app-scenarios-card-list>
 
-        <div class="empty-state" *ngIf="activeScenarios.length === 0">
-          No active scenarios
-        </div>
+          <div class="empty-state" *ngIf="activeScenarios.length === 0">
+            No active scenarios
+          </div>
+        </mat-card-content>
       </mat-tab>
       <mat-tab label="ARCHIVED">
-        <app-scenarios-card-list
-          *ngIf="archivedScenarios.length > 0"
-          [scenarios]="archivedScenarios"
-          (viewScenario)="navigateToScenario($event)"></app-scenarios-card-list>
-        <div class="empty-state" *ngIf="archivedScenarios.length === 0">
-          No scenarios in Archived.
-        </div>
+        <mat-card-content>
+          <app-scenarios-card-list
+            *ngIf="archivedScenarios.length > 0"
+            [scenarios]="archivedScenarios"
+            (viewScenario)="
+              navigateToScenario($event)
+            "></app-scenarios-card-list>
+          <div class="empty-state" *ngIf="archivedScenarios.length === 0">
+            No scenarios in Archived.
+          </div>
+        </mat-card-content>
       </mat-tab>
     </mat-tab-group>
   </app-section-loader>
