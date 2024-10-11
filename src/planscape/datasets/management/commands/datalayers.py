@@ -119,6 +119,17 @@ class Command(PlanscapeCommand):
                 datalayer=datalayer,
                 upload_to=upload_to,
             )
+<<<<<<< HEAD
+=======
+            output_data = response.json()
+            datalayer = output_data.get("datalayer")
+            upload_to = output_data.get("upload_to")
+            self._upload_file(
+                rasters,
+                datalayer=datalayer,
+                upload_to=upload_to,
+            )
+>>>>>>> 8947e87c (uploads file)
             return output_data
         except Exception:
             self.stderr.write("Something went wrong while talking to Planscape.")
