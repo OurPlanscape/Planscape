@@ -13,6 +13,7 @@
     <div class="side-search-container">
       <sg-search-bar
         class="search-bar"
+        [debounceInterval]="160"
         searchPlaceholder="Search treatment prescriptions"
         [inputHeight]="'regular'"
         (searchString)="setSearchString($event)"></sg-search-bar>
