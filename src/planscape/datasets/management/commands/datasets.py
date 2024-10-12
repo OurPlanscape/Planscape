@@ -6,7 +6,7 @@ from core.base_commands import PlanscapeCommand
 
 
 class Command(PlanscapeCommand):
-    entity = "DataLayers"
+    entity = "Datasets"
 
     def add_subcommands(self, parser: CommandParser) -> None:
         subp = parser.add_subparsers()
@@ -14,17 +14,22 @@ class Command(PlanscapeCommand):
         create_parser = subp.add_parser("create")
         create_parser.add_argument("name", type=str)
         create_parser.add_argument(
-            "--dataset",
-            type=int,
-            required=True,
+            "-p",
+            "--public",
+            type=str,
+            action="store_true",
         )
-        create_parser.add_argument("--input_file", type=str, required=False)
+        create_parser.add_argument(
+            "-v",
+            "--version",
+            type=str,
+        )
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
 
     def list(self, token, **kwargs):
         base_url = self.get_base_url(**kwargs)
-        list_url = base_url + "/v2/datalayers"
+        list_url = base_url + "/v2/datasets"
         headers = self.get_headers(token, **kwargs)
         response = requests.get(
             list_url,
@@ -34,14 +39,14 @@ class Command(PlanscapeCommand):
         self.stdout.write(f"Found {data['count']} {self.entity}:")
         pprint(data)
 
-    def create(self, name: str, dataset: int, **kwargs) -> None:
+    def create(self, name: str, public: bool, version: Optional[str], **kwargs) -> None:
         base_url = self.get_base_url(**kwargs)
-        url = base_url + "/v2/datalayers/"
+        url = base_url + "/v2/datasets/"
         headers = self.get_headers(**kwargs)
         input_data = {
-            "organization": kwargs.get("org"),
             "name": name,
-            "dataset": dataset,
+            "visibility": "PUBLIC" if public else "PRIVATE",
+            "version": version,
         }
         response = requests.post(
             url,
