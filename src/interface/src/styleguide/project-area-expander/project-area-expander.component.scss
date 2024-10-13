@@ -148,6 +148,11 @@
   --mat-expansion-header-expanded-state-height: 34px;
   --mat-expansion-header-collapsed-state-height: 34px;
   background-color: unset;
+  padding-right: 0px;
+  
+  ::ng-deep .mat-expansion-panel-body {
+    padding-right: 0px;
+  }
 }
 
 .rx-submenu-header {

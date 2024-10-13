@@ -6,6 +6,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('TreatmentOverviewComponent', () => {
   let component: TreatmentOverviewComponent;
@@ -14,6 +15,7 @@ describe('TreatmentOverviewComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        HttpClientTestingModule,
         TreatmentOverviewComponent,
         RouterTestingModule,
         BrowserAnimationsModule,

@@ -3,6 +3,7 @@ import { TreatmentPlanTabsComponent } from './treatment-plan-tabs.component';
 import { TreatmentsState } from '../treatments.state';
 import { MockProviders } from 'ng-mocks';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('TreatmentPlanTabsComponent', () => {
   let component: TreatmentPlanTabsComponent;
@@ -10,7 +11,11 @@ describe('TreatmentPlanTabsComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentPlanTabsComponent, BrowserAnimationsModule],
+      imports: [
+        HttpClientTestingModule,
+        TreatmentPlanTabsComponent,
+        BrowserAnimationsModule,
+      ],
       providers: [MockProviders(TreatmentsState)],
     }).compileComponents();
 

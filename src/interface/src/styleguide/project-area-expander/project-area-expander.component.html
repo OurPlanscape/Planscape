@@ -50,7 +50,7 @@
           </div>
         </div>
       </mat-expansion-panel-header>
-      <div *ngIf="rx.type === 'SEQUENCE'">
+      <div *ngIf="rx.type === 'SEQUENCE'" class="sequence-body">
         <div
           *ngFor="let seqDetail of sequenceActions(rx.action)"
           class="sequence-treatment-line">
