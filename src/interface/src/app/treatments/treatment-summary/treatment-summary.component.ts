@@ -29,5 +29,7 @@ export class TreatmentSummaryComponent {
 
   setActiveProjectArea(projectAreaId: number) {
     this.treatmentsState.selectProjectArea(projectAreaId);
+    //TODO: route
+    //[routerLink]="['project-area', projectArea.project_area_id]"
   }
 }
