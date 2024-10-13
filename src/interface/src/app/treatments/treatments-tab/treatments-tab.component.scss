@@ -79,6 +79,7 @@
     background-color: $color-light-gray;
   }
   ::ng-deep .search-bar input {
+    @include xs-label();
     width: 100%;
   }
 }
