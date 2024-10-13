@@ -9,11 +9,11 @@ import { InputDirective } from '../../../styleguide/input/input.directive';
 import { InputFieldComponent } from '../../../styleguide/input/input-field.component';
 import { Prescription } from '@types';
 import { map, combineLatest, Observable } from 'rxjs';
-// import {
-//   PRESCRIPTIONS,
-//   PrescriptionSequenceAction,
-//   PrescriptionSingleAction,
-// } from '../prescriptions';
+import {
+  PRESCRIPTIONS,
+  PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+} from '../prescriptions';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { TreatmentsState } from '../treatments.state';
 
@@ -42,7 +42,7 @@ export class ProjectAreaTreatmentsTabComponent {
   opacity = this.treatedStandsState.opacity$;
   summary$ = this.treatmentsState.summary$;
   projId$ = this.treatmentsState.projectAreaId$;
-  searchString: string = '';
+  searchString: string | null = null;
 
   prescriptions$: Observable<Prescription[]> = combineLatest([
     this.treatmentsState.summary$,
@@ -58,43 +58,37 @@ export class ProjectAreaTreatmentsTabComponent {
     })
   );
 
+  filteredPrescriptions$ = this.prescriptions$;
+
   handleOpacityChange(opacity: number) {
     this.treatedStandsState.setOpacity(opacity);
   }
 
   setSearchString(searchString: string) {
     this.searchString = searchString;
+    if (this.searchString === '') {
+      this.filteredPrescriptions$ = this.prescriptions$;
+    } else {
+      this.filteredPrescriptions$ = this.prescriptions$.pipe(
+        map((prescriptions) =>
+          prescriptions.filter((p) => {
+            return (
+              this.searchString === null ||
+              p.action.toLowerCase().includes(this.searchString) ||
+              (p.type === 'SINGLE' &&
+                PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
+                  .toLowerCase()
+                  .includes(this.searchString)) ||
+              (p.type === 'SEQUENCE' &&
+                PRESCRIPTIONS.SEQUENCE[
+                  p.action as PrescriptionSequenceAction
+                ].name
+                  .toLowerCase()
+                  .includes(this.searchString))
+            );
+          })
+        )
+      );
+    }
   }
-
-  // filteredPrescriptions$: Observable<Prescription[]> = combineLatest([
-  //   this.prescriptions$,
-  //   this.searchString,
-  // ]).pipe(
-  //   map(([prescriptions, searchString]) =>
-  //     this.filterPrescriptions(prescriptions, searchString)
-  //   )
-  // );
-
-  // private filterPrescriptions(
-  //   prescriptions: Prescription[],
-  //   searchString: string
-  // ): Prescription[] {
-  //   const needle = searchString.toLowerCase();
-  //   console.log('here is the needle?:', needle);
-  //   if (!prescriptions || needle === '') {
-  //     return prescriptions;
-  //   }
-  //   return prescriptions.filter(
-  //     (p) =>
-  //       p.action.toLowerCase().includes(needle) ||
-  //       (p.type === 'SINGLE' &&
-  //         PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
-  //           .toLowerCase()
-  //           .includes(needle)) ||
-  //       (p.type === 'SEQUENCE' &&
-  //         PRESCRIPTIONS.SEQUENCE[p.action as PrescriptionSequenceAction].name
-  //           .toLowerCase()
-  //           .includes(needle))
-  //   );
-  // }
 }

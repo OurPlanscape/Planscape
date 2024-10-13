@@ -13,6 +13,7 @@
     <div class="side-search-container">
       <sg-search-bar
         class="search-bar"
+        [debounceInterval]="160"
         searchPlaceholder="Search treatment prescriptions"
         [inputHeight]="'regular'"
         (searchString)="setSearchString($event)"></sg-search-bar>
@@ -26,9 +27,11 @@
         [sliderValue]="(opacity | async) || 0"
         (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
     </div>
-    <div class="expanders-container">
+    <div
+      class="expanders-container"
+      *ngIf="filteredPrescriptions$ | async as filteredRxs">
       <sg-treatment-expander
-        *ngFor="let tx of prescriptions"
+        *ngFor="let tx of filteredRxs"
         [treatmentType]="tx.type"
         [action]="tx.action"
         [areaAcres]="tx.area_acres"
