@@ -17,6 +17,11 @@
       background-color: $color-soft-purple;
       --mat-expansion-header-hover-state-layer-color: $color-soft-purple;
     }
+    .mat-expansion-panel:active {
+      border-color: $color-soft-purple;
+      background-color: $color-soft-purple;
+      --mat-expansion-header-hover-state-layer-color: $color-soft-purple;
+    }
 
     .mat-expansion-panel:not([class*='mat-elevation-z']) {
       box-shadow: none;
@@ -25,12 +30,23 @@
     .mat-expansion-panel:hover:not([class*='selected']) {
       border-color: $color-original-purple;
       background-color: $color-light-gray;
-      
+
       .mat-expansion-panel {
         background-color: unset;
       }
     }
-    
+    .mat-expansion-indicator {
+      height: 18px;
+      line-height: 8px;
+      align-content: center;
+      display: inline-block;
+      padding-left: 8px;
+      padding-right: 8px;
+    }
+    .mat-expansion-indicator:hover {
+      background-color: $color-soft-gray;
+      border-radius: 20px;
+    }
   }
 }
 
@@ -62,8 +78,9 @@
 }
 
 .header-content {
-  padding: 0 20px 0 8px;
+  padding: 0 8px 0 8px;
 }
+
 
 .left-content {
   @include xs-label();

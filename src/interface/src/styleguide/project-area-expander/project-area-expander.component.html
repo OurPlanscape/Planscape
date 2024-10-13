@@ -4,8 +4,11 @@
   (closed)="toggleState()"
   (mouseover)="handleHover($event)"
   class="project-area-expander-panel">
-  <mat-expansion-panel-header class="header-content">
-    <div class="left-content">
+  <mat-expansion-panel-header
+    class="header-content"
+    #header
+    (click)="onHeaderClick($event)">
+    <div class="left-content" (click)="onHeaderClick($event)">
       <img src="assets/svg/icons/project-area-icon.svg" />
       <div>{{ title ? title : projectArea.project_area_name }}</div>
     </div>

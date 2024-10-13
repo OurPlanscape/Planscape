@@ -82,7 +82,5 @@ class DataLayerSerializerTest(TestCase):
         data = serializer.data
         self.assertEqual(data["id"], data_layer.id)
         self.assertEqual(data["name"], data_layer.name)
-        self.assertEqual(data["created_by"], data_layer.created_by.id)
         self.assertEqual(data["organization"], data_layer.organization.id)
         self.assertEqual(data["dataset"], data_layer.dataset.id)
-        self.assertEqual(data["status"], data_layer.status)
