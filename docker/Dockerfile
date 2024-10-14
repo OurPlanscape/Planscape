@@ -1,28 +1,46 @@
-FROM python:3.10-slim-bookworm
+FROM python:3.10-alpine
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
 
-RUN apt-get update && \
-    apt-get install -y \
-    git curl wget software-properties-common && \
-    gpg --keyserver keyserver.ubuntu.com --recv-key '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7' && \
-    gpg --armor --export '95C0FAF38DB3CCAD0C080A7BDC78B2DDEABC47B7' | tee /etc/apt/trusted.gpg.d/cran_debian_key.asc && \
-    add-apt-repository "deb http://cloud.r-project.org/bin/linux/debian bookworm-cran40/"
+# Required packages
+RUN apk update
+RUN apk add g++
+RUN apk add binutils
+RUN apk add openssh-client
+RUN apk add postgresql-client
+RUN apk add py3-pip
+RUN apk add musl
+RUN apk add libssl3
+RUN apk add curl-dev
+RUN apk add jpeg-dev
+RUN apk add tiff-dev
+RUN apk add proj-dev
+RUN apk add gdal
+RUN apk add gdal-dev
+RUN apk add py3-gdal
+RUN apk add libpng-dev
+RUN apk add geos-dev
+RUN apk add libpq-dev
+RUN apk add freetype-dev
+RUN apk add fontconfig-dev
+RUN apk add libxml2-dev
+RUN apk add libgit2-dev
+RUN apk add harfbuzz-dev
+RUN apk add fribidi-dev
+RUN apk add sqlite-dev
+RUN apk add R-dev
+RUN apk add perl
+# RUN apk add udunits-dev
 
-RUN apt-get update && \
-    apt-get -y install \
-    g++ binutils \
-    openssh-client \
-    libc6-dev libsqlite3-dev \
-    libpng-dev libtiff-dev libjpeg-dev \
-    libgdal-dev libproj-dev libgeos-dev gdal-bin \
-    libpq-dev libfreetype-dev libfontconfig1-dev libxml2-dev  \
-    libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
-    libcurl4-openssl-dev libssl-dev \
-    postgresql-client \
-    python3-pip \
-    r-base r-base-dev
+
+# Compile R
+RUN wget https://cloud.r-project.org/src/base/R-4/R-4.4.1.tar.gz \
+    && tar -xvzf R-4.4.1.tar.gz 
+RUN cd R-4.4.1/ && ./configure -C --with-x=no
+RUN cd R-4.4.1/ && make 
+RUN cd R-4.4.1/ && make install-strip
+
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
