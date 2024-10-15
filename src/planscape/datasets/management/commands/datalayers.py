@@ -76,7 +76,7 @@ class Command(PlanscapeCommand):
             "name": name,
             "dataset": dataset,
             "type": layer_type,
-            # "info": layer_info,
+            "info": layer_info,
             "geometry_type": geometry_type,
         }
         response = requests.post(

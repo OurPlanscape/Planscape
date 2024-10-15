@@ -101,6 +101,14 @@ class CreateDatasetSerializer(serializers.ModelSerializer[DataLayer]):
 
 class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    metadata = serializers.JSONField(
+        required=False,
+        allow_null=True,
+    )
+    info = serializers.JSONField(
+        required=False,
+        allow_null=True,
+    )
 
     class Meta:
         model = DataLayer
@@ -113,6 +121,7 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "name",
             "type",
             "info",
+            "metadata",
             "original_name",
             "mimetype",
             "geometry",
