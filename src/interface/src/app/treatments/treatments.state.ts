@@ -119,6 +119,20 @@ export class TreatmentsState {
       );
   }
 
+  // simpler, no side-effect summary loader...
+  reloadSummary() {
+    return this.treatmentsService
+      .getTreatmentPlanSummary(this.getTreatmentPlanId())
+      .pipe(
+        map((summary) => {
+          this._summary$.next(summary);
+        }),
+        catchError((error) => {
+          throw error;
+        })
+      );
+  }
+
   loadTreatmentPlan() {
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
@@ -163,6 +177,15 @@ export class TreatmentsState {
     return this.treatmentsService
       .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
       .pipe(
+        map(() => {
+          this.reloadSummary()
+            .pipe(
+              catchError((error) => {
+                throw error;
+              })
+            )
+            .subscribe();
+        }),
         catchError((error) => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);

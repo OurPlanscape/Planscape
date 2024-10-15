@@ -13,7 +13,6 @@ import {
 /**
  * Expander component
  * A component to be used in the treatments panel to show treatment details
- * NOTE: this expects *either* a treatmentType OR a sequenceNumber to determine appearance
  */
 @Component({
   selector: 'sg-treatment-expander',
@@ -38,28 +37,31 @@ export class TreatmentExpanderComponent {
   /**
    * A treatment type
    */
-  @Input() treatmentType: 'SINGLE' | 'SEQUENCE' | null = null;
+  @Input() treatmentType: keyof typeof PRESCRIPTIONS | null = null;
   /**
    * A treatment action
    */
   @Input() action!: string;
   /**
-   * A treatment sequence number  (Optional)
-   */
-  @Input() sequenceNumber: number | null = null;
-  /**
    * A number or ratio indicating stand count
    */
-  @Input() standCount: string = '0';
-  /**
-   * Whether or not this is the selected expander
+  @Input() treatedStandCount?: number;
+  /***
+   * Area Acres
    */
-  @Input() selected = false;
+  @Input() areaAcres?: number;
+  /***
+   * Stand Ids
+   */
+  @Input() standIds: number[] = [];
   /**
    * Total number of acres
    */
   @Input() totalAcres = 100;
-
+  /***
+   * Whether this component is selected, for styling
+   */
+  @Input() selected = false;
   openState = false;
 
   toggleState() {
@@ -93,6 +95,10 @@ export class TreatmentExpanderComponent {
       return this.action as PrescriptionSingleAction;
     }
     return null;
+  }
+
+  totalStands(): number {
+    return this.standIds.length;
   }
 
   get isSelected() {

@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { ProjectAreaExpanderComponent } from './project-area-expander.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { Extent } from '@types';
+import { Extent, TreatmentType } from '@types';
 import { Point } from 'geojson';
 
 const containerStyle = `style="display: flex;
@@ -25,56 +25,56 @@ const sampleProjectAreaResult = {
       action: 'MODERATE_THINNING_BIOMASS',
       area_acres: 100,
       treated_stand_count: 3,
-      type: 'SINGLE',
+      type: 'SINGLE' as TreatmentType,
       stand_ids: [1, 2, 3, 8, 10],
     },
     {
       action: 'HEAVY_THINNING_BIOMASS',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'SINGLE',
+      type: 'SINGLE' as TreatmentType,
       stand_ids: [4, 5],
     },
     {
       action: 'HEAVY_MASTICATION',
       area_acres: 50,
       treated_stand_count: 1,
-      type: 'SINGLE',
+      type: 'SINGLE' as TreatmentType,
       stand_ids: [4, 5],
     },
     {
       action: 'MASTICATION_RX_FIRE',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'SINGLE',
+      type: 'SINGLE' as TreatmentType,
       stand_ids: [4, 5],
     },
     {
       action: 'HEAVY_THINNING_BURN',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'SINGLE',
+      type: 'SINGLE' as TreatmentType,
       stand_ids: [4, 5],
     },
     {
       action: 'RX_FIRE_PLUS_RX_FIRE',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'SEQUENCE',
+      type: 'SEQUENCE' as TreatmentType,
       stand_ids: [4, 5],
     },
     {
       action: 'MODERATE_MASTICATION_PLUS_RX_FIRE',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'SEQUENCE',
+      type: 'SEQUENCE' as TreatmentType,
       stand_ids: [4, 5],
     },
     {
       action: 'HEAVY_THINNING_BURN_PLUS_RX_FIRE',
       area_acres: 50,
       treated_stand_count: 2,
-      type: 'SEQUENCE',
+      type: 'SEQUENCE' as TreatmentType,
       stand_ids: [4, 5],
     },
   ],
