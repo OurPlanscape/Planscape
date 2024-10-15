@@ -71,7 +71,6 @@ class Command(PlanscapeCommand):
         base_url = self.get_base_url(**kwargs)
         url = base_url + "/v2/datalayers/"
         headers = self.get_headers(**kwargs)
-        breakpoint()
         input_data = {
             "organization": org,
             "name": name,
