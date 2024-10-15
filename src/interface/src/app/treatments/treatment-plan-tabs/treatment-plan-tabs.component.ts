@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
-import { TreatmentplanAboutTabComponent } from '../treatmentplan-about-tab/treatmentplan-about-tab.component';
+import { TreatmentPlanAboutTabComponent } from '../treatment-plan-about-tab/treatment-plan-about-tab.component';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 
 @Component({
@@ -8,7 +8,7 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
   standalone: true,
   imports: [
     MatTabsModule,
-    TreatmentplanAboutTabComponent,
+    TreatmentPlanAboutTabComponent,
     TreatmentSummaryComponent,
   ],
   templateUrl: './treatment-plan-tabs.component.html',

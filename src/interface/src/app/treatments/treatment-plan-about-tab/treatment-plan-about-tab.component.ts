@@ -7,13 +7,13 @@ import { ScenarioService } from '@services';
 
 @UntilDestroy()
 @Component({
-  selector: 'app-treatmentplan-about-tab',
+  selector: 'app-treatment-plan-about-tab',
   standalone: true,
   imports: [AsyncPipe, DecimalPipe, NgIf],
-  templateUrl: './treatmentplan-about-tab.component.html',
-  styleUrl: './treatmentplan-about-tab.component.scss',
+  templateUrl: './treatment-plan-about-tab.component.html',
+  styleUrl: './treatment-plan-about-tab.component.scss',
 })
-export class TreatmentplanAboutTabComponent implements OnInit {
+export class TreatmentPlanAboutTabComponent implements OnInit {
   constructor(
     private treatmentsState: TreatmentsState,
     private scenarioService: ScenarioService
@@ -35,8 +35,6 @@ export class TreatmentplanAboutTabComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((scenario: Scenario) => {
         this.standSize = scenario.configuration?.stand_size;
-        //TODO: confirm that this is actually the acres value we want to display- not planning area acres
-        // this is calculating from scenario_result, just as we do in the result table
         this.areaAcres = scenario.scenario_result?.result.features
           .map((featureCollection) => featureCollection.properties.area_acres)
           .reduce((acc: number, acres) => {
