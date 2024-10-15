@@ -1,0 +1,17 @@
+<div
+  *ngIf="filteredProjectAreas$ | async; let areas"
+  class="project-areas-list">
+  <div class="side-search-container">
+    <sg-search-bar
+      class="search-bar"
+      [debounceInterval]="160"
+      searchPlaceholder="Search a project area or treatment prescription"
+      [inputHeight]="'regular'"
+      (searchString)="doSearch($event)"></sg-search-bar>
+  </div>
+  <sg-project-area-expander
+    *ngFor="let projectArea of areas"
+    [projectArea]="projectArea"
+    (headerClick)="setActiveProjectArea(projectArea.project_area_id)">
+  </sg-project-area-expander>
+</div>
