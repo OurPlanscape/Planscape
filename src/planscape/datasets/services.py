@@ -4,7 +4,7 @@ from django.conf import settings
 from typing import Any, Dict, Optional
 from actstream import action
 from core.s3 import create_upload_url
-from datasets.models import DataLayer, Category, Dataset
+from datasets.models import DataLayer, Category, DataLayerType, Dataset, GeometryType
 
 
 def get_object_name(organization_id: int, uuid: str) -> str:
@@ -15,7 +15,7 @@ def get_storage_url(organization_id: int, uuid: str) -> str:
     return f"s3://{settings.S3_BUCKET}/{get_object_name(organization_id, uuid)}"
 
 
-def create_upload_url_for_org(organization_id: int, uuid: str) -> str:
+def create_upload_url_for_org(organization_id: int, uuid: str) -> Dict[str, Any]:
     object_name = get_object_name(organization_id, uuid)
     upload_url_response = create_upload_url(
         bucket_name=settings.S3_BUCKET,
@@ -25,7 +25,7 @@ def create_upload_url_for_org(organization_id: int, uuid: str) -> str:
     if not upload_url_response:
         raise ValueError("Could not create upload url.")
 
-    return upload_url_response["url"]
+    return upload_url_response
 
 
 @transaction.atomic()
@@ -35,6 +35,9 @@ def create_datalayer(
     organization,
     created_by,
     category: Optional[Category] = None,
+    type: Optional[DataLayerType] = None,
+    geometry_type: Optional[GeometryType] = None,
+    info: Optional[Dict[str, Any]] = None,
     **kwargs,
 ) -> Dict[str, Any]:
     metadata = kwargs.get("metadata", None) or None
@@ -49,6 +52,10 @@ def create_datalayer(
         category=category,
         url=storage_url,
         metadata=metadata,
+        type=type,
+        geometry_type=geometry_type,
+        info=info,
+        **kwargs,
     )
     upload_to = create_upload_url_for_org(
         organization_id=organization.pk,
