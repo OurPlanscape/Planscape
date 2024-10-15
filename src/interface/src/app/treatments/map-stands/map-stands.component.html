@@ -6,7 +6,8 @@
 
 <mgl-vector-source
   [id]="sourceId"
-  [tiles]="[vectorLayerUrl]"></mgl-vector-source>
+  [tiles]="[vectorLayerUrl]"
+  [promoteId]="'id'"></mgl-vector-source>
 
 <mgl-layer
   [id]="layers.stands.name"
@@ -38,12 +39,7 @@
   type="fill"
   source="stands"
   [paint]="layers.selectedStands.paint"
-  [sourceLayer]="layers.selectedStands.sourceLayer"
-  [filter]="[
-    'in',
-    ['get', 'id'],
-    ['literal', selectedStands$ | async]
-  ]"></mgl-layer>
+  [sourceLayer]="layers.selectedStands.sourceLayer"></mgl-layer>
 
 <mgl-layer
   [id]="layers.projectAreaOutline.name"
