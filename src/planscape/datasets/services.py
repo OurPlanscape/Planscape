@@ -1,3 +1,5 @@
+import mimetypes
+from pathlib import Path
 from uuid import uuid4
 from django.db import transaction
 from django.conf import settings
@@ -7,16 +9,42 @@ from core.s3 import create_upload_url
 from datasets.models import DataLayer, Category, DataLayerType, Dataset, GeometryType
 
 
-def get_object_name(organization_id: int, uuid: str) -> str:
-    return f"{settings.DATALAYERS_FOLDER}/{organization_id}/{uuid}"
+def get_object_name(
+    organization_id: int,
+    uuid: str,
+    original_name: Optional[str] = None,
+    mimetype: Optional[str] = None,
+) -> str:
+    extension = ""
+    if mimetype:
+        extension = mimetypes.guess_extension(mimetype)
+    if original_name:
+        original_file = Path(original_name)
+        extension = original_file.suffix
+    return f"{settings.DATALAYERS_FOLDER}/{organization_id}/{uuid}{extension}"
 
 
-def get_storage_url(organization_id: int, uuid: str) -> str:
-    return f"s3://{settings.S3_BUCKET}/{get_object_name(organization_id, uuid)}"
+def get_storage_url(
+    organization_id: int,
+    uuid: str,
+    original_name: Optional[str] = None,
+    mimetype: Optional[str] = None,
+) -> str:
+    return f"s3://{settings.S3_BUCKET}/{get_object_name(organization_id, uuid, original_name, mimetype)}"
 
 
-def create_upload_url_for_org(organization_id: int, uuid: str) -> Dict[str, Any]:
-    object_name = get_object_name(organization_id, uuid)
+def create_upload_url_for_org(
+    organization_id: int,
+    uuid: str,
+    original_name: Optional[str] = None,
+    mimetype: Optional[str] = None,
+) -> Dict[str, Any]:
+    object_name = get_object_name(
+        organization_id,
+        uuid,
+        original_name,
+        mimetype,
+    )
     upload_url_response = create_upload_url(
         bucket_name=settings.S3_BUCKET,
         object_name=object_name,
@@ -38,11 +66,18 @@ def create_datalayer(
     type: Optional[DataLayerType] = None,
     geometry_type: Optional[GeometryType] = None,
     info: Optional[Dict[str, Any]] = None,
+    original_name: Optional[str] = None,
+    mimetype: Optional[str] = None,
     **kwargs,
 ) -> Dict[str, Any]:
     metadata = kwargs.get("metadata", None) or None
     uuid = str(uuid4())
-    storage_url = get_storage_url(organization_id=organization.pk, uuid=uuid)
+    storage_url = get_storage_url(
+        organization_id=organization.pk,
+        uuid=uuid,
+        original_name=original_name,
+        mimetype=mimetype,
+    )
     datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid,
@@ -55,11 +90,15 @@ def create_datalayer(
         type=type,
         geometry_type=geometry_type,
         info=info,
+        original_name=original_name,
+        mimetype=mimetype,
         **kwargs,
     )
     upload_to = create_upload_url_for_org(
         organization_id=organization.pk,
         uuid=uuid,
+        original_name=original_name,
+        mimetype=mimetype,
     )
     action.send(created_by, verb="created", action_object=datalayer)
     return {
