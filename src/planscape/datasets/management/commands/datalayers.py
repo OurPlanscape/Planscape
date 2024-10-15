@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from pprint import pprint
 from typing import Any, Dict, Optional
@@ -48,10 +49,10 @@ class Command(PlanscapeCommand):
     def create(self, **kwargs) -> None:
         pprint(self._create_datalayer(**kwargs))
 
-    def _upload_file(self, rasters, datalayer, upload_to) -> bool:
+    def _upload_file(self, rasters, datalayer, upload_to) -> requests.Response:
         upload_url_path = Path(datalayer.get("url"))
         object_name = "/".join(upload_url_path.parts[2:])
-        upload_file(
+        return upload_file(
             object_name=object_name,
             input_file=rasters[0],
             upload_to=upload_to,
@@ -75,7 +76,7 @@ class Command(PlanscapeCommand):
             "name": name,
             "dataset": dataset,
             "type": layer_type,
-            "info": layer_info,
+            # "info": layer_info,
             "geometry_type": geometry_type,
         }
         response = requests.post(
@@ -97,29 +98,26 @@ class Command(PlanscapeCommand):
         get_layer_info = (
             info_raster if layer_type == DataLayerType.RASTER else info_vector
         )
-        layer_info = get_layer_info(input_file=input_file)
-        geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         rasters = to_planscape(input_file=input_file)
-        try:
-            output_data = self._create_datalayer_request(
-                name=name,
-                dataset=dataset,
-                org=org,
-                layer_type=layer_type,
-                geometry_type=geometry_type,
-                layer_info=layer_info,
-                **kwargs,
-            )
-            if not output_data:
-                raise ValueError("request failed.")
-            datalayer = output_data.get("datalayer")
-            upload_to = output_data.get("upload_to")
-            self._upload_file(
-                rasters,
-                datalayer=datalayer,
-                upload_to=upload_to,
-            )
-            return output_data
-        except Exception:
-            self.stderr.write("Something went wrong while talking to Planscape.")
-            return
+        layer_info = get_layer_info(input_file=rasters[0])
+        geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
+        # updated info
+        output_data = self._create_datalayer_request(
+            name=name,
+            dataset=dataset,
+            org=org,
+            layer_type=layer_type,
+            geometry_type=geometry_type,
+            layer_info=layer_info,
+            **kwargs,
+        )
+        if not output_data:
+            raise ValueError("request failed.")
+        datalayer = output_data.get("datalayer")
+        upload_to = output_data.get("upload_to")
+        self._upload_file(
+            rasters,
+            datalayer=datalayer,
+            upload_to=upload_to,
+        )
+        return output_data
