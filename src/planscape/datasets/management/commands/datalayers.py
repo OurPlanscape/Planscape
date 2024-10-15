@@ -57,6 +57,34 @@ class Command(PlanscapeCommand):
             upload_to=upload_to,
         )
 
+    def _create_datalayer_request(
+        self,
+        name: str,
+        dataset: int,
+        org: int,
+        layer_type: str,
+        geometry_type: str,
+        layer_info: Dict[str, Any],
+        **kwargs,
+    ) -> Optional[Dict[str, Any]]:
+        base_url = self.get_base_url(**kwargs)
+        url = base_url + "/v2/datalayers/"
+        headers = self.get_headers(**kwargs)
+        input_data = {
+            "organization": org,
+            "name": name,
+            "dataset": dataset,
+            "type": layer_type,
+            "info": layer_info,
+            "geometry_type": geometry_type,
+        }
+        response = requests.post(
+            url,
+            headers=headers,
+            data=input_data,
+        )
+        return response.json()
+
     def _create_datalayer(
         self,
         name: str,
@@ -73,23 +101,17 @@ class Command(PlanscapeCommand):
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         rasters = to_planscape(input_file=input_file)
         try:
-            base_url = self.get_base_url(**kwargs)
-            url = base_url + "/v2/datalayers/"
-            headers = self.get_headers(**kwargs)
-            input_data = {
-                "organization": org,
-                "name": name,
-                "dataset": dataset,
-                "type": layer_type,
-                "info": layer_info,
-                "geometry_type": geometry_type,
-            }
-            response = requests.post(
-                url,
-                headers=headers,
-                data=input_data,
+            output_data = self._create_datalayer_request(
+                name=name,
+                dataset=dataset,
+                org=org,
+                layer_type=layer_type,
+                geometry_type=geometry_type,
+                layer_info=layer_info,
+                **kwargs,
             )
-            output_data = response.json()
+            if not output_data:
+                raise ValueError("request failed.")
             datalayer = output_data.get("datalayer")
             upload_to = output_data.get("upload_to")
             self._upload_file(
