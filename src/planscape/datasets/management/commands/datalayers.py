@@ -82,7 +82,7 @@ class Command(PlanscapeCommand):
         response = requests.post(
             url,
             headers=headers,
-            data=input_data,
+            json=input_data,
         )
         return response.json()
 
