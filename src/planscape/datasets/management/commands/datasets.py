@@ -16,11 +16,10 @@ class Command(PlanscapeCommand):
         create_parser.add_argument(
             "-p",
             "--public",
-            type=str,
             action="store_true",
         )
         create_parser.add_argument(
-            "-v",
+            "-ve",
             "--version",
             type=str,
         )
@@ -39,7 +38,14 @@ class Command(PlanscapeCommand):
         self.stdout.write(f"Found {data['count']} {self.entity}:")
         pprint(data)
 
-    def create(self, name: str, public: bool, version: Optional[str], **kwargs) -> None:
+    def create(
+        self,
+        name: str,
+        public: bool,
+        org: int,
+        version: Optional[str],
+        **kwargs,
+    ) -> None:
         base_url = self.get_base_url(**kwargs)
         url = base_url + "/v2/datasets/"
         headers = self.get_headers(**kwargs)
@@ -47,6 +53,7 @@ class Command(PlanscapeCommand):
             "name": name,
             "visibility": "PUBLIC" if public else "PRIVATE",
             "version": version,
+            "organization": org,
         }
         response = requests.post(
             url,

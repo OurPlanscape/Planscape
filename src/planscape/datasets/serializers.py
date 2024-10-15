@@ -111,9 +111,13 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "dataset",
             "category",
             "name",
+            "type",
+            "geometry_type",
+            "info",
+            "geometry",
         )
 
 
 class DataLayerCreatedSerializer(serializers.Serializer):
     datalayer = DataLayerSerializer()
-    upload_to = serializers.URLField()
+    upload_to = serializers.JSONField()
