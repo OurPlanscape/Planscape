@@ -556,7 +556,7 @@ class GeoJSONSerializer(serializers.Serializer):
 class UploadedScenarioDataSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
     stand_size = serializers.ChoiceField(
-        choices=["SMALL", "MEDIUM", "LARGE"], required=False
+        choices=["SMALL", "MEDIUM", "LARGE"], required=False, allow_blank=True
     )
     planning_area = serializers.IntegerField(min_value=1, required=True)
     geometry = serializers.JSONField(required=True)
@@ -572,7 +572,9 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         return data
 
     def validate_geometry(self, value):
-        geojson_serializer = GeoJSONSerializer(data=json.loads(value))
+        if not isinstance(value, (dict, list)):
+            value = json.loads(value)
+        geojson_serializer = GeoJSONSerializer(data=value)
         geojson_serializer.is_valid(raise_exception=True)
         return geojson_serializer.validated_data
 
