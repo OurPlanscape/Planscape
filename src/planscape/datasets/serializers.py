@@ -112,9 +112,11 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "category",
             "name",
             "type",
-            "geometry_type",
             "info",
+            "original_name",
+            "mimetype",
             "geometry",
+            "geometry_type",
         )
 
 
