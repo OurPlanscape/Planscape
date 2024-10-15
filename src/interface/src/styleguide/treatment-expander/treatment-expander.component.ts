@@ -37,7 +37,7 @@ export class TreatmentExpanderComponent {
   /**
    * A treatment type
    */
-  @Input() treatmentType: string | null = null;
+  @Input() treatmentType: keyof typeof PRESCRIPTIONS | null = null;
   /**
    * A treatment action
    */

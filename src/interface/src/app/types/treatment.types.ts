@@ -1,6 +1,8 @@
 import { Point } from 'geojson';
+import { PRESCRIPTIONS } from '../treatments/prescriptions';
 
 export type TreatmentStatus = 'FAILURE' | 'PENDING' | 'RUNNING' | 'SUCCESS';
+export type TreatmentType = keyof typeof PRESCRIPTIONS;
 
 export interface TreatmentPlan {
   id: number;
@@ -23,7 +25,7 @@ export interface Prescription {
   action: string;
   area_acres: number;
   treated_stand_count: number;
-  type: string;
+  type: TreatmentType;
   stand_ids: number[];
 }
 
