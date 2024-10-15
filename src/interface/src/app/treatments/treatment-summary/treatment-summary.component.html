@@ -1,7 +1,0 @@
-<div *ngIf="summary$ | async; let summary" class="project-areas-list">
-  <sg-project-area-expander
-    *ngFor="let projectArea of summary.project_areas"
-    [projectArea]="projectArea"
-    (headerClick)="setActiveProjectArea(projectArea.project_area_id)">
-  </sg-project-area-expander>
-</div>

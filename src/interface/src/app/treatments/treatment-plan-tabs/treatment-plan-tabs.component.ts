@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
 import { TreatmentPlanAboutTabComponent } from '../treatment-plan-about-tab/treatment-plan-about-tab.component';
-import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
+import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 
 @Component({
   selector: 'app-treatment-plan-tabs',
@@ -9,7 +9,7 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
   imports: [
     MatTabsModule,
     TreatmentPlanAboutTabComponent,
-    TreatmentSummaryComponent,
+    ProjectAreasTabComponent,
   ],
   templateUrl: './treatment-plan-tabs.component.html',
   styleUrl: './treatment-plan-tabs.component.scss',

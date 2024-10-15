@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { TreatmentSummaryComponent } from './treatment-summary.component';
+import { ProjectAreasTabComponent } from './project-areas-tab.component';
 import { MockProvider } from 'ng-mocks';
 import { TreatmentsState } from '../treatments.state';
 
-describe('TreatmentSummaryComponent', () => {
-  let component: TreatmentSummaryComponent;
-  let fixture: ComponentFixture<TreatmentSummaryComponent>;
+describe('ProjectAreasTabComponent', () => {
+  let component: ProjectAreasTabComponent;
+  let fixture: ComponentFixture<ProjectAreasTabComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentSummaryComponent],
+      imports: [ProjectAreasTabComponent],
       providers: [MockProvider(TreatmentsState)],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TreatmentSummaryComponent);
+    fixture = TestBed.createComponent(ProjectAreasTabComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
