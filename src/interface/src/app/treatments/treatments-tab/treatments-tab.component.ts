@@ -1,12 +1,13 @@
 import { Component } from '@angular/core';
 import { CommonModule, NgIf, NgFor } from '@angular/common';
-//TODO: fix path?
-import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opacity-slider.component';
-import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
-import { TreatmentExpanderComponent } from 'src/styleguide/treatment-expander/treatment-expander.component';
+import {
+  SearchBarComponent,
+  OpacitySliderComponent,
+  TreatmentExpanderComponent,
+  InputFieldComponent,
+  InputDirective,
+} from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import { InputDirective } from '../../../styleguide/input/input.directive';
-import { InputFieldComponent } from '../../../styleguide/input/input-field.component';
 import { Prescription } from '@types';
 import { map, combineLatest, Observable } from 'rxjs';
 import {

@@ -120,8 +120,7 @@ export class TreatmentsState {
   }
 
   // simpler, no side-effect summary loader...
-  // TODO: refactor this one and the one above this
-  loadSummaryDataOnly() {
+  reloadSummary() {
     this.treatmentsService
       .getTreatmentPlanSummary(this.getTreatmentPlanId())
       .subscribe((summary) => {
@@ -173,6 +172,9 @@ export class TreatmentsState {
     return this.treatmentsService
       .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
       .pipe(
+        tap(() => {
+          this.reloadSummary();
+        }),
         catchError((error) => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
