@@ -1,0 +1,29 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  height: 100%;
+  display: block;
+
+  .debug-link {
+    height: 20px;
+  }
+  
+  .side-search-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    height: 70px;
+    padding: 20px 10px 10px 10px;
+  }
+
+  ::ng-deep .search-bar .input-wrapper {
+    width: 100%;
+    background-color: $color-light-gray;
+  }
+  ::ng-deep .search-bar input {
+    width: 100%;
+    @include xs-label();
+  }
+}

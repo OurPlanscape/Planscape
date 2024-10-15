@@ -30,7 +30,7 @@ class TestCreateUploadURLForOrganization(TestCase):
     def test_call_create_url_returns_url(self, create_upload_url_mock):
         uuid = str(uuid4())
         result = create_upload_url_for_org(1, uuid)
-        self.assertEqual(result, "foo")
+        self.assertEqual(result, {"url": "foo"})
         create_upload_url_mock.assert_called_with(
             bucket_name=settings.S3_BUCKET,
             object_name=f"{settings.DATALAYERS_FOLDER}/1/{uuid}",

@@ -1,7 +1,19 @@
-import { Component, Input } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  Output,
+  ViewChild,
+  AfterViewInit,
+  ChangeDetectorRef,
+} from '@angular/core';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MatExpansionModule } from '@angular/material/expansion';
+import {
+  MatExpansionModule,
+  MatExpansionPanel,
+  MatExpansionPanelHeader,
+} from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
 import { TreatmentProjectArea } from '@types';
@@ -29,7 +41,12 @@ import {
   templateUrl: './project-area-expander.component.html',
   styleUrl: './project-area-expander.component.scss',
 })
-export class ProjectAreaExpanderComponent {
+export class ProjectAreaExpanderComponent implements AfterViewInit {
+  constructor(private cdr: ChangeDetectorRef) {}
+
+  @ViewChild('header') header!: MatExpansionPanelHeader;
+  @ViewChild(MatExpansionPanel) panel!: MatExpansionPanel;
+
   /**
    * Optional title text -- explicitly overrides the derived title
    */
@@ -38,12 +55,36 @@ export class ProjectAreaExpanderComponent {
    * Whether or not this is the selected expander
    */
   @Input() selected = false;
-
-  openState = false;
   /**
    * A TreatmentProjectArea record, with an array of prescriptions
    */
   @Input() projectArea!: TreatmentProjectArea;
+  @Output() hoverEvent = new EventEmitter<boolean>();
+  @Output() headerClick = new EventEmitter();
+  openState = false;
+
+  ngAfterViewInit() {
+    // Disable the click handler on the header
+    this.header._toggle = () => {};
+    this.cdr.detectChanges();
+  }
+
+  togglePanel(event: Event): void {
+    event.stopPropagation();
+    this.panel.toggle();
+  }
+
+  onHeaderClick(event: MouseEvent): void {
+    // Prevent the default expansion behavior
+    const target = event.target as HTMLElement;
+    if (!target.classList.contains('mat-expansion-indicator')) {
+      event.preventDefault();
+      event.stopPropagation();
+      this.headerClick.emit();
+    } else {
+      this.togglePanel(event);
+    }
+  }
 
   toggleState() {
     this.openState = !this.openState;
@@ -62,6 +103,10 @@ export class ProjectAreaExpanderComponent {
       }
     }
     return '';
+  }
+
+  handleHover($event: Event) {
+    this.hoverEvent.emit(true);
   }
 
   treatedStandCount(): number {

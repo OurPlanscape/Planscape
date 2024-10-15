@@ -1,9 +1,0 @@
-<div *ngIf="summary$ | async; let summary">
-  <div class="project-areas" *ngFor="let projectArea of summary.project_areas">
-    <a
-      [routerLink]="['project-area', projectArea.project_area_id]"
-      (click)="setActiveProjectArea(projectArea.project_area_id)">
-      {{ projectArea.project_area_name }}
-    </a>
-  </div>
-</div>

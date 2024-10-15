@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Dict, List, Optional
+
 import boto3
+import requests
 from botocore.exceptions import ClientError
 
 
@@ -26,3 +28,16 @@ def create_upload_url(
 
     # The response contains the presigned URL and required fields
     return response
+
+
+def upload_file(
+    object_name: str, input_file: str, upload_to: Dict[str, Any]
+) -> requests.Response:
+    with open(input_file, "rb") as f:
+        files = {"file": (object_name, f)}
+        response = requests.post(
+            upload_to["url"],
+            data=upload_to["fields"],
+            files=files,
+        )
+        return response

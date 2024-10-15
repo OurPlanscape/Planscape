@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
+import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -13,8 +13,8 @@ import { TreatedStandsState } from '../treatment-map/treated-stands.state';
   standalone: true,
   imports: [
     TreatmentMapComponent,
-    TreatmentSummaryComponent,
     MatTabsModule,
+    ProjectAreasTabComponent,
     JsonPipe,
     AsyncPipe,
     RouterLink,

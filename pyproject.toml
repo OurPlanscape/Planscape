@@ -60,6 +60,7 @@ django-stubs-ext = "^5.0.4"
 whitenoise = "^6.7.0"
 djangorestframework-types = "^0.8.0"
 toml = "^0.10.2"
+rio-cogeo = "^5.3.6"
 
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"
