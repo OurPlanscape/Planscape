@@ -178,6 +178,16 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         help_text="output of gdalinfo or ogrinfo.",
     )
 
+    original_name = models.CharField(
+        max_length=1024,
+        null=True,
+    )
+
+    mimetype = models.CharField(
+        null=True,
+        max_length=256,
+    )
+
     url = models.CharField(
         max_length=1024,
         validators=[URLValidator(schemes=SUPPORTED_SCHEMES)],
