@@ -6,6 +6,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('TreatmentProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -13,7 +14,11 @@ describe('TreatmentProjectAreaComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentProjectAreaComponent, RouterTestingModule],
+      imports: [
+        TreatmentProjectAreaComponent,
+        RouterTestingModule,
+        BrowserAnimationsModule,
+      ],
       providers: [
         MockProviders(MapConfigState, SelectedStandsState, TreatmentsState),
       ],
