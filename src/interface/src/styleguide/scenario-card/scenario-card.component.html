@@ -15,10 +15,12 @@
       New Treatment Plan
     </button>
     <button
+      (click)="menuTriggerClick($event)"
       [disabled]="!isDone()"
+      mat-icon-button
+      class="more-menu-button"
       [matMenuTriggerFor]="menu"
-      aria-label="more scenario Options"
-      class="more-menu-button">
+      aria-label="more scenario options">
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">

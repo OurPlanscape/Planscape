@@ -113,7 +113,7 @@ export class ScenarioCardComponent {
     return 'Failed';
   }
 
-  handleClick(event: Event) {
-    this.clicked.emit(event);
+  menuTriggerClick(event: Event) {
+    event.stopPropagation();
   }
 }
