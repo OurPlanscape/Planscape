@@ -1,16 +1,16 @@
 import {
   Component,
-  Input,
-  HostBinding,
-  Output,
   EventEmitter,
+  HostBinding,
+  Input,
+  Output,
 } from '@angular/core';
 import {
-  DatePipe,
   CurrencyPipe,
+  DatePipe,
+  NgClass,
   NgIf,
   NgSwitch,
-  NgClass,
 } from '@angular/common';
 import {
   StatusChipComponent,
@@ -55,6 +55,8 @@ export class ScenarioCardComponent {
   @Input() created_at? = '';
   @Input() selected: boolean = false;
 
+  @Input() treatmentPlansEnabled = false;
+
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
   @Output() archiveScenario = new EventEmitter();
@@ -62,7 +64,10 @@ export class ScenarioCardComponent {
 
   readonly chipsStatus: Record<
     ScenarioResultStatus,
-    { status: StatusChipStatus; label: ScenarioResultLabel }
+    {
+      status: StatusChipStatus;
+      label: ScenarioResultLabel;
+    }
   > = {
     FAILURE: { status: 'failed', label: 'Failed' },
     LOADING: { status: 'running', label: 'Running' },

@@ -5,13 +5,17 @@
       *ngIf="status"
       [status]="getChipStatus()"
       [label]="getChipLabel()"></sg-status-chip>
-    <div *ngIf="hasFailed()" class="failed-message">
+    <div *ngIf="hasFailed() && treatmentPlansEnabled" class="failed-message">
       <mat-icon class="error-icon">error</mat-icon>
       Create a new scenario to proceed to treatment plan
     </div>
   </div>
   <div class="controls-section" *ngIf="!hasFailed()">
-    <button sg-button icon="add" [disabled]="!isDone()">
+    <button
+      sg-button
+      icon="add"
+      [disabled]="!isDone()"
+      *ngIf="treatmentPlansEnabled">
       New Treatment Plan
     </button>
     <button
@@ -24,8 +28,9 @@
     <mat-menu #menu="matMenu">
       <button mat-menu-item (click)="openScenario.emit()">
         <mat-icon class="folder_open-icon">folder_open</mat-icon>
-        <span>Open</span></button
-      ><button mat-menu-item (click)="openPlanningProgress.emit()">
+        <span>Open</span>
+      </button>
+      <button mat-menu-item (click)="openPlanningProgress.emit()">
         <mat-icon class="more_horiz-icon">more_horiz</mat-icon>
         <span>Planning progress</span>
       </button>
@@ -49,11 +54,11 @@
       <div class="detail-header">Areas</div>
       <div class="detail-info">{{ areas ?? 'N/A' }}</div>
     </div>
-    <div class="detail-column">
+    <div class="detail-column" *ngIf="treatmentPlansEnabled">
       <div class="detail-header">Est Budget</div>
       <div class="detail-info">{{ (budget | currency) ?? 'N/A' }}</div>
     </div>
-    <div class="detail-column">
+    <div class="detail-column" *ngIf="treatmentPlansEnabled">
       <div class="detail-header">Treatment Plans</div>
       <div class="detail-info">{{ treatmentPlansCount }}</div>
     </div>
