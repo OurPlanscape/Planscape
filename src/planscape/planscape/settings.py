@@ -75,6 +75,7 @@ INSTALLED_APPS = [
     "rest_framework_simplejwt",
     "rest_framework.authtoken",
     "drf_spectacular",
+    "treebeard",
 ] + PLANSCAPE_APPS
 
 # Middleware order matters because of layering dependencies
@@ -100,6 +101,7 @@ TEMPLATES = [
         "DIRS": [
             os.path.join(BASE_DIR, "templates"),
             os.path.join(BASE_DIR, "templates/allauth"),
+            os.path.join(BASE_DIR, "templates/treebeard"),
         ],
         "APP_DIRS": True,
         "OPTIONS": {
