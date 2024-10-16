@@ -25,7 +25,13 @@ import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { combineLatest, distinctUntilChanged, map, Observable } from 'rxjs';
+import {
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  pairwise,
+} from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   BASE_STANDS_PAINT,
@@ -79,7 +85,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
    */
   @Input() sourceId = 'stands';
 
-  selectedStands$ = this.selectedStandsState.selectedStands$;
   treatedStands$ = this.treatedStandsState.treatedStands$;
   sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
   /**
@@ -149,7 +154,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     selectedStands: {
       name: 'stands-layer-selected',
       sourceLayer: 'stands_by_tx_plan',
-      paint: SELECTED_STANDS_PAINT,
+      paint: SELECTED_STANDS_PAINT as any,
     },
   };
 
@@ -173,6 +178,27 @@ export class MapStandsComponent implements OnChanges, OnInit {
           treatedStands.filter((stand) => stand.action in SEQUENCE_ACTIONS),
           opacity
         );
+      });
+
+    this.selectedStandsState.selectedStands$
+      .pipe(pairwise(), untilDestroyed(this))
+      .subscribe(([previousIds, currentIds]) => {
+        const previousSet = new Set(previousIds);
+        const currentSet = new Set(currentIds);
+
+        // find and remove selection on previous stands
+        previousIds.forEach((id) => {
+          if (!currentSet.has(id)) {
+            this.deselectStand(id);
+          }
+        });
+
+        // add selection on new stands
+        currentIds.forEach((id) => {
+          if (!previousSet.has(id)) {
+            this.selectStand(id);
+          }
+        });
       });
   }
 
@@ -201,6 +227,13 @@ export class MapStandsComponent implements OnChanges, OnInit {
     }
     const standId = this.getStandIdFromStandsLayer(event.point)[0];
     this.selectedStandsState.toggleStand(standId);
+
+    const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
+      layers: [this.layers.stands.name],
+    });
+
+    this.mapLibreMap.setFeatureState(features[0], { selected: true });
+
     this.treatmentsState.setShowApplyTreatmentsDialog(true);
   }
 
@@ -251,6 +284,8 @@ export class MapStandsComponent implements OnChanges, OnInit {
     return features.map((feature) => feature.properties['id']);
   }
 
+  stands: number[] = [];
+
   private selectStandsWithinRectangle(): void {
     if (!this.selectStart || !this.selectEnd) {
       return;
@@ -271,5 +306,27 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
     // Update the state with the combined array of selected stands
     this.selectedStandsState.updateSelectedStands(Array.from(combinedStands));
+  }
+
+  private deselectStand(id: number) {
+    this.mapLibreMap.removeFeatureState(
+      {
+        source: 'stands',
+        sourceLayer: this.layers.stands.sourceLayer,
+        id: id,
+      },
+      'selected'
+    );
+  }
+
+  private selectStand(id: number) {
+    this.mapLibreMap.setFeatureState(
+      {
+        source: 'stands',
+        sourceLayer: this.layers.stands.sourceLayer,
+        id: id,
+      },
+      { selected: true }
+    );
   }
 }
