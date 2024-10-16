@@ -14,10 +14,7 @@
   gap: 1em;
   height: 140px;
   justify-content: center;
-  left: 0px;
-  padding: 8px 12px;
-  right: 0px;
-  top: 40px;
+  padding: 8px 4px 8px 12px;
   width: 100%;
 
   &:hover {
@@ -61,7 +58,10 @@
   .controls-section {
     display: flex;
     flex-direction: row;
-    gap: 0;
+    gap: 4px;
+    justify-content: space-between;
+    align-content: center;
+    height: 100%;
   }
 
   h4 {
