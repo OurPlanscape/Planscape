@@ -23,7 +23,7 @@
   type="fill"
   source="stands"
   [paint]="layers.sequenceStands.paint"
-  [filter]="['in', ['get', 'id'], ['literal', sequencedStandsId$ | async]]"
+  [filter]="['in', ['get', 'id'], ['literal', sequenceStandsIds$ | async]]"
   [sourceLayer]="layers.sequenceStands.sourceLayer"></mgl-layer>
 
 <mgl-layer

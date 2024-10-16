@@ -81,7 +81,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   selectedStands$ = this.selectedStandsState.selectedStands$;
   treatedStands$ = this.treatedStandsState.treatedStands$;
-  sequencedStandsId$ = this.treatedStandsState.sequenceStandsIds$;
+  sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
   /**
    * Reference to the selected stands before the user starts dragging for stand selection
    */
