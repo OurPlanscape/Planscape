@@ -1,13 +1,8 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor } from '@angular/common';
-
 import { ScenarioRow } from '../saved-scenarios/saved-scenarios.component';
-import { Scenario, ScenarioResult } from '@types';
 import { ScenarioCardComponent } from '../../../../styleguide/scenario-card/scenario-card.component';
-import {
-  parseResultsToProjectAreas,
-  parseResultsToTotals,
-} from '../../plan-helpers';
+import { FeatureService } from '../../../features/feature.service';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -22,12 +17,9 @@ export class ScenariosCardListComponent {
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
   @Output() viewScenario = new EventEmitter<ScenarioRow>();
 
-  hasResults(scenario: Scenario) {
-    return (
-      !!scenario.scenario_result &&
-      scenario.scenario_result.result?.features?.length > 0
-    );
-  }
+  constructor(private featureService: FeatureService) {}
+
+  treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
 
   handleClickedScenario(row: ScenarioRow): void {
     if (
@@ -37,11 +29,6 @@ export class ScenariosCardListComponent {
       this.selectedCard = row;
       this.viewScenario.emit(row);
     }
-  }
-
-  calculateTotals(results: ScenarioResult) {
-    const projectAreas = parseResultsToProjectAreas(results);
-    return parseResultsToTotals(projectAreas);
   }
 
   isSelected(s: ScenarioRow): boolean {

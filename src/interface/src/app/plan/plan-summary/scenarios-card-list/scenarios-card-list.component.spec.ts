@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ScenariosCardListComponent } from './scenarios-card-list.component';
+import { FeaturesModule } from '../../../features/features.module';
 
 describe('ScenariosCardListComponent', () => {
   let component: ScenariosCardListComponent;
@@ -8,7 +9,7 @@ describe('ScenariosCardListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ScenariosCardListComponent],
+      imports: [ScenariosCardListComponent, FeaturesModule],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ScenariosCardListComponent);
