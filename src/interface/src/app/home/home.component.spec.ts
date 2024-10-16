@@ -5,7 +5,6 @@ import { By } from '@angular/platform-browser';
 import { BehaviorSubject } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FeaturesModule } from '../features/features.module';
-import { FEATURES_JSON } from '../features/features-config';
 
 describe('HomeComponent', () => {
   let fixture: ComponentFixture<HomeComponent>;
@@ -24,7 +23,6 @@ describe('HomeComponent', () => {
           provide: AuthService,
           useValue: { loggedInStatus$: new BehaviorSubject(false) },
         },
-        { provide: FEATURES_JSON, useValue: { new_home: true } },
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
     }).compileComponents();
