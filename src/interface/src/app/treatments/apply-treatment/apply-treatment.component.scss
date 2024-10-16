@@ -18,6 +18,11 @@
   display: block;
 }
 
+.apply-warning {
+  margin-bottom: 16px;
+}
+
+
 .label {
   margin-bottom: 8px;
   color: $color-dark-gray;
@@ -121,3 +126,4 @@ sg-modal {
 .prescription-sequence ::ng-deep label {
   font-weight: bold;
 }
+

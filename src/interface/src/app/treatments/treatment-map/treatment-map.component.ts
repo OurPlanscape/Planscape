@@ -105,6 +105,8 @@ export class TreatmentMapComponent {
     withLatestFrom(this.mapConfigState.showProjectAreasLayer$),
     map(([bounds, showAreas]) => showAreas) // Pass only the showProjectAreas$ value forward
   );
+
+  showFillProjectAreas$ = this.mapConfigState.showFillProjectAreas$;
   /**
    * Observable to determine if we show the treatment stands layer
    */
@@ -150,6 +152,14 @@ export class TreatmentMapComponent {
     this.dragStandsSelection = true;
 
     this.mouseStart = event;
+  }
+
+  mapLoaded(event: MapLibreMap) {
+    this.mapLibreMap = event;
+  }
+
+  onImageMissing(a: any) {
+    // console.log('missing!', a);
   }
 
   onMapMouseMove(event: MapMouseEvent): void {

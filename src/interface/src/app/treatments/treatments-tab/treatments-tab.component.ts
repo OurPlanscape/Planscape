@@ -1,22 +1,22 @@
 import { Component } from '@angular/core';
-import { CommonModule, NgIf, NgFor } from '@angular/common';
+import { CommonModule, NgFor, NgIf } from '@angular/common';
 import {
-  SearchBarComponent,
-  OpacitySliderComponent,
-  TreatmentExpanderComponent,
-  InputFieldComponent,
   InputDirective,
+  InputFieldComponent,
+  OpacitySliderComponent,
+  SearchBarComponent,
+  TreatmentExpanderComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { Prescription } from '@types';
-import { map, combineLatest, Observable } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
 } from '../prescriptions';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { TreatmentsState } from '../treatments.state';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-project-area-tx-tab',
@@ -37,12 +37,11 @@ import { TreatmentsState } from '../treatments.state';
 })
 export class ProjectAreaTreatmentsTabComponent {
   constructor(
-    private treatedStandsState: TreatedStandsState,
+    private mapConfigState: MapConfigState,
     private treatmentsState: TreatmentsState
   ) {}
-  opacity = this.treatedStandsState.opacity$;
-  summary$ = this.treatmentsState.summary$;
-  projId$ = this.treatmentsState.projectAreaId$;
+
+  opacity$ = this.mapConfigState.treatedStandsOpacity$;
   searchString: string | null = null;
 
   prescriptions$: Observable<Prescription[]> = combineLatest([
@@ -62,7 +61,7 @@ export class ProjectAreaTreatmentsTabComponent {
   filteredPrescriptions$ = this.prescriptions$;
 
   handleOpacityChange(opacity: number) {
-    this.treatedStandsState.setOpacity(opacity);
+    this.mapConfigState.setTreatedStandsOpacity(opacity);
   }
 
   setSearchString(searchString: string) {

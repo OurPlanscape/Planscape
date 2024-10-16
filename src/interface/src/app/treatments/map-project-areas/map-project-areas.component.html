@@ -3,47 +3,42 @@
   [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
 <mgl-layer
-  id="map-project-areas-line"
-  type="line"
-  source="scenarioProjectAreas"
-  [sourceLayer]="layerName"
-  [paint]="{
-    'line-color': visible ? '#333' : 'transparent',
-    'line-width': 2
-  }"></mgl-layer>
-
-<mgl-layer
-  id="map-project-areas-fill"
+  [id]="layers.projectAreasFill.name"
   type="fill"
   source="scenarioProjectAreas"
   (layerClick)="visible ? goToProjectArea($event) : null"
   (layerMouseEnter)="visible ? setCursor() : null"
   (layerMouseMove)="visible ? setProjectAreaTooltip($event) : null"
   (layerMouseLeave)="visible ? resetCursorAndTooltip($event) : null"
-  [sourceLayer]="layerName"
+  [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
-    'fill-outline-color': '#000',
     'fill-color': getFillColors(),
-    'fill-opacity': visible ? 0.5 : 0
+    'fill-opacity': visible && withFill ? 0.5 : 0
   }"></mgl-layer>
 
 <mgl-layer
-  id="map-project-areas-labels"
+  [id]="layers.projectAreasOutline.name"
+  type="line"
+  source="scenarioProjectAreas"
+  [sourceLayer]="layers.projectAreasOutline.sourceLayer"
+  [paint]="{
+    'line-color': visible ? layers.projectAreasOutline.color : 'transparent',
+    'line-width': 2
+  }"></mgl-layer>
+
+<mgl-layer
+  [id]="layers.projectAreaLabels.name"
   type="symbol"
   source="scenarioProjectAreas"
-  [sourceLayer]="'project_areas_by_scenario_label'"
+  [sourceLayer]="layers.projectAreaLabels.sourceLayer"
   [layout]="{
-    visibility: visible ? 'visible' : 'none',
+    visibility: visible && withFill ? 'visible' : 'none',
     'text-field': ['get', 'rank'],
     'text-size': 14,
     'text-anchor': 'center',
     'text-justify': 'center'
   }"
-  [paint]="{
-    'text-color': '#000',
-    'text-halo-color': '#fff',
-    'text-halo-width': 2
-  }"></mgl-layer>
+  [paint]="layers.projectAreaLabels.paint"></mgl-layer>
 
 <ng-container *ngIf="mouseLngLat">
   <app-map-tooltip

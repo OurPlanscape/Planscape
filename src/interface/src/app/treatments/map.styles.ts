@@ -1,9 +1,14 @@
 // colors
 
 import { TreatedStand } from '@types';
-import { PrescriptionSingleAction, SEQUENCE_COLORS } from './prescriptions';
+import {
+  PRESCRIPTION_COLORS,
+  PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+  SEQUENCE_PATTERNS,
+} from './prescriptions';
 
-const BASE_COLORS: Record<
+export const BASE_COLORS: Record<
   'white' | 'black' | 'blue' | 'dark' | 'light',
   string
 > = {
@@ -50,6 +55,36 @@ export function generatePaintForTreatedStands(
   };
 }
 
+export function generatePaintForSequencedStands(
+  sequenceStands: TreatedStand[],
+  opacity: number
+) {
+  if (sequenceStands.length < 1) {
+    return {};
+  }
+
+  return {
+    'fill-pattern': generatePatternsForSequencedStands(sequenceStands) as any,
+    'fill-opacity': opacity,
+  };
+}
+
+function generatePatternsForSequencedStands(sequenceStands: TreatedStand[]) {
+  const matchExpression: (number | string | string[])[] = [
+    'match',
+    ['get', 'id'],
+  ];
+  sequenceStands.forEach((stand) => {
+    matchExpression.push(
+      stand.id,
+      SEQUENCE_PATTERNS[stand.action as PrescriptionSequenceAction]
+    );
+  });
+  matchExpression.push('sequence1');
+
+  return matchExpression;
+}
+
 function generateColorsForTreatedStands(stands: TreatedStand[]) {
   const defaultColor = BASE_COLORS.light;
   if (stands.length === 0) {
@@ -63,7 +98,7 @@ function generateColorsForTreatedStands(stands: TreatedStand[]) {
   stands.forEach((stand) => {
     matchExpression.push(
       stand.id,
-      SEQUENCE_COLORS[stand.action as PrescriptionSingleAction]
+      PRESCRIPTION_COLORS[stand.action as PrescriptionSingleAction]
     );
   });
   matchExpression.push(defaultColor);

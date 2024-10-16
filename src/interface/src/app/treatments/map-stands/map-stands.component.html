@@ -1,3 +1,9 @@
+<!--Patterns-->
+<mgl-image
+  *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]"
+  [id]="'sequence' + i"
+  [url]="'/assets/png/patterns/' + i + '.png'"></mgl-image>
+
 <mgl-vector-source
   [id]="sourceId"
   [tiles]="[vectorLayerUrl]"></mgl-vector-source>
@@ -11,6 +17,14 @@
   (layerMouseEnter)="setCursor()"
   (layerMouseLeave)="resetCursor()"
   [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
+
+<mgl-layer
+  [id]="layers.sequenceStands.name"
+  type="fill"
+  source="stands"
+  [paint]="layers.sequenceStands.paint"
+  [filter]="['in', ['get', 'id'], ['literal', sequenceStandsIds$ | async]]"
+  [sourceLayer]="layers.sequenceStands.sourceLayer"></mgl-layer>
 
 <mgl-layer
   [id]="layers.standsOutline.name"

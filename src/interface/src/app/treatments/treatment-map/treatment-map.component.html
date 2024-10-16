@@ -1,6 +1,6 @@
 <mgl-map
   *ngIf="mapExtent$ | async; let bounds"
-  (mapLoad)="mapLibreMap = $event"
+  (mapLoad)="mapLoaded($event)"
   [style]="(baseLayerUrl$ | async) || ''"
   [fitBounds]="bounds"
   [fitBoundsOptions]="{ padding: 20 }"
@@ -15,10 +15,17 @@
   (mapMouseMove)="onMapMouseMove($event)"
   (mapMouseUp)="onMapMouseUp()"
   (mapMouseOut)="onMapMouseOut()"
+  (styleImageMissing)="onImageMissing($event)"
   [transformRequest]="transformRequest">
   <app-map-controls
     *ngIf="showMapControls$ | async"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
+
+  <app-map-project-areas
+    [mapLibreMap]="mapLibreMap"
+    [withFill]="(showFillProjectAreas$ | async) || false"
+    [visible]="(showMapProjectAreas$ | async) || false"></app-map-project-areas>
+
   <app-map-stands
     *ngIf="showTreatmentStands$ | async"
     [sourceId]="standsSourceLayerId"
@@ -30,10 +37,6 @@
     [mapLibreMap]="mapLibreMap"
     [start]="mouseStart ? mouseStart.lngLat : null"
     [end]="mouseEnd ? mouseEnd.lngLat : null"></app-map-rectangle>
-
-  <app-map-project-areas
-    [mapLibreMap]="mapLibreMap"
-    [visible]="(showMapProjectAreas$ | async) || false"></app-map-project-areas>
 
   <app-map-tooltip
     [lngLat]="treatmentTooltipLngLat"
