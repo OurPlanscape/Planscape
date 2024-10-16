@@ -33,64 +33,80 @@ type Story = StoryObj<TreatmentExpanderComponent>;
 export const Default: Story = {
   args: {
     action: 'MODERATE_THINNING_BURN',
+    treatedStandCount: 11,
+    standIds: [1, 2, 3, 8, 10],
+    areaAcres: 117,
     treatmentType: 'SINGLE',
-    standCount: '11',
   },
 };
 
 export const Sequence1: Story = {
   args: {
-    treatmentType: 'SEQUENCE',
     action: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
-    standCount: '1/11',
+    treatmentType: 'SEQUENCE',
+    areaAcres: 117,
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 1,
   },
 };
 export const Sequence5: Story = {
   args: {
-    treatmentType: 'SEQUENCE',
     action: 'RX_FIRE_PLUS_RX_FIRE',
-    standCount: '5/11',
+    treatmentType: 'SEQUENCE',
+    areaAcres: 117,
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 5,
   },
 };
 
 export const TreatmentModerateMastication: Story = {
   args: {
-    action: 'MODERATE_MASTICATION',
     treatmentType: 'SINGLE',
-    standCount: '8',
+    action: 'MODERATE_MASTICATION',
+    areaAcres: 117,
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 8,
   },
 };
 
 export const TreatmentHeavyMastication: Story = {
   args: {
-    action: 'HEAVY_MASTICATION',
     treatmentType: 'SINGLE',
-    standCount: '600',
+    action: 'HEAVY_MASTICATION',
+    areaAcres: 117,
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 600,
   },
 };
 
 export const TreatmentHeavyThinning: Story = {
   args: {
-    action: 'HEAVY_THINNING_BURN',
     treatmentType: 'SINGLE',
-    standCount: '5',
+    action: 'HEAVY_THINNING_BURN',
+    areaAcres: 117,
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 5,
   },
 };
 
 export const TreatmentMasticationAndFireSelected: Story = {
   args: {
-    action: 'MASTICATION_RX_FIRE',
     treatmentType: 'SINGLE',
-    standCount: '5',
+    action: 'MASTICATION_RX_FIRE',
+    treatedStandCount: 17,
+    standIds: [1, 2, 3, 8, 10],
+    areaAcres: 117,
     selected: true,
   },
 };
 
 export const OverriddenTitle: Story = {
   args: {
+    treatmentType: 'SINGLE',
     title: 'Special Title',
     action: 'MODERATE_THINNING_BURN',
-    treatmentType: 'SINGLE',
-    standCount: '11',
+    areaAcres: 117,
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 11,
   },
 };

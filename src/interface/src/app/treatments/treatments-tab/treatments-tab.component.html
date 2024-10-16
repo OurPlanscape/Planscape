@@ -1,0 +1,44 @@
+<ng-container *ngIf="prescriptions$ | async as prescriptions">
+  <div *ngIf="prescriptions.length < 1" class="no-treatments-blurb">
+    <mat-icon class="no-treatments-icon material-symbols-outlined"
+      >medication
+    </mat-icon>
+    <div class="no-treatments-header">No Treatments Yet</div>
+    <div class="no-treatments-text">
+      Start applying treatments to each stand
+    </div>
+  </div>
+
+  <div *ngIf="prescriptions.length > 0" class="treatments-tab-content">
+    <div class="side-search-container">
+      <sg-search-bar
+        class="search-bar"
+        [debounceInterval]="160"
+        searchPlaceholder="Search treatment prescriptions"
+        [inputHeight]="'regular'"
+        (searchString)="setSearchString($event)"></sg-search-bar>
+    </div>
+    <div class="slider-container">
+      <sg-opacity-slider
+        title="Treatment opacity"
+        [minValue]="0"
+        [maxValue]="1"
+        [step]="0.01"
+        [sliderValue]="(opacity$ | async) || 0"
+        (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
+    </div>
+    <div
+      class="expanders-container"
+      *ngIf="filteredPrescriptions$ | async as filteredRxs">
+      <sg-treatment-expander
+        *ngFor="let tx of filteredRxs"
+        [treatmentType]="tx.type"
+        [action]="tx.action"
+        [areaAcres]="tx.area_acres"
+        [treatedStandCount]="tx.treated_stand_count"
+        [standIds]="tx.stand_ids">
+        {{ tx.type }}
+      </sg-treatment-expander>
+    </div>
+  </div>
+</ng-container>

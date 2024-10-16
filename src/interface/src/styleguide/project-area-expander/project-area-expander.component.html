@@ -2,10 +2,14 @@
   [ngClass]="{ selected: isSelected }"
   (opened)="toggleState()"
   (closed)="toggleState()"
+  (mouseover)="handleHover($event)"
   class="project-area-expander-panel">
-  <mat-expansion-panel-header class="header-content">
-    <div class="left-content">
-      <img src="svg/icons/project-area-icon.svg" />
+  <mat-expansion-panel-header
+    class="header-content"
+    #header
+    (click)="onHeaderClick($event)">
+    <div class="left-content" (click)="onHeaderClick($event)">
+      <img src="assets/svg/icons/project-area-icon.svg" />
       <div>{{ title ? title : projectArea.project_area_name }}</div>
     </div>
     <div class="right-content">
@@ -17,7 +21,11 @@
       >
     </div>
   </mat-expansion-panel-header>
-  <div class="rx-section">
+  <div class="empty-treatments" *ngIf="projectArea.prescriptions.length === 0">
+    No treatments
+  </div>
+
+  <div class="rx-section" *ngIf="projectArea.prescriptions.length > 0">
     <mat-expansion-panel
       class="rx-submenu"
       *ngFor="let rx of projectArea.prescriptions">
@@ -42,7 +50,7 @@
           </div>
         </div>
       </mat-expansion-panel-header>
-      <div *ngIf="rx.type === 'SEQUENCE'">
+      <div *ngIf="rx.type === 'SEQUENCE'" class="sequence-body">
         <div
           *ngFor="let seqDetail of sequenceActions(rx.action)"
           class="sequence-treatment-line">

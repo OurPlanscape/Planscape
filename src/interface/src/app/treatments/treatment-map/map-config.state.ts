@@ -26,6 +26,9 @@ export class MapConfigState {
   public showTreatmentStandsLayer$ =
     this._showTreatmentStandsLayer$.asObservable();
 
+  private _showFillProjectAreas$ = new BehaviorSubject(true);
+  public showFillProjectAreas$ = this._showFillProjectAreas$.asObservable();
+
   private _standSelectionEnabled$ = new BehaviorSubject(false);
   public standSelectionEnabled$ = this._standSelectionEnabled$.asObservable();
 
@@ -34,6 +37,10 @@ export class MapConfigState {
 
   private _showMapControls$ = new BehaviorSubject(false);
   public showMapControls$ = this._showMapControls$.asObservable();
+
+  private readonly defaultOpacity = 0.8;
+  private _treatedStandsOpacity = new BehaviorSubject(this.defaultOpacity);
+  public treatedStandsOpacity$ = this._treatedStandsOpacity.asObservable();
 
   updateBaseLayer(layer: BaseLayerType) {
     this._baseLayer$.next(layer);
@@ -48,12 +55,24 @@ export class MapConfigState {
   }
 
   updateShowTreatmentStands(value: boolean) {
+    this.setTreatedStandsOpacity(this.defaultOpacity);
     this._showTreatmentStandsLayer$.next(value);
   }
 
+  setShowFillProjectAreas(value: boolean) {
+    this._showFillProjectAreas$.next(value);
+  }
+
   toggleShowTreatmentStands() {
-    const visible = this._showTreatmentStandsLayer$.value;
-    this._showTreatmentStandsLayer$.next(!visible);
+    const treatmentsVisible = this.isTreatmentStandsVisible();
+
+    this.setShowFillProjectAreas(treatmentsVisible);
+    this.setTreatedStandsOpacity(treatmentsVisible ? 0 : 1);
+    this._showTreatmentStandsLayer$.next(!treatmentsVisible);
+  }
+
+  isTreatmentStandsVisible() {
+    return this._showTreatmentStandsLayer$.value;
   }
 
   setStandSelectionEnabled(value: boolean) {
@@ -75,5 +94,9 @@ export class MapConfigState {
 
   setShowMapControls(value: boolean) {
     this._showMapControls$.next(value);
+  }
+
+  setTreatedStandsOpacity(value: number) {
+    this._treatedStandsOpacity.next(value);
   }
 }

@@ -1,0 +1,18 @@
+<div *ngIf="summary$ | async; let summary">
+  <div class="about-items">
+    <div class="about-row">
+      <div class="about-label"># of Project areas</div>
+      <div class="about-info">
+        {{ summary.project_areas.length | number: '1.0-0' }}
+      </div>
+    </div>
+    <div class="about-row">
+      <div class="about-label">Acres</div>
+      <div class="about-info">{{ areaAcres | number: '1.0-0' }}</div>
+    </div>
+    <div class="about-row">
+      <div class="about-label">Stand size</div>
+      <div class="about-info">{{ standSize }}</div>
+    </div>
+  </div>
+</div>

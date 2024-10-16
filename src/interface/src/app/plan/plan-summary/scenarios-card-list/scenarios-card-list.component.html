@@ -10,5 +10,6 @@
   [treatmentPlansCount]="s.tx_plan_count"
   [status]="s.scenario_result?.status || 'PENDING'"
   (click)="handleClickedScenario(s)"
-  [selected]="isSelected(s)">
+  [selected]="isSelected(s)"
+  [treatmentPlansEnabled]="treatmentPlansEnabled">
 </sg-scenario-card>

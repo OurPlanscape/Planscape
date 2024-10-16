@@ -1,8 +1,13 @@
 <sg-modal
-  title="Apply Treatment"
+  [title]="
+    (hasSelectedTreatedStands$ | async) ? 'Edit Treatment' : 'Apply Treatment'
+  "
   (clickedClose)="cancel()"
   (clickedPrimary)="apply()"
-  (clickedSecondary)="cancel()"
+  (clickedSecondary)="clickSecondary()"
+  [secondaryButtonText]="
+    (hasSelectedTreatedStands$ | async) ? 'Remove Treatment' : 'Cancel'
+  "
   [primaryButtonDisabled]="
     !(selectedPrescription && (hasSelectedStands$ | async))
   "
@@ -10,10 +15,13 @@
   width="small">
   <form [formGroup]="prescriptionForm" modalBodyContent class="modal-body">
     <div class="form-fixed">
-      <div class="label">Project Area</div>
-      <div class="project-area-name">
-        {{ (projectArea$ | async)?.project_area_name }}
-      </div>
+      <sg-banner
+        type="info"
+        class="apply-warning"
+        *ngIf="hasSelectedTreatedStands$ | async"
+        >Applying a new treatment will overwrite any previously applied
+        treatments on the selected stands.
+      </sg-banner>
 
       <div class="label">Treatment Prescription</div>
       <div class="item">

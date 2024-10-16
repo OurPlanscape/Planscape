@@ -27,7 +27,7 @@
       matSuffix
       *ngIf="savingStatus$ | async"></mat-spinner>
   </sg-input-field>
-  <div class="error-blurb">
-    <span *ngIf="errorMessage">{{ errorMessage }}</span>
+  <div class="error-blurb" *ngIf="errorMessage">
+    <span>{{ errorMessage }}</span>
   </div>
 </div>

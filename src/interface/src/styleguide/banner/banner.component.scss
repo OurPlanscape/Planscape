@@ -29,6 +29,11 @@
     background-color: $color-brand-soft-green;
     color: $color-brand-green;
   }
+
+}
+
+.icon {
+  flex-shrink: 0;
 }
 
 .close {

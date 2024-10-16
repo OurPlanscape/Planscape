@@ -1,13 +1,14 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { ScenarioRow } from '../saved-scenarios/saved-scenarios.component';
-import { Scenario, ScenarioResult } from '@types';
 import { ScenarioCardComponent } from '../../../../styleguide/scenario-card/scenario-card.component';
 import { SharedModule } from '@shared';
 import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
 } from '../../plan-helpers';
+import { FeatureService } from '../../../features/feature.service';
+import { Scenario, ScenarioResult } from '@types';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -22,12 +23,9 @@ export class ScenariosCardListComponent {
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
   @Output() viewScenario = new EventEmitter<ScenarioRow>();
 
-  hasResults(scenario: Scenario) {
-    return (
-      !!scenario.scenario_result &&
-      scenario.scenario_result.result?.features?.length > 0
-    );
-  }
+  constructor(private featureService: FeatureService) {}
+
+  treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
 
   getAreas(scenario: Scenario) {
     return scenario.scenario_result?.result?.features?.length;
@@ -41,6 +39,13 @@ export class ScenariosCardListComponent {
       this.selectedCard = row;
       this.viewScenario.emit(row);
     }
+  }
+
+  hasResults(scenario: Scenario) {
+    return (
+      !!scenario.scenario_result &&
+      scenario.scenario_result.result?.features?.length > 0
+    );
   }
 
   calculateTotals(results: ScenarioResult) {

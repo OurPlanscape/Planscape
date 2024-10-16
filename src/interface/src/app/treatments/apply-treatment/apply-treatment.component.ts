@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { ModalComponent } from '../../../styleguide/modal/modal.component';
+import { BannerComponent, ModalComponent } from '@styleguide';
 import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { KeyPipe } from '../../standalone/key.pipe';
@@ -17,6 +17,9 @@ import { MatLegacyFormFieldModule } from '@angular/material/legacy-form-field';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { combineLatest, map, take } from 'rxjs';
+
 @Component({
   selector: 'app-apply-treatment',
   standalone: true,
@@ -32,6 +35,7 @@ import { TreatmentsState } from '../treatments.state';
     MatLegacyFormFieldModule,
     AsyncPipe,
     NgIf,
+    BannerComponent,
   ],
   templateUrl: './apply-treatment.component.html',
   styleUrl: './apply-treatment.component.scss',
@@ -39,6 +43,17 @@ import { TreatmentsState } from '../treatments.state';
 export class ApplyTreatmentComponent {
   projectArea$ = this.treatmentsState.activeProjectArea$;
   hasSelectedStands$ = this.selectedStandsState.hasSelectedStands$;
+
+  hasSelectedTreatedStands$ = combineLatest([
+    this.selectedStandsState.selectedStands$,
+    this.treatedStandsState.treatedStands$,
+  ]).pipe(
+    map(([selectedStands, treatedStands]) => {
+      return treatedStands.some((treatedStand) =>
+        selectedStands.includes(treatedStand.id)
+      );
+    })
+  );
 
   readonly sequenceTypes: Record<keyof typeof PRESCRIPTIONS, string> = {
     SINGLE: 'Single',
@@ -57,7 +72,8 @@ export class ApplyTreatmentComponent {
 
   constructor(
     public selectedStandsState: SelectedStandsState,
-    public treatmentsState: TreatmentsState
+    public treatmentsState: TreatmentsState,
+    public treatedStandsState: TreatedStandsState
   ) {}
 
   readonly prescriptions = PRESCRIPTIONS;
@@ -103,5 +119,12 @@ export class ApplyTreatmentComponent {
     const stands = this.selectedStandsState.getSelectedStands();
     this.selectedStandsState.clearStands();
     this.treatmentsState.removeTreatments(stands).subscribe();
+    this.treatmentsState.setShowApplyTreatmentsDialog(false);
+  }
+
+  clickSecondary() {
+    this.hasSelectedTreatedStands$
+      .pipe(take(1))
+      .subscribe((value) => (value ? this.removeTreatments() : this.cancel()));
   }
 }

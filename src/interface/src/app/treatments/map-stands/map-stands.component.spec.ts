@@ -4,6 +4,7 @@ import { MapStandsComponent } from './map-stands.component';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
 import {
+  ImageComponent,
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
@@ -20,13 +21,23 @@ describe('MapStandsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [MapStandsComponent],
       providers: [
-        MockProviders(SelectedStandsState, TreatmentsState, MapConfigState),
+        MockProviders(TreatmentsState),
+        MockProvider(SelectedStandsState, {
+          selectedStands$: of([]),
+        }),
         MockProvider(TreatedStandsState, {
           treatedStands$: of([]),
-          opacity$: of(1),
+        }),
+        MockProvider(MapConfigState, {
+          showTreatmentStandsLayer$: of(false),
+          treatedStandsOpacity$: of(1),
         }),
       ],
-      declarations: MockDeclarations(VectorSourceComponent, LayerComponent),
+      declarations: MockDeclarations(
+        VectorSourceComponent,
+        LayerComponent,
+        ImageComponent
+      ),
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapStandsComponent);

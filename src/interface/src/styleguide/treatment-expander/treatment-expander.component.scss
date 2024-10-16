@@ -5,6 +5,8 @@
   --mat-expansion-header-hover-state-layer-color: $color-white;
   --mat-expansion-header-focus-state-layer-color: $color-white;
   --mat-expansion-header-expanded-state-height: 48px;
+  width: 100%;
+  display: block;
 
   ::ng-deep {
     .mat-expansion-panel {
@@ -37,6 +39,7 @@
       align-items: center;
       cursor: pointer;
       width: 100%;
+      gap: 4px;
     }
 
     .mat-expansion-panel-header .mat-expansion-indicator {
@@ -68,17 +71,23 @@
   gap: 8px;
   margin-left: 4px;
   line-height: 0;
+  flex: 1;
+}
+
+.treatment-type-text {
+  width: 100%;
+  white-space: nowrap;
 }
 
 .right-content {
   @include xs-label();
   color: $color-md-gray;
-  width: 100px;
   display: flex;
   align-items: center;
   justify-content: right;
-  gap: 8px;
-  padding-right: 10px;
+  gap: 4px;
+  padding-right: 6px;
+  flex: 0 0 0;
 }
 
 .treatment-detail {
@@ -105,12 +114,15 @@
   color: $color-dark-gray;
 }
 
+.stand-count {
+  text-justify: right;
+}
+
 .rx-detail {
   height: 22px;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding-left: 24px;
 }
 
 .rx-detail-name {

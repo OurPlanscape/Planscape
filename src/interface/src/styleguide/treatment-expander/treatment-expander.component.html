@@ -11,10 +11,16 @@
       <sg-sequence-icon
         *ngIf="treatmentType === 'SEQUENCE'"
         [action]="action"></sg-sequence-icon>
-      <div>{{ titleText() }}</div>
+      <div class="treatment-type-text">{{ titleText() }}</div>
     </div>
     <div class="right-content">
-      <div class="stand-count">{{ standCount }}</div>
+      <div class="stand-count" *ngIf="treatmentType === 'SINGLE'">
+        {{ treatedStandCount }}
+      </div>
+      <div class="stand-count" *ngIf="treatmentType === 'SEQUENCE'">
+        {{ treatedStandCount + '/' + totalStands() }}
+      </div>
+
       <mat-icon class="material-symbols-outlined treatment-hexagon"
         >hexagon_outline</mat-icon
       >
@@ -28,6 +34,6 @@
 
   <div class="treatment-detail">
     <span class="treatment-detail-name">Total:</span
-    ><span class="treatment-detail-value">{{ totalAcres }} acres</span>
+    ><span class="treatment-detail-value">{{ areaAcres }} acres</span>
   </div>
 </mat-expansion-panel>
