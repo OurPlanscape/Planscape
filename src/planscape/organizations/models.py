@@ -41,6 +41,9 @@ class Organization(
         null=True,
     )
 
+    def __str__(self):
+        return f"{self.name} [{self.type}]"
+
     class Meta(TypedModelMeta):
         verbose_name = "Organization"
         verbose_name_plural = "Organizations"

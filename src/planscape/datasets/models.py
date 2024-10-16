@@ -47,6 +47,9 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
     )
 
+    def __str__(self) -> str:
+        return f"{self.name} [{self.organization}] "
+
     class Meta(TypedModelMeta):
         verbose_name = "Dataset"
         verbose_name_plural = "Datasets"
@@ -80,6 +83,7 @@ class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
     order = models.IntegerField(
         default=0,
         help_text="If necessary, changing the order allows the users to configure what categories appears first.",
+        null=True,
     )
 
     node_order_by = [
@@ -90,6 +94,9 @@ class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
     name = models.CharField(
         max_length=128,
     )
+
+    def __str__(self) -> str:
+        return self.name
 
     class Meta(TypedModelMeta):
         verbose_name = "Category"
@@ -204,6 +211,9 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     # from vectors. to support both formats cleanly, a JSON field, with a custom validator
     # that depends on the type of the datalyer might be appropriate
     metadata = models.JSONField(null=True)
+
+    def __str__(self) -> str:
+        return f"{self.name} [{self.type}]"
 
     class Meta(TypedModelMeta):
         verbose_name = "Datalayer"
