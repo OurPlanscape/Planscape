@@ -6,6 +6,6 @@
   "unlaunched_layers": false,
   "upload_project_area": false,
   "use_its": false,
-  "new_home": false,
-  "new_planning_area": false
+  "new_planning_area": false,
+  "treatments": false
 }
