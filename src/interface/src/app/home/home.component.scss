@@ -6,11 +6,6 @@
   justify-content: center;
   align-items: center;
 
-  &.with-background {
-    background-image: url('/assets/webp/planscape_home_bg.webp');
-    background-size: cover;
-  }
-
   app-planning-areas {
     display: flex;
     flex-direction: column;
