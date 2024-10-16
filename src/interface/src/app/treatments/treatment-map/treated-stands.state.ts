@@ -1,7 +1,8 @@
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
 
 import { TreatedStand } from '@types';
+import { SEQUENCE_ACTIONS } from '../prescriptions';
 
 /**
  * Manages the stands that have treatment, to be displayed on the map.
@@ -10,8 +11,14 @@ import { TreatedStand } from '@types';
 export class TreatedStandsState {
   private _treatedStands$ = new BehaviorSubject<TreatedStand[]>([]);
   treatedStands$ = this._treatedStands$.asObservable();
-  private _opacity$ = new BehaviorSubject(0.5);
-  public opacity$ = this._opacity$.asObservable();
+
+  sequenceStandsIds$ = this.treatedStands$.pipe(
+    map((stands) =>
+      stands
+        .filter((stand) => stand.action in SEQUENCE_ACTIONS)
+        .map((stand) => stand.id)
+    )
+  );
 
   updateTreatedStands(stands: TreatedStand[]) {
     const currentStands = this.getTreatedStands();
@@ -39,9 +46,5 @@ export class TreatedStandsState {
       (currentStand) => !standId.some((standId) => standId === currentStand.id)
     );
     this._treatedStands$.next(filteredStands);
-  }
-
-  setOpacity(value: number) {
-    this._opacity$.next(value);
   }
 }

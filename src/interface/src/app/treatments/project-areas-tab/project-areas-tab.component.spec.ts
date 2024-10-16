@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ProjectAreasTabComponent } from './project-areas-tab.component';
 import { MockProvider } from 'ng-mocks';
 import { TreatmentsState } from '../treatments.state';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ProjectAreasTabComponent', () => {
   let component: ProjectAreasTabComponent;
@@ -10,7 +11,7 @@ describe('ProjectAreasTabComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProjectAreasTabComponent],
+      imports: [ProjectAreasTabComponent, RouterTestingModule],
       providers: [MockProvider(TreatmentsState)],
     }).compileComponents();
 

@@ -5,6 +5,7 @@ import { MockProviders } from 'ng-mocks';
 import { TreatmentsState } from '../treatments.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 
 describe('ApplyTreatmentComponent', () => {
   let component: ApplyTreatmentComponent;
@@ -13,7 +14,9 @@ describe('ApplyTreatmentComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ApplyTreatmentComponent, NoopAnimationsModule],
-      providers: [MockProviders(TreatmentsState, SelectedStandsState)],
+      providers: [
+        MockProviders(TreatmentsState, SelectedStandsState, TreatedStandsState),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ApplyTreatmentComponent);

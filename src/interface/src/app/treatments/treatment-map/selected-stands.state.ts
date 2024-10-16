@@ -11,6 +11,7 @@ export class SelectedStandsState {
   hasSelectedStands$ = this.selectedStands$.pipe(
     map((stands) => stands.length > 0)
   );
+
   private _history: number[][] = [];
 
   updateSelectedStands(stands: number[]) {

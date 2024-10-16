@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { BehaviorSubject, catchError, map, of, tap } from 'rxjs';
+import { BehaviorSubject, catchError, combineLatest, map, of, tap } from 'rxjs';
 import {
   TreatedStand,
   TreatmentPlan,
@@ -9,6 +9,8 @@ import {
   TreatmentSummary,
 } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
+import { TreatmentRoutingData } from './treatments-routing.module';
+import { filter } from 'rxjs/operators';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -61,57 +63,75 @@ export class TreatmentsState {
     return this._scenarioId;
   }
 
-  setInitialState(opts: {
-    scenarioId: number;
-    treatmentId: number;
-    projectAreaId: number | undefined;
-  }) {
-    this._scenarioId = opts.scenarioId;
-    this._treatmentPlanId = opts.treatmentId;
-    this._projectAreaId$.next(opts.projectAreaId);
+  /**
+   * Uses route data to load summary and treatment plan
+   * returns true when both are loaded.
+   * @param data
+   */
+  loadTreatmentByRouteData(data: TreatmentRoutingData) {
+    this.setInitialState(data);
+
+    return combineLatest([
+      this.loadSummaryData(),
+      this.loadTreatmentPlan(),
+    ]).pipe(
+      filter(([summaryData, treatmentPlan]) => {
+        // Emit true only when both are loaded
+        return !!summaryData && !!treatmentPlan;
+      }),
+      map(() => true)
+    );
   }
 
-  loadSummaryForProjectArea() {
+  private setInitialState(data: TreatmentRoutingData) {
+    this._scenarioId = data.scenarioId;
+    this._treatmentPlanId = data.treatmentId;
+    this._projectAreaId$.next(data.projectAreaId);
+
+    // update config on map, based on route data
+    this.mapConfigState.updateShowProjectAreas(
+      data.showMapProjectAreas || false
+    );
+    this.mapConfigState.updateShowTreatmentStands(
+      data.showTreatmentStands || false
+    );
+    this.mapConfigState.setStandSelectionEnabled(
+      data.showTreatmentStands || false
+    );
+    this.mapConfigState.setShowMapControls(data.showTreatmentStands || false);
+  }
+
+  private loadSummaryData() {
     const projectAreaId = this.getProjectAreaId();
-    const summary = this._summary$.value;
-    // if summary is already loaded, select project area and return
-    if (!projectAreaId) {
-      throw new Error('must provide projectAreaId');
-    }
-
-    if (summary && projectAreaId) {
-      return of(true);
-    }
-    // if we don't have summary fetch data
-    return this.treatmentsService
-      .getTreatmentPlanSummary(this.getTreatmentPlanId())
-      .pipe(
-        map((summary) => {
-          this._summary$.next(summary);
-          this.setTreatedStandsFromSummary(summary.project_areas);
-          this.selectProjectArea(projectAreaId);
-          return true;
-        })
-      );
-  }
-
-  loadSummary() {
     const previousSummary = this._summary$.value;
-    // remove active project area
-    this._activeProjectArea$.next(null);
-    // if I already have summary center the map before fetching
-    if (previousSummary) {
-      this.mapConfigState.updateMapCenter(previousSummary.extent);
+
+    if (projectAreaId && previousSummary) {
+      // set active project area
+      this.selectProjectArea(projectAreaId);
+      // if we have a project area and loaded summary already, just return
+      return of(true);
+    } else {
+      // if no project area reset active one
+      this._activeProjectArea$.next(null);
+      // if we have a previous summary, center the map immediately
+      if (previousSummary) {
+        this.mapConfigState.updateMapCenter(previousSummary.extent);
+      }
     }
-    //fetch summary
+
     return this.treatmentsService
       .getTreatmentPlanSummary(this.getTreatmentPlanId())
       .pipe(
         map((summary) => {
+          // set summary data
           this._summary$.next(summary);
+          // parse summary data into treated stands
           this.setTreatedStandsFromSummary(summary.project_areas);
-          // center if we didn't have a previous summary
-          if (!previousSummary) {
+          if (projectAreaId) {
+            // set active project area if provided
+            this.selectProjectArea(projectAreaId);
+          } else if (!previousSummary) {
+            // if its the first time loading summary, center the map
             this.mapConfigState.updateMapCenter(summary.extent);
           }
           return true;
@@ -119,7 +139,6 @@ export class TreatmentsState {
       );
   }
 
-  // simpler, no side-effect summary loader...
   reloadSummary() {
     return this.treatmentsService
       .getTreatmentPlanSummary(this.getTreatmentPlanId())
@@ -133,7 +152,7 @@ export class TreatmentsState {
       );
   }
 
-  loadTreatmentPlan() {
+  private loadTreatmentPlan() {
     return this.treatmentsService
       .getTreatmentPlan(this.getTreatmentPlanId())
       .pipe(
@@ -208,7 +227,7 @@ export class TreatmentsState {
       );
   }
 
-  selectProjectArea(projectAreaId: number) {
+  private selectProjectArea(projectAreaId: number) {
     const summary = this._summary$.value;
 
     if (!summary) {

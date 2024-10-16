@@ -4,6 +4,7 @@ import {
   ActivatedRouteSnapshot,
   NavigationEnd,
   Router,
+  RouterLink,
   RouterOutlet,
 } from '@angular/router';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
@@ -28,6 +29,7 @@ import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment
 import { ApplyTreatmentComponent } from '../apply-treatment/apply-treatment.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
+import { TreatmentRoutingData } from '../treatments-routing.module';
 
 @UntilDestroy()
 @Component({
@@ -48,6 +50,7 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
     TreatmentNavbarMenuComponent,
     ApplyTreatmentComponent,
     TreatmentLegendComponent,
+    RouterLink,
   ],
   providers: [
     TreatmentsState,
@@ -72,58 +75,6 @@ export class TreatmentLayoutComponent {
   ]).pipe(
     map(([activeArea, showTreatmentLayer]) => !activeArea && showTreatmentLayer)
   );
-
-  constructor(
-    private treatmentsState: TreatmentsState,
-    private mapConfig: MapConfigState,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {
-    this.router.events
-      .pipe(
-        untilDestroyed(this),
-        filter((event) => event instanceof NavigationEnd) // Only react to navigation events
-      )
-      .subscribe(() => {
-        const data = getMergedRouteData(this.route.snapshot);
-        const projectAreaId = data['projectAreaId'];
-
-        if (data) {
-          this.treatmentsState.setInitialState({
-            treatmentId: data['treatmentId'],
-            scenarioId: data['scenarioId'],
-            projectAreaId: projectAreaId,
-          });
-
-          // update config on map, based on route data
-          this.mapConfig.updateShowProjectAreas(data['showMapProjectAreas']);
-          this.mapConfig.updateShowTreatmentStands(data['showTreatmentStands']);
-          this.mapConfig.setStandSelectionEnabled(data['showTreatmentStands']);
-          this.mapConfig.setShowMapControls(data['showMapControls']);
-
-          if (projectAreaId) {
-            treatmentsState
-              .loadSummaryForProjectArea()
-              .pipe(this.catchError())
-              .subscribe();
-          } else {
-            treatmentsState.loadSummary().pipe(this.catchError()).subscribe();
-          }
-
-          this.treatmentsState
-            .loadTreatmentPlan()
-            .pipe(this.catchError())
-            .subscribe();
-        }
-      });
-  }
-
-  private catchError() {
-    return catchError((error) => {
-      this.router.navigate(['/']);
-      throw error;
-    });
-  }
 
   breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
     map(([projectArea, summary]) => {
@@ -156,6 +107,26 @@ export class TreatmentLayoutComponent {
     })
   );
 
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private mapConfig: MapConfigState,
+    private route: ActivatedRoute,
+    private router: Router
+  ) {
+    this.router.events
+      .pipe(
+        untilDestroyed(this),
+        filter((event) => event instanceof NavigationEnd) // Only react to navigation events
+      )
+      .subscribe(() => {
+        const data = getMergedRouteData(this.route.snapshot);
+        this.treatmentsState
+          .loadTreatmentByRouteData(data)
+          .pipe(this.catchError())
+          .subscribe();
+      });
+  }
+
   redirectToScenario() {
     const summary = this.treatmentsState.getCurrentSummary();
     let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
@@ -171,9 +142,18 @@ export class TreatmentLayoutComponent {
   toggleShowTreatmentLayers() {
     this.mapConfig.toggleShowTreatmentStands();
   }
+
+  private catchError() {
+    return catchError((error) => {
+      this.router.navigate(['/']);
+      throw error;
+    });
+  }
 }
 
-export function getMergedRouteData(route: ActivatedRouteSnapshot): any {
+export function getMergedRouteData(
+  route: ActivatedRouteSnapshot
+): TreatmentRoutingData {
   const parentData = route.parent?.data || {};
   const childData = route.firstChild?.data || {};
   const currentData = route.data || {};
@@ -182,5 +162,5 @@ export function getMergedRouteData(route: ActivatedRouteSnapshot): any {
     ...parentData,
     ...childData,
     ...currentData,
-  };
+  } as TreatmentRoutingData;
 }
