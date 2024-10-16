@@ -20,7 +20,12 @@ export const BASE_COLORS: Record<
 };
 
 export const SELECTED_STANDS_PAINT = {
-  'fill-color': BASE_COLORS.blue,
+  'fill-color': [
+    'case',
+    ['boolean', ['feature-state', 'selected'], false],
+    BASE_COLORS.blue,
+    'transparent',
+  ],
   'fill-opacity': 0.3,
 };
 
