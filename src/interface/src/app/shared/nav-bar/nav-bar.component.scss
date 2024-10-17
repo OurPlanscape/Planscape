@@ -30,20 +30,6 @@
   padding-right: 10px;
 }
 
-.action-button {
-  color: #3367d6;
-  text-transform: uppercase;
-
-  &::ng-deep .mat-button-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-}
-
-.help {
-  line-height: 38px;
-}
 
 .tooltip {
   padding: 20px;
@@ -52,6 +38,10 @@
 .breadcrumb {
   @include standard-input-label();
 
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  
   a {
     color: $color-standard-blue;
     text-decoration: none;

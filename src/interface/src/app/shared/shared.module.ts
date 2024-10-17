@@ -15,6 +15,7 @@ import { FormMessageBoxComponent } from './form-message-box/form-message-box.com
 import { ShareExploreDialogComponent } from './share-explore-dialog/share-explore-dialog.component';
 import { SectionLoaderComponent } from './section-loader/section-loader.component';
 import { TopBarComponent } from './top-bar/top-bar.component';
+import { ButtonComponent } from '@styleguide';
 
 @NgModule({
   declarations: [
@@ -49,6 +50,7 @@ import { TopBarComponent } from './top-bar/top-bar.component';
     ReactiveFormsModule,
     FeaturesModule,
     RouterLink,
+    ButtonComponent,
   ],
 })
 export class SharedModule {}
