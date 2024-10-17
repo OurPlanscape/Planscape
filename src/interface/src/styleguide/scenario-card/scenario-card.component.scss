@@ -87,6 +87,9 @@
     border: none;
     background-color: white;
   }
+  .scenario-more-menu {
+    width: 140px;
+  }
 
   .detail-row {
     display: flex;
@@ -117,4 +120,14 @@
     border: none;
     background-color: inherit;
   }
+}
+
+::ng-deep .scenario-more-menu .mat-icon {
+  margin-right: 8px;
+  height: 20px;
+  width: 20px;
+  font-size: 20px;
+}
+::ng-deep .scenario-more-menu .mat-mdc-menu-panel {
+  width: 140px;
 }
