@@ -15,7 +15,6 @@
   (mapMouseMove)="onMapMouseMove($event)"
   (mapMouseUp)="onMapMouseUp()"
   (mapMouseOut)="onMapMouseOut()"
-  (styleImageMissing)="onImageMissing($event)"
   [transformRequest]="transformRequest">
   <app-map-controls
     *ngIf="showMapControls$ | async"

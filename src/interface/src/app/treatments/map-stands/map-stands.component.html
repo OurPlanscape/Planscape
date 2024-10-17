@@ -1,49 +1,52 @@
 <!--Patterns-->
 <mgl-image
-  *ngFor="let i of [1, 2, 3, 4, 5, 6, 7, 8]"
-  [id]="'sequence' + i"
-  [url]="'/assets/png/patterns/' + i + '.png'"></mgl-image>
+  *ngFor="let patternName of patternNames"
+  [id]="patternName"
+  [url]="'/assets/png/patterns/' + patternName + '.png'"
+  (imageLoaded)="patternLoaded[patternName] = true"></mgl-image>
 
 <mgl-vector-source
   [id]="sourceId"
   [tiles]="[vectorLayerUrl]"
   [promoteId]="'id'"></mgl-vector-source>
 
-<mgl-layer
-  [id]="layers.stands.name"
-  type="fill"
-  source="stands"
-  [paint]="layers.stands.paint"
-  (layerMouseDown)="clickOnStand($event)"
-  (layerMouseEnter)="setCursor()"
-  (layerMouseLeave)="resetCursor()"
-  [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
+<ng-container *ngIf="allPatternsLoaded()">
+  <mgl-layer
+    [id]="layers.stands.name"
+    type="fill"
+    source="stands"
+    [paint]="layers.stands.paint"
+    (layerMouseDown)="clickOnStand($event)"
+    (layerMouseEnter)="setCursor()"
+    (layerMouseLeave)="resetCursor()"
+    [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
 
-<mgl-layer
-  [id]="layers.sequenceStands.name"
-  type="fill"
-  source="stands"
-  [paint]="layers.sequenceStands.paint"
-  [filter]="['in', ['get', 'id'], ['literal', sequenceStandsIds$ | async]]"
-  [sourceLayer]="layers.sequenceStands.sourceLayer"></mgl-layer>
+  <mgl-layer
+    [id]="layers.sequenceStands.name"
+    type="fill"
+    source="stands"
+    [paint]="layers.sequenceStands.paint"
+    [filter]="['in', ['get', 'id'], ['literal', sequenceStandsIds$ | async]]"
+    [sourceLayer]="layers.sequenceStands.sourceLayer"></mgl-layer>
 
-<mgl-layer
-  [id]="layers.standsOutline.name"
-  type="line"
-  source="stands"
-  [paint]="layers.standsOutline.paint$ | async"
-  [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
+  <mgl-layer
+    [id]="layers.standsOutline.name"
+    type="line"
+    source="stands"
+    [paint]="layers.standsOutline.paint$ | async"
+    [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
 
-<mgl-layer
-  [id]="layers.selectedStands.name"
-  type="fill"
-  source="stands"
-  [paint]="layers.selectedStands.paint"
-  [sourceLayer]="layers.selectedStands.sourceLayer"></mgl-layer>
+  <mgl-layer
+    [id]="layers.selectedStands.name"
+    type="fill"
+    source="stands"
+    [paint]="layers.selectedStands.paint"
+    [sourceLayer]="layers.selectedStands.sourceLayer"></mgl-layer>
 
-<mgl-layer
-  [id]="layers.projectAreaOutline.name"
-  type="line"
-  source="stands"
-  [paint]="layers.projectAreaOutline.paint$ | async"
-  [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>
+  <mgl-layer
+    [id]="layers.projectAreaOutline.name"
+    type="line"
+    source="stands"
+    [paint]="layers.projectAreaOutline.paint$ | async"
+    [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>
+</ng-container>
