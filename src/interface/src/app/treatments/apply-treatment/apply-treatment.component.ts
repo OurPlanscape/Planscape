@@ -117,13 +117,7 @@ export class ApplyTreatmentComponent {
     this.selectedStandsState.clearStands();
     return this.treatmentsState.updateTreatedStands(action, stands).subscribe({
       error: (err) => {
-        this.snackBar.open(
-          err.message === 'updating-stands'
-            ? 'There was an error applying treatments. Please try again'
-            : 'There was an error refreshing your treatments. Please try again',
-          'Dismiss',
-          SNACK_ERROR_CONFIG
-        );
+        this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
       },
     });
   }
@@ -133,13 +127,7 @@ export class ApplyTreatmentComponent {
     this.selectedStandsState.clearStands();
     this.treatmentsState.removeTreatments(stands).subscribe({
       error: (err) => {
-        this.snackBar.open(
-          err.message === 'removing-stands'
-            ? 'There was an error removing treatments. Please try again'
-            : 'There was an error refreshing your treatments. Please try again',
-          'Dismiss',
-          SNACK_ERROR_CONFIG
-        );
+        this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
       },
     });
     this.treatmentsState.setShowApplyTreatmentsDialog(false);

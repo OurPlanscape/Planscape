@@ -19,6 +19,11 @@ import {
 import { MapConfigState } from './treatment-map/map-config.state';
 import { TreatmentRoutingData } from './treatments-routing.module';
 import { filter } from 'rxjs/operators';
+import {
+  ReloadTreatmentError,
+  RemovingStandsError,
+  UpdatingStandsError,
+} from './treatment-errors';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -155,7 +160,7 @@ export class TreatmentsState {
           this._summary$.next(summary);
         }),
         catchError((error) => {
-          throw error;
+          throw new ReloadTreatmentError();
         })
       );
   }
@@ -208,7 +213,8 @@ export class TreatmentsState {
         catchError((error) => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
-          throw new Error('updating-stands');
+          // throws specific error message to identify on the component
+          throw new UpdatingStandsError();
         }),
         // if no error, load summary
         switchMap((s) => this.reloadSummary())
@@ -224,7 +230,7 @@ export class TreatmentsState {
         catchError((error) => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
-          throw new Error('removing-stands');
+          throw new RemovingStandsError();
         }),
         switchMap((s) => this.reloadSummary())
       );
