@@ -18,7 +18,7 @@ from impacts.services import (
     generate_summary,
 )
 from impacts.tasks import (
-    async_calculate_persist_impacts,
+    async_get_or_calculate_persist_impacts,
     async_calculate_persist_impacts_treatment_plan,
 )
 from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
@@ -381,7 +381,7 @@ class AsyncCalculatePersistImpactsTestCase(TransactionTestCase):
             self.assertEquals(TreatmentResult.objects.count(), 0)
             matrix = get_calculation_matrix(self.plan)
             variable, action, year = matrix[0]
-            result = async_calculate_persist_impacts(
+            result = async_get_or_calculate_persist_impacts(
                 self.plan.pk, variable, action, year
             )
             self.assertIsNotNone(result)
