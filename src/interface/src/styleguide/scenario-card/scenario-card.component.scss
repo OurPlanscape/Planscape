@@ -61,7 +61,9 @@
   .controls-section {
     display: flex;
     flex-direction: row;
-    gap: 0;
+    gap: 2px;
+    justify-content: space-between;
+    align-items: center;
   }
 
   h4 {
@@ -95,6 +97,7 @@
 
   .detail-header {
     @include top-level-label();
+    font-size: 14px;
     color: $color-md-gray;
     text-transform: uppercase;
     text-align: left;

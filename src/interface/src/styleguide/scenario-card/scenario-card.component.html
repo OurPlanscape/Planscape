@@ -21,8 +21,10 @@
     <button
       [disabled]="!isDone()"
       [matMenuTriggerFor]="menu"
-      aria-label="more scenario Options"
-      class="more-menu-button">
+      aria-label="More scenario options"
+      class="more-menu-button"
+      (click)="handleMoreMenuClick($event)"
+      mat-icon-button>
       <mat-icon>more_vert</mat-icon>
     </button>
     <mat-menu #menu="matMenu">
@@ -30,11 +32,10 @@
         <mat-icon class="folder_open-icon">folder_open</mat-icon>
         <span>Open</span>
       </button>
-      <button mat-menu-item (click)="openPlanningProgress.emit()">
-        <mat-icon class="more_horiz-icon">more_horiz</mat-icon>
-        <span>Planning progress</span>
-      </button>
-      <button mat-menu-item (click)="archiveScenario.emit()">
+      <button
+        mat-menu-item
+        *ngIf="userCanArchiveScenario"
+        (click)="archiveScenario.emit()">
         <mat-icon class="archive-icon">archive</mat-icon>
         <span>Archive</span>
       </button>

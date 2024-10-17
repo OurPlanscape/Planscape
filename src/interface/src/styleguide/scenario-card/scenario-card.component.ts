@@ -49,13 +49,14 @@ export class ScenarioCardComponent {
   @Input() status: ScenarioResultStatus = 'SUCCESS';
   @Input() name = '';
   @Input() areas? = 0;
-  @Input() budget? = 0;
+  @Input() budget: number | null = null;
   @Input() treatmentPlansCount?: number = 0;
   @Input() creator?: string = '';
   @Input() created_at? = '';
   @Input() selected: boolean = false;
 
   @Input() treatmentPlansEnabled = false;
+  @Input() userCanArchiveScenario = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
@@ -116,6 +117,10 @@ export class ScenarioCardComponent {
       return this.chipsStatus[this.status].label;
     }
     return 'Failed';
+  }
+
+  handleMoreMenuClick(event: Event) {
+    event.stopPropagation();
   }
 
   handleClick(event: Event) {

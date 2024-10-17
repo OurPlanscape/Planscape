@@ -5,6 +5,10 @@
 
 .saved-scenarios-wrapper {
   position: relative;
+  height: 100%;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .scenario-list-controls {
@@ -15,6 +19,7 @@
   flex-direction: row;
   justify-content: flex-end;
 }
+
 .slide-toggle-my-scenarios {
   @include standard-label();
   width: 280px;
@@ -147,4 +152,12 @@
   &:visited {
     color: $color-standard-blue;
   }
+}
+
+
+app-section-loader {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  flex: 1;
 }
