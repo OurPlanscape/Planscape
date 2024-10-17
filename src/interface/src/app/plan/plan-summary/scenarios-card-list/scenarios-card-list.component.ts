@@ -9,7 +9,9 @@ import {
 } from '../../plan-helpers';
 import { FeatureService } from '../../../features/feature.service';
 import { Plan, Scenario, ScenarioResult } from '@types';
-import { AuthService } from '@services';
+import { AuthService, ScenarioService } from '@services';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -27,12 +29,14 @@ export class ScenariosCardListComponent {
 
   constructor(
     private featureService: FeatureService,
-    private authService: AuthService
+    private authService: AuthService,
+    private snackbar: MatSnackBar,
+    private scenarioService: ScenarioService
   ) {}
 
   treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
 
-  getAreas(scenario: Scenario) {
+  numberOfAreas(scenario: Scenario) {
     return scenario.scenario_result?.result?.features?.length;
   }
 
@@ -68,5 +72,28 @@ export class ScenariosCardListComponent {
     }
     const user = this.authService.currentUser();
     return user?.id === this.plan?.user || user?.id == scenario.user;
+  }
+
+  toggleScenarioStatus(scenario: Scenario) {
+    if (scenario.id) {
+      const originalStatus = scenario.status;
+      this.scenarioService.toggleScenarioStatus(Number(scenario.id)).subscribe({
+        next: () => {
+          this.snackbar.open(
+            `"${scenario.name}" has been ${originalStatus === 'ARCHIVED' ? 'restored' : 'archived'}`,
+            'Dismiss',
+            SNACK_BOTTOM_NOTICE_CONFIG
+          );
+          //TODO: refetch the list
+        },
+        error: (err) => {
+          this.snackbar.open(
+            `Error: ${err.error.error}`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+      });
+    }
   }
 }
