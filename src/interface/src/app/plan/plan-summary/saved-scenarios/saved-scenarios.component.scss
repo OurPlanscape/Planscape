@@ -17,17 +17,22 @@
   height: 28px;
   display: flex;
   flex-direction: row;
+  gap: 24px;
   justify-content: flex-end;
 }
 
+.scenario-sort-picker {
+  @include xs-label();
+  line-height: 23px;
+}
+
 .slide-toggle-my-scenarios {
-  @include standard-label();
-  width: 280px;
+  @include xs-label();
 }
 
 .sort-select {
-  @include standard-label();
-  width: 280px;
+  @include xs-label();
+  width: 200px;
   border: none;
 }
 
@@ -68,12 +73,15 @@
 }
 
 .new-scenario-button {
+  @include xs-label();
   right: 5px;
   margin-left: auto;
 
   .mat-icon {
     line-height: 21px;
   }
+  
+
 }
 
 .scenario-table-head {
@@ -141,6 +149,8 @@
 
   h4 {
     margin: 0 auto 0 0;
+    font-size: 18px;
+    font-weight: 600;
   }
 }
 
@@ -155,9 +165,14 @@
 }
 
 
+
 app-section-loader {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   flex: 1;
+}
+
+::ng-deep .new-scenario-button .button {
+  @include xs-label();
 }
