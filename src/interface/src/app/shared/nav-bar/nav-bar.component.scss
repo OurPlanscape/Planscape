@@ -32,12 +32,17 @@
 
 .action-button {
   color: #3367d6;
-  text-transform: uppercase;
 
   &::ng-deep .mat-button-wrapper {
     display: flex;
     align-items: center;
     gap: 5px;
+  }
+
+  .nav-icon {
+    height: 20px;
+    width: 20px;
+    font-size: 20px;
   }
 }
 
@@ -50,7 +55,7 @@
 }
 
 .breadcrumb {
-  @include standard-input-label();
+  @include h3();
 
   a {
     color: $color-standard-blue;
