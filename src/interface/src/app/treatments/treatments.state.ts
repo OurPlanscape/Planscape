@@ -1,7 +1,15 @@
 import { Injectable } from '@angular/core';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { BehaviorSubject, catchError, combineLatest, map, of, tap } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  map,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {
   TreatedStand,
   TreatmentPlan,
@@ -196,20 +204,14 @@ export class TreatmentsState {
     return this.treatmentsService
       .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
       .pipe(
-        map(() => {
-          this.reloadSummary()
-            .pipe(
-              catchError((error) => {
-                throw error;
-              })
-            )
-            .subscribe();
-        }),
+        // if setting treatments failed, rollback and throw error
         catchError((error) => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
-          throw error;
-        })
+          throw new Error('updating-stands');
+        }),
+        // if no error, load summary
+        switchMap((s) => this.reloadSummary())
       );
   }
 
@@ -222,8 +224,9 @@ export class TreatmentsState {
         catchError((error) => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
-          throw error;
-        })
+          throw new Error('removing-stands');
+        }),
+        switchMap((s) => this.reloadSummary())
       );
   }
 
