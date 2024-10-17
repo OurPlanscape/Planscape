@@ -26,7 +26,13 @@ export const SELECTED_STANDS_PAINT = {
     BASE_COLORS.blue,
     'transparent',
   ],
-  'fill-opacity': 0.3,
+  'fill-outline-color': [
+    'case',
+    ['boolean', ['feature-state', 'selected'], false],
+    BASE_COLORS.black,
+    'transparent',
+  ],
+  'fill-opacity': 0.7,
 };
 
 export const PROJECT_AREA_OUTLINE_PAINT = {

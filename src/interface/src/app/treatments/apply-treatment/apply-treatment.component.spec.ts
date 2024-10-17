@@ -6,6 +6,7 @@ import { TreatmentsState } from '../treatments.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('ApplyTreatmentComponent', () => {
   let component: ApplyTreatmentComponent;
@@ -13,7 +14,11 @@ describe('ApplyTreatmentComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ApplyTreatmentComponent, NoopAnimationsModule],
+      imports: [
+        ApplyTreatmentComponent,
+        NoopAnimationsModule,
+        MatSnackBarModule,
+      ],
       providers: [
         MockProviders(TreatmentsState, SelectedStandsState, TreatedStandsState),
       ],

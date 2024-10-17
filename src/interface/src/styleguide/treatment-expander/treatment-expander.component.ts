@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -64,8 +64,11 @@ export class TreatmentExpanderComponent {
   @Input() selected = false;
   openState = false;
 
+  @Output() stateToggle = new EventEmitter<boolean>();
+
   toggleState() {
     this.openState = !this.openState;
+    this.stateToggle.emit(this.openState);
   }
 
   // If a title is explicity set, use that.

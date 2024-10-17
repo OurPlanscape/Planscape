@@ -6,6 +6,7 @@ import { MockProviders } from 'ng-mocks';
 import { MapConfigState } from './treatment-map/map-config.state';
 import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
 import { firstValueFrom, of, throwError } from 'rxjs';
+import { RemovingStandsError, UpdatingStandsError } from './treatment-errors';
 
 const mockSummary: TreatmentSummary = {
   project_areas: [
@@ -188,7 +189,7 @@ describe('TreatmentsState', () => {
 
     service.updateTreatedStands('cut', [2, 3]).subscribe({
       error: (err) => {
-        expect(err.message).toBe('Update failed');
+        expect(err instanceof UpdatingStandsError).toBe(true);
       },
     });
 
@@ -239,7 +240,7 @@ describe('TreatmentsState', () => {
 
     service.removeTreatments([2, 3]).subscribe({
       error: (err) => {
-        expect(err.message).toBe('Remove failed');
+        expect(err instanceof RemovingStandsError).toBe(true);
       },
     });
 
