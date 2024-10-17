@@ -2,6 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService, ScenarioService } from '@services';
+import { FeatureService } from '../../../features/feature.service';
 import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -37,7 +38,9 @@ export class SavedScenariosComponent implements OnInit {
   scenariosForUser: ScenarioRow[] = [];
   selectedTabIndex = 0;
   totalScenarios = 0;
-  sortSelection = 'created_at';
+  sortSelection = '-created_at';
+
+  treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
 
   constructor(
     private route: ActivatedRoute,
@@ -45,7 +48,8 @@ export class SavedScenariosComponent implements OnInit {
     private router: Router,
     private snackbar: MatSnackBar,
     private scenarioService: ScenarioService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -99,6 +103,7 @@ export class SavedScenariosComponent implements OnInit {
     return this.plan.permissions.includes('add_scenario');
   }
 
+  //TODO: Remove this when we permanently switch to new_planning_area
   get canArchiveScenario() {
     if (!this.plan || !this.highlightedScenarioRow) {
       return false;

@@ -66,3 +66,17 @@ export const TreatmentsPlansEnabled: Story = {
     treatmentPlansEnabled: true,
   },
 };
+
+export const UserCanArchiveScenario: Story = {
+  args: {
+    name: 'Test Scenario',
+    areas: 5,
+    status: 'SUCCESS',
+    creator: 'Larry Larrington',
+    created_at: '2024-01-01 12:34:00',
+    budget: 1234567,
+    treatmentPlansCount: 5,
+    treatmentPlansEnabled: true,
+    userCanArchiveScenario: true,
+  },
+};

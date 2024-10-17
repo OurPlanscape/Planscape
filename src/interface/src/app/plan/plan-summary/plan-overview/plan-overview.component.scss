@@ -1,4 +1,4 @@
-.plan-overview-container {
+:host {
   display: flex;
   flex-direction: column;
   flex-grow: 1;
@@ -15,8 +15,9 @@
 .plan-scenario-panel {
   background-color: white;
   flex-grow: 1;
-  overflow-y: auto;
   padding: 20px;
+  overflow-y: scroll;
+  height: 100%;
 }
 
 .plan-scenario-panel-content {
