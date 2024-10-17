@@ -103,6 +103,7 @@ export class SavedScenariosComponent implements OnInit {
     return this.plan.permissions.includes('add_scenario');
   }
 
+  //TODO: Remove this when we permanently switch to new_planning_area
   get canArchiveScenario() {
     if (!this.plan || !this.highlightedScenarioRow) {
       return false;

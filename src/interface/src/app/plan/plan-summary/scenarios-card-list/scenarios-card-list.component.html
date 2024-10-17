@@ -11,5 +11,6 @@
   [status]="s.scenario_result?.status || 'PENDING'"
   (click)="handleClickedScenario(s)"
   [selected]="isSelected(s)"
-  [treatmentPlansEnabled]="treatmentPlansEnabled">
+  [treatmentPlansEnabled]="treatmentPlansEnabled"
+  [userCanArchiveScenario]="userCanArchiveScenario(s)">
 </sg-scenario-card>

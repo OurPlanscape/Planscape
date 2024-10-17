@@ -56,6 +56,7 @@ export class ScenarioCardComponent {
   @Input() selected: boolean = false;
 
   @Input() treatmentPlansEnabled = false;
+  @Input() userCanArchiveScenario = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
@@ -116,6 +117,10 @@ export class ScenarioCardComponent {
       return this.chipsStatus[this.status].label;
     }
     return 'Failed';
+  }
+
+  handleMoreMenuClick(event: Event) {
+    event.stopPropagation();
   }
 
   handleClick(event: Event) {

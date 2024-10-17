@@ -8,7 +8,8 @@ import {
   parseResultsToTotals,
 } from '../../plan-helpers';
 import { FeatureService } from '../../../features/feature.service';
-import { Scenario, ScenarioResult } from '@types';
+import { Plan, Scenario, ScenarioResult } from '@types';
+import { AuthService } from '@services';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -20,10 +21,14 @@ import { Scenario, ScenarioResult } from '@types';
 export class ScenariosCardListComponent {
   selectedCard: ScenarioRow | null = null;
   @Input() scenarios: ScenarioRow[] = [];
+  @Input() plan: Plan | null = null;
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
   @Output() viewScenario = new EventEmitter<ScenarioRow>();
 
-  constructor(private featureService: FeatureService) {}
+  constructor(
+    private featureService: FeatureService,
+    private authService: AuthService
+  ) {}
 
   treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
 
@@ -55,5 +60,13 @@ export class ScenariosCardListComponent {
 
   isSelected(s: ScenarioRow): boolean {
     return this.selectedCard == s;
+  }
+
+  userCanArchiveScenario(scenario: Scenario) {
+    if (!this.plan) {
+      return false;
+    }
+    const user = this.authService.currentUser();
+    return user?.id === this.plan?.user || user?.id == scenario.user;
   }
 }
