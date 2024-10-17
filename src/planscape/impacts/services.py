@@ -231,6 +231,22 @@ def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
 IMPACTS_RASTER_NODATA = -999
 
 
+def get_impacts(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    action: TreatmentPrescriptionAction,
+    year: int,
+):
+    prescriptions = treatment_plan.tx_prescriptions.filter(action=action)
+    treatment_results = TreatmentResult.objects.filter(
+        treatment_plan=treatment_plan,
+        treatment_prescription__in=prescriptions,
+        variable=variable,
+        year=year,
+    ).all()
+    return treatment_results
+
+
 def to_treatment_results(
     result: Dict[str, Any],
     variable: ImpactVariable,
