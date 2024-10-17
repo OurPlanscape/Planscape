@@ -9,30 +9,42 @@ from impacts.models import (
     TreatmentPrescriptionAction,
     TreatmentPlan,
 )
-from impacts.services import calculate_impacts, persist_impacts, get_calculation_matrix
+from impacts.services import (
+    calculate_impacts,
+    persist_impacts,
+    get_calculation_matrix,
+    get_impacts,
+)
 from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
 
 @app.task()
-def async_calculate_persist_impacts(
+def async_get_or_calculate_persist_impacts(
     treatment_plan_pk: int,
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
 ) -> List[int]:
-    log.info(f"Calculating impacts for {variable}")
+    log.info(f"Getting impacts for {variable}")
     treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
-    zonal_stats = calculate_impacts(
-        treatment_plan=treatment_plan,
-        variable=variable,
-        action=action,
-        year=year,
+    # get or calculate impacts
+    results = get_impacts(
+        treatment_plan=treatment_plan, variable=variable, action=action, year=year
     )
-    results = persist_impacts(
-        zonal_statistics=zonal_stats, variable=variable, year=year
-    )
+
+    if not results:
+        log.info(f"No impacts found. Calculating impacts for {variable}")
+        zonal_stats = calculate_impacts(
+            treatment_plan=treatment_plan,
+            variable=variable,
+            action=action,
+            year=year,
+        )
+        results = persist_impacts(
+            zonal_statistics=zonal_stats, variable=variable, year=year
+        )
     return list([x.pk for x in results])
 
 
@@ -75,7 +87,7 @@ def async_calculate_persist_impacts_treatment_plan(
         )
     )
     tasks = [
-        async_calculate_persist_impacts.si(
+        async_get_or_calculate_persist_impacts.si(
             treatment_plan_pk=treatment_plan_pk,
             variable=variable,
             action=action,
