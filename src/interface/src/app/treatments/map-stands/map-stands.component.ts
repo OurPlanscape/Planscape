@@ -18,7 +18,7 @@ import {
   Point,
 } from 'maplibre-gl';
 
-import { AsyncPipe, NgForOf } from '@angular/common';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
 import { environment } from '../../../environments/environment';
@@ -41,7 +41,7 @@ import {
   SELECTED_STANDS_PAINT,
   STANDS_CELL_PAINT,
 } from '../map.styles';
-import { SEQUENCE_ACTIONS } from '../prescriptions';
+import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
 
 type MapLayerData = {
   readonly name: string;
@@ -60,6 +60,7 @@ type MapLayerData = {
     AsyncPipe,
     ImageComponent,
     NgForOf,
+    NgIf,
   ],
   templateUrl: './map-stands.component.html',
 })
@@ -87,6 +88,23 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   treatedStands$ = this.treatedStandsState.treatedStands$;
   sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
+
+  readonly patternNames = PATTERN_NAMES;
+
+  patternLoaded: Record<PatternName, boolean> = {
+    'stripes-black': false,
+    'stripes-red': false,
+    'stripes-purple': false,
+  };
+
+  allPatternsLoaded() {
+    return (
+      this.patternLoaded['stripes-purple'] &&
+      this.patternLoaded['stripes-black'] &&
+      this.patternLoaded['stripes-red']
+    );
+  }
+
   /**
    * Reference to the selected stands before the user starts dragging for stand selection
    */

@@ -158,10 +158,6 @@ export class TreatmentMapComponent {
     this.mapLibreMap = event;
   }
 
-  onImageMissing(a: any) {
-    // console.log('missing!', a);
-  }
-
   onMapMouseMove(event: MapMouseEvent): void {
     if (this.mapConfigState.isStandSelectionEnabled()) {
       this.treatmentTooltipLngLat = event.lngLat;
