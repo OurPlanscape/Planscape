@@ -97,6 +97,7 @@
 
   .detail-header {
     @include top-level-label();
+    font-size: 14px;
     color: $color-md-gray;
     text-transform: uppercase;
     text-align: left;
