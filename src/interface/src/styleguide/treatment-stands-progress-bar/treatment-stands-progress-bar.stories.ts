@@ -36,3 +36,32 @@ export const Default: Story = {
     treatedStands: 50,
   },
 };
+
+//edge case stories
+export const SmallTotal: Story = {
+  args: {
+    totalStands: 3,
+    treatedStands: 2,
+  },
+};
+
+export const LargeTotal: Story = {
+  args: {
+    totalStands: 15000,
+    treatedStands: 2654,
+  },
+};
+
+export const ZeroStands: Story = {
+  args: {
+    totalStands: 0,
+    treatedStands: 200,
+  },
+};
+
+export const Negative: Story = {
+  args: {
+    totalStands: -100,
+    treatedStands: -200,
+  },
+};

@@ -24,6 +24,6 @@ export class TreatmentStandsProgressBarComponent {
     if (this.treatedStands < 1 || this.totalStands < 1) {
       return 0;
     }
-    return Math.round(this.treatedStands / this.totalStands) * 100;
+    return Math.round((this.treatedStands / this.totalStands) * 100);
   }
 }
