@@ -1,0 +1,47 @@
+<sg-modal
+  title="Review Treatment Plan"
+  primaryButtonText="Create"
+  [scrollableContent]="true"
+  [showBorders]="true"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="runTreatmentPlan()"
+  (clickedSecondary)="cancel()"
+  width="large">
+  <div
+    modalBodyContent
+    class="review-content"
+    *ngIf="standTotals$ | async; let standTotals">
+    <p>
+      <b
+        >We found {{ standTotals.totalStands - standTotals.treatedStands }} out
+        of {{ standTotals.totalStands }} stands with no treatments applied.</b
+      >
+      You are not required to apply treatments to all project areas, however, no
+      modifications can be done after a treatment plan is created.
+    </p>
+    <p>
+      You are about to create a treatment plan for the following project
+      area(s):
+    </p>
+    <mat-slide-toggle
+      class="no-treatments-toggle"
+      (change)="toggleShowTreatments()"
+      >Show only areas with no treatments
+    </mat-slide-toggle>
+
+    <table>
+      <tr>
+        <th>Project area #</th>
+        <th>Total stands</th>
+        <th># of stands with treatments</th>
+        <th># of stands with <b>no</b> treatments</th>
+      </tr>
+      <tr *ngFor="let area of filteredProjectAreas$ | async">
+        <td>{{ area.name }}</td>
+        <td>{{ area.totalStands }}</td>
+        <td>{{ area.treatedStands }}</td>
+        <td>{{ area.totalStands - area.treatedStands }}</td>
+      </tr>
+    </table>
+  </div>
+</sg-modal>
