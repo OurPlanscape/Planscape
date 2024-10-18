@@ -4,6 +4,7 @@
   [scrollableContent]="true"
   [showBorders]="true"
   (clickedClose)="cancel()"
+  [primaryButtonDisabled]="submitting"
   (clickedPrimary)="runTreatmentPlan()"
   (clickedSecondary)="cancel()"
   width="large">

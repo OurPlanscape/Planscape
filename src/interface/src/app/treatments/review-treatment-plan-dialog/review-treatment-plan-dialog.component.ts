@@ -1,12 +1,17 @@
 import { Component } from '@angular/core';
 import { ModalComponent } from '@styleguide';
-import { MatDialogRef } from '@angular/material/dialog';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { TreatmentsState } from '../treatments.state';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { filter } from 'rxjs/operators';
 import { TreatmentSummary } from '@types';
+
+import { DialogData } from '../../../styleguide/dialogs/dialogs';
+import { ErrorDialogComponent } from '../../../styleguide/dialogs/error-dialog/error-dialog.component';
+import { PendingDialogComponent } from '../../../styleguide/dialogs/pending-dialog/pending-dialog.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @Component({
   selector: 'app-review-treatment-plan-dialog',
@@ -18,9 +23,14 @@ import { TreatmentSummary } from '@types';
 export class ReviewTreatmentPlanDialogComponent {
   private showOnlyAreasWithNoTreatment$ = new BehaviorSubject(false);
 
+  submitting = false;
+
   constructor(
     private dialogRef: MatDialogRef<ReviewTreatmentPlanDialogComponent>,
-    private treatmentsState: TreatmentsState
+    private dialog: MatDialog,
+    private treatmentsState: TreatmentsState,
+    private router: Router,
+    private route: ActivatedRoute
   ) {}
 
   projectAreas$: Observable<
@@ -74,8 +84,46 @@ export class ReviewTreatmentPlanDialogComponent {
   }
 
   runTreatmentPlan(): void {
-    // TODO yey message and ney message
-    this.treatmentsState.runTreatmentPlan().subscribe();
+    this.submitting = true;
+    this.treatmentsState.runTreatmentPlan().subscribe({
+      error: () => {
+        this.dialogRef.close();
+        this.dialog
+          .open<ErrorDialogComponent, DialogData>(ErrorDialogComponent, {
+            data: {
+              primaryButtonText: 'Try Again',
+              headline: 'Unable to create your treatment plan',
+              message:
+                'There was an error while creating the treatment plan. Please check your internet connection and try again.',
+            },
+          })
+          .afterClosed()
+          .subscribe((confirm) => {
+            if (confirm) {
+              this.runTreatmentPlan();
+            }
+          });
+      },
+      next: () => {
+        this.dialogRef.close();
+        this.router.navigate(['../..'], { relativeTo: this.route });
+        this.dialog
+          .open<PendingDialogComponent, DialogData>(PendingDialogComponent, {
+            data: {
+              primaryButtonText: 'Return To Plan Overview',
+              headline: 'Planscape is creating your treatment plan',
+              message:
+                'This may take up to 1 hour. You will receive an email when the treatment plan is created.',
+            },
+          })
+          .afterClosed()
+          .subscribe((confirm) => {
+            if (confirm) {
+              this.router.navigate(['../../../..'], { relativeTo: this.route });
+            }
+          });
+      },
+    });
   }
 
   toggleShowTreatments() {
