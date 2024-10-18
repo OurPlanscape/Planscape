@@ -76,15 +76,12 @@
 }
 
 .new-scenario-button {
-  @include xs-label();
   right: 5px;
   margin-left: auto;
 
   .mat-icon {
     line-height: 21px;
   }
-  
-
 }
 
 .scenario-table-head {
@@ -168,15 +165,9 @@
   }
 }
 
-
-
 app-section-loader {
   display: flex;
   flex-direction: column;
   overflow: hidden;
   flex: 1;
-}
-
-::ng-deep .new-scenario-button .button {
-  @include xs-label();
 }
