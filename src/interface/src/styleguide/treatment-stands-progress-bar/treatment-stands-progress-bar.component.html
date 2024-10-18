@@ -1,0 +1,9 @@
+<div class="title-row">
+  Stands With Treatments Applied
+  <div class="count-box">{{ treatedStands + '/' + totalStands }}</div>
+</div>
+<div class="progress-row">
+  <mat-progress-bar
+    [type]="determinate"
+    [value]="treatedToPercent()"></mat-progress-bar>
+</div>
