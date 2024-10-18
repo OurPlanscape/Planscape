@@ -19,7 +19,7 @@
       New Treatment Plan
     </button>
     <button
-      [disabled]="!isDone()"
+      [disabled]="isRunning()"
       [matMenuTriggerFor]="menu"
       aria-label="More scenario options"
       class="more-menu-button"

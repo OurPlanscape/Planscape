@@ -26,6 +26,7 @@ export class ScenariosCardListComponent {
   @Input() plan: Plan | null = null;
   @Output() selectScenario = new EventEmitter<ScenarioRow>();
   @Output() viewScenario = new EventEmitter<ScenarioRow>();
+  @Output() triggerRefresh = new EventEmitter<ScenarioRow>();
 
   constructor(
     private featureService: FeatureService,
@@ -84,7 +85,7 @@ export class ScenariosCardListComponent {
             'Dismiss',
             SNACK_BOTTOM_NOTICE_CONFIG
           );
-          //TODO: refetch the list
+          this.triggerRefresh.emit();
         },
         error: (err) => {
           this.snackbar.open(
