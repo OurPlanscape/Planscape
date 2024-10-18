@@ -58,10 +58,3 @@ export const ZeroStands: Story = {
     treatedStands: 200,
   },
 };
-
-export const Negative: Story = {
-  args: {
-    totalStands: -100,
-    treatedStands: -200,
-  },
-};

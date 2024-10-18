@@ -14,13 +14,20 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 })
 export class TreatmentStandsProgressBarComponent {
   /**
-   * Optional title text -- explicitly overrides the derived title
+   * Optional title text, if than the default
    */
-  @Input() title: string | null = null;
-  @Input() totalStands: number = 0;
+  @Input() title = 'Stands With Treatments Applied';
+  /**
+   * The number of treated stands
+   */
   @Input() treatedStands: number = 0;
+  /**
+   * The total number of stands, treated and not treated
+   */
+  @Input() totalStands: number = 0;
 
-  treatedToPercent(): number {
+  // convert to units for progress bar
+  treatedAsPercent(): number {
     if (this.treatedStands < 1 || this.totalStands < 1) {
       return 0;
     }
