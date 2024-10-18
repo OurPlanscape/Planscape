@@ -31,7 +31,14 @@
     </div>
     <div *appFeatureFlag="'new_planning_area'">
       <div class="plan-summary-panel full-height" *ngIf="showOverview$ | async">
-        <app-area-scrolling-notes [plan]="plan"></app-area-scrolling-notes>
+        <sg-notes-sidebar
+          [showHeader]="true"
+          [notes]="sidebarNotes"
+          [notesState]="notesSidebarState"
+          (createNote)="addNote($event)"
+          (deleteNote)="handleNoteDelete($event)"
+          noNotesTitleText="No Notes For This Planning Area Yet"
+          noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
       </div>
     </div>
 

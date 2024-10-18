@@ -4,9 +4,13 @@ import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { BehaviorSubject, of } from 'rxjs';
 import { Plan, Region } from '@types';
-
+import { MatDialogModule } from '@angular/material/dialog';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
-import { AuthService, PlanStateService } from '@services';
+import {
+  AuthService,
+  PlanStateService,
+  PlanningAreaNotesService,
+} from '@services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
@@ -15,12 +19,13 @@ import { MockComponent } from 'ng-mocks';
 import { NavBarComponent } from '@shared';
 import { MOCK_PLAN } from '@services/mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
   let fixture: ComponentFixture<PlanComponent>;
   let mockAuthService: Partial<AuthService>;
-
+  let mockNotesService: PlanningAreaNotesService;
   const fakeGeoJson: GeoJSON.GeoJSON = {
     type: 'FeatureCollection',
     features: [
@@ -60,6 +65,18 @@ describe('PlanComponent', () => {
 
     mockAuthService = {};
 
+    mockNotesService = jasmine.createSpyObj('PlanningAreaNotesService', [
+      'getNotes',
+      'addNote',
+      'deleteNote',
+    ]);
+    Object.assign(mockNotesService, {
+      modelName: 'planning_area',
+      multipleUrl: 'mock-multiple-url',
+      singleUrl: 'mock-single-url',
+    });
+    (mockNotesService.getNotes as jasmine.Spy).and.returnValue(of([]));
+
     const fakeService = jasmine.createSpyObj(
       'PlanStateService',
       {
@@ -83,6 +100,8 @@ describe('PlanComponent', () => {
         PlanModule,
         RouterTestingModule.withRoutes([]),
         NoopAnimationsModule,
+        MatDialogModule,
+        MatSnackBar,
       ],
       declarations: [
         PlanComponent,
@@ -94,6 +113,7 @@ describe('PlanComponent', () => {
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: AuthService, useValue: mockAuthService },
         { provide: PlanStateService, useValue: fakeService },
+        { provide: PlanningAreaNotesService, useValue: mockNotesService },
       ],
     }).compileComponents();
 

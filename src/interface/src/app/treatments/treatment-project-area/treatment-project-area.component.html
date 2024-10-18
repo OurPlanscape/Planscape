@@ -6,5 +6,13 @@
     <app-project-area-tx-tab></app-project-area-tx-tab>
   </mat-tab>
   <mat-tab label="Map Layers"></mat-tab>
-  <mat-tab label="Notes"></mat-tab>
+  <mat-tab label="Notes">
+    <sg-notes-sidebar
+      [notes]="notes"
+      [notesState]="notesSidebarState"
+      (createNote)="addNote($event)"
+      (deleteNote)="handleNoteDelete($event)"
+      noNotesTitleText="No Project Area Notes Yet"
+      noNotesDetailText="Start adding notes to help your team learn more about this project area."></sg-notes-sidebar>
+  </mat-tab>
 </mat-tab-group>
