@@ -17,6 +17,7 @@ import {
 } from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 
 @Component({
   selector: 'app-project-area-tx-tab',
@@ -38,7 +39,8 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 export class ProjectAreaTreatmentsTabComponent {
   constructor(
     private mapConfigState: MapConfigState,
-    private treatmentsState: TreatmentsState
+    private treatmentsState: TreatmentsState,
+    private selectedStandsState: SelectedStandsState
   ) {}
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
@@ -90,5 +92,9 @@ export class ProjectAreaTreatmentsTabComponent {
         )
       );
     }
+  }
+
+  highlightPrescriptions(tx: Prescription) {
+    this.selectedStandsState.updateSelectedStands(tx.stand_ids);
   }
 }
