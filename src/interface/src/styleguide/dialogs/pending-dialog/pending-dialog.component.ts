@@ -4,7 +4,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { DialogData } from '../dialogs';
 
 @Component({
-  selector: 'app-pending-dialog',
+  selector: 'sg-pending-dialog',
   standalone: true,
   imports: [ModalComponent, ModalConfirmationDialogComponent],
   templateUrl: './pending-dialog.component.html',
