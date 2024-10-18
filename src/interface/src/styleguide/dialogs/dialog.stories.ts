@@ -41,6 +41,18 @@ const meta: Meta<ErrorDialogComponent | PendingDialogComponent> = {
       ],
     }),
   ],
+  parameters: {
+    docs: {
+      description: {
+        component: `A generic dialogs to be used to display simple messages.
+
+Provide data with the  \`DialogData\` interface, via \`MAT_DIALOG_DATA\`.
+
+
+Clicking the primary button will resolve \`afterClose()\` to \`true\`, and clicking the secondary will resolve \`afterClose()\` to \`false\`.`,
+      },
+    },
+  },
 };
 
 export default meta;
@@ -68,14 +80,6 @@ export const ErrorDialog: Story = {
     props: args,
     template: `<div ${containerStyle}><sg-error-dialog></sg-error-dialog></div>`,
   }),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'A generic error dialog to be used to display simple errors. Clicking the primary button will resolve `afterClose()` to `true`, and clicking the secondary will resolve `afterClose()` to `false`.',
-      },
-    },
-  },
 };
 
 // Story for PendingDialogComponent
@@ -98,12 +102,4 @@ export const PendingDialog: Story = {
     props: args,
     template: `<div ${containerStyle}><sg-pending-dialog></sg-pending-dialog></div>`,
   }),
-  parameters: {
-    docs: {
-      description: {
-        story:
-          'A generic pending dialog to be used to display simple pending messages. Clicking the primary button will resolve `afterClose()` to `true`, and clicking the secondary will resolve `afterClose()` to `false`.',
-      },
-    },
-  },
 };

@@ -11,7 +11,8 @@ import { TreatmentsService } from '@services/treatments.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AfterDuplicateTreatmentDialogComponent } from '../after-duplicate-treatment-dialog/after-duplicate-treatment-dialog.component';
 import { TreatmentPlan } from '@types';
-import { DuplicateTreatmentErrorDialogComponent } from '../duplicate-treatment-error-dialog/duplicate-treatment-error-dialog.component';
+import { ErrorDialogComponent } from '../../../styleguide/dialogs/error-dialog/error-dialog.component';
+import { DialogData } from '../../../styleguide/dialogs/dialogs';
 
 @Component({
   selector: 'app-treatment-navbar-menu',
@@ -84,8 +85,13 @@ export class TreatmentNavbarMenuComponent {
 
   openDuplicateTreatmentErrorDialog() {
     this.dialog
-      .open(DuplicateTreatmentErrorDialogComponent, {
-        data: { name: this.treatmentPlanName },
+      .open<ErrorDialogComponent, DialogData>(ErrorDialogComponent, {
+        data: {
+          primaryButtonText: 'Try Again',
+          headline: `Failed to duplicate '${this.treatmentPlanName}' `,
+          message:
+            'An error occurred duplicating this treatment plan, please check your internet connection and try again.',
+        },
       })
       .afterClosed()
       .pipe(take(1))
