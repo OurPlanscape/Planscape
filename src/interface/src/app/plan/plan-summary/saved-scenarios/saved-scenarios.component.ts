@@ -77,12 +77,24 @@ export class SavedScenariosComponent implements OnInit {
         this.scenariosForUser = this.showOnlyMyScenarios
           ? scenarios.filter((s) => s.user === this.user$.value?.id)
           : scenarios;
-        this.activeScenarios = this.scenariosForUser.filter(
+        const fetchedActiveScenarios = this.scenariosForUser.filter(
           (s) => s.status === 'ACTIVE'
         );
-        this.archivedScenarios = this.scenariosForUser.filter(
+        const fetchedArchivedScenarios = this.scenariosForUser.filter(
           (s) => s.status === 'ARCHIVED'
         );
+        if (
+          JSON.stringify(fetchedActiveScenarios) !==
+          JSON.stringify(this.activeScenarios)
+        ) {
+          this.activeScenarios = fetchedActiveScenarios;
+        }
+        if (
+          JSON.stringify(fetchedArchivedScenarios) !==
+          JSON.stringify(this.archivedScenarios)
+        ) {
+          this.archivedScenarios = fetchedArchivedScenarios;
+        }
         this.loading = false;
       });
   }
