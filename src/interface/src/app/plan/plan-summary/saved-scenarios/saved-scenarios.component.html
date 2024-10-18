@@ -193,9 +193,8 @@
             *ngIf="activeScenarios.length > 0"
             [scenarios]="activeScenarios"
             [plan]="plan"
-            (viewScenario)="
-              navigateToScenario($event)
-            "></app-scenarios-card-list>
+            (viewScenario)="navigateToScenario($event)"
+            (triggerRefresh)="fetchScenarios()"></app-scenarios-card-list>
 
           <div class="empty-state" *ngIf="activeScenarios.length === 0">
             No active scenarios
