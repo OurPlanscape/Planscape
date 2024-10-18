@@ -23,11 +23,14 @@
 
 .scenario-sort-picker {
   @include xs-label();
-  line-height: 23px;
+  line-height: 40px;
+  height: 40px;
 }
 
 .slide-toggle-my-scenarios {
   @include xs-label();
+  line-height: 40px;
+  height: 40px; // a smaller height clips the hover outline
 }
 
 .sort-select {
@@ -157,7 +160,8 @@
 .view-map {
   text-decoration: none;
   color: $color-standard-blue;
-
+  padding-left: 4px;
+  font-weight: 500;
   &:active,
   &:visited {
     color: $color-standard-blue;
