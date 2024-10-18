@@ -17,17 +17,25 @@
   height: 28px;
   display: flex;
   flex-direction: row;
+  gap: 24px;
   justify-content: flex-end;
 }
 
+.scenario-sort-picker {
+  @include xs-label();
+  line-height: 40px;
+  height: 40px;
+}
+
 .slide-toggle-my-scenarios {
-  @include standard-label();
-  width: 280px;
+  @include xs-label();
+  line-height: 40px;
+  height: 40px; // a smaller height clips the hover outline
 }
 
 .sort-select {
-  @include standard-label();
-  width: 280px;
+  @include xs-label();
+  width: 200px;
   border: none;
 }
 
@@ -141,19 +149,21 @@
 
   h4 {
     margin: 0 auto 0 0;
+    font-size: 18px;
+    font-weight: 600;
   }
 }
 
 .view-map {
   text-decoration: none;
   color: $color-standard-blue;
-
+  padding-left: 4px;
+  font-weight: 500;
   &:active,
   &:visited {
     color: $color-standard-blue;
   }
 }
-
 
 app-section-loader {
   display: flex;
