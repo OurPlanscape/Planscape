@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   ActivatedRoute,
   Event as NavigationEvent,
@@ -41,7 +41,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   styleUrls: ['./plan.component.scss'],
   providers: [PlanningAreaNotesService],
 })
-export class PlanComponent implements OnInit, OnDestroy {
+export class PlanComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private planStateService: PlanStateService,
@@ -149,10 +149,6 @@ export class PlanComponent implements OnInit, OnDestroy {
 
     // TODO: add featureflag
     this.loadNotes();
-  }
-
-  ngOnDestroy(): void {
-    console.log('eh');
   }
 
   private getPathFromSnapshot() {
