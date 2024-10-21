@@ -244,60 +244,38 @@ def clone_existing_impacts_from_other_scenarios_given_action(
     treatment_prescriptions = treatment_plan.tx_prescriptions.select_related(
         "stand"
     ).filter(action=action)
-    stands = [
-        treatment_prescription.stand
-        for treatment_prescription in treatment_prescriptions.iterator()
-    ]
 
-    others_plan_treatment_prescritions = (
-        TreatmentPrescription.objects.filter(
-            action=action,
-            treatment_plan__scenario=treatment_plan.scenario,
-            stand__in=stands,
+    stands_prescriptions = {
+        treatment_prescription.stand.pk: treatment_prescription
+        for treatment_prescription in treatment_prescriptions.iterator()
+    }
+    general_treatment_results = (
+        TreatmentResult.objects.filter(
+            treatment_prescription__action=action,
+            treatment_prescription__treatment_plan__scenario=treatment_plan.scenario,
+            treatment_prescription__stand__in=stands_prescriptions.keys(),
+            variable=variable,
+            year=year,
         )
-        .select_related("stand")
-        .exclude(treatment_plan=treatment_plan)
+        .select_related("treatment_prescription", "treatment_prescription__stand")
+        .distinct("treatment_prescription__stand__pk", "aggregation", "value", "delta")
+        .values_list(
+            "treatment_prescription__stand__pk", "aggregation", "value", "delta"
+        )
     )
 
-    copied_results = []
-    for other_treatment_prescription in others_plan_treatment_prescritions.iterator():
-        try:
-            treatment_prescription = treatment_plan.tx_prescriptions.get(
-                action=other_treatment_prescription.action,
-                type=other_treatment_prescription.type,
-                stand=other_treatment_prescription.stand,
-            )
-        except (
-            TreatmentPrescription.MultipleObjectsReturned,
-            TreatmentPrescription.ObjectDoesNotExist,
-        ) as ex:
-            log.exception("Could not found a proper TreatmentPrescription.")
-            continue
-        others_treatment_results = (
-            TreatmentResult.objects.filter(
-                treatment_prescription=other_treatment_prescription,
-                variable=variable,
-                year=year,
-            )
-            .select_related("treatment_prescription")
-            .distinct("treatment_prescription__action", "variable", "year")
-        )
-
-        copied_results.extend(
-            [
-                TreatmentResult.objects.update_or_create(
-                    treatment_plan=treatment_plan,
-                    treatment_prescription=treatment_prescription,
-                    variable=variable,
-                    aggregation=treatment_result.aggregation,
-                    year=year,
-                    value=treatment_result.value,
-                    delta=treatment_result.delta,
-                )[0]
-                for treatment_result in others_treatment_results.iterator()
-            ]
-        )
-
+    copied_results = [
+        TreatmentResult.objects.update_or_create(
+            treatment_plan=treatment_plan,
+            treatment_prescription=stands_prescriptions.get(other_result[0]),
+            variable=variable,
+            aggregation=other_result[1],
+            year=year,
+            value=other_result[2],
+            delta=other_result[3],
+        )[0]
+        for other_result in general_treatment_results.iterator()
+    ]
     return copied_results
 
 
