@@ -237,7 +237,7 @@ def clone_existing_impacts_from_other_scenarios_given_action(
     action: TreatmentPrescriptionAction,
     year: int,
 ) -> List[TreatmentResult]:
-    """Clones TreatmentPrescriptions from others TreatmentPlans
+    """Clones TreatmentResults from others TreatmentPlans
     which `action`, `year`, `variable` and `stand` are the same to
     avoid re-calculations.
     """
@@ -246,7 +246,7 @@ def clone_existing_impacts_from_other_scenarios_given_action(
     ).filter(action=action)
     stands = [
         treatment_prescription.stand
-        for treatment_prescription in treatment_prescriptions
+        for treatment_prescription in treatment_prescriptions.iterator()
     ]
 
     others_plan_treatment_prescritions = (
@@ -257,11 +257,10 @@ def clone_existing_impacts_from_other_scenarios_given_action(
         )
         .select_related("stand")
         .exclude(treatment_plan=treatment_plan)
-        .all()
     )
 
     copied_results = []
-    for other_treatment_prescription in others_plan_treatment_prescritions:
+    for other_treatment_prescription in others_plan_treatment_prescritions.iterator():
         treatment_prescription = treatment_plan.tx_prescriptions.get(
             action=other_treatment_prescription.action,
             type=other_treatment_prescription.type,
@@ -362,14 +361,13 @@ def calculate_impacts(
             delta__isnull=False,
         )
         .select_related("treatment_prescription")
-        .all()
     )
 
     # Exclude TreatmentPrescriptions with TreatmentResult to avoid re-calculation
     prescriptions = prescriptions.exclude(
         pk__in=[
             treatment_result.treatment_prescription.pk
-            for treatment_result in treatment_results
+            for treatment_result in treatment_results.iterator()
         ]
     )
 
