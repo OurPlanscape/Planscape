@@ -8,6 +8,16 @@ from treebeard.forms import movenodeform_factory
 class CategoryAdmin(TreeAdmin):
     form = CategoryAdminForm
     search_fields = ["name"]
+    list_display = ("id", "name", "order", "dataset")
+
+    def get_changeform_initial_data(self, request):
+        return {"created_by": request.user}
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        if not change:
+            form.created_by = request.user
+        return form
 
 
 class DatasetAdmin(admin.ModelAdmin):
@@ -15,6 +25,17 @@ class DatasetAdmin(admin.ModelAdmin):
     search_fields = ["organization__name__icontains", "name"]
     autocomplete_fields = ["organization"]
     form = DatasetAdminForm
+    list_display = ("id", "name", "visibility", "organization")
+    list_display_links = (
+        "id",
+        "name",
+    )
+
+    def get_form(self, request, obj=None, change=False, **kwargs):
+        form = super().get_form(request, obj, change, **kwargs)
+        if not change:
+            form.created_by = request.user
+        return form
 
 
 class DataLayerAdmin(admin.ModelAdmin):
@@ -25,6 +46,23 @@ class DataLayerAdmin(admin.ModelAdmin):
         "name",
     ]
     autocomplete_fields = ["organization", "created_by", "dataset", "category"]
+    list_display = (
+        "id",
+        "name",
+        "status",
+        "type",
+        "geometry_type",
+        "dataset",
+        "category",
+        "organization",
+    )
+    list_display_links = (
+        "id",
+        "name",
+        "status",
+        "type",
+        "geometry_type",
+    )
 
 
 admin.site.register(Dataset, DatasetAdmin)
