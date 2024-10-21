@@ -25,32 +25,33 @@ export const Default: Story = {
   args: {
     name: 'Test Scenario',
     areas: 5,
-    status: 'SUCCESS',
+    resultStatus: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
     budget: 1234567,
     treatmentPlansCount: 5,
+    userCanArchiveScenario: true,
   },
 };
 
 export const Running: Story = {
   args: {
     ...Default.args,
-    status: 'RUNNING',
+    resultStatus: 'RUNNING',
   },
 };
 
 export const Done: Story = {
   args: {
     ...Default.args,
-    status: 'SUCCESS',
+    resultStatus: 'SUCCESS',
   },
 };
 
 export const Failed: Story = {
   args: {
     ...Default.args,
-    status: 'FAILURE',
+    resultStatus: 'FAILURE',
   },
 };
 
@@ -58,7 +59,7 @@ export const TreatmentsPlansEnabled: Story = {
   args: {
     name: 'Test Scenario',
     areas: 5,
-    status: 'SUCCESS',
+    resultStatus: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
     budget: 1234567,
@@ -67,16 +68,16 @@ export const TreatmentsPlansEnabled: Story = {
   },
 };
 
-export const UserCanArchiveScenario: Story = {
+export const UserCannotArchiveScenario: Story = {
   args: {
     name: 'Test Scenario',
     areas: 5,
-    status: 'SUCCESS',
+    resultStatus: 'SUCCESS',
     creator: 'Larry Larrington',
     created_at: '2024-01-01 12:34:00',
     budget: 1234567,
     treatmentPlansCount: 5,
     treatmentPlansEnabled: true,
-    userCanArchiveScenario: true,
+    userCanArchiveScenario: false,
   },
 };
