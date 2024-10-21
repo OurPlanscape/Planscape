@@ -396,7 +396,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
         "impacts.services.ImpactVariable.get_baseline_raster_path",
         return_value="impacts/tests/test_data/test_raster.tif",
     )
-    def test_calculate_already_existing_impacts_in_other_plan_returns_data(
+    def test_calculate_already_existing_impacts_returns_data(
         self, _get_impact_raster, _get_baseline_raster
     ):
         """Test that this function is performing work correctly. we don't
