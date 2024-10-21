@@ -8,6 +8,10 @@ class DatasetAdminForm(forms.ModelForm):
     description = forms.CharField(widget=forms.Textarea, required=False)
     version = forms.CharField(required=False)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["created_by"].disabled = True
+
     class Meta:
         model = Dataset
         fields = (
@@ -23,12 +27,16 @@ class DatasetAdminForm(forms.ModelForm):
 class CategoryAdminForm(movenodeform_factory(Category)):
     order = forms.IntegerField(required=False)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["created_by"].disabled = True
+
     class Meta:
         model = Category
         fields = (
             "organization",
-            "created_by",
             "dataset",
+            "created_by",
             "name",
             "order",
         )
