@@ -8,8 +8,8 @@ import { MapService, SessionService } from '@services';
   styleUrls: ['./region-dropdown.component.scss'],
 })
 export class RegionDropdownComponent {
-  readonly regions = Object.entries(Region).map(([text, region]) => ({
-    text,
+  readonly regions = Object.entries(Region).map(([key, region]) => ({
+    key,
     region: region as Region,
   }));
   readonly selectedRegion$ = this.sessionService.region$;

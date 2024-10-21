@@ -77,12 +77,21 @@
         </div>
       </mat-menu>
     </button>
+    <button mat-button class="action-button" (click)="print()" data-id="print">
+      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
+        print
+      </mat-icon>
+      Print
+    </button>
     <button
       mat-button
       class="action-button"
       (click)="share()"
       data-id="share"
       *ngIf="area === 'EXPLORE'">
+      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
+        share
+      </mat-icon>
       Share
     </button>
 
@@ -92,15 +101,12 @@
       (click)="sharePlan()"
       data-id="share"
       *ngIf="area === 'SCENARIOS' && (canSharePlan$ | async)">
+      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
+        share
+      </mat-icon>
       Share
     </button>
 
-    <button mat-button class="action-button" (click)="print()" data-id="print">
-      <mat-icon class="material-symbols-outlined" color="primary">
-        print
-      </mat-icon>
-      Print
-    </button>
     <ng-content></ng-content>
   </div>
 </div>

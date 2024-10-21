@@ -19,6 +19,8 @@ import { TreatmentsState } from '../treatments.state';
 
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { combineLatest, map, take } from 'rxjs';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@shared';
 
 @Component({
   selector: 'app-apply-treatment',
@@ -73,7 +75,8 @@ export class ApplyTreatmentComponent {
   constructor(
     public selectedStandsState: SelectedStandsState,
     public treatmentsState: TreatmentsState,
-    public treatedStandsState: TreatedStandsState
+    public treatedStandsState: TreatedStandsState,
+    public snackBar: MatSnackBar
   ) {}
 
   readonly prescriptions = PRESCRIPTIONS;
@@ -112,13 +115,21 @@ export class ApplyTreatmentComponent {
   private applyTreatments(action: PrescriptionAction) {
     const stands = this.selectedStandsState.getSelectedStands();
     this.selectedStandsState.clearStands();
-    return this.treatmentsState.updateTreatedStands(action, stands).subscribe();
+    return this.treatmentsState.updateTreatedStands(action, stands).subscribe({
+      error: (err) => {
+        this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
+      },
+    });
   }
 
   removeTreatments() {
     const stands = this.selectedStandsState.getSelectedStands();
     this.selectedStandsState.clearStands();
-    this.treatmentsState.removeTreatments(stands).subscribe();
+    this.treatmentsState.removeTreatments(stands).subscribe({
+      error: (err) => {
+        this.snackBar.open(err.message, 'Dismiss', SNACK_ERROR_CONFIG);
+      },
+    });
     this.treatmentsState.setShowApplyTreatmentsDialog(false);
   }
 

@@ -2,15 +2,17 @@
   *ngFor="let s of scenarios"
   [name]="s.name"
   [creator]="s.creator"
-  [areas]="getAreas(s)"
+  [areas]="numberOfAreas(s)"
   [created_at]="s.created_at"
   [budget]="
     hasResults(s) ? calculateTotals(s.scenario_result!).estimatedCost : null
   "
   [treatmentPlansCount]="s.tx_plan_count"
-  [status]="s.scenario_result?.status || 'PENDING'"
+  [resultStatus]="s.scenario_result?.status || 'PENDING'"
+  [archiveStatus]="s.status"
   (click)="handleClickedScenario(s)"
   [selected]="isSelected(s)"
   [treatmentPlansEnabled]="treatmentPlansEnabled"
-  [userCanArchiveScenario]="userCanArchiveScenario(s)">
+  [userCanArchiveScenario]="userCanArchiveScenario(s)"
+  (toggleArchiveStatus)="toggleScenarioStatus(s)">
 </sg-scenario-card>

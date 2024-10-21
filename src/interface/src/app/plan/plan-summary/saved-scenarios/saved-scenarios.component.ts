@@ -153,6 +153,7 @@ export class SavedScenariosComponent implements OnInit {
     this.highlightedScenarioRow = row;
   }
 
+  //TODO: Remove this from here we permanently switch to new_planning_area
   toggleScenarioStatus(archive: boolean) {
     const id = this.highlightedScenarioRow?.id;
 

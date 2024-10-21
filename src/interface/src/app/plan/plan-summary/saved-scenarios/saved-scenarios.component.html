@@ -127,7 +127,7 @@
     <a [routerLink]="['/explore', plan?.id]" class="view-map">View Map</a>
   </div>
   <div class="scenarios-header">
-    <h4>Scenarios</h4>
+    <h4 class="scenarios-title">Scenarios</h4>
     <button
       *ngIf="treatmentPlansEnabled"
       sg-button
@@ -170,16 +170,17 @@
         (change)="fetchScenarios()">
         Show only my scenarios
       </mat-slide-toggle>
-      <div>
+      <div class="scenario-sort-picker">
+        Sort by:
         <mat-select
           class="sort-select"
           [(ngModel)]="sortSelection"
           (selectionChange)="handleSortChange()">
           <mat-option value="-created_at">
-            Sort by Created Date (newest first)
+            Created date (Newest first)
           </mat-option>
           <mat-option value="created_at">
-            Sort by Created Date (oldest first)
+            Created date (Oldest first)
           </mat-option>
         </mat-select>
       </div>
@@ -187,22 +188,21 @@
     <mat-tab-group
       mat-align-tabs="start"
       (selectedTabChange)="tabChange($event)">
-      <mat-tab label="ACTIVE">
+      <mat-tab label="Active">
         <mat-card-content>
           <app-scenarios-card-list
             *ngIf="activeScenarios.length > 0"
             [scenarios]="activeScenarios"
             [plan]="plan"
-            (viewScenario)="
-              navigateToScenario($event)
-            "></app-scenarios-card-list>
+            (viewScenario)="navigateToScenario($event)"
+            (triggerRefresh)="fetchScenarios()"></app-scenarios-card-list>
 
           <div class="empty-state" *ngIf="activeScenarios.length === 0">
             No active scenarios
           </div>
         </mat-card-content>
       </mat-tab>
-      <mat-tab label="ARCHIVED">
+      <mat-tab label="Archived">
         <mat-card-content>
           <app-scenarios-card-list
             *ngIf="archivedScenarios.length > 0"
