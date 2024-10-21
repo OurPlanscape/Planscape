@@ -13,7 +13,7 @@ from impacts.services import (
     calculate_impacts,
     persist_impacts,
     get_calculation_matrix,
-    get_impacts,
+    clone_existing_impacts_from_other_scenarios_given_action,
 )
 from planscape.celery import app
 
@@ -27,24 +27,28 @@ def async_get_or_calculate_persist_impacts(
     action: TreatmentPrescriptionAction,
     year: int,
 ) -> List[int]:
-    log.info(f"Getting impacts for {variable}")
-    treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
-    # get or calculate impacts
-    results = get_impacts(
+    log.info(f"Getting already calculated impacts for {variable}")
+    treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+        pk=treatment_plan_pk
+    )
+    copied_results = clone_existing_impacts_from_other_scenarios_given_action(
         treatment_plan=treatment_plan, variable=variable, action=action, year=year
     )
 
-    if not results:
-        log.info(f"No impacts found. Calculating impacts for {variable}")
-        zonal_stats = calculate_impacts(
-            treatment_plan=treatment_plan,
-            variable=variable,
-            action=action,
-            year=year,
-        )
-        results = persist_impacts(
-            zonal_statistics=zonal_stats, variable=variable, year=year
-        )
+    log.info(f"Calculating impacts for {variable}")
+    zonal_stats = calculate_impacts(
+        treatment_plan=treatment_plan,
+        variable=variable,
+        action=action,
+        year=year,
+    )
+
+    log.info(f"Merging impacts for {variable}")
+    calculated_results = persist_impacts(
+        zonal_statistics=zonal_stats, variable=variable, year=year
+    )
+
+    results = copied_results + calculated_results
     return list([x.pk for x in results])
 
 
