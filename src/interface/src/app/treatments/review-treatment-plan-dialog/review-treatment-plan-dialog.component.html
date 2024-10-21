@@ -41,7 +41,14 @@
         <td>{{ area.name }}</td>
         <td>{{ area.totalStands }}</td>
         <td>{{ area.treatedStands }}</td>
-        <td>{{ area.totalStands - area.treatedStands }}</td>
+        <td>
+          <div class="project-area-wrapper">
+            {{ area.totalStands - area.treatedStands }}
+            <a [routerLink]="['project-area', area.id]" (click)="cancel()">
+              <img src="assets/svg/icons/project-area-icon-blue.svg" />
+            </a>
+          </div>
+        </td>
       </tr>
     </table>
   </div>

@@ -11,12 +11,19 @@ import { TreatmentSummary } from '@types';
 import { DialogData } from '../../../styleguide/dialogs/dialogs';
 import { ErrorDialogComponent } from '../../../styleguide/dialogs/error-dialog/error-dialog.component';
 import { PendingDialogComponent } from '../../../styleguide/dialogs/pending-dialog/pending-dialog.component';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-review-treatment-plan-dialog',
   standalone: true,
-  imports: [ModalComponent, MatSlideToggleModule, NgForOf, AsyncPipe, NgIf],
+  imports: [
+    ModalComponent,
+    MatSlideToggleModule,
+    NgForOf,
+    AsyncPipe,
+    NgIf,
+    RouterLink,
+  ],
   templateUrl: './review-treatment-plan-dialog.component.html',
   styleUrl: './review-treatment-plan-dialog.component.scss',
 })
@@ -35,6 +42,7 @@ export class ReviewTreatmentPlanDialogComponent {
 
   projectAreas$: Observable<
     {
+      id: number;
       name: string;
       totalStands: number;
       treatedStands: number;
@@ -44,6 +52,7 @@ export class ReviewTreatmentPlanDialogComponent {
     map((summary) =>
       summary.project_areas.map((projectArea) => {
         return {
+          id: projectArea.project_area_id,
           name: projectArea.project_area_name,
           totalStands: projectArea.total_stand_count,
           treatedStands: projectArea.prescriptions
