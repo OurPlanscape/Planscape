@@ -281,7 +281,6 @@ def clone_existing_impacts_from_other_scenarios_given_action(
             )
             .select_related("treatment_prescription")
             .distinct("treatment_prescription__action", "variable", "year")
-            .all()
         )
 
         copied_results.extend(
@@ -295,7 +294,7 @@ def clone_existing_impacts_from_other_scenarios_given_action(
                     value=treatment_result.value,
                     delta=treatment_result.delta,
                 )[0]
-                for treatment_result in others_treatment_results
+                for treatment_result in others_treatment_results.iterator()
             ]
         )
 
