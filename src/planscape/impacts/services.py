@@ -261,11 +261,18 @@ def clone_existing_impacts_from_other_scenarios_given_action(
 
     copied_results = []
     for other_treatment_prescription in others_plan_treatment_prescritions.iterator():
-        treatment_prescription = treatment_plan.tx_prescriptions.get(
-            action=other_treatment_prescription.action,
-            type=other_treatment_prescription.type,
-            stand=other_treatment_prescription.stand,
-        )
+        try:
+            treatment_prescription = treatment_plan.tx_prescriptions.get(
+                action=other_treatment_prescription.action,
+                type=other_treatment_prescription.type,
+                stand=other_treatment_prescription.stand,
+            )
+        except (
+            TreatmentPrescription.MultipleObjectsReturned,
+            TreatmentPrescription.ObjectDoesNotExist,
+        ) as ex:
+            log.exception("Could not found a proper TreatmentPrescription.")
+            continue
         others_treatment_results = (
             TreatmentResult.objects.filter(
                 treatment_prescription=other_treatment_prescription,
@@ -352,16 +359,13 @@ def calculate_impacts(
         "project_area",
     )
 
-    treatment_results = (
-        TreatmentResult.objects.filter(
-            treatment_prescription__in=prescriptions,
-            variable=variable,
-            year=year,
-            value__isnull=False,
-            delta__isnull=False,
-        )
-        .select_related("treatment_prescription")
-    )
+    treatment_results = TreatmentResult.objects.filter(
+        treatment_prescription__in=prescriptions,
+        variable=variable,
+        year=year,
+        value__isnull=False,
+        delta__isnull=False,
+    ).select_related("treatment_prescription")
 
     # Exclude TreatmentPrescriptions with TreatmentResult to avoid re-calculation
     prescriptions = prescriptions.exclude(
