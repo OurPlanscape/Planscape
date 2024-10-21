@@ -25,7 +25,11 @@
           (change)="toggleShowTreatmentLayers()"
           >View Treatment Layers
         </mat-slide-toggle>
-        <button sg-button variant="primary" class="footer-primary">
+        <button
+          sg-button
+          variant="primary"
+          class="footer-primary"
+          (click)="showReviewDialog()">
           Run Impacts
         </button>
       </ng-template>

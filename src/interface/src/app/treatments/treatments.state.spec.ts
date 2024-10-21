@@ -4,55 +4,10 @@ import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { TreatmentsState } from './treatments.state';
 import { MockProviders } from 'ng-mocks';
 import { MapConfigState } from './treatment-map/map-config.state';
-import { TreatedStand, TreatmentPlan, TreatmentSummary } from '@types';
+import { TreatedStand } from '@types';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import { RemovingStandsError, UpdatingStandsError } from './treatment-errors';
-
-const mockSummary: TreatmentSummary = {
-  project_areas: [
-    {
-      project_area_id: 1,
-      project_area_name: 'Area 1',
-      total_stand_count: 10,
-      prescriptions: [
-        {
-          action: 'cut',
-          area_acres: 100,
-          treated_stand_count: 3,
-          type: 'SINGLE',
-          stand_ids: [1, 2, 3],
-        },
-        {
-          action: 'burn',
-          area_acres: 50,
-          treated_stand_count: 2,
-          type: 'SEQUENCE',
-          stand_ids: [4, 5],
-        },
-      ],
-      extent: [1, 2, 3, 4],
-      centroid: {
-        type: 'Point',
-        coordinates: [],
-      },
-    },
-  ],
-  extent: [1, 2, 3, 4],
-  planning_area_id: 1,
-  planning_area_name: 'Test',
-  scenario_id: 2,
-  scenario_name: 'Test Scenario',
-  treatment_plan_id: 3,
-  treatment_plan_name: 'Test Treatment Plan',
-};
-
-const mockTreatmentPlan: TreatmentPlan = {
-  id: 123,
-  name: 'Plan 1',
-  status: 'SUCCESS',
-  created_at: '2024-01-01T00:00:00Z',
-  creator_name: 'John Doe',
-};
+import { MOCK_SUMMARY, MOCK_TREATMENT_PLAN } from './mocks';
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;
@@ -76,10 +31,10 @@ describe('TreatmentsState', () => {
     spyOn(treatedStandsState, 'removeTreatments').and.callThrough();
 
     spyOn(treatmentsService, 'getTreatmentPlanSummary').and.returnValue(
-      of(mockSummary)
+      of(MOCK_SUMMARY)
     );
     spyOn(treatmentsService, 'getTreatmentPlan').and.returnValue(
-      of(mockTreatmentPlan)
+      of(MOCK_TREATMENT_PLAN)
     );
   });
 
@@ -126,7 +81,7 @@ describe('TreatmentsState', () => {
       );
       expect(treatmentsService.getTreatmentPlanSummary).toHaveBeenCalled();
       const summary = await firstValueFrom(service.summary$);
-      expect(summary).toEqual(mockSummary);
+      expect(summary).toEqual(MOCK_SUMMARY);
     });
 
     it('should load treatment plan', async () => {
@@ -139,7 +94,7 @@ describe('TreatmentsState', () => {
       );
       expect(treatmentsService.getTreatmentPlan).toHaveBeenCalled();
       const plan = await firstValueFrom(service.treatmentPlan$);
-      expect(plan).toEqual(mockTreatmentPlan);
+      expect(plan).toEqual(MOCK_TREATMENT_PLAN);
     });
   });
 

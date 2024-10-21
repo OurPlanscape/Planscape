@@ -251,7 +251,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
     });
 
     this.mapLibreMap.setFeatureState(features[0], { selected: true });
-
     this.treatmentsState.setShowApplyTreatmentsDialog(true);
   }
 

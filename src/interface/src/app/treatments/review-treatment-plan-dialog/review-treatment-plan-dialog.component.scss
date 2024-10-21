@@ -1,0 +1,52 @@
+@import "colors";
+
+.review-content {
+  padding: 24px;
+  color: $color-dark-gray;
+
+  p + p {
+    margin-top: 22px;
+  }
+
+  .no-treatments-toggle {
+    display: block;
+    margin-left: auto;
+    text-align: right;
+    margin-top: 40px;
+    margin-bottom: 16px;
+  }
+
+  table {
+    width: 100%;
+    border: 1px solid $color-soft-gray;
+    border-radius: 4px;
+    border-collapse: collapse;
+
+  }
+
+  tr {
+    height: 50px;
+    border-bottom: 1px solid $color-soft-gray;
+  }
+
+  th {
+    background-color: $color-light-gray;
+    text-align: left;
+    padding: 14px 14px;
+    font-weight: 600;
+  }
+
+  td {
+    padding: 14px 16px;
+  }
+
+
+  .project-area-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    
+  }
+
+}
