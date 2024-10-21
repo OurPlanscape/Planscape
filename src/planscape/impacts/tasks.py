@@ -13,7 +13,7 @@ from impacts.services import (
     calculate_impacts,
     persist_impacts,
     get_calculation_matrix,
-    clone_existing_impacts_from_other_scenarios_given_action,
+    clone_existing_results,
 )
 from planscape.celery import app
 
@@ -31,7 +31,7 @@ def async_get_or_calculate_persist_impacts(
     treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
         pk=treatment_plan_pk
     )
-    copied_results = clone_existing_impacts_from_other_scenarios_given_action(
+    copied_results = clone_existing_results(
         treatment_plan=treatment_plan, variable=variable, action=action, year=year
     )
 

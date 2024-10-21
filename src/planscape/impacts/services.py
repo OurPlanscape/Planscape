@@ -231,7 +231,7 @@ def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
 IMPACTS_RASTER_NODATA = -999
 
 
-def clone_existing_impacts_from_other_scenarios_given_action(
+def clone_existing_results(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
@@ -249,10 +249,9 @@ def clone_existing_impacts_from_other_scenarios_given_action(
         treatment_prescription.stand.pk: treatment_prescription
         for treatment_prescription in treatment_prescriptions.iterator()
     }
-    general_treatment_results = (
+    existing_results = (
         TreatmentResult.objects.filter(
             treatment_prescription__action=action,
-            treatment_prescription__treatment_plan__scenario=treatment_plan.scenario,
             treatment_prescription__stand__in=stands_prescriptions.keys(),
             variable=variable,
             year=year,
@@ -274,7 +273,7 @@ def clone_existing_impacts_from_other_scenarios_given_action(
             value=other_result[2],
             delta=other_result[3],
         )[0]
-        for other_result in general_treatment_results.iterator()
+        for other_result in existing_results.iterator()
     ]
     return copied_results
 
@@ -336,21 +335,18 @@ def calculate_impacts(
         "project_area",
     )
 
-    treatment_results = TreatmentResult.objects.filter(
-        treatment_prescription__in=prescriptions,
-        variable=variable,
-        year=year,
-        value__isnull=False,
-        delta__isnull=False,
-    ).select_related("treatment_prescription")
+    already_calculated_prescriptions_ids = (
+        TreatmentResult.objects.filter(
+            treatment_prescription__in=prescriptions,
+            variable=variable,
+            year=year,
+        )
+        .select_related("treatment_prescription")
+        .values_list("treatment_prescription__pk")
+    )
 
     # Exclude TreatmentPrescriptions with TreatmentResult to avoid re-calculation
-    prescriptions = prescriptions.exclude(
-        pk__in=[
-            treatment_result.treatment_prescription.pk
-            for treatment_result in treatment_results.iterator()
-        ]
-    )
+    prescriptions = prescriptions.exclude(pk__in=already_calculated_prescriptions_ids)
 
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")

@@ -440,3 +440,19 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             self.assertGreater(
                 TreatmentResult.objects.count(), initial_n_treatment_results
             )
+
+            result_from_first_exec_pk = first_exec_result[0]
+            result_from_first_exec = TreatmentResult.objects.select_related(
+                "treatment_prescription__stand"
+            ).get(pk=result_from_first_exec_pk)
+
+            # From a Stand, it gets the other TreatmentResult to compare
+            # to the second execution
+            treatment_result_from_second_exec = (
+                TreatmentResult.objects.filter(
+                    treatment_prescription__stand=result_from_first_exec.treatment_prescription.stand
+                )
+                .exclude(pk=result_from_first_exec_pk)
+                .get()
+            )
+            assert treatment_result_from_second_exec.pk in second_exec_result
