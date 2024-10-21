@@ -357,6 +357,11 @@ class ImpactVariable(models.TextChoices):
         return f"s3://{settings.S3_BUCKET}/rasters/impacts/{treatment_name}_{year}_{variable}_3857_COG.tif"
 
 
+class TreatmentResultType(models.TextChoices):
+    DIRECT = "DIRECT", "Direct"
+    INDIRECT = "INDIRECT", "Indirect"
+
+
 class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     treatment_plan = models.ForeignKey(
         TreatmentPlan,
@@ -385,6 +390,11 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Delta between this years value and base year value. From 0-1, null for base years.",
         null=True,
     )
+    # type = models.CharField(
+    #    choices=TreatmentResultType.choices,
+    #    default=TreatmentResultType.DIRECT,
+    #    help_text="Type of Treatment Result (choice).",
+    # )
 
     class Meta(TypedModelMeta):
         constraints = [
