@@ -56,6 +56,9 @@
 
 .breadcrumb {
   @include h3();
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
 
   a {
     color: $color-standard-blue;
