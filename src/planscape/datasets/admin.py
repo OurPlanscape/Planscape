@@ -1,3 +1,4 @@
+from typing import Any, Dict
 from django.contrib import admin
 from datasets.forms import DatasetAdminForm, CategoryAdminForm
 from datasets.models import Category, DataLayer, Dataset
@@ -10,14 +11,8 @@ class CategoryAdmin(TreeAdmin):
     search_fields = ["name"]
     list_display = ("id", "name", "order", "dataset")
 
-    def get_changeform_initial_data(self, request):
+    def get_changeform_initial_data(self, request) -> Dict[str, Any]:
         return {"created_by": request.user}
-
-    def get_form(self, request, obj=None, change=False, **kwargs):
-        form = super().get_form(request, obj, change, **kwargs)
-        if not change:
-            form.created_by = request.user
-        return form
 
 
 class DatasetAdmin(admin.ModelAdmin):
@@ -31,11 +26,8 @@ class DatasetAdmin(admin.ModelAdmin):
         "name",
     )
 
-    def get_form(self, request, obj=None, change=False, **kwargs):
-        form = super().get_form(request, obj, change, **kwargs)
-        if not change:
-            form.created_by = request.user
-        return form
+    def get_changeform_initial_data(self, request) -> Dict[str, Any]:
+        return {"created_by": request.user}
 
 
 class DataLayerAdmin(admin.ModelAdmin):
