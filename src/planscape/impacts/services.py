@@ -22,7 +22,7 @@ from impacts.models import (
     TreatmentResult,
     get_prescription_type,
 )
-from planning.models import ProjectArea, TProjectArea, TScenario
+from planning.models import ProjectArea, Scenario, TProjectArea, TScenario
 from actstream import action as actstream_action
 from stands.models import STAND_AREA_ACRES, TStand, Stand
 from planscape.typing import TUser
@@ -231,20 +231,69 @@ def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
 IMPACTS_RASTER_NODATA = -999
 
 
-def get_impacts(
+def clone_existing_impacts_from_other_scenarios_given_action(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
-):
-    prescriptions = treatment_plan.tx_prescriptions.filter(action=action)
-    treatment_results = TreatmentResult.objects.filter(
-        treatment_plan=treatment_plan,
-        treatment_prescription__in=prescriptions,
-        variable=variable,
-        year=year,
-    ).all()
-    return treatment_results
+) -> List[TreatmentResult]:
+    """Clones TreatmentPrescriptions from others TreatmentPlans
+    which `action`, `year`, `variable` and `stand` are the same to
+    avoid re-calculations.
+    """
+    treatment_prescriptions = treatment_plan.tx_prescriptions.select_related(
+        "stand"
+    ).filter(action=action)
+    stands = [
+        treatment_prescription.stand
+        for treatment_prescription in treatment_prescriptions
+    ]
+
+    others_plan_treatment_prescritions = (
+        TreatmentPrescription.objects.filter(
+            action=action,
+            treatment_plan__scenario=treatment_plan.scenario,
+            stand__in=stands,
+        )
+        .select_related("stand")
+        .exclude(treatment_plan=treatment_plan)
+        .all()
+    )
+
+    copied_results = []
+    for other_treatment_prescription in others_plan_treatment_prescritions:
+        treatment_prescription = treatment_plan.tx_prescriptions.get(
+            action=other_treatment_prescription.action,
+            type=other_treatment_prescription.type,
+            stand=other_treatment_prescription.stand,
+        )
+        others_treatment_results = (
+            TreatmentResult.objects.filter(
+                treatment_prescription=other_treatment_prescription,
+                variable=variable,
+                year=year,
+            )
+            .select_related("treatment_prescription")
+            .distinct("treatment_prescription__action", "variable", "year")
+            .all()
+        )
+
+        copied_results.extend(
+            [
+                TreatmentResult.objects.update_or_create(
+                    treatment_plan=treatment_plan,
+                    treatment_prescription=treatment_prescription,
+                    variable=variable,
+                    aggregation=treatment_result.aggregation,
+                    year=year,
+                    value=treatment_result.value,
+                    delta=treatment_result.delta,
+                )[0]
+                for treatment_result in others_treatment_results
+            ]
+        )
+
+    return copied_results
 
 
 def to_treatment_results(
@@ -298,7 +347,32 @@ def calculate_impacts(
 ) -> List[Dict[str, Any]]:
     prescriptions = treatment_plan.tx_prescriptions.filter(
         action=action
-    ).select_related("stand", "treatment_plan", "project_area")
+    ).select_related(
+        "stand",
+        "treatment_plan",
+        "project_area",
+    )
+
+    treatment_results = (
+        TreatmentResult.objects.filter(
+            treatment_prescription__in=prescriptions,
+            variable=variable,
+            year=year,
+            value__isnull=False,
+            delta__isnull=False,
+        )
+        .select_related("treatment_prescription")
+        .all()
+    )
+
+    # Exclude TreatmentPrescriptions with TreatmentResult to avoid re-calculation
+    prescriptions = prescriptions.exclude(
+        pk__in=[
+            treatment_result.treatment_prescription.pk
+            for treatment_result in treatment_results
+        ]
+    )
+
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
 
