@@ -394,6 +394,7 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     #    choices=TreatmentResultType.choices,
     #    default=TreatmentResultType.DIRECT,
     #    help_text="Type of Treatment Result (choice).",
+    #    null=True,
     # )
 
     class Meta(TypedModelMeta):

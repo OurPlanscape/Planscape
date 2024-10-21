@@ -14,6 +14,7 @@ class Migration(migrations.Migration):
                 choices=[("DIRECT", "Direct"), ("INDIRECT", "Indirect")],
                 default="DIRECT",
                 help_text="Type of Treatment Result (choice).",
+                null=True,
             ),
         ),
     ]
