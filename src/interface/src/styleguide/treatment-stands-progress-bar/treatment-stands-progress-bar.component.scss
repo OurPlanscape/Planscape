@@ -3,14 +3,23 @@
 
 :host {
   width: 100%;
-  height: 70px;
+  box-sizing: border-box;
+  height: 74px;
   background-color: $color-white;
-  border-bottom: 1px $color-soft-gray;
+  border-bottom: 1px $color-soft-gray solid;
   display: flex;
   flex-direction: column;
   justify-content: space-evenly;
   padding: 8px 16px;
   gap: 2px;
+
+  ::ng-deep .mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: #{$color-brand-teal};
+  --mdc-linear-progress-track-color: #{$color-soft-gray};
+  --mdc-linear-progress-active-indicator-height: 6px;
+  border-radius: 4px;
+  --mdc-linear-progress-track-height: 6px;
+  }
 
   .title-row {
     display: flex;
@@ -31,6 +40,7 @@
   
   .count-box {
     @include xs-label();
+    color: $color-brand-teal;
   }
 
   .progress-row {

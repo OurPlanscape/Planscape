@@ -3,7 +3,5 @@
   <div class="count-box">{{ treatedStands + '/' + totalStands }}</div>
 </div>
 <div class="progress-row">
-  <mat-progress-bar
-    [type]="determinate"
-    [value]="treatedAsPercent()"></mat-progress-bar>
+  <mat-progress-bar [value]="treatedAsPercent()"></mat-progress-bar>
 </div>
