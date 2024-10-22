@@ -4,7 +4,7 @@ import json
 from rasterstats import zonal_stats
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
-from django.db.models import Count, Q
+from django.db.models import Count
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.models import (
@@ -23,7 +23,7 @@ from impacts.models import (
     TreatmentResultType,
     get_prescription_type,
 )
-from planning.models import ProjectArea, Scenario, TProjectArea, TScenario
+from planning.models import ProjectArea, TProjectArea, TScenario
 from actstream import action as actstream_action
 from stands.models import STAND_AREA_ACRES, TStand, Stand
 from planscape.typing import TUser
@@ -252,13 +252,11 @@ def clone_existing_results(
     }
     existing_results = (
         TreatmentResult.objects.filter(
-            Q(
-                treatment_prescription__action=action,
-                treatment_prescription__stand__in=stands_prescriptions.keys(),
-                variable=variable,
-                year=year,
-            )
-            & (Q(type=TreatmentResultType.DIRECT) | Q(type__isnull=True))
+            treatment_prescription__action=action,
+            treatment_prescription__stand__in=stands_prescriptions.keys(),
+            variable=variable,
+            year=year,
+            type=TreatmentResultType.DIRECT,
         )
         .select_related("treatment_prescription", "treatment_prescription__stand")
         .distinct("treatment_prescription__stand__pk", "aggregation", "value", "delta")
@@ -341,12 +339,10 @@ def calculate_impacts(
 
     already_calculated_prescriptions_ids = (
         TreatmentResult.objects.filter(
-            Q(
-                treatment_prescription__in=prescriptions,
-                variable=variable,
-                year=year,
-            )
-            & (Q(type=TreatmentResultType.DIRECT) | Q(type__isnull=True))
+            treatment_prescription__in=prescriptions,
+            variable=variable,
+            year=year,
+            type=TreatmentResultType.DIRECT,
         )
         .select_related("treatment_prescription")
         .values_list("treatment_prescription__pk")
