@@ -3,7 +3,6 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { TreatmentProjectArea } from '@types';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 import {
@@ -32,22 +31,20 @@ export class TreatmentOverviewComponent {
   savingStatus$ = new BehaviorSubject<boolean>(false);
   savingName = false;
   errorSavingName: string | null = null;
-  constructor(
-    private treatmentsState: TreatmentsState,
-    private treatedStandsState: TreatedStandsState
-  ) {}
+  constructor(private treatmentsState: TreatmentsState) {}
 
   saveStatus() {
     return this.savingName;
   }
 
+  // TODO
   totalTreatedStands() {
-    return this.treatedStandsState.getTreatedStands();
+    return 0;
   }
 
   totalStands() {
     const summary$ = this.treatmentsState.getCurrentSummary();
-    return summary$.project_areas
+    return summary$?.project_areas
       .map((p: TreatmentProjectArea) => p.total_stand_count)
       .reduce((acc = 0, totalStandCount) => {
         return acc + totalStandCount;
