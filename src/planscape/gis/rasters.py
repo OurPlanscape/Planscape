@@ -20,9 +20,11 @@ def get_profile(
     blockxsize: int = 512,
     blockysize: int = 512,
     compress: str = "DEFLATE",
+    crs: Optional[str] = None,
 ) -> Dict[str, Any]:
     return {
         **input_profile,
+        "crs": crs,
         "transform": transform,
         "blockxsize": blockxsize,
         "blockysize": blockysize,
@@ -48,7 +50,9 @@ def to_planscape(input_file: str) -> List[str]:
     cog_output = get_random_output_file(input_file=warped_output)
 
     warped_raster = warp(
-        input_file=input_file, output_file=warped_output, crs=f"EPSG:3857"
+        input_file=input_file,
+        output_file=warped_output,
+        crs="EPSG:3857",
     )
 
     cog_raster = cog(input_file=warped_raster, output_file=cog_output)
@@ -94,7 +98,7 @@ def warp(
     output_file: str,
     crs: str,
     num_threads: str = "ALL_CPUS",
-    resampling_method=Resampling.nearest,
+    resampling_method: Resampling = Resampling.nearest,
 ) -> str:
     log.info("warrrrrping")
     with rasterio.Env(GDAL_NUM_THREADS=num_threads):
@@ -110,10 +114,10 @@ def warp(
                 right=right,
                 top=top,
             )
-
             output_profile = get_profile(
                 input_profile=source.meta,
                 transform=transform,
+                crs=crs,
                 width=width,  # type: ignore
                 height=height,  # type: ignore
             )
