@@ -20,9 +20,10 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentResult,
+    TreatmentResultType,
     get_prescription_type,
 )
-from planning.models import ProjectArea, Scenario, TProjectArea, TScenario
+from planning.models import ProjectArea, TProjectArea, TScenario
 from actstream import action as actstream_action
 from stands.models import STAND_AREA_ACRES, TStand, Stand
 from planscape.typing import TUser
@@ -255,6 +256,7 @@ def clone_existing_results(
             treatment_prescription__stand__in=stands_prescriptions.keys(),
             variable=variable,
             year=year,
+            type=TreatmentResultType.DIRECT,
         )
         .select_related("treatment_prescription", "treatment_prescription__stand")
         .distinct("treatment_prescription__stand__pk", "aggregation", "value", "delta")
@@ -340,6 +342,7 @@ def calculate_impacts(
             treatment_prescription__in=prescriptions,
             variable=variable,
             year=year,
+            type=TreatmentResultType.DIRECT,
         )
         .select_related("treatment_prescription")
         .values_list("treatment_prescription__pk")

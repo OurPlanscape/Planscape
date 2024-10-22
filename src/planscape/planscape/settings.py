@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_extensions",
+    "django_json_widget",
     "actstream",
     "password_policies",
     "rest_framework",
