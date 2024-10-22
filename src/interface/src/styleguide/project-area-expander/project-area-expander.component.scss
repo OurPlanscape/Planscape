@@ -14,12 +14,10 @@
       padding-right: 8px;
     }
     .mat-expansion-panel.selected {
-      border: 1px $color-soft-purple solid;
       background-color: $color-soft-purple;
       --mat-expansion-header-hover-state-layer-color: $color-soft-purple;
     }
     .mat-expansion-panel:active {
-      border: 1px $color-soft-purple solid;
       background-color: $color-soft-purple;
       --mat-expansion-header-hover-state-layer-color: $color-soft-purple;
     }
@@ -29,10 +27,6 @@
     }
 
     .mat-expansion-panel:hover:not([class*='selected']) {
-      border: 1px $color-soft-purple solid;
-      border-left: none;
-      border-right: none;
-      border-color: $color-original-purple;
       background-color: $color-light-gray;
 
       .mat-expansion-panel {

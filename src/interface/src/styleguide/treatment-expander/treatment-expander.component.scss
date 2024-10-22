@@ -17,7 +17,6 @@
 
     .mat-expansion-panel.selected {
       background-color: $color-soft-purple;
-      border: 1px $color-soft-purple solid;
       border-left: none;
       border-right: none;
     }
@@ -27,8 +26,7 @@
     }
 
     .mat-expansion-panel:hover:not([class*='selected']) {
-      background-color: $color-white;
-      border: 1px $color-soft-purple solid;
+      background-color: $color-light-gray ;
       border-left: none;
       border-right: none;
     }
