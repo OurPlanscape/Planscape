@@ -1,6 +1,6 @@
 from typing import Any, Dict
 from django.contrib import admin
-from datasets.forms import DatasetAdminForm, CategoryAdminForm
+from datasets.forms import DataLayerAdminForm, DatasetAdminForm, CategoryAdminForm
 from datasets.models import Category, DataLayer, Dataset
 from treebeard.admin import TreeAdmin
 from treebeard.forms import movenodeform_factory
@@ -31,6 +31,7 @@ class DatasetAdmin(admin.ModelAdmin):
 
 
 class DataLayerAdmin(admin.ModelAdmin):
+    form = DataLayerAdminForm
     search_fields = [
         "organization__name__icontains",
         "dataset__name__icontains",

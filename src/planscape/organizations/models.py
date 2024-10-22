@@ -45,6 +45,7 @@ class Organization(
         return f"{self.name} [{self.type}]"
 
     class Meta(TypedModelMeta):
+        ordering = ("id",)
         verbose_name = "Organization"
         verbose_name_plural = "Organizations"
         constraints = [
