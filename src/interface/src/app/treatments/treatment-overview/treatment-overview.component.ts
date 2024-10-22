@@ -37,11 +37,15 @@ export class TreatmentOverviewComponent {
     return this.savingName;
   }
 
-  // TODO
+  
   totalTreatedStands() {
-    return 0;
+    const summary$ = this.treatmentsState.getCurrentSummary();
+    return summary$?.project_areas
+      .map((p: TreatmentProjectArea) => p.prescriptions)
+      .flat()
+      .map((rx) => rx.treated_stand_count)
+      .reduce((acc, count) => {return acc + count; });
   }
-
   totalStands() {
     const summary$ = this.treatmentsState.getCurrentSummary();
     return summary$?.project_areas
@@ -50,6 +54,7 @@ export class TreatmentOverviewComponent {
         return acc + totalStandCount;
       });
   }
+
 
   handleNameChange(name: string) {
     if (name.length < 1) {

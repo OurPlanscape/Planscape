@@ -4,6 +4,7 @@
 :host {
   height: 100%;
   display: block;
+  overflow: hidden;
 
   .debug-link {
     height: 20px;
