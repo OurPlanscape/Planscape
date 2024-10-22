@@ -391,10 +391,10 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
     )
     type = models.CharField(
-       choices=TreatmentResultType.choices,
-       default=TreatmentResultType.DIRECT,
-       help_text="Type of Treatment Result (choice).",
-       null=True,
+        choices=TreatmentResultType.choices,
+        default=TreatmentResultType.DIRECT,
+        help_text="Type of Treatment Result (choice).",
+        null=True,
     )
 
     class Meta(TypedModelMeta):
