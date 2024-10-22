@@ -113,6 +113,7 @@
 .overview {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 
   mat-icon {
@@ -123,6 +124,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
     color: $color-dark-gray;
 
     &::after {
@@ -159,6 +161,7 @@
   color: $color-standard-blue;
   padding-left: 4px;
   font-weight: 500;
+
   &:active,
   &:visited {
     color: $color-standard-blue;
