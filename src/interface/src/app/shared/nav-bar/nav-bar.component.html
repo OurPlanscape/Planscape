@@ -43,12 +43,6 @@
             </p>
 
             <p>
-              From this page you can create new scenarios for your planning area
-              by selecting either the “Upload Scenario” or “+ New Scenario”
-              buttons.
-            </p>
-
-            <p>
               For each scenario that has been started or completed, you will see
               the number of project areas and the status of each scenario.
             </p>
@@ -82,21 +76,24 @@
         </div>
       </mat-menu>
     </button>
-    <button mat-button class="action-button" (click)="print()" data-id="print">
-      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
-        print
-      </mat-icon>
+
+    <button
+      sg-button
+      variant="text"
+      icon="print"
+      [outlined]="true"
+      (click)="print()"
+      data-id="print">
       Print
     </button>
+
     <button
-      mat-button
-      class="action-button"
+      sg-button
+      variant="text"
+      icon="share"
       (click)="share()"
       data-id="share"
       *ngIf="area === 'EXPLORE'">
-      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
-        share
-      </mat-icon>
       Share
     </button>
 
@@ -107,20 +104,7 @@
       (click)="sharePlan()"
       data-id="share"
       *ngIf="area === 'SCENARIOS' && (canSharePlan$ | async)">
-      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
-        share
-      </mat-icon>
       Share
-    </button>
-
-    <button
-      sg-button
-      variant="text"
-      icon="print"
-      [outlined]="true"
-      (click)="print()"
-      data-id="print">
-      Print
     </button>
 
     <ng-content></ng-content>
