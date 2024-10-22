@@ -390,12 +390,12 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Delta between this years value and base year value. From 0-1, null for base years.",
         null=True,
     )
-    # type = models.CharField(
-    #    choices=TreatmentResultType.choices,
-    #    default=TreatmentResultType.DIRECT,
-    #    help_text="Type of Treatment Result (choice).",
-    #    null=True,
-    # )
+    type = models.CharField(
+       choices=TreatmentResultType.choices,
+       default=TreatmentResultType.DIRECT,
+       help_text="Type of Treatment Result (choice).",
+       null=True,
+    )
 
     class Meta(TypedModelMeta):
         constraints = [
