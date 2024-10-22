@@ -11,13 +11,15 @@
   ::ng-deep {
     .mat-expansion-panel {
       box-shadow: none;
-      border: 1px $color-light-gray solid;
+      border-bottom: 1px $color-soft-gray solid;
       border-radius: 0;
     }
 
     .mat-expansion-panel.selected {
-      border-color: $color-soft-purple;
       background-color: $color-soft-purple;
+      border: 1px $color-soft-purple solid;
+      border-left: none;
+      border-right: none;
     }
 
     .mat-expansion-panel:not([class*='mat-elevation-z']) {
@@ -25,8 +27,10 @@
     }
 
     .mat-expansion-panel:hover:not([class*='selected']) {
-      border-color: $color-original-purple;
       background-color: $color-white;
+      border: 1px $color-soft-purple solid;
+      border-left: none;
+      border-right: none;
     }
   }
 }

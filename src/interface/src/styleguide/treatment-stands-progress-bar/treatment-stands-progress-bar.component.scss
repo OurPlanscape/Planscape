@@ -22,6 +22,7 @@
   }
 
   .title-row {
+    @include h5();
     display: flex;
     flex-direction: row;
     justify-content: space-between;
@@ -29,15 +30,6 @@
     align-items: baseline;
   }
 
-  .title-box {
-    @include h5();
-    font-family: 'Public Sans';
-    font-size: 16px;
-    font-weight: 600;
-    line-height: 32px;
-    text-align: left;
-  }
-  
   .count-box {
     @include xs-label();
     color: $color-brand-teal;

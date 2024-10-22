@@ -15,15 +15,25 @@
     align-items: center;
     justify-content: center;
     height: 70px;
-    padding: 20px 10px 10px 10px;
+    padding: 4px 16px;
+    border-bottom: 1px $color-soft-gray solid;
   }
+
+.project-areas-list {
+  overflow: scroll;
+  height: 100%;
+}
 
   ::ng-deep .search-bar .input-wrapper {
     width: 100%;
     background-color: $color-light-gray;
+    height: 42px;
   }
+
   ::ng-deep .search-bar input {
-    width: 100%;
     @include xs-label();
+    font-weight: 400;
+    font-family: 'Public Sans';
+    width: 100%;
   }
 }
