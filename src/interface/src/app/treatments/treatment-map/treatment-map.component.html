@@ -15,7 +15,8 @@
   (mapMouseMove)="onMapMouseMove($event)"
   (mapMouseUp)="onMapMouseUp()"
   (mapMouseOut)="onMapMouseOut()"
-  [transformRequest]="transformRequest">
+  [transformRequest]="transformRequest"
+  [doubleClickZoom]="(standSelectionEnabled$ | async) === false">
   <app-map-controls
     *ngIf="showMapControls$ | async"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
