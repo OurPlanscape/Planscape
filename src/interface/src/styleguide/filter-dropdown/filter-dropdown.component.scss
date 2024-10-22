@@ -13,12 +13,15 @@
 :host {
   display: block;
 
+
   &.small {
     max-width: 140px;
   }
+
   &.medium {
     max-width: 240px;
   }
+
   &.large {
     max-width: 380px;
   }
@@ -35,6 +38,7 @@
 }
 
 .dropdown-button {
+  font-family: inherit;
   display: flex;
   flex-direction: row;
   justify-content: space-between;
