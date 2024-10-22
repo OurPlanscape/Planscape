@@ -14,13 +14,13 @@ Number = Union[int, float]
 
 def get_profile(
     input_profile: Dict[str, Any],
+    crs: str,
     transform,
     width: int,
     height: int,
     blockxsize: int = 512,
     blockysize: int = 512,
     compress: str = "DEFLATE",
-    crs: Optional[str] = None,
 ) -> Dict[str, Any]:
     return {
         **input_profile,
@@ -100,7 +100,7 @@ def warp(
     num_threads: str = "ALL_CPUS",
     resampling_method: Resampling = Resampling.nearest,
 ) -> str:
-    log.info("warrrrrping")
+    log.info(f"Warping raster {input_file}")
     with rasterio.Env(GDAL_NUM_THREADS=num_threads):
         with rasterio.open(input_file) as source:
             left, bottom, right, top = source.bounds
@@ -116,8 +116,8 @@ def warp(
             )
             output_profile = get_profile(
                 input_profile=source.meta,
-                transform=transform,
                 crs=crs,
+                transform=transform,
                 width=width,  # type: ignore
                 height=height,  # type: ignore
             )
