@@ -20,6 +20,7 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentResult,
+    TreatmentResultType,
     get_prescription_type,
 )
 from planning.models import ProjectArea, TProjectArea, TScenario
@@ -231,6 +232,54 @@ def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
 IMPACTS_RASTER_NODATA = -999
 
 
+def clone_existing_results(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    action: TreatmentPrescriptionAction,
+    year: int,
+) -> List[TreatmentResult]:
+    """Clones TreatmentResults from others TreatmentPlans
+    which `action`, `year`, `variable` and `stand` are the same to
+    avoid re-calculations.
+    """
+    treatment_prescriptions = treatment_plan.tx_prescriptions.select_related(
+        "stand"
+    ).filter(action=action)
+
+    stands_prescriptions = {
+        treatment_prescription.stand.pk: treatment_prescription
+        for treatment_prescription in treatment_prescriptions.iterator()
+    }
+    existing_results = (
+        TreatmentResult.objects.filter(
+            treatment_prescription__action=action,
+            treatment_prescription__stand__in=stands_prescriptions.keys(),
+            variable=variable,
+            year=year,
+            type=TreatmentResultType.DIRECT,
+        )
+        .select_related("treatment_prescription", "treatment_prescription__stand")
+        .distinct("treatment_prescription__stand__pk", "aggregation", "value", "delta")
+        .values_list(
+            "treatment_prescription__stand__pk", "aggregation", "value", "delta"
+        )
+    )
+
+    copied_results = [
+        TreatmentResult.objects.update_or_create(
+            treatment_plan=treatment_plan,
+            treatment_prescription=stands_prescriptions.get(other_result[0]),
+            variable=variable,
+            aggregation=other_result[1],
+            year=year,
+            value=other_result[2],
+            delta=other_result[3],
+        )[0]
+        for other_result in existing_results.iterator()
+    ]
+    return copied_results
+
+
 def to_treatment_results(
     result: Dict[str, Any],
     variable: ImpactVariable,
@@ -282,7 +331,26 @@ def calculate_impacts(
 ) -> List[Dict[str, Any]]:
     prescriptions = treatment_plan.tx_prescriptions.filter(
         action=action
-    ).select_related("stand", "treatment_plan", "project_area")
+    ).select_related(
+        "stand",
+        "treatment_plan",
+        "project_area",
+    )
+
+    already_calculated_prescriptions_ids = (
+        TreatmentResult.objects.filter(
+            treatment_prescription__in=prescriptions,
+            variable=variable,
+            year=year,
+            type=TreatmentResultType.DIRECT,
+        )
+        .select_related("treatment_prescription")
+        .values_list("treatment_prescription__pk")
+    )
+
+    # Exclude TreatmentPrescriptions with TreatmentResult to avoid re-calculation
+    prescriptions = prescriptions.exclude(pk__in=already_calculated_prescriptions_ids)
+
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
 
