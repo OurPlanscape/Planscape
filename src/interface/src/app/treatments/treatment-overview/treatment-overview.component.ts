@@ -3,8 +3,13 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { TreatmentProjectArea } from '@types';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
-import { DebounceInputComponent } from '@styleguide';
+import {
+  DebounceInputComponent,
+  TreatmentStandsProgressBarComponent,
+} from '@styleguide';
 import { TreatmentPlan } from '@types';
 import { BehaviorSubject } from 'rxjs';
 @Component({
@@ -14,6 +19,7 @@ import { BehaviorSubject } from 'rxjs';
     AsyncPipe,
     TreatmentMapComponent,
     TreatmentPlanTabsComponent,
+    TreatmentStandsProgressBarComponent,
     MapBaseLayerComponent,
     DebounceInputComponent,
     NgIf,
@@ -26,10 +32,26 @@ export class TreatmentOverviewComponent {
   savingStatus$ = new BehaviorSubject<boolean>(false);
   savingName = false;
   errorSavingName: string | null = null;
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private treatedStandsState: TreatedStandsState
+  ) {}
 
   saveStatus() {
     return this.savingName;
+  }
+
+  totalTreatedStands() {
+    return this.treatedStandsState.getTreatedStands();
+  }
+
+  totalStands() {
+    const summary$ = this.treatmentsState.getCurrentSummary();
+    return summary$.project_areas
+      .map((p: TreatmentProjectArea) => p.total_stand_count)
+      .reduce((acc = 0, totalStandCount) => {
+        return acc + totalStandCount;
+      });
   }
 
   handleNameChange(name: string) {

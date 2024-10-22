@@ -1,9 +1,9 @@
-<div *ngIf="treatmentPlan$ | async; let treatmentPlan">
-  {{ treatmentPlan.id }}. {{ treatmentPlan.name }}
-</div>
 <sg-debounce-input
   title="Treatment Plan Name"
   [savingStatus$]="savingStatus$"
   [errorMessage]="errorSavingName"
   (textValueUpdated)="handleNameChange($event)"></sg-debounce-input>
+<sg-treatment-progress
+  [totalStands]="totalStands()"
+  [treatedStands]="totalTreatedStands().length"></sg-treatment-progress>
 <app-treatment-plan-tabs></app-treatment-plan-tabs>
