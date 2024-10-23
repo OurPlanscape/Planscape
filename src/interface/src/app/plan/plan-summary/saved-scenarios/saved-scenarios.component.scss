@@ -10,11 +10,11 @@
 .scenario-list-controls {
   @include standard-label();
   width: 100%;
-  height: 28px;
   display: flex;
   flex-direction: row;
   gap: 24px;
   justify-content: flex-end;
+  flex-wrap: wrap;
 }
 
 .scenario-sort-picker {
