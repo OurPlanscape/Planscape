@@ -30,25 +30,6 @@
   padding-right: 10px;
 }
 
-.action-button {
-  color: #3367d6;
-
-  &::ng-deep .mat-button-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-  }
-
-  .nav-icon {
-    height: 20px;
-    width: 20px;
-    font-size: 20px;
-  }
-}
-
-.help {
-  line-height: 38px;
-}
 
 .tooltip {
   padding: 20px;
