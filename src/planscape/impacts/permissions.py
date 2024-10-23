@@ -3,7 +3,7 @@ from collaboration.permissions import CheckPermissionMixin
 from collaboration.utils import check_for_permission, is_creator
 from django.shortcuts import get_object_or_404
 from impacts.models import TTreatmentPlan, TreatmentPlan
-from planning.models import TScenario
+from planning.models import TScenario, Scenario
 from planscape.typing import TUser
 from planscape.permissions import PlanscapePermission
 
@@ -110,6 +110,18 @@ class TreatmentPlanViewPermission(PlanscapePermission):
                 return TreatmentPlanPermission.can_view(request.user, object)
             case _:
                 return TreatmentPlanPermission.can_change(request.user, object)
+
+    def has_permission(self, request, view):
+        match view.action:
+            case "create":
+                scenario_pk = request.data.get("scenario", 0)
+                scenario = get_object_or_404(Scenario, id=scenario_pk)
+                return TreatmentPlanPermission.can_add(
+                    request.user,
+                    scenario,
+                )
+            case _:
+                return super().has_permission(request, view)
 
 
 class TreatmentPrescriptionViewPermission(PlanscapePermission):

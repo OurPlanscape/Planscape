@@ -38,6 +38,58 @@ class TxPlanViewSetTest(APITransactionTestCase):
             tx_plan.created_by.id,
         )
 
+    def test_create_tx_plan_with_role_returns_201(self):
+        collaborator = UserFactory()
+        self.client.force_authenticate(user=collaborator)
+
+        _ = Permissions.objects.create(role=Role.COLLABORATOR, permission="add_tx_plan")
+        _ = UserObjectRole.objects.create(
+            email=collaborator.email,
+            inviter=self.scenario.user,
+            collaborator=collaborator,
+            role=Role.COLLABORATOR,
+            content_type=get_content_type("PlanningArea"),
+            object_pk=self.scenario.planning_area.pk,
+        )
+
+        payload = {"scenario": str(self.scenario.pk), "name": "my cool name"}
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-list"),
+            data=payload,
+            format="json",
+        )
+        data = response.json()
+        tx_plan = TreatmentPlan.objects.get(id=data.get("id"))
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(1, TreatmentPlan.objects.all().count())
+        self.assertEqual(
+            data.get("created_by"),
+            tx_plan.created_by.id,
+        )
+
+    def test_create_tx_plan_with_role_returns_403(self):
+        viewer = UserFactory()
+        self.client.force_authenticate(user=viewer)
+
+        _ = Permissions.objects.create(role=Role.VIEWER, permission="view_tx_plan")
+        _ = UserObjectRole.objects.create(
+            email=viewer.email,
+            inviter=self.scenario.user,
+            collaborator=viewer,
+            role=Role.VIEWER,
+            content_type=get_content_type("PlanningArea"),
+            object_pk=self.scenario.planning_area.pk,
+        )
+
+        payload = {"scenario": str(self.scenario.pk), "name": "my cool name"}
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-list"),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(0, TreatmentPlan.objects.all().count())
+
     @mock.patch(
         "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
         return_value=None,
