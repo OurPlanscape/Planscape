@@ -27,14 +27,13 @@ import { MapModule } from './map/map.module';
 import { LegacyMaterialModule } from './material/legacy-material.module';
 
 import { NgxMaskModule } from 'ngx-mask';
-import { PlanTableComponent } from './home/plan-table/plan-table.component';
 
 import { SharePlanDialogComponent } from './home/share-plan-dialog/share-plan-dialog.component';
 import { SharedModule } from '@shared';
 import { WelcomeComponent } from './home/welcome/welcome.component';
 import { environment } from 'src/environments/environment';
 import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.component';
-import { LegacyPlanningAreasComponent } from './home/legacy-planning-areas/legacy-planning-areas.component';
+
 import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
 import { MatDialogModule } from '@angular/material/dialog';
 
@@ -43,8 +42,6 @@ import { MatDialogModule } from '@angular/material/dialog';
     AppComponent,
     ChipInputComponent,
     HomeComponent,
-    PlanTableComponent,
-    LegacyPlanningAreasComponent,
     SharePlanDialogComponent,
     WelcomeComponent,
   ],
