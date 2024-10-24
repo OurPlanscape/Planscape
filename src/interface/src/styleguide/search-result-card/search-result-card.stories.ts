@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { SearchResultCardComponent } from './search-result-card.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
+import { TreatmentProjectArea } from 'src/app/types';
 
 const containerStyle = `style="display: flex;
   width: 100%;
@@ -30,14 +31,50 @@ const meta: Meta<SearchResultCardComponent> = {
 export default meta;
 type Story = StoryObj<SearchResultCardComponent>;
 
+const exampleProjectArea: TreatmentProjectArea = {
+  project_area_id: 20,
+  project_area_name: 'hello i am a project',
+  total_stand_count: 100,
+  prescriptions: [
+    {
+      action: 'RX_FIRE',
+      area_acres: 100,
+      treated_stand_count: 100,
+      type: 'SINGLE',
+      stand_ids: [],
+    },
+    {
+      action: 'HEAVY_THINNING_BURN_PLUS_RX_FIRE',
+      area_acres: 100,
+      treated_stand_count: 100,
+      type: 'SEQUENCE',
+      stand_ids: [],
+    },
+    {
+      action: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
+      area_acres: 100,
+      treated_stand_count: 100,
+      type: 'SEQUENCE',
+      stand_ids: [],
+    },
+    {
+      action: 'HEAVY_THINNING_RX_FIRE',
+      area_acres: 100,
+      treated_stand_count: 100,
+      type: 'SINGLE',
+      stand_ids: [],
+    },
+  ],
+  extent: [0, 0, 0, 0],
+  centroid: {
+    type: 'Point',
+    coordinates: [],
+  },
+};
+
 export const Default: Story = {
   args: {
-    resultTitle: 'hello i am a title',
-    resultTextLines: [
-      'this is a line',
-      'this is another line',
-      'here is some third line',
-    ],
+    projectArea: exampleProjectArea,
     searchString: '',
     wholeWordsOnly: false,
   },
