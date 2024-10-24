@@ -1,12 +1,16 @@
+import logging
 import mimetypes
 from pathlib import Path
 from uuid import uuid4
 from django.db import transaction
+from django.contrib.gis.geos import Polygon
 from django.conf import settings
 from typing import Any, Dict, Optional
 from actstream import action
 from core.s3 import create_upload_url
 from datasets.models import DataLayer, Category, DataLayerType, Dataset, GeometryType
+
+log = logging.getLogger(__name__)
 
 
 def get_object_name(
@@ -56,6 +60,28 @@ def create_upload_url_for_org(
     return upload_url_response
 
 
+def geometry_from_info(
+    info: Optional[Dict[str, Any]],
+    datalayer_type: DataLayerType = DataLayerType.RASTER,
+) -> Optional[Polygon]:
+    if not info:
+        return None
+    match datalayer_type:
+        case DataLayerType.RASTER:
+            x0, y0, x1, y1 = info.get("bounds", [])
+            _epsg, srid = info.get("crs", "").split(":")
+            return Polygon(
+                ((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0)),
+                srid=srid,
+            ).transform(
+                settings.CRS_INTERNAL_REPRESENTATION,
+                clone=True,
+            )
+        case _:
+            log.warning("Not yet implemented for vectors.")
+            return None
+
+
 @transaction.atomic()
 def create_datalayer(
     name: str,
@@ -78,6 +104,10 @@ def create_datalayer(
         original_name=original_name,
         mimetype=mimetype,
     )
+    try:
+        geometry = geometry_from_info(info)
+    except Exception:
+        geometry = None
     datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid,
@@ -89,6 +119,7 @@ def create_datalayer(
         metadata=metadata,
         type=type,
         geometry_type=geometry_type,
+        geometry=geometry,
         info=info,
         original_name=original_name,
         mimetype=mimetype,

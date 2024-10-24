@@ -6,8 +6,15 @@ from rasterio.errors import RasterioIOError
 from fiona.errors import DriverError
 from datasets.models import DataLayerType, GeometryType
 from gis.errors import InvalidFileFormat, InvalidGeometryType
+from gis.info import info_raster, info_vector
 
 log = logging.getLogger(__name__)
+
+
+def get_layer_info(input_file: str) -> Dict[str, Any]:
+    layer_type = fetch_datalayer_type(input_file)
+    fn = info_raster if layer_type == DataLayerType.RASTER else info_vector
+    return fn(input_file=input_file)
 
 
 def is_vector(input_file: str) -> bool:
