@@ -9,9 +9,20 @@
       [inputHeight]="'regular'"
       (searchString)="doSearch($event)"></sg-search-bar>
   </div>
-  <sg-project-area-expander
-    *ngFor="let projectArea of areas"
-    [projectArea]="projectArea"
-    (headerClick)="setActiveProjectArea(projectArea.project_area_id)">
-  </sg-project-area-expander>
+  <ng-container *ngIf="searchString === ''">
+    <sg-project-area-expander
+      *ngFor="let projectArea of areas"
+      [projectArea]="projectArea"
+      (headerClick)="setActiveProjectArea(projectArea.project_area_id)">
+    </sg-project-area-expander>
+  </ng-container>
+  <ng-container *ngIf="searchString !== ''">
+    <sg-search-result-card
+      *ngFor="let projectArea of areas"
+      [resultTitle]="projectArea.project_area_name"
+      [resultTextLines]="['hello']"
+      [searchString]="searchString"
+      (headerClick)="setActiveProjectArea(projectArea.project_area_id)">
+    </sg-search-result-card>
+  </ng-container>
 </div>

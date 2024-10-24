@@ -6,6 +6,7 @@ import { TreatmentSummary } from '@types';
 import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
 import { map } from 'rxjs';
+import { SearchResultCardComponent } from '../../../styleguide/search-result-card/search-result-card.component';
 
 @Component({
   selector: 'app-project-areas-tab',
@@ -18,6 +19,7 @@ import { map } from 'rxjs';
     AsyncPipe,
     SearchBarComponent,
     ProjectAreaExpanderComponent,
+    SearchResultCardComponent,
   ],
   templateUrl: './project-areas-tab.component.html',
   styleUrl: './project-areas-tab.component.scss',
