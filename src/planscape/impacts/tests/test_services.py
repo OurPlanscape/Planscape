@@ -9,6 +9,7 @@ from impacts.models import (
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
     TreatmentResult,
+    TreatmentResultType,
 )
 from impacts.services import (
     calculate_impacts,
@@ -21,7 +22,11 @@ from impacts.tasks import (
     async_get_or_calculate_persist_impacts,
     async_calculate_persist_impacts_treatment_plan,
 )
-from impacts.tests.factories import TreatmentPlanFactory, TreatmentPrescriptionFactory
+from impacts.tests.factories import (
+    TreatmentPlanFactory,
+    TreatmentPrescriptionFactory,
+    TreatmentResultFactory,
+)
 from planning.tests.factories import ProjectAreaFactory, ScenarioFactory
 from stands.models import Stand, StandSizeChoices
 from stands.tests.factories import StandFactory
@@ -396,12 +401,9 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
         "impacts.services.ImpactVariable.get_baseline_raster_path",
         return_value="impacts/tests/test_data/test_raster.tif",
     )
-    def test_calculate_already_existing_impacts_returns_data(
+    def test_calculate_with_existing_direct_impacts_returns_data(
         self, _get_impact_raster, _get_baseline_raster
     ):
-        """Test that this function is performing work correctly. we don't
-        really care about the returned values right now, only that it works.
-        """
         with self.settings(
             CELERY_ALWAYS_EAGER=True,
             CELERY_TASK_STORE_EAGER_RESULT=True,
@@ -456,3 +458,80 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
                 .get()
             )
             assert treatment_result_from_second_exec.pk in second_exec_result
+
+            first_prescription = self.prescriptions[0]
+            first_result = TreatmentResult.objects.get(
+                treatment_prescription__stand=first_prescription.stand,
+                treatment_prescription=first_prescription,
+            )
+
+            plan_b_result = TreatmentResult.objects.get(
+                treatment_prescription__stand=first_prescription.stand,
+                treatment_prescription__in=plan_b_prescriptions,
+            )
+
+            assert plan_b_result.value == first_result.value
+            assert plan_b_result.delta == first_result.delta
+            assert plan_b_result.year == first_result.year
+            assert plan_b_result.aggregation == first_result.aggregation
+
+    @mock.patch(
+        "impacts.services.ImpactVariable.get_impact_raster_path",
+        return_value="impacts/tests/test_data/test_raster.tif",
+    )
+    @mock.patch(
+        "impacts.services.ImpactVariable.get_baseline_raster_path",
+        return_value="impacts/tests/test_data/test_raster.tif",
+    )
+    def test_calculate_with_existing_indirect_impacts_returns_data(
+        self, _get_impact_raster, _get_baseline_raster
+    ):
+        with self.settings(
+            CELERY_ALWAYS_EAGER=True,
+            CELERY_TASK_STORE_EAGER_RESULT=True,
+            CELERY_TASK_IGNORE_RESULT=False,
+        ):
+            indirect_results = [
+                TreatmentResultFactory(
+                    treatment_plan=self.plan,
+                    treatment_prescription=prescription,
+                    value=0.9897,
+                    type=TreatmentResultType.INDIRECT,
+                )
+                for prescription in self.prescriptions
+            ]
+
+            assert TreatmentResult.objects.count() == len(indirect_results)
+
+            plan_b = TreatmentPlanFactory.create(scenario=self.plan.scenario)
+            plan_b_prescriptions = list(
+                [
+                    TreatmentPrescriptionFactory.create(
+                        treatment_plan=plan_b,
+                        stand=stand,
+                        action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                        geometry=stand.geometry,
+                    )
+                    for stand in self.stands
+                ]
+            )
+
+            matrix = get_calculation_matrix(self.plan)
+            variable, action, year = matrix[0]
+            plan_b_exec_result = async_get_or_calculate_persist_impacts(
+                plan_b.pk, variable, action, year
+            )
+            self.assertIsNotNone(plan_b_exec_result)
+
+            assert TreatmentResult.objects.count() == (
+                len(indirect_results) + len(plan_b_exec_result)
+            )
+
+            first_prescription = self.prescriptions[0]
+            plan_b_result = TreatmentResult.objects.get(
+                treatment_prescription__stand=first_prescription.stand,
+                treatment_prescription__in=plan_b_prescriptions,
+            )
+
+            assert plan_b_result.type == TreatmentResultType.DIRECT
+            assert plan_b_result.value != 0.9897
