@@ -9,6 +9,8 @@ import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opaci
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
+import { TreatmentStandsProgressBarComponent } from '@styleguide';
+import { combineLatest, map } from 'rxjs';
 
 @Component({
   selector: 'app-treatment-project-area',
@@ -22,6 +24,7 @@ import { TreatmentsState } from '../treatments.state';
     RouterLink,
     ProjectAreaTreatmentsTabComponent,
     OpacitySliderComponent,
+    TreatmentStandsProgressBarComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
@@ -34,6 +37,38 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   ) {}
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
+  projectAreaId$ = this.treatmentsState.projectAreaId$;
+
+  treatedStands() {
+    return combineLatest([
+      this.treatmentsState.summary$,
+      this.treatmentsState.projectAreaId$,
+    ]).pipe(
+      map(([summaryData, projectId]) => {
+        const projectArea = summaryData?.project_areas?.find(
+          (project) => project.project_area_id === projectId
+        );
+        return projectArea?.prescriptions?.reduce(
+          (total, prescription) => total + prescription.treated_stand_count,
+          0
+        );
+      })
+    );
+  }
+
+  totalStands() {
+    return combineLatest([
+      this.treatmentsState.summary$,
+      this.treatmentsState.projectAreaId$,
+    ]).pipe(
+      map(
+        ([summaryData, projectId]) =>
+          summaryData?.project_areas?.find(
+            (project) => project.project_area_id === projectId
+          )?.total_stand_count
+      )
+    );
+  }
 
   changeValue(num: number) {
     this.mapConfigState.setTreatedStandsOpacity(num);

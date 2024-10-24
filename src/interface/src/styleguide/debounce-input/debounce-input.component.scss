@@ -7,8 +7,8 @@
   flex-direction: column;
   width: 100%;
   padding: 10px;
-  padding-bottom: 2px;
   box-sizing: border-box;
+  border-bottom: 1px $color-soft-gray solid;
 
   .heading-line {
     display: flex;

@@ -4,7 +4,10 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
-import { DebounceInputComponent } from '@styleguide';
+import {
+  DebounceInputComponent,
+  TreatmentStandsProgressBarComponent,
+} from '@styleguide';
 import { TreatmentPlan } from '@types';
 import { BehaviorSubject } from 'rxjs';
 @Component({
@@ -14,6 +17,7 @@ import { BehaviorSubject } from 'rxjs';
     AsyncPipe,
     TreatmentMapComponent,
     TreatmentPlanTabsComponent,
+    TreatmentStandsProgressBarComponent,
     MapBaseLayerComponent,
     DebounceInputComponent,
     NgIf,
@@ -30,6 +34,27 @@ export class TreatmentOverviewComponent {
 
   saveStatus() {
     return this.savingName;
+  }
+
+  totalTreatedStands() {
+    const summary$ = this.treatmentsState.getCurrentSummary();
+    return summary$?.project_areas.reduce(
+      (total, projectArea) =>
+        total +
+        projectArea.prescriptions.reduce(
+          (rxTotal, rx) => rxTotal + rx.treated_stand_count,
+          0
+        ),
+      0
+    );
+  }
+
+  totalStands() {
+    const summary$ = this.treatmentsState.getCurrentSummary();
+    return summary$?.project_areas.reduce(
+      (total, projectArea) => total + projectArea.total_stand_count,
+      0
+    );
   }
 
   handleNameChange(name: string) {
