@@ -84,6 +84,7 @@ class Command(PlanscapeCommand):
             "mimetype": mimetype,
             "geometry_type": geometry_type,
         }
+        breakpoint()
         response = requests.post(
             url,
             headers=headers,
