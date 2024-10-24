@@ -3,7 +3,7 @@ import mimetypes
 from pathlib import Path
 from uuid import uuid4
 from django.db import transaction
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Polygon, GEOSGeometry
 from django.conf import settings
 from typing import Any, Dict, Optional
 from actstream import action
@@ -70,9 +70,8 @@ def geometry_from_info(
         case DataLayerType.RASTER:
             x0, y0, x1, y1 = info.get("bounds", [])
             _epsg, srid = info.get("crs", "").split(":")
-            return Polygon(
-                ((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0)),
-                srid=srid,
+            return GEOSGeometry(
+                Polygon(((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0))), srid=srid
             ).transform(
                 settings.CRS_INTERNAL_REPRESENTATION,
                 clone=True,
@@ -104,15 +103,8 @@ def create_datalayer(
         original_name=original_name,
         mimetype=mimetype,
     )
-<<<<<<< HEAD
     geometry = geometry_from_info(info)
 
-=======
-    try:
-        geometry = geometry_from_info(info)
-    except Exception:
-        geometry = None
->>>>>>> 048ebb49 (adds some processing to get geometries from info)
     datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid,
