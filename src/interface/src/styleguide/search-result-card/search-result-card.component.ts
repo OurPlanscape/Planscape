@@ -55,7 +55,7 @@ export class SearchResultCardComponent {
 
   // split on string, but retain search string
   _splitRetain(haystack: string, needle: string) {
-    const regex = new RegExp(`(${needle})`, 'g');
+    const regex = new RegExp(`(${needle})`, 'ig');
     return haystack.split(regex).filter(Boolean);
   }
 
