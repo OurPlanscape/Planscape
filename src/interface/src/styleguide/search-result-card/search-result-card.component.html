@@ -1,6 +1,9 @@
 <div class="title-line">
   <ng-container
-    *ngFor="let titlePart of splitTextLine(resultTitle); let i = index">
+    *ngFor="
+      let titlePart of splitTextLine(extractProjectTitle());
+      let i = index
+    ">
     <div class="highlighted" *ngIf="isMatch(titlePart)">
       <span>{{ titlePart }}</span>
     </div>

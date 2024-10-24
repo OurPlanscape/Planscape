@@ -19,8 +19,7 @@
   <ng-container *ngIf="searchString !== ''">
     <sg-search-result-card
       *ngFor="let projectArea of areas"
-      [resultTitle]="projectArea.project_area_name"
-      [resultTextLines]="['hello']"
+      [projectArea]="projectArea"
       [searchString]="searchString"
       (headerClick)="setActiveProjectArea(projectArea.project_area_id)">
     </sg-search-result-card>

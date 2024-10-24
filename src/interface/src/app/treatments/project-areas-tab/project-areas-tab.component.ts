@@ -7,7 +7,11 @@ import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-e
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
 import { map } from 'rxjs';
 import { SearchResultCardComponent } from '../../../styleguide/search-result-card/search-result-card.component';
-
+import {
+  PRESCRIPTIONS,
+  PrescriptionSingleAction,
+  PrescriptionSequenceAction,
+} from '../prescriptions';
 @Component({
   selector: 'app-project-areas-tab',
   standalone: true,
@@ -45,8 +49,21 @@ export class ProjectAreasTabComponent {
     } else {
       this.filteredProjectAreas$ = this.projectAreas$.pipe(
         map((projectArea) =>
-          projectArea?.filter((p) =>
-            p.project_area_name.toLowerCase().includes(this.searchString)
+          projectArea?.filter(
+            (p) =>
+              p.project_area_name.toLowerCase().includes(this.searchString) ||
+              p.prescriptions?.filter((rx) => {
+                (rx.type === 'SINGLE' &&
+                  PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction]
+                    .toLowerCase()
+                    .includes(this.searchString)) ||
+                  (rx.type === 'SEQUENCE' &&
+                    PRESCRIPTIONS.SEQUENCE[
+                      rx.action as PrescriptionSequenceAction
+                    ].name
+                      .toLowerCase()
+                      .includes(this.searchString));
+              })
           )
         )
       );

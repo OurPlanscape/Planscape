@@ -4,8 +4,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
 import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component';
-import { ProjectArea } from 'src/app/types';
-
+import { TreatmentProjectArea } from 'src/app/types';
+import {
+  PRESCRIPTIONS,
+  PrescriptionSingleAction,
+  PrescriptionSequenceAction,
+} from '../../app/treatments/prescriptions';
 /**
  * Search Result Card Component
  * A component to be used in the left panel to highlight matching results
@@ -26,16 +30,25 @@ import { ProjectArea } from 'src/app/types';
   styleUrl: './search-result-card.component.scss',
 })
 export class SearchResultCardComponent {
-  @Input() projectArea!: ProjectArea;
-  @Input() resultTitle: string = '';
-  @Input() resultTextLines: string[] = [];
+  @Input() projectArea!: TreatmentProjectArea;
   @Input() searchString: string = '';
   @Input() wholeWordsOnly: boolean = false;
 
-  extractProjectTitle() {}
+  extractProjectTitle() {
+    return this.projectArea.project_area_name;
+  }
 
   extractProjectLines(): string[] {
-    return this.resultTextLines.filter((t) =>
+    const lines = this.projectArea.prescriptions.map((rx) => {
+      if (rx.type === 'SINGLE') {
+        return PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
+      } else if (rx.type === 'SEQUENCE')
+        return PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
+          .name;
+      else return '';
+    });
+
+    return lines.filter((t) =>
       t.toLowerCase().includes(this.searchString.toLowerCase())
     );
   }
