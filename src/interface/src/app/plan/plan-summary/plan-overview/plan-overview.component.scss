@@ -3,6 +3,7 @@
   flex-direction: column;
   flex-grow: 1;
   height: 100%;
+  overflow-y: scroll;
 }
 
 .plan-map-view {
@@ -16,8 +17,6 @@
   background-color: white;
   flex-grow: 1;
   padding: 20px;
-  overflow-y: scroll;
-  height: 100%;
 }
 
 .plan-scenario-panel-content {

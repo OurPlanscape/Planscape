@@ -1,19 +1,18 @@
 <div class="title-row">
-  <div class="title-section">
-    <div class="scenario-name">{{ name }}</div>
-    <sg-status-chip
-      *ngIf="resultStatus"
-      [status]="getChipStatus()"
-      [label]="getChipLabel()"></sg-status-chip>
-    <div *ngIf="hasFailed() && treatmentPlansEnabled" class="failed-message">
-      <mat-icon class="error-icon">error</mat-icon>
-      Create a new scenario to proceed to treatment plan
-    </div>
+  <div class="scenario-name">{{ name }}</div>
+  <sg-status-chip
+    *ngIf="resultStatus"
+    [status]="getChipStatus()"
+    [label]="getChipLabel()"></sg-status-chip>
+  <div *ngIf="hasFailed() && treatmentPlansEnabled" class="failed-message">
+    <mat-icon class="error-icon">error</mat-icon>
+    Create a new scenario to proceed to treatment plan
   </div>
   <div class="controls-section" *ngIf="!hasFailed()">
     <button
       sg-button
       icon="add"
+      class="new-treatment-btn"
       [disabled]="!isDone()"
       *ngIf="treatmentPlansEnabled">
       New Treatment Plan
@@ -41,11 +40,11 @@
         *ngIf="userCanArchiveScenario"
         (click)="toggleArchiveStatus.emit()">
         <mat-icon *ngIf="!isArchived()" class="material-symbols-outlined"
-          >archive</mat-icon
-        >
+          >archive
+        </mat-icon>
         <mat-icon *ngIf="isArchived()" class="material-symbols-outlined"
-          >unarchive</mat-icon
-        >
+          >unarchive
+        </mat-icon>
         <span>{{ isArchived() ? 'Restore' : 'Archive' }}</span>
       </button>
     </mat-menu>
@@ -60,15 +59,15 @@
     </div>
   </div>
   <ng-container *ngIf="!isRunning()">
-    <div class="detail-column">
+    <div class="detail-column hide-on-small">
       <div class="detail-header">Areas</div>
       <div class="detail-info">{{ areas ?? 'N/A' }}</div>
     </div>
-    <div class="detail-column" *ngIf="treatmentPlansEnabled">
+    <div class="detail-column hide-on-small" *ngIf="treatmentPlansEnabled">
       <div class="detail-header">Est Budget</div>
       <div class="detail-info">{{ (budget | currency) ?? 'N/A' }}</div>
     </div>
-    <div class="detail-column" *ngIf="treatmentPlansEnabled">
+    <div class="detail-column hide-on-small" *ngIf="treatmentPlansEnabled">
       <div class="detail-header">Treatment Plans</div>
       <div class="detail-info">{{ treatmentPlansCount }}</div>
     </div>
