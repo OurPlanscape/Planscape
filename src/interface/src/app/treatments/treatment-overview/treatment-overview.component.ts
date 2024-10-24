@@ -3,7 +3,6 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
-import { TreatmentProjectArea } from '@types';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 import {
   DebounceInputComponent,
@@ -39,21 +38,23 @@ export class TreatmentOverviewComponent {
 
   totalTreatedStands() {
     const summary$ = this.treatmentsState.getCurrentSummary();
-    return summary$?.project_areas
-      .map((p: TreatmentProjectArea) => p.prescriptions)
-      .flat()
-      .map((rx) => rx.treated_stand_count)
-      .reduce((acc, count) => {
-        return acc + count;
-      });
+    return summary$?.project_areas.reduce(
+      (total, projectArea) =>
+        total +
+        projectArea.prescriptions.reduce(
+          (rxTotal, rx) => rxTotal + rx.treated_stand_count,
+          0
+        ),
+      0
+    );
   }
+
   totalStands() {
     const summary$ = this.treatmentsState.getCurrentSummary();
-    return summary$?.project_areas
-      .map((p: TreatmentProjectArea) => p.total_stand_count)
-      .reduce((acc = 0, totalStandCount) => {
-        return acc + totalStandCount;
-      });
+    return summary$?.project_areas.reduce(
+      (total, projectArea) => total + projectArea.total_stand_count,
+      0
+    );
   }
 
   handleNameChange(name: string) {
