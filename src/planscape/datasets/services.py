@@ -104,10 +104,8 @@ def create_datalayer(
         original_name=original_name,
         mimetype=mimetype,
     )
-    try:
-        geometry = geometry_from_info(info)
-    except Exception:
-        geometry = None
+    geometry = geometry_from_info(info)
+
     datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid,
