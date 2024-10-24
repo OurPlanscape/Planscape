@@ -71,7 +71,8 @@ def geometry_from_info(
             x0, y0, x1, y1 = info.get("bounds", [])
             _epsg, srid = info.get("crs", "").split(":")
             return GEOSGeometry(
-                Polygon(((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0))), srid=srid
+                Polygon(((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0))),
+                srid=int(srid),
             ).transform(
                 settings.CRS_INTERNAL_REPRESENTATION,
                 clone=True,
