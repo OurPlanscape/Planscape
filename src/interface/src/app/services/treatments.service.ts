@@ -96,4 +96,14 @@ export class TreatmentsService {
       }
     );
   }
+
+  runTreatmentPlan(treatmentPlanId: number) {
+    return this.http.post(
+      this.baseUrl + treatmentPlanId + '/run/',
+      {},
+      {
+        withCredentials: true,
+      }
+    );
+  }
 }
