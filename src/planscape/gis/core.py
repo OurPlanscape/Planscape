@@ -11,6 +11,12 @@ from gis.errors import InvalidFileFormat, InvalidGeometryType
 log = logging.getLogger(__name__)
 
 
+def get_layer_info(input_file: str) -> Dict[str, Any]:
+    layer_type = fetch_datalayer_type(input_file)
+    fn = info_raster if layer_type == DataLayerType.RASTER else info_vector
+    return fn(input_file=input_file)
+
+
 def is_vector(input_file: str) -> bool:
     try:
         with fiona.open(input_file):
