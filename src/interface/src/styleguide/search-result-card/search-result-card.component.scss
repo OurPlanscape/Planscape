@@ -1,0 +1,46 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  background-color: $color-white;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px;
+
+  .mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: $color-md-gray;
+  }
+
+  .title-line {
+    background-color: $color-white;
+    @include h5();
+    display: flex;
+    flex-direction: row;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .text-line {
+    @include xs-label();
+    background-color: $color-white;
+    display: flex;
+    flex-direction: row;
+    line-height: 22px;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    height: 22px;
+  }
+
+  .highlighted {
+    background-color: $color-soft-purple;
+    border-radius: 4px;
+    color: $color-original-purple;
+  }
+
+  .regular {
+    background-color: white;
+  }
+}

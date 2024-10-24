@@ -1,0 +1,22 @@
+<div class="title-line">
+  <ng-container
+    *ngFor="let titlePart of splitTextLine(resultTitle); let i = index">
+    <div class="highlighted" *ngIf="isMatch(titlePart)">
+      <span>{{ titlePart }}</span>
+    </div>
+    <div class="regular" *ngIf="!isMatch(titlePart)">
+      <span>{{ titlePart }}</span>
+    </div>
+  </ng-container>
+</div>
+<div class="text-line" *ngFor="let textLine of extractProjectLines()">
+  <mat-icon>subdirectory_arrow_right</mat-icon>
+  <div *ngFor="let part of splitTextLine(textLine); let i = index">
+    <div class="highlighted" *ngIf="isMatch(part)">
+      <span>{{ part }}</span>
+    </div>
+    <div class="regular" *ngIf="!isMatch(part)">
+      <span>{{ part }}</span>
+    </div>
+  </div>
+</div>
