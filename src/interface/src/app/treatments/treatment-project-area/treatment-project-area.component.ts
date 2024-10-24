@@ -45,14 +45,13 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
       this.treatmentsState.projectAreaId$,
     ]).pipe(
       map(([summaryData, projectId]) => {
-        const projectAreaData = summaryData?.project_areas?.find(
+        const projectArea = summaryData?.project_areas?.find(
           (project) => project.project_area_id === projectId
         );
-        return projectAreaData?.prescriptions
-          .map((p) => p.treated_stand_count)
-          .reduce((acc, standCount) => {
-            return acc + standCount;
-          });
+        return projectArea?.prescriptions?.reduce(
+          (total, prescription) => total + prescription.treated_stand_count,
+          0
+        );
       })
     );
   }
@@ -62,12 +61,12 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
       this.treatmentsState.summary$,
       this.treatmentsState.projectAreaId$,
     ]).pipe(
-      map(([summaryData, projectId]) => {
-        const projectAreaData = summaryData?.project_areas?.find(
-          (project) => project.project_area_id === projectId
-        );
-        return projectAreaData?.total_stand_count;
-      })
+      map(
+        ([summaryData, projectId]) =>
+          summaryData?.project_areas?.find(
+            (project) => project.project_area_id === projectId
+          )?.total_stand_count
+      )
     );
   }
 
