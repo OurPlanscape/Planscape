@@ -8,8 +8,8 @@ import {
   DebounceInputComponent,
   TreatmentStandsProgressBarComponent,
 } from '@styleguide';
-import { TreatmentPlan } from '@types';
-import { BehaviorSubject } from 'rxjs';
+import { TreatmentPlan, TreatmentSummary } from '@types';
+import { BehaviorSubject, map } from 'rxjs';
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
@@ -26,34 +26,41 @@ import { BehaviorSubject } from 'rxjs';
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
+  constructor(private treatmentsState: TreatmentsState) {}
+
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   savingStatus$ = new BehaviorSubject<boolean>(false);
   savingName = false;
   errorSavingName: string | null = null;
-  constructor(private treatmentsState: TreatmentsState) {}
+  summary$ = this.treatmentsState.summary$;
+  projectAreas$ = this.summary$?.pipe(
+    map((summary: TreatmentSummary | null) => summary?.project_areas)
+  );
 
   saveStatus() {
     return this.savingName;
   }
 
   totalTreatedStands() {
-    const summary$ = this.treatmentsState.getCurrentSummary();
-    return summary$?.project_areas.reduce(
-      (total, projectArea) =>
-        total +
-        projectArea.prescriptions.reduce(
-          (rxTotal, rx) => rxTotal + rx.treated_stand_count,
-          0
-        ),
-      0
+    return this.projectAreas$.pipe(
+      map((areas) =>
+        areas?.reduce((sum, area) => {
+          const prescriptionSum = area.prescriptions.reduce(
+            (count, p) => count + p.treated_stand_count,
+            0
+          );
+          return sum + prescriptionSum;
+        }, 0)
+      )
     );
   }
 
   totalStands() {
-    const summary$ = this.treatmentsState.getCurrentSummary();
-    return summary$?.project_areas.reduce(
-      (total, projectArea) => total + projectArea.total_stand_count,
-      0
+    return this.projectAreas$.pipe(
+      map(
+        (areas) =>
+          areas?.reduce((sum, area) => sum + area.total_stand_count, 0) ?? 0
+      )
     );
   }
 
