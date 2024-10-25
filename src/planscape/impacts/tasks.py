@@ -69,7 +69,7 @@ def async_set_status(
 @app.task()
 def async_calculate_persist_impacts_treatment_plan(
     treatment_plan_pk: int,
-) -> Tuple[bool, int]:
+) -> None:
     # calling it this way will not be async
     async_set_status(
         treatment_plan_pk=treatment_plan_pk,
@@ -100,7 +100,5 @@ def async_calculate_persist_impacts_treatment_plan(
         for variable, action, year in matrix
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
-    async_result = chord(tasks)(callback)
-    succedeed_huh, treatment_plan = async_result.get()
-    log.info(f"Impacts calculated for {treatment_plan} returned {succedeed_huh}.")
-    return succedeed_huh, treatment_plan
+    chord(tasks)(callback)
+    log.info(f"Calculation of impacts for {treatment_plan} triggered.")
