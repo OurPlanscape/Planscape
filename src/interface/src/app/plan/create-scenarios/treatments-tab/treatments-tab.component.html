@@ -19,16 +19,3 @@
   <div class="empty-state__title">No Treatment Plans Yet</div>
   <div>Click “New Treatment plan” to start creating treatment plans</div>
 </section>
-
-<section class="treatment-footer">
-  <mat-spinner diameter="24" *ngIf="creatingTreatment"></mat-spinner>
-  <button
-    sg-button
-    variant="primary"
-    icon="add"
-    class="new-treatment"
-    [disabled]="creatingTreatment"
-    (click)="createTreatment()">
-    New Treatment Plan
-  </button>
-</section>

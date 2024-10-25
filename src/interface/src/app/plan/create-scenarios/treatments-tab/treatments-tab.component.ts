@@ -17,8 +17,6 @@ export class TreatmentsTabComponent implements OnInit {
 
   treatments: TreatmentPlan[] = [];
 
-  creatingTreatment = false;
-
   constructor(
     private router: Router,
     private route: ActivatedRoute,
@@ -36,26 +34,6 @@ export class TreatmentsTabComponent implements OnInit {
       .subscribe((results) => {
         this.treatments = results;
         this.state = results.length > 0 ? 'loaded' : 'empty';
-      });
-  }
-
-  createTreatment() {
-    this.creatingTreatment = true;
-
-    this.treatmentsService
-      .createTreatmentPlan(Number(this.scenarioId), 'New Treatment Plan')
-      .subscribe({
-        next: (result) => {
-          this.goToTreatment(result.id);
-        },
-        error: () => {
-          this.creatingTreatment = false;
-          this.matSnackBar.open(
-            '[Error] Cannot create a new treatment plan',
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-        },
       });
   }
 
