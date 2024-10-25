@@ -384,7 +384,8 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     )
     year = models.IntegerField(default=0, help_text="Number of year for the result.")
     value = models.FloatField(
-        help_text="Value extracted for the prescription stand, based on variable, year and variable aggreation type."
+        help_text="Value extracted for the prescription stand, based on variable, year and variable aggreation type.",
+        null=True,
     )
     delta = models.FloatField(
         help_text="Delta between this years value and base year value. From 0-1, null for base years.",
