@@ -1,9 +1,14 @@
 import factory
+import factory.fuzzy
 from django.contrib.gis.geos import Polygon
 from impacts.models import (
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
+    TreatmentResult,
+    TreatmentResultType,
+    ImpactVariable,
+    ImpactVariableAggregation,
     get_prescription_type,
 )
 from planning.tests.factories import ScenarioFactory, ProjectAreaFactory
@@ -33,3 +38,17 @@ class TreatmentPrescriptionFactory(factory.django.DjangoModelFactory):
     created_by = factory.SelfAttribute("treatment_plan.created_by")
     updated_by = factory.SelfAttribute("treatment_plan.created_by")
     geometry = Polygon(((1, 1), (1, 2), (2, 2), (1, 1)))
+
+
+class TreatmentResultFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TreatmentResult
+
+    treatment_plan = factory.SubFactory(TreatmentPlanFactory)
+    treatment_prescription = factory.SubFactory(TreatmentPrescriptionFactory)
+    variable = factory.fuzzy.FuzzyChoice(ImpactVariable.values)
+    aggregation = factory.fuzzy.FuzzyChoice(ImpactVariableAggregation.values)
+    year = factory.fuzzy.FuzzyInteger(low=0, high=20)
+    value = factory.fuzzy.FuzzyFloat(low=0, high=100)
+    delta = factory.fuzzy.FuzzyFloat(low=0, high=1)
+    type = TreatmentResultType.DIRECT

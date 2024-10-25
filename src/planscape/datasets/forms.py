@@ -1,7 +1,8 @@
 from django import forms
 
-from datasets.models import Category, Dataset
+from datasets.models import Category, DataLayer, Dataset
 from treebeard.forms import movenodeform_factory
+from django_json_widget.widgets import JSONEditorWidget
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -39,4 +40,34 @@ class CategoryAdminForm(movenodeform_factory(Category)):
             "created_by",
             "name",
             "order",
+        )
+
+
+class DataLayerAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["created_by"].disabled = True
+        self.fields["original_name"].disabled = True
+        self.fields["mimetype"].disabled = True
+        self.fields["url"].disabled = True
+        self.fields["geometry"].disabled = True
+
+    class Meta:
+        model = DataLayer
+        widgets = {
+            "info": JSONEditorWidget,
+            "metadata": JSONEditorWidget,
+        }
+        fields = (
+            "organization",
+            "created_by",
+            "dataset",
+            "category",
+            "name",
+            "info",
+            "metadata",
+            "original_name",
+            "mimetype",
+            "url",
+            "geometry",
         )

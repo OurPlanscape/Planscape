@@ -1,5 +1,5 @@
 <div class="nav-bar mat-elevation-z2">
-  <span class="breadcrumb">
+  <section class="breadcrumb">
     <a
       [routerLink]="['/home']"
       [queryParams]="params"
@@ -14,7 +14,7 @@
       >
       <span *ngIf="!breadcrumb.path">{{ breadcrumb.name }}</span>
     </ng-container>
-  </span>
+  </section>
   <div class="actions">
     <button mat-icon-button class="help" [matMenuTriggerFor]="popoverMenu">
       <mat-icon class="material-symbols-outlined" color="primary">
@@ -35,24 +35,23 @@
 
           <div *ngSwitchCase="'SCENARIOS'">
             <p>
-              The scenario page lists all the scenarios that you have created
-              for a planning area. You will likely have numerous scenarios for
-              any planning area. The scenario list provides detail about the
-              status of each scenario, including any that are currently running.
-              Note that the planning area is shown in the upper left of the
-              navigation bar.
+              The scenario page allows you to create and view all the scenarios
+              that you have created for a specific Planning Area . This page
+              lists the Planning Area creator, number of acres, number of
+              scenarios and gives you the ability to go back to the map of the
+              Planning Area.
             </p>
+
             <p>
-              The left panel gives you information about the entire planning
-              area in which the scenario is running: an overview of the planning
-              area in the map, total available acres, number of scenarios, the
-              region, the plan owner, the date the plan was originally created
-              and when it was last updated.
+              For each scenario that has been started or completed, you will see
+              the number of project areas and the status of each scenario.
             </p>
+
             <p>
-              There is also a Notes field in the left panel. If there are notes
-              you want to put in about your scenarios or other outputs, they can
-              be entered here.
+              In the left panel you’ll find the collaborative Notes panel, where
+              all members of the planning team can leave important information
+              regarding the Project. These are viewable to all users who have
+              access to that Planning Area.
             </p>
           </div>
           <div *ngSwitchCase="'EXPLORE'">
@@ -77,33 +76,34 @@
         </div>
       </mat-menu>
     </button>
-    <button mat-button class="action-button" (click)="print()" data-id="print">
-      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
-        print
-      </mat-icon>
+
+    <button
+      sg-button
+      variant="text"
+      icon="print"
+      [outlined]="true"
+      (click)="print()"
+      data-id="print">
       Print
     </button>
+
     <button
-      mat-button
-      class="action-button"
+      sg-button
+      variant="text"
+      icon="share"
       (click)="share()"
       data-id="share"
       *ngIf="area === 'EXPLORE'">
-      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
-        share
-      </mat-icon>
       Share
     </button>
 
     <button
-      mat-button
-      class="action-button"
+      sg-button
+      icon="share"
+      variant="text"
       (click)="sharePlan()"
       data-id="share"
       *ngIf="area === 'SCENARIOS' && (canSharePlan$ | async)">
-      <mat-icon class="material-symbols-outlined nav-icon" color="primary">
-        share
-      </mat-icon>
       Share
     </button>
 

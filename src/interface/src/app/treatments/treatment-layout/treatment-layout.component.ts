@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
 import {
   ActivatedRoute,
   ActivatedRouteSnapshot,
@@ -30,6 +30,8 @@ import { ApplyTreatmentComponent } from '../apply-treatment/apply-treatment.comp
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { TreatmentRoutingData } from '../treatments-routing.module';
+import { MatDialog } from '@angular/material/dialog';
+import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -111,7 +113,9 @@ export class TreatmentLayoutComponent {
     private treatmentsState: TreatmentsState,
     private mapConfig: MapConfigState,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private dialog: MatDialog,
+    private injector: Injector // Angular's injector for passing shared services
   ) {
     this.router.events
       .pipe(
@@ -141,6 +145,12 @@ export class TreatmentLayoutComponent {
 
   toggleShowTreatmentLayers() {
     this.mapConfig.toggleShowTreatmentStands();
+  }
+
+  showReviewDialog() {
+    this.dialog.open(ReviewTreatmentPlanDialogComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
   }
 
   private catchError() {

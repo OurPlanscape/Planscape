@@ -14,6 +14,7 @@ Number = Union[int, float]
 
 def get_profile(
     input_profile: Dict[str, Any],
+    crs: str,
     transform,
     width: int,
     height: int,
@@ -23,6 +24,7 @@ def get_profile(
 ) -> Dict[str, Any]:
     return {
         **input_profile,
+        "crs": crs,
         "transform": transform,
         "blockxsize": blockxsize,
         "blockysize": blockysize,
@@ -48,7 +50,9 @@ def to_planscape(input_file: str) -> List[str]:
     cog_output = get_random_output_file(input_file=warped_output)
 
     warped_raster = warp(
-        input_file=input_file, output_file=warped_output, crs=f"EPSG:3857"
+        input_file=input_file,
+        output_file=warped_output,
+        crs="EPSG:3857",
     )
 
     cog_raster = cog(input_file=warped_raster, output_file=cog_output)
@@ -94,9 +98,9 @@ def warp(
     output_file: str,
     crs: str,
     num_threads: str = "ALL_CPUS",
-    resampling_method=Resampling.nearest,
+    resampling_method: Resampling = Resampling.nearest,
 ) -> str:
-    log.info("warrrrrping")
+    log.info(f"Warping raster {input_file}")
     with rasterio.Env(GDAL_NUM_THREADS=num_threads):
         with rasterio.open(input_file) as source:
             left, bottom, right, top = source.bounds
@@ -110,9 +114,9 @@ def warp(
                 right=right,
                 top=top,
             )
-
             output_profile = get_profile(
                 input_profile=source.meta,
+                crs=crs,
                 transform=transform,
                 width=width,  # type: ignore
                 height=height,  # type: ignore

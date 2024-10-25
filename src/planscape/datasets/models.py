@@ -216,5 +216,6 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         return f"{self.name} [{self.type}]"
 
     class Meta(TypedModelMeta):
+        ordering = ("organization", "dataset", "id")
         verbose_name = "Datalayer"
         verbose_name_plural = "Datalayers"
