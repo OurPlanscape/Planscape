@@ -42,7 +42,7 @@ export class TreatmentOverviewComponent {
   }
 
   totalTreatedStands() {
-    return this.projectAreas$.pipe(
+    return this.projectAreas$?.pipe(
       map((areas) =>
         areas?.reduce((sum, area) => {
           const prescriptionSum = area.prescriptions.reduce(
@@ -56,7 +56,7 @@ export class TreatmentOverviewComponent {
   }
 
   totalStands() {
-    return this.projectAreas$.pipe(
+    return this.projectAreas$?.pipe(
       map(
         (areas) =>
           areas?.reduce((sum, area) => sum + area.total_stand_count, 0) ?? 0
