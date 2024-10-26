@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
+import { Observable } from 'rxjs';
+
 export interface Note {
   id: number;
   user_id: number;
@@ -12,10 +14,19 @@ export interface Note {
 
 export type NotesModelName = 'planning_area' | 'project_area';
 
+export interface INotesService {
+  getNotes(objectId: string | number): Observable<Note[]>;
+  addNote(objectId: string | number, noteContent: string): Observable<Note>;
+  deleteNote(
+    objectId: string | number,
+    noteId: string | number
+  ): Observable<Note>;
+}
+
 @Injectable({
   providedIn: 'root',
 })
-export abstract class BaseNotesService {
+export abstract class BaseNotesService implements INotesService {
   constructor(private http: HttpClient) {}
 
   protected abstract multipleUrl: (objectId: string) => string;

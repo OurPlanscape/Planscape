@@ -3,7 +3,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Note, ProjectAreaNotesService } from '@services';
+import { Note, ProjectAreaNotesService, BaseNotesService } from '@services';
 import { MatDividerModule } from '@angular/material/divider';
 import {
   NotesSidebarComponent,
@@ -26,7 +26,9 @@ import { TreatmentsState } from '../treatments.state';
 @Component({
   selector: 'app-project-area',
   standalone: true,
-  providers: [ProjectAreaNotesService],
+  providers: [
+    { provide: BaseNotesService, useClass: ProjectAreaNotesService }, // Specify which service to use
+  ],
   imports: [
     SharedModule,
     TreatmentMapComponent,
@@ -44,7 +46,6 @@ import { TreatmentsState } from '../treatments.state';
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
-  // providers: [{ provide: PlanNotesService, useClass: PlanNotesService }],
 })
 export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
   constructor(
