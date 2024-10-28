@@ -182,9 +182,13 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        qs = Scenario.objects.list_by_user(user=user).select_related(
-            "planning_area",
-            "user",
+        qs = (
+            Scenario.objects.list_by_user(user=user)
+            .select_related(
+                "planning_area",
+                "user",
+            )
+            .prefetch_related("project_areas")
         )
         return qs
 

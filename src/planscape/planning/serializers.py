@@ -1,9 +1,12 @@
 import json
+from typing import List, Optional
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry
+from shapely import MultiPolygon
 from collaboration.services import get_role, get_permissions
+from rest_framework_gis.serializers import GeometrySerializerMethodField
 from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -303,6 +306,34 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="configuration.max_budget", help_text="Max budget."
     )
 
+    geometry = GeometrySerializerMethodField()
+    bbox = serializers.SerializerMethodField()
+
+    def get_geometry(self, instance) -> Optional[MultiPolygon]:
+        geometries = list(
+            [
+                pa
+                for pa in instance.project_areas.all().values_list(
+                    "geometry", flat=True
+                )
+            ]
+        )
+        try:
+            polygons = GEOSGeometry(MultiPolygon(geometries), srid=geometries[0].srid)
+            if polygons.empty:
+                return None
+            return polygons.unary_union
+        except IndexError:
+            return None
+
+    def get_bbox(self, instance) -> Optional[List[float]]:
+        geometry = self.get_geometry(instance)
+        if not geometry:
+            return None
+        if geometry.empty:
+            return None
+        return geometry.extent
+
     def get_tx_plan_count(self, obj):
         return obj.tx_plans.count()
 
@@ -321,6 +352,8 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "status",
             "scenario_result",
             "tx_plan_count",
+            "geometry",
+            "bbox",
         )
         model = Scenario
 
