@@ -7,10 +7,11 @@ import {
   LayerComponent,
   MapComponent,
   PopupComponent,
+  RasterSourceComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 
-import {
+import maplibregl, {
   LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
@@ -28,6 +29,9 @@ import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
+import { cogProtocol } from '@geomatico/maplibre-cog-protocol';
+
+maplibregl.addProtocol('cog', cogProtocol);
 
 @UntilDestroy()
 @Component({
@@ -51,6 +55,7 @@ import { TreatmentsState } from '../treatments.state';
     MatIconModule,
     PopupComponent,
     MapTooltipComponent,
+    RasterSourceComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',

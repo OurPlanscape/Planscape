@@ -44,4 +44,11 @@
     *ngIf="treatmentTooltipLngLat">
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
+
+  <mgl-raster-source
+    url="cog://https://planscape-control-dev.s3.amazonaws.com/datalayers/1/8be31e29-dc90-4fc4-996b-d6dcc1336383.tif?AWSAccessKeyId=AKIA2ISRA6UAJ4HOYFVT&Signature=QH4aPCEN%2BAryAm46IyGCCm9wSKk%3D&Expires=1730127278#color:BrewerSpectral9,0,1,c"
+    [tileSize]="256"
+    id="rasterImage"></mgl-raster-source>
+
+  <mgl-layer id="image-layer" type="raster" source="rasterImage"></mgl-layer>
 </mgl-map>
