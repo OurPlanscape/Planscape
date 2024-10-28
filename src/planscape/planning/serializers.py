@@ -306,7 +306,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
 
     bbox = serializers.SerializerMethodField()
 
-    def get_geometry(self, instance) -> Optional[MultiPolygon]:
+    def get_bbox(self, instance) -> Optional[List[float]]:
         geometries = list(
             [
                 Polygon.from_bbox(pa.extent)
@@ -319,12 +319,9 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             polygons = MultiPolygon(*geometries, srid=geometries[0].srid)
             if polygons.empty:
                 return None
-            return polygons.unary_union
+            geometry = polygons.unary_union
         except IndexError:
             return None
-
-    def get_bbox(self, instance) -> Optional[List[float]]:
-        geometry = self.get_geometry(instance)
         if not geometry:
             return None
         if geometry.empty:
