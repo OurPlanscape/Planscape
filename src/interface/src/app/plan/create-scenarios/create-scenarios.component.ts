@@ -11,7 +11,7 @@ import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { PlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -22,6 +22,8 @@ import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { ChartData } from '../project-areas-metrics/chart-data';
 import { MetricsService } from '@services/metrics.service';
 import { processScenarioResultsToChartData } from '../scenario-helpers';
+import { TreatmentsService } from '@services/treatments.service';
+import { canAddTreatmentPlan } from '../permissions';
 
 enum ScenarioTabs {
   CONFIG,
@@ -69,15 +71,19 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(ConstraintsPanelComponent, { static: true })
   constraintsPanelComponent!: ConstraintsPanelComponent;
 
+  creatingTreatment = false;
+
   constructor(
     private fb: FormBuilder,
     private planStateService: PlanStateService,
     private scenarioService: ScenarioService,
     private router: Router,
+    private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService,
     private goalOverlayService: GoalOverlayService,
-    private metricsService: MetricsService
+    private metricsService: MetricsService,
+    private treatmentsService: TreatmentsService
   ) {}
 
   createForms() {
@@ -326,12 +332,50 @@ export class CreateScenariosComponent implements OnInit {
       this.featureService.isFeatureEnabled('treatments')
     );
   }
+
+  showTreatmentFooter() {
+    const plan = this.plan$.value;
+    // if feature is on, the scenario is done, and I have permissions to create new one
+    return this.showTreatmentsTab && !!plan && canAddTreatmentPlan(plan);
+  }
+
+  createTreatment() {
+    this.creatingTreatment = true;
+    const scenarioId = this.scenarioId;
+    if (!scenarioId) {
+      return;
+    }
+
+    this.treatmentsService
+      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .subscribe({
+        next: (result) => {
+          this.goToTreatment(result.id);
+        },
+        error: () => {
+          this.creatingTreatment = false;
+          this.matSnackBar.open(
+            '[Error] Cannot create a new treatment plan',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+      });
+  }
+
+  goToTreatment(id: number) {
+    this.router.navigate(['treatment', id], {
+      relativeTo: this.route,
+    });
+  }
 }
 
 function scenarioNameMustBeNew(
   nameControl: AbstractControl,
   existingNames: string[]
-): { [key: string]: any } | null {
+): {
+  [key: string]: any;
+} | null {
   if (existingNames.includes(nameControl.value)) {
     return { duplicate: true };
   }
