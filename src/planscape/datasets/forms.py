@@ -47,15 +47,6 @@ class DataLayerAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def get_initial_for_field(self, field, field_name):
-        match field_name:
-            case "public_url":
-                if self.instance:
-                    return self.instance.get_public_url()
-                return None
-            case _:
-                return super().get_initial_for_field(field, field_name)
-
     class Meta:
         model = DataLayer
         widgets = {
