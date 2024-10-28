@@ -7,6 +7,7 @@ import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-pla
 import { DebounceInputComponent } from '@styleguide';
 import { TreatmentPlan } from '@types';
 import { BehaviorSubject } from 'rxjs';
+
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
@@ -22,15 +23,10 @@ import { BehaviorSubject } from 'rxjs';
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   savingStatus$ = new BehaviorSubject<boolean>(false);
-  savingName = false;
   errorSavingName: string | null = null;
-  constructor(private treatmentsState: TreatmentsState) {}
 
-  saveStatus() {
-    return this.savingName;
-  }
+  constructor(private treatmentsState: TreatmentsState) {}
 
   handleNameChange(name: string) {
     if (name.length < 1) {
