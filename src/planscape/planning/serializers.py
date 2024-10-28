@@ -351,6 +351,10 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "status",
             "scenario_result",
             "tx_plan_count",
+<<<<<<< HEAD
+=======
+            "geometry",
+>>>>>>> 8e0c458f (closes plan-1631)
             "bbox",
         )
         model = Scenario
