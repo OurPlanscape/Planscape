@@ -4,6 +4,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.db.models import QuerySet
 from conditions.models import Condition
 from core.models import CreatedAtMixin
+from datasets.models import DataLayer
 
 
 class StandSizeChoices(models.TextChoices):
@@ -77,7 +78,17 @@ class StandMetric(CreatedAtMixin, models.Model):
     stand = models.ForeignKey(Stand, related_name="metrics", on_delete=models.CASCADE)
 
     condition = models.ForeignKey(
-        Condition, related_name="metrics", on_delete=models.CASCADE
+        Condition,
+        related_name="metrics",
+        on_delete=models.CASCADE,
+        null=True,
+    )
+
+    datalayer = models.ForeignKey(
+        DataLayer,
+        related_name="metrics",
+        on_delete=models.CASCADE,
+        null=True,
     )
 
     min = models.FloatField(null=True)

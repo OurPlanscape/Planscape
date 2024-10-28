@@ -99,5 +99,18 @@
         </mat-tab>
       </mat-tab-group>
     </div>
+
+    <section class="treatment-footer" *ngIf="showTreatmentFooter()">
+      <mat-spinner diameter="24" *ngIf="creatingTreatment"></mat-spinner>
+      <button
+        sg-button
+        variant="primary"
+        icon="add"
+        class="new-treatment"
+        [disabled]="creatingTreatment"
+        (click)="createTreatment()">
+        New Treatment Plan
+      </button>
+    </section>
   </div>
 </div>

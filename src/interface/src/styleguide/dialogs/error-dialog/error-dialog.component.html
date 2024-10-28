@@ -1,0 +1,16 @@
+<sg-modal
+  title=""
+  [shortHeader]="true"
+  [showBorders]="false"
+  [centerFooter]="true"
+  (clickedClose)="close()"
+  (clickedPrimary)="confirm()"
+  (clickedSecondary)="close()"
+  [primaryButtonText]="data.primaryButtonText">
+  <div modalBodyContent>
+    <sg-modal-confirmation-dialog
+      [headline]="data.headline"
+      [message]="data.message"
+      [infoType]="'error'"></sg-modal-confirmation-dialog>
+  </div>
+</sg-modal>

@@ -1,3 +1,5 @@
+@import "colors";
+
 .create-scenarios-panel {
   box-sizing: border-box;
 }
@@ -130,4 +132,25 @@
 
 .results-container {
   padding: 0 20px 10px;
+}
+
+
+.treatment-footer {
+  background-color: $color-white;
+  padding: 16px 0;
+  box-sizing: border-box;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-grow: 0;
+  position: sticky;
+  z-index: 1200;
+  border-top: 1px solid $color-soft-gray;
+}
+
+.new-treatment {
+  margin: 0 16px;
 }

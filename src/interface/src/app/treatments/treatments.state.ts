@@ -267,4 +267,8 @@ export class TreatmentsState {
   setShowApplyTreatmentsDialog(value: boolean) {
     this._showApplyTreatmentsDialog$.next(value);
   }
+
+  runTreatmentPlan() {
+    return this.treatmentsService.runTreatmentPlan(this.getTreatmentPlanId());
+  }
 }

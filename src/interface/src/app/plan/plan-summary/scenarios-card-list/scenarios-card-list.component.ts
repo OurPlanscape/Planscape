@@ -41,7 +41,7 @@ export class ScenariosCardListComponent {
     return scenario.scenario_result?.result?.features?.length;
   }
 
-  handleClickedScenario(row: ScenarioRow): void {
+  handleOpenScenario(row: ScenarioRow): void {
     if (
       row.scenario_result &&
       ['SUCCESS', 'FAILURE', 'PANIC'].includes(row.scenario_result.status)

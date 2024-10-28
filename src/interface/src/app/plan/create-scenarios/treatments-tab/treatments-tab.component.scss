@@ -1,25 +1,6 @@
 @import "colors";
 @import "mixins";
 
-$footer-size: 72px;
-
-.treatment-footer {
-  background-color: white;
-  padding: 16px 0;
-  box-sizing: border-box;
-  bottom: 0;
-  width: 100%;
-  text-align: right;
-  height: $footer-size;
-  position: absolute;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-}
-
-.new-treatment {
-  margin: 0 16px;
-}
 
 sg-treatment-card {
   margin: 10px 16px 0;
@@ -27,7 +8,7 @@ sg-treatment-card {
 
 .loader, .empty-state {
   text-align: center;
-  height: calc(100% - $footer-size);
+  height: 100%;
   width: 100%;
   display: flex;
   align-items: center;

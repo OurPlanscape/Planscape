@@ -1,11 +1,17 @@
 @import 'variables';
 @import 'mixins';
+@import "media";
 
 .root-container {
   display: flex;
   flex-direction: row;
   height: calc(100% - $navbar-height);
   width: 100%;
+
+  @include on-small() {
+    height: initial;
+    flex-direction: column-reverse;
+  }
 }
 
 .plan-summary-panel {
@@ -13,6 +19,10 @@
   box-sizing: border-box;
   display: block;
   width: 300px;
+
+  @include on-small() {
+    width: 100%;
+  }
 
   ::ng-deep .mat-tab-body-wrapper {
     height: 100%;
@@ -58,6 +68,8 @@
   width: 45%;
   min-width: 450px;
   max-width: 800px;
+  display: flex;
+  flex-direction: column;
 }
 
 .scenario-details {
@@ -68,9 +80,10 @@
 :host {
   ::ng-deep {
     app-create-scenarios {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
+
     }
 
     .create-scenarios-panel {
@@ -129,10 +142,6 @@
   ::ng-deep .mat-tab-label {
     min-width: auto;
   }
-
-  ::ng-deep .mat-tab-group {
-    height: 100%;
-    overflow: hidden;
-    flex: 1;
-  }
 }
+
+
