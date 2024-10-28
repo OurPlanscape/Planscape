@@ -6,6 +6,7 @@ from rasterio.errors import RasterioIOError
 from fiona.errors import DriverError
 from datasets.models import DataLayerType, GeometryType
 from gis.errors import InvalidFileFormat, InvalidGeometryType
+from gis.info import info_raster, info_vector
 
 
 log = logging.getLogger(__name__)
