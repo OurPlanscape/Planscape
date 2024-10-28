@@ -1,0 +1,86 @@
+<div class="notes-header" *ngIf="showHeader">Notes</div>
+<div *ngIf="!hasNotes()" class="no-notes-view">
+  <div class="no-notes-blurb">
+    <mat-icon class="add-notes-icon material-symbols-outlined"
+      >add_notes</mat-icon
+    >
+    <div class="no-notes-header">{{ noNotesTitleText }}</div>
+    <div class="no-notes-text">
+      {{ noNotesDetailText }}
+    </div>
+  </div>
+</div>
+<div class="notes" *ngIf="hasNotes()">
+  <div *ngFor="let note of notes" class="note-enclosed">
+    <div class="note-left">
+      <div class="note-head">
+        <div>{{ note.user_name }}</div>
+        <div class="date">{{ note.created_at | date }}</div>
+      </div>
+      <div class="note-content">
+        {{ note.content }}
+      </div>
+    </div>
+    <div class="note-right">
+      <button
+        class="more-menu-button"
+        *ngIf="canDelete(note)"
+        mat-icon-button
+        [matMenuTriggerFor]="menu"
+        aria-label="more note options">
+        <mat-icon>more_vert</mat-icon>
+      </button>
+      <mat-menu #menu="matMenu">
+        <button
+          mat-menu-item
+          (click)="requestToDelete(note)"
+          class="delete-note-button">
+          <mat-icon class="delete-icon">delete_outline</mat-icon>
+          <span>Delete</span>
+        </button>
+      </mat-menu>
+    </div>
+  </div>
+</div>
+<div class="add-note-box">
+  <mat-form-field
+    appearance="outline"
+    class="add-note-field"
+    appearance="outline">
+    <textarea
+      class="add-note-textarea"
+      (keydown.enter)="addNote($event)"
+      [(ngModel)]="newNoteText"
+      [disabled]="notesState === 'SAVING'"
+      matInput
+      placeholder="Add a note">
+    </textarea>
+    <mat-spinner
+      class="spinner-class"
+      diameter="20"
+      matSuffix
+      *ngIf="notesState === 'SAVING'"></mat-spinner>
+    <svg
+      *ngIf="notesState === 'READY'"
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      class="arrow-up"
+      (click)="addNote($event)"
+      [ngClass]="{ active: !!newNoteText }"
+      matSuffix>
+      <g clip-path="url(#clip0_229_19311)">
+        <path
+          d="M17 3.33989C18.5083 4.21075 19.7629 5.46042 20.6398 6.96519C21.5167 8.46997 21.9854 10.1777 21.9994 11.9192C22.0135 13.6608 21.5725 15.3758 20.72 16.8946C19.8676 18.4133 18.6332 19.6831 17.1392 20.5782C15.6452 21.4733 13.9434 21.9627 12.2021 21.998C10.4608 22.0332 8.74055 21.6131 7.21155 20.7791C5.68256 19.9452 4.39787 18.7264 3.48467 17.2434C2.57146 15.7604 2.06141 14.0646 2.005 12.3239L2 11.9999L2.005 11.6759C2.061 9.94888 2.56355 8.26585 3.46364 6.79089C4.36373 5.31592 5.63065 4.09934 7.14089 3.25977C8.65113 2.42021 10.3531 1.98629 12.081 2.00033C13.8089 2.01437 15.5036 2.47589 17 3.33989ZM12.02 6.99989L11.857 7.00989L11.771 7.02589L11.629 7.07089L11.516 7.12489L11.446 7.16789L11.351 7.23889L11.293 7.29289L7.293 11.2929L7.21 11.3869C7.05459 11.5879 6.98151 11.8405 7.0056 12.0934C7.02969 12.3463 7.14916 12.5806 7.33972 12.7486C7.53029 12.9167 7.77767 13.0059 8.03162 12.9981C8.28557 12.9904 8.52704 12.8862 8.707 12.7069L11 10.4139V15.9999L11.007 16.1169C11.0371 16.37 11.1627 16.602 11.3582 16.7656C11.5536 16.9292 11.8042 17.012 12.0586 16.9971C12.313 16.9821 12.5522 16.8706 12.7272 16.6853C12.9021 16.4999 12.9997 16.2548 13 15.9999V10.4149L15.293 12.7069L15.387 12.7899C15.588 12.9453 15.8406 13.0184 16.0935 12.9943C16.3464 12.9702 16.5807 12.8507 16.7488 12.6602C16.9168 12.4696 17.006 12.2222 16.9982 11.9683C16.9905 11.7143 16.8863 11.4728 16.707 11.2929L12.707 7.29289L12.625 7.21989L12.536 7.15589L12.423 7.09389L12.342 7.05989L12.229 7.02589L12.117 7.00589L12.019 6.99989H12.02Z"
+          fill="currentColor" />
+      </g>
+      <defs>
+        <clipPath id="clip0_229_19311">
+          <rect width="24" height="24" fill="white" />
+        </clipPath>
+      </defs>
+    </svg>
+  </mat-form-field>
+</div>
