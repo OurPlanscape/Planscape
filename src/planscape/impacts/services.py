@@ -385,7 +385,9 @@ def calculate_impacts(
     return calculate_deltas(baseline_stats, variable_stats, agg)
 
 
-def calculate_delta(value: float, base: float) -> float:
+def calculate_delta(value: float | None, base: float | None) -> float:
+    if value is None:
+        value = 0
     if not base:
         base = 1
     return (value - base) / base

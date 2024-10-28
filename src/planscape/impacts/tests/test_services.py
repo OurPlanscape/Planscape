@@ -12,6 +12,7 @@ from impacts.models import (
     TreatmentResultType,
 )
 from impacts.services import (
+    calculate_delta,
     calculate_impacts,
     clone_treatment_plan,
     get_calculation_matrix,
@@ -20,7 +21,6 @@ from impacts.services import (
 )
 from impacts.tasks import (
     async_get_or_calculate_persist_impacts,
-    async_calculate_persist_impacts_treatment_plan,
 )
 from impacts.tests.factories import (
     TreatmentPlanFactory,
@@ -330,6 +330,23 @@ class CalculateImpactsTest(TransactionTestCase):
         action = TreatmentPrescriptionAction.HEAVY_MASTICATION
         with self.assertRaises(ValueError):
             calculate_impacts(self.plan, variable, action, 1)
+
+    def test_calculate_delta(self):
+        values_bases_expected_results = [
+            (0, 0, -1),
+            (0, 1, -1),
+            (1, 0, 0),
+            (1, 1, 0),
+            (2, 1, 1),
+            (1.5, 1, 0.5),
+            (40, 20, 1),
+            (None, 1, -1),
+            (1, None, 0),
+            (None, None, -1),
+        ]
+
+        for value, base, expected_result in values_bases_expected_results:
+            assert calculate_delta(value=value, base=base) == expected_result
 
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
