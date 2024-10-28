@@ -68,6 +68,10 @@ export class SavedScenariosComponent implements OnInit {
     this.fetchScenarios();
   }
 
+  _listsDiffer(listA: Scenario[], listB: Scenario[]) {
+    return JSON.stringify(listA) !== JSON.stringify(listB);
+  }
+
   fetchScenarios(): void {
     this.scenarioService
       .getScenariosForPlan(this.plan?.id!, this.sortSelection)
@@ -80,18 +84,14 @@ export class SavedScenariosComponent implements OnInit {
         const fetchedActiveScenarios = this.scenariosForUser.filter(
           (s) => s.status === 'ACTIVE'
         );
+        if (this._listsDiffer(this.activeScenarios, fetchedActiveScenarios)) {
+          this.activeScenarios = fetchedActiveScenarios;
+        }
         const fetchedArchivedScenarios = this.scenariosForUser.filter(
           (s) => s.status === 'ARCHIVED'
         );
         if (
-          JSON.stringify(fetchedActiveScenarios) !==
-          JSON.stringify(this.activeScenarios)
-        ) {
-          this.activeScenarios = fetchedActiveScenarios;
-        }
-        if (
-          JSON.stringify(fetchedArchivedScenarios) !==
-          JSON.stringify(this.archivedScenarios)
+          this._listsDiffer(this.archivedScenarios, fetchedArchivedScenarios)
         ) {
           this.archivedScenarios = fetchedArchivedScenarios;
         }
