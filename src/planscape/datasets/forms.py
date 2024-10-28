@@ -52,6 +52,15 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["url"].disabled = True
         self.fields["geometry"].disabled = True
 
+    def get_initial_for_field(self, field, field_name):
+        match field_name:
+            case "public_url":
+                if self.instance:
+                    return self.instance.get_public_url()
+                return None
+            case _:
+                return super().get_initial_for_field(field, field_name)
+
     class Meta:
         model = DataLayer
         widgets = {
@@ -69,5 +78,6 @@ class DataLayerAdminForm(forms.ModelForm):
             "original_name",
             "mimetype",
             "url",
+            "public_url",
             "geometry",
         )
