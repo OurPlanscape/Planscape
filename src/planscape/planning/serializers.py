@@ -306,7 +306,6 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         source="configuration.max_budget", help_text="Max budget."
     )
 
-    geometry = GeometrySerializerMethodField()
     bbox = serializers.SerializerMethodField()
 
     def get_geometry(self, instance) -> Optional[MultiPolygon]:
@@ -352,7 +351,6 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "status",
             "scenario_result",
             "tx_plan_count",
-            "geometry",
             "bbox",
         )
         model = Scenario
