@@ -50,6 +50,7 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["original_name"].disabled = True
         self.fields["mimetype"].disabled = True
         self.fields["url"].disabled = True
+        self.fields["public_url"].disabled = True
         self.fields["geometry"].disabled = True
 
     def get_initial_for_field(self, field, field_name):
