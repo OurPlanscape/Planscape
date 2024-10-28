@@ -1,5 +1,7 @@
+from pathlib import Path
 from typing import Optional
 from rest_framework import serializers
+from core.s3 import create_download_url
 from datasets.models import Category, Dataset, DataLayer
 
 
@@ -62,6 +64,10 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
 
 class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
+    public_url = serializers.CharField(
+        source="get_public_url",
+        read_only=True,
+    )
 
     class Meta:
         model = DataLayer
@@ -79,6 +85,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "geometry_type",
             "status",
             "url",
+            "public_url",
             "info",
             "metadata",
         )
