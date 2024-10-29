@@ -8,9 +8,11 @@
   height: calc(100% - $navbar-height);
   width: 100%;
 
-  @include on-small() {
-    height: initial;
-    flex-direction: column-reverse;
+  &.overview {
+    @include on-small() {
+      height: initial;
+      flex-direction: column-reverse;
+    }
   }
 }
 
