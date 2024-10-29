@@ -66,3 +66,10 @@ def is_s3_file(input_file: Optional[str]) -> bool:
     if not input_file:
         return False
     return input_file.lower().startswith("s3://")
+
+
+def s3_filename(input_file: Optional[str]) -> Optional[str]:
+    if not input_file:
+        return None
+    path, filename = input_file.rsplit("/", 1)
+    return filename
