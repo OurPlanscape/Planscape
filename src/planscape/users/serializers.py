@@ -19,6 +19,15 @@ from collaboration.services import link_invites
 
 from users.forms import CustomAllAuthPasswordResetForm
 
+try:
+    from django.utils.translation import gettext_lazy as _
+    from allauth.account import app_settings as allauth_account_settings
+    from allauth.account.adapter import get_adapter
+    from allauth.socialaccount.models import EmailAddress
+except ImportError:
+    raise ImportError("allauth needs to be added to INSTALLED_APPS.")
+
+
 # Configures global logging.
 log = logging.getLogger(__name__)
 
@@ -33,6 +42,22 @@ class NameRegistrationSerializer(RegisterSerializer):
         user.save(update_fields=["first_name", "last_name"])
 
         link_invites(user)
+
+    # overriding dj-rest-auth method to provide
+    def validate_email(self, email):
+        email = get_adapter().clean_email(email)
+        if allauth_account_settings.UNIQUE_EMAIL:
+            if email and EmailAddress.objects.is_verified(email):
+                raise serializers.ValidationError(
+                    _("A user is already registered with this e-mail address."),
+                )
+        if email and not EmailAddress.objects.is_verified(email):
+            raise serializers.ValidationError(
+                _(
+                    "An account has been created with this email, but the address was not validated."
+                ),
+            )
+        return email
 
 
 class UserSerializer(serializers.ModelSerializer):
