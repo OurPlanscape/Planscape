@@ -346,7 +346,7 @@ class CalculateImpactsTest(TransactionTestCase):
         ]
 
         for value, base, expected_result in values_bases_expected_results:
-            assert calculate_delta(value=value, base=base) == expected_result
+            assert calculate_delta(value=value, baseline=base) == expected_result
 
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
@@ -487,10 +487,10 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
                 treatment_prescription__in=plan_b_prescriptions,
             )
 
-            assert plan_b_result.value == first_result.value
-            assert plan_b_result.delta == first_result.delta
-            assert plan_b_result.year == first_result.year
-            assert plan_b_result.aggregation == first_result.aggregation
+            self.assertEquals(plan_b_result.value, first_result.value)
+            self.assertEquals(plan_b_result.baseline, first_result.baseline)
+            self.assertEquals(plan_b_result.year, first_result.year)
+            self.assertEquals(plan_b_result.aggregation, first_result.aggregation)
 
     @mock.patch(
         "impacts.services.ImpactVariable.get_impact_raster_path",

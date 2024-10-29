@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
+from impacts.calculator import calculate_delta
 from planning.models import ProjectArea, Scenario
 from stands.models import Stand
 from typing_extensions import Self
@@ -362,6 +363,61 @@ class TreatmentResultType(models.TextChoices):
     INDIRECT = "INDIRECT", "Indirect"
 
 
+class ProjectAreaTreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
+    treatment_plan = models.ForeignKey(
+        TreatmentPlan,
+        on_delete=models.RESTRICT,
+        related_name="project_area_results",
+    )
+    project_area = models.ForeignKey(
+        ProjectArea,
+        on_delete=models.RESTRICT,
+        related_name="project_area_results",
+    )
+    variable = models.CharField(
+        choices=ImpactVariable.choices, help_text="Impact Variable (choice)."
+    )
+    aggregation = models.CharField(
+        choices=ImpactVariableAggregation.choices,
+        help_text="Impact Variable Aggregation (choice).",
+    )
+    year = models.IntegerField(
+        default=0,
+        help_text="Number of year for the result.",
+    )
+    value = models.FloatField(
+        help_text="Value extracted for the prescriptions inside this project area.",
+        null=True,
+    )
+    baseline = models.FloatField(
+        help_text="Baseline value extract from the prescriptions inside this project area."
+    )
+    type = models.CharField(
+        choices=TreatmentResultType.choices,
+        default=TreatmentResultType.DIRECT,
+        help_text="Type of Treatment Result (choice).",
+    )
+
+    def delta(self) -> float:
+        return calculate_delta(self.value, self.baseline)
+
+    class Meta(TypedModelMeta):
+        constraints = [
+            models.UniqueConstraint(
+                # given a specific project area we can only have a single value for the same
+                # variable, aggregationa and year
+                fields=[
+                    "treatment_plan",
+                    "project_area",
+                    "variable",
+                    "aggregation",
+                    "year",
+                ],
+                name="project_area_treatment_result_unique_constraint",
+            )
+        ]
+
+
 class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     treatment_plan = models.ForeignKey(
         TreatmentPlan,
@@ -387,8 +443,7 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Value extracted for the prescription stand, based on variable, year and variable aggreation type.",
         null=True,
     )
-    delta = models.FloatField(
-        help_text="Delta between this years value and base year value. From 0-1, null for base years.",
+    baseline = models.FloatField(
         null=True,
     )
     type = models.CharField(
@@ -397,6 +452,9 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Type of Treatment Result (choice).",
         null=True,
     )
+
+    def delta(self) -> float:
+        return calculate_delta(self.value, self.baseline)
 
     class Meta(TypedModelMeta):
         constraints = [
