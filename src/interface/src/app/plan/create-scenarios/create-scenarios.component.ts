@@ -106,7 +106,7 @@ export class CreateScenariosComponent implements OnInit {
     this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.planStateService.planState$
-      .pipe(untilDestroyed(this))
+      .pipe(untilDestroyed(this), take(1))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
@@ -241,13 +241,15 @@ export class CreateScenariosComponent implements OnInit {
           return NEVER;
         })
       )
-      .subscribe(() => {
+      .subscribe((newScenario) => {
+        // Setting the new scenario id
+        this.scenarioId = newScenario.id;
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTab = ScenarioTabs.RESULTS;
         this.pollForChanges();
-        this.goToScenario()
+        this.goToScenario();
       });
   }
 
@@ -371,7 +373,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   goToScenario() {
-    this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]); 
+    this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
   }
 }
 
