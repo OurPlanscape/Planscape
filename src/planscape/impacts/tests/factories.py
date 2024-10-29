@@ -50,5 +50,5 @@ class TreatmentResultFactory(factory.django.DjangoModelFactory):
     aggregation = factory.fuzzy.FuzzyChoice(ImpactVariableAggregation.values)
     year = factory.fuzzy.FuzzyInteger(low=0, high=20)
     value = factory.fuzzy.FuzzyFloat(low=0, high=100)
-    delta = factory.fuzzy.FuzzyFloat(low=0, high=1)
+    baseline = factory.fuzzy.FuzzyFloat(low=0, high=100)
     type = TreatmentResultType.DIRECT
