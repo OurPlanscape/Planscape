@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
+from impacts.calculator import calculate_delta
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -259,9 +260,11 @@ def clone_existing_results(
             type=TreatmentResultType.DIRECT,
         )
         .select_related("treatment_prescription", "treatment_prescription__stand")
-        .distinct("treatment_prescription__stand__pk", "aggregation", "value", "delta")
+        .distinct(
+            "treatment_prescription__stand__pk", "aggregation", "value", "baseline"
+        )
         .values_list(
-            "treatment_prescription__stand__pk", "aggregation", "value", "delta"
+            "treatment_prescription__stand__pk", "aggregation", "value", "baseline"
         )
     )
 
@@ -273,7 +276,7 @@ def clone_existing_results(
             aggregation=other_result[1],
             year=year,
             value=other_result[2],
-            delta=other_result[3],
+            baseline=other_result[3],
         )[0]
         for other_result in existing_results.iterator()
     ]
@@ -303,7 +306,7 @@ def to_treatment_results(
                 year=year,
                 defaults={
                     "value": properties.get(agg.lower()),
-                    "delta": properties.get(f"delta_{agg.lower()}"),
+                    "baseline": properties.get(f"baseline_{agg.lower()}"),
                 },
             )[0]
             for agg in aggregations
@@ -385,14 +388,6 @@ def calculate_impacts(
     return calculate_deltas(baseline_stats, variable_stats, agg)
 
 
-def calculate_delta(value: float | None, base: float | None) -> float:
-    if value is None:
-        value = 0
-    if not base:
-        base = 1
-    return (value - base) / base
-
-
 def calculate_deltas(
     baseline_zonal_stats,
     variable_zonal_stats,
@@ -405,14 +400,12 @@ def calculate_deltas(
         variable_props = f.get("properties", {})
         stand_id = variable_props.get("stand_id")
         baseline_props = baseline_dict.get(stand_id).get("properties")
-        deltas = {
-            f"delta_{agg}": calculate_delta(
-                variable_props.get(agg),
-                baseline_props.get(agg),
-            )
-            for agg in aggregations
+
+        baselines = {
+            f"baseline_{agg}": baseline_props.get("agg") for agg in aggregations
         }
-        variable_zonal_stats[i]["properties"] = {**variable_props, **deltas}
+
+        variable_zonal_stats[i]["properties"] = {**variable_props, **baselines}
     return variable_zonal_stats
 
 
