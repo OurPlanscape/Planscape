@@ -11,13 +11,7 @@ const routes: Routes = [
     title: 'Plan Details',
     component: PlanComponent,
     canActivate: [AuthGuard],
-
     children: [
-      {
-        path: 'config',
-        title: 'Scenario Configuration',
-        component: CreateScenariosComponent,
-      },
       {
         path: 'config/:id',
         title: 'Scenario Configuration',

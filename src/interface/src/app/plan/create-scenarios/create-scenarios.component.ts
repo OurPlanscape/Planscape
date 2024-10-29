@@ -247,6 +247,7 @@ export class CreateScenariosComponent implements OnInit {
         this.disableForms();
         this.selectedTab = ScenarioTabs.RESULTS;
         this.pollForChanges();
+        this.goToScenario()
       });
   }
 
@@ -367,6 +368,10 @@ export class CreateScenariosComponent implements OnInit {
     this.router.navigate(['treatment', id], {
       relativeTo: this.route,
     });
+  }
+
+  goToScenario() {
+    this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]); 
   }
 }
 
