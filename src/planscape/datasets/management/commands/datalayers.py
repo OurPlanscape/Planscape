@@ -1,6 +1,5 @@
-import json
 from pathlib import Path
-from pprint import pprint
+from core.pprint import pprint
 from typing import Any, Dict, Optional
 from django.core.management.base import CommandParser
 import requests
