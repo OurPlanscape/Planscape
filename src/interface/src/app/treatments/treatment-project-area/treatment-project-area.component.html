@@ -1,6 +1,6 @@
 <sg-treatment-progress
-  [treatedStands]="(treatedStands() | async) ?? 0"
-  [totalStands]="(totalStands() | async) ?? 0"></sg-treatment-progress>
+  [treatedStands]="treatedStands() | async"
+  [totalStands]="totalStands() | async"></sg-treatment-progress>
 <mat-tab-group
   class="summary-tab-group"
   mat-align-tabs="start"
