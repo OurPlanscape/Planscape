@@ -56,8 +56,9 @@ def to_planscape(input_file: str) -> List[str]:
         raise ValueError(
             "Cannot convert to planscape format if raster file does not have CRS information."
         )
+    log.info("Raster info available")
     _epsg, srid = layer_crs.split(":")
-    if srid != settings.CRS_FOR_RASTERS:
+    if int(srid) != settings.CRS_FOR_RASTERS:
         warped_output = get_random_output_file(input_file=input_file)
 
         warped_raster = warp(
