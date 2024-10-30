@@ -1,8 +1,10 @@
 from pathlib import Path
-from typing import Optional
+from typing import Any, Dict, Optional
 from rest_framework import serializers
+from core.loades import get_python_object
 from core.s3 import create_download_url
 from datasets.models import Category, Dataset, DataLayer
+from impacts.models import ImpactVariable
 
 
 class CategorySerializer(serializers.ModelSerializer[Category]):
@@ -139,3 +141,76 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
 class DataLayerCreatedSerializer(serializers.Serializer):
     datalayer = DataLayerSerializer()
     upload_to = serializers.JSONField()
+
+
+class ProviderMetadataSerializer(serializers.Serializer):
+    """This serializers tries to bridge the gap between
+    what we had in original planscape and the new things
+    we want to build.
+
+    Planscape originally only used information from the RRKs and,
+    these datasets have a specific provider metadata shape. They
+    are bundled inside the RRK, but are produced by someone else.
+
+    Most likely this structure will not capture all the needs
+    of future metadata storage and we should use a _real_ metadata
+    standard, such as OGC CSW.
+    """
+
+    # example: CECS
+    name = serializers.CharField(required=False)
+    # example: Northern California Regional Resource Kit
+    dataset = serializers.CharField(required=False)
+    # example: https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=33
+    # this is about the datalayer, from the provider
+    reference = serializers.URLField(required=False)
+    # https://wildfiretaskforce.org/northern-california-regional-resource-kit/
+    # this is a where to find the original data
+    original_url = serializers.URLField(required=False)
+
+
+class SourceMetadataSerializer(serializers.Serializer):
+    provider = ProviderMetadataSerializer(
+        required=False,
+    )
+
+    units = serializers.CharField(
+        required=False,
+    )
+
+
+class DataLayerMetadataSerializer(serializers.Serializer):
+    module_validators: Dict[str, str] = {
+        "impacts": "impacts.serializers.DataLayerImpactsModuleSerializer",
+    }
+    modules = serializers.DictField(
+        required=False,
+    )
+    source = SourceMetadataSerializer(
+        required=False,
+    )
+
+    def __init__(self, *args, **kwargs):
+        module_validators = kwargs.get("module_validators", {}) or {}
+        if module_validators:
+            self.module_validators = module_validators
+        super().__init__(*args, **kwargs)
+
+    def validate_module(self, name, values):
+        try:
+            module = self.module_validators[name]
+            ModuleSerializerClass = get_python_object(module)
+        except Exception:
+            raise serializers.ValidationError(
+                f"Invalid module specification. {name} is not supported."
+            )
+
+        serializer: serializers.Serializer = ModuleSerializerClass(data=values)
+        serializer.is_valid(raise_exception=True)
+        return values
+
+    def validate(self, attrs):
+        modules = attrs.get("modules", {}) or {}
+        for name, values in modules.items():
+            self.validate_module(name, values)
+        return super().validate(attrs)
