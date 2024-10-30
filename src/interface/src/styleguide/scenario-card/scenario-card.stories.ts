@@ -84,6 +84,14 @@ export const PanickedWithTreatmentPlansEnabled: Story = {
   },
 };
 
+export const RunningWithTreatmentPlansEnabled: Story = {
+  args: {
+    ...Default.args,
+    resultStatus: 'RUNNING',
+    treatmentPlansEnabled: true,
+  },
+};
+
 export const UserCannotArchiveScenario: Story = {
   args: {
     name: 'Test Scenario',
