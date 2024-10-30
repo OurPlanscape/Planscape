@@ -1,0 +1,19 @@
+<div class="title-row">
+  <ng-content select="[panelTitle]"></ng-content>
+  <div class="buttons" *ngIf="buttons.length">
+    <mat-icon
+      *ngFor="let button of buttons"
+      class="material-symbols-outlined"
+      (click)="clickButton(button.actionName)"
+      >{{ button.icon }}
+    </mat-icon>
+    <!--    <button-->
+    <!--      sg-button-->
+    <!--      [outlined]="true"-->
+    <!--      icon="open_in_full"-->
+    <!--      variant="text"></button>-->
+  </div>
+</div>
+<div class="content" [ngClass]="{ padded: paddedContent }">
+  <ng-content></ng-content>
+</div>
