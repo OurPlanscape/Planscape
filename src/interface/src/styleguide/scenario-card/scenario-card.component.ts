@@ -82,7 +82,7 @@ export class ScenarioCardComponent {
   };
 
   hasFailed(): boolean {
-    const failedValues = ['LOADING', 'NOT_STARTED', 'PENDING', 'RUNNING'];
+    const failedValues = ['FAILURE', 'PANIC', 'TIMED_OUT'];
     return failedValues.includes(this.resultStatus);
   }
 

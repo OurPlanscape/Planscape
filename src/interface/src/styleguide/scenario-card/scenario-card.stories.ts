@@ -68,6 +68,30 @@ export const TreatmentsPlansEnabled: Story = {
   },
 };
 
+export const FailedWithTreatmentPlansEnabled: Story = {
+  args: {
+    ...Default.args,
+    resultStatus: 'FAILURE',
+    treatmentPlansEnabled: true,
+  },
+};
+
+export const PanickedWithTreatmentPlansEnabled: Story = {
+  args: {
+    ...Default.args,
+    resultStatus: 'PANIC',
+    treatmentPlansEnabled: true,
+  },
+};
+
+export const RunningWithTreatmentPlansEnabled: Story = {
+  args: {
+    ...Default.args,
+    resultStatus: 'RUNNING',
+    treatmentPlansEnabled: true,
+  },
+};
+
 export const UserCannotArchiveScenario: Story = {
   args: {
     name: 'Test Scenario',
