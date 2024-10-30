@@ -6,10 +6,7 @@ from django.core.management.base import CommandParser
 import requests
 from core.base_commands import PlanscapeCommand
 from core.s3 import is_s3_file, upload_file
-from datasets.models import DataLayerType
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
-from gis.info import info_raster, info_vector
-from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape
 
