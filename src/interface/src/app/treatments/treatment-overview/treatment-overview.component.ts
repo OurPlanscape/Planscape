@@ -10,6 +10,7 @@ import {
 } from '@styleguide';
 import { TreatmentPlan, TreatmentSummary } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
+
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
@@ -30,16 +31,11 @@ export class TreatmentOverviewComponent {
 
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   savingStatus$ = new BehaviorSubject<boolean>(false);
-  savingName = false;
   errorSavingName: string | null = null;
   summary$ = this.treatmentsState.summary$;
   projectAreas$ = this.summary$?.pipe(
     map((summary: TreatmentSummary | null) => summary?.project_areas)
   );
-
-  saveStatus() {
-    return this.savingName;
-  }
 
   totalTreatedStands() {
     return this.projectAreas$?.pipe(

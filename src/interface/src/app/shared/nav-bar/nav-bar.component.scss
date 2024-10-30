@@ -36,7 +36,7 @@
 }
 
 .breadcrumb {
-  @include h3();
+  @include h4();
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
