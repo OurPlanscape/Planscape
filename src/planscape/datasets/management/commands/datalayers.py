@@ -6,10 +6,7 @@ from django.core.management.base import CommandParser
 import requests
 from core.base_commands import PlanscapeCommand
 from core.s3 import is_s3_file, upload_file
-from datasets.models import DataLayerType
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
-from gis.info import info_raster, info_vector
-from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape
 
@@ -99,6 +96,7 @@ class Command(PlanscapeCommand):
         input_file: str,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
+        s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
         layer_type = fetch_datalayer_type(input_file=input_file)
         rasters = to_planscape(
@@ -107,7 +105,7 @@ class Command(PlanscapeCommand):
         layer_info = get_layer_info(input_file=rasters[0])
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         mimetype = detect_mimetype(input_file=input_file)
-        if is_s3_file(input_file=input_file):
+        if s3_file:
             original_name = input_file
         else:
             original_name = original_file_path.name
