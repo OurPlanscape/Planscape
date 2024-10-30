@@ -45,12 +45,14 @@ export class TreatmentCardComponent {
 
   @HostBinding('class.disabled')
   get isDisabled() {
-    return this.status === 'RUNNING';
+    return this.status === 'RUNNING' || this.status === 'FAILURE';
   }
 
   @HostListener('click')
   viewTreatment() {
-    this.view.emit();
+    if (!this.isDisabled) {
+      this.view.emit();
+    }
   }
 
   stopEventPropagation(event: Event) {
