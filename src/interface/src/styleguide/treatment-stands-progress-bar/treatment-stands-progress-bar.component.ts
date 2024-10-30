@@ -20,20 +20,15 @@ export class TreatmentStandsProgressBarComponent {
   /**
    * The number of treated stands
    */
-  @Input() treatedStands?: number | null = 0;
+  @Input() treatedStands: number = 0;
   /**
    * The total number of stands, treated and not treated
    */
-  @Input() totalStands?: number | null = 0;
+  @Input() totalStands: number = 0;
 
   // convert to units for progress bar
   treatedAsPercent(): number {
-    if (
-      typeof this.treatedStands !== 'number' ||
-      typeof this.totalStands !== 'number' ||
-      this.treatedStands < 1 ||
-      this.totalStands < 1
-    ) {
+    if (this.treatedStands < 1 || this.totalStands < 1) {
       return 0;
     }
     return Math.round((this.treatedStands / this.totalStands) * 100);
