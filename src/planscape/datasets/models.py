@@ -1,3 +1,4 @@
+from typing import Optional
 from django.contrib.auth import get_user_model
 from django.core.validators import URLValidator
 from django.conf import settings
@@ -6,6 +7,7 @@ from django_stubs_ext.db.models import TypedModelMeta
 from treebeard.mp_tree import MP_Node
 
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
+from core.s3 import create_download_url
 from core.schemes import SUPPORTED_SCHEMES
 from organizations.models import Organization
 
@@ -211,6 +213,12 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     # from vectors. to support both formats cleanly, a JSON field, with a custom validator
     # that depends on the type of the datalyer might be appropriate
     metadata = models.JSONField(null=True)
+
+    def get_public_url(self) -> Optional[str]:
+        if not self.url:
+            return None
+        object_name = self.url.replace(f"f3://{settings.S3_BUCKET}/", "")
+        return create_download_url(settings.S3_BUCKET, object_name)
 
     def __str__(self) -> str:
         return f"{self.name} [{self.type}]"
