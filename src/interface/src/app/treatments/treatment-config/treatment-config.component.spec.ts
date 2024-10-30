@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { TreatmentLayoutComponent } from './treatment-layout.component';
+import { TreatmentConfigComponent } from './treatment-config.component';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentsState } from '../treatments.state';
@@ -10,14 +10,14 @@ import { NavBarComponent, SharedModule } from '@shared';
 import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
 
 describe('TreatmentLayoutComponent', () => {
-  let component: TreatmentLayoutComponent;
-  let fixture: ComponentFixture<TreatmentLayoutComponent>;
+  let component: TreatmentConfigComponent;
+  let fixture: ComponentFixture<TreatmentConfigComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
         BrowserAnimationsModule,
-        TreatmentLayoutComponent,
+        TreatmentConfigComponent,
         RouterTestingModule,
         SharedModule,
       ],
@@ -31,7 +31,7 @@ describe('TreatmentLayoutComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(TreatmentLayoutComponent);
+    fixture = TestBed.createComponent(TreatmentConfigComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

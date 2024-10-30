@@ -17,13 +17,14 @@ import {
   TreatmentSummary,
 } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
-import { TreatmentRoutingData } from './treatments-routing.module';
+
 import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
   RemovingStandsError,
   UpdatingStandsError,
 } from './treatment-errors';
+import { TreatmentRoutingData } from './treatments-routing-data';
 
 /**
  * Class that holds data of the current state, and makes it available

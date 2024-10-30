@@ -4,11 +4,11 @@ import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
-import { getMergedRouteData } from '../treatment-layout/treatment-layout.component';
 import { catchError, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { getMergedRouteData } from '../treatments-routing-data';
 
 @Component({
   selector: 'app-direct-impacts',

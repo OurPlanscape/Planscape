@@ -1,7 +1,6 @@
 import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
 import {
   ActivatedRoute,
-  ActivatedRouteSnapshot,
   NavigationEnd,
   Router,
   RouterLink,
@@ -19,9 +18,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { FeaturesModule } from '../../features/features.module';
 import { SharedModule } from '@shared';
-
 import { ButtonComponent } from '@styleguide';
-
 import { MatIconModule } from '@angular/material/icon';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
 import { MatMenuModule } from '@angular/material/menu';
@@ -29,9 +26,9 @@ import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment
 import { ApplyTreatmentComponent } from '../apply-treatment/apply-treatment.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
-import { TreatmentRoutingData } from '../treatments-routing.module';
 import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
+import { getMergedRouteData } from '../treatments-routing-data';
 
 @UntilDestroy()
 @Component({
@@ -60,11 +57,11 @@ import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dia
     TreatedStandsState,
     MapConfigState,
   ],
-  templateUrl: './treatment-layout.component.html',
-  styleUrl: './treatment-layout.component.scss',
+  templateUrl: './treatment-config.component.html',
+  styleUrl: './treatment-config.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class TreatmentLayoutComponent {
+export class TreatmentConfigComponent {
   projectAreaId$ = this.treatmentsState.projectAreaId$;
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
@@ -134,18 +131,4 @@ export class TreatmentLayoutComponent {
       injector: this.injector, // Pass the current injector to the dialog
     });
   }
-}
-
-export function getMergedRouteData(
-  route: ActivatedRouteSnapshot
-): TreatmentRoutingData {
-  const parentData = route.parent?.data || {};
-  const childData = route.firstChild?.data || {};
-  const currentData = route.data || {};
-
-  return {
-    ...parentData,
-    ...childData,
-    ...currentData,
-  } as TreatmentRoutingData;
 }
