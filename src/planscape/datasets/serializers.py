@@ -158,15 +158,22 @@ class ProviderMetadataSerializer(serializers.Serializer):
     """
 
     # example: CECS
-    name = serializers.CharField(required=False)
-    # example: Northern California Regional Resource Kit
-    dataset = serializers.CharField(required=False)
-    # example: https://rrk.sdsc.edu/norcal/p/Northern%20California%20Region%20Metric%20Dictionary18Oct23.pdf#page=33
-    # this is about the datalayer, from the provider
-    reference = serializers.URLField(required=False)
-    # https://wildfiretaskforce.org/northern-california-regional-resource-kit/
-    # this is a where to find the original data
-    original_url = serializers.URLField(required=False)
+    name = serializers.CharField(
+        required=False,
+        help_text="Name of the original provider.",
+    )
+    dataset = serializers.CharField(
+        required=False,
+        help_text="Dataset that the datalayer belongs to, for the original provider.",
+    )
+    reference = serializers.URLField(
+        required=False,
+        help_text="URL where the user can discover more about the data, from the provider.",
+    )
+    original_url = serializers.URLField(
+        required=False,
+        help_text="URL where the original data is located.",
+    )
 
 
 class SourceMetadataSerializer(serializers.Serializer):
