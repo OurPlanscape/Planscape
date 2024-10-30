@@ -167,7 +167,7 @@
       (selectedTabChange)="tabChange($event)">
       <mat-tab label="Active">
         <mat-card-content>
-          <ng-container>
+          <ng-container *ngIf="activeScenarios.length > 0">
             <div class="scenario-list-controls">
               <mat-slide-toggle
                 color="primary"
@@ -192,27 +192,49 @@
               </div>
             </div>
             <app-scenarios-card-list
-              *ngIf="activeScenarios.length > 0"
               [scenarios]="activeScenarios"
               [plan]="plan"
               (viewScenario)="navigateToScenario($event)"
               (triggerRefresh)="fetchScenarios()"></app-scenarios-card-list>
-
-            <div class="empty-state" *ngIf="activeScenarios.length === 0">
-              No active scenarios
-            </div>
           </ng-container>
+          <div class="empty-state" *ngIf="activeScenarios.length === 0">
+            No active scenarios
+          </div>
         </mat-card-content>
       </mat-tab>
       <mat-tab label="Archived">
         <mat-card-content>
-          <app-scenarios-card-list
-            *ngIf="archivedScenarios.length > 0"
-            [scenarios]="archivedScenarios"
-            [plan]="plan"
-            (viewScenario)="
-              navigateToScenario($event)
-            "></app-scenarios-card-list>
+          <ng-container *ngIf="archivedScenarios.length > 0">
+            <div class="scenario-list-controls">
+              <mat-slide-toggle
+                color="primary"
+                class="slide-toggle-my-scenarios"
+                [(ngModel)]="showOnlyMyScenarios"
+                (change)="fetchScenarios()">
+                Show only my scenarios
+              </mat-slide-toggle>
+              <div class="scenario-sort-picker">
+                Sort by:
+                <mat-select
+                  class="sort-select"
+                  [(ngModel)]="sortSelection"
+                  (selectionChange)="handleSortChange()">
+                  <mat-option value="-created_at">
+                    Created date (Newest first)
+                  </mat-option>
+                  <mat-option value="created_at">
+                    Created date (Oldest first)
+                  </mat-option>
+                </mat-select>
+              </div>
+            </div>
+            <app-scenarios-card-list
+              [scenarios]="archivedScenarios"
+              [plan]="plan"
+              (viewScenario)="
+                navigateToScenario($event)
+              "></app-scenarios-card-list>
+          </ng-container>
           <div class="empty-state" *ngIf="archivedScenarios.length === 0">
             No scenarios in Archived.
           </div>
