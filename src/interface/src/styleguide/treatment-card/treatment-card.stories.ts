@@ -38,3 +38,12 @@ export const Running: Story = {
     createdAt: '2024-04-23T13:19:31.019747Z',
   },
 };
+
+export const Failed: Story = {
+  args: {
+    name: 'Treatment plan that failed',
+    status: 'FAILURE',
+    creator: 'John Doe',
+    createdAt: '2024-04-23T13:19:31.019747Z',
+  },
+};

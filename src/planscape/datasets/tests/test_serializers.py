@@ -2,6 +2,7 @@ from django.test import TestCase
 from datasets.serializers import (
     CategorySerializer,
     CategoryEmbbedSerializer,
+    DataLayerMetadataSerializer,
     DatasetSerializer,
     DataLayerSerializer,
     CreateDataLayerSerializer,
@@ -12,6 +13,7 @@ from datasets.tests.factories import (
     DataLayerFactory,
     OrganizationFactory,
 )
+from impacts.models import ImpactVariable, TreatmentPrescriptionAction
 
 
 class CategorySerializerTest(TestCase):
@@ -84,3 +86,51 @@ class DataLayerSerializerTest(TestCase):
         self.assertEqual(data["name"], data_layer.name)
         self.assertEqual(data["organization"], data_layer.organization.id)
         self.assertEqual(data["dataset"], data_layer.dataset.id)
+
+
+class DataLayerMetadataSerializerTest(TestCase):
+    def test_empty_serializer_validates_ok(self):
+        serializer = DataLayerMetadataSerializer(data={})
+        self.assertTrue(serializer.is_valid())
+
+    def test_modules_serializer_validates_ok(self):
+        data = {
+            "modules": {
+                "impacts": {
+                    "baseline": True,
+                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "year": "2024",
+                    "action": None,
+                }
+            }
+        }
+        serializer = DataLayerMetadataSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_modules_serializer_ok_no_baseline(self):
+        data = {
+            "modules": {
+                "impacts": {
+                    "baseline": False,
+                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "year": "2024",
+                    "action": TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                }
+            }
+        }
+        serializer = DataLayerMetadataSerializer(data=data)
+        self.assertTrue(serializer.is_valid())
+
+    def test_modules_serializer_fails(self):
+        data = {
+            "modules": {
+                "impacts": {
+                    "baseline": True,
+                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "year": "2024",
+                    "action": TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                }
+            }
+        }
+        serializer = DataLayerMetadataSerializer(data=data)
+        self.assertFalse(serializer.is_valid())

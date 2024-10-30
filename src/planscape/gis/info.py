@@ -7,8 +7,6 @@ from fiona.errors import DriverError
 from rasterio.transform import from_gcps
 from attr import asdict
 
-from gis.core import is_raster, is_vector
-
 logger = logging.getLogger(__name__)
 
 

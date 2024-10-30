@@ -21,6 +21,7 @@
 
   &.disabled {
     box-shadow: none;
+    cursor: not-allowed;
 
     h4 {
       color: $color-text-gray;
