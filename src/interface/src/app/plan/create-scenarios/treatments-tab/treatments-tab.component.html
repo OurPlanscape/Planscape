@@ -8,7 +8,7 @@
     [status]="treatment.status"
     [createdAt]="treatment.created_at"
     [creator]="treatment.creator_name"
-    (view)="goToTreatment(treatment.id)"
+    (view)="goToTreatment(treatment.id, treatment.status)"
     (delete)="deleteTreatment(treatment)"
     (duplicate)="duplicateTreatment(treatment)"
     *ngFor="let treatment of treatments"></sg-treatment-card>

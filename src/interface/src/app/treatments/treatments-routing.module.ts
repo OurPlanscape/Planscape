@@ -5,6 +5,7 @@ import { NgModule } from '@angular/core';
 import { numberResolver } from '../resolvers/number.resolver';
 import { TreatmentProjectAreaComponent } from './treatment-project-area/treatment-project-area.component';
 import { TreatmentLayoutComponent } from './treatment-layout/treatment-layout.component';
+import { DirectImpactsComponent } from './direct-impacts/direct-impacts.component';
 
 // Possible routing params
 export interface TreatmentRoutingData extends Data {
@@ -47,6 +48,7 @@ const routes: Routes = [
       },
     ],
   },
+  { path: 'impacts', component: DirectImpactsComponent },
 ];
 
 @NgModule({

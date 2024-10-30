@@ -12,7 +12,7 @@ import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import { catchError, combineLatest, map } from 'rxjs';
+import { catchError, combineLatest, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -65,7 +65,6 @@ import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dia
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TreatmentLayoutComponent {
-  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
   projectAreaId$ = this.treatmentsState.projectAreaId$;
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
@@ -78,36 +77,7 @@ export class TreatmentLayoutComponent {
     map(([activeArea, showTreatmentLayer]) => !activeArea && showTreatmentLayer)
   );
 
-  breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
-    map(([projectArea, summary]) => {
-      if (!summary) {
-        return [];
-      }
-      const crumbs = [
-        {
-          name: summary.planning_area_name,
-          path: `/plan/${summary.planning_area_id}`,
-        },
-        {
-          name: summary.scenario_name,
-          path: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
-        },
-        {
-          name: summary.treatment_plan_name,
-          path: projectArea
-            ? `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`
-            : '',
-        },
-      ];
-      if (projectArea) {
-        crumbs.push({
-          name: projectArea.project_area_name,
-          path: '',
-        });
-      }
-      return crumbs;
-    })
-  );
+  breadcrumbs$ = this.treatmentsState.breadcrumbs$;
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -126,7 +96,19 @@ export class TreatmentLayoutComponent {
         const data = getMergedRouteData(this.route.snapshot);
         this.treatmentsState
           .loadTreatmentByRouteData(data)
-          .pipe(this.catchError())
+          .pipe(
+            switchMap((_) => this.treatmentsState.treatmentPlan$),
+            map((plan) => {
+              // if plan is completed redirect to impacts
+              if (plan?.status === 'SUCCESS') {
+                this.router.navigate(['impacts'], { relativeTo: this.route });
+              }
+            }),
+            catchError((error) => {
+              this.router.navigate(['/']);
+              throw error;
+            })
+          )
           .subscribe();
       });
   }
@@ -150,13 +132,6 @@ export class TreatmentLayoutComponent {
   showReviewDialog() {
     this.dialog.open(ReviewTreatmentPlanDialogComponent, {
       injector: this.injector, // Pass the current injector to the dialog
-    });
-  }
-
-  private catchError() {
-    return catchError((error) => {
-      this.router.navigate(['/']);
-      throw error;
     });
   }
 }
