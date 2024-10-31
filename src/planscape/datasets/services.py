@@ -104,7 +104,7 @@ def create_datalayer(
     mimetype: Optional[str] = None,
     **kwargs,
 ) -> Dict[str, Any]:
-    metadata = kwargs.get("metadata", None) or None
+    metadata = kwargs.pop("metadata", None) or None
     uuid = str(uuid4())
     storage_url = get_storage_url(
         organization_id=organization.pk,
