@@ -10,6 +10,7 @@ import {
 } from '@styleguide';
 import { TreatmentPlan, TreatmentSummary } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -27,7 +28,10 @@ import { BehaviorSubject, map } from 'rxjs';
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private treatedStandsState: TreatedStandsState
+  ) {}
 
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   savingStatus$ = new BehaviorSubject<boolean>(false);
@@ -37,24 +41,13 @@ export class TreatmentOverviewComponent {
     map((summary: TreatmentSummary | null) => summary?.project_areas)
   );
 
-  totalTreatedStands$ = this.projectAreas$?.pipe(
-    map((areas) =>
-      areas?.reduce((sum, area) => {
-        const prescriptionSum = area.prescriptions.reduce(
-          (count, p) => count + p.treated_stand_count,
-          0
-        );
-        return sum + prescriptionSum;
-      }, 0)
-    )
-  );
-
   totalStands$ = this.projectAreas$?.pipe(
     map(
       (areas) =>
         areas?.reduce((sum, area) => sum + area.total_stand_count, 0) ?? 0
     )
   );
+  treatedStands$ = this.treatedStandsState.treatedStands$;
 
   handleNameChange(name: string) {
     if (name.length < 1) {
