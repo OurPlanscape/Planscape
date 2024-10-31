@@ -200,7 +200,7 @@ export class PlanStateService {
     this.planState$.next(updatedState);
   }
 
-  async updateStateWithScenario(
+  updateStateWithScenario(
     scenarioId: string | null,
     scenarioName: string | null
   ) {
