@@ -12,6 +12,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
+from datasets.models import DataLayer, DataLayerType
 from impacts.calculator import calculate_delta
 from planning.models import ProjectArea, Scenario
 from stands.models import Stand
@@ -349,13 +350,13 @@ class ImpactVariable(models.TextChoices):
         action: Optional[TreatmentPrescriptionAction],
         year: int,
     ) -> str:
-        treatment_name = (
-            TreatmentPrescriptionAction.get_file_mapping(action)
-            if action
-            else "Baseline"
+        datalayers = DataLayer.objects.filter(type=DataLayerType.RASTER).by_module(
+            "impacts"
         )
-        variable = str(impact_variable).lower()
-        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{treatment_name}_{year}_{variable}_3857_COG.tif"
+        if datalayers.count() <= 0:
+            raise ValueError("We could not find any impacts enabled datalayer.")
+        
+        
 
 
 class TreatmentResultType(models.TextChoices):
