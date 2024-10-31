@@ -178,8 +178,8 @@ export class CreateScenariosComponent implements OnInit {
         }
 
         // Updating breadcrumbs
-        this.scenarioName = scenario?.name;
-        this.scenarioId = scenario?.id;
+        this.scenarioName = scenario.name;
+        this.scenarioId = scenario.id;
         this.planStateService.updateStateWithScenario(
           this.scenarioId,
           this.scenarioName
@@ -253,8 +253,8 @@ export class CreateScenariosComponent implements OnInit {
       )
       .subscribe((newScenario) => {
         // Setting the new scenario id
-        this.scenarioId = newScenario?.id;
-        this.scenarioName = newScenario?.name;
+        this.scenarioId = newScenario.id;
+        this.scenarioName = newScenario.name;
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
