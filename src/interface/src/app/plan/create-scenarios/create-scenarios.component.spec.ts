@@ -113,7 +113,7 @@ describe('CreateScenariosComponent', () => {
       {
         getScenario: fakeGetScenario,
         updateStateWithShapes: undefined,
-        updateStateWithScenario: undefined
+        updateStateWithScenario: undefined,
       },
       {
         planState$: fakePlanState$,
