@@ -40,8 +40,8 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
-  scenarioId?: string | null;
-  scenarioName?: string | null;
+  scenarioId: string | null = null;
+  scenarioName: string | null = null;
   planId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
@@ -178,8 +178,8 @@ export class CreateScenariosComponent implements OnInit {
         }
 
         // Updating breadcrumbs
-        this.scenarioName = scenario?.name || null;
-        this.scenarioId = scenario?.id || null;
+        this.scenarioName = scenario?.name;
+        this.scenarioId = scenario?.id;
         this.planStateService.updateStateWithScenario(
           this.scenarioId,
           this.scenarioName
@@ -222,6 +222,7 @@ export class CreateScenariosComponent implements OnInit {
 
   private formValueToScenario(): Scenario {
     return {
+      id: '',
       name: this.scenarioNameFormField?.value,
       planning_area: this.planId ? this.planId.toString() : '', // nope I should have planID
       status: 'ACTIVE',
@@ -252,8 +253,8 @@ export class CreateScenariosComponent implements OnInit {
       )
       .subscribe((newScenario) => {
         // Setting the new scenario id
-        this.scenarioId = newScenario?.id || null;
-        this.scenarioName = newScenario?.name || null;
+        this.scenarioId = newScenario?.id;
+        this.scenarioName = newScenario?.name;
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
@@ -385,8 +386,8 @@ export class CreateScenariosComponent implements OnInit {
   goToScenario() {
     // Updating breadcrums so when we navigate we can see it
     this.planStateService.updateStateWithScenario(
-      this.scenarioId || null,
-      this.scenarioName || null
+      this.scenarioId,
+      this.scenarioName
     );
     this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
   }

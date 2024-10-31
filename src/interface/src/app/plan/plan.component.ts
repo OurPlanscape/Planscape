@@ -38,7 +38,7 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   scenarioName$ = this.planStateService.planState$.pipe(
     map((state) => {
-      return state.currentScenarioName || null;
+      return state.currentScenarioName;
     })
   );
   breadcrumbs$ = combineLatest([
