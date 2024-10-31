@@ -1,0 +1,16 @@
+<mgl-map
+  *ngIf="mapExtent$ | async; let bounds"
+  (mapLoad)="mapLoaded($event)"
+  [boxZoom]="false"
+  [doubleClickZoom]="true"
+  [dragPan]="true"
+  [dragRotate]="false"
+  [fitBoundsOptions]="{ padding: 20 }"
+  [fitBounds]="bounds"
+  [interactive]="true"
+  [maxZoom]="17"
+  [minZoom]="7"
+  [pitchWithRotate]="false"
+  [style]="(baseLayerUrl$ | async) || ''"
+  [transformRequest]="transformRequest">
+</mgl-map>

@@ -32,6 +32,7 @@
     "@angular/platform-browser-dynamic": "^17.3.1",
     "@angular/router": "^17.3.1",
     "@geoman-io/leaflet-geoman-free": "^2.13.1",
+    "@mapbox/mapbox-gl-sync-move": "^0.3.1",
     "@maplibre/ngx-maplibre-gl": "^17.4.3",
     "@ngneat/until-destroy": "^10.0.0",
     "@turf/area": "^6.5.0",

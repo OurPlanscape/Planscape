@@ -9,11 +9,18 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
+import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
+import { DirectImpactsMapsPanelComponent } from '../direct-impacts-maps-panel/direct-impacts-maps-panel.component';
 
 @Component({
   selector: 'app-direct-impacts',
   standalone: true,
-  imports: [AsyncPipe, SharedModule],
+  imports: [
+    AsyncPipe,
+    SharedModule,
+    DirectImpactsMapComponent,
+    DirectImpactsMapsPanelComponent,
+  ],
   providers: [
     TreatmentsState,
     SelectedStandsState,

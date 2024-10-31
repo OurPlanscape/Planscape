@@ -1,3 +1,5 @@
-<app-nav-bar [breadcrumbs]="(breadcrumbs$ | async) || []" [area]="'TREATMENTS'">
-</app-nav-bar>
-Direct Impact is working
+<app-nav-bar
+  [breadcrumbs]="(breadcrumbs$ | async) || []"
+  [area]="'TREATMENTS'"></app-nav-bar>
+
+<app-direct-impacts-maps-panel></app-direct-impacts-maps-panel>
