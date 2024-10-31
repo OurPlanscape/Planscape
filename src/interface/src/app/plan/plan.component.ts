@@ -7,21 +7,18 @@ import {
 } from '@angular/router';
 import {
   BehaviorSubject,
-  catchError,
   combineLatest,
   concatMap,
   filter,
   map,
   Observable,
-  of,
   Subject,
-  switchMap,
   take,
   takeUntil,
 } from 'rxjs';
 
 import { Plan, User } from '@types';
-import { AuthService, PlanStateService, ScenarioService } from '@services';
+import { AuthService, PlanStateService } from '@services';
 import { Breadcrumb } from '@shared';
 import { getPlanPath } from './plan-helpers';
 
@@ -40,21 +37,15 @@ export class PlanComponent implements OnInit, OnDestroy {
   );
 
   scenario$ = this.planStateService.planState$.pipe(
-    switchMap((state) => {
-      if (state.currentScenarioId) {
-        return this.scenarioService.getScenario(state.currentScenarioId);
-      }
-      return of(null);
-    }),
-    catchError((e) => {
-      return of(undefined);
+    map((state) => {
+      return state.currentScenarioName || null;
     })
   );
   breadcrumbs$ = combineLatest([
     this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
     this.scenario$,
   ]).pipe(
-    map(([plan, scenario]) => {
+    map(([plan, scenarioName]) => {
       const path = this.getPathFromSnapshot();
       const scenarioId = this.route.children[0]?.snapshot.params['id'];
 
@@ -64,16 +55,17 @@ export class PlanComponent implements OnInit, OnDestroy {
           path: path === 'config' ? getPlanPath(plan.id) : undefined,
         },
       ];
-      if (scenario === undefined) {
-        return crumbs;
+
+      // If we dont check for scenarioId we will see for a second New Scenario and then the scenario name
+      if(path === 'config' && !scenarioId && !scenarioName) {
+        crumbs.push({name: 'New Scenario'})
       }
-      if (path === 'config' && !scenarioId) {
-        crumbs.push({ name: 'New Scenario' });
+
+      if(scenarioName) {
+        crumbs.push({ name: scenarioName || '' });
       }
-      if (scenario) {
-        crumbs.push({ name: scenario.name || '' });
-      }
-      return crumbs;
+
+      return crumbs
     })
   );
 
@@ -87,7 +79,6 @@ export class PlanComponent implements OnInit, OnDestroy {
     private planStateService: PlanStateService,
     private route: ActivatedRoute,
     private router: Router,
-    private scenarioService: ScenarioService
   ) {
     // TODO: Move everything in the constructor to ngOnInit
 
@@ -151,12 +142,13 @@ export class PlanComponent implements OnInit, OnDestroy {
     const routeChild = this.route.snapshot.firstChild;
     const path = routeChild?.url[0].path;
     const id = routeChild?.paramMap.get('id') ?? null;
-
+    
     if (path === 'config') {
-      this.planStateService.updateStateWithScenario(id);
+      const name = this.planStateService.planState$.value.currentScenarioName;
+      this.planStateService.updateStateWithScenario(id, name);
       this.planStateService.updateStateWithShapes(null);
     } else {
-      this.planStateService.updateStateWithScenario(null);
+      this.planStateService.updateStateWithScenario(null, null);
       this.planStateService.updateStateWithShapes(null);
     }
   }

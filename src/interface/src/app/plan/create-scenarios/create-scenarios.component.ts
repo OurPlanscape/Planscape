@@ -41,6 +41,7 @@ export class CreateScenariosComponent implements OnInit {
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
   scenarioId?: string | null;
+  scenarioName?: string | null;
   planId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
@@ -176,6 +177,9 @@ export class CreateScenariosComponent implements OnInit {
           return;
         }
 
+        // Updating breadcrumbs
+        this.planStateService.updateStateWithScenario(scenario.id || null, scenario.name || null)
+
         this.disableForms();
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
@@ -244,6 +248,7 @@ export class CreateScenariosComponent implements OnInit {
       .subscribe((newScenario) => {
         // Setting the new scenario id
         this.scenarioId = newScenario.id;
+        this.scenarioName = newScenario.name
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
@@ -373,6 +378,11 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   goToScenario() {
+    // Updating breadcrums so when we navigate we can see it
+    this.planStateService.updateStateWithScenario(
+      this.scenarioId || null,
+      this.scenarioName || null
+    );
     this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
   }
 }
