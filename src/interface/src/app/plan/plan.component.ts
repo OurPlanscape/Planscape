@@ -56,7 +56,6 @@ export class PlanComponent implements OnInit, OnDestroy {
         },
       ];
 
-      // If we dont check for scenarioId we will see for a second New Scenario and then the scenario name
       if (path === 'config' && !scenarioId && !scenarioName) {
         crumbs.push({ name: 'New Scenario' });
       }
