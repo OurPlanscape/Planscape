@@ -10,7 +10,8 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentStandsProgressBarComponent } from '@styleguide';
-import { combineLatest, map } from 'rxjs';
+import { Prescription, TreatmentProjectArea } from '@types';
+import { combineLatest, map, Observable, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-treatment-project-area',
@@ -37,33 +38,34 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   ) {}
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
+  summary$ = this.treatmentsState.summary$;
   projectAreaId$ = this.treatmentsState.projectAreaId$;
 
-  treatedStands$ = combineLatest([
-    this.treatmentsState.summary$,
-    this.treatmentsState.projectAreaId$,
-  ]).pipe(
-    map(([summaryData, projectId]) => {
-      const projectArea = summaryData?.project_areas?.find(
-        (project) => project.project_area_id === projectId
-      );
-      return projectArea?.prescriptions?.reduce(
-        (total, prescription) => total + prescription.treated_stand_count,
-        0
-      );
-    })
+  activeProjectArea$: Observable<TreatmentProjectArea | undefined> =
+    combineLatest([
+      this.summary$,
+      this.projectAreaId$.pipe(distinctUntilChanged()),
+    ]).pipe(
+      map(([summary, projectAreaId]) => {
+        return summary?.project_areas.find(
+          (p) => p.project_area_id === projectAreaId
+        );
+      })
+    );
+
+  treatedStands$ = this.activeProjectArea$?.pipe(
+    map(
+      (area) =>
+        area?.prescriptions?.reduce(
+          (total: number, prescription: Prescription) =>
+            total + prescription.treated_stand_count,
+          0
+        ) ?? 0
+    )
   );
 
-  totalStands$ = combineLatest([
-    this.treatmentsState.summary$,
-    this.treatmentsState.projectAreaId$,
-  ]).pipe(
-    map(
-      ([summaryData, projectId]) =>
-        summaryData?.project_areas?.find(
-          (project) => project.project_area_id === projectId
-        )?.total_stand_count
-    )
+  totalStands$ = this.activeProjectArea$?.pipe(
+    map((area) => area?.total_stand_count ?? 0)
   );
 
   changeValue(num: number) {
