@@ -36,14 +36,14 @@ export class PlanComponent implements OnInit, OnDestroy {
     map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
   );
 
-  scenario$ = this.planStateService.planState$.pipe(
+  scenarioName$ = this.planStateService.planState$.pipe(
     map((state) => {
       return state.currentScenarioName || null;
     })
   );
   breadcrumbs$ = combineLatest([
     this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
-    this.scenario$,
+    this.scenarioName$,
   ]).pipe(
     map(([plan, scenarioName]) => {
       const path = this.getPathFromSnapshot();
@@ -57,15 +57,15 @@ export class PlanComponent implements OnInit, OnDestroy {
       ];
 
       // If we dont check for scenarioId we will see for a second New Scenario and then the scenario name
-      if(path === 'config' && !scenarioId && !scenarioName) {
-        crumbs.push({name: 'New Scenario'})
+      if (path === 'config' && !scenarioId && !scenarioName) {
+        crumbs.push({ name: 'New Scenario' });
       }
 
-      if(scenarioName) {
+      if (scenarioName) {
         crumbs.push({ name: scenarioName || '' });
       }
 
-      return crumbs
+      return crumbs;
     })
   );
 
@@ -78,7 +78,7 @@ export class PlanComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private planStateService: PlanStateService,
     private route: ActivatedRoute,
-    private router: Router,
+    private router: Router
   ) {
     // TODO: Move everything in the constructor to ngOnInit
 
@@ -142,7 +142,7 @@ export class PlanComponent implements OnInit, OnDestroy {
     const routeChild = this.route.snapshot.firstChild;
     const path = routeChild?.url[0].path;
     const id = routeChild?.paramMap.get('id') ?? null;
-    
+
     if (path === 'config') {
       const name = this.planStateService.planState$.value.currentScenarioName;
       this.planStateService.updateStateWithScenario(id, name);
