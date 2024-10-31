@@ -68,6 +68,6 @@ export const LongNameAndLotsOfIcons: Story = {
     props: args,
     template: `<sg-panel  ${argsToTemplate(args)}>
 <div panelTitle>This Panel a very long name that might take more space than whats available, without wrapping</div>
- Just the content, no title.</sg-panel>`,
+ This is the content of the panel.</sg-panel>`,
   }),
 };
