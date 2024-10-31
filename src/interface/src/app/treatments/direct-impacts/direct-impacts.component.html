@@ -2,4 +2,23 @@
   [breadcrumbs]="(breadcrumbs$ | async) || []"
   [area]="'TREATMENTS'"></app-nav-bar>
 
-<app-direct-impacts-maps-panel></app-direct-impacts-maps-panel>
+<section class="direct-impacts">
+  <sg-panel>
+    <div panelTitle>Chart 1</div>
+    [chart]
+  </sg-panel>
+  <sg-panel>
+    <div panelTitle>Chart 2</div>
+    [chart]
+  </sg-panel>
+  <sg-panel
+    class="map-panel"
+    [paddedContent]="false"
+    [buttons]="[
+      { icon: 'layers', actionName: 'layers' },
+      { icon: 'expand', actionName: 'expand' }
+    ]">
+    <div panelTitle>Total Carbon for All Project Areas</div>
+    <app-direct-impacts-maps-panel></app-direct-impacts-maps-panel>
+  </sg-panel>
+</section>

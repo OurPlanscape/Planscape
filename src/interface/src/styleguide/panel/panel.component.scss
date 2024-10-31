@@ -7,6 +7,7 @@
   border: 1px solid $color-soft-gray;
   background: $color-white;
   box-shadow: 0 6px 6px 0 rgba(0, 0, 0, 0.20);
+  box-sizing: border-box;
 
   ::ng-deep *[panelTitle] {
     white-space: nowrap;
@@ -17,9 +18,12 @@
 }
 
 .title-row:not(:empty) {
+  @include h5();
+  box-sizing: border-box;
+  height: 60px;
   display: flex;
   align-items: center;
-  @include h5();
+
   padding: 14px 16px 14px 24px;
   border-bottom: 1px solid $color-soft-gray;
 
@@ -36,6 +40,7 @@
   align-items: center;
   gap: 16px;
 }
+
 
 .padded {
   padding: 14px 16px 14px 24px;

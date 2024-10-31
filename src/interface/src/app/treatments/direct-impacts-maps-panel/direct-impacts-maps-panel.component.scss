@@ -1,11 +1,13 @@
-:host {
-  display: flex;
-  flex-wrap: wrap;
-  width: 100%;
-  height: 600px;
-}
+@import "colors";
 
-app-direct-impacts-map {
-  width: 50%;
-  height: 50%;
+$panel-height: 1000px;
+
+:host {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 1px;
+  height: $panel-height;
+  width: 100%;
+  background-color: $color-soft-gray;
 }

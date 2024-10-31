@@ -1,4 +1,5 @@
 <mgl-map
+  [attributionControl]="false"
   *ngIf="mapExtent$ | async; let bounds"
   (mapLoad)="mapLoaded($event)"
   [boxZoom]="false"
@@ -13,4 +14,7 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
+  <mgl-control position="bottom-left">
+    <div class="label">{{ label }}</div>
+  </mgl-control>
 </mgl-map>

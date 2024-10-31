@@ -11,6 +11,7 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsMapsPanelComponent } from '../direct-impacts-maps-panel/direct-impacts-maps-panel.component';
+import { PanelComponent } from '../../../styleguide/panel/panel.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -20,6 +21,7 @@ import { DirectImpactsMapsPanelComponent } from '../direct-impacts-maps-panel/di
     SharedModule,
     DirectImpactsMapComponent,
     DirectImpactsMapsPanelComponent,
+    PanelComponent,
   ],
   providers: [
     TreatmentsState,

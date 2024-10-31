@@ -1,6 +1,6 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { MapComponent } from '@maplibre/ngx-maplibre-gl';
+import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
@@ -22,6 +22,7 @@ import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
     MapStandsComponent,
     MapTooltipComponent,
     NgIf,
+    ControlComponent,
   ],
   templateUrl: './direct-impacts-map.component.html',
   styleUrl: './direct-impacts-map.component.scss',
@@ -32,7 +33,9 @@ export class DirectImpactsMapComponent {
     private authService: AuthService
   ) {}
 
-  @Output() mapCreated = new EventEmitter<MapLibreMap>();
+  @Input() label = '';
+  @Output()
+  mapCreated = new EventEmitter<MapLibreMap>();
 
   /**
    * Observable that provides the url to load the selected map base layer
