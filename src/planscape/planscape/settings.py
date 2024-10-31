@@ -443,3 +443,5 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
 os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
 
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
+
+MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")

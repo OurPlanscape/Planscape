@@ -127,6 +127,11 @@ class GeometryType(models.TextChoices):
     MULTIPOLYGON = "MULTIPOLYGON", "MultiPolygon"
 
 
+class DataLayerManager(models.Manager):
+    def by_module(self, module: str) -> "QuerySet[DataLayer]":
+        return self.get_queryset().filter(metadata__modules__has_key=module)
+
+
 class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
@@ -213,6 +218,8 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     # from vectors. to support both formats cleanly, a JSON field, with a custom validator
     # that depends on the type of the datalyer might be appropriate
     metadata = models.JSONField(null=True)
+
+    objects: "Manager[DataLayer]" = DataLayerManager()
 
     def get_public_url(self) -> Optional[str]:
         if not self.url:
