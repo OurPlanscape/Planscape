@@ -61,7 +61,7 @@ export class PlanComponent implements OnInit, OnDestroy {
       }
 
       if (scenarioName) {
-        crumbs.push({ name: scenarioName || '' });
+        crumbs.push({ name: scenarioName });
       }
 
       return crumbs;
