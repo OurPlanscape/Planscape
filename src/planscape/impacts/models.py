@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Tuple, Type
+from typing import List, Optional, Tuple, Type, Union
 
 from core.models import (
     AliveObjectsManager,
@@ -14,6 +14,7 @@ from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from datasets.models import DataLayer, DataLayerType
 from impacts.calculator import calculate_delta
+from organizations.models import Organization
 from planning.models import ProjectArea, Scenario
 from stands.models import Stand
 from typing_extensions import Self
@@ -339,9 +340,37 @@ class ImpactVariable(models.TextChoices):
         return list([x.lower() for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
-    def get_baseline_raster_path(cls, impact_variable: Self, year: int) -> str:
-        name = f"Baseline_{year}_{impact_variable.lower()}_3857_COG.tif"
-        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{name}"
+    def _get_datalayer(
+        cls,
+        impact_variable: Self,
+        year: int,
+        action: Optional[TreatmentPrescriptionAction],
+    ) -> DataLayer:
+        baseline = action is None
+        query = {
+            "modules": {
+                "impacts": {
+                    "year": year,
+                    "baseline": baseline,
+                    "variable": str(impact_variable),
+                    "action": action,
+                }
+            }
+        }
+        return DataLayer.objects.get(
+            type=DataLayerType.RASTER,
+            metadata__contains=query,
+        )
+
+    @classmethod
+    def get_baseline_raster_path(
+        cls, impact_variable: Self, year: int
+    ) -> Optional[str]:
+        return cls._get_datalayer(
+            impact_variable=impact_variable,
+            year=year,
+            action=None,
+        ).url
 
     @classmethod
     def get_impact_raster_path(
@@ -349,14 +378,12 @@ class ImpactVariable(models.TextChoices):
         impact_variable: Self,
         action: Optional[TreatmentPrescriptionAction],
         year: int,
-    ) -> str:
-        datalayers = DataLayer.objects.filter(type=DataLayerType.RASTER).by_module(
-            "impacts"
-        )
-        if datalayers.count() <= 0:
-            raise ValueError("We could not find any impacts enabled datalayer.")
-        
-        
+    ) -> Optional[str]:
+        return cls._get_datalayer(
+            impact_variable=impact_variable,
+            year=year,
+            action=action,
+        ).url
 
 
 class TreatmentResultType(models.TextChoices):
