@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from core.pprint import pprint
 from typing import Any, Dict, Optional
@@ -28,6 +29,7 @@ class Command(PlanscapeCommand):
             required=True,
             type=str,
         )
+        create_parser.add_argument("--metadata", required=False, type=json.loads)
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
 
@@ -70,12 +72,14 @@ class Command(PlanscapeCommand):
         headers = self.get_headers(**kwargs)
         mimetype = kwargs.get("mimetype")
         original_name = kwargs.get("original_name")
+        metadata = kwargs.get("metadata", {}) or {}
         input_data = {
             "organization": org,
             "name": name,
             "dataset": dataset,
             "type": layer_type,
             "info": layer_info,
+            "metadata": metadata,
             "original_name": original_name,
             "mimetype": mimetype,
             "geometry_type": geometry_type,
