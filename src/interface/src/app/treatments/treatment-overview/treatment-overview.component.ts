@@ -37,28 +37,24 @@ export class TreatmentOverviewComponent {
     map((summary: TreatmentSummary | null) => summary?.project_areas)
   );
 
-  totalTreatedStands() {
-    return this.projectAreas$?.pipe(
-      map((areas) =>
-        areas?.reduce((sum, area) => {
-          const prescriptionSum = area.prescriptions.reduce(
-            (count, p) => count + p.treated_stand_count,
-            0
-          );
-          return sum + prescriptionSum;
-        }, 0)
-      )
-    );
-  }
+  totalTreatedStands$ = this.projectAreas$?.pipe(
+    map((areas) =>
+      areas?.reduce((sum, area) => {
+        const prescriptionSum = area.prescriptions.reduce(
+          (count, p) => count + p.treated_stand_count,
+          0
+        );
+        return sum + prescriptionSum;
+      }, 0)
+    )
+  );
 
-  totalStands() {
-    return this.projectAreas$?.pipe(
-      map(
-        (areas) =>
-          areas?.reduce((sum, area) => sum + area.total_stand_count, 0) ?? 0
-      )
-    );
-  }
+  totalStands$ = this.projectAreas$?.pipe(
+    map(
+      (areas) =>
+        areas?.reduce((sum, area) => sum + area.total_stand_count, 0) ?? 0
+    )
+  );
 
   handleNameChange(name: string) {
     if (name.length < 1) {

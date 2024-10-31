@@ -39,36 +39,32 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   opacity = this.mapConfigState.treatedStandsOpacity$;
   projectAreaId$ = this.treatmentsState.projectAreaId$;
 
-  treatedStands() {
-    return combineLatest([
-      this.treatmentsState.summary$,
-      this.treatmentsState.projectAreaId$,
-    ]).pipe(
-      map(([summaryData, projectId]) => {
-        const projectArea = summaryData?.project_areas?.find(
-          (project) => project.project_area_id === projectId
-        );
-        return projectArea?.prescriptions?.reduce(
-          (total, prescription) => total + prescription.treated_stand_count,
-          0
-        );
-      })
-    );
-  }
+  treatedStands$ = combineLatest([
+    this.treatmentsState.summary$,
+    this.treatmentsState.projectAreaId$,
+  ]).pipe(
+    map(([summaryData, projectId]) => {
+      const projectArea = summaryData?.project_areas?.find(
+        (project) => project.project_area_id === projectId
+      );
+      return projectArea?.prescriptions?.reduce(
+        (total, prescription) => total + prescription.treated_stand_count,
+        0
+      );
+    })
+  );
 
-  totalStands() {
-    return combineLatest([
-      this.treatmentsState.summary$,
-      this.treatmentsState.projectAreaId$,
-    ]).pipe(
-      map(
-        ([summaryData, projectId]) =>
-          summaryData?.project_areas?.find(
-            (project) => project.project_area_id === projectId
-          )?.total_stand_count
-      )
-    );
-  }
+  totalStands$ = combineLatest([
+    this.treatmentsState.summary$,
+    this.treatmentsState.projectAreaId$,
+  ]).pipe(
+    map(
+      ([summaryData, projectId]) =>
+        summaryData?.project_areas?.find(
+          (project) => project.project_area_id === projectId
+        )?.total_stand_count
+    )
+  );
 
   changeValue(num: number) {
     this.mapConfigState.setTreatedStandsOpacity(num);
