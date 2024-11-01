@@ -152,6 +152,10 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
+    this.planStateService.updateStateWithScenario(
+      clickedScenario.id,
+      clickedScenario.name
+    );
     this.router.navigate(['config', clickedScenario.id], {
       relativeTo: this.route,
     });
