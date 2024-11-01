@@ -2,17 +2,16 @@ import { Component } from '@angular/core';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { syncMaps } from '../maplibre.helper';
-import { PanelComponent } from '../../../styleguide/panel/panel.component';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 
 @Component({
-  selector: 'app-direct-impacts-maps-panel',
+  selector: 'app-direct-impacts-synced-maps',
   standalone: true,
-  imports: [DirectImpactsMapComponent, PanelComponent, ControlComponent],
-  templateUrl: './direct-impacts-maps-panel.component.html',
-  styleUrl: './direct-impacts-maps-panel.component.scss',
+  imports: [DirectImpactsMapComponent, ControlComponent],
+  templateUrl: './direct-impacts-synced-maps.component.html',
+  styleUrl: './direct-impacts-synced-maps.component.scss',
 })
-export class DirectImpactsMapsPanelComponent {
+export class DirectImpactsSyncedMapsComponent {
   private maps: MapLibreMap[] = [];
 
   buttons = [

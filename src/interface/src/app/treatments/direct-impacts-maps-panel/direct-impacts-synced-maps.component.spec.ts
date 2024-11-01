@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DirectImpactsMapsPanelComponent } from './direct-impacts-maps-panel.component';
+import { DirectImpactsSyncedMapsComponent } from './direct-impacts-synced-maps.component';
 import { MockDeclarations } from 'ng-mocks';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 
 describe('DirectImpactsMapsPanelComponent', () => {
-  let component: DirectImpactsMapsPanelComponent;
-  let fixture: ComponentFixture<DirectImpactsMapsPanelComponent>;
+  let component: DirectImpactsSyncedMapsComponent;
+  let fixture: ComponentFixture<DirectImpactsSyncedMapsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DirectImpactsMapsPanelComponent],
+      imports: [DirectImpactsSyncedMapsComponent],
       declarations: [MockDeclarations(DirectImpactsMapComponent)],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DirectImpactsMapsPanelComponent);
+    fixture = TestBed.createComponent(DirectImpactsSyncedMapsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
