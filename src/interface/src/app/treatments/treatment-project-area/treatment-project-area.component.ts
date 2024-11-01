@@ -44,7 +44,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   activeProjectArea$: Observable<TreatmentProjectArea | undefined> =
     combineLatest([
       this.summary$,
-      this.projectAreaId$.pipe(distinctUntilChanged()),
+      this.projectAreaId$?.pipe(distinctUntilChanged()),
     ]).pipe(
       map(([summary, projectAreaId]) => {
         return summary?.project_areas.find(
