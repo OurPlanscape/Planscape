@@ -1,4 +1,4 @@
-import { Map as MapLibreMap, Point } from 'maplibre-gl';
+import { Map as MapLibreMap, Point, ResourceType } from 'maplibre-gl';
 
 export function getBoundingBox(
   startPoint: Point,
@@ -10,6 +10,22 @@ export function getBoundingBox(
     [Math.min(start[0], end[0]), Math.min(start[1], end[1])],
     [Math.max(start[0], end[0]), Math.max(start[1], end[1])],
   ];
+}
+
+export function addAuthHeaders(
+  url: string,
+  resourceType: ResourceType | undefined,
+  cookie: string
+) {
+  if (resourceType === 'Tile' && url.includes('planscape.org')) {
+    return {
+      url: url, // Keep the URL unchanged
+      headers: {
+        Authorization: 'Bearer ' + cookie,
+      },
+    };
+  }
+  return { url }; // Return unchanged if not applying headers
 }
 
 /**

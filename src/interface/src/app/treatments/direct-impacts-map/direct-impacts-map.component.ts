@@ -9,6 +9,7 @@ import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
+import { addAuthHeaders } from '../maplibre.helper';
 
 @Component({
   selector: 'app-direct-impacts-map',
@@ -56,16 +57,6 @@ export class DirectImpactsMapComponent {
     this.mapCreated.emit(this.mapLibreMap);
   }
 
-  transformRequest: RequestTransformFunction = (url, resourceType) => {
-    // add auth cookie to our tiles requests
-    if (resourceType === 'Tile' && url.includes('planscape.org')) {
-      return {
-        url: url, // Keep the URL unchanged
-        headers: {
-          Authorization: 'Bearer ' + this.authService.getAuthCookie(),
-        },
-      };
-    }
-    return { url }; // Return unchanged if not applying headers
-  };
+  transformRequest: RequestTransformFunction = (url, resourceType) =>
+    addAuthHeaders(url, resourceType, this.authService.getAuthCookie());
 }

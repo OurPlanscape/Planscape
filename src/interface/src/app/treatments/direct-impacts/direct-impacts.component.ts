@@ -10,7 +10,7 @@ import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
-import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-maps-panel/direct-impacts-synced-maps.component';
+import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
 import { PanelComponent } from '@styleguide';
 
 @Component({
