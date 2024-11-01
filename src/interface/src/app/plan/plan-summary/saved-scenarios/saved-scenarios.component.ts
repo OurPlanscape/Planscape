@@ -140,8 +140,11 @@ export class SavedScenariosComponent implements OnInit {
 
   viewScenario(): void {
     // Updating planstate with the selected scenario name and ID
-    if(this.highlightedScenarioRow) {
-      this.planStateService.updateStateWithScenario(this.highlightedScenarioRow.id, this.highlightedScenarioRow.name)
+    if (this.highlightedScenarioRow) {
+      this.planStateService.updateStateWithScenario(
+        this.highlightedScenarioRow.id,
+        this.highlightedScenarioRow.name
+      );
     }
     this.router.navigate(['config', this.highlightedScenarioRow?.id], {
       relativeTo: this.route,
