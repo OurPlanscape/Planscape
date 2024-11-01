@@ -37,12 +37,20 @@ class CreateTreatmentPlanSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPlanSerializer(serializers.ModelSerializer):
+    creator_name = serializers.SerializerMethodField(
+        help_text="Name of the Creator of the Treatment Plan."
+    )
+
+    def get_creator_name(self, instance):
+        return instance.created_by.get_full_name()
+
     class Meta:
         model = TreatmentPlan
         fields = (
             "id",
             "created_at",
             "created_by",
+            "creator_name",
             "updated_at",
             "scenario",
             "name",
