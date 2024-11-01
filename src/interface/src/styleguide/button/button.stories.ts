@@ -80,3 +80,17 @@ export const Outline: Story = {
     content: 'A button with outline icon',
   },
 };
+
+export const Icon: Story = {
+  args: {
+    variant: 'icon-only',
+    icon: 'explore',
+    outlined: true,
+  },
+  render: ({ content, ...args }) => ({
+    props: args,
+    template: `<button sg-button ${argsToTemplate(args)}></button>
+<button sg-button ${argsToTemplate(args)} disabled></button>
+<button sg-button ${argsToTemplate(args)} [hasError]='true'></button>`,
+  }),
+};
