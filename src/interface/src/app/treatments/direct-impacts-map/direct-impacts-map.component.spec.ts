@@ -13,7 +13,7 @@ describe('DirectImpactsMapComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DirectImpactsMapComponent],
-      providers: [MockProviders(MapConfigState, AuthServ ice)],
+      providers: [MockProviders(MapConfigState, AuthService)],
       declarations: [MockDeclarations(MapComponent)],
     }).compileComponents();
 

@@ -3,14 +3,6 @@
   [area]="'TREATMENTS'"></app-nav-bar>
 
 <section class="direct-impacts">
-  <sg-panel>
-    <div panelTitle>Chart 1</div>
-    [chart]
-  </sg-panel>
-  <sg-panel>
-    <div panelTitle>Chart 2</div>
-    [chart]
-  </sg-panel>
   <sg-panel
     class="map-panel"
     [paddedContent]="false"
@@ -20,5 +12,13 @@
     ]">
     <div panelTitle>Total Carbon for All Project Areas</div>
     <app-direct-impacts-maps-panel></app-direct-impacts-maps-panel>
+  </sg-panel>
+  <sg-panel>
+    <div panelTitle>Chart 1</div>
+    [chart]
+  </sg-panel>
+  <sg-panel>
+    <div panelTitle>Chart 2</div>
+    [chart]
   </sg-panel>
 </section>

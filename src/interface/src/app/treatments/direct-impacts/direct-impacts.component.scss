@@ -1,8 +1,15 @@
+@import "media";
+
 .direct-impacts {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
   padding: 16px 0;
+
+  @include on-small() {
+    display: flex;
+    flex-direction: column;
+  }
 
   sg-panel {
     grid-column: 1;
