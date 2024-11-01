@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
-import { TreatmentSummary } from '@types';
+import { TreatmentSummary, Prescription } from '@types';
 import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
 import { map } from 'rxjs';
@@ -42,28 +42,33 @@ export class ProjectAreasTabComponent {
     private route: ActivatedRoute
   ) {}
 
+  prescriptionsHaveMatch(prescriptions: Prescription[]) {
+    return prescriptions.some((rx) => {
+      return (
+        (rx.type === 'SINGLE' &&
+          PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction]
+            .toLowerCase()
+            .includes(this.searchString)) ||
+        (rx.type === 'SEQUENCE' &&
+          PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction].name
+            .toLowerCase()
+            .includes(this.searchString))
+      );
+    });
+  }
+
   doSearch(searchString: string) {
     this.searchString = searchString;
     if (this.searchString === '') {
       this.filteredProjectAreas$ = this.projectAreas$;
     } else {
       this.filteredProjectAreas$ = this.projectAreas$.pipe(
+        // this checks values of title, as well as the names of various treatments
         map((projectArea) =>
           projectArea?.filter(
             (p) =>
               p.project_area_name.toLowerCase().includes(this.searchString) ||
-              p.prescriptions?.filter((rx) => {
-                (rx.type === 'SINGLE' &&
-                  PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction]
-                    .toLowerCase()
-                    .includes(this.searchString)) ||
-                  (rx.type === 'SEQUENCE' &&
-                    PRESCRIPTIONS.SEQUENCE[
-                      rx.action as PrescriptionSequenceAction
-                    ].name
-                      .toLowerCase()
-                      .includes(this.searchString));
-              })
+              this.prescriptionsHaveMatch(p.prescriptions)
           )
         )
       );
