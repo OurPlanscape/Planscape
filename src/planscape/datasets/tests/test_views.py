@@ -53,6 +53,7 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
             "name": "my dataset",
             "dataset": self.dataset.pk,
             "organization": self.dataset.organization.pk,
+            "original_name": "foo",
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 201)
@@ -96,6 +97,7 @@ class TestAdminDatasetViewSet(APITransactionTestCase):
             "name": "my dataset",
             "visibility": "PUBLIC",
             "organization": self.org.pk,
+            "original_name": "foo.tif",
         }
         response = self.client.post(url, data=data, format="json")
         self.assertEqual(response.status_code, 201)

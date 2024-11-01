@@ -15,6 +15,8 @@
   gap: 24px;
   justify-content: flex-end;
   flex-wrap: wrap;
+  height: 24px;
+  padding: 8px 0;
 }
 
 .scenario-sort-picker {
@@ -143,11 +145,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 24px 0;
+  padding: 24px 0 10px 0;
   position: sticky;
-  top: 0;
+  top: -12px;
   background: $color-white;
   z-index: 11;
+  height: 40px;
 
   h4 {
     margin: 0 auto 0 0;

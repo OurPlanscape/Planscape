@@ -1,15 +1,12 @@
 import json
 from pathlib import Path
-from pprint import pprint
+from core.pprint import pprint
 from typing import Any, Dict, Optional
 from django.core.management.base import CommandParser
 import requests
 from core.base_commands import PlanscapeCommand
-from core.s3 import upload_file
-from datasets.models import DataLayerType
+from core.s3 import is_s3_file, upload_file
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
-from gis.info import info_raster, info_vector
-from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape
 
@@ -32,6 +29,7 @@ class Command(PlanscapeCommand):
             required=True,
             type=str,
         )
+        create_parser.add_argument("--metadata", required=False, type=json.loads)
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
 
@@ -74,12 +72,14 @@ class Command(PlanscapeCommand):
         headers = self.get_headers(**kwargs)
         mimetype = kwargs.get("mimetype")
         original_name = kwargs.get("original_name")
+        metadata = kwargs.get("metadata", {}) or {}
         input_data = {
             "organization": org,
             "name": name,
             "dataset": dataset,
             "type": layer_type,
             "info": layer_info,
+            "metadata": metadata,
             "original_name": original_name,
             "mimetype": mimetype,
             "geometry_type": geometry_type,
@@ -99,13 +99,19 @@ class Command(PlanscapeCommand):
         input_file: str,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
+        s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
         layer_type = fetch_datalayer_type(input_file=input_file)
-        rasters = to_planscape(input_file=input_file)
+        rasters = to_planscape(
+            input_file=input_file,
+        )
         layer_info = get_layer_info(input_file=rasters[0])
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         mimetype = detect_mimetype(input_file=input_file)
-        original_name = original_file_path.name
+        if s3_file:
+            original_name = input_file
+        else:
+            original_name = original_file_path.name
         # updated info
         output_data = self._create_datalayer_request(
             name=name,
@@ -121,10 +127,11 @@ class Command(PlanscapeCommand):
         if not output_data:
             raise ValueError("request failed.")
         datalayer = output_data.get("datalayer")
-        upload_to = output_data.get("upload_to")
-        self._upload_file(
-            rasters,
-            datalayer=datalayer,
-            upload_to=upload_to,
-        )
+        upload_to = output_data.get("upload_to", {}) or {}
+        if len(upload_to.keys()) > 0:
+            self._upload_file(
+                rasters,
+                datalayer=datalayer,
+                upload_to=upload_to,
+            )
         return output_data

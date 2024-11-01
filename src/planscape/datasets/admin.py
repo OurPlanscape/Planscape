@@ -31,7 +31,12 @@ class DatasetAdmin(admin.ModelAdmin):
 
 
 class DataLayerAdmin(admin.ModelAdmin):
+    @admin.display(description="Public URL")
+    def public_url(self, instance):
+        return instance.get_public_url()
+
     form = DataLayerAdminForm
+
     search_fields = [
         "organization__name__icontains",
         "dataset__name__icontains",
@@ -56,6 +61,9 @@ class DataLayerAdmin(admin.ModelAdmin):
         "type",
         "geometry_type",
     )
+    readonly_fields = [
+        "public_url",
+    ]
 
 
 admin.site.register(Dataset, DatasetAdmin)

@@ -18,7 +18,7 @@ library("tidyr")
 library("friendlyeval")
 library("uuid")
 
-readRenviron("planscape/.env")
+readRenviron("../../.env")
 
 options <- list(
   make_option(

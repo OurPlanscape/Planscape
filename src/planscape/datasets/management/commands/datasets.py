@@ -1,4 +1,4 @@
-from pprint import pprint
+from core.pprint import pprint
 from typing import Optional
 from django.core.management.base import CommandParser
 import requests

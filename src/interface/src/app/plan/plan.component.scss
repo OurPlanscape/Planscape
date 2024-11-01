@@ -8,9 +8,11 @@
   height: calc(100% - $navbar-height);
   width: 100%;
 
-  @include on-small() {
-    height: initial;
-    flex-direction: column-reverse;
+  &.overview {
+    @include on-small() {
+      height: initial;
+      flex-direction: column-reverse;
+    }
   }
 }
 
@@ -68,6 +70,8 @@
   width: 45%;
   min-width: 450px;
   max-width: 800px;
+  display: flex;
+  flex-direction: column;
 }
 
 .scenario-details {
@@ -78,9 +82,10 @@
 :host {
   ::ng-deep {
     app-create-scenarios {
+      flex: 1;
       display: flex;
       flex-direction: column;
-      height: 100%;
+
     }
 
     .create-scenarios-panel {
@@ -140,3 +145,5 @@
     min-width: auto;
   }
 }
+
+

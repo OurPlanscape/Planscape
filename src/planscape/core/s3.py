@@ -6,6 +6,25 @@ import requests
 from botocore.exceptions import ClientError
 
 
+def create_download_url(
+    bucket_name: str,
+    object_name: str,
+    expiration: int = 3600,
+) -> Optional[str]:
+    s3_client = boto3.client("s3")
+    try:
+        response = s3_client.generate_presigned_url(
+            "get_object",
+            Params={"Bucket": bucket_name, "Key": object_name},
+            ExpiresIn=expiration,
+        )
+    except ClientError as e:
+        logging.error(e)
+        return None
+
+    return response
+
+
 def create_upload_url(
     bucket_name: str,
     object_name: str,
@@ -41,3 +60,16 @@ def upload_file(
             files=files,
         )
         return response
+
+
+def is_s3_file(input_file: Optional[str]) -> bool:
+    if not input_file:
+        return False
+    return input_file.lower().startswith("s3://")
+
+
+def s3_filename(input_file: Optional[str]) -> Optional[str]:
+    if not input_file:
+        return None
+    path, filename = input_file.rsplit("/", 1)
+    return filename

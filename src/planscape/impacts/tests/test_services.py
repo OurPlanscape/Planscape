@@ -12,6 +12,7 @@ from impacts.models import (
     TreatmentResultType,
 )
 from impacts.services import (
+    calculate_delta,
     calculate_impacts,
     clone_treatment_plan,
     get_calculation_matrix,
@@ -20,7 +21,6 @@ from impacts.services import (
 )
 from impacts.tasks import (
     async_get_or_calculate_persist_impacts,
-    async_calculate_persist_impacts_treatment_plan,
 )
 from impacts.tests.factories import (
     TreatmentPlanFactory,
@@ -331,6 +331,23 @@ class CalculateImpactsTest(TransactionTestCase):
         with self.assertRaises(ValueError):
             calculate_impacts(self.plan, variable, action, 1)
 
+    def test_calculate_delta(self):
+        values_bases_expected_results = [
+            (0, 0, -1),
+            (0, 1, -1),
+            (1, 0, 0),
+            (1, 1, 0),
+            (2, 1, 1),
+            (1.5, 1, 0.5),
+            (40, 20, 1),
+            (None, 1, -1),
+            (1, None, 0),
+            (None, None, -1),
+        ]
+
+        for value, base, expected_result in values_bases_expected_results:
+            assert calculate_delta(value=value, baseline=base) == expected_result
+
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
     def load_stands(self):
@@ -470,10 +487,10 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
                 treatment_prescription__in=plan_b_prescriptions,
             )
 
-            assert plan_b_result.value == first_result.value
-            assert plan_b_result.delta == first_result.delta
-            assert plan_b_result.year == first_result.year
-            assert plan_b_result.aggregation == first_result.aggregation
+            self.assertEquals(plan_b_result.value, first_result.value)
+            self.assertEquals(plan_b_result.baseline, first_result.baseline)
+            self.assertEquals(plan_b_result.year, first_result.year)
+            self.assertEquals(plan_b_result.aggregation, first_result.aggregation)
 
     @mock.patch(
         "impacts.services.ImpactVariable.get_impact_raster_path",

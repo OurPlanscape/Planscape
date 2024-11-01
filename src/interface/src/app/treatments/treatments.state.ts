@@ -17,13 +17,14 @@ import {
   TreatmentSummary,
 } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
-import { TreatmentRoutingData } from './treatments-routing.module';
+
 import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
   RemovingStandsError,
   UpdatingStandsError,
 } from './treatment-errors';
+import { TreatmentRoutingData } from './treatments-routing-data';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -57,6 +58,37 @@ export class TreatmentsState {
   private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
   public showApplyTreatmentsDialog$ =
     this._showApplyTreatmentsDialog$.asObservable();
+
+  breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
+    map(([projectArea, summary]) => {
+      if (!summary) {
+        return [];
+      }
+      const crumbs = [
+        {
+          name: summary.planning_area_name,
+          path: `/plan/${summary.planning_area_id}`,
+        },
+        {
+          name: summary.scenario_name,
+          path: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
+        },
+        {
+          name: summary.treatment_plan_name,
+          path: projectArea
+            ? `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`
+            : '',
+        },
+      ];
+      if (projectArea) {
+        crumbs.push({
+          name: projectArea.project_area_name,
+          path: '',
+        });
+      }
+      return crumbs;
+    })
+  );
 
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {

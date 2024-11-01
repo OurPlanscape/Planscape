@@ -11,7 +11,7 @@ import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { PlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -22,6 +22,8 @@ import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { ChartData } from '../project-areas-metrics/chart-data';
 import { MetricsService } from '@services/metrics.service';
 import { processScenarioResultsToChartData } from '../scenario-helpers';
+import { TreatmentsService } from '@services/treatments.service';
+import { canAddTreatmentPlan } from '../permissions';
 
 enum ScenarioTabs {
   CONFIG,
@@ -38,7 +40,8 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
-  scenarioId?: string | null;
+  scenarioId: string | null = null;
+  scenarioName: string | null = null;
   planId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
@@ -69,15 +72,19 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(ConstraintsPanelComponent, { static: true })
   constraintsPanelComponent!: ConstraintsPanelComponent;
 
+  creatingTreatment = false;
+
   constructor(
     private fb: FormBuilder,
     private planStateService: PlanStateService,
     private scenarioService: ScenarioService,
     private router: Router,
+    private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService,
     private goalOverlayService: GoalOverlayService,
-    private metricsService: MetricsService
+    private metricsService: MetricsService,
+    private treatmentsService: TreatmentsService
   ) {}
 
   createForms() {
@@ -100,7 +107,7 @@ export class CreateScenariosComponent implements OnInit {
     this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.planStateService.planState$
-      .pipe(untilDestroyed(this))
+      .pipe(untilDestroyed(this), take(1))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
@@ -164,11 +171,19 @@ export class CreateScenariosComponent implements OnInit {
 
   loadConfig(): void {
     this.planStateService.getScenario(this.scenarioId!).subscribe({
-      next: (scenario) => {
+      next: (scenario: Scenario) => {
         // if we have the same state do nothing.
         if (this.scenarioState === scenario.scenario_result?.status) {
           return;
         }
+
+        // Updating breadcrumbs
+        this.scenarioName = scenario.name;
+        this.scenarioId = scenario.id;
+        this.planStateService.updateStateWithScenario(
+          this.scenarioId,
+          this.scenarioName
+        );
 
         this.disableForms();
         if (scenario.scenario_result) {
@@ -207,6 +222,7 @@ export class CreateScenariosComponent implements OnInit {
 
   private formValueToScenario(): Scenario {
     return {
+      id: '',
       name: this.scenarioNameFormField?.value,
       planning_area: this.planId ? this.planId.toString() : '', // nope I should have planID
       status: 'ACTIVE',
@@ -235,12 +251,16 @@ export class CreateScenariosComponent implements OnInit {
           return NEVER;
         })
       )
-      .subscribe(() => {
+      .subscribe((newScenario) => {
+        // Setting the new scenario id
+        this.scenarioId = newScenario.id;
+        this.scenarioName = newScenario.name;
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTab = ScenarioTabs.RESULTS;
         this.pollForChanges();
+        this.goToScenario();
       });
   }
 
@@ -326,12 +346,59 @@ export class CreateScenariosComponent implements OnInit {
       this.featureService.isFeatureEnabled('treatments')
     );
   }
+
+  showTreatmentFooter() {
+    const plan = this.plan$.value;
+    // if feature is on, the scenario is done, and I have permissions to create new one
+    return this.showTreatmentsTab && !!plan && canAddTreatmentPlan(plan);
+  }
+
+  createTreatment() {
+    this.creatingTreatment = true;
+    const scenarioId = this.scenarioId;
+    if (!scenarioId) {
+      return;
+    }
+
+    this.treatmentsService
+      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .subscribe({
+        next: (result) => {
+          this.goToTreatment(result.id);
+        },
+        error: () => {
+          this.creatingTreatment = false;
+          this.matSnackBar.open(
+            '[Error] Cannot create a new treatment plan',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+      });
+  }
+
+  goToTreatment(id: number) {
+    this.router.navigate(['treatment', id], {
+      relativeTo: this.route,
+    });
+  }
+
+  goToScenario() {
+    // Updating breadcrums so when we navigate we can see it
+    this.planStateService.updateStateWithScenario(
+      this.scenarioId,
+      this.scenarioName
+    );
+    this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
+  }
 }
 
 function scenarioNameMustBeNew(
   nameControl: AbstractControl,
   existingNames: string[]
-): { [key: string]: any } | null {
+): {
+  [key: string]: any;
+} | null {
   if (existingNames.includes(nameControl.value)) {
     return { duplicate: true };
   }
