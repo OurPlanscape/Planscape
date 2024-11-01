@@ -40,7 +40,8 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
-  scenarioId?: string | null;
+  scenarioId: string | null = null;
+  scenarioName: string | null = null;
   planId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
@@ -106,7 +107,7 @@ export class CreateScenariosComponent implements OnInit {
     this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.planStateService.planState$
-      .pipe(untilDestroyed(this))
+      .pipe(untilDestroyed(this), take(1))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
@@ -170,11 +171,19 @@ export class CreateScenariosComponent implements OnInit {
 
   loadConfig(): void {
     this.planStateService.getScenario(this.scenarioId!).subscribe({
-      next: (scenario) => {
+      next: (scenario: Scenario) => {
         // if we have the same state do nothing.
         if (this.scenarioState === scenario.scenario_result?.status) {
           return;
         }
+
+        // Updating breadcrumbs
+        this.scenarioName = scenario.name;
+        this.scenarioId = scenario.id;
+        this.planStateService.updateStateWithScenario(
+          this.scenarioId,
+          this.scenarioName
+        );
 
         this.disableForms();
         if (scenario.scenario_result) {
@@ -213,6 +222,7 @@ export class CreateScenariosComponent implements OnInit {
 
   private formValueToScenario(): Scenario {
     return {
+      id: '',
       name: this.scenarioNameFormField?.value,
       planning_area: this.planId ? this.planId.toString() : '', // nope I should have planID
       status: 'ACTIVE',
@@ -241,12 +251,16 @@ export class CreateScenariosComponent implements OnInit {
           return NEVER;
         })
       )
-      .subscribe(() => {
+      .subscribe((newScenario) => {
+        // Setting the new scenario id
+        this.scenarioId = newScenario.id;
+        this.scenarioName = newScenario.name;
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
         this.selectedTab = ScenarioTabs.RESULTS;
         this.pollForChanges();
+        this.goToScenario();
       });
   }
 
@@ -367,6 +381,15 @@ export class CreateScenariosComponent implements OnInit {
     this.router.navigate(['treatment', id], {
       relativeTo: this.route,
     });
+  }
+
+  goToScenario() {
+    // Updating breadcrums so when we navigate we can see it
+    this.planStateService.updateStateWithScenario(
+      this.scenarioId,
+      this.scenarioName
+    );
+    this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
   }
 }
 

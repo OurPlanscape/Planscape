@@ -96,6 +96,7 @@ describe('ScenarioService', () => {
         stand_size: 'LARGE',
       };
       const scenario: Scenario = {
+        id: '1',
         name: 'name',
         planning_area: '1',
         configuration: scenarioConfig,
@@ -119,7 +120,7 @@ describe('ScenarioService', () => {
       };
 
       service.createScenario(scenario).subscribe((res) => {
-        expect(res).toEqual({ ...scenario, id: '1' });
+        expect(res).toEqual({ ...scenario });
       });
 
       tick();
@@ -127,6 +128,7 @@ describe('ScenarioService', () => {
       expect(req.request.method).toEqual('POST');
 
       expect(req.request.body).toEqual({
+        id: '1',
         name: 'name',
         planning_area: '1',
         configuration: backendConfig,
