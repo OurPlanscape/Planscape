@@ -10,8 +10,8 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentStandsProgressBarComponent } from '@styleguide';
-import { Prescription, TreatmentProjectArea } from '@types';
-import { combineLatest, map, Observable, distinctUntilChanged } from 'rxjs';
+import { Prescription } from '@types';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-treatment-project-area',
@@ -41,17 +41,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   summary$ = this.treatmentsState.summary$;
   projectAreaId$ = this.treatmentsState.projectAreaId$;
 
-  activeProjectArea$: Observable<TreatmentProjectArea | undefined> =
-    combineLatest([
-      this.summary$,
-      this.projectAreaId$?.pipe(distinctUntilChanged()),
-    ]).pipe(
-      map(([summary, projectAreaId]) => {
-        return summary?.project_areas.find(
-          (p) => p.project_area_id === projectAreaId
-        );
-      })
-    );
+  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
 
   treatedStands$ = this.activeProjectArea$?.pipe(
     map(
