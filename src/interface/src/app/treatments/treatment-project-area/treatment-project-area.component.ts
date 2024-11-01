@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
-import { AsyncPipe, JsonPipe } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
@@ -10,21 +10,21 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentStandsProgressBarComponent } from '@styleguide';
-import { Prescription } from '@types';
-import { map } from 'rxjs';
+import { getTreatedStandsTotal } from '../prescriptions';
 
 @Component({
   selector: 'app-treatment-project-area',
   standalone: true,
   imports: [
-    TreatmentMapComponent,
-    MatTabsModule,
-    ProjectAreasTabComponent,
-    JsonPipe,
     AsyncPipe,
-    RouterLink,
-    ProjectAreaTreatmentsTabComponent,
+    JsonPipe,
+    MatTabsModule,
+    NgIf,
     OpacitySliderComponent,
+    ProjectAreasTabComponent,
+    ProjectAreaTreatmentsTabComponent,
+    RouterLink,
+    TreatmentMapComponent,
     TreatmentStandsProgressBarComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
@@ -38,25 +38,8 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   ) {}
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
-  summary$ = this.treatmentsState.summary$;
-  projectAreaId$ = this.treatmentsState.projectAreaId$;
-
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
-
-  treatedStands$ = this.activeProjectArea$?.pipe(
-    map(
-      (area) =>
-        area?.prescriptions?.reduce(
-          (total: number, prescription: Prescription) =>
-            total + prescription.treated_stand_count,
-          0
-        ) ?? 0
-    )
-  );
-
-  totalStands$ = this.activeProjectArea$?.pipe(
-    map((area) => area?.total_stand_count ?? 0)
-  );
+  getTreatedStandsTotal = getTreatedStandsTotal;
 
   changeValue(num: number) {
     this.mapConfigState.setTreatedStandsOpacity(num);

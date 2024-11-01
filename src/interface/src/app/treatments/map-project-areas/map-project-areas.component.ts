@@ -27,8 +27,9 @@ import {
   Observable,
   Subject,
 } from 'rxjs';
-import { Prescription, TreatmentProjectArea } from '@types';
+import { TreatmentProjectArea } from '@types';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
+import { getTreatedStandsTotal } from '../prescriptions';
 
 type MapLayerData = {
   readonly name: string;
@@ -60,7 +61,7 @@ export class MapProjectAreasComponent {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() withFill = true;
-
+  getTreatedStandsTotal = getTreatedStandsTotal;
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
@@ -170,12 +171,5 @@ export class MapProjectAreasComponent {
     });
 
     return features[0].properties['id'];
-  }
-
-  getPrescriptionStandCount(prescriptions: Prescription[]) {
-    return prescriptions.reduce((total: number, prescription) => {
-      total = total + prescription.treated_stand_count;
-      return total;
-    }, 0);
   }
 }

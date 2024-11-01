@@ -9,6 +9,7 @@ import {
   of,
   switchMap,
   tap,
+  distinctUntilChanged,
 } from 'rxjs';
 import {
   TreatedStand,
@@ -52,7 +53,16 @@ export class TreatmentsState {
   private _activeProjectArea$ =
     new BehaviorSubject<TreatmentProjectArea | null>(null);
 
-  public activeProjectArea$ = this._activeProjectArea$.asObservable();
+  public activeProjectArea$ = combineLatest([
+    this.summary$,
+    this.projectAreaId$?.pipe(distinctUntilChanged()),
+  ]).pipe(
+    map(([summary, projectAreaId]) => {
+      return summary?.project_areas.find(
+        (p) => p.project_area_id === projectAreaId
+      );
+    })
+  );
 
   private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
   public showApplyTreatmentsDialog$ =
