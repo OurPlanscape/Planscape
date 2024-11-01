@@ -1,6 +1,70 @@
 @import "media";
+@import "colors";
+@import "mixins";
+
+:host {
+  display: block;
+
+}
+
+.treatment-plan {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  align-items: center;
+
+  .item {
+    @include xs-label();
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+}
 
 .direct-impacts {
+  background-color: $color-soft-purple;
+  padding: 16px;
+}
+
+.title-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  padding: 5px 0;
+  @include on-small() {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.title {
+  @include h4();
+  margin: 0 auto 0 0;
+}
+
+.holder {
+  background-color: $color-white;
+  padding: 24px;
+  margin-top: 16px;
+}
+
+.hexagon-help {
+  @include xs-label();
+  display: flex;
+  align-items: center;
+  margin-top: 24px;
+  gap: 8px;
+  color: $color-standard-blue;
+}
+
+.metric-selection {
+  background-color: $color-light-gray;
+  margin-top: 24px;
+  //placeholder styles
+  padding: 20px;
+}
+
+.direct-impacts-metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
@@ -19,6 +83,5 @@
     grid-column: 2;
     grid-row: 1/3;
   }
-
 }
 
