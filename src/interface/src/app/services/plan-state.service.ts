@@ -22,6 +22,7 @@ export interface PlanState {
   };
   currentPlanId: Plan['id'] | null;
   currentScenarioId: Scenario['id'] | null;
+  currentScenarioName: Scenario['name'] | null;
   mapConditionLayer: string | null;
   mapShapes: Feature[] | null;
   legendUnits: string | null;
@@ -36,6 +37,7 @@ export class PlanStateService {
     all: {}, // All plans indexed by id
     currentPlanId: null,
     currentScenarioId: null,
+    currentScenarioName: null,
     mapConditionLayer: null,
     mapShapes: null,
     legendUnits: null,
@@ -151,7 +153,7 @@ export class PlanStateService {
     return this.scenarioService.createScenario(scenarioParameters).pipe(
       tap((result) => {
         if (result.id) {
-          this.updateStateWithScenario(result.id.toString());
+          this.updateStateWithScenario(result.id.toString(), result.name);
         }
       })
     );
@@ -198,7 +200,10 @@ export class PlanStateService {
     this.planState$.next(updatedState);
   }
 
-  updateStateWithScenario(scenarioId: string | null) {
+  updateStateWithScenario(
+    scenarioId: string | null,
+    scenarioName: string | null
+  ) {
     const currentState = Object.freeze(this.planState$.value);
     const updatedState = Object.freeze({
       ...currentState,
@@ -206,6 +211,7 @@ export class PlanStateService {
         ...currentState.all,
       },
       currentScenarioId: scenarioId,
+      currentScenarioName: scenarioName,
     });
 
     this.planState$.next(updatedState);

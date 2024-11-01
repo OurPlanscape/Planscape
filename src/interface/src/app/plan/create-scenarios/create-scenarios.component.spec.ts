@@ -49,6 +49,7 @@ describe('CreateScenariosComponent', () => {
     weights: [0],
   };
   let fakeScenario: Scenario = {
+    id: '1',
     name: 'name',
     planning_area: '1',
     configuration: {},
@@ -82,6 +83,7 @@ describe('CreateScenariosComponent', () => {
       },
       currentPlanId: 1,
       currentScenarioId: null,
+      currentScenarioName: null,
       mapConditionLayer: null,
       mapShapes: null,
       legendUnits: null,
@@ -111,6 +113,7 @@ describe('CreateScenariosComponent', () => {
       {
         getScenario: fakeGetScenario,
         updateStateWithShapes: undefined,
+        updateStateWithScenario: undefined,
       },
       {
         planState$: fakePlanState$,

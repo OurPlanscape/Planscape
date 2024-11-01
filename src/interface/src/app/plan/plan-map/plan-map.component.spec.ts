@@ -28,6 +28,7 @@ describe('PlanMapComponent', () => {
     currentPlanId: null,
     currentConfigId: null,
     currentScenarioId: null,
+    currentScenarioName: null,
     mapConditionLayer: null,
     mapShapes: null,
     legendUnits: null,
