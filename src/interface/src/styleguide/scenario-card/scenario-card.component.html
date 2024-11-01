@@ -65,7 +65,9 @@
     </div>
     <div class="detail-column hide-on-small" *ngIf="treatmentPlansEnabled">
       <div class="detail-header">Est Budget</div>
-      <div class="detail-info">{{ (budget | currency) ?? 'N/A' }}</div>
+      <div class="detail-info">
+        {{ (budget | currency: 'USD' : 'symbol' : '1.0-0') ?? 'N/A' }}
+      </div>
     </div>
     <div class="detail-column hide-on-small" *ngIf="treatmentPlansEnabled">
       <div class="detail-header">Treatment Plans</div>
