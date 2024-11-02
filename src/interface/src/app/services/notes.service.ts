@@ -27,7 +27,7 @@ export interface INotesService {
   providedIn: 'root',
 })
 export abstract class BaseNotesService implements INotesService {
-  constructor(private http: HttpClient) {}
+  constructor(protected http: HttpClient) {}
 
   protected abstract multipleUrl: (objectId: string) => string;
   protected abstract singleUrl: (objectId: string, noteId: string) => string;
@@ -77,8 +77,41 @@ export class PlanningAreaNotesService extends BaseNotesService {
 @Injectable()
 export class ProjectAreaNotesService extends BaseNotesService {
   protected modelName: NotesModelName = 'planning_area';
-  protected multipleUrl = (objectId: string) =>
-    `/project_area_note/${objectId}/note`;
+  protected multipleUrl = () => `/v2/projectarea-notes/`;
+
   protected singleUrl = (objectId: string, noteId: string) =>
     `/project_area_note/${objectId}/note/${noteId}`;
+
+  override getNotes(objectId: number | string): Observable<Note[]> {
+    return this.http.get<Note[]>(
+      environment.backend_endpoint.concat(this.multipleUrl()),
+      {
+        withCredentials: true,
+        params: { project_area_pk: objectId.toString() },
+      }
+    );
+  }
+
+  override addNote(objectId: string | number, noteContent: string | number) {
+    return this.http.post<Note>(
+      environment.backend_endpoint.concat(this.multipleUrl()),
+      {
+        project_area: objectId.toString(),
+        content: noteContent,
+      },
+      {
+        withCredentials: true,
+      }
+    );
+  }
+
+  override deleteNote(noteId: string | number) {
+    noteId = noteId.toString();
+    return this.http.delete<Note>(
+      environment.backend_endpoint.concat(this.multipleUrl(), noteId, '/'),
+      {
+        withCredentials: true,
+      }
+    );
+  }
 }

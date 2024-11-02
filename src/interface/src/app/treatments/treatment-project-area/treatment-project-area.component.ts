@@ -3,7 +3,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { AsyncPipe, JsonPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { Note, ProjectAreaNotesService, BaseNotesService } from '@services';
+import { Note, ProjectAreaNotesService } from '@services';
 import { MatDividerModule } from '@angular/material/divider';
 import {
   NotesSidebarComponent,
@@ -26,9 +26,7 @@ import { TreatmentsState } from '../treatments.state';
 @Component({
   selector: 'app-project-area',
   standalone: true,
-  providers: [
-    { provide: BaseNotesService, useClass: ProjectAreaNotesService }, // Specify which service to use
-  ],
+  providers: [ProjectAreaNotesService],
   imports: [
     SharedModule,
     TreatmentMapComponent,
@@ -82,31 +80,31 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
         .getTreatmentPlan(Number(this.treatmentPlanId))
         .subscribe((r) => (this.treatmentPlan = r));
     }
+    this.loadNotes();
   }
 
   // notes data
-  projectId: number = 0;
   notes: Note[] = [];
   notesSidebarState: NotesSidebarState = 'READY';
 
   //notes handling functions
   addNote(comment: string) {
     this.notesSidebarState = 'SAVING';
-    this.notesService.addNote(this.projectId, comment).subscribe((note) => {
+    this.notesService.addNote(this.projectAreaId, comment).subscribe((note) => {
       this.notes.unshift(note);
       this.loadNotes();
     });
     this.notesSidebarState = 'READY';
   }
 
-  handleNoteDelete(n: Note) {
+  handleNoteDelete(note: Note) {
     const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
     dialogRef
       .afterClosed()
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.notesService.deleteNote(this.projectId, n.id).subscribe({
+          this.notesService.deleteNote(note.id).subscribe({
             next: () => {
               this.snackbar.open(
                 `Deleted note`,
@@ -128,8 +126,10 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
   }
 
   loadNotes() {
-    this.notesService.getNotes(this.projectId).subscribe((notes) => {
-      this.notes = notes;
-    });
+    if (this.projectAreaId) {
+      this.notesService.getNotes(this.projectAreaId).subscribe((notes) => {
+        this.notes = notes;
+      });
+    }
   }
 }
