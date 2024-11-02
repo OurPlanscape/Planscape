@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, EventEmitter, Output } from '@angular/core';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -33,9 +33,14 @@ export class SearchResultCardComponent {
   @Input() projectArea!: TreatmentProjectArea;
   @Input() searchString: string = '';
   @Input() wholeWordsOnly: boolean = false;
+  @Output() cardClick = new EventEmitter();
 
   extractProjectTitle() {
     return this.projectArea.project_area_name;
+  }
+
+  handleClick(event: Event) {
+    this.cardClick.emit(true);
   }
 
   extractProjectLines(): string[] {

@@ -3,6 +3,7 @@ import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentSummary, Prescription } from '@types';
+import { MatIconModule } from '@angular/material/icon';
 import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
 import { map } from 'rxjs';
@@ -19,6 +20,7 @@ import {
     JsonPipe,
     NgForOf,
     NgIf,
+    MatIconModule,
     RouterLink,
     AsyncPipe,
     SearchBarComponent,

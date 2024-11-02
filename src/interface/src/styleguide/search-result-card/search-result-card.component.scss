@@ -7,6 +7,15 @@
   flex-direction: column;
   gap: 4px;
   padding: 14px;
+  border-bottom: 1px $color-soft-gray solid;
+
+  &:hover {
+    background-color: $color-light-gray;
+    border:1px $color-original-purple solid;
+  }
+  &:active {
+    background-color: $color-soft-purple;
+  }
 
   .mat-icon {
     width: 20px;
@@ -16,16 +25,15 @@
   }
 
   .title-line {
-    background-color: $color-white;
-    @include h5();
+    @include xs-label();
     display: flex;
     flex-direction: row;
     white-space: pre-wrap;
     word-wrap: break-word;
+    padding: 8px 0;
   }
   .text-line {
     @include xs-label();
-    background-color: $color-white;
     display: flex;
     flex-direction: row;
     line-height: 22px;
@@ -41,6 +49,6 @@
   }
 
   .regular {
-    background-color: white;
+    background-color:inherit;
   }
 }
