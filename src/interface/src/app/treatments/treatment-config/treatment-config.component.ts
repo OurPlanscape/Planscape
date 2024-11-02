@@ -1,4 +1,9 @@
-import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Injector,
+  ViewChild,
+} from '@angular/core';
 import {
   ActivatedRoute,
   NavigationEnd,
@@ -6,6 +11,7 @@ import {
   RouterLink,
   RouterOutlet,
 } from '@angular/router';
+import { Map as MapLibreMap } from 'maplibre-gl';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentsState } from '../treatments.state';
 
@@ -73,7 +79,7 @@ export class TreatmentConfigComponent {
   ]).pipe(
     map(([activeArea, showTreatmentLayer]) => !activeArea && showTreatmentLayer)
   );
-
+  @ViewChild(TreatmentMapComponent) mapElement: any;
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
 
   constructor(
@@ -130,5 +136,84 @@ export class TreatmentConfigComponent {
     this.dialog.open(ReviewTreatmentPlanDialogComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });
+  }
+
+  async printTreatment() {
+    // Create a new div for the printable map
+    const printContainer = document.createElement('div');
+    printContainer.style.position = 'absolute';
+    printContainer.style.left = '-9999px'; // Hide it off-screen
+    printContainer.style.width = '100%'; // Or whatever size you want for print
+    printContainer.style.height = '100%';
+    document.body.appendChild(printContainer);
+
+    // Copy orientation and content of existing map
+    const originalMap = this.mapElement.mapLibreMap; // or however you access your map
+    const printMap = new MapLibreMap({
+      container: printContainer,
+      style: originalMap.getStyle(),
+      center: originalMap.getCenter(),
+      zoom: originalMap.getZoom(),
+      bearing: originalMap.getBearing(),
+      pitch: originalMap.getPitch(),
+    });
+
+    // Let map load
+    await new Promise((resolve) => printMap.on('load', resolve));
+
+    // 4. Get canvas from new map
+    const canvas = printMap.getCanvas();
+    const img = new Image();
+    img.src = canvas.toDataURL('image/png');
+
+    // 5. Create a print-only div that will only show during printing
+    const printElement = document.createElement('div');
+    printElement.className = 'print-only-map';
+    printElement.style.display = 'none';
+    printElement.appendChild(img);
+    document.body.appendChild(printElement);
+
+    // 6. Add print styles dynamically
+    const style = document.createElement('style');
+    style.textContent = `
+    @media print {
+        
+          .right-side {
+            display: none;
+          }
+          .print-only-map {
+            display: block !important;
+            page-break-inside: avoid;
+            position: absolute;
+            margin:10px;
+            top: 10px;
+            left: 0px;
+            margin-left: auto;
+            margin-right: auto;
+            width: 7in;
+            height: 7in;
+            border: 5px black dotted;
+          }
+          .print-only-map img {
+            width:auto;
+            height: 100%;
+          }
+
+          .right-side-footer {
+            display: none;
+          }
+            
+  }
+      `;
+    document.head.appendChild(style);
+
+    // 7. Print
+    window.print();
+
+    // 8. Cleanup
+    document.body.removeChild(printElement);
+    // document.head.removeChild(style);
+    printMap.remove();
+    document.body.removeChild(printContainer);
   }
 }

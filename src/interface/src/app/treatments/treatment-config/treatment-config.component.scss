@@ -1,5 +1,6 @@
-@import "colors";
-@import "variables";
+@import 'colors';
+@import 'mixins';
+@import 'variables';
 
 :host {
   display: flex;
@@ -35,10 +36,25 @@
   padding: 16px;
 }
 
-.footer-primary {
+.right-footer-right-box {
   margin-left: auto;
+  width: 400px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 8px;
 }
 
+.export-pdf-option {
+  color: $color-standard-blue;
+  @include xs-label;
+}
+
+.export-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
+}
 
 app-apply-treatment {
   position: absolute;
@@ -47,4 +63,50 @@ app-apply-treatment {
   width: 460px;
   height: calc(100% - 100px);
   z-index: 1000;
+}
+
+@media print {
+  .left-side {
+    position: absolute;
+    top: 7in;
+    left: 0px;
+  }
+  .right-side {
+    display: none;
+  }
+  .print-only-map {
+    display: block !important;
+    page-break-inside: avoid;
+    position: absolute;
+    top: 20px;
+    left: 0px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 7in;
+    height: 7in;
+    border: 5px black dotted;
+  }
+  .print-only-map img {
+    width: 100%;
+    height: auto;
+  }
+
+  .right-side-footer {
+    display: none;
+  }
+  .actions {
+    display: none;
+  }
+
+  .about-items {
+    display: block;
+    position: absolute;
+    top: 8in;
+    left: 0px;
+    width: 40%;
+  }
+
+  app-treatment-legend {
+    width: 10px;
+  }
 }

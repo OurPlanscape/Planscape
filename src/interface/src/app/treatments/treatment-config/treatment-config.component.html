@@ -25,13 +25,19 @@
           (change)="toggleShowTreatmentLayers()"
           >View Treatment Layers
         </mat-slide-toggle>
-        <button
-          sg-button
-          variant="primary"
-          class="footer-primary"
-          (click)="showReviewDialog()">
-          Run Impacts
-        </button>
+        <div class="right-footer-right-box">
+          <div class="export-pdf-option" (click)="printTreatment()">
+            <mat-icon class="export-icon">ios_share</mat-icon>
+            Export Plan to PDF
+          </div>
+          <button
+            sg-button
+            variant="primary"
+            class="footer-primary"
+            (click)="showReviewDialog()">
+            Run Impacts
+          </button>
+        </div>
       </ng-template>
     </section>
 
