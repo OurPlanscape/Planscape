@@ -16,7 +16,6 @@ import {
   debounceTime,
   distinctUntilChanged,
   Subject,
-  Observable,
   BehaviorSubject,
 } from 'rxjs';
 import { InputDirective } from '../input/input.directive';
@@ -55,16 +54,16 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   @Input() placeholderText: string | null = '';
   @Input() errorMessage: string | null = null;
   @Input() tooltipContent: string | null = null;
-  @Input() savingStatus$: Observable<boolean> = new BehaviorSubject<boolean>(
-    false
-  );
+
+  @Input() currentMode$ = new BehaviorSubject<editState>('INITIAL');
+
   @Output() textValueUpdated = new EventEmitter<string>();
-  @Input() debounceInterval = 800;
+  @Input() debounceInterval = 10;
   readonly textValueUpdatedSubject = new Subject<string>();
 
-  currentMode: editState = 'INITIAL';
+  hovering = false;
 
-  //TODO: subscribe to savingstatus -- when it's done, we update currentMode
+  // TODO: this component also needs a clear icon in EDIT mode
 
   ngOnInit() {
     const debounceInterval = Number(this.debounceInterval);
@@ -75,6 +74,7 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
         untilDestroyed(this)
       )
       .subscribe((textValue: string) => {
+        this.hovering = false;
         this.textValueUpdated.emit(this.textValue);
       });
   }
@@ -93,22 +93,17 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   }
 
   onHover() {
-    console.log('hovering...');
+    this.hovering = true;
+  }
+  outHover() {
+    this.hovering = false;
   }
 
   ngOnDestroy() {
     this.textValueUpdatedSubject.complete();
   }
 
-  toggleMode() {
-    if (this.currentMode === 'EDIT') {
-      this.currentMode = 'INITIAL';
-    } else {
-      this.currentMode = 'EDIT';
-    }
-  }
-
-  inEditMode() {
-    return this.currentMode === 'EDIT';
+  setToEditMode() {
+    this.currentMode$.next('EDIT');
   }
 }

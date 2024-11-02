@@ -4,7 +4,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
-import { DebounceInputComponent } from '@styleguide';
+import { editState, DebounceInputComponent } from '@styleguide';
 import { TreatmentPlan } from '@types';
 import { BehaviorSubject } from 'rxjs';
 
@@ -23,7 +23,7 @@ import { BehaviorSubject } from 'rxjs';
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  savingStatus$ = new BehaviorSubject<boolean>(false);
+  nameFieldStatus$ = new BehaviorSubject<editState>('INITIAL');
   errorSavingName: string | null = null;
 
   constructor(private treatmentsState: TreatmentsState) {}
@@ -34,13 +34,13 @@ export class TreatmentOverviewComponent {
     if (name.length < 1) {
       return;
     }
-    this.savingStatus$.next(true);
+    this.nameFieldStatus$.next('SAVING');
     const partialTreatmentPlan: Partial<TreatmentPlan> = {
       name: name,
     };
     this.treatmentsState.updateTreatmentPlan(partialTreatmentPlan).subscribe({
       next: (result) => {
-        this.savingStatus$.next(false);
+        this.nameFieldStatus$.next('INITIAL');
       },
       error: (err) => {
         if (err.error.detail) {
@@ -48,7 +48,7 @@ export class TreatmentOverviewComponent {
         } else {
           this.errorSavingName = 'Could not update the name.';
         }
-        this.savingStatus$.next(false);
+        this.nameFieldStatus$.next('EDIT');
       },
     });
   }

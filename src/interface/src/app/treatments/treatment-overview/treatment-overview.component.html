@@ -1,8 +1,9 @@
 <sg-debounce-input
+  class="name-input-box"
   *ngIf="currentPlan$ | async; let plan"
   [textValue]="plan.name"
   title="Treatment Plan Name"
-  [savingStatus$]="savingStatus$"
+  [currentMode$]="nameFieldStatus$"
   [errorMessage]="errorSavingName"
   (textValueUpdated)="handleNameChange($event)"></sg-debounce-input>
 <app-treatment-plan-tabs></app-treatment-plan-tabs>

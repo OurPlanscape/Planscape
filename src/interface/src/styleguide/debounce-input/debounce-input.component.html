@@ -1,4 +1,4 @@
-<div class="name-input-component">
+<div class="name-input-component" *ngIf="currentMode$ | async; let curMode">
   <div class="heading-line">
     <div *ngIf="title" class="title">{{ title }}</div>
     <button
@@ -16,28 +16,34 @@
   </div>
   <div
     class="plain-text-box"
-    *ngIf="!inEditMode() && (savingStatus$ | async) === false">
-    <div class="text-content" (mouseover)="onHover()">
+    *ngIf="curMode === 'INITIAL'"
+    (mouseover)="onHover()"
+    (mouseleave)="outHover()">
+    <div class="text-content">
       {{ textValue }}
     </div>
     <mat-icon
-      (click)="toggleMode()"
+      *ngIf="hovering"
+      (click)="setToEditMode()"
       class="pencil-icon material-symbols-outlined"
       >edit</mat-icon
     >
   </div>
-  <sg-input-field *ngIf="inEditMode()" size="regular" class="name-input">
+  <sg-input-field
+    *ngIf="curMode !== 'INITIAL'"
+    size="regular"
+    class="name-input"
+    trailingIcon="close">
     <input
       sgInput
       [placeholder]="placeholderText"
       [(ngModel)]="textValue"
       (ngModelChange)="clearError()"
-      (blur)="emitTextValue($event)"
       (keyup.enter)="emitTextValue($event)" />
     <mat-spinner
       diameter="20"
       matSuffix
-      *ngIf="savingStatus$ | async"></mat-spinner>
+      *ngIf="curMode === 'SAVING'"></mat-spinner>
   </sg-input-field>
   <div class="error-blurb" *ngIf="errorMessage">
     <span>{{ errorMessage }}</span>
