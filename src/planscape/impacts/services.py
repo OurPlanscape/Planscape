@@ -7,6 +7,7 @@ from django.db import transaction
 from django.db.models import Count
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
+from impacts.calculator import calculate_delta
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -20,6 +21,7 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentResult,
+    TreatmentResultType,
     get_prescription_type,
 )
 from planning.models import ProjectArea, TProjectArea, TScenario
@@ -231,6 +233,56 @@ def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
 IMPACTS_RASTER_NODATA = -999
 
 
+def clone_existing_results(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    action: TreatmentPrescriptionAction,
+    year: int,
+) -> List[TreatmentResult]:
+    """Clones TreatmentResults from others TreatmentPlans
+    which `action`, `year`, `variable` and `stand` are the same to
+    avoid re-calculations.
+    """
+    treatment_prescriptions = treatment_plan.tx_prescriptions.select_related(
+        "stand"
+    ).filter(action=action)
+
+    stands_prescriptions = {
+        treatment_prescription.stand.pk: treatment_prescription
+        for treatment_prescription in treatment_prescriptions.iterator()
+    }
+    existing_results = (
+        TreatmentResult.objects.filter(
+            treatment_prescription__action=action,
+            treatment_prescription__stand__in=stands_prescriptions.keys(),
+            variable=variable,
+            year=year,
+            type=TreatmentResultType.DIRECT,
+        )
+        .select_related("treatment_prescription", "treatment_prescription__stand")
+        .distinct(
+            "treatment_prescription__stand__pk", "aggregation", "value", "baseline"
+        )
+        .values_list(
+            "treatment_prescription__stand__pk", "aggregation", "value", "baseline"
+        )
+    )
+
+    copied_results = [
+        TreatmentResult.objects.update_or_create(
+            treatment_plan=treatment_plan,
+            treatment_prescription=stands_prescriptions.get(other_result[0]),
+            variable=variable,
+            aggregation=other_result[1],
+            year=year,
+            value=other_result[2],
+            baseline=other_result[3],
+        )[0]
+        for other_result in existing_results.iterator()
+    ]
+    return copied_results
+
+
 def to_treatment_results(
     result: Dict[str, Any],
     variable: ImpactVariable,
@@ -254,7 +306,7 @@ def to_treatment_results(
                 year=year,
                 defaults={
                     "value": properties.get(agg.lower()),
-                    "delta": properties.get(f"delta_{agg.lower()}"),
+                    "baseline": properties.get(f"baseline_{agg.lower()}"),
                 },
             )[0]
             for agg in aggregations
@@ -282,7 +334,26 @@ def calculate_impacts(
 ) -> List[Dict[str, Any]]:
     prescriptions = treatment_plan.tx_prescriptions.filter(
         action=action
-    ).select_related("stand", "treatment_plan", "project_area")
+    ).select_related(
+        "stand",
+        "treatment_plan",
+        "project_area",
+    )
+
+    already_calculated_prescriptions_ids = (
+        TreatmentResult.objects.filter(
+            treatment_prescription__in=prescriptions,
+            variable=variable,
+            year=year,
+            type=TreatmentResultType.DIRECT,
+        )
+        .select_related("treatment_prescription")
+        .values_list("treatment_prescription__pk")
+    )
+
+    # Exclude TreatmentPrescriptions with TreatmentResult to avoid re-calculation
+    prescriptions = prescriptions.exclude(pk__in=already_calculated_prescriptions_ids)
+
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
 
@@ -317,12 +388,6 @@ def calculate_impacts(
     return calculate_deltas(baseline_stats, variable_stats, agg)
 
 
-def calculate_delta(value: float, base: float) -> float:
-    if not base:
-        base = 1
-    return (value - base) / base
-
-
 def calculate_deltas(
     baseline_zonal_stats,
     variable_zonal_stats,
@@ -335,14 +400,12 @@ def calculate_deltas(
         variable_props = f.get("properties", {})
         stand_id = variable_props.get("stand_id")
         baseline_props = baseline_dict.get(stand_id).get("properties")
-        deltas = {
-            f"delta_{agg}": calculate_delta(
-                variable_props.get(agg),
-                baseline_props.get(agg),
-            )
-            for agg in aggregations
+
+        baselines = {
+            f"baseline_{agg}": baseline_props.get("agg") for agg in aggregations
         }
-        variable_zonal_stats[i]["properties"] = {**variable_props, **deltas}
+
+        variable_zonal_stats[i]["properties"] = {**variable_props, **baselines}
     return variable_zonal_stats
 
 

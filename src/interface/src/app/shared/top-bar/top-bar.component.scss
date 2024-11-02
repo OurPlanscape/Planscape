@@ -7,7 +7,7 @@
 .mat-toolbar {
   background-color: $color-dark-gray;
   height: $toolbar-height;
-  padding: 0 64px 0 12px;
+  padding: 0 24px 0 12px;
   position: relative;
 
   display: flex;
@@ -44,6 +44,10 @@
 
   .mat-icon {
     line-height: 22px;
+  }
+
+  .help.mat-icon-button {
+    line-height: 36px;
   }
 
 }
@@ -92,6 +96,14 @@ button.navbar-item, a.navbar-item {
 
   &:active, &:hover {
     color: $color-light-blue;
+  }
+
+
+  .mat-icon {
+    line-height: 22px;
+    height: 20px;
+    width: 20px;
+    font-size: 20px;
   }
 }
 

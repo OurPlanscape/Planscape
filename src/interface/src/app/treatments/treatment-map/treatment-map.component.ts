@@ -28,6 +28,7 @@ import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
+import { addAuthHeaders } from '../maplibre.helper';
 
 @UntilDestroy()
 @Component({
@@ -188,16 +189,6 @@ export class TreatmentMapComponent {
     }
   }
 
-  transformRequest: RequestTransformFunction = (url, resourceType) => {
-    // add auth cookie to our tiles requests
-    if (resourceType === 'Tile' && url.includes('planscape.org')) {
-      return {
-        url: url, // Keep the URL unchanged
-        headers: {
-          Authorization: 'Bearer ' + this.authService.getAuthCookie(),
-        },
-      };
-    }
-    return { url }; // Return unchanged if not applying headers
-  };
+  transformRequest: RequestTransformFunction = (url, resourceType) =>
+    addAuthHeaders(url, resourceType, this.authService.getAuthCookie());
 }

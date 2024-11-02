@@ -35,7 +35,6 @@ ALLOWED_HOSTS: list[str] = str(config("PLANSCAPE_ALLOWED_HOSTS", default="*")).s
     ","
 )
 
-
 # Application definition
 PLANSCAPE_APPS = [
     "admin.apps.PlanscapeAdmin",
@@ -68,6 +67,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django_extensions",
+    "django_json_widget",
     "actstream",
     "password_policies",
     "rest_framework",
@@ -443,3 +443,5 @@ os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
 os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
 
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
+
+MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")

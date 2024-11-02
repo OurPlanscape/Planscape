@@ -41,7 +41,6 @@ export class NotesSidebarComponent implements OnChanges {
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =
     'Start adding notes to help your team learn more about this section.';
-  @Input() notesObject?: any;
   @Output() createNote = new EventEmitter<string>();
   @Output() deleteNote = new EventEmitter<Note>();
 

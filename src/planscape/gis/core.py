@@ -1,3 +1,4 @@
+from functools import lru_cache
 import logging
 from typing import Any, Dict, Optional
 import rasterio
@@ -6,10 +7,13 @@ from rasterio.errors import RasterioIOError
 from fiona.errors import DriverError
 from datasets.models import DataLayerType, GeometryType
 from gis.errors import InvalidFileFormat, InvalidGeometryType
+from gis.info import info_raster, info_vector
+
 
 log = logging.getLogger(__name__)
 
 
+@lru_cache
 def is_vector(input_file: str) -> bool:
     try:
         with fiona.open(input_file):
@@ -18,6 +22,7 @@ def is_vector(input_file: str) -> bool:
         return False
 
 
+@lru_cache
 def is_raster(input_file: str) -> bool:
     try:
         with rasterio.open(input_file):
@@ -26,6 +31,7 @@ def is_raster(input_file: str) -> bool:
         return False
 
 
+@lru_cache
 def fetch_datalayer_type(input_file: str) -> DataLayerType:
     if is_raster(input_file):
         return DataLayerType.RASTER
@@ -56,3 +62,12 @@ def fetch_geometry_type(
     if not geometry_type:
         raise InvalidGeometryType(f"Could not determine geometry type")
     return GeometryType[geometry_type.upper()]
+
+
+@lru_cache
+def get_layer_info(input_file: str) -> Dict[str, Any]:
+    from gis.info import info_raster, info_vector
+
+    layer_type = fetch_datalayer_type(input_file)
+    fn = info_raster if layer_type == DataLayerType.RASTER else info_vector
+    return fn(input_file=input_file)

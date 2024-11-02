@@ -1,4 +1,5 @@
 import logging
+from django.conf import settings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
@@ -6,7 +7,10 @@ from uuid import uuid4
 import rasterio
 from rasterio.warp import Resampling, calculate_default_transform, reproject
 from rio_cogeo.cogeo import cog_translate
+from rio_cogeo.cogeo import cog_validate
 from rio_cogeo.profiles import cog_profiles
+
+from gis.core import get_layer_info
 
 log = logging.getLogger(__name__)
 Number = Union[int, float]
@@ -14,6 +18,7 @@ Number = Union[int, float]
 
 def get_profile(
     input_profile: Dict[str, Any],
+    crs: str,
     transform,
     width: int,
     height: int,
@@ -23,6 +28,7 @@ def get_profile(
 ) -> Dict[str, Any]:
     return {
         **input_profile,
+        "crs": crs,
         "transform": transform,
         "blockxsize": blockxsize,
         "blockysize": blockysize,
@@ -43,15 +49,37 @@ def get_random_output_file(input_file: str, output_folder: str = "/tmp") -> str:
 
 
 def to_planscape(input_file: str) -> List[str]:
-    log.info("converting the raster to planscape format.")
-    warped_output = get_random_output_file(input_file=input_file)
-    cog_output = get_random_output_file(input_file=warped_output)
+    log.info("Converting raster to planscape format.")
+    layer_info = get_layer_info(input_file=input_file)
+    layer_crs = layer_info.get("crs")
+    if layer_crs is None:
+        raise ValueError(
+            "Cannot convert to planscape format if raster file does not have CRS information."
+        )
+    log.info("Raster info available")
+    _epsg, srid = layer_crs.split(":")
+    if int(srid) != settings.CRS_FOR_RASTERS:
+        warped_output = get_random_output_file(input_file=input_file)
 
-    warped_raster = warp(
-        input_file=input_file, output_file=warped_output, crs=f"EPSG:3857"
+        warped_raster = warp(
+            input_file=input_file,
+            output_file=warped_output,
+            crs=f"EPSG:{settings.CRS_FOR_RASTERS}",
+        )
+    else:
+        log.info("Raster DataLayer already has EPSG:3857 projection.")
+        warped_raster = input_file
+
+    is_valid, _errors, warnings = cog_validate(
+        src_path=input_file,
+        quiet=True,
     )
-
-    cog_raster = cog(input_file=warped_raster, output_file=cog_output)
+    if not is_valid:
+        cog_output = get_random_output_file(input_file=warped_output)
+        cog_raster = cog(input_file=warped_raster, output_file=cog_output)
+    else:
+        log.info(f"Raster DataLayer already is a COG. possible warnings: {warnings}")
+        cog_raster = input_file
 
     return [cog_raster, warped_raster]
 
@@ -94,9 +122,9 @@ def warp(
     output_file: str,
     crs: str,
     num_threads: str = "ALL_CPUS",
-    resampling_method=Resampling.nearest,
+    resampling_method: Resampling = Resampling.nearest,
 ) -> str:
-    log.info("warrrrrping")
+    log.info(f"Warping raster {input_file}")
     with rasterio.Env(GDAL_NUM_THREADS=num_threads):
         with rasterio.open(input_file) as source:
             left, bottom, right, top = source.bounds
@@ -110,9 +138,9 @@ def warp(
                 right=right,
                 top=top,
             )
-
             output_profile = get_profile(
                 input_profile=source.meta,
+                crs=crs,
                 transform=transform,
                 width=width,  # type: ignore
                 height=height,  # type: ignore

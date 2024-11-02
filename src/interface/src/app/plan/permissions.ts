@@ -11,3 +11,7 @@ export function canAddScenario(plan: Plan) {
 export function canDeletePlanningArea(plan: Plan | PreviewPlan, user: User) {
   return plan.user == user.id;
 }
+
+export function canAddTreatmentPlan(plan: Plan | PreviewPlan) {
+  return plan.permissions?.includes('add_tx_plan');
+}

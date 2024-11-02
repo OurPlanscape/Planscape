@@ -43,3 +43,5 @@ class DataLayerFactory(factory.django.DjangoModelFactory):
     type = factory.Iterator(DataLayerType.values)
     geometry_type = factory.Iterator(GeometryType.values)
     status = factory.Iterator(DataLayerStatus.values)
+    metadata = {}
+    url = None

@@ -1,0 +1,49 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  width: 100%;
+  box-sizing: border-box;
+  height: 74px;
+  background-color: $color-white;
+  border-bottom: 1px $color-soft-gray solid;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  padding: 8px 16px;
+  gap: 2px;
+
+  ::ng-deep .mat-mdc-progress-bar {
+  --mdc-linear-progress-active-indicator-color: #{$color-brand-teal};
+  --mdc-linear-progress-track-color: #{$color-soft-gray};
+  --mdc-linear-progress-active-indicator-height: 6px;
+  border-radius: 4px;
+  --mdc-linear-progress-track-height: 6px;
+  }
+
+  .title-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    height: 32px;
+    align-items: baseline;
+  }
+
+  .title-box {
+    @include h5();
+    font-family: 'Public Sans';
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 32px;
+    text-align: left;
+  }
+  
+  .count-box {
+    @include xs-label();
+    color: $color-brand-teal;
+  }
+
+  .progress-row {
+    width: 100%;
+  }
+}

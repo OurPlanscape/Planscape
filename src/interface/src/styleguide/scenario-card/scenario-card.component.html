@@ -1,25 +1,24 @@
 <div class="title-row">
-  <div class="title-section">
-    <div class="scenario-name">{{ name }}</div>
-    <sg-status-chip
-      *ngIf="status"
-      [status]="getChipStatus()"
-      [label]="getChipLabel()"></sg-status-chip>
-    <div *ngIf="hasFailed() && treatmentPlansEnabled" class="failed-message">
-      <mat-icon class="error-icon">error</mat-icon>
-      Create a new scenario to proceed to treatment plan
-    </div>
+  <div class="scenario-name">{{ name }}</div>
+  <sg-status-chip
+    *ngIf="resultStatus"
+    [status]="getChipStatus()"
+    [label]="getChipLabel()"></sg-status-chip>
+  <div *ngIf="hasFailed() && treatmentPlansEnabled" class="failed-message">
+    <mat-icon class="error-icon">error</mat-icon>
+    Create a new scenario to proceed to treatment plan
   </div>
   <div class="controls-section" *ngIf="!hasFailed()">
     <button
       sg-button
       icon="add"
+      class="new-treatment-btn"
       [disabled]="!isDone()"
       *ngIf="treatmentPlansEnabled">
       New Treatment Plan
     </button>
     <button
-      [disabled]="!isDone()"
+      [disabled]="isRunning()"
       [matMenuTriggerFor]="menu"
       aria-label="More scenario options"
       class="more-menu-button"
@@ -27,17 +26,26 @@
       mat-icon-button>
       <mat-icon>more_vert</mat-icon>
     </button>
-    <mat-menu #menu="matMenu">
-      <button mat-menu-item (click)="openScenario.emit()">
-        <mat-icon class="folder_open-icon">folder_open</mat-icon>
+    <mat-menu class="scenario-more-menu" #menu="matMenu">
+      <button
+        class="more-menu-item"
+        mat-menu-item
+        (click)="openScenario.emit()">
+        <mat-icon class="material-symbols-outlined">folder_open</mat-icon>
         <span>Open</span>
       </button>
       <button
+        class="more-menu-item"
         mat-menu-item
         *ngIf="userCanArchiveScenario"
-        (click)="archiveScenario.emit()">
-        <mat-icon class="archive-icon">archive</mat-icon>
-        <span>Archive</span>
+        (click)="toggleArchiveStatus.emit()">
+        <mat-icon *ngIf="!isArchived()" class="material-symbols-outlined"
+          >archive
+        </mat-icon>
+        <mat-icon *ngIf="isArchived()" class="material-symbols-outlined"
+          >unarchive
+        </mat-icon>
+        <span>{{ isArchived() ? 'Restore' : 'Archive' }}</span>
       </button>
     </mat-menu>
   </div>
@@ -51,15 +59,17 @@
     </div>
   </div>
   <ng-container *ngIf="!isRunning()">
-    <div class="detail-column">
+    <div class="detail-column hide-on-small">
       <div class="detail-header">Areas</div>
       <div class="detail-info">{{ areas ?? 'N/A' }}</div>
     </div>
-    <div class="detail-column" *ngIf="treatmentPlansEnabled">
+    <div class="detail-column hide-on-small" *ngIf="treatmentPlansEnabled">
       <div class="detail-header">Est Budget</div>
-      <div class="detail-info">{{ (budget | currency) ?? 'N/A' }}</div>
+      <div class="detail-info">
+        {{ (budget | currency: 'USD' : 'symbol' : '1.0-0') ?? 'N/A' }}
+      </div>
     </div>
-    <div class="detail-column" *ngIf="treatmentPlansEnabled">
+    <div class="detail-column hide-on-small" *ngIf="treatmentPlansEnabled">
       <div class="detail-header">Treatment Plans</div>
       <div class="detail-info">{{ treatmentPlansCount }}</div>
     </div>

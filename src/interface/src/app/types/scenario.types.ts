@@ -1,7 +1,7 @@
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 
 export interface Scenario {
-  id?: string;
+  id: string;
   name: string;
   notes?: string;
   creator?: string;

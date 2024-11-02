@@ -11,11 +11,11 @@
     <mat-icon>more_vert</mat-icon>
   </button>
   <mat-menu #menu="matMenu" class="more-treatment-menu">
-    <button mat-menu-item (click)="view.emit()">
+    <button mat-menu-item (click)="view.emit()" [disabled]="isDisabled">
       <mat-icon class="material-symbols-outlined">file_open_outlined</mat-icon>
       <span>Open</span>
     </button>
-    <button mat-menu-item (click)="duplicate.emit()">
+    <button mat-menu-item (click)="duplicate.emit()" [disabled]="isDisabled">
       <mat-icon class="material-symbols-outlined">file_copy_outlined</mat-icon>
       <span>Duplicate</span>
     </button>

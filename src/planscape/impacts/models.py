@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Tuple, Type
+from typing import List, Optional, Tuple, Type, Union
 
 from core.models import (
     AliveObjectsManager,
@@ -12,6 +12,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
+from datasets.models import DataLayer, DataLayerType
+from impacts.calculator import calculate_delta
+from organizations.models import Organization
 from planning.models import ProjectArea, Scenario
 from stands.models import Stand
 from typing_extensions import Self
@@ -337,9 +340,37 @@ class ImpactVariable(models.TextChoices):
         return list([x.lower() for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
-    def get_baseline_raster_path(cls, impact_variable: Self, year: int) -> str:
-        name = f"Baseline_{year}_{impact_variable.lower()}_3857_COG.tif"
-        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{name}"
+    def _get_datalayer(
+        cls,
+        impact_variable: Self,
+        year: int,
+        action: Optional[TreatmentPrescriptionAction],
+    ) -> DataLayer:
+        baseline = action is None
+        query = {
+            "modules": {
+                "impacts": {
+                    "year": year,
+                    "baseline": baseline,
+                    "variable": str(impact_variable),
+                    "action": action,
+                }
+            }
+        }
+        return DataLayer.objects.get(
+            type=DataLayerType.RASTER,
+            metadata__contains=query,
+        )
+
+    @classmethod
+    def get_baseline_raster_path(
+        cls, impact_variable: Self, year: int
+    ) -> Optional[str]:
+        return cls._get_datalayer(
+            impact_variable=impact_variable,
+            year=year,
+            action=None,
+        ).url
 
     @classmethod
     def get_impact_raster_path(
@@ -347,14 +378,72 @@ class ImpactVariable(models.TextChoices):
         impact_variable: Self,
         action: Optional[TreatmentPrescriptionAction],
         year: int,
-    ) -> str:
-        treatment_name = (
-            TreatmentPrescriptionAction.get_file_mapping(action)
-            if action
-            else "Baseline"
-        )
-        variable = str(impact_variable).lower()
-        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{treatment_name}_{year}_{variable}_3857_COG.tif"
+    ) -> Optional[str]:
+        return cls._get_datalayer(
+            impact_variable=impact_variable,
+            year=year,
+            action=action,
+        ).url
+
+
+class TreatmentResultType(models.TextChoices):
+    DIRECT = "DIRECT", "Direct"
+    INDIRECT = "INDIRECT", "Indirect"
+
+
+class ProjectAreaTreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
+    treatment_plan = models.ForeignKey(
+        TreatmentPlan,
+        on_delete=models.RESTRICT,
+        related_name="project_area_results",
+    )
+    project_area = models.ForeignKey(
+        ProjectArea,
+        on_delete=models.RESTRICT,
+        related_name="project_area_results",
+    )
+    variable = models.CharField(
+        choices=ImpactVariable.choices, help_text="Impact Variable (choice)."
+    )
+    aggregation = models.CharField(
+        choices=ImpactVariableAggregation.choices,
+        help_text="Impact Variable Aggregation (choice).",
+    )
+    year = models.IntegerField(
+        default=0,
+        help_text="Number of year for the result.",
+    )
+    value = models.FloatField(
+        help_text="Value extracted for the prescriptions inside this project area.",
+        null=True,
+    )
+    baseline = models.FloatField(
+        help_text="Baseline value extract from the prescriptions inside this project area."
+    )
+    type = models.CharField(
+        choices=TreatmentResultType.choices,
+        default=TreatmentResultType.DIRECT,
+        help_text="Type of Treatment Result (choice).",
+    )
+
+    def delta(self) -> float:
+        return calculate_delta(self.value, self.baseline)
+
+    class Meta(TypedModelMeta):
+        constraints = [
+            models.UniqueConstraint(
+                # given a specific project area we can only have a single value for the same
+                # variable, aggregationa and year
+                fields=[
+                    "treatment_plan",
+                    "project_area",
+                    "variable",
+                    "aggregation",
+                    "year",
+                ],
+                name="project_area_treatment_result_unique_constraint",
+            )
+        ]
 
 
 class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
@@ -379,12 +468,21 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     )
     year = models.IntegerField(default=0, help_text="Number of year for the result.")
     value = models.FloatField(
-        help_text="Value extracted for the prescription stand, based on variable, year and variable aggreation type."
-    )
-    delta = models.FloatField(
-        help_text="Delta between this years value and base year value. From 0-1, null for base years.",
+        help_text="Value extracted for the prescription stand, based on variable, year and variable aggreation type.",
         null=True,
     )
+    baseline = models.FloatField(
+        null=True,
+    )
+    type = models.CharField(
+        choices=TreatmentResultType.choices,
+        default=TreatmentResultType.DIRECT,
+        help_text="Type of Treatment Result (choice).",
+        null=True,
+    )
+
+    def delta(self) -> float:
+        return calculate_delta(self.value, self.baseline)
 
     class Meta(TypedModelMeta):
         constraints = [

@@ -3,7 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { TreatmentsService } from '@services/treatments.service';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
-import { TreatmentPlan } from '@types';
+import { TreatmentPlan, TreatmentStatus } from '@types';
 
 @Component({
   selector: 'app-treatments-tab',
@@ -16,8 +16,6 @@ export class TreatmentsTabComponent implements OnInit {
   state: 'loading' | 'empty' | 'loaded' = 'loading';
 
   treatments: TreatmentPlan[] = [];
-
-  creatingTreatment = false;
 
   constructor(
     private router: Router,
@@ -39,28 +37,13 @@ export class TreatmentsTabComponent implements OnInit {
       });
   }
 
-  createTreatment() {
-    this.creatingTreatment = true;
+  goToTreatment(id: number, status: TreatmentStatus) {
+    const route = ['treatment', id];
+    if (status === 'SUCCESS') {
+      route.push('impacts');
+    }
 
-    this.treatmentsService
-      .createTreatmentPlan(Number(this.scenarioId), 'New Treatment Plan')
-      .subscribe({
-        next: (result) => {
-          this.goToTreatment(result.id);
-        },
-        error: () => {
-          this.creatingTreatment = false;
-          this.matSnackBar.open(
-            '[Error] Cannot create a new treatment plan',
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-        },
-      });
-  }
-
-  goToTreatment(id: number) {
-    this.router.navigate(['treatment', id], { relativeTo: this.route });
+    this.router.navigate(route, { relativeTo: this.route });
   }
 
   deleteTreatment(treatment: TreatmentPlan) {

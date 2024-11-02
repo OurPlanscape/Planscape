@@ -5,29 +5,35 @@
 
 .saved-scenarios-wrapper {
   position: relative;
-  height: 100%;
-  overflow-y: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
 .scenario-list-controls {
   @include standard-label();
   width: 100%;
-  height: 28px;
   display: flex;
   flex-direction: row;
+  gap: 24px;
   justify-content: flex-end;
+  flex-wrap: wrap;
+  height: 24px;
+  padding: 8px 0;
+}
+
+.scenario-sort-picker {
+  @include xs-label();
+  line-height: 40px;
+  height: 40px;
 }
 
 .slide-toggle-my-scenarios {
-  @include standard-label();
-  width: 280px;
+  @include xs-label();
+  line-height: 40px;
+  height: 40px; // a smaller height clips the hover outline
 }
 
 .sort-select {
-  @include standard-label();
-  width: 280px;
+  @include xs-label();
+  width: 200px;
   border: none;
 }
 
@@ -105,6 +111,7 @@
 .overview {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
 
   mat-icon {
@@ -115,6 +122,7 @@
     display: flex;
     align-items: center;
     gap: 4px;
+    white-space: nowrap;
     color: $color-dark-gray;
 
     &::after {
@@ -137,23 +145,31 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 24px 0;
+  padding: 24px 0 10px 0;
+  position: sticky;
+  top: -12px;
+  background: $color-white;
+  z-index: 11;
+  height: 40px;
 
   h4 {
     margin: 0 auto 0 0;
+    font-size: 18px;
+    font-weight: 600;
   }
 }
 
 .view-map {
   text-decoration: none;
   color: $color-standard-blue;
+  padding-left: 4px;
+  font-weight: 500;
 
   &:active,
   &:visited {
     color: $color-standard-blue;
   }
 }
-
 
 app-section-loader {
   display: flex;

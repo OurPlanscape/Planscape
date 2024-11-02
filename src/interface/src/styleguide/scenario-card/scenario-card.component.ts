@@ -46,7 +46,8 @@ export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
   styleUrl: './scenario-card.component.scss',
 })
 export class ScenarioCardComponent {
-  @Input() status: ScenarioResultStatus = 'SUCCESS';
+  @Input() resultStatus: ScenarioResultStatus = 'SUCCESS';
+  @Input() archiveStatus: 'ACTIVE' | 'ARCHIVED' = 'ACTIVE';
   @Input() name = '';
   @Input() areas? = 0;
   @Input() budget: number | null = null;
@@ -60,7 +61,7 @@ export class ScenarioCardComponent {
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
-  @Output() archiveScenario = new EventEmitter();
+  @Output() toggleArchiveStatus = new EventEmitter();
   @Output() clicked = new EventEmitter();
 
   readonly chipsStatus: Record<
@@ -81,18 +82,22 @@ export class ScenarioCardComponent {
   };
 
   hasFailed(): boolean {
-    const failedValues = ['LOADING', 'NOT_STARTED', 'PENDING', 'RUNNING'];
-    return failedValues.includes(this.status);
+    const failedValues = ['FAILURE', 'PANIC', 'TIMED_OUT'];
+    return failedValues.includes(this.resultStatus);
   }
 
   isRunning(): boolean {
     const runningValues = ['LOADING', 'NOT_STARTED', 'PENDING', 'RUNNING'];
-    return runningValues.includes(this.status);
+    return runningValues.includes(this.resultStatus);
   }
 
   isDone(): boolean {
     const doneValues = ['SUCCESS'];
-    return doneValues.includes(this.status);
+    return doneValues.includes(this.resultStatus);
+  }
+
+  isArchived(): boolean {
+    return this.archiveStatus === 'ARCHIVED';
   }
 
   @HostBinding('class.disabled-content')
@@ -106,15 +111,15 @@ export class ScenarioCardComponent {
   }
 
   getChipStatus(): StatusChipStatus {
-    if (this.status) {
-      return this.chipsStatus[this.status].status;
+    if (this.resultStatus) {
+      return this.chipsStatus[this.resultStatus].status;
     }
     return 'failed';
   }
 
   getChipLabel(): ScenarioResultLabel {
-    if (this.status) {
-      return this.chipsStatus[this.status].label;
+    if (this.resultStatus) {
+      return this.chipsStatus[this.resultStatus].label;
     }
     return 'Failed';
   }

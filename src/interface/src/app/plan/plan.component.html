@@ -9,7 +9,7 @@
     </ng-container>
   </ng-container>
 </app-nav-bar>
-<div class="root-container">
+<div class="root-container" [ngClass]="{ overview: (showOverview$ | async) }">
   <app-resource-unavailable
     *ngIf="planNotFound"
     resource="plan"></app-resource-unavailable>

@@ -68,6 +68,10 @@ export class SavedScenariosComponent implements OnInit {
     this.fetchScenarios();
   }
 
+  listsDiffer(listA: Scenario[], listB: Scenario[]) {
+    return JSON.stringify(listA) !== JSON.stringify(listB);
+  }
+
   fetchScenarios(): void {
     this.scenarioService
       .getScenariosForPlan(this.plan?.id!, this.sortSelection)
@@ -77,12 +81,20 @@ export class SavedScenariosComponent implements OnInit {
         this.scenariosForUser = this.showOnlyMyScenarios
           ? scenarios.filter((s) => s.user === this.user$.value?.id)
           : scenarios;
-        this.activeScenarios = this.scenariosForUser.filter(
+        const fetchedActiveScenarios = this.scenariosForUser.filter(
           (s) => s.status === 'ACTIVE'
         );
-        this.archivedScenarios = this.scenariosForUser.filter(
+        if (this.listsDiffer(this.activeScenarios, fetchedActiveScenarios)) {
+          this.activeScenarios = fetchedActiveScenarios;
+        }
+        const fetchedArchivedScenarios = this.scenariosForUser.filter(
           (s) => s.status === 'ARCHIVED'
         );
+        if (
+          this.listsDiffer(this.archivedScenarios, fetchedArchivedScenarios)
+        ) {
+          this.archivedScenarios = fetchedArchivedScenarios;
+        }
         this.loading = false;
       });
   }
@@ -141,6 +153,7 @@ export class SavedScenariosComponent implements OnInit {
     this.highlightedScenarioRow = row;
   }
 
+  //TODO: Remove this from here we permanently switch to new_planning_area
   toggleScenarioStatus(archive: boolean) {
     const id = this.highlightedScenarioRow?.id;
 

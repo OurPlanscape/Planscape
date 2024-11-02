@@ -1,6 +1,7 @@
 from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from core.models import CreatedAtMixin, DeletedAtMixin, UUIDMixin, UpdatedAtMixin
 
 User = get_user_model()
@@ -14,6 +15,11 @@ class OrganizationType(models.TextChoices):
     TRIBAL = "TRIBAL", "Tribal"
     COLLABORATIVES = "COLLABORATIVES", "Collaboratives"
     OTHER = "OTHER", "Other"
+
+
+class OrganizationManager(models.Manager):
+    def get_main_org(self, name=settings.MAIN_ORG_NAME) -> "Organization":
+        return self.get_queryset().get(name=name)
 
 
 class Organization(
@@ -41,10 +47,13 @@ class Organization(
         null=True,
     )
 
+    objects: "Manager[Organization]" = OrganizationManager()
+
     def __str__(self):
         return f"{self.name} [{self.type}]"
 
     class Meta(TypedModelMeta):
+        ordering = ("id",)
         verbose_name = "Organization"
         verbose_name_plural = "Organizations"
         constraints = [
