@@ -26,6 +26,24 @@
     text-align: left;
     height: 22px;
   }
+
+  .plain-text-box {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+  }
+
+  .pencil-icon {
+    color: $color-standard-blue;
+  }
+  .pencil-icon:hover {
+    color: $color-black;
+  }
+
+  .text-content {
+    @include h5();
+  }
+
   .error-blurb {
     @include small-input-label();
     color: $color-dark-red;

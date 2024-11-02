@@ -26,6 +26,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+export type editState = 'INITIAL' | 'EDIT' | 'SAVING';
+
 /**
  * Component for setting name
  */
@@ -60,6 +62,10 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   @Input() debounceInterval = 800;
   readonly textValueUpdatedSubject = new Subject<string>();
 
+  currentMode: editState = 'INITIAL';
+
+  //TODO: subscribe to savingstatus -- when it's done, we update currentMode
+
   ngOnInit() {
     const debounceInterval = Number(this.debounceInterval);
     this.textValueUpdatedSubject
@@ -86,7 +92,23 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
     e.stopPropagation();
   }
 
+  onHover() {
+    console.log('hovering...');
+  }
+
   ngOnDestroy() {
     this.textValueUpdatedSubject.complete();
+  }
+
+  toggleMode() {
+    if (this.currentMode === 'EDIT') {
+      this.currentMode = 'INITIAL';
+    } else {
+      this.currentMode = 'EDIT';
+    }
+  }
+
+  inEditMode() {
+    return this.currentMode === 'EDIT';
   }
 }

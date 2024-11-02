@@ -14,7 +14,19 @@
       {{ tooltipContent }}
     </mat-menu>
   </div>
-  <sg-input-field [disabled]="false" size="regular" class="name-input">
+  <div
+    class="plain-text-box"
+    *ngIf="!inEditMode() && (savingStatus$ | async) === false">
+    <div class="text-content" (mouseover)="onHover()">
+      {{ textValue }}
+    </div>
+    <mat-icon
+      (click)="toggleMode()"
+      class="pencil-icon material-symbols-outlined"
+      >edit</mat-icon
+    >
+  </div>
+  <sg-input-field *ngIf="inEditMode()" size="regular" class="name-input">
     <input
       sgInput
       [placeholder]="placeholderText"

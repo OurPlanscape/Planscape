@@ -28,6 +28,8 @@ export class TreatmentOverviewComponent {
 
   constructor(private treatmentsState: TreatmentsState) {}
 
+  currentPlan$ = this.treatmentsState.treatmentPlan$;
+
   handleNameChange(name: string) {
     if (name.length < 1) {
       return;

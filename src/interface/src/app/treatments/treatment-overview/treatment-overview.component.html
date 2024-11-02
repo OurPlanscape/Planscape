@@ -1,4 +1,6 @@
 <sg-debounce-input
+  *ngIf="currentPlan$ | async; let plan"
+  [textValue]="plan.name"
   title="Treatment Plan Name"
   [savingStatus$]="savingStatus$"
   [errorMessage]="errorSavingName"
