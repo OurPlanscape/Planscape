@@ -31,6 +31,8 @@
     width: 100%;
     display: flex;
     flex-direction: row;
+    padding: 10px;
+    gap: 10px;
   }
 
   .pencil-icon {
@@ -55,9 +57,10 @@
   width: 100%;
 }
 
-::ng-deep .name-input-component .input-wrapper {
+::ng-deep .name-input .input-wrapper {
   width: 100%;
   border-width: 2px;
+  padding: 4px 10px;
 }
 
 ::ng-deep .name-input-component .focus-within {

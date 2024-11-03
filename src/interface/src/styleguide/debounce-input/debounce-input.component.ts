@@ -54,19 +54,20 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   @Input() placeholderText: string | null = '';
   @Input() errorMessage: string | null = null;
   @Input() tooltipContent: string | null = null;
-
+  @Input() hasClearButton = true;
   @Input() currentMode$ = new BehaviorSubject<editState>('INITIAL');
 
   @Output() textValueUpdated = new EventEmitter<string>();
   @Input() debounceInterval = 10;
   readonly textValueUpdatedSubject = new Subject<string>();
-
+  originalText = this.textValue;
   hovering = false;
 
   // TODO: this component also needs a clear icon in EDIT mode
 
   ngOnInit() {
     const debounceInterval = Number(this.debounceInterval);
+    this.originalText = this.textValue;
     this.textValueUpdatedSubject
       .pipe(
         debounceTime(debounceInterval),
@@ -75,7 +76,9 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
       )
       .subscribe((textValue: string) => {
         this.hovering = false;
-        this.textValueUpdated.emit(this.textValue);
+        if (this.textValue !== '') {
+          this.textValueUpdated.emit(this.textValue);
+        }
       });
   }
 
@@ -95,8 +98,20 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   onHover() {
     this.hovering = true;
   }
+
   outHover() {
     this.hovering = false;
+  }
+
+  onBlur() {
+    //if the text is clear, we just revert to the original text
+    console.log('is text clear? whats original:', this.originalText);
+    if (this.textValue === '') {
+      this.textValue = this.originalText;
+      this.currentMode$.next('INITIAL');
+    } else if (this.textValue !== this.originalText) {
+      this.textValueUpdated.emit(this.textValue);
+    }
   }
 
   ngOnDestroy() {
@@ -105,5 +120,9 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
 
   setToEditMode() {
     this.currentMode$.next('EDIT');
+  }
+
+  clear() {
+    this.textValue = '';
   }
 }

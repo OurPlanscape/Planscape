@@ -32,14 +32,21 @@
   <sg-input-field
     *ngIf="curMode !== 'INITIAL'"
     size="regular"
-    class="name-input"
-    trailingIcon="close">
+    class="name-input">
     <input
       sgInput
       [placeholder]="placeholderText"
       [(ngModel)]="textValue"
+      (blur)="onBlur()"
       (ngModelChange)="clearError()"
       (keyup.enter)="emitTextValue($event)" />
+    <button
+      *ngIf="hasClearButton && curMode === 'EDIT'"
+      mat-icon-button
+      aria-label="Clear"
+      (click)="clear()">
+      <mat-icon>close</mat-icon>
+    </button>
     <mat-spinner
       diameter="20"
       matSuffix
