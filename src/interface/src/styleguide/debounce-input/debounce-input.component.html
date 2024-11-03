@@ -29,10 +29,7 @@
       >edit</mat-icon
     >
   </div>
-  <sg-input-field
-    *ngIf="curMode !== 'INITIAL'"
-    size="regular"
-    class="name-input">
+  <sg-input-field *ngIf="curMode !== 'INITIAL'" size="small" class="name-input">
     <input
       sgInput
       [placeholder]="placeholderText"
