@@ -24,6 +24,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ButtonComponent } from '@styleguide';
 
 export type editState = 'INITIAL' | 'EDIT' | 'SAVING';
 
@@ -35,6 +36,7 @@ export type editState = 'INITIAL' | 'EDIT' | 'SAVING';
   selector: 'sg-debounce-input',
   standalone: true,
   imports: [
+    ButtonComponent,
     CommonModule,
     FormsModule,
     InputFieldComponent,
@@ -67,6 +69,9 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     const debounceInterval = Number(this.debounceInterval);
+    if (this.textValue === '') {
+      this.currentMode$.next('EDIT');
+    }
     this.originalText = this.textValue;
     this.textValueUpdatedSubject
       .pipe(

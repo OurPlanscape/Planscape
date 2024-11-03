@@ -22,12 +22,8 @@
     <div class="text-content">
       {{ textValue }}
     </div>
-    <mat-icon
-      *ngIf="hovering"
-      (click)="setToEditMode()"
-      class="pencil-icon material-symbols-outlined"
-      >edit</mat-icon
-    >
+    <button sg-button variant="icon-only" *ngIf="hovering"
+    class="pencil-icon" icon="edit_outlined" (click)="setToEditMode()"></button>
   </div>
   <sg-input-field *ngIf="curMode !== 'INITIAL'" size="small" class="name-input">
     <input

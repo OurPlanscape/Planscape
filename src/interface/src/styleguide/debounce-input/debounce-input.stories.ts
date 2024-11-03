@@ -14,8 +14,8 @@ const meta: Meta<DebounceInputComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div style="width:100%;height:200px;background-color:#aaaaaa;">
-    <div style="width:400px"><sg-debounce-input ${argsToTemplate(args)}></sg-debounce-input></div></div>`,
+    template: `<div style="width:600px;height:180px;background-color:#aaaaaa;">
+    <div style="width:320px;margin-left:auto;margin-right:auto;padding:20px;"><sg-debounce-input ${argsToTemplate(args)}></sg-debounce-input></div></div>`,
   }),
 };
 
@@ -24,14 +24,14 @@ type Story = StoryObj<DebounceInputComponent>;
 
 export const Default: Story = {
   args: {
-    textValue: '',
+    textValue: 'New Treatment Plan Name',
     title: 'Treatment plan name',
   },
 };
 
 export const WithError: Story = {
   args: {
-    textValue: '',
+    ...Default, 
     title: 'Treatment plan name',
     errorMessage: 'This name already exists',
   },
@@ -39,12 +39,14 @@ export const WithError: Story = {
 
 export const NoTitle: Story = {
   args: {
-    textValue: '',
+    ...Default, 
+    title: '',
   },
 };
 
 export const TooltipText: Story = {
   args: {
+    ...Default,
     textValue: '',
     title: 'Treatment plan name',
     tooltipContent: 'Clicking this does something',

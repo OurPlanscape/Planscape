@@ -6,9 +6,9 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 10px;
-  padding-bottom: 2px;
+  padding: 12px;
   box-sizing: border-box;
+  gap: 2px;
 
   .heading-line {
     display: flex;
@@ -31,8 +31,10 @@
     width: 100%;
     display: flex;
     flex-direction: row;
-    padding: 10px;
+    padding: 10px 8x 0 8px ;
     gap: 10px;
+    height: 40px;
+    align-items: center;
   }
 
   .pencil-icon {
@@ -44,6 +46,7 @@
 
   .text-content {
     @include h5();
+    line-height: 40px;
   }
 
   .error-blurb {
@@ -57,7 +60,7 @@
   width: 100%;
 }
 
-::ng-deep .name-input .input-wrapper {
+::ng-deep .name-input-component .input-wrapper {
   width: 100%;
   border-width: 2px;
   padding: 4px 10px;
