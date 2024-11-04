@@ -11,7 +11,7 @@ import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.componen
     MatTabsModule,
     TreatmentPlanAboutTabComponent,
     ProjectAreasTabComponent,
-    MapBaseLayerComponent
+    MapBaseLayerComponent,
   ],
   templateUrl: './treatment-plan-tabs.component.html',
   styleUrl: './treatment-plan-tabs.component.scss',

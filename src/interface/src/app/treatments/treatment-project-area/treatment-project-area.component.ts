@@ -23,7 +23,7 @@ import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.componen
     RouterLink,
     ProjectAreaTreatmentsTabComponent,
     OpacitySliderComponent,
-    MapBaseLayerComponent
+    MapBaseLayerComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
