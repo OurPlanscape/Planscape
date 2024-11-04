@@ -19,7 +19,7 @@ describe('TreatmentProjectAreaComponent', () => {
         TreatmentProjectAreaComponent,
         RouterTestingModule,
         BrowserAnimationsModule,
-        MapBaseLayerComponent
+        MapBaseLayerComponent,
       ],
       providers: [
         MockProviders(MapConfigState, SelectedStandsState, TreatmentsState),
