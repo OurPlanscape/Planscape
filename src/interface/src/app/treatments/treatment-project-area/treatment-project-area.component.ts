@@ -9,6 +9,7 @@ import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opaci
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 @Component({
   selector: 'app-treatment-project-area',
@@ -22,6 +23,7 @@ import { TreatmentsState } from '../treatments.state';
     RouterLink,
     ProjectAreaTreatmentsTabComponent,
     OpacitySliderComponent,
+    MapBaseLayerComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
