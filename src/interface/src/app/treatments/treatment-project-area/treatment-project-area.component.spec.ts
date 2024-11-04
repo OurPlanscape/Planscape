@@ -19,12 +19,13 @@ describe('TreatmentProjectAreaComponent', () => {
         TreatmentProjectAreaComponent,
         RouterTestingModule,
         BrowserAnimationsModule,
-        MapBaseLayerComponent,
       ],
       providers: [
         MockProviders(MapConfigState, SelectedStandsState, TreatmentsState),
       ],
-      declarations: [MockDeclarations(TreatmentMapComponent)],
+      declarations: [
+        MockDeclarations(TreatmentMapComponent, MapBaseLayerComponent),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentProjectAreaComponent);
