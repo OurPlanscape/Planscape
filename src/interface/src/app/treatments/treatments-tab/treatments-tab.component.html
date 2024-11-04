@@ -30,6 +30,14 @@
     <div
       class="expanders-container"
       *ngIf="filteredPrescriptions$ | async as filteredRxs">
+      <ng-container
+        *ngIf="
+          searchString !== '' && searchString !== null && filteredRxs.length > 0
+        ">
+        <div class="results-count">
+          {{ filteredRxs.length }} results for &quot;{{ searchString }}&quot;
+        </div>
+      </ng-container>
       <sg-treatment-expander
         *ngFor="let tx of filteredRxs"
         [treatmentType]="tx.type"
@@ -41,6 +49,25 @@
         [searchString]="searchString">
         {{ tx.type }}
       </sg-treatment-expander>
+      <ng-container
+        *ngIf="
+          searchString !== '' &&
+          searchString !== null &&
+          filteredRxs.length === 0
+        ">
+        <div class="no-results-box">
+          <mat-icon class="material-symbols-outlined no-results-icon"
+            >find_in_page</mat-icon
+          >
+          <div class="no-results-title">
+            No results for &quot;{{ searchString }}&quot;
+          </div>
+          <div class="no-results-detail">
+            No results match the search criteria provided. Check your search for
+            typos or try a different search term.
+          </div>
+        </div>
+      </ng-container>
     </div>
   </div>
 </ng-container>
