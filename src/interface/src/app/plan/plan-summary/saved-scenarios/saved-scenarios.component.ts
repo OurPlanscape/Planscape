@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AuthService, ScenarioService } from '@services';
+import { AuthService, PlanStateService, ScenarioService } from '@services';
 import { FeatureService } from '../../../features/feature.service';
 import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
@@ -49,7 +49,8 @@ export class SavedScenariosComponent implements OnInit {
     private snackbar: MatSnackBar,
     private scenarioService: ScenarioService,
     private dialog: MatDialog,
-    private featureService: FeatureService
+    private featureService: FeatureService,
+    private planStateService: PlanStateService
   ) {}
 
   ngOnInit(): void {
@@ -138,12 +139,23 @@ export class SavedScenariosComponent implements OnInit {
   }
 
   viewScenario(): void {
+    // Updating planstate with the selected scenario name and ID
+    if (this.highlightedScenarioRow) {
+      this.planStateService.updateStateWithScenario(
+        this.highlightedScenarioRow.id,
+        this.highlightedScenarioRow.name
+      );
+    }
     this.router.navigate(['config', this.highlightedScenarioRow?.id], {
       relativeTo: this.route,
     });
   }
 
   navigateToScenario(clickedScenario: ScenarioRow): void {
+    this.planStateService.updateStateWithScenario(
+      clickedScenario.id,
+      clickedScenario.name
+    );
     this.router.navigate(['config', clickedScenario.id], {
       relativeTo: this.route,
     });
