@@ -2,6 +2,7 @@
   [ngClass]="{ selected: isSelected }"
   (opened)="toggleState()"
   (closed)="toggleState()"
+  [expanded]="isSearchResult"
   class="sg-expander-panel">
   <mat-expansion-panel-header class="header-content">
     <div class="left-content">
@@ -38,18 +39,18 @@
     </div>
   </mat-expansion-panel-header>
 
-  <div
-    class="rx-detail rx-detail-name"
-    *ngFor="let seqDetail of sequenceDetails()">
+  <div class="rx-detail" *ngFor="let seqDetail of sequenceDetails()">
     <mat-icon class="material-symbols-outlined">medication_outline</mat-icon>
-    <ng-container *ngFor="let seqDetailPart of splitTextLine(seqDetail)">
-      <span class="highlighted" *ngIf="isMatch(seqDetailPart)"
-        >{{ seqDetailPart }}
-      </span>
-      <span class="regular" *ngIf="!isMatch(seqDetailPart)">{{
-        seqDetailPart
-      }}</span>
-    </ng-container>
+    <div class="rx-detail-name">
+      <ng-container *ngFor="let seqDetailPart of splitTextLine(seqDetail)">
+        <span class="highlighted" *ngIf="isMatch(seqDetailPart)"
+          >{{ seqDetailPart }}
+        </span>
+        <span class="regular" *ngIf="!isMatch(seqDetailPart)">{{
+          seqDetailPart
+        }}</span>
+      </ng-container>
+    </div>
   </div>
 
   <div class="treatment-detail">

@@ -92,7 +92,6 @@ export class TreatmentExpanderComponent {
     return 'No Treatment';
   }
 
-  // TODO: DRY this?
   // split on string, but retain search string
   _splitRetain(haystack: string, needle: string) {
     const regex = new RegExp(`(${needle})`, 'ig');
@@ -106,7 +105,6 @@ export class TreatmentExpanderComponent {
 
   isMatch(part: string): boolean {
     if (!this.searchString) return false;
-
     return part.toLowerCase() === this.searchString.toLowerCase();
   }
 
@@ -116,10 +114,6 @@ export class TreatmentExpanderComponent {
         .details;
     }
     return [];
-  }
-
-  sequenceMatchesSearch() {
-    this.openState = true;
   }
 
   treatmentIconType(): PrescriptionSingleAction | null {
@@ -135,5 +129,11 @@ export class TreatmentExpanderComponent {
 
   get isSelected() {
     return this.selected;
+  }
+
+  //if the element is being rendered and searchstring exists,
+  // we know that the treatment is in the search results
+  get isSearchResult() {
+    return this.searchString !== null && this.searchString !== '';
   }
 }

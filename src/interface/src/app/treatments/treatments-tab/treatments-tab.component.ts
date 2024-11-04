@@ -67,8 +67,9 @@ export class ProjectAreaTreatmentsTabComponent {
   }
 
   setSearchString(searchString: string) {
-    this.searchString = searchString;
-    if (this.searchString === '') {
+    this.searchString = searchString.toLowerCase();
+    if (this.searchString === '' || this.searchString === null) {
+      //no search string
       this.filteredPrescriptions$ = this.prescriptions$;
     } else {
       this.filteredPrescriptions$ = this.prescriptions$.pipe(

@@ -135,6 +135,7 @@
 
 .rx-detail-name {
   @include small-paragraph();
+
   .highlighted {
     background-color: $color-soft-purple;
     border-radius: 4px;
