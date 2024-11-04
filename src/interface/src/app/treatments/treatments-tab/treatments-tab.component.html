@@ -35,7 +35,10 @@
           searchString !== '' && searchString !== null && filteredRxs.length > 0
         ">
         <div class="results-count">
-          {{ filteredRxs.length }} results for &quot;{{ searchString }}&quot;
+          {{ filteredRxs.length }} result{{
+            filteredRxs.length !== 1 ? 's' : ''
+          }}
+          for &quot;{{ searchString }}&quot;
         </div>
       </ng-container>
       <sg-treatment-expander

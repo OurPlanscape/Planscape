@@ -18,7 +18,9 @@
   </ng-container>
   <ng-container *ngIf="searchString !== '' && areas.length > 0">
     <div class="results-count">
-      {{ areas.length }} results for &quot;{{ searchString }}&quot;
+      {{ areas.length }} result{{ areas.length !== 1 ? 's' : '' }} for &quot;{{
+        searchString
+      }}&quot;
     </div>
     <sg-search-result-card
       *ngFor="let projectArea of areas"
