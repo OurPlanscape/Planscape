@@ -6,3 +6,7 @@
     height: 100%;
   }
 }
+
+::ng-deep .base-maps-selector summary {
+  display: none;
+}
