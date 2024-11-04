@@ -37,7 +37,8 @@
         [areaAcres]="tx.area_acres"
         [treatedStandCount]="tx.treated_stand_count"
         [standIds]="tx.stand_ids"
-        (stateToggle)="highlightPrescriptions(tx)">
+        (stateToggle)="highlightPrescriptions(tx)"
+        [searchString]="searchString">
         {{ tx.type }}
       </sg-treatment-expander>
     </div>

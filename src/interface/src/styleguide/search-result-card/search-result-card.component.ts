@@ -68,7 +68,6 @@ export class SearchResultCardComponent {
   // And then in the template, we highlight any matching segments
   splitTextLine(textLine: string): string[] | null {
     if (!this.searchString) return [textLine];
-
     return this._splitRetain(textLine, this.searchString);
   }
 

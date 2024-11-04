@@ -11,7 +11,18 @@
       <sg-sequence-icon
         *ngIf="treatmentType === 'SEQUENCE'"
         [action]="action"></sg-sequence-icon>
-      <div class="treatment-type-text">{{ titleText() }}</div>
+
+      <div class="treatment-type-text">
+        <ng-container
+          *ngFor="let titlePart of splitTextLine(titleText()); let i = index">
+          <span class="highlighted" *ngIf="isMatch(titlePart)">{{
+            titlePart
+          }}</span>
+          <span *ngIf="!isMatch(titlePart)" class="regular">{{
+            titlePart
+          }}</span>
+        </ng-container>
+      </div>
     </div>
     <div class="right-content">
       <div class="stand-count" *ngIf="treatmentType === 'SINGLE'">
