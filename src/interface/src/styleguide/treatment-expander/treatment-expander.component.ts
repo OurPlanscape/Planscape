@@ -106,6 +106,7 @@ export class TreatmentExpanderComponent {
 
   isMatch(part: string): boolean {
     if (!this.searchString) return false;
+
     return part.toLowerCase() === this.searchString.toLowerCase();
   }
 
@@ -115,6 +116,10 @@ export class TreatmentExpanderComponent {
         .details;
     }
     return [];
+  }
+
+  sequenceMatchesSearch() {
+    this.openState = true;
   }
 
   treatmentIconType(): PrescriptionSingleAction | null {
