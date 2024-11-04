@@ -16,7 +16,7 @@ from gis.io import detect_mimetype
 from gis.rasters import to_planscape
 
 TREATMENT_METADATA_REGEX = re.compile(
-    r"^(?P<action_type>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
+    r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
 )
 BASELINE_METADATA_REGEX = re.compile(
     r"^(?P<baseline>Baseline)_(?P<year>\d{4})_(?P<variable>\w+)"
