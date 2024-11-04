@@ -288,6 +288,11 @@ class ProjectAreaNoteViewSet(
     filterset_class = ProjectAreaNoteFilterSet
     filter_backends = [DjangoFilterBackend]
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["user"] = self.request.user
+        return context
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)

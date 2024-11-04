@@ -519,10 +519,13 @@ class ProjectAreaNoteListSerializer(serializers.ModelSerializer):
     def get_can_delete(self, obj):
         user = self.context.get("user")
         if user:
-            return (user == obj.user) or (
-                user == obj.project_area.scenario.planning_area.user
+            return (
+                (user == obj.user)
+                or (user == obj.project_area.scenario.planning_area.user)
+                or PlanningAreaPermission.can_remove(
+                    user, obj.project_area.scenario.planning_area
+                )
             )
-        return False
 
     class Meta:
         fields = (
