@@ -45,7 +45,8 @@
     [lngLat]="mouseLngLat"
     *ngIf="activeProjectArea$ | async; let activeProjectArea">
     <mat-icon class="material-symbols-outlined">medication</mat-icon>
-    {{ getPrescriptionStandCount(activeProjectArea.prescriptions) }} /
+    {{ getTreatedStandsTotal(activeProjectArea.prescriptions) }}
+    /
     {{ activeProjectArea.total_stand_count }}
   </app-map-tooltip>
 </ng-container>

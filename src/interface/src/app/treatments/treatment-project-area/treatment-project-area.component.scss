@@ -1,3 +1,5 @@
+@import "colors";
+
 .summary-tab-group {
     height: 100%;
     width: 100%;
@@ -5,4 +7,8 @@
     ::ng-deep .mat-mdc-tab-body-wrapper {
         height: 100%;
     }
+
+    ::ng-deep .mat-mdc-tab-labels {
+        border-bottom: 1px $color-soft-gray solid;
+      }
 }
