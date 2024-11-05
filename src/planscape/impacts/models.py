@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Tuple, Type
+from typing import List, Optional, Tuple, Type, Union
 
 from core.models import (
     AliveObjectsManager,
@@ -12,7 +12,9 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
+from datasets.models import DataLayer, DataLayerType
 from impacts.calculator import calculate_delta
+from organizations.models import Organization
 from planning.models import ProjectArea, Scenario
 from stands.models import Stand
 from typing_extensions import Self
@@ -289,6 +291,7 @@ class ImpactVariable(models.TextChoices):
     CANOPY_BASE_HEIGHT = "CBH", "Canopy Base Height"
     CANOPY_COVER = "CC", "Canopy Cover"
     FIRE_BEHAVIOR_FUEL_MODEL = "FBFM", "Fire Behavior/Fuel Model"
+    FLAME_LENGTH = "FL", "Flame Length"
     LARGE_TREE_BIOMASS = "LARGE_TREE_BIOMASS", "Large Tree Biomass"
     MERCH_BIOMASS = "MERCH_BIOMASS", "Merch Biomass"
     MORTALITY = "MORTALITY", "Mortality"
@@ -296,6 +299,7 @@ class ImpactVariable(models.TextChoices):
     POTENTIAL_SMOKE = "POTENTIAL_SMOKE", "Potential Smoke"
     PROBABILITY_TORCHING = "PTORCH", "Probabiliy of Torching"
     QUADRATIC_MEAN_DIAMETER = "QMD", "Quadratic Mean Diameter"
+    RATE_OF_SPREAD = "ROS", "Rate of Spread"
     STAND_DENSITY_INDEX = "SDI", "Stand Density Index"
     TOTAL_HEIGHT = "TH", "Total Height"
     TOTAL_FLAME_SEVERITY = "TOT_FLAME_SEV", "Total Flame Severity"
@@ -308,6 +312,7 @@ class ImpactVariable(models.TextChoices):
             cls.CANOPY_BASE_HEIGHT: [ImpactVariableAggregation.MEAN],
             cls.CANOPY_COVER: [ImpactVariableAggregation.MEAN],
             cls.FIRE_BEHAVIOR_FUEL_MODEL: [],
+            cls.FLAME_LENGTH: [ImpactVariableAggregation.MEAN],
             cls.LARGE_TREE_BIOMASS: [
                 ImpactVariableAggregation.SUM,
                 ImpactVariableAggregation.MEAN,
@@ -327,6 +332,7 @@ class ImpactVariable(models.TextChoices):
             ],
             cls.PROBABILITY_TORCHING: [ImpactVariableAggregation.MEAN],
             cls.QUADRATIC_MEAN_DIAMETER: [ImpactVariableAggregation.MEAN],
+            cls.RATE_OF_SPREAD: [ImpactVariableAggregation.MEAN],
             cls.STAND_DENSITY_INDEX: [ImpactVariableAggregation.MEAN],
             cls.TOTAL_HEIGHT: [ImpactVariableAggregation.MEAN],
             cls.TOTAL_FLAME_SEVERITY: [ImpactVariableAggregation.MEAN],
@@ -338,9 +344,37 @@ class ImpactVariable(models.TextChoices):
         return list([x.lower() for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
-    def get_baseline_raster_path(cls, impact_variable: Self, year: int) -> str:
-        name = f"Baseline_{year}_{impact_variable.lower()}_3857_COG.tif"
-        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{name}"
+    def _get_datalayer(
+        cls,
+        impact_variable: Self,
+        year: int,
+        action: Optional[TreatmentPrescriptionAction],
+    ) -> DataLayer:
+        baseline = action is None
+        query = {
+            "modules": {
+                "impacts": {
+                    "year": year,
+                    "baseline": baseline,
+                    "variable": str(impact_variable),
+                    "action": action,
+                }
+            }
+        }
+        return DataLayer.objects.get(
+            type=DataLayerType.RASTER,
+            metadata__contains=query,
+        )
+
+    @classmethod
+    def get_baseline_raster_path(
+        cls, impact_variable: Self, year: int
+    ) -> Optional[str]:
+        return cls._get_datalayer(
+            impact_variable=impact_variable,
+            year=year,
+            action=None,
+        ).url
 
     @classmethod
     def get_impact_raster_path(
@@ -348,14 +382,12 @@ class ImpactVariable(models.TextChoices):
         impact_variable: Self,
         action: Optional[TreatmentPrescriptionAction],
         year: int,
-    ) -> str:
-        treatment_name = (
-            TreatmentPrescriptionAction.get_file_mapping(action)
-            if action
-            else "Baseline"
-        )
-        variable = str(impact_variable).lower()
-        return f"s3://{settings.S3_BUCKET}/rasters/impacts/{treatment_name}_{year}_{variable}_3857_COG.tif"
+    ) -> Optional[str]:
+        return cls._get_datalayer(
+            impact_variable=impact_variable,
+            year=year,
+            action=action,
+        ).url
 
 
 class TreatmentResultType(models.TextChoices):

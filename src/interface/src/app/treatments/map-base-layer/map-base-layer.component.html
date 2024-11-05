@@ -1,15 +1,12 @@
-<details open>
-  <summary>Map Base</summary>
-  <div class="base-options">
-    <div *ngFor="let t of baseLayers" class="base-option">
-      <input
-        type="radio"
-        [value]="t"
-        [id]="'layer-' + t"
-        name="baseLayer"
-        [checked]="t === defaultLayer"
-        (click)="updateBaseLayer(t)" />
-      <label [for]="'layer-' + t">{{ t }}</label>
-    </div>
+<div class="base-options">
+  <div *ngFor="let t of baseLayers" class="base-option">
+    <input
+      type="radio"
+      [value]="t"
+      [id]="'layer-' + t"
+      name="baseLayer"
+      [checked]="t === defaultLayer"
+      (click)="updateBaseLayer(t)" />
+    <label [for]="'layer-' + t">{{ t }}</label>
   </div>
-</details>
+</div>

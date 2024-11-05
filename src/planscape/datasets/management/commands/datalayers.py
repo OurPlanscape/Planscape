@@ -1,17 +1,70 @@
 import json
+import multiprocessing
+import re
+from functools import partial
 from pathlib import Path
-from pprint import pprint
 from typing import Any, Dict, Optional
-from django.core.management.base import CommandParser
+
 import requests
 from core.base_commands import PlanscapeCommand
-from core.s3 import upload_file
-from datasets.models import DataLayerType
+from core.pprint import pprint
+from core.s3 import is_s3_file, list_files, upload_file
+from django.core.management import call_command
+from django.core.management.base import CommandParser
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
-from gis.info import info_raster, info_vector
-from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape
+
+TREATMENT_METADATA_REGEX = re.compile(
+    r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
+)
+BASELINE_METADATA_REGEX = re.compile(
+    r"^(?P<baseline>Baseline)_(?P<year>\d{4})_(?P<variable>\w+)"
+)
+
+
+def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
+    name = name_from_input_file(input_file)
+    match = TREATMENT_METADATA_REGEX.match(name)
+    if match:
+        action = match.group("action")
+        baseline = False
+    else:
+        match = BASELINE_METADATA_REGEX.match(name)
+        action = None
+        baseline = True
+
+    year = match.group("year")  # type: ignore
+    variable = match.group("variable")  # type: ignore
+
+    return {
+        "modules": {
+            "impacts": {
+                "baseline": baseline,
+                "variable": variable,
+                "year": int(year),
+                "action": action,
+            }
+        }
+    }
+
+
+def create_for_import(input_file: str, dataset: int) -> None:
+    name = name_from_input_file(input_file)
+    metadata = get_impacts_metadata(input_file=input_file)
+    call_command(
+        "datalayers",
+        "create",
+        name,
+        input_file=input_file,
+        dataset=dataset,
+        metadata=metadata if metadata else None,
+    )
+
+
+def name_from_input_file(input_file: str):
+    _base, name = input_file.rsplit("/", 1)
+    return name.replace("_3857_COG.tif", "")
 
 
 class Command(PlanscapeCommand):
@@ -21,6 +74,7 @@ class Command(PlanscapeCommand):
         subp = parser.add_subparsers()
         list_parser = subp.add_parser("list")
         create_parser = subp.add_parser("create")
+        import_parser = subp.add_parser("import")
         create_parser.add_argument("name", type=str)
         create_parser.add_argument(
             "--dataset",
@@ -32,8 +86,40 @@ class Command(PlanscapeCommand):
             required=True,
             type=str,
         )
+        create_parser.add_argument("--metadata", required=False, type=json.loads)
+        import_parser.add_argument(
+            "--dataset",
+            type=int,
+            required=True,
+        )
+        import_parser.add_argument(
+            "--bucket",
+            required=False,
+            type=str,
+            default="planscape-control-dev",
+        )
+        import_parser.add_argument(
+            "--prefix", required=False, type=str, default="datalayers/1/"
+        )
+        import_parser.add_argument(
+            "--ext-filter", required=False, type=str, default=".tif"
+        )
+        import_parser.add_argument(
+            "--dry-run",
+            required=False,
+            type=bool,
+            default=False,
+        )
+        import_parser.add_argument(
+            "--process-count",
+            required=False,
+            type=int,
+            default=4,
+        )
+
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
+        import_parser.set_defaults(func=self.import_from_s3)
 
     def list(self, token, **kwargs):
         base_url = self.get_base_url(**kwargs)
@@ -74,12 +160,14 @@ class Command(PlanscapeCommand):
         headers = self.get_headers(**kwargs)
         mimetype = kwargs.get("mimetype")
         original_name = kwargs.get("original_name")
+        metadata = kwargs.get("metadata", {}) or {}
         input_data = {
             "organization": org,
             "name": name,
             "dataset": dataset,
             "type": layer_type,
             "info": layer_info,
+            "metadata": metadata,
             "original_name": original_name,
             "mimetype": mimetype,
             "geometry_type": geometry_type,
@@ -99,13 +187,19 @@ class Command(PlanscapeCommand):
         input_file: str,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
+        s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
         layer_type = fetch_datalayer_type(input_file=input_file)
-        rasters = to_planscape(input_file=input_file)
+        rasters = to_planscape(
+            input_file=input_file,
+        )
         layer_info = get_layer_info(input_file=rasters[0])
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         mimetype = detect_mimetype(input_file=input_file)
-        original_name = original_file_path.name
+        if s3_file:
+            original_name = input_file
+        else:
+            original_name = original_file_path.name
         # updated info
         output_data = self._create_datalayer_request(
             name=name,
@@ -121,10 +215,47 @@ class Command(PlanscapeCommand):
         if not output_data:
             raise ValueError("request failed.")
         datalayer = output_data.get("datalayer")
-        upload_to = output_data.get("upload_to")
-        self._upload_file(
-            rasters,
-            datalayer=datalayer,
-            upload_to=upload_to,
-        )
+        upload_to = output_data.get("upload_to", {}) or {}
+        if len(upload_to.keys()) > 0:
+            self._upload_file(
+                rasters,
+                datalayer=datalayer,
+                upload_to=upload_to,
+            )
         return output_data
+
+    def _name_from_input_file(self, input_file: str):
+        _base, name = input_file.rsplit("/", 1)
+        return name.replace("_3857_COG.tif", "")
+
+    def import_from_s3(
+        self,
+        dataset: int,
+        bucket: str,
+        prefix: str,
+        ext_filter: str,
+        dry_run: bool,
+        process_count: int,
+        **kwargs,
+    ) -> None:
+        files = list_files(
+            bucket=bucket,
+            prefix=prefix,
+            extension=ext_filter,
+        )
+        s3_files = list(
+            map(
+                lambda file: f"s3://{bucket}/{file}",
+                files,
+            )
+        )
+
+        if dry_run:
+            map(pprint, s3_files)
+            return
+        fn = partial(create_for_import, dataset=dataset)
+        with multiprocessing.Pool(processes=process_count) as pool:
+            _ = pool.map(
+                fn,
+                s3_files,
+            )

@@ -7,7 +7,8 @@ export type ButtonVariant =
   | 'ghost'
   | 'text'
   | 'negative'
-  | 'positive';
+  | 'positive'
+  | 'icon-only';
 
 @Component({
   // eslint-disable-next-line @angular-eslint/component-selector
@@ -59,6 +60,11 @@ export class ButtonComponent {
   @HostBinding('class.positive-button')
   get isVariantPositive() {
     return this.variant === 'positive';
+  }
+
+  @HostBinding('class.icon-button')
+  get isVariantIconOnly() {
+    return this.variant === 'icon-only';
   }
 
   @HostBinding('class.has-error')

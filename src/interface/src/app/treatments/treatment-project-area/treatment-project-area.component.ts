@@ -11,6 +11,7 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentStandsProgressBarComponent } from '@styleguide';
 import { getTreatedStandsTotal } from '../prescriptions';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 @Component({
   selector: 'app-treatment-project-area',
@@ -19,6 +20,7 @@ import { getTreatedStandsTotal } from '../prescriptions';
     AsyncPipe,
     JsonPipe,
     MatTabsModule,
+    MapBaseLayerComponent,
     NgIf,
     OpacitySliderComponent,
     ProjectAreasTabComponent,

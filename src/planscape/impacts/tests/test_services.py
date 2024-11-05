@@ -263,7 +263,7 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertIsNotNone(matrix)
 
         # impact variables * years * actions
-        total_records = 15 * len(years) * 3
+        total_records = 17 * len(years) * 3
         self.assertEqual(len(matrix), total_records)
 
 

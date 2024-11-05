@@ -120,6 +120,7 @@ describe('MapComponent', () => {
         planState$: new BehaviorSubject<PlanState>({
           all: {}, // All plans indexed by id
           currentPlanId: currentPlanId,
+          currentScenarioName: null,
           currentScenarioId: null,
           mapConditionLayer: null,
           mapShapes: null,

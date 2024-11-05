@@ -1,30 +1,21 @@
-import { Data, RouterModule, Routes } from '@angular/router';
+import { RouterModule, Routes } from '@angular/router';
 import { TreatmentOverviewComponent } from './treatment-overview/treatment-overview.component';
 
 import { NgModule } from '@angular/core';
 import { numberResolver } from '../resolvers/number.resolver';
 import { TreatmentProjectAreaComponent } from './treatment-project-area/treatment-project-area.component';
-import { TreatmentLayoutComponent } from './treatment-layout/treatment-layout.component';
-
-// Possible routing params
-export interface TreatmentRoutingData extends Data {
-  scenarioId: number;
-  treatmentId: number;
-  projectAreaId?: number;
-  showMapProjectAreas?: boolean;
-  showTreatmentStands?: boolean;
-  showMapControls?: boolean;
-}
+import { TreatmentConfigComponent } from './treatment-config/treatment-config.component';
+import { DirectImpactsComponent } from './direct-impacts/direct-impacts.component';
 
 const routes: Routes = [
   {
     path: '',
-    title: 'Treatment plan overview',
-    component: TreatmentLayoutComponent,
+    title: 'Treatment Plan Overview',
+    component: TreatmentConfigComponent,
     children: [
       {
         path: '',
-        title: 'Treatment plan overview',
+        title: 'Treatment Plan Overview',
         component: TreatmentOverviewComponent,
         data: {
           showMapProjectAreas: true,
@@ -34,7 +25,7 @@ const routes: Routes = [
       { path: 'project-area', redirectTo: '', pathMatch: 'full' },
       {
         path: 'project-area/:projectAreaId',
-        title: 'Project area overview',
+        title: 'Project Area Overview',
         component: TreatmentProjectAreaComponent,
         resolve: {
           projectAreaId: numberResolver('projectAreaId', ''),
@@ -46,6 +37,11 @@ const routes: Routes = [
         },
       },
     ],
+  },
+  {
+    path: 'impacts',
+    title: 'Direct Treatment Impacts',
+    component: DirectImpactsComponent,
   },
 ];
 

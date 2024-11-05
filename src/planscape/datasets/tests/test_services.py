@@ -71,6 +71,7 @@ class TestCreateDataLayer(TransactionTestCase):
             dataset=dataset,
             organization=dataset.organization,
             created_by=dataset.created_by,
+            original_name="foo.tif",
         )
         self.assertIn("datalayer", result)
         self.assertIsNotNone(result["datalayer"])
@@ -89,5 +90,6 @@ class TestCreateDataLayer(TransactionTestCase):
                 dataset=dataset,
                 organization=dataset.organization,
                 created_by=dataset.created_by,
+                original_name="foo.tif",
             )
             self.assertEqual(0, DataLayer.objects.all().count())

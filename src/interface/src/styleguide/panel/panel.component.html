@@ -1,0 +1,14 @@
+<div class="title-row">
+  <ng-content select="[panelTitle]"></ng-content>
+  <div class="buttons" *ngIf="buttons.length">
+    <button
+      sg-button
+      *ngFor="let button of buttons"
+      variant="icon-only"
+      [icon]="button.icon"
+      (click)="clickButton(button.actionName)"></button>
+  </div>
+</div>
+<div class="content" [ngClass]="{ padded: paddedContent }">
+  <ng-content></ng-content>
+</div>

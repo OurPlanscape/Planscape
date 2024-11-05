@@ -116,3 +116,7 @@ Declare mixins based on styleguide and apply to classes
   display: block;
   margin: 24px;
 }
+
+@mixin public-sans() {
+  font-family: "Public Sans", sans-serif;
+}

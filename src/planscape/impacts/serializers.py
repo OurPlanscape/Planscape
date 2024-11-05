@@ -2,6 +2,8 @@ from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
 
 from impacts.models import (
+    AVAILABLE_YEARS,
+    ImpactVariable,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
@@ -35,12 +37,20 @@ class CreateTreatmentPlanSerializer(serializers.ModelSerializer):
 
 
 class TreatmentPlanSerializer(serializers.ModelSerializer):
+    creator_name = serializers.SerializerMethodField(
+        help_text="Name of the Creator of the Treatment Plan."
+    )
+
+    def get_creator_name(self, instance):
+        return instance.created_by.get_full_name()
+
     class Meta:
         model = TreatmentPlan
         fields = (
             "id",
             "created_at",
             "created_by",
+            "creator_name",
             "updated_at",
             "scenario",
             "name",
@@ -200,3 +210,54 @@ class OutputSummarySerializer(serializers.Serializer):
     project_areas = serializers.ListSerializer(
         child=OutputProjectAreaSummarySerializer(), help_text="Project Areas."
     )
+
+
+class DataLayerImpactsModuleSerializer(serializers.Serializer):
+    """Serializer used to describe and validate part of the
+    `modules` field in the `DataLayerMetadataSerializer`.
+
+    Ideally, we would be able to dynamically import these
+    serializers that describes the participation of a datalayer
+    in a planscape module and validate this on the fly.
+    """
+
+    baseline = serializers.BooleanField(
+        required=True,
+    )
+
+    variable = serializers.ChoiceField(
+        choices=ImpactVariable.choices,
+        required=True,
+    )
+
+    year = serializers.ChoiceField(
+        choices=[
+            (
+                year,
+                str(year),
+            )
+            for year in AVAILABLE_YEARS
+        ],
+        required=True,
+    )
+
+    action = serializers.ChoiceField(
+        choices=TreatmentPrescriptionAction.choices,
+        required=True,
+        allow_null=True,
+    )
+
+    def validate(self, attrs):
+        baseline = attrs.get("baseline", False) or False
+        action = attrs.get("action", None) or None
+        if not baseline and not action:
+            raise serializers.ValidationError(
+                "You must specify action if `baseline` is False."
+            )
+
+        if baseline and action:
+            raise serializers.ValidationError(
+                "The fields `baseline` and `action` are mutually exclusive."
+            )
+
+        return super().validate(attrs=attrs)

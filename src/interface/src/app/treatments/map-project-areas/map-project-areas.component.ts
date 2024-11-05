@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -57,7 +57,7 @@ type MapLayerData = {
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
-export class MapProjectAreasComponent {
+export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() withFill = true;
@@ -65,6 +65,7 @@ export class MapProjectAreasComponent {
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
+  fillColor: any;
 
   activeProjectAreaId$ = new Subject<number>();
   activeProjectArea$: Observable<TreatmentProjectArea | undefined> =
@@ -112,10 +113,9 @@ export class MapProjectAreasComponent {
     return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
   }
 
-  paint: LayerSpecification['paint'] = {
-    'fill-color': this.getFillColors() as any,
-    'fill-opacity': this.visible ? 0.5 : 0,
-  };
+  ngOnInit() {
+    this.fillColor = this.getFillColors();
+  }
 
   getFillColors() {
     const defaultColor = BASE_COLORS['dark'];

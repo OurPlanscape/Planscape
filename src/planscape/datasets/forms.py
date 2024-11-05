@@ -46,6 +46,10 @@ class CategoryAdminForm(movenodeform_factory(Category)):
 class DataLayerAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.fields["original_name"].disabled = True
+        self.fields["url"].disabled = True
+        self.fields["mimetype"].disabled = True
+        self.fields["geometry"].disabled = True
 
     class Meta:
         model = DataLayer
@@ -59,6 +63,10 @@ class DataLayerAdminForm(forms.ModelForm):
             "dataset",
             "category",
             "name",
+            "original_name",
+            "url",
             "info",
             "metadata",
+            "mimetype",
+            "geometry",
         )

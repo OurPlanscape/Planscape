@@ -12,7 +12,7 @@
   (layerMouseLeave)="visible ? resetCursorAndTooltip($event) : null"
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
-    'fill-color': getFillColors(),
+    'fill-color': fillColor,
     'fill-opacity': visible && withFill ? 0.5 : 0
   }"></mgl-layer>
 
