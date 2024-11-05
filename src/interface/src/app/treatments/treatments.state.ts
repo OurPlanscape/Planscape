@@ -143,6 +143,10 @@ export class TreatmentsState {
     this.mapConfigState.setStandSelectionEnabled(
       data.showTreatmentStands || false
     );
+
+    this.mapConfigState.setShowFillProjectAreas(
+      data.showMapProjectAreas || false
+    );
     this.mapConfigState.setShowMapControls(data.showTreatmentStands || false);
   }
 
