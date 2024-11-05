@@ -61,11 +61,13 @@ export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() withFill = true;
-  getTreatedStandsTotal = getTreatedStandsTotal;
+  @Input() showTooltips = true;
+
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
   fillColor: any;
+  getTreatedStandsTotal = getTreatedStandsTotal;
 
   activeProjectAreaId$ = new Subject<number>();
   activeProjectArea$: Observable<TreatmentProjectArea | undefined> =

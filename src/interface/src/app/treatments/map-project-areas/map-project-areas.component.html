@@ -7,9 +7,13 @@
   type="fill"
   source="scenarioProjectAreas"
   (layerClick)="visible ? goToProjectArea($event) : null"
-  (layerMouseEnter)="visible ? setCursor() : null"
-  (layerMouseMove)="visible ? setProjectAreaTooltip($event) : null"
-  (layerMouseLeave)="visible ? resetCursorAndTooltip($event) : null"
+  (layerMouseEnter)="visible && showTooltips ? setCursor() : null"
+  (layerMouseMove)="
+    visible && showTooltips ? setProjectAreaTooltip($event) : null
+  "
+  (layerMouseLeave)="
+    visible && showTooltips ? resetCursorAndTooltip($event) : null
+  "
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
     'fill-color': fillColor,
