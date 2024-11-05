@@ -23,7 +23,7 @@ BEGIN
   );
 
 
-  SELECT INTO p_tx_results (
+  SELECT INTO p_mvt (
     WITH tx_result_year_0 AS(
       SELECT
         tr.year AS "year",
@@ -147,5 +147,5 @@ BEGIN
         ss.size = p_stand_size
   ) as tile WHERE geom IS NOT NULL;
 
-  RETURN p_tx_results;
+  RETURN p_mvt;
 END $$ LANGUAGE plpgsql IMMUTABLE STRICT PARALLEL SAFE;
