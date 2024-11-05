@@ -35,6 +35,15 @@
     <div class="metric-selection">Metric section placeholder</div>
 
     <section class="direct-impacts-metrics">
+      <sg-panel class="chart-1">
+        <div panelTitle>Chart 1</div>
+        [chart]
+      </sg-panel>
+      <sg-panel class="chart-2">
+        <div panelTitle>Chart 2</div>
+        [chart]
+      </sg-panel>
+
       <sg-panel
         class="map-panel"
         [paddedContent]="false"
@@ -45,13 +54,15 @@
         <div panelTitle>Total Carbon for All Project Areas</div>
         <app-direct-impacts-synced-maps></app-direct-impacts-synced-maps>
       </sg-panel>
-      <sg-panel>
-        <div panelTitle>Chart 1</div>
-        [chart]
-      </sg-panel>
-      <sg-panel>
-        <div panelTitle>Chart 2</div>
-        [chart]
+      <sg-panel class="legend-panel" [paddedContent]="false">
+        <div class="legend-title">Map Legend</div>
+        <div class="legends">
+          <div>100%</div>
+          <div>50%</div>
+          <div>0% (No change)</div>
+          <div>-50%</div>
+          <div>-100%</div>
+        </div>
       </sg-panel>
     </section>
   </div>

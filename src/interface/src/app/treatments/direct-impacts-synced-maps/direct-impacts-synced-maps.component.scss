@@ -1,14 +1,12 @@
 @import "colors";
 
-// placeholder until we validate what drives the actual panel height
-$panel-height: 1000px;
 
 :host {
   display: grid;
   grid-template-columns: 1fr 1fr;
   grid-template-rows: 1fr 1fr;
   gap: 1px;
-  height: $panel-height;
+  height: 100%;
   width: 100%;
   background-color: $color-soft-gray;
 }
