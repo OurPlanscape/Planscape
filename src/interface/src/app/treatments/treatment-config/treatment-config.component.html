@@ -26,10 +26,15 @@
           >View Treatment Layers
         </mat-slide-toggle>
         <div class="right-footer-right-box">
-          <div class="export-pdf-option" (click)="printTreatment()">
-            <mat-icon class="export-icon">ios_share</mat-icon>
+          <button
+            sg-button
+            variant="text"
+            icon="ios_share"
+            [outlined]="true"
+            (click)="printTreatment()"
+            data-id="print">
             Export Plan to PDF
-          </div>
+          </button>
           <button
             sg-button
             variant="primary"
