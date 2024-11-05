@@ -1,0 +1,23 @@
+$slider-height: 34px;
+
+.opacity-container {
+  border-radius: 4px;
+}
+
+.leaflet-control {
+  clear: inline-end;
+  top: 6px;
+  left: 8px;
+}
+
+mat-card {
+  max-height: $slider-height;
+}
+
+sg-panel.panel-container {
+  height: $slider-height;
+  border: 0;
+  .padded {
+    padding: 0;
+  }
+}

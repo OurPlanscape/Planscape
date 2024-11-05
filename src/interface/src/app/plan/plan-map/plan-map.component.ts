@@ -27,6 +27,7 @@ import { MapLayerSelectDialogComponent } from '../map-layer-select-dialog/map-la
 import { satelliteTiles, terrainTiles } from 'src/app/map/map.tiles';
 import { MapLayerControlComponent } from './map-layer-control/map-layer-control-component';
 import { MatDialog } from '@angular/material/dialog';
+import { OpacityControlComponent } from './opacity-control/opcaity-control.component';
 
 // Needed to keep references to div elements to remove
 export interface MapRef {
@@ -46,7 +47,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   @Input() mapPadding: L.PointTuple = [0, 0]; // [left, top]
   @Input() showAttributionAndZoom: boolean = false;
   @Input() showLayerSwitcher: boolean = false;
+  @Input() showOpacityControl: boolean = false;
   private readonly destroy$ = new Subject<void>();
+  tooltips: L.Tooltip[] = [];
 
   map!: L.Map;
   drawingLayer: L.GeoJSON | undefined;
@@ -62,6 +65,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private layer: string = '';
   private shapes: any | null = null;
   private layerControl = new MapLayerControlComponent();
+  private opacityControl = new OpacityControlComponent();
   private currentBaseLayer: BaseLayerType = BaseLayerType.Road;
 
   constructor(
@@ -105,6 +109,40 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       });
   }
 
+  updateOpacity(opacity: number): void {
+    // Converting opacity from 0-100 to 0-1
+    const opacityValue = opacity / 100;
+    // Maximum values
+    const maxProjectAreaOpacity = 1;
+    const maxPlanningAreaOpacity = 0.3;
+    // Opacity values
+    const projectAreaOpacity = Math.max(
+      0,
+      Math.min(opacityValue, maxProjectAreaOpacity)
+    );
+    const planningAreaOpacity = Math.max(
+      0,
+      Math.min(opacityValue, maxPlanningAreaOpacity)
+    );
+
+    if (this.drawingLayer) {
+      this.drawingLayer.setStyle({
+        fillOpacity: planningAreaOpacity, // Fill/background opacity
+        opacity: planningAreaOpacity, // Border opacity
+      });
+    }
+
+    if (this.projectAreasLayer) {
+      this.projectAreasLayer.setStyle({
+        fillOpacity: projectAreaOpacity,
+        opacity: projectAreaOpacity,
+      });
+      this.tooltips.forEach((tooltip) => {
+        tooltip.setOpacity(projectAreaOpacity);
+      });
+    }
+  }
+
   ngAfterViewInit(): void {
     if (this.map != undefined) this.map.remove();
     this.map = L.map(this.mapId ? this.mapId : 'map', {
@@ -132,6 +170,13 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.showLayerSwitcher) {
       this.layerControl.layerClicked.subscribe(() => this.openLayerDialog());
       this.map.addControl(this.layerControl);
+    }
+
+    if (this.showOpacityControl) {
+      this.opacityControl.opacityChanged.subscribe((opacity: number) =>
+        this.updateOpacity(opacity)
+      );
+      this.map.addControl(this.opacityControl);
     }
 
     if (this.plan) {
@@ -338,19 +383,21 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         let center: number[] = [];
         if (feature.geometry.type === 'Polygon') {
           center = polylabel(feature.geometry.coordinates, 0.0005);
-          addTooltipAtCenter(
+          const tooltip = addTooltipAtCenter(
             feature.properties.treatment_rank.toString(),
             center,
             this.map
           );
+          this.tooltips.push(tooltip);
         } else if (feature.geometry.type === 'MultiPolygon') {
           feature.geometry.coordinates.forEach((positions) => {
             center = polylabel(positions, 0.005);
-            addTooltipAtCenter(
+            const tooltip = addTooltipAtCenter(
               feature.properties.treatment_rank.toString(),
               center,
               this.map
             );
+            this.tooltips.push(tooltip);
           });
         }
       },
@@ -359,7 +406,11 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 }
 
-function addTooltipAtCenter(content: string, center: number[], map: L.Map) {
+function addTooltipAtCenter(
+  content: string,
+  center: number[],
+  map: L.Map
+): L.Tooltip {
   let tooltip = L.tooltip({
     permanent: true,
     direction: 'center',
@@ -369,4 +420,5 @@ function addTooltipAtCenter(content: string, center: number[], map: L.Map) {
     .setContent(content);
 
   tooltip.addTo(map);
+  return tooltip;
 }
