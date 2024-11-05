@@ -10,6 +10,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatmentsService } from '@services/treatments.service';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
+import { NotesSidebarComponent } from '@styleguide';
 
 describe('TreatmentProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -18,6 +20,7 @@ describe('TreatmentProjectAreaComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        NotesSidebarComponent,
         TreatmentProjectAreaComponent,
         RouterTestingModule,
         HttpClientTestingModule,
@@ -32,7 +35,9 @@ describe('TreatmentProjectAreaComponent', () => {
           TreatmentsService
         ),
       ],
-      declarations: [MockDeclarations(TreatmentMapComponent)],
+      declarations: [
+        MockDeclarations(TreatmentMapComponent, MapBaseLayerComponent),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentProjectAreaComponent);

@@ -5,10 +5,7 @@ import { AsyncPipe, JsonPipe } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Note, ProjectAreaNotesService } from '@services';
 import { MatDividerModule } from '@angular/material/divider';
-import {
-  NotesSidebarComponent,
-  NotesSidebarState,
-} from 'src/styleguide/notes-sidebar/notes-sidebar.component';
+import { NotesSidebarComponent, NotesSidebarState } from '@styleguide';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatmentPlan } from '@types';
 import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
@@ -22,6 +19,7 @@ import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opaci
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 @Component({
   selector: 'app-project-area',
@@ -41,6 +39,7 @@ import { TreatmentsState } from '../treatments.state';
     RouterLink,
     ProjectAreaTreatmentsTabComponent,
     OpacitySliderComponent,
+    MapBaseLayerComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
