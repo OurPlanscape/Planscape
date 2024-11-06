@@ -4,6 +4,7 @@ import { TreatmentOverviewComponent } from './treatment-overview.component';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsState } from '../treatments.state';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -24,7 +25,9 @@ describe('TreatmentOverviewComponent', () => {
       declarations: [
         MockDeclarations(ProjectAreasTabComponent, MapBaseLayerComponent),
       ],
-      providers: [MockProviders(MapConfigState, TreatmentsState)],
+      providers: [
+        MockProviders(TreatmentsState, MapConfigState, TreatedStandsState),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentOverviewComponent);

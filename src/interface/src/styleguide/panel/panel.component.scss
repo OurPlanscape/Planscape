@@ -1,6 +1,8 @@
 @import "colors";
 @import "mixins";
 
+$panel-title-height: 60px;
+
 :host {
   display: block;
   border-radius: 4px;
@@ -20,7 +22,7 @@
 .title-row:not(:empty) {
   @include h5();
   box-sizing: border-box;
-  height: 60px;
+  height: $panel-title-height;
   display: flex;
   align-items: center;
 
@@ -33,6 +35,10 @@
 
 }
 
+.content {
+  height: calc(100% - $panel-title-height);
+  position: relative;
+}
 
 .buttons {
   margin-left: auto;

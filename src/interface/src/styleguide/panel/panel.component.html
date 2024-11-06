@@ -4,6 +4,7 @@
     <button
       sg-button
       *ngFor="let button of buttons"
+      [outlined]="true"
       variant="icon-only"
       [icon]="button.icon"
       (click)="clickButton(button.actionName)"></button>

@@ -1,11 +1,16 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
-import { AsyncPipe, JsonPipe } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Note, ProjectAreaNotesService } from '@services';
 import { MatDividerModule } from '@angular/material/divider';
-import { NotesSidebarComponent, NotesSidebarState } from '@styleguide';
+import {
+  NotesSidebarComponent,
+  NotesSidebarState,
+  TreatmentStandsProgressBarComponent,
+  OpacitySliderComponent,
+} from '@styleguide';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatmentPlan } from '@types';
 import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
@@ -15,10 +20,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
-import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opacity-slider.component';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
+import { getTreatedStandsTotal } from '../prescriptions';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 @Component({
@@ -26,20 +31,21 @@ import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.componen
   standalone: true,
   providers: [ProjectAreaNotesService],
   imports: [
+    AsyncPipe,
+    JsonPipe,
+    MapBaseLayerComponent,
+    MatDialogModule,
+    MatDividerModule,
+    MatTabsModule,
+    NgIf,
+    NotesSidebarComponent,
+    OpacitySliderComponent,
+    ProjectAreasTabComponent,
+    ProjectAreaTreatmentsTabComponent,
+    RouterLink,
     SharedModule,
     TreatmentMapComponent,
-    MatTabsModule,
-    ProjectAreasTabComponent,
-    JsonPipe,
-    AsyncPipe,
-    MatDividerModule,
-    NotesSidebarComponent,
-    MatTabsModule,
-    MatDialogModule,
-    RouterLink,
-    ProjectAreaTreatmentsTabComponent,
-    OpacitySliderComponent,
-    MapBaseLayerComponent,
+    TreatmentStandsProgressBarComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
@@ -57,6 +63,8 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
   ) {}
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
+  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
+  getTreatedStandsTotal = getTreatedStandsTotal;
 
   changeValue(num: number) {
     this.mapConfigState.setTreatedStandsOpacity(num);
