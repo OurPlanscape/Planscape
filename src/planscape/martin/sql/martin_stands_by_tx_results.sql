@@ -1,4 +1,4 @@
-CREATE OR REPLACE FUNCTION martin_stands_by_tx_results(z integer, x integer, y integer, query_params json)
+CREATE OR REPLACE FUNCTION martin_stands_by_tx_result(z integer, x integer, y integer, query_params json)
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
@@ -112,7 +112,7 @@ BEGIN
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'mean'
         AND tr.year = 2044
-  ) SELECT INTO p_mvt (
+  ) SELECT INTO p_mvt ST_AsMVT(tile, 'stands_by_tx_result', 4096, 'geom') (
     SELECT 
       ss.id as "id",
       ss.size as "stand_size",
