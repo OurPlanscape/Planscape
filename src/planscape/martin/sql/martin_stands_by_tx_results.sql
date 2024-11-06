@@ -40,8 +40,7 @@ BEGIN
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'mean'
         AND tr.year = 2024
-  ),
-  WITH tx_result_year_5 AS(
+  ), tx_result_year_5 AS(
     SELECT
       tr.year AS "year",
       tr.value AS "value",
@@ -58,8 +57,7 @@ BEGIN
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'mean'
         AND tr.year = 2029
-  ),
-  WITH tx_result_year_10 AS(
+  ), tx_result_year_10 AS(
     SELECT
       tr.year AS "year",
       tr.value AS "value",
@@ -76,8 +74,7 @@ BEGIN
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'mean'
         AND tr.year = 2034
-  ),
-  WITH tx_result_year_15 AS(
+  ), tx_result_year_15 AS(
     SELECT
       tr.year AS "year",
       tr.value AS "value",
@@ -94,8 +91,7 @@ BEGIN
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'mean'
         AND tr.year = 2039
-  ),
-  WITH tx_result_year_20 AS(
+  ), tx_result_year_20 AS(
     SELECT
       tr.year AS "year",
       tr.value AS "value",
@@ -112,7 +108,7 @@ BEGIN
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'mean'
         AND tr.year = 2044
-  ) SELECT INTO p_mvt ST_AsMVT(tile, 'stands_by_tx_result', 4096, 'geom') (
+  ) SELECT INTO p_mvt ST_AsMVT(tile, 'stands_by_tx_result', 4096, 'geom') FROM (
     SELECT 
       ss.id as "id",
       ss.size as "stand_size",
