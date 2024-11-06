@@ -141,9 +141,9 @@ BEGIN
       LEFT JOIN tx_result_year_15 tr15 ON tr15.stand_id = ss.id
       LEFT JOIN tx_result_year_20 tr20 ON tr20.stand_id = ss.id
     WHERE
+      ss.size = p_stand_size AND
       ss.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269) AND
-        ss.geometry && p_intersecting_area AND ST_Within(ST_Centroid(ss.geometry), p_intersecting_area) AND
-        ss.size = p_stand_size
+        ss.geometry && p_intersecting_area AND ST_Within(ST_Centroid(ss.geometry), p_intersecting_area)
   ) as tile WHERE geom IS NOT NULL;
 
   RETURN p_mvt;
