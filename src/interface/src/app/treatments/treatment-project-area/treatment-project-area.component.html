@@ -1,3 +1,9 @@
+<sg-treatment-progress
+  *ngIf="activeProjectArea$ | async; let activeProjectArea"
+  [totalStands]="activeProjectArea.total_stand_count"
+  [treatedStands]="
+    getTreatedStandsTotal(activeProjectArea.prescriptions)
+  "></sg-treatment-progress>
 <mat-tab-group
   class="summary-tab-group"
   mat-align-tabs="start"
@@ -5,6 +11,8 @@
   <mat-tab label="Treatments">
     <app-project-area-tx-tab></app-project-area-tx-tab>
   </mat-tab>
-  <mat-tab label="Map Layers"></mat-tab>
+  <mat-tab label="Base Maps">
+    <app-map-base-layer></app-map-base-layer>
+  </mat-tab>
   <mat-tab label="Notes"></mat-tab>
 </mat-tab-group>

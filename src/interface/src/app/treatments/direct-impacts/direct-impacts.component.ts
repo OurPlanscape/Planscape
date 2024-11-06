@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
 import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
@@ -11,7 +11,9 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { PanelComponent } from '@styleguide';
+import { ButtonComponent, PanelComponent } from '@styleguide';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -22,6 +24,11 @@ import { PanelComponent } from '@styleguide';
     DirectImpactsMapComponent,
     DirectImpactsSyncedMapsComponent,
     PanelComponent,
+    MatIconModule,
+    NgIf,
+    MatSlideToggleModule,
+    ButtonComponent,
+    DatePipe,
   ],
   providers: [
     TreatmentsState,
@@ -58,4 +65,5 @@ export class DirectImpactsComponent {
   }
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+  treatmentPlan$ = this.treatmentsState.treatmentPlan$;
 }

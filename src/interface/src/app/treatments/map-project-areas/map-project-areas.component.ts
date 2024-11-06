@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -27,8 +27,9 @@ import {
   Observable,
   Subject,
 } from 'rxjs';
-import { Prescription, TreatmentProjectArea } from '@types';
+import { TreatmentProjectArea } from '@types';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
+import { getTreatedStandsTotal } from '../prescriptions';
 
 type MapLayerData = {
   readonly name: string;
@@ -56,14 +57,17 @@ type MapLayerData = {
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
-export class MapProjectAreasComponent {
+export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() withFill = true;
+  @Input() showTooltips = true;
 
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
+  fillColor: any;
+  getTreatedStandsTotal = getTreatedStandsTotal;
 
   activeProjectAreaId$ = new Subject<number>();
   activeProjectArea$: Observable<TreatmentProjectArea | undefined> =
@@ -111,10 +115,9 @@ export class MapProjectAreasComponent {
     return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
   }
 
-  paint: LayerSpecification['paint'] = {
-    'fill-color': this.getFillColors() as any,
-    'fill-opacity': this.visible ? 0.5 : 0,
-  };
+  ngOnInit() {
+    this.fillColor = this.getFillColors();
+  }
 
   getFillColors() {
     const defaultColor = BASE_COLORS['dark'];
@@ -170,12 +173,5 @@ export class MapProjectAreasComponent {
     });
 
     return features[0].properties['id'];
-  }
-
-  getPrescriptionStandCount(prescriptions: Prescription[]) {
-    return prescriptions.reduce((total: number, prescription) => {
-      total = total + prescription.treated_stand_count;
-      return total;
-    }, 0);
   }
 }
