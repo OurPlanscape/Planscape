@@ -128,14 +128,12 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.drawingLayer) {
       this.drawingLayer.setStyle({
         fillOpacity: planningAreaOpacity, // Fill/background opacity
-        opacity: planningAreaOpacity, // Border opacity
       });
     }
 
     if (this.projectAreasLayer) {
       this.projectAreasLayer.setStyle({
         fillOpacity: projectAreaOpacity,
-        opacity: projectAreaOpacity,
       });
       this.tooltips.forEach((tooltip) => {
         tooltip.setOpacity(projectAreaOpacity);
