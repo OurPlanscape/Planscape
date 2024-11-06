@@ -135,8 +135,6 @@ export class PlanComponent implements OnInit {
       .subscribe((event: NavigationEvent) => {
         this.updatePlanStateFromRoute();
       });
-
-    // TODO: add featureflag
     this.loadNotes();
   }
 
