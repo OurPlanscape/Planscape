@@ -1,3 +1,5 @@
+import { Prescription } from '@types';
+
 // Single prescription keys
 export type PrescriptionSingleAction =
   | 'MODERATE_THINNING_BIOMASS'
@@ -146,3 +148,11 @@ export const PRESCRIPTIONS = {
   SINGLE: SINGLE_ACTIONS,
   SEQUENCE: SEQUENCE_ACTIONS,
 };
+
+// Tabulate the total treated stands count from a prescriptions array
+export function getTreatedStandsTotal(prescriptions: Prescription[]) {
+  return prescriptions.reduce((total: number, prescription) => {
+    total = total + prescription.treated_stand_count;
+    return total;
+  }, 0);
+}
