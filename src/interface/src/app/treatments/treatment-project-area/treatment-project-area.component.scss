@@ -2,6 +2,8 @@
 @import 'mixins';
 @import "colors";
 
+$stand-progress-height: 72px;
+
 .root-container {
   display: flex;
   flex-direction: row;
@@ -16,6 +18,10 @@
 
   ::ng-deep .mat-mdc-tab-body-wrapper {
     height: 100%;
+  }
+
+  sg-notes-sidebar {
+    height: calc(100% - $stand-progress-height);
   }
 }
 
