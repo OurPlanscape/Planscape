@@ -47,7 +47,7 @@ import { ScenarioCardComponent } from '../../styleguide/scenario-card/scenario-c
 import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/scenarios-card-list.component';
 import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
 import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
-import { OpacityControlComponent } from './plan-map/opacity-control/opcaity-control.component';
+import { OpacityControlComponent } from './plan-map/opacity-control/opacity-control.component';
 
 /** Components used in the plan flow. */
 @NgModule({

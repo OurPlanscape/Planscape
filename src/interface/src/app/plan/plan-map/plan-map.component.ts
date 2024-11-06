@@ -27,7 +27,7 @@ import { MapLayerSelectDialogComponent } from '../map-layer-select-dialog/map-la
 import { satelliteTiles, terrainTiles } from 'src/app/map/map.tiles';
 import { MapLayerControlComponent } from './map-layer-control/map-layer-control-component';
 import { MatDialog } from '@angular/material/dialog';
-import { OpacityControlComponent } from './opacity-control/opcaity-control.component';
+import { OpacityControlComponent } from './opacity-control/opacity-control.component';
 
 // Needed to keep references to div elements to remove
 export interface MapRef {
