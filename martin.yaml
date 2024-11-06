@@ -23,9 +23,9 @@ postgres:
         # parameters:
         # - treatment_plan_id: int
         # - variable: string
-        stands_by_tx_results:
+        stands_by_tx_result:
             schema: public
-            function: martin_stands_by_tx_results
+            function: martin_stands_by_tx_result
             minzoom: 0
             maxzoom: 20
             bounds: [-180.0, -90.0, 180.0, 90.0]
