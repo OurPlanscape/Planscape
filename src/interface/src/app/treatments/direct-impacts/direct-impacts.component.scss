@@ -67,7 +67,7 @@
 .direct-impacts-metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  grid-template-rows: repeat(12, 1fr);
+  grid-template-rows: repeat(12, minmax(86px, 1fr));
   gap: 16px;
   padding: 16px 0;
 
@@ -93,6 +93,10 @@
 
     @include on-small() {
       height: 90vh;
+    }
+
+    &.prescriptions {
+      grid-row: 1/13;
     }
   }
 
