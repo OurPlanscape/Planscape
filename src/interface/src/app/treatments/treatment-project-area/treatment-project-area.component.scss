@@ -20,9 +20,6 @@ $stand-progress-height: 72px;
     height: 100%;
   }
 
-  sg-notes-sidebar {
-    height: calc(100% - $stand-progress-height);
-  }
 }
 
 .placeholder-navbar {
@@ -32,7 +29,7 @@ $stand-progress-height: 72px;
 }
 
 .summary-tab-group {
-  height: 100%;
+  height: calc(100% - $stand-progress-height);
   width: 100%;
 
   ::ng-deep .mat-mdc-tab-body-wrapper {
