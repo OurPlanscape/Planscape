@@ -50,7 +50,7 @@ export class OpacityControlComponent extends L.Control {
 
     // Adding the component into the Leaflet container
     container.appendChild(componentRef.location.nativeElement);
-    componentRef.changeDetectorRef.detectChanges()
+    componentRef.changeDetectorRef.detectChanges();
   }
 
   handleOpacityChange(opacity: number) {
