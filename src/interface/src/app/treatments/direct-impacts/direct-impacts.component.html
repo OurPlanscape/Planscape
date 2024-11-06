@@ -16,7 +16,9 @@
 <div class="direct-impacts">
   <div class="title-row">
     <h4 class="title">Direct Treatment Impacts</h4>
-    <mat-slide-toggle>View treatment prescription</mat-slide-toggle>
+    <mat-slide-toggle [(ngModel)]="showTreatmentPrescription"
+      >View treatment prescription
+    </mat-slide-toggle>
     <button sg-button variant="ghost" icon="download" [outlined]="true">
       Download Shapefile
     </button>
@@ -46,15 +48,25 @@
 
       <sg-panel
         class="map-panel"
+        [ngClass]="{ prescriptions: showTreatmentPrescription }"
         [paddedContent]="false"
         [buttons]="[
           { icon: 'layers', actionName: 'layers' },
           { icon: 'open_in_full', actionName: 'expand' }
         ]">
         <div panelTitle>Total Carbon for All Project Areas</div>
-        <app-direct-impacts-synced-maps></app-direct-impacts-synced-maps>
+        <app-direct-impacts-synced-maps
+          *ngIf="!showTreatmentPrescription"></app-direct-impacts-synced-maps>
+        <app-treatment-map
+          [showProjectAreaTooltips]="false"
+          *ngIf="showTreatmentPrescription"></app-treatment-map>
+        <app-treatment-legend
+          *ngIf="showTreatmentPrescription"></app-treatment-legend>
       </sg-panel>
-      <sg-panel class="legend-panel" [paddedContent]="false">
+      <sg-panel
+        class="legend-panel"
+        [paddedContent]="false"
+        *ngIf="!showTreatmentPrescription">
         <div class="legend-title">Map Legend</div>
         <div class="legends">
           <div>100%</div>
