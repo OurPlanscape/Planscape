@@ -38,7 +38,7 @@ BEGIN
       WHERE 
         tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
         AND tr.variable = query_params->>'variable'
-        AND tr.aggregation = 'mean'
+        AND tr.aggregation = 'MEAN'
         AND tr.year = 2024
   ), tx_result_year_5 AS(
     SELECT
@@ -55,7 +55,7 @@ BEGIN
       WHERE 
         tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
         AND tr.variable = query_params->>'variable'
-        AND tr.aggregation = 'mean'
+        AND tr.aggregation = 'MEAN'
         AND tr.year = 2029
   ), tx_result_year_10 AS(
     SELECT
@@ -72,7 +72,7 @@ BEGIN
       WHERE 
         tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
         AND tr.variable = query_params->>'variable'
-        AND tr.aggregation = 'mean'
+        AND tr.aggregation = 'MEAN'
         AND tr.year = 2034
   ), tx_result_year_15 AS(
     SELECT
@@ -89,7 +89,7 @@ BEGIN
       WHERE 
         tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
         AND tr.variable = query_params->>'variable'
-        AND tr.aggregation = 'mean'
+        AND tr.aggregation = 'MEAN'
         AND tr.year = 2039
   ), tx_result_year_20 AS(
     SELECT
@@ -106,7 +106,7 @@ BEGIN
       WHERE 
         tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
         AND tr.variable = query_params->>'variable'
-        AND tr.aggregation = 'mean'
+        AND tr.aggregation = 'MEAN'
         AND tr.year = 2044
   ) SELECT INTO p_mvt ST_AsMVT(tile, 'stands_by_tx_result', 4096, 'geom') FROM (
     SELECT 
