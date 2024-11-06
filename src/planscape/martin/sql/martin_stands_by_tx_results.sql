@@ -23,98 +23,96 @@ BEGIN
   );
 
 
-  SELECT INTO p_mvt (
-    WITH tx_result_year_0 AS(
-      SELECT
-        tr.year AS "year",
-        tr.value AS "value",
-        tr.baseline AS "baseline",
-        tr.aggregation AS "aggregation",
-        tr.variable AS "variable",
-        tp.stand_id AS "stand_id",
-        tp.action AS "action",
-        tp.project_area_id AS "project_area_id"
-        FROM impacts_treatmentresult tr
-        INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
-        WHERE 
-          tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
-          AND tr.variable = query_params->>'variable'
-          AND tr.aggregation = 'mean'
-          AND tr.year = 2024
-    ),
-    WITH tx_result_year_5 AS(
-      SELECT
-        tr.year AS "year",
-        tr.value AS "value",
-        tr.baseline AS "baseline",
-        tr.aggregation AS "aggregation",
-        tr.variable AS "variable",
-        tp.stand_id AS "stand_id",
-        tp.action AS "action",
-        tp.project_area_id AS "project_area_id"
-        FROM impacts_treatmentresult tr
-        INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
-        WHERE 
-          tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
-          AND tr.variable = query_params->>'variable'
-          AND tr.aggregation = 'mean'
-          AND tr.year = 2029
-    ),
-    WITH tx_result_year_10 AS(
-      SELECT
-        tr.year AS "year",
-        tr.value AS "value",
-        tr.baseline AS "baseline",
-        tr.aggregation AS "aggregation",
-        tr.variable AS "variable",
-        tp.stand_id AS "stand_id",
-        tp.action AS "action",
-        tp.project_area_id AS "project_area_id"
-        FROM impacts_treatmentresult tr
-        INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
-        WHERE 
-          tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
-          AND tr.variable = query_params->>'variable'
-          AND tr.aggregation = 'mean'
-          AND tr.year = 2034
-    ),
-    WITH tx_result_year_15 AS(
-      SELECT
-        tr.year AS "year",
-        tr.value AS "value",
-        tr.baseline AS "baseline",
-        tr.aggregation AS "aggregation",
-        tr.variable AS "variable",
-        tp.stand_id AS "stand_id",
-        tp.action AS "action",
-        tp.project_area_id AS "project_area_id"
-        FROM impacts_treatmentresult tr
-        INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
-        WHERE 
-          tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
-          AND tr.variable = query_params->>'variable'
-          AND tr.aggregation = 'mean'
-          AND tr.year = 2039
-    ),
-    WITH tx_result_year_20 AS(
-      SELECT
-        tr.year AS "year",
-        tr.value AS "value",
-        tr.baseline AS "baseline",
-        tr.aggregation AS "aggregation",
-        tr.variable AS "variable",
-        tp.stand_id AS "stand_id",
-        tp.action AS "action",
-        tp.project_area_id AS "project_area_id"
-        FROM impacts_treatmentresult tr
-        INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
-        WHERE 
-          tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
-          AND tr.variable = query_params->>'variable'
-          AND tr.aggregation = 'mean'
-          AND tr.year = 2044
-    )
-
+  WITH tx_result_year_0 AS(
+    SELECT
+      tr.year AS "year",
+      tr.value AS "value",
+      tr.baseline AS "baseline",
+      tr.aggregation AS "aggregation",
+      tr.variable AS "variable",
+      tp.stand_id AS "stand_id",
+      tp.action AS "action",
+      tp.project_area_id AS "project_area_id"
+      FROM impacts_treatmentresult tr
+      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
+      WHERE 
+        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        AND tr.variable = query_params->>'variable'
+        AND tr.aggregation = 'mean'
+        AND tr.year = 2024
+  ),
+  WITH tx_result_year_5 AS(
+    SELECT
+      tr.year AS "year",
+      tr.value AS "value",
+      tr.baseline AS "baseline",
+      tr.aggregation AS "aggregation",
+      tr.variable AS "variable",
+      tp.stand_id AS "stand_id",
+      tp.action AS "action",
+      tp.project_area_id AS "project_area_id"
+      FROM impacts_treatmentresult tr
+      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
+      WHERE 
+        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        AND tr.variable = query_params->>'variable'
+        AND tr.aggregation = 'mean'
+        AND tr.year = 2029
+  ),
+  WITH tx_result_year_10 AS(
+    SELECT
+      tr.year AS "year",
+      tr.value AS "value",
+      tr.baseline AS "baseline",
+      tr.aggregation AS "aggregation",
+      tr.variable AS "variable",
+      tp.stand_id AS "stand_id",
+      tp.action AS "action",
+      tp.project_area_id AS "project_area_id"
+      FROM impacts_treatmentresult tr
+      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
+      WHERE 
+        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        AND tr.variable = query_params->>'variable'
+        AND tr.aggregation = 'mean'
+        AND tr.year = 2034
+  ),
+  WITH tx_result_year_15 AS(
+    SELECT
+      tr.year AS "year",
+      tr.value AS "value",
+      tr.baseline AS "baseline",
+      tr.aggregation AS "aggregation",
+      tr.variable AS "variable",
+      tp.stand_id AS "stand_id",
+      tp.action AS "action",
+      tp.project_area_id AS "project_area_id"
+      FROM impacts_treatmentresult tr
+      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
+      WHERE 
+        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        AND tr.variable = query_params->>'variable'
+        AND tr.aggregation = 'mean'
+        AND tr.year = 2039
+  ),
+  WITH tx_result_year_20 AS(
+    SELECT
+      tr.year AS "year",
+      tr.value AS "value",
+      tr.baseline AS "baseline",
+      tr.aggregation AS "aggregation",
+      tr.variable AS "variable",
+      tp.stand_id AS "stand_id",
+      tp.action AS "action",
+      tp.project_area_id AS "project_area_id"
+      FROM impacts_treatmentresult tr
+      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
+      WHERE 
+        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        AND tr.variable = query_params->>'variable'
+        AND tr.aggregation = 'mean'
+        AND tr.year = 2044
+  ) SELECT INTO p_mvt (
     SELECT 
       ss.id as "id",
       ss.size as "stand_size",
@@ -142,6 +140,7 @@ BEGIN
       LEFT JOIN tx_result_year_10 tr10 ON tr10.stand_id = ss.id
       LEFT JOIN tx_result_year_15 tr15 ON tr15.stand_id = ss.id
       LEFT JOIN tx_result_year_20 tr20 ON tr20.stand_id = ss.id
+    WHERE
       ss.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269) AND
         ss.geometry && p_intersecting_area AND ST_Within(ST_Centroid(ss.geometry), p_intersecting_area) AND
         ss.size = p_stand_size
