@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import { Component, Input, EventEmitter, Output } from '@angular/core';
 import { NgIf, NgFor, NgClass, KeyValuePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -6,7 +6,7 @@ import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-i
 import { SequenceIconComponent } from '../../../styleguide/sequence-icon/sequence-icon.component';
 import { ModalComponent } from '../../../styleguide/modal/modal.component';
 import { PRESCRIPTIONS } from '../prescriptions';
-
+import { MatDividerModule } from '@angular/material/divider';
 /**
  * Treatment Legend
  * A component that displays a set of treatments, along with an icon
@@ -16,6 +16,7 @@ import { PRESCRIPTIONS } from '../prescriptions';
   standalone: true,
   imports: [
     KeyValuePipe,
+    MatDividerModule,
     MatExpansionModule,
     MatIconModule,
     ModalComponent,
@@ -31,6 +32,7 @@ import { PRESCRIPTIONS } from '../prescriptions';
 export class TreatmentLegendComponent {
   readonly singlePrescriptions = PRESCRIPTIONS.SINGLE;
   readonly sequencePrescriptions = PRESCRIPTIONS.SEQUENCE;
+  @Input() defaultExpanded = true;
   @Output() closeRequest = new EventEmitter();
   constructor() {}
 
