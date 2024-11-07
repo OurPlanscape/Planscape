@@ -23,6 +23,7 @@ postgres:
         # parameters:
         # - treatment_plan_id: int
         # - variable: string
+        # - project_area_id: Optional[int]
         stands_by_tx_result:
             schema: public
             function: martin_stands_by_tx_result
