@@ -31,7 +31,7 @@ export const Default: Story = {
 
 export const WithError: Story = {
   args: {
-    ...Default, 
+    ...Default,
     title: 'Treatment plan name',
     errorMessage: 'This name already exists',
   },
@@ -39,7 +39,7 @@ export const WithError: Story = {
 
 export const NoTitle: Story = {
   args: {
-    ...Default, 
+    ...Default,
     title: '',
   },
 };
