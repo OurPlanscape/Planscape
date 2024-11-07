@@ -3,10 +3,8 @@ import { AsyncPipe, NgForOf } from '@angular/common';
 import {
   baseLayerStyles,
   BaseLayerType,
-  DEFAULT_BASE_MAP,
 } from '../treatment-map/map-base-layers';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import { of } from 'rxjs';
 
 @Component({
   selector: 'app-map-base-layer',
@@ -17,8 +15,7 @@ import { of } from 'rxjs';
 })
 export class MapBaseLayerComponent {
   baseLayers = Object.keys(baseLayerStyles) as BaseLayerType[];
-  readonly defaultLayer =
-    this.mapConfigState.baseLayer$ || of(DEFAULT_BASE_MAP);
+  readonly baseLayer$ = this.mapConfigState.baseLayer$;
 
   constructor(private mapConfigState: MapConfigState) {}
 

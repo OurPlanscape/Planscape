@@ -5,7 +5,7 @@
       [value]="t"
       [id]="'layer-' + t"
       name="baseLayer"
-      [checked]="(defaultLayer | async) === t"
+      [checked]="(baseLayer$ | async) === t"
       (click)="updateBaseLayer(t)" />
     <label [for]="'layer-' + t">{{ t }}</label>
   </div>
