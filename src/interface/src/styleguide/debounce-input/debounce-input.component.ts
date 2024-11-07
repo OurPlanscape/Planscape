@@ -60,7 +60,6 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   readonly textValueUpdatedSubject = new Subject<string>();
   originalText = this.textValue;
   hovering = false;
-
   ngOnInit() {
     const debounceInterval = Number(this.debounceInterval);
     if (this.textValue === '') {
@@ -89,7 +88,7 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
     this.errorMessage = null;
   }
 
-  emitTextValue(e: Event) {
+  handleEnterPress(e: Event) {
     this.textValueUpdatedSubject.next(this.textValue);
     e.stopPropagation();
   }
@@ -104,7 +103,7 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
 
   onBlur() {
     //if the text is empty, we revert to the original text
-    if (this.textValue === '') {
+    if (this.textValue === '' || this.textValue === this.originalText) {
       this.textValue = this.originalText;
       this.currentMode$.next('INITIAL');
     } else if (this.textValue !== this.originalText) {
@@ -119,8 +118,15 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   setToEditMode() {
     this.currentMode$.next('EDIT');
   }
-
-  clear() {
-    this.textValue = '';
+  handleMouseDown(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  //This removes any edit changes and returns to initial state
+  handleMouseUp(event: MouseEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.textValue = this.originalText;
+    this.currentMode$.next('INITIAL');
   }
 }

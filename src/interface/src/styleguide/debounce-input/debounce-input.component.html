@@ -41,12 +41,13 @@
         [(ngModel)]="textValue"
         (blur)="onBlur()"
         (ngModelChange)="clearError()"
-        (keyup.enter)="emitTextValue($event)" />
+        (keyup.enter)="handleEnterPress($event)" />
       <button
         *ngIf="hasClearButton && curMode === 'EDIT'"
         mat-icon-button
         aria-label="Clear"
-        (click)="clear()">
+        (mousedown)="handleMouseDown($event)"
+        (mouseup)="handleMouseUp($event)">
         <mat-icon>close</mat-icon>
       </button>
       <mat-spinner
