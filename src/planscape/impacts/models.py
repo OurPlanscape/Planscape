@@ -291,6 +291,7 @@ class ImpactVariable(models.TextChoices):
     CANOPY_BASE_HEIGHT = "CBH", "Canopy Base Height"
     CANOPY_COVER = "CC", "Canopy Cover"
     FIRE_BEHAVIOR_FUEL_MODEL = "FBFM", "Fire Behavior/Fuel Model"
+    FLAME_LENGTH = "FL", "Flame Length"
     LARGE_TREE_BIOMASS = "LARGE_TREE_BIOMASS", "Large Tree Biomass"
     MERCH_BIOMASS = "MERCH_BIOMASS", "Merch Biomass"
     MORTALITY = "MORTALITY", "Mortality"
@@ -298,6 +299,7 @@ class ImpactVariable(models.TextChoices):
     POTENTIAL_SMOKE = "POTENTIAL_SMOKE", "Potential Smoke"
     PROBABILITY_TORCHING = "PTORCH", "Probabiliy of Torching"
     QUADRATIC_MEAN_DIAMETER = "QMD", "Quadratic Mean Diameter"
+    RATE_OF_SPREAD = "ROS", "Rate of Spread"
     STAND_DENSITY_INDEX = "SDI", "Stand Density Index"
     TOTAL_HEIGHT = "TH", "Total Height"
     TOTAL_FLAME_SEVERITY = "TOT_FLAME_SEV", "Total Flame Severity"
@@ -310,6 +312,7 @@ class ImpactVariable(models.TextChoices):
             cls.CANOPY_BASE_HEIGHT: [ImpactVariableAggregation.MEAN],
             cls.CANOPY_COVER: [ImpactVariableAggregation.MEAN],
             cls.FIRE_BEHAVIOR_FUEL_MODEL: [],
+            cls.FLAME_LENGTH: [ImpactVariableAggregation.MEAN],
             cls.LARGE_TREE_BIOMASS: [
                 ImpactVariableAggregation.SUM,
                 ImpactVariableAggregation.MEAN,
@@ -329,6 +332,7 @@ class ImpactVariable(models.TextChoices):
             ],
             cls.PROBABILITY_TORCHING: [ImpactVariableAggregation.MEAN],
             cls.QUADRATIC_MEAN_DIAMETER: [ImpactVariableAggregation.MEAN],
+            cls.RATE_OF_SPREAD: [ImpactVariableAggregation.MEAN],
             cls.STAND_DENSITY_INDEX: [ImpactVariableAggregation.MEAN],
             cls.TOTAL_HEIGHT: [ImpactVariableAggregation.MEAN],
             cls.TOTAL_FLAME_SEVERITY: [ImpactVariableAggregation.MEAN],
@@ -337,7 +341,7 @@ class ImpactVariable(models.TextChoices):
                 ImpactVariableAggregation.MEAN,
             ],
         }
-        return list([x.lower() for x in AGGREGATIONS[impact_variable]])
+        return list([x for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
     def _get_datalayer(

@@ -9,6 +9,7 @@
   padding: 12px;
   box-sizing: border-box;
   gap: 2px;
+  border-bottom: 1px $color-soft-gray solid;
 
   .heading-line {
     display: flex;
@@ -31,7 +32,7 @@
     width: 100%;
     display: flex;
     flex-direction: row;
-    padding: 10px 8x 0 8px ;
+    padding: 10px 8px 0 8px;
     gap: 10px;
     height: 40px;
     align-items: center;
@@ -63,7 +64,7 @@
 ::ng-deep .name-input-component .input-wrapper {
   width: 100%;
   border-width: 2px;
-  padding: 4px 10px;
+  padding: 4px 0px 4px 10px;
 }
 
 ::ng-deep .name-input-component .focus-within {

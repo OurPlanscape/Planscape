@@ -7,6 +7,7 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 describe('TreatmentProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -22,7 +23,9 @@ describe('TreatmentProjectAreaComponent', () => {
       providers: [
         MockProviders(MapConfigState, SelectedStandsState, TreatmentsState),
       ],
-      declarations: [MockDeclarations(TreatmentMapComponent)],
+      declarations: [
+        MockDeclarations(TreatmentMapComponent, MapBaseLayerComponent),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentProjectAreaComponent);

@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TreatmentPlanAboutTabComponent } from '../treatment-plan-about-tab/treatment-plan-about-tab.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 describe('TreatmentPlanTabsComponent', () => {
   let component: TreatmentPlanTabsComponent;
@@ -21,7 +22,8 @@ describe('TreatmentPlanTabsComponent', () => {
       declarations: [
         MockDeclarations(
           TreatmentPlanAboutTabComponent,
-          ProjectAreasTabComponent
+          ProjectAreasTabComponent,
+          MapBaseLayerComponent
         ),
       ],
       providers: [MockProviders(TreatmentsState)],

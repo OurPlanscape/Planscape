@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   DraggableDirective,
@@ -57,6 +57,7 @@ import { addAuthHeaders } from '../maplibre.helper';
   styleUrl: './treatment-map.component.scss',
 })
 export class TreatmentMapComponent {
+  @Input() showProjectAreaTooltips = true;
   /**
    * Flag to determine if the user is currently dragging to select stands
    */

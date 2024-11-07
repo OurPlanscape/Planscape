@@ -14,7 +14,9 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
-  <app-map-project-areas [withFill]="false"></app-map-project-areas>
+  <app-map-project-areas
+    [withFill]="false"
+    [showTooltips]="false"></app-map-project-areas>
   <mgl-control position="bottom-left">
     <div class="label">{{ label }}</div>
   </mgl-control>
