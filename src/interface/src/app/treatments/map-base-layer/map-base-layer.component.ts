@@ -17,7 +17,8 @@ import { of } from 'rxjs';
 })
 export class MapBaseLayerComponent {
   baseLayers = Object.keys(baseLayerStyles) as BaseLayerType[];
-  readonly defaultLayer = this.mapConfigState.baseLayer$ || of(DEFAULT_BASE_MAP);
+  readonly defaultLayer =
+    this.mapConfigState.baseLayer$ || of(DEFAULT_BASE_MAP);
 
   constructor(private mapConfigState: MapConfigState) {}
 
