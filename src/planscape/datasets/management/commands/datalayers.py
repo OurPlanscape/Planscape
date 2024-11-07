@@ -278,8 +278,7 @@ class Command(PlanscapeCommand):
                 }
                 self._skip_existing(**check_existing_args)
         except DataLayerAlreadyExists as datalayer_exists:
-            self.stdout.write(str(datalayer_exists))
-            return
+            return {"info": str(datalayer_exists)}
 
         s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
