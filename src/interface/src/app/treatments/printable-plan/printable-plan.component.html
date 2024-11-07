@@ -1,0 +1,25 @@
+<div>Treatment Plan</div>
+<div class="title-info"></div>
+<div class="map-view"><app-treatment-map></app-treatment-map></div>
+
+<div *ngIf="projectAreas$ | async; let areas" class="proj-area-list">
+  <div *ngFor="let projectArea of areas" class="proj-area-box">
+    {{ projectArea.project_area_name }}
+    <div *ngFor="let rx of projectArea.prescriptions">
+      <div
+        class="rx-submenu-header single-treatment"
+        *ngIf="rx.type === 'SINGLE'">
+        <div class="rx-detail-name">
+          {{ headingTitleText(rx.action, rx.type) }}
+        </div>
+      </div>
+      <div *ngIf="rx.type === 'SEQUENCE'" class="sequence-body">
+        <div
+          *ngFor="let seqDetail of sequenceActions(rx.action)"
+          class="sequence-treatment-line">
+          <span class="sequence-treatment-name">{{ seqDetail }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

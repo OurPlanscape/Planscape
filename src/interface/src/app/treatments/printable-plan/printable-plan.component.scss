@@ -1,0 +1,21 @@
+.map-view {
+  width: 7in;
+  height: 7in;
+}
+.proj-area-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  row-gap: 10px;
+  column-gap: 10px;
+  width: 7in;
+}
+.proj-area-box {
+  width: 240px;
+  height: 180px;
+  border: 1px black solid;
+}
+
+
+@media print {
+  
+}

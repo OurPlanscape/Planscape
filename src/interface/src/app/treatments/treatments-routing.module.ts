@@ -6,6 +6,7 @@ import { numberResolver } from '../resolvers/number.resolver';
 import { TreatmentProjectAreaComponent } from './treatment-project-area/treatment-project-area.component';
 import { TreatmentConfigComponent } from './treatment-config/treatment-config.component';
 import { DirectImpactsComponent } from './direct-impacts/direct-impacts.component';
+import { PrintablePlanComponent } from './printable-plan/printable-plan.component';
 
 const routes: Routes = [
   {
@@ -37,6 +38,11 @@ const routes: Routes = [
         },
       },
     ],
+  },
+  {
+    path: 'export',
+    title: 'Treatment Plan Export',
+    component: PrintablePlanComponent,
   },
   {
     path: 'impacts',

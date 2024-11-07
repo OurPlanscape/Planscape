@@ -14,7 +14,7 @@ import {
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentsState } from '../treatments.state';
-
+import { PrintablePlanComponent } from '../printable-plan/printable-plan.component';
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { catchError, combineLatest, map, switchMap } from 'rxjs';
@@ -56,6 +56,7 @@ import { getMergedRouteData } from '../treatments-routing-data';
     ApplyTreatmentComponent,
     TreatmentLegendComponent,
     RouterLink,
+    PrintablePlanComponent,
   ],
   providers: [
     TreatmentsState,
@@ -79,8 +80,9 @@ export class TreatmentConfigComponent {
   ]).pipe(
     map(([activeArea, showTreatmentLayer]) => !activeArea && showTreatmentLayer)
   );
-  @ViewChild(TreatmentMapComponent) mapElement: any;
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+
+  @ViewChild(TreatmentMapComponent) mapElement: any;
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -137,8 +139,9 @@ export class TreatmentConfigComponent {
       injector: this.injector, // Pass the current injector to the dialog
     });
   }
+  showPrintVersion = false;
 
-  async printTreatment() {
+  async oldPrintTreatment() {
     // Create a new div for the printable map
     const printContainer = document.createElement('div');
     printContainer.style.position = 'absolute';
@@ -148,7 +151,7 @@ export class TreatmentConfigComponent {
     document.body.appendChild(printContainer);
 
     // Copy orientation and content of existing map
-    const originalMap = this.mapElement.mapLibreMap; // or however you access your map
+    const originalMap = this.mapElement.mapLibreMap;
     const printMap = new MapLibreMap({
       container: printContainer,
       style: originalMap.getStyle(),
@@ -192,7 +195,6 @@ export class TreatmentConfigComponent {
             margin-right: auto;
             width: 7in;
             height: 7in;
-            border: 5px black dotted;
           }
           .print-only-map img {
             width:auto;
