@@ -1,6 +1,3 @@
-// handle errors
-// emit change event
-
 import {
   Component,
   Input,
@@ -10,8 +7,8 @@ import {
   OnInit,
 } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // Import FormsModule
-import { InputFieldComponent } from '@styleguide';
+import { FormsModule } from '@angular/forms';
+import { InputFieldComponent, ButtonComponent } from '@styleguide';
 import {
   debounceTime,
   distinctUntilChanged,
@@ -24,9 +21,8 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { ButtonComponent } from '@styleguide';
 
-export type editState = 'INITIAL' | 'EDIT' | 'SAVING';
+export type DebounceEditState = 'INITIAL' | 'EDIT' | 'SAVING';
 
 /**
  * Component for setting name
@@ -57,7 +53,7 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   @Input() errorMessage: string | null = null;
   @Input() tooltipContent: string | null = null;
   @Input() hasClearButton = true;
-  @Input() currentMode$ = new BehaviorSubject<editState>('INITIAL');
+  @Input() currentMode$ = new BehaviorSubject<DebounceEditState>('INITIAL');
 
   @Output() textValueUpdated = new EventEmitter<string>();
   @Input() debounceInterval = 10;

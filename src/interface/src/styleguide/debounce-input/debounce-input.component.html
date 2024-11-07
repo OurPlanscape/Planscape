@@ -22,8 +22,13 @@
     <div class="text-content">
       {{ textValue }}
     </div>
-    <button sg-button variant="icon-only" *ngIf="hovering"
-    class="pencil-icon" icon="edit_outlined" (click)="setToEditMode()"></button>
+    <button
+      sg-button
+      variant="icon-only"
+      *ngIf="hovering"
+      class="pencil-icon"
+      icon="edit_outlined"
+      (click)="setToEditMode()"></button>
   </div>
   <sg-input-field *ngIf="curMode !== 'INITIAL'" size="small" class="name-input">
     <input
