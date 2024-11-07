@@ -65,8 +65,6 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   originalText = this.textValue;
   hovering = false;
 
-  // TODO: this component also needs a clear icon in EDIT mode
-
   ngOnInit() {
     const debounceInterval = Number(this.debounceInterval);
     if (this.textValue === '') {
@@ -109,8 +107,7 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   }
 
   onBlur() {
-    //if the text is clear, we just revert to the original text
-    console.log('is text clear? whats original:', this.originalText);
+    //if the text is empty, we revert to the original text
     if (this.textValue === '') {
       this.textValue = this.originalText;
       this.currentMode$.next('INITIAL');
