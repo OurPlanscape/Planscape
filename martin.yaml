@@ -18,6 +18,18 @@ postgres:
             maxzoom: 20
             bounds: [-180.0, -90.0, 180.0, 90.0]
             id_column: id
+        # layer with a series of stands and treatment results' value and baseline, 
+        # given a treatment_plan_id and variable
+        # parameters:
+        # - treatment_plan_id: int
+        # - variable: string
+        stands_by_tx_result:
+            schema: public
+            function: martin_stands_by_tx_result
+            minzoom: 0
+            maxzoom: 20
+            bounds: [-180.0, -90.0, 180.0, 90.0]
+            id_column: id
         # layer with the project area outline. This unions all stands
         # that compose the project are and creates a single multi polygon.
         # this layer changes the shape of the project area to conform to

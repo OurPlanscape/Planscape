@@ -37,6 +37,7 @@ $panel-title-height: 60px;
 
 .content {
   height: calc(100% - $panel-title-height);
+  position: relative;
 }
 
 .buttons {
