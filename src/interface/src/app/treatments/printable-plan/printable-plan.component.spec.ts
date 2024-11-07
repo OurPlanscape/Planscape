@@ -8,10 +8,9 @@ describe('PrintablePlanComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PrintablePlanComponent]
-    })
-    .compileComponents();
-    
+      imports: [PrintablePlanComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(PrintablePlanComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
