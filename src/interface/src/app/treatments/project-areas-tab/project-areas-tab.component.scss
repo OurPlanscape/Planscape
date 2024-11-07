@@ -9,7 +9,7 @@
   .debug-link {
     height: 20px;
   }
-  
+
   .side-search-container {
     display: flex;
     flex-direction: row;
@@ -20,10 +20,43 @@
     border-bottom: 1px $color-soft-gray solid;
   }
 
-.project-areas-list {
-  overflow: scroll;
-  height: 100%;
-}
+  .results-count {
+    @include h5();
+    height: 60;
+    padding: 16px;
+  }
+
+  .no-results {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .no-results-box {
+    color: $color-md-gray;
+    flex-direction: column;
+    display: flex;
+    height: 180px;
+    width: 100%;
+    align-items: center;
+    gap: 8px;
+    padding: 24px 0;
+
+    .no-results-title {
+      @include h5();
+      color: $color-black;
+    }
+    .no-results-detail {
+      @include small-paragraph;
+      text-align: center;
+    }
+  }
+
+  .project-areas-list {
+    overflow: scroll;
+    height: 100%;
+  }
 
   ::ng-deep .search-bar .input-wrapper {
     width: 100%;

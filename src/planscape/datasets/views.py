@@ -5,6 +5,7 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.response import Response
 from rest_framework import status
 from core.serializers import MultiSerializerMixin
+from datasets.filters import AdminDataLayerFilterSet
 from datasets.models import DataLayer, Dataset
 from datasets.serializers import (
     CreateDataLayerSerializer,
@@ -50,6 +51,7 @@ class AdminDataLayerViewSet(
         "retrieve": DataLayerSerializer,
     }
     pagination_class = LimitOffsetPagination
+    filterset_class = AdminDataLayerFilterSet
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)

@@ -62,9 +62,16 @@ export class TreatmentExpanderComponent {
    * Whether this component is selected, for styling
    */
   @Input() selected = false;
-  openState = false;
-
+  /***
+   * Search string - a string to be highlighted if it appears
+   */
+  @Input() searchString: string | null = null;
+  /***
+   * an event emitted when the expander is toggled
+   */
   @Output() stateToggle = new EventEmitter<boolean>();
+
+  openState = false;
 
   toggleState() {
     this.openState = !this.openState;
@@ -83,6 +90,22 @@ export class TreatmentExpanderComponent {
         .name;
     }
     return 'No Treatment';
+  }
+
+  // split on string, but retain search string
+  _splitRetain(haystack: string, needle: string) {
+    const regex = new RegExp(`(${needle})`, 'ig');
+    return haystack.split(regex).filter(Boolean);
+  }
+
+  splitTextLine(textLine: string): string[] | null {
+    if (!this.searchString) return [textLine];
+    return this._splitRetain(textLine, this.searchString);
+  }
+
+  isMatch(part: string): boolean {
+    if (!this.searchString) return false;
+    return part.toLowerCase() === this.searchString.toLowerCase();
   }
 
   sequenceDetails(): string[] {
@@ -106,5 +129,11 @@ export class TreatmentExpanderComponent {
 
   get isSelected() {
     return this.selected;
+  }
+
+  //if the element is being rendered and searchstring exists,
+  // we know that the treatment is in the search results
+  get isSearchResult() {
+    return this.searchString !== null && this.searchString !== '';
   }
 }
