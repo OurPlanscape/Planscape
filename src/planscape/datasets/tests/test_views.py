@@ -1,4 +1,5 @@
 from unittest import mock
+from urllib.parse import urlencode
 from datasets.models import DataLayer, Dataset
 from datasets.tests.factories import DataLayerFactory, DatasetFactory
 from organizations.tests.factories import OrganizationFactory
@@ -29,6 +30,32 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
         url = reverse("api:admin-datasets:datalayers-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+
+    def test_filter_by_name_exact_returns_record(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(dataset=self.dataset)
+        filter = {
+            "name": datalayer.name,
+        }
+        url = f"{reverse('api:admin-datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, data.get("count"))
+        self.assertEqual(datalayer.name, data.get("records")[0].get("name"))
+
+    def test_filter_by_name_icontains_returns_record(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(dataset=self.dataset)
+        filter = {
+            "name__icontains": datalayer.name[:3],
+        }
+        url = f"{reverse('api:admin-datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, data.get("count"))
+        self.assertEqual(datalayer.name, data.get("records")[0].get("name"))
 
     def test_create_by_normal_user_fails(self):
         self.client.force_authenticate(user=self.normal)
