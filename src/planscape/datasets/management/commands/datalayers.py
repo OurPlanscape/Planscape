@@ -3,7 +3,8 @@ import multiprocessing
 import re
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Optional
+import subprocess
+from typing import Any, Dict, List, Optional
 
 import requests
 from core.base_commands import PlanscapeCommand
@@ -49,17 +50,27 @@ def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
     }
 
 
-def create_for_import(input_file: str, dataset: int) -> None:
-    name = name_from_input_file(input_file)
-    metadata = get_impacts_metadata(input_file=input_file)
-    call_command(
+def get_create_call(name, input_file, dataset, metadata) -> List[str]:
+    return [
+        "python3",
+        "manage.py",
         "datalayers",
         "create",
         name,
-        input_file=input_file,
-        dataset=dataset,
-        metadata=metadata if metadata else None,
-    )
+        "--input-file",
+        input_file,
+        "--dataset",
+        str(dataset),
+        "--metadata",
+        metadata,
+    ]
+
+
+def create_for_import(input_file: str, dataset: int) -> None:
+    name = name_from_input_file(input_file)
+    metadata = get_impacts_metadata(input_file=input_file)
+    command = get_create_call(name, input_file, dataset, json.dumps(metadata))
+    subprocess.run(command)
 
 
 def name_from_input_file(input_file: str):
@@ -107,8 +118,8 @@ class Command(PlanscapeCommand):
         import_parser.add_argument(
             "--dry-run",
             required=False,
-            type=bool,
             default=False,
+            action="store_true",
         )
         import_parser.add_argument(
             "--process-count",
@@ -134,7 +145,10 @@ class Command(PlanscapeCommand):
         pprint(data)
 
     def create(self, **kwargs) -> None:
-        pprint(self._create_datalayer(**kwargs))
+        try:
+            pprint(self._create_datalayer(**kwargs))
+        except Exception as ex:
+            self.stderr.write(f"ERROR: {kwargs =}\nEXCEPTION: {ex =}")
 
     def _upload_file(self, rasters, datalayer, upload_to) -> requests.Response:
         upload_url_path = Path(datalayer.get("url"))
@@ -251,10 +265,11 @@ class Command(PlanscapeCommand):
         )
 
         if dry_run:
-            map(pprint, s3_files)
+            for f in s3_files:
+                pprint(f)
             return
         fn = partial(create_for_import, dataset=dataset)
-        with multiprocessing.Pool(processes=process_count) as pool:
+        with multiprocessing.Pool(process_count) as pool:
             _ = pool.map(
                 fn,
                 s3_files,

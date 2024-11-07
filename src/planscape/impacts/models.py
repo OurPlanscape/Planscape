@@ -341,7 +341,7 @@ class ImpactVariable(models.TextChoices):
                 ImpactVariableAggregation.MEAN,
             ],
         }
-        return list([x.lower() for x in AGGREGATIONS[impact_variable]])
+        return list([x for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
     def _get_datalayer(

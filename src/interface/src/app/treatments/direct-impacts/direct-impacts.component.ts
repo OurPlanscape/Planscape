@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, DatePipe, NgIf } from '@angular/common';
+import { AsyncPipe, DatePipe, NgClass, NgIf } from '@angular/common';
 import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
@@ -14,6 +14,9 @@ import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/
 import { ButtonComponent, PanelComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { FormsModule } from '@angular/forms';
+import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
+import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -29,6 +32,10 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
     MatSlideToggleModule,
     ButtonComponent,
     DatePipe,
+    NgClass,
+    FormsModule,
+    TreatmentMapComponent,
+    TreatmentLegendComponent,
   ],
   providers: [
     TreatmentsState,
@@ -42,6 +49,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 export class DirectImpactsComponent {
   constructor(
     private treatmentsState: TreatmentsState,
+    private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -55,6 +63,9 @@ export class DirectImpactsComponent {
           if (plan?.status !== 'SUCCESS') {
             this.router.navigate(['../'], { relativeTo: this.route });
           }
+          this.mapConfigState.setShowFillProjectAreas(false);
+          this.mapConfigState.updateShowTreatmentStands(true);
+          this.mapConfigState.updateShowProjectAreas(true);
         }),
         catchError((error) => {
           this.router.navigate(['/']);
@@ -66,4 +77,6 @@ export class DirectImpactsComponent {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
+
+  showTreatmentPrescription = false;
 }
