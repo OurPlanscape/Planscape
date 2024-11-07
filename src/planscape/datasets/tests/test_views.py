@@ -42,7 +42,7 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, data.get("count"))
-        self.assertEqual(datalayer.name, data.get("records")[0].get("name"))
+        self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
 
     def test_filter_by_name_icontains_returns_record(self):
         self.client.force_authenticate(user=self.admin)
@@ -55,7 +55,7 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, data.get("count"))
-        self.assertEqual(datalayer.name, data.get("records")[0].get("name"))
+        self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
 
     def test_create_by_normal_user_fails(self):
         self.client.force_authenticate(user=self.normal)
@@ -79,10 +79,12 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
         data = {
             "name": "my dataset",
             "dataset": self.dataset.pk,
+            "type": "RASTER",
             "organization": self.dataset.organization.pk,
             "original_name": "foo",
         }
         response = self.client.post(url, data=data, format="json")
+        breakpoint()
         self.assertEqual(response.status_code, 201)
         self.assertEqual(1, DataLayer.objects.all().count())
 
