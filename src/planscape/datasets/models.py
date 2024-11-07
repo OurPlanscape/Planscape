@@ -234,3 +234,13 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         ordering = ("organization", "dataset", "id")
         verbose_name = "Datalayer"
         verbose_name_plural = "Datalayers"
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "dataset",
+                    "name",
+                    "type",
+                ],
+                name="datalayer_unique_constraint",
+            )
+        ]
