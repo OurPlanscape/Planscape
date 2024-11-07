@@ -84,7 +84,6 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
             "original_name": "foo",
         }
         response = self.client.post(url, data=data, format="json")
-        breakpoint()
         self.assertEqual(response.status_code, 201)
         self.assertEqual(1, DataLayer.objects.all().count())
 
