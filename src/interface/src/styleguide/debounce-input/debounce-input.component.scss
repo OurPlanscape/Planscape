@@ -6,7 +6,7 @@
   display: flex;
   flex-direction: column;
   width: 100%;
-  padding: 12px;
+  padding: 8px 12px 8px 12px;
   box-sizing: border-box;
   gap: 2px;
   border-bottom: 1px $color-soft-gray solid;
@@ -28,11 +28,15 @@
     height: 22px;
   }
 
+  .name-container {
+    height: 40px;
+  }
+
   .plain-text-box {
     width: 100%;
     display: flex;
     flex-direction: row;
-    padding: 10px 8px 0 8px;
+    padding:  2px 24px 0px 14px;
     gap: 10px;
     height: 40px;
     align-items: center;
@@ -55,16 +59,29 @@
     color: $color-dark-red;
     height: 24px;
   }
+
+  ::ng-deep input {
+    @include h5();
+  width: 100%;
+  font-weight: 600;
+  }
+
+}
+
+.name-input {
+  @include h5();
 }
 
 ::ng-deep .name-input-component input {
+  @include h5();
   width: 100%;
+  font-weight: 600;
 }
 
 ::ng-deep .name-input-component .input-wrapper {
   width: 100%;
   border-width: 2px;
-  padding: 4px 0px 4px 10px;
+  padding: 4px 0px 4px 8px;
 }
 
 ::ng-deep .name-input-component .focus-within {
