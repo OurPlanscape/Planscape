@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { Component, Input, EventEmitter, Output, OnInit } from '@angular/core';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -29,11 +29,17 @@ import {
   templateUrl: './search-result-card.component.html',
   styleUrl: './search-result-card.component.scss',
 })
-export class SearchResultCardComponent {
+export class SearchResultCardComponent implements OnInit {
   @Input() projectArea!: TreatmentProjectArea;
   @Input() searchString: string = '';
   @Input() wholeWordsOnly: boolean = false;
   @Output() cardClick = new EventEmitter();
+
+  projectLines: string[] = [];
+
+  ngOnInit(): void {
+    this.projectLines = this.extractProjectLines();
+  }
 
   extractProjectTitle() {
     return this.projectArea.project_area_name;

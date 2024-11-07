@@ -44,7 +44,7 @@ export class ProjectAreaTreatmentsTabComponent {
   ) {}
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
-  searchString: string | null = null;
+  searchString: string = '';
 
   prescriptions$: Observable<Prescription[]> = combineLatest([
     this.treatmentsState.summary$,
@@ -85,7 +85,8 @@ export class ProjectAreaTreatmentsTabComponent {
               (p.type === 'SEQUENCE' &&
                 PRESCRIPTIONS.SEQUENCE[
                   p.action as PrescriptionSequenceAction
-                ].name
+                ].details
+                  .join(' ')
                   .toLowerCase()
                   .includes(this.searchString))
             );

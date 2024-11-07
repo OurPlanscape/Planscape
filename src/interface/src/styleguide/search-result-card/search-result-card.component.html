@@ -13,7 +13,7 @@
       </div>
     </ng-container>
   </div>
-  <div class="text-line" *ngFor="let textLine of extractProjectLines()">
+  <div class="text-line" *ngFor="let textLine of projectLines">
     <mat-icon>subdirectory_arrow_right</mat-icon>
     <div *ngFor="let part of splitTextLine(textLine); let i = index">
       <div class="highlighted" *ngIf="isMatch(part)">

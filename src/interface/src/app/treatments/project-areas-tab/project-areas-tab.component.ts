@@ -61,7 +61,7 @@ export class ProjectAreasTabComponent {
 
   doSearch(searchString: string) {
     this.searchString = searchString;
-    if (this.searchString === '') {
+    if (!this.searchString) {
       this.filteredProjectAreas$ = this.projectAreas$;
     } else {
       this.filteredProjectAreas$ = this.projectAreas$.pipe(

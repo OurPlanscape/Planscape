@@ -27,7 +27,6 @@
   }
 
   .no-results {
-    height: 100%;
     width: 100%;
     display: flex;
     align-items: center;
@@ -38,10 +37,11 @@
     color: $color-md-gray;
     flex-direction: column;
     display: flex;
-    height: 140px;
+    height: 180px;
     width: 100%;
     align-items: center;
     gap: 8px;
+    padding: 24px 0;
 
     .no-results-title {
       @include h5();
