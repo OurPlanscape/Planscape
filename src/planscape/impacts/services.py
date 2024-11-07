@@ -367,7 +367,7 @@ def calculate_impacts(
         year=year,
     )
     prescription_stands = list(map(to_geojson, prescriptions))
-    agg = ImpactVariable.get_aggregations(variable)
+    agg = [ag.lower() for ag in ImpactVariable.get_aggregations(variable)]
     log.info(f"Calculating raster stats for {variable} with aggregations {agg}")
     baseline_stats = zonal_stats(
         prescription_stands,
