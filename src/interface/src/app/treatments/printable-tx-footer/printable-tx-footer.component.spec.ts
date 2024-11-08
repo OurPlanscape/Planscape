@@ -8,10 +8,9 @@ describe('PrintableTxFooterComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [PrintableTxFooterComponent]
-    })
-    .compileComponents();
-    
+      imports: [PrintableTxFooterComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(PrintableTxFooterComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
