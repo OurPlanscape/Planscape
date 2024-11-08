@@ -1,0 +1,22 @@
+<div class="printable-footer">
+  <div class="print-project-area" *ngFor="let pa of summary?.project_areas">
+    <div class="print-project-area-name">
+      {{ pa.project_area_name }}
+    </div>
+    <div *ngIf="pa.prescriptions.length === 0" class="print-rx-name">
+      No treatments
+    </div>
+    <div *ngFor="let rx of pa.prescriptions">
+      <div *ngIf="rx.type === 'SINGLE'">
+        <div class="print-rx-name">
+          {{ prescriptionName(rx.action, rx.type) }}
+        </div>
+      </div>
+      <div *ngIf="rx.type === 'SEQUENCE'">
+        <div *ngFor="let seqDetail of sequenceActions(rx.action)">
+          <span class="print-seq-detail">{{ seqDetail }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

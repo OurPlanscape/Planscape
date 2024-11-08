@@ -36,12 +36,8 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
 import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { getMergedRouteData } from '../treatments-routing-data';
-import {
-  PRESCRIPTIONS,
-  PrescriptionSequenceAction,
-  PrescriptionSingleAction,
-  // SEQUENCE_PATTERNS,
-} from '../prescriptions';
+import { PrintableTxFooterComponent } from '../printable-tx-footer/printable-tx-footer.component';
+
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-layout',
@@ -63,6 +59,7 @@ import {
     ApplyTreatmentComponent,
     TreatmentLegendComponent,
     RouterLink,
+    PrintableTxFooterComponent,
   ],
   providers: [
     TreatmentsState,
@@ -188,7 +185,7 @@ export class TreatmentConfigComponent {
               page-break-inside: avoid;
               position: absolute;
               top: 1in;
-              left: 1in;
+              left: 0in;
               width: 3in;
               height: 5in;
             }
@@ -205,29 +202,5 @@ export class TreatmentConfigComponent {
     document.head.removeChild(style);
     printMap.remove();
     document.body.removeChild(printContainer);
-  }
-
-  //print element functions
-  sequenceActions(action: string): string[] {
-    let title = action as PrescriptionSequenceAction;
-    if (title !== null) {
-      return PRESCRIPTIONS.SEQUENCE[title].details;
-    }
-    return [];
-  }
-
-  prescriptionName(action: string, type: string): string | null {
-    if (type === 'SINGLE') {
-      let title = action as PrescriptionSingleAction;
-      if (title !== null) {
-        return PRESCRIPTIONS.SINGLE[title];
-      }
-    } else if (type === 'SEQUENCE') {
-      let title = action as PrescriptionSequenceAction;
-      if (title !== null) {
-        return PRESCRIPTIONS.SEQUENCE[title].name;
-      }
-    }
-    return '';
   }
 }
