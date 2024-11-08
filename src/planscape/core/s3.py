@@ -81,14 +81,12 @@ def list_files(
     prefix: Optional[str],
     extension: Optional[str] = None,
 ) -> List[str]:
-    client = boto3.client("s3")
-    if prefix:
-        response = client.list_objects_v2(Bucket=bucket)
-    else:
-        response = client.list_objects_v2(Bucket=bucket, Prefix=prefix)
+    files = []
+    s3 = boto3.resource("s3")
+    s3_bucket = s3.Bucket(bucket)
+    for object_summary in s3_bucket.objects.filter(Prefix=prefix):
+        files.append(object_summary.key)
 
-    files = response.get("Contents")
     if extension:
-        files = filter(lambda x: x["Key"].lower().endswith(extension), files)
-
-    return [file["Key"] for file in files]
+        return list(filter(lambda x: x.lower().endswith(extension), files))
+    return files

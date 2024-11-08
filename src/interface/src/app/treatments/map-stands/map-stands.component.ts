@@ -245,12 +245,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
     }
     const standId = this.getStandIdFromStandsLayer(event.point)[0];
     this.selectedStandsState.toggleStand(standId);
-
-    const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
-      layers: [this.layers.stands.name],
-    });
-
-    this.mapLibreMap.setFeatureState(features[0], { selected: true });
     this.treatmentsState.setShowApplyTreatmentsDialog(true);
   }
 
