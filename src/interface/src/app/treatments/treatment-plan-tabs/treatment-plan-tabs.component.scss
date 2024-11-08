@@ -1,8 +1,17 @@
+@import "mixins";
+@import "colors";
+
 :host {
   .summary-tab-group {
     display: flex;
     flex-direction: column;
     max-width: 100%;
-    height: 100%;
+    height: calc(100% - 170px);
+
+
+    ::ng-deep .mat-mdc-tab-labels {
+      border-bottom: 1px $color-soft-gray solid;
+    }
   }
+  
 }

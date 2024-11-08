@@ -9,9 +9,38 @@
       [inputHeight]="'regular'"
       (searchString)="doSearch($event)"></sg-search-bar>
   </div>
-  <sg-project-area-expander
-    *ngFor="let projectArea of areas"
-    [projectArea]="projectArea"
-    (headerClick)="setActiveProjectArea(projectArea.project_area_id)">
-  </sg-project-area-expander>
+  <ng-container *ngIf="!searchString">
+    <sg-project-area-expander
+      *ngFor="let projectArea of areas"
+      [projectArea]="projectArea"
+      (headerClick)="setActiveProjectArea(projectArea.project_area_id)">
+    </sg-project-area-expander>
+  </ng-container>
+  <ng-container *ngIf="searchString && areas.length > 0">
+    <div class="results-count">
+      {{ areas.length }} result{{ areas.length !== 1 ? 's' : '' }} for &quot;{{
+        searchString
+      }}&quot;
+    </div>
+    <sg-search-result-card
+      *ngFor="let projectArea of areas"
+      [projectArea]="projectArea"
+      [searchString]="searchString"
+      (cardClick)="setActiveProjectArea(projectArea.project_area_id)">
+    </sg-search-result-card>
+  </ng-container>
+  <div *ngIf="searchString !== '' && areas.length < 1" class="no-results">
+    <div class="no-results-box">
+      <mat-icon class="material-symbols-outlined no-results-icon"
+        >find_in_page</mat-icon
+      >
+      <div class="no-results-title">
+        No results for &quot;{{ searchString }}&quot;
+      </div>
+      <div class="no-results-detail">
+        No results match the search criteria provided. Check your search for
+        typos or try a different search term.
+      </div>
+    </div>
+  </div>
 </div>

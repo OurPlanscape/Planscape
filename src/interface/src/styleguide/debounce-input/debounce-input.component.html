@@ -1,4 +1,4 @@
-<div class="name-input-component">
+<div class="name-input-component" *ngIf="currentMode$ | async; let curMode">
   <div class="heading-line">
     <div *ngIf="title" class="title">{{ title }}</div>
     <button
@@ -14,18 +14,41 @@
       {{ tooltipContent }}
     </mat-menu>
   </div>
-  <sg-input-field [disabled]="false" size="regular" class="name-input">
+  <div
+    class="plain-text-box"
+    *ngIf="curMode === 'INITIAL'"
+    (mouseover)="onHover()"
+    (mouseleave)="outHover()">
+    <div class="text-content">
+      {{ textValue }}
+    </div>
+    <button
+      sg-button
+      variant="icon-only"
+      *ngIf="hovering"
+      class="pencil-icon"
+      icon="edit_outlined"
+      (click)="setToEditMode()"></button>
+  </div>
+  <sg-input-field *ngIf="curMode !== 'INITIAL'" size="small" class="name-input">
     <input
       sgInput
       [placeholder]="placeholderText"
       [(ngModel)]="textValue"
+      (blur)="onBlur()"
       (ngModelChange)="clearError()"
-      (blur)="emitTextValue($event)"
       (keyup.enter)="emitTextValue($event)" />
+    <button
+      *ngIf="hasClearButton && curMode === 'EDIT'"
+      mat-icon-button
+      aria-label="Clear"
+      (click)="clear()">
+      <mat-icon>close</mat-icon>
+    </button>
     <mat-spinner
       diameter="20"
       matSuffix
-      *ngIf="savingStatus$ | async"></mat-spinner>
+      *ngIf="curMode === 'SAVING'"></mat-spinner>
   </sg-input-field>
   <div class="error-blurb" *ngIf="errorMessage">
     <span>{{ errorMessage }}</span>

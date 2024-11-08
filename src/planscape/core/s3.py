@@ -2,6 +2,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import boto3
+import boto3.s3
 import requests
 from botocore.exceptions import ClientError
 
@@ -73,3 +74,19 @@ def s3_filename(input_file: Optional[str]) -> Optional[str]:
         return None
     path, filename = input_file.rsplit("/", 1)
     return filename
+
+
+def list_files(
+    bucket: str,
+    prefix: Optional[str],
+    extension: Optional[str] = None,
+) -> List[str]:
+    files = []
+    s3 = boto3.resource("s3")
+    s3_bucket = s3.Bucket(bucket)
+    for object_summary in s3_bucket.objects.filter(Prefix=prefix):
+        files.append(object_summary.key)
+
+    if extension:
+        return list(filter(lambda x: x.lower().endswith(extension), files))
+    return files

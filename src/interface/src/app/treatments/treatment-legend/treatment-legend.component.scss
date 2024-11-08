@@ -10,9 +10,12 @@
     0px 4px 4px 0px rgba(0, 0, 0, 0.1),
     0px 2px 2px 0px rgba(0, 0, 0, 0.1);
 
-    max-height: calc(100% - 100px);
-    z-index: 1000;
+  max-height: calc(100% - 100px);
+  z-index: 1000;
 
+  ::ng-deep .header {
+    height: 24px;
+  }
 
   ::ng-deep .header-title {
     @include xs-label();
@@ -29,7 +32,12 @@
   }
 
   ::ng-deep .mat-expansion-panel-body {
-    padding: 0 24px 8px;
+    padding: 0 16px 8px;
+  }
+
+  ::ng-deep .treatment-img {
+    width: 20px;
+    height: 20px;
   }
 }
 
@@ -38,20 +46,20 @@
   background-color: $color-white;
   display: flex;
   flex-direction: column;
-  
-  padding-top: 4px;}
+  padding-top: 10px;
+}
 
 .legend-section {
   background-color: $color-white;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .legend-expander-panel {
   --mat-expansion-header-indicator-color: $color-black;
-  --mat-expansion-header-expanded-state-height: 40px;
-  --mat-expansion-header-collapsed-state-height: 40px;
+  --mat-expansion-header-expanded-state-height: 24px;
+  --mat-expansion-header-collapsed-state-height: 24px;
   --mat-expansion-header-hover-state-layer-color: $color-white;
   border-radius: 0px;
 }
@@ -68,6 +76,7 @@
   justify-content: left;
   gap: 6px;
   align-items: center;
+  padding: 10px 24px 10px 16px;
 }
 
 .expander-heading-content {
@@ -78,16 +87,24 @@
 }
 
 .legend-no-expander {
-  height: 30px;
-  flex-direction: row;
-  align-items: center;
   display: flex;
+  width: 100%;
 }
 
 .no-treatment-row {
-  height: 40px;
-  padding-left: 24px;
-  align-items: center;
+  @include xs-label();
+
+  padding: 0px 16px;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 6px;
+  line-height: 20px;
+}
+
+.tx-divider {
+  margin-left: 16px;
+  margin-right: 16px;
 }
 
 .expander-heading-icon {
@@ -95,10 +112,10 @@
   background-repeat: no-repeat;
   display: inline-block;
   fill: currentColor;
-  height: 22px;
-  width: 22px;
+  height: 20px;
+  width: 20px;
+  font-size: 20px;
   overflow: hidden;
-  font-size: 22px;
 }
 
 .legend-row {
@@ -116,6 +133,6 @@
   font-family: Public Sans;
   font-size: 14px;
   font-weight: 500;
-  line-height: 24px;
+  line-height: 20px;
   text-align: left;
 }

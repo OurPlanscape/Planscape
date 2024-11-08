@@ -1,5 +1,13 @@
+@import 'colors';
+
 :host {
   height: 100%;
   display: block;
   overflow: hidden;
+
+}
+
+.name-input-box {
+  border-bottom: 1px $color-md-gray solid;
+  padding-bottom: 12px;
 }

@@ -1,9 +1,6 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import {
-  FeatureComponent,
-  GeoJSONSourceComponent,
   LayerComponent,
-  PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
@@ -18,17 +15,10 @@ import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import {
-  combineLatest,
-  distinctUntilChanged,
-  map,
-  Observable,
-  Subject,
-} from 'rxjs';
-import { Prescription, TreatmentProjectArea } from '@types';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
+import { getTreatedStandsTotal } from '../prescriptions';
 
 type MapLayerData = {
   readonly name: string;
@@ -41,42 +31,29 @@ type MapLayerData = {
   selector: 'app-map-project-areas',
   standalone: true,
   imports: [
-    FeatureComponent,
-    GeoJSONSourceComponent,
     LayerComponent,
     VectorSourceComponent,
-    PopupComponent,
     MatIconModule,
-    NgForOf,
     NgIf,
     AsyncPipe,
     MapTooltipComponent,
-    JsonPipe,
   ],
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
-export class MapProjectAreasComponent {
+export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() withFill = true;
+  @Input() showTooltips = true;
 
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
+  fillColor: any;
+  getTreatedStandsTotal = getTreatedStandsTotal;
 
-  activeProjectAreaId$ = new Subject<number>();
-  activeProjectArea$: Observable<TreatmentProjectArea | undefined> =
-    combineLatest([
-      this.summary$,
-      this.activeProjectAreaId$.pipe(distinctUntilChanged()),
-    ]).pipe(
-      map(([summary, projectAreaId]) => {
-        return summary?.project_areas.find(
-          (p) => p.project_area_id === projectAreaId
-        );
-      })
-    );
+  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
 
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
@@ -111,10 +88,9 @@ export class MapProjectAreasComponent {
     return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
   }
 
-  paint: LayerSpecification['paint'] = {
-    'fill-color': this.getFillColors() as any,
-    'fill-opacity': this.visible ? 0.5 : 0,
-  };
+  ngOnInit() {
+    this.fillColor = this.getFillColors();
+  }
 
   getFillColors() {
     const defaultColor = BASE_COLORS['dark'];
@@ -152,11 +128,6 @@ export class MapProjectAreasComponent {
       return;
     }
     this.mouseLngLat = e.lngLat;
-    const newId = this.getProjectAreaIdFromFeatures(e.point);
-
-    if (newId) {
-      this.activeProjectAreaId$.next(newId);
-    }
   }
 
   resetCursorAndTooltip(e: MapMouseEvent) {
@@ -170,12 +141,5 @@ export class MapProjectAreasComponent {
     });
 
     return features[0].properties['id'];
-  }
-
-  getPrescriptionStandCount(prescriptions: Prescription[]) {
-    return prescriptions.reduce((total: number, prescription) => {
-      total = total + prescription.treated_stand_count;
-      return total;
-    }, 0);
   }
 }

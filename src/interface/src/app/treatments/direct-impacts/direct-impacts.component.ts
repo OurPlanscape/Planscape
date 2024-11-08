@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, DatePipe, NgClass, NgIf } from '@angular/common';
 import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
@@ -11,7 +11,12 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { PanelComponent } from '@styleguide';
+import { ButtonComponent, PanelComponent } from '@styleguide';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { FormsModule } from '@angular/forms';
+import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
+import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -22,6 +27,15 @@ import { PanelComponent } from '@styleguide';
     DirectImpactsMapComponent,
     DirectImpactsSyncedMapsComponent,
     PanelComponent,
+    MatIconModule,
+    NgIf,
+    MatSlideToggleModule,
+    ButtonComponent,
+    DatePipe,
+    NgClass,
+    FormsModule,
+    TreatmentMapComponent,
+    TreatmentLegendComponent,
   ],
   providers: [
     TreatmentsState,
@@ -35,6 +49,7 @@ import { PanelComponent } from '@styleguide';
 export class DirectImpactsComponent {
   constructor(
     private treatmentsState: TreatmentsState,
+    private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -48,6 +63,9 @@ export class DirectImpactsComponent {
           if (plan?.status !== 'SUCCESS') {
             this.router.navigate(['../'], { relativeTo: this.route });
           }
+          this.mapConfigState.setShowFillProjectAreas(false);
+          this.mapConfigState.updateShowTreatmentStands(true);
+          this.mapConfigState.updateShowProjectAreas(true);
         }),
         catchError((error) => {
           this.router.navigate(['/']);
@@ -58,4 +76,7 @@ export class DirectImpactsComponent {
   }
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+  treatmentPlan$ = this.treatmentsState.treatmentPlan$;
+
+  showTreatmentPrescription = false;
 }

@@ -39,7 +39,7 @@ class DataLayerFactory(factory.django.DjangoModelFactory):
     dataset = factory.SubFactory(DatasetFactory)
     organization = factory.SelfAttribute("dataset.organization")
     created_by = factory.SelfAttribute("dataset.created_by")
-    name = factory.Sequence(lambda x: f"DataLayer {x}")
+    name = factory.Faker("name")
     type = factory.Iterator(DataLayerType.values)
     geometry_type = factory.Iterator(GeometryType.values)
     status = factory.Iterator(DataLayerStatus.values)

@@ -10,6 +10,7 @@ export interface TreatmentPlan {
   status: TreatmentStatus;
   created_at: string;
   creator_name: string;
+  updated_at: string;
 }
 
 export interface TreatmentProjectArea {
