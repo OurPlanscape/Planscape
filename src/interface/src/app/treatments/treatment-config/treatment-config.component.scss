@@ -65,48 +65,56 @@ app-apply-treatment {
   z-index: 1000;
 }
 
+
+#print-container {
+  display: none;
+}
+#printable-map-container { 
+  display: none;
+}
+.printable-footer {
+  display: none;
+}
+
 @media print {
-  .left-side {
-    position: absolute;
-    top: 7in;
-    left: 0px;
-  }
-  .right-side {
+   //hide elements we won't print      
+  .right-side, .left-side, .right-side-footer {
     display: none;
   }
-  .print-only-map {
+  .printable-footer {
     display: block !important;
     page-break-inside: avoid;
+    font-size: 12px;
     position: absolute;
-    top: 20px;
-    left: 0px;
+    top: 6.2in;
+    left:0.2in;
+    height: 3.8in;
+    column-width: 2.5in; 
+    column-gap: 0.2in;
     margin-left: auto;
     margin-right: auto;
-    width: 7in;
-    height: 7in;
-    border: 5px black dotted;
   }
-  .print-only-map img {
-    width: 100%;
-    height: auto;
+  .print-project-area {
+    break-inside: avoid;
+    page-break-inside: avoid;
+    font-family: 'Public Sans', sans-serif;
   }
 
-  .right-side-footer {
-    display: none;
+  .print-project-area-name {
+    font-size: 14px;
+    font-weight: 600;
+    height: 20px;
   }
-  .actions {
-    display: none;
+  .print-rx-name {
+    font-size: 12px;
+    padding-left: 10px;
+  }
+  .print-seq-detail {
+    font-size: 12px;
+    padding-left: 10px;
   }
 
-  .about-items {
-    display: block;
-    position: absolute;
-    top: 8in;
-    left: 0px;
-    width: 40%;
-  }
 
-  app-treatment-legend {
-    width: 10px;
-  }
+
+    
 }

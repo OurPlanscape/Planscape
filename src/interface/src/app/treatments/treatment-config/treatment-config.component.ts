@@ -4,6 +4,7 @@ import {
   Injector,
   ViewChild,
 } from '@angular/core';
+
 import {
   ActivatedRoute,
   NavigationEnd,
@@ -21,7 +22,7 @@ import { catchError, combineLatest, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { FeaturesModule } from '../../features/features.module';
 import { SharedModule } from '@shared';
 import { ButtonComponent } from '@styleguide';
@@ -35,7 +36,12 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
 import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { getMergedRouteData } from '../treatments-routing-data';
-
+import {
+  PRESCRIPTIONS,
+  PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+  // SEQUENCE_PATTERNS,
+} from '../prescriptions';
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-layout',
@@ -45,6 +51,7 @@ import { getMergedRouteData } from '../treatments-routing-data';
     TreatmentMapComponent,
     AsyncPipe,
     NgIf,
+    NgFor,
     FeaturesModule,
     SharedModule,
     ButtonComponent,
@@ -69,6 +76,7 @@ import { getMergedRouteData } from '../treatments-routing-data';
 })
 export class TreatmentConfigComponent {
   projectAreaId$ = this.treatmentsState.projectAreaId$;
+  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
   showApplyTreatments$ = this.treatmentsState.showApplyTreatmentsDialog$;
@@ -142,13 +150,13 @@ export class TreatmentConfigComponent {
     // Create a new div for the printable map
     const printContainer = document.createElement('div');
     printContainer.style.position = 'absolute';
-    printContainer.style.left = '-9999px'; // Hide it off-screen
-    printContainer.style.width = '100%'; // Or whatever size you want for print
+    printContainer.style.left = '-9999px';
+    printContainer.style.width = '100%';
     printContainer.style.height = '100%';
     document.body.appendChild(printContainer);
 
     // Copy orientation and content of existing map
-    const originalMap = this.mapElement.mapLibreMap; // or however you access your map
+    const originalMap = this.mapElement.mapLibreMap;
     const printMap = new MapLibreMap({
       container: printContainer,
       style: originalMap.getStyle(),
@@ -158,62 +166,68 @@ export class TreatmentConfigComponent {
       pitch: originalMap.getPitch(),
     });
 
-    // Let map load
+    // Let map load, then grab canvas as png
     await new Promise((resolve) => printMap.on('load', resolve));
-
-    // 4. Get canvas from new map
     const canvas = printMap.getCanvas();
     const img = new Image();
     img.src = canvas.toDataURL('image/png');
 
-    // 5. Create a print-only div that will only show during printing
+    // create actual printable element
     const printElement = document.createElement('div');
     printElement.className = 'print-only-map';
     printElement.style.display = 'none';
     printElement.appendChild(img);
     document.body.appendChild(printElement);
 
-    // 6. Add print styles dynamically
+    //add styles that must be dynamic
     const style = document.createElement('style');
     style.textContent = `
-    @media print {
-        
-          .right-side {
-            display: none;
-          }
-          .print-only-map {
-            display: block !important;
-            page-break-inside: avoid;
-            position: absolute;
-            margin:10px;
-            top: 10px;
-            left: 0px;
-            margin-left: auto;
-            margin-right: auto;
-            width: 7in;
-            height: 7in;
-            border: 5px black dotted;
-          }
-          .print-only-map img {
-            width:auto;
-            height: 100%;
-          }
-
-          .right-side-footer {
-            display: none;
-          }
-            
-  }
-      `;
+      @media print {
+            .print-only-map {
+              display: block !important;
+              page-break-inside: avoid;
+              position: absolute;
+              top: 1in;
+              left: 1in;
+              width: 3in;
+              height: 5in;
+            }
+            .print-only-map img {
+              width:auto;
+              height:5in;
+            }}`;
     document.head.appendChild(style);
 
-    // 7. Print
     window.print();
 
-    // 8. Cleanup
+    // cleanup/remove elements
     document.body.removeChild(printElement);
-    // document.head.removeChild(style);
+    document.head.removeChild(style);
     printMap.remove();
     document.body.removeChild(printContainer);
+  }
+
+  //print element functions
+  sequenceActions(action: string): string[] {
+    let title = action as PrescriptionSequenceAction;
+    if (title !== null) {
+      return PRESCRIPTIONS.SEQUENCE[title].details;
+    }
+    return [];
+  }
+
+  prescriptionName(action: string, type: string): string | null {
+    if (type === 'SINGLE') {
+      let title = action as PrescriptionSingleAction;
+      if (title !== null) {
+        return PRESCRIPTIONS.SINGLE[title];
+      }
+    } else if (type === 'SEQUENCE') {
+      let title = action as PrescriptionSequenceAction;
+      if (title !== null) {
+        return PRESCRIPTIONS.SEQUENCE[title].name;
+      }
+    }
+    return '';
   }
 }
