@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import rasterio
 from rasterio.warp import Resampling, calculate_default_transform, reproject
+from rasterstats import zonal_stats
 from rio_cogeo.cogeo import cog_translate
 from rio_cogeo.cogeo import cog_validate
 from rio_cogeo.profiles import cog_profiles
@@ -158,3 +159,28 @@ def warp(
                         resampling=resampling_method,
                     )
             return output_file
+
+
+def get_zonal_stats(
+    input_raster: str,
+    features: List[Dict[str, Any]],
+    aggregations: List[str] = ["mean"],
+    band: int = 1,
+    nodata: int = -999,
+    geojson_output: bool = True,
+) -> List[Dict[str, Any]]:
+    if not input_raster:
+        raise ValueError("input_raster is mandatory")
+    if not features:
+        raise ValueError("features is mandatory")
+    if not aggregations:
+        raise ValueError("aggregations is mandatory")
+
+    return zonal_stats(
+        features,
+        input_raster,
+        stats=aggregations,
+        band=band,
+        nodata=nodata,
+        geojson_out=geojson_output,
+    )
