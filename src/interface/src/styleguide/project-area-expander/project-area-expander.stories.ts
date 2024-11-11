@@ -123,7 +123,7 @@ export const EmptyTreatments: Story = {
 export const WrappedTitle: Story = {
   args: {
     title:
-      'Here is an excessively long title that should wrap and expand the header to accomodate whatever size it becomes',
+      'Here Is An Excessively Long Title That Should Wrap And Expand The Header To Accommodate Whatever Size It Becomes',
     projectArea: sampleProjectAreaResult,
   },
 };

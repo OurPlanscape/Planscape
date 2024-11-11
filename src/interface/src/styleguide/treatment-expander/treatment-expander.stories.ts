@@ -115,7 +115,7 @@ export const WrappedTitle: Story = {
   args: {
     treatmentType: 'SINGLE',
     title:
-      'Here is an excessively long title that should wrap and expand the header to accomodate whatever size it becomes',
+      'Here Is An Excessively Long Title That Should Wrap And Expand The Header To Accommodate Whatever Size It Becomes',
     action: 'MODERATE_THINNING_BURN',
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
