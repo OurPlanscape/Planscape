@@ -34,7 +34,10 @@
       Hexagon = Stand
     </div>
 
-    <div class="metric-selection">Metric section placeholder</div>
+    <div class="metric-selection">
+      <app-metric-filters
+        (metricActivated)="activateMetric($event)"></app-metric-filters>
+    </div>
 
     <section class="direct-impacts-metrics">
       <sg-panel class="chart-1">

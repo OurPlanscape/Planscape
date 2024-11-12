@@ -1,0 +1,23 @@
+<div class="grid-selector-container">
+  <mat-icon
+    class="material-symbols-outlined"
+    [style.color]="selectedMetric?.active ? selectedMetric.color : 'gray'"
+    [class.blue-color]="selectedMetric?.active"
+    color="primary"
+    (click)="onActivate()">
+    map
+  </mat-icon>
+  <i
+    class="metric-color"
+    [style.backgroundColor]="selectedMetric?.color || 'gray'"></i>
+  <span class="metric-label">
+    {{ label }}
+  </span>
+  <div class="dropdown">
+    <mat-select [ngModel]="selectedOption" (ngModelChange)="onSelect($event)">
+      <mat-option *ngFor="let option of metrics" [value]="option.id">
+        {{ option.label }}
+      </mat-option>
+    </mat-select>
+  </div>
+</div>

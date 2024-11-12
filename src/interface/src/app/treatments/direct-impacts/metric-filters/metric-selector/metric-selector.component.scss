@@ -1,0 +1,48 @@
+.grid-selector-container {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  flex-wrap: wrap;
+  .dropdown {
+    margin-top: 8px;
+    width: 150px;
+  }
+  .material-symbols-outlined {
+    cursor: pointer;
+    margin-right: 8px;
+  }
+  .metric-color {
+    display: block;
+    height: 16px;
+    width: 16px;
+    border-radius: 4px;
+    margin-right: 8px;
+  }
+  .metric-label {
+    margin-right: 16px;
+  }
+}
+
+.map-icon {
+  color: black !important;
+}
+
+.blue-color {
+  color: #064bba !important;
+}
+
+mat-select {
+  background-color: white;
+  padding: 8px 14px 8px 14px;
+  border-radius: 4px;
+  border: 1px solid #e1e1e1;
+}
+
+@media (min-width: 768px) {
+  .grid-selector-container {
+    justify-content: center;
+    .dropdown {
+      margin-top: 0px;
+    }
+  }
+}
