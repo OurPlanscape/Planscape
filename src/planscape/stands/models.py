@@ -1,6 +1,8 @@
 from typing import Type, Union
 from django.contrib.gis.db import models
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.contrib.gis.db.models.functions import Centroid
+from django_stubs_ext.db.models import TypedModelMeta
 from django.db.models import QuerySet
 from conditions.models import Condition
 from core.models import CreatedAtMixin
@@ -32,26 +34,31 @@ STAND_AREA_ACRES = {
 }
 
 
-def length_from_size(size: Union[str | StandSizeChoices]) -> float:
+def length_from_size(size: StandSizeChoices) -> float:
     return STAND_LENGTH_METERS[size]
 
 
-def area_from_size(size: Union[str | StandSizeChoices]) -> float:
+def area_from_size(size: StandSizeChoices) -> float:
     return STAND_AREA_ACRES[size]
 
 
 class StandManager(models.Manager):
-    def overlapping(
-        self, target_geometry: GEOSGeometry, stand_size: str | StandSizeChoices
-    ) -> QuerySet["Stand"]:
-        queryset = self.get_queryset()
-        return queryset.filter(
-            geometry__intersects=target_geometry,
-            size=stand_size,
+    def within_polygon(
+        self,
+        geometry: Union[Polygon, MultiPolygon],
+        size: StandSizeChoices = StandSizeChoices.LARGE,
+    ) -> "QuerySet[Stand]":
+        if not geometry.valid:
+            raise ValueError("Invalid geometry")
+
+        return Stand.objects.annotate(centroid=Centroid("geometry")).filter(
+            centroid__within=geometry,
+            size=size,
         )
 
 
 class Stand(CreatedAtMixin, models.Model):
+    id: int
     size = models.CharField(
         choices=StandSizeChoices.choices,
         max_length=16,
@@ -61,9 +68,9 @@ class Stand(CreatedAtMixin, models.Model):
 
     area_m2 = models.FloatField()
 
-    objects = StandManager()
+    objects: StandManager = StandManager()
 
-    class Meta:
+    class Meta(TypedModelMeta):
         indexes = [
             models.Index(
                 fields=[

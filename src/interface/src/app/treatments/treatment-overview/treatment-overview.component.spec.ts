@@ -9,6 +9,7 @@ import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 
 describe('TreatmentOverviewComponent', () => {
   let component: TreatmentOverviewComponent;
@@ -23,7 +24,11 @@ describe('TreatmentOverviewComponent', () => {
         BrowserAnimationsModule,
       ],
       declarations: [
-        MockDeclarations(ProjectAreasTabComponent, MapBaseLayerComponent),
+        MockDeclarations(
+          ProjectAreasTabComponent,
+          MapBaseLayerComponent,
+          TreatmentPlanTabsComponent
+        ),
       ],
       providers: [
         MockProviders(TreatmentsState, MapConfigState, TreatedStandsState),

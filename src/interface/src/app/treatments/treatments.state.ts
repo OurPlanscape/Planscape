@@ -5,6 +5,7 @@ import {
   BehaviorSubject,
   catchError,
   combineLatest,
+  distinctUntilChanged,
   map,
   of,
   switchMap,
@@ -50,10 +51,16 @@ export class TreatmentsState {
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
 
-  private _activeProjectArea$ =
-    new BehaviorSubject<TreatmentProjectArea | null>(null);
-
-  public activeProjectArea$ = this._activeProjectArea$.asObservable();
+  public activeProjectArea$ = combineLatest([
+    this.summary$,
+    this.projectAreaId$.pipe(distinctUntilChanged()),
+  ]).pipe(
+    map(([summary, projectAreaId]) => {
+      return summary?.project_areas.find(
+        (p) => p.project_area_id === projectAreaId
+      );
+    })
+  );
 
   private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
   public showApplyTreatmentsDialog$ =
@@ -160,8 +167,6 @@ export class TreatmentsState {
       // if we have a project area and loaded summary already, just return
       return of(true);
     } else {
-      // if no project area reset active one
-      this._activeProjectArea$.next(null);
       // if we have a previous summary, center the map immediately
       if (previousSummary) {
         this.mapConfigState.updateMapCenter(previousSummary.extent);
@@ -288,7 +293,6 @@ export class TreatmentsState {
     this._projectAreaId$.next(projectAreaId);
     this.mapConfigState.updateShowTreatmentStands(true);
     this.mapConfigState.updateMapCenter(projectArea?.extent);
-    this._activeProjectArea$.next(projectArea);
     this.setTreatedStandsFromSummary([projectArea]);
   }
 
