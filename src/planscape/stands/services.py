@@ -3,7 +3,7 @@ import logging
 from stands.models import Stand, StandMetric
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
-from typing import Any, Dict, List
+from typing import Any, Dict, Iterable, List
 from gis.rasters import get_zonal_stats
 
 log = logging.getLogger(__name__)
@@ -63,7 +63,7 @@ AGGREGATION_MODEL_MAP = {
 def calculate_stand_zonal_stats(
     stands: QuerySet["Stand"],
     datalayer: DataLayer,
-    aggregations: List[str] = DEFAULT_METRICS,
+    aggregations: Iterable[str] = DEFAULT_AGGREGATIONS,
 ) -> QuerySet[StandMetric]:
     """This function calculates zonal stats for
     a collection of stands. This function skips
@@ -76,7 +76,6 @@ def calculate_stand_zonal_stats(
 
     if datalayer.url is None:
         raise ValueError("Cannot calculate zonal stats for empty urls.")
-
     stand_ids = set(stands.all().values_list("id", flat=True))
     existing_metrics = StandMetric.objects.filter(
         stand_id__in=stands,
@@ -112,7 +111,7 @@ def calculate_stand_zonal_stats(
         )
     )
 
-    log.info(f"Created {len(results)} stand metrics.")
+    log.info(f"Created/Updated {len(results)} stand metrics.")
 
     result_queryset = (
         StandMetric.objects.filter(
