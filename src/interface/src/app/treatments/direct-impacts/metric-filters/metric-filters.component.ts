@@ -168,6 +168,11 @@ export class MetricFiltersComponent implements OnInit {
   }
 
   activateMetric(metric: Metric): void {
+    this.dropdownOptions.forEach(list => {
+      list.map(m => {
+        m.active =  m.id === metric.id ? metric.active : false 
+      })
+    })
     this.metricSelected.emit(metric);
   }
 }
