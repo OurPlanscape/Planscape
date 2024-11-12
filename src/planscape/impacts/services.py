@@ -176,10 +176,7 @@ def generate_summary(
         geometry=UnionOp("geometry")
     )["geometry"]
     for project in project_area_queryset:
-        stand_project_qs = Stand.objects.filter(
-            size=stand_size,
-            geometry__intersects=project.geometry,
-        )
+        stand_project_qs = Stand.objects.within_polygon(project.geometry).all()
         project_areas[project.id] = {
             "project_area_id": project.id,
             "project_area_name": project.name,
