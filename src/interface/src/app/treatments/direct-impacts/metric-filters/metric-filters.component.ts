@@ -12,85 +12,85 @@ export interface Metric {
 export const METRICS: Metric[] = [
   {
     id: 'ID_CROWN_BULK_DENSITY',
-    color: '#FF5733',
+    color: '',
     label: 'Crown Bulk Density',
     active: false,
   },
   {
     id: 'ID_CANOPY_BASE_HEIGHT',
-    color: '#33FF57',
+    color: '',
     label: 'Canopy Base Height',
     active: false,
   },
   {
     id: 'ID_CANOPY_COVER',
-    color: '#3357FF',
+    color: '',
     label: 'Canopy Cover',
     active: false,
   },
   {
     id: 'ID_LARGE_TREE_BIOMASS',
-    color: '#FF33A1',
+    color: '',
     label: 'Large Tree Biomass',
     active: false,
   },
   {
     id: 'ID_MERCHANTABLE_BIOMASS',
-    color: '#FFC300',
+    color: '',
     label: 'Merchantable Biomass',
     active: false,
   },
   {
     id: 'ID_NON_MERCHANTABLE_BIOMASS',
-    color: '#8E44AD',
+    color: '',
     label: 'Non-Merchantable Biomass',
     active: false,
   },
   {
     id: 'ID_MORTALITY',
-    color: '#16A085',
+    color: '',
     label: 'Mortality',
     active: false,
   },
   {
     id: 'ID_POTENTIAL_SMOKE',
-    color: '#E74C3C',
+    color: '',
     label: 'Potential Smoke',
     active: false,
   },
   {
     id: 'ID_PROBABILITY_OF_TORCHING',
-    color: '#3498DB',
+    color: '',
     label: 'Probability of Torching',
     active: false,
   },
   {
     id: 'ID_QUADRATIC_MEAN_DIAMETER',
-    color: '#F39C12',
+    color: '',
     label: 'Quadratic Mean Diameter',
     active: false,
   },
   {
     id: 'ID_STAND_DENSITY_INDEX',
-    color: '#9B59B6',
+    color: '',
     label: 'Stand Density Index',
     active: false,
   },
   {
     id: 'ID_TOTAL_HEIGHT',
-    color: '#2ECC71',
+    color: '',
     label: 'Total Height',
     active: false,
   },
   {
     id: 'ID_TOTAL_FLAME_SEVERITY',
-    color: '#E67E22',
+    color: '',
     label: 'Total Flame Severity',
     active: false,
   },
   {
     id: 'ID_TOTAL_CARBON',
-    color: '#1ABC9C',
+    color: '',
     label: 'Total Carbon',
     active: false,
   },
@@ -104,9 +104,11 @@ export const METRICS: Metric[] = [
   styleUrl: './metric-filters.component.scss',
 })
 export class MetricFiltersComponent implements OnInit {
-  @Output() metricActivated = new EventEmitter<any>();
+  @Output() metricSelected = new EventEmitter<Metric>();
 
   initialOptions: Metric[] = METRICS;
+
+  metricColors: string[] = ['#4361EE', '#9071E8', '#EC933A', '#63C2A2'];
 
   // Initializing every dropdown
   dropdownOptions: Metric[][] = [
@@ -129,7 +131,7 @@ export class MetricFiltersComponent implements OnInit {
     this.updateDropdownOptions(null);
   }
 
-  optionSelected(dropdownIndex: number, metric: any): void {
+  optionSelected(dropdownIndex: number, metric: Metric): void {
     // Storing the selection
     this.selectedOptions[dropdownIndex] = metric.id;
 
@@ -143,20 +145,29 @@ export class MetricFiltersComponent implements OnInit {
       (list: Metric[], listIndex: number) => {
         // if the list is the same as the dropdown we are updating we want to keep it as it is
         if (listIndex === updatedDropdownIndex) {
-          return list;
+          return this.applyMetricColor(listIndex, list);
         }
 
         // Keeping the selected option if the dropdown already have value and is not the updated dropdown
-        return this.initialOptions.filter(
+        const filteredList = this.initialOptions.filter(
           (m) =>
             !this.selectedOptions.includes(m.id) ||
             m.id === this.selectedOptions[listIndex]
         );
+
+        return this.applyMetricColor(listIndex, filteredList);
       }
     );
   }
 
-  activateMetric(metric: any): void {
-    this.metricActivated.emit(metric);
+  applyMetricColor(dropdownIndex: number, list: Metric[]): Metric[] {
+    return list.map((metric) => {
+      metric.color = this.metricColors[dropdownIndex];
+      return metric;
+    });
+  }
+
+  activateMetric(metric: Metric): void {
+    this.metricSelected.emit(metric);
   }
 }

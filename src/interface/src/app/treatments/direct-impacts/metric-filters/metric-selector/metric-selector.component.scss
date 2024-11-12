@@ -1,3 +1,5 @@
+@import 'media';
+
 .grid-selector-container {
   display: flex;
   justify-content: start;
@@ -38,7 +40,7 @@ mat-select {
   border: 1px solid #e1e1e1;
 }
 
-@media (min-width: 768px) {
+@include on-medium() {
   .grid-selector-container {
     justify-content: center;
     .dropdown {

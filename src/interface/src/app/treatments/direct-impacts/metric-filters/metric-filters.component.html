@@ -4,7 +4,7 @@
       [selectedOption]="selectedOptions[i]"
       [metrics]="list"
       [label]="'Metric ' + (i + 1)"
-      (metricSelection)="optionSelected(i, $event)"
+      (metricChanged)="optionSelected(i, $event)"
       (activated)="activateMetric($event)"></app-metric-selector>
   </div>
 </div>

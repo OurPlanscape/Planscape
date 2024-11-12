@@ -1,4 +1,12 @@
+$breakpoint_xl: 1366px;
 $breakpoint_lg: 840px;
+$breakpoint_md: 768px;
+
+@mixin on-extra-large() {
+  @media screen and (min-width: $breakpoint_xl) {
+    @content;
+  }
+}
 
 @mixin on-large() {
   @media screen and (min-width: $breakpoint_lg) {
@@ -8,6 +16,12 @@ $breakpoint_lg: 840px;
 
 @mixin on-small() {
   @media screen and (max-width: $breakpoint_lg) {
+    @content;
+  }
+}
+
+@mixin on-medium() {
+  @media screen and (min-width: $breakpoint_md) {
     @content;
   }
 }

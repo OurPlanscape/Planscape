@@ -24,7 +24,7 @@ export class MetricSelectorComponent implements OnInit {
   @Input() label!: string;
   @Input() metrics!: Metric[];
   @Input() selectedOption!: string;
-  @Output() metricSelection = new EventEmitter<Metric>();
+  @Output() metricChanged = new EventEmitter<Metric>();
   @Output() activated = new EventEmitter<Metric>();
 
   selectedMetric: any;
@@ -39,7 +39,7 @@ export class MetricSelectorComponent implements OnInit {
     this.selectedMetric = this.metrics.find(
       (metric: any) => metric.id === selectedMetricID
     );
-    this.metricSelection.emit(this.selectedMetric);
+    this.metricChanged.emit(this.selectedMetric);
   }
 
   onActivate() {
