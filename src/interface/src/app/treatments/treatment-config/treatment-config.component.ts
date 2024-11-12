@@ -29,6 +29,8 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
 import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { getMergedRouteData } from '../treatments-routing-data';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 
 @UntilDestroy()
 @Component({
@@ -50,6 +52,8 @@ import { getMergedRouteData } from '../treatments-routing-data';
     ApplyTreatmentComponent,
     TreatmentLegendComponent,
     RouterLink,
+    MatProgressSpinnerModule,
+    OverlayLoaderComponent,
   ],
   providers: [
     TreatmentsState,
@@ -75,6 +79,8 @@ export class TreatmentConfigComponent {
   );
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+
+  loading = true;
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -106,7 +112,7 @@ export class TreatmentConfigComponent {
               throw error;
             })
           )
-          .subscribe();
+          .subscribe((_) => (this.loading = false));
       });
   }
 
