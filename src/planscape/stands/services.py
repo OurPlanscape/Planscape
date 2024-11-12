@@ -58,6 +58,7 @@ AGGREGATION_MODEL_MAP = {
     "majority": "majority",
     "minority": "minority",
 }
+MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.items()}
 
 
 def calculate_stand_zonal_stats(

@@ -1,10 +1,9 @@
 import logging
 import itertools
 import json
-from rasterstats import zonal_stats
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
-from django.db.models import Count
+from django.db.models import Count, QuerySet
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.calculator import calculate_delta
@@ -26,8 +25,9 @@ from impacts.models import (
 )
 from planning.models import ProjectArea, TProjectArea, TScenario
 from actstream import action as actstream_action
-from stands.models import STAND_AREA_ACRES, TStand, Stand
+from stands.models import STAND_AREA_ACRES, StandMetric, TStand, Stand
 from planscape.typing import TUser
+from stands.services import AGGREGATION_MODEL_MAP, calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
 
@@ -54,10 +54,10 @@ def create_treatment_plan(
 
 @transaction.atomic()
 def upsert_treatment_prescriptions(
-    treatment_plan: TTreatmentPlan,
-    project_area: TProjectArea,
-    stands: List[TStand],
-    action: TAction,
+    treatment_plan: TreatmentPlan,
+    project_area: ProjectArea,
+    stands: List[Stand],
+    action: TreatmentPrescriptionAction,
     created_by: TUser,
 ) -> List[TreatmentPrescription]:
     def upsert(treatment_plan, project_area, stand, action, user):
@@ -211,116 +211,30 @@ def generate_summary(
     return data
 
 
-def to_geojson(prescription: TreatmentPrescription) -> Dict[str, Any]:
-    geometry = prescription.geometry.transform(3857, clone=True)
-    return {
-        "type": "Feature",
-        "id": prescription.pk,
-        "properties": {
-            "treatment_plan_id": prescription.treatment_plan.pk,
-            "treatment_prescription_id": prescription.pk,
-            "project_area_id": prescription.project_area.pk,
-            "stand_id": prescription.stand.pk,
-            "type": prescription.type,
-        },
-        "geometry": json.loads(geometry.json),
-    }
-
-
-IMPACTS_RASTER_NODATA = -999
-
-
-def clone_existing_results(
+def to_treatment_result(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
-) -> List[TreatmentResult]:
-    """Clones TreatmentResults from others TreatmentPlans
-    which `action`, `year`, `variable` and `stand` are the same to
-    avoid re-calculations.
-    """
-    treatment_prescriptions = treatment_plan.tx_prescriptions.select_related(
-        "stand"
-    ).filter(action=action)
-
-    stands_prescriptions = {
-        treatment_prescription.stand.pk: treatment_prescription
-        for treatment_prescription in treatment_prescriptions.iterator()
-    }
-    existing_results = (
-        TreatmentResult.objects.filter(
-            treatment_prescription__action=action,
-            treatment_prescription__stand__in=stands_prescriptions.keys(),
-            variable=variable,
-            year=year,
-            type=TreatmentResultType.DIRECT,
-        )
-        .select_related("treatment_prescription", "treatment_prescription__stand")
-        .distinct(
-            "treatment_prescription__stand__pk", "aggregation", "value", "baseline"
-        )
-        .values_list(
-            "treatment_prescription__stand__pk", "aggregation", "value", "baseline"
-        )
-    )
-
-    copied_results = [
-        TreatmentResult.objects.update_or_create(
-            treatment_plan=treatment_plan,
-            treatment_prescription=stands_prescriptions.get(other_result[0]),
-            variable=variable,
-            aggregation=other_result[1],
-            year=year,
-            value=other_result[2],
-            baseline=other_result[3],
-        )[0]
-        for other_result in existing_results.iterator()
-    ]
-    return copied_results
-
-
-def to_treatment_results(
     result: Dict[str, Any],
-    variable: ImpactVariable,
-    year: int,
-) -> List[TreatmentResult]:
+) -> TreatmentResult:
     """Transforms the result/output of rasterstats (a zonal statistic record)
-    into multiple TreamentResults. If a variable has more than one aggregament,
-    this method will produce more than one result per stand.
+    into a TreamentResult
     """
-    properties: Dict[str, Any] = result.get("properties", {})
-    treament_plan_id = properties.get("treatment_plan_id")
-    tx_prescription_id = properties.get("treatment_prescription_id")
-    aggregations = ImpactVariable.get_aggregations(variable)
-    return list(
-        [
-            TreatmentResult.objects.update_or_create(
-                treatment_plan_id=treament_plan_id,
-                treatment_prescription_id=tx_prescription_id,
-                variable=variable,
-                aggregation=agg,
-                year=year,
-                defaults={
-                    "value": properties.get(agg.lower()),
-                    "baseline": properties.get(f"baseline_{agg.lower()}"),
-                },
-            )[0]
-            for agg in aggregations
-        ]
+    instance, created = TreatmentResult.objects.update_or_create(
+        treatment_plan_id=treatment_plan.id,
+        stand_id=result.get("stand_id"),
+        variable=variable,
+        aggregation=result.get("aggregation"),
+        action=action,
+        year=year,
+        defaults={
+            "value": result.get("value"),
+            "baseline": result.get("baseline"),
+            "delta": result.get("delta"),
+        },
     )
-
-
-def persist_impacts(
-    zonal_statistics: List[Dict[str, Any]],
-    variable: ImpactVariable,
-    year: int,
-) -> List[TreatmentResult]:
-    return list(
-        itertools.chain.from_iterable(
-            map(lambda r: to_treatment_results(r, variable, year), zonal_statistics)
-        )
-    )
+    return instance
 
 
 def calculate_impacts(
@@ -328,82 +242,68 @@ def calculate_impacts(
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
-) -> List[Dict[str, Any]]:
-    prescriptions = treatment_plan.tx_prescriptions.filter(
-        action=action
-    ).select_related(
-        "stand",
-        "treatment_plan",
-        "project_area",
-    )
-
-    already_calculated_prescriptions_ids = (
-        TreatmentResult.objects.filter(
-            treatment_prescription__in=prescriptions,
-            variable=variable,
-            year=year,
-            type=TreatmentResultType.DIRECT,
-        )
-        .select_related("treatment_prescription")
-        .values_list("treatment_prescription__pk")
-    )
-
-    # Exclude TreatmentPrescriptions with TreatmentResult to avoid re-calculation
-    prescriptions = prescriptions.exclude(pk__in=already_calculated_prescriptions_ids)
-
+) -> List[TreatmentResult]:
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
-
-    raster_path = ImpactVariable.get_impact_raster_path(
-        impact_variable=variable,
+    baseline_metrics = calculate_baseline_metrics(
+        treatment_plan=treatment_plan,
+        variable=variable,
+        year=year,
+    )
+    action_metrics = calculate_action_metrics(
+        treatment_plan=treatment_plan,
+        variable=variable,
         action=action,
         year=year,
     )
-    baseline_path = ImpactVariable.get_baseline_raster_path(
-        impact_variable=variable,
-        year=year,
+
+    aggregations = ImpactVariable.get_aggregations(impact_variable=variable)
+    deltas = calculate_deltas(
+        baseline_metrics=baseline_metrics,
+        action_metrics=action_metrics,
+        aggregations=aggregations,
     )
-    prescription_stands = list(map(to_geojson, prescriptions))
-    agg = [ag.lower() for ag in ImpactVariable.get_aggregations(variable)]
-    log.info(f"Calculating raster stats for {variable} with aggregations {agg}")
-    baseline_stats = zonal_stats(
-        prescription_stands,
-        baseline_path,
-        stats=agg,
-        band=1,
-        nodata=IMPACTS_RASTER_NODATA,
-        geojson_out=True,
+    treatment_results = list(
+        map(
+            lambda x: to_treatment_result(
+                treatment_plan, variable, action, year, result=x
+            ),
+            deltas,
+        )
     )
-    variable_stats = zonal_stats(
-        prescription_stands,
-        raster_path,
-        stats=agg,
-        band=1,
-        nodata=IMPACTS_RASTER_NODATA,
-        geojson_out=True,
-    )
-    return calculate_deltas(baseline_stats, variable_stats, agg)
+
+    return treatment_results
 
 
 def calculate_deltas(
-    baseline_zonal_stats,
-    variable_zonal_stats,
+    baseline_metrics: QuerySet[StandMetric],
+    action_metrics: QuerySet[StandMetric],
     aggregations: List[ImpactVariableAggregation],
-):
-    baseline_dict = {
-        f.get("properties", {}).get("stand_id"): f for f in baseline_zonal_stats
-    }
-    for i, f in enumerate(variable_zonal_stats):
-        variable_props = f.get("properties", {})
-        stand_id = variable_props.get("stand_id")
-        baseline_props = baseline_dict.get(stand_id).get("properties")
+) -> List[Dict[str, Any]]:
+    baseline_dict = {m.stand_id: m for m in baseline_metrics}
+    action_dict = {m.stand_id: m for m in action_metrics}
+    results = []
+    for stand_id, metric in action_dict.items():
+        baseline = baseline_dict.get(stand_id)
+        if not baseline:
+            log.warning(f"Could not find {stand_id} in baseline metrics!")
+            continue
 
-        baselines = {
-            f"baseline_{agg}": baseline_props.get("agg") for agg in aggregations
-        }
-
-        variable_zonal_stats[i]["properties"] = {**variable_props, **baselines}
-    return variable_zonal_stats
+        for agg in aggregations:
+            attribute_to_lookup = ImpactVariableAggregation.get_metric_attribute(agg)
+            metric_value = getattr(metric, attribute_to_lookup)
+            baseline_value = getattr(baseline, attribute_to_lookup)
+            delta = calculate_delta(metric_value, baseline_value)
+            results.append(
+                {
+                    "stand_id": stand_id,
+                    "aggregation": agg,
+                    "value": metric_value,
+                    "baseline": baseline_value,
+                    "delta": delta,
+                }
+            )
+    return results
 
 
 def get_calculation_matrix(
@@ -422,3 +322,46 @@ def get_calculation_matrix(
         years = AVAILABLE_YEARS
     variables = list(ImpactVariable)
     return list(itertools.product(variables, actions, years))
+
+
+def calculate_baseline_metrics(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    year: int,
+) -> QuerySet[StandMetric]:
+    geometry = ProjectArea.objects.filter(scenario=treatment_plan.scenario).aggregate(
+        geometry=UnionOp("geometry")
+    )["geometry"]
+    stands = Stand.objects.within_polygon(geometry)
+    datalayer = ImpactVariable.get_datalayer(
+        impact_variable=variable,
+        year=year,
+    )
+    return calculate_stand_zonal_stats(
+        stands=stands,
+        datalayer=datalayer,
+    )
+
+
+def calculate_action_metrics(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    action: TreatmentPrescriptionAction,
+    year: int,
+) -> QuerySet[StandMetric]:
+    prescriptions = treatment_plan.tx_prescriptions.filter(
+        action=action
+    ).select_related(
+        "stand",
+        "treatment_plan",
+        "project_area",
+    )
+
+    stand_ids = prescriptions.values_list("stand_id", flat=True)
+    stands = Stand.objects.filter(id__in=stand_ids)
+    datalayer = ImpactVariable.get_datalayer(
+        impact_variable=variable,
+        action=action,
+        year=year,
+    )
+    return calculate_stand_zonal_stats(stands=stands, datalayer=datalayer)
