@@ -5,62 +5,74 @@ import rasterio
 import fiona
 from fiona.errors import DriverError
 from rasterio.transform import from_gcps
+from django.conf import settings
 from attr import asdict
 
 logger = logging.getLogger(__name__)
 
 
+def get_gdal_env() -> Dict[str, Any]:
+    return {
+        "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
+        "CPL_VSIL_USE_TEMP_FILE_FOR_RANDOM_WRITE": "YES",
+        "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
+        "GDAL_CACHE_MAX": settings.GDAL_CACHE_MAX,
+        "VSI_CACHE": False,
+    }
+
+
 def info_raster(input_file: str) -> Dict[str, Any]:
-    """
+    """z
     This copies the original rasterio info CLI util with some changes, so we can call this
     from our code.
     """
-    with rasterio.open(input_file) as src:
-        info = dict(src.profile)
-        info["shape"] = (info["height"], info["width"])
-        info["bounds"] = src.bounds
+    with rasterio.Env(**get_gdal_env()):
+        with rasterio.open(input_file) as src:
+            info = dict(src.profile)
+            info["shape"] = (info["height"], info["width"])
+            info["bounds"] = src.bounds
 
-        if src.crs:
-            epsg = src.crs.to_epsg()
-            if epsg:
-                info["crs"] = f"EPSG:{epsg}"
-            else:
-                info["crs"] = src.crs.to_string()
-        else:
-            info["crs"] = None
-
-        info["res"] = src.res
-        info["colorinterp"] = [ci.name for ci in src.colorinterp]
-        info["units"] = [units or None for units in src.units]
-        info["descriptions"] = src.descriptions
-        info["indexes"] = src.indexes
-        info["mask_flags"] = [
-            [flag.name for flag in flags] for flags in src.mask_flag_enums
-        ]
-
-        if src.crs:
-            info["lnglat"] = src.lnglat()
-
-        gcps, gcps_crs = src.gcps
-
-        if gcps:
-            info["gcps"] = {"points": [p.asdict() for p in gcps]}
-            if gcps_crs:
-                epsg = gcps_crs.to_epsg()
+            if src.crs:
+                epsg = src.crs.to_epsg()
                 if epsg:
-                    info["gcps"]["crs"] = f"EPSG:{epsg}"
+                    info["crs"] = f"EPSG:{epsg}"
                 else:
-                    info["gcps"]["crs"] = src.crs.to_string()
+                    info["crs"] = src.crs.to_string()
             else:
-                info["gcps"]["crs"] = None
+                info["crs"] = None
 
-            info["gcps"]["transform"] = from_gcps(gcps)
+            info["res"] = src.res
+            info["colorinterp"] = [ci.name for ci in src.colorinterp]
+            info["units"] = [units or None for units in src.units]
+            info["descriptions"] = src.descriptions
+            info["indexes"] = src.indexes
+            info["mask_flags"] = [
+                [flag.name for flag in flags] for flags in src.mask_flag_enums
+            ]
 
-        stats = [asdict(so) for so in src.stats()]
-        info["stats"] = stats
-        info["checksum"] = [src.checksum(i) for i in src.indexes]
+            if src.crs:
+                info["lnglat"] = src.lnglat()
 
-        return json.loads(json.dumps(info))
+            gcps, gcps_crs = src.gcps
+
+            if gcps:
+                info["gcps"] = {"points": [p.asdict() for p in gcps]}
+                if gcps_crs:
+                    epsg = gcps_crs.to_epsg()
+                    if epsg:
+                        info["gcps"]["crs"] = f"EPSG:{epsg}"
+                    else:
+                        info["gcps"]["crs"] = src.crs.to_string()
+                else:
+                    info["gcps"]["crs"] = None
+
+                info["gcps"]["transform"] = from_gcps(gcps)
+
+            stats = [asdict(so) for so in src.stats()]
+            info["stats"] = stats
+            info["checksum"] = [src.checksum(i) for i in src.indexes]
+
+            return json.loads(json.dumps(info))
 
 
 def info_vector_layer(input_file: str, layer: Optional[str] = None) -> Dict[str, Any]:

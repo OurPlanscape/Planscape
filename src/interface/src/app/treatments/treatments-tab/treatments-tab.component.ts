@@ -44,7 +44,7 @@ export class ProjectAreaTreatmentsTabComponent {
   ) {}
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
-  searchString: string | null = null;
+  searchString: string = '';
 
   prescriptions$: Observable<Prescription[]> = combineLatest([
     this.treatmentsState.summary$,
@@ -67,8 +67,9 @@ export class ProjectAreaTreatmentsTabComponent {
   }
 
   setSearchString(searchString: string) {
-    this.searchString = searchString;
-    if (this.searchString === '') {
+    this.searchString = searchString.toLowerCase();
+    if (this.searchString === '' || this.searchString === null) {
+      //no search string
       this.filteredPrescriptions$ = this.prescriptions$;
     } else {
       this.filteredPrescriptions$ = this.prescriptions$.pipe(
@@ -84,7 +85,8 @@ export class ProjectAreaTreatmentsTabComponent {
               (p.type === 'SEQUENCE' &&
                 PRESCRIPTIONS.SEQUENCE[
                   p.action as PrescriptionSequenceAction
-                ].name
+                ].details
+                  .join(' ')
                   .toLowerCase()
                   .includes(this.searchString))
             );

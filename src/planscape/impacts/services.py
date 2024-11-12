@@ -176,10 +176,7 @@ def generate_summary(
         geometry=UnionOp("geometry")
     )["geometry"]
     for project in project_area_queryset:
-        stand_project_qs = Stand.objects.filter(
-            size=stand_size,
-            geometry__intersects=project.geometry,
-        )
+        stand_project_qs = Stand.objects.within_polygon(project.geometry).all()
         project_areas[project.id] = {
             "project_area_id": project.id,
             "project_area_name": project.name,
@@ -367,7 +364,7 @@ def calculate_impacts(
         year=year,
     )
     prescription_stands = list(map(to_geojson, prescriptions))
-    agg = ImpactVariable.get_aggregations(variable)
+    agg = [ag.lower() for ag in ImpactVariable.get_aggregations(variable)]
     log.info(f"Calculating raster stats for {variable} with aggregations {agg}")
     baseline_stats = zonal_stats(
         prescription_stands,

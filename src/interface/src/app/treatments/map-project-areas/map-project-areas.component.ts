@@ -1,9 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import {
-  FeatureComponent,
-  GeoJSONSourceComponent,
   LayerComponent,
-  PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { getColorForProjectPosition } from '../../plan/plan-helpers';
@@ -18,16 +15,8 @@ import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import {
-  combineLatest,
-  distinctUntilChanged,
-  map,
-  Observable,
-  Subject,
-} from 'rxjs';
-import { TreatmentProjectArea } from '@types';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
 import { getTreatedStandsTotal } from '../prescriptions';
 
@@ -42,17 +31,12 @@ type MapLayerData = {
   selector: 'app-map-project-areas',
   standalone: true,
   imports: [
-    FeatureComponent,
-    GeoJSONSourceComponent,
     LayerComponent,
     VectorSourceComponent,
-    PopupComponent,
     MatIconModule,
-    NgForOf,
     NgIf,
     AsyncPipe,
     MapTooltipComponent,
-    JsonPipe,
   ],
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
@@ -69,18 +53,7 @@ export class MapProjectAreasComponent implements OnInit {
   fillColor: any;
   getTreatedStandsTotal = getTreatedStandsTotal;
 
-  activeProjectAreaId$ = new Subject<number>();
-  activeProjectArea$: Observable<TreatmentProjectArea | undefined> =
-    combineLatest([
-      this.summary$,
-      this.activeProjectAreaId$.pipe(distinctUntilChanged()),
-    ]).pipe(
-      map(([summary, projectAreaId]) => {
-        return summary?.project_areas.find(
-          (p) => p.project_area_id === projectAreaId
-        );
-      })
-    );
+  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
 
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
@@ -155,11 +128,6 @@ export class MapProjectAreasComponent implements OnInit {
       return;
     }
     this.mouseLngLat = e.lngLat;
-    const newId = this.getProjectAreaIdFromFeatures(e.point);
-
-    if (newId) {
-      this.activeProjectAreaId$.next(newId);
-    }
   }
 
   resetCursorAndTooltip(e: MapMouseEvent) {
