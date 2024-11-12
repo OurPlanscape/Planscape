@@ -5,7 +5,6 @@ import {
   BaseLayerType,
 } from '../treatment-map/map-base-layers';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 
 @Component({
   selector: 'app-map-base-layer',
@@ -19,19 +18,16 @@ export class MapBaseLayerComponent {
 
   readonly baseLayer$ = this.mapConfigState.baseLayer$;
 
-  constructor(
-    private mapConfigState: MapConfigState,
-    private selectedStandsState: SelectedStandsState
-  ) {}
+  constructor(private mapConfigState: MapConfigState) {}
 
   updateBaseLayer(layer: BaseLayerType) {
-    const stands = this.selectedStandsState.getSelectedStands();
-    this.selectedStandsState.clearStands();
+    // const stands = this.selectedStandsState.getSelectedStands();
+    // this.selectedStandsState.clearStands();
     this.mapConfigState.updateBaseLayer(layer);
     // not great, but updating the baseLayer re-renders all the layers, and gets the
     // selected stands completely out of sync.
-    setTimeout(() => {
-      this.selectedStandsState.updateSelectedStands(stands);
-    }, 10);
+    // setTimeout(() => {
+    //   this.selectedStandsState.updateSelectedStands(stands);
+    // }, 10);
   }
 }

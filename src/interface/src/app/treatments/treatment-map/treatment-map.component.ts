@@ -25,10 +25,12 @@ import { MapConfigState } from './map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
+import { BehaviorSubject, map, Subject, withLatestFrom } from 'rxjs';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addAuthHeaders } from '../maplibre.helper';
+import { filter } from 'rxjs/operators';
+import { SelectedStandsState } from './selected-stands.state';
 
 @UntilDestroy()
 @Component({
@@ -129,10 +131,15 @@ export class TreatmentMapComponent {
    */
   standsSourceLayerId = 'stands';
 
+  sourceLoaded$ = new Subject<MapSourceDataEvent>();
+
+  backupSelected: number[] = [];
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
-    private treatmentsState: TreatmentsState
+    private treatmentsState: TreatmentsState,
+    private selectedStandsState: SelectedStandsState
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -140,6 +147,32 @@ export class TreatmentMapComponent {
       .subscribe((cursor) => {
         if (this.mapLibreMap) {
           this.mapLibreMap.getCanvas().style.cursor = cursor;
+        }
+      });
+
+    this.mapConfigState.baseLayer$
+      .pipe(
+        untilDestroyed(this),
+        withLatestFrom(this.showTreatmentStands$),
+        filter(([_, showTreatmentStands]) => showTreatmentStands) // Only pass through if showTreatmentStands is true
+      )
+      .subscribe(() => {
+        // This will only trigger when baseLayer$ emits and showTreatmentStands$ is true
+        this.backupSelected = this.selectedStandsState.getSelectedStands();
+        this.selectedStandsState.clearStands();
+      });
+
+    this.sourceLoaded$
+      .pipe(
+        untilDestroyed(this),
+        filter(
+          (source) => source.sourceId === 'stands' && !source.sourceDataType
+        )
+      )
+      .subscribe((s) => {
+        if (this.backupSelected.length > 0) {
+          this.selectedStandsState.updateSelectedStands(this.backupSelected);
+          this.backupSelected = [];
         }
       });
   }
@@ -185,6 +218,9 @@ export class TreatmentMapComponent {
   }
 
   onSourceData(event: MapSourceDataEvent) {
+    if (event.isSourceLoaded) {
+      this.sourceLoaded$.next(event);
+    }
     if (event.sourceId === this.standsSourceLayerId && event.isSourceLoaded) {
       this.standsLoaded$.next(true);
     }
