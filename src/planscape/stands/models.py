@@ -58,6 +58,7 @@ class StandManager(models.Manager):
 
 
 class Stand(CreatedAtMixin, models.Model):
+    id: int
     size = models.CharField(
         choices=StandSizeChoices.choices,
         max_length=16,
