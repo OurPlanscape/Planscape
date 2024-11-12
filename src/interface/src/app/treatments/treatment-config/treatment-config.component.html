@@ -31,7 +31,7 @@
             variant="text"
             icon="ios_share"
             [outlined]="true"
-            (click)="printTreatment()"
+            (click)="createPDF()"
             data-id="print">
             Export Plan to PDF
           </button>
@@ -53,5 +53,15 @@
       *ngIf="(showTreatmentLegend$ | async) || false"></app-treatment-legend>
   </div>
 </section>
-
-<app-printable-tx-footer [summary]="summary$ | async"></app-printable-tx-footer>
+<div
+  id="printable-map"
+  style="
+    position: absolute;
+    width: 1000px;
+    height: 600px;
+    left: -9999px;
+    top: -9999px;
+  "></div>
+<app-printable-tx-footer
+  id="pdffooter"
+  [summary]="summary$ | async"></app-printable-tx-footer>
