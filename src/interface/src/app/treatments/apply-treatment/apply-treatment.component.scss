@@ -1,4 +1,4 @@
-@import "colors";
+@import 'colors';
 
 .prescription {
   display: block;
@@ -21,7 +21,6 @@
 .apply-warning {
   margin-bottom: 16px;
 }
-
 
 .label {
   margin-bottom: 8px;
@@ -58,15 +57,14 @@
     .mat-form-field-outline {
       top: 0;
     }
-
   }
-
-
 }
 
 sg-modal {
-  height: 100%;
-  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.10), 0px 2px 2px 0px rgba(0, 0, 0, 0.10);
+  height: fit-content;
+  box-shadow:
+    0px 4px 4px 0px rgba(0, 0, 0, 0.1),
+    0px 2px 2px 0px rgba(0, 0, 0, 0.1);
 
   ::ng-deep {
     .modal-body {
@@ -82,11 +80,8 @@ sg-modal {
     .footer {
       height: initial;
     }
-
   }
-
 }
-
 
 :host ::ng-deep {
   .mat-mdc-radio-button .mdc-radio {
@@ -99,7 +94,6 @@ sg-modal {
     label {
       width: 100%;
     }
-
   }
 
   .mdc-form-field > label {
@@ -126,4 +120,3 @@ sg-modal {
 .prescription-sequence ::ng-deep label {
   font-weight: bold;
 }
-
