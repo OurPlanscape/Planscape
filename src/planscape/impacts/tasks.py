@@ -45,7 +45,7 @@ def async_calculate_impacts_for_variable_action_year(
     results = calculate_impacts(
         treatment_plan=treatment_plan, variable=variable, action=action, year=year
     )
-    return list(x.id for x in results)
+    return list([x.id for x in results])
 
 
 @app.task()
