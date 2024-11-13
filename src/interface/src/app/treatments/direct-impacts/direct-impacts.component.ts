@@ -86,6 +86,5 @@ export class DirectImpactsComponent {
 
   showTreatmentPrescription = false;
 
-  // Metric will have metric.active = true if it should be turned on or false if it should be turned off
   activateMetric(metric: Metric) {}
 }

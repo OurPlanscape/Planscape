@@ -43,7 +43,7 @@ export class MetricSelectorComponent implements OnInit {
   }
 
   onActivate() {
-    this.selectedMetric.active = !this.selectedMetric.active;
+    this.selectedMetric.active = true;
     this.activated.emit(this.selectedMetric);
   }
 }
