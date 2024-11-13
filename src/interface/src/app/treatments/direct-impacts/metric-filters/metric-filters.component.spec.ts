@@ -7,31 +7,26 @@ export const MockMetrics = [
     id: 'ID_1',
     color: '',
     label: 'Mock metric 1',
-    active: false,
   },
   {
     id: 'ID_2',
     color: '',
     label: 'Mock metric 2',
-    active: false,
   },
   {
     id: 'ID_3',
     color: '',
     label: 'Mock metric 2',
-    active: false,
   },
   {
     id: 'ID_4',
     color: '',
     label: 'Mock metric 4',
-    active: false,
   },
   {
     id: 'ID_5',
     color: '',
     label: 'Mock metric 5',
-    active: false,
   },
 ];
 
@@ -101,7 +96,7 @@ describe('MetricFiltersComponent', () => {
   it('should update the selected option and call updateDropdownOptions when optionSelected is called', () => {
     spyOn(component, 'updateDropdownOptions').and.callFake(() => {});
     const dropdownIndex = 1;
-    const metric: Metric = { id: 'Test', color: '', label: '', active: false };
+    const metric: Metric = { id: 'Test', color: '', label: '' };
     component.optionSelected(dropdownIndex, metric);
     // The selected option for this dropdown should be updated with the corresponding ID
     expect(component.selectedOptions[dropdownIndex]).toEqual(metric.id);

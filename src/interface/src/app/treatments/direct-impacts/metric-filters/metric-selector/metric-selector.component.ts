@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Metric } from '../metric-filters.component';
+import { TreatmentsState } from 'src/app/treatments/treatments.state';
 
 @Component({
   selector: 'app-metric-selector',
@@ -29,6 +30,10 @@ export class MetricSelectorComponent implements OnInit {
 
   selectedMetric: any;
 
+  activeMetric$ = this.treatmentsState.activeMetric$;
+
+  constructor(private treatmentsState: TreatmentsState) {}
+
   ngOnInit(): void {
     this.selectedMetric = this.metrics.find(
       (metric: any) => metric.id === this.selectedOption
@@ -43,7 +48,6 @@ export class MetricSelectorComponent implements OnInit {
   }
 
   onActivate() {
-    this.selectedMetric.active = true;
     this.activated.emit(this.selectedMetric);
   }
 }

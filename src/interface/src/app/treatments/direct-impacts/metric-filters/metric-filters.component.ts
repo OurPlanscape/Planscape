@@ -6,7 +6,6 @@ export interface Metric {
   id: string;
   color: string;
   label: string;
-  active: boolean;
 }
 
 export const METRICS: Metric[] = [
@@ -14,85 +13,71 @@ export const METRICS: Metric[] = [
     id: 'ID_CROWN_BULK_DENSITY',
     color: '',
     label: 'Crown Bulk Density',
-    active: false,
   },
   {
     id: 'ID_CANOPY_BASE_HEIGHT',
     color: '',
     label: 'Canopy Base Height',
-    active: false,
   },
   {
     id: 'ID_CANOPY_COVER',
     color: '',
     label: 'Canopy Cover',
-    active: false,
   },
   {
     id: 'ID_LARGE_TREE_BIOMASS',
     color: '',
     label: 'Large Tree Biomass',
-    active: false,
   },
   {
     id: 'ID_MERCHANTABLE_BIOMASS',
     color: '',
     label: 'Merchantable Biomass',
-    active: false,
   },
   {
     id: 'ID_NON_MERCHANTABLE_BIOMASS',
     color: '',
     label: 'Non-Merchantable Biomass',
-    active: false,
   },
   {
     id: 'ID_MORTALITY',
     color: '',
     label: 'Mortality',
-    active: false,
   },
   {
     id: 'ID_POTENTIAL_SMOKE',
     color: '',
     label: 'Potential Smoke',
-    active: false,
   },
   {
     id: 'ID_PROBABILITY_OF_TORCHING',
     color: '',
     label: 'Probability of Torching',
-    active: false,
   },
   {
     id: 'ID_QUADRATIC_MEAN_DIAMETER',
     color: '',
     label: 'Quadratic Mean Diameter',
-    active: false,
   },
   {
     id: 'ID_STAND_DENSITY_INDEX',
     color: '',
     label: 'Stand Density Index',
-    active: false,
   },
   {
     id: 'ID_TOTAL_HEIGHT',
     color: '',
     label: 'Total Height',
-    active: false,
   },
   {
     id: 'ID_TOTAL_FLAME_SEVERITY',
     color: '',
     label: 'Total Flame Severity',
-    active: false,
   },
   {
     id: 'ID_TOTAL_CARBON',
     color: '',
     label: 'Total Carbon',
-    active: false,
   },
 ];
 
@@ -168,11 +153,6 @@ export class MetricFiltersComponent implements OnInit {
   }
 
   activateMetric(metric: Metric): void {
-    this.dropdownOptions.forEach((list) => {
-      list.map((m) => {
-        m.active = m.id === metric.id ? metric.active : false;
-      });
-    });
     this.metricSelected.emit(metric);
   }
 }
