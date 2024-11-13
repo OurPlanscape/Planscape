@@ -37,6 +37,7 @@ import { PlanningAreaMenuComponent } from '../planning-area-menu/planning-area-m
 import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-areas-search.component';
 import { FormsModule } from '@angular/forms';
 import { combineLatest, map } from 'rxjs';
+import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 
 @Component({
   selector: 'app-planning-areas',
@@ -67,6 +68,7 @@ import { combineLatest, map } from 'rxjs';
     FormsModule,
     FilterDropdownComponent,
     PaginatorComponent,
+    OverlayLoaderComponent,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
