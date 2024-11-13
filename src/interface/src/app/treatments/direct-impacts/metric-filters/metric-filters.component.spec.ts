@@ -102,10 +102,10 @@ describe('MetricFiltersComponent', () => {
   it('should update the selected option and call updateDropdownOptions when optionSelected is called', () => {
     spyOn(component, 'updateDropdownOptions').and.callFake(() => {});
     const dropdownIndex = 1;
-    const metric: Metric = {id: 'Test', color: '', label: '', active: false};
+    const metric: Metric = { id: 'Test', color: '', label: '', active: false };
     component.optionSelected(dropdownIndex, metric);
     // The selected option for this dropdown should be updated with the corresponding ID
-    expect(component.selectedOptions[dropdownIndex]).toEqual(metric.id)
+    expect(component.selectedOptions[dropdownIndex]).toEqual(metric.id);
     // updateDropdownOptions should be called with the dropdown index we just selected
     expect(component.updateDropdownOptions).toHaveBeenCalledWith(dropdownIndex);
   });

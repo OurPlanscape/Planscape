@@ -1,11 +1,16 @@
 <div class="container">
   <div class="fixed-width">
-    <mat-icon class="material-symbols-outlined"
+    <mat-icon
+      class="material-symbols-outlined"
       [style.color]="selectedMetric?.active ? selectedMetric.color : '#898989'"
-      [class.blue-color]="selectedMetric?.active" color="primary" (click)="onActivate()">
+      [class.blue-color]="selectedMetric?.active"
+      color="primary"
+      (click)="onActivate()">
       map
     </mat-icon>
-    <i class="metric-color" [style.backgroundColor]="selectedMetric?.color || 'gray'"></i>
+    <i
+      class="metric-color"
+      [style.backgroundColor]="selectedMetric?.color || 'gray'"></i>
     <span class="metric-label">
       {{ label }}
     </span>
