@@ -4,7 +4,7 @@
   width: 100%;
 }
 
-.grid-container {
+:host{
   display: grid;
   gap: 16px; // Space between metrics
   grid-template-columns: repeat(1, 1fr); // 1 column by default
@@ -15,7 +15,7 @@
 }
 
 @include on-medium() {
-  .grid-container {
+  :host{
     grid-template-columns: repeat(2, 1fr); // 2 columns in md-desktop
   }
   
@@ -26,7 +26,7 @@
 }
 
 @include on-extra-large() {
-  .grid-container {
+  :host{
       grid-template-columns: repeat(4, 1fr); // 4 columns in xl-desktop
   }
   
