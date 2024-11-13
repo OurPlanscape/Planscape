@@ -12,7 +12,7 @@ describe('MetricSelectorComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MetricSelectorComponent],
-      providers: [MockProviders(TreatmentsState)]
+      providers: [MockProviders(TreatmentsState)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MetricSelectorComponent);

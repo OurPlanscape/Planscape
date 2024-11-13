@@ -1,4 +1,8 @@
 <div class="grid-item" *ngFor="let list of dropdownOptions; let i = index">
-  <app-metric-selector [selectedOption]="selectedOptions[i]" [metrics]="list" [label]="'Metric ' + (i + 1)"
-    (metricChanged)="optionSelected(i, $event)" (activated)="activateMetric($event)"></app-metric-selector>
+  <app-metric-selector
+    [selectedOption]="selectedOptions[i]"
+    [metrics]="list"
+    [label]="'Metric ' + (i + 1)"
+    (metricChanged)="optionSelected(i, $event)"
+    (activated)="activateMetric($event)"></app-metric-selector>
 </div>

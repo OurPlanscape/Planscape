@@ -87,6 +87,6 @@ export class DirectImpactsComponent {
   showTreatmentPrescription = false;
 
   activateMetric(metric: Metric) {
-    this.treatmentsState.activeMetric$.next(metric)
+    this.treatmentsState.activeMetric$.next(metric);
   }
 }
