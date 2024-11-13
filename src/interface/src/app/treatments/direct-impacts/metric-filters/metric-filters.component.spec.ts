@@ -46,7 +46,6 @@ describe('MetricFiltersComponent', () => {
 
     fixture = TestBed.createComponent(MetricFiltersComponent);
     component = fixture.componentInstance;
-    // Configuración inicial de los datos
     component.initialOptions = MockMetrics;
 
     component.selectedOptions = [
