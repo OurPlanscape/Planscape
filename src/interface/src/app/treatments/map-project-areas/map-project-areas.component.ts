@@ -61,11 +61,11 @@ export class MapProjectAreasComponent implements OnInit {
   fillColor: any;
   getTreatedStandsTotal = getTreatedStandsTotal;
 
-  hoverProjectAreaId$ = new Subject<number>();
+  hoveredProjectAreaId$ = new Subject<number>();
   hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
     combineLatest([
       this.summary$,
-      this.hoverProjectAreaId$.pipe(distinctUntilChanged()),
+      this.hoveredProjectAreaId$.pipe(distinctUntilChanged()),
     ]).pipe(
       map(([summary, projectAreaId]) => {
         return summary?.project_areas.find(
@@ -147,9 +147,9 @@ export class MapProjectAreasComponent implements OnInit {
     if (this.treatmentsState.getProjectAreaId()) {
       return;
     }
-    const hoverProjectAreaId = this.getProjectAreaIdFromFeatures(e.point);
-    if (hoverProjectAreaId) {
-      this.hoverProjectAreaId$.next(hoverProjectAreaId);
+    const hoveredProjectAreaId = this.getProjectAreaIdFromFeatures(e.point);
+    if (hoveredProjectAreaId) {
+      this.hoveredProjectAreaId$.next(hoveredProjectAreaId);
     }
     this.mouseLngLat = e.lngLat;
   }
