@@ -3,17 +3,13 @@
     <mat-icon
       class="material-symbols-outlined"
       [style.color]="
-        (activeMetric$ | async)?.id === selectedOption
-          ? selectedMetric.color
-          : '#898989'
+        (activeMetric$ | async)?.id === selectedOption ? color : '#898989'
       "
       color="primary"
       (click)="onActivate()">
       map
     </mat-icon>
-    <i
-      class="metric-color"
-      [style.backgroundColor]="selectedMetric?.color || 'gray'"></i>
+    <i class="metric-color" [style.backgroundColor]="color"></i>
     <span class="metric-label">
       {{ label }}
     </span>

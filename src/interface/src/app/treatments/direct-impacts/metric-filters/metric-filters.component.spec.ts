@@ -55,36 +55,11 @@ describe('MetricFiltersComponent', () => {
       MockMetrics,
       MockMetrics,
     ];
-
-    spyOn(component, 'applyMetricColor').and.callFake((index, list) => list);
   });
 
   it('should update the dropdownOption lists', () => {
     const updatedDropdownIndex = null;
     component.updateDropdownOptions(updatedDropdownIndex);
-
-    // Verify applyMetricColor was called 4 times one for every dropdown
-    expect(component.applyMetricColor).toHaveBeenCalledTimes(4);
-    // The 1st dropdown should have the default option and the not selected one
-    expect(component.applyMetricColor).toHaveBeenCalledWith(0, [
-      MockMetrics[0],
-      MockMetrics[4],
-    ]);
-    // The 2nd dropdown should have the default option and the not selected one
-    expect(component.applyMetricColor).toHaveBeenCalledWith(1, [
-      MockMetrics[1],
-      MockMetrics[4],
-    ]);
-    // The 3rd dropdown should have the default option and the not selected one
-    expect(component.applyMetricColor).toHaveBeenCalledWith(2, [
-      MockMetrics[2],
-      MockMetrics[4],
-    ]);
-    // The 4th dropdown should have the default option and the not selected one
-    expect(component.applyMetricColor).toHaveBeenCalledWith(3, [
-      MockMetrics[3],
-      MockMetrics[4],
-    ]);
 
     // We have 5 items, 4 of them are selected as default, we should have 2 options available per dropdown
     expect(component.dropdownOptions[0].length).toEqual(2);
@@ -96,7 +71,7 @@ describe('MetricFiltersComponent', () => {
   it('should update the selected option and call updateDropdownOptions when optionSelected is called', () => {
     spyOn(component, 'updateDropdownOptions').and.callFake(() => {});
     const dropdownIndex = 1;
-    const metric: Metric = { id: 'Test', color: '', label: '' };
+    const metric: Metric = { id: 'Test', label: '' };
     component.optionSelected(dropdownIndex, metric);
     // The selected option for this dropdown should be updated with the corresponding ID
     expect(component.selectedOptions[dropdownIndex]).toEqual(metric.id);

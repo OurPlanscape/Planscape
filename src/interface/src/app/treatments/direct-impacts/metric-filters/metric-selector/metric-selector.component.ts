@@ -23,6 +23,7 @@ import { TreatmentsState } from 'src/app/treatments/treatments.state';
 })
 export class MetricSelectorComponent implements OnInit {
   @Input() label!: string;
+  @Input() color!: string;
   @Input() metrics!: Metric[];
   @Input() selectedOption!: string;
   @Output() metricChanged = new EventEmitter<Metric>();
