@@ -52,6 +52,9 @@ def async_calculate_impacts_for_variable_action_year(
 def async_set_status(
     treatment_plan_pk: int, status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE
 ) -> Tuple[bool, int]:
+    """sets the status of a treatment plan async.
+    this is used as a callback in celery canvas.
+    """
     with transaction.atomic():
         treatment_plan = TreatmentPlan.objects.select_for_update().get(
             pk=treatment_plan_pk
