@@ -335,7 +335,9 @@ class CalculateImpactsTest(TransactionTestCase):
                 "impacts": {
                     "year": 2024,
                     "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
-                    "action": TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                    "action": TreatmentPrescriptionAction.get_file_mapping(
+                        TreatmentPrescriptionAction.HEAVY_MASTICATION
+                    ),
                     "baseline": False,
                 }
             }
@@ -453,7 +455,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
                     "impacts": {
                         "year": year,
                         "variable": variable,
-                        "action": action,
+                        "action": TreatmentPrescriptionAction.get_file_mapping(action),
                         "baseline": False,
                     }
                 }

@@ -376,13 +376,16 @@ class ImpactVariable(models.TextChoices):
         action: Optional[TreatmentPrescriptionAction] = None,
     ) -> DataLayer:
         baseline = action is None
+        action_query = (
+            TreatmentPrescriptionAction.get_file_mapping(action) if action else None
+        )
         query = {
             "modules": {
                 "impacts": {
                     "year": year,
                     "baseline": baseline,
                     "variable": str(impact_variable),
-                    "action": action,
+                    "action": action_query,
                 }
             }
         }
