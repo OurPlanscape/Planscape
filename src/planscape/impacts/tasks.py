@@ -24,7 +24,7 @@ def async_calculate_impacts_for_variable_action_year(
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
-) -> List[int]:
+) -> None:
     """Calculates impacts for the variable, action year triple.
 
     :param treatment_plan_pk: _description_
@@ -42,10 +42,9 @@ def async_calculate_impacts_for_variable_action_year(
     treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
         pk=treatment_plan_pk
     )
-    results = calculate_impacts(
+    calculate_impacts(
         treatment_plan=treatment_plan, variable=variable, action=action, year=year
     )
-    return list([x.id for x in results])
 
 
 @app.task()
