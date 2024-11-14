@@ -17,6 +17,10 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
+import {
+  Metric,
+  MetricFiltersComponent,
+} from './metric-filters/metric-filters.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -36,6 +40,8 @@ import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.c
     FormsModule,
     TreatmentMapComponent,
     TreatmentLegendComponent,
+    MetricFiltersComponent,
+    MetricFiltersComponent,
   ],
   providers: [
     TreatmentsState,
@@ -79,4 +85,8 @@ export class DirectImpactsComponent {
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
 
   showTreatmentPrescription = false;
+
+  activateMetric(metric: Metric) {
+    this.treatmentsState.activeMetric$.next(metric);
+  }
 }
