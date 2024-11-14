@@ -19,6 +19,14 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
 import { getTreatedStandsTotal } from '../prescriptions';
+import { TreatmentProjectArea } from '@types';
+import {
+  combineLatest,
+  Observable,
+  distinctUntilChanged,
+  Subject,
+  map,
+} from 'rxjs';
 
 type MapLayerData = {
   readonly name: string;
@@ -53,7 +61,18 @@ export class MapProjectAreasComponent implements OnInit {
   fillColor: any;
   getTreatedStandsTotal = getTreatedStandsTotal;
 
-  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
+  hoverProjectAreaId$ = new Subject<number>();
+  hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
+    combineLatest([
+      this.summary$,
+      this.hoverProjectAreaId$.pipe(distinctUntilChanged()),
+    ]).pipe(
+      map(([summary, projectAreaId]) => {
+        return summary?.project_areas.find(
+          (p: TreatmentProjectArea) => p.project_area_id === projectAreaId
+        );
+      })
+    );
 
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
@@ -123,9 +142,14 @@ export class MapProjectAreasComponent implements OnInit {
   }
 
   setProjectAreaTooltip(e: MapMouseEvent) {
-    // if I have a project area ID im transitioning to the project area view.
+    // if I have a project area ID im transitioning to the project area view,
+    // so we won't set a tooltip here
     if (this.treatmentsState.getProjectAreaId()) {
       return;
+    }
+    const hoverProjectAreaId = this.getProjectAreaIdFromFeatures(e.point);
+    if (hoverProjectAreaId) {
+      this.hoverProjectAreaId$.next(hoverProjectAreaId);
     }
     this.mouseLngLat = e.lngLat;
   }
