@@ -2,10 +2,10 @@ from collaboration.models import Role
 from collaboration.permissions import CheckPermissionMixin
 from collaboration.utils import check_for_permission, is_creator
 from django.shortcuts import get_object_or_404
-from impacts.models import TTreatmentPlan, TreatmentPlan
-from planning.models import TScenario, Scenario
-from planscape.typing import TUser
+from impacts.models import TreatmentPlan
+from planning.models import Scenario
 from planscape.permissions import PlanscapePermission
+from django.contrib.auth.models import AbstractUser
 
 VIEWER_PERMISSIONS = [
     "view_planningarea",
@@ -38,7 +38,7 @@ PERMISSIONS = {
 
 class TreatmentPlanPermission(CheckPermissionMixin):
     @staticmethod
-    def can_view(user: TUser, tx_plan: TTreatmentPlan):
+    def can_view(user: AbstractUser, tx_plan: TreatmentPlan):
         if is_creator(user, tx_plan.scenario.planning_area):
             return True
 
@@ -47,14 +47,14 @@ class TreatmentPlanPermission(CheckPermissionMixin):
         )
 
     @staticmethod
-    def can_add(user: TUser, scenario: TScenario):
+    def can_add(user: AbstractUser, scenario: Scenario):
         if is_creator(user, scenario.planning_area):
             return True
 
         return check_for_permission(user.id, scenario.planning_area, "add_tx_plan")
 
     @staticmethod
-    def can_change(user: TUser, tx_plan: TTreatmentPlan):
+    def can_change(user: AbstractUser, tx_plan: TreatmentPlan):
         if (
             is_creator(user, tx_plan.scenario.planning_area)
             or tx_plan.created_by.pk == user.pk
@@ -66,7 +66,7 @@ class TreatmentPlanPermission(CheckPermissionMixin):
         )
 
     @staticmethod
-    def can_remove(user: TUser, tx_plan: TTreatmentPlan) -> bool:
+    def can_remove(user: AbstractUser, tx_plan: TreatmentPlan) -> bool:
         if is_creator(user, tx_plan.scenario.planning_area):
             return True
 
@@ -80,7 +80,7 @@ class TreatmentPlanPermission(CheckPermissionMixin):
         )
 
     @staticmethod
-    def can_clone(user: TUser, tx_plan: TTreatmentPlan) -> bool:
+    def can_clone(user: AbstractUser, tx_plan: TreatmentPlan) -> bool:
         return is_creator(user, tx_plan.scenario.planning_area) or check_for_permission(
             user,
             tx_plan.scenario.planning_area,
@@ -88,7 +88,7 @@ class TreatmentPlanPermission(CheckPermissionMixin):
         )
 
     @staticmethod
-    def can_run(user: TUser, tx_plan: TTreatmentPlan):
+    def can_run(user: AbstractUser, tx_plan: TreatmentPlan):
         is_creator_pa = is_creator(user, tx_plan.scenario.planning_area)
         is_creator_tx = tx_plan.created_by.pk == user.pk
         has_perm = check_for_permission(
