@@ -4,6 +4,7 @@ import json
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
 from django.db.models import Count, QuerySet
+from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from impacts.calculator import calculate_delta
@@ -11,33 +12,28 @@ from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
-    TAction,
-    TTreatmentPlan,
-    TTreatmentPlanCloneResult,
-    TTreatmentPrescriptionEntity,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentResult,
-    TreatmentResultType,
+    TTreatmentPlanCloneResult,
     get_prescription_type,
 )
-from planning.models import ProjectArea, TProjectArea, TScenario
 from actstream import action as actstream_action
-from stands.models import STAND_AREA_ACRES, StandMetric, TStand, Stand
-from planscape.typing import TUser
-from stands.services import AGGREGATION_MODEL_MAP, calculate_stand_zonal_stats
+from planning.models import Scenario, ProjectArea
+from stands.models import STAND_AREA_ACRES, StandMetric, Stand
+from stands.services import calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
 
 
 @transaction.atomic()
 def create_treatment_plan(
-    scenario: TScenario,
+    scenario: Scenario,
     name: str,
-    created_by: TUser,
-) -> TTreatmentPlan:
+    created_by: AbstractUser,
+) -> TreatmentPlan:
     # question: should we add a constraint on
     # treament plan to prevent users from creating
     # treamentplans with for the same scenario with the
@@ -58,7 +54,7 @@ def upsert_treatment_prescriptions(
     project_area: ProjectArea,
     stands: List[Stand],
     action: TreatmentPrescriptionAction,
-    created_by: TUser,
+    created_by: AbstractUser,
 ) -> List[TreatmentPrescription]:
     def upsert(treatment_plan, project_area, stand, action, user):
         upsert_defaults = {
@@ -95,9 +91,9 @@ def upsert_treatment_prescriptions(
 
 @transaction.atomic()
 def clone_treatment_prescription(
-    tx_prescription: TTreatmentPrescriptionEntity,
-    new_treatment_plan: TTreatmentPlan,
-    user: TUser,
+    tx_prescription: TreatmentPrescription,
+    new_treatment_plan: TreatmentPlan,
+    user: AbstractUser,
 ):
     return TreatmentPrescription.objects.create(
         created_by=user,
@@ -117,8 +113,8 @@ def get_cloned_name(name: str) -> str:
 
 @transaction.atomic()
 def clone_treatment_plan(
-    treatment_plan: TTreatmentPlan,
-    user: TUser,
+    treatment_plan: TreatmentPlan,
+    user: AbstractUser,
 ) -> TTreatmentPlanCloneResult:
     cloned_plan = TreatmentPlan.objects.create(
         created_by=user,
@@ -145,7 +141,7 @@ def clone_treatment_plan(
 
 
 def generate_summary(
-    treatment_plan: TTreatmentPlan,
+    treatment_plan: TreatmentPlan,
     project_area: Optional[ProjectArea] = None,
 ) -> Dict[str, Any]:
     scenario = treatment_plan.scenario
@@ -170,33 +166,35 @@ def generate_summary(
         .annotate(stand_ids=ArrayAgg("stand__id"), treated_stand_count=Count("stand"))
         .order_by("project_area__id")
     )
-    project_areas = {}
-    project_area_queryset = ProjectArea.objects.filter(**pa_filter)
+    project_areas = []
+    project_area_queryset = ProjectArea.objects.filter(**pa_filter).order_by("name")
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
     for project in project_area_queryset:
         stand_project_qs = Stand.objects.within_polygon(project.geometry).all()
-        project_areas[project.id] = {
-            "project_area_id": project.id,
-            "project_area_name": project.name,
-            "total_stand_count": stand_project_qs.count(),
-            "extent": project.geometry.extent,
-            "centroid": json.loads(project.geometry.point_on_surface.json),
-            "prescriptions": [
-                {
-                    "action": p["action"],
-                    "type": p["type"],
-                    "treated_stand_count": p["treated_stand_count"],
-                    "area_acres": p["treated_stand_count"] * stand_area,
-                    "stand_ids": p["stand_ids"],
-                }
-                for p in filter(
-                    lambda p: p["project_area__id"] == project.id,
-                    prescriptions,
-                )
-            ],
-        }
+        project_areas.append(
+            {
+                "project_area_id": project.id,
+                "project_area_name": project.name,
+                "total_stand_count": stand_project_qs.count(),
+                "extent": project.geometry.extent,
+                "centroid": json.loads(project.geometry.point_on_surface.json),
+                "prescriptions": [
+                    {
+                        "action": p["action"],
+                        "type": p["type"],
+                        "treated_stand_count": p["treated_stand_count"],
+                        "area_acres": p["treated_stand_count"] * stand_area,
+                        "stand_ids": p["stand_ids"],
+                    }
+                    for p in filter(
+                        lambda p: p["project_area__id"] == project.id,
+                        prescriptions,
+                    )
+                ],
+            }
+        )
 
     data = {
         "planning_area_id": plan_area.id,
@@ -205,7 +203,7 @@ def generate_summary(
         "scenario_name": scenario.name,
         "treatment_plan_id": treatment_plan.pk,
         "treatment_plan_name": treatment_plan.name,
-        "project_areas": list(project_areas.values()),
+        "project_areas": project_areas,
         "extent": project_areas_geometry.extent,
     }
     return data

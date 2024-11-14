@@ -543,8 +543,4 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         ]
 
 
-TTreatmentPlan = Type[TreatmentPlan]
-TAction = Type[TreatmentPrescriptionType]
-TTreatmentPrescriptionEntity = Type[TreatmentPrescription]
-TTreatmentPlanCloneResult = Tuple[TTreatmentPlan, List[TTreatmentPrescriptionEntity]]
-TTreatmentResult = Type[TreatmentResult]
+TTreatmentPlanCloneResult = Tuple[TreatmentPlan, List[TreatmentPrescription]]
