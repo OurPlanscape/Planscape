@@ -82,6 +82,8 @@ class Stand(CreatedAtMixin, models.Model):
 
 
 class StandMetric(CreatedAtMixin, models.Model):
+    id: int
+    stand_id: int
     stand = models.ForeignKey(Stand, related_name="metrics", on_delete=models.CASCADE)
 
     condition = models.ForeignKey(
