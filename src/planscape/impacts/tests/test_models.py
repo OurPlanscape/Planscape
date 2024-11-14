@@ -23,11 +23,10 @@ class TestImpactVariable(TestCase):
                     "year": year,
                     "baseline": False,
                     "variable": variable,
-                    "action": action,
+                    "action": TreatmentPrescriptionAction.get_file_mapping(action),
                 }
             }
         }
-
         DataLayerFactory.create(
             organization=self.org,
             metadata=metadata,

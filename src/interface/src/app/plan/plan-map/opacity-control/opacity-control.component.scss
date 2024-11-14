@@ -1,0 +1,27 @@
+@import 'mixins';
+$slider-height: 40px;
+
+.opacity-container {
+  border-radius: 4px;
+  background: white;
+  box-shadow: 2px 2px 6px 0px #00000029;
+}
+
+.leaflet-control {
+  clear: inline-end;
+  top: 6px;
+  left: 8px;
+}
+
+mat-card {
+  max-height: $slider-height;
+  border: none !important;
+}
+
+sg-panel.panel-container {
+  height: $slider-height;
+  border: 0;
+  .padded {
+    padding: 0;
+  }
+}

@@ -19,7 +19,6 @@ from planscape.typing import TLooseGeom, TUser
 from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
-    TPlanningArea,
     ProjectArea,
     ProjectAreaNote,
     Scenario,
@@ -67,7 +66,7 @@ def create_planning_area(
 @transaction.atomic
 def delete_planning_area(
     user: TUser,
-    planning_area: TPlanningArea,
+    planning_area: PlanningArea,
 ):
     if not PlanningAreaPermission.can_remove(user, planning_area):
         logger.error(f"User {user} has no permission to delete {planning_area.pk}")

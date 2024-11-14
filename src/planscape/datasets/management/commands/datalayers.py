@@ -37,7 +37,7 @@ def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
     name = name_from_input_file(input_file)
     match = TREATMENT_METADATA_REGEX.match(name)
     if match:
-        action = match.group("action")
+        action = match.group("action").upper()
         baseline = False
     else:
         match = BASELINE_METADATA_REGEX.match(name)

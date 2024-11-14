@@ -1,3 +1,4 @@
+<sg-overlay-loader *ngIf="loading" [offsetTop]="48"></sg-overlay-loader>
 <app-nav-bar [breadcrumbs]="(breadcrumbs$ | async) || []" [area]="'TREATMENTS'">
   <app-treatment-navbar-menu
     [treatmentPlanName]="(treatmentPlanName$ | async) || ''"
