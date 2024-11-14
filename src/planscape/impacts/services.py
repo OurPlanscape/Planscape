@@ -203,7 +203,7 @@ def generate_summary(
         "scenario_name": scenario.name,
         "treatment_plan_id": treatment_plan.pk,
         "treatment_plan_name": treatment_plan.name,
-        "project_areas": list(project_areas),
+        "project_areas": project_areas,
         "extent": project_areas_geometry.extent,
     }
     return data
