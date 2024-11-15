@@ -26,6 +26,10 @@ import {
   UpdatingStandsError,
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
+import {
+  Metric,
+  METRICS,
+} from './direct-impacts/metric-filters/metric-filters.component';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -96,6 +100,8 @@ export class TreatmentsState {
       return crumbs;
     })
   );
+
+  public activeMetric$ = new BehaviorSubject<Metric>(METRICS[0]);
 
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
