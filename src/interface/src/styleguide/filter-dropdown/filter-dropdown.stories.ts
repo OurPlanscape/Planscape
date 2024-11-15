@@ -20,7 +20,7 @@ const meta: Meta<FilterDropdownComponent<string>> = {
 };
 
 export default meta;
-type Story = StoryObj<FilterDropdownComponent<string>>;
+type Story = StoryObj<FilterDropdownComponent<any>>;
 
 export const Default: Story = {
   args: {
@@ -269,6 +269,16 @@ export const WithSearchTerm: Story = {
       'Olivia Turner',
       'Owen King',
       'Penelope Johnson',
+    ],
+  },
+};
+
+export const WithExpansionCategories: Story = {
+  args: {
+    menuLabel: 'With categories',
+    menuItems: [
+      { category: 'Primary', options: ['hello', 'is'] },
+      { category: 'Secondary', options: ['this', 'selectable'] },
     ],
   },
 };
