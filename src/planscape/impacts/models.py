@@ -275,6 +275,31 @@ class ImpactVariableAggregation(models.TextChoices):
     MAX = "MAX", "Max"
     MIN = "MIN", "Min"
     MAJORITY = "MAJORITY", "Majority"
+    MINORITY = "MINORITY", "Minority"
+
+    @classmethod
+    def get_rasterstats_agg(cls, value):
+        return {
+            cls.SUM: "sum",
+            cls.MEAN: "mean",
+            cls.COUNT: "count",
+            cls.MAX: "max",
+            cls.MIN: "min",
+            cls.MAJORITY: "majority",
+            cls.MINORITY: "minority",
+        }[value]
+
+    @classmethod
+    def get_metric_attribute(cls, value):
+        return {
+            cls.SUM: "sum",
+            cls.MEAN: "avg",
+            cls.COUNT: "count",
+            cls.MAX: "max",
+            cls.MIN: "min",
+            cls.MAJORITY: "majority",
+            cls.MINORITY: "minority",
+        }[value]
 
 
 AVAILABLE_YEARS = (
@@ -344,20 +369,23 @@ class ImpactVariable(models.TextChoices):
         return list([x for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
-    def _get_datalayer(
+    def get_datalayer(
         cls,
         impact_variable: Self,
         year: int,
-        action: Optional[TreatmentPrescriptionAction],
+        action: Optional[TreatmentPrescriptionAction] = None,
     ) -> DataLayer:
         baseline = action is None
+        action_query = (
+            TreatmentPrescriptionAction.get_file_mapping(action) if action else None
+        )
         query = {
             "modules": {
                 "impacts": {
                     "year": year,
                     "baseline": baseline,
                     "variable": str(impact_variable),
-                    "action": action,
+                    "action": action_query,
                 }
             }
         }
@@ -370,7 +398,7 @@ class ImpactVariable(models.TextChoices):
     def get_baseline_raster_path(
         cls, impact_variable: Self, year: int
     ) -> Optional[str]:
-        return cls._get_datalayer(
+        return cls.get_datalayer(
             impact_variable=impact_variable,
             year=year,
             action=None,
@@ -383,7 +411,7 @@ class ImpactVariable(models.TextChoices):
         action: Optional[TreatmentPrescriptionAction],
         year: int,
     ) -> Optional[str]:
-        return cls._get_datalayer(
+        return cls.get_datalayer(
             impact_variable=impact_variable,
             year=year,
             action=action,
@@ -451,20 +479,29 @@ class ProjectAreaTreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
 
 
 class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
+    id: int
+    treatment_plan_id: int
     treatment_plan = models.ForeignKey(
         TreatmentPlan,
         on_delete=models.RESTRICT,
         related_name="results",
         help_text="Treatment Plan ID.",
     )
-    treatment_prescription = models.ForeignKey(
-        TreatmentPrescription,
+
+    stand_id: int
+    stand = models.ForeignKey(
+        Stand,
         on_delete=models.RESTRICT,
-        related_name="results",
-        help_text="Treatment Prescription ID.",
+        related_name="tx_results",
+        null=True,
     )
+
     variable = models.CharField(
         choices=ImpactVariable.choices, help_text="Impact Variable (choice)."
+    )
+    action = models.CharField(
+        choices=TreatmentPrescriptionAction.choices,
+        null=True,
     )
     aggregation = models.CharField(
         choices=ImpactVariableAggregation.choices,
@@ -478,6 +515,9 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     baseline = models.FloatField(
         null=True,
     )
+    delta = models.FloatField(
+        null=True,
+    )
     type = models.CharField(
         choices=TreatmentResultType.choices,
         default=TreatmentResultType.DIRECT,
@@ -485,27 +525,22 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
     )
 
-    def delta(self) -> float:
-        return calculate_delta(self.value, self.baseline)
-
     class Meta(TypedModelMeta):
         constraints = [
             models.UniqueConstraint(
                 # given a specific treatment prescription, we can only have a single value for the same
                 # variable, aggregationa and year
                 fields=[
-                    "treatment_prescription",
+                    "treatment_plan",
+                    "stand",
                     "variable",
-                    "aggregation",
+                    "action",
                     "year",
+                    "aggregation",
                 ],
                 name="treatment_result_unique_constraint",
             )
         ]
 
 
-TTreatmentPlan = Type[TreatmentPlan]
-TAction = Type[TreatmentPrescriptionType]
-TTreatmentPrescriptionEntity = Type[TreatmentPrescription]
-TTreatmentPlanCloneResult = Tuple[TTreatmentPlan, List[TTreatmentPrescriptionEntity]]
-TTreatmentResult = Type[TreatmentResult]
+TTreatmentPlanCloneResult = Tuple[TreatmentPlan, List[TreatmentPrescription]]

@@ -50,12 +50,18 @@
 
 .project-area-expander-panel {
   ::ng-deep {
-    .mat-expansion-panel-header .mat-content {
+
+    .mat-expansion-panel-header.header-content .mat-content {
       display: flex;
       justify-content: space-between;
       align-items: center;
       cursor: pointer;
       width: 100%;
+      height: auto;
+      padding: 12px;
+    }
+    .mat-expansion-panel-header.header-content.mat-expanded {
+      height: auto;
     }
 
     .mat-expansion-panel-header .mat-expansion-indicator {
@@ -77,8 +83,13 @@
 
 .header-content {
   padding: 0 8px 0 8px;
+  height: auto;
 }
-
+.header-title {
+  line-height: 24px;
+  height: auto;
+  padding: 0 4px;
+}
 
 .left-content {
   @include xs-label();

@@ -5,6 +5,7 @@ from functools import partial
 from pathlib import Path
 import subprocess
 from typing import Any, Dict, List, Optional
+from urllib.parse import urlencode
 
 import requests
 from core.base_commands import PlanscapeCommand
@@ -24,11 +25,19 @@ BASELINE_METADATA_REGEX = re.compile(
 )
 
 
+class PlanscapeCLIException(Exception):
+    pass
+
+
+class DataLayerAlreadyExists(PlanscapeCLIException):
+    pass
+
+
 def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
     name = name_from_input_file(input_file)
     match = TREATMENT_METADATA_REGEX.match(name)
     if match:
-        action = match.group("action")
+        action = match.group("action").upper()
         baseline = False
     else:
         match = BASELINE_METADATA_REGEX.match(name)
@@ -86,6 +95,24 @@ class Command(PlanscapeCommand):
         list_parser = subp.add_parser("list")
         create_parser = subp.add_parser("create")
         import_parser = subp.add_parser("import")
+        list_parser.add_argument(
+            "--name",
+            type=str,
+            required=False,
+            default=None,
+        )
+        list_parser.add_argument(
+            "--dataset",
+            type=int,
+            required=False,
+            default=None,
+        )
+        list_parser.add_argument(
+            "--type",
+            type=str,
+            required=False,
+            default=None,
+        )
         create_parser.add_argument("name", type=str)
         create_parser.add_argument(
             "--dataset",
@@ -98,6 +125,12 @@ class Command(PlanscapeCommand):
             type=str,
         )
         create_parser.add_argument("--metadata", required=False, type=json.loads)
+        create_parser.add_argument(
+            "--skip-existing",
+            required=False,
+            action="store_true",
+            default=True,
+        )
         import_parser.add_argument(
             "--dataset",
             type=int,
@@ -132,14 +165,38 @@ class Command(PlanscapeCommand):
         create_parser.set_defaults(func=self.create)
         import_parser.set_defaults(func=self.import_from_s3)
 
-    def list(self, token, **kwargs):
+    def _list_filters(self, **kwargs):
+        possible_filters = {
+            "name": "name__icontains",
+            "dataset": "dataset",
+            "type": "type",
+        }
+        filters = {}
+        for argument, filter in possible_filters.items():
+            value = kwargs.get(argument, None) or None
+            if value:
+                filters[filter] = value
+
+        return urlencode(filters)
+
+    def _list(
+        self,
+        token,
+        **kwargs,
+    ) -> requests.Response:
         base_url = self.get_base_url(**kwargs)
         list_url = base_url + "/v2/datalayers"
         headers = self.get_headers(token, **kwargs)
-        response = requests.get(
+        filters = self._list_filters(**kwargs)
+        if filters:
+            list_url = f"{list_url}?{filters}"
+        return requests.get(
             list_url,
             headers=headers,
         )
+
+    def list(self, token, **kwargs):
+        response = self._list(token, **kwargs)
         data = response.json()
         self.stdout.write(f"Found {data['count']} {self.entity}:")
         pprint(data)
@@ -193,14 +250,36 @@ class Command(PlanscapeCommand):
         )
         return response.json()
 
+    def _datalayer_exists(self, token, **kwargs) -> bool:
+        response = self._list(token, **kwargs)
+        data = response.json()
+        return data.get("count") > 0
+
+    def _skip_existing(self, **kwargs):
+        if self._datalayer_exists(**kwargs):
+            kwargs.pop("token")
+            raise DataLayerAlreadyExists(f"DataLayer with {kwargs = } already exists")
+
     def _create_datalayer(
         self,
         name: str,
         dataset: int,
         org: int,
         input_file: str,
+        skip_existing: bool,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
+        try:
+            if skip_existing:
+                check_existing_args = {
+                    "token": kwargs.get("token"),
+                    "dataset": dataset,
+                    "name": name,
+                }
+                self._skip_existing(**check_existing_args)
+        except DataLayerAlreadyExists as datalayer_exists:
+            return {"info": str(datalayer_exists)}
+
         s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
         layer_type = fetch_datalayer_type(input_file=input_file)

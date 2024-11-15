@@ -1,8 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { MapBaseLayerComponent } from './map-base-layer.component';
-import { MockProvider } from 'ng-mocks';
+import { MockProviders } from 'ng-mocks';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 
 describe('MapBaseLayerComponent', () => {
   let component: MapBaseLayerComponent;
@@ -11,7 +11,7 @@ describe('MapBaseLayerComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MapBaseLayerComponent],
-      providers: [MockProvider(MapConfigState)],
+      providers: [MockProviders(MapConfigState, SelectedStandsState)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapBaseLayerComponent);

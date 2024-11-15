@@ -121,24 +121,26 @@
     left: 6px;
     font-weight: bold;
     text-align: center;
-    width: 30px;
+    width: 40px;
     text-overflow: ellipsis;
     overflow-x: hidden;
     line-height: 10px;
     background: white;
     white-space: nowrap;
     opacity: 0.9;
-    padding: 1px 3px 2px 3px;
+    padding: 0;
     border-radius: 4px;
     transition: width 0.8s;
-    box-shadow: 0px 3px 3px 0px rgba(0, 0, 0, 0.42);
+    box-shadow: 2px 2px 6px 0px #00000029;
   }
   ::ng-deep .base-layer-control:hover {
     background: lightgray;
   }
   ::ng-deep .layer-icon {
     color: black;
-    height: 32px;
-    line-height: 32px;
+    height: 40px;
+    width: 40px;
+    line-height: 40px;
+    align-content: center;
   }
 }

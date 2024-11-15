@@ -6,15 +6,27 @@ DECLARE
   p_stand_size varchar;
 BEGIN
 
-  SELECT INTO p_intersecting_area (
-    SELECT ST_Union(geometry) FROM planning_projectarea pa
-    LEFT JOIN planning_scenario sc ON (pa.scenario_id = sc.id)
-    LEFT JOIN impacts_treatmentplan tp ON (sc.id = tp.scenario_id)
-    WHERE 
-      tp.id = (query_params->>'treatment_plan_id')::int AND
-      pa.deleted_at IS NULL
+  IF (query_params::jsonb) ? 'project_area_id' THEN
+    SELECT INTO p_intersecting_area (
+      SELECT 
+        geometry 
+      FROM 
+        planning_projectarea pa
+      WHERE 
+        id = (query_params->>'project_area_id')::int AND
+        pa.deleted_at IS NULL
+    );
+  ELSE 
+    SELECT INTO p_intersecting_area (
+      SELECT ST_Union(geometry) FROM planning_projectarea pa
+      LEFT JOIN planning_scenario sc ON (pa.scenario_id = sc.id)
+      LEFT JOIN impacts_treatmentplan tp ON (sc.id = tp.scenario_id)
+      WHERE 
+        tp.id = (query_params->>'treatment_plan_id')::int AND
+        pa.deleted_at IS NULL
 
-  );
+    );
+  END IF;
 
   SELECT INTO p_stand_size (
     SELECT (configuration->>'stand_size')::varchar FROM planning_scenario sc

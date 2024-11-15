@@ -1,0 +1,9 @@
+:host {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(255, 255, 255, 0.50);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

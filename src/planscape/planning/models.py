@@ -60,6 +60,8 @@ class RegionChoices(models.TextChoices):
 
 
 class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+    id: int
+    user_id: int
     user = models.ForeignKey(
         User,
         related_name="planning_areas",
@@ -87,7 +89,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
     def creator_name(self) -> str:
         return self.user.get_full_name()
 
-    objects = PlanningAreaManager()
+    objects: PlanningAreaManager = PlanningAreaManager()
 
     class Meta(TypedModelMeta):
         indexes = [
@@ -112,11 +114,14 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
 
 
 class PlanningAreaNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    id: int
+    planning_area_id: int
     planning_area = models.ForeignKey(
         PlanningArea,
         related_name="planning_area_notes",
         on_delete=models.CASCADE,
     )
+    user_id: int
     user = models.ForeignKey(
         User, related_name="notes", on_delete=models.SET_NULL, null=True, blank=True
     )
@@ -169,6 +174,8 @@ class ScenarioOrigin(models.TextChoices):
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+    id: int
+    planning_area_id: int
     planning_area = models.ForeignKey(
         PlanningArea,
         related_name="scenarios",
@@ -239,6 +246,8 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
 
 class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+    id: int
+    scenario_id: int
     scenario = models.OneToOneField(
         Scenario,
         related_name="results",
@@ -268,6 +277,8 @@ class ScenarioResult(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mode
 
 
 class SharedLink(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    id: int
+    user_id: int
     user = models.ForeignKey(
         User,
         related_name="shared_links",
@@ -302,12 +313,16 @@ class ProjectArea(
     DeletedAtMixin,
     models.Model,
 ):
+    id: int
+
+    created_by_id: int
     created_by = models.ForeignKey(
         User,
         related_name="project_areas",
         on_delete=models.RESTRICT,
     )
 
+    scenario_id: int
     scenario = models.ForeignKey(
         Scenario,
         related_name="project_areas",
@@ -335,12 +350,15 @@ class ProjectArea(
 
 
 class ProjectAreaNote(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+    id: int
+    project_area_id: int
     project_area = models.ForeignKey(
         ProjectArea,
         related_name="project_area",
         on_delete=models.CASCADE,
     )
     # if the user is deleted, their notes are also deleted
+    user_id: int
     user = models.ForeignKey(
         User,
         related_name="projectarea_notes",
@@ -360,10 +378,3 @@ class ProjectAreaNote(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mod
             )
         ]
         ordering = ["user", "-created_at"]
-
-
-TPlanningArea = Type[PlanningArea]
-TPlanningAreaNote = Type[PlanningAreaNote]
-TScenario = Type[Scenario]
-TScenarioResult = Type[ScenarioResult]
-TProjectArea = Type[ProjectArea]

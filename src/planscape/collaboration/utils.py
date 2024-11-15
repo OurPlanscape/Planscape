@@ -1,11 +1,11 @@
 from typing import Any, Union
 from collaboration.models import UserObjectRole, Permissions
 from planscape.typing import TUser
-from planning.models import TPlanningArea, TPlanningAreaNote, TScenario
+from planning.models import PlanningArea, PlanningAreaNote, Scenario
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import AbstractUser
 
-TCreatable = Union[TPlanningArea, TPlanningAreaNote, TScenario]
+TCreatable = Union[PlanningArea, PlanningAreaNote, Scenario]
 
 
 def is_creator(user: AbstractUser, instance: TCreatable) -> bool:
