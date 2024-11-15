@@ -12,12 +12,14 @@ from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
+    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentResult,
     TTreatmentPlanCloneResult,
+    TreatmentResultType,
     get_prescription_type,
 )
 from actstream import action as actstream_action
@@ -209,6 +211,28 @@ def generate_summary(
     return data
 
 
+def to_project_area_result(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    year: int,
+    result: Dict[str, Any],
+) -> ProjectAreaTreatmentResult:
+    instance, created = ProjectAreaTreatmentResult.objects.update_or_create(
+        treatment_plan=treatment_plan,
+        project_area_id=result.get("project_area_id"),
+        variable=variable,
+        year=year,
+        aggregation=result.get("aggregation"),
+        defaults={
+            "value": result.get("value"),
+            "baseline": result.get("baseline"),
+            "delta": result.get("delta"),
+            "type": TreatmentResultType.DIRECT,
+        },
+    )
+    return instance
+
+
 def to_treatment_result(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
@@ -240,7 +264,7 @@ def calculate_impacts(
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
-) -> List[TreatmentResult]:
+) -> Tuple[List[TreatmentResult], List[ProjectAreaTreatmentResult]]:
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
     baseline_metrics = calculate_baseline_metrics(
@@ -256,10 +280,35 @@ def calculate_impacts(
     )
 
     aggregations = ImpactVariable.get_aggregations(impact_variable=variable)
-    deltas = calculate_deltas(
-        baseline_metrics=baseline_metrics,
-        action_metrics=action_metrics,
+    baseline_dict = {m.stand_id: m for m in baseline_metrics}
+    action_dict = {m.stand_id: m for m in action_metrics}
+    deltas = calculate_stand_deltas(
+        baseline_dict=baseline_dict,
+        action_dict=action_dict,
         aggregations=aggregations,
+    )
+
+    project_area_deltas = []
+    for project_area in treatment_plan.scenario.project_areas.all():
+        project_area_deltas.extend(
+            calculate_project_area_deltas(
+                project_area=project_area,
+                baseline_dict=baseline_dict,
+                action_dict=action_dict,
+                aggregations=aggregations,
+            )
+        )
+
+    project_area_results = list(
+        map(
+            lambda x: to_project_area_result(
+                treatment_plan,
+                variable,
+                year,
+                result=x,
+            ),
+            project_area_deltas,
+        )
     )
     treatment_results = list(
         map(
@@ -270,16 +319,14 @@ def calculate_impacts(
         )
     )
 
-    return treatment_results
+    return (treatment_results, project_area_results)
 
 
-def calculate_deltas(
-    baseline_metrics: QuerySet[StandMetric],
-    action_metrics: QuerySet[StandMetric],
+def calculate_stand_deltas(
+    baseline_dict: Dict[int, StandMetric],
+    action_dict: Dict[int, StandMetric],
     aggregations: List[ImpactVariableAggregation],
 ) -> List[Dict[str, Any]]:
-    baseline_dict = {m.stand_id: m for m in baseline_metrics}
-    action_dict = {m.stand_id: m for m in action_metrics}
     results = []
     for stand_id, metric in action_dict.items():
         baseline = baseline_dict.get(stand_id)
@@ -363,3 +410,78 @@ def calculate_action_metrics(
         year=year,
     )
     return calculate_stand_zonal_stats(stands=stands, datalayer=datalayer)
+
+
+def calculate_project_area_deltas(
+    project_area: ProjectArea,
+    baseline_dict: Dict[int, StandMetric],
+    action_dict: Dict[int, StandMetric],
+    aggregations: List[ImpactVariableAggregation],
+) -> List[Dict[str, Any]]:
+    pass
+
+    """
+    PA = [s1, s2, s3]
+    Baseline:
+    - s1_C = 100 tons (avg of cells w/i stand)
+    - s2_C = 200 tons
+    - s3_C = 300 tons
+
+    Post-tx: 
+    - s1_C = 50 tons
+    - s2_C = 200 tons
+    - s3_C = 300 tons
+
+    Per-stand deltas:
+    - s1 = -50%
+    - s2 = 0%
+    - s3 =0%
+
+    PA delta:
+    (600-550)/600 = -8.3%
+    (sum of all baselines - sum of actions) / sum of all baselines
+    """
+    # untreated stands just copy the values from baselines
+    results = []
+
+    stands_in_project_area = list(
+        Stand.objects.within_polygon(project_area.geometry).values_list(
+            "id",
+            flat=True,
+        )
+    )
+
+    baseline_dict = {
+        k: v for k, v in baseline_dict.items() if k in stands_in_project_area
+    }
+
+    action_dict = {k: v for k, v in action_dict.items() if k in stands_in_project_area}
+
+    for agg in aggregations:
+        attribute = ImpactVariableAggregation.get_metric_attribute(agg)
+        # merges both dicts, keep action dicts if they clash
+        new_action_dict = {**baseline_dict, **action_dict}
+        baseline_sum = sum(
+            [
+                getattr(stand_metric, attribute)
+                for _stand_id, stand_metric in baseline_dict.items()
+            ]
+        )
+
+        action_sum = sum(
+            [
+                getattr(stand_metric, attribute)
+                for _stand_id, stand_metric in new_action_dict.items()
+            ]
+        )
+        delta = (baseline_sum - action_sum) / (baseline_sum + 1)
+        results.append(
+            {
+                "project_area_id": project_area.id,
+                "aggregation": agg,
+                "baseline": baseline_sum,
+                "value": action_sum,
+                "delta": delta,
+            }
+        )
+    return results
