@@ -7,6 +7,7 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from impacts.models import (
     ImpactVariable,
+    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
@@ -356,8 +357,11 @@ class CalculateImpactsTest(TransactionTestCase):
         )
         variable = ImpactVariable.CANOPY_BASE_HEIGHT
         action = TreatmentPrescriptionAction.HEAVY_MASTICATION
-        results = calculate_impacts(self.plan, variable, action, 2024)
-        self.assertIsNotNone(results)
+        stand_results, project_area_results = calculate_impacts(
+            self.plan, variable, action, 2024
+        )
+        self.assertIsNotNone(stand_results)
+        self.assertIsNotNone(project_area_results)
 
     def test_calculate_impacts_bad_year_throws(self):
         """Test that this function is performing work correctly. we don't
@@ -475,12 +479,13 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             )
             self.assertEquals(TreatmentResult.objects.count(), 0)
 
-            result = async_calculate_impacts_for_variable_action_year(
+            async_calculate_impacts_for_variable_action_year(
                 self.plan.id,
                 variable=variable,
                 action=action,
                 year=year,
             )
-            self.assertIsNotNone(result)
+
             self.assertGreater(TreatmentResult.objects.count(), 0)
+            self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
             self.assertEquals(len(self.stands), TreatmentResult.objects.count())

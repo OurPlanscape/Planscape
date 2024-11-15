@@ -452,14 +452,14 @@ class ProjectAreaTreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     baseline = models.FloatField(
         help_text="Baseline value extract from the prescriptions inside this project area."
     )
+    delta = models.FloatField(
+        null=True,
+    )
     type = models.CharField(
         choices=TreatmentResultType.choices,
         default=TreatmentResultType.DIRECT,
         help_text="Type of Treatment Result (choice).",
     )
-
-    def delta(self) -> float:
-        return calculate_delta(self.value, self.baseline)
 
     class Meta(TypedModelMeta):
         constraints = [
