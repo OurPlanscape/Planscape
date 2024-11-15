@@ -37,6 +37,7 @@
       class="name-input">
       <input
         sgInput
+        #debounceField
         [placeholder]="placeholderText"
         [(ngModel)]="textValue"
         (blur)="onBlur()"
@@ -53,6 +54,7 @@
       <mat-spinner
         diameter="20"
         matSuffix
+        class="spinner"
         *ngIf="curMode === 'SAVING'"></mat-spinner>
     </sg-input-field>
   </div>

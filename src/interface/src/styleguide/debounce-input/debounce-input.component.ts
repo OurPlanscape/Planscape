@@ -5,6 +5,9 @@ import {
   EventEmitter,
   OnDestroy,
   OnInit,
+  ViewChild,
+  AfterViewChecked,
+  ElementRef,
 } from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -46,7 +49,9 @@ export type DebounceEditState = 'INITIAL' | 'EDIT' | 'SAVING';
   templateUrl: './debounce-input.component.html',
   styleUrl: './debounce-input.component.scss',
 })
-export class DebounceInputComponent implements OnInit, OnDestroy {
+export class DebounceInputComponent
+  implements OnInit, OnDestroy, AfterViewChecked
+{
   @Input() textValue = '';
   @Input() title = '';
   @Input() placeholderText: string | null = '';
@@ -57,6 +62,8 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
 
   @Output() textValueUpdated = new EventEmitter<string>();
   @Input() debounceInterval = 10;
+
+  @ViewChild('debounceField') debounceField!: ElementRef;
   readonly textValueUpdatedSubject = new Subject<string>();
   originalText = this.textValue;
   hovering = false;
@@ -78,6 +85,15 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
           this.textValueUpdated.emit(this.textValue);
         }
       });
+  }
+
+  ngAfterViewChecked() {
+    if (
+      this.currentMode$.value === 'EDIT' &&
+      this.debounceField?.nativeElement
+    ) {
+      this.debounceField.nativeElement.focus();
+    }
   }
 
   textValueUpdated$ = this.textValueUpdatedSubject
@@ -103,11 +119,15 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
 
   onBlur() {
     //if the text is empty, we revert to the original text
-    if (this.textValue === '' || this.textValue === this.originalText) {
+    if (this.textValue === '') {
       this.textValue = this.originalText;
       this.currentMode$.next('INITIAL');
+    } else if (this.textValue === this.originalText) {
+      this.currentMode$.next('INITIAL');
     } else if (this.textValue !== this.originalText) {
+      //actually save the new value
       this.textValueUpdated.emit(this.textValue);
+      this.originalText = this.textValue;
     }
   }
 
@@ -115,8 +135,10 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
     this.textValueUpdatedSubject.complete();
   }
 
-  setToEditMode() {
+  async setToEditMode() {
+    this.originalText = this.textValue;
     this.currentMode$.next('EDIT');
+    await new Promise((resolve) => setTimeout(resolve));
   }
   handleMouseDown(event: MouseEvent) {
     event.preventDefault();
