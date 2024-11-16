@@ -18,14 +18,7 @@ import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import {
-  catchError,
-  combineLatest,
-  map,
-  switchMap,
-  //lastValueFrom,
-  firstValueFrom,
-} from 'rxjs';
+import { catchError, combineLatest, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -46,7 +39,12 @@ import { getMergedRouteData } from '../treatments-routing-data';
 import { PrintableTxFooterComponent } from '../printable-tx-footer/printable-tx-footer.component';
 import { jsPDF } from 'jspdf';
 import { logoImg } from '../../../assets/base64/icons';
-import { TreatmentSummary } from '@types';
+import { TreatmentSummary, Prescription, TreatmentProjectArea } from '@types';
+import {
+  PRESCRIPTIONS,
+  PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+} from '../prescriptions';
 
 // import { autoTable } from 'jspdf-autotable';
 
@@ -102,6 +100,7 @@ export class TreatmentConfigComponent {
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfig: MapConfigState,
+    private treatedStandsState: TreatedStandsState,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
@@ -161,7 +160,7 @@ export class TreatmentConfigComponent {
     }
     this.pdfDoc.setFont('Helvetica');
     this.pdfDoc.setFontSize(10);
-
+    const indentAmount = 8;
     let yLoc: number = 130;
     let xLoc: number = 20;
     currentSummary?.project_areas.map((p) => {
@@ -177,15 +176,28 @@ export class TreatmentConfigComponent {
       }
 
       const projectName =
-        p.project_area_name + ' stand count:' + p.total_stand_count;
+        p.project_area_name +
+        ' stand count: ' +
+        +this.treatedStandCount(p) +
+        '/' +
+        p.total_stand_count;
       this.pdfDoc?.setFont('Helvetica');
       this.pdfDoc?.setFontSize(10);
+      this.pdfDoc?.getTextWidth(projectName);
       this.pdfDoc?.text(projectName, xLoc, yLoc);
 
       p.prescriptions.forEach((rx) => {
         this.pdfDoc?.setFontSize(8);
         yLoc += 4;
-        this.pdfDoc?.text(rx.action, xLoc, yLoc);
+        const actionName = this.actionToName(rx.type, rx.action);
+        console.log('what do we know about this prescription?', rx);
+        const standsTreated =
+          rx.treated_stand_count + ' acres:' + rx.area_acres;
+        this.pdfDoc?.text(actionName + '  (' + standsTreated + ')', xLoc, yLoc);
+        if (rx.type === 'SEQUENCE') {
+          yLoc += 4;
+          this.pdfDoc?.text('sequence action', xLoc + indentAmount, yLoc);
+        }
       });
 
       yLoc += 14;
@@ -203,14 +215,29 @@ export class TreatmentConfigComponent {
     this.pdfDoc = new jsPDF();
     //TODO: display project areas, planning area, scenario, about data,
 
-    const logoWidth = 30;
-    const logoHeight = 5.5;
-    this.pdfDoc.addImage(logoImg, 'SVG', 20, 10, logoWidth, logoHeight); // Position at (10, 10)
+    const curSummary = this.treatmentsState.getCurrentSummary();
+    const scenarioName = curSummary.scenario_name;
+    const treatmentPlanName = curSummary.treatment_plan_name;
+    const planningAreaName = curSummary.planning_area_name;
+    const treatedStandsCount =
+      this.treatedStandsState.getTreatedStands().length;
+    const totalStands = curSummary.project_areas.reduce((acc: number, p) => {
+      acc += p.total_stand_count;
+      return acc;
+    }, 0);
 
-    const treatmentName = await firstValueFrom(this.treatmentPlanName$);
+    const logoWidth = 28;
+    const logoHeight = 5.5;
+    this.pdfDoc.addImage(logoImg, 'SVG', 20, 5, logoWidth, logoHeight); // Position at (10, 10)
+
     this.pdfDoc?.setFont('Helvetica');
     this.pdfDoc?.setFontSize(10);
-    this.pdfDoc.text(`${treatmentName}`, 85, 14);
+
+    const header = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName}`;
+    this.pdfDoc.text(header, 20, 16);
+
+    const standInfo = `Treated Stands: ${treatedStandsCount} / ${totalStands}`;
+    this.pdfDoc.text(standInfo, 20, 124);
 
     // Get the existing MapLibre map instance
     const originalMap = this.mapElement.mapLibreMap;
@@ -221,7 +248,7 @@ export class TreatmentConfigComponent {
       container: 'printable-map',
       style: originalMap.getStyle(),
       center: mapBounds.getCenter(),
-      zoom: originalMap.getZoom() - 2,
+      zoom: originalMap.getZoom(),
       bearing: originalMap.getBearing(),
       pitch: originalMap.getPitch(),
     });
@@ -233,81 +260,93 @@ export class TreatmentConfigComponent {
     const mapWidth = 150;
     const mapHeight = 100;
     const mapX = 30;
-    const mapY = 20;
+    const mapY = 18;
 
     // Draw a border around the map
     this.pdfDoc.setLineWidth(1);
     this.pdfDoc.rect(mapX, mapY, mapWidth, mapHeight);
     this.pdfDoc.addImage(imgData, 'PNG', mapX, mapY, mapWidth, mapHeight);
 
-    const currentSummary = await firstValueFrom(this.summary$);
-    console.log('is there a current summary?');
-    if (currentSummary) {
-      this.addProjectAreaPDFBox(currentSummary);
-    } else {
-      console.log('what is happening here?');
-    }
-    this.pdfDoc.save('map.pdf');
+    this.addProjectAreaPDFBox(curSummary);
+
+    const pdfName = `planscape-${encodeURI(treatmentPlanName.split(' ').join('_'))}.pdf`;
+    this.pdfDoc.save(pdfName);
   }
 
-  async printTreatment() {
-    // Create a new div for the printable map
-    const printContainer = document.createElement('div');
-    printContainer.style.position = 'absolute';
-    printContainer.style.left = '-9999px';
-    printContainer.style.width = '100%';
-    printContainer.style.height = '100%';
-    document.body.appendChild(printContainer);
-
-    // Copy orientation and content of existing map
-    const originalMap = this.mapElement.mapLibreMap;
-    const printMap = new MapLibreMap({
-      container: printContainer,
-      style: originalMap.getStyle(),
-      center: originalMap.getCenter(),
-      zoom: originalMap.getZoom(),
-      bearing: originalMap.getBearing(),
-      pitch: originalMap.getPitch(),
-    });
-
-    // Let map load, then grab canvas as png
-    await new Promise((resolve) => printMap.on('load', resolve));
-    const canvas = printMap.getCanvas();
-    const img = new Image();
-    img.src = canvas.toDataURL('image/png');
-
-    // create actual printable element
-    const printElement = document.createElement('div');
-    printElement.className = 'print-only-map';
-    printElement.style.display = 'none';
-    printElement.appendChild(img);
-    document.body.appendChild(printElement);
-
-    //add styles that must be dynamic
-    const style = document.createElement('style');
-    style.textContent = `
-      @media print {
-            .print-only-map {
-              display: block !important;
-              page-break-inside: avoid;
-              position: absolute;
-              top: 1in;
-              left: 0in;
-              width: 3in;
-              height: 5in;
-            }
-            .print-only-map img {
-              width:auto;
-              height:5in;
-            }}`;
-    document.head.appendChild(style);
-
-    window.print();
-
-    // cleanup/remove elements
-    document.body.removeChild(printElement);
-    document.head.removeChild(style);
-    printMap.remove();
-    document.body.removeChild(printContainer);
+  actionToName(rxType: string, rxAction: string) {
+    if (rxType === 'SINGLE') {
+      return PRESCRIPTIONS.SINGLE[rxAction as PrescriptionSingleAction];
+    } else if (rxType === 'SEQUENCE')
+      return PRESCRIPTIONS.SEQUENCE[rxAction as PrescriptionSequenceAction]
+        .name;
+    else return '';
   }
+
+  treatedStandCount(projectArea: TreatmentProjectArea): number {
+    return projectArea.prescriptions.reduce(
+      (acc: number, p: Prescription) => acc + p.treated_stand_count,
+      0
+    );
+  }
+
+  // async printTreatment() {
+  //   // Create a new div for the printable map
+  //   const printContainer = document.createElement('div');
+  //   printContainer.style.position = 'absolute';
+  //   printContainer.style.left = '-9999px';
+  //   printContainer.style.width = '100%';
+  //   printContainer.style.height = '100%';
+  //   document.body.appendChild(printContainer);
+
+  //   // Copy orientation and content of existing map
+  //   const originalMap = this.mapElement.mapLibreMap;
+  //   const printMap = new MapLibreMap({
+  //     container: printContainer,
+  //     style: originalMap.getStyle(),
+  //     center: originalMap.getCenter(),
+  //     zoom: originalMap.getZoom(),
+  //     bearing: originalMap.getBearing(),
+  //     pitch: originalMap.getPitch(),
+  //   });
+
+  //   // Let map load, then grab canvas as png
+  //   await new Promise((resolve) => printMap.on('load', resolve));
+  //   const canvas = printMap.getCanvas();
+  //   const img = new Image();
+  //   img.src = canvas.toDataURL('image/png');
+
+  //   // create actual printable element
+  //   const printElement = document.createElement('div');
+  //   printElement.className = 'print-only-map';
+  //   printElement.style.display = 'none';
+  //   printElement.appendChild(img);
+  //   document.body.appendChild(printElement);
+
+  //   //add styles that must be dynamic
+  //   const style = document.createElement('style');
+  //   style.textContent = `
+  //     @media print {
+  //           .print-only-map {
+  //             display: block !important;
+  //             page-break-inside: avoid;
+  //             position: absolute;
+  //             top: 1in;
+  //             left: 0in;
+  //             width: 3in;
+  //             height: 5in;
+  //           }
+  //           .print-only-map img {
+  //             width:auto;
+  //             height:5in;
+  //           }}`;
+  //   document.head.appendChild(style);
+
+  //   window.print();
+
+  //   // cleanup/remove elements
+  //   document.body.removeChild(printElement);
+  //   document.head.removeChild(style);
+  //   printMap.remove();
+  //   document.body.removeChild(printContainer);
+  // }
 }
