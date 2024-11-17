@@ -161,7 +161,7 @@ export class TreatmentConfigComponent {
     this.pdfDoc.setFont('Helvetica');
     this.pdfDoc.setFontSize(10);
     const indentAmount = 4;
-    let yLoc: number = 130;
+    let yLoc: number = 134;
     let xLoc: number = 30;
     currentSummary?.project_areas.map((p) => {
       if (!this.pdfDoc) {
@@ -214,36 +214,10 @@ export class TreatmentConfigComponent {
 
   pdfDoc: jsPDF | null = null;
 
-  async createPDF() {
-    // Create a new jsPDF instance
-    this.pdfDoc = new jsPDF();
-    //TODO: display project areas, planning area, scenario, about data,
-
-    const curSummary = this.treatmentsState.getCurrentSummary();
-    const scenarioName = curSummary.scenario_name;
-    const treatmentPlanName = curSummary.treatment_plan_name;
-    const planningAreaName = curSummary.planning_area_name;
-    const treatedStandsCount =
-      this.treatedStandsState.getTreatedStands().length;
-    const totalStands = curSummary.project_areas.reduce((acc: number, p) => {
-      acc += p.total_stand_count;
-      return acc;
-    }, 0);
-
-    const logoWidth = 28;
-    const logoHeight = 5.5;
-    this.pdfDoc.addImage(logoImg, 'SVG', 20, 5, logoWidth, logoHeight); // Position at (10, 10)
-
-    this.pdfDoc?.setFont('Helvetica');
-    this.pdfDoc?.setFontSize(10);
-
-    const header = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName}`;
-    this.pdfDoc.text(header, 30, 15);
-
-    const standInfo = `Treated Stands: ${treatedStandsCount} / ${totalStands}`;
-    this.pdfDoc.text(standInfo, 30, 124);
-
-    // Get the existing MapLibre map instance
+  async addMap() {
+    if (!this.pdfDoc) {
+      return;
+    }
     const originalMap = this.mapElement.mapLibreMap;
     // Get the map's bounding box
     const mapBounds = originalMap.getBounds();
@@ -264,13 +238,45 @@ export class TreatmentConfigComponent {
     const mapWidth = 150;
     const mapHeight = 100;
     const mapX = 30;
-    const mapY = 18;
+    const mapY = 24;
 
     // Draw a border around the map
     this.pdfDoc.setLineWidth(1);
     this.pdfDoc.rect(mapX, mapY, mapWidth, mapHeight);
     this.pdfDoc.addImage(imgData, 'PNG', mapX, mapY, mapWidth, mapHeight);
+  }
 
+  addLogo() {
+    const logoWidth = 28;
+    const logoHeight = 5.5;
+    this.pdfDoc?.addImage(logoImg, 'SVG', 20, 14, logoWidth, logoHeight);
+  }
+
+  async createPDF() {
+    this.pdfDoc = new jsPDF();
+
+    const curSummary = this.treatmentsState.getCurrentSummary();
+    const scenarioName = curSummary.scenario_name;
+    const treatmentPlanName = curSummary.treatment_plan_name;
+    const planningAreaName = curSummary.planning_area_name;
+    const treatedStandsCount =
+      this.treatedStandsState.getTreatedStands().length;
+    const totalStands = curSummary.project_areas.reduce((acc: number, p) => {
+      acc += p.total_stand_count;
+      return acc;
+    }, 0);
+
+    this.pdfDoc?.setFont('Helvetica');
+    this.pdfDoc?.setFontSize(10);
+
+    const header = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName}`;
+    this.pdfDoc.text(header, 30, 22);
+
+    const standInfo = `Treated Stands: ${treatedStandsCount} / ${totalStands}`;
+    this.pdfDoc.text(standInfo, 30, 130);
+
+    this.addLogo();
+    await this.addMap();
     this.addProjectAreaPDFBox(curSummary);
 
     const pdfName = `planscape-${encodeURI(treatmentPlanName.split(' ').join('_'))}.pdf`;
@@ -292,65 +298,4 @@ export class TreatmentConfigComponent {
       0
     );
   }
-
-  // async printTreatment() {
-  //   // Create a new div for the printable map
-  //   const printContainer = document.createElement('div');
-  //   printContainer.style.position = 'absolute';
-  //   printContainer.style.left = '-9999px';
-  //   printContainer.style.width = '100%';
-  //   printContainer.style.height = '100%';
-  //   document.body.appendChild(printContainer);
-
-  //   // Copy orientation and content of existing map
-  //   const originalMap = this.mapElement.mapLibreMap;
-  //   const printMap = new MapLibreMap({
-  //     container: printContainer,
-  //     style: originalMap.getStyle(),
-  //     center: originalMap.getCenter(),
-  //     zoom: originalMap.getZoom(),
-  //     bearing: originalMap.getBearing(),
-  //     pitch: originalMap.getPitch(),
-  //   });
-
-  //   // Let map load, then grab canvas as png
-  //   await new Promise((resolve) => printMap.on('load', resolve));
-  //   const canvas = printMap.getCanvas();
-  //   const img = new Image();
-  //   img.src = canvas.toDataURL('image/png');
-
-  //   // create actual printable element
-  //   const printElement = document.createElement('div');
-  //   printElement.className = 'print-only-map';
-  //   printElement.style.display = 'none';
-  //   printElement.appendChild(img);
-  //   document.body.appendChild(printElement);
-
-  //   //add styles that must be dynamic
-  //   const style = document.createElement('style');
-  //   style.textContent = `
-  //     @media print {
-  //           .print-only-map {
-  //             display: block !important;
-  //             page-break-inside: avoid;
-  //             position: absolute;
-  //             top: 1in;
-  //             left: 0in;
-  //             width: 3in;
-  //             height: 5in;
-  //           }
-  //           .print-only-map img {
-  //             width:auto;
-  //             height:5in;
-  //           }}`;
-  //   document.head.appendChild(style);
-
-  //   window.print();
-
-  //   // cleanup/remove elements
-  //   document.body.removeChild(printElement);
-  //   document.head.removeChild(style);
-  //   printMap.remove();
-  //   document.body.removeChild(printContainer);
-  // }
 }
