@@ -160,16 +160,16 @@ export class TreatmentConfigComponent {
     }
     this.pdfDoc.setFont('Helvetica');
     this.pdfDoc.setFontSize(10);
-    const indentAmount = 8;
+    const indentAmount = 4;
     let yLoc: number = 130;
-    let xLoc: number = 20;
+    let xLoc: number = 30;
     currentSummary?.project_areas.map((p) => {
       if (!this.pdfDoc) {
         return;
       }
 
       // create a new page if we overflow
-      if (xLoc > 100) {
+      if (xLoc > 120) {
         this.pdfDoc.addPage();
         xLoc = 20;
         yLoc = 20;
@@ -190,13 +190,17 @@ export class TreatmentConfigComponent {
         this.pdfDoc?.setFontSize(8);
         yLoc += 4;
         const actionName = this.actionToName(rx.type, rx.action);
-        console.log('what do we know about this prescription?', rx);
         const standsTreated =
-          rx.treated_stand_count + ' acres:' + rx.area_acres;
+          rx.treated_stand_count + ' acres:' + Number(rx.area_acres.toFixed(2));
         this.pdfDoc?.text(actionName + '  (' + standsTreated + ')', xLoc, yLoc);
         if (rx.type === 'SEQUENCE') {
-          yLoc += 4;
-          this.pdfDoc?.text('sequence action', xLoc + indentAmount, yLoc);
+          const seqActions =
+            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
+              .details;
+          seqActions.forEach((sa) => {
+            yLoc += 4;
+            this.pdfDoc?.text(sa, xLoc + indentAmount, yLoc);
+          });
         }
       });
 
@@ -234,10 +238,10 @@ export class TreatmentConfigComponent {
     this.pdfDoc?.setFontSize(10);
 
     const header = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName}`;
-    this.pdfDoc.text(header, 20, 16);
+    this.pdfDoc.text(header, 30, 15);
 
     const standInfo = `Treated Stands: ${treatedStandsCount} / ${totalStands}`;
-    this.pdfDoc.text(standInfo, 20, 124);
+    this.pdfDoc.text(standInfo, 30, 124);
 
     // Get the existing MapLibre map instance
     const originalMap = this.mapElement.mapLibreMap;
