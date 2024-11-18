@@ -1,4 +1,13 @@
 <div class="printable-footer">
+  <div
+    id="printable-map"
+    style="
+      position: absolute;
+      width: 1000px;
+      height: 600px;
+      left: -9999px;
+      top: -9999px;
+    "></div>
   <div class="print-project-area" *ngFor="let pa of summary?.project_areas">
     <div class="print-project-area-name">
       {{ pa.project_area_name }}
