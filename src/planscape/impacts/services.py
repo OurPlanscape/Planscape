@@ -283,9 +283,10 @@ def calculate_impacts(
     aggregations = ImpactVariable.get_aggregations(impact_variable=variable)
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
+    merged_action_dict = {**baseline_dict, **action_dict}
     deltas = calculate_stand_deltas(
         baseline_dict=baseline_dict,
-        action_dict=action_dict,
+        action_dict=merged_action_dict,
         aggregations=aggregations,
     )
 
