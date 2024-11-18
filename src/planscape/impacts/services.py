@@ -267,6 +267,7 @@ def calculate_impacts(
 ) -> Tuple[List[TreatmentResult], List[ProjectAreaTreatmentResult]]:
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
+
     baseline_metrics = calculate_baseline_metrics(
         treatment_plan=treatment_plan,
         variable=variable,
