@@ -13,6 +13,7 @@ import { of } from 'rxjs';
 import { AuthService } from '@services';
 
 import { TreatmentsState } from '../treatments.state';
+import { DEFAULT_BASE_MAP } from './map-base-layers';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
@@ -28,7 +29,10 @@ describe('TreatmentMapComponent', () => {
           AuthService,
           TreatmentsState
         ),
-        MockProvider(MapConfigState, { cursor$: of('') }),
+        MockProvider(MapConfigState, {
+          cursor$: of(''),
+          baseLayer$: of(DEFAULT_BASE_MAP),
+        }),
       ],
       declarations: [
         MockDeclarations(
