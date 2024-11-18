@@ -21,13 +21,6 @@ export class MapBaseLayerComponent {
   constructor(private mapConfigState: MapConfigState) {}
 
   updateBaseLayer(layer: BaseLayerType) {
-    // const stands = this.selectedStandsState.getSelectedStands();
-    // this.selectedStandsState.clearStands();
     this.mapConfigState.updateBaseLayer(layer);
-    // not great, but updating the baseLayer re-renders all the layers, and gets the
-    // selected stands completely out of sync.
-    // setTimeout(() => {
-    //   this.selectedStandsState.updateSelectedStands(stands);
-    // }, 10);
   }
 }

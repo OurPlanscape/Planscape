@@ -12,6 +12,8 @@ export class SelectedStandsState {
     map((stands) => stands.length > 0)
   );
 
+  private backupSelected: number[] = [];
+
   private _history: number[][] = [];
 
   updateSelectedStands(stands: number[]) {
@@ -60,5 +62,17 @@ export class SelectedStandsState {
   reset() {
     this._history = [];
     this._selectedStands$.next([]);
+  }
+
+  backUpAndClearSelectedStands() {
+    this.backupSelected = this.getSelectedStands();
+    this.clearStands();
+  }
+
+  restoreSelectedStands() {
+    if (this.backupSelected.length > 0) {
+      this.updateSelectedStands(this.backupSelected);
+      this.backupSelected = [];
+    }
   }
 }
