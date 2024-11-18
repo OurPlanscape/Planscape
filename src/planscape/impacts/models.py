@@ -534,7 +534,6 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
                     "treatment_plan",
                     "stand",
                     "variable",
-                    "action",
                     "year",
                     "aggregation",
                 ],
