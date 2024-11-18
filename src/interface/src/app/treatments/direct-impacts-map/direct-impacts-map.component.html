@@ -18,6 +18,10 @@
     [withFill]="false"
     [showTooltips]="false"></app-map-project-areas>
   <mgl-control position="bottom-left">
-    <div class="label">{{ label }}</div>
+    <div class="label">{{ labels[year] }}</div>
   </mgl-control>
+
+  <app-map-stands-tx-result
+    [mapLibreMap]="mapLibreMap"
+    [propertyName]="variables[year]"></app-map-stands-tx-result>
 </mgl-map>
