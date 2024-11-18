@@ -236,7 +236,6 @@ def to_project_area_result(
 def to_treatment_result(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
-    action: TreatmentPrescriptionAction,
     year: int,
     result: Dict[str, Any],
 ) -> TreatmentResult:
@@ -248,7 +247,6 @@ def to_treatment_result(
         stand_id=result.get("stand_id"),
         variable=variable,
         aggregation=result.get("aggregation"),
-        action=action,
         year=year,
         defaults={
             "value": result.get("value"),
@@ -314,9 +312,7 @@ def calculate_impacts(
     )
     treatment_results = list(
         map(
-            lambda x: to_treatment_result(
-                treatment_plan, variable, action, year, result=x
-            ),
+            lambda x: to_treatment_result(treatment_plan, variable, year, result=x),
             deltas,
         )
     )
