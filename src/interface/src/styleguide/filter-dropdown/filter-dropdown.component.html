@@ -38,7 +38,7 @@
   <div
     class="search-section"
     *ngIf="hasSearch"
-    (click)="$event.stopPropagation()">
+    >
     <sg-search-bar
       [debounceInterval]="0"
       searchPlaceholder="Search for {{ menuLabel }}"
@@ -53,8 +53,8 @@
       ">
       <div
         *ngFor="let categoryGroup of displayedItems"
-        (click)="$event.stopPropagation()">
-        <details class="expander" open>
+        >
+        <details class="expander" open (click)="$event.stopPropagation()">
           <summary>{{ categoryGroup.category }}</summary>
           <div *ngFor="let item of categoryGroup.options">
             <button
