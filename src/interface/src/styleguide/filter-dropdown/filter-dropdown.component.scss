@@ -263,3 +263,11 @@
 .clear-all-text:hover:not(:disabled) {
   color: $color-standard-blue;
 }
+
+.expander {
+  summary {
+    padding: 8px 12px 8px 12px;
+    border-bottom: 1px solid $color-dark-gray;
+    cursor: pointer;
+  }
+}
