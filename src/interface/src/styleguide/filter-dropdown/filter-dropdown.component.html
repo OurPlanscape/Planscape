@@ -35,10 +35,7 @@
   #multiSelectMenu="matMenu"
   class="filtermenu"
   (closed)="handleClosedMenu($event)">
-  <div
-    class="search-section"
-    *ngIf="hasSearch"
-    >
+  <div class="search-section" *ngIf="hasSearch">
     <sg-search-bar
       [debounceInterval]="0"
       searchPlaceholder="Search for {{ menuLabel }}"
@@ -51,9 +48,7 @@
         displayCategories && displayedItems && displayedItems.length > 0;
         else noCategory
       ">
-      <div
-        *ngFor="let categoryGroup of displayedItems"
-        >
+      <div *ngFor="let categoryGroup of displayedItems">
         <details class="expander" open (click)="$event.stopPropagation()">
           <summary>{{ categoryGroup.category }}</summary>
           <div *ngFor="let item of categoryGroup.options">
