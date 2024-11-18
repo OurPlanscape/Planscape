@@ -4,6 +4,7 @@ DECLARE
   p_mvt bytea;
   p_intersecting_area geometry;
   p_stand_size varchar;
+  p_scenario_id int;
 BEGIN
 
   IF (query_params::jsonb) ? 'project_area_id' THEN
@@ -34,6 +35,12 @@ BEGIN
     WHERE tp.id = (query_params->>'treatment_plan_id')::int
   );
 
+  SELECT INTO p_scenario_id (
+    SELECT sc.id FROM planning_scenario sc
+    RIGHT JOIN impacts_treatmentplan tp ON (tp.scenario_id = sc.id)
+    WHERE tp.id = (query_params->>'treatment_plan_id')::int
+  );
+
 
   WITH tx_result_year_0 AS(
     SELECT
@@ -42,13 +49,24 @@ BEGIN
       tr.baseline AS "baseline",
       tr.aggregation AS "aggregation",
       tr.variable AS "variable",
-      tp.stand_id AS "stand_id",
-      tp.action AS "action",
-      tp.project_area_id AS "project_area_id"
+      tr.action AS "action",
+      tr.delta as "delta",
+      tr.stand_id AS "stand_id",
+      (
+        SELECT 
+          pa.name
+        FROM
+          planning_projectarea pa
+        WHERE
+          pa.scenario_id = p_scenario_id AND
+          ss.id = tr.stand_id AND
+          pa.geometry && ss.geometry AND
+          ST_Within(ST_Centroid(ss.geometry), pa.geometry)
+      ) as "project_area_name"
       FROM impacts_treatmentresult tr
-      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
+      LEFT JOIN stands_stand ss ON (tr.stand_id = ss.id)
       WHERE 
-        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        tr.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'MEAN'
         AND tr.year = 2024
@@ -59,13 +77,11 @@ BEGIN
       tr.baseline AS "baseline",
       tr.aggregation AS "aggregation",
       tr.variable AS "variable",
-      tp.stand_id AS "stand_id",
-      tp.action AS "action",
-      tp.project_area_id AS "project_area_id"
+      tr.delta as "delta",
+      tr.stand_id AS "stand_id"
       FROM impacts_treatmentresult tr
-      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
       WHERE 
-        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        tr.treatment_plan_id = (query_params->>'treatment_plan_id')::int
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'MEAN'
         AND tr.year = 2029
@@ -76,13 +92,11 @@ BEGIN
       tr.baseline AS "baseline",
       tr.aggregation AS "aggregation",
       tr.variable AS "variable",
-      tp.stand_id AS "stand_id",
-      tp.action AS "action",
-      tp.project_area_id AS "project_area_id"
+      tr.delta as "delta",
+      tr.stand_id AS "stand_id"
       FROM impacts_treatmentresult tr
-      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
       WHERE 
-        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        tr.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'MEAN'
         AND tr.year = 2034
@@ -93,13 +107,11 @@ BEGIN
       tr.baseline AS "baseline",
       tr.aggregation AS "aggregation",
       tr.variable AS "variable",
-      tp.stand_id AS "stand_id",
-      tp.action AS "action",
-      tp.project_area_id AS "project_area_id"
+      tr.delta as "delta",
+      tr.stand_id AS "stand_id"
       FROM impacts_treatmentresult tr
-      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
       WHERE 
-        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        tr.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'MEAN'
         AND tr.year = 2039
@@ -110,13 +122,11 @@ BEGIN
       tr.baseline AS "baseline",
       tr.aggregation AS "aggregation",
       tr.variable AS "variable",
-      tp.stand_id AS "stand_id",
-      tp.action AS "action",
-      tp.project_area_id AS "project_area_id"
+      tr.delta as "delta",
+      tr.stand_id AS "stand_id"
       FROM impacts_treatmentresult tr
-      INNER JOIN impacts_treatmentprescription tp ON tr.treatment_prescription_id = tp.id
       WHERE 
-        tp.treatment_plan_id = (query_params->>'treatment_plan_id')::int 
+        tr.treatment_plan_id = (query_params->>'treatment_plan_id')::int
         AND tr.variable = query_params->>'variable'
         AND tr.aggregation = 'MEAN'
         AND tr.year = 2044
@@ -124,20 +134,25 @@ BEGIN
     SELECT 
       ss.id as "id",
       ss.size as "stand_size",
+      tr0.project_area_name as "project_area_name",
       tr0.variable as "variable",
       tr0.action as "action",
-      tr0.project_area_id as "project_area_id",
       (query_params->>'treatment_plan_id') as "treatment_plan_id",
       tr0.baseline AS "baseline_0",
       tr0.value AS "value_0",
+      tr0.delta as "delta_0",
       tr5.baseline AS "baseline_5",
       tr5.value AS "value_5",
+      tr5.delta as "delta_5",
       tr10.baseline AS "baseline_10",
       tr10.value AS "value_10",
+      tr10.delta as "delta_10",
       tr15.baseline AS "baseline_15",
       tr15.value AS "value_15",
+      tr15.delta as "delta_15",
       tr20.baseline AS "baseline_20",
       tr20.value AS "value_20",
+      tr20.delta as "delta_20",
       ST_AsMVTGeom(
           ST_Transform(ss.geometry, 3857),
           ST_TileEnvelope(z, x, y),
