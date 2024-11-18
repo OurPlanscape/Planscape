@@ -461,8 +461,8 @@ def calculate_project_area_deltas(
 
     for agg in aggregations:
         attribute = ImpactVariableAggregation.get_metric_attribute(agg)
-        # merges both dicts, keep action dicts if they clash
-        new_action_dict = {**baseline_dict, **action_dict}
+        # # merges both dicts, keep action dicts if they clash
+        # new_action_dict = {**baseline_dict, **action_dict}
         baseline_sum = sum(
             [
                 getattr(stand_metric, attribute)
@@ -473,7 +473,7 @@ def calculate_project_area_deltas(
         action_sum = sum(
             [
                 getattr(stand_metric, attribute)
-                for _stand_id, stand_metric in new_action_dict.items()
+                for _stand_id, stand_metric in action_dict.items()
             ]
         )
         delta = (baseline_sum - action_sum) / (baseline_sum + 1)
