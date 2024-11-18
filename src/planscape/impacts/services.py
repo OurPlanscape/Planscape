@@ -296,7 +296,7 @@ def calculate_impacts(
             calculate_project_area_deltas(
                 project_area=project_area,
                 baseline_dict=baseline_dict,
-                action_dict=action_dict,
+                action_dict=merged_action_dict,
                 aggregations=aggregations,
             )
         )
