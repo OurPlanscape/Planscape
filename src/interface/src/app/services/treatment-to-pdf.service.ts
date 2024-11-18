@@ -3,14 +3,13 @@ import jsPDF from 'jspdf';
 import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
-  PrescriptionSingleAction,
+  nameForTypeAndAction,
 } from '../treatments/prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
 import { TreatmentSummary, Prescription, TreatmentProjectArea } from '@types';
 import { TreatmentsState } from '../treatments/treatments.state';
 import { TreatedStandsState } from '../treatments/treatment-map/treated-stands.state';
-
 @Injectable({
   providedIn: 'root',
 })
@@ -21,26 +20,91 @@ export class TreatmentToPDFService {
   ) {}
 
   parentMap!: MapLibreMap;
+  pdfDoc: jsPDF | null = null;
 
-  async addProjectAreaPDFBox(currentSummary: TreatmentSummary) {
+  topMargin = 10;
+  leftMargin = 20;
+  rightMargin = 190;
+  bottomMargin = 280;
+
+  async createPDF(map: MapLibreMap) {
+    this.parentMap = map;
+    this.pdfDoc = new jsPDF();
+
+    const mapContainer = document.createElement('div');
+    this.configMapContainer(mapContainer);
+    document.body.appendChild(mapContainer);
+
+    const curSummary = this.treatmentsState.getCurrentSummary();
+    const scenarioName = curSummary.scenario_name;
+    const treatmentPlanName = curSummary.treatment_plan_name;
+    const planningAreaName = curSummary.planning_area_name;
+    const treatedStandsCount =
+      this.treatedStandsState.getTreatedStands().length;
+    const totalStands = curSummary.project_areas.reduce((acc: number, p) => {
+      acc += p.total_stand_count;
+      return acc;
+    }, 0);
+
+    const mapX = this.leftMargin + 10;
+    const mapY = 24;
+    const mapWidth = this.rightMargin - (this.leftMargin + 20);
+    const mapHeight = 100;
+    const projectAreasX = this.leftMargin;
+    const projectAreasY = 130;
+
+    this.addLogo(this.leftMargin, this.topMargin);
+
+    const headerText = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName} - Treated Stands: ${treatedStandsCount} / ${totalStands}`;
+    this.addHeader(headerText, this.leftMargin, 22);
+
+    await this.addMap(mapX, mapY, mapHeight, mapWidth);
+    this.addProjectAreas(curSummary, projectAreasX, projectAreasY);
+
+    document.body.removeChild(mapContainer);
+    const pdfName = `planscape-${encodeURI(treatmentPlanName.split(' ').join('_'))}.pdf`;
+    this.pdfDoc.save(pdfName);
+  }
+
+  getProjectAreaHeight() {}
+
+  addProjectArea() {}
+
+  addProjectAreas(
+    currentSummary: TreatmentSummary,
+    startX: number,
+    startY: number
+  ) {
     if (!this.pdfDoc) {
       return;
     }
+    let xLoc: number = startX;
+    let yLoc: number = startY;
+    //
+    let projectAreaWidth = 80;
+    let projectAreaSpacing = 8; // y space between project areas
     this.pdfDoc.setFont('Helvetica');
     this.pdfDoc.setFontSize(10);
+
     const indentAmount = 4;
-    let yLoc: number = 134;
-    let xLoc: number = 30;
+
+    //cycle through each project area, advancing the Y position as we go
     currentSummary?.project_areas.map((p) => {
       if (!this.pdfDoc) {
         return;
       }
 
       // create a new page if we overflow
-      if (xLoc > 120) {
+      if (xLoc > this.rightMargin - projectAreaWidth) {
         this.pdfDoc.addPage();
-        xLoc = 20;
-        yLoc = 20;
+        xLoc = this.topMargin;
+        yLoc = this.leftMargin;
+      }
+
+      // if we are beyond the bottom margin, advance to next column
+      if (yLoc > this.bottomMargin) {
+        yLoc = startY;
+        xLoc += projectAreaWidth;
       }
 
       const projectName =
@@ -54,10 +118,11 @@ export class TreatmentToPDFService {
       this.pdfDoc?.getTextWidth(projectName);
       this.pdfDoc?.text(projectName, xLoc, yLoc);
 
+      // TODO: precalculate the vertical size here before advancing.
       p.prescriptions.forEach((rx) => {
         this.pdfDoc?.setFontSize(8);
         yLoc += 4;
-        const actionName = this.actionToName(rx.type, rx.action);
+        const actionName = nameForTypeAndAction(rx.type, rx.action);
         const standsTreated =
           rx.treated_stand_count + ' acres:' + Number(rx.area_acres.toFixed(2));
         this.pdfDoc?.text(actionName + '  (' + standsTreated + ')', xLoc, yLoc);
@@ -72,41 +137,37 @@ export class TreatmentToPDFService {
         }
       });
 
-      yLoc += 14;
-      if (yLoc > 260) {
-        yLoc = 130;
-        xLoc += 80;
-      }
+      yLoc += projectAreaSpacing; // add space between each project area
     });
   }
 
-  pdfDoc: jsPDF | null = null;
+  copyOldMapStyles(originalMap: MapLibreMap) {
+    return new MapLibreMap({
+      container: 'printable-map',
+      style: this.parentMap.getStyle(),
+      center: this.parentMap.getBounds().getCenter(),
+      zoom: this.parentMap.getZoom(),
+      bearing: this.parentMap.getBearing(),
+      pitch: this.parentMap.getPitch(),
+      bounds: this.parentMap.getBounds(),
+    });
+  }
 
-  async addMap() {
+  async addMap(
+    mapX: number,
+    mapY: number,
+    mapHeight: number,
+    mapWidth: number
+  ) {
     if (!this.pdfDoc) {
       return;
     }
-    const originalMap = this.parentMap;
-    // Get the map's bounding box
-    const mapBounds = originalMap.getBounds();
 
-    const printMap = new MapLibreMap({
-      container: 'printable-map',
-      style: originalMap.getStyle(),
-      center: mapBounds.getCenter(),
-      zoom: originalMap.getZoom(),
-      bearing: originalMap.getBearing(),
-      pitch: originalMap.getPitch(),
-    });
-    printMap.fitBounds(mapBounds);
+    const printMap = this.copyOldMapStyles(this.parentMap);
     await new Promise((resolve) => printMap.on('load', resolve));
 
     const canvas = printMap.getCanvas();
     const imgData = canvas.toDataURL('image/png');
-    const mapWidth = 150;
-    const mapHeight = 100;
-    const mapX = 30;
-    const mapY = 24;
 
     // Draw a border around the map
     this.pdfDoc.setLineWidth(1);
@@ -114,63 +175,26 @@ export class TreatmentToPDFService {
     this.pdfDoc.addImage(imgData, 'PNG', mapX, mapY, mapWidth, mapHeight);
   }
 
-  addLogo() {
+  addLogo(x: number, y: number) {
     const logoWidth = 28;
     const logoHeight = 5.5;
-    this.pdfDoc?.addImage(logoImg, 'SVG', 20, 14, logoWidth, logoHeight);
+    this.pdfDoc?.addImage(logoImg, 'SVG', x, y, logoWidth, logoHeight);
   }
 
-  createMapContainer() {
-    const mapContainer = document.createElement('div');
+  addHeader(headerText: string, x: number, y: number) {
+    this.pdfDoc?.setFont('Helvetica');
+    this.pdfDoc?.setFontSize(10);
+    this.pdfDoc?.text(headerText, x, y);
+  }
+
+  configMapContainer(mapContainer: HTMLDivElement) {
     mapContainer.id = 'printable-map';
     mapContainer.style.position = 'absolute';
     mapContainer.style.width = '1000px';
-    mapContainer.style.height = '800px';
+    mapContainer.style.height = '700px';
     mapContainer.style.left = '-9000px';
     mapContainer.style.top = '-100px';
-
     document.body.appendChild(mapContainer);
-  }
-
-  async createPDF(map: MapLibreMap) {
-    this.parentMap = map;
-    this.pdfDoc = new jsPDF();
-    this.createMapContainer();
-    const curSummary = this.treatmentsState.getCurrentSummary();
-    const scenarioName = curSummary.scenario_name;
-    const treatmentPlanName = curSummary.treatment_plan_name;
-    const planningAreaName = curSummary.planning_area_name;
-    const treatedStandsCount =
-      this.treatedStandsState.getTreatedStands().length;
-    const totalStands = curSummary.project_areas.reduce((acc: number, p) => {
-      acc += p.total_stand_count;
-      return acc;
-    }, 0);
-
-    this.pdfDoc?.setFont('Helvetica');
-    this.pdfDoc?.setFontSize(10);
-
-    const header = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName}`;
-    this.pdfDoc.text(header, 30, 22);
-
-    const standInfo = `Treated Stands: ${treatedStandsCount} / ${totalStands}`;
-    this.pdfDoc.text(standInfo, 30, 130);
-
-    this.addLogo();
-    await this.addMap();
-    this.addProjectAreaPDFBox(curSummary);
-
-    const pdfName = `planscape-${encodeURI(treatmentPlanName.split(' ').join('_'))}.pdf`;
-    this.pdfDoc.save(pdfName);
-  }
-
-  actionToName(rxType: string, rxAction: string) {
-    if (rxType === 'SINGLE') {
-      return PRESCRIPTIONS.SINGLE[rxAction as PrescriptionSingleAction];
-    } else if (rxType === 'SEQUENCE')
-      return PRESCRIPTIONS.SEQUENCE[rxAction as PrescriptionSequenceAction]
-        .name;
-    else return '';
   }
 
   treatedStandCount(projectArea: TreatmentProjectArea): number {
@@ -178,31 +202,5 @@ export class TreatmentToPDFService {
       (acc: number, p: Prescription) => acc + p.treated_stand_count,
       0
     );
-  }
-
-  //TODO: move this to prescriptions?
-  //print element functions
-  sequenceActions(action: string): string[] {
-    let title = action as PrescriptionSequenceAction;
-    if (title !== null) {
-      return PRESCRIPTIONS.SEQUENCE[title].details;
-    }
-    return [];
-  }
-
-  // TODO: move this to prescriptions?
-  prescriptionName(action: string, type: string): string | null {
-    if (type === 'SINGLE') {
-      let title = action as PrescriptionSingleAction;
-      if (title !== null) {
-        return PRESCRIPTIONS.SINGLE[title];
-      }
-    } else if (type === 'SEQUENCE') {
-      let title = action as PrescriptionSequenceAction;
-      if (title !== null) {
-        return PRESCRIPTIONS.SEQUENCE[title].name;
-      }
-    }
-    return '';
   }
 }
