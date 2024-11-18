@@ -120,10 +120,22 @@ export class TreatmentToPDFService {
     this.pdfDoc?.addImage(logoImg, 'SVG', 20, 14, logoWidth, logoHeight);
   }
 
+  createMapContainer() {
+    const mapContainer = document.createElement('div');
+    mapContainer.id = 'printable-map';
+    mapContainer.style.position = 'absolute';
+    mapContainer.style.width = '1000px';
+    mapContainer.style.height = '800px';
+    mapContainer.style.left = '-9000px';
+    mapContainer.style.top = '-100px';
+
+    document.body.appendChild(mapContainer);
+  }
+
   async createPDF(map: MapLibreMap) {
     this.parentMap = map;
     this.pdfDoc = new jsPDF();
-
+    this.createMapContainer();
     const curSummary = this.treatmentsState.getCurrentSummary();
     const scenarioName = curSummary.scenario_name;
     const treatmentPlanName = curSummary.treatment_plan_name;
@@ -168,6 +180,7 @@ export class TreatmentToPDFService {
     );
   }
 
+  //TODO: move this to prescriptions?
   //print element functions
   sequenceActions(action: string): string[] {
     let title = action as PrescriptionSequenceAction;
@@ -177,6 +190,7 @@ export class TreatmentToPDFService {
     return [];
   }
 
+  // TODO: move this to prescriptions?
   prescriptionName(action: string, type: string): string | null {
     if (type === 'SINGLE') {
       let title = action as PrescriptionSingleAction;

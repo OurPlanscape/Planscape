@@ -53,8 +53,3 @@
       *ngIf="(showTreatmentLegend$ | async) || false"></app-treatment-legend>
   </div>
 </section>
-
-<app-printable-treatment
-  id="pdffooter"
-  (createPdf)="createPDF()"
-  [summary]="summary$ | async"></app-printable-treatment>
