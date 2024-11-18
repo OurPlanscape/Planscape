@@ -67,13 +67,24 @@ export class AreaNotesComponent implements OnInit {
   addNote(event: Event) {
     if (this.note) {
       this.saving = true;
-      this.notesService.addNote(this.plan?.id, this.note).subscribe((note) => {
-        // add the note
-        this.notes.unshift(note);
-        // but then refresh as well.
-        this.loadNotes();
-        this.saving = false;
-        this.note = '';
+      this.notesService.addNote(this.plan?.id, this.note).subscribe({
+        next: (noteResult: Note) => {
+          // add the note to the shown list
+          this.notes.unshift(noteResult);
+          // but then refresh as well.
+          this.loadNotes();
+          this.saving = false;
+          this.note = '';
+        },
+        error: (error: any) => {
+          this.snackbar.open(
+            `Error adding note.`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+          this.saving = false;
+          this.note = '';
+        },
       });
     }
     event.preventDefault();
