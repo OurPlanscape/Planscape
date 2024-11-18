@@ -13,6 +13,7 @@ from impacts.services import (
     calculate_impacts,
     get_calculation_matrix,
 )
+from planning.models import ProjectArea
 from planscape.celery import app
 
 log = logging.getLogger(__name__)
