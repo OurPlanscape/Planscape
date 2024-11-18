@@ -29,18 +29,11 @@ BEGIN
     );
   END IF;
 
-  SELECT INTO p_stand_size (
-    SELECT (configuration->>'stand_size')::varchar FROM planning_scenario sc
+  SELECT INTO 
+    p_scenario_id, p_stand_size
+    sc.id, (configuration->>'stand_size')::varchar FROM planning_scenario sc
     RIGHT JOIN impacts_treatmentplan tp ON (tp.scenario_id = sc.id)
-    WHERE tp.id = (query_params->>'treatment_plan_id')::int
-  );
-
-  SELECT INTO p_scenario_id (
-    SELECT sc.id FROM planning_scenario sc
-    RIGHT JOIN impacts_treatmentplan tp ON (tp.scenario_id = sc.id)
-    WHERE tp.id = (query_params->>'treatment_plan_id')::int
-  );
-
+    WHERE tp.id = (query_params->>'treatment_plan_id')::int;
 
   WITH tx_result_year_0 AS(
     SELECT
