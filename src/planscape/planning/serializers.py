@@ -582,7 +582,7 @@ class GeoJSONSerializer(serializers.Serializer):
 class UploadedScenarioDataSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
     stand_size = serializers.ChoiceField(
-        choices=["SMALL", "MEDIUM", "LARGE"], required=False
+        choices=["SMALL", "MEDIUM", "LARGE"], required=False, allow_blank=True
     )
     planning_area = serializers.IntegerField(min_value=1, required=True)
     geometry = serializers.JSONField(required=True)
@@ -598,7 +598,24 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         return data
 
     def validate_geometry(self, value):
-        geojson_serializer = GeoJSONSerializer(data=json.loads(value))
+        # consolidate a list of feature collections into one object
+        ## TODO: use built-in approaches for this
+        if isinstance(value, list):
+            merged_feature_collection = {"type": "FeatureCollection", "features": []}
+            for fc in value:
+                if fc.get("type") == "FeatureCollection":
+                    merged_feature_collection["features"].extend(fc.get("features", []))
+                else:
+                    raise ValueError(
+                        "All items must be GeoJSON FeatureCollection objects"
+                    )
+            value = merged_feature_collection
+
+        # convert if neither dict nor list
+        if not isinstance(value, (dict, list)):
+            value = json.loads(value)
+
+        geojson_serializer = GeoJSONSerializer(data=value)
         geojson_serializer.is_valid(raise_exception=True)
         return geojson_serializer.validated_data
 
