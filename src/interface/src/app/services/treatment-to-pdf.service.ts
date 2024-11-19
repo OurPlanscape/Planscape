@@ -50,7 +50,7 @@ export class TreatmentToPDFService {
     const mapY = 24;
     const mapWidth = this.rightMargin - (this.leftMargin + 20);
     const mapHeight = 100;
-    const projectAreasX = this.leftMargin;
+    const projectAreasX = this.leftMargin + 10;
     const projectAreasY = 130;
 
     this.addLogo(this.leftMargin, this.topMargin);
@@ -82,7 +82,8 @@ export class TreatmentToPDFService {
     let yLoc: number = startY;
     //
     let projectAreaWidth = 80;
-    let projectAreaSpacing = 8; // y space between project areas
+    let projectAreaSpacing = 12; // y space between project areas
+    let rxSpacing = 5; // y space between project areas
     this.pdfDoc.setFont('Helvetica');
     this.pdfDoc.setFontSize(10);
 
@@ -121,7 +122,7 @@ export class TreatmentToPDFService {
       // TODO: precalculate the vertical size here before advancing.
       p.prescriptions.forEach((rx) => {
         this.pdfDoc?.setFontSize(8);
-        yLoc += 4;
+        yLoc += rxSpacing;
         const actionName = nameForTypeAndAction(rx.type, rx.action);
         const standsTreated =
           rx.treated_stand_count + ' acres:' + Number(rx.area_acres.toFixed(2));
@@ -131,7 +132,7 @@ export class TreatmentToPDFService {
             PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
               .details;
           seqActions.forEach((sa) => {
-            yLoc += 4;
+            yLoc += rxSpacing;
             this.pdfDoc?.text(sa, xLoc + indentAmount, yLoc);
           });
         }

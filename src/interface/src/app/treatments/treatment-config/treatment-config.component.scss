@@ -65,16 +65,4 @@ app-apply-treatment {
   z-index: 1000;
 }
 
-app-printable-tx-footer {
-  display: none;
-}
-@media print {
-  //hide elements we won't print      
- .right-side, .left-side, .right-side-footer {
-   display: none;
- }
- app-printable-tx-footer {
-  display: block;
-}
-}
 
