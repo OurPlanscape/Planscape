@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
@@ -59,86 +60,62 @@ export class TreatmentToPDFService {
     this.addHeader(headerText, this.leftMargin, 22);
 
     await this.addMap(mapX, mapY, mapHeight, mapWidth);
-    this.addProjectAreas(curSummary, projectAreasX, projectAreasY);
+
+    this.addProjectAreaTable(
+      this.tableRowsFromSummary(curSummary),
+      projectAreasX,
+      projectAreasY
+    );
 
     document.body.removeChild(mapContainer);
     const pdfName = `planscape-${encodeURI(treatmentPlanName.split(' ').join('_'))}.pdf`;
     this.pdfDoc.save(pdfName);
   }
 
-  getProjectAreaHeight() {}
-
-  addProjectArea() {}
-
-  addProjectAreas(
-    currentSummary: TreatmentSummary,
-    startX: number,
-    startY: number
-  ) {
-    if (!this.pdfDoc) {
-      return;
-    }
-    let xLoc: number = startX;
-    let yLoc: number = startY;
-    //
-    let projectAreaWidth = 80;
-    let projectAreaSpacing = 12; // y space between project areas
-    let rxSpacing = 5; // y space between project areas
-    this.pdfDoc.setFont('Helvetica');
-    this.pdfDoc.setFontSize(10);
-
-    const indentAmount = 4;
-
-    //cycle through each project area, advancing the Y position as we go
-    currentSummary?.project_areas.map((p) => {
-      if (!this.pdfDoc) {
-        return;
-      }
-
-      // create a new page if we overflow
-      if (xLoc > this.rightMargin - projectAreaWidth) {
-        this.pdfDoc.addPage();
-        xLoc = this.topMargin;
-        yLoc = this.leftMargin;
-      }
-
-      // if we are beyond the bottom margin, advance to next column
-      if (yLoc > this.bottomMargin) {
-        yLoc = startY;
-        xLoc += projectAreaWidth;
-      }
-
-      const projectName =
-        p.project_area_name +
-        ' stand count: ' +
-        +this.treatedStandCount(p) +
-        '/' +
-        p.total_stand_count;
-      this.pdfDoc?.setFont('Helvetica');
-      this.pdfDoc?.setFontSize(10);
-      this.pdfDoc?.getTextWidth(projectName);
-      this.pdfDoc?.text(projectName, xLoc, yLoc);
-
-      // TODO: precalculate the vertical size here before advancing.
+  tableRowsFromSummary(currentSummary: TreatmentSummary): string[][] {
+    const tableRows: string[][] = [];
+    currentSummary.project_areas.forEach((p) => {
+      let rxInfo = '';
       p.prescriptions.forEach((rx) => {
-        this.pdfDoc?.setFontSize(8);
-        yLoc += rxSpacing;
         const actionName = nameForTypeAndAction(rx.type, rx.action);
-        const standsTreated =
-          rx.treated_stand_count + ' acres:' + Number(rx.area_acres.toFixed(2));
-        this.pdfDoc?.text(actionName + '  (' + standsTreated + ')', xLoc, yLoc);
+        rxInfo += actionName + '\n';
+
         if (rx.type === 'SEQUENCE') {
           const seqActions =
             PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
               .details;
-          seqActions.forEach((sa) => {
-            yLoc += rxSpacing;
-            this.pdfDoc?.text(sa, xLoc + indentAmount, yLoc);
+          seqActions.forEach((aeqAction) => {
+            rxInfo += '\t' + aeqAction + '\n';
           });
         }
       });
+      const treatedStands = `treated stands: ${this.treatedStandCount(p)}/${p.total_stand_count}`;
+      tableRows.push([p.project_area_name, treatedStands, rxInfo]);
+    });
+    return tableRows;
+  }
 
-      yLoc += projectAreaSpacing; // add space between each project area
+  addProjectAreaTable(bodyData: string[][], startX: number, startY: number) {
+    autoTable(this.pdfDoc, {
+      styles: { fillColor: [255, 255, 255] },
+      alternateRowStyles: { fillColor: [255, 255, 255] },
+      columnStyles: {
+        0: { fontSize: 10, cellWidth: 30 },
+        1: { fontSize: 8, cellWidth: 40 },
+        2: { fontSize: 8 },
+      },
+      startY: startY,
+      theme: 'grid',
+      margin: {
+        left: startX,
+        right: 30,
+        top: 10,
+        bottom: 20,
+      },
+      // tableLineWidth: 0.4,
+      tableLineColor: '#000000',
+      horizontalPageBreak: true,
+      body: bodyData,
     });
   }
 
