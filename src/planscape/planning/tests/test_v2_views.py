@@ -972,6 +972,46 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         self.assertEqual(len(response_data), 3)
         for rec in response_data:
             self.assertIn("can_delete", rec)
+            self.assertEqual(rec["can_delete"], True)
+
+    def test_delete_notes_perms_for_collaborator(self):
+        """
+        This test is meant to check the can_delete permission for a non-owner
+        """
+        UserObjectRoleFactory(
+            inviter=self.user,
+            collaborator=self.other_user,
+            email=self.other_user.email,
+            role=Role.COLLABORATOR,
+            associated_model=self.planning_area,
+        )
+        ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a note"
+        )
+        ProjectAreaNote.objects.create(
+            project_area=self.project_area, user=self.user, content="I am a second note"
+        )
+        ProjectAreaNote.objects.create(
+            project_area=self.project_area,
+            user=self.other_user,
+            content="A note the collaborator added",
+        )
+
+        self.client.force_authenticate(self.other_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:project-areas-notes-list",
+                kwargs={"project_area_id": self.project_area.pk},
+            ),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        for note_record in response_data:
+            self.assertIn("can_delete", note_record)
+            if note_record["content"] == "A note the collaborator added":
+                self.assertEqual(note_record["can_delete"], True)
+            else:
+                self.assertEqual(note_record["can_delete"], False)
 
     def test_get_notes_for_unauthorized_user(self):
         self.client.force_authenticate(self.other_user)

@@ -25,7 +25,7 @@ router.register(
 )
 router.register("project-areas", ProjectAreaViewSet, basename="project-areas")
 router.register(
-    r"project-areas/(?P<project_area_id>\d+)/notes",
+    r"project-areas/(?P<project_area_id>\d+)/note",
     ProjectAreaNoteViewSet,
     basename="project-areas-notes",
 )
