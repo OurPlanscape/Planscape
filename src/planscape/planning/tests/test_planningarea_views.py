@@ -1282,6 +1282,23 @@ class GetPlanningAreaNotes(APITestCase):
             self.owner_user.pk,
         )
 
+    def test_get_note_delete_permissions(self):
+        self.client.force_authenticate(self.collab_user)
+        response = self.client.get(
+            reverse(
+                "planning:get_planningareanote",
+                kwargs={"planningarea_pk": self.planningarea.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        planning_area_notes = response.json()
+        self.assertEqual(len(planning_area_notes), 3)
+        self.assertEqual(planning_area_notes[0]["can_delete"], False)
+        # note owned by collab_user, so can delete
+        self.assertEqual(planning_area_notes[1]["can_delete"], True)
+        self.assertEqual(planning_area_notes[2]["can_delete"], False)
+
     def test_get_notes_unauthenticated(self):
         response = self.client.post(
             reverse(
