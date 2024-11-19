@@ -24,7 +24,7 @@ export class TreatmentToPDFService {
   pdfDoc: jsPDF | null = null;
 
   topMargin = 10;
-  leftMargin = 20;
+  leftMargin = 30;
   rightMargin = 190;
   bottomMargin = 280;
 
@@ -47,20 +47,19 @@ export class TreatmentToPDFService {
       return acc;
     }, 0);
 
-    const mapX = this.leftMargin + 10;
-    const mapY = 24;
-    const mapWidth = this.rightMargin - (this.leftMargin + 20);
-    const mapHeight = 100;
-    const projectAreasX = this.leftMargin + 10;
-    const projectAreasY = 130;
-
-    this.addLogo(this.leftMargin, this.topMargin);
+    this.addLogo(this.leftMargin, 14);
 
     const headerText = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName} - Treated Stands: ${treatedStandsCount} / ${totalStands}`;
-    this.addHeader(headerText, this.leftMargin, 22);
+    this.addHeader(headerText, this.leftMargin, 24);
 
+    const mapX = this.leftMargin + 10;
+    const mapY = 28;
+    const mapWidth = this.rightMargin - (this.leftMargin + 20);
+    const mapHeight = 100;
     await this.addMap(mapX, mapY, mapHeight, mapWidth);
 
+    const projectAreasX = this.leftMargin;
+    const projectAreasY = 132;
     this.addProjectAreaTable(
       this.tableRowsFromSummary(curSummary),
       projectAreasX,
@@ -89,7 +88,7 @@ export class TreatmentToPDFService {
           });
         }
       });
-      const treatedStands = `treated stands: ${this.treatedStandCount(p)}/${p.total_stand_count}`;
+      const treatedStands = `Treated stands: ${this.treatedStandCount(p)}/${p.total_stand_count}`;
       tableRows.push([p.project_area_name, treatedStands, rxInfo]);
     });
     return tableRows;
@@ -100,15 +99,15 @@ export class TreatmentToPDFService {
       styles: { fillColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [255, 255, 255] },
       columnStyles: {
-        0: { fontSize: 10, cellWidth: 30 },
-        1: { fontSize: 8, cellWidth: 40 },
-        2: { fontSize: 8 },
+        0: { fontSize: 9, cellWidth: 30 },
+        1: { fontSize: 9, cellWidth: 40 },
+        2: { fontSize: 9 },
       },
       startY: startY,
       theme: 'grid',
       margin: {
         left: startX,
-        right: 30,
+        right: 20,
         top: 10,
         bottom: 20,
       },
