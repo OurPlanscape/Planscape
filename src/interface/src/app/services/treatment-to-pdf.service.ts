@@ -111,14 +111,13 @@ export class TreatmentToPDFService {
         top: 10,
         bottom: 20,
       },
-      // tableLineWidth: 0.4,
       tableLineColor: '#000000',
       horizontalPageBreak: true,
       body: bodyData,
     });
   }
 
-  copyOldMapStyles(originalMap: MapLibreMap) {
+  copyParentMap() {
     return new MapLibreMap({
       container: 'printable-map',
       style: this.parentMap.getStyle(),
@@ -140,13 +139,10 @@ export class TreatmentToPDFService {
       return;
     }
 
-    const printMap = this.copyOldMapStyles(this.parentMap);
+    const printMap = this.copyParentMap();
     await new Promise((resolve) => printMap.on('load', resolve));
-
     const canvas = printMap.getCanvas();
     const imgData = canvas.toDataURL('image/png');
-
-    // Draw a border around the map
     this.pdfDoc.setLineWidth(1);
     this.pdfDoc.rect(mapX, mapY, mapWidth, mapHeight);
     this.pdfDoc.addImage(imgData, 'PNG', mapX, mapY, mapWidth, mapHeight);
