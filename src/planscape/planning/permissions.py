@@ -50,9 +50,10 @@ class ProjectAreaNoteViewPermission(PlanscapePermission):
         if not self.is_authenticated(request):
             return False
 
+        project_area_id = view.kwargs.get("project_area_id")
+
         match view.action:
             case "create":
-                project_area_id = request.data.get("project_area") or None
                 if not project_area_id:
                     return False
                 try:
@@ -62,9 +63,8 @@ class ProjectAreaNoteViewPermission(PlanscapePermission):
                 return ProjectAreaNotePermission.can_add(request.user, project_area)
 
             case "list":
-                project_area_id = request.query_params.get("project_area_pk") or None
                 if not project_area_id:
-                    raise ValidationError(f"Missing required project_area_pk")
+                    raise ValidationError(f"Missing required project_area_id")
                 try:
                     project_area = ProjectArea.objects.select_related(
                         "scenario", "scenario__planning_area"

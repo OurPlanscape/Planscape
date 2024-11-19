@@ -30,6 +30,7 @@ from planning.serializers import (
     PlanningAreaSerializer,
     ProjectAreaNoteSerializer,
     ProjectAreaNoteListSerializer,
+    ProjectAreaNoteCreateSerializer,
     ProjectAreaSerializer,
     ScenarioSerializer,
     ScenarioAndProjectAreasSerializer,
@@ -272,55 +273,25 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     }
 
 
-class ProjectAreaNoteViewSet(
-    mixins.ListModelMixin,
-    mixins.CreateModelMixin,
-    mixins.DestroyModelMixin,
-    mixins.RetrieveModelMixin,
-    viewsets.GenericViewSet,
-):
+class ProjectAreaNoteViewSet(viewsets.ModelViewSet):
     queryset = ProjectAreaNote.objects.all()
-    permission_classes = [ProjectAreaNoteViewPermission]
     serializer_class = ProjectAreaNoteSerializer
+    permission_classes = [ProjectAreaNoteViewPermission]
     serializer_classes = {
         "list": ProjectAreaNoteListSerializer,
+        "create": ProjectAreaNoteCreateSerializer,
     }
     filterset_class = ProjectAreaNoteFilterSet
     filter_backends = [DjangoFilterBackend]
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context["user"] = self.request.user
-        return context
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-
-        note = create_projectarea_note(
-            self.request.user,
-            **serializer.validated_data,
-        )
-        out_serializer = ProjectAreaNoteSerializer(instance=note)
-        headers = self.get_success_headers(out_serializer.data)
-        return Response(
-            out_serializer.data,
-            status=status.HTTP_201_CREATED,
-            headers=headers,
-        )
-
     def get_serializer_class(self):
-        return (
-            self.serializer_classes.get(self.action, self.serializer_class)
-            or self.serializer_class
-        )
+        return self.serializer_classes.get(self.action, ProjectAreaNoteSerializer)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
     def get_queryset(self):
-        user = self.request.user
-        queryset = ProjectAreaNote.objects.select_related("project_area")
-
-        project_area_pk = self.request.query_params.get("project_area_pk")
-        if project_area_pk:
-            queryset = queryset.filter(project_area__pk=project_area_pk)
-
-        return queryset
+        project_area_id = self.kwargs.get("project_area_id")
+        if project_area_id is None:
+            raise ValueError("project_area_id is missing in kwargs")
+        return self.queryset.filter(project_area_id=project_area_id)
