@@ -35,7 +35,7 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
 import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { getMergedRouteData } from '../treatments-routing-data';
-import { TreatmentToPDFService } from '../../services/treatment-to-pdf.service';
+import { TreatmentToPDFService } from '../treatment-to-pdf.service';
 
 @UntilDestroy()
 @Component({

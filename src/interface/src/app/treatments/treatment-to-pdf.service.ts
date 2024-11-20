@@ -5,22 +5,21 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   nameForTypeAndAction,
-} from '../treatments/prescriptions';
+} from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
 import { TreatmentSummary, Prescription, TreatmentProjectArea } from '@types';
-import { TreatmentsState } from '../treatments/treatments.state';
-import { TreatedStandsState } from '../treatments/treatment-map/treated-stands.state';
-@Injectable({
-  providedIn: 'root',
-})
+import { TreatmentsState } from './treatments.state';
+import { TreatedStandsState } from './treatment-map/treated-stands.state';
+
+@Injectable()
 export class TreatmentToPDFService {
   constructor(
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState
   ) {}
 
-  parentMap!: MapLibreMap;
+  activeMap: MapLibreMap | null = null;
   pdfDoc: jsPDF | null = null;
 
   topMargin = 10;
@@ -29,7 +28,7 @@ export class TreatmentToPDFService {
   bottomMargin = 280;
 
   async createPDF(map: MapLibreMap) {
-    this.parentMap = map;
+    this.activeMap = map;
     this.pdfDoc = new jsPDF();
 
     const mapContainer = document.createElement('div');
@@ -117,15 +116,18 @@ export class TreatmentToPDFService {
     });
   }
 
-  copyParentMap() {
+  copyActiveMap() {
+    if (!this.activeMap) {
+      return;
+    }
     return new MapLibreMap({
       container: 'printable-map',
-      style: this.parentMap.getStyle(),
-      center: this.parentMap.getBounds().getCenter(),
-      zoom: this.parentMap.getZoom(),
-      bearing: this.parentMap.getBearing(),
-      pitch: this.parentMap.getPitch(),
-      bounds: this.parentMap.getBounds(),
+      style: this.activeMap.getStyle(),
+      center: this.activeMap.getBounds().getCenter(),
+      zoom: this.activeMap.getZoom(),
+      bearing: this.activeMap.getBearing(),
+      pitch: this.activeMap.getPitch(),
+      bounds: this.activeMap.getBounds(),
     });
   }
 
@@ -135,17 +137,19 @@ export class TreatmentToPDFService {
     mapHeight: number,
     mapWidth: number
   ) {
-    if (!this.pdfDoc) {
+    if (!this.pdfDoc || !this.activeMap) {
       return;
     }
 
-    const printMap = this.copyParentMap();
-    await new Promise((resolve) => printMap.on('load', resolve));
-    const canvas = printMap.getCanvas();
-    const imgData = canvas.toDataURL('image/png');
-    this.pdfDoc.setLineWidth(1);
-    this.pdfDoc.rect(mapX, mapY, mapWidth, mapHeight);
-    this.pdfDoc.addImage(imgData, 'PNG', mapX, mapY, mapWidth, mapHeight);
+    const printMap = this.copyActiveMap();
+    await new Promise((resolve) => printMap?.on('load', resolve));
+    const canvas = printMap?.getCanvas();
+    const imgData = canvas?.toDataURL('image/png');
+    if (imgData) {
+      this.pdfDoc.setLineWidth(1);
+      this.pdfDoc.rect(mapX, mapY, mapWidth, mapHeight);
+      this.pdfDoc.addImage(imgData, 'PNG', mapX, mapY, mapWidth, mapHeight);
+    }
   }
 
   addLogo(x: number, y: number) {
