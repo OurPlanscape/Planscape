@@ -39,13 +39,26 @@ export class TreatmentCardComponent {
   readonly chipsStatus: Record<TreatmentStatus, StatusChipStatus> = {
     PENDING: 'inProgress',
     SUCCESS: 'success',
+    QUEUED: 'running',
     RUNNING: 'running',
     FAILURE: 'failed',
   };
 
+  readonly statusLabel: Record<TreatmentStatus, string> = {
+    PENDING: 'In Progress',
+    SUCCESS: 'Done',
+    QUEUED: 'Running',
+    RUNNING: 'Running',
+    FAILURE: 'Failed',
+  };
+
   @HostBinding('class.disabled')
   get isDisabled() {
-    return this.status === 'RUNNING' || this.status === 'FAILURE';
+    return (
+      this.status === 'RUNNING' ||
+      this.status === 'QUEUED' ||
+      this.status === 'FAILURE'
+    );
   }
 
   @HostListener('click')
