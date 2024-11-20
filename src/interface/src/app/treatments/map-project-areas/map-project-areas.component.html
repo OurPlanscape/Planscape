@@ -6,7 +6,7 @@
   [id]="layers.projectAreasFill.name"
   type="fill"
   source="scenarioProjectAreas"
-  (layerClick)="visible ? goToProjectArea($event) : null"
+  (layerClick)="visible && showTooltips ? goToProjectArea($event) : null"
   (layerMouseEnter)="visible && showTooltips ? setCursor() : null"
   (layerMouseMove)="
     visible && showTooltips ? setProjectAreaTooltip($event) : null

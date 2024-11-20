@@ -14,10 +14,13 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
+  <app-map-stands-tx-result
+    [mapLibreMap]="mapLibreMap"
+    [propertyName]="variables[year]"></app-map-stands-tx-result>
   <app-map-project-areas
     [withFill]="false"
     [showTooltips]="false"></app-map-project-areas>
   <mgl-control position="bottom-left">
-    <div class="label">{{ label }}</div>
+    <div class="label">{{ labels[year] }}</div>
   </mgl-control>
 </mgl-map>

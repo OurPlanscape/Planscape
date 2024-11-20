@@ -10,8 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Metric } from '../metric-filters.component';
 import { TreatmentsState } from 'src/app/treatments/treatments.state';
+import { Metric } from '../../../metrics';
 
 @Component({
   selector: 'app-metric-selector',
