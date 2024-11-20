@@ -8,11 +8,11 @@ import {
   ColorSpecification,
   DataDrivenPropertyValueSpecification,
   Map as MapLibreMap,
-  MapMouseEvent,
 } from 'maplibre-gl';
 import { STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
+import { MapMetricSlot, SLOT_PALETTES } from '../metrics';
 
 @Component({
   selector: 'app-map-stands-tx-result',
@@ -31,7 +31,11 @@ export class MapStandsTxResultComponent implements OnInit {
 
   paint = {};
 
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(private treatmentsState: TreatmentsState) {
+    this.treatmentsState.activeMetric$.pipe().subscribe((m) => {
+      this.paint = this.generatePaint(m.slot);
+    });
+  }
 
   readonly url =
     'stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=152&variable=TOTAL_CARBON';
@@ -40,7 +44,7 @@ export class MapStandsTxResultComponent implements OnInit {
 
   get vectorLayerUrl() {
     // TODO dynamic
-    const variable = 'TOTAL_CARBON';
+    const variable = this.treatmentsState.activeMetric$.value.metric.id;
     const plan = this.treatmentsState.getTreatmentPlanId();
     return (
       environment.martin_server +
@@ -48,16 +52,12 @@ export class MapStandsTxResultComponent implements OnInit {
     );
   }
 
-  clickLayer(event: MapMouseEvent) {
-    const d = this.mapLibreMap.queryRenderedFeatures(event.point, {
-      layers: ['standsFill'],
-    });
-    console.log(d);
+  ngOnInit(): void {
+    this.paint = this.generatePaint('blue');
   }
 
-  ngOnInit(): void {
-    console.log(this.propertyName);
-    this.paint = {
+  private generatePaint(slot: MapMetricSlot) {
+    return {
       'fill-color': [
         'case',
         ['==', ['get', this.propertyName], ['literal', null]], // Explicitly typing null
@@ -66,12 +66,27 @@ export class MapStandsTxResultComponent implements OnInit {
           'interpolate',
           ['linear'],
           ['get', this.propertyName],
-          -1,
-          'hsl(200,61%,72%)', // Light blue for low values
-          1,
-          'hsl(200,93%,18%)', // Dark blue for high values
+          ...this.getPallete(slot),
         ],
       ] as DataDrivenPropertyValueSpecification<ColorSpecification>,
+      'fill-opacity': 0.8,
     };
+  }
+
+  private getPallete(slot: MapMetricSlot) {
+    const palette = SLOT_PALETTES[slot];
+    // INVERSE ORDER
+    return [
+      -1,
+      palette[4],
+      -0.5,
+      palette[3],
+      0,
+      palette[2],
+      0.5,
+      palette[1],
+      1,
+      palette[0],
+    ];
   }
 }

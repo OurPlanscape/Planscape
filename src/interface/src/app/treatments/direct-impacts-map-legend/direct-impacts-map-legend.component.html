@@ -1,0 +1,12 @@
+<div class="legend-title">Map Legend</div>
+<div class="legends" *ngIf="activeSlot$ | async; let activeSlot">
+  <div
+    *ngFor="let step of steps; index as i"
+    [ngStyle]="{
+      '--square-color': SLOT_PALETTES[activeSlot][i]
+    }">
+    {{ step }}
+  </div>
+</div>
+
+<!--SLOT_PALETTES[activeMetric.slot][0]-->

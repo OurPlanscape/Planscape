@@ -1,70 +1,13 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { MetricSelectorComponent } from './metric-selector/metric-selector.component';
 import { NgFor } from '@angular/common';
-
-export interface Metric {
-  id: string;
-  label: string;
-}
-
-export const METRICS: Metric[] = [
-  {
-    id: 'ID_CROWN_BULK_DENSITY',
-    label: 'Crown Bulk Density',
-  },
-  {
-    id: 'ID_CANOPY_BASE_HEIGHT',
-    label: 'Canopy Base Height',
-  },
-  {
-    id: 'ID_CANOPY_COVER',
-    label: 'Canopy Cover',
-  },
-  {
-    id: 'ID_LARGE_TREE_BIOMASS',
-    label: 'Large Tree Biomass',
-  },
-  {
-    id: 'ID_MERCHANTABLE_BIOMASS',
-    label: 'Merchantable Biomass',
-  },
-  {
-    id: 'ID_NON_MERCHANTABLE_BIOMASS',
-    label: 'Non-Merchantable Biomass',
-  },
-  {
-    id: 'ID_MORTALITY',
-    label: 'Mortality',
-  },
-  {
-    id: 'ID_POTENTIAL_SMOKE',
-    label: 'Potential Smoke',
-  },
-  {
-    id: 'ID_PROBABILITY_OF_TORCHING',
-    label: 'Probability of Torching',
-  },
-  {
-    id: 'ID_QUADRATIC_MEAN_DIAMETER',
-    label: 'Quadratic Mean Diameter',
-  },
-  {
-    id: 'ID_STAND_DENSITY_INDEX',
-    label: 'Stand Density Index',
-  },
-  {
-    id: 'ID_TOTAL_HEIGHT',
-    label: 'Total Height',
-  },
-  {
-    id: 'ID_TOTAL_FLAME_SEVERITY',
-    label: 'Total Flame Severity',
-  },
-  {
-    id: 'ID_TOTAL_CARBON',
-    label: 'Total Carbon',
-  },
-];
+import {
+  MapMetric,
+  MapMetricSlot,
+  Metric,
+  METRICS,
+  SLOT_COLORS,
+} from '../../metrics';
 
 @Component({
   selector: 'app-metric-filters',
@@ -74,11 +17,14 @@ export const METRICS: Metric[] = [
   styleUrl: './metric-filters.component.scss',
 })
 export class MetricFiltersComponent implements OnInit {
-  @Output() metricSelected = new EventEmitter<Metric>();
+  @Output() metricSelected = new EventEmitter<MapMetric>();
 
   initialOptions: Metric[] = METRICS;
 
-  metricColors: string[] = ['#4361EE', '#9071E8', '#EC933A', '#63C2A2'];
+  metricColors = Object.entries(SLOT_COLORS).map(([key, value]) => ({
+    key: key as MapMetricSlot,
+    value,
+  }));
 
   // Initializing every dropdown
   dropdownOptions: Metric[][] = [
@@ -128,7 +74,7 @@ export class MetricFiltersComponent implements OnInit {
     );
   }
 
-  activateMetric(metric: Metric): void {
-    this.metricSelected.emit(metric);
+  activateMetric(metric: Metric, slot: MapMetricSlot): void {
+    this.metricSelected.emit({ metric, slot });
   }
 }
