@@ -1,6 +1,10 @@
 import { Component, inject, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { FeatureComponent, GeoJSONSourceComponent, LayerComponent } from '@maplibre/ngx-maplibre-gl';
+import {
+  FeatureComponent,
+  GeoJSONSourceComponent,
+  LayerComponent,
+} from '@maplibre/ngx-maplibre-gl';
 import { PlanService } from '@services';
 import { Geometry } from 'geojson';
 import { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
@@ -34,7 +38,7 @@ export class TreatmentAreaLayerComponent implements OnInit {
       this.planService.getPlan(this.planId).subscribe((plan) => {
         if (plan.geometry) {
           this.polygonGeometry = plan.geometry as Geometry;
-          this.updateArea()
+          this.updateArea();
         }
       });
     });

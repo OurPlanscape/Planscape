@@ -1,21 +1,19 @@
 <mgl-geojson-source [id]="sourceName">
-  <mgl-feature 
-    [geometry]="polygonGeometry">
-  </mgl-feature>
+  <mgl-feature [geometry]="polygonGeometry"> </mgl-feature>
 </mgl-geojson-source>
-<mgl-layer 
-  id="treatment-area-polygon" 
-  type="line" 
-  [source]="sourceName" 
+<mgl-layer
+  id="treatment-area-polygon"
+  type="line"
+  [source]="sourceName"
   [paint]="{
     'line-color': 'black',
     'line-width': 2
   }">
 </mgl-layer>
-<mgl-layer 
-  id="treatment-area-fill" 
-  type="fill" 
-  [source]="sourceName" 
+<mgl-layer
+  id="treatment-area-fill"
+  type="fill"
+  [source]="sourceName"
   [paint]="{
     'fill-color': '#e9eded',
     'fill-opacity': 0.1

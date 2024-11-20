@@ -53,7 +53,7 @@ import { TreatmentAreaLayerComponent } from '../treatment-area-layer/treatment-a
     MatIconModule,
     PopupComponent,
     MapTooltipComponent,
-    TreatmentAreaLayerComponent
+    TreatmentAreaLayerComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
