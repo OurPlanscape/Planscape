@@ -284,9 +284,6 @@ class ProjectAreaNoteViewSet(viewsets.ModelViewSet):
     filterset_class = ProjectAreaNoteFilterSet
     filter_backends = [DjangoFilterBackend]
 
-    # def get_serializer_class(self):
-    #     return self.serializer_classes.get(self.action, ProjectAreaNoteSerializer)
-
     def get_serializer_class(self):
         return (
             self.serializer_classes.get(self.action, self.serializer_class)
