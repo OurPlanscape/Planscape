@@ -173,6 +173,12 @@ class TreatmentPlanViewSet(
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # TODO: refactor this and wrap the change of this status
+        # to a service method, that changes the status to queued
+        # and queues the execution
+        treatment_plan.status = TreatmentPlanStatus.QUEUED
+        treatment_plan.save()
+
         async_calculate_persist_impacts_treatment_plan.delay(
             treatment_plan_pk=treatment_plan.pk
         )
