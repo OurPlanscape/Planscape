@@ -1,7 +1,14 @@
+import fiona
 import logging
 import itertools
 import json
+import shapely.geometry
+import shapely.wkt
+import os
+import zipfile
 from typing import Iterable, List, Optional, Dict, Tuple, Any
+from django.conf import settings
+from django.db import connection
 from django.db import transaction
 from django.db.models import Count, QuerySet
 from django.contrib.auth.models import AbstractUser
@@ -483,3 +490,124 @@ def calculate_project_area_deltas(
             }
         )
     return results
+
+
+def generate_shapefile_for_treatment_plan(treatment_plan):
+    """
+    Generates shapefiles for the stands in a Treatment Plan and zips them for download.
+    Returns the path to the generated zip file.
+    """
+    try:
+        # Fetch data using raw SQL
+        data = fetch_treatment_plan_data(treatment_plan.id)
+        if not data:
+            raise ValueError("No stands found for the specified Treatment Plan.")
+
+        # Define schema
+        schema = define_shapefile_schema()
+
+        # Prepare output paths
+        output_dir = os.path.join(settings.MEDIA_ROOT, "shapefiles", f"treatment_plan_{treatment_plan.id}")
+        os.makedirs(output_dir, exist_ok=True)
+        shapefile_path = os.path.join(output_dir, "treatment_plan.shp")
+
+        # Write shapefile
+        with fiona.open(
+            shapefile_path, 'w', driver='ESRI Shapefile', crs='EPSG:3857', schema=schema
+        ) as shp:
+            for record in data:
+                try:
+                    geom = shapely.wkt.loads(record.pop('wkt_geom'))
+                    properties = {k: record[k] for k in record}
+                    shp.write({
+                        'geometry': shapely.geometry.mapping(geom),
+                        'properties': properties,
+                    })
+                except Exception as e:
+                    log.error(f"Invalid geometry WKT: {record.get('wkt_geom')} - Error: {e}")
+                    continue
+
+        # Zip shapefile components
+        zip_path = os.path.join(output_dir, f"treatment_plan_{treatment_plan.id}_shapefiles.zip")
+        with zipfile.ZipFile(zip_path, "w") as zipf:
+            for filename in os.listdir(output_dir):
+                if filename.startswith("treatment_plan") and not filename.endswith(".zip"):
+                    file_path = os.path.join(output_dir, filename)
+                    zipf.write(file_path, filename)
+
+        return zip_path
+
+    except Exception as e:
+        log.error(f"Error generating shapefile: {e}")
+        raise
+
+def fetch_treatment_plan_data(treatment_plan_id):
+    """
+    Fetches data for the specified treatment plan using raw SQL.
+    """
+    with connection.cursor() as cursor:
+        sql = """
+        SELECT
+            ST_AsText(stand.geometry) AS wkt_geom,
+            treatmentprescription.action,
+            calculations.baseline_0,
+            calculations.baseline_5,
+            calculations.baseline_10,
+            calculations.baseline_15,
+            calculations.baseline_20,
+            calculations.delta_0,
+            calculations.delta_5,
+            calculations.delta_10,
+            calculations.delta_15,
+            calculations.delta_20,
+            stand.id,
+            project_area.name AS project_area_name,
+            stand.stand_size,
+            treatmentprescription.treatment_plan_id,
+            calculations.value_0,
+            calculations.value_5,
+            calculations.value_10,
+            calculations.value_15,
+            calculations.value_20,
+            calculations.variable
+        FROM stand
+        JOIN treatmentprescription ON treatmentprescription.stand_id = stand.id
+        JOIN project_area ON stand.project_area_id = project_area.id
+        JOIN calculations ON calculations.stand_id = stand.id
+        WHERE treatmentprescription.treatment_plan_id = %s
+        """
+        cursor.execute(sql, [treatment_plan_id])
+        columns = [col[0] for col in cursor.description]
+        data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+    return data
+
+def define_shapefile_schema():
+    """
+    Defines the schema for the shapefile to be written by Fiona.
+    """
+    return {
+        'geometry': 'Polygon',  # Adjust based on your actual geometry type
+        'properties': {
+            'action': 'str',
+            'baseline_0': 'float',
+            'baseline_5': 'float',
+            'baseline_10': 'float',
+            'baseline_15': 'float',
+            'baseline_20': 'float',
+            'delta_0': 'float',
+            'delta_5': 'float',
+            'delta_10': 'float',
+            'delta_15': 'float',
+            'delta_20': 'float',
+            'id': 'int',
+            'project_area_name': 'str',
+            'stand_size': 'str',
+            'treatment_plan_id': 'int',
+            'value_0': 'float',
+            'value_5': 'float',
+            'value_10': 'float',
+            'value_15': 'float',
+            'value_20': 'float',
+            'variable': 'str',
+        },
+    }
