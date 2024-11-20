@@ -12,12 +12,11 @@ import { map } from 'rxjs';
   styleUrl: './direct-impacts-map-legend.component.scss',
 })
 export class DirectImpactsMapLegendComponent {
-  protected readonly SLOT_PALETTES = SLOT_PALETTES;
-  activeSlot$ = this.treatmentsState.activeMetric$.pipe(
-    map((mapMetric) => mapMetric.slot)
-  );
-
   constructor(private treatmentsState: TreatmentsState) {}
 
-  steps = ['100%', '50%', '0% (No change)', '-50%', '-100%'];
+  readonly SLOT_PALETTES = SLOT_PALETTES;
+  readonly steps = ['100%', '50%', '0% (No change)', '-50%', '-100%'];
+  readonly activeSlot$ = this.treatmentsState.activeMetric$.pipe(
+    map((mapMetric) => mapMetric.slot)
+  );
 }

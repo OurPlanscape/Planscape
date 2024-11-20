@@ -68,6 +68,7 @@ export const METRICS: Metric[] = [
 ];
 
 export type MapMetricSlot = 'blue' | 'purple' | 'orange' | 'green';
+export const DEFAULT_SLOT: MapMetricSlot = 'blue';
 
 export const SLOT_COLORS: Record<MapMetricSlot, string> = {
   blue: '#4361EE',

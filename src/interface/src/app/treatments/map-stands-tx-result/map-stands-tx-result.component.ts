@@ -12,7 +12,8 @@ import {
 import { STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
-import { MapMetricSlot, SLOT_PALETTES } from '../metrics';
+import { DEFAULT_SLOT, MapMetricSlot, SLOT_PALETTES } from '../metrics';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-map-stands-tx-result',
@@ -29,6 +30,7 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
 
+  readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
   paint = {};
 
   constructor(private treatmentsState: TreatmentsState) {
@@ -37,23 +39,18 @@ export class MapStandsTxResultComponent implements OnInit {
     });
   }
 
-  readonly url =
-    'stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=152&variable=TOTAL_CARBON';
-
-  readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
-
-  get vectorLayerUrl() {
-    // TODO dynamic
-    const variable = this.treatmentsState.activeMetric$.value.metric.id;
-    const plan = this.treatmentsState.getTreatmentPlanId();
-    return (
-      environment.martin_server +
-      `stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=${plan}&variable=${variable}`
-    );
-  }
+  vectorLayer$ = this.treatmentsState.activeMetric$.pipe(
+    map((mapMetric) => {
+      const plan = this.treatmentsState.getTreatmentPlanId();
+      return (
+        environment.martin_server +
+        `stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=${plan}&variable=${mapMetric.metric.id}`
+      );
+    })
+  );
 
   ngOnInit(): void {
-    this.paint = this.generatePaint('blue');
+    this.paint = this.generatePaint(DEFAULT_SLOT);
   }
 
   private generatePaint(slot: MapMetricSlot) {

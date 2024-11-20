@@ -18,7 +18,7 @@ import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MetricFiltersComponent } from './metric-filters/metric-filters.component';
-import { MapMetric, SLOT_PALETTES } from '../metrics';
+import { MapMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
 
 @Component({
@@ -84,12 +84,9 @@ export class DirectImpactsComponent {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
-  activeMetric$ = this.treatmentsState.activeMetric$;
   showTreatmentPrescription = false;
 
   activateMetric(data: MapMetric) {
     this.treatmentsState.activeMetric$.next(data);
   }
-
-  readonly SLOT_PALETTES = SLOT_PALETTES;
 }

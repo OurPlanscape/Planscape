@@ -1,6 +1,6 @@
 <mgl-vector-source
   id="stands_by_tx_result"
-  [tiles]="[vectorLayerUrl]"
+  [tiles]="[(vectorLayer$ | async) || '']"
   [promoteId]="'id'"></mgl-vector-source>
 
 <mgl-layer
