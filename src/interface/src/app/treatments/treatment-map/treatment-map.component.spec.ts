@@ -10,9 +10,10 @@ import { SelectedStandsState } from './selected-stands.state';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
 
-import { AuthService } from '@services';
+import { AuthService, PlanService } from '@services';
 
 import { TreatmentsState } from '../treatments.state';
+import { ActivatedRoute } from '@angular/router';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
@@ -26,9 +27,14 @@ describe('TreatmentMapComponent', () => {
           TreatedStandsState,
           SelectedStandsState,
           AuthService,
-          TreatmentsState
+          TreatmentsState,
+          PlanService
         ),
         MockProvider(MapConfigState, { cursor$: of('') }),
+        {
+          provide: ActivatedRoute,
+          useValue: { paramMap: of(null) },
+        },
       ],
       declarations: [
         MockDeclarations(

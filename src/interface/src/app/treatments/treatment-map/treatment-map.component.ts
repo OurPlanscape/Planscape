@@ -26,10 +26,12 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
-import { AuthService } from '@services';
+import { AuthService, PlanService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addAuthHeaders } from '../maplibre.helper';
-import { TreatmentAreaLayerComponent } from '../treatment-area-layer/treatment-area-layer.component';
+import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
+import { ActivatedRoute } from '@angular/router';
+import { Geometry } from 'geojson';
 
 @UntilDestroy()
 @Component({
@@ -53,7 +55,7 @@ import { TreatmentAreaLayerComponent } from '../treatment-area-layer/treatment-a
     MatIconModule,
     PopupComponent,
     MapTooltipComponent,
-    TreatmentAreaLayerComponent,
+    PlanningAreaLayerComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -131,10 +133,21 @@ export class TreatmentMapComponent {
    */
   standsSourceLayerId = 'stands';
 
+  /**
+   *
+   * The selected plan geometry
+   */
+  geometry: Geometry = {
+    type: 'Polygon',
+    coordinates: [[]],
+  };
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
-    private treatmentsState: TreatmentsState
+    private treatmentsState: TreatmentsState,
+    private route: ActivatedRoute,
+    private planService: PlanService
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -144,6 +157,16 @@ export class TreatmentMapComponent {
           this.mapLibreMap.getCanvas().style.cursor = cursor;
         }
       });
+
+    this.route.paramMap.subscribe((params) => {
+      const planId = params.get('planId') || '';
+
+      this.planService.getPlan(planId).subscribe((plan) => {
+        if (plan.geometry) {
+          this.geometry = plan.geometry as Geometry;
+        }
+      });
+    });
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
