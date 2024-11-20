@@ -24,7 +24,7 @@ export class PlanningAreaLayerComponent implements OnInit {
   }
 
   private updateArea() {
-    (this.mapLibreMap.getSource(this.sourceName) as GeoJSONSource)?.setData(
+    (this.mapLibreMap?.getSource(this.sourceName) as GeoJSONSource)?.setData(
       this.polygonGeometry
     );
   }
