@@ -75,7 +75,10 @@ export class FilterDropdownComponent<T> implements OnInit {
    */
   @Output() confirmedSelection = new EventEmitter<T[]>();
 
-  displayedItems: T[] = [];
+  displayedItems: any[] = [];
+
+  displayCategories: boolean = false;
+
   /**
    * the items already selected
    */
@@ -89,6 +92,7 @@ export class FilterDropdownComponent<T> implements OnInit {
   private previousSelections: T[] = [];
 
   ngOnInit(): void {
+    this.displayCategories = this.menuItems.some((e) => (e as any).category);
     this.displayedItems = this.menuItems;
   }
 
@@ -154,21 +158,44 @@ export class FilterDropdownComponent<T> implements OnInit {
   }
 
   filterSearch(searchTerm: string): void {
-    if (searchTerm !== '') {
+    if (searchTerm === '') {
       this.displayedItems = this.menuItems.slice();
+      return;
     }
 
-    this.displayedItems = this.menuItems.filter((item) => {
-      let value = '';
-      if (typeof item === 'string') {
-        value = item;
-      }
-      if (this.displayField && typeof item !== 'string') {
-        value = item[this.displayField] as string;
-      }
+    this.displayedItems = this.menuItems
+      .map((item) => {
+        let matches = false;
+        let value = '';
 
-      return value.toLowerCase().includes(searchTerm.toLowerCase());
-    });
+        if (typeof item === 'string') {
+          value = item;
+        }
+
+        if (this.displayField && typeof item !== 'string') {
+          value = item[this.displayField] as string;
+        }
+
+        if (this.displayCategories && (item as any).options) {
+          const filteredOptions = (item as any).options.filter(
+            (subItem: any) => {
+              return subItem.toLowerCase().includes(searchTerm.toLowerCase());
+            }
+          );
+
+          if (filteredOptions.length > 0) {
+            matches = true;
+            return { ...item, options: filteredOptions };
+          }
+        }
+
+        if (value.toLowerCase().includes(searchTerm.toLowerCase())) {
+          matches = true;
+        }
+
+        return matches ? item : null;
+      })
+      .filter((item) => item !== null);
   }
 
   applyChanges(e: Event) {
