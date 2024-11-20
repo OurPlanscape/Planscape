@@ -22,6 +22,10 @@
     *ngIf="showMapControls$ | async"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
+    <app-treatment-area-layer 
+      [mapLibreMap]="mapLibreMap">
+    </app-treatment-area-layer>
+
   <app-map-project-areas
     [mapLibreMap]="mapLibreMap"
     [withFill]="(showFillProjectAreas$ | async) || false"

@@ -29,6 +29,7 @@ import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addAuthHeaders } from '../maplibre.helper';
+import { TreatmentAreaLayerComponent } from '../treatment-area-layer/treatment-area-layer.component';
 
 @UntilDestroy()
 @Component({
@@ -52,6 +53,7 @@ import { addAuthHeaders } from '../maplibre.helper';
     MatIconModule,
     PopupComponent,
     MapTooltipComponent,
+    TreatmentAreaLayerComponent
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
