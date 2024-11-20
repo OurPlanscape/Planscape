@@ -14,6 +14,7 @@ import { AuthService, PlanService } from '@services';
 
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute } from '@angular/router';
+import { DEFAULT_BASE_MAP } from './map-base-layers';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
@@ -30,7 +31,10 @@ describe('TreatmentMapComponent', () => {
           TreatmentsState,
           PlanService
         ),
-        MockProvider(MapConfigState, { cursor$: of('') }),
+        MockProvider(MapConfigState, {
+          cursor$: of(''),
+          baseLayer$: of(DEFAULT_BASE_MAP),
+        }),
         {
           provide: ActivatedRoute,
           useValue: { paramMap: of(null) },

@@ -236,7 +236,6 @@ def to_project_area_result(
 def to_treatment_result(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
-    action: TreatmentPrescriptionAction,
     year: int,
     result: Dict[str, Any],
 ) -> TreatmentResult:
@@ -248,7 +247,6 @@ def to_treatment_result(
         stand_id=result.get("stand_id"),
         variable=variable,
         aggregation=result.get("aggregation"),
-        action=action,
         year=year,
         defaults={
             "value": result.get("value"),
@@ -267,6 +265,7 @@ def calculate_impacts(
 ) -> Tuple[List[TreatmentResult], List[ProjectAreaTreatmentResult]]:
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
+
     baseline_metrics = calculate_baseline_metrics(
         treatment_plan=treatment_plan,
         variable=variable,
@@ -282,6 +281,7 @@ def calculate_impacts(
     aggregations = ImpactVariable.get_aggregations(impact_variable=variable)
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
+
     deltas = calculate_stand_deltas(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
@@ -312,9 +312,7 @@ def calculate_impacts(
     )
     treatment_results = list(
         map(
-            lambda x: to_treatment_result(
-                treatment_plan, variable, action, year, result=x
-            ),
+            lambda x: to_treatment_result(treatment_plan, variable, year, result=x),
             deltas,
         )
     )
@@ -328,22 +326,21 @@ def calculate_stand_deltas(
     aggregations: List[ImpactVariableAggregation],
 ) -> List[Dict[str, Any]]:
     results = []
-    for stand_id, metric in action_dict.items():
-        baseline = baseline_dict.get(stand_id)
-        if not baseline:
-            log.warning(f"Could not find {stand_id} in baseline metrics!")
-            continue
+    for stand_id, baseline in baseline_dict.items():
+        action = action_dict.get(stand_id)
 
         for agg in aggregations:
             attribute_to_lookup = ImpactVariableAggregation.get_metric_attribute(agg)
-            metric_value = getattr(metric, attribute_to_lookup)
             baseline_value = getattr(baseline, attribute_to_lookup)
-            delta = calculate_delta(metric_value, baseline_value)
+            action_value = (
+                getattr(action, attribute_to_lookup) if action else baseline_value
+            )
+            delta = calculate_delta(action_value, baseline_value)
             results.append(
                 {
                     "stand_id": stand_id,
                     "aggregation": agg,
-                    "value": metric_value,
+                    "value": action_value,
                     "baseline": baseline_value,
                     "delta": delta,
                 }
@@ -377,6 +374,7 @@ def calculate_baseline_metrics(
     geometry = ProjectArea.objects.filter(scenario=treatment_plan.scenario).aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
+
     stands = Stand.objects.within_polygon(geometry)
     datalayer = ImpactVariable.get_datalayer(
         impact_variable=variable,
@@ -459,7 +457,7 @@ def calculate_project_area_deltas(
 
     for agg in aggregations:
         attribute = ImpactVariableAggregation.get_metric_attribute(agg)
-        # merges both dicts, keep action dicts if they clash
+        # # merges both dicts, keep action dicts if they clash
         new_action_dict = {**baseline_dict, **action_dict}
         baseline_sum = sum(
             [
