@@ -15,3 +15,15 @@ export function canDeletePlanningArea(plan: Plan | PreviewPlan, user: User) {
 export function canAddTreatmentPlan(plan: Plan | PreviewPlan) {
   return plan.permissions?.includes('add_tx_plan');
 }
+
+export function canCloneTreatmentPlan(plan: Plan | PreviewPlan) {
+  return plan.permissions?.includes('clone_tx_plan');
+}
+
+export function canDeleteTreatmentPlan(plan: Plan | PreviewPlan) {
+  return plan.permissions?.includes('remove_tx_plan');
+}
+
+export function canRunTreatmentAnalysis(plan: Plan | PreviewPlan) {
+  return plan.permissions?.includes('run_tx');
+}
