@@ -23,8 +23,8 @@
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
   <app-planning-area-layer
-    [mapLibreMap]="mapLibreMap"
-    [polygonGeometry]="geometry$ | async">
+    *ngIf="planningAreaGeometry$ | async as geometry"
+    [polygonGeometry]="geometry">
   </app-planning-area-layer>
 
   <app-map-project-areas

@@ -147,9 +147,9 @@ export class TreatmentMapComponent {
 
   /**
    *
-   * The selected plan geometry
+   * The Planning Area geometry
    */
-  geometry$: any = this.treatmentsState.planId$.pipe(
+  planningAreaGeometry$ = this.treatmentsState.planId$.pipe(
     filter((id) => id !== null),
     switchMap((id) => this.planService.getPlan(id)),
     map((planData) => planData.geometry as Geometry)

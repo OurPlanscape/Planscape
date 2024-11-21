@@ -4,7 +4,7 @@ import {
   GeoJSONSourceComponent,
   LayerComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
+import { Geometry } from 'geojson';
 
 @Component({
   selector: 'app-planning-area-layer',
@@ -13,24 +13,6 @@ import { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
   templateUrl: './planning-area-layer.component.html',
 })
 export class PlanningAreaLayerComponent {
-  private _polygonGeometry!: any;
-
-  @Input()
-  get polygonGeometry(): any {
-    return this._polygonGeometry;
-  }
-
-  set polygonGeometry(value: any) {
-    this._polygonGeometry = value;
-    this.updateArea()
-  }
-  @Input() mapLibreMap!: MapLibreMap;
-
-  readonly sourceName = 'tratment-planing-area';
-
-  private updateArea() {
-    (this.mapLibreMap?.getSource(this.sourceName) as GeoJSONSource)?.setData(
-      this.polygonGeometry
-    );
-  }
+  @Input() polygonGeometry!: Geometry;
+  readonly sourceName = 'treatment-planing-area';
 }
