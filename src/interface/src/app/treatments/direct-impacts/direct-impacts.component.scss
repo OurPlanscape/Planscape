@@ -106,33 +106,5 @@
     grid-row: 12;
     padding: 16px;
   }
-
-  .legend-title {
-    @include xs-label();
-    margin-bottom: 16px;
-  }
-
-  .legends {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-
-    div {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-    }
-
-    div:before {
-      content: '';
-      display: block;
-      background-color: $color-dark-gray;
-      width: 14px;
-      aspect-ratio: 1;
-      border-radius: 4px;
-    }
-  }
 }
 
