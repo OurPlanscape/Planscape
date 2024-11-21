@@ -176,7 +176,26 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         name=validated_data["name"],
         planning_area=planning_area,
         user=user,
-        configuration={"stand_size": validated_data["stand_size"]},
+        configuration={
+            "stand_size": validated_data["stand_size"],
+            "weights": [],
+            "est_cost": 1.0,
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["probability_of_fire_severity_high"],
+            "scenario_output_fields": [
+                "probability_of_fire_severity_high",
+                "total_fuel_exposed_to_fire",
+                "dead_and_down_carbon",
+                "structure_exposure",
+                "damage_potential_wui",
+                "standing_dead_and_ladder_fuels",
+                "available_standing_biomass",
+                "sawtimber_biomass",
+                "california_spotted_owl_habitat",
+            ],
+        },
         origin=ScenarioOrigin.USER,
     )
     transaction.on_commit(
@@ -208,7 +227,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
 
     # Store geometry with added properties into ScenarioResult.result
     ScenarioResult.objects.create(scenario=scenario, result=uploaded_geom)
-
+    async_forsys_run.delay(scenario.pk)
     return scenario
 
 
