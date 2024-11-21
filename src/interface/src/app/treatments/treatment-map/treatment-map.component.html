@@ -24,7 +24,7 @@
 
   <app-planning-area-layer
     [mapLibreMap]="mapLibreMap"
-    [polygonGeometry]="geometry">
+    [polygonGeometry]="geometry$ | async">
   </app-planning-area-layer>
 
   <app-map-project-areas

@@ -1,10 +1,9 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
   LayerComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { Geometry } from 'geojson';
 import { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
 
 @Component({
@@ -13,15 +12,21 @@ import { GeoJSONSource, Map as MapLibreMap } from 'maplibre-gl';
   imports: [FeatureComponent, GeoJSONSourceComponent, LayerComponent],
   templateUrl: './planning-area-layer.component.html',
 })
-export class PlanningAreaLayerComponent implements OnInit {
-  @Input() polygonGeometry!: Geometry;
+export class PlanningAreaLayerComponent {
+  private _polygonGeometry!: any;
+
+  @Input()
+  get polygonGeometry(): any {
+    return this._polygonGeometry;
+  }
+
+  set polygonGeometry(value: any) {
+    this._polygonGeometry = value;
+    this.updateArea()
+  }
   @Input() mapLibreMap!: MapLibreMap;
 
   readonly sourceName = 'tratment-planing-area';
-
-  ngOnInit(): void {
-    this.updateArea();
-  }
 
   private updateArea() {
     (this.mapLibreMap?.getSource(this.sourceName) as GeoJSONSource)?.setData(

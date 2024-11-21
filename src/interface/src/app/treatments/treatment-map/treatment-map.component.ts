@@ -29,10 +29,9 @@ import { AuthService, PlanService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addAuthHeaders } from '../maplibre.helper';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { ActivatedRoute } from '@angular/router';
 import { Geometry } from 'geojson';
 import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import { filter, switchMap } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 
 @UntilDestroy()
@@ -150,16 +149,16 @@ export class TreatmentMapComponent {
    *
    * The selected plan geometry
    */
-  geometry: Geometry = {
-    type: 'Polygon',
-    coordinates: [[]],
-  };
+  geometry$: any = this.treatmentsState.planId$.pipe(
+    filter((id) => id !== null),
+    switchMap((id) => this.planService.getPlan(id)),
+    map((planData) => planData.geometry as Geometry)
+  );
 
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private treatmentsState: TreatmentsState,
-    private route: ActivatedRoute,
     private planService: PlanService,
     private selectedStandsState: SelectedStandsState
   ) {
@@ -184,16 +183,6 @@ export class TreatmentMapComponent {
 
     this.standsSourceLoaded$.pipe(untilDestroyed(this)).subscribe((s) => {
       this.selectedStandsState.restoreSelectedStands();
-    });
-
-    this.route.paramMap.subscribe((params) => {
-      const planId = params.get('planId') || '';
-
-      this.planService.getPlan(planId).subscribe((plan) => {
-        if (plan.geometry) {
-          this.geometry = plan.geometry as Geometry;
-        }
-      });
     });
   }
 
