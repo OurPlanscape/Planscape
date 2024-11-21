@@ -65,3 +65,19 @@ export const Failed: Story = {
     createdAt: '2024-04-23T13:19:31.019747Z',
   },
 };
+
+export const WithCreatorPermissions: Story = {
+  ...Default,
+  args: {
+    userCanDelete: true,
+    userCanDuplicate: true,
+  },
+};
+
+export const WithViewerPermissions: Story = {
+  ...Default,
+  args: {
+    userCanDelete: false,
+    userCanDuplicate: false,
+  },
+};

@@ -32,6 +32,9 @@ export class TreatmentCardComponent {
   @Input() createdAt = '';
   @Input() status: TreatmentStatus = 'PENDING';
 
+  @Input() userCanDelete: boolean = false;
+  @Input() userCanDuplicate: boolean = false;
+
   @Output() view = new EventEmitter();
   @Output() duplicate = new EventEmitter();
   @Output() delete = new EventEmitter();

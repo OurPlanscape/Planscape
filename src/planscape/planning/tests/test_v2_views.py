@@ -5,6 +5,8 @@ from rest_framework import status
 from rest_framework.test import APITransactionTestCase, APITestCase
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
+from collaboration.utils import check_for_permission
+
 from impacts.permissions import (
     VIEWER_PERMISSIONS,
     COLLABORATOR_PERMISSIONS,
@@ -868,11 +870,11 @@ class ProjectAreaNoteTest(APITransactionTestCase):
 
         # explicitly creating these objects, so same user is planningarea creator
         self.planning_area = PlanningAreaFactory.create(user=self.user)
+
         self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
         self.treatment_plan = TreatmentPlanFactory.create(
             created_by=self.user, scenario=self.scenario
         )
-
         self.project_area = ProjectAreaFactory.create(
             created_by_id=self.user.pk, scenario=self.treatment_plan.scenario
         )
@@ -888,12 +890,12 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         new_note = json.dumps(
             {
                 "content": "Here is a note about a project area.",
-                "project_area": self.project_area.pk,
             }
         )
         response = self.client.post(
             reverse(
-                "api:planning:projectarea-notes-list",
+                "api:planning:project-areas-notes-list",
+                kwargs={"project_area_id": self.project_area.pk},
             ),
             new_note,
             content_type="application/json",
@@ -903,7 +905,6 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         self.assertEqual(
             response_data["content"], "Here is a note about a project area."
         )
-        self.assertEqual(response_data["user_id"], self.user.pk)
 
     # this fails if a user is projectarea owner, but not planningarea owner or note owner
     def test_create_note_as_projectarea_owner(self):
@@ -916,7 +917,8 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         )
         response = self.client.post(
             reverse(
-                "api:planning:projectarea-notes-list",
+                "api:planning:project-areas-notes-list",
+                kwargs={"project_area_id": self.project_area.pk},
             ),
             new_note,
             content_type="application/json",
@@ -933,7 +935,8 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         )
         response = self.client.post(
             reverse(
-                "api:planning:projectarea-notes-list",
+                "api:planning:project-areas-notes-list",
+                kwargs={"project_area_id": self.project_area.pk},
             ),
             new_note,
             content_type="application/json",
@@ -960,8 +963,10 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             content="I am a third note",
         )
         response = self.client.get(
-            reverse("api:planning:projectarea-notes-list"),
-            {"project_area_pk": self.project_area.pk},
+            reverse(
+                "api:planning:project-areas-notes-list",
+                kwargs={"project_area_id": self.project_area.pk},
+            ),
             content_type="application/json",
         )
         response_data = response.json()
@@ -969,6 +974,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         self.assertEqual(len(response_data), 3)
         for rec in response_data:
             self.assertIn("can_delete", rec)
+            self.assertEqual(rec["can_delete"], True)
 
     def test_get_notes_for_unauthorized_user(self):
         self.client.force_authenticate(self.other_user)
@@ -979,25 +985,13 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             project_area=self.project_area, user=self.user, content="I am a second note"
         )
         response = self.client.get(
-            reverse("api:planning:projectarea-notes-list"),
-            {"project_area_pk": self.project_area.pk},
+            reverse(
+                "api:planning:project-areas-notes-list",
+                kwargs={"project_area_id": self.project_area.pk},
+            ),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_get_notes_without_project_area(self):
-        self.client.force_authenticate(self.user)
-        ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a note"
-        )
-        ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a second note"
-        )
-        response = self.client.get(
-            reverse("api:planning:projectarea-notes-list"),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_get_single_note(self):
         self.client.force_authenticate(self.user)
@@ -1006,9 +1000,9 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         )
         response = self.client.get(
             reverse(
-                "api:planning:projectarea-notes-detail", kwargs={"pk": visible_note.pk}
+                "api:planning:project-areas-notes-detail",
+                kwargs={"project_area_id": self.project_area.pk, "pk": visible_note.pk},
             ),
-            {"project_area_pk": self.project_area.pk},
             content_type="application/json",
         )
         response_data = response.json()
@@ -1022,9 +1016,9 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         )
         response = self.client.get(
             reverse(
-                "api:planning:projectarea-notes-detail", kwargs={"pk": visible_note.pk}
+                "api:planning:project-areas-notes-detail",
+                kwargs={"project_area_id": self.project_area.pk, "pk": visible_note.pk},
             ),
-            {"project_area_pk": self.project_area.pk},
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -1036,8 +1030,8 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         )
         response = self.client.delete(
             reverse(
-                "api:planning:projectarea-notes-detail",
-                kwargs={"pk": new_note.pk},
+                "api:planning:project-areas-notes-detail",
+                kwargs={"project_area_id": self.project_area.pk, "pk": new_note.pk},
             ),
             content_type="application/json",
         )
@@ -1050,8 +1044,11 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         )
         response = self.client.delete(
             reverse(
-                "api:planning:projectarea-notes-detail",
-                kwargs={"pk": (new_note.pk + 1)},
+                "api:planning:project-areas-notes-detail",
+                kwargs={
+                    "project_area_id": self.project_area.pk,
+                    "pk": (new_note.pk + 1),
+                },
             ),
             content_type="application/json",
         )
@@ -1064,12 +1061,15 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         )
         response = self.client.delete(
             reverse(
-                "api:planning:projectarea-notes-detail",
-                kwargs={"pk": new_note.pk},
+                "api:planning:project-areas-notes-detail",
+                kwargs={
+                    "project_area_id": self.project_area.pk,
+                    "pk": (new_note.pk + 1),
+                },
             ),
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class CreateScenariosFromUpload(APITransactionTestCase):

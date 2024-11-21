@@ -15,11 +15,18 @@
       <mat-icon class="material-symbols-outlined">file_open_outlined</mat-icon>
       <span>Open</span>
     </button>
-    <button mat-menu-item (click)="duplicate.emit()" [disabled]="isDisabled">
+    <button
+      mat-menu-item
+      (click)="duplicate.emit()"
+      [disabled]="!userCanDuplicate">
       <mat-icon class="material-symbols-outlined">file_copy_outlined</mat-icon>
       <span>Duplicate</span>
     </button>
-    <button mat-menu-item class="delete" (click)="delete.emit()">
+    <button
+      mat-menu-item
+      class="delete"
+      [disabled]="!userCanDelete"
+      (click)="delete.emit()">
       <mat-icon class="material-symbols-outlined">delete_outlined</mat-icon>
       <span>Delete</span>
     </button>

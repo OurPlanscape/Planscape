@@ -10,15 +10,15 @@ export interface MapMetric {
 
 export const METRICS: Metric[] = [
   {
-    id: 'CROWN_BULK_DENSITY',
+    id: 'CBD',
     label: 'Crown Bulk Density',
   },
   {
-    id: 'CANOPY_BASE_HEIGHT',
+    id: 'CBH',
     label: 'Canopy Base Height',
   },
   {
-    id: 'CANOPY_COVER',
+    id: 'CC',
     label: 'Canopy Cover',
   },
   {
@@ -26,11 +26,11 @@ export const METRICS: Metric[] = [
     label: 'Large Tree Biomass',
   },
   {
-    id: 'MERCHANTABLE_BIOMASS',
+    id: 'MERCH_BIOMASS',
     label: 'Merchantable Biomass',
   },
   {
-    id: 'NON_MERCHANTABLE_BIOMASS',
+    id: 'NON_MERCH_BIOMASS',
     label: 'Non-Merchantable Biomass',
   },
   {
@@ -42,23 +42,23 @@ export const METRICS: Metric[] = [
     label: 'Potential Smoke',
   },
   {
-    id: 'PROBABILITY_OF_TORCHING',
+    id: 'PTORCH',
     label: 'Probability of Torching',
   },
   {
-    id: 'QUADRATIC_MEAN_DIAMETER',
+    id: 'QMD',
     label: 'Quadratic Mean Diameter',
   },
   {
-    id: 'STAND_DENSITY_INDEX',
+    id: 'SDI',
     label: 'Stand Density Index',
   },
   {
-    id: 'TOTAL_HEIGHT',
+    id: 'TH',
     label: 'Total Height',
   },
   {
-    id: 'TOTAL_FLAME_SEVERITY',
+    id: 'TOT_FLAME_SEV',
     label: 'Total Flame Severity',
   },
   {
