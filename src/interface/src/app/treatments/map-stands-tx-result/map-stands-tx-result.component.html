@@ -1,0 +1,18 @@
+<mgl-vector-source
+  id="stands_by_tx_result"
+  [tiles]="[(vectorLayer$ | async) || '']"
+  [promoteId]="'id'"></mgl-vector-source>
+
+<mgl-layer
+  id="standsFill"
+  type="fill"
+  source="stands_by_tx_result"
+  [paint]="paint"
+  sourceLayer="stands_by_tx_result"></mgl-layer>
+
+<mgl-layer
+  id="standsOutline"
+  type="line"
+  source="stands_by_tx_result"
+  [paint]="STANDS_CELL_PAINT"
+  sourceLayer="stands_by_tx_result"></mgl-layer>

@@ -8,6 +8,8 @@
     [status]="treatment.status"
     [createdAt]="treatment.created_at"
     [creator]="treatment.creator_name"
+    [userCanDelete]="userCanDelete()"
+    [userCanDuplicate]="userCanDuplicate()"
     (view)="goToTreatment(treatment.id, treatment.status)"
     (delete)="deleteTreatment(treatment)"
     (duplicate)="duplicateTreatment(treatment)"

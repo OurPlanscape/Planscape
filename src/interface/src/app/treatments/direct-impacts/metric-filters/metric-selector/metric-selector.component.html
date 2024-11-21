@@ -3,7 +3,9 @@
     <mat-icon
       class="material-symbols-outlined"
       [style.color]="
-        (activeMetric$ | async)?.id === selectedOption ? color : '#898989'
+        (activeMetric$ | async)?.metric?.id === selectedOption
+          ? color
+          : '#898989'
       "
       color="primary"
       (click)="onActivate()">

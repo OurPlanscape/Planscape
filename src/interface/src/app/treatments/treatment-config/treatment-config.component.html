@@ -16,7 +16,7 @@
     <section class="right-side-footer">
       <ng-container *ngIf="projectAreaId$ | async; else treatment">
         <a sg-button variant="primary" class="footer-primary" routerLink="./">
-          Done
+          Back To Overview
         </a>
       </ng-container>
       <ng-template #treatment>
@@ -31,7 +31,7 @@
           variant="primary"
           class="footer-primary"
           (click)="showReviewDialog()">
-          Run Impacts
+          Run Treatment Analysis
         </button>
       </ng-template>
     </section>
