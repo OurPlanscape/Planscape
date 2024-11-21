@@ -151,7 +151,7 @@ export class TreatmentMapComponent {
    */
   planningAreaGeometry$ = this.treatmentsState.planId$.pipe(
     filter((id) => id !== null),
-    switchMap((id) => this.planService.getPlan(id)),
+    switchMap((id) => this.planService.getPlan(String(id))),
     map((planData) => planData.geometry as Geometry)
   );
 

@@ -46,7 +46,7 @@ export class TreatmentsState {
   private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
   public projectAreaId$ = this._projectAreaId$.asObservable();
 
-  public planId$ = new BehaviorSubject<any>(null);
+  public planId$ = new BehaviorSubject<number | null>(null);
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
@@ -147,7 +147,7 @@ export class TreatmentsState {
     this._scenarioId = data.scenarioId;
     this._treatmentPlanId = data.treatmentId;
     this._projectAreaId$.next(data.projectAreaId);
-    this.planId$.next(data.planId)
+    this.planId$.next(data.planId);
 
     // update config on map, based on route data
     this.mapConfigState.updateShowProjectAreas(

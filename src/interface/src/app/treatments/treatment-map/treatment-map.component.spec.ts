@@ -13,7 +13,6 @@ import { of } from 'rxjs';
 import { AuthService, PlanService } from '@services';
 
 import { TreatmentsState } from '../treatments.state';
-import { ActivatedRoute } from '@angular/router';
 import { DEFAULT_BASE_MAP } from './map-base-layers';
 
 describe('TreatmentMapComponent', () => {
@@ -36,8 +35,8 @@ describe('TreatmentMapComponent', () => {
           baseLayer$: of(DEFAULT_BASE_MAP),
         }),
         {
-          provide: ActivatedRoute,
-          useValue: { paramMap: of(null) },
+          provide: TreatmentsState,
+          useValue: { planId$: of(null) },
         },
       ],
       declarations: [

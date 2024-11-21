@@ -5,7 +5,7 @@ export interface TreatmentRoutingData extends Data {
   scenarioId: number;
   treatmentId: number;
   projectAreaId?: number;
-  planId?: number;
+  planId: number | null;
   showMapProjectAreas?: boolean;
   showTreatmentStands?: boolean;
   showMapControls?: boolean;
@@ -23,6 +23,6 @@ export function getMergedRouteData(
     ...parentData,
     ...childData,
     ...currentData,
-    planId
+    planId,
   } as TreatmentRoutingData;
 }
