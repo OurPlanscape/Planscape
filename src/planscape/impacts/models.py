@@ -26,6 +26,7 @@ User = get_user_model()
 
 class TreatmentPlanStatus(models.TextChoices):
     PENDING = "PENDING", "Pending"
+    QUEUED = "QUEUED", "Queued"
     RUNNING = "RUNNING", "Running"
     SUCCESS = "SUCCESS", "Suceess"
     FAILURE = "FAILURE", "Failure"

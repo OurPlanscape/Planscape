@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { Metric, MetricFiltersComponent } from './metric-filters.component';
+import { MetricFiltersComponent } from './metric-filters.component';
+import { Metric } from '../../metrics';
 
 export const MockMetrics = [
   {
