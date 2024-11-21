@@ -489,3 +489,60 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             self.assertGreater(TreatmentResult.objects.count(), 0)
             self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
             self.assertEquals(len(self.stands), TreatmentResult.objects.count())
+
+
+class GenerateShapefileTest(TransactionTestCase):
+    def setUp(self):
+        self.treatment_plan = TreatmentPlanFactory.create()
+        self.stand = StandFactory.create()
+        self.project_area = ProjectAreaFactory.create(scenario=self.treatment_plan.scenario)
+        self.treatment_prescription = TreatmentPrescriptionFactory.create(
+            treatment_plan=self.treatment_plan,
+            project_area=self.project_area,
+            stand=self.stand,
+        )
+
+    @mock.patch("impacts.services.fetch_treatment_plan_data")
+    @mock.patch("impacts.services.fiona.open")
+    @mock.patch("impacts.services.zipfile.ZipFile")
+    def test_generate_shapefile_success(
+        self, mock_zipfile, mock_fiona_open, mock_fetch_data
+    ):
+        """
+        Test successful shapefile generation and zipping.
+        """
+        mock_fetch_data.return_value = [
+            {
+                "wkt_geom": "POLYGON((...))",
+                "action": "Heavy Thinning",
+                "id": self.stand.id,
+                "project_area_name": self.project_area.name,
+                "treatment_plan_id": self.treatment_plan.id,
+            }
+        ]
+        mock_fiona_open.return_value.__enter__.return_value.write = mock.Mock()
+
+        zip_path = generate_shapefile_for_treatment_plan(self.treatment_plan)
+
+        self.assertIn("treatment_plan", zip_path)
+        mock_fetch_data.assert_called_once_with(self.treatment_plan.id)
+        mock_fiona_open.assert_called_once()
+        mock_zipfile.assert_called_once()
+
+    @mock.patch("impacts.services.fetch_treatment_plan_data")
+    def test_generate_shapefile_no_data(self, mock_fetch_data):
+        """
+        Test shapefile generation when no data is returned.
+        """
+        mock_fetch_data.return_value = []
+        with self.assertRaises(ValueError):
+            generate_shapefile_for_treatment_plan(self.treatment_plan)
+
+    @mock.patch("impacts.services.fetch_treatment_plan_data")
+    def test_generate_shapefile_error(self, mock_fetch_data):
+        """
+        Test shapefile generation when an exception is raised.
+        """
+        mock_fetch_data.side_effect = Exception("Mocked error")
+        with self.assertRaises(Exception):
+            generate_shapefile_for_treatment_plan(self.treatment_plan)
