@@ -5,7 +5,7 @@ export interface TreatmentRoutingData extends Data {
   scenarioId: number;
   treatmentId: number;
   projectAreaId?: number;
-  planId: number | null;
+  planId: number;
   showMapProjectAreas?: boolean;
   showTreatmentStands?: boolean;
   showMapControls?: boolean;
