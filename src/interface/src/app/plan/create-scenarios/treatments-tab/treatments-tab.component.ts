@@ -52,35 +52,12 @@ export class TreatmentsTabComponent implements OnInit {
   }
 
   userCanDelete(): boolean {
-    console.log('is planning area set for delete? ', this.planningArea);
-    if (this.planningArea) {
-      console.log(
-        'is permission set for delete? ',
-        canDeleteTreatmentPlan(this.planningArea)
-      );
-    }
-    console.log(
-      'so the result should be: ',
-      this.planningArea !== null && canDeleteTreatmentPlan(this.planningArea)
-    );
     return (
       this.planningArea !== null && canDeleteTreatmentPlan(this.planningArea)
     );
   }
 
   userCanDuplicate(): boolean {
-    console.log('is planning area set? ', this.planningArea);
-    if (this.planningArea) {
-      console.log(
-        'is permission set? ',
-        canCloneTreatmentPlan(this.planningArea)
-      );
-    }
-    console.log(
-      'so the result should be: ',
-      this.planningArea !== null && canCloneTreatmentPlan(this.planningArea)
-    );
-
     return (
       this.planningArea !== null && canCloneTreatmentPlan(this.planningArea)
     );
