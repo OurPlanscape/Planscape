@@ -21,8 +21,7 @@ export function canCloneTreatmentPlan(plan: Plan | PreviewPlan) {
 }
 
 export function canDeleteTreatmentPlan(plan: Plan | PreviewPlan) {
-  //TODO: this should be remove_tx_plan, but we might not be getting a remove_tx_plan from the backend?
-  return plan.permissions?.includes('edit_tx_plan');
+  return plan.permissions?.includes('remove_tx_plan');
 }
 
 export function canRunTreatmentAnalysis(plan: Plan | PreviewPlan) {
