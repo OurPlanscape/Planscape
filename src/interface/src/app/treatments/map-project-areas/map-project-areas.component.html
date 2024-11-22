@@ -6,7 +6,7 @@
   [id]="layers.projectAreasFill.name"
   type="fill"
   source="scenarioProjectAreas"
-  (layerClick)="visible ? goToProjectArea($event) : null"
+  (layerClick)="visible && showTooltips ? goToProjectArea($event) : null"
   (layerMouseEnter)="visible && showTooltips ? setCursor() : null"
   (layerMouseMove)="
     visible && showTooltips ? setProjectAreaTooltip($event) : null
@@ -47,10 +47,10 @@
 <ng-container *ngIf="mouseLngLat">
   <app-map-tooltip
     [lngLat]="mouseLngLat"
-    *ngIf="activeProjectArea$ | async; let activeProjectArea">
+    *ngIf="hoveredProjectArea$ | async; let curProjectArea">
     <mat-icon class="material-symbols-outlined">medication</mat-icon>
-    {{ getTreatedStandsTotal(activeProjectArea.prescriptions) }}
+    {{ getTreatedStandsTotal(curProjectArea.prescriptions) }}
     /
-    {{ activeProjectArea.total_stand_count }}
+    {{ curProjectArea.total_stand_count }}
   </app-map-tooltip>
 </ng-container>

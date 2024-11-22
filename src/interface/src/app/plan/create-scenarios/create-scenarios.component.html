@@ -95,7 +95,9 @@
           </div>
         </mat-tab>
         <mat-tab label="Treatments" *ngIf="showTreatmentsTab && scenarioId">
-          <app-treatments-tab [scenarioId]="scenarioId"></app-treatments-tab>
+          <app-treatments-tab
+            [scenarioId]="scenarioId"
+            [planningArea]="plan$ | async"></app-treatments-tab>
         </mat-tab>
       </mat-tab-group>
     </div>

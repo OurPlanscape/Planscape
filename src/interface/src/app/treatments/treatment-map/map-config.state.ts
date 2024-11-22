@@ -22,7 +22,7 @@ export class MapConfigState {
   private _showProjectAreasLayer$ = new BehaviorSubject(true);
   public showProjectAreasLayer$ = this._showProjectAreasLayer$.asObservable();
 
-  private _showTreatmentStandsLayer$ = new BehaviorSubject(true);
+  private _showTreatmentStandsLayer$ = new BehaviorSubject(false);
   public showTreatmentStandsLayer$ =
     this._showTreatmentStandsLayer$.asObservable();
 

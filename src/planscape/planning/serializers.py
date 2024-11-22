@@ -5,6 +5,7 @@ from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from collaboration.services import get_role, get_permissions
+from collaboration.permissions import PlanningAreaPermission
 from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -513,11 +514,28 @@ class ProjectAreaNoteSerializer(serializers.ModelSerializer):
         model = ProjectAreaNote
 
 
+class ProjectAreaNoteCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectAreaNote
+        fields = ["content"]
+
+    def create(self, validated_data):
+        project_area_id = self.context["view"].kwargs.get("project_area_id")
+        try:
+            project_area = ProjectArea.objects.get(id=project_area_id)
+        except ProjectArea.DoesNotExist:
+            raise serializers.ValidationError("Invalid project_area_id")
+        user = self.context["request"].user
+        validated_data["project_area"] = project_area
+        validated_data["user"] = user
+        return super().create(validated_data)
+
+
 class ProjectAreaNoteListSerializer(serializers.ModelSerializer):
     can_delete = serializers.SerializerMethodField()
 
     def get_can_delete(self, obj):
-        user = self.context.get("user")
+        user = self.context["request"].user
         if user:
             return (
                 (user == obj.user)

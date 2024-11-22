@@ -10,7 +10,9 @@
     (click)="onHeaderClick($event)">
     <div class="left-content" (click)="onHeaderClick($event)">
       <img src="assets/svg/icons/project-area-icon.svg" />
-      <div>{{ title ? title : projectArea.project_area_name }}</div>
+      <div class="header-title">
+        {{ title ? title : projectArea.project_area_name }}
+      </div>
     </div>
     <div class="right-content">
       <div class="stand-count">

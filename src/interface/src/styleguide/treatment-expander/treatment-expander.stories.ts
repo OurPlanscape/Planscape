@@ -110,3 +110,15 @@ export const OverriddenTitle: Story = {
     treatedStandCount: 11,
   },
 };
+
+export const WrappedTitle: Story = {
+  args: {
+    treatmentType: 'SINGLE',
+    title:
+      'Here Is An Excessively Long Title That Should Wrap And Expand The Header To Accommodate Whatever Size It Becomes',
+    action: 'MODERATE_THINNING_BURN',
+    areaAcres: 117,
+    standIds: [1, 2, 3, 8, 10],
+    treatedStandCount: 11,
+  },
+};

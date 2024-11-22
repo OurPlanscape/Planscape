@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, DatePipe, NgClass, NgIf } from '@angular/common';
+import { AsyncPipe, DatePipe, NgClass, NgIf, NgStyle } from '@angular/common';
 import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
@@ -17,6 +17,9 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
+import { MetricFiltersComponent } from './metric-filters/metric-filters.component';
+import { MapMetric } from '../metrics';
+import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -36,6 +39,10 @@ import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.c
     FormsModule,
     TreatmentMapComponent,
     TreatmentLegendComponent,
+    MetricFiltersComponent,
+    MetricFiltersComponent,
+    NgStyle,
+    DirectImpactsMapLegendComponent,
   ],
   providers: [
     TreatmentsState,
@@ -77,6 +84,9 @@ export class DirectImpactsComponent {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
-
   showTreatmentPrescription = false;
+
+  activateMetric(data: MapMetric) {
+    this.treatmentsState.activeMetric$.next(data);
+  }
 }

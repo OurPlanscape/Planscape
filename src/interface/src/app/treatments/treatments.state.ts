@@ -26,6 +26,7 @@ import {
   UpdatingStandsError,
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
+import { DEFAULT_SLOT, MapMetric, METRICS } from './metrics';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -96,6 +97,11 @@ export class TreatmentsState {
       return crumbs;
     })
   );
+
+  public activeMetric$ = new BehaviorSubject<MapMetric>({
+    metric: METRICS[0],
+    slot: DEFAULT_SLOT,
+  });
 
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {

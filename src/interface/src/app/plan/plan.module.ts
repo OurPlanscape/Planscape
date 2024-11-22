@@ -38,7 +38,7 @@ import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overl
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { MapLayerSelectDialogComponent } from './map-layer-select-dialog/map-layer-select-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
-import { ButtonComponent } from '@styleguide';
+import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
 import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/upload-project-areas-modal.component';
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
@@ -47,6 +47,7 @@ import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/s
 import { NotesSidebarComponent } from '../../styleguide/notes-sidebar/notes-sidebar.component';
 import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
 import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
+import { OpacityControlComponent } from './plan-map/opacity-control/opacity-control.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -104,6 +105,8 @@ import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatm
     ScenariosCardListComponent,
     TreatmentCardComponent,
     NotesSidebarComponent,
+    OpacitySliderComponent,
+    OpacityControlComponent,
   ],
 })
 export class PlanModule {}

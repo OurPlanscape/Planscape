@@ -34,7 +34,10 @@
       Hexagon = Stand
     </div>
 
-    <div class="metric-selection">Metric section placeholder</div>
+    <div class="metric-selection">
+      <app-metric-filters
+        (metricSelected)="activateMetric($event)"></app-metric-filters>
+    </div>
 
     <section class="direct-impacts-metrics">
       <sg-panel class="chart-1">
@@ -67,14 +70,7 @@
         class="legend-panel"
         [paddedContent]="false"
         *ngIf="!showTreatmentPrescription">
-        <div class="legend-title">Map Legend</div>
-        <div class="legends">
-          <div>100%</div>
-          <div>50%</div>
-          <div>0% (No change)</div>
-          <div>-50%</div>
-          <div>-100%</div>
-        </div>
+        <app-direct-impacts-map-legend></app-direct-impacts-map-legend>
       </sg-panel>
     </section>
   </div>

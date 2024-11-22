@@ -11,51 +11,50 @@ from impacts.models import (
 )
 from impacts.services import (
     calculate_impacts,
-    persist_impacts,
     get_calculation_matrix,
-    clone_existing_results,
 )
+from planning.models import ProjectArea
 from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
 
 @app.task()
-def async_get_or_calculate_persist_impacts(
+def async_calculate_impacts_for_variable_action_year(
     treatment_plan_pk: int,
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
     year: int,
-) -> List[int]:
+) -> None:
+    """Calculates impacts for the variable, action year triple.
+
+    :param treatment_plan_pk: _description_
+    :type treatment_plan_pk: int
+    :param variable: _description_
+    :type variable: ImpactVariable
+    :param action: _description_
+    :type action: TreatmentPrescriptionAction
+    :param year: _description_
+    :type year: int
+    :return: _description_
+    :rtype: List[int]
+    """
     log.info(f"Getting already calculated impacts for {variable}")
     treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
         pk=treatment_plan_pk
     )
-    copied_results = clone_existing_results(
+    calculate_impacts(
         treatment_plan=treatment_plan, variable=variable, action=action, year=year
     )
-
-    log.info(f"Calculating impacts for {variable}")
-    zonal_stats = calculate_impacts(
-        treatment_plan=treatment_plan,
-        variable=variable,
-        action=action,
-        year=year,
-    )
-
-    log.info(f"Merging impacts for {variable}")
-    calculated_results = persist_impacts(
-        zonal_statistics=zonal_stats, variable=variable, year=year
-    )
-
-    results = copied_results + calculated_results
-    return list([x.pk for x in results])
 
 
 @app.task()
 def async_set_status(
     treatment_plan_pk: int, status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE
 ) -> Tuple[bool, int]:
+    """sets the status of a treatment plan async.
+    this is used as a callback in celery canvas.
+    """
     with transaction.atomic():
         treatment_plan = TreatmentPlan.objects.select_for_update().get(
             pk=treatment_plan_pk
@@ -91,7 +90,7 @@ def async_calculate_persist_impacts_treatment_plan(
         )
     )
     tasks = [
-        async_get_or_calculate_persist_impacts.si(
+        async_calculate_impacts_for_variable_action_year.si(
             treatment_plan_pk=treatment_plan_pk,
             variable=variable,
             action=action,

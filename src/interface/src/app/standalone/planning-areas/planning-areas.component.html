@@ -1,7 +1,5 @@
 <!--Overlay loader -->
-<div class="overlay-loader" *ngIf="overlayLoader$ | async">
-  <mat-spinner class="main-loader" diameter="48"></mat-spinner>
-</div>
+<sg-overlay-loader *ngIf="overlayLoader$ | async"></sg-overlay-loader>
 
 <div class="title-nav">
   <h3>Home</h3>
