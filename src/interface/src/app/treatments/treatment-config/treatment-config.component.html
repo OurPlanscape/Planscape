@@ -24,6 +24,7 @@
           color="primary"
           [checked]="(showTreatmentLayer$ | async) || false"
           (change)="toggleShowTreatmentLayers()"
+          class="bottom-toggle"
           >View Treatment Layers
         </mat-slide-toggle>
         <button
