@@ -100,8 +100,8 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     this.notesService.addNote(this.projectAreaId, comment).subscribe((note) => {
       this.notes.unshift(note);
       this.loadNotes();
+      this.notesSidebarState = 'READY';
     });
-    this.notesSidebarState = 'READY';
   }
 
   handleNoteDelete(note: Note) {

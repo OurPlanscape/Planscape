@@ -183,9 +183,9 @@ export class PlanComponent implements OnInit {
       this.notesService.addNote(this.planId, comment).subscribe((note) => {
         this.sidebarNotes.unshift(note);
         this.loadNotes();
+        this.notesSidebarState = 'READY';
       });
     }
-    this.notesSidebarState = 'READY';
   }
 
   handleNoteDelete(n: Note) {
