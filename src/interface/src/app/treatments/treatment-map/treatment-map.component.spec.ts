@@ -10,7 +10,7 @@ import { SelectedStandsState } from './selected-stands.state';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
 
-import { AuthService } from '@services';
+import { AuthService, PlanService } from '@services';
 
 import { TreatmentsState } from '../treatments.state';
 import { DEFAULT_BASE_MAP } from './map-base-layers';
@@ -27,12 +27,17 @@ describe('TreatmentMapComponent', () => {
           TreatedStandsState,
           SelectedStandsState,
           AuthService,
-          TreatmentsState
+          TreatmentsState,
+          PlanService
         ),
         MockProvider(MapConfigState, {
           cursor$: of(''),
           baseLayer$: of(DEFAULT_BASE_MAP),
         }),
+        {
+          provide: TreatmentsState,
+          useValue: { planId$: of(null) },
+        },
       ],
       declarations: [
         MockDeclarations(

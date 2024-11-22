@@ -22,6 +22,11 @@
     *ngIf="showMapControls$ | async"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
+  <app-planning-area-layer
+    *ngIf="planningAreaGeometry$ | async as geometry"
+    [polygonGeometry]="geometry">
+  </app-planning-area-layer>
+
   <app-map-project-areas
     [mapLibreMap]="mapLibreMap"
     [withFill]="(showFillProjectAreas$ | async) || false"
