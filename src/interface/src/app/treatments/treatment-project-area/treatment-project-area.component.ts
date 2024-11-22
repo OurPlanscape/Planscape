@@ -1,15 +1,12 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
-import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Note, ProjectAreaNotesService } from '@services';
 import { MatDividerModule } from '@angular/material/divider';
 import {
   NotesSidebarComponent,
   NotesSidebarState,
   TreatmentStandsProgressBarComponent,
-  OpacitySliderComponent,
 } from '@styleguide';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatmentPlan } from '@types';
@@ -32,19 +29,14 @@ import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.componen
   providers: [ProjectAreaNotesService],
   imports: [
     AsyncPipe,
-    JsonPipe,
     MapBaseLayerComponent,
     MatDialogModule,
     MatDividerModule,
     MatTabsModule,
     NgIf,
     NotesSidebarComponent,
-    OpacitySliderComponent,
-    ProjectAreasTabComponent,
     ProjectAreaTreatmentsTabComponent,
-    RouterLink,
     SharedModule,
-    TreatmentMapComponent,
     TreatmentStandsProgressBarComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
@@ -97,11 +89,25 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
   //notes handling functions
   addNote(comment: string) {
     this.notesSidebarState = 'SAVING';
-    this.notesService.addNote(this.projectAreaId, comment).subscribe((note) => {
-      this.notes.unshift(note);
-      this.loadNotes();
-      this.notesSidebarState = 'READY';
-    });
+    if (this.projectAreaId) {
+      this.notesService.addNote(this.projectAreaId, comment).subscribe({
+        next: (note) => {
+          this.notes.unshift(note);
+          this.loadNotes();
+        },
+        error: (error) => {
+          this.snackbar.open(
+            `Error: Could not add note.`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+        complete: () => {
+          this.loadNotes();
+          this.notesSidebarState = 'READY';
+        },
+      });
+    }
   }
 
   handleNoteDelete(note: Note) {
@@ -122,7 +128,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
             },
             error: (err) => {
               this.snackbar.open(
-                `Error: ${err.statusText}`,
+                `Error: Could not delete note.`,
                 'Dismiss',
                 SNACK_ERROR_CONFIG
               );

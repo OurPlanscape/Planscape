@@ -180,10 +180,22 @@ export class PlanComponent implements OnInit {
   addNote(comment: string) {
     this.notesSidebarState = 'SAVING';
     if (this.planId) {
-      this.notesService.addNote(this.planId, comment).subscribe((note) => {
-        this.sidebarNotes.unshift(note);
-        this.loadNotes();
-        this.notesSidebarState = 'READY';
+      this.notesService.addNote(this.planId, comment).subscribe({
+        next: (note) => {
+          this.sidebarNotes.unshift(note);
+          this.loadNotes();
+        },
+        error: (error) => {
+          this.snackbar.open(
+            `Error: could not add note.`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+        complete: () => {
+          this.loadNotes();
+          this.notesSidebarState = 'READY';
+        },
       });
     }
   }
