@@ -1,7 +1,7 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
-import { Note, ProjectAreaNotesService } from '@services';
+import { Note, ProjectAreaNotesService } from '../../services/notes.service';
 import { MatDividerModule } from '@angular/material/divider';
 import {
   NotesSidebarComponent,
@@ -51,7 +51,8 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     private route: ActivatedRoute,
     private notesService: ProjectAreaNotesService,
     private dialog: MatDialog,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private readonly cdr: ChangeDetectorRef
   ) {}
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
@@ -91,11 +92,10 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     this.notesSidebarState = 'SAVING';
     if (this.projectAreaId) {
       this.notesService.addNote(this.projectAreaId, comment).subscribe({
-        next: (note) => {
-          this.notes.unshift(note);
+        next: () => {
           this.loadNotes();
         },
-        error: (error) => {
+        error: () => {
           this.snackbar.open(
             `Error: Could not add note.`,
             'Dismiss',
@@ -103,7 +103,6 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
           );
         },
         complete: () => {
-          this.loadNotes();
           this.notesSidebarState = 'READY';
         },
       });
@@ -124,14 +123,16 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
                 'Dismiss',
                 SNACK_NOTICE_CONFIG
               );
-              this.loadNotes();
             },
-            error: (err) => {
+            error: () => {
               this.snackbar.open(
                 `Error: Could not delete note.`,
                 'Dismiss',
                 SNACK_ERROR_CONFIG
               );
+            },
+            complete: () => {
+              this.loadNotes();
             },
           });
         }
@@ -140,9 +141,12 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
 
   loadNotes() {
     if (this.projectAreaId) {
-      this.notesService.getNotes(this.projectAreaId).subscribe((notes) => {
-        this.notes = notes;
-      });
+      this.notesService
+        .getNotes(this.projectAreaId)
+        .subscribe((notes: Note[]) => {
+          this.notes = notes;
+          this.cdr.detectChanges();
+        });
     }
   }
 }

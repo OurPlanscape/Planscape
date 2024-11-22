@@ -181,11 +181,10 @@ export class PlanComponent implements OnInit {
     this.notesSidebarState = 'SAVING';
     if (this.planId) {
       this.notesService.addNote(this.planId, comment).subscribe({
-        next: (note) => {
-          this.sidebarNotes.unshift(note);
+        next: () => {
           this.loadNotes();
         },
-        error: (error) => {
+        error: () => {
           this.snackbar.open(
             `Error: could not add note.`,
             'Dismiss',
@@ -193,7 +192,6 @@ export class PlanComponent implements OnInit {
           );
         },
         complete: () => {
-          this.loadNotes();
           this.notesSidebarState = 'READY';
         },
       });
@@ -216,9 +214,9 @@ export class PlanComponent implements OnInit {
               );
               this.loadNotes();
             },
-            error: (err) => {
+            error: () => {
               this.snackbar.open(
-                `Error: ${err.statusText}`,
+                `Error: Could not delete note.`,
                 'Dismiss',
                 SNACK_ERROR_CONFIG
               );
@@ -230,7 +228,7 @@ export class PlanComponent implements OnInit {
 
   loadNotes() {
     if (this.planId) {
-      this.notesService.getNotes(this.planId).subscribe((notes) => {
+      this.notesService.getNotes(this.planId).subscribe((notes: Note[]) => {
         this.sidebarNotes = notes;
       });
     }
