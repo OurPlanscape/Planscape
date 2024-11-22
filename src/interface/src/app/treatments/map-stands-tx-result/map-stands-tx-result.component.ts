@@ -72,18 +72,17 @@ export class MapStandsTxResultComponent implements OnInit {
 
   private getPallete(slot: MapMetricSlot) {
     const palette = SLOT_PALETTES[slot];
-    // INVERSE ORDER
     return [
       -1,
-      palette[4],
+      palette[0],
       -0.5,
-      palette[3],
+      palette[1],
       0,
       palette[2],
       0.5,
-      palette[1],
+      palette[3],
       1,
-      palette[0],
+      palette[4],
     ];
   }
 }
