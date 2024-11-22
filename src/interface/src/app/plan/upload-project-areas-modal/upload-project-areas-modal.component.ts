@@ -25,7 +25,6 @@ import { ButtonComponent, InputFieldComponent } from '@styleguide';
 import { FileUploadFieldComponent } from '../../../styleguide/file-upload-field/file-upload-field.component';
 import { SharedModule } from '../../shared/shared.module';
 import { FormMessageType } from '@types';
-import { GeoJsonObject } from 'geojson';
 import { PlanService } from '@services';
 import { take } from 'rxjs';
 
@@ -68,7 +67,7 @@ export class UploadProjectAreasModalComponent {
   standSize = 'Medium';
   uploadError?: string | null = null;
   alertMessage?: string | null = null;
-  geometries: GeoJsonObject | null = null;
+  geometries: GeoJSON.GeoJSON | null = null;
   readonly FormMessageType = FormMessageType;
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
@@ -118,8 +117,7 @@ export class UploadProjectAreasModalComponent {
       const geojson = (await shp.parseZip(
         fileAsArrayBuffer
       )) as GeoJSON.GeoJSON;
-      if (geojson.type == 'FeatureCollection') {
-        // Note: this has to be set to a value in order for the 'create' button to be enabled
+      if (Array.isArray(geojson) || geojson.type == 'FeatureCollection') {
         this.geometries = geojson;
       } else {
         this.uploadElementStatus = 'failed';
@@ -166,8 +164,8 @@ export class UploadProjectAreasModalComponent {
             this.dialogRef.close({ response: response });
           },
           error: (err: any) => {
-            if (err.error.error !== undefined) {
-              this.uploadError = err.error.error;
+            if (!!err.error?.global) {
+              this.uploadError = err.error.global.join(' ');
             } else {
               this.uploadError =
                 'An unknown error occured when trying to create a scenario.';
