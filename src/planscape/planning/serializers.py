@@ -5,6 +5,7 @@ from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from collaboration.services import get_role, get_permissions
+from collaboration.permissions import PlanningAreaPermission
 from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -192,6 +193,29 @@ class PlanningAreaNoteSerializer(serializers.ModelSerializer):
             "planning_area",
             "user_id",
             "user_name",
+        )
+        model = PlanningAreaNote
+
+
+class PlanningAreaNoteListSerializer(serializers.ModelSerializer):
+    can_delete = serializers.SerializerMethodField()
+
+    def get_can_delete(self, obj):
+        user = self.context.get("user")
+        if user:
+            return (user == obj.user) or (user == obj.planning_area.user)
+        return False
+
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "content",
+            "planning_area",
+            "user_id",
+            "user_name",
+            "can_delete",
         )
         model = PlanningAreaNote
 
@@ -490,16 +514,36 @@ class ProjectAreaNoteSerializer(serializers.ModelSerializer):
         model = ProjectAreaNote
 
 
+class ProjectAreaNoteCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectAreaNote
+        fields = ["content"]
+
+    def create(self, validated_data):
+        project_area_id = self.context["view"].kwargs.get("project_area_id")
+        try:
+            project_area = ProjectArea.objects.get(id=project_area_id)
+        except ProjectArea.DoesNotExist:
+            raise serializers.ValidationError("Invalid project_area_id")
+        user = self.context["request"].user
+        validated_data["project_area"] = project_area
+        validated_data["user"] = user
+        return super().create(validated_data)
+
+
 class ProjectAreaNoteListSerializer(serializers.ModelSerializer):
     can_delete = serializers.SerializerMethodField()
 
     def get_can_delete(self, obj):
-        user = self.context.get("user")
+        user = self.context["request"].user
         if user:
-            return (user == obj.user) or (
-                user == obj.project_area.scenario.planning_area.user
+            return (
+                (user == obj.user)
+                or (user == obj.project_area.scenario.planning_area.user)
+                or PlanningAreaPermission.can_remove(
+                    user, obj.project_area.scenario.planning_area
+                )
             )
-        return False
 
     class Meta:
         fields = (
