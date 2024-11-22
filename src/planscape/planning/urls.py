@@ -109,7 +109,7 @@ urlpatterns = [
     ),
     # Planning Area Notes C/R/D
     path(
-        "planning_area/<int:planningarea_pk>/note",
+        "planning_area/<int:planningarea_pk>/note/",
         PlanningAreaNotes.as_view(),
         name="create_planningareanote",
     ),
