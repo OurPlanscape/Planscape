@@ -31,8 +31,6 @@ import {
   map,
   Observable,
   pairwise,
-  switchMap,
-  of,
 } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
@@ -44,7 +42,6 @@ import {
   STANDS_CELL_PAINT,
 } from '../map.styles';
 import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
-import { PlanStateService } from '@services';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { Plan } from '@types';
 
@@ -181,32 +178,12 @@ export class MapStandsComponent implements OnChanges, OnInit {
     },
   };
 
-  userCanEditTreatmentPlan = false;
-  userCanSelectTreatments$: Observable<boolean>;
-
   constructor(
     private selectedStandsState: SelectedStandsState,
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState,
-    private mapConfigState: MapConfigState,
-    private planStateService: PlanStateService
+    private mapConfigState: MapConfigState
   ) {
-    this.userCanSelectTreatments$ = this.treatmentsState.planId$.pipe(
-      switchMap((planId) =>
-        planId
-          ? this.planStateService
-              .getPlan(planId.toString())
-              .pipe(map((plan: Plan) => canEditTreatmentPlan(plan)))
-          : of(false)
-      )
-    );
-
-    this.userCanSelectTreatments$
-      .pipe(untilDestroyed(this))
-      .subscribe((value) => {
-        this.userCanEditTreatmentPlan = value;
-      });
-
     combineLatest([
       this.treatedStands$.pipe(distinctUntilChanged()),
       this.opacity$,
