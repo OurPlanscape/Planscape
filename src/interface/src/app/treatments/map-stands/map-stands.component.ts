@@ -42,8 +42,6 @@ import {
   STANDS_CELL_PAINT,
 } from '../map.styles';
 import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
-import { canEditTreatmentPlan } from 'src/app/plan/permissions';
-import { Plan } from '@types';
 
 type MapLayerData = {
   readonly name: string;
@@ -241,7 +239,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
     // or disable click if stand selection is not enabled
     // or disable if user doesn't have permission to apply treatments
     if (
-      this.userCanEditTreatmentPlan === false ||
       event.originalEvent.button === 2 ||
       !this.mapConfigState.isStandSelectionEnabled()
     ) {
