@@ -8,6 +8,7 @@ import {
   METRICS,
   SLOT_COLORS,
 } from '../../metrics';
+import { TreatmentsState } from '../../treatments.state';
 
 @Component({
   selector: 'app-metric-filters',
@@ -18,6 +19,8 @@ import {
 })
 export class MetricFiltersComponent implements OnInit {
   @Output() metricSelected = new EventEmitter<MapMetric>();
+
+  constructor(private treatmentsState: TreatmentsState) {}
 
   initialOptions: Metric[] = METRICS;
 
@@ -47,12 +50,19 @@ export class MetricFiltersComponent implements OnInit {
     this.updateDropdownOptions(null);
   }
 
-  optionSelected(dropdownIndex: number, metric: Metric): void {
+  optionSelected(
+    dropdownIndex: number,
+    slot: MapMetricSlot,
+    metric: Metric
+  ): void {
     // Storing the selection
     this.selectedOptions[dropdownIndex] = metric.id;
-
     // Updating the dropdowns
     this.updateDropdownOptions(dropdownIndex);
+    // setting the metric as active if slot is active
+    if (this.treatmentsState.activeMetric$.value.slot === slot) {
+      this.activateMetric(metric, slot);
+    }
   }
 
   updateDropdownOptions(updatedDropdownIndex: number | null): void {

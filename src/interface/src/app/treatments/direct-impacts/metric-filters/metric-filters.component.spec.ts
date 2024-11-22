@@ -1,7 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { MetricFiltersComponent } from './metric-filters.component';
-import { Metric } from '../../metrics';
+import { DEFAULT_SLOT, Metric, METRICS } from '../../metrics';
+import { MockProvider } from 'ng-mocks';
+import { TreatmentsState } from '../../treatments.state';
+import { BehaviorSubject } from 'rxjs';
 
 export const MockMetrics = [
   {
@@ -38,6 +40,14 @@ describe('MetricFiltersComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MetricFiltersComponent],
+      providers: [
+        MockProvider(TreatmentsState, {
+          activeMetric$: new BehaviorSubject({
+            metric: METRICS[0],
+            slot: DEFAULT_SLOT,
+          }),
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MetricFiltersComponent);
@@ -73,7 +83,7 @@ describe('MetricFiltersComponent', () => {
     spyOn(component, 'updateDropdownOptions').and.callFake(() => {});
     const dropdownIndex = 1;
     const metric: Metric = { id: 'Test', label: '' };
-    component.optionSelected(dropdownIndex, metric);
+    component.optionSelected(dropdownIndex, 'blue', metric);
     // The selected option for this dropdown should be updated with the corresponding ID
     expect(component.selectedOptions[dropdownIndex]).toEqual(metric.id);
     // updateDropdownOptions should be called with the dropdown index we just selected
