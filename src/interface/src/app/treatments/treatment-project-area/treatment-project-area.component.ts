@@ -111,7 +111,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.notesService.deleteNote(note.id).subscribe({
+          this.notesService.deleteNote(this.projectAreaId, note.id).subscribe({
             next: () => {
               this.snackbar.open(
                 `Deleted note`,

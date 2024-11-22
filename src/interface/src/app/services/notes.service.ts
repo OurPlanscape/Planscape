@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { Observable } from 'rxjs';
 
 export interface Note {
   id: number;
@@ -68,41 +67,8 @@ export class PlanningAreaNotesService extends BaseNotesService {
 @Injectable()
 export class ProjectAreaNotesService extends BaseNotesService {
   protected modelName: NotesModelName = 'planning_area';
-  protected multipleUrl = () => `/v2/projectarea-notes/`;
-
+  protected multipleUrl = (objectId: string) =>
+    `/v2/project-areas/${objectId}/note/`;
   protected singleUrl = (objectId: string, noteId: string) =>
-    `/project_area_note/${objectId}/note/${noteId}`;
-
-  override getNotes(objectId: number | string): Observable<Note[]> {
-    return this.http.get<Note[]>(
-      environment.backend_endpoint.concat(this.multipleUrl()),
-      {
-        withCredentials: true,
-        params: { project_area_pk: objectId.toString() },
-      }
-    );
-  }
-
-  override addNote(objectId: string | number, noteContent: string | number) {
-    return this.http.post<Note>(
-      environment.backend_endpoint.concat(this.multipleUrl()),
-      {
-        project_area: objectId.toString(),
-        content: noteContent,
-      },
-      {
-        withCredentials: true,
-      }
-    );
-  }
-
-  override deleteNote(noteId: string | number) {
-    noteId = noteId.toString();
-    return this.http.delete<Note>(
-      environment.backend_endpoint.concat(this.multipleUrl(), noteId, '/'),
-      {
-        withCredentials: true,
-      }
-    );
-  }
+    `/v2/project-areas/${objectId}/note/${noteId}`;
 }
