@@ -11,14 +11,7 @@ import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import {
-  catchError,
-  combineLatest,
-  of,
-  map,
-  switchMap,
-  BehaviorSubject,
-} from 'rxjs';
+import { catchError, combineLatest, of, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -76,7 +69,7 @@ import { Plan } from '@types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TreatmentConfigComponent {
-  planningAreaId$ = new BehaviorSubject<number | null>(null);
+  planningAreaId$ = this.treatmentsState.planId$;
   projectAreaId$ = this.treatmentsState.projectAreaId$;
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
@@ -109,7 +102,6 @@ export class TreatmentConfigComponent {
       )
       .subscribe(() => {
         const data = getMergedRouteData(this.route.snapshot);
-        this.planningAreaId$.next(data.planId);
         this.treatmentsState
           .loadTreatmentByRouteData(data)
           .pipe(
