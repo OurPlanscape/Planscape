@@ -27,7 +27,7 @@ export class TreatmentToPDFService {
   rightMargin = 190;
   bottomMargin = 280;
 
-  async createPDF(map: MapLibreMap) {
+  async createPDF(map: MapLibreMap, attributions: string) {
     this.activeMap = map;
     this.pdfDoc = new jsPDF();
 
@@ -56,6 +56,8 @@ export class TreatmentToPDFService {
     const mapWidth = this.rightMargin - (this.leftMargin + 20);
     const mapHeight = 100;
     await this.addMap(mapX, mapY, mapHeight, mapWidth);
+
+    this.addAttributions(attributions, mapX + mapWidth, mapHeight + mapY - 2);
 
     const projectAreasX = this.leftMargin;
     const projectAreasY = 132;
@@ -162,6 +164,13 @@ export class TreatmentToPDFService {
     this.pdfDoc?.setFont('Helvetica');
     this.pdfDoc?.setFontSize(10);
     this.pdfDoc?.text(headerText, x, y);
+  }
+
+  addAttributions(attributionText: string, mapRight: number, y: number) {
+    this.pdfDoc?.setFont('Helvetica');
+    this.pdfDoc?.setFontSize(5);
+    const textWidth = this.pdfDoc?.getTextWidth(attributionText) ?? 0;
+    this.pdfDoc?.text(attributionText, mapRight - textWidth - 2, y);
   }
 
   configMapContainer(mapContainer: HTMLDivElement) {

@@ -121,8 +121,17 @@ export class TreatmentConfigComponent {
       });
   }
 
+  getMapAttributions() {
+    const attrElement = document.querySelector('.maplibregl-ctrl-attrib-inner');
+    return Array.from(attrElement?.childNodes || [])
+      .map((node) => node.textContent?.trim())
+      .filter((text) => text) // Remove any empty strings
+      .join(' | ');
+  }
+
   createPDF() {
-    this.pdfService.createPDF(this.mapElement.mapLibreMap);
+    const mapAttributions = this.getMapAttributions();
+    this.pdfService.createPDF(this.mapElement.mapLibreMap, mapAttributions);
   }
 
   redirectToScenario() {
