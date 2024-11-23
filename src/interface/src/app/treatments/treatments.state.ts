@@ -155,6 +155,7 @@ export class TreatmentsState {
   private setInitialState(data: TreatmentRoutingData) {
     this._scenarioId = data.scenarioId;
     this._treatmentPlanId = data.treatmentId;
+    this._projectAreaId$.next(data.projectAreaId);
     this._planningAreaId$.next(data.planId);
 
     // update config on map, based on route data
