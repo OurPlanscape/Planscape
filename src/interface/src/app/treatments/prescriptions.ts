@@ -174,3 +174,11 @@ export function nameForTypeAndAction(
   }
   return null;
 }
+
+export function nameForAction(action: string): string {
+  return (
+    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
+    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].name ||
+    ''
+  );
+}

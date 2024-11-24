@@ -5,19 +5,22 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   nameForTypeAndAction,
+  nameForAction,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
 import { TreatmentSummary, Prescription, TreatmentProjectArea } from '@types';
+import { MapConfigState } from './treatment-map/map-config.state';
+
 import { TreatmentsState } from './treatments.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
-import { doc } from 'prettier';
 
 @Injectable()
 export class TreatmentToPDFService {
   constructor(
     private treatmentsState: TreatmentsState,
-    private treatedStandsState: TreatedStandsState
+    private treatedStandsState: TreatedStandsState,
+    private mapConfigState: MapConfigState
   ) {}
 
   activeMap: MapLibreMap | null = null;
@@ -46,17 +49,11 @@ export class TreatmentToPDFService {
       acc += p.total_stand_count;
       return acc;
     }, 0);
-    const treatmentsUsed: string[][] = [
-      ['Type 1'],
-      ['Type 2'],
-      ['Type 4'],
-      ['Type 5'],
-      ['Type 6'],
-      ['Type 7'],
-      ['Type 8'],
-      ['Type 9'],
-    ];
-
+    const treatmentsUsedSet = new Set(
+      this.treatedStandsState
+        .getTreatedStands()
+        .map((s) => nameForAction(s.action))
+    );
     this.addLogo(this.leftMargin, 14);
 
     const headerText = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName} - Treated Stands: ${treatedStandsCount} / ${totalStands}`;
@@ -70,21 +67,23 @@ export class TreatmentToPDFService {
 
     this.addAttributions(attributions, mapX + mapWidth, mapHeight + mapY - 2);
 
-    // const projectAreasX = this.leftMargin;
-    // const projectAreasY = 132;
-    // this.addProjectAreaTable(
-    //   this.tableRowsFromSummary(curSummary),
-    //   projectAreasX,
-    //   projectAreasY
-    // );
-
-    this.drawHexagon(this.pdfDoc, 100, 100, 2, '#aaaaff');
-    this.drawTreatmentLegend(
-      this.leftMargin,
-      132,
-      treatmentsUsed,
-      this.drawHexagon
-    );
+    if (this.mapConfigState.isTreatmentStandsVisible()) {
+      this.drawHexagon(this.pdfDoc, 100, 100, 2, '#aaaaff');
+      this.drawTreatmentLegend(
+        this.leftMargin,
+        132,
+        Array.from(treatmentsUsedSet, (str) => [str]),
+        this.drawHexagon
+      );
+    } else {
+      const projectAreasX = this.leftMargin;
+      const projectAreasY = 132;
+      this.addProjectAreaTable(
+        this.tableRowsFromSummary(curSummary),
+        projectAreasX,
+        projectAreasY
+      );
+    }
 
     document.body.removeChild(mapContainer);
     const pdfName = `planscape-${encodeURI(treatmentPlanName.split(' ').join('_'))}.pdf`;
@@ -136,7 +135,7 @@ export class TreatmentToPDFService {
       },
       alternateRowStyles: { fillColor: [255, 255, 255] },
       columnStyles: {
-        0: { fontSize: 6, cellWidth: 20, lineWidth: 0 },
+        0: { fontSize: 6, cellWidth: 29, lineWidth: 0 },
       },
       startY: startY,
       tableLineWidth: 0.3,
@@ -147,14 +146,12 @@ export class TreatmentToPDFService {
         top: 10,
         bottom: 20,
       },
-      tableWidth: 20,
+      tableWidth: 30,
       horizontalPageBreak: true,
       body: treatmentsUsed,
       didParseCell: function (data) {
         // Only handle image column (index 1)
         if (data.column.index === 1 && data.row.section === 'body') {
-          const padding = 5;
-          hexFunction();
         }
       },
     });
