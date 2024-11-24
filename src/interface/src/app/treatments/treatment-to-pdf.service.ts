@@ -11,6 +11,7 @@ import { logoImg } from '../../assets/base64/icons';
 import { TreatmentSummary, Prescription, TreatmentProjectArea } from '@types';
 import { TreatmentsState } from './treatments.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
+import { doc } from 'prettier';
 
 @Injectable()
 export class TreatmentToPDFService {
@@ -153,7 +154,7 @@ export class TreatmentToPDFService {
         // Only handle image column (index 1)
         if (data.column.index === 1 && data.row.section === 'body') {
           const padding = 5;
-          this.drawHexagon();
+          hexFunction();
         }
       },
     });
