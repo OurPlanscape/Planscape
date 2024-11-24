@@ -45,6 +45,16 @@ export class TreatmentToPDFService {
       acc += p.total_stand_count;
       return acc;
     }, 0);
+    const treatmentsUsed: string[][] = [
+      ['Type 1'],
+      ['Type 2'],
+      ['Type 4'],
+      ['Type 5'],
+      ['Type 6'],
+      ['Type 7'],
+      ['Type 8'],
+      ['Type 9'],
+    ];
 
     this.addLogo(this.leftMargin, 14);
 
@@ -59,17 +69,94 @@ export class TreatmentToPDFService {
 
     this.addAttributions(attributions, mapX + mapWidth, mapHeight + mapY - 2);
 
-    const projectAreasX = this.leftMargin;
-    const projectAreasY = 132;
-    this.addProjectAreaTable(
-      this.tableRowsFromSummary(curSummary),
-      projectAreasX,
-      projectAreasY
+    // const projectAreasX = this.leftMargin;
+    // const projectAreasY = 132;
+    // this.addProjectAreaTable(
+    //   this.tableRowsFromSummary(curSummary),
+    //   projectAreasX,
+    //   projectAreasY
+    // );
+
+    this.drawHexagon(this.pdfDoc, 100, 100, 2, '#aaaaff');
+    this.drawTreatmentLegend(
+      this.leftMargin,
+      132,
+      treatmentsUsed,
+      this.drawHexagon
     );
 
     document.body.removeChild(mapContainer);
     const pdfName = `planscape-${encodeURI(treatmentPlanName.split(' ').join('_'))}.pdf`;
     this.pdfDoc.save(pdfName);
+  }
+
+  drawHexagon(
+    doc: any,
+    centerX: number,
+    centerY: number,
+    size: number,
+    fill: string
+  ) {
+    const points = this.calculateHexagonPoints(centerX, centerY, size);
+    doc.setLineWidth(0.1);
+    doc.setFillColor(fill);
+    doc.setDrawColor(0); // Black stroke
+    doc.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; i++) {
+      doc.lineTo(points[i].x, points[i].y);
+    }
+    doc.lineTo(points[0].x, points[0].y);
+    doc.fillStroke();
+  }
+
+  calculateHexagonPoints(centerX: number, centerY: number, size: number) {
+    const points = [];
+    for (let i = 0; i < 6; i++) {
+      const angle = (i * Math.PI) / 3;
+      const x = centerX + size * Math.cos(angle);
+      const y = centerY + size * Math.sin(angle);
+      points.push({ x, y });
+    }
+    return points;
+  }
+
+  drawTreatmentLegend(
+    startX: number,
+    startY: number,
+    treatmentsUsed: string[][],
+    hexFunction: Function
+  ) {
+    autoTable(this.pdfDoc, {
+      styles: {
+        fillColor: [255, 255, 255],
+        cellPadding: 1,
+        lineColor: '#000000',
+        lineWidth: 0.4,
+      },
+      alternateRowStyles: { fillColor: [255, 255, 255] },
+      columnStyles: {
+        0: { fontSize: 6, cellWidth: 20, lineWidth: 0 },
+      },
+      startY: startY,
+      tableLineWidth: 0.3,
+      tableLineColor: [0, 0, 0],
+      margin: {
+        left: startX,
+        right: 20,
+        top: 10,
+        bottom: 20,
+      },
+      tableWidth: 20,
+      horizontalPageBreak: true,
+      body: treatmentsUsed,
+      didParseCell: function (data) {
+        // Only handle image column (index 1)
+        if (data.column.index === 1 && data.row.section === 'body') {
+          const padding = 5;
+          this.drawHexagon();
+        }
+      },
+    });
   }
 
   tableRowsFromSummary(currentSummary: TreatmentSummary): string[][] {
