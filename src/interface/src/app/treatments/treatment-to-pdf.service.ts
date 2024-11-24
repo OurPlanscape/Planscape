@@ -14,6 +14,7 @@ import { MapConfigState } from './treatment-map/map-config.state';
 
 import { TreatmentsState } from './treatments.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
+import * as txIcons from '../../assets/base64/stand_icons/treatments';
 
 @Injectable()
 export class TreatmentToPDFService {
@@ -56,8 +57,16 @@ export class TreatmentToPDFService {
     );
     this.addLogo(this.leftMargin, 14);
 
-    const headerText = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName} - Treated Stands: ${treatedStandsCount} / ${totalStands}`;
-    this.addHeader(headerText, this.leftMargin, 24);
+    const headerText = `${planningAreaName} / ${scenarioName} /  ${treatmentPlanName}`;
+    this.addHeader(headerText, this.leftMargin, 24.5);
+
+    //add stands info:
+    const treatedStands = `Treated Stands: ${treatedStandsCount} / ${totalStands}`;
+
+    this.pdfDoc?.setFont('Helvetica', 'normal');
+    this.pdfDoc?.setFontSize(8);
+    const standsTextWidth = this.pdfDoc?.getTextWidth(treatedStands);
+    this.pdfDoc?.text(treatedStands, 190 - standsTextWidth, 24.5);
 
     const mapX = this.leftMargin + 10;
     const mapY = 28;
@@ -67,6 +76,7 @@ export class TreatmentToPDFService {
 
     this.addAttributions(attributions, mapX + mapWidth, mapHeight + mapY - 2);
 
+    // If we are showing the treatment stands, we change what's being rendered
     if (this.mapConfigState.isTreatmentStandsVisible()) {
       this.drawHexagon(this.pdfDoc, 100, 100, 2, '#aaaaff');
       this.drawTreatmentLegend(
@@ -129,15 +139,21 @@ export class TreatmentToPDFService {
     autoTable(this.pdfDoc, {
       styles: {
         fillColor: [255, 255, 255],
-        cellPadding: 1,
+        cellPadding: 2,
         lineColor: '#000000',
         lineWidth: 0.4,
       },
+      headStyles: {
+        fontSize: 6,
+        lineWidth: 0,
+        font: 'Helvetica',
+        textColor: '#000000',
+      },
       alternateRowStyles: { fillColor: [255, 255, 255] },
       columnStyles: {
-        0: { fontSize: 6, cellWidth: 29, lineWidth: 0 },
+        0: { fontSize: 6, cellWidth: 39, lineWidth: 0, cellPadding: 2 },
       },
-      startY: startY,
+      startY: 100,
       tableLineWidth: 0.3,
       tableLineColor: [0, 0, 0],
       margin: {
@@ -146,15 +162,41 @@ export class TreatmentToPDFService {
         top: 10,
         bottom: 20,
       },
-      tableWidth: 30,
+      tableWidth: 40,
       horizontalPageBreak: true,
+      head: [['Treatment Legend']],
       body: treatmentsUsed,
-      didParseCell: function (data) {
-        // Only handle image column (index 1)
-        if (data.column.index === 1 && data.row.section === 'body') {
+      didDrawCell: (data) => {
+        if (data.column.index === 0 && data.row.section === 'body') {
+          const x = data.cell.x + 1; // Add some padding
+          const y = data.cell.y + 2; // Add some padding
+          data.doc.addImage(this.iconForAction(), 'PNG', x, y, 3, 3);
         }
       },
     });
+  }
+
+  iconForAction() {
+    const icons = [
+      txIcons.sequence_1,
+      txIcons.sequence_2,
+      txIcons.sequence_3,
+      txIcons.sequence_4,
+      txIcons.sequence_5,
+      txIcons.sequence_6,
+      txIcons.sequence_7,
+      txIcons.sequence_8,
+      txIcons.treatment_blue,
+      txIcons.treatment_brown,
+      txIcons.treatment_junglegreen,
+      txIcons.treatment_limegreen,
+      txIcons.treatment_orange,
+      txIcons.treatment_pink,
+      txIcons.treatment_purple,
+      txIcons.treatment_red,
+      txIcons.treatment_yellow,
+    ];
+    return icons[Math.floor(Math.random() * icons.length)];
   }
 
   tableRowsFromSummary(currentSummary: TreatmentSummary): string[][] {
@@ -246,7 +288,7 @@ export class TreatmentToPDFService {
   }
 
   addHeader(headerText: string, x: number, y: number) {
-    this.pdfDoc?.setFont('Helvetica');
+    this.pdfDoc?.setFont('Helvetica', 'bold');
     this.pdfDoc?.setFontSize(10);
     this.pdfDoc?.text(headerText, x, y);
   }
