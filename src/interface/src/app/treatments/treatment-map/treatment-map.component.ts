@@ -28,14 +28,7 @@ import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addAuthHeaders } from '../maplibre.helper';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import {
-  combineLatest,
-  map,
-  startWith,
-  Subject,
-  withLatestFrom,
-  defaultIfEmpty,
-} from 'rxjs';
+import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 import { Geometry } from 'geojson';
@@ -161,8 +154,7 @@ export class TreatmentMapComponent {
    * The Planning Area geometry
    */
   planningAreaGeometry$ = this.treatmentsState.planningArea$.pipe(
-    map((planningArea) => (planningArea?.geometry as Geometry) ?? null),
-    defaultIfEmpty(null)
+    map((area) => area.geometry as Geometry)
   );
 
   constructor(
