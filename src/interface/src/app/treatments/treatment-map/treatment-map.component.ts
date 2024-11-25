@@ -200,6 +200,15 @@ export class TreatmentMapComponent {
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
+    this.listenForZoom();
+  }
+
+  listenForZoom() {
+    this.mapLibreMap.on('zoom', () => {
+      const zoomLevel = this.mapLibreMap.getZoom();
+      // Hide project areas label when we zoom out
+      this.treatmentsState.projectAreaLabelsSize$.next(zoomLevel > 9 ? 14 : 0);
+    });
   }
 
   onMapMouseMove(event: MapMouseEvent): void {

@@ -97,6 +97,8 @@ export class MapProjectAreasComponent implements OnInit {
     },
   };
 
+  textSize$ = this.treatmentsState.projectAreaLabelsSize$;
+
   constructor(
     private treatmentsState: TreatmentsState,
     private router: Router,

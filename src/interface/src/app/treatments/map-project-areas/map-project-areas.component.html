@@ -37,8 +37,8 @@
   [sourceLayer]="layers.projectAreaLabels.sourceLayer"
   [layout]="{
     visibility: visible && withFill ? 'visible' : 'none',
-    'text-field': ['get', 'rank'],
-    'text-size': 14,
+    'text-field': ['get', 'name'],
+    'text-size': textSize$?.value,
     'text-anchor': 'center',
     'text-justify': 'center'
   }"
