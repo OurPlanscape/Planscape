@@ -31,8 +31,6 @@ import {
   map,
   Observable,
   pairwise,
-  switchMap,
-  of,
 } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
@@ -44,9 +42,6 @@ import {
   STANDS_CELL_PAINT,
 } from '../map.styles';
 import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
-import { PlanStateService } from '@services';
-import { canEditTreatmentPlan } from 'src/app/plan/permissions';
-import { Plan } from '@types';
 
 type MapLayerData = {
   readonly name: string;
@@ -90,6 +85,11 @@ export class MapStandsComponent implements OnChanges, OnInit {
    * The id to be applied on the source vector layer
    */
   @Input() sourceId = 'stands';
+
+  /**
+   * Whether or not the user can edit stands on the map
+   */
+  @Input() userCanEditStands = false;
 
   treatedStands$ = this.treatedStandsState.treatedStands$;
   sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
@@ -181,32 +181,12 @@ export class MapStandsComponent implements OnChanges, OnInit {
     },
   };
 
-  userCanEditTreatmentPlan = false;
-  userCanSelectTreatments$: Observable<boolean>;
-
   constructor(
     private selectedStandsState: SelectedStandsState,
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState,
-    private mapConfigState: MapConfigState,
-    private planStateService: PlanStateService
+    private mapConfigState: MapConfigState
   ) {
-    this.userCanSelectTreatments$ = this.treatmentsState.planId$.pipe(
-      switchMap((planId) =>
-        planId
-          ? this.planStateService
-              .getPlan(planId.toString())
-              .pipe(map((plan: Plan) => canEditTreatmentPlan(plan)))
-          : of(false)
-      )
-    );
-
-    this.userCanSelectTreatments$
-      .pipe(untilDestroyed(this))
-      .subscribe((value) => {
-        this.userCanEditTreatmentPlan = value;
-      });
-
     combineLatest([
       this.treatedStands$.pipe(distinctUntilChanged()),
       this.opacity$,
@@ -264,7 +244,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     // or disable click if stand selection is not enabled
     // or disable if user doesn't have permission to apply treatments
     if (
-      this.userCanEditTreatmentPlan === false ||
+      !this.userCanEditStands ||
       event.originalEvent.button === 2 ||
       !this.mapConfigState.isStandSelectionEnabled()
     ) {
