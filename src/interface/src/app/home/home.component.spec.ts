@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { HomeComponent } from './home.component';
 import { AuthService } from '@services';
 import { By } from '@angular/platform-browser';
@@ -29,18 +29,22 @@ describe('HomeComponent', () => {
     setUpComponent();
   });
 
-  it('should show welcome if not logged in', () => {
+  it('should show welcome if not logged in', fakeAsync(() => {
     const auth = TestBed.inject(AuthService);
     auth.loggedInStatus$.next(false);
     fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
     const planTable = fixture.debugElement.query(By.css('app-welcome'));
     expect(planTable).toBeTruthy();
-  });
-  it('should show planning areas if logged in', () => {
+  }));
+  it('should show planning areas if logged in', fakeAsync(() => {
     const auth = TestBed.inject(AuthService);
     auth.loggedInStatus$.next(true);
     fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
     const planTable = fixture.debugElement.query(By.css('app-planning-areas'));
     expect(planTable).toBeTruthy();
-  });
+  }));
 });
