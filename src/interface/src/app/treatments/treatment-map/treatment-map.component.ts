@@ -184,8 +184,6 @@ export class TreatmentMapComponent {
       .pipe(untilDestroyed(this))
       .subscribe((plan) => {
         this.userCanEditStands = plan ? canEditTreatmentPlan(plan) : false;
-        console.log('the plan is: ', plan);
-        console.log('the user can edit stands? ', this.userCanEditStands);
       });
 
     this.mapConfigState.baseLayer$
