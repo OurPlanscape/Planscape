@@ -176,7 +176,7 @@ export class TreatmentToPDFService {
       },
       alternateRowStyles: { fillColor: [255, 255, 255] },
       columnStyles: {
-        0: { fontSize: 6, cellWidth: 44, lineWidth: 0, cellPadding: 1 },
+        0: { fontSize: 7, cellWidth: 50, lineWidth: 0, cellPadding: 1 },
       },
       startY: startY,
       tableLineWidth: 0.3,
@@ -187,7 +187,7 @@ export class TreatmentToPDFService {
         top: 10,
         bottom: 20,
       },
-      tableWidth: 44,
+      tableWidth: 50,
       horizontalPageBreak: true,
       head: [['Treatment Legend']],
       body: treatments,
@@ -237,7 +237,7 @@ export class TreatmentToPDFService {
       styles: { fillColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [255, 255, 255] },
       columnStyles: {
-        0: { fontSize: 9 },
+        0: { fontSize: 8 },
       },
       tableWidth: tableWidth,
       startY: startY,

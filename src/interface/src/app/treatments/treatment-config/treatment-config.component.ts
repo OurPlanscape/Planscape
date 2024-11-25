@@ -126,7 +126,7 @@ export class TreatmentConfigComponent {
     return Array.from(attrElement?.childNodes || [])
       .map((node) => node.textContent?.trim())
       .filter((text) => text) // Remove any empty strings
-      .join(' | ');
+      .join(' ');
   }
 
   createPDF() {
