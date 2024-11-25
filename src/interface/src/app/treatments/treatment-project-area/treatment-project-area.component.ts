@@ -1,6 +1,5 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
 import { Note, ProjectAreaNotesService } from '../../services/notes.service';
 import { MatDividerModule } from '@angular/material/divider';
 import {
@@ -48,11 +47,10 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     private selectedStandsState: SelectedStandsState,
     private treatmentsState: TreatmentsState,
     private treatmentsService: TreatmentsService,
-    private route: ActivatedRoute,
     private notesService: ProjectAreaNotesService,
     private dialog: MatDialog,
-    private snackbar: MatSnackBar,
-    private readonly cdr: ChangeDetectorRef
+    private snackbar: MatSnackBar
+    // private readonly cdr: ChangeDetectorRef
   ) {}
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
@@ -68,8 +66,8 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     this.treatmentsState.setShowApplyTreatmentsDialog(false);
   }
 
-  treatmentPlanId: number = this.route.snapshot.data['treatmentId'];
-  projectAreaId: number = this.route.snapshot.data['projectAreaId'];
+  treatmentPlanId: number = this.treatmentsState.getTreatmentPlanId();
+  projectAreaId?: number = this.treatmentsState.getProjectAreaId();
 
   treatmentPlan: TreatmentPlan | null = null;
   notesModel = 'project_area';
@@ -89,8 +87,8 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
 
   //notes handling functions
   addNote(comment: string) {
-    this.notesSidebarState = 'SAVING';
     if (this.projectAreaId) {
+      this.notesSidebarState = 'SAVING';
       this.notesService.addNote(this.projectAreaId, comment).subscribe({
         next: () => {
           this.loadNotes();
@@ -115,7 +113,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
       .afterClosed()
       .pipe(take(1))
       .subscribe((confirmed) => {
-        if (confirmed) {
+        if (confirmed && this.projectAreaId) {
           this.notesService.deleteNote(this.projectAreaId, note.id).subscribe({
             next: () => {
               this.snackbar.open(
@@ -144,8 +142,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
       this.notesService
         .getNotes(this.projectAreaId)
         .subscribe((notes: Note[]) => {
-          this.notes = notes;
-          this.cdr.detectChanges();
+          this.notes = [...notes];
         });
     }
   }
