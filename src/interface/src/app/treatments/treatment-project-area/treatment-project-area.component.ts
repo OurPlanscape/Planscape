@@ -21,7 +21,9 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { getTreatedStandsTotal } from '../prescriptions';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-project-area',
   standalone: true,
@@ -67,8 +69,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
   }
 
   treatmentPlanId: number = this.treatmentsState.getTreatmentPlanId();
-  projectAreaId?: number = this.treatmentsState.getProjectAreaId();
-
+  projectAreaId: number | null = null;
   treatmentPlan: TreatmentPlan | null = null;
   notesModel = 'project_area';
 
@@ -78,6 +79,13 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
         .getTreatmentPlan(Number(this.treatmentPlanId))
         .subscribe((r) => (this.treatmentPlan = r));
     }
+    this.activeProjectArea$
+      .pipe(untilDestroyed(this))
+      .subscribe((projectArea) => {
+        if (projectArea) {
+          this.projectAreaId = projectArea.project_area_id;
+        }
+      });
     this.loadNotes();
   }
 
