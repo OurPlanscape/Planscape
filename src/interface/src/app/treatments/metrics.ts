@@ -81,8 +81,8 @@ export const SLOT_PALETTES: Record<
   MapMetricSlot,
   [string, string, string, string, string]
 > = {
-  blue: ['#4895EF', '#4361EE', '#3F37C9', '#1264B6', '#0D4A86'],
-  purple: ['#C2A9E5', '#A47BE5', '#9071E8', '#764ABF', '#5D2E99'],
-  orange: ['#F3B072', '#F1A45C', '#EC933A', '#D67D2F', '#B56425'],
-  green: ['#A5E3D2', '#7FD1B8', '#63C2A2', '#4CA98B', '#368F76'],
+  blue: ['#BBDEFB', '#64B5F6', '#2196F3', '#1976D2', '#0D47A1'],
+  purple: ['#E1BEE7', '#BA68C8', '#9C27B0', '#7B1FA2', '#4A148C'],
+  orange: ['#FFE0B2', '#FFB74D', '#FF9800', '#F57C00', '#E65100'],
+  green: ['#C8E6C9', '#81C784', '#43A047', '#2E7D32', '#1B5E20'],
 };
