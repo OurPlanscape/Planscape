@@ -9,7 +9,6 @@ import {
   PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-
 import {
   LngLat,
   Map as MapLibreMap,
@@ -29,7 +28,6 @@ import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addAuthHeaders } from '../maplibre.helper';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-
 import {
   combineLatest,
   map,
@@ -40,7 +38,8 @@ import {
 } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
-
+import { Geometry } from 'geojson';
+import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
@@ -153,11 +152,16 @@ export class TreatmentMapComponent {
   treatmentTooltipLngLat: LngLat | null = null;
 
   /**
+   * permissions for current user
+   */
+  userCanEditStands: boolean = false;
+
+  /**
    *
    * The Planning Area geometry
    */
   planningAreaGeometry$ = this.treatmentsState.planningArea$.pipe(
-    map((planningArea) => planningArea?.geometry ?? null),
+    map((planningArea) => (planningArea?.geometry as Geometry) ?? null),
     defaultIfEmpty(null)
   );
 
@@ -174,6 +178,14 @@ export class TreatmentMapComponent {
         if (this.mapLibreMap) {
           this.mapLibreMap.getCanvas().style.cursor = cursor;
         }
+      });
+
+    this.treatmentsState.planningArea$
+      .pipe(untilDestroyed(this))
+      .subscribe((plan) => {
+        this.userCanEditStands = plan ? canEditTreatmentPlan(plan) : false;
+        console.log('the plan is: ', plan);
+        console.log('the user can edit stands? ', this.userCanEditStands);
       });
 
     this.mapConfigState.baseLayer$
@@ -195,7 +207,10 @@ export class TreatmentMapComponent {
     if (event.originalEvent.button === 2) {
       return;
     }
-    if (!this.mapConfigState.isStandSelectionEnabled()) {
+    if (
+      !this.userCanEditStands ||
+      !this.mapConfigState.isStandSelectionEnabled()
+    ) {
       return;
     }
     this.dragStandsSelection = true;
@@ -208,7 +223,10 @@ export class TreatmentMapComponent {
   }
 
   onMapMouseMove(event: MapMouseEvent): void {
-    if (this.mapConfigState.isStandSelectionEnabled()) {
+    if (
+      this.userCanEditStands &&
+      this.mapConfigState.isStandSelectionEnabled()
+    ) {
       this.treatmentTooltipLngLat = event.lngLat;
     } else {
       this.treatmentTooltipLngLat = null;

@@ -16,7 +16,10 @@
     </button>
     <button
       type="button"
-      [ngClass]="{ active: (standSelectionEnabled$ | async) }"
+      *ngIf="userCanEditStands"
+      [ngClass]="{
+        active: (standSelectionEnabled$ | async)
+      }"
       (click)="toggleRxSelection()"
       matTooltip="RX Selection Tool"
       matTooltipPosition="right">
