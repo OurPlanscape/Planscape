@@ -24,12 +24,14 @@
           color="primary"
           [checked]="(showTreatmentLayer$ | async) || false"
           (change)="toggleShowTreatmentLayers()"
+          class="bottom-toggle"
           >View Treatment Layers
         </mat-slide-toggle>
         <button
           sg-button
           variant="primary"
           class="footer-primary"
+          *ngIf="canRunTreatment$ | async"
           (click)="showReviewDialog()">
           Run Treatment Analysis
         </button>

@@ -8,6 +8,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsService } from '@services/treatments.service';
 import { NavBarComponent, SharedModule } from '@shared';
 import { TreatmentNavbarMenuComponent } from '../treatment-navbar-menu/treatment-navbar-menu.component';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('TreatmentLayoutComponent', () => {
   let component: TreatmentConfigComponent;
@@ -16,6 +17,7 @@ describe('TreatmentLayoutComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
+        HttpClientTestingModule,
         BrowserAnimationsModule,
         TreatmentConfigComponent,
         RouterTestingModule,
