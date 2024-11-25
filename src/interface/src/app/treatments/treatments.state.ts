@@ -68,10 +68,9 @@ export class TreatmentsState {
     })
   );
 
-  public planningArea$: Observable<Plan | null> = this._planningAreaId$.pipe(
-    switchMap((id) =>
-      id ? this.planStateService.getPlan(id.toString()) : of(null)
-    )
+  public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
+    filter((id): id is number => !!id),
+    switchMap((id) => this.planStateService.getPlan(id.toString()))
   );
 
   private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
