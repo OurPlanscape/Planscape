@@ -1,6 +1,5 @@
 import { AreaDetailsComponent } from './area-details/area-details.component';
 import { AreaNotesComponent } from './area-notes/area-notes.component';
-import { AreaScrollingNotesComponent } from './area-scrolling-notes/area-scrolling-notes.component';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
@@ -45,6 +44,7 @@ import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/u
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 import { ScenarioCardComponent } from '../../styleguide/scenario-card/scenario-card.component';
 import { ScenariosCardListComponent } from './plan-summary/scenarios-card-list/scenarios-card-list.component';
+import { NotesSidebarComponent } from '../../styleguide/notes-sidebar/notes-sidebar.component';
 import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
 import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
 import { OpacityControlComponent } from './plan-map/opacity-control/opacity-control.component';
@@ -54,7 +54,6 @@ import { OpacityControlComponent } from './plan-map/opacity-control/opacity-cont
   declarations: [
     AreaDetailsComponent,
     AreaNotesComponent,
-    AreaScrollingNotesComponent,
     ConstraintsPanelComponent,
     CreateScenariosComponent,
     DeleteNoteDialogComponent,
@@ -105,6 +104,7 @@ import { OpacityControlComponent } from './plan-map/opacity-control/opacity-cont
     ScenarioCardComponent,
     ScenariosCardListComponent,
     TreatmentCardComponent,
+    NotesSidebarComponent,
     OpacitySliderComponent,
     OpacityControlComponent,
   ],
