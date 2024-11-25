@@ -172,11 +172,37 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
 def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
     uploaded_geom = validated_data["geometry"]
+    default_config = {
+        "stand_size": validated_data["stand_size"],
+        "weights": [],
+        "est_cost": 2470,
+        "max_slope": 100,
+        "question_id": 1,
+        "excluded_areas": [],
+        "stand_thresholds": ["probability_of_fire_severity_high > 0"],
+        "global_thresholds": [],
+        "scenario_priorities": ["probability_of_fire_severity_high"],
+        "min_distance_from_road": 1,
+        "scenario_output_fields": [
+            "probability_of_fire_severity_high",
+            "total_fuel_exposed_to_fire",
+            "dead_and_down_carbon",
+            "structure_exposure",
+            "damage_potential_wui",
+            "standing_dead_and_ladder_fuels",
+            "available_standing_biomass",
+            "sawtimber_biomass",
+            "california_spotted_owl_habitat",
+            "california_spotted_owl_territory",
+        ],
+        "max_treatment_area_ratio": 40000,
+    }
+
     scenario = Scenario.objects.create(
         name=validated_data["name"],
         planning_area=planning_area,
         user=user,
-        configuration={"stand_size": validated_data["stand_size"]},
+        configuration=default_config,
         origin=ScenarioOrigin.USER,
     )
     transaction.on_commit(
@@ -207,7 +233,9 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             f["properties"]["project_id"] = new_feature.pk
 
     # Store geometry with added properties into ScenarioResult.result
-    ScenarioResult.objects.create(scenario=scenario, result=uploaded_geom)
+    ScenarioResult.objects.create(
+        scenario=scenario, result=uploaded_geom, status=ScenarioResultStatus.SUCCESS
+    )
 
     return scenario
 
