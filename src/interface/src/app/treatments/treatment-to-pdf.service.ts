@@ -6,6 +6,7 @@ import {
   PrescriptionSequenceAction,
   nameForTypeAndAction,
   nameForAction,
+  PrescriptionAction,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
@@ -15,6 +16,26 @@ import { MapConfigState } from './treatment-map/map-config.state';
 import { TreatmentsState } from './treatments.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import * as txIcons from '../../assets/base64/stand_icons/treatments';
+
+const treatmentIcons: Record<PrescriptionAction, string> = {
+  MODERATE_THINNING_BIOMASS: txIcons.treatment_blue,
+  HEAVY_THINNING_BIOMASS: txIcons.treatment_purple,
+  MODERATE_THINNING_BURN: txIcons.treatment_orange,
+  HEAVY_THINNING_BURN: txIcons.treatment_yellow,
+  MODERATE_MASTICATION: txIcons.treatment_junglegreen,
+  HEAVY_MASTICATION: txIcons.treatment_limegreen,
+  RX_FIRE: txIcons.treatment_red,
+  HEAVY_THINNING_RX_FIRE: txIcons.treatment_brown,
+  MASTICATION_RX_FIRE: txIcons.treatment_pink,
+  MODERATE_THINNING_BURN_PLUS_RX_FIRE: txIcons.sequence_1,
+  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: txIcons.sequence_2,
+  HEAVY_THINNING_BURN_PLUS_RX_FIRE: txIcons.sequence_3,
+  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: txIcons.sequence_4,
+  RX_FIRE_PLUS_RX_FIRE: txIcons.sequence_5,
+  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: txIcons.sequence_6,
+  HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: txIcons.sequence_7,
+  MODERATE_MASTICATION_PLUS_RX_FIRE: txIcons.sequence_8,
+};
 
 @Injectable()
 export class TreatmentToPDFService {
@@ -51,9 +72,7 @@ export class TreatmentToPDFService {
       return acc;
     }, 0);
     const treatmentsUsedSet = new Set(
-      this.treatedStandsState
-        .getTreatedStands()
-        .map((s) => nameForAction(s.action))
+      this.treatedStandsState.getTreatedStands().map((s) => s.action)
     );
     this.addLogo(this.leftMargin, 14);
 
@@ -78,20 +97,22 @@ export class TreatmentToPDFService {
 
     // If we are showing the treatment stands, we change what's being rendered
     if (this.mapConfigState.isTreatmentStandsVisible()) {
-      this.drawHexagon(this.pdfDoc, 100, 100, 2, '#aaaaff');
-      this.drawTreatmentLegend(
-        this.leftMargin,
-        132,
-        Array.from(treatmentsUsedSet, (str) => [str]),
-        this.drawHexagon
+      const nextY = 132;
+      this.drawTreatmentLegend(130, nextY, treatmentsUsedSet);
+      this.addProjectAreaTable(
+        this.tableRowsFromSummary(curSummary),
+        this.leftMargin + 10,
+        nextY,
+        80
       );
     } else {
-      const projectAreasX = this.leftMargin;
+      const projectAreasX = this.leftMargin + 10;
       const projectAreasY = 132;
       this.addProjectAreaTable(
         this.tableRowsFromSummary(curSummary),
         projectAreasX,
-        projectAreasY
+        projectAreasY,
+        140
       );
     }
 
@@ -133,9 +154,13 @@ export class TreatmentToPDFService {
   drawTreatmentLegend(
     startX: number,
     startY: number,
-    treatmentsUsed: string[][],
-    hexFunction: Function
+    treatmentsUsed: Set<string>
   ) {
+    const treatments = Array.from(treatmentsUsed).map((t) => ({
+      name: nameForAction(t),
+      icon: treatmentIcons[t as PrescriptionAction],
+    }));
+
     autoTable(this.pdfDoc, {
       styles: {
         fillColor: [255, 255, 255],
@@ -144,16 +169,16 @@ export class TreatmentToPDFService {
         lineWidth: 0.4,
       },
       headStyles: {
-        fontSize: 6,
+        fontSize: 7,
         lineWidth: 0,
         font: 'Helvetica',
         textColor: '#000000',
       },
       alternateRowStyles: { fillColor: [255, 255, 255] },
       columnStyles: {
-        0: { fontSize: 6, cellWidth: 39, lineWidth: 0, cellPadding: 2 },
+        0: { fontSize: 6, cellWidth: 44, lineWidth: 0, cellPadding: 1 },
       },
-      startY: 100,
+      startY: startY,
       tableLineWidth: 0.3,
       tableLineColor: [0, 0, 0],
       margin: {
@@ -162,41 +187,20 @@ export class TreatmentToPDFService {
         top: 10,
         bottom: 20,
       },
-      tableWidth: 40,
+      tableWidth: 44,
       horizontalPageBreak: true,
       head: [['Treatment Legend']],
-      body: treatmentsUsed,
+      body: treatments,
       didDrawCell: (data) => {
         if (data.column.index === 0 && data.row.section === 'body') {
+          const idx = data.row.index;
           const x = data.cell.x + 1; // Add some padding
-          const y = data.cell.y + 2; // Add some padding
-          data.doc.addImage(this.iconForAction(), 'PNG', x, y, 3, 3);
+          const y = data.cell.y; // Add some padding
+          data.doc.addImage(treatments[idx].icon, 'PNG', x, y, 3, 3);
+          data.doc.text(treatments[idx].name, x + 4, y + 3);
         }
       },
     });
-  }
-
-  iconForAction() {
-    const icons = [
-      txIcons.sequence_1,
-      txIcons.sequence_2,
-      txIcons.sequence_3,
-      txIcons.sequence_4,
-      txIcons.sequence_5,
-      txIcons.sequence_6,
-      txIcons.sequence_7,
-      txIcons.sequence_8,
-      txIcons.treatment_blue,
-      txIcons.treatment_brown,
-      txIcons.treatment_junglegreen,
-      txIcons.treatment_limegreen,
-      txIcons.treatment_orange,
-      txIcons.treatment_pink,
-      txIcons.treatment_purple,
-      txIcons.treatment_red,
-      txIcons.treatment_yellow,
-    ];
-    return icons[Math.floor(Math.random() * icons.length)];
   }
 
   tableRowsFromSummary(currentSummary: TreatmentSummary): string[][] {
@@ -217,21 +221,28 @@ export class TreatmentToPDFService {
         }
       });
       const treatedStands = `Treated stands: ${this.treatedStandCount(p)}/${p.total_stand_count}`;
-      tableRows.push([p.project_area_name, treatedStands, rxInfo]);
+      const projectInfo = `${p.project_area_name} \n ${treatedStands} \n\n ${rxInfo}`;
+      tableRows.push([projectInfo]);
     });
     return tableRows;
   }
 
-  addProjectAreaTable(bodyData: string[][], startX: number, startY: number) {
+  addProjectAreaTable(
+    bodyData: string[][],
+    startX: number,
+    startY: number,
+    tableWidth: number
+  ) {
     autoTable(this.pdfDoc, {
       styles: { fillColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [255, 255, 255] },
       columnStyles: {
-        0: { fontSize: 9, cellWidth: 30 },
-        1: { fontSize: 9, cellWidth: 40 },
-        2: { fontSize: 9 },
+        0: { fontSize: 9 },
       },
+      tableWidth: tableWidth,
       startY: startY,
+      tableLineWidth: 0.3,
+      tableLineColor: '#000000',
       theme: 'grid',
       margin: {
         left: startX,
@@ -239,7 +250,6 @@ export class TreatmentToPDFService {
         top: 10,
         bottom: 20,
       },
-      tableLineColor: '#000000',
       horizontalPageBreak: true,
       body: bodyData,
     });
