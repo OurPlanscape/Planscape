@@ -45,7 +45,6 @@ export class TreatmentsState {
 
   private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
   public projectAreaId$ = this._projectAreaId$.asObservable();
-
   public planId$ = new BehaviorSubject<number | null>(null);
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
@@ -54,9 +53,13 @@ export class TreatmentsState {
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
 
+  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
+  public showApplyTreatmentsDialog$ =
+    this._showApplyTreatmentsDialog$.asObservable();
+
   public activeProjectArea$ = combineLatest([
     this.summary$,
-    this.projectAreaId$.pipe(distinctUntilChanged()),
+    this._projectAreaId$.pipe(distinctUntilChanged()),
   ]).pipe(
     map(([summary, projectAreaId]) => {
       return summary?.project_areas.find(
@@ -64,10 +67,6 @@ export class TreatmentsState {
       );
     })
   );
-
-  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
-  public showApplyTreatmentsDialog$ =
-    this._showApplyTreatmentsDialog$.asObservable();
 
   breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
     map(([projectArea, summary]) => {

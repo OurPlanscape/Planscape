@@ -10,7 +10,7 @@ import {
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatmentPlan } from '@types';
 import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
-import {  take,  distinctUntilChanged, BehaviorSubject} from 'rxjs';
+import { take, distinctUntilChanged, BehaviorSubject } from 'rxjs';
 import { SharedModule, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -53,12 +53,11 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     private dialog: MatDialog,
     private snackbar: MatSnackBar
   ) {
-    this.treatmentsState.projectAreaId$
-    .pipe(distinctUntilChanged(),untilDestroyed(this))
-    .subscribe((projectAreaId) => {
-      console.log('here we are setting the project: ', projectAreaId);
-      this.projectAreaId = projectAreaId;
-        });
+    this.activeProjectArea$
+      .pipe(distinctUntilChanged(), untilDestroyed(this))
+      .subscribe((projectArea) => {
+        this.projectAreaId = projectArea?.project_area_id;
+      });
   }
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
@@ -71,7 +70,6 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
   notesModel = 'project_area';
   notes = new BehaviorSubject<Note[]>([]);
   notesSidebarState: NotesSidebarState = 'READY';
-
 
   getTreatedStandsTotal = getTreatedStandsTotal;
 
@@ -92,7 +90,6 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     }
     this.loadNotes();
   }
-
 
   //notes handling functions
   addNote(comment: string) {
