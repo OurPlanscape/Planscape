@@ -1,6 +1,6 @@
 @import 'variables';
 @import 'mixins';
-@import "media";
+@import 'media';
 
 .root-container {
   display: flex;
@@ -29,7 +29,6 @@
   ::ng-deep .mat-tab-body-wrapper {
     height: 100%;
   }
-
 }
 
 //feature flagged style
@@ -85,7 +84,6 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-
     }
 
     .create-scenarios-panel {
@@ -145,5 +143,3 @@
     min-width: auto;
   }
 }
-
-
