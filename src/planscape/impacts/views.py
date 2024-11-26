@@ -4,8 +4,13 @@ from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.views import Response
-from impacts.filters import TreatmentPlanFilterSet
-from impacts.models import TreatmentPlan, TreatmentPlanStatus, TreatmentPrescription
+from impacts.filters import TreatmentPlanFilterSet, ProjectAreaTreatmentResultFilter
+from impacts.models import (
+    TreatmentPlan,
+    TreatmentPlanStatus,
+    TreatmentPrescription,
+    ProjectAreaTreatmentResult,
+)
 from impacts.permissions import (
     TreatmentPlanViewPermission,
     TreatmentPrescriptionViewPermission,
@@ -22,6 +27,7 @@ from impacts.serializers import (
     TreatmentPrescriptionBatchDeleteSerializer,
     TreatmentPrescriptionBatchDeleteResponseSerializer,
     UpsertTreamentPrescriptionSerializer,
+    ProjectAreaTreatmentResultListSerializer,
 )
 from impacts.services import (
     clone_treatment_plan,
@@ -323,3 +329,28 @@ class TreatmentPrescriptionViewSet(
         ).delete()
 
         return response.Response({"result": delete_result}, status=status.HTTP_200_OK)
+
+
+class ProjectAreaTreatmentResultViewSet(
+    mixins.ListModelMixin,
+    viewsets.GenericViewSet,
+):
+    queryset = ProjectAreaTreatmentResult.objects.all().select_related(
+        "treatment_plan",
+        "project_area",
+        "treatment_plan__scenario__planning_area",
+        "treatment_plan__created_by",
+    )
+    filterset_class = ProjectAreaTreatmentResultFilter
+    serializer_class = ProjectAreaTreatmentResultListSerializer
+    # permission_classes = [
+    #     TreatmentPlanViewPermission,
+    # ]
+    pagination_class = LimitOffsetPagination
+
+    def get_queryset(self):
+        tx_plan_pk = self.kwargs.get("tx_plan_pk", 0)
+        # filter will return zero elements if it does not match with anything
+        return self.queryset.filter(
+            treatment_plan_id=tx_plan_pk,
+        )
