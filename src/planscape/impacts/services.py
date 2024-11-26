@@ -6,6 +6,7 @@ import shapely.geometry
 import shapely.wkt
 import os
 import zipfile
+from fiona.crs import from_epsg
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.conf import settings
 from django.db import connection
@@ -492,101 +493,45 @@ def calculate_project_area_deltas(
     return results
 
 
-def generate_shapefile_for_treatment_plan(treatment_plan):
-    """
-    Generates shapefiles for the stands in a Treatment Plan and zips them for download.
-    Returns the path to the generated zip file.
-    """
-    try:
-        # Fetch data using raw SQL
-        data = fetch_treatment_plan_data(treatment_plan.id)
-        if not data:
-            raise ValueError("No stands found for the specified Treatment Plan.")
-
-        # Define schema
-        schema = define_shapefile_schema()
-
-        # Prepare output paths
-        output_dir = os.path.join(settings.MEDIA_ROOT, "shapefiles", f"treatment_plan_{treatment_plan.id}")
-        os.makedirs(output_dir, exist_ok=True)
-        shapefile_path = os.path.join(output_dir, "treatment_plan.shp")
-
-        # Write shapefile
-        with fiona.open(
-            shapefile_path, 'w', driver='ESRI Shapefile', crs='EPSG:3857', schema=schema
-        ) as shp:
-            for record in data:
-                try:
-                    geom = shapely.wkt.loads(record.pop('wkt_geom'))
-                    properties = {k: record[k] for k in record}
-                    shp.write({
-                        'geometry': shapely.geometry.mapping(geom),
-                        'properties': properties,
-                    })
-                except Exception as e:
-                    log.error(f"Invalid geometry WKT: {record.get('wkt_geom')} - Error: {e}")
-                    continue
-
-        # Zip shapefile components
-        zip_path = os.path.join(output_dir, f"treatment_plan_{treatment_plan.id}_shapefiles.zip")
-        with zipfile.ZipFile(zip_path, "w") as zipf:
-            for filename in os.listdir(output_dir):
-                if filename.startswith("treatment_plan") and not filename.endswith(".zip"):
-                    file_path = os.path.join(output_dir, filename)
-                    zipf.write(file_path, filename)
-
-        return zip_path
-
-    except Exception as e:
-        log.error(f"Error generating shapefile: {e}")
-        raise
-
 def fetch_treatment_plan_data(treatment_plan_id):
     """
     Fetches data for the specified treatment plan using raw SQL.
     """
-    with connection.cursor() as cursor:
-        sql = """
-        SELECT
-            ST_AsText(stand.geometry) AS wkt_geom,
-            treatmentprescription.action,
-            calculations.baseline_0,
-            calculations.baseline_5,
-            calculations.baseline_10,
-            calculations.baseline_15,
-            calculations.baseline_20,
-            calculations.delta_0,
-            calculations.delta_5,
-            calculations.delta_10,
-            calculations.delta_15,
-            calculations.delta_20,
-            stand.id,
-            project_area.name AS project_area_name,
-            stand.stand_size,
-            treatmentprescription.treatment_plan_id,
-            calculations.value_0,
-            calculations.value_5,
-            calculations.value_10,
-            calculations.value_15,
-            calculations.value_20,
-            calculations.variable
-        FROM stand
-        JOIN treatmentprescription ON treatmentprescription.stand_id = stand.id
-        JOIN project_area ON stand.project_area_id = project_area.id
-        JOIN calculations ON calculations.stand_id = stand.id
-        WHERE treatmentprescription.treatment_plan_id = %s
-        """
-        cursor.execute(sql, [treatment_plan_id])
-        columns = [col[0] for col in cursor.description]
-        data = [dict(zip(columns, row)) for row in cursor.fetchall()]
-    return data
+    try:
+        with connection.cursor() as cursor:
+            sql = """
+            SELECT
+                ST_AsText(ss.geometry) AS wkt_geom,  
+                tr.action,
+                tr.baseline_0, tr.baseline_5, tr.baseline_10, tr.baseline_15, tr.baseline_20,
+                tr.delta_0, tr.delta_5, tr.delta_10, tr.delta_15, tr.delta_20,
+                ss.id,
+                pa.name AS project_area_name,
+                ss.size AS stand_size,
+                tp.id AS treatment_plan_id,
+                tr.value_0, tr.value_5, tr.value_10, tr.value_15, tr.value_20,
+                tr.variable
+            FROM stands_stand ss
+            LEFT JOIN impacts_treatmentresult tr ON tr.stand_id = ss.id
+            LEFT JOIN planning_projectarea pa ON pa.id = ss.project_area_id
+            LEFT JOIN impacts_treatmentplan tp ON tp.id = tr.treatment_plan_id
+            WHERE tp.id = %s;
+            """
+            cursor.execute(sql, [treatment_plan_id])
+            columns = [col[0] for col in cursor.description]
+            data = [dict(zip(columns, row)) for row in cursor.fetchall()]
+        return data
+    except Exception as e:
+        log.error(f"Error fetching data for Treatment Plan {treatment_plan_id}: {e}")
+        raise
+
 
 def define_shapefile_schema():
     """
     Defines the schema for the shapefile to be written by Fiona.
     """
     return {
-        'geometry': 'Polygon',  # Adjust based on your actual geometry type
+        'geometry': 'Polygon',  
         'properties': {
             'action': 'str',
             'baseline_0': 'float',
@@ -611,3 +556,67 @@ def define_shapefile_schema():
             'variable': 'str',
         },
     }
+
+def generate_shapefile_path(treatment_plan_id):
+    """
+    Generates the path for the .zip shapefile export directory and file based on the treatment plan ID.
+    """
+    try:
+        base_dir = os.path.join(settings.shapefile_folder, "shapefiles")  # Use shapefile_folder as base export directory
+        output_dir = os.path.join(base_dir, f"treatment_plan_{treatment_plan_id}")
+        os.makedirs(output_dir, exist_ok=True)  # Creates directories if they don't exist
+        shapefile_path = os.path.join(output_dir, f"treatment_plan_{treatment_plan_id}.zip")
+        return shapefile_path
+    except Exception as e:
+        log.error(f"Error creating output directory for Treatment Plan {treatment_plan_id}: {e}")
+        raise
+
+def generate_shapefile_for_treatment_plan(treatment_plan):
+    """
+    Generates a zipped shapefile for the stands in a Treatment Plan.
+    Returns the path to the generated zip file.
+    """
+    try:
+        # Log start of generation
+        log.info(f"Starting shapefile generation for Treatment Plan {treatment_plan.id}")
+
+        # Fetch data using raw SQL
+        data = fetch_treatment_plan_data(treatment_plan.id)
+        if not data:
+            raise ValueError(f"No stands found for Treatment Plan {treatment_plan.id}.")
+
+        # Define schema
+        schema = define_shapefile_schema()
+
+        # Prepare shapefile path
+        shapefile_path = generate_shapefile_path(treatment_plan.id)
+
+        # Write shapefile directly to a zipped archive
+        with fiona.open(
+            f"zip://{shapefile_path}",
+            mode='w',
+            driver='ESRI Shapefile',
+            crs='EPSG:3857',
+            schema=schema,
+        ) as shp:
+            for record in data:
+                try:
+                    # Separate geometry and properties
+                    geom = wkt.loads(record['wkt_geom'])
+                    properties = {key: value for key, value in record.items() if key != 'wkt_geom'}
+
+                    shp.write({
+                        'geometry': shapely.geometry.mapping(geom),  # Correct geometry mapping
+                        'properties': properties,
+                    })
+                except Exception as e:
+                    log.error(f"Error processing record {record.get('id', 'unknown')} for Treatment Plan {treatment_plan.id}: {e}")
+                    raise  # Stop processing on error
+
+        log.info(f"Shapefile generation completed for Treatment Plan {treatment_plan.id}")
+        return shapefile_path
+
+    except Exception as e:
+        log.error(f"Error generating shapefile for Treatment Plan {treatment_plan.id}: {e}")
+        raise
+
