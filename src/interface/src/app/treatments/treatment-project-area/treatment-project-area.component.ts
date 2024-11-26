@@ -10,7 +10,7 @@ import {
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatmentPlan } from '@types';
 import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
-import { take } from 'rxjs';
+import {  take,  distinctUntilChanged, BehaviorSubject} from 'rxjs';
 import { SharedModule, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -21,7 +21,9 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { getTreatedStandsTotal } from '../prescriptions';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-project-area',
   standalone: true,
@@ -50,11 +52,27 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     private notesService: ProjectAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar
-    // private readonly cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    this.treatmentsState.projectAreaId$
+    .pipe(distinctUntilChanged(),untilDestroyed(this))
+    .subscribe((projectAreaId) => {
+      console.log('here we are setting the project: ', projectAreaId);
+      this.projectAreaId = projectAreaId;
+        });
+  }
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
+  treatmentPlanId: number = this.treatmentsState.getTreatmentPlanId();
+  projectAreaId?: number;
+  treatmentPlan: TreatmentPlan | null = null;
+
+  // notes data
+  notesModel = 'project_area';
+  notes = new BehaviorSubject<Note[]>([]);
+  notesSidebarState: NotesSidebarState = 'READY';
+
+
   getTreatedStandsTotal = getTreatedStandsTotal;
 
   changeValue(num: number) {
@@ -66,12 +84,6 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     this.treatmentsState.setShowApplyTreatmentsDialog(false);
   }
 
-  treatmentPlanId: number = this.treatmentsState.getTreatmentPlanId();
-  projectAreaId?: number = this.treatmentsState.getProjectAreaId();
-
-  treatmentPlan: TreatmentPlan | null = null;
-  notesModel = 'project_area';
-
   ngOnInit(): void {
     if (this.treatmentPlanId) {
       this.treatmentsService
@@ -81,9 +93,6 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     this.loadNotes();
   }
 
-  // notes data
-  notes: Note[] = [];
-  notesSidebarState: NotesSidebarState = 'READY';
 
   //notes handling functions
   addNote(comment: string) {
@@ -142,7 +151,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
       this.notesService
         .getNotes(this.projectAreaId)
         .subscribe((notes: Note[]) => {
-          this.notes = [...notes];
+          this.notes.next([...notes]);
         });
     }
   }

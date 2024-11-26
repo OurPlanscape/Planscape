@@ -16,7 +16,7 @@
   </mat-tab>
   <mat-tab label="Notes">
     <sg-notes-sidebar
-      [notes]="notes"
+      [notes]="(notes | async) ?? []"
       [notesState]="notesSidebarState"
       (createNote)="addNote($event)"
       (deleteNote)="handleNoteDelete($event)"
