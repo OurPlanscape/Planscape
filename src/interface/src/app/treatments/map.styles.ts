@@ -9,7 +9,7 @@ import {
 } from './prescriptions';
 
 export const BASE_COLORS: Record<
-  'white' | 'black' | 'blue' | 'dark' | 'light',
+  'white' | 'black' | 'blue' | 'dark' | 'light' | 'yellow',
   string
 > = {
   white: '#FFF',
@@ -17,22 +17,23 @@ export const BASE_COLORS: Record<
   dark: '#4A4A4A',
   light: '#F6F6F650',
   blue: '#007dff',
+  yellow: '#FFD54F',
 };
 
-export const SELECTED_STANDS_PAINT = {
-  'fill-color': [
+export const SELECTED_STANDS_LINE_PAINT = {
+  'line-color': [
     'case',
     ['boolean', ['feature-state', 'selected'], false],
-    BASE_COLORS.blue,
-    'transparent',
+    BASE_COLORS.yellow, // Selected
+    'transparent', // Non selected
   ],
-  'fill-outline-color': [
+  'line-width': [
     'case',
     ['boolean', ['feature-state', 'selected'], false],
-    BASE_COLORS.black,
-    'transparent',
+    8, // Selected
+    1, // Non selected
   ],
-  'fill-opacity': 0.7,
+  'line-opacity': 1,
 };
 
 export const PROJECT_AREA_OUTLINE_PAINT = {
