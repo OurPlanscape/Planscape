@@ -52,13 +52,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     private notesService: ProjectAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar
-  ) {
-    this.activeProjectArea$
-      .pipe(distinctUntilChanged(), untilDestroyed(this))
-      .subscribe((projectArea) => {
-        this.projectAreaId = projectArea?.project_area_id;
-      });
-  }
+  ) {}
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
@@ -88,7 +82,13 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
         .getTreatmentPlan(Number(this.treatmentPlanId))
         .subscribe((r) => (this.treatmentPlan = r));
     }
-    this.loadNotes();
+
+    this.activeProjectArea$
+      .pipe(distinctUntilChanged(), untilDestroyed(this))
+      .subscribe((projectArea) => {
+        this.projectAreaId = projectArea?.project_area_id;
+        this.loadNotes();
+      });
   }
 
   //notes handling functions
