@@ -105,8 +105,6 @@ export class TreatmentsState {
     slot: DEFAULT_SLOT,
   });
 
-  projectAreaLabelsSize$: any = new BehaviorSubject<number>(14);
-
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
       throw new Error('no treatment plan id!');
