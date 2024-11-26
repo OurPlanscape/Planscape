@@ -10,6 +10,7 @@ from impacts.models import TreatmentPlan, TreatmentPlanStatus
 from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
+    ProjectAreaTreatmentResultFactory,
 )
 from planning.tests.factories import ScenarioFactory
 from planscape.tests.factories import UserFactory
@@ -376,3 +377,59 @@ class TxPrescriptionBatchDeleteTest(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data["result"][0], 10)
+
+
+class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.tx_plan = TreatmentPlanFactory.create(created_by=self.user)
+        self.tx_empty_plan = TreatmentPlanFactory.create(created_by=self.user)
+        self.client.force_authenticate(user=self.user)
+        self.txrx_list = TreatmentPrescriptionFactory.create_batch(
+            10, treatment_plan=self.tx_plan
+        )
+        self.patxrx_list = ProjectAreaTreatmentResultFactory.create_batch(
+            10,
+            treatment_plan=self.tx_plan,
+        )
+
+    def test_list(self):
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-results-by-planning-area-list",
+                kwargs={"tx_plan_pk": self.tx_plan.pk},
+            ),
+        )
+        response_data = response.json()
+        self.assertEqual(response_data["count"], 10)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_list_filter(self):
+        # TDB
+        pass
+
+    def test_treatment_plan_does_not_exists(self):
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-results-by-planning-area-list",
+                kwargs={"tx_plan_pk": 999},
+            ),
+        )
+        response_data = response.json()
+        self.assertEqual(response_data["count"], 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_no_project_area_treatment_result(self):
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-results-by-planning-area-list",
+                kwargs={"tx_plan_pk": self.tx_empty_plan.pk},
+            ),
+        )
+        response_data = response.json()
+        self.assertEqual(response_data["count"], 0)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_forbidden(self):
+        # TBD
+        pass

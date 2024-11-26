@@ -7,6 +7,7 @@ from impacts.models import (
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
+    ProjectAreaTreatmentResult,
 )
 from planning.models import ProjectArea
 from planning.services import get_acreage
@@ -261,3 +262,17 @@ class DataLayerImpactsModuleSerializer(serializers.Serializer):
             )
 
         return super().validate(attrs=attrs)
+
+
+class ProjectAreaTreatmentResultListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ProjectAreaTreatmentResult
+        fields = (
+            "variable",
+            "aggregation",
+            "year",
+            "value",
+            "baseline",
+            "delta",
+            "type",
+        )
