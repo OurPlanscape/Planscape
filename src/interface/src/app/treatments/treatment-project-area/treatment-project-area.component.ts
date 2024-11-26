@@ -56,9 +56,9 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
-  treatmentPlanId: number = this.treatmentsState.getTreatmentPlanId();
   projectAreaId?: number;
   treatmentPlan: TreatmentPlan | null = null;
+  treatmentPlanId: number = this.treatmentsState.getTreatmentPlanId();
 
   // notes data
   notesModel = 'project_area';
@@ -84,7 +84,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
     }
 
     this.activeProjectArea$
-      .pipe(distinctUntilChanged(), untilDestroyed(this))
+      .pipe(untilDestroyed(this), distinctUntilChanged())
       .subscribe((projectArea) => {
         this.projectAreaId = projectArea?.project_area_id;
         this.loadNotes();
