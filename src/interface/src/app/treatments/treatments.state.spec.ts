@@ -8,6 +8,7 @@ import { TreatedStand } from '@types';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import { RemovingStandsError, UpdatingStandsError } from './treatment-errors';
 import { MOCK_SUMMARY, MOCK_TREATMENT_PLAN } from './mocks';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;
@@ -16,6 +17,7 @@ describe('TreatmentsState', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       providers: [
         TreatmentsState,
         MockProviders(MapConfigState, TreatedStandsState, TreatmentsService),

@@ -86,6 +86,11 @@ export class MapStandsComponent implements OnChanges, OnInit {
    */
   @Input() sourceId = 'stands';
 
+  /**
+   * Whether or not the user can edit stands on the map
+   */
+  @Input() userCanEditStands = false;
+
   treatedStands$ = this.treatedStandsState.treatedStands$;
   sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
 
@@ -237,7 +242,9 @@ export class MapStandsComponent implements OnChanges, OnInit {
   clickOnStand(event: MapMouseEvent) {
     // do not react to right clicks
     // or disable click if stand selection is not enabled
+    // or disable if user doesn't have permission to apply treatments
     if (
+      !this.userCanEditStands ||
       event.originalEvent.button === 2 ||
       !this.mapConfigState.isStandSelectionEnabled()
     ) {

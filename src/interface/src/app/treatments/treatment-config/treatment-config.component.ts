@@ -11,7 +11,7 @@ import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import { catchError, combineLatest, of, map, switchMap } from 'rxjs';
+import { catchError, combineLatest, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -31,7 +31,6 @@ import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dia
 import { getMergedRouteData } from '../treatments-routing-data';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
-import { PlanStateService } from '@services';
 import { canRunTreatmentAnalysis } from '../../plan/permissions';
 import { Plan } from '@types';
 
@@ -69,7 +68,6 @@ import { Plan } from '@types';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class TreatmentConfigComponent {
-  planningAreaId$ = this.treatmentsState.planId$;
   projectAreaId$ = this.treatmentsState.projectAreaId$;
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
@@ -89,7 +87,6 @@ export class TreatmentConfigComponent {
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfig: MapConfigState,
-    private planStateService: PlanStateService,
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
@@ -121,14 +118,8 @@ export class TreatmentConfigComponent {
       });
   }
 
-  canRunTreatment$ = this.planningAreaId$.pipe(
-    switchMap((planId) =>
-      planId
-        ? this.planStateService
-            .getPlan(planId.toString())
-            .pipe(map((plan: Plan) => canRunTreatmentAnalysis(plan)))
-        : of(false)
-    )
+  canRunTreatment$ = this.treatmentsState.planningArea$.pipe(
+    map((plan: Plan | null) => (plan ? canRunTreatmentAnalysis(plan) : false))
   );
 
   redirectToScenario() {
