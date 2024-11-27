@@ -14,7 +14,11 @@ from impacts.tests.factories import (
     ProjectAreaTreatmentResultFactory,
     ImpactVariable,
 )
-from planning.tests.factories import ScenarioFactory, PlanningAreaFactory
+from planning.tests.factories import (
+    ScenarioFactory,
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+)
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -386,6 +390,11 @@ class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
         self.user = UserFactory.create()
         self.planning_area = PlanningAreaFactory(user=self.user)
         self.scenario = ScenarioFactory(planning_area=self.planning_area)
+        self.project_areas = [
+            ProjectAreaFactory(scenario=self.scenario),
+            ProjectAreaFactory(scenario=self.scenario),
+            ProjectAreaFactory(scenario=self.scenario),
+        ]
         self.tx_plan = TreatmentPlanFactory.create(
             scenario=self.scenario, created_by=self.user
         )
@@ -393,15 +402,19 @@ class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
             scenario=self.scenario, created_by=self.user
         )
         self.client.force_authenticate(user=self.user)
+        years = [0, 5, 10, 15, 20]
         self.patxrx_list = []
-        for variable in ImpactVariable.choices:
-            self.patxrx_list.extend(
-                ProjectAreaTreatmentResultFactory.create_batch(
-                    5,
-                    treatment_plan=self.tx_plan,
-                    variable=variable[0],
-                )
-            )
+        for pa in self.project_areas:
+            for variable in ImpactVariable.choices:
+                for year in years:
+                    self.patxrx_list.append(
+                        ProjectAreaTreatmentResultFactory.create(
+                            treatment_plan=self.tx_plan,
+                            variable=variable[0],
+                            project_area=pa,
+                            year=year,
+                        )
+                    )
         self.someone_elses_tx_plan = TreatmentPlanFactory.create()
 
     def test_list(self):
@@ -455,4 +468,16 @@ class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
-        self.assertEqual(response_data["count"], 20)
+        self.assertEqual(response_data["count"], 60)
+
+    def test_list_project_area_filter(self):
+        filter = [
+            ("project_area", self.project_areas[0].pk),
+        ]
+        url = f"{reverse('api:impacts:tx-results-by-planning-area-list', kwargs={'tx_plan_pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(
+            response_data["count"], len(self.patxrx_list) / len(self.project_areas)
+        )

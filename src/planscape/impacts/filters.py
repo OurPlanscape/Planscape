@@ -52,8 +52,7 @@ class ProjectAreaTreatmentResultFilter(filters.FilterSet):
         lookup_expr="iexact",
         help_text="Treatment result impact variable choice (exact).",
     )
-    project_area = filters.ModelChoiceFilter(
-        field_name="project_area",
-        queryset=get_planning_areas_for_filter,
+    project_area = filters.NumberFilter(
+        field_name="project_area__pk",
         help_text="Project Area ID.",
     )
