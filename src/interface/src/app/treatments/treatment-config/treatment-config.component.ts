@@ -149,7 +149,6 @@ export class TreatmentConfigComponent {
   }
 
   closeLegend() {
-    console.log('are we closing something?');
     this.mapConfig.setShowTreatmentLegend(false);
   }
 }

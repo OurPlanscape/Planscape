@@ -104,10 +104,6 @@ export class MapConfigState {
   }
 
   setShowTreatmentLegend(value: boolean) {
-    console.log(
-      'is anything heppending here? we want to close this, right?',
-      value
-    );
     this._showTreatmentLegend$.next(value);
   }
 
