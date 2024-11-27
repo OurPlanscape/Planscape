@@ -57,9 +57,13 @@ export class TreatmentsState {
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
 
+  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
+  public showApplyTreatmentsDialog$ =
+    this._showApplyTreatmentsDialog$.asObservable();
+
   public activeProjectArea$ = combineLatest([
     this.summary$,
-    this.projectAreaId$.pipe(distinctUntilChanged()),
+    this._projectAreaId$.pipe(distinctUntilChanged()),
   ]).pipe(
     map(([summary, projectAreaId]) => {
       return summary?.project_areas.find(
@@ -72,10 +76,6 @@ export class TreatmentsState {
     filter((id): id is number => !!id),
     switchMap((id) => this.planStateService.getPlan(id.toString()))
   );
-
-  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
-  public showApplyTreatmentsDialog$ =
-    this._showApplyTreatmentsDialog$.asObservable();
 
   breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
     map(([projectArea, summary]) => {
