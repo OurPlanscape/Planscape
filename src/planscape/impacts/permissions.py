@@ -151,3 +151,23 @@ class TreatmentPrescriptionViewPermission(PlanscapePermission):
                 return TreatmentPlanPermission.can_change(
                     request.user, object.treatment_plan
                 )
+
+
+class TreatmentResultViewPermission(PlanscapePermission):
+    permission_set = TreatmentPlanPermission
+
+    def has_permission(self, request, view):
+        tx_plan_pk = view.kwargs.get("tx_plan_pk")
+        tx_plan = get_object_or_404(TreatmentPlan, id=tx_plan_pk)
+        return TreatmentPlanPermission.can_view(request.user, tx_plan)
+
+    def has_object_permission(self, request, view, object):
+        match view.action:
+            case "delete":
+                return TreatmentPlanPermission.can_remove(
+                    request.user, object.treatment_plan
+                )
+            case _:
+                return TreatmentPlanPermission.can_change(
+                    request.user, object.treatment_plan
+                )

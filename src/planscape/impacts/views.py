@@ -14,6 +14,7 @@ from impacts.models import (
 from impacts.permissions import (
     TreatmentPlanViewPermission,
     TreatmentPrescriptionViewPermission,
+    TreatmentResultViewPermission,
 )
 from impacts.serializers import (
     CreateTreatmentPlanSerializer,
@@ -343,9 +344,9 @@ class ProjectAreaTreatmentResultViewSet(
     )
     filterset_class = ProjectAreaTreatmentResultFilter
     serializer_class = ProjectAreaTreatmentResultListSerializer
-    # permission_classes = [
-    #     TreatmentPlanViewPermission,
-    # ]
+    permission_classes = [
+        TreatmentResultViewPermission,
+    ]
     pagination_class = LimitOffsetPagination
 
     def get_queryset(self):
