@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {
   ActivatedRoute,
   Event as NavigationEvent,
@@ -16,25 +16,74 @@ import {
   take,
   takeUntil,
 } from 'rxjs';
-
 import { Plan, User } from '@types';
-import { AuthService, PlanStateService } from '@services';
-import { Breadcrumb } from '@shared';
+import {
+  AuthService,
+  PlanStateService,
+  Note,
+  PlanningAreaNotesService,
+} from '@services';
 import { getPlanPath } from './plan-helpers';
+import { HomeParametersStorageService } from '@services/local-storage.service';
+import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
+import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
+import { Breadcrumb, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-plan',
   templateUrl: './plan.component.html',
   styleUrls: ['./plan.component.scss'],
+  providers: [PlanningAreaNotesService],
 })
-export class PlanComponent implements OnInit, OnDestroy {
+export class PlanComponent implements OnInit {
+  constructor(
+    private authService: AuthService,
+    private planStateService: PlanStateService,
+    private route: ActivatedRoute,
+    private router: Router,
+    private homeParametersStorageService: HomeParametersStorageService,
+    private notesService: PlanningAreaNotesService,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar
+  ) {
+    if (this.planId === null) {
+      this.planNotFound = true;
+      return;
+    }
+    const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
+
+    plan$.subscribe({
+      next: (plan) => {
+        this.currentPlan$.next(plan);
+      },
+      error: (error) => {
+        this.planNotFound = true;
+      },
+    });
+
+    this.planOwner$ = plan$.pipe(
+      concatMap((plan) => {
+        return this.authService.getUser(plan.user);
+      })
+    );
+  }
+
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
   planOwner$ = new Observable<User | null>();
+
+  planId = this.route.snapshot.paramMap.get('id');
+  planNotFound: boolean = !this.planId;
+
+  sidebarNotes: Note[] = [];
+  notesSidebarState: NotesSidebarState = 'READY';
 
   showOverview$ = new BehaviorSubject<boolean>(false);
   area$ = this.showOverview$.pipe(
     map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
   );
+  private readonly destroy$ = new Subject<void>();
 
   scenarioName$ = this.planStateService.planState$.pipe(
     map((state) => {
@@ -68,41 +117,6 @@ export class PlanComponent implements OnInit, OnDestroy {
     })
   );
 
-  private readonly destroy$ = new Subject<void>();
-
-  planId = this.route.snapshot.paramMap.get('id');
-  planNotFound: boolean = !this.planId;
-
-  constructor(
-    private authService: AuthService,
-    private planStateService: PlanStateService,
-    private route: ActivatedRoute,
-    private router: Router
-  ) {
-    // TODO: Move everything in the constructor to ngOnInit
-
-    if (this.planId === null) {
-      this.planNotFound = true;
-      return;
-    }
-    const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
-
-    plan$.subscribe({
-      next: (plan) => {
-        this.currentPlan$.next(plan);
-      },
-      error: (error) => {
-        this.planNotFound = true;
-      },
-    });
-
-    this.planOwner$ = plan$.pipe(
-      concatMap((plan) => {
-        return this.authService.getUser(plan.user);
-      })
-    );
-  }
-
   ngOnInit() {
     this.planStateService.planState$
       .pipe(takeUntil(this.destroy$))
@@ -121,11 +135,7 @@ export class PlanComponent implements OnInit, OnDestroy {
       .subscribe((event: NavigationEvent) => {
         this.updatePlanStateFromRoute();
       });
-  }
-
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
+    this.loadNotes();
   }
 
   private getPathFromSnapshot() {
@@ -154,5 +164,73 @@ export class PlanComponent implements OnInit, OnDestroy {
 
   backToOverview() {
     this.router.navigate(['plan', this.currentPlan$.value!.id]);
+  }
+
+  goBack() {
+    if (this.showOverview$.value) {
+      this.router.navigate(['home'], {
+        queryParams: this.homeParametersStorageService.getItem(),
+      });
+    } else {
+      this.backToOverview();
+    }
+  }
+
+  //notes handling functions
+  addNote(comment: string) {
+    this.notesSidebarState = 'SAVING';
+    if (this.planId) {
+      this.notesService.addNote(this.planId, comment).subscribe({
+        next: () => {
+          this.loadNotes();
+        },
+        error: () => {
+          this.snackbar.open(
+            `Error: could not add note.`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+        complete: () => {
+          this.notesSidebarState = 'READY';
+        },
+      });
+    }
+  }
+
+  handleNoteDelete(n: Note) {
+    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed: boolean) => {
+        if (confirmed && this.planId) {
+          this.notesService.deleteNote(this.planId, n.id).subscribe({
+            next: () => {
+              this.snackbar.open(
+                `Deleted note`,
+                'Dismiss',
+                SNACK_NOTICE_CONFIG
+              );
+              this.loadNotes();
+            },
+            error: () => {
+              this.snackbar.open(
+                `Error: Could not delete note.`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+          });
+        }
+      });
+  }
+
+  loadNotes() {
+    if (this.planId) {
+      this.notesService.getNotes(this.planId).subscribe((notes: Note[]) => {
+        this.sidebarNotes = notes;
+      });
+    }
   }
 }

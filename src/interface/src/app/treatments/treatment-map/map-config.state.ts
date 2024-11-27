@@ -42,6 +42,9 @@ export class MapConfigState {
   private _treatedStandsOpacity = new BehaviorSubject(this.defaultOpacity);
   public treatedStandsOpacity$ = this._treatedStandsOpacity.asObservable();
 
+  private defaultZoomLevel = 7;
+  public zoomLevel$ = new BehaviorSubject<number>(this.defaultZoomLevel);
+
   updateBaseLayer(layer: BaseLayerType) {
     this._baseLayer$.next(layer);
   }

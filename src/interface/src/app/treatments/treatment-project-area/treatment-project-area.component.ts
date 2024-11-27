@@ -1,42 +1,56 @@
-import { Component, OnDestroy } from '@angular/core';
-import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { Note, ProjectAreaNotesService } from '../../services/notes.service';
+import { MatDividerModule } from '@angular/material/divider';
+import {
+  NotesSidebarComponent,
+  NotesSidebarState,
+  TreatmentStandsProgressBarComponent,
+} from '@styleguide';
+import { TreatmentsService } from '@services/treatments.service';
+import { TreatmentPlan } from '@types';
+import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
+import { take } from 'rxjs';
+import { SharedModule, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
-import { OpacitySliderComponent } from '../../../styleguide/opacity-slider/opacity-slider.component';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
-import { TreatmentStandsProgressBarComponent } from '@styleguide';
 import { getTreatedStandsTotal } from '../prescriptions';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
 @Component({
-  selector: 'app-treatment-project-area',
+  selector: 'app-project-area',
   standalone: true,
+  providers: [ProjectAreaNotesService],
   imports: [
     AsyncPipe,
-    JsonPipe,
-    MatTabsModule,
     MapBaseLayerComponent,
+    MatDialogModule,
+    MatDividerModule,
+    MatTabsModule,
     NgIf,
-    OpacitySliderComponent,
-    ProjectAreasTabComponent,
+    NotesSidebarComponent,
     ProjectAreaTreatmentsTabComponent,
-    RouterLink,
-    TreatmentMapComponent,
+    SharedModule,
     TreatmentStandsProgressBarComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
 })
-export class TreatmentProjectAreaComponent implements OnDestroy {
+export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
   constructor(
     private mapConfigState: MapConfigState,
     private selectedStandsState: SelectedStandsState,
-    private treatmentsState: TreatmentsState
+    private treatmentsState: TreatmentsState,
+    private treatmentsService: TreatmentsService,
+    private notesService: ProjectAreaNotesService,
+    private dialog: MatDialog,
+    private snackbar: MatSnackBar
+    // private readonly cdr: ChangeDetectorRef
   ) {}
 
   opacity = this.mapConfigState.treatedStandsOpacity$;
@@ -50,5 +64,86 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   ngOnDestroy(): void {
     this.selectedStandsState.clearStands();
     this.treatmentsState.setShowApplyTreatmentsDialog(false);
+  }
+
+  treatmentPlanId: number = this.treatmentsState.getTreatmentPlanId();
+  projectAreaId?: number = this.treatmentsState.getProjectAreaId();
+
+  treatmentPlan: TreatmentPlan | null = null;
+  notesModel = 'project_area';
+
+  ngOnInit(): void {
+    if (this.treatmentPlanId) {
+      this.treatmentsService
+        .getTreatmentPlan(Number(this.treatmentPlanId))
+        .subscribe((r) => (this.treatmentPlan = r));
+    }
+    this.loadNotes();
+  }
+
+  // notes data
+  notes: Note[] = [];
+  notesSidebarState: NotesSidebarState = 'READY';
+
+  //notes handling functions
+  addNote(comment: string) {
+    if (this.projectAreaId) {
+      this.notesSidebarState = 'SAVING';
+      this.notesService.addNote(this.projectAreaId, comment).subscribe({
+        next: () => {
+          this.loadNotes();
+        },
+        error: () => {
+          this.snackbar.open(
+            `Error: Could not add note.`,
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+        complete: () => {
+          this.notesSidebarState = 'READY';
+        },
+      });
+    }
+  }
+
+  handleNoteDelete(note: Note) {
+    const dialogRef = this.dialog.open(DeleteNoteDialogComponent, {});
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed && this.projectAreaId) {
+          this.notesService.deleteNote(this.projectAreaId, note.id).subscribe({
+            next: () => {
+              this.snackbar.open(
+                `Deleted note`,
+                'Dismiss',
+                SNACK_NOTICE_CONFIG
+              );
+            },
+            error: () => {
+              this.snackbar.open(
+                `Error: Could not delete note.`,
+                'Dismiss',
+                SNACK_ERROR_CONFIG
+              );
+            },
+            complete: () => {
+              this.loadNotes();
+            },
+          });
+        }
+      });
+  }
+
+  loadNotes() {
+    if (this.projectAreaId) {
+      this.notesService
+        .getNotes(this.projectAreaId)
+        .subscribe((notes: Note[]) => {
+          this.notes = [...notes];
+        });
+    }
   }
 }
