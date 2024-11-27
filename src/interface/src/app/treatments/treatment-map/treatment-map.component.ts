@@ -210,6 +210,13 @@ export class TreatmentMapComponent {
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
+    this.listenForZoom();
+  }
+
+  listenForZoom() {
+    this.mapLibreMap.on('zoom', () => {
+      this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
+    });
   }
 
   onMapMouseMove(event: MapMouseEvent): void {

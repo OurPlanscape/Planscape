@@ -461,14 +461,14 @@ def calculate_project_area_deltas(
         new_action_dict = {**baseline_dict, **action_dict}
         baseline_sum = sum(
             [
-                getattr(stand_metric, attribute)
+                getattr(stand_metric, attribute, 0) or 0
                 for _stand_id, stand_metric in baseline_dict.items()
             ]
         )
 
         action_sum = sum(
             [
-                getattr(stand_metric, attribute)
+                getattr(stand_metric, attribute, 0) or 0
                 for _stand_id, stand_metric in new_action_dict.items()
             ]
         )
