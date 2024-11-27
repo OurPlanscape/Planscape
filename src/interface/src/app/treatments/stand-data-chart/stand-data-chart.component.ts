@@ -4,7 +4,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { map, Observable } from 'rxjs';
-import { SLOT_COLORS } from '../metrics';
+import { SLOT_COLORS, YEAR_INTERVAL_PROPERTY } from '../metrics';
 
 @Component({
   selector: 'app-stand-data-chart',
@@ -19,13 +19,9 @@ export class StandDataChartComponent {
   activeStandValues$: Observable<number[]> =
     this.directImpactsStateService.activeStand$.pipe(
       map((a) => {
-        return [
-          a.properties['delta_0'] * 100,
-          a.properties['delta_5'] * 100,
-          a.properties['delta_10'] * 100,
-          a.properties['delta_15'] * 100,
-          a.properties['delta_20'] * 100,
-        ];
+        return Object.values(YEAR_INTERVAL_PROPERTY).map(
+          (property) => a.properties[property] * 100
+        );
       })
     );
 

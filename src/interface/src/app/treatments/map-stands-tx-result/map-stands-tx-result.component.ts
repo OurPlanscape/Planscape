@@ -54,6 +54,10 @@ export class MapStandsTxResultComponent implements OnInit {
     })
   );
 
+  activeStandId$ = this.directImpactsStateService.activeStand$.pipe(
+    map((stand) => stand.id)
+  );
+
   setActiveStand(event: MapMouseEvent) {
     const d = this.mapLibreMap.queryRenderedFeatures(event.point, {
       layers: ['standsFill'],
