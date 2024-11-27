@@ -5,9 +5,7 @@ from rest_framework.request import Request
 from impacts.models import (
     TreatmentPlan,
     TreatmentPlanStatus,
-    TreatmentPrescriptionAction,
     ImpactVariable,
-    ProjectAreaTreatmentResult,
 )
 from planning.models import Scenario
 from planning.filters import get_planning_areas_for_filter
@@ -54,14 +52,8 @@ class ProjectAreaTreatmentResultFilter(filters.FilterSet):
         lookup_expr="iexact",
         help_text="Treatment result impact variable choice (exact).",
     )
-    action = filters.ChoiceFilter(
-        choices=TreatmentPrescriptionAction.choices,
-        field_name="action",
-        lookup_expr="iexact",
-        help_text="Treatment Prescription action choice (exact).",
-    )
     project_area = filters.ModelChoiceFilter(
         field_name="project_area",
         queryset=get_planning_areas_for_filter,
-        help_text="Scenario ID.",
+        help_text="Project Area ID.",
     )
