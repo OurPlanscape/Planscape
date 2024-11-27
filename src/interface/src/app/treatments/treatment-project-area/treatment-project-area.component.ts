@@ -10,7 +10,7 @@ import {
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatmentPlan } from '@types';
 import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
-import { take, distinctUntilChanged, BehaviorSubject } from 'rxjs';
+import { take, distinctUntilChanged } from 'rxjs';
 import { SharedModule, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -62,7 +62,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
 
   // notes data
   notesModel = 'project_area';
-  notes = new BehaviorSubject<Note[]>([]);
+  notes: Note[] = [];
   notesSidebarState: NotesSidebarState = 'READY';
 
   getTreatedStandsTotal = getTreatedStandsTotal;
@@ -148,7 +148,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, OnInit {
       this.notesService
         .getNotes(this.projectAreaId)
         .subscribe((notes: Note[]) => {
-          this.notes.next([...notes]);
+          this.notes = [...notes];
         });
     }
   }
