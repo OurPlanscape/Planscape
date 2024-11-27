@@ -284,6 +284,31 @@ class ProjectAreaNoteViewSet(viewsets.ModelViewSet):
     filterset_class = ProjectAreaNoteFilterSet
     filter_backends = [DjangoFilterBackend]
 
+    def get_queryset(self):
+        project_area_id = self.kwargs.get("project_area_id")
+        treatment_plan_id = self.request.data.get(
+            "treatment_plan_id"
+        ) or self.request.query_params.get("treatment_plan_id")
+        if project_area_id is None:
+            raise ValueError("project_area_id is required")
+        if treatment_plan_id is None:
+            raise ValueError("treatment_plan_id is required")
+        return self.queryset.filter(
+            project_area_id=project_area_id, treatment_plan_id=treatment_plan_id
+        )
+
+    def create(self, request, project_area_id=None):
+        treatment_plan_id = request.data.get("treatment_plan_id")
+        serializer = self.get_serializer(
+            data={
+                **request.data,
+                "treatment_plan": treatment_plan_id,
+            }
+        )
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response(serializer.data, status=201)
+
     def get_serializer_class(self):
         return (
             self.serializer_classes.get(self.action, self.serializer_class)
@@ -292,9 +317,3 @@ class ProjectAreaNoteViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
-
-    def get_queryset(self):
-        project_area_id = self.kwargs.get("project_area_id")
-        if project_area_id is None:
-            raise ValueError("project_area_id is required")
-        return self.queryset.filter(project_area_id=project_area_id)

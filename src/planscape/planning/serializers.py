@@ -510,6 +510,7 @@ class ProjectAreaNoteSerializer(serializers.ModelSerializer):
             "project_area",
             "user_id",
             "user_name",
+            "treatment_plan_id",
         )
         model = ProjectAreaNote
 
@@ -517,7 +518,7 @@ class ProjectAreaNoteSerializer(serializers.ModelSerializer):
 class ProjectAreaNoteCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProjectAreaNote
-        fields = ["content"]
+        fields = ["content", "treatment_plan"]
 
     def create(self, validated_data):
         project_area_id = self.context["view"].kwargs.get("project_area_id")
@@ -555,6 +556,7 @@ class ProjectAreaNoteListSerializer(serializers.ModelSerializer):
             "user_id",
             "user_name",
             "can_delete",
+            "treatment_plan_id",
         )
         model = ProjectAreaNote
 

@@ -357,6 +357,12 @@ class ProjectAreaNote(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Mod
         related_name="project_area",
         on_delete=models.CASCADE,
     )
+    treatment_plan = models.ForeignKey(
+        "impacts.TreatmentPlan",
+        related_name="treatment_plan",
+        on_delete=models.CASCADE,
+        null=True,
+    )
     # if the user is deleted, their notes are also deleted
     user_id: int
     user = models.ForeignKey(

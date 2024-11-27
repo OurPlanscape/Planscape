@@ -876,13 +876,13 @@ class ProjectAreaNoteTest(APITransactionTestCase):
             created_by=self.user, scenario=self.scenario
         )
         self.project_area = ProjectAreaFactory.create(
-            created_by_id=self.user.pk, scenario=self.treatment_plan.scenario
+            created_by_id=self.user.pk, scenario=self.scenario
         )
         self.other_project_area = ProjectAreaFactory.create(
-            created_by_id=self.user.pk, scenario=self.treatment_plan.scenario
+            created_by_id=self.user.pk, scenario=self.scenario
         )
         self.other_user_project_area = ProjectAreaFactory.create(
-            created_by_id=self.other_user.pk, scenario=self.treatment_plan.scenario
+            created_by_id=self.other_user.pk, scenario=self.scenario
         )
 
     def test_create_note(self):
@@ -890,6 +890,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         new_note = json.dumps(
             {
                 "content": "Here is a note about a project area.",
+                "treatment_plan_id": self.treatment_plan.pk,
             }
         )
         response = self.client.post(
@@ -912,7 +913,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         new_note = json.dumps(
             {
                 "content": "Here is a note about a project area.",
-                "project_area": self.other_user_project_area.pk,
+                "treatment_plan_id": self.treatment_plan.pk,
             }
         )
         response = self.client.post(
@@ -930,7 +931,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
         new_note = json.dumps(
             {
                 "content": "Here is a note about a project area.",
-                "project_area": self.project_area.pk,
+                "treatment_plan_id": self.treatment_plan.pk,
             }
         )
         response = self.client.post(
@@ -946,27 +947,37 @@ class ProjectAreaNoteTest(APITransactionTestCase):
     def test_get_notes_for_project_area(self):
         self.client.force_authenticate(self.user)
         ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a note"
+            project_area=self.project_area,
+            user=self.user,
+            content="I am a note",
+            treatment_plan_id=self.treatment_plan.pk,
         )
         ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a second note"
+            project_area=self.project_area,
+            user=self.user,
+            content="I am a second note",
+            treatment_plan_id=self.treatment_plan.pk,
         )
         ProjectAreaNote.objects.create(
             project_area=self.project_area,
             user=self.other_user,
             content="I am a third note",
+            treatment_plan_id=self.treatment_plan.pk,
         )
         # creating a note for a separate project area, so it shouldnt be in results
         ProjectAreaNote.objects.create(
             project_area=self.other_project_area,
             user=self.other_user,
             content="I am a third note",
+            treatment_plan_id=self.treatment_plan.pk,
         )
+        query_params = {"treatment_plan_id": self.treatment_plan.pk}
         response = self.client.get(
             reverse(
                 "api:planning:project-areas-notes-list",
                 kwargs={"project_area_id": self.project_area.pk},
             ),
+            query_params,
             content_type="application/json",
         )
         response_data = response.json()
@@ -979,16 +990,24 @@ class ProjectAreaNoteTest(APITransactionTestCase):
     def test_get_notes_for_unauthorized_user(self):
         self.client.force_authenticate(self.other_user)
         ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a note"
+            project_area=self.project_area,
+            user=self.user,
+            content="I am a note",
+            treatment_plan_id=self.treatment_plan.pk,
         )
         ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a second note"
+            project_area=self.project_area,
+            user=self.user,
+            content="I am a second note",
+            treatment_plan_id=self.treatment_plan.pk,
         )
+        query_params = {"treatment_plan_id": self.treatment_plan.pk}
         response = self.client.get(
             reverse(
                 "api:planning:project-areas-notes-list",
                 kwargs={"project_area_id": self.project_area.pk},
             ),
+            query_params,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -996,13 +1015,18 @@ class ProjectAreaNoteTest(APITransactionTestCase):
     def test_get_single_note(self):
         self.client.force_authenticate(self.user)
         visible_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am just one note"
+            project_area=self.project_area,
+            user=self.user,
+            content="I am just one note",
+            treatment_plan_id=self.treatment_plan.pk,
         )
+        query_params = {"treatment_plan_id": self.treatment_plan.pk}
         response = self.client.get(
             reverse(
                 "api:planning:project-areas-notes-detail",
                 kwargs={"project_area_id": self.project_area.pk, "pk": visible_note.pk},
             ),
+            query_params,
             content_type="application/json",
         )
         response_data = response.json()
@@ -1012,13 +1036,18 @@ class ProjectAreaNoteTest(APITransactionTestCase):
     def test_get_single_note_no_perms(self):
         self.client.force_authenticate(self.other_user)
         visible_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a note"
+            project_area=self.project_area,
+            user=self.user,
+            content="I am a note",
+            treatment_plan_id=self.treatment_plan.pk,
         )
+        query_params = {"treatment_plan_id": self.treatment_plan.pk}
         response = self.client.get(
             reverse(
                 "api:planning:project-areas-notes-detail",
                 kwargs={"project_area_id": self.project_area.pk, "pk": visible_note.pk},
             ),
+            data=query_params,
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
@@ -1026,13 +1055,16 @@ class ProjectAreaNoteTest(APITransactionTestCase):
     def test_delete_note(self):
         self.client.force_authenticate(self.user)
         new_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user
+            project_area=self.project_area,
+            user=self.user,
+            treatment_plan_id=self.treatment_plan.pk,
         )
         response = self.client.delete(
             reverse(
                 "api:planning:project-areas-notes-detail",
                 kwargs={"project_area_id": self.project_area.pk, "pk": new_note.pk},
             ),
+            data=json.dumps({"treatment_plan_id": self.treatment_plan.pk}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
@@ -1040,7 +1072,9 @@ class ProjectAreaNoteTest(APITransactionTestCase):
     def test_delete_nonexistent_note(self):
         self.client.force_authenticate(self.user)
         new_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user
+            project_area=self.project_area,
+            user=self.user,
+            treatment_plan_id=self.treatment_plan.pk,
         )
         response = self.client.delete(
             reverse(
@@ -1050,6 +1084,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
                     "pk": (new_note.pk + 1),
                 },
             ),
+            data=json.dumps({"treatment_plan_id": self.treatment_plan.pk}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
@@ -1067,6 +1102,7 @@ class ProjectAreaNoteTest(APITransactionTestCase):
                     "pk": (new_note.pk + 1),
                 },
             ),
+            data=json.dumps({"treatment_plan_id": self.treatment_plan.pk}),
             content_type="application/json",
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
