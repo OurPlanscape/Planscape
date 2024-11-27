@@ -4,6 +4,7 @@ import { NgChartsModule } from 'ng2-charts';
 import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { map, Observable } from 'rxjs';
+import { SLOT_COLORS } from '../metrics';
 
 @Component({
   selector: 'app-stand-data-chart',
@@ -42,14 +43,7 @@ export class StandDataChartComponent {
     })
   );
 
-  public barChartOptions: ChartConfiguration<'bar'>['options'] = {
-    backgroundColor: '#4965c7',
-    borderColor: '#4965c7',
-    elements: {
-      bar: {
-        hoverBackgroundColor: '#577bf9',
-      },
-    },
+  private readonly barChartOptions: ChartConfiguration<'bar'>['options'] = {
     responsive: true,
     maintainAspectRatio: false,
     plugins: {
@@ -93,4 +87,25 @@ export class StandDataChartComponent {
       },
     },
   };
+
+  barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =
+    this.directImpactsStateService.activeMetric$.pipe(
+      map((activeMetric) => {
+        const slot = activeMetric.slot;
+        const color = SLOT_COLORS[slot];
+        const options = {
+          backgroundColor: color,
+          borderColor: color,
+          elements: {
+            bar: {
+              hoverBackgroundColor: color,
+            },
+          },
+        };
+        return {
+          ...options,
+          ...this.barChartOptions,
+        };
+      })
+    );
 }

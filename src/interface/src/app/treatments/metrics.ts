@@ -71,10 +71,10 @@ export type MapMetricSlot = 'blue' | 'purple' | 'orange' | 'green';
 export const DEFAULT_SLOT: MapMetricSlot = 'blue';
 
 export const SLOT_COLORS: Record<MapMetricSlot, string> = {
-  blue: '#4361EE',
-  purple: '#9071E8',
-  orange: '#EC933A',
-  green: '#63C2A2',
+  blue: '#1E88E5',
+  purple: '#8E24AA',
+  orange: '#FB8C00',
+  green: '#43A047',
 };
 
 export const SLOT_PALETTES: Record<

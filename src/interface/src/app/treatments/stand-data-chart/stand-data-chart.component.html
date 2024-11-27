@@ -2,6 +2,6 @@
 <canvas
   baseChart
   [data]="(barChartData$ | async) || undefined"
-  [options]="barChartOptions"
+  [options]="(barChartOptions$ | async) ?? {}"
   [legend]="false"
   [type]="'bar'"></canvas>
