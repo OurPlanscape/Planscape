@@ -24,7 +24,8 @@
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
   <app-action-button
-    *ngIf="(showTreatmentStands$ | async) && (showLegend$ | async) === false">
+    *ngIf="(showTreatmentStands$ | async) && (showLegend$ | async) === false"
+    (clickedActionButton)="openTreatmentLegend()">
   </app-action-button>
 
   <app-planning-area-layer

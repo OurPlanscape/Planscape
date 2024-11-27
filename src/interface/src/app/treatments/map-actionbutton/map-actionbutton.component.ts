@@ -1,23 +1,20 @@
-import { Component, Input } from '@angular/core';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
-import { ButtonComponent } from '@styleguide';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Map as MapLibreMap } from 'maplibre-gl';
 
 @Component({
   selector: 'app-action-button',
   standalone: true,
-  imports: [ControlComponent, MatIconModule, ButtonComponent, MatTooltipModule],
+  imports: [ControlComponent, MatIconModule, MatTooltipModule],
   templateUrl: './map-actionbutton.component.html',
   styleUrl: './map-actionbutton.component.scss',
 })
 export class MapActionButtonComponent {
-  @Input() mapLibreMap!: MapLibreMap;
-  constructor(private mapConfigState: MapConfigState) {}
+  constructor() {}
+  @Output() clickedActionButton = new EventEmitter();
 
-  openLegend() {
-    this.mapConfigState.setShowTreatmentLegend(true);
+  handleClick() {
+    this.clickedActionButton.emit();
   }
 }

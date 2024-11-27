@@ -259,6 +259,9 @@ export class TreatmentMapComponent {
       this.sourceLoaded$.next(event);
     }
   }
+  openTreatmentLegend() {
+    this.mapConfigState.setShowTreatmentLegend(true);
+  }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addAuthHeaders(url, resourceType, this.authService.getAuthCookie());
