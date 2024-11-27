@@ -9,7 +9,7 @@ import {
 import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 
 describe('MapProjectAreasComponent', () => {
   let component: MapProjectAreasComponent;
@@ -22,6 +22,7 @@ describe('MapProjectAreasComponent', () => {
         MockProvider(TreatmentsState),
         MockProvider(MapConfigState, {
           showTreatmentStandsLayer$: of(false),
+          zoomLevel$: new BehaviorSubject<number>(7),
         }),
       ],
       declarations: MockDeclarations(VectorSourceComponent, LayerComponent),

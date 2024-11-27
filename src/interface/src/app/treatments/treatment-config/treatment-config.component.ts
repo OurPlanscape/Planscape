@@ -31,6 +31,8 @@ import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dia
 import { getMergedRouteData } from '../treatments-routing-data';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
+import { canRunTreatmentAnalysis } from '../../plan/permissions';
+import { Plan } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -115,6 +117,10 @@ export class TreatmentConfigComponent {
           .subscribe((_) => (this.loading = false));
       });
   }
+
+  canRunTreatment$ = this.treatmentsState.planningArea$.pipe(
+    map((plan: Plan | null) => (plan ? canRunTreatmentAnalysis(plan) : false))
+  );
 
   redirectToScenario() {
     const summary = this.treatmentsState.getCurrentSummary();

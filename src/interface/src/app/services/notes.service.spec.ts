@@ -1,15 +1,16 @@
 import { TestBed } from '@angular/core/testing';
-import { PlanNotesService } from './plan-notes.service';
+import { PlanningAreaNotesService } from './notes.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
-describe('PlanNotesService', () => {
-  let service: PlanNotesService;
+describe('PlanningAreaNotesService', () => {
+  let service: PlanningAreaNotesService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
+      providers: [PlanningAreaNotesService],
     });
-    service = TestBed.inject(PlanNotesService);
+    service = TestBed.inject(PlanningAreaNotesService);
   });
 
   it('should be created', () => {

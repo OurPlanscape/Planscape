@@ -38,7 +38,7 @@ import {
   generatePaintForSequencedStands,
   generatePaintForTreatedStands,
   PROJECT_AREA_OUTLINE_PAINT,
-  SELECTED_STANDS_PAINT,
+  SELECTED_STANDS_LINE_PAINT,
   STANDS_CELL_PAINT,
 } from '../map.styles';
 import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
@@ -85,6 +85,11 @@ export class MapStandsComponent implements OnChanges, OnInit {
    * The id to be applied on the source vector layer
    */
   @Input() sourceId = 'stands';
+
+  /**
+   * Whether or not the user can edit stands on the map
+   */
+  @Input() userCanEditStands = false;
 
   treatedStands$ = this.treatedStandsState.treatedStands$;
   sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
@@ -172,7 +177,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     selectedStands: {
       name: 'stands-layer-selected',
       sourceLayer: 'stands_by_tx_plan',
-      paint: SELECTED_STANDS_PAINT as any,
+      paint: SELECTED_STANDS_LINE_PAINT as any,
     },
   };
 
@@ -237,7 +242,9 @@ export class MapStandsComponent implements OnChanges, OnInit {
   clickOnStand(event: MapMouseEvent) {
     // do not react to right clicks
     // or disable click if stand selection is not enabled
+    // or disable if user doesn't have permission to apply treatments
     if (
+      !this.userCanEditStands ||
       event.originalEvent.button === 2 ||
       !this.mapConfigState.isStandSelectionEnabled()
     ) {

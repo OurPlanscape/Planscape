@@ -9,7 +9,6 @@ import {
   PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-
 import {
   LngLat,
   Map as MapLibreMap,
@@ -25,15 +24,15 @@ import { MapConfigState } from './map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { AuthService, PlanService } from '@services';
+import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addAuthHeaders } from '../maplibre.helper';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { Geometry } from 'geojson';
 import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
-import { filter, switchMap } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
-
+import { Geometry } from 'geojson';
+import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
@@ -146,20 +145,22 @@ export class TreatmentMapComponent {
   treatmentTooltipLngLat: LngLat | null = null;
 
   /**
+   * permissions for current user
+   */
+  userCanEditStands: boolean = false;
+
+  /**
    *
    * The Planning Area geometry
    */
-  planningAreaGeometry$ = this.treatmentsState.planId$.pipe(
-    filter((id) => id !== null),
-    switchMap((id) => this.planService.getPlan(String(id))),
-    map((planData) => planData.geometry as Geometry)
+  planningAreaGeometry$ = this.treatmentsState.planningArea$.pipe(
+    map((area) => area.geometry as Geometry)
   );
 
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private treatmentsState: TreatmentsState,
-    private planService: PlanService,
     private selectedStandsState: SelectedStandsState
   ) {
     // update cursor on map
@@ -169,6 +170,12 @@ export class TreatmentMapComponent {
         if (this.mapLibreMap) {
           this.mapLibreMap.getCanvas().style.cursor = cursor;
         }
+      });
+
+    this.treatmentsState.planningArea$
+      .pipe(untilDestroyed(this))
+      .subscribe((plan) => {
+        this.userCanEditStands = plan ? canEditTreatmentPlan(plan) : false;
       });
 
     this.mapConfigState.baseLayer$
@@ -190,7 +197,10 @@ export class TreatmentMapComponent {
     if (event.originalEvent.button === 2) {
       return;
     }
-    if (!this.mapConfigState.isStandSelectionEnabled()) {
+    if (
+      !this.userCanEditStands ||
+      !this.mapConfigState.isStandSelectionEnabled()
+    ) {
       return;
     }
     this.dragStandsSelection = true;
@@ -200,10 +210,20 @@ export class TreatmentMapComponent {
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
+    this.listenForZoom();
+  }
+
+  listenForZoom() {
+    this.mapLibreMap.on('zoom', () => {
+      this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
+    });
   }
 
   onMapMouseMove(event: MapMouseEvent): void {
-    if (this.mapConfigState.isStandSelectionEnabled()) {
+    if (
+      this.userCanEditStands &&
+      this.mapConfigState.isStandSelectionEnabled()
+    ) {
       this.treatmentTooltipLngLat = event.lngLat;
     } else {
       this.treatmentTooltipLngLat = null;
