@@ -1,4 +1,5 @@
 from unittest import mock
+from urllib.parse import urlencode
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 from django.forms.models import model_to_dict
@@ -11,8 +12,9 @@ from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
     ProjectAreaTreatmentResultFactory,
+    ImpactVariable,
 )
-from planning.tests.factories import ScenarioFactory
+from planning.tests.factories import ScenarioFactory, PlanningAreaFactory
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -382,16 +384,25 @@ class TxPrescriptionBatchDeleteTest(APITransactionTestCase):
 class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory.create()
-        self.tx_plan = TreatmentPlanFactory.create(created_by=self.user)
-        self.tx_empty_plan = TreatmentPlanFactory.create(created_by=self.user)
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.scenario = ScenarioFactory(planning_area=self.planning_area)
+        self.tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.user
+        )
+        self.empty_tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.user
+        )
         self.client.force_authenticate(user=self.user)
-        self.txrx_list = TreatmentPrescriptionFactory.create_batch(
-            10, treatment_plan=self.tx_plan
-        )
-        self.patxrx_list = ProjectAreaTreatmentResultFactory.create_batch(
-            10,
-            treatment_plan=self.tx_plan,
-        )
+        self.patxrx_list = []
+        for variable in ImpactVariable.choices:
+            self.patxrx_list.extend(
+                ProjectAreaTreatmentResultFactory.create_batch(
+                    5,
+                    treatment_plan=self.tx_plan,
+                    variable=variable[0],
+                )
+            )
+        self.someone_elses_tx_plan = TreatmentPlanFactory.create()
 
     def test_list(self):
         response = self.client.get(
@@ -400,13 +411,9 @@ class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
                 kwargs={"tx_plan_pk": self.tx_plan.pk},
             ),
         )
-        response_data = response.json()
-        self.assertEqual(response_data["count"], 10)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-
-    def test_list_filter(self):
-        # TDB
-        pass
+        response_data = response.json()
+        self.assertEqual(response_data["count"], len(self.patxrx_list))
 
     def test_treatment_plan_does_not_exists(self):
         response = self.client.get(
@@ -415,21 +422,37 @@ class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
                 kwargs={"tx_plan_pk": 999},
             ),
         )
-        response_data = response.json()
-        self.assertEqual(response_data["count"], 0)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
     def test_no_project_area_treatment_result(self):
         response = self.client.get(
             reverse(
                 "api:impacts:tx-results-by-planning-area-list",
-                kwargs={"tx_plan_pk": self.tx_empty_plan.pk},
+                kwargs={"tx_plan_pk": self.empty_tx_plan.pk},
             ),
         )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         response_data = response.json()
         self.assertEqual(response_data["count"], 0)
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_forbidden(self):
-        # TBD
-        pass
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-results-by-planning-area-list",
+                kwargs={"tx_plan_pk": self.someone_elses_tx_plan.pk},
+            ),
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_list_variable_filter(self):
+        filter = [
+            ("variable", ImpactVariable.TOTAL_CARBON.value),
+            ("variable", ImpactVariable.FLAME_LENGTH.value),
+            ("variable", ImpactVariable.RATE_OF_SPREAD.value),
+            ("variable", ImpactVariable.PROBABILITY_TORCHING.value),
+        ]
+        url = f"{reverse('api:impacts:tx-results-by-planning-area-list', kwargs={'tx_plan_pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(response_data["count"], 20)
