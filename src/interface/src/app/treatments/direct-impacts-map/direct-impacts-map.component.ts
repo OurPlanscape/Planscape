@@ -11,8 +11,11 @@ import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addAuthHeaders } from '../maplibre.helper';
 import { MapStandsTxResultComponent } from '../map-stands-tx-result/map-stands-tx-result.component';
-
-type Year = 'cero' | 'five' | 'ten' | 'fifteen' | 'twenty';
+import {
+  YEAR_INTERVAL_LABELS,
+  YEAR_INTERVAL_PROPERTY,
+  YearInterval,
+} from '../metrics';
 
 @Component({
   selector: 'app-direct-impacts-map',
@@ -38,23 +41,10 @@ export class DirectImpactsMapComponent {
     private authService: AuthService
   ) {}
 
-  readonly labels: Record<Year, string> = {
-    cero: 'Baseline',
-    five: '5 Years',
-    ten: '10 Years',
-    fifteen: '15 Years',
-    twenty: '20 Years',
-  };
+  readonly labels = YEAR_INTERVAL_LABELS;
 
-  readonly variables: Record<Year, string> = {
-    cero: 'delta_0',
-    five: 'delta_5',
-    ten: 'delta_10',
-    fifteen: 'delta_15',
-    twenty: 'delta_20',
-  };
-
-  @Input() year: Year = 'cero';
+  readonly variables = YEAR_INTERVAL_PROPERTY;
+  @Input() year: YearInterval = 'cero';
   @Output()
   mapCreated = new EventEmitter<MapLibreMap>();
 

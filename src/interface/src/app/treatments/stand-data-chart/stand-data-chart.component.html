@@ -1,0 +1,7 @@
+<div>Change (%)</div>
+<canvas
+  baseChart
+  [data]="(barChartData$ | async) || undefined"
+  [options]="barChartOptions"
+  [legend]="false"
+  [type]="'bar'"></canvas>

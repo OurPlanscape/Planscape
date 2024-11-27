@@ -86,3 +86,21 @@ export const SLOT_PALETTES: Record<
   orange: ['#FFE0B2', '#FFB74D', '#FF9800', '#F57C00', '#E65100'],
   green: ['#C8E6C9', '#81C784', '#43A047', '#2E7D32', '#1B5E20'],
 };
+
+export type YearInterval = 'cero' | 'five' | 'ten' | 'fifteen' | 'twenty';
+
+export const YEAR_INTERVAL_LABELS: Record<YearInterval, string> = {
+  cero: 'Baseline',
+  five: '5 Years',
+  ten: '10 Years',
+  fifteen: '15 Years',
+  twenty: '20 Years',
+};
+
+export const YEAR_INTERVAL_PROPERTY: Record<YearInterval, string> = {
+  cero: 'delta_0',
+  five: 'delta_5',
+  ten: 'delta_10',
+  fifteen: 'delta_15',
+  twenty: 'delta_20',
+};

@@ -50,5 +50,9 @@ $panel-title-height: 60px;
 
 .padded {
   padding: 14px 16px 14px 24px;
+
+  &.content {
+    height: calc(100% - $panel-title-height - 28px);
+  }
 }
 

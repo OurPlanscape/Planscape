@@ -2,9 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DirectImpactsMapLegendComponent } from './direct-impacts-map-legend.component';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentsState } from '../treatments.state';
 import { DEFAULT_SLOT, METRICS } from '../metrics';
 import { BehaviorSubject } from 'rxjs';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 
 describe('DirectImpactsMapLegendComponent', () => {
   let component: DirectImpactsMapLegendComponent;
@@ -14,7 +14,7 @@ describe('DirectImpactsMapLegendComponent', () => {
     await TestBed.configureTestingModule({
       imports: [DirectImpactsMapLegendComponent],
       providers: [
-        MockProvider(TreatmentsState, {
+        MockProvider(DirectImpactsStateService, {
           activeMetric$: new BehaviorSubject({
             metric: METRICS[0],
             slot: DEFAULT_SLOT,

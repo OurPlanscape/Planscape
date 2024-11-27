@@ -10,8 +10,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { TreatmentsState } from 'src/app/treatments/treatments.state';
 import { Metric } from '../../../metrics';
+import { DirectImpactsStateService } from '../../../direct-impacts.state.service';
 
 @Component({
   selector: 'app-metric-selector',
@@ -31,9 +31,9 @@ export class MetricSelectorComponent implements OnInit {
 
   selectedMetric: any;
 
-  activeMetric$ = this.treatmentsState.activeMetric$;
+  activeMetric$ = this.directImpactsStateService.activeMetric$;
 
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(private directImpactsStateService: DirectImpactsStateService) {}
 
   ngOnInit(): void {
     this.selectedMetric = this.metrics.find(

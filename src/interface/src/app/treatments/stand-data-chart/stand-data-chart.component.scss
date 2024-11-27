@@ -1,0 +1,10 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  height: calc(100% - 100px);
+}
+
+canvas {
+  flex: 1;
+  max-height: 80vh;
+}

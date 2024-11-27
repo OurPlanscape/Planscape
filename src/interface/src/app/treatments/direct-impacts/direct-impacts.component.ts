@@ -1,5 +1,12 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, DatePipe, NgClass, NgIf, NgStyle } from '@angular/common';
+import {
+  AsyncPipe,
+  DatePipe,
+  JsonPipe,
+  NgClass,
+  NgIf,
+  NgStyle,
+} from '@angular/common';
 import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
@@ -20,6 +27,9 @@ import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.c
 import { MetricFiltersComponent } from './metric-filters/metric-filters.component';
 import { MapMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
+import { MapGeoJSONFeature } from 'maplibre-gl';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -43,6 +53,8 @@ import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/di
     MetricFiltersComponent,
     NgStyle,
     DirectImpactsMapLegendComponent,
+    JsonPipe,
+    StandDataChartComponent,
   ],
   providers: [
     TreatmentsState,
@@ -58,7 +70,8 @@ export class DirectImpactsComponent {
     private treatmentsState: TreatmentsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private directImpactsStateService: DirectImpactsStateService
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.treatmentsState
@@ -84,9 +97,13 @@ export class DirectImpactsComponent {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
+  activeStand$ = this.directImpactsStateService.activeStand$;
+
   showTreatmentPrescription = false;
 
   activateMetric(data: MapMetric) {
-    this.treatmentsState.activeMetric$.next(data);
+    this.directImpactsStateService.activeMetric$.next(data);
   }
+
+  getValues(activeStand: MapGeoJSONFeature) {}
 }

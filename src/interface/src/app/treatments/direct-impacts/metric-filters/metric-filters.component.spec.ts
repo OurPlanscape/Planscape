@@ -2,8 +2,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MetricFiltersComponent } from './metric-filters.component';
 import { DEFAULT_SLOT, Metric, METRICS } from '../../metrics';
 import { MockProvider } from 'ng-mocks';
-import { TreatmentsState } from '../../treatments.state';
 import { BehaviorSubject } from 'rxjs';
+import { DirectImpactsStateService } from '../../direct-impacts.state.service';
 
 export const MockMetrics = [
   {
@@ -41,7 +41,7 @@ describe('MetricFiltersComponent', () => {
     await TestBed.configureTestingModule({
       imports: [MetricFiltersComponent],
       providers: [
-        MockProvider(TreatmentsState, {
+        MockProvider(DirectImpactsStateService, {
           activeMetric$: new BehaviorSubject({
             metric: METRICS[0],
             slot: DEFAULT_SLOT,
