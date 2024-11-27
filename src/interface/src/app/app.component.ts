@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { take } from 'rxjs';
 import { AuthService } from '@services';
+import { OverlayLoaderService } from '@services/overlay-loader.service';
 
 @Component({
   selector: 'app-root',
@@ -10,7 +11,12 @@ import { AuthService } from '@services';
 export class AppComponent implements OnInit {
   sidebarOpen = false;
 
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private overlayLoaderService: OverlayLoaderService
+  ) {}
+
+  isLoading$ = this.overlayLoaderService.isLoading$;
 
   toggleSidebar(event: Event) {
     this.sidebarOpen = !this.sidebarOpen;
