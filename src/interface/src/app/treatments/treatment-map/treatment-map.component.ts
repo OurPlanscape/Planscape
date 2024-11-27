@@ -19,6 +19,7 @@ import {
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
+import { MapActionButtonComponent } from '../map-actionbutton/map-actionbutton.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { MapConfigState } from './map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -46,6 +47,7 @@ import { canEditTreatmentPlan } from 'src/app/plan/permissions';
     FeatureComponent,
     DraggableDirective,
     GeoJSONSourceComponent,
+    MapActionButtonComponent,
     MapStandsComponent,
     MapRectangleComponent,
     MapControlsComponent,
@@ -96,6 +98,12 @@ export class TreatmentMapComponent {
    * Observable that provides the map extent (bounds) for the treatment plan or project area
    */
   mapExtent$ = this.mapConfigState.mapExtent$;
+
+  /**
+   * Observable (boolean) for whether the treatment legend should be visible
+   *  If not, and if we are showing treatments, we show the action button, instead.
+   */
+  showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   /**
    * The name of the source layer used to load stands, and later check if loaded

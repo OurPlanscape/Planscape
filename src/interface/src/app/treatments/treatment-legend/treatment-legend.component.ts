@@ -33,7 +33,7 @@ export class TreatmentLegendComponent {
   readonly singlePrescriptions = PRESCRIPTIONS.SINGLE;
   readonly sequencePrescriptions = PRESCRIPTIONS.SEQUENCE;
   @Input() defaultExpanded = true;
-  @Output() closeRequest = new EventEmitter();
+  @Output() handleCloseLegend = new EventEmitter();
   constructor() {}
 
   originalOrder = (): number => {
@@ -41,6 +41,6 @@ export class TreatmentLegendComponent {
   };
 
   handleClose() {
-    this.closeRequest.emit();
+    this.handleCloseLegend.emit();
   }
 }

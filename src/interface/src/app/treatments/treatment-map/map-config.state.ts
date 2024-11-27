@@ -38,6 +38,9 @@ export class MapConfigState {
   private _showMapControls$ = new BehaviorSubject(false);
   public showMapControls$ = this._showMapControls$.asObservable();
 
+  private _showTreatmentLegend$ = new BehaviorSubject(false);
+  public showTreatmentLegend$ = this._showTreatmentLegend$.asObservable();
+
   private readonly defaultOpacity = 0.8;
   private _treatedStandsOpacity = new BehaviorSubject(this.defaultOpacity);
   public treatedStandsOpacity$ = this._treatedStandsOpacity.asObservable();
@@ -72,6 +75,7 @@ export class MapConfigState {
     this.setShowFillProjectAreas(treatmentsVisible);
     this.setTreatedStandsOpacity(treatmentsVisible ? 0 : 1);
     this._showTreatmentStandsLayer$.next(!treatmentsVisible);
+    this._showTreatmentLegend$.next(!treatmentsVisible);
   }
 
   isTreatmentStandsVisible() {
@@ -97,6 +101,14 @@ export class MapConfigState {
 
   setShowMapControls(value: boolean) {
     this._showMapControls$.next(value);
+  }
+
+  setShowTreatmentLegend(value: boolean) {
+    console.log(
+      'is anything heppending here? we want to close this, right?',
+      value
+    );
+    this._showTreatmentLegend$.next(value);
   }
 
   setTreatedStandsOpacity(value: number) {
