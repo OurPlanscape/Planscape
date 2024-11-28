@@ -32,7 +32,7 @@ export const SELECTED_STANDS_PAINT = {
     ['boolean', ['feature-state', 'selected'], false],
     BASE_COLORS.black,
     'transparent',
-  ]
+  ],
 };
 
 export const PROJECT_AREA_OUTLINE_PAINT = {
