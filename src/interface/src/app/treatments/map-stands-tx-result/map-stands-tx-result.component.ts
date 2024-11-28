@@ -10,7 +10,7 @@ import {
   Map as MapLibreMap,
   MapMouseEvent,
 } from 'maplibre-gl';
-import { STANDS_CELL_PAINT } from '../map.styles';
+import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
 import { DEFAULT_SLOT, MapMetricSlot, SLOT_PALETTES } from '../metrics';
 import { map } from 'rxjs';
@@ -33,6 +33,7 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() propertyName!: string;
 
   readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
+  readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
   paint = {};
 
   constructor(

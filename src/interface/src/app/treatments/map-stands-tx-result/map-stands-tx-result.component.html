@@ -22,9 +22,6 @@
   id="standSelected"
   type="line"
   source="stands_by_tx_result"
-  [paint]="{
-    'line-color': 'yellow',
-    'line-width': 1
-  }"
+  [paint]="STAND_SELECTED_PAINT"
   [filter]="['==', ['get', 'id'], (activeStandId$ | async) ?? -1]"
   sourceLayer="stands_by_tx_result"></mgl-layer>
