@@ -16,6 +16,10 @@ export function canAddTreatmentPlan(plan: Plan | PreviewPlan) {
   return plan.permissions?.includes('add_tx_plan');
 }
 
+export function canEditTreatmentPlan(plan: Plan | PreviewPlan) {
+  return plan.permissions?.includes('edit_tx_plan');
+}
+
 export function canCloneTreatmentPlan(plan: Plan | PreviewPlan) {
   return plan.permissions?.includes('clone_tx_plan');
 }

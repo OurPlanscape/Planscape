@@ -3,3 +3,6 @@
 <section>
   <router-outlet></router-outlet>
 </section>
+<sg-overlay-loader
+  *ngIf="isLoading$ | async"
+  [offsetTop]="48"></sg-overlay-loader>
