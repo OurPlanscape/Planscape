@@ -4,7 +4,7 @@ from django.conf import settings
 from django.db import transaction
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from celery import chord
+from celery import chord, chain
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -65,8 +65,6 @@ def async_set_status(
         treatment_plan.save()
         log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
 
-    if status in [TreatmentPlanStatus.SUCCESS, TreatmentPlanStatus.FAILURE]:
-        async_send_email_process_finished.delay(treatment_plan_pk=treatment_plan_pk)
     return (True, treatment_plan_pk)
 
 
@@ -86,8 +84,11 @@ def async_calculate_persist_impacts_treatment_plan(
         treatment_plan=treatment_plan,
         years=AVAILABLE_YEARS,
     )
-    callback = async_set_status.si(
-        treatment_plan_pk=treatment_plan_pk, status=TreatmentPlanStatus.SUCCESS
+    callback = chain(
+        async_set_status.si(
+            treatment_plan_pk=treatment_plan_pk, status=TreatmentPlanStatus.SUCCESS
+        ),
+        async_send_email_process_finished.si(treatment_plan_pk=treatment_plan_pk),
     ).on_error(
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
@@ -109,13 +110,15 @@ def async_calculate_persist_impacts_treatment_plan(
 
 
 @app.task()
-def async_send_email_process_finished(treatment_plan_pk):
-    treatment_plan = TreatmentPlan.objects.select_related("created_by").get(
-        pk=treatment_plan_pk
-    )
-    user = treatment_plan.created_by
+def async_send_email_process_finished(success, treatment_plan_pk):
+    if not success:
+        return
 
     try:
+        treatment_plan = TreatmentPlan.objects.select_related("created_by").get(
+            pk=treatment_plan_pk
+        )
+        user = treatment_plan.created_by
         context = {
             "user_full_name": user.get_full_name(),
             "treatment_plan_link": None,
