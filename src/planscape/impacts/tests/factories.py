@@ -46,7 +46,6 @@ class TreatmentResultFactory(factory.django.DjangoModelFactory):
         model = TreatmentResult
 
     treatment_plan = factory.SubFactory(TreatmentPlanFactory)
-    treatment_prescription = factory.SubFactory(TreatmentPrescriptionFactory)
     variable = factory.fuzzy.FuzzyChoice(ImpactVariable.values)
     aggregation = factory.fuzzy.FuzzyChoice(ImpactVariableAggregation.values)
     year = factory.fuzzy.FuzzyInteger(low=0, high=20)

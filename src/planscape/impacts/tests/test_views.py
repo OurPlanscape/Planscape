@@ -7,19 +7,26 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
-from impacts.models import TreatmentPlan, TreatmentPlanStatus
+from impacts.models import (
+    TreatmentPlan,
+    TreatmentPlanStatus,
+    ImpactVariableAggregation,
+    TreatmentPrescriptionAction,
+)
 from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
-    ProjectAreaTreatmentResultFactory,
+    TreatmentResultFactory,
     ImpactVariable,
 )
+from impacts.services import generate_impact_results_data_to_plot
 from planning.tests.factories import (
     ScenarioFactory,
     PlanningAreaFactory,
     ProjectAreaFactory,
 )
 from planscape.tests.factories import UserFactory
+from stands.models import StandSizeChoices
 
 User = get_user_model()
 
@@ -278,6 +285,174 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
 
 
+class TxPlanViewSetPlotTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            configuration={"stand_size": StandSizeChoices.SMALL},
+        )
+        self.project_areas = [
+            ProjectAreaFactory(scenario=self.scenario),
+            ProjectAreaFactory(scenario=self.scenario),
+            ProjectAreaFactory(scenario=self.scenario),
+        ]
+        self.tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.user
+        )
+        self.empty_tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.user
+        )
+        self.client.force_authenticate(user=self.user)
+        self.years = [0, 5, 10, 15, 20]
+        self.patxrx_list = []
+        for pa in self.project_areas:
+            for variable in ImpactVariable.choices:
+                for year in self.years:
+                    prescription = TreatmentPrescriptionFactory(
+                        project_area=pa,
+                        treatment_plan=self.tx_plan,
+                        action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value,
+                    )
+                    self.patxrx_list.append(
+                        TreatmentResultFactory.create(
+                            treatment_plan=self.tx_plan,
+                            variable=variable[0],
+                            stand=prescription.stand,
+                            year=year,
+                            aggregation=ImpactVariableAggregation.MEAN.value,
+                            action=prescription.action,
+                        )
+                    )
+        self.someone_elses_tx_plan = TreatmentPlanFactory.create()
+
+    def test_treatment_results(self):
+        pa_pks = [project_area.pk for project_area in self.project_areas]
+        pa_pks.sort()
+
+        filter = [
+            ("variables", ImpactVariable.TOTAL_CARBON.value),
+            ("variables", ImpactVariable.FLAME_LENGTH.value),
+            ("variables", ImpactVariable.RATE_OF_SPREAD.value),
+            ("variables", ImpactVariable.PROBABILITY_TORCHING.value),
+        ]
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(response_data["project_areas"], pa_pks)
+        self.assertIsNotNone(response_data["values"])
+        self.assertEqual(
+            response_data["variables"],
+            [
+                ImpactVariable.TOTAL_CARBON.value,
+                ImpactVariable.FLAME_LENGTH.value,
+                ImpactVariable.RATE_OF_SPREAD.value,
+                ImpactVariable.PROBABILITY_TORCHING.value,
+            ],
+        )
+        self.assertEqual(response_data["years"], self.years)
+
+    def test_filter_by_project_areas(self):
+        pa_pks = [project_area.pk for project_area in self.project_areas]
+        pa_pks.pop(0)
+        pa_pks.sort()
+
+        filter = [
+            ("variables", ImpactVariable.TOTAL_CARBON.value),
+            ("variables", ImpactVariable.FLAME_LENGTH.value),
+            ("variables", ImpactVariable.RATE_OF_SPREAD.value),
+            ("variables", ImpactVariable.PROBABILITY_TORCHING.value),
+            ("project_areas", pa_pks[0]),
+            ("project_areas", pa_pks[1]),
+        ]
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(response_data["project_areas"], pa_pks)
+        self.assertIsNotNone(response_data["values"])
+        self.assertEqual(
+            response_data["variables"],
+            [
+                ImpactVariable.TOTAL_CARBON.value,
+                ImpactVariable.FLAME_LENGTH.value,
+                ImpactVariable.RATE_OF_SPREAD.value,
+                ImpactVariable.PROBABILITY_TORCHING.value,
+            ],
+        )
+        self.assertEqual(response_data["years"], self.years)
+
+    def test_filter_by_actions(self):
+        pa_pks = [project_area.pk for project_area in self.project_areas]
+        pa_pks.sort()
+
+        filter = [
+            ("variables", ImpactVariable.TOTAL_CARBON.value),
+            ("variables", ImpactVariable.FLAME_LENGTH.value),
+            ("variables", ImpactVariable.RATE_OF_SPREAD.value),
+            ("variables", ImpactVariable.PROBABILITY_TORCHING.value),
+            ("actions", TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value),
+        ]
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(response_data["project_areas"], pa_pks)
+        self.assertIsNotNone(response_data["values"])
+        self.assertEqual(
+            response_data["variables"],
+            [
+                ImpactVariable.TOTAL_CARBON.value,
+                ImpactVariable.FLAME_LENGTH.value,
+                ImpactVariable.RATE_OF_SPREAD.value,
+                ImpactVariable.PROBABILITY_TORCHING.value,
+            ],
+        )
+        self.assertEqual(response_data["years"], self.years)
+
+    def test_filter_by_not_applied_actions(self):
+        pa_pks = [project_area.pk for project_area in self.project_areas]
+        pa_pks.sort()
+
+        filter = [
+            ("variables", ImpactVariable.TOTAL_CARBON.value),
+            ("variables", ImpactVariable.FLAME_LENGTH.value),
+            ("variables", ImpactVariable.RATE_OF_SPREAD.value),
+            ("variables", ImpactVariable.PROBABILITY_TORCHING.value),
+            ("actions", TreatmentPrescriptionAction.HEAVY_MASTICATION.value),
+        ]
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(response_data["project_areas"], pa_pks)
+        self.assertEqual(response_data["values"], [])
+        self.assertEqual(
+            response_data["variables"],
+            [
+                ImpactVariable.TOTAL_CARBON.value,
+                ImpactVariable.FLAME_LENGTH.value,
+                ImpactVariable.RATE_OF_SPREAD.value,
+                ImpactVariable.PROBABILITY_TORCHING.value,
+            ],
+        )
+        self.assertEqual(response_data["years"], [])
+
+
 class TxPrescriptionListTest(APITransactionTestCase):
     def setUp(self):
         self.tx_plan = TreatmentPlanFactory.create()
@@ -389,7 +564,10 @@ class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory.create()
         self.planning_area = PlanningAreaFactory(user=self.user)
-        self.scenario = ScenarioFactory(planning_area=self.planning_area)
+        self.scenario = ScenarioFactory(
+            planning_area=self.planning_area,
+            configuration={"stand_size": StandSizeChoices.SMALL},
+        )
         self.project_areas = [
             ProjectAreaFactory(scenario=self.scenario),
             ProjectAreaFactory(scenario=self.scenario),
@@ -407,12 +585,18 @@ class ProjectAreaTreatmentResultViewSetListTest(APITransactionTestCase):
         for pa in self.project_areas:
             for variable in ImpactVariable.choices:
                 for year in years:
+                    prescription = TreatmentPrescriptionFactory(
+                        project_area=pa,
+                        treatment_plan=self.tx_plan,
+                    )
                     self.patxrx_list.append(
-                        ProjectAreaTreatmentResultFactory.create(
+                        TreatmentResultFactory.create(
                             treatment_plan=self.tx_plan,
                             variable=variable[0],
-                            project_area=pa,
+                            stand=prescription.stand,
                             year=year,
+                            aggregation=ImpactVariableAggregation.MEAN.value,
+                            action=prescription.action,
                         )
                     )
         self.someone_elses_tx_plan = TreatmentPlanFactory.create()
