@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { Note, ProjectAreaNotesService } from '../../services/notes.service';
 import { MatDividerModule } from '@angular/material/divider';
 import {
@@ -39,7 +39,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     ProjectAreaTreatmentsTabComponent,
     SharedModule,
     TreatmentStandsProgressBarComponent,
-    JsonPipe,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
