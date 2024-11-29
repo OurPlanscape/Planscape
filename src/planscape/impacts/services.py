@@ -337,7 +337,7 @@ def calculate_stand_deltas(
             baseline_value = getattr(baseline, attribute_to_lookup)
             action_value = (
                 getattr(action_metric, attribute_to_lookup)
-                if action
+                if action_metric
                 else baseline_value
             )
             delta = calculate_delta(action_value, baseline_value)
