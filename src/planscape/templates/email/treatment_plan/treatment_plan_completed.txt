@@ -1,4 +1,4 @@
-Dear {User_name},
+Dear {{ user_full_name }},
 
 Your Planscape Treatment Plan analysis is now complete. Click here to review your analysis.
 
