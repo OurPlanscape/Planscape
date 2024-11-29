@@ -29,12 +29,14 @@ from impacts.serializers import (
     TreatmentPrescriptionBatchDeleteResponseSerializer,
     UpsertTreamentPrescriptionSerializer,
     ProjectAreaTreatmentResultListSerializer,
+    TreatmentResultSerializer,
 )
 from impacts.services import (
     clone_treatment_plan,
     create_treatment_plan,
     generate_summary,
     upsert_treatment_prescriptions,
+    generate_impact_results_data_to_plot,
 )
 from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from planscape.serializers import BaseErrorMessageSerializer
@@ -228,6 +230,34 @@ class TreatmentPlanViewSet(
             project_area=project_area,
         )
         return Response(data=summary, status=status.HTTP_200_OK)
+
+    @action(
+        methods=["get"],
+        detail=True,
+        filterset_class=None,
+    )
+    def plot(self, request, pk=None):
+        instance = self.get_object()
+
+        serializer = TreatmentResultSerializer(
+            data=request.query_params,
+            context={
+                "treatment_plan": instance,
+            },
+        )
+        serializer.is_valid(raise_exception=True)
+        variables = serializer.validated_data.get("variables")
+        project_areas = serializer.validated_data.get("project_areas", []) or []
+        project_areas_pks = [project_area.pk for project_area in project_areas]
+        actions = serializer.validated_data.get("actions")
+
+        data_to_plot = generate_impact_results_data_to_plot(
+            treatment_plan=instance,
+            impact_variables=variables,
+            project_area_pks=project_areas_pks,
+            tx_px_actions=actions,
+        )
+        return Response(data=data_to_plot, status=status.HTTP_200_OK)
 
 
 @extend_schema_view(
