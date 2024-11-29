@@ -16,7 +16,6 @@ from impacts.services import (
     calculate_impacts,
     get_calculation_matrix,
 )
-from planning.models import ProjectArea
 from planscape.celery import app
 
 log = logging.getLogger(__name__)
@@ -118,13 +117,16 @@ def async_send_email_process_finished(treatment_plan_pk):
 
     try:
         context = {
-            "user_name": user.get_full_name(),
+            "user_full_name": user.get_full_name(),
             "treatment_plan_link": None,
         }
 
-        subject = f"Planscape Treatment Plan is completed"
+        subject = "Planscape Treatment Plan is completed"
 
-        txt = render_to_string("templates/email/treatment_plan_completed.txt", context)
+        txt = render_to_string(
+            "email/treatment_plan/treatment_plan_completed.txt", context
+        )
+
         send_mail(
             subject=subject,
             from_email=settings.DEFAULT_FROM_EMAIL,
