@@ -288,15 +288,15 @@ class TxPlanViewSetTest(APITransactionTestCase):
 class TxPlanViewSetPlotTest(APITransactionTestCase):
     def setUp(self):
         self.user = UserFactory.create()
-        self.planning_area = PlanningAreaFactory(user=self.user)
-        self.scenario = ScenarioFactory(
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             configuration={"stand_size": StandSizeChoices.SMALL},
         )
         self.project_areas = [
-            ProjectAreaFactory(scenario=self.scenario),
-            ProjectAreaFactory(scenario=self.scenario),
-            ProjectAreaFactory(scenario=self.scenario),
+            ProjectAreaFactory.create(scenario=self.scenario),
+            ProjectAreaFactory.create(scenario=self.scenario),
+            ProjectAreaFactory.create(scenario=self.scenario),
         ]
         self.tx_plan = TreatmentPlanFactory.create(
             scenario=self.scenario, created_by=self.user
@@ -310,7 +310,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
         for pa in self.project_areas:
             for variable in ImpactVariable.choices:
                 for year in self.years:
-                    prescription = TreatmentPrescriptionFactory(
+                    prescription = TreatmentPrescriptionFactory.create(
                         project_area=pa,
                         treatment_plan=self.tx_plan,
                         action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value,
@@ -356,6 +356,36 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
             ],
         )
         self.assertEqual(response_data["years"], self.years)
+
+    def test_empty_tx_plan(self):
+        pa_pks = [project_area.pk for project_area in self.project_areas]
+        pa_pks.sort()
+
+        filter = [
+            ("variables", ImpactVariable.TOTAL_CARBON.value),
+            ("variables", ImpactVariable.FLAME_LENGTH.value),
+            ("variables", ImpactVariable.RATE_OF_SPREAD.value),
+            ("variables", ImpactVariable.PROBABILITY_TORCHING.value),
+        ]
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.empty_tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(response_data["project_areas"], pa_pks)
+        self.assertEqual(response_data["values"], [])
+        self.assertEqual(
+            response_data["variables"],
+            [
+                ImpactVariable.TOTAL_CARBON.value,
+                ImpactVariable.FLAME_LENGTH.value,
+                ImpactVariable.RATE_OF_SPREAD.value,
+                ImpactVariable.PROBABILITY_TORCHING.value,
+            ],
+        )
+        self.assertEqual(response_data["years"], [])
 
     def test_filter_by_project_areas(self):
         pa_pks = [project_area.pk for project_area in self.project_areas]
@@ -451,6 +481,20 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
             ],
         )
         self.assertEqual(response_data["years"], [])
+
+    def test_someone_elses_tx_plan(self):
+        filter = [
+            ("variables", ImpactVariable.TOTAL_CARBON.value),
+            ("variables", ImpactVariable.FLAME_LENGTH.value),
+            ("variables", ImpactVariable.RATE_OF_SPREAD.value),
+            ("variables", ImpactVariable.PROBABILITY_TORCHING.value),
+        ]
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.someone_elses_tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class TxPrescriptionListTest(APITransactionTestCase):
