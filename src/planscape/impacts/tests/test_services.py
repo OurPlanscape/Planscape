@@ -383,11 +383,13 @@ class CalculateImpactsTest(TransactionTestCase):
             (40, 20, 1),
             (None, 1, -1),
             (1, None, 0),
-            (None, None, -1),
+            (None, None, None),
         ]
 
         for value, base, expected_result in values_bases_expected_results:
-            assert calculate_delta(value=value, baseline=base) == expected_result
+            self.assertEqual(
+                calculate_delta(value=value, baseline=base), expected_result
+            )
 
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
