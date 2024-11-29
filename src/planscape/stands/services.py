@@ -114,11 +114,7 @@ def calculate_stand_zonal_stats(
 
     log.info(f"Created/Updated {len(results)} stand metrics.")
 
-    result_queryset = (
-        StandMetric.objects.filter(
-            stand_id__in=missing_stand_ids,
-            datalayer=datalayer,
-        )
-        | existing_metrics
+    return StandMetric.objects.filter(
+        stand_id__in=stand_ids,
+        datalayer=datalayer,
     )
-    return result_queryset
