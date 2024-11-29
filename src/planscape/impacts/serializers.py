@@ -310,21 +310,6 @@ class DataLayerImpactsModuleSerializer(serializers.Serializer):
         return super().validate(attrs=attrs)
 
 
-class ProjectAreaTreatmentResultListSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectAreaTreatmentResult
-        fields = (
-            "project_area",
-            "variable",
-            "aggregation",
-            "year",
-            "value",
-            "baseline",
-            "delta",
-            "type",
-        )
-
-
 class TreatmentResultsPlotSerializer(serializers.Serializer):
     project_areas = serializers.ListField(
         child=serializers.IntegerField(), help_text="Project Areas IDs."
