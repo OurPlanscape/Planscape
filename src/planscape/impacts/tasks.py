@@ -1,6 +1,9 @@
 import logging
-from typing import List, Tuple
+from typing import Tuple
+from django.conf import settings
 from django.db import transaction
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
 from celery import chord
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -62,6 +65,9 @@ def async_set_status(
         treatment_plan.status = status
         treatment_plan.save()
         log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+
+    if status in [TreatmentPlanStatus.SUCCESS, TreatmentPlanStatus.FAILURE]:
+        async_send_email_process_finished.delay(treatment_plan_pk=treatment_plan_pk)
     return (True, treatment_plan_pk)
 
 
@@ -101,3 +107,40 @@ def async_calculate_persist_impacts_treatment_plan(
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     chord(tasks)(callback)
     log.info(f"Calculation of impacts for {treatment_plan} triggered.")
+
+
+@app.task()
+def async_send_email_process_finished(treatment_plan_pk):
+    treatment_plan = TreatmentPlan.objects.select_related("created_by").get(
+        pk=treatment_plan_pk
+    )
+    user = treatment_plan.created_by
+
+    try:
+        context = {
+            "user_name": user.get_full_name(),
+            "treatment_plan_link": None,
+        }
+
+        subject = f"Planscape Treatment Plan is completed"
+
+        txt = render_to_string("templates/email/treatment_plan_completed.txt", context)
+        send_mail(
+            subject=subject,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            message=txt,
+        )
+        log.info(
+            "Email sent informing user that Treatment Plan %s process is finished.",
+            treatment_plan.pk,
+        )
+    except Exception as e:
+        log.exception(
+            "Something unexpected happened while sending the email to inform that a Treatment Plan process was finished.",
+            extra={
+                "exception": e,
+                "treatment_plan": treatment_plan.pk,
+                "user": user.pk,
+            },
+        )
