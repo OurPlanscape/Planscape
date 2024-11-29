@@ -43,16 +43,3 @@ class TreatmentPlanFilterSet(filters.FilterSet):
             "name",
             "status",
         )
-
-
-class ProjectAreaTreatmentResultFilter(filters.FilterSet):
-    variable = filters.MultipleChoiceFilter(
-        choices=ImpactVariable.choices,
-        field_name="variable",
-        lookup_expr="iexact",
-        help_text="Treatment result impact variable choice (exact).",
-    )
-    project_area = filters.NumberFilter(
-        field_name="project_area__pk",
-        help_text="Project Area ID.",
-    )
