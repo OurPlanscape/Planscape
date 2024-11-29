@@ -252,6 +252,7 @@ def to_treatment_result(
             "value": result.get("value"),
             "baseline": result.get("baseline"),
             "delta": result.get("delta"),
+            "action": result.get("action"),
         },
     )
     return instance
@@ -286,6 +287,7 @@ def calculate_impacts(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
         aggregations=aggregations,
+        action=action,
     )
 
     project_area_deltas = []
@@ -324,6 +326,7 @@ def calculate_stand_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     aggregations: List[ImpactVariableAggregation],
+    action: Optional[TreatmentPrescriptionAction] = None,
 ) -> List[Dict[str, Any]]:
     results = []
     for stand_id, baseline in baseline_dict.items():
@@ -339,6 +342,7 @@ def calculate_stand_deltas(
             results.append(
                 {
                     "stand_id": stand_id,
+                    "action": action,
                     "aggregation": agg,
                     "value": action_value,
                     "baseline": baseline_value,
