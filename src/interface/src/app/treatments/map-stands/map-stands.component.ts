@@ -38,7 +38,7 @@ import {
   generatePaintForSequencedStands,
   generatePaintForTreatedStands,
   PROJECT_AREA_OUTLINE_PAINT,
-  SELECTED_STANDS_LINE_PAINT,
+  SELECTED_STANDS_PAINT,
   STANDS_CELL_PAINT,
 } from '../map.styles';
 import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
@@ -177,7 +177,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     selectedStands: {
       name: 'stands-layer-selected',
       sourceLayer: 'stands_by_tx_plan',
-      paint: SELECTED_STANDS_LINE_PAINT as any,
+      paint: SELECTED_STANDS_PAINT as any,
     },
   };
 

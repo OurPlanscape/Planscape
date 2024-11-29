@@ -20,20 +20,19 @@ export const BASE_COLORS: Record<
   yellow: '#FFD54F',
 };
 
-export const SELECTED_STANDS_LINE_PAINT = {
-  'line-color': [
+export const SELECTED_STANDS_PAINT = {
+  'fill-color': [
     'case',
     ['boolean', ['feature-state', 'selected'], false],
-    BASE_COLORS.yellow, // Selected
-    'transparent', // Non selected
+    BASE_COLORS.yellow,
+    'transparent',
   ],
-  'line-width': [
+  'fill-outline-color': [
     'case',
     ['boolean', ['feature-state', 'selected'], false],
-    8, // Selected
-    1, // Non selected
+    BASE_COLORS.black,
+    'transparent',
   ],
-  'line-opacity': 1,
 };
 
 export const PROJECT_AREA_OUTLINE_PAINT = {
