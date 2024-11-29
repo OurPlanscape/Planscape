@@ -21,6 +21,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { ScenarioResultStatus } from '@types';
+import { MatLegacyProgressSpinnerModule } from '@angular/material/legacy-progress-spinner';
 
 export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
 
@@ -41,6 +42,7 @@ export type ScenarioResultLabel = 'Done' | 'Running' | 'Failed';
     MatIconModule,
     MatMenuModule,
     MatButtonModule,
+    MatLegacyProgressSpinnerModule,
   ],
   templateUrl: './scenario-card.component.html',
   styleUrl: './scenario-card.component.scss',
@@ -61,6 +63,7 @@ export class ScenarioCardComponent {
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
+  @Output() openNewTreatment = new EventEmitter();
   @Output() toggleArchiveStatus = new EventEmitter();
   @Output() clicked = new EventEmitter();
 

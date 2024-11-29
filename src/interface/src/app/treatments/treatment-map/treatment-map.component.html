@@ -19,6 +19,7 @@
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
   <app-map-controls
+    [userCanEditStands]="userCanEditStands"
     *ngIf="showMapControls$ | async"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
@@ -35,6 +36,7 @@
 
   <app-map-stands
     *ngIf="showTreatmentStands$ | async"
+    [userCanEditStands]="userCanEditStands"
     [sourceId]="standsSourceLayerId"
     [mapLibreMap]="mapLibreMap"
     [selectStart]="mouseStart ? mouseStart.point : null"

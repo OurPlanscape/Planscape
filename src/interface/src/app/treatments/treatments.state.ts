@@ -8,10 +8,12 @@ import {
   distinctUntilChanged,
   map,
   of,
+  Observable,
   switchMap,
   tap,
 } from 'rxjs';
 import {
+  Plan,
   TreatedStand,
   TreatmentPlan,
   TreatmentProjectArea,
@@ -27,6 +29,7 @@ import {
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
 import { DEFAULT_SLOT, MapMetric, METRICS } from './metrics';
+import { PlanStateService } from '@services';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -36,6 +39,7 @@ import { DEFAULT_SLOT, MapMetric, METRICS } from './metrics';
 export class TreatmentsState {
   constructor(
     private treatmentsService: TreatmentsService,
+    private planStateService: PlanStateService,
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState
   ) {}
@@ -44,9 +48,8 @@ export class TreatmentsState {
   private _scenarioId: number | undefined = undefined;
 
   private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
+  private _planningAreaId$ = new BehaviorSubject<number | undefined>(undefined);
   public projectAreaId$ = this._projectAreaId$.asObservable();
-
-  public planId$ = new BehaviorSubject<number | null>(null);
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
   private _treatmentPlan = new BehaviorSubject<TreatmentPlan | null>(null);
@@ -54,9 +57,13 @@ export class TreatmentsState {
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
 
+  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
+  public showApplyTreatmentsDialog$ =
+    this._showApplyTreatmentsDialog$.asObservable();
+
   public activeProjectArea$ = combineLatest([
     this.summary$,
-    this.projectAreaId$.pipe(distinctUntilChanged()),
+    this._projectAreaId$.pipe(distinctUntilChanged()),
   ]).pipe(
     map(([summary, projectAreaId]) => {
       return summary?.project_areas.find(
@@ -65,9 +72,10 @@ export class TreatmentsState {
     })
   );
 
-  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
-  public showApplyTreatmentsDialog$ =
-    this._showApplyTreatmentsDialog$.asObservable();
+  public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
+    filter((id): id is number => !!id),
+    switchMap((id) => this.planStateService.getPlan(id.toString()))
+  );
 
   breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
     map(([projectArea, summary]) => {
@@ -147,7 +155,7 @@ export class TreatmentsState {
     this._scenarioId = data.scenarioId;
     this._treatmentPlanId = data.treatmentId;
     this._projectAreaId$.next(data.projectAreaId);
-    this.planId$.next(data.planId);
+    this._planningAreaId$.next(data.planId);
 
     // update config on map, based on route data
     this.mapConfigState.updateShowProjectAreas(

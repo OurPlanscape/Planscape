@@ -2,7 +2,11 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgFor } from '@angular/common';
 import { ScenarioRow } from '../saved-scenarios/saved-scenarios.component';
 import { ScenarioCardComponent } from '../../../../styleguide/scenario-card/scenario-card.component';
-import { SharedModule } from '@shared';
+import {
+  SharedModule,
+  SNACK_BOTTOM_NOTICE_CONFIG,
+  SNACK_ERROR_CONFIG,
+} from '@shared';
 import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
@@ -11,12 +15,15 @@ import { FeatureService } from '../../../features/feature.service';
 import { Plan, Scenario, ScenarioResult } from '@types';
 import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
+import { TreatmentsService } from '@services/treatments.service';
+import { ActivatedRoute, Router } from '@angular/router';
+import { OverlayLoaderComponent } from '../../../../styleguide/overlay-loader/overlay-loader.component';
+import { OverlayLoaderService } from '@services/overlay-loader.service';
 
 @Component({
   selector: 'app-scenarios-card-list',
   standalone: true,
-  imports: [ScenarioCardComponent, NgFor, SharedModule],
+  imports: [ScenarioCardComponent, NgFor, SharedModule, OverlayLoaderComponent],
   templateUrl: './scenarios-card-list.component.html',
   styleUrl: './scenarios-card-list.component.scss',
 })
@@ -32,7 +39,11 @@ export class ScenariosCardListComponent {
     private featureService: FeatureService,
     private authService: AuthService,
     private snackbar: MatSnackBar,
-    private scenarioService: ScenarioService
+    private scenarioService: ScenarioService,
+    private treatmentsService: TreatmentsService,
+    private router: Router,
+    private route: ActivatedRoute,
+    private overlayLoaderService: OverlayLoaderService
   ) {}
 
   treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
@@ -96,5 +107,32 @@ export class ScenariosCardListComponent {
         },
       });
     }
+  }
+
+  openNewTreatment(event: Event, s: Scenario) {
+    event.stopPropagation();
+    const scenarioId = s.id;
+    if (!scenarioId) {
+      return;
+    }
+    this.overlayLoaderService.showLoader();
+
+    this.treatmentsService
+      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .subscribe({
+        next: (result) => {
+          this.overlayLoaderService.hideLoader();
+          this.router.navigate(['config', scenarioId, 'treatment', result.id], {
+            relativeTo: this.route,
+          });
+        },
+        error: () => {
+          this.snackbar.open(
+            '[Error] Cannot create a new treatment plan',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+      });
   }
 }

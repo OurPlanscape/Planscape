@@ -117,9 +117,14 @@ export class UploadProjectAreasModalComponent {
       const geojson = (await shp.parseZip(
         fileAsArrayBuffer
       )) as GeoJSON.GeoJSON;
-      if (Array.isArray(geojson) || geojson.type == 'FeatureCollection') {
+      if (geojson.type == 'FeatureCollection') {
         this.geometries = geojson;
+      } else if (Array.isArray(geojson)) {
+        this.uploadElementStatus = 'failed';
+        this.uploadError =
+          'The upload contains multiple shapefiles and could not be processed.';
       } else {
+        //unknown failure
         this.uploadElementStatus = 'failed';
         this.uploadError = 'The file cannot be converted to GeoJSON.';
       }
