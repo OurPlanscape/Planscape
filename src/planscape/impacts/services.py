@@ -330,13 +330,15 @@ def calculate_stand_deltas(
 ) -> List[Dict[str, Any]]:
     results = []
     for stand_id, baseline in baseline_dict.items():
-        action = action_dict.get(stand_id)
+        action_metric = action_dict.get(stand_id)
 
         for agg in aggregations:
             attribute_to_lookup = ImpactVariableAggregation.get_metric_attribute(agg)
             baseline_value = getattr(baseline, attribute_to_lookup)
             action_value = (
-                getattr(action, attribute_to_lookup) if action else baseline_value
+                getattr(action_metric, attribute_to_lookup)
+                if action
+                else baseline_value
             )
             delta = calculate_delta(action_value, baseline_value)
             results.append(
