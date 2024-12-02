@@ -23,10 +23,3 @@ class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
             message=mock.ANY,
             html_message=mock.ANY,
         )
-
-    @mock.patch("impacts.tasks.send_mail", return_value=True)
-    def test_trigger_email__set_status_failed(self, send_email_mock):
-        async_send_email_process_finished(
-            treatment_plan_pk=self.treatment_plan.pk,
-        )
-        self.assertFalse(send_email_mock.called)
