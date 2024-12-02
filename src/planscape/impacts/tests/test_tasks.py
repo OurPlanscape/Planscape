@@ -11,7 +11,10 @@ class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
 
     @mock.patch("impacts.tasks.send_mail", return_value=True)
     def test_trigger_email(self, send_email_mock):
-        async_send_email_process_finished(treatment_plan_pk=self.treatment_plan.pk)
+        async_send_email_process_finished(
+            set_status_success=(True, self.treatment_plan.pk),
+            treatment_plan_pk=self.treatment_plan.pk,
+        )
         self.assertTrue(send_email_mock.called)
 
         send_email_mock.assert_called_once_with(
@@ -20,3 +23,11 @@ class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
             recipient_list=[self.user.email],
             message=mock.ANY,
         )
+
+    @mock.patch("impacts.tasks.send_mail", return_value=True)
+    def test_trigger_email__set_status_failed(self, send_email_mock):
+        async_send_email_process_finished(
+            set_status_success=(False, self.treatment_plan.pk),
+            treatment_plan_pk=self.treatment_plan.pk,
+        )
+        self.assertFalse(send_email_mock.called)
