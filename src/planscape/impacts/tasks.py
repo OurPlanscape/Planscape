@@ -110,8 +110,9 @@ def async_calculate_persist_impacts_treatment_plan(
 
 
 @app.task()
-def async_send_email_process_finished(success, treatment_plan_pk):
-    if not success:
+def async_send_email_process_finished(set_status_success, treatment_plan_pk):
+    if not set_status_success or set_status_success[0] is False:
+        log.warning("Not sending email due to previous task failure.")
         return
 
     try:
