@@ -79,6 +79,8 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
           this.textValueUpdated.emit(this.textValue);
         }
       });
+
+    this.currentMode$.next('SAVING');
   }
 
   textValueUpdated$ = this.textValueUpdatedSubject
@@ -102,6 +104,14 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
     this.hovering = false;
   }
 
+  saveText() {
+    if (this.textValue !== this.originalText) {
+      this.currentMode$.next('SAVING');
+      this.textValueUpdatedSubject.next(this.textValue);
+    }
+    this.currentMode$.next('INITIAL');
+  }
+
   onBlur() {
     //if the text is empty, we revert to the original text
     if (this.textValue === '') {
@@ -118,9 +128,5 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
 
   setToEditMode() {
     this.currentMode$.next('EDIT');
-  }
-
-  clear() {
-    this.textValue = '';
   }
 }

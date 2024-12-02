@@ -14,39 +14,39 @@
       {{ tooltipContent }}
     </mat-menu>
   </div>
-  <div
-    class="plain-text-box"
-    *ngIf="curMode === 'INITIAL'"
+  <sg-input-field
+    size="small"
+    class="name-input"
     (mouseover)="onHover()"
     (mouseleave)="outHover()">
-    <div class="text-content">
-      {{ textValue }}
-    </div>
-    <button
-      sg-button
-      variant="icon-only"
-      *ngIf="hovering"
-      class="pencil-icon"
-      icon="edit_outlined"
-      (click)="setToEditMode()"></button>
-  </div>
-  <sg-input-field *ngIf="curMode !== 'INITIAL'" size="small" class="name-input">
     <input
+      class="debounce-input"
       sgInput
       [placeholder]="placeholderText"
       [(ngModel)]="textValue"
-      (blur)="onBlur()"
+      #inputModel="ngModel"
       (ngModelChange)="clearError()"
-      (keyup.enter)="emitTextValue($event)" />
+      (keyup.enter)="emitTextValue($event)"
+      (blur)="saveText()"
+      [readonly]="curMode === 'INITIAL'"
+      [disabled]="curMode === 'INITIAL'" />
     <button
-      *ngIf="hasClearButton && curMode === 'EDIT'"
+      *ngIf="curMode === 'EDIT'"
       mat-icon-button
       aria-label="Clear"
-      (click)="clear()">
-      <mat-icon>close</mat-icon>
+      (click)="saveText()">
+      <mat-icon>check</mat-icon>
+    </button>
+    <button
+      *ngIf="hovering && curMode === 'INITIAL'"
+      mat-icon-button
+      aria-label="Edit"
+      (click)="setToEditMode()">
+      <mat-icon>edit_outlined</mat-icon>
     </button>
     <mat-spinner
       diameter="20"
+      class="save-spinner"
       matSuffix
       *ngIf="curMode === 'SAVING'"></mat-spinner>
   </sg-input-field>

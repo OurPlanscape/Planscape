@@ -55,16 +55,34 @@
     color: $color-dark-red;
     height: 24px;
   }
+
+  .save-spinner {
+    right: 8px;
+  }
 }
 
 ::ng-deep .name-input-component input {
   width: 100%;
 }
 
+::ng-deep .name-input.small input:disabled {
+  color: black;
+}
+
+::ng-deep .name-input.small .input-wrapper {
+  padding-right: 0px;
+}
+
+::ng-deep .name-input.small .input-wrapper:focus-within {
+  padding-right: 4px;
+  border: 1px $color-main-blue solid;
+}
+
 ::ng-deep .name-input-component .input-wrapper {
   width: 100%;
   border-width: 2px;
-  padding: 4px 0px 4px 10px;
+  padding: 4px 0px 4px 8px;
+  padding-right: 4px;
 }
 
 ::ng-deep .name-input-component .focus-within {

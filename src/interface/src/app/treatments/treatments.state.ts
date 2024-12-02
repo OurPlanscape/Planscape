@@ -76,8 +76,12 @@ export class TreatmentsState {
     switchMap((id) => this.planStateService.getPlan(id.toString()))
   );
 
-  breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
-    map(([projectArea, summary]) => {
+  breadcrumbs$ = combineLatest([
+    this.activeProjectArea$,
+    this.summary$,
+    this.treatmentPlan$,
+  ]).pipe(
+    map(([projectArea, summary, treatmentPlan]) => {
       if (!summary) {
         return [];
       }
@@ -91,7 +95,7 @@ export class TreatmentsState {
           path: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
         },
         {
-          name: summary.treatment_plan_name,
+          name: treatmentPlan?.name ?? summary.treatment_plan_name,
           path: projectArea
             ? `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`
             : '',
