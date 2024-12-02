@@ -1,10 +1,12 @@
 import logging
 from typing import Tuple
+from urllib.parse import urljoin
+from celery import chord, chain
 from django.conf import settings
 from django.db import transaction
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from celery import chord, chain
+from django.urls import reverse
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -120,9 +122,16 @@ def async_send_email_process_finished(set_status_success, treatment_plan_pk):
             pk=treatment_plan_pk
         )
         user = treatment_plan.created_by
+
+        link = urljoin(
+            settings.PLANSCAPE_BASE_URL,
+            f"plan/{treatment_plan.scenario.planning_area_id}/"
+            f"config/{treatment_plan.scenario.pk}/treatment/{treatment_plan_pk}",
+        )
+
         context = {
             "user_full_name": user.get_full_name(),
-            "treatment_plan_link": None,
+            "treatment_plan_link": link,
         }
 
         subject = "Planscape Treatment Plan is completed"
