@@ -22,6 +22,7 @@ class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
             from_email=mock.ANY,
             recipient_list=[self.user.email],
             message=mock.ANY,
+            html_message=mock.ANY,
         )
 
     @mock.patch("impacts.tasks.send_mail", return_value=True)

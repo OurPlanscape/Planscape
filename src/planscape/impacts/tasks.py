@@ -139,12 +139,16 @@ def async_send_email_process_finished(set_status_success, treatment_plan_pk):
         txt = render_to_string(
             "email/treatment_plan/treatment_plan_completed.txt", context
         )
+        html = render_to_string(
+            "email/treatment_plan/treatment_plan_completed.html", context
+        )
 
         send_mail(
             subject=subject,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             message=txt,
+            html_message=html,
         )
         log.info(
             "Email sent informing user that Treatment Plan %s process is finished.",
