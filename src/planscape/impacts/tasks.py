@@ -118,9 +118,9 @@ def async_send_email_process_finished(set_status_success, treatment_plan_pk):
         return
 
     try:
-        treatment_plan = TreatmentPlan.objects.select_related("created_by").get(
-            pk=treatment_plan_pk
-        )
+        treatment_plan = TreatmentPlan.objects.select_related(
+            "created_by", "scenario"
+        ).get(pk=treatment_plan_pk)
         user = treatment_plan.created_by
 
         link = urljoin(
