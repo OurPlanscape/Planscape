@@ -44,7 +44,7 @@ export class DirectImpactsMapComponent {
   readonly labels = YEAR_INTERVAL_LABELS;
 
   readonly variables = YEAR_INTERVAL_PROPERTY;
-  @Input() year: YearInterval = 'cero';
+  @Input() year: YearInterval = 'zero';
   @Output()
   mapCreated = new EventEmitter<MapLibreMap>();
 
