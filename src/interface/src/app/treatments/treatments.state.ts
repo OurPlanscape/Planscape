@@ -7,8 +7,8 @@ import {
   combineLatest,
   distinctUntilChanged,
   map,
-  of,
   Observable,
+  of,
   switchMap,
   tap,
 } from 'rxjs';
@@ -28,7 +28,6 @@ import {
   UpdatingStandsError,
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
-import { DEFAULT_SLOT, MapMetric, METRICS } from './metrics';
 import { PlanStateService } from '@services';
 
 /**
@@ -107,11 +106,6 @@ export class TreatmentsState {
       return crumbs;
     })
   );
-
-  public activeMetric$ = new BehaviorSubject<MapMetric>({
-    metric: METRICS[0],
-    slot: DEFAULT_SLOT,
-  });
 
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
@@ -202,7 +196,7 @@ export class TreatmentsState {
             // set active project area if provided
             this.selectProjectArea(projectAreaId);
           } else if (!previousSummary) {
-            // if its the first time loading summary, center the map
+            // if it's the first time loading summary, center the map
             this.mapConfigState.updateMapCenter(summary.extent);
           }
           return true;
@@ -217,7 +211,7 @@ export class TreatmentsState {
         map((summary) => {
           this._summary$.next(summary);
         }),
-        catchError((error) => {
+        catchError(() => {
           throw new ReloadTreatmentError();
         })
       );
@@ -268,14 +262,14 @@ export class TreatmentsState {
       .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
       .pipe(
         // if setting treatments failed, rollback and throw error
-        catchError((error) => {
+        catchError(() => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
           // throws specific error message to identify on the component
           throw new UpdatingStandsError();
         }),
         // if no error, load summary
-        switchMap((s) => this.reloadSummary())
+        switchMap(() => this.reloadSummary())
       );
   }
 
@@ -285,12 +279,12 @@ export class TreatmentsState {
     return this.treatmentsService
       .removeTreatments(this.getTreatmentPlanId(), standIds)
       .pipe(
-        catchError((error) => {
+        catchError(() => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
           throw new RemovingStandsError();
         }),
-        switchMap((s) => this.reloadSummary())
+        switchMap(() => this.reloadSummary())
       );
   }
 

@@ -8,12 +8,16 @@ import {
   ColorSpecification,
   DataDrivenPropertyValueSpecification,
   Map as MapLibreMap,
+  MapGeoJSONFeature,
+  MapMouseEvent,
 } from 'maplibre-gl';
-import { STANDS_CELL_PAINT } from '../map.styles';
+import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
-import { TreatmentsState } from '../treatments.state';
 import { DEFAULT_SLOT, MapMetricSlot, SLOT_PALETTES } from '../metrics';
 import { map } from 'rxjs';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { TreatmentsState } from '../treatments.state';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-map-stands-tx-result',
@@ -31,15 +35,19 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() propertyName!: string;
 
   readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
+  readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
   paint = {};
 
-  constructor(private treatmentsState: TreatmentsState) {
-    this.treatmentsState.activeMetric$.pipe().subscribe((m) => {
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private directImpactsStateService: DirectImpactsStateService
+  ) {
+    this.directImpactsStateService.activeMetric$.pipe().subscribe((m) => {
       this.paint = this.generatePaint(m.slot);
     });
   }
 
-  vectorLayer$ = this.treatmentsState.activeMetric$.pipe(
+  vectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
     map((mapMetric) => {
       const plan = this.treatmentsState.getTreatmentPlanId();
       return (
@@ -48,6 +56,18 @@ export class MapStandsTxResultComponent implements OnInit {
       );
     })
   );
+
+  activeStandId$ = this.directImpactsStateService.activeStand$.pipe(
+    filter((s): s is MapGeoJSONFeature => s !== null),
+    map((stand) => stand.id)
+  );
+
+  setActiveStand(event: MapMouseEvent) {
+    const d = this.mapLibreMap.queryRenderedFeatures(event.point, {
+      layers: ['standsFill'],
+    });
+    this.directImpactsStateService.setActiveStand(d[0]);
+  }
 
   ngOnInit(): void {
     this.paint = this.generatePaint(DEFAULT_SLOT);
