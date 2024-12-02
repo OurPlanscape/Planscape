@@ -1,7 +1,10 @@
 import logging
-from typing import List, Tuple
+from typing import Tuple
+from django.conf import settings
 from django.db import transaction
-from celery import chord
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from celery import chord, chain
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -13,7 +16,6 @@ from impacts.services import (
     calculate_impacts,
     get_calculation_matrix,
 )
-from planning.models import ProjectArea
 from planscape.celery import app
 
 log = logging.getLogger(__name__)
@@ -62,6 +64,7 @@ def async_set_status(
         treatment_plan.status = status
         treatment_plan.save()
         log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+
     return (True, treatment_plan_pk)
 
 
@@ -81,8 +84,11 @@ def async_calculate_persist_impacts_treatment_plan(
         treatment_plan=treatment_plan,
         years=AVAILABLE_YEARS,
     )
-    callback = async_set_status.si(
-        treatment_plan_pk=treatment_plan_pk, status=TreatmentPlanStatus.SUCCESS
+    callback = chain(
+        async_set_status.si(
+            treatment_plan_pk=treatment_plan_pk, status=TreatmentPlanStatus.SUCCESS
+        ),
+        async_send_email_process_finished.si(treatment_plan_pk=treatment_plan_pk),
     ).on_error(
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
@@ -101,3 +107,46 @@ def async_calculate_persist_impacts_treatment_plan(
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     chord(tasks)(callback)
     log.info(f"Calculation of impacts for {treatment_plan} triggered.")
+
+
+@app.task()
+def async_send_email_process_finished(set_status_success, treatment_plan_pk):
+    if not set_status_success or set_status_success[0] is False:
+        log.warning("Not sending email due to previous task failure.")
+        return
+
+    try:
+        treatment_plan = TreatmentPlan.objects.select_related("created_by").get(
+            pk=treatment_plan_pk
+        )
+        user = treatment_plan.created_by
+        context = {
+            "user_full_name": user.get_full_name(),
+            "treatment_plan_link": None,
+        }
+
+        subject = "Planscape Treatment Plan is completed"
+
+        txt = render_to_string(
+            "email/treatment_plan/treatment_plan_completed.txt", context
+        )
+
+        send_mail(
+            subject=subject,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            message=txt,
+        )
+        log.info(
+            "Email sent informing user that Treatment Plan %s process is finished.",
+            treatment_plan.pk,
+        )
+    except Exception as e:
+        log.exception(
+            "Something unexpected happened while sending the email to inform that a Treatment Plan process was finished.",
+            extra={
+                "exception": e,
+                "treatment_plan": treatment_plan.pk,
+                "user": user.pk,
+            },
+        )
