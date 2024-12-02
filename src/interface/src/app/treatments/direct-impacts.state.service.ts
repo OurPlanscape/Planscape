@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Subject } from 'rxjs';
+import { BehaviorSubject } from 'rxjs';
 import { DEFAULT_SLOT, MapMetric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 
@@ -12,7 +12,7 @@ export class DirectImpactsStateService {
     slot: DEFAULT_SLOT,
   });
 
-  private _activeStand$ = new Subject<MapGeoJSONFeature>();
+  private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
 
   constructor() {}

@@ -1,13 +1,12 @@
 import { Component } from '@angular/core';
-import { Chart, ChartConfiguration } from 'chart.js';
+import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { map, Observable } from 'rxjs';
 import { SLOT_COLORS, YEAR_INTERVAL_PROPERTY } from '../metrics';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
-
-Chart.register(ChartDataLabels);
+import { filter } from 'rxjs/operators';
+import { MapGeoJSONFeature } from 'maplibre-gl';
 
 const baseFont = {
   family: 'Public Sans',
@@ -28,6 +27,7 @@ export class StandDataChartComponent {
 
   activeStandValues$: Observable<number[]> =
     this.directImpactsStateService.activeStand$.pipe(
+      filter((s): s is MapGeoJSONFeature => s !== null),
       map((a) => {
         return Object.values(YEAR_INTERVAL_PROPERTY).map(
           (property) => a.properties[property] * 100

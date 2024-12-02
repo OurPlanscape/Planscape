@@ -8,6 +8,7 @@ import {
   ColorSpecification,
   DataDrivenPropertyValueSpecification,
   Map as MapLibreMap,
+  MapGeoJSONFeature,
   MapMouseEvent,
 } from 'maplibre-gl';
 import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
@@ -16,6 +17,7 @@ import { DEFAULT_SLOT, MapMetricSlot, SLOT_PALETTES } from '../metrics';
 import { map } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
+import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-map-stands-tx-result',
@@ -56,6 +58,7 @@ export class MapStandsTxResultComponent implements OnInit {
   );
 
   activeStandId$ = this.directImpactsStateService.activeStand$.pipe(
+    filter((s): s is MapGeoJSONFeature => s !== null),
     map((stand) => stand.id)
   );
 

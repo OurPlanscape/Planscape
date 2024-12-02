@@ -46,7 +46,16 @@
       </sg-panel>
       <sg-panel class="chart-2" [paddedContent]="false">
         <div panelTitle>Chart 2</div>
-        <app-stand-data-chart></app-stand-data-chart>
+        <div *ngIf="(activeStand$ | async) === null" class="empty-state">
+          <div>
+            Select a
+            <sg-treatment-type-icon [treatment]="null"></sg-treatment-type-icon>
+            (hexagon) from the map to see changes over time displayed in the
+            graph
+          </div>
+        </div>
+        <app-stand-data-chart
+          *ngIf="activeStand$ | async"></app-stand-data-chart>
       </sg-panel>
 
       <sg-panel

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
@@ -30,6 +30,9 @@ import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/di
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { MapGeoJSONFeature } from 'maplibre-gl';
+import { Chart } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -55,6 +58,7 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
     DirectImpactsMapLegendComponent,
     JsonPipe,
     StandDataChartComponent,
+    TreatmentTypeIconComponent,
   ],
   providers: [
     TreatmentsState,
@@ -65,7 +69,7 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
   templateUrl: './direct-impacts.component.html',
   styleUrl: './direct-impacts.component.scss',
 })
-export class DirectImpactsComponent {
+export class DirectImpactsComponent implements OnInit, OnDestroy {
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfigState: MapConfigState,
@@ -106,4 +110,14 @@ export class DirectImpactsComponent {
   }
 
   getValues(activeStand: MapGeoJSONFeature) {}
+
+  ngOnInit(): void {
+    // Register the plugin only when this component is initialized
+    Chart.register(ChartDataLabels);
+  }
+
+  ngOnDestroy(): void {
+    // Unregister the plugin when the component is destroyed
+    Chart.unregister(ChartDataLabels);
+  }
 }
