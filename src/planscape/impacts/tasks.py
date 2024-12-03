@@ -2,6 +2,7 @@ import logging
 from typing import Tuple
 from urllib.parse import urljoin
 from celery import chord, chain
+from rasterio.errors import RasterioIOError
 from django.conf import settings
 from django.db import transaction
 from django.core.mail import send_mail
@@ -22,7 +23,7 @@ from planscape.celery import app
 log = logging.getLogger(__name__)
 
 
-@app.task()
+@app.task(autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5})
 def async_calculate_impacts_for_variable_action_year(
     treatment_plan_pk: int,
     variable: ImpactVariable,
