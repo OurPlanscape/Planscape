@@ -36,6 +36,11 @@ export const SELECTED_STANDS_PAINT = {
   'fill-opacity': 0.7,
 };
 
+export const SINGLE_STAND_SELECTED = {
+  'fill-color': BASE_COLORS.yellow,
+  'fill-opacity': 0.5,
+};
+
 export const PROJECT_AREA_OUTLINE_PAINT = {
   'line-color': BASE_COLORS.dark,
   'line-width': 4,

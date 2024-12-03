@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { Note, ProjectAreaNotesService } from '../../services/notes.service';
 import { MatDividerModule } from '@angular/material/divider';
@@ -10,7 +10,7 @@ import {
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatmentPlan } from '@types';
 import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
-import { take, distinctUntilChanged } from 'rxjs';
+import { distinctUntilChanged, take } from 'rxjs';
 import { SharedModule, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';

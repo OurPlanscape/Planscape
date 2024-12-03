@@ -336,7 +336,7 @@ def calculate_stand_deltas(
             attribute_to_lookup = ImpactVariableAggregation.get_metric_attribute(agg)
             baseline_value = getattr(baseline, attribute_to_lookup)
             action_value = (
-                getattr(action_metric, attribute_to_lookup)
+                getattr(action_metric, attribute_to_lookup) or baseline_value
                 if action_metric
                 else baseline_value
             )

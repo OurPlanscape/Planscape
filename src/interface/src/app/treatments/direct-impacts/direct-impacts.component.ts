@@ -1,5 +1,12 @@
-import { Component } from '@angular/core';
-import { AsyncPipe, DatePipe, NgClass, NgIf, NgStyle } from '@angular/common';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import {
+  AsyncPipe,
+  DatePipe,
+  JsonPipe,
+  NgClass,
+  NgIf,
+  NgStyle,
+} from '@angular/common';
 import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
@@ -20,6 +27,12 @@ import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.c
 import { MetricFiltersComponent } from './metric-filters/metric-filters.component';
 import { MapMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
+import { MapGeoJSONFeature } from 'maplibre-gl';
+import { Chart } from 'chart.js';
+import ChartDataLabels from 'chartjs-plugin-datalabels';
+import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -43,6 +56,9 @@ import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/di
     MetricFiltersComponent,
     NgStyle,
     DirectImpactsMapLegendComponent,
+    JsonPipe,
+    StandDataChartComponent,
+    TreatmentTypeIconComponent,
   ],
   providers: [
     TreatmentsState,
@@ -53,12 +69,13 @@ import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/di
   templateUrl: './direct-impacts.component.html',
   styleUrl: './direct-impacts.component.scss',
 })
-export class DirectImpactsComponent {
+export class DirectImpactsComponent implements OnInit, OnDestroy {
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private directImpactsStateService: DirectImpactsStateService
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.treatmentsState
@@ -84,9 +101,23 @@ export class DirectImpactsComponent {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
+  activeStand$ = this.directImpactsStateService.activeStand$;
+
   showTreatmentPrescription = false;
 
   activateMetric(data: MapMetric) {
-    this.treatmentsState.activeMetric$.next(data);
+    this.directImpactsStateService.activeMetric$.next(data);
+  }
+
+  getValues(activeStand: MapGeoJSONFeature) {}
+
+  ngOnInit(): void {
+    // Register the plugin only when this component is initialized
+    Chart.register(ChartDataLabels);
+  }
+
+  ngOnDestroy(): void {
+    // Unregister the plugin when the component is destroyed
+    Chart.unregister(ChartDataLabels);
   }
 }
