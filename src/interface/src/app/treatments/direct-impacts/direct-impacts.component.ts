@@ -33,6 +33,7 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -59,6 +60,7 @@ import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-i
     JsonPipe,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
+    ChangeOverTimeChartComponent,
   ],
   providers: [
     TreatmentsState,
