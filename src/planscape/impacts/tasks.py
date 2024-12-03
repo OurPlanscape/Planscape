@@ -95,7 +95,7 @@ def async_calculate_persist_impacts_treatment_plan(
             treatment_plan_pk=treatment_plan_pk,
             status=TreatmentPlanStatus.FAILURE,
         )
-    )()
+    )
     tasks = [
         async_calculate_impacts_for_variable_action_year.si(
             treatment_plan_pk=treatment_plan_pk,
