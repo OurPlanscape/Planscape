@@ -1,0 +1,82 @@
+::ng-deep {
+  .treatment-tooltip {
+
+
+    font-family: "Public Sans";
+    font-size: 12px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 22px; /* 183.333% */
+
+    .maplibregl-popup-content {
+      background-color: black;
+      color: #FFF;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+      border-left-color: black;
+    }
+
+    &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+      border-right-color: black;
+    }
+
+    &.maplibregl-popup-anchor-top .maplibregl-popup-tip {
+      border-bottom-color: black;
+    }
+
+    &.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
+      border-top-color: black;
+    }
+
+    &.maplibregl-popup-anchor-bottom-right {
+      .maplibregl-popup-tip {
+        border-top-color: black;
+      }
+
+      .maplibregl-popup-content {
+        border-bottom-right-radius: 0;
+      }
+    }
+
+    &.maplibregl-popup-anchor-bottom-left {
+      .maplibregl-popup-tip {
+        border-top-color: black;
+      }
+
+      .maplibregl-popup-content {
+        border-bottom-left-radius: 0;
+      }
+    }
+
+    &.maplibregl-popup-anchor-top-left {
+      .maplibregl-popup-tip {
+        border-bottom-color: black;
+      }
+
+      .maplibregl-popup-content {
+        border-top-left-radius: 0;
+      }
+    }
+
+    &.maplibregl-popup-anchor-top-right {
+      .maplibregl-popup-tip {
+        border-bottom-color: black;
+      }
+
+      .maplibregl-popup-content {
+        border-top-right-radius: 0;
+      }
+    }
+
+    .tooltip-title {
+      color: #E1E1E1;
+      font-weight: 600;
+      line-height: 14px; /* 116.667% */
+      font-style: normal;
+      margin-bottom: 4px;
+    }
+  }
+}
