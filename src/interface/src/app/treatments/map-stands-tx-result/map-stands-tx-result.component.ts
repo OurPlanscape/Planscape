@@ -44,10 +44,6 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
 
-  readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
-  readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
-  paint = {};
-
   constructor(
     private treatmentsState: TreatmentsState,
     private directImpactsStateService: DirectImpactsStateService
@@ -56,6 +52,13 @@ export class MapStandsTxResultComponent implements OnInit {
       this.paint = this.generatePaint(m.slot);
     });
   }
+
+  readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
+  readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
+  paint = {};
+
+  tooltipLongLat: null | LngLat = null;
+  appliedTreatment = '';
 
   vectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
     map((mapMetric) => {
@@ -84,13 +87,9 @@ export class MapStandsTxResultComponent implements OnInit {
     this.paint = this.generatePaint(DEFAULT_SLOT);
   }
 
-  tooltipLongLat: null | LngLat = null;
-  appliedTreatment = '';
-
   showTooltip(event: MapMouseEvent) {
-    const feature = this.getMapGeoJSONFeature(event.point);
-    // const coordinates = centroid(feature).geometry.coordinates;
     this.tooltipLongLat = event.lngLat;
+    const feature = this.getMapGeoJSONFeature(event.point);
     this.appliedTreatment = nameForAction(feature.properties['action']);
   }
 

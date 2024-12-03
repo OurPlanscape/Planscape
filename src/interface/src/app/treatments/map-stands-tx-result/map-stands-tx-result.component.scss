@@ -1,16 +1,17 @@
+@import "colors";
+@import "mixins";
+
 ::ng-deep {
   .treatment-tooltip {
-
-
-    font-family: "Public Sans";
+    @include public-sans();
     font-size: 12px;
     font-style: normal;
     font-weight: 400;
-    line-height: 22px; /* 183.333% */
+    line-height: 22px;
 
     .maplibregl-popup-content {
-      background-color: black;
-      color: #FFF;
+      background-color: $color-black;
+      color: $color-white;
       padding: 8px 12px;
       border-radius: 8px;
     }
@@ -18,25 +19,25 @@
     // overriding tip colors for each corner
 
     &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
-      border-left-color: black;
+      border-left-color: $color-black;
     }
 
     &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
-      border-right-color: black;
+      border-right-color: $color-black;
     }
 
     &.maplibregl-popup-anchor-top .maplibregl-popup-tip {
-      border-bottom-color: black;
+      border-bottom-color: $color-black;
     }
 
     &.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-      border-top-color: black;
+      border-top-color: $color-black;
     }
 
     // overriding tip color for diagonals
     &.maplibregl-popup-anchor-bottom-right {
       .maplibregl-popup-tip {
-        border-top-color: black;
+        border-top-color: $color-black;
       }
 
       .maplibregl-popup-content {
@@ -46,7 +47,7 @@
 
     &.maplibregl-popup-anchor-bottom-left {
       .maplibregl-popup-tip {
-        border-top-color: black;
+        border-top-color: $color-black;
       }
 
       .maplibregl-popup-content {
@@ -56,7 +57,7 @@
 
     &.maplibregl-popup-anchor-top-left {
       .maplibregl-popup-tip {
-        border-bottom-color: black;
+        border-bottom-color: $color-black;
       }
 
       .maplibregl-popup-content {
@@ -66,7 +67,7 @@
 
     &.maplibregl-popup-anchor-top-right {
       .maplibregl-popup-tip {
-        border-bottom-color: black;
+        border-bottom-color: $color-black;
       }
 
       .maplibregl-popup-content {
@@ -75,7 +76,7 @@
     }
 
     .tooltip-title {
-      color: #E1E1E1;
+      color: $color-soft-gray;
       font-weight: 600;
       line-height: 14px; /* 116.667% */
       font-style: normal;
