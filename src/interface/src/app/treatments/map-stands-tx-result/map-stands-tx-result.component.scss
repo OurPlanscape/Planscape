@@ -15,6 +15,8 @@
       border-radius: 8px;
     }
 
+    // overriding tip colors for each corner
+
     &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
       border-left-color: black;
     }
@@ -31,6 +33,7 @@
       border-top-color: black;
     }
 
+    // overriding tip color for diagonals
     &.maplibregl-popup-anchor-bottom-right {
       .maplibregl-popup-tip {
         border-top-color: black;

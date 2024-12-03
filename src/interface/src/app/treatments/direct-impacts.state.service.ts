@@ -18,7 +18,6 @@ export class DirectImpactsStateService {
   constructor() {}
 
   setActiveStand(standData: MapGeoJSONFeature) {
-    console.log(standData);
     this._activeStand$.next(standData);
   }
 }

@@ -77,6 +77,7 @@ export class MapStandsTxResultComponent implements OnInit {
   setActiveStand(event: MapMouseEvent) {
     const feature = this.getMapGeoJSONFeature(event.point);
     this.directImpactsStateService.setActiveStand(feature);
+    this.hideTooltip();
   }
 
   ngOnInit(): void {
