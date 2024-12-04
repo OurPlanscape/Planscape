@@ -22,10 +22,10 @@ import { getTreatedStandsTotal } from '../prescriptions';
 import { TreatmentProjectArea } from '@types';
 import {
   combineLatest,
-  Observable,
   distinctUntilChanged,
-  Subject,
   map,
+  Observable,
+  Subject,
 } from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
 
