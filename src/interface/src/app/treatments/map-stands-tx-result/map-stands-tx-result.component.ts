@@ -21,7 +21,7 @@ import { map } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { filter } from 'rxjs/operators';
-import { nameForAction } from '../prescriptions';
+import { descriptionForAction } from '../prescriptions';
 
 @Component({
   selector: 'app-map-stands-tx-result',
@@ -90,7 +90,14 @@ export class MapStandsTxResultComponent implements OnInit {
   showTooltip(event: MapMouseEvent) {
     this.tooltipLongLat = event.lngLat;
     const feature = this.getMapGeoJSONFeature(event.point);
-    this.appliedTreatment = nameForAction(feature.properties['action']);
+    const action = feature.properties['action'];
+    if (action) {
+      this.appliedTreatment = descriptionForAction(
+        feature.properties['action']
+      );
+    } else {
+      this.appliedTreatment = 'No Treatment';
+    }
   }
 
   hideTooltip() {
