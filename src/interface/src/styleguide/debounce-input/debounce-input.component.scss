@@ -57,7 +57,7 @@
   }
 
   .save-spinner {
-    right: 8px;
+    right: 10px;
   }
 }
 
@@ -71,11 +71,12 @@
 
 ::ng-deep .name-input.small .input-wrapper {
   padding-right: 0px;
+  border: 1px $color-soft-gray solid;
 }
 
 ::ng-deep .name-input.small .input-wrapper:focus-within {
-  padding-right: 4px;
-  border: 1px $color-main-blue solid;
+  padding-right: 0px;
+  border: 1px $color-standard-blue solid;
 }
 
 ::ng-deep .name-input-component .input-wrapper {
@@ -83,10 +84,6 @@
   border-width: 2px;
   padding: 4px 0px 4px 8px;
   padding-right: 4px;
-}
-
-::ng-deep .name-input-component .focus-within {
-  border-width: 1px;
 }
 
 ::ng-deep .tooltip-menu .mat-mdc-menu-content {

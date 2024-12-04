@@ -27,8 +27,7 @@
       #inputModel="ngModel"
       (ngModelChange)="clearError()"
       (keyup.enter)="emitTextValue($event)"
-      (blur)="saveText()"
-      [readonly]="curMode === 'INITIAL'"
+      (blur)="onBlur()"
       [disabled]="curMode === 'INITIAL'" />
     <button
       *ngIf="curMode === 'EDIT'"
