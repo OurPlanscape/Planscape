@@ -156,3 +156,13 @@ export function getTreatedStandsTotal(prescriptions: Prescription[]) {
     return total;
   }, 0);
 }
+
+export function descriptionForAction(action: string): string {
+  return (
+    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
+    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].details.join(
+      ', '
+    ) ||
+    ''
+  );
+}
