@@ -15,6 +15,11 @@ export class DirectImpactsStateService {
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
 
+  private _selectedProjectAreaForChanges$ =
+    new BehaviorSubject<MapGeoJSONFeature | null>(null);
+  public selectedProjectAreaForChanges$ =
+    this._selectedProjectAreaForChanges$.asObservable();
+
   constructor() {}
 
   setActiveStand(standData: MapGeoJSONFeature) {

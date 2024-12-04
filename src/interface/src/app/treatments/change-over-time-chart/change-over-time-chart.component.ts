@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { AsyncPipe } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map, Observable } from 'rxjs';
+import { map, Observable, of } from 'rxjs';
 import { SLOT_COLORS } from '../metrics';
 
 const baseFont = {
@@ -22,6 +22,32 @@ const baseFont = {
 })
 export class ChangeOverTimeChartComponent {
   constructor(private directImpactsStateService: DirectImpactsStateService) {}
+
+  @Input() projectAreaSelection = null;
+
+  //TODO: remove this test data
+  projectAreaChangeData$: Observable<number[]> = of(
+    [
+      62.701134511713974, 55.04547112954606, 57.91574438509243,
+      68.16669536204647, 13.4343242,
+    ],
+    [
+      -62.701134511713974, 55.04547112954606, 57.91574438509243,
+      -68.16669536204647, 13.4343242,
+    ],
+    [
+      -62.701134511713974, 55.04547112954606, 57.91574438509243,
+      -68.16669536204647, 13.4343242,
+    ],
+    [
+      62.701134511713974, 55.04547112954606, 57.91574438509243,
+      68.16669536204647, 13.4343242,
+    ],
+    [
+      62.701134511713974, 55.04547112954606, 57.91574438509243,
+      68.16669536204647, 13.4343242,
+    ]
+  );
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
@@ -98,6 +124,33 @@ export class ChangeOverTimeChartComponent {
         },
       },
     };
+
+  barChartData$ = this.projectAreaChangeData$.pipe(
+    map((data) => {
+      console.log('here is the data we got:', data);
+      return {
+        labels: [0, 5, 10, 15, 20],
+        datasets: [
+          {
+            data: data[0],
+            barThickness: 20,
+          },
+          {
+            data: data[1],
+            barThickness: 20,
+          },
+          {
+            data: data[2],
+            barThickness: 20,
+          },
+          {
+            data: data,
+            barThickness: 20,
+          },
+        ],
+      } as ChartConfiguration<'bar'>['data'];
+    })
+  );
 
   barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =
     this.directImpactsStateService.activeMetric$.pipe(

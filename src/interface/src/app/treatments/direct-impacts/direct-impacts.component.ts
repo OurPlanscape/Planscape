@@ -5,6 +5,7 @@ import {
   JsonPipe,
   NgClass,
   NgIf,
+  NgFor,
   NgStyle,
 } from '@angular/common';
 import { SharedModule } from '@shared';
@@ -34,6 +35,9 @@ import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
+import { TreatmentProjectArea, Extent } from '@types';
+import { MatSelectModule } from '@angular/material/select';
+import { Point } from 'geojson';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -45,7 +49,9 @@ import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-o
     DirectImpactsSyncedMapsComponent,
     PanelComponent,
     MatIconModule,
+    MatSelectModule,
     NgIf,
+    NgFor,
     MatSlideToggleModule,
     ButtonComponent,
     DatePipe,
@@ -104,8 +110,47 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
-
   showTreatmentPrescription = false;
+
+  //TODO: can we move these to state service?
+  // REMOVE:
+  sampleExtent: Extent = [1, 2, 3, 4];
+  samplePoint: Point = { type: 'Point', coordinates: [] };
+  availableProjectAreas: TreatmentProjectArea[] = [
+    {
+      project_area_id: 20,
+      project_area_name: 'Project Area 1',
+      total_stand_count: 1,
+      prescriptions: [],
+      extent: this.sampleExtent,
+      centroid: this.samplePoint,
+    },
+    {
+      project_area_id: 20,
+      project_area_name: 'Project Area 2',
+      total_stand_count: 1,
+      prescriptions: [],
+      extent: this.sampleExtent,
+      centroid: this.samplePoint,
+    },
+    {
+      project_area_id: 20,
+      project_area_name: 'Project Area 3',
+      total_stand_count: 1,
+      prescriptions: [],
+      extent: this.sampleExtent,
+      centroid: this.samplePoint,
+    },
+    {
+      project_area_id: 20,
+      project_area_name: 'Project Area 4',
+      total_stand_count: 1,
+      prescriptions: [],
+      extent: this.sampleExtent,
+      centroid: this.samplePoint,
+    },
+  ];
+  selectedChartProjectArea = { name: 1, value: 'ok' };
 
   activateMetric(data: MapMetric) {
     this.directImpactsStateService.activeMetric$.next(data);
@@ -122,4 +167,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     // Unregister the plugin when the component is destroyed
     Chart.unregister(ChartDataLabels);
   }
+
+  setChartProjectArea(e: Event) {}
 }

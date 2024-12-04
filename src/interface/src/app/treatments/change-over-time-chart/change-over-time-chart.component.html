@@ -1,2 +1,7 @@
-<div>ok</div>
-<canvas baseChart [options]="(barChartOptions$ | async) ?? {}"></canvas>
+<div class="title">Change (%)</div>
+<canvas
+  baseChart
+  [data]="(barChartData$ | async) || undefined"
+  [options]="(barChartOptions$ | async) ?? {}"
+  [legend]="false"
+  [type]="'bar'"></canvas>

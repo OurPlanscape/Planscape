@@ -41,7 +41,27 @@
 
     <section class="direct-impacts-metrics">
       <sg-panel class="chart-1">
-        <div panelTitle>Chart 1</div>
+        <div panelTitle class="changes-chart-title">
+          <div>
+            Project Area
+            <mat-form-field appearance="outline" class="changes-chart-select">
+              <mat-select
+                class="project-area-selector"
+                [ngModel]="selectedChartProjectArea"
+                (ngModelChange)="setChartProjectArea($event)">
+                <mat-option [value]="null">All</mat-option>
+                <mat-option
+                  *ngFor="let projectArea of availableProjectAreas"
+                  [value]="projectArea.project_area_id">
+                  {{ projectArea.project_area_name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+          <button sg-button [variant]="'icon-only'">
+            <img src="/assets/svg/icons/open-in-full.svg" />
+          </button>
+        </div>
         <app-change-over-time-chart></app-change-over-time-chart>
       </sg-panel>
       <sg-panel class="chart-2" [paddedContent]="false">

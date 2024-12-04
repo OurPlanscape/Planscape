@@ -1,10 +1,9 @@
-@import "media";
-@import "colors";
-@import "mixins";
+@import 'media';
+@import 'colors';
+@import 'mixins';
 
 :host {
   display: block;
-
 }
 
 .treatment-plan {
@@ -24,6 +23,24 @@
 .direct-impacts {
   background-color: $color-soft-purple;
   padding: 16px;
+}
+
+.changes-chart-select {
+  height: 38px;
+  border: 1px;
+  border-radius: 4px;
+}
+.changes-chart-title {
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: normal;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  line-height: 48px;
+  justify-content: space-between;
 }
 
 .title-row {
@@ -124,4 +141,3 @@
     top: 6px;
   }
 }
-
