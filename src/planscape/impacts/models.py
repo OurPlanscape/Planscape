@@ -13,8 +13,6 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from datasets.models import DataLayer, DataLayerType
-from impacts.calculator import calculate_delta
-from organizations.models import Organization
 from planning.models import ProjectArea, Scenario
 from stands.models import Stand
 from typing_extensions import Self

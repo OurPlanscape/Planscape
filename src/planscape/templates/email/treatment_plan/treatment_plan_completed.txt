@@ -1,0 +1,9 @@
+Dear {{ user_full_name }},
+
+Your Planscape Treatment Plan analysis is now complete. Your can review your analysis here: {{ treatment_plan_link }}.
+
+If you have questions or need help, please refer to the User Guide (https://www.planscape.org/documentation/user-guide/).  As always, we welcome your feedback.  
+
+Thank you,
+
+Team Planscape

@@ -8,7 +8,7 @@ import {
   METRICS,
   SLOT_COLORS,
 } from '../../metrics';
-import { TreatmentsState } from '../../treatments.state';
+import { DirectImpactsStateService } from '../../direct-impacts.state.service';
 
 @Component({
   selector: 'app-metric-filters',
@@ -20,7 +20,7 @@ import { TreatmentsState } from '../../treatments.state';
 export class MetricFiltersComponent implements OnInit {
   @Output() metricSelected = new EventEmitter<MapMetric>();
 
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(private directImpactsStateService: DirectImpactsStateService) {}
 
   initialOptions: Metric[] = METRICS;
 
@@ -60,7 +60,7 @@ export class MetricFiltersComponent implements OnInit {
     // Updating the dropdowns
     this.updateDropdownOptions(dropdownIndex);
     // setting the metric as active if slot is active
-    if (this.treatmentsState.activeMetric$.value.slot === slot) {
+    if (this.directImpactsStateService.activeMetric$.value.slot === slot) {
       this.activateMetric(metric, slot);
     }
   }
