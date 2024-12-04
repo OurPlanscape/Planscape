@@ -127,7 +127,6 @@ export class ChangeOverTimeChartComponent {
 
   barChartData$ = this.projectAreaChangeData$.pipe(
     map((data) => {
-      console.log('here is the data we got:', data);
       return {
         labels: [0, 5, 10, 15, 20],
         datasets: [

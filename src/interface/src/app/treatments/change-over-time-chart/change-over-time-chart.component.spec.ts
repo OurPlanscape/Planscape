@@ -8,10 +8,9 @@ describe('ChangeOverTimeChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChangeOverTimeChartComponent]
-    })
-    .compileComponents();
-    
+      imports: [ChangeOverTimeChartComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ChangeOverTimeChartComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
