@@ -40,7 +40,10 @@
     </div>
 
     <section class="direct-impacts-metrics">
-      <sg-panel class="chart-1">
+      <sg-panel
+        class="chart-1"
+        [paddedContent]="false"
+        [buttons]="changeChartButtons">
         <div panelTitle class="changes-chart-title">
           <div>
             Project Area
@@ -58,9 +61,6 @@
               </mat-select>
             </mat-form-field>
           </div>
-          <button class="expansion-icon" sg-button [variant]="'icon-only'">
-            <img src="/assets/svg/icons/open-in-full.svg" />
-          </button>
         </div>
         <app-change-over-time-chart></app-change-over-time-chart>
       </sg-panel>

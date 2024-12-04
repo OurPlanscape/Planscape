@@ -19,7 +19,7 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { ButtonComponent, PanelComponent } from '@styleguide';
+import { ButtonComponent, PanelComponent, PanelIconButton } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
@@ -111,7 +111,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
   showTreatmentPrescription = false;
-
+  changeChartButtons: PanelIconButton[] = [
+    { icon: 'open_in_full', actionName: 'expand' },
+  ];
   //TODO: can we move these to state service?
   // REMOVE:
   sampleExtent: Extent = [1, 2, 3, 4];

@@ -26,28 +26,10 @@ export class ChangeOverTimeChartComponent {
   @Input() projectAreaSelection = null;
 
   //TODO: remove this test data
-  projectAreaChangeData$: Observable<number[]> = of(
-    [
-      62.701134511713974, 55.04547112954606, 57.91574438509243,
-      68.16669536204647, 13.4343242,
-    ],
-    [
-      -62.701134511713974, 55.04547112954606, 57.91574438509243,
-      -68.16669536204647, 13.4343242,
-    ],
-    [
-      -62.701134511713974, 55.04547112954606, 57.91574438509243,
-      -68.16669536204647, 13.4343242,
-    ],
-    [
-      62.701134511713974, 55.04547112954606, 57.91574438509243,
-      68.16669536204647, 13.4343242,
-    ],
-    [
-      62.701134511713974, 55.04547112954606, 57.91574438509243,
-      68.16669536204647, 13.4343242,
-    ]
-  );
+  projectAreaChangeData$: Observable<number[]> = of([
+    -62.701134511713974, 55.04547112954606, 57.91574438509243,
+    68.16669536204647, 13.4343242,
+  ]);
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
@@ -131,20 +113,24 @@ export class ChangeOverTimeChartComponent {
         labels: [0, 5, 10, 15, 20],
         datasets: [
           {
-            data: data[0],
-            barThickness: 20,
+            label: 'Metric 1',
+            data: [12, 18, 15, 22, 10],
+            backgroundColor: '#ff4444',
           },
           {
-            data: data[1],
-            barThickness: 20,
+            label: 'Metric 2',
+            data: [15, 20, 12, 17, 14],
+            backgroundColor: '#44ff44',
           },
           {
-            data: data[2],
-            barThickness: 20,
+            label: 'Metric 3',
+            data: [10, 14, 20, 11, 16],
+            backgroundColor: '#4444ff',
           },
           {
-            data: data,
-            barThickness: 20,
+            label: 'Metric 4',
+            data: [8, 16, 13, 19, 12],
+            backgroundColor: '#ff44ff',
           },
         ],
       } as ChartConfiguration<'bar'>['data'];
