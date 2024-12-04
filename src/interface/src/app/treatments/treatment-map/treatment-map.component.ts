@@ -260,7 +260,7 @@ export class TreatmentMapComponent {
     }
   }
   openTreatmentLegend() {
-    this.mapConfigState.setShowTreatmentLegend(true);
+    this.mapConfigState.setTreatmentLegendVisible(true);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

@@ -103,7 +103,7 @@ export class MapConfigState {
     this._showMapControls$.next(value);
   }
 
-  setShowTreatmentLegend(value: boolean) {
+  setTreatmentLegendVisible(value: boolean) {
     this._showTreatmentLegend$.next(value);
   }
 

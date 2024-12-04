@@ -149,6 +149,6 @@ export class TreatmentConfigComponent {
   }
 
   closeLegend() {
-    this.mapConfig.setShowTreatmentLegend(false);
+    this.mapConfig.setTreatmentLegendVisible(false);
   }
 }
