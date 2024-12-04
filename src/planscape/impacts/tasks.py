@@ -1,10 +1,12 @@
 import logging
 from typing import Tuple
+from urllib.parse import urljoin
+from celery import chord, chain
+from rasterio.errors import RasterioIOError
 from django.conf import settings
 from django.db import transaction
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from celery import chord, chain
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -21,7 +23,7 @@ from planscape.celery import app
 log = logging.getLogger(__name__)
 
 
-@app.task()
+@app.task(autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5})
 def async_calculate_impacts_for_variable_action_year(
     treatment_plan_pk: int,
     variable: ImpactVariable,
@@ -110,19 +112,22 @@ def async_calculate_persist_impacts_treatment_plan(
 
 
 @app.task()
-def async_send_email_process_finished(set_status_success, treatment_plan_pk):
-    if not set_status_success or set_status_success[0] is False:
-        log.warning("Not sending email due to previous task failure.")
-        return
-
+def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
     try:
-        treatment_plan = TreatmentPlan.objects.select_related("created_by").get(
-            pk=treatment_plan_pk
-        )
+        treatment_plan = TreatmentPlan.objects.select_related(
+            "created_by", "scenario"
+        ).get(pk=treatment_plan_pk)
         user = treatment_plan.created_by
+
+        link = urljoin(
+            settings.PLANSCAPE_BASE_URL,
+            f"plan/{treatment_plan.scenario.planning_area_id}/"
+            f"config/{treatment_plan.scenario.pk}/treatment/{treatment_plan_pk}",
+        )
+
         context = {
             "user_full_name": user.get_full_name(),
-            "treatment_plan_link": None,
+            "treatment_plan_link": link,
         }
 
         subject = "Planscape Treatment Plan is completed"
@@ -130,12 +135,16 @@ def async_send_email_process_finished(set_status_success, treatment_plan_pk):
         txt = render_to_string(
             "email/treatment_plan/treatment_plan_completed.txt", context
         )
+        html = render_to_string(
+            "email/treatment_plan/treatment_plan_completed.html", context
+        )
 
         send_mail(
             subject=subject,
             from_email=settings.DEFAULT_FROM_EMAIL,
             recipient_list=[user.email],
             message=txt,
+            html_message=html,
         )
         log.info(
             "Email sent informing user that Treatment Plan %s process is finished.",
