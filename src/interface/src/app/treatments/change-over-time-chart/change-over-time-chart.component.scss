@@ -1,9 +1,9 @@
-@import "colors";
+@import 'colors';
 
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 100px);
+  height: calc(100% - 80px);
 }
 
 canvas {

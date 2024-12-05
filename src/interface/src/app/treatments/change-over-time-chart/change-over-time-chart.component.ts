@@ -25,10 +25,36 @@ export class ChangeOverTimeChartComponent {
 
   @Input() projectAreaSelection = null;
 
-  //TODO: remove this test data
-  projectAreaChangeData$: Observable<number[]> = of([
-    -62.701134511713974, 55.04547112954606, 57.91574438509243,
-    68.16669536204647, 13.4343242,
+  //TODO: remove this example data
+  projectAreaChangeData$: Observable<any[][]> = of([
+    [
+      { id: 'metric1', value: 14.32432 },
+      { id: 'metric1', value: 24.32432 },
+      { id: 'metric1', value: 34.32432 },
+      { id: 'metric1', value: 44.32432 },
+      { id: 'metric1', value: 54.32432 },
+    ],
+    [
+      { id: 'metric2', value: 24.32432 },
+      { id: 'metric2', value: -24.32432 },
+      { id: 'metric2', value: 34.32432 },
+      { id: 'metric2', value: 34.32432 },
+      { id: 'metric2', value: 44.32432 },
+    ],
+    [
+      { id: 'metric3', value: -14.32432 },
+      { id: 'metric3', value: 34.32432 },
+      { id: 'metric3', value: 54.32432 },
+      { id: 'metric3', value: 74.32432 },
+      { id: 'metric3', value: 94.32432 },
+    ],
+    [
+      { id: 'metric4', value: 24.32432 },
+      { id: 'metric4', value: 3.32432 },
+      { id: 'metric4', value: 14.32432 },
+      { id: 'metric4', value: 64.32432 },
+      { id: 'metric4', value: 34.32432 },
+    ],
   ]);
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
@@ -57,7 +83,7 @@ export class ChangeOverTimeChartComponent {
           },
           formatter: (value: number) => {
             // Check if the value has a decimal part
-            return value % 1 === 0 ? value.toString() : value.toFixed(1);
+            return value % 1 === 0 ? value.toString() : value.toFixed(0);
           },
         },
       },
@@ -113,24 +139,24 @@ export class ChangeOverTimeChartComponent {
         labels: [0, 5, 10, 15, 20],
         datasets: [
           {
-            label: 'Metric 1',
-            data: [12, 18, 15, 22, 10],
-            backgroundColor: '#ff4444',
+            label: data[0][0].id,
+            data: data[0].map((d) => d.value),
+            backgroundColor: SLOT_COLORS['blue'],
           },
           {
             label: 'Metric 2',
-            data: [15, 20, 12, 17, 14],
-            backgroundColor: '#44ff44',
+            data: data[1].map((d) => d.value),
+            backgroundColor: SLOT_COLORS['purple'],
           },
           {
             label: 'Metric 3',
-            data: [10, 14, 20, 11, 16],
-            backgroundColor: '#4444ff',
+            data: data[2].map((d) => d.value),
+            backgroundColor: SLOT_COLORS['orange'],
           },
           {
             label: 'Metric 4',
-            data: [8, 16, 13, 19, 12],
-            backgroundColor: '#ff44ff',
+            data: data[3].map((d) => d.value),
+            backgroundColor: SLOT_COLORS['green'],
           },
         ],
       } as ChartConfiguration<'bar'>['data'];
