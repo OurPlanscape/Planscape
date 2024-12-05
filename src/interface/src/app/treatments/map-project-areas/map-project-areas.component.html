@@ -18,7 +18,7 @@
   [paint]="{
     'fill-color': [
       'case',
-      ['==', ['get', 'id'], hoveredProjectAreaId$.value],
+      ['==', ['get', 'id'], hoveredProjectAreaFromFeatures?.properties?.['id']],
       hoveredFillColor,
       fillColor
     ],
