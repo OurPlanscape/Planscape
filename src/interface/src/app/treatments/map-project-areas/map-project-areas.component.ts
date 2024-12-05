@@ -155,7 +155,7 @@ export class MapProjectAreasComponent implements OnInit {
       e.point
     );
     this.updateHoveredFillColor(
-      this.hoveredProjectAreaFromFeatures.properties['id']
+      this.hoveredProjectAreaFromFeatures.properties['rank']
     );
     this.mouseLngLat = e.lngLat;
   }
@@ -175,9 +175,9 @@ export class MapProjectAreasComponent implements OnInit {
     return features[0];
   }
 
-  updateHoveredFillColor(projectAreaId: number | null) {
-    if (projectAreaId) {
-      const baseColor = getColorForProjectPosition(projectAreaId + 6);
+  updateHoveredFillColor(projectAreaRank: number | null) {
+    if (projectAreaRank) {
+      const baseColor = getColorForProjectPosition(projectAreaRank);
       this.hoveredFillColor = this.colorService.darkenColor(baseColor, 20);
     } else {
       this.hoveredFillColor = BASE_COLORS['dark'];
