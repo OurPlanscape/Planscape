@@ -1,0 +1,11 @@
+<sg-modal
+  title="Stand data modal"
+  primaryButtonText="Create"
+  [scrollableContent]="false"
+  [showBorders]="true"
+  [hasFooter]="false"
+  width="large">
+  <div modalBodyContent class="expanded-stand-data">
+    <app-stand-data-chart *ngIf="activeStand$ | async"></app-stand-data-chart>
+  </div>
+</sg-modal>

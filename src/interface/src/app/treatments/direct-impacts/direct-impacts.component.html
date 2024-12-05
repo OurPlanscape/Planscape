@@ -44,7 +44,11 @@
         <div panelTitle>Chart 1</div>
         <div>the chart</div>
       </sg-panel>
-      <sg-panel class="chart-2" [paddedContent]="false">
+      <sg-panel
+        class="chart-2"
+        [paddedContent]="false"
+        [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
+        (clickedButton)="expandStandChart()">
         <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
         <div *ngIf="(activeStand$ | async) === null" class="empty-state">
           <div>

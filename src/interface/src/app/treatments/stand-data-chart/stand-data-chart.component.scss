@@ -3,12 +3,16 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 100px);
+  height: 100%;
+  box-sizing: border-box;
 }
 
-canvas {
+.chart {
   flex: 1;
-  max-height: 80vh;
+
+  canvas {
+    padding-bottom: 20px;
+  }
 }
 
 .title {

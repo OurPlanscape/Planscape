@@ -1,0 +1,7 @@
+.expanded-stand-data {
+  padding: 20px;
+
+  ::ng-deep app-stand-data-chart canvas {
+    height: calc(100vh - 600px);
+  }
+}

@@ -4,7 +4,7 @@ import { MetricSelectorComponent } from './metric-selector.component';
 
 import { MockProviders } from 'ng-mocks';
 import { TreatmentsState } from 'src/app/treatments/treatments.state';
-import { METRICS } from '../../../metrics';
+import { METRICS } from '../metrics';
 
 describe('MetricSelectorComponent', () => {
   let component: MetricSelectorComponent;

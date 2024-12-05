@@ -24,7 +24,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
-import { MetricFiltersComponent } from './metric-filters/metric-filters.component';
+import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
 import { MapMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
@@ -33,6 +33,8 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { Dialog } from '@angular/cdk/dialog';
+import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -75,7 +77,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private router: Router,
-    private directImpactsStateService: DirectImpactsStateService
+    private directImpactsStateService: DirectImpactsStateService,
+    private dialog: Dialog
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.treatmentsState
@@ -128,5 +131,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Unregister the plugin when the component is destroyed
     Chart.unregister(ChartDataLabels);
+  }
+
+  expandStandChart() {
+    this.dialog.open(ExpandedStandDataChartComponent);
   }
 }

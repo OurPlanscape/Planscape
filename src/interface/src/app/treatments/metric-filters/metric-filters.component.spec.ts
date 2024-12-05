@@ -1,9 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MetricFiltersComponent } from './metric-filters.component';
-import { DEFAULT_SLOT, Metric, METRICS } from '../../metrics';
+import { DEFAULT_SLOT, Metric, METRICS } from '../metrics';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
-import { DirectImpactsStateService } from '../../direct-impacts.state.service';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 
 export const MockMetrics = [
   {
