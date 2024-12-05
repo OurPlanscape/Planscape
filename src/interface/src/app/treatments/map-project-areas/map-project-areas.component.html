@@ -2,7 +2,7 @@
   id="scenarioProjectAreas"
   [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
-<mgl-layer
+  <mgl-layer
   [id]="layers.projectAreasFill.name"
   type="fill"
   source="scenarioProjectAreas"
@@ -16,7 +16,12 @@
   "
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
-    'fill-color': fillColor,
+    'fill-color': [
+      'case',
+      ['==', ['get', 'id'], hoveredProjectAreaId$.value],
+      hoveredFillColor,
+      fillColor
+    ],
     'fill-opacity': visible && withFill ? 0.5 : 0
   }"></mgl-layer>
 

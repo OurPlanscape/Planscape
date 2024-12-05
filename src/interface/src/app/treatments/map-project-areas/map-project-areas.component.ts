@@ -24,8 +24,8 @@ import {
   combineLatest,
   Observable,
   distinctUntilChanged,
-  Subject,
   map,
+  BehaviorSubject,
 } from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
 
@@ -59,10 +59,10 @@ export class MapProjectAreasComponent implements OnInit {
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
-  fillColor: any;
+  fillColor!: any;
   getTreatedStandsTotal = getTreatedStandsTotal;
 
-  hoveredProjectAreaId$ = new Subject<number>();
+  hoveredProjectAreaId$ = new BehaviorSubject<any>(null);
   hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
     combineLatest([
       this.summary$,
@@ -74,6 +74,7 @@ export class MapProjectAreasComponent implements OnInit {
         );
       })
     );
+    hoveredFillColor = BASE_COLORS['dark'];
 
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
@@ -82,21 +83,21 @@ export class MapProjectAreasComponent implements OnInit {
     'projectAreasOutline' | 'projectAreasFill' | 'projectAreaLabels',
     MapLayerData
   > = {
-    projectAreasOutline: {
-      name: 'map-project-areas-line',
-      sourceLayer: 'project_areas_by_scenario',
-      color: BASE_COLORS['dark'],
-    },
-    projectAreasFill: {
-      name: 'map-project-areas-fill',
-      sourceLayer: 'project_areas_by_scenario',
-    },
-    projectAreaLabels: {
-      name: 'map-project-areas-labels',
-      sourceLayer: 'project_areas_by_scenario_label',
-      paint: LABEL_PAINT,
-    },
-  };
+      projectAreasOutline: {
+        name: 'map-project-areas-line',
+        sourceLayer: 'project_areas_by_scenario',
+        color: BASE_COLORS['dark'],
+      },
+      projectAreasFill: {
+        name: 'map-project-areas-fill',
+        sourceLayer: 'project_areas_by_scenario',
+      },
+      projectAreaLabels: {
+        name: 'map-project-areas-labels',
+        sourceLayer: 'project_areas_by_scenario_label',
+        paint: LABEL_PAINT,
+      },
+    };
 
   textSize$ = this.mapConfigState.zoomLevel$.pipe(
     map((zoomLevel) => (zoomLevel > 9 ? 14 : 0))
@@ -154,14 +155,15 @@ export class MapProjectAreasComponent implements OnInit {
       return;
     }
     const hoveredProjectAreaId = this.getProjectAreaIdFromFeatures(e.point);
-    if (hoveredProjectAreaId) {
-      this.hoveredProjectAreaId$.next(hoveredProjectAreaId);
-    }
+    this.hoveredProjectAreaId$.next(hoveredProjectAreaId);
+    this.updateHoveredFillColor(hoveredProjectAreaId);
     this.mouseLngLat = e.lngLat;
   }
 
   resetCursorAndTooltip(e: MapMouseEvent) {
     this.mapLibreMap.getCanvas().style.cursor = '';
+    this.hoveredProjectAreaId$.next(null);
+    this.updateHoveredFillColor(null);
     this.mouseLngLat = null;
   }
 
@@ -171,5 +173,56 @@ export class MapProjectAreasComponent implements OnInit {
     });
 
     return features[0].properties['id'];
+  }
+
+  updateHoveredFillColor(projectAreaId: number | null) {
+    if (projectAreaId) {
+      const baseColor = getColorForProjectPosition(projectAreaId + 6);
+      this.hoveredFillColor = this.darkenColor(baseColor, 20);
+    } else {
+      this.hoveredFillColor = BASE_COLORS['dark'];
+    }
+  }
+
+  /**
+   * Darkens a specified color by a given percentage.
+   * @param hexColor The color in hexadecimal format (#RRGGBB).
+   * @param percent The percentage by which to darken the color (0-100).
+   * @returns The darkened color in hexadecimal format.
+   */
+  darkenColor(hexColor: string, percent: number): string {
+    // Remove the '#' character if present
+    hexColor = hexColor.replace('#', '');
+
+    // Convert HEX to RGB
+    const r = parseInt(hexColor.substring(0, 2), 16);
+    const g = parseInt(hexColor.substring(2, 4), 16);
+    const b = parseInt(hexColor.substring(4, 6), 16);
+
+    // Calculate the darkness factor
+    const factor = (100 - percent) / 100;
+
+    // Apply the darkness factor to each color channel
+    const newR = Math.floor(r * factor);
+    const newG = Math.floor(g * factor);
+    const newB = Math.floor(b * factor);
+
+    // Convert back to HEX
+    return (
+      '#' +
+      this.toHex(newR) +
+      this.toHex(newG) +
+      this.toHex(newB)
+    );
+  }
+
+  /**
+   * Converts a number to a 2-digit HEX format.
+   * @param value A number between 0 and 255.
+   * @returns A 2-character HEX string.
+   */
+  private toHex(value: number): string {
+    const hex = value.toString(16);
+    return hex.length === 1 ? '0' + hex : hex;
   }
 }
