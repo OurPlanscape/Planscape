@@ -21,10 +21,7 @@ import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
 import { getTreatedStandsTotal } from '../prescriptions';
 import { TreatmentProjectArea } from '@types';
-import {
-  Observable,
-  map,
-} from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { ColorService } from 'src/app/color.service';
 
@@ -63,14 +60,16 @@ export class MapProjectAreasComponent implements OnInit {
 
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
   hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
-      this.summary$.pipe(
+    this.summary$.pipe(
       map((summary) => {
         return summary?.project_areas.find(
-          (p: TreatmentProjectArea) => p.project_area_id === this.hoveredProjectAreaFromFeatures?.properties['id']
+          (p: TreatmentProjectArea) =>
+            p.project_area_id ===
+            this.hoveredProjectAreaFromFeatures?.properties['id']
         );
       })
     );
-    hoveredFillColor = BASE_COLORS['dark'];
+  hoveredFillColor = BASE_COLORS['dark'];
 
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
@@ -79,21 +78,21 @@ export class MapProjectAreasComponent implements OnInit {
     'projectAreasOutline' | 'projectAreasFill' | 'projectAreaLabels',
     MapLayerData
   > = {
-      projectAreasOutline: {
-        name: 'map-project-areas-line',
-        sourceLayer: 'project_areas_by_scenario',
-        color: BASE_COLORS['dark'],
-      },
-      projectAreasFill: {
-        name: 'map-project-areas-fill',
-        sourceLayer: 'project_areas_by_scenario',
-      },
-      projectAreaLabels: {
-        name: 'map-project-areas-labels',
-        sourceLayer: 'project_areas_by_scenario_label',
-        paint: LABEL_PAINT,
-      },
-    };
+    projectAreasOutline: {
+      name: 'map-project-areas-line',
+      sourceLayer: 'project_areas_by_scenario',
+      color: BASE_COLORS['dark'],
+    },
+    projectAreasFill: {
+      name: 'map-project-areas-fill',
+      sourceLayer: 'project_areas_by_scenario',
+    },
+    projectAreaLabels: {
+      name: 'map-project-areas-labels',
+      sourceLayer: 'project_areas_by_scenario_label',
+      paint: LABEL_PAINT,
+    },
+  };
 
   textSize$ = this.mapConfigState.zoomLevel$.pipe(
     map((zoomLevel) => (zoomLevel > 9 ? 14 : 0))
@@ -129,7 +128,8 @@ export class MapProjectAreasComponent implements OnInit {
   }
 
   goToProjectArea(event: MapMouseEvent) {
-    const projectAreaId = this.getProjectAreaFromFeatures(event.point).properties['id'];
+    const projectAreaId = this.getProjectAreaFromFeatures(event.point)
+      .properties['id'];
     this.mouseLngLat = null;
 
     this.router
@@ -151,8 +151,12 @@ export class MapProjectAreasComponent implements OnInit {
     if (this.treatmentsState.getProjectAreaId()) {
       return;
     }
-    this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(e.point);
-    this.updateHoveredFillColor(this.hoveredProjectAreaFromFeatures.properties['id']);
+    this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
+      e.point
+    );
+    this.updateHoveredFillColor(
+      this.hoveredProjectAreaFromFeatures.properties['id']
+    );
     this.mouseLngLat = e.lngLat;
   }
 
