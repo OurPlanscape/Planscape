@@ -540,8 +540,6 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
                     )
 
     def test_generate_data_to_plot(self):
-        pa_pks = [project_area.pk for project_area in self.project_areas]
-        pa_pks.sort()
         input_variables = [
             ImpactVariable.TOTAL_CARBON.value,
             ImpactVariable.FLAME_LENGTH.value,
@@ -552,13 +550,12 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             treatment_plan=self.tx_plan,
             impact_variables=input_variables,
         )
-        self.assertEqual(data["project_areas"], pa_pks)
-        self.assertIsNotNone(data["values"])
-        self.assertEqual(
-            data["variables"],
-            input_variables,
-        )
-        self.assertEqual(data["years"], self.years)
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), len(self.years) * len(input_variables))
+        for item in data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), input_variables)
+            self.assertIsNotNone(item.get("value"))
 
     def test_generate_data_to_plot__filter_by_project_areas(self):
         pa_pks = [project_area.pk for project_area in self.project_areas]
@@ -576,18 +573,14 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             impact_variables=input_variables,
             project_area_pks=pa_pks,
         )
-        self.assertEqual(data["project_areas"], pa_pks)
-        self.assertIsNotNone(data["values"])
-        self.assertEqual(
-            data["variables"],
-            input_variables,
-        )
-        self.assertEqual(data["years"], self.years)
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), len(self.years) * len(input_variables))
+        for item in data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), input_variables)
+            self.assertIsNotNone(item.get("value"))
 
     def test_generate_data_to_plot__filter_by_actions(self):
-        pa_pks = [project_area.pk for project_area in self.project_areas]
-        pa_pks.sort()
-
         input_variables = [
             ImpactVariable.TOTAL_CARBON.value,
             ImpactVariable.FLAME_LENGTH.value,
@@ -600,17 +593,14 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             impact_variables=input_variables,
             tx_px_actions=actions,
         )
-        self.assertEqual(data["project_areas"], pa_pks)
-        self.assertIsNotNone(data["values"])
-        self.assertEqual(
-            data["variables"],
-            input_variables,
-        )
-        self.assertEqual(data["years"], self.years)
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), len(self.years) * len(input_variables))
+        for item in data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), input_variables)
+            self.assertIsNotNone(item.get("value"))
 
     def test_empty_results(self):
-        pa_pks = [project_area.pk for project_area in self.project_areas]
-        pa_pks.sort()
         input_variables = [
             ImpactVariable.TOTAL_CARBON.value,
             ImpactVariable.FLAME_LENGTH.value,
@@ -621,10 +611,4 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             treatment_plan=self.empty_tx_plan,
             impact_variables=input_variables,
         )
-        self.assertEqual(data["project_areas"], pa_pks)
-        self.assertEqual(data["values"], [])
-        self.assertEqual(
-            data["variables"],
-            input_variables,
-        )
-        self.assertEqual(data["years"], [])
+        self.assertEqual(data, [])
