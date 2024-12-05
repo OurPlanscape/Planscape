@@ -105,6 +105,15 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   showTreatmentPrescription = false;
 
+  standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
+    map((activeStand) => {
+      if (!activeStand) {
+        return 'Stand Level Data Unavailable';
+      }
+      return `${activeStand.properties['project_area_name']}, Stand ${activeStand.properties['id']}`;
+    })
+  );
+
   activateMetric(data: MapMetric) {
     this.directImpactsStateService.activeMetric$.next(data);
   }

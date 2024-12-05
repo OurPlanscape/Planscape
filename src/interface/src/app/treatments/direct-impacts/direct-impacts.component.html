@@ -45,7 +45,7 @@
         <div>the chart</div>
       </sg-panel>
       <sg-panel class="chart-2" [paddedContent]="false">
-        <div panelTitle>Chart 2</div>
+        <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
         <div *ngIf="(activeStand$ | async) === null" class="empty-state">
           <div>
             Select a

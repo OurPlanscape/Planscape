@@ -1,15 +1,18 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import {
   LayerComponent,
+  PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   ColorSpecification,
   DataDrivenPropertyValueSpecification,
+  LngLat,
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapMouseEvent,
+  Point,
 } from 'maplibre-gl';
 import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
@@ -18,11 +21,18 @@ import { map } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { filter } from 'rxjs/operators';
+import { descriptionForAction } from '../prescriptions';
 
 @Component({
   selector: 'app-map-stands-tx-result',
   standalone: true,
-  imports: [AsyncPipe, LayerComponent, VectorSourceComponent],
+  imports: [
+    AsyncPipe,
+    LayerComponent,
+    VectorSourceComponent,
+    PopupComponent,
+    NgIf,
+  ],
   templateUrl: './map-stands-tx-result.component.html',
   styleUrl: './map-stands-tx-result.component.scss',
 })
@@ -34,10 +44,6 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
 
-  readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
-  readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
-  paint = {};
-
   constructor(
     private treatmentsState: TreatmentsState,
     private directImpactsStateService: DirectImpactsStateService
@@ -46,6 +52,13 @@ export class MapStandsTxResultComponent implements OnInit {
       this.paint = this.generatePaint(m.slot);
     });
   }
+
+  readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
+  readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
+  paint = {};
+
+  tooltipLongLat: null | LngLat = null;
+  appliedTreatment = '';
 
   vectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
     map((mapMetric) => {
@@ -57,20 +70,45 @@ export class MapStandsTxResultComponent implements OnInit {
     })
   );
 
-  activeStandId$ = this.directImpactsStateService.activeStand$.pipe(
+  activeStand$ = this.directImpactsStateService.activeStand$;
+
+  activeStandId$ = this.activeStand$.pipe(
     filter((s): s is MapGeoJSONFeature => s !== null),
     map((stand) => stand.id)
   );
 
   setActiveStand(event: MapMouseEvent) {
-    const d = this.mapLibreMap.queryRenderedFeatures(event.point, {
-      layers: ['standsFill'],
-    });
-    this.directImpactsStateService.setActiveStand(d[0]);
+    const feature = this.getMapGeoJSONFeature(event.point);
+    this.directImpactsStateService.setActiveStand(feature);
+    this.hideTooltip();
   }
 
   ngOnInit(): void {
     this.paint = this.generatePaint(DEFAULT_SLOT);
+  }
+
+  showTooltip(event: MapMouseEvent) {
+    this.tooltipLongLat = event.lngLat;
+    const feature = this.getMapGeoJSONFeature(event.point);
+    const action = feature.properties['action'];
+    if (action) {
+      this.appliedTreatment = descriptionForAction(
+        feature.properties['action']
+      );
+    } else {
+      this.appliedTreatment = 'No Treatment';
+    }
+  }
+
+  hideTooltip() {
+    this.tooltipLongLat = null;
+  }
+
+  private getMapGeoJSONFeature(point: Point) {
+    const features = this.mapLibreMap.queryRenderedFeatures(point, {
+      layers: ['standsFill'],
+    });
+    return features[0];
   }
 
   private generatePaint(slot: MapMetricSlot) {
