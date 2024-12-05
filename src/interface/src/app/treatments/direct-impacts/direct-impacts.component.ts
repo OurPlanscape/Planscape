@@ -156,6 +156,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   activateMetric(data: MapMetric) {
     this.directImpactsStateService.activeMetric$.next(data);
+    this.directImpactsStateService.getChangesOverTimeData();
   }
 
   getValues(activeStand: MapGeoJSONFeature) {}
@@ -170,5 +171,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     Chart.unregister(ChartDataLabels);
   }
 
-  setChartProjectArea(e: Event) {}
+  setChartProjectArea(e: Event) {
+    this.directImpactsStateService.setProjectAreaForChanges(
+      this.selectedChartProjectArea.value
+    );
+  }
 }

@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { DEFAULT_SLOT, MapMetric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { TreatmentProjectArea } from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -16,8 +15,9 @@ export class DirectImpactsStateService {
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
 
-  private _selectedProjectAreaForChanges$ =
-    new BehaviorSubject<TreatmentProjectArea | null>(null);
+  private _selectedProjectAreaForChanges$ = new BehaviorSubject<string | null>(
+    null
+  );
   public selectedProjectAreaForChanges$ =
     this._selectedProjectAreaForChanges$.asObservable();
 
@@ -25,7 +25,13 @@ export class DirectImpactsStateService {
 
   getChangesOverTimeData() {
     //TODO: send selectedProjectArea and active Metrics to backend
-    //
+  }
+
+  setProjectAreaForChanges(projectId: string) {
+    this._selectedProjectAreaForChanges$.next(projectId);
+
+    //then refresh the changes chart data
+    this.getChangesOverTimeData();
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {

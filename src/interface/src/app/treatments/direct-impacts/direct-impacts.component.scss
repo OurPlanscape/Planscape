@@ -31,7 +31,6 @@
   border-radius: 4px;
 }
 .changes-chart-title {
-  font-size: 16px;
   line-height: 24px;
   font-weight: 600;
   letter-spacing: normal;
@@ -39,9 +38,34 @@
   display: flex;
   flex-direction: row;
   gap: 20px;
-  line-height: 48px;
   justify-content: space-between;
   align-items: center;
+  height: 38px;
+}
+
+.left-title-box {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  height: 38px;
+}
+
+::ng-deep .mat-mdc-text-field-wrapper {
+  height: 38px;
+}
+
+::ng-deep .mat-mdc-text-field-wrapper,
+.mat-mdc-form-field-flex {
+  height: 38px;
+}
+::ng-deep
+  .mat-mdc-text-field-wrapper.mdc-text-field--outlined
+  .mat-mdc-form-field-infix {
+  padding: 0px;
+  line-height: 38px;
+  height: 38px;
 }
 
 .expansion-icon {
@@ -53,6 +77,12 @@
   gap: 16px;
   align-items: center;
   padding: 5px 0;
+
+  padding-top: 11px;
+  padding-bottom: 11px;
+  padding-left: 14px;
+  padding-right: 14px;
+
   @include on-small() {
     flex-direction: column;
     align-items: flex-start;
@@ -87,8 +117,6 @@
   display: flex;
 }
 
-
-
 .direct-impacts-metrics {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -100,7 +128,6 @@
     display: flex;
     flex-direction: column;
   }
-
 
   .chart-1 {
     grid-column: 1;

@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'mixins';
 
 :host {
   display: flex;
@@ -6,9 +7,18 @@
   height: calc(100% - 80px);
 }
 
+.chart-heading {
+  @include h5();
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  height: 60px;
+  align-items: flex-end;
+}
+
 canvas {
   flex: 1;
-  max-height: 80vh;
+  max-height: 390px;
 }
 
 .title {
