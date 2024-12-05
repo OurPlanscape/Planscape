@@ -108,20 +108,4 @@
   }
 }
 
-.empty-state {
-  @include regular-paragraph();
-  color: $color-md-gray;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  text-align: center;
-  padding: 0 80px;
-
-  sg-treatment-type-icon {
-    position: relative;
-    top: 6px;
-  }
-}
 

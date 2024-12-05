@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
@@ -18,7 +18,7 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { ButtonComponent, PanelComponent } from '@styleguide';
+import { ButtonComponent, ModalComponent, PanelComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
@@ -33,8 +33,8 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
-import { Dialog } from '@angular/cdk/dialog';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -61,8 +61,12 @@ import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/ex
     JsonPipe,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
+    ExpandedStandDataChartComponent,
+    ModalComponent,
+    MatDialogModule,
   ],
   providers: [
+    DirectImpactsStateService,
     TreatmentsState,
     SelectedStandsState,
     TreatedStandsState,
@@ -78,7 +82,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private directImpactsStateService: DirectImpactsStateService,
-    private dialog: Dialog
+    private dialog: MatDialog,
+    private injector: Injector // Angular's injector for passing shared services
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.treatmentsState
@@ -104,7 +109,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
-  activeStand$ = this.directImpactsStateService.activeStand$;
 
   showTreatmentPrescription = false;
 
@@ -134,6 +138,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   }
 
   expandStandChart() {
-    this.dialog.open(ExpandedStandDataChartComponent);
+    this.dialog.open(ExpandedStandDataChartComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
   }
 }

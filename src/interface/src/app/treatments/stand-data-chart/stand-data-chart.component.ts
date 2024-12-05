@@ -7,6 +7,7 @@ import { map, Observable } from 'rxjs';
 import { SLOT_COLORS, YEAR_INTERVAL_PROPERTY } from '../metrics';
 import { filter } from 'rxjs/operators';
 import { MapGeoJSONFeature } from 'maplibre-gl';
+import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 
 const baseFont = {
   family: 'Public Sans',
@@ -18,12 +19,20 @@ const baseFont = {
 @Component({
   selector: 'app-stand-data-chart',
   standalone: true,
-  imports: [NgChartsModule, NgIf, AsyncPipe, JsonPipe],
+  imports: [
+    NgChartsModule,
+    NgIf,
+    AsyncPipe,
+    JsonPipe,
+    TreatmentTypeIconComponent,
+  ],
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',
 })
 export class StandDataChartComponent {
   constructor(private directImpactsStateService: DirectImpactsStateService) {}
+
+  activeStand$ = this.directImpactsStateService.activeStand$;
 
   activeStandValues$: Observable<number[]> =
     this.directImpactsStateService.activeStand$.pipe(
