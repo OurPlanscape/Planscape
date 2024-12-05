@@ -1,0 +1,32 @@
+@import "colors";
+@import "mixins";
+
+
+.legend-title {
+  @include xs-label();
+  margin-bottom: 16px;
+}
+
+.legends {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+
+  div {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+  }
+
+  div:before {
+    content: '';
+    display: block;
+    background-color: var(--square-color, #000);
+    opacity: 0.8;
+    width: 14px;
+    aspect-ratio: 1;
+    border-radius: 4px;
+  }
+}

@@ -36,6 +36,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { TreatmentToPDFService } from '../treatment-to-pdf.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
+import { canRunTreatmentAnalysis } from '../../plan/permissions';
+import { Plan } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -58,6 +62,8 @@ import { TreatmentToPDFService } from '../treatment-to-pdf.service';
     ApplyTreatmentComponent,
     TreatmentLegendComponent,
     RouterLink,
+    MatProgressSpinnerModule,
+    OverlayLoaderComponent,
   ],
   providers: [
     TreatmentsState,
@@ -85,6 +91,8 @@ export class TreatmentConfigComponent {
   );
   @ViewChild(TreatmentMapComponent) mapElement: any;
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+
+  loading = true;
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -117,7 +125,7 @@ export class TreatmentConfigComponent {
               throw error;
             })
           )
-          .subscribe();
+          .subscribe((_) => (this.loading = false));
       });
   }
 
@@ -133,6 +141,10 @@ export class TreatmentConfigComponent {
     const mapAttributions = this.getMapAttributions();
     this.pdfService.createPDF(this.mapElement.mapLibreMap, mapAttributions);
   }
+
+  canRunTreatment$ = this.treatmentsState.planningArea$.pipe(
+    map((plan: Plan | null) => (plan ? canRunTreatmentAnalysis(plan) : false))
+  );
 
   redirectToScenario() {
     const summary = this.treatmentsState.getCurrentSummary();

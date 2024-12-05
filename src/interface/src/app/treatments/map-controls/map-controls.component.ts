@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
-import { AsyncPipe, NgClass, NgForOf } from '@angular/common';
+import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import {
   ControlComponent,
@@ -19,6 +19,7 @@ import { Map as MapLibreMap } from 'maplibre-gl';
   standalone: true,
   imports: [
     NgForOf,
+    NgIf,
     AsyncPipe,
     ControlComponent,
     GeolocateControlDirective,
@@ -35,6 +36,7 @@ import { Map as MapLibreMap } from 'maplibre-gl';
 })
 export class MapControlsComponent {
   @Input() mapLibreMap!: MapLibreMap;
+  @Input() userCanEditStands: boolean = false;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
 
   constructor(

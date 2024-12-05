@@ -1,0 +1,54 @@
+@import 'media';
+@import 'colors';
+@import 'mixins';
+
+.container {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.fixed-width {
+  width: fit-content;
+}
+
+.flexible-width {
+  background-color: $color-white;
+  border-radius: 4px;
+  border: 1px solid $color-soft-gray;
+  padding: 8px 14px 8px 14px;
+}
+
+mat-select {
+  width: 100%;
+}
+
+mat-icon {
+  vertical-align: middle;
+  cursor: pointer;
+  margin-right: 8px;
+}
+
+.metric-color {
+  display: inline-block;
+  height: 16px;
+  width: 16px;
+  border-radius: 4px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.metric-label {
+  @include standard-label();
+  color: $color-dark-gray;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@include on-extra-extra-large() {
+  .container {
+    grid-template-columns: auto 1fr;
+  }
+}

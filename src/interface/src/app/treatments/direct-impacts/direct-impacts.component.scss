@@ -62,6 +62,7 @@
   margin-top: 24px;
   //placeholder styles
   padding: 20px;
+  display: flex;
 }
 
 .direct-impacts-metrics {
@@ -105,33 +106,22 @@
     grid-row: 12;
     padding: 16px;
   }
+}
 
-  .legend-title {
-    @include xs-label();
-    margin-bottom: 16px;
-  }
+.empty-state {
+  @include regular-paragraph();
+  color: $color-md-gray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 0 80px;
 
-  .legends {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    flex-wrap: wrap;
-
-    div {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-
-    }
-
-    div:before {
-      content: '';
-      display: block;
-      background-color: $color-dark-gray;
-      width: 14px;
-      aspect-ratio: 1;
-      border-radius: 4px;
-    }
+  sg-treatment-type-icon {
+    position: relative;
+    top: 6px;
   }
 }
 

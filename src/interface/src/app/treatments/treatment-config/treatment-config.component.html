@@ -1,3 +1,4 @@
+<sg-overlay-loader *ngIf="loading" [offsetTop]="48"></sg-overlay-loader>
 <app-nav-bar [breadcrumbs]="(breadcrumbs$ | async) || []" [area]="'TREATMENTS'">
   <app-treatment-navbar-menu
     [treatmentPlanName]="(treatmentPlanName$ | async) || ''"
@@ -15,7 +16,7 @@
     <section class="right-side-footer">
       <ng-container *ngIf="projectAreaId$ | async; else treatment">
         <a sg-button variant="primary" class="footer-primary" routerLink="./">
-          Done
+          Back To Overview
         </a>
       </ng-container>
       <ng-template #treatment>
@@ -23,6 +24,7 @@
           color="primary"
           [checked]="(showTreatmentLayer$ | async) || false"
           (change)="toggleShowTreatmentLayers()"
+          class="bottom-toggle"
           >View Treatment Layers
         </mat-slide-toggle>
         <div class="right-footer-right-box">
@@ -39,8 +41,9 @@
             sg-button
             variant="primary"
             class="footer-primary"
+            *ngIf="canRunTreatment$ | async"
             (click)="showReviewDialog()">
-            Run Impacts
+            Run Treatment Analysis
           </button>
         </div>
       </ng-template>

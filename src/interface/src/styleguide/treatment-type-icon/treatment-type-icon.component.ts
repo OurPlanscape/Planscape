@@ -15,7 +15,7 @@ export class TreatmentTypeIconComponent {
     MODERATE_THINNING_BIOMASS: 'treatment_blue.svg',
     HEAVY_THINNING_BIOMASS: 'treatment_purple.svg',
     MODERATE_THINNING_BURN: 'treatment_orange.svg',
-    HEAVY_THINNING_BURN: 'treatment_yellow.svg',
+    HEAVY_THINNING_BURN: 'treatment_light_orange.svg',
     MODERATE_MASTICATION: 'treatment_junglegreen.svg',
     HEAVY_MASTICATION: 'treatment_limegreen.svg',
     RX_FIRE: 'treatment_red.svg',

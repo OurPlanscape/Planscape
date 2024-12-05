@@ -3,6 +3,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ScenariosCardListComponent } from './scenarios-card-list.component';
 import { FeaturesModule } from '../../../features/features.module';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { RouterTestingModule } from '@angular/router/testing';
 
 describe('ScenariosCardListComponent', () => {
   let component: ScenariosCardListComponent;
@@ -15,6 +16,7 @@ describe('ScenariosCardListComponent', () => {
         HttpClientTestingModule,
         MatSnackBarModule,
         ScenariosCardListComponent,
+        RouterTestingModule,
       ],
     }).compileComponents();
 

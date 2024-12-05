@@ -56,6 +56,11 @@
   width: 20px;
 }
 
+.bottom-toggle {
+  @include top-level-label();
+  line-height: 22px;
+}
+
 app-apply-treatment {
   position: absolute;
   top: 10px;
@@ -64,5 +69,3 @@ app-apply-treatment {
   height: calc(100% - 100px);
   z-index: 1000;
 }
-
-

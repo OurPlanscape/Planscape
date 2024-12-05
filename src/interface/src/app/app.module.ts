@@ -36,6 +36,7 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
 
 import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
 import { MatDialogModule } from '@angular/material/dialog';
+import { OverlayLoaderComponent } from '../styleguide/overlay-loader/overlay-loader.component';
 
 @NgModule({
   declarations: [
@@ -70,6 +71,7 @@ import { MatDialogModule } from '@angular/material/dialog';
     ButtonComponent,
     DeleteDialogComponent,
     PlanningAreasComponent,
+    OverlayLoaderComponent,
   ],
   providers: [
     WINDOW_PROVIDERS,

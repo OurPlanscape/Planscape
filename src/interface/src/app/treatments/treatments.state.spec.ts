@@ -8,6 +8,7 @@ import { TreatedStand } from '@types';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import { RemovingStandsError, UpdatingStandsError } from './treatment-errors';
 import { MOCK_SUMMARY, MOCK_TREATMENT_PLAN } from './mocks';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;
@@ -16,6 +17,7 @@ describe('TreatmentsState', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
       providers: [
         TreatmentsState,
         MockProviders(MapConfigState, TreatedStandsState, TreatmentsService),
@@ -55,6 +57,7 @@ describe('TreatmentsState', () => {
           scenarioId: 1,
           treatmentId: 123,
           projectAreaId: undefined,
+          planId: 1,
         });
         expect(service.getTreatmentPlanId()).toBe(123);
         expect(service.getScenarioId()).toBe(1);
@@ -66,6 +69,7 @@ describe('TreatmentsState', () => {
           scenarioId: 1,
           treatmentId: 123,
           projectAreaId: 456,
+          planId: 1,
         });
         expect(service.getProjectAreaId()).toBe(456);
       });
@@ -77,6 +81,7 @@ describe('TreatmentsState', () => {
           scenarioId: 1,
           treatmentId: 123,
           projectAreaId: undefined,
+          planId: 1,
         })
       );
       expect(treatmentsService.getTreatmentPlanSummary).toHaveBeenCalled();
@@ -90,6 +95,7 @@ describe('TreatmentsState', () => {
           scenarioId: 1,
           treatmentId: 123,
           projectAreaId: undefined,
+          planId: 1,
         })
       );
       expect(treatmentsService.getTreatmentPlan).toHaveBeenCalled();
@@ -110,6 +116,7 @@ describe('TreatmentsState', () => {
       scenarioId: 1,
       treatmentId: 123,
       projectAreaId: 456,
+      planId: 1,
     });
     spyOn(treatmentsService, 'setTreatments').and.returnValue(of({}));
 
@@ -132,6 +139,7 @@ describe('TreatmentsState', () => {
       scenarioId: 1,
       treatmentId: 123,
       projectAreaId: 456,
+      planId: 1,
     });
 
     const originalStands: TreatedStand[] = [{ id: 1, action: 'cut' }];
@@ -158,6 +166,7 @@ describe('TreatmentsState', () => {
       scenarioId: 1,
       treatmentId: 123,
       projectAreaId: 456,
+      planId: 1,
     });
     const originalStands: TreatedStand[] = [
       { id: 1, action: 'cut' },
@@ -183,6 +192,7 @@ describe('TreatmentsState', () => {
       scenarioId: 1,
       treatmentId: 123,
       projectAreaId: 456,
+      planId: 1,
     });
 
     const originalStands: TreatedStand[] = [{ id: 1, action: 'cut' }];

@@ -10,6 +10,12 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addAuthHeaders } from '../maplibre.helper';
+import { MapStandsTxResultComponent } from '../map-stands-tx-result/map-stands-tx-result.component';
+import {
+  YEAR_INTERVAL_LABELS,
+  YEAR_INTERVAL_PROPERTY,
+  YearInterval,
+} from '../metrics';
 
 @Component({
   selector: 'app-direct-impacts-map',
@@ -24,6 +30,7 @@ import { addAuthHeaders } from '../maplibre.helper';
     MapTooltipComponent,
     NgIf,
     ControlComponent,
+    MapStandsTxResultComponent,
   ],
   templateUrl: './direct-impacts-map.component.html',
   styleUrl: './direct-impacts-map.component.scss',
@@ -34,7 +41,10 @@ export class DirectImpactsMapComponent {
     private authService: AuthService
   ) {}
 
-  @Input() label = '';
+  readonly labels = YEAR_INTERVAL_LABELS;
+
+  readonly variables = YEAR_INTERVAL_PROPERTY;
+  @Input() year: YearInterval = 'zero';
   @Output()
   mapCreated = new EventEmitter<MapLibreMap>();
 

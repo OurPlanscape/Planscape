@@ -7,11 +7,13 @@ import {
   combineLatest,
   distinctUntilChanged,
   map,
+  Observable,
   of,
   switchMap,
   tap,
 } from 'rxjs';
 import {
+  Plan,
   TreatedStand,
   TreatmentPlan,
   TreatmentProjectArea,
@@ -26,6 +28,7 @@ import {
   UpdatingStandsError,
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
+import { PlanStateService } from '@services';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -35,6 +38,7 @@ import { TreatmentRoutingData } from './treatments-routing-data';
 export class TreatmentsState {
   constructor(
     private treatmentsService: TreatmentsService,
+    private planStateService: PlanStateService,
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState
   ) {}
@@ -43,6 +47,7 @@ export class TreatmentsState {
   private _scenarioId: number | undefined = undefined;
 
   private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
+  private _planningAreaId$ = new BehaviorSubject<number | undefined>(undefined);
   public projectAreaId$ = this._projectAreaId$.asObservable();
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
@@ -51,9 +56,13 @@ export class TreatmentsState {
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
 
+  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
+  public showApplyTreatmentsDialog$ =
+    this._showApplyTreatmentsDialog$.asObservable();
+
   public activeProjectArea$ = combineLatest([
     this.summary$,
-    this.projectAreaId$.pipe(distinctUntilChanged()),
+    this._projectAreaId$.pipe(distinctUntilChanged()),
   ]).pipe(
     map(([summary, projectAreaId]) => {
       return summary?.project_areas.find(
@@ -62,9 +71,10 @@ export class TreatmentsState {
     })
   );
 
-  private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
-  public showApplyTreatmentsDialog$ =
-    this._showApplyTreatmentsDialog$.asObservable();
+  public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
+    filter((id): id is number => !!id),
+    switchMap((id) => this.planStateService.getPlan(id.toString()))
+  );
 
   breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
     map(([projectArea, summary]) => {
@@ -139,6 +149,7 @@ export class TreatmentsState {
     this._scenarioId = data.scenarioId;
     this._treatmentPlanId = data.treatmentId;
     this._projectAreaId$.next(data.projectAreaId);
+    this._planningAreaId$.next(data.planId);
 
     // update config on map, based on route data
     this.mapConfigState.updateShowProjectAreas(
@@ -185,7 +196,7 @@ export class TreatmentsState {
             // set active project area if provided
             this.selectProjectArea(projectAreaId);
           } else if (!previousSummary) {
-            // if its the first time loading summary, center the map
+            // if it's the first time loading summary, center the map
             this.mapConfigState.updateMapCenter(summary.extent);
           }
           return true;
@@ -200,7 +211,7 @@ export class TreatmentsState {
         map((summary) => {
           this._summary$.next(summary);
         }),
-        catchError((error) => {
+        catchError(() => {
           throw new ReloadTreatmentError();
         })
       );
@@ -251,14 +262,14 @@ export class TreatmentsState {
       .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
       .pipe(
         // if setting treatments failed, rollback and throw error
-        catchError((error) => {
+        catchError(() => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
           // throws specific error message to identify on the component
           throw new UpdatingStandsError();
         }),
         // if no error, load summary
-        switchMap((s) => this.reloadSummary())
+        switchMap(() => this.reloadSummary())
       );
   }
 
@@ -268,12 +279,12 @@ export class TreatmentsState {
     return this.treatmentsService
       .removeTreatments(this.getTreatmentPlanId(), standIds)
       .pipe(
-        catchError((error) => {
+        catchError(() => {
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
           throw new RemovingStandsError();
         }),
-        switchMap((s) => this.reloadSummary())
+        switchMap(() => this.reloadSummary())
       );
   }
 

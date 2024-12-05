@@ -9,7 +9,6 @@ import {
   PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-
 import {
   LngLat,
   Map as MapLibreMap,
@@ -25,11 +24,15 @@ import { MapConfigState } from './map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { BehaviorSubject, map, withLatestFrom } from 'rxjs';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addAuthHeaders } from '../maplibre.helper';
-
+import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
+import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
+import { filter } from 'rxjs/operators';
+import { SelectedStandsState } from './selected-stands.state';
+import { Geometry } from 'geojson';
+import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
@@ -52,6 +55,7 @@ import { addAuthHeaders } from '../maplibre.helper';
     MatIconModule,
     PopupComponent,
     MapTooltipComponent,
+    PlanningAreaLayerComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -62,11 +66,6 @@ export class TreatmentMapComponent {
    * Flag to determine if the user is currently dragging to select stands
    */
   private dragStandsSelection = false;
-
-  /**
-   * Observable that provides values when the stands are loaded.
-   */
-  private standsLoaded$ = new BehaviorSubject(false);
 
   /**
    * Starting point for dragging selection
@@ -99,13 +98,34 @@ export class TreatmentMapComponent {
   mapExtent$ = this.mapConfigState.mapExtent$;
 
   /**
-   * Observable to determine if we show the map project area layer.
-   * It uses the `standsLoaded$` as the trigger to re-check the value provided on
-   * `mapConfigState`
+   * The name of the source layer used to load stands, and later check if loaded
    */
-  showMapProjectAreas$ = this.standsLoaded$.pipe(
-    withLatestFrom(this.mapConfigState.showProjectAreasLayer$),
-    map(([bounds, showAreas]) => showAreas) // Pass only the showProjectAreas$ value forward
+  standsSourceLayerId = 'stands';
+
+  private sourceLoaded$ = new Subject<MapSourceDataEvent>();
+
+  private standsSourceLoaded$ = this.sourceLoaded$.pipe(
+    filter(
+      (source) =>
+        source.sourceId === this.standsSourceLayerId && !source.sourceDataType
+    )
+  );
+
+  /**
+   * Observable to determine if we show the map project area layer.
+   * It uses the `standsSourceLoaded$` as the trigger to re-check the value provided on
+   * `mapConfigState`.
+   * We could be using mapConfigState.showProjectAreasLayer$ directly, but we want to animate
+   * properly when we show and hide this layer, when the user moves between treatment overview and
+   * project area.
+   */
+  showMapProjectAreas$ = combineLatest([
+    this.standsSourceLoaded$.pipe(startWith(null)),
+    this.mapConfigState.showProjectAreasLayer$,
+  ]).pipe(
+    map(([bounds, showAreas]) => {
+      return showAreas;
+    })
   );
 
   showFillProjectAreas$ = this.mapConfigState.showFillProjectAreas$;
@@ -125,14 +145,23 @@ export class TreatmentMapComponent {
   treatmentTooltipLngLat: LngLat | null = null;
 
   /**
-   * The name of the source layer used to load stands, and later check if loaded
+   * permissions for current user
    */
-  standsSourceLayerId = 'stands';
+  userCanEditStands: boolean = false;
+
+  /**
+   *
+   * The Planning Area geometry
+   */
+  planningAreaGeometry$ = this.treatmentsState.planningArea$.pipe(
+    map((area) => area.geometry as Geometry)
+  );
 
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
-    private treatmentsState: TreatmentsState
+    private treatmentsState: TreatmentsState,
+    private selectedStandsState: SelectedStandsState
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -142,13 +171,36 @@ export class TreatmentMapComponent {
           this.mapLibreMap.getCanvas().style.cursor = cursor;
         }
       });
+
+    this.treatmentsState.planningArea$
+      .pipe(untilDestroyed(this))
+      .subscribe((plan) => {
+        this.userCanEditStands = plan ? canEditTreatmentPlan(plan) : false;
+      });
+
+    this.mapConfigState.baseLayer$
+      .pipe(
+        untilDestroyed(this),
+        withLatestFrom(this.showTreatmentStands$),
+        filter(([_, showTreatmentStands]) => showTreatmentStands) // Only pass through if showTreatmentStands is true
+      )
+      .subscribe(() => {
+        this.selectedStandsState.backUpAndClearSelectedStands();
+      });
+
+    this.standsSourceLoaded$.pipe(untilDestroyed(this)).subscribe((s) => {
+      this.selectedStandsState.restoreSelectedStands();
+    });
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {
       return;
     }
-    if (!this.mapConfigState.isStandSelectionEnabled()) {
+    if (
+      !this.userCanEditStands ||
+      !this.mapConfigState.isStandSelectionEnabled()
+    ) {
       return;
     }
     this.dragStandsSelection = true;
@@ -158,10 +210,20 @@ export class TreatmentMapComponent {
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
+    this.listenForZoom();
+  }
+
+  listenForZoom() {
+    this.mapLibreMap.on('zoom', () => {
+      this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
+    });
   }
 
   onMapMouseMove(event: MapMouseEvent): void {
-    if (this.mapConfigState.isStandSelectionEnabled()) {
+    if (
+      this.userCanEditStands &&
+      this.mapConfigState.isStandSelectionEnabled()
+    ) {
       this.treatmentTooltipLngLat = event.lngLat;
     } else {
       this.treatmentTooltipLngLat = null;
@@ -185,8 +247,8 @@ export class TreatmentMapComponent {
   }
 
   onSourceData(event: MapSourceDataEvent) {
-    if (event.sourceId === this.standsSourceLayerId && event.isSourceLoaded) {
-      this.standsLoaded$.next(true);
+    if (event.isSourceLoaded) {
+      this.sourceLoaded$.next(event);
     }
   }
 

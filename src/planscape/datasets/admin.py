@@ -3,7 +3,6 @@ from django.contrib import admin
 from datasets.forms import DataLayerAdminForm, DatasetAdminForm, CategoryAdminForm
 from datasets.models import Category, DataLayer, Dataset
 from treebeard.admin import TreeAdmin
-from treebeard.forms import movenodeform_factory
 
 
 class CategoryAdmin(TreeAdmin):

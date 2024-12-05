@@ -1,9 +1,13 @@
 import json
 from unittest import mock
 from django.test import TransactionTestCase
-from django.contrib.gis.geos import GEOSGeometry
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.contrib.gis.db.models import Union
+from datasets.models import DataLayerType
+from datasets.tests.factories import DataLayerFactory
 from impacts.models import (
     ImpactVariable,
+    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
@@ -20,7 +24,8 @@ from impacts.services import (
     generate_summary,
 )
 from impacts.tasks import (
-    async_get_or_calculate_persist_impacts,
+    async_calculate_impacts_for_variable_action_year,
+    async_calculate_persist_impacts_treatment_plan,
 )
 from impacts.tests.factories import (
     TreatmentPlanFactory,
@@ -287,6 +292,17 @@ class CalculateImpactsTest(TransactionTestCase):
     def setUp(self):
         self.stands = self.load_stands()
         self.plan = TreatmentPlanFactory.create()
+        stand_ids = [s.id for s in self.stands]
+        self.project_area_geometry = MultiPolygon(
+            [
+                Stand.objects.filter(id__in=stand_ids).aggregate(
+                    geometry=Union("geometry")
+                )["geometry"]
+            ]
+        )
+        self.project_area = ProjectAreaFactory.create(
+            scenario=self.plan.scenario, geometry=self.project_area_geometry
+        )
         self.prescriptions = list(
             [
                 TreatmentPrescriptionFactory.create(
@@ -299,28 +315,53 @@ class CalculateImpactsTest(TransactionTestCase):
             ]
         )
 
-    @mock.patch(
-        "impacts.services.ImpactVariable.get_impact_raster_path",
-        return_value="impacts/tests/test_data/test_raster.tif",
-    )
-    @mock.patch(
-        "impacts.services.ImpactVariable.get_baseline_raster_path",
-        return_value="impacts/tests/test_data/test_raster.tif",
-    )
     def test_calculate_impacts_returns_data(
-        self, _get_impact_raster_path, _get_baseline_raster_path
+        self,
     ):
         """Test that this function is performing work correctly. we don't
         really care about the returned values right now, only that it works.
         """
+        baseline_metadata = {
+            "modules": {
+                "impacts": {
+                    "year": 2024,
+                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "action": None,
+                    "baseline": True,
+                }
+            }
+        }
+        action_metadata = {
+            "modules": {
+                "impacts": {
+                    "year": 2024,
+                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "action": TreatmentPrescriptionAction.get_file_mapping(
+                        TreatmentPrescriptionAction.HEAVY_MASTICATION
+                    ),
+                    "baseline": False,
+                }
+            }
+        }
+        DataLayerFactory.create(
+            name="baseline",
+            url="impacts/tests/test_data/test_raster.tif",
+            metadata=baseline_metadata,
+            type=DataLayerType.RASTER,
+        )
+        DataLayerFactory.create(
+            name="action",
+            url="impacts/tests/test_data/test_raster.tif",
+            metadata=action_metadata,
+            type=DataLayerType.RASTER,
+        )
         variable = ImpactVariable.CANOPY_BASE_HEIGHT
         action = TreatmentPrescriptionAction.HEAVY_MASTICATION
-        zonal = calculate_impacts(self.plan, variable, action, 2024)
-        self.assertIsNotNone(zonal)
-        for f in zonal:
-            mean = f.get("properties", {}).get("mean")
-            self.assertIsNotNone(mean)
-            self.assertGreater(mean, 0)
+        stand_results, project_area_results = calculate_impacts(
+            self.plan, variable, action, 2024
+        )
+        self.assertIsNotNone(stand_results)
+        self.assertIsNotNone(project_area_results)
 
     def test_calculate_impacts_bad_year_throws(self):
         """Test that this function is performing work correctly. we don't
@@ -342,11 +383,13 @@ class CalculateImpactsTest(TransactionTestCase):
             (40, 20, 1),
             (None, 1, -1),
             (1, None, 0),
-            (None, None, -1),
+            (None, None, None),
         ]
 
         for value, base, expected_result in values_bases_expected_results:
-            assert calculate_delta(value=value, baseline=base) == expected_result
+            self.assertEqual(
+                calculate_delta(value=value, baseline=base), expected_result
+            )
 
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
@@ -369,6 +412,17 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
     def setUp(self):
         self.stands = self.load_stands()
         self.plan = TreatmentPlanFactory.create()
+        stand_ids = [s.id for s in self.stands]
+        self.project_area_geometry = MultiPolygon(
+            [
+                Stand.objects.filter(id__in=stand_ids).aggregate(
+                    geometry=Union("geometry")
+                )["geometry"]
+            ]
+        )
+        self.project_area = ProjectAreaFactory.create(
+            scenario=self.plan.scenario, geometry=self.project_area_geometry
+        )
         self.prescriptions = list(
             [
                 TreatmentPrescriptionFactory.create(
@@ -381,17 +435,7 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             ]
         )
 
-    @mock.patch(
-        "impacts.services.ImpactVariable.get_impact_raster_path",
-        return_value="impacts/tests/test_data/test_raster.tif",
-    )
-    @mock.patch(
-        "impacts.services.ImpactVariable.get_baseline_raster_path",
-        return_value="impacts/tests/test_data/test_raster.tif",
-    )
-    def test_calculate_impacts_returns_data(
-        self, _get_impact_raster, _get_baseline_raster
-    ):
+    def test_calculate_impacts_returns_data(self):
         """Test that this function is performing work correctly. we don't
         really care about the returned values right now, only that it works.
         """
@@ -400,155 +444,50 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             CELERY_TASK_STORE_EAGER_RESULT=True,
             CELERY_TASK_IGNORE_RESULT=False,
         ):
-            self.assertEquals(TreatmentResult.objects.count(), 0)
             matrix = get_calculation_matrix(self.plan)
             variable, action, year = matrix[0]
-            result = async_get_or_calculate_persist_impacts(
-                self.plan.pk, variable, action, year
-            )
-            self.assertIsNotNone(result)
-            self.assertGreater(TreatmentResult.objects.count(), 0)
-            self.assertEquals(len(self.stands), TreatmentResult.objects.count())
+            baseline_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": variable,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            action_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": variable,
+                        "action": TreatmentPrescriptionAction.get_file_mapping(action),
+                        "baseline": False,
+                    }
+                }
+            }
 
-    @mock.patch(
-        "impacts.services.ImpactVariable.get_impact_raster_path",
-        return_value="impacts/tests/test_data/test_raster.tif",
-    )
-    @mock.patch(
-        "impacts.services.ImpactVariable.get_baseline_raster_path",
-        return_value="impacts/tests/test_data/test_raster.tif",
-    )
-    def test_calculate_with_existing_direct_impacts_returns_data(
-        self, _get_impact_raster, _get_baseline_raster
-    ):
-        with self.settings(
-            CELERY_ALWAYS_EAGER=True,
-            CELERY_TASK_STORE_EAGER_RESULT=True,
-            CELERY_TASK_IGNORE_RESULT=False,
-        ):
-            plan_b = TreatmentPlanFactory.create(scenario=self.plan.scenario)
-            plan_b_prescriptions = list(
-                [
-                    TreatmentPrescriptionFactory.create(
-                        treatment_plan=plan_b,
-                        stand=stand,
-                        action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
-                        geometry=stand.geometry,
-                    )
-                    for stand in self.stands
-                ]
+            DataLayerFactory.create(
+                name="baseline",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=baseline_metadata,
+                type=DataLayerType.RASTER,
+            )
+            DataLayerFactory.create(
+                name="action",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=action_metadata,
+                type=DataLayerType.RASTER,
             )
             self.assertEquals(TreatmentResult.objects.count(), 0)
-            matrix = get_calculation_matrix(self.plan)
 
-            variable, action, year = matrix[0]
-            first_exec_result = async_get_or_calculate_persist_impacts(
-                self.plan.pk, variable, action, year
+            async_calculate_impacts_for_variable_action_year(
+                self.plan.id,
+                variable=variable,
+                action=action,
+                year=year,
             )
-            self.assertIsNotNone(first_exec_result)
+
             self.assertGreater(TreatmentResult.objects.count(), 0)
+            self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
             self.assertEquals(len(self.stands), TreatmentResult.objects.count())
-            initial_n_treatment_results = TreatmentResult.objects.count()
-
-            second_exec_result = async_get_or_calculate_persist_impacts(
-                plan_b.pk, variable, action, year
-            )
-            self.assertIsNotNone(second_exec_result)
-            self.assertGreater(TreatmentResult.objects.count(), 0)
-            assert len(first_exec_result) == len(second_exec_result)
-            self.assertGreater(
-                TreatmentResult.objects.count(), initial_n_treatment_results
-            )
-
-            result_from_first_exec_pk = first_exec_result[0]
-            result_from_first_exec = TreatmentResult.objects.select_related(
-                "treatment_prescription__stand"
-            ).get(pk=result_from_first_exec_pk)
-
-            # From a Stand, it gets the other TreatmentResult to compare
-            # to the second execution
-            treatment_result_from_second_exec = (
-                TreatmentResult.objects.filter(
-                    treatment_prescription__stand=result_from_first_exec.treatment_prescription.stand
-                )
-                .exclude(pk=result_from_first_exec_pk)
-                .get()
-            )
-            assert treatment_result_from_second_exec.pk in second_exec_result
-
-            first_prescription = self.prescriptions[0]
-            first_result = TreatmentResult.objects.get(
-                treatment_prescription__stand=first_prescription.stand,
-                treatment_prescription=first_prescription,
-            )
-
-            plan_b_result = TreatmentResult.objects.get(
-                treatment_prescription__stand=first_prescription.stand,
-                treatment_prescription__in=plan_b_prescriptions,
-            )
-
-            self.assertEquals(plan_b_result.value, first_result.value)
-            self.assertEquals(plan_b_result.baseline, first_result.baseline)
-            self.assertEquals(plan_b_result.year, first_result.year)
-            self.assertEquals(plan_b_result.aggregation, first_result.aggregation)
-
-    @mock.patch(
-        "impacts.services.ImpactVariable.get_impact_raster_path",
-        return_value="impacts/tests/test_data/test_raster.tif",
-    )
-    @mock.patch(
-        "impacts.services.ImpactVariable.get_baseline_raster_path",
-        return_value="impacts/tests/test_data/test_raster.tif",
-    )
-    def test_calculate_with_existing_indirect_impacts_returns_data(
-        self, _get_impact_raster, _get_baseline_raster
-    ):
-        with self.settings(
-            CELERY_ALWAYS_EAGER=True,
-            CELERY_TASK_STORE_EAGER_RESULT=True,
-            CELERY_TASK_IGNORE_RESULT=False,
-        ):
-            indirect_results = [
-                TreatmentResultFactory(
-                    treatment_plan=self.plan,
-                    treatment_prescription=prescription,
-                    value=0.9897,
-                    type=TreatmentResultType.INDIRECT,
-                )
-                for prescription in self.prescriptions
-            ]
-
-            assert TreatmentResult.objects.count() == len(indirect_results)
-
-            plan_b = TreatmentPlanFactory.create(scenario=self.plan.scenario)
-            plan_b_prescriptions = list(
-                [
-                    TreatmentPrescriptionFactory.create(
-                        treatment_plan=plan_b,
-                        stand=stand,
-                        action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
-                        geometry=stand.geometry,
-                    )
-                    for stand in self.stands
-                ]
-            )
-
-            matrix = get_calculation_matrix(self.plan)
-            variable, action, year = matrix[0]
-            plan_b_exec_result = async_get_or_calculate_persist_impacts(
-                plan_b.pk, variable, action, year
-            )
-            self.assertIsNotNone(plan_b_exec_result)
-
-            assert TreatmentResult.objects.count() == (
-                len(indirect_results) + len(plan_b_exec_result)
-            )
-
-            first_prescription = self.prescriptions[0]
-            plan_b_result = TreatmentResult.objects.get(
-                treatment_prescription__stand=first_prescription.stand,
-                treatment_prescription__in=plan_b_prescriptions,
-            )
-
-            assert plan_b_result.type == TreatmentResultType.DIRECT
-            assert plan_b_result.value != 0.9897

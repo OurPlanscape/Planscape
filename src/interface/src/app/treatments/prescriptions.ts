@@ -38,7 +38,7 @@ export const PRESCRIPTION_COLORS: Record<PrescriptionAction, string> = {
   MODERATE_THINNING_BIOMASS: '#3A86FF',
   HEAVY_THINNING_BIOMASS: '#8338EC',
   MODERATE_THINNING_BURN: '#F77F00',
-  HEAVY_THINNING_BURN: '#FFBE0B',
+  HEAVY_THINNING_BURN: '#F4A261',
   MODERATE_MASTICATION: '#2A9D8F',
   HEAVY_MASTICATION: '#90BE6D',
   RX_FIRE: '#EF233C',
@@ -179,6 +179,16 @@ export function nameForAction(action: string): string {
   return (
     PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
     PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].name ||
+    ''
+  );
+}
+
+export function descriptionForAction(action: string): string {
+  return (
+    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
+    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].details.join(
+      ', '
+    ) ||
     ''
   );
 }
