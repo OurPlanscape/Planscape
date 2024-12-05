@@ -9,6 +9,8 @@
   source="stands_by_tx_result"
   [paint]="paint"
   (layerClick)="setActiveStand($event)"
+  (layerMouseMove)="showTooltip($event)"
+  (layerMouseOut)="hideTooltip()"
   sourceLayer="stands_by_tx_result"></mgl-layer>
 
 <mgl-layer
@@ -25,3 +27,12 @@
   [paint]="STAND_SELECTED_PAINT"
   [filter]="['==', ['get', 'id'], (activeStandId$ | async) ?? -1]"
   sourceLayer="stands_by_tx_result"></mgl-layer>
+
+<mgl-popup
+  *ngIf="tooltipLongLat"
+  [lngLat]="tooltipLongLat"
+  [closeButton]="false"
+  className="treatment-tooltip">
+  <div class="tooltip-title">Applied Treatment</div>
+  {{ appliedTreatment }}
+</mgl-popup>
