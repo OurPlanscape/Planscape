@@ -62,6 +62,7 @@ export class StandDataChartComponent {
     {
       responsive: true,
       maintainAspectRatio: false,
+      animation: false,
       layout: {
         padding: {
           left: 0, // Add 20px padding between the tick labels and the chart content
