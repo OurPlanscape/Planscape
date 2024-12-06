@@ -1,4 +1,7 @@
+from django.test import TestCase
 from unittest import mock
+from unittest.mock import patch, MagicMock
+from rest_framework.test import APIClient
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 from django.forms.models import model_to_dict
@@ -20,6 +23,8 @@ User = get_user_model()
 class TxPlanViewSetTest(APITransactionTestCase):
     def setUp(self):
         self.scenario = ScenarioFactory.create()
+        self.treatment_plan = TreatmentPlanFactory.create()
+        self.client.force_authenticate(user=self.scenario.user)
 
     def test_create_tx_plan_returns_201(self):
         self.client.force_authenticate(user=self.scenario.user)
@@ -269,6 +274,67 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertEqual(updated_plan.name, "ok new name")
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
+
+    @mock.patch("impacts.views.generate_shapefile_for_treatment_plan")
+    def test_export_shapefile_success(self, mock_generate_shapefile):
+        """
+        Test the export shapefile endpoint when the process is successful.
+        """
+        mock_generate_shapefile.return_value = "/mock/path/to/zipfile.zip"
+
+        # Call the endpoint
+        response = self.client.get(
+            reverse(
+                "api:impacts:treatmentplan-export-shapefile", 
+                kwargs={"pk": self.treatment_plan.pk}
+            ),
+            content_type="application/json",
+        )
+
+        # Assertions
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response["Content-Type"], "application/zip")
+        self.assertIn(
+            f'attachment; filename="treatment_plan_{self.treatment_plan.pk}_shapefiles.zip"',
+            response["Content-Disposition"],
+        )
+        mock_generate_shapefile.assert_called_once_with(self.treatment_plan)
+
+    def test_export_shapefile_treatment_plan_not_found(self):
+        """
+        Test the export shapefile endpoint when the TreatmentPlan does not exist.
+        """
+        response = self.client.get(
+            reverse(
+                "api:impacts:treatmentplan-export-shapefile", 
+                kwargs={"pk": 9999}
+            ),
+            content_type="application/json",
+        )
+
+        # Assertions
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+        self.assertIn("Treatment Plan not found.", response.data["detail"])
+
+    @mock.patch("impacts.views.generate_shapefile_for_treatment_plan")
+    def test_export_shapefile_server_error(self, mock_generate_shapefile):
+        """
+        Test the export shapefile endpoint when an error occurs during shapefile generation.
+        """
+        mock_generate_shapefile.side_effect = Exception("Test exception")
+
+        response = self.client.get(
+            reverse(
+                "api:impacts:treatmentplan-export-shapefile", 
+                kwargs={"pk": self.treatment_plan.pk}
+            ),
+            content_type="application/json",
+        )
+
+        # Assertions
+        self.assertEqual(response.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertIn("An error occurred while exporting shapefiles.", response.data["detail"])
+        mock_generate_shapefile.assert_called_once_with(self.treatment_plan)
 
 
 class TxPrescriptionListTest(APITransactionTestCase):
