@@ -42,7 +42,7 @@
   source="scenarioProjectAreas"
   [sourceLayer]="layers.projectAreaLabels.sourceLayer"
   [layout]="{
-    visibility: visible && withFill ? 'visible' : 'none',
+    visibility: visible ? 'visible' : 'none',
     'text-field': ['get', 'name'],
     'text-size': textSize,
     'text-anchor': 'center',

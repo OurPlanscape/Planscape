@@ -21,7 +21,13 @@ import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
 import { getTreatedStandsTotal } from '../prescriptions';
 import { TreatmentProjectArea } from '@types';
-import { Observable, Subject, combineLatest, distinctUntilChanged, map } from 'rxjs';
+import {
+  combineLatest,
+  distinctUntilChanged,
+  map,
+  Observable,
+  Subject,
+} from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { ColorService } from 'src/app/color.service';
 

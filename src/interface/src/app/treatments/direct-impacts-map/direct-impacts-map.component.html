@@ -13,7 +13,8 @@
   [minZoom]="7"
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
-  [transformRequest]="transformRequest">
+  [transformRequest]="transformRequest"
+  (zoomEvt)="saveZoom()">
   <app-map-stands-tx-result
     [mapLibreMap]="mapLibreMap"
     [propertyName]="variables[year]"></app-map-stands-tx-result>
