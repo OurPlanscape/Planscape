@@ -9,7 +9,6 @@ import {
   NgStyle,
 } from '@angular/common';
 import { SharedModule } from '@shared';
-
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, switchMap } from 'rxjs';
@@ -44,6 +43,7 @@ import { TreatmentProjectArea, Extent } from '@types';
 import { MatSelectModule } from '@angular/material/select';
 import { Point } from 'geojson';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
+import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
 
 @Component({
@@ -75,6 +75,7 @@ import { MatDialog } from '@angular/material/dialog';
     TreatmentTypeIconComponent,
     ChangeOverTimeChartComponent,
     ExpandedStandDataChartComponent,
+    ExpandedChangeOverTimeChartComponent,
     ModalComponent,
   ],
   providers: [
@@ -197,6 +198,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     this.directImpactsStateService.setProjectAreaForChanges(
       this.selectedChartProjectArea.value
     );
+  }
+
+  expandChangeChart() {
+    this.dialog.open(ExpandedChangeOverTimeChartComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
   }
 
   expandStandChart() {

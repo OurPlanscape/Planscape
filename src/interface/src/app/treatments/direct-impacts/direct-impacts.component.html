@@ -43,7 +43,8 @@
       <sg-panel
         class="chart-1"
         [paddedContent]="false"
-        [buttons]="changeChartButtons">
+        [buttons]="changeChartButtons"
+        (clickedButton)="expandChangeChart()">
         <div panelTitle class="changes-chart-title">
           <div class="left-title-box">
             Project Area
