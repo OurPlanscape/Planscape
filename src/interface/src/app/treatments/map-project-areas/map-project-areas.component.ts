@@ -163,7 +163,9 @@ export class MapProjectAreasComponent implements OnInit {
       e.point
     );
     if (this.hoveredProjectAreaFromFeatures?.properties?.['id']) {
-      this.hoveredProjectAreaId$.next(this.hoveredProjectAreaFromFeatures.properties['id']);
+      this.hoveredProjectAreaId$.next(
+        this.hoveredProjectAreaFromFeatures.properties['id']
+      );
     }
     this.updateHoveredFillColor(
       this.hoveredProjectAreaFromFeatures.properties['rank']
