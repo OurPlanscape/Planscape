@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { ExpandedStandDataChartComponent } from './expanded-stand-data-chart.component';
+import { ExpandedChangeOverTimeChartComponent } from './expanded-change-over-time-chart.component';
 import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -8,12 +8,12 @@ import { BehaviorSubject } from 'rxjs';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 
 describe('ExpandedStandDataChartComponent', () => {
-  let component: ExpandedStandDataChartComponent;
-  let fixture: ComponentFixture<ExpandedStandDataChartComponent>;
+  let component: ExpandedChangeOverTimeChartComponent;
+  let fixture: ComponentFixture<ExpandedChangeOverTimeChartComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ExpandedStandDataChartComponent],
+      imports: [ExpandedChangeOverTimeChartComponent],
       providers: [
         MockProvider(DirectImpactsStateService, {
           activeStand$: new BehaviorSubject(null),
@@ -23,7 +23,7 @@ describe('ExpandedStandDataChartComponent', () => {
       declarations: [MockDeclaration(StandDataChartComponent)],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ExpandedStandDataChartComponent);
+    fixture = TestBed.createComponent(ExpandedChangeOverTimeChartComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
