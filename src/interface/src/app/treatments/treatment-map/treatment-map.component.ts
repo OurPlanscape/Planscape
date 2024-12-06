@@ -19,7 +19,7 @@ import {
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
-import { MapActionButtonComponent } from '../map-actionbutton/map-actionbutton.component';
+import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { MapConfigState } from './map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';

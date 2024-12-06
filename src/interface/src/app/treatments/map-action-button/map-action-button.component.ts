@@ -7,8 +7,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   selector: 'app-action-button',
   standalone: true,
   imports: [ControlComponent, MatIconModule, MatTooltipModule],
-  templateUrl: './map-actionbutton.component.html',
-  styleUrl: './map-actionbutton.component.scss',
+  templateUrl: './map-action-button.component.html',
+  styleUrl: './map-action-button.component.scss',
 })
 export class MapActionButtonComponent {
   constructor() {}
