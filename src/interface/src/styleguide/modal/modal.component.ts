@@ -33,7 +33,7 @@ export class ModalComponent {
   /**
    * Heading title
    */
-  @Input() title: string = 'Title';
+  @Input() title?: string;
   /**
    * Set horizontal size variant of the modal
    */

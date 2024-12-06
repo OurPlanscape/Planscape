@@ -1,5 +1,4 @@
 <sg-modal
-  title="Project Area"
   primaryButtonText="Create"
   [scrollableContent]="false"
   [showBorders]="true"
@@ -7,6 +6,24 @@
   (clickedClose)="close()"
   width="xlarge"
   class="stand-data-modal">
+  <div headerContent class="header-content">
+    <div class="left-title-box">
+      Project Area
+      <mat-form-field appearance="outline" class="changes-chart-select">
+        <mat-select
+          class="project-area-selector"
+          [ngModel]="selectedChartProjectArea"
+          (ngModelChange)="setChartProjectArea()">
+          <mat-option [value]="null">All</mat-option>
+          <mat-option
+            *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
+            [value]="projectArea.project_area_id">
+            {{ projectArea.project_area_name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+  </div>
   <div modalBodyContent class="expanded-stand-data">
     <app-change-over-time-chart></app-change-over-time-chart>
   </div>

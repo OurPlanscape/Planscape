@@ -5,6 +5,14 @@
   height: 70vh;
 }
 
+.header-content {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+
 ::ng-deep {
   sg-modal.stand-data-modal {
     .header {

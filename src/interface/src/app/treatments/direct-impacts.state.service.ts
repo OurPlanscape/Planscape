@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { DEFAULT_SLOT, MapMetric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
+import { TreatmentProjectArea } from '@types';
 
 export class DirectImpactsStateService {
   public activeMetric$ = new BehaviorSubject<MapMetric>({
@@ -16,6 +17,11 @@ export class DirectImpactsStateService {
   );
   public selectedProjectAreaForChanges$ =
     this._selectedProjectAreaForChanges$.asObservable();
+
+  private _availableProjectAreas$ = new BehaviorSubject<
+    TreatmentProjectArea[] | null
+  >(null);
+  public availableProjectAreas$ = this._availableProjectAreas$.asObservable();
 
   constructor() {}
 
