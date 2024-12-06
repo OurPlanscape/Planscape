@@ -16,7 +16,12 @@
   "
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
-    'fill-color': fillColor,
+    'fill-color': [
+      'case',
+      ['==', ['get', 'id'], hoveredProjectAreaFromFeatures?.properties?.['id']],
+      hoveredFillColor,
+      fillColor
+    ],
     'fill-opacity': visible && withFill ? 0.5 : 0
   }"></mgl-layer>
 
@@ -37,7 +42,7 @@
   source="scenarioProjectAreas"
   [sourceLayer]="layers.projectAreaLabels.sourceLayer"
   [layout]="{
-    visibility: visible && withFill ? 'visible' : 'none',
+    visibility: visible ? 'visible' : 'none',
     'text-field': ['get', 'name'],
     'text-size': textSize,
     'text-anchor': 'center',

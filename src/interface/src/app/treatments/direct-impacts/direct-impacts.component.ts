@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
@@ -19,13 +19,18 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { ButtonComponent, PanelComponent, PanelIconButton } from '@styleguide';
+import {
+  ButtonComponent,
+  PanelComponent,
+  PanelIconButton,
+  ModalComponent,
+} from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
-import { MetricFiltersComponent } from './metric-filters/metric-filters.component';
+import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
 import { MapMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
@@ -38,6 +43,8 @@ import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-o
 import { TreatmentProjectArea, Extent } from '@types';
 import { MatSelectModule } from '@angular/material/select';
 import { Point } from 'geojson';
+import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -67,8 +74,11 @@ import { Point } from 'geojson';
     StandDataChartComponent,
     TreatmentTypeIconComponent,
     ChangeOverTimeChartComponent,
+    ExpandedStandDataChartComponent,
+    ModalComponent,
   ],
   providers: [
+    DirectImpactsStateService,
     TreatmentsState,
     SelectedStandsState,
     TreatedStandsState,
@@ -83,7 +93,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private router: Router,
-    private directImpactsStateService: DirectImpactsStateService
+    private directImpactsStateService: DirectImpactsStateService,
+    private dialog: MatDialog,
+    private injector: Injector // Angular's injector for passing shared services
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.treatmentsState
@@ -110,6 +122,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
+
   showTreatmentPrescription = false;
   changeChartButtons: PanelIconButton[] = [
     { icon: 'open_in_full', actionName: 'expand' },
@@ -154,6 +167,15 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   ];
   selectedChartProjectArea = { name: 1, value: 'ok' };
 
+  standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
+    map((activeStand) => {
+      if (!activeStand) {
+        return 'Stand Level Data Unavailable';
+      }
+      return `${activeStand.properties['project_area_name']}, Stand ${activeStand.properties['id']}`;
+    })
+  );
+
   activateMetric(data: MapMetric) {
     this.directImpactsStateService.activeMetric$.next(data);
     this.directImpactsStateService.getChangesOverTimeData();
@@ -175,5 +197,11 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     this.directImpactsStateService.setProjectAreaForChanges(
       this.selectedChartProjectArea.value
     );
+  }
+
+  expandStandChart() {
+    this.dialog.open(ExpandedStandDataChartComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
   }
 }

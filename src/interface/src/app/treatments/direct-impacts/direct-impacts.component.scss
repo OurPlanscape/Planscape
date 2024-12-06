@@ -119,8 +119,8 @@
 
 .direct-impacts-metrics {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  grid-template-rows: repeat(12, minmax(86px, 1fr));
+  grid-template-columns: 50% 50%;
+  grid-template-rows: repeat(12, 86px);
   gap: 16px;
   padding: 16px 0;
 
@@ -175,3 +175,4 @@
     top: 6px;
   }
 }
+

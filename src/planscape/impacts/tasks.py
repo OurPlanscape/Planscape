@@ -2,11 +2,11 @@ import logging
 from typing import Tuple
 from urllib.parse import urljoin
 from celery import chord, chain
+from rasterio.errors import RasterioIOError
 from django.conf import settings
 from django.db import transaction
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
-from django.urls import reverse
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -23,7 +23,7 @@ from planscape.celery import app
 log = logging.getLogger(__name__)
 
 
-@app.task()
+@app.task(autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5})
 def async_calculate_impacts_for_variable_action_year(
     treatment_plan_pk: int,
     variable: ImpactVariable,
@@ -112,11 +112,7 @@ def async_calculate_persist_impacts_treatment_plan(
 
 
 @app.task()
-def async_send_email_process_finished(set_status_success, treatment_plan_pk):
-    if not set_status_success or set_status_success[0] is False:
-        log.warning("Not sending email due to previous task failure.")
-        return
-
+def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
     try:
         treatment_plan = TreatmentPlan.objects.select_related(
             "created_by", "scenario"

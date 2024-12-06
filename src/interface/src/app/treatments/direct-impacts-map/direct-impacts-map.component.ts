@@ -67,6 +67,10 @@ export class DirectImpactsMapComponent {
     this.mapCreated.emit(this.mapLibreMap);
   }
 
+  saveZoom() {
+    this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
+  }
+
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addAuthHeaders(url, resourceType, this.authService.getAuthCookie());
 }
