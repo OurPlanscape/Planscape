@@ -21,7 +21,7 @@ import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
 import { getTreatedStandsTotal } from '../prescriptions';
 import { TreatmentProjectArea } from '@types';
-import { Observable, map } from 'rxjs';
+import { Observable, Subject, combineLatest, distinctUntilChanged, map } from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { ColorService } from 'src/app/color.service';
 
@@ -58,14 +58,16 @@ export class MapProjectAreasComponent implements OnInit {
   fillColor!: any;
   getTreatedStandsTotal = getTreatedStandsTotal;
 
+  hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
   hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
-    this.summary$.pipe(
-      map((summary) => {
+    combineLatest([
+      this.summary$,
+      this.hoveredProjectAreaId$.pipe(distinctUntilChanged()),
+    ]).pipe(
+      map(([summary, projectAreaId]) => {
         return summary?.project_areas.find(
-          (p: TreatmentProjectArea) =>
-            p.project_area_id ===
-            this.hoveredProjectAreaFromFeatures?.properties['id']
+          (p: TreatmentProjectArea) => p.project_area_id === projectAreaId
         );
       })
     );
@@ -154,6 +156,9 @@ export class MapProjectAreasComponent implements OnInit {
     this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
       e.point
     );
+    if (this.hoveredProjectAreaFromFeatures?.properties?.['id']) {
+      this.hoveredProjectAreaId$.next(this.hoveredProjectAreaFromFeatures.properties['id']);
+    }
     this.updateHoveredFillColor(
       this.hoveredProjectAreaFromFeatures.properties['rank']
     );
@@ -163,6 +168,7 @@ export class MapProjectAreasComponent implements OnInit {
   resetCursorAndTooltip(e: MapMouseEvent) {
     this.mapLibreMap.getCanvas().style.cursor = '';
     this.hoveredProjectAreaFromFeatures = null;
+    this.hoveredProjectAreaId$.next(null);
     this.updateHoveredFillColor(null);
     this.mouseLngLat = null;
   }
