@@ -1,7 +1,18 @@
-<div class="title">Change (%)</div>
-<canvas
-  baseChart
-  [data]="(barChartData$ | async) || undefined"
-  [options]="(barChartOptions$ | async) ?? {}"
-  [legend]="false"
-  [type]="'bar'"></canvas>
+<div *ngIf="(activeStand$ | async) === null; else chart" class="empty-state">
+  <div>
+    Select a
+    <sg-treatment-type-icon [treatment]="null"></sg-treatment-type-icon>
+    (hexagon) from the map to see changes over time displayed in the graph
+  </div>
+</div>
+<ng-template #chart>
+  <div class="title">Change (%)</div>
+  <div class="chart">
+    <canvas
+      baseChart
+      [data]="(barChartData$ | async) || undefined"
+      [options]="(barChartOptions$ | async) ?? {}"
+      [legend]="false"
+      [type]="'bar'"></canvas>
+  </div>
+</ng-template>

@@ -25,11 +25,14 @@ mat-select {
   width: 100%;
 }
 
-mat-icon {
-  vertical-align: middle;
-  cursor: pointer;
-  margin-right: 8px;
+:host ::ng-deep {
+  mat-icon {
+    vertical-align: middle;
+    cursor: pointer;
+    margin-right: 8px;
+  }
 }
+
 
 .metric-color {
   display: inline-block;
