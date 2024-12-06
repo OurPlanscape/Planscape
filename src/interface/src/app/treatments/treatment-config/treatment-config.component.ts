@@ -76,8 +76,12 @@ export class TreatmentConfigComponent {
   showTreatmentLegend$ = combineLatest([
     this.treatmentsState.projectAreaId$.pipe(map((activeArea) => !!activeArea)),
     this.showTreatmentLayer$,
+    this.mapConfig.showTreatmentLegend$,
   ]).pipe(
-    map(([activeArea, showTreatmentLayer]) => !activeArea && showTreatmentLayer)
+    map(
+      ([activeArea, showTreatmentLayer, shouldShowLegend]) =>
+        !activeArea && showTreatmentLayer && shouldShowLegend
+    )
   );
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
@@ -142,5 +146,9 @@ export class TreatmentConfigComponent {
     this.dialog.open(ReviewTreatmentPlanDialogComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });
+  }
+
+  closeLegend() {
+    this.mapConfig.setTreatmentLegendVisible(false);
   }
 }
