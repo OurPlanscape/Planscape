@@ -7,6 +7,7 @@ import { getColorForProjectPosition } from '../../plan/plan-helpers';
 import {
   LayerSpecification,
   LngLat,
+  MapGeoJSONFeature,
   Map as MapLibreMap,
   MapMouseEvent,
   Point,
@@ -28,6 +29,7 @@ import {
   Subject,
 } from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { ColorService } from 'src/app/color.service';
 
 type MapLayerData = {
   readonly name: string;
@@ -59,10 +61,11 @@ export class MapProjectAreasComponent implements OnInit {
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
-  fillColor: any;
+  fillColor!: any;
   getTreatedStandsTotal = getTreatedStandsTotal;
 
-  hoveredProjectAreaId$ = new Subject<number>();
+  hoveredProjectAreaId$ = new Subject<number | null>();
+  hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
   hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
     combineLatest([
       this.summary$,
@@ -74,6 +77,7 @@ export class MapProjectAreasComponent implements OnInit {
         );
       })
     );
+  hoveredFillColor = BASE_COLORS['dark'];
 
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
@@ -106,7 +110,8 @@ export class MapProjectAreasComponent implements OnInit {
     private treatmentsState: TreatmentsState,
     private router: Router,
     private route: ActivatedRoute,
-    private mapConfigState: MapConfigState
+    private mapConfigState: MapConfigState,
+    private colorService: ColorService
   ) {}
 
   get vectorLayerUrl() {
@@ -131,7 +136,8 @@ export class MapProjectAreasComponent implements OnInit {
   }
 
   goToProjectArea(event: MapMouseEvent) {
-    const projectAreaId = this.getProjectAreaIdFromFeatures(event.point);
+    const projectAreaId = this.getProjectAreaFromFeatures(event.point)
+      .properties['id'];
     this.mouseLngLat = null;
 
     this.router
@@ -153,23 +159,42 @@ export class MapProjectAreasComponent implements OnInit {
     if (this.treatmentsState.getProjectAreaId()) {
       return;
     }
-    const hoveredProjectAreaId = this.getProjectAreaIdFromFeatures(e.point);
-    if (hoveredProjectAreaId) {
-      this.hoveredProjectAreaId$.next(hoveredProjectAreaId);
+    this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
+      e.point
+    );
+    if (this.hoveredProjectAreaFromFeatures?.properties?.['id']) {
+      this.hoveredProjectAreaId$.next(
+        this.hoveredProjectAreaFromFeatures.properties['id']
+      );
     }
+    this.updateHoveredFillColor(
+      this.hoveredProjectAreaFromFeatures.properties['rank']
+    );
     this.mouseLngLat = e.lngLat;
   }
 
   resetCursorAndTooltip(e: MapMouseEvent) {
     this.mapLibreMap.getCanvas().style.cursor = '';
+    this.hoveredProjectAreaFromFeatures = null;
+    this.hoveredProjectAreaId$.next(null);
+    this.updateHoveredFillColor(null);
     this.mouseLngLat = null;
   }
 
-  private getProjectAreaIdFromFeatures(point: Point): number | null {
+  private getProjectAreaFromFeatures(point: Point): MapGeoJSONFeature {
     const features = this.mapLibreMap.queryRenderedFeatures(point, {
       layers: ['map-project-areas-fill'],
     });
 
-    return features[0].properties['id'];
+    return features[0];
+  }
+
+  updateHoveredFillColor(projectAreaRank: number | null) {
+    if (projectAreaRank) {
+      const baseColor = getColorForProjectPosition(projectAreaRank);
+      this.hoveredFillColor = this.colorService.darkenColor(baseColor, 20);
+    } else {
+      this.hoveredFillColor = BASE_COLORS['dark'];
+    }
   }
 }
