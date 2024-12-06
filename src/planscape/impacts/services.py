@@ -500,22 +500,95 @@ def fetch_treatment_plan_data(treatment_plan_id):
     try:
         with connection.cursor() as cursor:
             sql = """
+            WITH tx_result_year_0 AS (
+                SELECT
+                    tr.stand_id AS id,
+                    tr.baseline AS baseline_0,
+                    tr.value AS value_0,
+                    tr.delta AS delta_0
+                FROM impacts_treatmentresult tr
+                WHERE tr.treatment_plan_id = %s
+                AND tr.year = 2024
+                AND tr.aggregation = 'MEAN'
+            ),
+            tx_result_year_5 AS (
+                SELECT
+                    tr.stand_id AS id,
+                    tr.baseline AS baseline_5,
+                    tr.value AS value_5,
+                    tr.delta AS delta_5
+                FROM impacts_treatmentresult tr
+                WHERE tr.treatment_plan_id = %s
+                AND tr.year = 2029
+                AND tr.aggregation = 'MEAN'
+            ),
+            tx_result_year_10 AS (
+                SELECT
+                    tr.stand_id AS id,
+                    tr.baseline AS baseline_10,
+                    tr.value AS value_10,
+                    tr.delta AS delta_10
+                FROM impacts_treatmentresult tr
+                WHERE tr.treatment_plan_id = %s
+                AND tr.year = 2034
+                AND tr.aggregation = 'MEAN'
+            ),
+            tx_result_year_15 AS (
+                SELECT
+                    tr.stand_id AS id,
+                    tr.baseline AS baseline_15,
+                    tr.value AS value_15,
+                    tr.delta AS delta_15
+                FROM impacts_treatmentresult tr
+                WHERE tr.treatment_plan_id = %s
+                AND tr.year = 2039
+                AND tr.aggregation = 'MEAN'
+            ),
+            tx_result_year_20 AS (
+                SELECT
+                    tr.stand_id AS id,
+                    tr.baseline AS baseline_20,
+                    tr.value AS value_20,
+                    tr.delta AS delta_20
+                FROM impacts_treatmentresult tr
+                WHERE tr.treatment_plan_id = %s
+                AND tr.year = 2044
+                AND tr.aggregation = 'MEAN'
+            )
             SELECT
-                ST_AsText(ss.geometry) AS wkt_geom,  
+                ST_AsText(ss.geometry) AS wkt_geom,
                 tr.action,
-                tr.baseline_0, tr.baseline_5, tr.baseline_10, tr.baseline_15, tr.baseline_20,
-                tr.delta_0, tr.delta_5, tr.delta_10, tr.delta_15, tr.delta_20,
+                tx0.baseline_0,
+                tx5.baseline_5,
+                tx10.baseline_10,
+                tx15.baseline_15,
+                tx20.baseline_20,
+                tx0.delta_0,
+                tx5.delta_5,
+                tx10.delta_10,
+                tx15.delta_15,
+                tx20.delta_20,
                 ss.id,
-                pa.name AS project_area_name,
+                pa.name AS project_area_name, 
                 ss.size AS stand_size,
                 tp.id AS treatment_plan_id,
-                tr.value_0, tr.value_5, tr.value_10, tr.value_15, tr.value_20,
+                tx0.value_0,
+                tx5.value_5,
+                tx10.value_10,
+                tx15.value_15,
+                tx20.value_20,
                 tr.variable
             FROM stands_stand ss
-            LEFT JOIN impacts_treatmentresult tr ON tr.stand_id = ss.id
-            LEFT JOIN planning_projectarea pa ON pa.id = ss.project_area_id
-            LEFT JOIN impacts_treatmentplan tp ON tp.id = tr.treatment_plan_id
-            WHERE tp.id = %s;
+            JOIN impacts_treatmentresult tr ON tr.stand_id = ss.id
+            JOIN impacts_treatmentplan tp ON tp.id = tr.treatment_plan_id
+            JOIN impacts_treatmentprescription itp ON itp.stand_id = ss.id 
+            JOIN planning_projectarea pa ON pa.id = itp.project_area_id 
+            JOIN tx_result_year_0 tx0 ON tx0.id = ss.id
+            JOIN tx_result_year_5 tx5 ON tx5.id = ss.id
+            JOIN tx_result_year_10 tx10 ON tx10.id = ss.id
+            JOIN tx_result_year_15 tx15 ON tx15.id = ss.id
+            JOIN tx_result_year_20 tx20 ON tx20.id = ss.id
+            WHERE tp.id = %s
             """
             cursor.execute(sql, [treatment_plan_id])
             columns = [col[0] for col in cursor.description]
@@ -526,50 +599,53 @@ def fetch_treatment_plan_data(treatment_plan_id):
         raise
 
 
-def define_shapefile_schema():
+def get_schema(data: list) -> dict:
     """
-    Defines the schema for the shapefile to be written by Fiona.
+    Generates a Fiona schema dynamically based on the query results.
     """
-    return {
-        'geometry': 'Polygon',  
-        'properties': {
-            'action': 'str',
-            'baseline_0': 'float',
-            'baseline_5': 'float',
-            'baseline_10': 'float',
-            'baseline_15': 'float',
-            'baseline_20': 'float',
-            'delta_0': 'float',
-            'delta_5': 'float',
-            'delta_10': 'float',
-            'delta_15': 'float',
-            'delta_20': 'float',
-            'id': 'int',
-            'project_area_name': 'str',
-            'stand_size': 'str',
-            'treatment_plan_id': 'int',
-            'value_0': 'float',
-            'value_5': 'float',
-            'value_10': 'float',
-            'value_15': 'float',
-            'value_20': 'float',
-            'variable': 'str',
-        },
+    # Step 1: Check if the data is empty
+    if not data:
+        raise ValueError("No data available to generate the schema.")
+
+    # Step 2: Use the first record to determine the schema
+    first_record = data[0]
+
+    # Step 3: Define a mapping from Python types to Fiona-compatible types
+    type_mapping = {
+        str: "str",      
+        int: "int",      
+        float: "float",  
     }
+
+    # Step 4: Build the properties dictionary for all non-geometry fields
+    properties = {}
+    for key, value in first_record.items():
+        if key != "wkt_geom":  
+            # Infer the type of the value and map it to Fiona-compatible types
+            python_type = type(value)
+            fiona_type = type_mapping.get(python_type, "str")  # Default to "str" if type is unknown
+            properties[key] = fiona_type
+
+    # Step 5: Construct and return the schema dictionary
+    schema = {
+        "geometry": "Polygon",  
+        "properties": properties,  
+    }
+
+    return schema
+
 
 def generate_shapefile_path(treatment_plan_id):
     """
     Generates the path for the .zip shapefile export directory and file based on the treatment plan ID.
     """
-    try:
-        base_dir = os.path.join(settings.shapefile_folder, "shapefiles")  # Use shapefile_folder as base export directory
-        output_dir = os.path.join(base_dir, f"treatment_plan_{treatment_plan_id}")
-        os.makedirs(output_dir, exist_ok=True)  # Creates directories if they don't exist
-        shapefile_path = os.path.join(output_dir, f"treatment_plan_{treatment_plan_id}.zip")
-        return shapefile_path
-    except Exception as e:
-        log.error(f"Error creating output directory for Treatment Plan {treatment_plan_id}: {e}")
-        raise
+    return (
+        settings.OUTPUT_DIR
+        / "shapefile"
+        / f"treatment_plan_{treatment_plan_id}"
+        / f"export_{treatment_plan_id}.zip"
+    )
+
 
 def generate_shapefile_for_treatment_plan(treatment_plan):
     """
@@ -578,15 +654,17 @@ def generate_shapefile_for_treatment_plan(treatment_plan):
     """
     try:
         # Log start of generation
-        log.info(f"Starting shapefile generation for Treatment Plan {treatment_plan.id}")
+        log.info(
+            f"Starting shapefile generation for Treatment Plan {treatment_plan.id}"
+        )
 
         # Fetch data using raw SQL
         data = fetch_treatment_plan_data(treatment_plan.id)
         if not data:
             raise ValueError(f"No stands found for Treatment Plan {treatment_plan.id}.")
 
-        # Define schema
-        schema = define_shapefile_schema()
+        # Dynamically define schema
+        schema = get_schema(data)
 
         # Prepare shapefile path
         shapefile_path = generate_shapefile_path(treatment_plan.id)
@@ -594,29 +672,54 @@ def generate_shapefile_for_treatment_plan(treatment_plan):
         # Write shapefile directly to a zipped archive
         with fiona.open(
             f"zip://{shapefile_path}",
-            mode='w',
-            driver='ESRI Shapefile',
-            crs='EPSG:3857',
+            mode="w",
+            driver="ESRI Shapefile",
+            crs="EPSG:4269",
             schema=schema,
         ) as shp:
             for record in data:
                 try:
                     # Separate geometry and properties
-                    geom = wkt.loads(record['wkt_geom'])
-                    properties = {key: value for key, value in record.items() if key != 'wkt_geom'}
+                    geom = wkt.loads(record["wkt_geom"])
+                    properties = {
+                        key: value for key, value in record.items() if key != "wkt_geom"
+                    }
 
-                    shp.write({
-                        'geometry': shapely.geometry.mapping(geom),  # Correct geometry mapping
-                        'properties': properties,
-                    })
+                    shp.write(
+                        {
+                            "geometry": shapely.geometry.mapping(
+                                geom
+                            ),  # Correct geometry mapping
+                            "properties": properties,
+                        }
+                    )
                 except Exception as e:
-                    log.error(f"Error processing record {record.get('id', 'unknown')} for Treatment Plan {treatment_plan.id}: {e}")
+                    log.error(
+                        f"Error processing record {record.get('id', 'unknown')} for Treatment Plan {treatment_plan.id}: {e}"
+                    )
                     raise  # Stop processing on error
 
-        log.info(f"Shapefile generation completed for Treatment Plan {treatment_plan.id}")
+        log.info(
+            f"Shapefile generation completed for Treatment Plan {treatment_plan.id}"
+        )
         return shapefile_path
 
     except Exception as e:
-        log.error(f"Error generating shapefile for Treatment Plan {treatment_plan.id}: {e}")
+        log.error(
+            f"Error generating shapefile for Treatment Plan {treatment_plan.id}: {e}"
+        )
         raise
 
+
+"""
+def get_schema(geojson: Dict[str, Any]) -> Dict[str, Any]:
+    features = geojson.get("features", [])
+    first = features[0]
+    field_type_pairs = list(map(map_property, first.get("properties", {}).items()))
+    schema = {
+        "geometry": first.get("geometry", {}).get("type", "MultiPolygon")
+        or "MultiPolygon",
+        "properties": field_type_pairs,
+    }
+    return schema
+"""
