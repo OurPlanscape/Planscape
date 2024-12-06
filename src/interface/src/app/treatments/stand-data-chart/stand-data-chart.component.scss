@@ -1,17 +1,39 @@
 @import "colors";
+@import "mixins";
 
 :host {
   display: flex;
   flex-direction: column;
-  height: calc(100% - 100px);
+  height: 100%;
+  box-sizing: border-box;
 }
 
-canvas {
+.chart {
   flex: 1;
-  max-height: 80vh;
+
+  canvas {
+    padding-bottom: 20px;
+  }
 }
 
 .title {
   padding: 24px 24px 0;
   color: $color-text-gray;
+}
+
+.empty-state {
+  @include regular-paragraph();
+  color: $color-md-gray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 0 80px;
+
+  sg-treatment-type-icon {
+    position: relative;
+    top: 6px;
+  }
 }

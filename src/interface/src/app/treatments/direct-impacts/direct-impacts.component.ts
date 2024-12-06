@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
@@ -18,13 +18,13 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { ButtonComponent, PanelComponent } from '@styleguide';
+import { ButtonComponent, ModalComponent, PanelComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
-import { MetricFiltersComponent } from './metric-filters/metric-filters.component';
+import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
 import { MapMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
@@ -33,6 +33,8 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -59,8 +61,12 @@ import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-i
     JsonPipe,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
+    ExpandedStandDataChartComponent,
+    ModalComponent,
+    MatDialogModule,
   ],
   providers: [
+    DirectImpactsStateService,
     TreatmentsState,
     SelectedStandsState,
     TreatedStandsState,
@@ -75,7 +81,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private router: Router,
-    private directImpactsStateService: DirectImpactsStateService
+    private directImpactsStateService: DirectImpactsStateService,
+    private dialog: MatDialog,
+    private injector: Injector // Angular's injector for passing shared services
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.treatmentsState
@@ -101,7 +109,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
-  activeStand$ = this.directImpactsStateService.activeStand$;
 
   showTreatmentPrescription = false;
 
@@ -128,5 +135,11 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Unregister the plugin when the component is destroyed
     Chart.unregister(ChartDataLabels);
+  }
+
+  expandStandChart() {
+    this.dialog.open(ExpandedStandDataChartComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
   }
 }
