@@ -15,3 +15,5 @@ export * from './debounce-input/debounce-input.component';
 export * from './treatment-stands-progress-bar/treatment-stands-progress-bar.component';
 export * from './notes-sidebar/notes-sidebar.component';
 export * from './panel/panel.component';
+export * from './treatment-type-icon/treatment-type-icon.component';
+export * from './sequence-icon/sequence-icon.component';

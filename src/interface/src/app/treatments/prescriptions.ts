@@ -157,6 +157,32 @@ export function getTreatedStandsTotal(prescriptions: Prescription[]) {
   }, 0);
 }
 
+export function nameForTypeAndAction(
+  type: string,
+  action: string
+): string | null {
+  if (type === 'SINGLE') {
+    let title = action as PrescriptionSingleAction;
+    if (title !== null) {
+      return PRESCRIPTIONS.SINGLE[title];
+    }
+  } else if (type === 'SEQUENCE') {
+    let title = action as PrescriptionSequenceAction;
+    if (title !== null) {
+      return PRESCRIPTIONS.SEQUENCE[title].name;
+    }
+  }
+  return null;
+}
+
+export function nameForAction(action: string): string {
+  return (
+    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
+    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].name ||
+    ''
+  );
+}
+
 export function descriptionForAction(action: string): string {
   return (
     PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||

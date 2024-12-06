@@ -1,6 +1,6 @@
 @import 'variables';
-@import "colors";
-@import "mixins";
+@import 'colors';
+@import 'mixins';
 
 .nav-bar {
   display: flex;
@@ -17,11 +17,9 @@
   }
 }
 
-
 .back-button {
   line-height: 0; // override line height from .mat-icon-button
 }
-
 
 .actions {
   margin-left: auto;
@@ -29,7 +27,6 @@
   align-items: center;
   padding-right: 10px;
 }
-
 
 .tooltip {
   padding: 20px;
@@ -45,9 +42,10 @@
     color: $color-standard-blue;
     text-decoration: none;
 
-    &:hover, &:active {
+    &:hover,
+    &:active {
       text-decoration: underline;
-      color: $color-main-blue
+      color: $color-main-blue;
     }
   }
 }
