@@ -102,14 +102,22 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
     this.hovering = false;
   }
 
+  saveText() {
+    if (this.textValue !== this.originalText) {
+      this.currentMode$.next('SAVING');
+      this.textValueUpdatedSubject.next(this.textValue);
+    }
+    this.currentMode$.next('INITIAL');
+  }
+
   onBlur() {
-    //if the text is empty, we revert to the original text
     if (this.textValue === '') {
       this.textValue = this.originalText;
-      this.currentMode$.next('INITIAL');
     } else if (this.textValue !== this.originalText) {
-      this.textValueUpdated.emit(this.textValue);
+      this.currentMode$.next('SAVING');
+      this.textValueUpdatedSubject.next(this.textValue);
     }
+    this.currentMode$.next('INITIAL');
   }
 
   ngOnDestroy() {
@@ -118,9 +126,5 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
 
   setToEditMode() {
     this.currentMode$.next('EDIT');
-  }
-
-  clear() {
-    this.textValue = '';
   }
 }
