@@ -5,10 +5,10 @@ import {
   JsonPipe,
   NgClass,
   NgIf,
+  NgFor,
   NgStyle,
 } from '@angular/common';
 import { SharedModule } from '@shared';
-
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, switchMap } from 'rxjs';
@@ -18,7 +18,12 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { ButtonComponent, ModalComponent, PanelComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  PanelComponent,
+  PanelIconButton,
+  ModalComponent,
+} from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
@@ -33,8 +38,13 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
+import { TreatmentProjectArea, Extent } from '@types';
+import { MatSelectModule } from '@angular/material/select';
+import { Point } from 'geojson';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -46,7 +56,9 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     DirectImpactsSyncedMapsComponent,
     PanelComponent,
     MatIconModule,
+    MatSelectModule,
     NgIf,
+    NgFor,
     MatSlideToggleModule,
     ButtonComponent,
     DatePipe,
@@ -61,9 +73,10 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
     JsonPipe,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
+    ChangeOverTimeChartComponent,
     ExpandedStandDataChartComponent,
+    ExpandedChangeOverTimeChartComponent,
     ModalComponent,
-    MatDialogModule,
   ],
   providers: [
     DirectImpactsStateService,
@@ -109,8 +122,51 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
+  activeStand$ = this.directImpactsStateService.activeStand$;
 
   showTreatmentPrescription = false;
+  changeChartButtons: PanelIconButton[] = [
+    { icon: 'open_in_full', actionName: 'expand' },
+  ];
+  //TODO: can we move these to state service?
+  // REMOVE:
+  sampleExtent: Extent = [1, 2, 3, 4];
+  samplePoint: Point = { type: 'Point', coordinates: [] };
+  availableProjectAreas: TreatmentProjectArea[] = [
+    {
+      project_area_id: 20,
+      project_area_name: 'Project Area 1',
+      total_stand_count: 1,
+      prescriptions: [],
+      extent: this.sampleExtent,
+      centroid: this.samplePoint,
+    },
+    {
+      project_area_id: 20,
+      project_area_name: 'Project Area 2',
+      total_stand_count: 1,
+      prescriptions: [],
+      extent: this.sampleExtent,
+      centroid: this.samplePoint,
+    },
+    {
+      project_area_id: 20,
+      project_area_name: 'Project Area 3',
+      total_stand_count: 1,
+      prescriptions: [],
+      extent: this.sampleExtent,
+      centroid: this.samplePoint,
+    },
+    {
+      project_area_id: 20,
+      project_area_name: 'Project Area 4',
+      total_stand_count: 1,
+      prescriptions: [],
+      extent: this.sampleExtent,
+      centroid: this.samplePoint,
+    },
+  ];
+  selectedChartProjectArea = { name: 1, value: 'ok' };
 
   standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
     map((activeStand) => {
@@ -123,6 +179,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   activateMetric(data: MapMetric) {
     this.directImpactsStateService.activeMetric$.next(data);
+    this.directImpactsStateService.getChangesOverTimeData();
   }
 
   getValues(activeStand: MapGeoJSONFeature) {}
@@ -135,6 +192,18 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Unregister the plugin when the component is destroyed
     Chart.unregister(ChartDataLabels);
+  }
+
+  setChartProjectArea(e: Event) {
+    this.directImpactsStateService.setProjectAreaForChanges(
+      this.selectedChartProjectArea.value
+    );
+  }
+
+  expandChangeChart() {
+    this.dialog.open(ExpandedChangeOverTimeChartComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
   }
 
   expandStandChart() {

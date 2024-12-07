@@ -1,0 +1,24 @@
+@import "mixins";
+
+.expanded-stand-data {
+  padding: 20px;
+  height: 70vh;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+
+::ng-deep {
+  sg-modal.stand-data-modal {
+    .header {
+      @include h5();
+      height: 39px;
+    }
+  }
+}
+
