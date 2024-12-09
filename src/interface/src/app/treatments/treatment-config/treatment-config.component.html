@@ -42,6 +42,7 @@
       *ngIf="showApplyTreatments$ | async"></app-apply-treatment>
 
     <app-treatment-legend
-      *ngIf="(showTreatmentLegend$ | async) || false"></app-treatment-legend>
+      *ngIf="(showTreatmentLegend$ | async) || false"
+      (handleCloseLegend)="closeLegend()"></app-treatment-legend>
   </div>
 </section>
