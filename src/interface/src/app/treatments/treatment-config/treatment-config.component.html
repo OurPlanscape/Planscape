@@ -27,14 +27,25 @@
           class="bottom-toggle"
           >View Treatment Layers
         </mat-slide-toggle>
-        <button
-          sg-button
-          variant="primary"
-          class="footer-primary"
-          *ngIf="canRunTreatment$ | async"
-          (click)="showReviewDialog()">
-          Run Treatment Analysis
-        </button>
+        <div class="right-footer-right-box">
+          <button
+            sg-button
+            variant="text"
+            icon="ios_share"
+            [outlined]="true"
+            (click)="createPDF()"
+            data-id="print">
+            Export Plan to PDF
+          </button>
+          <button
+            sg-button
+            variant="primary"
+            class="footer-primary"
+            *ngIf="canRunTreatment$ | async"
+            (click)="showReviewDialog()">
+            Run Treatment Analysis
+          </button>
+        </div>
       </ng-template>
     </section>
 
