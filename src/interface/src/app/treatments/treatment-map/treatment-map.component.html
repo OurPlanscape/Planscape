@@ -23,6 +23,15 @@
     *ngIf="showMapControls$ | async"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
+  <app-action-button
+    *ngIf="
+      (standSelectionEnabled$ | async) === false &&
+      (showTreatmentStands$ | async) === true &&
+      (showLegend$ | async) === false
+    "
+    (clickedActionButton)="openTreatmentLegend()">
+  </app-action-button>
+
   <app-planning-area-layer
     *ngIf="planningAreaGeometry$ | async as geometry"
     [polygonGeometry]="geometry">

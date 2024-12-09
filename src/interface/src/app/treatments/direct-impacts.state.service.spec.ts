@@ -6,7 +6,9 @@ describe('DirectImpactsStateService', () => {
   let service: DirectImpactsStateService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [DirectImpactsStateService],
+    });
     service = TestBed.inject(DirectImpactsStateService);
   });
 
