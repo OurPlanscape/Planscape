@@ -44,18 +44,13 @@
         <div panelTitle>Chart 1</div>
         <div>the chart</div>
       </sg-panel>
-      <sg-panel class="chart-2" [paddedContent]="false">
+      <sg-panel
+        class="chart-2"
+        [paddedContent]="false"
+        [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
+        (clickedButton)="expandStandChart()">
         <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
-        <div *ngIf="(activeStand$ | async) === null" class="empty-state">
-          <div>
-            Select a
-            <sg-treatment-type-icon [treatment]="null"></sg-treatment-type-icon>
-            (hexagon) from the map to see changes over time displayed in the
-            graph
-          </div>
-        </div>
-        <app-stand-data-chart
-          *ngIf="activeStand$ | async"></app-stand-data-chart>
+        <app-stand-data-chart></app-stand-data-chart>
       </sg-panel>
 
       <sg-panel

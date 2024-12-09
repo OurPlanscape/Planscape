@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, Injector } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  Injector,
+  ViewChild,
+} from '@angular/core';
+
 import {
   ActivatedRoute,
   NavigationEnd,
@@ -15,7 +21,7 @@ import { catchError, combineLatest, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { FeaturesModule } from '../../features/features.module';
 import { SharedModule } from '@shared';
 import { ButtonComponent } from '@styleguide';
@@ -29,6 +35,7 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
 import { MatDialog } from '@angular/material/dialog';
 import { ReviewTreatmentPlanDialogComponent } from '../review-treatment-plan-dialog/review-treatment-plan-dialog.component';
 import { getMergedRouteData } from '../treatments-routing-data';
+import { TreatmentToPDFService } from '../treatment-to-pdf.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 import { canRunTreatmentAnalysis } from '../../plan/permissions';
@@ -43,6 +50,7 @@ import { Plan } from '@types';
     TreatmentMapComponent,
     AsyncPipe,
     NgIf,
+    NgFor,
     FeaturesModule,
     SharedModule,
     ButtonComponent,
@@ -62,6 +70,7 @@ import { Plan } from '@types';
     SelectedStandsState,
     TreatedStandsState,
     MapConfigState,
+    TreatmentToPDFService,
   ],
   templateUrl: './treatment-config.component.html',
   styleUrl: './treatment-config.component.scss',
@@ -69,6 +78,7 @@ import { Plan } from '@types';
 })
 export class TreatmentConfigComponent {
   projectAreaId$ = this.treatmentsState.projectAreaId$;
+  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
   showApplyTreatments$ = this.treatmentsState.showApplyTreatmentsDialog$;
@@ -76,10 +86,14 @@ export class TreatmentConfigComponent {
   showTreatmentLegend$ = combineLatest([
     this.treatmentsState.projectAreaId$.pipe(map((activeArea) => !!activeArea)),
     this.showTreatmentLayer$,
+    this.mapConfig.showTreatmentLegend$,
   ]).pipe(
-    map(([activeArea, showTreatmentLayer]) => !activeArea && showTreatmentLayer)
+    map(
+      ([activeArea, showTreatmentLayer, shouldShowLegend]) =>
+        !activeArea && showTreatmentLayer && shouldShowLegend
+    )
   );
-
+  @ViewChild(TreatmentMapComponent) mapElement: any;
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
 
   loading = true;
@@ -90,6 +104,7 @@ export class TreatmentConfigComponent {
     private route: ActivatedRoute,
     private router: Router,
     private dialog: MatDialog,
+    private pdfService: TreatmentToPDFService,
     private injector: Injector // Angular's injector for passing shared services
   ) {
     this.router.events
@@ -118,6 +133,19 @@ export class TreatmentConfigComponent {
       });
   }
 
+  getMapAttributions() {
+    const attrElement = document.querySelector('.maplibregl-ctrl-attrib-inner');
+    return Array.from(attrElement?.childNodes || [])
+      .map((node) => node.textContent?.trim())
+      .filter((text) => text) // Remove any empty strings
+      .join(' ');
+  }
+
+  createPDF() {
+    const mapAttributions = this.getMapAttributions();
+    this.pdfService.createPDF(this.mapElement.mapLibreMap, mapAttributions);
+  }
+
   canRunTreatment$ = this.treatmentsState.planningArea$.pipe(
     map((plan: Plan | null) => (plan ? canRunTreatmentAnalysis(plan) : false))
   );
@@ -142,5 +170,9 @@ export class TreatmentConfigComponent {
     this.dialog.open(ReviewTreatmentPlanDialogComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });
+  }
+
+  closeLegend() {
+    this.mapConfig.setTreatmentLegendVisible(false);
   }
 }

@@ -1,18 +1,20 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
-import { MetricSelectorComponent } from './metric-selector/metric-selector.component';
+
 import { NgFor } from '@angular/common';
+
+import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
   MapMetric,
   MapMetricSlot,
   Metric,
   METRICS,
   SLOT_COLORS,
-} from '../../metrics';
-import { DirectImpactsStateService } from '../../direct-impacts.state.service';
+} from '../metrics';
 import { FilterDropdownComponent } from 'src/styleguide';
-import { TreatmentsState } from '../../treatments.state';
-import { PRESCRIPTIONS, SequenceAttributes } from '../../prescriptions';
+import { TreatmentsState } from '../treatments.state';
 import { filter, take } from 'rxjs/operators';
+import { PRESCRIPTIONS, SequenceAttributes } from '../prescriptions';
 
 @Component({
   selector: 'app-metric-filters',

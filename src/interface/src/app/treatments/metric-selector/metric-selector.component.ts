@@ -1,17 +1,10 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  ViewEncapsulation,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Metric } from '../../../metrics';
-import { DirectImpactsStateService } from '../../../direct-impacts.state.service';
+import { Metric } from '../metrics';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 
 @Component({
   selector: 'app-metric-selector',
@@ -19,7 +12,6 @@ import { DirectImpactsStateService } from '../../../direct-impacts.state.service
   imports: [CommonModule, FormsModule, MatIconModule, MatSelectModule],
   templateUrl: './metric-selector.component.html',
   styleUrl: './metric-selector.component.scss',
-  encapsulation: ViewEncapsulation.None,
 })
 export class MetricSelectorComponent implements OnInit {
   @Input() label!: string;
