@@ -1,8 +1,12 @@
-@import "mixins";
+@import 'mixins';
+
+:host {
+  overflow: hidden;
+}
 
 .expanded-stand-data {
   padding: 20px;
-  height: 70vh;
+  height: 100%;
 }
 
 .header-content {
@@ -12,6 +16,14 @@
   align-items: center;
 }
 
+.left-title-box {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: baseline;
+  height: 38px;
+}
 
 ::ng-deep {
   sg-modal.stand-data-modal {
@@ -21,4 +33,3 @@
     }
   }
 }
-

@@ -39,12 +39,15 @@ import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
-import { TreatmentProjectArea, Extent } from '@types';
 import { MatSelectModule } from '@angular/material/select';
-import { Point } from 'geojson';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
 import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
+
+export interface ImpactsProjectArea {
+  project_area_id: number;
+  project_area_name: string;
+}
 
 @Component({
   selector: 'app-direct-impacts',
@@ -123,50 +126,17 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
+  selectedChartProjectArea: ImpactsProjectArea = {
+    project_area_id: 1,
+    project_area_name: 'ok',
+  };
 
   showTreatmentPrescription = false;
   changeChartButtons: PanelIconButton[] = [
     { icon: 'open_in_full', actionName: 'expand' },
   ];
-  //TODO: can we move these to state service?
-  // REMOVE:
-  sampleExtent: Extent = [1, 2, 3, 4];
-  samplePoint: Point = { type: 'Point', coordinates: [] };
-  availableProjectAreas: TreatmentProjectArea[] = [
-    {
-      project_area_id: 20,
-      project_area_name: 'Project Area 1',
-      total_stand_count: 1,
-      prescriptions: [],
-      extent: this.sampleExtent,
-      centroid: this.samplePoint,
-    },
-    {
-      project_area_id: 20,
-      project_area_name: 'Project Area 2',
-      total_stand_count: 1,
-      prescriptions: [],
-      extent: this.sampleExtent,
-      centroid: this.samplePoint,
-    },
-    {
-      project_area_id: 20,
-      project_area_name: 'Project Area 3',
-      total_stand_count: 1,
-      prescriptions: [],
-      extent: this.sampleExtent,
-      centroid: this.samplePoint,
-    },
-    {
-      project_area_id: 20,
-      project_area_name: 'Project Area 4',
-      total_stand_count: 1,
-      prescriptions: [],
-      extent: this.sampleExtent,
-      centroid: this.samplePoint,
-    },
-  ];
-  selectedChartProjectArea = { name: 1, value: 'ok' };
+  availableProjectAreas$ =
+    this.directImpactsStateService.availableProjectAreas$;
 
   standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
     map((activeStand) => {
@@ -194,9 +164,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     Chart.unregister(ChartDataLabels);
   }
 
-  setChartProjectArea(e: Event) {
+  setChartProjectArea() {
     this.directImpactsStateService.setProjectAreaForChanges(
-      this.selectedChartProjectArea.value
+      this.selectedChartProjectArea
     );
   }
 

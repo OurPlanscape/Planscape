@@ -3,7 +3,7 @@ import { ChartConfiguration } from 'chart.js';
 import { AsyncPipe } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map, Observable, of } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { SLOT_COLORS } from '../metrics';
 
 const baseFont = {
@@ -25,37 +25,7 @@ export class ChangeOverTimeChartComponent {
 
   @Input() projectAreaSelection = null;
 
-  //TODO: remove this example data
-  projectAreaChangeData$: Observable<any[][]> = of([
-    [
-      { id: 'metric1', value: 14.32432 },
-      { id: 'metric1', value: 24.32432 },
-      { id: 'metric1', value: 34.32432 },
-      { id: 'metric1', value: 44.32432 },
-      { id: 'metric1', value: 54.32432 },
-    ],
-    [
-      { id: 'metric2', value: 24.32432 },
-      { id: 'metric2', value: -24.32432 },
-      { id: 'metric2', value: 34.32432 },
-      { id: 'metric2', value: 34.32432 },
-      { id: 'metric2', value: 44.32432 },
-    ],
-    [
-      { id: 'metric3', value: -14.32432 },
-      { id: 'metric3', value: 34.32432 },
-      { id: 'metric3', value: 54.32432 },
-      { id: 'metric3', value: 74.32432 },
-      { id: 'metric3', value: 94.32432 },
-    ],
-    [
-      { id: 'metric4', value: 24.32432 },
-      { id: 'metric4', value: 3.32432 },
-      { id: 'metric4', value: 14.32432 },
-      { id: 'metric4', value: 64.32432 },
-      { id: 'metric4', value: 34.32432 },
-    ],
-  ]);
+  projectAreaChangeData$ = this.directImpactsStateService.changeOverTimeData$;
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
@@ -139,23 +109,23 @@ export class ChangeOverTimeChartComponent {
         labels: [0, 5, 10, 15, 20],
         datasets: [
           {
-            label: data[0][0].id,
-            data: data[0].map((d) => d.value),
+            label: data[0][0].variable,
+            data: data[0].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['blue'],
           },
           {
-            label: 'Metric 2',
-            data: data[1].map((d) => d.value),
+            label: data[0][1].variable,
+            data: data[1].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['purple'],
           },
           {
-            label: 'Metric 3',
-            data: data[2].map((d) => d.value),
+            label: data[0][2].variable,
+            data: data[2].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['orange'],
           },
           {
-            label: 'Metric 4',
-            data: data[3].map((d) => d.value),
+            label: data[0][3].variable,
+            data: data[3].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['green'],
           },
         ],

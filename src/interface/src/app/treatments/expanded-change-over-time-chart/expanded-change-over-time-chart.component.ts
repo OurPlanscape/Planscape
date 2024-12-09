@@ -7,6 +7,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { FormsModule } from '@angular/forms';
+import { ImpactsProjectArea } from '../direct-impacts/direct-impacts.component';
 
 @Component({
   selector: 'app-expanded-change-over-time-chart',
@@ -31,12 +32,15 @@ export class ExpandedChangeOverTimeChartComponent {
     public dialogRef: MatDialogRef<ExpandedChangeOverTimeChartComponent>
   ) {}
 
-  // TODO: Remove example data
-  selectedChartProjectArea = { id: '5', name: 'replaceme' };
+  // TODO: Remove this example data
+  selectedChartProjectArea: ImpactsProjectArea = {
+    project_area_id: 5,
+    project_area_name: 'replaceme',
+  };
 
   setChartProjectArea() {
     this.directImpactsStateService.setProjectAreaForChanges(
-      this.selectedChartProjectArea.id
+      this.selectedChartProjectArea
     );
   }
 

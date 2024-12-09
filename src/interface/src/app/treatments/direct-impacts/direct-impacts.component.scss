@@ -52,14 +52,11 @@
   height: 38px;
 }
 
-::ng-deep .mat-mdc-text-field-wrapper {
-  height: 38px;
-}
-
-::ng-deep .mat-mdc-text-field-wrapper,
+::ng-deep .changes-chart-select .mat-mdc-text-field-wrapper,
 .mat-mdc-form-field-flex {
   height: 38px;
 }
+
 ::ng-deep
   .mat-mdc-text-field-wrapper.mdc-text-field--outlined
   .mat-mdc-form-field-infix {
@@ -175,4 +172,3 @@
     top: 6px;
   }
 }
-
