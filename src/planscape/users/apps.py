@@ -7,7 +7,7 @@ log = logging.getLogger(__name__)
 
 def log_login_failure(sender, credentials, request, **kwargs):
     email = credentials["email"]
-    log.error(
+    log.warning(
         "Failed to login: %s via %s",
         email,
         request,

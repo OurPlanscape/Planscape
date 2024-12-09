@@ -9,6 +9,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   switchMap,
   tap,
 } from 'rxjs';
@@ -72,8 +73,10 @@ export class TreatmentsState {
   );
 
   public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
+    distinctUntilChanged(),
     filter((id): id is number => !!id),
-    switchMap((id) => this.planStateService.getPlan(id.toString()))
+    switchMap((id) => this.planStateService.getPlan(id.toString())),
+    shareReplay(1)
   );
 
   breadcrumbs$ = combineLatest([
@@ -292,7 +295,7 @@ export class TreatmentsState {
       );
   }
 
-  private selectProjectArea(projectAreaId: number) {
+  private selectProjectArea(projectAreaId: number, setStands = false) {
     const summary = this._summary$.value;
 
     if (!summary) {
@@ -308,7 +311,9 @@ export class TreatmentsState {
     this._projectAreaId$.next(projectAreaId);
     this.mapConfigState.updateShowTreatmentStands(true);
     this.mapConfigState.updateMapCenter(projectArea?.extent);
-    this.setTreatedStandsFromSummary([projectArea]);
+    if (setStands) {
+      this.setTreatedStandsFromSummary([projectArea]);
+    }
   }
 
   getCurrentSummary() {
