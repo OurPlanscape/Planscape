@@ -24,8 +24,9 @@
   }
 
   .field-label {
+    @include standard-label();
     height: 28px;
-    color: $color-dark-gray;
+    color: black;
     flex-direction: row;
     display: flex;
     justify-content: space-between;
