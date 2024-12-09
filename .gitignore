@@ -187,3 +187,5 @@ static/
 compiled-static/
 
 .planconfig
+
+*:Zone.Identifier
