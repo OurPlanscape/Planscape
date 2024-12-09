@@ -535,6 +535,7 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
                     "variable",
                     "year",
                     "aggregation",
+                    "action",
                 ],
                 name="treatment_result_unique_constraint",
             )
