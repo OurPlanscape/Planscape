@@ -81,7 +81,6 @@ export class DirectImpactsStateService {
   }
 
   getChangesOverTimeData() {
-    console.log('fetching new data...');
     //TODO: send selectedProjectArea and active Metrics to backend,
     // then collect chart data (and ensure it's sorted by year) to a state variable here
   }
