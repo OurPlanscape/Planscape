@@ -248,11 +248,11 @@ def to_treatment_result(
         variable=variable,
         aggregation=result.get("aggregation"),
         year=year,
-        action=result.get("action"),
         defaults={
             "value": result.get("value"),
             "baseline": result.get("baseline"),
             "delta": result.get("delta"),
+            "action": result.get("action"),
         },
     )
     return instance
