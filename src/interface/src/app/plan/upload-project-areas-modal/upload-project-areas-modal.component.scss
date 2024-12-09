@@ -26,7 +26,7 @@
   .field-label {
     @include standard-label();
     height: 28px;
-    color: black;
+    color: $color-black;
     flex-direction: row;
     display: flex;
     justify-content: space-between;
