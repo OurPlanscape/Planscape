@@ -127,7 +127,7 @@ export class MapStandsTxResultComponent implements OnInit {
             'interpolate',
             ['linear'],
             ['get', this.propertyName],
-            ...this.getPallete(slot),
+            ...this.getPalette(slot),
           ],
         ],
       ] as DataDrivenPropertyValueSpecification<ColorSpecification>,
@@ -135,7 +135,7 @@ export class MapStandsTxResultComponent implements OnInit {
     };
   }
 
-  private getPallete(slot: MapMetricSlot) {
+  private getPalette(slot: MapMetricSlot) {
     const palette = SLOT_PALETTES[slot];
     return [
       -1,
