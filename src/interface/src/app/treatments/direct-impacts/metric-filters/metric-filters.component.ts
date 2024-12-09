@@ -9,18 +9,31 @@ import {
   SLOT_COLORS,
 } from '../../metrics';
 import { DirectImpactsStateService } from '../../direct-impacts.state.service';
+import { FilterDropdownComponent } from 'src/styleguide';
+import { TreatmentsState } from '../../treatments.state';
+import { PRESCRIPTIONS, SequenceAttributes } from '../../prescriptions';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-metric-filters',
   standalone: true,
-  imports: [NgFor, MetricSelectorComponent, MetricSelectorComponent],
+  imports: [
+    NgFor,
+    MetricSelectorComponent,
+    MetricSelectorComponent,
+    FilterDropdownComponent,
+  ],
   templateUrl: './metric-filters.component.html',
   styleUrl: './metric-filters.component.scss',
 })
 export class MetricFiltersComponent implements OnInit {
   @Output() metricSelected = new EventEmitter<MapMetric>();
+  @Output() treatmentTypeSelected = new EventEmitter<string[]>();
 
-  constructor(private directImpactsStateService: DirectImpactsStateService) {}
+  constructor(
+    private directImpactsStateService: DirectImpactsStateService,
+    private treatmentState: TreatmentsState
+  ) {}
 
   initialOptions: Metric[] = METRICS;
 
@@ -45,9 +58,16 @@ export class MetricFiltersComponent implements OnInit {
     this.initialOptions[3].id,
   ];
 
+  treatmentTypeOptions: { category: string; options: string[] }[] = [
+    { category: 'Single Treatment', options: [] },
+    { category: 'Sequenced Treatment', options: [] },
+  ];
+
   ngOnInit(): void {
     // Updating every list based on the default selected values
     this.updateDropdownOptions(null);
+    // Getting the treatment types
+    this.getTreatmentTypes();
   }
 
   optionSelected(
@@ -86,5 +106,79 @@ export class MetricFiltersComponent implements OnInit {
 
   activateMetric(metric: Metric, slot: MapMetricSlot): void {
     this.metricSelected.emit({ metric, slot });
+  }
+
+  getTreatmentTypes() {
+    const options = [
+      { category: 'Single Treatment', options: [] },
+      { category: 'Sequenced Treatment', options: [] },
+    ];
+
+    this.treatmentState.summary$
+      .pipe(
+        filter((summary) => summary !== null),
+        take(1)
+      )
+      .subscribe((summary) => {
+        if (!summary?.project_areas) {
+          this.treatmentTypeOptions = options;
+          return;
+        }
+
+        summary.project_areas.forEach((project_area) => {
+          project_area.prescriptions.forEach((prescription) => {
+            this.addTreatmentOption(
+              prescription,
+              options,
+              PRESCRIPTIONS.SINGLE,
+              PRESCRIPTIONS.SEQUENCE
+            );
+          });
+        });
+
+        this.treatmentTypeOptions = options;
+      });
+  }
+
+  onConfirmedSelection(selection: any) {
+    this.directImpactsStateService.filteredTreatmentTypes$.next(
+      this.processTreatmentTypeSelection(selection)
+    );
+  }
+
+  private addTreatmentOption(
+    prescription: any,
+    options: { category: string; options: any[] }[],
+    singleActions: Record<string, string>,
+    sequencedActions: Record<string, SequenceAttributes>
+  ) {
+    if (singleActions[prescription.action]) {
+      options[0].options.push(singleActions[prescription.action]);
+    } else if (sequencedActions[prescription.action]) {
+      options[1].options.push(...sequencedActions[prescription.action].details);
+    }
+  }
+
+  processTreatmentTypeSelection(selection: string[]): string[] {
+    if (!selection || selection.length === 0) {
+      return [];
+    }
+
+    const findSingleKey = (option: string): string | undefined => {
+      return Object.entries(PRESCRIPTIONS.SINGLE).find(
+        ([_, value]) => value === option
+      )?.[0];
+    };
+
+    const findSequencedKey = (option: string): string | undefined => {
+      return Object.entries(PRESCRIPTIONS.SEQUENCE).find(([_, attributes]) =>
+        attributes.details.includes(option)
+      )?.[0];
+    };
+
+    const result = selection
+      .map((option) => findSingleKey(option) || findSequencedKey(option))
+      .filter((key): key is string => !!key);
+    return result;
   }
 }
