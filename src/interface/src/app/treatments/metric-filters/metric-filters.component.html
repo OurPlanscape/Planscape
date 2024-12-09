@@ -9,3 +9,11 @@
       activateMetric($event, metricColors[i].key)
     "></app-metric-selector>
 </div>
+
+<div class="grid-item">
+  <sg-filter-dropdown
+    menuLabel="Treatment Type"
+    [menuItems]="treatmentTypeOptions"
+    [hasSearch]="false"
+    (confirmedSelection)="onConfirmedSelection($event)"></sg-filter-dropdown>
+</div>

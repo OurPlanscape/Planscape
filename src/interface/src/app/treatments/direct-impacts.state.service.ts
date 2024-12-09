@@ -8,6 +8,8 @@ export class DirectImpactsStateService {
     slot: DEFAULT_SLOT,
   });
 
+  public filteredTreatmentTypes$ = new BehaviorSubject<string[]>([]);
+
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
 
