@@ -28,7 +28,6 @@ import { filter, take } from 'rxjs/operators';
 })
 export class MetricFiltersComponent implements OnInit {
   @Output() metricSelected = new EventEmitter<MapMetric>();
-  @Output() treatmentTypeSelected = new EventEmitter<string[]>();
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
