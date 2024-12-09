@@ -64,7 +64,6 @@ export class UploadProjectAreasModalComponent {
   file: File | null = null;
   uploadElementStatus: 'default' | 'failed' | 'running' | 'uploaded' =
     'default';
-  standSize = 'Medium';
   uploadError?: string | null = null;
   alertMessage?: string | null = null;
   geometries: GeoJSON.GeoJSON | null = null;
@@ -78,7 +77,7 @@ export class UploadProjectAreasModalComponent {
   ) {
     this.uploadProjectsForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
-      standSize: this.fb.control(''),
+      standSize: this.fb.control('MEDIUM', [Validators.required]),
     });
   }
 
