@@ -47,7 +47,6 @@ class PlanscapeCommand(BaseCommand):
 
     def get_base_url(self, **kwargs):
         env = kwargs.get("env", "dev") or "dev"
-        breakpoint()
         return f"https://{env}.planscape.org/planscape-backend/"
 
     def get_token(self, email, password, options) -> Optional[str]:
