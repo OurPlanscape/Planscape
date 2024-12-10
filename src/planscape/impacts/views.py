@@ -1,7 +1,12 @@
 import logging
+from django.http import FileResponse
+from django.http import HttpResponse
+from drf_spectacular.utils import extend_schema, OpenApiTypes
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
+from rest_framework.exceptions import NotFound
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework.views import Response
 from impacts.filters import TreatmentPlanFilterSet
@@ -28,6 +33,7 @@ from impacts.services import (
     create_treatment_plan,
     generate_summary,
     upsert_treatment_prescriptions,
+    generate_shapefile_for_treatment_plan
 )
 from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from planscape.serializers import BaseErrorMessageSerializer
@@ -222,6 +228,46 @@ class TreatmentPlanViewSet(
         )
         return Response(data=summary, status=status.HTTP_200_OK)
 
+    @extend_schema(  
+        description="Export shapefiles for the stands in a Treatment Plan.",
+        responses={
+            200: OpenApiTypes.BINARY, # indicates a file is returned
+            404: BaseErrorMessageSerializer, # indicates treatment plan not found
+        },
+    )
+    @action(
+        detail=True, # creates custom endpoint that applies to specific resource (pk)
+        methods=["get"], # sets custom endpoint to only repond to HTTP GET requests 
+        filterset_class=None, # No additional filtering needed
+    )
+    def export_shapefile(self, request, pk=None):
+        """
+        Endpoint to export shapefiles for the specified Treatment Plan.
+        """
+        try:
+            # Fetch the treatment plan by primary key
+            treatment_plan = self.get_object()
+
+            # Generate the shapefile and its path using the service.py functions
+            zip_path = generate_shapefile_for_treatment_plan(treatment_plan)
+
+            # Stream the zip file as a response to GET request
+            return FileResponse(
+                open(zip_path, "rb"),
+                as_attachment=True, 
+                filename=f"treatment_plan_{pk}_shapefiles.zip", 
+                content_type="application/zip" 
+            )
+
+        except TreatmentPlan.DoesNotExist:
+            raise NotFound({"detail": "Treatment Plan not found."})
+        except Exception as e:
+            log.error(f"Error exporting shapefile for Treatment Plan {pk}: {e}")
+            return Response(
+                {"detail": "An error occurred while exporting shapefiles."},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
 
 @extend_schema_view(
     list=extend_schema(description="List Treatment Prescriptions."),
@@ -240,6 +286,8 @@ class TreatmentPlanViewSet(
         },
     ),
 )
+
+
 class TreatmentPrescriptionViewSet(
     mixins.CreateModelMixin,
     mixins.ListModelMixin,
