@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, Pipe, PipeTransform } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
   LayerComponent,
@@ -8,6 +8,7 @@ import {
 import {
   ColorSpecification,
   DataDrivenPropertyValueSpecification,
+  FilterSpecification,
   LngLat,
   Map as MapLibreMap,
   MapGeoJSONFeature,
@@ -23,6 +24,21 @@ import { TreatmentsState } from '../treatments.state';
 import { filter } from 'rxjs/operators';
 import { descriptionForAction } from '../prescriptions';
 
+@Pipe({
+  name: 'filterByAction',
+  standalone: true,
+})
+export class FilterByActionPipe implements PipeTransform {
+  transform(treatments: string[] | null): FilterSpecification | undefined {
+    if (!treatments || treatments.length === 0) {
+      // No filter applied
+      return undefined; // Explicitly return undefined when there's no filter
+    }
+    // Apply filter based on the "action" property
+    return ['in', 'action', ...treatments] as FilterSpecification;
+  }
+}
+
 @Component({
   selector: 'app-map-stands-tx-result',
   standalone: true,
@@ -32,6 +48,7 @@ import { descriptionForAction } from '../prescriptions';
     VectorSourceComponent,
     PopupComponent,
     NgIf,
+    FilterByActionPipe,
   ],
   templateUrl: './map-stands-tx-result.component.html',
   styleUrl: './map-stands-tx-result.component.scss',
@@ -71,6 +88,8 @@ export class MapStandsTxResultComponent implements OnInit {
   );
 
   activeStand$ = this.directImpactsStateService.activeStand$;
+
+  treatments$ = this.directImpactsStateService.filteredTreatmentTypes$;
 
   activeStandId$ = this.activeStand$.pipe(
     filter((s): s is MapGeoJSONFeature => s !== null),

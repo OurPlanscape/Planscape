@@ -1,6 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
 import { DEFAULT_SLOT, MapMetric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
+import { PrescriptionAction } from './prescriptions';
 
 export class DirectImpactsStateService {
   public activeMetric$ = new BehaviorSubject<MapMetric>({
@@ -8,7 +9,9 @@ export class DirectImpactsStateService {
     slot: DEFAULT_SLOT,
   });
 
-  private _filteredTreatmentTypes$ = new BehaviorSubject<string[]>([]);
+  private _filteredTreatmentTypes$ = new BehaviorSubject<PrescriptionAction[]>(
+    []
+  );
   public filteredTreatmentTypes$ = this._filteredTreatmentTypes$.asObservable();
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
@@ -19,7 +22,7 @@ export class DirectImpactsStateService {
     this._activeStand$.next(standData);
   }
 
-  setFilteredTreatmentTypes(selection: string[]) {
+  setFilteredTreatmentTypes(selection: PrescriptionAction[]) {
     this._filteredTreatmentTypes$.next(selection);
   }
 }
