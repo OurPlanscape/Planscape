@@ -371,6 +371,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "scenario_result",
             "tx_plan_count",
             "bbox",
+            "origin",
         )
         model = Scenario
 

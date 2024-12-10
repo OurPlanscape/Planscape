@@ -173,6 +173,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
     uploaded_geom = validated_data["geometry"]
     scenario = Scenario.objects.create(
+        ## TODO: we need to change some of what is configured here
         name=validated_data["name"],
         planning_area=planning_area,
         user=user,

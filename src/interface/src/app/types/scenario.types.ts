@@ -1,4 +1,5 @@
 export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
+export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
 
 export interface Scenario {
   id: string;
@@ -14,6 +15,7 @@ export interface Scenario {
   created_at?: string;
   max_budget?: number;
   tx_plan_count?: number | undefined;
+  origin?: ORIGIN_TYPE;
 }
 
 /**

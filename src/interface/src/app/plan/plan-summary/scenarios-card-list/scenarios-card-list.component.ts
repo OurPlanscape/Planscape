@@ -53,6 +53,11 @@ export class ScenariosCardListComponent {
   }
 
   handleOpenScenario(row: ScenarioRow): void {
+    if (row.origin === 'USER') {
+      // TODO: we should go directly to the plan
+      return;
+    }
+
     if (
       row.scenario_result &&
       ['SUCCESS', 'FAILURE', 'PANIC'].includes(row.scenario_result.status)
