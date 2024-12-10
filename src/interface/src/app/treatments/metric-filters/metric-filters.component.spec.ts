@@ -4,6 +4,7 @@ import { DEFAULT_SLOT, Metric, METRICS } from '../metrics';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { TreatmentsState } from '../treatments.state';
 
 export const MockMetrics = [
   {
@@ -46,6 +47,9 @@ describe('MetricFiltersComponent', () => {
             metric: METRICS[0],
             slot: DEFAULT_SLOT,
           }),
+        }),
+        MockProvider(TreatmentsState, {
+          summary$: new BehaviorSubject(null),
         }),
       ],
     }).compileComponents();

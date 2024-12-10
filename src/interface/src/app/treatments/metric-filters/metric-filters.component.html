@@ -9,3 +9,12 @@
       activateMetric($event, metricColors[i].key)
     "></app-metric-selector>
 </div>
+
+<div class="grid-item" *ngIf="(treatmentTypeOptions$ | async) !== null">
+  <sg-filter-dropdown
+    menuLabel="Treatment Type"
+    [menuItems]="treatmentTypeOptions$ | async"
+    [hasSearch]="false"
+    displayField="value"
+    (confirmedSelection)="onConfirmedSelection($event)"></sg-filter-dropdown>
+</div>
