@@ -49,7 +49,7 @@ describe('MetricFiltersComponent', () => {
           }),
         }),
         MockProvider(TreatmentsState, {
-          summary$: new BehaviorSubject(null)
+          summary$: new BehaviorSubject(null),
         }),
       ],
     }).compileComponents();
