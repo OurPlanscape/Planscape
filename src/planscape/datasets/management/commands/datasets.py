@@ -34,6 +34,7 @@ class Command(PlanscapeCommand):
             list_url,
             headers=headers,
         )
+        breakpoint()
         data = response.json()
         self.stdout.write(f"Found {data['count']} {self.entity}:")
         pprint(data)

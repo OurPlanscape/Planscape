@@ -47,6 +47,7 @@ class PlanscapeCommand(BaseCommand):
 
     def get_base_url(self, **kwargs):
         env = kwargs.get("env", "dev") or "dev"
+        breakpoint()
         return f"https://{env}.planscape.org/planscape-backend/"
 
     def get_token(self, email, password, options) -> Optional[str]:
@@ -55,7 +56,7 @@ class PlanscapeCommand(BaseCommand):
         data = {"email": email, "password": password}
         response = requests.post(
             login_url,
-            data=data,
+            json=data,
         )
         out_data = response.json()
         return out_data["access"]
@@ -102,7 +103,7 @@ class PlanscapeCommand(BaseCommand):
         if not is_valid:
             self.stderr.write("Invalid options.")
         try:
-            token = self.get_token(email, password, options)
+            token = self.get_token(email, password, cli_options)
         except Exception:
             token = None
 
@@ -110,7 +111,7 @@ class PlanscapeCommand(BaseCommand):
             self.stderr.write("Could not fetch token. Double check your credentials.")
             return
 
-        options = {**cli_options, "token": token}
+        ultimate_options = {**cli_options, "token": token}
 
         subcommand = options.get("func")
         if not subcommand:
@@ -118,4 +119,4 @@ class PlanscapeCommand(BaseCommand):
                 "CLI incorrectly configured. Check your parsers and subparsers!"
             )
             return
-        subcommand(**options)
+        subcommand(**ultimate_options)
