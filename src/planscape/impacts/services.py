@@ -279,14 +279,12 @@ def calculate_impacts(
         year=year,
     )
 
-    aggregations = ImpactVariable.get_aggregations(impact_variable=variable)
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
 
     deltas = calculate_stand_deltas(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
-        aggregations=aggregations,
         action=action,
     )
 
@@ -297,7 +295,6 @@ def calculate_impacts(
                 project_area=project_area,
                 baseline_dict=baseline_dict,
                 action_dict=action_dict,
-                aggregations=aggregations,
             )
         )
 
@@ -325,33 +322,33 @@ def calculate_impacts(
 def calculate_stand_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
-    aggregations: List[ImpactVariableAggregation],
     action: Optional[TreatmentPrescriptionAction] = None,
 ) -> List[Dict[str, Any]]:
     results = []
     for stand_id, baseline in baseline_dict.items():
         action_metric = action_dict.get(stand_id)
         actual_action = action if stand_id in action_dict else None
-        for agg in aggregations:
-            attribute_to_lookup = ImpactVariableAggregation.get_metric_attribute(agg)
-            baseline_value = getattr(baseline, attribute_to_lookup)
-            action_value = (
-                getattr(action_metric, attribute_to_lookup) or baseline_value
-                if action_metric
-                else baseline_value
-            )
+        attribute_to_lookup = ImpactVariableAggregation.get_metric_attribute(
+            ImpactVariableAggregation.MEAN
+        )
+        baseline_value = getattr(baseline, attribute_to_lookup)
+        action_value = (
+            getattr(action_metric, attribute_to_lookup) or baseline_value
+            if action_metric
+            else baseline_value
+        )
 
-            delta = calculate_delta(action_value, baseline_value)
-            results.append(
-                {
-                    "stand_id": stand_id,
-                    "action": actual_action,
-                    "aggregation": agg,
-                    "value": action_value,
-                    "baseline": baseline_value,
-                    "delta": delta,
-                }
-            )
+        delta = calculate_delta(action_value, baseline_value)
+        results.append(
+            {
+                "stand_id": stand_id,
+                "action": actual_action,
+                "aggregation": ImpactVariableAggregation.MEAN,
+                "value": action_value,
+                "baseline": baseline_value,
+                "delta": delta,
+            }
+        )
     return results
 
 
@@ -421,7 +418,6 @@ def calculate_project_area_deltas(
     project_area: ProjectArea,
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
-    aggregations: List[ImpactVariableAggregation],
 ) -> List[Dict[str, Any]]:
     pass
 
@@ -462,31 +458,32 @@ def calculate_project_area_deltas(
 
     action_dict = {k: v for k, v in action_dict.items() if k in stands_in_project_area}
 
-    for agg in aggregations:
-        attribute = ImpactVariableAggregation.get_metric_attribute(agg)
-        # # merges both dicts, keep action dicts if they clash
-        new_action_dict = {**baseline_dict, **action_dict}
-        baseline_sum = sum(
-            [
-                getattr(stand_metric, attribute, 0) or 0
-                for _stand_id, stand_metric in baseline_dict.items()
-            ]
-        )
+    attribute = ImpactVariableAggregation.get_metric_attribute(
+        ImpactVariableAggregation.MEAN
+    )
+    # # merges both dicts, keep action dicts if they clash
+    new_action_dict = {**baseline_dict, **action_dict}
+    baseline_sum = sum(
+        [
+            getattr(stand_metric, attribute, 0) or 0
+            for _stand_id, stand_metric in baseline_dict.items()
+        ]
+    )
 
-        action_sum = sum(
-            [
-                getattr(stand_metric, attribute, 0) or 0
-                for _stand_id, stand_metric in new_action_dict.items()
-            ]
-        )
-        delta = (baseline_sum - action_sum) / (baseline_sum + 1)
-        results.append(
-            {
-                "project_area_id": project_area.id,
-                "aggregation": agg,
-                "baseline": baseline_sum,
-                "value": action_sum,
-                "delta": delta,
-            }
-        )
+    action_sum = sum(
+        [
+            getattr(stand_metric, attribute, 0) or 0
+            for _stand_id, stand_metric in new_action_dict.items()
+        ]
+    )
+    delta = (baseline_sum - action_sum) / (baseline_sum + 1)
+    results.append(
+        {
+            "project_area_id": project_area.id,
+            "aggregation": ImpactVariableAggregation.MEAN,
+            "baseline": baseline_sum,
+            "value": action_sum,
+            "delta": delta,
+        }
+    )
     return results
