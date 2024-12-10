@@ -5,7 +5,6 @@ import { MockProvider, MockProviders } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
-import { PRESCRIPTIONS } from '../prescriptions';
 
 export const MockMetrics = [
   {
@@ -91,39 +90,5 @@ describe('MetricFiltersComponent', () => {
     expect(component.selectedOptions[dropdownIndex]).toEqual(metric.id);
     // updateDropdownOptions should be called with the dropdown index we just selected
     expect(component.updateDropdownOptions).toHaveBeenCalledWith(dropdownIndex);
-  });
-
-  it('should return an empty array when selection is empty', () => {
-    const result = component.processTreatmentTypeSelection([]);
-    expect(result).toEqual([]);
-  });
-
-  it('should map single treatment options correctly', () => {
-    const selection = [
-      PRESCRIPTIONS.SINGLE.HEAVY_MASTICATION,
-      PRESCRIPTIONS.SINGLE.HEAVY_THINNING_BIOMASS,
-    ];
-    const result = component.processTreatmentTypeSelection(selection);
-    expect(result).toEqual(['HEAVY_MASTICATION', 'HEAVY_THINNING_BIOMASS']);
-  });
-
-  it('should map sequence treatment options correctly', () => {
-    const selection = [
-      PRESCRIPTIONS.SEQUENCE.HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE.details[0],
-    ];
-    const result = component.processTreatmentTypeSelection(selection);
-    expect(result).toEqual(['HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE']);
-  });
-
-  it('should map mixed treatment options correctly', () => {
-    const selection = [
-      PRESCRIPTIONS.SINGLE.HEAVY_MASTICATION,
-      PRESCRIPTIONS.SEQUENCE.HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE.details[0],
-    ];
-    const result = component.processTreatmentTypeSelection(selection);
-    expect(result).toEqual([
-      'HEAVY_MASTICATION',
-      'HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE',
-    ]);
   });
 });
