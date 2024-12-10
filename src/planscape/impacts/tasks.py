@@ -122,7 +122,7 @@ def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
         link = urljoin(
             settings.PLANSCAPE_BASE_URL,
             f"plan/{treatment_plan.scenario.planning_area_id}/"
-            f"config/{treatment_plan.scenario.pk}/treatment/{treatment_plan_pk}",
+            f"config/{treatment_plan.scenario.pk}/treatment/{treatment_plan_pk}/impacts",
         )
 
         context = {
