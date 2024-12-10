@@ -16,7 +16,7 @@ def get_datasets_for_filter(request: Optional[Request]) -> "QuerySet[Dataset]":
     return Dataset.objects.all()
 
 
-class AdminDataLayerFilterSet(filters.FilterSet):
+class DataLayerFilterSet(filters.FilterSet):
     dataset = filters.ModelChoiceFilter(
         queryset=get_datasets_for_filter,
         field_name="dataset",

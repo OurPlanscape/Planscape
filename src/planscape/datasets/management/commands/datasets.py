@@ -28,7 +28,7 @@ class Command(PlanscapeCommand):
 
     def list(self, token, **kwargs):
         base_url = self.get_base_url(**kwargs)
-        list_url = base_url + "/v2/datasets"
+        list_url = base_url + "/v2/admin/datasets"
         headers = self.get_headers(token, **kwargs)
         response = requests.get(
             list_url,
@@ -47,7 +47,7 @@ class Command(PlanscapeCommand):
         **kwargs,
     ) -> None:
         base_url = self.get_base_url(**kwargs)
-        url = base_url + "/v2/datasets/"
+        url = base_url + "/v2/admin/datasets/"
         headers = self.get_headers(**kwargs)
         input_data = {
             "name": name,
