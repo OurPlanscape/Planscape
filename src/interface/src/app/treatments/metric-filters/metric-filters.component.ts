@@ -104,7 +104,7 @@ export class MetricFiltersComponent implements OnInit {
     // Updating the dropdowns
     this.updateDropdownOptions(dropdownIndex);
     // setting the metric as active if slot is active
-    if (this.directImpactsStateService.activeMetric$.value.slot === slot) {
+    if (this.directImpactsStateService.isActiveSlot(slot)) {
       this.activateMetric(metric, slot);
     }
   }

@@ -5,6 +5,10 @@ import {
   MatDialog,
   MatDialogRef,
 } from '@angular/material/dialog';
+import { MatRadioButton, MatRadioModule } from '@angular/material/radio';
+import { MatRippleModule } from '@angular/material/core';
+import { MatIconModule } from '@angular/material/icon';
+import { FormsModule } from '@angular/forms';
 
 describe('MapLayerSelectDialogComponent', () => {
   let component: MapLayerSelectDialogComponent;
@@ -32,7 +36,8 @@ describe('MapLayerSelectDialogComponent', () => {
     );
     await TestBed.configureTestingModule({
       // imports: [MapLayerSelectDialogComponent],
-      declarations: [MapLayerSelectDialogComponent],
+      declarations: [MapLayerSelectDialogComponent, MatRadioButton],
+      imports: [MatRippleModule, MatIconModule, MatRadioModule, FormsModule],
       providers: [
         {
           provide: MAT_DIALOG_DATA,

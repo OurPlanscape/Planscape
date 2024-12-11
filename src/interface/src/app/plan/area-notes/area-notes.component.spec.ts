@@ -7,6 +7,10 @@ import { AreaNotesComponent } from './area-notes.component';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { MatDialogModule } from '@angular/material/dialog';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { FormsModule } from '@angular/forms';
+import { MatInputModule } from '@angular/material/input';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('AreaNotesComponent', () => {
   let component: AreaNotesComponent;
@@ -16,7 +20,14 @@ describe('AreaNotesComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       declarations: [AreaNotesComponent],
-      imports: [MatDialogModule, MatSnackBarModule],
+      imports: [
+        MatDialogModule,
+        MatSnackBarModule,
+        MatFormFieldModule,
+        MatInputModule,
+        FormsModule,
+        NoopAnimationsModule,
+      ],
       providers: [
         {
           provide: AuthService,
