@@ -72,6 +72,7 @@ def get_create_call(name, input_file, dataset, metadata) -> List[str]:
         str(dataset),
         "--metadata",
         metadata,
+        "--skip-existing",
     ]
 
 
@@ -273,6 +274,7 @@ class Command(PlanscapeCommand):
             if skip_existing:
                 check_existing_args = {
                     "token": kwargs.get("token"),
+                    "env": kwargs.get("env"),
                     "dataset": dataset,
                     "name": name,
                 }
@@ -342,7 +344,6 @@ class Command(PlanscapeCommand):
                 files,
             )
         )
-
         if dry_run:
             for f in s3_files:
                 pprint(f)
