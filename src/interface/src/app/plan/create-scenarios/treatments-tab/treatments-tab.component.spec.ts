@@ -6,6 +6,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { MockProvider } from 'ng-mocks';
 import { MatLegacySnackBarModule } from '@angular/material/legacy-snack-bar';
 import { of } from 'rxjs';
+import { MatIconModule } from '@angular/material/icon';
 
 describe('TreatmentsTabComponent', () => {
   let component: TreatmentsTabComponent;
@@ -13,7 +14,7 @@ describe('TreatmentsTabComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RouterTestingModule, MatLegacySnackBarModule],
+      imports: [RouterTestingModule, MatLegacySnackBarModule, MatIconModule],
       declarations: [TreatmentsTabComponent],
       providers: [
         MockProvider(TreatmentsService, {
