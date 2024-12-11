@@ -32,6 +32,7 @@ from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 from actstream import action
+from impacts.services import create_treatment_plan
 
 logger = logging.getLogger(__name__)
 
@@ -208,8 +209,10 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             f["properties"]["project_id"] = new_feature.pk
 
     # Store geometry with added properties into ScenarioResult.result
-    ScenarioResult.objects.create(scenario=scenario, result=uploaded_geom)
-
+    # TODO: do we need to create more attributes here?
+    ScenarioResult.objects.create(
+        scenario=scenario, result=uploaded_geom, status="SUCCESS"
+    )
     return scenario
 
 

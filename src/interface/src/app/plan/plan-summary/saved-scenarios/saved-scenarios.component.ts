@@ -14,6 +14,7 @@ import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
+import { TreatmentsService } from '@services/treatments.service';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -50,7 +51,8 @@ export class SavedScenariosComponent implements OnInit {
     private scenarioService: ScenarioService,
     private dialog: MatDialog,
     private featureService: FeatureService,
-    private planStateService: PlanStateService
+    private planStateService: PlanStateService,
+    private treatmentsService: TreatmentsService
   ) {}
 
   ngOnInit(): void {
@@ -206,19 +208,37 @@ export class SavedScenariosComponent implements OnInit {
     return isValidTotalArea(this.plan.area_acres);
   }
 
-  openConfirmationDialog(): void {
+  openConfirmationDialog(newScenarioResult: any): void {
     this.dialog
-      .open(ScenarioCreateConfirmationComponent, {})
+      .open(ScenarioCreateConfirmationComponent, {
+        data: newScenarioResult,
+      })
       .afterClosed()
       .subscribe((response: any) => {
-        if (response) {
-          this.goToTreatmentPlans();
+        if (response === true) {
+          this.goToTreatmentPlans(newScenarioResult.response?.id);
         }
+        //we just close on cancel.
       });
   }
 
-  goToTreatmentPlans(): void {
-    // TODO: route to next page
+  goToTreatment(id: number) {
+    this.router.navigate(['treatment', id], {
+      relativeTo: this.route,
+    });
+  }
+
+  goToTreatmentPlans(scenarioId: string): void {
+    this.treatmentsService
+      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .subscribe({
+        next: (result) => {
+          this.goToTreatment(result.id);
+        },
+        error: () => {
+          // TODO: handle error here
+        },
+      });
   }
 
   openUploadDialog(): void {
@@ -232,9 +252,9 @@ export class SavedScenariosComponent implements OnInit {
       .afterClosed()
       .subscribe((response: any) => {
         if (response) {
-          // if there's not an error...we open the confirmation dialog
-          this.openConfirmationDialog();
+          this.openConfirmationDialog(response);
         }
+        //TODO: handle error here
       });
   }
 }

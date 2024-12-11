@@ -1,6 +1,5 @@
 <div class="title-row">
   <div class="scenario-name">{{ name }}</div>
-  {{ origin }}
   <sg-status-chip
     *ngIf="resultStatus && origin === 'SYSTEM'"
     [status]="getChipStatus()"
