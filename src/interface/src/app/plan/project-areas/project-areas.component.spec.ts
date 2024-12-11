@@ -12,7 +12,7 @@ import { LegacyMaterialModule } from '../../material/legacy-material.module';
 class TestHostComponent {
   areas = [
     {
-      id: 1,
+      rank: 1,
       percentTotal: 0.2234,
       score: 2,
       estimatedCost: 1231.22,
@@ -37,7 +37,7 @@ describe('ProjectAreasComponent', () => {
     component = fixture.componentInstance;
     component.areas = [
       {
-        id: 1,
+        rank: 1,
         percentTotal: 0.2234,
         score: 2.1223123123,
         estimatedCost: 1231.22,
@@ -82,21 +82,21 @@ describe('ProjectAreasComponent', () => {
   it('should calculate totals based on provided areas', () => {
     component.areas = [
       {
-        id: 1,
+        rank: 1,
         percentTotal: 0.2,
         score: 1,
         estimatedCost: 100,
         acres: 4,
       },
       {
-        id: 1,
+        rank: 1,
         percentTotal: 0.2,
         score: 2,
         estimatedCost: 100,
         acres: 4,
       },
       {
-        id: 1,
+        rank: 1,
         percentTotal: 0.2,
         score: 3,
         estimatedCost: 200,

@@ -34,6 +34,7 @@ import { filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 import { Geometry } from 'geojson';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
+
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
@@ -218,6 +219,7 @@ export class TreatmentMapComponent {
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
+    this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
     this.listenForZoom();
   }
 
@@ -259,6 +261,7 @@ export class TreatmentMapComponent {
       this.sourceLoaded$.next(event);
     }
   }
+
   openTreatmentLegend() {
     this.mapConfigState.setTreatmentLegendVisible(true);
   }

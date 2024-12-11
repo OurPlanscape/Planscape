@@ -11,6 +11,7 @@ import { User } from '@types';
 import { ChipInputComponent } from '../chip-input/chip-input.component';
 import { SectionLoaderComponent } from '@shared';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { FormsModule } from '@angular/forms';
 
 describe('SharePlanDialogComponent', () => {
   let component: SharePlanDialogComponent;
@@ -30,7 +31,12 @@ describe('SharePlanDialogComponent', () => {
         SharePlanDialogComponent,
         MockComponents(ChipInputComponent, SectionLoaderComponent),
       ],
-      imports: [LegacyMaterialModule, MatSnackBarModule, NoopAnimationsModule],
+      imports: [
+        LegacyMaterialModule,
+        MatSnackBarModule,
+        NoopAnimationsModule,
+        FormsModule,
+      ],
       providers: [
         MockProvider(PlanStateService, {
           getPlan: () => NEVER,
