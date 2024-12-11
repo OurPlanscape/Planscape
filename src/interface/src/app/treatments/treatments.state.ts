@@ -197,8 +197,11 @@ export class TreatmentsState {
         map((summary) => {
           // set summary data
           this._summary$.next(summary);
-          // parse summary data into treated stands
-          this.setTreatedStandsFromSummary(summary.project_areas);
+          if (!previousSummary) {
+            // parse summary data into treated stands
+            this.setTreatedStandsFromSummary(summary.project_areas);
+          }
+
           if (projectAreaId) {
             // set active project area if provided
             this.selectProjectArea(projectAreaId);
