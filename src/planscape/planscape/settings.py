@@ -450,3 +450,8 @@ boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
+
+# Analytics
+FIREBASE_APP_ID = config("FIREBASE_APP_ID", default=None)
+FIREBASE_APP_INSTANCE_ID = config("FIREBASE_APP_INSTANCE_ID", default=None)
+FIREBASE_API_SECRET = config("FIREBASE_API_SECRET", default=None)
