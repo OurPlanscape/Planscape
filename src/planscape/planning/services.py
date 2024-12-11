@@ -173,12 +173,47 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
 def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
     uploaded_geom = validated_data["geometry"]
+    ## TODO: we need to change some of what is configured here
+    ## example working conf:
+    default_config = {
+        "stand_size": validated_data["stand_size"],
+        "est_cost": None,
+        "weights": [],
+        "max_slope": 100,
+        "question_id": 11,
+        "excluded_areas": [],
+        "stand_thresholds": ["probability_of_fire_severity_high > 0"],
+        "global_thresholds": [],
+        "scenario_priorities": ["probability_of_fire_severity_high"],
+        "min_distance_from_road": None,
+        "scenario_output_fields": [
+            "annual_burn_probability",
+            "aquatic_species_richness",
+            "california_red_legged_frog",
+            "california_spotted_owl",
+            "coastal_california_gnatcatcher",
+            "cost_of_potential_treatments",
+            "hermes_copper_butterfly",
+            "housing_unit_density",
+            "joshua_tree",
+            "mean_fri_departure_condition_class",
+            "mountain_lion",
+            "mountain_yellow_legged_frog",
+            "probability_of_fire_severity_high",
+            "structure_exposure_score",
+            "threatened_endangered_vertebrate_species_richness",
+            "total_aboveground_carbon",
+            "wildlife_species_richness",
+            "wui_damage_potential",
+        ],
+        "max_treatment_area_ratio": 3600000,
+    }
+
     scenario = Scenario.objects.create(
-        ## TODO: we need to change some of what is configured here
         name=validated_data["name"],
         planning_area=planning_area,
         user=user,
-        configuration={"stand_size": validated_data["stand_size"]},
+        configuration=default_config,
         origin=ScenarioOrigin.USER,
     )
     transaction.on_commit(
