@@ -3,7 +3,7 @@ import itertools
 import json
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
-from django.db.models import Count, QuerySet
+from django.db.models import Count, QuerySet, Avg
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -209,6 +209,53 @@ def generate_summary(
         "extent": project_areas_geometry.extent,
     }
     return data
+
+
+def generate_impact_results_data_to_plot(
+    treatment_plan: TreatmentPlan,
+    impact_variables: List,
+    project_area_pks: Optional[List] = None,
+    tx_px_actions: Optional[List] = None,
+) -> List[Dict]:
+    project_areas = ProjectArea.objects.filter(scenario=treatment_plan.scenario)
+    if project_area_pks:
+        project_areas = project_areas.filter(pk__in=project_area_pks)
+
+    geometry = project_areas.aggregate(geometry=UnionOp("geometry"))["geometry"]
+    stands = Stand.objects.within_polygon(geometry)
+
+    if tx_px_actions:
+        queryset = TreatmentResult.objects.filter(
+            treatment_plan=treatment_plan,
+            variable__in=impact_variables,
+            stand__in=stands,
+            action__in=tx_px_actions,
+            aggregation=ImpactVariableAggregation.MEAN.value,
+        )
+    else:
+        queryset = TreatmentResult.objects.filter(
+            treatment_plan=treatment_plan,
+            variable__in=impact_variables,
+            stand__in=stands,
+            aggregation=ImpactVariableAggregation.MEAN.value,
+        )
+
+    years = queryset.values_list("year", flat=True).distinct("year").order_by("year")
+    years = [year for year in years]
+
+    aggregated_values = (
+        queryset.values("year", "variable").distinct().annotate(value=Avg("value"))
+    )
+    impact_variables_indexes = {k: v for v, k in enumerate(impact_variables)}
+
+    values = sorted(
+        aggregated_values,
+        key=lambda x: int(
+            f"{x.get('year')}{impact_variables_indexes[x.get('variable')]}"
+        ),
+    )
+
+    return values
 
 
 def to_project_area_result(
