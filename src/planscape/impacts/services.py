@@ -312,7 +312,7 @@ def calculate_impacts(
     treatment_results = list(
         map(
             lambda x: to_treatment_result(treatment_plan, variable, year, result=x),
-            deltas,
+            list(filter(lambda x: x.get("action") is not None, deltas)),
         )
     )
 
