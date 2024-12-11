@@ -21,7 +21,7 @@ import { MAT_DIALOG_DATA } from '@angular/material/dialog';
 export class ScenarioCreateConfirmationComponent {
   constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
 
-  @Input() scenarioName = this.data.response?.name;
+  @Input() scenarioName = this.data.name;
   @Output() proceed = new EventEmitter<boolean>();
   readonly dialogRef = inject(
     MatDialogRef<ScenarioCreateConfirmationComponent>

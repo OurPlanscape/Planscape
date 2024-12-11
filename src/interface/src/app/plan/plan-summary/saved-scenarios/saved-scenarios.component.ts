@@ -208,15 +208,15 @@ export class SavedScenariosComponent implements OnInit {
     return isValidTotalArea(this.plan.area_acres);
   }
 
-  openConfirmationDialog(newScenarioResult: any): void {
+  openConfirmationDialog(newScenarioResponse: any): void {
     this.dialog
       .open(ScenarioCreateConfirmationComponent, {
-        data: newScenarioResult,
+        data: newScenarioResponse,
       })
       .afterClosed()
-      .subscribe((response: any) => {
-        if (response === true) {
-          this.goToTreatmentPlans(newScenarioResult.response?.id);
+      .subscribe((modalResponse: any) => {
+        if (modalResponse) {
+          this.goToTreatmentPlans(newScenarioResponse?.id);
         }
         //we just close on cancel.
       });
@@ -250,9 +250,9 @@ export class SavedScenariosComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe((response: any) => {
-        if (response) {
-          this.openConfirmationDialog(response);
+      .subscribe((res: any) => {
+        if (res) {
+          this.openConfirmationDialog(res.response);
         }
         //TODO: handle error here
       });
