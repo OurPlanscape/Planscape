@@ -390,11 +390,15 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
         )
 
 
+class UploadedConfigurationSerializer(serializers.Serializer):
+    stand_size = serializers.ChoiceField(choices=StandSizeChoices.choices)
+
+
 class ScenarioSerializer(
     ListScenarioSerializer,
     serializers.ModelSerializer,
 ):
-    configuration = ConfigurationSerializer()
+    configuration = serializers.SerializerMethodField()
 
     def create(self, validated_data):
         validated_data["user"] = self.context["user"] or None
@@ -403,6 +407,16 @@ class ScenarioSerializer(
     def update(self, instance, validated_data):
         validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
+
+    def __init__(self, *args, **kwargs):
+        instance = kwargs.get("instance", None)
+
+        super().__init__(*args, **kwargs)
+
+        if instance and hasattr(instance, "origin") and instance.origin == "USER":
+            self.fields["configuration"] = UploadedConfigurationSerializer()
+        else:
+            self.fields["configuration"] = ConfigurationSerializer()
 
     class Meta:
         fields = (
@@ -486,19 +500,6 @@ class ListCreatorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "email", "full_name")
-
-
-class ProjectAreaSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectArea
-        fields = (
-            "id",
-            "scenario",
-            "name",
-            "data",
-            "geometry",
-            "created_by",
-        )
 
 
 class ProjectAreaNoteSerializer(serializers.ModelSerializer):
@@ -627,7 +628,7 @@ class GeoJSONSerializer(serializers.Serializer):
 class UploadedScenarioDataSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
     stand_size = serializers.ChoiceField(
-        choices=["SMALL", "MEDIUM", "LARGE"], required=False, allow_blank=True
+        choices=["SMALL", "MEDIUM", "LARGE"], required=True
     )
     planning_area = serializers.IntegerField(min_value=1, required=True)
     geometry = serializers.JSONField(required=True)
