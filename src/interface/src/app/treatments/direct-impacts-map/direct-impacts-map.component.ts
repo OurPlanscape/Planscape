@@ -65,6 +65,7 @@ export class DirectImpactsMapComponent {
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
     this.mapCreated.emit(this.mapLibreMap);
+    this.saveZoom();
   }
 
   saveZoom() {
