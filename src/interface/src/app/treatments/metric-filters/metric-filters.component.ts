@@ -1,6 +1,6 @@
 import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor } from '@angular/common';
 
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
@@ -22,7 +22,6 @@ import { Observable } from 'rxjs';
   standalone: true,
   imports: [
     AsyncPipe,
-    NgIf,
     NgFor,
     MetricSelectorComponent,
     MetricSelectorComponent,
