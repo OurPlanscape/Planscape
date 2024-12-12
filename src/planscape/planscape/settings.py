@@ -453,6 +453,8 @@ MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
 
 # Analytics
+ANALYTICS_ENABLED = config("ANALYTICS_ENABLED", default=False)
+ANALYTICS_DEBUG_MODE = config("ANALYTICS_DEBUG_MODE", default=False)
 FIREBASE_APP_ID = config("FIREBASE_APP_ID", default=None)
 FIREBASE_APP_INSTANCE_ID = config("FIREBASE_APP_INSTANCE_ID", default=None)
 FIREBASE_API_SECRET = config("FIREBASE_API_SECRET", default=None)
