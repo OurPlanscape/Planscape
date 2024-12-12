@@ -178,7 +178,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         name=validated_data["name"],
         planning_area=planning_area,
         user=user,
-        configuration="stand_size": validated_data["stand_size"],
+        configuration={"stand_size": validated_data["stand_size"]},
         origin=ScenarioOrigin.USER,
     )
     transaction.on_commit(
@@ -209,7 +209,6 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             f["properties"]["project_id"] = new_feature.pk
 
     # Store geometry with added properties into ScenarioResult.result
-    # TODO: do we need to create more attributes here?
     ScenarioResult.objects.create(
         scenario=scenario, result=uploaded_geom, status="SUCCESS"
     )
