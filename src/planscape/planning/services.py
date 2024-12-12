@@ -137,9 +137,9 @@ def union_geojson(uploaded_geojson):
 
 def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
     try:
-        area_name = f"{scenario.name} project area"
+        area_name = f"{scenario.name}, Project Area"
         if idx is not None:
-            area_name += f":{idx}"
+            area_name += f" {idx}"
 
         project_area = {
             "geometry": MultiPolygon(

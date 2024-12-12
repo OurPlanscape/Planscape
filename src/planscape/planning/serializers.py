@@ -412,11 +412,10 @@ class ScenarioSerializer(
         instance = kwargs.get("instance", None)
 
         super().__init__(*args, **kwargs)
-
-        if instance and hasattr(instance, "origin") and instance.origin == "USER":
-            self.fields["configuration"] = UploadedConfigurationSerializer()
-        else:
+        if instance and hasattr(instance, "origin") and instance.origin == "SYSTEM":
             self.fields["configuration"] = ConfigurationSerializer()
+        else:
+            self.fields["configuration"] = UploadedConfigurationSerializer()
 
     class Meta:
         fields = (

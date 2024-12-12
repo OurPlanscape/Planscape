@@ -216,27 +216,26 @@ export class SavedScenariosComponent implements OnInit {
       .afterClosed()
       .subscribe((modalResponse: any) => {
         if (modalResponse) {
-          this.goToTreatmentPlans(newScenarioResponse?.id);
+          this.createNewTreatmentPlan(newScenarioResponse?.id);
         }
-        //we just close on cancel.
       });
   }
 
-  goToTreatment(id: number) {
-    this.router.navigate(['treatment', id], {
-      relativeTo: this.route,
-    });
-  }
-
-  goToTreatmentPlans(scenarioId: string): void {
+  createNewTreatmentPlan(scenarioId: string): void {
     this.treatmentsService
       .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
       .subscribe({
         next: (result) => {
-          this.goToTreatment(result.id);
+          this.router.navigate(['config', scenarioId, 'treatment', result.id], {
+            relativeTo: this.route,
+          });
         },
         error: () => {
-          // TODO: handle error here
+          this.snackbar.open(
+            '[Error] Cannot create a new treatment plan',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
         },
       });
   }
