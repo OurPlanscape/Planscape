@@ -10,7 +10,7 @@ import { OpacitySliderComponent } from 'src/styleguide';
 @Component({
   standalone: true,
   template:
-    '<sg-opacity-slider title="Project area opacity" (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>',
+    '<sg-opacity-slider class="opacity-slider" title="Project area opacity" (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>',
   styleUrls: ['./opacity-control.component.scss'],
   imports: [CommonModule, OpacitySliderComponent],
   encapsulation: ViewEncapsulation.None,
