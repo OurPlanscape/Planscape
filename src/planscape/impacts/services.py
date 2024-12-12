@@ -223,11 +223,13 @@ def to_project_area_result(
         variable=variable,
         year=year,
         aggregation=result.get("aggregation"),
+        action=result.get("action"),
         defaults={
             "value": result.get("value"),
             "baseline": result.get("baseline"),
             "delta": result.get("delta"),
             "type": TreatmentResultType.DIRECT,
+            "stand_count": result.get("stand_count"),
         },
     )
     return instance
@@ -295,6 +297,7 @@ def calculate_impacts(
                 project_area=project_area,
                 baseline_dict=baseline_dict,
                 action_dict=action_dict,
+                action=action,
             )
         )
 
@@ -418,6 +421,7 @@ def calculate_project_area_deltas(
     project_area: ProjectArea,
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
+    action: TreatmentPrescriptionAction,
 ) -> List[Dict[str, Any]]:
     pass
 
@@ -484,6 +488,8 @@ def calculate_project_area_deltas(
             "baseline": baseline_sum,
             "value": action_sum,
             "delta": delta,
+            "action": action,
+            "stand_count": len(action_dict),
         }
     )
     return results
