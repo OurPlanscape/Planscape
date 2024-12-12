@@ -32,6 +32,7 @@ from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 from actstream import action
+from impacts.services import create_treatment_plan
 
 logger = logging.getLogger(__name__)
 
@@ -136,9 +137,9 @@ def union_geojson(uploaded_geojson):
 
 def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
     try:
-        area_name = f"{scenario.name} project area"
+        area_name = f"{scenario.name}, Project Area"
         if idx is not None:
-            area_name += f":{idx}"
+            area_name += f" {idx}"
 
         project_area = {
             "geometry": MultiPolygon(
@@ -172,6 +173,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
 def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
     uploaded_geom = validated_data["geometry"]
+
     scenario = Scenario.objects.create(
         name=validated_data["name"],
         planning_area=planning_area,
@@ -207,8 +209,9 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             f["properties"]["project_id"] = new_feature.pk
 
     # Store geometry with added properties into ScenarioResult.result
-    ScenarioResult.objects.create(scenario=scenario, result=uploaded_geom)
-
+    ScenarioResult.objects.create(
+        scenario=scenario, result=uploaded_geom, status="SUCCESS"
+    )
     return scenario
 
 

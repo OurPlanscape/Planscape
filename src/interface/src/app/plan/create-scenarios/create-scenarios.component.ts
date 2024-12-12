@@ -42,6 +42,7 @@ export class CreateScenariosComponent implements OnInit {
   generatingScenario: boolean = false;
   scenarioId: string | null = null;
   scenarioName: string | null = null;
+  scenarioOrigin: string = 'USER';
   planId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
@@ -53,6 +54,7 @@ export class CreateScenariosComponent implements OnInit {
   );
 
   // this value gets updated once we load the scenario result.
+
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
   priorities: string[] = [];
@@ -104,7 +106,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.createForms();
+    // this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.planStateService.planState$
       .pipe(untilDestroyed(this), take(1))

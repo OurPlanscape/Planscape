@@ -378,11 +378,14 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         weight: 1.5,
       }),
       onEachFeature: (feature, layer) => {
+        if (!feature.properties.treatment_rank) {
+          return;
+        }
         let center: number[] = [];
         if (feature.geometry.type === 'Polygon') {
           center = polylabel(feature.geometry.coordinates, 0.0005);
           const tooltip = addTooltipAtCenter(
-            feature.properties.treatment_rank.toString(),
+            feature.properties.treatment_rank?.toString(),
             center,
             this.map
           );
@@ -391,7 +394,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
           feature.geometry.coordinates.forEach((positions) => {
             center = polylabel(positions, 0.005);
             const tooltip = addTooltipAtCenter(
-              feature.properties.treatment_rank.toString(),
+              feature.properties.treatment_rank?.toString(),
               center,
               this.map
             );
