@@ -217,34 +217,22 @@ def generate_impact_results_data_to_plot(
     project_area_pks: Optional[List] = None,
     tx_px_actions: Optional[List] = None,
 ) -> List[Dict]:
-    project_areas = ProjectArea.objects.filter(scenario=treatment_plan.scenario)
+    queryset = ProjectAreaTreatmentResult.objects.filter(
+        treatment_plan=treatment_plan,
+        variable__in=impact_variables,
+        aggregation=ImpactVariableAggregation.MEAN.value,
+    )
     if project_area_pks:
-        project_areas = project_areas.filter(pk__in=project_area_pks)
-
-    geometry = project_areas.aggregate(geometry=UnionOp("geometry"))["geometry"]
-    stands = Stand.objects.within_polygon(geometry)
+        queryset = queryset.filter(project_area_pk__in=project_area_pks)
 
     if tx_px_actions:
-        queryset = TreatmentResult.objects.filter(
-            treatment_plan=treatment_plan,
-            variable__in=impact_variables,
-            stand__in=stands,
-            action__in=tx_px_actions,
-            aggregation=ImpactVariableAggregation.MEAN.value,
-        )
-    else:
-        queryset = TreatmentResult.objects.filter(
-            treatment_plan=treatment_plan,
-            variable__in=impact_variables,
-            stand__in=stands,
-            aggregation=ImpactVariableAggregation.MEAN.value,
-        )
+        queryset = queryset.filter(action__in=tx_px_actions)
 
     years = queryset.values_list("year", flat=True).distinct("year").order_by("year")
     years = [year for year in years]
 
     aggregated_values = (
-        queryset.values("year", "variable").distinct().annotate(value=Avg("value"))
+        queryset.values("year", "variable", "action", "stand_count")
     )
     impact_variables_indexes = {k: v for v, k in enumerate(impact_variables)}
 
