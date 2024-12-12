@@ -111,7 +111,6 @@ export class CreateScenariosComponent implements OnInit {
     this.planStateService.planState$
       .pipe(untilDestroyed(this), take(1))
       .subscribe((planState) => {
-        console.log('do we have a planstate?', planState);
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
         this.planId = planState.currentPlanId;

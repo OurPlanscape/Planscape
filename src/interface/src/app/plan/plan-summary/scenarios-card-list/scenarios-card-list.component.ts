@@ -53,7 +53,6 @@ export class ScenariosCardListComponent {
   }
 
   handleOpenScenario(row: ScenarioRow): void {
-
     if (
       row.scenario_result &&
       ['SUCCESS', 'FAILURE', 'PANIC'].includes(row.scenario_result.status)
