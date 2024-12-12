@@ -32,6 +32,7 @@ import { MockComponent, MockProvider } from 'ng-mocks';
 import { FeaturesModule } from '../../../features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
 import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';
+import { ButtonComponent } from '@styleguide';
 
 const SCENARIO_ROW: ScenarioRow = {
   id: '1',
@@ -88,6 +89,7 @@ describe('SavedScenariosComponent', () => {
         MatDialogModule,
         NoopAnimationsModule,
         FeaturesModule,
+        ButtonComponent,
       ],
       declarations: [
         SavedScenariosComponent,

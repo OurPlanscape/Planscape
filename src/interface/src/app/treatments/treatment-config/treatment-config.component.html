@@ -15,7 +15,7 @@
     <app-treatment-map></app-treatment-map>
     <section class="right-side-footer">
       <ng-container *ngIf="projectAreaId$ | async; else treatment">
-        <a sg-button variant="primary" class="footer-primary" routerLink="./">
+        <a sg-button variant="primary" class="back-btn" routerLink="./">
           Back To Overview
         </a>
       </ng-container>
@@ -40,7 +40,6 @@
           <button
             sg-button
             variant="primary"
-            class="footer-primary"
             *ngIf="canRunTreatment$ | async"
             (click)="showReviewDialog()">
             Run Treatment Analysis

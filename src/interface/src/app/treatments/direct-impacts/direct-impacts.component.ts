@@ -122,7 +122,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   );
 
   activateMetric(data: MapMetric) {
-    this.directImpactsStateService.activeMetric$.next(data);
+    this.directImpactsStateService.setActiveMetric(data);
   }
 
   getValues(activeStand: MapGeoJSONFeature) {}

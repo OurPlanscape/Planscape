@@ -72,6 +72,7 @@ def get_create_call(name, input_file, dataset, metadata) -> List[str]:
         str(dataset),
         "--metadata",
         metadata,
+        "--skip-existing",
     ]
 
 
@@ -185,7 +186,7 @@ class Command(PlanscapeCommand):
         **kwargs,
     ) -> requests.Response:
         base_url = self.get_base_url(**kwargs)
-        list_url = base_url + "/v2/datalayers"
+        list_url = base_url + "/v2/admin/datalayers"
         headers = self.get_headers(token, **kwargs)
         filters = self._list_filters(**kwargs)
         if filters:
@@ -227,7 +228,7 @@ class Command(PlanscapeCommand):
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
         base_url = self.get_base_url(**kwargs)
-        url = base_url + "/v2/datalayers/"
+        url = base_url + "/v2/admin/datalayers/"
         headers = self.get_headers(**kwargs)
         mimetype = kwargs.get("mimetype")
         original_name = kwargs.get("original_name")
@@ -273,6 +274,7 @@ class Command(PlanscapeCommand):
             if skip_existing:
                 check_existing_args = {
                     "token": kwargs.get("token"),
+                    "env": kwargs.get("env"),
                     "dataset": dataset,
                     "name": name,
                 }
@@ -342,7 +344,6 @@ class Command(PlanscapeCommand):
                 files,
             )
         )
-
         if dry_run:
             for f in s3_files:
                 pprint(f)

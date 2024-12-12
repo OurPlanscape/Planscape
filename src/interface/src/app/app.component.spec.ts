@@ -5,6 +5,8 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import { FeaturesModule } from './features/features.module';
+import { MockDeclaration } from 'ng-mocks';
+import { TopBarComponent } from './shared/top-bar/top-bar.component';
 
 describe('AppComponent', () => {
   let component: AppComponent;
@@ -18,7 +20,7 @@ describe('AppComponent', () => {
     );
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, RouterTestingModule, FeaturesModule],
-      declarations: [AppComponent],
+      declarations: [AppComponent, MockDeclaration(TopBarComponent)],
       providers: [{ provide: AuthService, useValue: fakeAuthService }],
     }).compileComponents();
 

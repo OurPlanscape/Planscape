@@ -9,6 +9,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { FeaturesModule } from '../../features/features.module';
 import { MockProvider } from 'ng-mocks';
 import { NEVER, of } from 'rxjs';
+import { ButtonComponent } from '@styleguide';
 
 describe('NavBarComponent', () => {
   let component: NavBarComponent;
@@ -16,7 +17,12 @@ describe('NavBarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [LegacyMaterialModule, RouterTestingModule, FeaturesModule],
+      imports: [
+        LegacyMaterialModule,
+        RouterTestingModule,
+        FeaturesModule,
+        ButtonComponent,
+      ],
       declarations: [NavBarComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       providers: [
