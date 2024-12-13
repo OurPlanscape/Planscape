@@ -314,8 +314,8 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
                         treatment_plan=self.tx_plan,
                         variable=variable[0],
                         year=year,
-                        aggregation=ImpactVariableAggregation.MEAN.value,
-                        action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value,
+                        aggregation=ImpactVariableAggregation.MEAN,
+                        action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS,
                     )
         self.someone_elses_tx_plan = TreatmentPlanFactory.create()
 

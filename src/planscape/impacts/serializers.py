@@ -209,23 +209,14 @@ class TreatmentResultSerializer(serializers.Serializer):
         required=False,
     )
 
-    def validate_variables(self, variables):
-        if len(variables) != 4:
-            raise serializers.ValidationError(
-                "It is necessary to set 4 Impact Variables."
-            )
-
-        return variables
-
     def validate_project_areas(self, project_areas):
         treatment_plan = self.context.get("treatment_plan", None) or None
 
-        if project_areas and treatment_plan:
-            for project_area in project_areas:
-                if treatment_plan.scenario.pk != project_area.scenario.pk:
-                    raise serializers.ValidationError(
-                        "Project Area does not belong to the same Scenario as Treatment Plan."
-                    )
+        pa_scenario_ids = set([pa.scenario.pk for pa in project_areas])
+        if not treatment_plan or treatment_plan.scenario.pk not in pa_scenario_ids:
+            raise serializers.ValidationError(
+                "Project Area does not belong to the same Scenario as Treatment Plan."
+            )
 
         return project_areas
 
