@@ -69,4 +69,4 @@ class ProjectAreaTreatmentResultFactory(factory.django.DjangoModelFactory):
     delta = factory.fuzzy.FuzzyFloat(low=0, high=100)
     type = TreatmentResultType.DIRECT
     action = factory.fuzzy.FuzzyChoice(TreatmentPrescriptionAction.choices)
-    stand_count = factory.fuzzy.FuzzyInteger(low=0, high=20)
+    stand_count = factory.fuzzy.FuzzyInteger(low=1, high=20)
