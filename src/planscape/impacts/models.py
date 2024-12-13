@@ -459,6 +459,15 @@ class ProjectAreaTreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         default=TreatmentResultType.DIRECT,
         help_text="Type of Treatment Result (choice).",
     )
+    action = models.CharField(
+        choices=TreatmentPrescriptionAction.choices,
+        help_text="Treatment Prescription Action.",
+        null=True,
+    )
+    stand_count = models.IntegerField(
+        help_text="Number of Stands.",
+        null=True,
+    )
 
     class Meta(TypedModelMeta):
         constraints = [
@@ -471,6 +480,7 @@ class ProjectAreaTreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
                     "variable",
                     "aggregation",
                     "year",
+                    "action",
                 ],
                 name="project_area_treatment_result_unique_constraint",
             )
