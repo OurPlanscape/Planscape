@@ -1,0 +1,23 @@
+@import "colors";
+
+:host {
+  box-sizing: border-box;
+  height: 100%;
+  display: block;
+  padding: 24px;
+}
+
+table {
+  width: 100%;
+  border: 1px solid $color-soft-gray;
+  border-radius: 4px;
+  overflow: hidden;
+
+  .mat-mdc-header-row {
+    background-color: $color-light-gray;
+  }
+
+  th {
+    width: 33%;
+  }
+}
