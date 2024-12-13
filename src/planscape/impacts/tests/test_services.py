@@ -527,8 +527,8 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
                         treatment_plan=self.tx_plan,
                         variable=variable[0],
                         year=year,
-                        aggregation=ImpactVariableAggregation.MEAN.value,
-                        action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value,
+                        aggregation=ImpactVariableAggregation.MEAN,
+                        action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS,
                     )
 
     def test_generate_data_to_plot(self):
