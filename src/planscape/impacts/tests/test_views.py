@@ -16,10 +16,9 @@ from impacts.models import (
 from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
-    TreatmentResultFactory,
+    ProjectAreaTreatmentResultFactory,
     ImpactVariable,
 )
-from impacts.services import generate_impact_results_data_to_plot
 from planning.tests.factories import (
     ScenarioFactory,
     PlanningAreaFactory,
@@ -310,20 +309,13 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
         for pa in self.project_areas:
             for variable in ImpactVariable.choices:
                 for year in self.years:
-                    prescription = TreatmentPrescriptionFactory.create(
+                    ProjectAreaTreatmentResultFactory(
                         project_area=pa,
                         treatment_plan=self.tx_plan,
+                        variable=variable[0],
+                        year=year,
+                        aggregation=ImpactVariableAggregation.MEAN.value,
                         action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value,
-                    )
-                    self.patxrx_list.append(
-                        TreatmentResultFactory.create(
-                            treatment_plan=self.tx_plan,
-                            variable=variable[0],
-                            stand=prescription.stand,
-                            year=year,
-                            aggregation=ImpactVariableAggregation.MEAN.value,
-                            action=prescription.action,
-                        )
                     )
         self.someone_elses_tx_plan = TreatmentPlanFactory.create()
 

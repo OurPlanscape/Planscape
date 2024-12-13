@@ -26,12 +26,10 @@ from impacts.services import (
 )
 from impacts.tasks import (
     async_calculate_impacts_for_variable_action_year,
-    async_calculate_persist_impacts_treatment_plan,
 )
 from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
-    TreatmentResultFactory,
     ProjectAreaTreatmentResultFactory,
 )
 from planning.tests.factories import (

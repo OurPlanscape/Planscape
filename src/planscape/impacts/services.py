@@ -3,7 +3,7 @@ import itertools
 import json
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
-from django.db.models import Count, QuerySet, Avg, Sum, F
+from django.db.models import Count, QuerySet, Sum, F
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
