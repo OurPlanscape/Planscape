@@ -3,7 +3,7 @@ import itertools
 import json
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
-from django.db.models import Count, QuerySet, Avg
+from django.db.models import Count, QuerySet, Avg, Sum, F
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -223,7 +223,7 @@ def generate_impact_results_data_to_plot(
         aggregation=ImpactVariableAggregation.MEAN.value,
     )
     if project_area_pks:
-        queryset = queryset.filter(project_area_pk__in=project_area_pks)
+        queryset = queryset.filter(project_area_id__in=project_area_pks)
 
     if tx_px_actions:
         queryset = queryset.filter(action__in=tx_px_actions)
@@ -231,9 +231,10 @@ def generate_impact_results_data_to_plot(
     years = queryset.values_list("year", flat=True).distinct("year").order_by("year")
     years = [year for year in years]
 
-    aggregated_values = (
-        queryset.values("year", "variable", "action", "stand_count")
+    aggregated_values = queryset.values("year", "variable").annotate(
+        value=(Sum(F("value") * F("stand_count")) / Sum("stand_count"))
     )
+
     impact_variables_indexes = {k: v for v, k in enumerate(impact_variables)}
 
     values = sorted(

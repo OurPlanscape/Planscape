@@ -32,6 +32,7 @@ from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
     TreatmentResultFactory,
+    ProjectAreaTreatmentResultFactory,
 )
 from planning.tests.factories import (
     ProjectAreaFactory,
@@ -523,20 +524,13 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
         for pa in self.project_areas:
             for variable in ImpactVariable.choices:
                 for year in self.years:
-                    prescription = TreatmentPrescriptionFactory.create(
+                    ProjectAreaTreatmentResultFactory(
                         project_area=pa,
                         treatment_plan=self.tx_plan,
+                        variable=variable[0],
+                        year=year,
+                        aggregation=ImpactVariableAggregation.MEAN.value,
                         action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value,
-                    )
-                    self.patxrx_list.append(
-                        TreatmentResultFactory.create(
-                            treatment_plan=self.tx_plan,
-                            variable=variable[0],
-                            stand=prescription.stand,
-                            year=year,
-                            aggregation=ImpactVariableAggregation.MEAN.value,
-                            action=prescription.action,
-                        )
                     )
 
     def test_generate_data_to_plot(self):
