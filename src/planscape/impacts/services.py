@@ -217,16 +217,19 @@ def generate_impact_results_data_to_plot(
     project_area_pks: Optional[List] = None,
     tx_px_actions: Optional[List] = None,
 ) -> List[Dict]:
-    queryset = ProjectAreaTreatmentResult.objects.filter(
-        treatment_plan=treatment_plan,
-        variable__in=impact_variables,
-        aggregation=ImpactVariableAggregation.MEAN.value,
-    )
+    filters = {
+        "treatment_plan": treatment_plan,
+        "variable__in": impact_variables,
+        "aggregation": ImpactVariableAggregation.MEAN,
+    }
+
     if project_area_pks:
-        queryset = queryset.filter(project_area_id__in=project_area_pks)
+        filters["project_area_id__in"] = project_area_pks
 
     if tx_px_actions:
-        queryset = queryset.filter(action__in=tx_px_actions)
+        filters["action__in"] = tx_px_actions
+
+    queryset = ProjectAreaTreatmentResult.objects.filter(**filters)
 
     years = queryset.values_list("year", flat=True).distinct("year").order_by("year")
     years = [year for year in years]
