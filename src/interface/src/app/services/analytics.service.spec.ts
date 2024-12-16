@@ -33,7 +33,7 @@ describe('AnalyticsService', () => {
   });
 
   it('should call gaEventService.event with all parameters', () => {
-    const action = 'button_click';
+    const action = 'polygons_draw_explore';
     const category = 'user_interaction';
     const label = 'home_page_button';
     const value = 10;
@@ -53,7 +53,7 @@ describe('AnalyticsService', () => {
   });
 
   it('should call gaEventService.event with optional parameters undefined', () => {
-    const action = 'button_click';
+    const action = 'polygons_draw_explore';
 
     service.emitEvent(action);
 
@@ -68,7 +68,7 @@ describe('AnalyticsService', () => {
   });
 
   it('should call gaEventService.event with only some parameters defined', () => {
-    const action = 'button_click';
+    const action = 'polygons_draw_explore';
     const category = 'user_interaction';
     const properties = { product_id: '123' };
 
