@@ -10,18 +10,8 @@ class CategoryAdmin(TreeAdmin):
     search_fields = ["name"]
     list_display = ("id", "name", "order", "dataset")
 
-    # Attach the current user to the form
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        # Attach the current user so the form can access it if needed
-        form.current_user = request.user
-        return form
-
-    # On save, explicitly set created_by if it's not already set
-    def save_model(self, request, obj, form, change):
-        if not obj.created_by_id:
-            obj.created_by = request.user
-        super().save_model(request, obj, form, change)
+    def get_changeform_initial_data(self, request) -> Dict[str, Any]:
+        return {"created_by": request.user}
 
 
 class DatasetAdmin(admin.ModelAdmin):
@@ -35,15 +25,8 @@ class DatasetAdmin(admin.ModelAdmin):
         "name",
     )
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.current_user = request.user
-        return form
-
-    def save_model(self, request, obj, form, change):
-        if not obj.created_by_id:
-            obj.created_by = request.user
-        super().save_model(request, obj, form, change)
+    def get_changeform_initial_data(self, request) -> Dict[str, Any]:
+        return {"created_by": request.user}
 
 
 class DataLayerAdmin(admin.ModelAdmin):
@@ -81,15 +64,6 @@ class DataLayerAdmin(admin.ModelAdmin):
         "public_url",
     ]
 
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.current_user = request.user
-        return form
-
-    def save_model(self, request, obj, form, change):
-        if not obj.created_by_id:
-            obj.created_by = request.user
-        super().save_model(request, obj, form, change)
 
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(DataLayer, DataLayerAdmin)
