@@ -46,7 +46,7 @@ class StandManager(models.Manager):
     def within_polygon(
         self,
         geometry: Union[Polygon, MultiPolygon],
-        size: StandSizeChoices = StandSizeChoices.LARGE,
+        size: StandSizeChoices,
     ) -> "QuerySet[Stand]":
         if not geometry.valid:
             raise ValueError("Invalid geometry")
