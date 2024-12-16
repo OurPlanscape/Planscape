@@ -604,3 +604,36 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             impact_variables=input_variables,
         )
         self.assertEqual(data, [])
+
+    def test_project_area_with_no_treatment(self):
+        new_project_area = ProjectAreaFactory.create(scenario=self.scenario)
+        self.project_areas.append(new_project_area)
+        for variable in ImpactVariable.choices:
+            for year in self.years:
+                ProjectAreaTreatmentResultFactory(
+                    project_area=new_project_area,
+                    treatment_plan=self.tx_plan,
+                    variable=variable[0],
+                    year=year,
+                    aggregation=ImpactVariableAggregation.MEAN,
+                    action=None,
+                    stand_count=0,
+                )
+
+        input_variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        data = generate_impact_results_data_to_plot(
+            treatment_plan=self.tx_plan,
+            impact_variables=input_variables,
+            project_area_pks=[new_project_area.pk],
+        )
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), len(self.years) * len(input_variables))
+        for item in data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), input_variables)
+            self.assertIsNone(item.get("value"))
