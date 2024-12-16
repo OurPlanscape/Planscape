@@ -11,7 +11,7 @@ import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, map, switchMap } from 'rxjs';
+import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
@@ -25,7 +25,7 @@ import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
-import { MapMetric } from '../metrics';
+import { ImpactsMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
@@ -121,7 +121,21 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  activateMetric(data: MapMetric) {
+  activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(
+    map((m) => m.metric)
+  );
+
+  // todo: placeholder to fill once we have project area filter
+  projectArea$ = of('All Project Areas');
+
+  mapPanelTitle$ = combineLatest([
+    this.directImpactsStateService.activeMetric$,
+    this.projectArea$,
+  ]).pipe(
+    map(([activeMetric, pa]) => `${activeMetric.metric.label} for ${pa}`)
+  );
+
+  activateMetric(data: ImpactsMetric) {
     this.directImpactsStateService.setActiveMetric(data);
   }
 
