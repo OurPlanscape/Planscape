@@ -424,15 +424,6 @@ class ScenarioSerializer(
         validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
 
-    def __init__(self, *args, **kwargs):
-        instance = kwargs.get("instance", None)
-
-        super().__init__(*args, **kwargs)
-        if instance and hasattr(instance, "origin") and instance.origin == "SYSTEM":
-            self.fields["configuration"] = ConfigurationSerializer()
-        else:
-            self.fields["configuration"] = UploadedConfigurationSerializer()
-
     class Meta:
         fields = (
             "id",
@@ -643,7 +634,7 @@ class GeoJSONSerializer(serializers.Serializer):
 class UploadedScenarioDataSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
     stand_size = serializers.ChoiceField(
-        choices=["SMALL", "MEDIUM", "LARGE"], required=True
+        choices=["SMALL", "MEDIUM", "LARGE"], required=False, allow_blank=False
     )
     planning_area = serializers.IntegerField(min_value=1, required=True)
     geometry = serializers.JSONField(required=True)
