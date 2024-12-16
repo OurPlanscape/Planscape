@@ -13,7 +13,7 @@
 <div class="grid-item">
   <sg-filter-dropdown
     menuLabel="Treatment Type"
-    [menuItems]="treatmentTypeOptions$ | async"
+    [menuItems]="(treatmentTypeOptions$ | async) || []"
     [hasSearch]="false"
     displayField="value"
     [disabled]="(treatmentTypeOptions$ | async) === null"

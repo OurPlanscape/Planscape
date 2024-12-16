@@ -1,10 +1,15 @@
 import { BehaviorSubject } from 'rxjs';
-import { DEFAULT_SLOT, MapMetric, MapMetricSlot, METRICS } from './metrics';
+import {
+  DEFAULT_SLOT,
+  ImpactsMetric,
+  ImpactsMetricSlot,
+  METRICS,
+} from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
 
 export class DirectImpactsStateService {
-  public _activeMetric$ = new BehaviorSubject<MapMetric>({
+  public _activeMetric$ = new BehaviorSubject<ImpactsMetric>({
     metric: METRICS[0],
     slot: DEFAULT_SLOT,
   });
@@ -28,11 +33,11 @@ export class DirectImpactsStateService {
     this._filteredTreatmentTypes$.next(selection);
   }
 
-  setActiveMetric(mapMetric: MapMetric) {
+  setActiveMetric(mapMetric: ImpactsMetric) {
     this._activeMetric$.next(mapMetric);
   }
 
-  isActiveSlot(slot: MapMetricSlot) {
+  isActiveSlot(slot: ImpactsMetricSlot) {
     return this._activeMetric$.value.slot === slot;
   }
 }
