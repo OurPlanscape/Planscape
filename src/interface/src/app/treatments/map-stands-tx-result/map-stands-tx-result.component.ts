@@ -16,7 +16,7 @@ import {
 } from 'maplibre-gl';
 import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
-import { DEFAULT_SLOT, MapMetricSlot, SLOT_PALETTES } from '../metrics';
+import { DEFAULT_SLOT, ImpactsMetricSlot, SLOT_PALETTES } from '../metrics';
 import { map } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
@@ -115,7 +115,7 @@ export class MapStandsTxResultComponent implements OnInit {
     return features[0];
   }
 
-  private generatePaint(slot: MapMetricSlot) {
+  private generatePaint(slot: ImpactsMetricSlot) {
     return {
       'fill-color': [
         'case',
@@ -139,7 +139,7 @@ export class MapStandsTxResultComponent implements OnInit {
     };
   }
 
-  private getPalette(slot: MapMetricSlot) {
+  private getPalette(slot: ImpactsMetricSlot) {
     const palette = SLOT_PALETTES[slot];
     return [
       -1,
