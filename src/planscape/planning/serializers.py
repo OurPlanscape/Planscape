@@ -385,6 +385,7 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
             "user",
             "planning_area",
             "name",
+            "origin",
             "notes",
             "configuration",
         )
@@ -401,13 +402,19 @@ class ScenarioSerializer(
     configuration = serializers.SerializerMethodField()
 
     def __init__(self, *args, **kwargs):
-        instance = kwargs.get("instance", None)
-
         super().__init__(*args, **kwargs)
-        if instance and hasattr(instance, "origin") and instance.origin == "SYSTEM":
-            self.fields["configuration"] = ConfigurationSerializer()
-        else:
+
+        origin = None
+        instance = kwargs.get("instance", None)
+        if hasattr(self, "initial_data") and self.initial_data:
+            origin = self.initial_data.get("origin")
+        elif instance and hasattr(instance, "origin"):
+            origin = instance.origin
+
+        if origin == "USER":
             self.fields["configuration"] = UploadedConfigurationSerializer()
+        else:
+            self.fields["configuration"] = ConfigurationSerializer()
 
     def create(self, validated_data):
         validated_data["user"] = self.context["user"] or None

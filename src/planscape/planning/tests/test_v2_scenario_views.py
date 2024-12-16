@@ -41,6 +41,7 @@ class CreateScenarioTest(APITransactionTestCase):
         data = {
             "planning_area": self.planning_area.pk,
             "name": "Hello Scenario!",
+            "origin": "SYSTEM",
             "configuration": self.configuration,
         }
         response = self.client.post(
@@ -48,6 +49,22 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(response.json().get("id"))
+
+    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
+    def test_create_uploaded_scenario(self, _forsys_run):
+        self.client.force_authenticate(self.user)
+        uploaded_scenario = {
+            "planning_area": self.planning_area.pk,
+            "name": "Uploaded Scenario",
+            "origin": "USER",
+            "configuration": {"stand_size": "LARGE"},
+        }
+        print(f"Here is the data we are uploading to the thingy {uploaded_scenario}")
+        upload_response = self.client.post(
+            reverse("api:planning:scenarios-list"), uploaded_scenario, format="json"
+        )
+        self.assertEqual(upload_response.status_code, 201)
+        self.assertIsNotNone(upload_response.json().get("id"))
 
 
 class ListScenariosForPlanningAreaTest(APITestCase):
