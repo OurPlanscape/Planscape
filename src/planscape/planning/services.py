@@ -135,7 +135,7 @@ def union_geojson(uploaded_geojson):
     return unioned_geometry
 
 
-def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
+def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] = None):
     try:
         area_name = f"{scenario.name}, Project Area"
         if idx is not None:
@@ -212,6 +212,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     ScenarioResult.objects.create(
         scenario=scenario, result=uploaded_geom, status="SUCCESS"
     )
+
     return scenario
 
 
