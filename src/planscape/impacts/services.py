@@ -173,8 +173,11 @@ def generate_summary(
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
+    stand_size = treatment_plan.scenario.get_stand_size()
     for project in project_area_queryset:
-        stand_project_qs = Stand.objects.within_polygon(project.geometry).all()
+        stand_project_qs = Stand.objects.within_polygon(
+            project.geometry, stand_size
+        ).all()
         project_areas.append(
             {
                 "project_area_id": project.id,
@@ -429,8 +432,8 @@ def calculate_baseline_metrics(
     geometry = ProjectArea.objects.filter(scenario=treatment_plan.scenario).aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
-
-    stands = Stand.objects.within_polygon(geometry)
+    stand_size = treatment_plan.scenario.get_stand_size()
+    stands = Stand.objects.within_polygon(geometry, stand_size)
     datalayer = ImpactVariable.get_datalayer(
         impact_variable=variable,
         year=year,
@@ -496,9 +499,9 @@ def calculate_project_area_deltas(
     """
     # untreated stands just copy the values from baselines
     results = []
-
+    stand_size = project_area.scenario.get_stand_size()
     stands_in_project_area = list(
-        Stand.objects.within_polygon(project_area.geometry).values_list(
+        Stand.objects.within_polygon(project_area.geometry, stand_size).values_list(
             "id",
             flat=True,
         )

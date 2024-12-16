@@ -12,6 +12,7 @@ class DatasetAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["created_by"].disabled = True
+        self.fields["created_by"].required = False
 
     class Meta:
         model = Dataset
