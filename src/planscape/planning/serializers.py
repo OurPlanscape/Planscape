@@ -406,6 +406,13 @@ class ScenarioSerializer(
 
         origin = None
         instance = kwargs.get("instance", None)
+
+        if hasattr(self, "instance") and hasattr(self.instance, "origin"):
+            origin = self.instance.origin
+
+        if kwargs.get("data"):
+            origin = kwargs["data"].get("origin")
+
         if hasattr(self, "initial_data") and self.initial_data:
             origin = self.initial_data.get("origin")
         elif instance and hasattr(instance, "origin"):
@@ -415,6 +422,14 @@ class ScenarioSerializer(
             self.fields["configuration"] = UploadedConfigurationSerializer()
         else:
             self.fields["configuration"] = ConfigurationSerializer()
+
+    def get_configuration(self, obj):
+        if obj.origin == "USER":
+            serializer = UploadedConfigurationSerializer(obj.configuration)
+        else:
+            serializer = ConfigurationSerializer(obj.configuration)
+        # Return the serialized data
+        return serializer.data
 
     def create(self, validated_data):
         validated_data["user"] = self.context["user"] or None

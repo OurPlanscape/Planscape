@@ -5,8 +5,11 @@
 <div
   class="create-scenarios-panel mat-elevation-z2"
   [ngClass]="{ hidden: scenarioNotFound }">
-  <div *ngIf="scenarioOrigin === 'USER'">
+  <div
+    *ngIf="scenarioOrigin === 'USER'"
+    class="uploaded-scenario-panel-content">
     <app-treatments-tab
+      class="uploaded-treatments-tab"
       *ngIf="scenarioId"
       [scenarioId]="scenarioId!"
       [planningArea]="plan$ | async"></app-treatments-tab>

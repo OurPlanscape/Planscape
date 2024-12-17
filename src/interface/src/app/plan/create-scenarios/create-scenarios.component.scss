@@ -19,6 +19,23 @@
   }
 }
 
+.uploaded-scenario-panel-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  // z-index: 5;
+  top: 0;
+  left: 0;
+}
+
+.uploaded-treatments-tab {
+  flex-grow: 1;
+  width: 100%;
+  background-color: $color-soft-purple;
+}
+
 .create-scenarios-panel-content {
   box-sizing: border-box;
   display: flex;
