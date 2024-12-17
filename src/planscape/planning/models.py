@@ -18,6 +18,7 @@ from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
 from django_stubs_ext.db.models import TypedModelMeta
+from stands.models import StandSizeChoices
 from utils.uuid_utils import generate_short_uuid
 
 from planscape.typing import TUser
@@ -229,6 +230,9 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     def get_forsys_folder(self) -> Path:
         return Path(settings.OUTPUT_DIR) / Path(str(self.uuid))
+
+    def get_stand_size(self) -> StandSizeChoices:
+        return self.configuration.get("stand_size", {}) or StandSizeChoices.LARGE
 
     objects = ScenarioManager()
 

@@ -9,6 +9,7 @@ from impacts.models import (
     TreatmentResultType,
     ImpactVariable,
     ImpactVariableAggregation,
+    ProjectAreaTreatmentResult,
     get_prescription_type,
 )
 from planning.tests.factories import ScenarioFactory, ProjectAreaFactory
@@ -45,10 +46,27 @@ class TreatmentResultFactory(factory.django.DjangoModelFactory):
         model = TreatmentResult
 
     treatment_plan = factory.SubFactory(TreatmentPlanFactory)
-    treatment_prescription = factory.SubFactory(TreatmentPrescriptionFactory)
     variable = factory.fuzzy.FuzzyChoice(ImpactVariable.values)
     aggregation = factory.fuzzy.FuzzyChoice(ImpactVariableAggregation.values)
     year = factory.fuzzy.FuzzyInteger(low=0, high=20)
     value = factory.fuzzy.FuzzyFloat(low=0, high=100)
     baseline = factory.fuzzy.FuzzyFloat(low=0, high=100)
     type = TreatmentResultType.DIRECT
+    action = factory.fuzzy.FuzzyChoice(TreatmentPrescriptionAction.choices)
+
+
+class ProjectAreaTreatmentResultFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = ProjectAreaTreatmentResult
+
+    treatment_plan = factory.SubFactory(TreatmentPlanFactory)
+    project_area = factory.SubFactory(ProjectAreaFactory)
+    variable = factory.fuzzy.FuzzyChoice(ImpactVariable.values)
+    aggregation = factory.fuzzy.FuzzyChoice(ImpactVariableAggregation.values)
+    year = factory.fuzzy.FuzzyInteger(low=0, high=20)
+    value = factory.fuzzy.FuzzyFloat(low=0, high=100)
+    baseline = factory.fuzzy.FuzzyFloat(low=0, high=100)
+    delta = factory.fuzzy.FuzzyFloat(low=0, high=100)
+    type = TreatmentResultType.DIRECT
+    action = factory.fuzzy.FuzzyChoice(TreatmentPrescriptionAction.choices)
+    stand_count = factory.fuzzy.FuzzyInteger(low=1, high=20)

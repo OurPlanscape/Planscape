@@ -1,6 +1,9 @@
 from rest_framework.routers import SimpleRouter
 
-from impacts.views import TreatmentPlanViewSet, TreatmentPrescriptionViewSet
+from impacts.views import (
+    TreatmentPlanViewSet,
+    TreatmentPrescriptionViewSet,
+)
 
 router = SimpleRouter()
 router.register(

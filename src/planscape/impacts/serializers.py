@@ -7,6 +7,7 @@ from impacts.models import (
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
+    ProjectAreaTreatmentResult,
 )
 from planning.models import ProjectArea
 from planning.services import get_acreage
@@ -183,6 +184,43 @@ class SummarySerializer(serializers.Serializer):
         return project_area
 
 
+class TreatmentResultSerializer(serializers.Serializer):
+    variables = serializers.ListField(
+        child=serializers.ChoiceField(
+            choices=ImpactVariable.choices,
+        ),
+        help_text="Impact Variables.",
+        required=True,
+    )
+    actions = serializers.ListField(
+        child=serializers.ChoiceField(
+            choices=TreatmentPrescriptionAction.choices,
+        ),
+        help_text="Actions.",
+        required=False,
+    )
+    project_areas = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=ProjectArea.objects.all(),
+            required=False,
+            help_text="Project Area ID.",
+        ),
+        help_text="Impact Variables.",
+        required=False,
+    )
+
+    def validate_project_areas(self, project_areas):
+        treatment_plan = self.context.get("treatment_plan", None) or None
+
+        pa_scenario_ids = set([pa.scenario.pk for pa in project_areas])
+        if not treatment_plan or treatment_plan.scenario.pk not in pa_scenario_ids:
+            raise serializers.ValidationError(
+                "Project Area does not belong to the same Scenario as Treatment Plan."
+            )
+
+        return project_areas
+
+
 # serializers used only for documentation
 class OutputPrescriptionSummarySerializer(serializers.Serializer):
     action = serializers.CharField(help_text="Action for Prescription.")
@@ -261,3 +299,21 @@ class DataLayerImpactsModuleSerializer(serializers.Serializer):
             )
 
         return super().validate(attrs=attrs)
+
+
+class TreatmentResultsPlotSerializer(serializers.Serializer):
+    project_areas = serializers.ListField(
+        child=serializers.IntegerField(), help_text="Project Areas IDs."
+    )
+    years = serializers.ListField(
+        child=serializers.IntegerField(), help_text="Years in sequence."
+    )
+    values = serializers.ListField(
+        child=serializers.ListField(
+            child=serializers.IntegerField(), help_text="Value ordered by metric."
+        ),
+        help_text="Values ordered by years.",
+    )
+    metrics = serializers.ListField(
+        child=serializers.CharField(max_length=20), help_text="Metrics."
+    )

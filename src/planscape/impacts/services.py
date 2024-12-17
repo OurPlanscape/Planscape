@@ -3,7 +3,7 @@ import itertools
 import json
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
-from django.db.models import Count, QuerySet
+from django.db.models import Count, QuerySet, Sum, F, Case, When
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -173,8 +173,11 @@ def generate_summary(
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
+    stand_size = treatment_plan.scenario.get_stand_size()
     for project in project_area_queryset:
-        stand_project_qs = Stand.objects.within_polygon(project.geometry).all()
+        stand_project_qs = Stand.objects.within_polygon(
+            project.geometry, stand_size
+        ).all()
         project_areas.append(
             {
                 "project_area_id": project.id,
@@ -209,6 +212,54 @@ def generate_summary(
         "extent": project_areas_geometry.extent,
     }
     return data
+
+
+def generate_impact_results_data_to_plot(
+    treatment_plan: TreatmentPlan,
+    impact_variables: List,
+    project_area_pks: Optional[List] = None,
+    tx_px_actions: Optional[List] = None,
+) -> List[Dict]:
+    filters = {
+        "treatment_plan": treatment_plan,
+        "variable__in": impact_variables,
+        "aggregation": ImpactVariableAggregation.MEAN,
+    }
+
+    if project_area_pks:
+        filters["project_area_id__in"] = project_area_pks
+
+    if tx_px_actions:
+        filters["action__in"] = tx_px_actions
+
+    queryset = ProjectAreaTreatmentResult.objects.filter(**filters)
+
+    years = queryset.values_list("year", flat=True).distinct("year").order_by("year")
+    years = [year for year in years]
+
+    aggregated_values = (
+        queryset.values("year", "variable")
+        .annotate(
+            dividend=Sum(F("value") * F("stand_count")), divisor=Sum("stand_count")
+        )
+        .annotate(
+            value=Case(
+                When(divisor=0, then=None),
+                default=(F("dividend") / F("divisor")),
+            )
+        )
+    )
+
+    impact_variables_indexes = {k: v for v, k in enumerate(impact_variables)}
+
+    values = sorted(
+        aggregated_values,
+        key=lambda x: int(
+            f"{x.get('year')}{impact_variables_indexes[x.get('variable')]}"
+        ),
+    )
+
+    return values
 
 
 def to_project_area_result(
@@ -381,8 +432,8 @@ def calculate_baseline_metrics(
     geometry = ProjectArea.objects.filter(scenario=treatment_plan.scenario).aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
-
-    stands = Stand.objects.within_polygon(geometry)
+    stand_size = treatment_plan.scenario.get_stand_size()
+    stands = Stand.objects.within_polygon(geometry, stand_size)
     datalayer = ImpactVariable.get_datalayer(
         impact_variable=variable,
         year=year,
@@ -448,9 +499,9 @@ def calculate_project_area_deltas(
     """
     # untreated stands just copy the values from baselines
     results = []
-
+    stand_size = project_area.scenario.get_stand_size()
     stands_in_project_area = list(
-        Stand.objects.within_polygon(project_area.geometry).values_list(
+        Stand.objects.within_polygon(project_area.geometry, stand_size).values_list(
             "id",
             flat=True,
         )

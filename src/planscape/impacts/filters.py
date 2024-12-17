@@ -2,8 +2,13 @@ from typing import Optional
 from django_filters import rest_framework as filters
 from django.db.models import QuerySet
 from rest_framework.request import Request
-from impacts.models import TreatmentPlan, TreatmentPlanStatus
+from impacts.models import (
+    TreatmentPlan,
+    TreatmentPlanStatus,
+    ImpactVariable,
+)
 from planning.models import Scenario
+from planning.filters import get_planning_areas_for_filter
 
 
 def get_scenarios_for_filter(request: Optional[Request]) -> QuerySet:
