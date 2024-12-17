@@ -144,10 +144,16 @@ class Command(PlanscapeCommand):
             default="planscape-control-dev",
         )
         import_parser.add_argument(
-            "--prefix", required=False, type=str, default="datalayers/1/"
+            "--prefix",
+            required=False,
+            type=str,
+            default="datalayers/1/",
         )
         import_parser.add_argument(
-            "--ext-filter", required=False, type=str, default=".tif"
+            "--ext-filter",
+            required=False,
+            type=str,
+            default=".tif",
         )
         import_parser.add_argument(
             "--dry-run",

@@ -59,7 +59,6 @@ class CreateScenarioTest(APITransactionTestCase):
             "origin": "USER",
             "configuration": {"stand_size": "LARGE"},
         }
-        print(f"Here is the data we are uploading to the thingy {uploaded_scenario}")
         upload_response = self.client.post(
             reverse("api:planning:scenarios-list"), uploaded_scenario, format="json"
         )

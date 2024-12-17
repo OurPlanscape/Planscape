@@ -13,7 +13,7 @@ from impacts.models import (
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
     TreatmentResult,
-    TreatmentResultType,
+    ImpactVariableAggregation,
 )
 from impacts.services import (
     calculate_delta,
@@ -22,17 +22,22 @@ from impacts.services import (
     get_calculation_matrix,
     upsert_treatment_prescriptions,
     generate_summary,
+    generate_impact_results_data_to_plot,
 )
 from impacts.tasks import (
     async_calculate_impacts_for_variable_action_year,
-    async_calculate_persist_impacts_treatment_plan,
 )
 from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
-    TreatmentResultFactory,
+    ProjectAreaTreatmentResultFactory,
 )
-from planning.tests.factories import ProjectAreaFactory, ScenarioFactory
+from planning.tests.factories import (
+    ProjectAreaFactory,
+    PlanningAreaFactory,
+    ScenarioFactory,
+)
+from planscape.tests.factories import UserFactory
 from stands.models import Stand, StandSizeChoices
 from stands.tests.factories import StandFactory
 
@@ -491,3 +496,144 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             self.assertGreater(TreatmentResult.objects.count(), 0)
             self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
             self.assertEquals(len(self.stands), TreatmentResult.objects.count())
+
+
+class ImpactResultsDataPlotTest(TransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration={"stand_size": StandSizeChoices.SMALL},
+        )
+        self.project_areas = [
+            ProjectAreaFactory.create(scenario=self.scenario),
+            ProjectAreaFactory.create(scenario=self.scenario),
+            ProjectAreaFactory.create(scenario=self.scenario),
+        ]
+        self.tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.user
+        )
+        self.empty_tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.user
+        )
+        self.years = [0, 5, 10, 15, 20]
+        self.patxrx_list = []
+        for pa in self.project_areas:
+            for variable in ImpactVariable.choices:
+                for year in self.years:
+                    ProjectAreaTreatmentResultFactory(
+                        project_area=pa,
+                        treatment_plan=self.tx_plan,
+                        variable=variable[0],
+                        year=year,
+                        aggregation=ImpactVariableAggregation.MEAN,
+                        action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS,
+                    )
+
+    def test_generate_data_to_plot(self):
+        input_variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        data = generate_impact_results_data_to_plot(
+            treatment_plan=self.tx_plan,
+            impact_variables=input_variables,
+        )
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), len(self.years) * len(input_variables))
+        for item in data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), input_variables)
+            self.assertIsNotNone(item.get("value"))
+
+    def test_generate_data_to_plot__filter_by_project_areas(self):
+        pa_pks = [project_area.pk for project_area in self.project_areas]
+        pa_pks.pop(0)
+        pa_pks.sort()
+
+        input_variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        data = generate_impact_results_data_to_plot(
+            treatment_plan=self.tx_plan,
+            impact_variables=input_variables,
+            project_area_pks=pa_pks,
+        )
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), len(self.years) * len(input_variables))
+        for item in data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), input_variables)
+            self.assertIsNotNone(item.get("value"))
+
+    def test_generate_data_to_plot__filter_by_actions(self):
+        input_variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        actions = [TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value]
+        data = generate_impact_results_data_to_plot(
+            treatment_plan=self.tx_plan,
+            impact_variables=input_variables,
+            tx_px_actions=actions,
+        )
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), len(self.years) * len(input_variables))
+        for item in data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), input_variables)
+            self.assertIsNotNone(item.get("value"))
+
+    def test_empty_results(self):
+        input_variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        data = generate_impact_results_data_to_plot(
+            treatment_plan=self.empty_tx_plan,
+            impact_variables=input_variables,
+        )
+        self.assertEqual(data, [])
+
+    def test_project_area_with_no_treatment(self):
+        new_project_area = ProjectAreaFactory.create(scenario=self.scenario)
+        self.project_areas.append(new_project_area)
+        for variable in ImpactVariable.choices:
+            for year in self.years:
+                ProjectAreaTreatmentResultFactory(
+                    project_area=new_project_area,
+                    treatment_plan=self.tx_plan,
+                    variable=variable[0],
+                    year=year,
+                    aggregation=ImpactVariableAggregation.MEAN,
+                    action=None,
+                    stand_count=0,
+                )
+
+        input_variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        data = generate_impact_results_data_to_plot(
+            treatment_plan=self.tx_plan,
+            impact_variables=input_variables,
+            project_area_pks=[new_project_area.pk],
+        )
+        self.assertIsNotNone(data)
+        self.assertEqual(len(data), len(self.years) * len(input_variables))
+        for item in data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), input_variables)
+            self.assertIsNone(item.get("value"))
