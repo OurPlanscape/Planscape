@@ -329,7 +329,7 @@ def calculate_impacts(
     )
 
     stand_ids = prescriptions.values_list("stand_id", flat=True)
-    stands = Stand.objects.filter(id__in=stand_ids)
+    stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
 
     baseline_metrics = calculate_metrics(
         stands=stands,
