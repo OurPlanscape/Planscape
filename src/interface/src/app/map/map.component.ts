@@ -78,6 +78,7 @@ import { getPlanPath } from '../plan/plan-helpers';
 import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
+import { AnalyticsService } from '@services/analytics.service';
 
 @UntilDestroy()
 @Component({
@@ -187,7 +188,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
     private shareMapService: ShareMapService,
-    private location: Location
+    private location: Location,
+    private analyticsService: AnalyticsService
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -651,6 +653,12 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           );
           this.showUploader = false;
           this.addDrawingControlToAllMaps();
+          this.analyticsService.emitEvent(
+            'shapefiles_uploaded_explore',
+            'file_uploaded',
+            'Upload Area',
+            1
+          );
         },
         error: () => {
           this.showAreaTooComplexError();
