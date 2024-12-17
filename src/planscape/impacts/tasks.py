@@ -55,7 +55,7 @@ def async_calculate_impacts_for_variable_action_year(
             treatment_plan=treatment_plan, variable=variable, action=action, year=year
         )
     except (OSError, RasterioIOError) as exc:
-        if self.request.retries >= self.request.max_retries:
+        if self.request.retries >= self.max_retries:
             log.exception("Task failed on all retries.")
         else:
             log.warning("Task failed. Retrying.")
