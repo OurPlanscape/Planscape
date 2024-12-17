@@ -3,9 +3,9 @@ export interface Metric {
   label: string;
 }
 
-export interface MapMetric {
+export interface ImpactsMetric {
   metric: Metric;
-  slot: MapMetricSlot;
+  slot: ImpactsMetricSlot;
 }
 
 export const METRICS: Metric[] = [
@@ -67,10 +67,10 @@ export const METRICS: Metric[] = [
   },
 ];
 
-export type MapMetricSlot = 'blue' | 'purple' | 'orange' | 'green';
-export const DEFAULT_SLOT: MapMetricSlot = 'blue';
+export type ImpactsMetricSlot = 'blue' | 'purple' | 'orange' | 'green';
+export const DEFAULT_SLOT: ImpactsMetricSlot = 'blue';
 
-export const SLOT_COLORS: Record<MapMetricSlot, string> = {
+export const SLOT_COLORS: Record<ImpactsMetricSlot, string> = {
   blue: '#1E88E5',
   purple: '#8E24AA',
   orange: '#FB8C00',
@@ -78,7 +78,7 @@ export const SLOT_COLORS: Record<MapMetricSlot, string> = {
 };
 
 export const SLOT_PALETTES: Record<
-  MapMetricSlot,
+  ImpactsMetricSlot,
   [string, string, string, string, string]
 > = {
   blue: ['#BBDEFB', '#64B5F6', '#2196F3', '#1976D2', '#0D47A1'],

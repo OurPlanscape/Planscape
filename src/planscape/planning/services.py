@@ -32,7 +32,6 @@ from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 from actstream import action
-from impacts.services import create_treatment_plan
 
 logger = logging.getLogger(__name__)
 

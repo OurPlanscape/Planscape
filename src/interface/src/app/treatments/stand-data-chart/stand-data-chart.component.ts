@@ -8,6 +8,8 @@ import { SLOT_COLORS, YEAR_INTERVAL_PROPERTY } from '../metrics';
 import { filter } from 'rxjs/operators';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { MatTableModule } from '@angular/material/table';
+import { NonForestedDataComponent } from '../non-forested-data/non-forested-data.component';
 
 const baseFont = {
   family: 'Public Sans',
@@ -25,6 +27,8 @@ const baseFont = {
     AsyncPipe,
     JsonPipe,
     TreatmentTypeIconComponent,
+    MatTableModule,
+    NonForestedDataComponent,
   ],
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',
@@ -33,6 +37,12 @@ export class StandDataChartComponent {
   constructor(private directImpactsStateService: DirectImpactsStateService) {}
 
   activeStand$ = this.directImpactsStateService.activeStand$;
+
+  activeStandIsForested$ = this.activeStand$.pipe(
+    map((d) => {
+      return d && !!d.properties['delta_0'];
+    })
+  );
 
   activeStandValues$: Observable<number[]> =
     this.directImpactsStateService.activeStand$.pipe(

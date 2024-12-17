@@ -424,15 +424,6 @@ class ScenarioSerializer(
         validated_data["user"] = self.context["user"] or None
         return super().update(instance, validated_data)
 
-    def __init__(self, *args, **kwargs):
-        instance = kwargs.get("instance", None)
-
-        super().__init__(*args, **kwargs)
-        if instance and hasattr(instance, "origin") and instance.origin == "SYSTEM":
-            self.fields["configuration"] = ConfigurationSerializer()
-        else:
-            self.fields["configuration"] = UploadedConfigurationSerializer()
-
     class Meta:
         fields = (
             "id",
