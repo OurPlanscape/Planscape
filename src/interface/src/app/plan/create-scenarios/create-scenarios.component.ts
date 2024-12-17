@@ -8,7 +8,13 @@ import {
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
 import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
-import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
+import {
+  ORIGIN_TYPE,
+  Plan,
+  Scenario,
+  ScenarioResult,
+  ScenarioResultStatus,
+} from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -42,7 +48,7 @@ export class CreateScenariosComponent implements OnInit {
   generatingScenario: boolean = false;
   scenarioId: string | null = null;
   scenarioName: string | null = null;
-  scenarioOrigin: string = 'USER';
+  scenarioOrigin?: ORIGIN_TYPE = 'SYSTEM';
   planId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
@@ -96,8 +102,8 @@ export class CreateScenariosComponent implements OnInit {
         (control: AbstractControl) =>
           scenarioNameMustBeNew(control, this.existingScenarioNames),
       ]),
-      priorities: this.prioritiesComponent.createForm(),
-      constrains: this.constraintsPanelComponent.createForm(),
+      priorities: this.prioritiesComponent?.createForm() || '',
+      constrains: this.constraintsPanelComponent?.createForm() || '',
       projectAreas: this.fb.group({
         generateAreas: [''],
         uploadedArea: [''],
@@ -106,7 +112,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // this.createForms();
+    this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.planStateService.planState$
       .pipe(untilDestroyed(this), take(1))
@@ -182,6 +188,7 @@ export class CreateScenariosComponent implements OnInit {
         // Updating breadcrumbs
         this.scenarioName = scenario.name;
         this.scenarioId = scenario.id;
+        this.scenarioOrigin = scenario.origin;
         this.planStateService.updateStateWithScenario(
           this.scenarioId,
           this.scenarioName
@@ -209,12 +216,12 @@ export class CreateScenariosComponent implements OnInit {
         }
         // setting treatment question
         if (scenario.configuration.treatment_question) {
-          this.prioritiesComponent.setFormData(
+          this.prioritiesComponent?.setFormData(
             scenario.configuration.treatment_question
           );
         }
         // setting constraints
-        this.constraintsPanelComponent.setFormData(scenario.configuration);
+        this.constraintsPanelComponent?.setFormData(scenario.configuration);
       },
       error: () => {
         this.scenarioNotFound = true;
@@ -238,7 +245,7 @@ export class CreateScenariosComponent implements OnInit {
   /** Creates the scenario */
   // TODO Add support for uploaded Project Area shapefiles
   createScenario(): void {
-    this.forms.markAllAsTouched();
+    this.forms?.markAllAsTouched();
     if (this.forms.invalid) {
       return;
     }
@@ -257,6 +264,7 @@ export class CreateScenariosComponent implements OnInit {
         // Setting the new scenario id
         this.scenarioId = newScenario.id;
         this.scenarioName = newScenario.name;
+        this.scenarioOrigin = newScenario.origin;
         this.matSnackBar.dismiss();
         this.scenarioState = 'PENDING';
         this.disableForms();
