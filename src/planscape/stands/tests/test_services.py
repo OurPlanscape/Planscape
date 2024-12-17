@@ -35,7 +35,7 @@ class CalculateStandZonalStatsTestCase(TestCase):
 
     def test_calculate_stand_zonal_stats_returns_stand_metrics(self):
         self.assertEqual(0, StandMetric.objects.count())
-        stands = Stand.objects.filter(id__in=self.stand_ids)
+        stands = Stand.objects.filter(id__in=self.stand_ids).with_webmercator()
         metrics = calculate_stand_zonal_stats(stands, datalayer=self.datalayer)
         self.assertGreater(metrics.count(), 0)
         for m in metrics:

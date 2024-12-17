@@ -5,8 +5,8 @@ import { AsyncPipe, NgFor } from '@angular/common';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
-  MapMetric,
-  MapMetricSlot,
+  ImpactsMetric,
+  ImpactsMetricSlot,
   Metric,
   METRICS,
   SLOT_COLORS,
@@ -31,7 +31,7 @@ import { Observable } from 'rxjs';
   styleUrl: './metric-filters.component.scss',
 })
 export class MetricFiltersComponent implements OnInit {
-  @Output() metricSelected = new EventEmitter<MapMetric>();
+  @Output() metricSelected = new EventEmitter<ImpactsMetric>();
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
@@ -41,7 +41,7 @@ export class MetricFiltersComponent implements OnInit {
   initialOptions: Metric[] = METRICS;
 
   metricColors = Object.entries(SLOT_COLORS).map(([key, value]) => ({
-    key: key as MapMetricSlot,
+    key: key as ImpactsMetricSlot,
     value,
   }));
 
@@ -95,7 +95,7 @@ export class MetricFiltersComponent implements OnInit {
 
   optionSelected(
     dropdownIndex: number,
-    slot: MapMetricSlot,
+    slot: ImpactsMetricSlot,
     metric: Metric
   ): void {
     // Storing the selection
@@ -127,7 +127,7 @@ export class MetricFiltersComponent implements OnInit {
     );
   }
 
-  activateMetric(metric: Metric, slot: MapMetricSlot): void {
+  activateMetric(metric: Metric, slot: ImpactsMetricSlot): void {
     this.metricSelected.emit({ metric, slot });
   }
 
