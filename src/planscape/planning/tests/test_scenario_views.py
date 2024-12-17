@@ -95,6 +95,7 @@ class CreateScenarioTest(APITestCase):
                 "planning_area": self.planning_area.pk,
                 "configuration": self.configuration,
                 "name": "test scenario",
+                "origin": "SYSTEM",
             }
         )
         response = self.client.post(
@@ -292,6 +293,29 @@ class CreateScenarioTest(APITestCase):
                 "planning_area": self.planning_area2.pk,
                 "configuration": self.configuration,
                 "name": "test scenario",
+            }
+        )
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertJSONEqual(
+            response.content,
+            {
+                "error": "User does not have permission to create scenarios from this Planning Area"
+            },
+        )
+
+    def test_create_scenario_uploaded_data(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = json.dumps(
+            {
+                "planning_area": self.planning_area2.pk,
+                "configuration": {"stand_size": "MEDIUM"},
+                "name": "test scenario",
+                "origin": "USER",
             }
         )
         response = self.client.post(
