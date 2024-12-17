@@ -433,7 +433,7 @@ def calculate_baseline_metrics(
         geometry=UnionOp("geometry")
     )["geometry"]
     stand_size = treatment_plan.scenario.get_stand_size()
-    stands = Stand.objects.within_polygon(geometry, stand_size)
+    stands = Stand.objects.within_polygon(geometry, stand_size).with_webmercator()
     datalayer = ImpactVariable.get_datalayer(
         impact_variable=variable,
         year=year,
@@ -459,7 +459,7 @@ def calculate_action_metrics(
     )
 
     stand_ids = prescriptions.values_list("stand_id", flat=True)
-    stands = Stand.objects.filter(id__in=stand_ids)
+    stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
     datalayer = ImpactVariable.get_datalayer(
         impact_variable=variable,
         action=action,

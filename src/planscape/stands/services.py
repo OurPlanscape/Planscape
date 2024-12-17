@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 
 
 def to_geojson(stand: Stand) -> Dict[str, Any]:
-    geometry = stand.geometry.transform(3857, clone=True)
+    geometry = stand.webmercator.json
     return {
         "type": "Feature",
         "id": stand.id,
@@ -18,7 +18,7 @@ def to_geojson(stand: Stand) -> Dict[str, Any]:
             "id": stand.id,
             "size": stand.size,
         },
-        "geometry": json.loads(geometry.json),
+        "geometry": json.loads(geometry),
     }
 
 
