@@ -72,7 +72,7 @@
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandStandChart()">
-        <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
+        <div panelTitle>{{ standChartPanelTitle$ | async }} /</div>
         <app-stand-data-chart></app-stand-data-chart>
       </sg-panel>
 
@@ -84,7 +84,7 @@
           { icon: 'layers', actionName: 'layers' },
           { icon: 'open_in_full', actionName: 'expand' }
         ]">
-        <div panelTitle>Total Carbon for All Project Areas</div>
+        <div panelTitle>{{ mapPanelTitle$ | async }}</div>
         <app-direct-impacts-synced-maps
           *ngIf="!showTreatmentPrescription"></app-direct-impacts-synced-maps>
         <app-treatment-map

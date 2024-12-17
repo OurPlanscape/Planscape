@@ -16,12 +16,13 @@ import {
 } from 'maplibre-gl';
 import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
-import { DEFAULT_SLOT, MapMetricSlot, SLOT_PALETTES } from '../metrics';
+import { DEFAULT_SLOT, ImpactsMetricSlot, SLOT_PALETTES } from '../metrics';
 import { map } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { filter } from 'rxjs/operators';
 import { descriptionForAction } from '../prescriptions';
+import { FilterByActionPipe } from './filter-by-action.pipe';
 
 @Component({
   selector: 'app-map-stands-tx-result',
@@ -32,6 +33,7 @@ import { descriptionForAction } from '../prescriptions';
     VectorSourceComponent,
     PopupComponent,
     NgIf,
+    FilterByActionPipe,
   ],
   templateUrl: './map-stands-tx-result.component.html',
   styleUrl: './map-stands-tx-result.component.scss',
@@ -72,6 +74,8 @@ export class MapStandsTxResultComponent implements OnInit {
 
   activeStand$ = this.directImpactsStateService.activeStand$;
 
+  treatments$ = this.directImpactsStateService.filteredTreatmentTypes$;
+
   activeStandId$ = this.activeStand$.pipe(
     filter((s): s is MapGeoJSONFeature => s !== null),
     map((stand) => stand.id)
@@ -111,24 +115,31 @@ export class MapStandsTxResultComponent implements OnInit {
     return features[0];
   }
 
-  private generatePaint(slot: MapMetricSlot) {
+  private generatePaint(slot: ImpactsMetricSlot) {
     return {
       'fill-color': [
         'case',
-        ['==', ['get', this.propertyName], ['literal', null]], // Explicitly typing null
-        '#ffffff', // White for null values
+        // Check if 'action' property is null
+        ['==', ['get', 'action'], ['literal', null]],
+        '#ffffff', // White for null 'action'
         [
-          'interpolate',
-          ['linear'],
-          ['get', this.propertyName],
-          ...this.getPallete(slot),
+          // If 'action' is not null, apply the existing logic
+          'case',
+          ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
+          '#ffffff', // White for null 'propertyName'
+          [
+            'interpolate',
+            ['linear'],
+            ['get', this.propertyName],
+            ...this.getPalette(slot),
+          ],
         ],
       ] as DataDrivenPropertyValueSpecification<ColorSpecification>,
       'fill-opacity': 0.8,
     };
   }
 
-  private getPallete(slot: MapMetricSlot) {
+  private getPalette(slot: ImpactsMetricSlot) {
     const palette = SLOT_PALETTES[slot];
     return [
       -1,

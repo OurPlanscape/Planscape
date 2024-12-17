@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenariosTableListComponent } from './scenarios-table-list.component';
 import { FeaturesModule } from '../../../features/features.module';
 import { LegacyMaterialModule } from '../../../material/legacy-material.module';
+import { TypeSafeMatCellDef } from '@shared';
 
 describe('ScenariosTableListComponent', () => {
   let component: ScenariosTableListComponent;
@@ -10,7 +11,7 @@ describe('ScenariosTableListComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ScenariosTableListComponent],
+      declarations: [ScenariosTableListComponent, TypeSafeMatCellDef],
       imports: [FeaturesModule, LegacyMaterialModule],
     }).compileComponents();
 

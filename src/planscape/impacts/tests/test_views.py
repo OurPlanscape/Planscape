@@ -1,4 +1,5 @@
 from unittest import mock
+from urllib.parse import urlencode
 from rest_framework.test import APITransactionTestCase
 from rest_framework import status
 from django.forms.models import model_to_dict
@@ -6,13 +7,25 @@ from django.urls import reverse
 from django.contrib.auth import get_user_model
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
-from impacts.models import TreatmentPlan, TreatmentPlanStatus
+from impacts.models import (
+    TreatmentPlan,
+    TreatmentPlanStatus,
+    ImpactVariableAggregation,
+    TreatmentPrescriptionAction,
+)
 from impacts.tests.factories import (
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
+    ProjectAreaTreatmentResultFactory,
+    ImpactVariable,
 )
-from planning.tests.factories import ScenarioFactory
+from planning.tests.factories import (
+    ScenarioFactory,
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+)
 from planscape.tests.factories import UserFactory
+from stands.models import StandSizeChoices
 
 User = get_user_model()
 
@@ -269,6 +282,181 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertEqual(updated_plan.name, "ok new name")
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
+
+
+class TxPlanViewSetPlotTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.scenario = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            configuration={"stand_size": StandSizeChoices.SMALL},
+        )
+        self.project_areas = [
+            ProjectAreaFactory.create(scenario=self.scenario),
+            ProjectAreaFactory.create(scenario=self.scenario),
+            ProjectAreaFactory.create(scenario=self.scenario),
+        ]
+        self.tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.user
+        )
+        self.empty_tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, created_by=self.user
+        )
+        self.client.force_authenticate(user=self.user)
+        self.years = [0, 5, 10, 15, 20]
+        self.patxrx_list = []
+        for pa in self.project_areas:
+            for variable in ImpactVariable.choices:
+                for year in self.years:
+                    ProjectAreaTreatmentResultFactory(
+                        project_area=pa,
+                        treatment_plan=self.tx_plan,
+                        variable=variable[0],
+                        year=year,
+                        aggregation=ImpactVariableAggregation.MEAN,
+                        action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS,
+                    )
+        self.someone_elses_tx_plan = TreatmentPlanFactory.create()
+
+    def _build_filters(self, variables=[], project_areas=[], actions=[]):
+        filters = []
+        for variable in variables:
+            filters.append(("variables", variable))
+
+        for pa in project_areas:
+            filters.append(("project_areas", pa))
+
+        for action in actions:
+            filters.append(("actions", action))
+
+        return filters
+
+    def test_treatment_results(self):
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(variables=variables)
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertIsNotNone(response_data)
+        self.assertEqual(len(response_data), len(self.years) * 4)
+        for item in response_data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), variables)
+            self.assertIsNotNone(item.get("value"))
+
+    def test_empty_tx_plan(self):
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(variables=variables)
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.empty_tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(response_data, [])
+
+    def test_filter_by_project_areas(self):
+        pa_pks = [project_area.pk for project_area in self.project_areas]
+        pa_pks.pop(0)
+        pa_pks.sort()
+
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(variables=variables, project_areas=pa_pks)
+
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertIsNotNone(response_data)
+        self.assertEqual(len(response_data), len(self.years) * 4)
+        for item in response_data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), variables)
+            self.assertIsNotNone(item.get("value"))
+
+    def test_filter_by_actions(self):
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(
+            variables=variables,
+            actions=[TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS.value],
+        )
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertIsNotNone(response_data)
+        self.assertEqual(len(response_data), len(self.years) * 4)
+        for item in response_data:
+            self.assertIn(item.get("year"), self.years)
+            self.assertIn(item.get("variable"), variables)
+            self.assertIsNotNone(item.get("value"))
+
+    def test_filter_by_not_applied_actions(self):
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(
+            variables=variables,
+            actions=[TreatmentPrescriptionAction.HEAVY_MASTICATION.value],
+        )
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        response_data = response.json()
+        self.assertEqual(response_data, [])
+
+    def test_someone_elses_tx_plan(self):
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(variables=variables)
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.someone_elses_tx_plan.pk})}?{urlencode(filter)}"
+        response = self.client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
 
 class TxPrescriptionListTest(APITransactionTestCase):

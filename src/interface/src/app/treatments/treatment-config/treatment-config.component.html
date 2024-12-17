@@ -15,7 +15,7 @@
     <app-treatment-map></app-treatment-map>
     <section class="right-side-footer">
       <ng-container *ngIf="projectAreaId$ | async; else treatment">
-        <a sg-button variant="primary" class="footer-primary" routerLink="./">
+        <a sg-button variant="primary" class="back-btn" routerLink="./">
           Back To Overview
         </a>
       </ng-container>
@@ -27,14 +27,24 @@
           class="bottom-toggle"
           >View Treatment Layers
         </mat-slide-toggle>
-        <button
-          sg-button
-          variant="primary"
-          class="footer-primary"
-          *ngIf="canRunTreatment$ | async"
-          (click)="showReviewDialog()">
-          Run Treatment Analysis
-        </button>
+        <div class="right-footer-right-box">
+          <button
+            sg-button
+            variant="text"
+            icon="ios_share"
+            [outlined]="true"
+            (click)="createPDF()"
+            data-id="print">
+            Export Plan to PDF
+          </button>
+          <button
+            sg-button
+            variant="primary"
+            *ngIf="canRunTreatment$ | async"
+            (click)="showReviewDialog()">
+            Run Treatment Analysis
+          </button>
+        </div>
       </ng-template>
     </section>
 
@@ -42,6 +52,7 @@
       *ngIf="showApplyTreatments$ | async"></app-apply-treatment>
 
     <app-treatment-legend
-      *ngIf="(showTreatmentLegend$ | async) || false"></app-treatment-legend>
+      *ngIf="(showTreatmentLegend$ | async) || false"
+      (handleCloseLegend)="closeLegend()"></app-treatment-legend>
   </div>
 </section>

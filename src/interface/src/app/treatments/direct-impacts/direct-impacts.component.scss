@@ -120,10 +120,12 @@
   grid-template-rows: repeat(12, 86px);
   gap: 16px;
   padding: 16px 0;
+  width: calc(100% - 16px);
 
   @include on-small() {
     display: flex;
     flex-direction: column;
+    width: 100%;
   }
 
   .chart-1 {

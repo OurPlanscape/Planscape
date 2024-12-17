@@ -1,0 +1,32 @@
+@import "colors";
+
+.controls {
+  background-color: $color-white;
+  gap: 10px;
+  padding: 2px 2px 0px 2px;
+  border-radius: 4px;
+  border: 1px solid $color-soft-gray;
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25), 0 2px 2px 0 rgba(0, 0, 0, 0.10);
+}
+
+button {
+  border: none;
+  background: white;
+  border-radius: 4px;
+  padding: 3px;
+  height: 30px;
+  width: 30px;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-soft-gray;
+  }
+
+  &.active, &:active {
+    color: $color-white;
+
+    &:hover {
+      color: $color-white;
+    }
+  }
+}

@@ -9,6 +9,7 @@ import {
   map,
   Observable,
   of,
+  shareReplay,
   switchMap,
   tap,
 } from 'rxjs';
@@ -72,12 +73,18 @@ export class TreatmentsState {
   );
 
   public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
+    distinctUntilChanged(),
     filter((id): id is number => !!id),
-    switchMap((id) => this.planStateService.getPlan(id.toString()))
+    switchMap((id) => this.planStateService.getPlan(id.toString())),
+    shareReplay(1)
   );
 
-  breadcrumbs$ = combineLatest([this.activeProjectArea$, this.summary$]).pipe(
-    map(([projectArea, summary]) => {
+  breadcrumbs$ = combineLatest([
+    this.activeProjectArea$,
+    this.summary$,
+    this.treatmentPlan$,
+  ]).pipe(
+    map(([projectArea, summary, treatmentPlan]) => {
       if (!summary) {
         return [];
       }
@@ -91,7 +98,7 @@ export class TreatmentsState {
           path: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
         },
         {
-          name: summary.treatment_plan_name,
+          name: treatmentPlan?.name ?? summary.treatment_plan_name,
           path: projectArea
             ? `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`
             : '',
@@ -190,8 +197,11 @@ export class TreatmentsState {
         map((summary) => {
           // set summary data
           this._summary$.next(summary);
-          // parse summary data into treated stands
-          this.setTreatedStandsFromSummary(summary.project_areas);
+          if (!previousSummary) {
+            // parse summary data into treated stands
+            this.setTreatedStandsFromSummary(summary.project_areas);
+          }
+
           if (projectAreaId) {
             // set active project area if provided
             this.selectProjectArea(projectAreaId);
@@ -288,7 +298,7 @@ export class TreatmentsState {
       );
   }
 
-  private selectProjectArea(projectAreaId: number) {
+  private selectProjectArea(projectAreaId: number, setStands = false) {
     const summary = this._summary$.value;
 
     if (!summary) {
@@ -304,7 +314,9 @@ export class TreatmentsState {
     this._projectAreaId$.next(projectAreaId);
     this.mapConfigState.updateShowTreatmentStands(true);
     this.mapConfigState.updateMapCenter(projectArea?.extent);
-    this.setTreatedStandsFromSummary([projectArea]);
+    if (setStands) {
+      this.setTreatedStandsFromSummary([projectArea]);
+    }
   }
 
   getCurrentSummary() {

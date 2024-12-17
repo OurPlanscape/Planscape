@@ -1,15 +1,15 @@
 from rest_framework.routers import SimpleRouter
 
-from datasets.views import AdminDataLayerViewSet, AdminDatasetViewSet
+from datasets.views import DatasetViewSet, DataLayerViewSet
 
 router = SimpleRouter()
 router.register(
     "datasets",
-    AdminDatasetViewSet,
+    DatasetViewSet,
     basename="datasets",
 )
 router.register(
     "datalayers",
-    AdminDataLayerViewSet,
+    DataLayerViewSet,
     basename="datalayers",
 )

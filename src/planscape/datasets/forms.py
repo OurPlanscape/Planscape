@@ -11,7 +11,7 @@ class DatasetAdminForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["created_by"].disabled = True
+        self.fields["created_by"].disabled = False
 
     class Meta:
         model = Dataset
@@ -30,7 +30,7 @@ class CategoryAdminForm(movenodeform_factory(Category)):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["created_by"].disabled = True
+        self.fields["created_by"].disabled = False
 
     class Meta:
         model = Category

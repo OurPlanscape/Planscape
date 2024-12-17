@@ -1,6 +1,6 @@
-@import "colors";
-@import "variables";
-@import "mixins";
+@import 'colors';
+@import 'mixins';
+@import 'variables';
 
 :host {
   display: flex;
@@ -36,15 +36,30 @@
   padding: 16px;
 }
 
-.footer-primary {
+.right-footer-right-box {
   margin-left: auto;
+  width: 400px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.export-pdf-option {
+  color: $color-standard-blue;
+  @include xs-label;
+}
+
+.export-icon {
+  font-size: 20px;
+  height: 20px;
+  width: 20px;
 }
 
 .bottom-toggle {
   @include top-level-label();
   line-height: 22px;
 }
-
 
 app-apply-treatment {
   position: absolute;
@@ -53,4 +68,8 @@ app-apply-treatment {
   width: 460px;
   height: calc(100% - 100px);
   z-index: 1000;
+}
+
+.back-btn {
+  margin-left: auto;
 }
