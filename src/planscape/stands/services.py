@@ -1,10 +1,15 @@
 import json
 import logging
-from stands.models import Stand, StandMetric
+from typing import Any, Dict, Iterable
+
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
-from typing import Any, Dict, Iterable, List
-from gis.rasters import get_zonal_stats
+from rasterstats.io import Raster
+from shapely import total_bounds
+from shapely.geometry import shape
+from rasterstats import zonal_stats
+
+from stands.models import Stand, StandMetric
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +30,7 @@ def to_geojson(stand: Stand) -> Dict[str, Any]:
 def to_stand_metric(
     stats_result: Dict[str, Any],
     datalayer: DataLayer,
-    aggregations: List[str],
+    aggregations: Iterable[str],
 ) -> StandMetric:
     properties = stats_result.get("properties", {}) or {}
     stand_metric_data = {
@@ -93,26 +98,32 @@ def calculate_stand_zonal_stats(
         )
 
     stand_geojson = list(map(to_geojson, missing_stands))
+    bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
-    stats = get_zonal_stats(
-        input_raster=datalayer.url,
-        features=stand_geojson,
-        aggregations=aggregations,
-        nodata=nodata,
-    )
-
-    results = list(
-        map(
-            lambda r: to_stand_metric(
-                stats_result=r,
-                datalayer=datalayer,
-                aggregations=aggregations,
-            ),
-            stats,
+    with Raster(datalayer.url) as main_raster:
+        subset = main_raster.read(bounds=list(bounds))
+        stats = zonal_stats(
+            raster=subset.array,
+            affine=subset.affine,
+            vectors=stand_geojson,
+            stats=aggregations,
+            nodata=nodata,
+            geojson_out=True,
+            band=1,
         )
-    )
 
-    log.info(f"Created/Updated {len(results)} stand metrics.")
+        results = list(
+            map(
+                lambda r: to_stand_metric(
+                    stats_result=r,
+                    datalayer=datalayer,
+                    aggregations=aggregations,
+                ),
+                stats,
+            )
+        )
+
+        log.info(f"Created/Updated {len(results)} stand metrics.")
 
     return StandMetric.objects.filter(
         stand_id__in=stand_ids,
