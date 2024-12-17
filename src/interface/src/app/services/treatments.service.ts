@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { TreatmentPlan, TreatmentSummary } from '@types';
 
@@ -105,5 +105,16 @@ export class TreatmentsService {
         withCredentials: true,
       }
     );
+  }
+
+  getTreatmentImpactCharts(treatmentPlanId: number, metrics: string[]) {
+    let variableParams = new HttpParams();
+    metrics.forEach((m) => {
+      variableParams = variableParams.append('variables', m);
+    });
+    return this.http.get(this.baseUrl + treatmentPlanId + '/plot/', {
+      withCredentials: true,
+      params: variableParams,
+    });
   }
 }
