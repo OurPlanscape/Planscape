@@ -35,7 +35,7 @@ class CalculateStandZonalStatsTestCase(TestCase):
 
     def test_calculate_stand_zonal_stats_returns_stand_metrics(self):
         self.assertEqual(0, StandMetric.objects.count())
-        stands = Stand.objects.filter(id__in=self.stand_ids)
+        stands = Stand.objects.filter(id__in=self.stand_ids).with_webmercator()
         metrics = calculate_stand_zonal_stats(stands, datalayer=self.datalayer)
         self.assertGreater(metrics.count(), 0)
         for m in metrics:
@@ -47,9 +47,9 @@ class CalculateStandZonalStatsTestCase(TestCase):
             self.assertIsNotNone(m.majority)
             self.assertIsNotNone(m.minority)
 
-    @mock.patch("stands.services.get_zonal_stats", return_value=[])
+    @mock.patch("stands.services.zonal_stats", return_value=[])
     def test_calculate_stand_zonal_stats_all_cached_does_not_call_get_zonal_stats(
-        self, get_zonal_stats
+        self, zonal_stats
     ):
         self.assertEqual(0, StandMetric.objects.count())
         stands = Stand.objects.filter(id__in=self.stand_ids)
@@ -66,7 +66,7 @@ class CalculateStandZonalStatsTestCase(TestCase):
                 minority=2,
             )
         calculate_stand_zonal_stats(stands, datalayer=self.datalayer)
-        get_zonal_stats.assert_not_called()
+        zonal_stats.assert_not_called()
 
     def test_calculate_stand_zonal_stats_with_vector_fails(self):
         datalayer = DataLayerFactory.create(type=DataLayerType.VECTOR)

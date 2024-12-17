@@ -20,6 +20,8 @@ import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { Region, regionToString } from '@types';
 import { Geometry } from 'geojson';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { MockProvider } from 'ng-mocks';
+import { AnalyticsService } from '@services/analytics.service';
 
 describe('PlanCreateDialogComponent', () => {
   let component: PlanCreateDialogComponent;
@@ -47,6 +49,7 @@ describe('PlanCreateDialogComponent', () => {
       ],
       declarations: [PlanCreateDialogComponent],
       providers: [
+        MockProvider(AnalyticsService),
         {
           provide: PlanService,
           useValue: {
