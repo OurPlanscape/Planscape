@@ -8,13 +8,15 @@ import {
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { ImpactsProjectArea } from './direct-impacts/direct-impacts.component';
 import { PrescriptionAction } from './prescriptions';
-
+import { TreatmentsService } from '@services/treatments.service';
+import { Injectable } from '@angular/core';
 export interface ChangeOverTimeResult {
   variable: string;
   year: number;
   avg_value: number;
 }
 
+@Injectable()
 export class DirectImpactsStateService {
   public _activeMetric$ = new BehaviorSubject<ImpactsMetric>({
     metric: METRICS[0],
@@ -45,7 +47,7 @@ export class DirectImpactsStateService {
   ]);
   public changeOverTimeData$ = this._changeOverTimeData$.asObservable();
 
-  constructor() {
+  constructor(private treatmentsService: TreatmentsService) {
     //TODO: remove test data
     this._availableProjectAreas$.next([
       { project_area_id: 1, project_area_name: 'Project Area 1' },
@@ -95,6 +97,22 @@ export class DirectImpactsStateService {
   getChangesOverTimeData() {
     //TODO: send selectedProjectArea and active Metrics to backend,
     // then collect chart data (and ensure it's sorted by year) to a state variable here
+
+    //TODO: are these selections in a state somewher ealready?
+    //TODO: remove this hardcoded example
+    const testMetrics = ['PTORCH', 'ROS', 'FL', 'TOTAL_CARBON'];
+
+    this.treatmentsService
+      .getTreatmentImpactCharts(169, testMetrics)
+      .subscribe({
+        next: (response) => {
+          console.log('the impacts response?', response);
+        },
+        error: (error) => {
+          //TODO: replace with snackbar or similar
+          console.log('error getting impacts: ', error);
+        },
+      });
   }
 
   setProjectAreaForChanges(projectArea: ImpactsProjectArea) {
