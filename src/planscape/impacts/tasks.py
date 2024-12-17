@@ -23,8 +23,11 @@ from planscape.celery import app
 log = logging.getLogger(__name__)
 
 
-@app.task(autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5})
+@app.task(
+    bind=True, autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5}
+)
 def async_calculate_impacts_for_variable_action_year(
+    self,
     treatment_plan_pk: int,
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
@@ -44,12 +47,24 @@ def async_calculate_impacts_for_variable_action_year(
     :rtype: List[int]
     """
     log.info(f"Getting already calculated impacts for {variable}")
-    treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
-        pk=treatment_plan_pk
-    )
-    calculate_impacts(
-        treatment_plan=treatment_plan, variable=variable, action=action, year=year
-    )
+    try:
+        treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+            pk=treatment_plan_pk
+        )
+        calculate_impacts(
+            treatment_plan=treatment_plan, variable=variable, action=action, year=year
+        )
+    except (OSError, RasterioIOError) as exc:
+        if self.request.retries >= self.request.max_retries:
+            log.exception("Task failed on all retries.")
+        else:
+            log.warning("Task failed. Retrying.")
+        raise exc
+    except Exception as exc:
+        log.exception(
+            "Task failed due to an unhandled exception. Not retrying execution."
+        )
+        raise exc
 
 
 @app.task()
