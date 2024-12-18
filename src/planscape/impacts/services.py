@@ -1,6 +1,9 @@
 import logging
 import itertools
 import json
+import rasterio
+from rasterio.session import AWSSession
+from core.s3 import get_aws_session
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
 from django.db.models import Count, QuerySet, Sum, F, Case, When
@@ -330,19 +333,20 @@ def calculate_impacts(
 
     stand_ids = prescriptions.values_list("stand_id", flat=True)
     stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
+    aws_session = AWSSession(get_aws_session())
+    with rasterio.Env(aws_session):
+        baseline_metrics = calculate_metrics(
+            stands=stands,
+            variable=variable,
+            year=year,
+        )
 
-    baseline_metrics = calculate_metrics(
-        stands=stands,
-        variable=variable,
-        year=year,
-    )
-
-    action_metrics = calculate_metrics(
-        stands=stands,
-        variable=variable,
-        year=year,
-        action=action,
-    )
+        action_metrics = calculate_metrics(
+            stands=stands,
+            variable=variable,
+            year=year,
+            action=action,
+        )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}

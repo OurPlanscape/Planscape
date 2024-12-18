@@ -2,15 +2,12 @@ import json
 import logging
 from typing import Any, Dict, Iterable
 
-from core.s3 import get_aws_session
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
 from rasterstats.io import Raster
 from shapely import total_bounds
 from shapely.geometry import shape
-import rasterio
 from rasterstats import zonal_stats
-from rasterio.session import AWSSession
 
 from stands.models import Stand, StandMetric
 
@@ -100,41 +97,40 @@ def calculate_stand_zonal_stats(
     stand_geojson = list(map(to_geojson, missing_stands))
     bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
-    rio_session = AWSSession(get_aws_session())
-    with rasterio.Env(rio_session):
-        with Raster(datalayer.url) as main_raster:
-            subset = main_raster.read(bounds=list(bounds))
-            stats = zonal_stats(
-                raster=subset.array,
-                affine=subset.affine,
-                vectors=stand_geojson,
-                stats=aggregations,
-                nodata=nodata,
-                geojson_out=True,
-                band=1,
-            )
 
-            results = list(
-                map(
-                    lambda r: to_stand_metric(
-                        stats_result=r,
-                        datalayer=datalayer,
-                        aggregations=aggregations,
-                    ),
-                    stats,
-                )
-            )
-            StandMetric.objects.bulk_create(
-                results,
-                batch_size=100,
-                update_conflicts=True,
-                unique_fields=["stand_id", "datalayer_id"],
-                update_fields="min avg max sum count majority minority".split(),
-            )
-
-            log.info(f"Created/Updated {len(results)} stand metrics.")
-
-        return StandMetric.objects.filter(
-            stand_id__in=stand_ids,
-            datalayer=datalayer,
+    with Raster(datalayer.url) as main_raster:
+        subset = main_raster.read(bounds=list(bounds))
+        stats = zonal_stats(
+            raster=subset.array,
+            affine=subset.affine,
+            vectors=stand_geojson,
+            stats=aggregations,
+            nodata=nodata,
+            geojson_out=True,
+            band=1,
         )
+
+    results = list(
+        map(
+            lambda r: to_stand_metric(
+                stats_result=r,
+                datalayer=datalayer,
+                aggregations=aggregations,
+            ),
+            stats,
+        )
+    )
+    StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields="min avg max sum count majority minority".split(),
+    )
+
+    log.info(f"Created/Updated {len(results)} stand metrics.")
+
+    return StandMetric.objects.filter(
+        stand_id__in=stand_ids,
+        datalayer=datalayer,
+    )
