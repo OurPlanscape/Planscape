@@ -597,7 +597,7 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIsNotNone(item.get("delta"))
             self.assertIsNone(item.get("value_dividend"))
             self.assertIsNone(item.get("baseline_dividend"))
-            self.assertIsNone(item.get("delta_dividend"))
+            self.assertIsNone(item.get("sum_baselines"))
             self.assertIsNone(item.get("divisor"))
 
     def test_empty_results(self):
@@ -626,6 +626,9 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
                     aggregation=ImpactVariableAggregation.MEAN,
                     action=None,
                     stand_count=0,
+                    value=0,
+                    baseline=0,
+                    delta=0,
                 )
 
         input_variables = [
