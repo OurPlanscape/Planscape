@@ -1,16 +1,18 @@
 import json
 import logging
-from typing import Any, Dict, Iterable
+from typing import Any, Dict, Iterable, Optional
 
+import rasterio
+import rasterio.env
 from core.s3 import get_aws_session
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
+from boto3.session import Session
+from rasterio.session import AWSSession
+from rasterstats import zonal_stats
 from rasterstats.io import Raster
 from shapely import total_bounds
 from shapely.geometry import shape
-import rasterio
-from rasterstats import zonal_stats
-from rasterio.session import AWSSession
 
 from stands.models import Stand, StandMetric
 
@@ -70,6 +72,7 @@ def calculate_stand_zonal_stats(
     stands: QuerySet["Stand"],
     datalayer: DataLayer,
     aggregations: Iterable[str] = DEFAULT_AGGREGATIONS,
+    aws_session: Optional[AWSSession] = None,
 ) -> QuerySet[StandMetric]:
     """This function calculates zonal stats for
     a collection of stands. This function skips
@@ -100,18 +103,20 @@ def calculate_stand_zonal_stats(
     stand_geojson = list(map(to_geojson, missing_stands))
     bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
-
-    with Raster(datalayer.url) as main_raster:
-        subset = main_raster.read(bounds=list(bounds))
-        stats = zonal_stats(
-            raster=subset.array,
-            affine=subset.affine,
-            vectors=stand_geojson,
-            stats=aggregations,
-            nodata=nodata,
-            geojson_out=True,
-            band=1,
-        )
+    if aws_session is None:
+        aws_session = AWSSession(get_aws_session())
+    with rasterio.env.Env(aws_session):
+        with Raster(datalayer.url) as main_raster:
+            subset = main_raster.read(bounds=list(bounds))
+            stats = zonal_stats(
+                raster=subset.array,
+                affine=subset.affine,
+                vectors=stand_geojson,
+                stats=aggregations,
+                nodata=nodata,
+                geojson_out=True,
+                band=1,
+            )
 
     results = list(
         map(

@@ -1,7 +1,6 @@
 import logging
 import itertools
 import json
-import rasterio
 from rasterio.session import AWSSession
 from core.s3 import get_aws_session
 from typing import Iterable, List, Optional, Dict, Tuple, Any
@@ -334,19 +333,20 @@ def calculate_impacts(
     stand_ids = prescriptions.values_list("stand_id", flat=True)
     stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
     aws_session = AWSSession(get_aws_session())
-    with rasterio.Env(aws_session):
-        baseline_metrics = calculate_metrics(
-            stands=stands,
-            variable=variable,
-            year=year,
-        )
+    baseline_metrics = calculate_metrics(
+        stands=stands,
+        variable=variable,
+        year=year,
+        aws_session=aws_session,
+    )
 
-        action_metrics = calculate_metrics(
-            stands=stands,
-            variable=variable,
-            year=year,
-            action=action,
-        )
+    action_metrics = calculate_metrics(
+        stands=stands,
+        variable=variable,
+        year=year,
+        action=action,
+        aws_session=aws_session,
+    )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
@@ -445,13 +445,18 @@ def calculate_metrics(
     variable: ImpactVariable,
     year: int,
     action: Optional[TreatmentPrescriptionAction] = None,
+    aws_session: Optional[AWSSession] = None,
 ):
     datalayer = ImpactVariable.get_datalayer(
         impact_variable=variable,
         action=action,
         year=year,
     )
-    return calculate_stand_zonal_stats(stands=stands, datalayer=datalayer)
+    return calculate_stand_zonal_stats(
+        stands=stands,
+        datalayer=datalayer,
+        aws_session=aws_session,
+    )
 
 
 def calculate_project_area_deltas(
