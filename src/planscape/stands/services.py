@@ -2,12 +2,15 @@ import json
 import logging
 from typing import Any, Dict, Iterable
 
+from core.s3 import get_aws_session
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
 from rasterstats.io import Raster
 from shapely import total_bounds
 from shapely.geometry import shape
+import rasterio
 from rasterstats import zonal_stats
+from rasterio.session import AWSSession
 
 from stands.models import Stand, StandMetric
 
