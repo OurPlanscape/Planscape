@@ -67,6 +67,10 @@ class TreatmentPlan(
     )
     name = models.CharField(max_length=256, help_text="Name of Treatment Plan.")
 
+    started_at = models.DateTimeField(null=True)
+
+    finished_at = models.DateTimeField(null=True)
+
     objects = TreatmentPlanManager()
 
     class Meta(TypedModelMeta):
