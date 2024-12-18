@@ -271,14 +271,15 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
       rr.geometry && plan_scenario.geometry AND
       ST_Intersects(rr.geometry, plan_scenario.geometry)"
   restrictions_statement <- glue_sql(statement, scenario_id = scenario_id, restrictions = restrictions, .con = connection)
+  crs <- st_crs(5070)
   restriction_data <- st_read(
     dsn = connection,
     layer = NULL,
     query = restrictions_statement,
     geometry_column = "geometry",
-    crs = st_crs(5070)
+    crs = crs
   )
-  log_info(paste("restriction data using", st_crs(restriction_data)))
+  log_info("restriction data using {crs}")
   return(restriction_data)
 }
 
@@ -304,16 +305,16 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
       ss.geometry && plan_scenario.geometry AND
       ST_Within(ST_Centroid(ss.geometry), plan_scenario.geometry)"
   query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
-
+  crs <- st_crs(5070)
   stands <- st_read(
     dsn = connection,
     layer = NULL,
     query = query,
     geometry_column = "geometry",
-    crs = st_crs(5070)
+    crs = crs
   )
 
-  log_info(paste("stand data using", st_crs(stands)))
+  log_info("stand data using {crs}")
 
   if (length(restrictions) > 0) {
     log_info("Restrictions found!")
