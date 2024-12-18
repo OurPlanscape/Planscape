@@ -126,6 +126,7 @@ def calculate_stand_zonal_stats(
             )
             StandMetric.objects.bulk_create(
                 results,
+                batch_size=100,
                 update_conflicts=True,
                 unique_fields=["stand_id", "datalayer_id"],
                 update_fields="min avg max sum count majority minority".split(),
