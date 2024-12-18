@@ -1,6 +1,6 @@
 <section class="header">
   <div class="header-title">
-    <ng-content select="[modalBodyTitle]"></ng-content>
+    <ng-content select="[panelTitle]"></ng-content>
   </div>
   <div class="title-buttons">
     <button mat-icon-button (click)="handleCloseButton()" aria-label="close">
@@ -9,5 +9,5 @@
   </div>
 </section>
 <main class="modal-body">
-  <ng-content select="[modalBodyContent]"></ng-content>
+  <ng-content select="[panelContent]"></ng-content>
 </main>

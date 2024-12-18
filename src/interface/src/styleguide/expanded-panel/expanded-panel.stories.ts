@@ -46,8 +46,8 @@ export const Default: Story = {
     props: args,
     template: `<div ${containerStyle}>
       <sg-expanded-panel ${argsToTemplate(args)}>
-        <div modalBodyTitle>The title</div>
-        <div modalBodyContent>Just a basic expaded panel</div>
+        <div panelTitle>The title</div>
+        <div panelContent>Just a basic expaded panel</div>
       </sg-expanded-panel><div>`,
   }),
 };

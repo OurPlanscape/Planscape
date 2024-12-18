@@ -8,10 +8,9 @@ describe('ExpandedPanelComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ExpandedPanelComponent]
-    })
-    .compileComponents();
-    
+      imports: [ExpandedPanelComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ExpandedPanelComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

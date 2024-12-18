@@ -1,13 +1,6 @@
-<sg-modal
-  [title]="(standChartPanelTitle$ | async) || ''"
-  primaryButtonText="Create"
-  [scrollableContent]="false"
-  [showBorders]="true"
-  [hasFooter]="false"
-  (clickedClose)="close()"
-  width="large"
-  class="stand-data-modal">
-  <div modalBodyContent class="expanded-stand-data">
+<sg-expanded-panel (clickedClose)="close()">
+  <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
+  <div panelContent>
     <app-stand-data-chart></app-stand-data-chart>
   </div>
-</sg-modal>
+</sg-expanded-panel>
