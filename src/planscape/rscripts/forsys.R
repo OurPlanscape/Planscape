@@ -827,7 +827,15 @@ upsert_project_area <- function(
       {scenario_id},
       {name},
       {data},
-      ST_Multi(ST_GeomFromGeoJSON({geometry}), 4269)
+      -- we have to convert to 4269 because ST_GeomFromGeoJSON assumes 4326
+      ST_Multi(
+        ST_Transform(
+          ST_GeomFromGeoJSON(
+            {geometry}
+          ),
+          4269
+        )
+      )
     )
     ON CONFLICT (scenario_id, name) DO UPDATE
     SET
