@@ -18,6 +18,8 @@ library("tidyr")
 library("friendlyeval")
 library("uuid")
 
+# do not use spherical geometries
+sf_use_s2(FALSE)
 readRenviron("../../.env")
 
 options <- list(
@@ -262,7 +264,7 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
         ps.id = {scenario_id}
     )
     SELECT
-      ST_Union(ST_Buffer(rr.geometry, 0)) as \"geometry\"
+      ST_Transform(ST_Union(ST_Buffer(rr.geometry, 0)), 5070) as \"geometry\"
     FROM restrictions_restriction rr, plan_scenario
     WHERE
       type IN ({restrictions*}) AND
@@ -274,8 +276,9 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
     layer = NULL,
     query = restrictions_statement,
     geometry_column = "geometry",
-    crs = 4269
+    crs = st_crs(5070)
   )
+  log_info(paste("restriction data using", st_crs(restriction_data)))
   return(restriction_data)
 }
 
@@ -293,7 +296,7 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   )
   SELECT
       ss.id AS \"stand_id\",
-      ss.geometry AS \"geometry\",
+      ST_Transform(ss.geometry, 5070) AS \"geometry\",
       ST_Area(ss.geometry::geography, TRUE) / 4047 as \"area_acres\"
   FROM stands_stand ss, plan_scenario
   WHERE
@@ -307,8 +310,10 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
     layer = NULL,
     query = query,
     geometry_column = "geometry",
-    crs = 4269
+    crs = st_crs(5070)
   )
+
+  log_info(paste("stand data using", st_crs(restriction_data)))
 
   if (length(restrictions) > 0) {
     log_info("Restrictions found!")
