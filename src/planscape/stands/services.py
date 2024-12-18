@@ -36,12 +36,9 @@ def to_stand_metric(
     stand_metric_data = {
         AGGREGATION_MODEL_MAP[agg]: properties.get(agg) for agg in aggregations
     }
-    stand_metric, _created = StandMetric.objects.update_or_create(
-        stand_id=stats_result.get("id"),
-        datalayer_id=datalayer.pk,
-        defaults=stand_metric_data,
+    return StandMetric(
+        stand_id=stats_result.get("id"), datalayer_id=datalayer.pk, **stand_metric_data
     )
-    return stand_metric
 
 
 DEFAULT_AGGREGATIONS = (
@@ -100,6 +97,7 @@ def calculate_stand_zonal_stats(
     stand_geojson = list(map(to_geojson, missing_stands))
     bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
+
     with Raster(datalayer.url) as main_raster:
         subset = main_raster.read(bounds=list(bounds))
         stats = zonal_stats(
@@ -112,18 +110,25 @@ def calculate_stand_zonal_stats(
             band=1,
         )
 
-        results = list(
-            map(
-                lambda r: to_stand_metric(
-                    stats_result=r,
-                    datalayer=datalayer,
-                    aggregations=aggregations,
-                ),
-                stats,
-            )
+    results = list(
+        map(
+            lambda r: to_stand_metric(
+                stats_result=r,
+                datalayer=datalayer,
+                aggregations=aggregations,
+            ),
+            stats,
         )
+    )
+    StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields="min avg max sum count majority minority".split(),
+    )
 
-        log.info(f"Created/Updated {len(results)} stand metrics.")
+    log.info(f"Created/Updated {len(results)} stand metrics.")
 
     return StandMetric.objects.filter(
         stand_id__in=stand_ids,

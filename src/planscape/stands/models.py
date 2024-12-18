@@ -128,7 +128,7 @@ class StandMetric(CreatedAtMixin, models.Model):
             models.UniqueConstraint(
                 fields=[
                     "stand",
-                    "condition",
+                    "datalayer",
                 ],
                 name="unique_stand_metric",
             )
