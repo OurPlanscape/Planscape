@@ -313,7 +313,7 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
     crs = st_crs(5070)
   )
 
-  log_info(paste("stand data using", st_crs(restriction_data)))
+  log_info(paste("stand data using", st_crs(stands)))
 
   if (length(restrictions) > 0) {
     log_info("Restrictions found!")
