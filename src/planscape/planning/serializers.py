@@ -405,16 +405,14 @@ class ScenarioSerializer(
         super().__init__(*args, **kwargs)
 
         origin = None
-        instance = kwargs.get("instance", None)
-
         if hasattr(self, "initial_data") and self.initial_data:
             origin = self.initial_data.get("origin")
-        elif kwargs.get("data"):
+        elif "data" in kwargs:
             origin = kwargs["data"].get("origin")
         elif hasattr(self, "instance") and hasattr(self.instance, "origin"):
             origin = self.instance.origin
-        elif instance and hasattr(instance, "origin"):
-            origin = instance.origin
+        elif "instance" in kwargs and hasattr(kwargs["instance"], "origin"):
+            origin = kwargs["instance"].origin
 
         if origin == "USER":
             self.fields["configuration"] = UploadedConfigurationSerializer()
