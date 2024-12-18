@@ -245,10 +245,14 @@ def generate_impact_results_data_to_plot(
         .annotate(
             value_dividend=Sum(F("value") * F("stand_count")),
             baseline_dividend=Sum(F("baseline") * F("stand_count")),
-            delta_dividend=Sum(F("delta") * F("stand_count")),
+            sum_baselines=Sum("baseline"),
             divisor=Sum("stand_count"),
         )
         .annotate(
+            delta=Case(
+                When(sum_baselines=0, then=None),
+                default=((F("sum_baselines") - Sum("value")) / F("sum_baselines")),
+            ),
             value=Case(
                 When(divisor=0, then=None),
                 default=(F("value_dividend") / F("divisor")),
@@ -256,10 +260,6 @@ def generate_impact_results_data_to_plot(
             baseline=Case(
                 When(divisor=0, then=None),
                 default=(F("baseline_dividend") / F("divisor")),
-            ),
-            delta=Case(
-                When(divisor=0, then=None),
-                default=(F("delta_dividend") / F("divisor")),
             ),
         )
     )
@@ -275,7 +275,7 @@ def generate_impact_results_data_to_plot(
     for value in values:
         value.pop("value_dividend")
         value.pop("baseline_dividend")
-        value.pop("delta_dividend")
+        value.pop("sum_baselines")
         value.pop("divisor")
 
     return values
