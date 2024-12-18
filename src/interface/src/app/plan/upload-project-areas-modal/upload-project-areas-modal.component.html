@@ -20,13 +20,13 @@
         message="{{ uploadError }}">
       </app-form-message>
 
-      <div>
+      <div class="field-row">
         <div class="field-label">Scenario name</div>
         <sg-input-field [disabled]="false" class="scenario-input">
           <input
             sgInput
             #inputElement
-            placeholder="Scenario Name"
+            placeholder="Scenario name"
             name="scenarioName"
             formControlName="scenarioName"
             class="scenario-name-field" />
