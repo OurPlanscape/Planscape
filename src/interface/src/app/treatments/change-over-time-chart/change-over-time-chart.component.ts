@@ -105,6 +105,11 @@ export class ChangeOverTimeChartComponent {
 
   barChartData$ = this.projectAreaChangeData$.pipe(
     map((data) => {
+      // if we don't have data here (eg., it hasn't loaded yet), it will be likely an empty array
+      if (!data || data.length === 0) {
+        return undefined;
+      }
+
       return {
         labels: [0, 5, 10, 15, 20],
         datasets: [

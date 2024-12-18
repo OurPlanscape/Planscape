@@ -16,7 +16,7 @@
           (ngModelChange)="setChartProjectArea()">
           <mat-option [value]="null">All</mat-option>
           <mat-option
-            *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
+            *ngFor="let projectArea of availableProjectAreas ?? []"
             [value]="projectArea.project_area_id">
             {{ projectArea.project_area_name }}
           </mat-option>

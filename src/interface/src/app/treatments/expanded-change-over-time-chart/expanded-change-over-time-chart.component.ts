@@ -32,6 +32,9 @@ export class ExpandedChangeOverTimeChartComponent {
     public dialogRef: MatDialogRef<ExpandedChangeOverTimeChartComponent>
   ) {}
 
+  // TODO: Remove this example data -- this should come from...treatmentsState??
+  // but what's the right way to inject that here?
+  availableProjectAreas = [{ project_area_name: 'ok', project_area_id: 1 }];
   // TODO: Remove this example data
   selectedChartProjectArea: ImpactsProjectArea = {
     project_area_id: 5,
@@ -43,9 +46,6 @@ export class ExpandedChangeOverTimeChartComponent {
       this.selectedChartProjectArea
     );
   }
-
-  availableProjectAreas$ =
-    this.directImpactsStateService.availableProjectAreas$;
 
   close() {
     this.dialogRef.close();

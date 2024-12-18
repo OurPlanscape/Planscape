@@ -114,6 +114,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           this.mapConfigState.setShowFillProjectAreas(false);
           this.mapConfigState.updateShowTreatmentStands(true);
           this.mapConfigState.updateShowProjectAreas(true);
+          if (plan) {
+            this.directImpactsStateService.setActiveTreatmentPlan(plan);
+            //TOOD: do an initial chart rendering, based on default data
+            this.directImpactsStateService.getChangesOverTimeData();
+          }
+          this.directImpactsStateService.getChangesOverTimeData();
         }),
         catchError((error) => {
           this.router.navigate(['/']);
@@ -135,8 +141,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   changeChartButtons: PanelIconButton[] = [
     { icon: 'open_in_full', actionName: 'expand' },
   ];
-  availableProjectAreas$ =
-    this.directImpactsStateService.availableProjectAreas$;
+
+  availableProjectAreas$ = this.treatmentsState.summary$.pipe(
+    map((summary) => {
+      return summary?.project_areas;
+    })
+  );
 
   standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
     map((activeStand) => {
@@ -176,6 +186,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Unregister the plugin when the component is destroyed
     Chart.unregister(ChartDataLabels);
+  }
+
+  handleChangedMetrics(data: string[]) {
+    //TODO: make sure we understand which slot corresponds to which number!!
+    this.directImpactsStateService.setSelectedMetrics(data);
+    this.directImpactsStateService.getChangesOverTimeData();
   }
 
   setChartProjectArea() {

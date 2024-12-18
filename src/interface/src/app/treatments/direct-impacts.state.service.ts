@@ -10,7 +10,17 @@ import { ImpactsProjectArea } from './direct-impacts/direct-impacts.component';
 import { PrescriptionAction } from './prescriptions';
 import { TreatmentsService } from '@services/treatments.service';
 import { Injectable } from '@angular/core';
-export interface ChangeOverTimeResult {
+import { TreatmentPlan } from '../types';
+
+export interface ImpactsResultData {
+  year: number;
+  variable: string;
+  dividend: number;
+  divisor: number;
+  value: number;
+}
+
+export interface ChangeOverTimeChartItem {
   variable: string;
   year: number;
   avg_value: number;
@@ -25,6 +35,9 @@ export class DirectImpactsStateService {
 
   public activeMetric$ = this._activeMetric$.asObservable();
 
+  //TODO: make this async? a behavior subject?
+  private selectedMetrics: string[] = [];
+
   private _filteredTreatmentTypes$ = new BehaviorSubject<PrescriptionAction[]>(
     []
   );
@@ -32,66 +45,47 @@ export class DirectImpactsStateService {
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
 
+  private _activeTreatmentPlan$ = new BehaviorSubject<TreatmentPlan | null>(
+    null
+  );
+  public activeTreatmentPlan$ = this._activeTreatmentPlan$.asObservable();
+
   private _selectedProjectAreaForChanges$ =
     new BehaviorSubject<ImpactsProjectArea | null>(null);
   public selectedProjectAreaForChanges$ =
     this._selectedProjectAreaForChanges$.asObservable();
 
-  private _availableProjectAreas$ = new BehaviorSubject<
-    ImpactsProjectArea[] | null
-  >(null);
-  public availableProjectAreas$ = this._availableProjectAreas$.asObservable();
-
-  private _changeOverTimeData$ = new BehaviorSubject<ChangeOverTimeResult[][]>([
-    [],
-  ]);
+  private _changeOverTimeData$ = new BehaviorSubject<
+    ChangeOverTimeChartItem[][]
+  >([[]]);
   public changeOverTimeData$ = this._changeOverTimeData$.asObservable();
 
   constructor(private treatmentsService: TreatmentsService) {
-    //TODO: remove test data
-    this._availableProjectAreas$.next([
-      { project_area_id: 1, project_area_name: 'Project Area 1' },
-      { project_area_id: 2, project_area_name: 'Project Area 2' },
-      { project_area_id: 3, project_area_name: 'Project Area 3' },
-      { project_area_id: 4, project_area_name: 'Project Area 4' },
-      { project_area_id: 5, project_area_name: 'Project Area 5' },
-      { project_area_id: 6, project_area_name: 'Project Area 6' },
-      { project_area_id: 7, project_area_name: 'Project Area 7' },
-      { project_area_id: 8, project_area_name: 'Project Area 8' },
-      { project_area_id: 9, project_area_name: 'Project Area 9' },
-      { project_area_id: 10, project_area_name: 'Project Area 10' },
-    ]);
-    //TODO: remove this test data
-    this._changeOverTimeData$.next([
-      [
-        { variable: 'TOTAL_CARBON', year: 0, avg_value: 14.32432 },
-        { variable: 'TOTAL_CARBON', year: 5, avg_value: 26.32432 },
-        { variable: 'TOTAL_CARBON', year: 10, avg_value: 38.32432 },
-        { variable: 'TOTAL_CARBON', year: 15, avg_value: 28.32432 },
-        { variable: 'TOTAL_CARBON', year: 20, avg_value: 34.32432 },
-      ],
-      [
-        { variable: 'FL', year: 0, avg_value: 16.32432 },
-        { variable: 'FL', year: 5, avg_value: 20.32432 },
-        { variable: 'FL', year: 10, avg_value: 31.32432 },
-        { variable: 'FL', year: 15, avg_value: 42.32432 },
-        { variable: 'FL', year: 20, avg_value: 44.32432 },
-      ],
-      [
-        { variable: 'PTORCH', year: 0, avg_value: 20.32432 },
-        { variable: 'PTORCH', year: 5, avg_value: 24.32432 },
-        { variable: 'PTORCH', year: 10, avg_value: 36.32432 },
-        { variable: 'PTORCH', year: 15, avg_value: 57.32432 },
-        { variable: 'PTORCH', year: 20, avg_value: 87.32432 },
-      ],
-      [
-        { variable: 'ROS', year: 0, avg_value: -24.32432 },
-        { variable: 'ROS', year: 5, avg_value: -14.32432 },
-        { variable: 'ROS', year: 10, avg_value: -4.32432 },
-        { variable: 'ROS', year: 15, avg_value: -24.32432 },
-        { variable: 'ROS', year: 20, avg_value: -36.32432 },
-      ],
-    ]);
+    this._changeOverTimeData$.next([]);
+  }
+
+  //TODO ensure this returns the ChangeOverTimeChartItem
+  convertImpactResultToChartData(data: ImpactsResultData[]): any[][] {
+    //TODO: convert data to year, avg_value data...
+    // for year, count from initial year
+    //  average value??
+    const currentYear = 2024;
+    const chartData = data
+      .map((d) => {
+        return {
+          year: d.year - currentYear,
+          avg_value: d.value, //idk....
+          variable: d.variable,
+        };
+      })
+      .sort((a, b) => a.year - b.year);
+    // Collect unique variables
+    const metricsVars = [...new Set(chartData.map((item) => item.variable))];
+    // Create arrays for each unique variable
+    const converted = metricsVars.map((v) =>
+      chartData.filter((item) => item.variable === v)
+    );
+    return converted;
   }
 
   getChangesOverTimeData() {
@@ -100,19 +94,28 @@ export class DirectImpactsStateService {
 
     //TODO: are these selections in a state somewher ealready?
     //TODO: remove this hardcoded example
-    const testMetrics = ['PTORCH', 'ROS', 'FL', 'TOTAL_CARBON'];
+    const testMetrics = this.selectedMetrics;
+
+    const treatmentPlanId = this._activeTreatmentPlan$.value!.id;
 
     this.treatmentsService
-      .getTreatmentImpactCharts(169, testMetrics)
+      .getTreatmentImpactCharts(treatmentPlanId, testMetrics)
       .subscribe({
-        next: (response) => {
-          console.log('the impacts response?', response);
+        next: (response: any) => {
+          const chartData = this.convertImpactResultToChartData(
+            response as ImpactsResultData[]
+          );
+          this._changeOverTimeData$.next(chartData);
         },
         error: (error) => {
           //TODO: replace with snackbar or similar
-          console.log('error getting impacts: ', error);
         },
       });
+  }
+
+  setSelectedMetrics(selections: string[]) {
+    //TODO: make this a behavior subject
+    this.selectedMetrics = selections;
   }
 
   setProjectAreaForChanges(projectArea: ImpactsProjectArea) {
@@ -124,6 +127,10 @@ export class DirectImpactsStateService {
 
   setActiveStand(standData: MapGeoJSONFeature) {
     this._activeStand$.next(standData);
+  }
+
+  setActiveTreatmentPlan(treatmentPlan: TreatmentPlan) {
+    this._activeTreatmentPlan$.next(treatmentPlan);
   }
 
   setFilteredTreatmentTypes(selection: PrescriptionAction[]) {

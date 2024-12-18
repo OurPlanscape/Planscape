@@ -32,6 +32,7 @@ import { Observable } from 'rxjs';
 })
 export class MetricFiltersComponent implements OnInit {
   @Output() metricSelected = new EventEmitter<ImpactsMetric>();
+  @Output() selectionsChanged = new EventEmitter<string[]>();
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
@@ -91,6 +92,7 @@ export class MetricFiltersComponent implements OnInit {
   ngOnInit(): void {
     // Updating every list based on the default selected values
     this.updateDropdownOptions(null);
+    this.selectionsChanged.emit(this.selectedOptions);
   }
 
   optionSelected(
@@ -106,6 +108,7 @@ export class MetricFiltersComponent implements OnInit {
     if (this.directImpactsStateService.isActiveSlot(slot)) {
       this.activateMetric(metric, slot);
     }
+    this.selectionsChanged.emit(this.selectedOptions);
   }
 
   updateDropdownOptions(updatedDropdownIndex: number | null): void {
