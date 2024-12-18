@@ -64,8 +64,9 @@ export class DirectImpactsStateService {
     this._changeOverTimeData$.next([]);
   }
 
-  //TODO ensure this returns the ChangeOverTimeChartItem
-  convertImpactResultToChartData(data: ImpactsResultData[]): any[][] {
+  convertImpactResultToChartData(
+    data: ImpactsResultData[]
+  ): ChangeOverTimeChartItem[][] {
     //TODO: convert data to year, avg_value data...
     // for year, count from initial year
     //  average value??
@@ -89,15 +90,8 @@ export class DirectImpactsStateService {
   }
 
   getChangesOverTimeData() {
-    //TODO: send selectedProjectArea and active Metrics to backend,
-    // then collect chart data (and ensure it's sorted by year) to a state variable here
-
-    //TODO: are these selections in a state somewher ealready?
-    //TODO: remove this hardcoded example
     const testMetrics = this.selectedMetrics;
-
     const treatmentPlanId = this._activeTreatmentPlan$.value!.id;
-
     this.treatmentsService
       .getTreatmentImpactCharts(treatmentPlanId, testMetrics)
       .subscribe({
@@ -114,14 +108,14 @@ export class DirectImpactsStateService {
   }
 
   setSelectedMetrics(selections: string[]) {
-    //TODO: make this a behavior subject
+    //TODO: make this a behavior subject??
     this.selectedMetrics = selections;
   }
 
   setProjectAreaForChanges(projectArea: ImpactsProjectArea) {
     this._selectedProjectAreaForChanges$.next(projectArea);
-    //then refresh the changes chart data
 
+    //then refresh the changes chart data
     this.getChangesOverTimeData();
   }
 
