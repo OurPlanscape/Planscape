@@ -827,7 +827,7 @@ upsert_project_area <- function(
       {scenario_id},
       {name},
       {data},
-      ST_Multi(ST_GeomFromGeoJSON({geometry}), 4269)
+      ST_Multi(ST_GeomFromGeoJSON({geometry}))
     )
     ON CONFLICT (scenario_id, name) DO UPDATE
     SET
