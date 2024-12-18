@@ -4,30 +4,28 @@
 :host {
   display: flex;
   flex-direction: column;
-  width: 500px;
   background-color: white;
-  max-height: 700px;
+  max-height: 1000px;
   border-radius: 4px;
   justify-content: space-between;
+  height: 90vh;
+  position: relative;
+  width: 80vw;
+  max-width: 1400px;
 }
 
 .header {
-  @include h4();
+  @include h5();
   display: flex;
   flex-shrink: 0;
   flex-direction: row;
   justify-content: space-between;
   align-items: center;
-  font-family: 'Public Sans';
-  font-size: 18px;
-  font-weight: 600;
-  line-height: 32px;
   text-align: left;
-  padding: 10px 16px;
+  padding: 14px 9px 14px 24px;
   border-bottom: 1px solid $color-soft-gray;
-  height: 64px;
-
-
+  height: 60px;
+  box-sizing: border-box;
 }
 
 
@@ -62,3 +60,14 @@
   align-items: center;
   gap: 16px;
 }
+
+.modal-body {
+  height: 100%;
+}
+
+::ng-deep {
+  [panelcontent] {
+    height: 100%;
+  }
+}
+

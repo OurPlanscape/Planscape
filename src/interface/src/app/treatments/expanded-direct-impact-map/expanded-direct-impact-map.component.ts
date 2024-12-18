@@ -7,6 +7,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
+import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
 
 @Component({
   selector: 'app-expanded-direct-impact-map',
@@ -19,6 +20,7 @@ import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.c
     TreatmentMapComponent,
     TreatmentLegendComponent,
     NgIf,
+    ExpandedPanelComponent,
   ],
   templateUrl: './expanded-direct-impact-map.component.html',
   styleUrl: './expanded-direct-impact-map.component.scss',
