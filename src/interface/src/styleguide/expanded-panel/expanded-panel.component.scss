@@ -1,0 +1,64 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  width: 500px;
+  background-color: white;
+  max-height: 700px;
+  border-radius: 4px;
+  justify-content: space-between;
+}
+
+.header {
+  @include h4();
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'Public Sans';
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 32px;
+  text-align: left;
+  padding: 10px 16px;
+  border-bottom: 1px solid $color-soft-gray;
+  height: 64px;
+
+
+}
+
+
+.title-buttons {
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 16px;
+
+  .button-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  button {
+    background: none;
+    border: none;
+    padding: 6px;
+    margin: 0;
+    line-height: 0;
+    cursor: pointer;
+    height: auto;
+    width: auto;
+  }
+}
+
+.header-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
