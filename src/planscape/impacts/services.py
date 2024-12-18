@@ -243,13 +243,24 @@ def generate_impact_results_data_to_plot(
     aggregated_values = (
         queryset.values("year", "variable")
         .annotate(
-            dividend=Sum(F("value") * F("stand_count")), divisor=Sum("stand_count")
+            value_dividend=Sum(F("value") * F("stand_count")), 
+            baseline_dividend=Sum(F("baseline")* F("stand_count")),
+            delta_dividend=Sum(F("delta")* F("stand_count")),
+            divisor=Sum("stand_count")
         )
         .annotate(
             value=Case(
                 When(divisor=0, then=None),
-                default=(F("dividend") / F("divisor")),
-            )
+                default=(F("value_dividend") / F("divisor")),
+            ),
+            baseline=Case(
+                When(divisor=0, then=None),
+                default=(F("baseline_dividend") / F("divisor")),
+            ),
+            delta=Case(
+                When(divisor=0, then=None),
+                default=(F("delta_dividend") / F("divisor")),
+            ),
         )
     )
 
