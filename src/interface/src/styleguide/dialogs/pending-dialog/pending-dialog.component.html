@@ -6,7 +6,8 @@
   (clickedClose)="close()"
   (clickedPrimary)="confirm()"
   (clickedSecondary)="close()"
-  [primaryButtonText]="data.primaryButtonText">
+  [primaryButtonText]="data.primaryButtonText"
+  [secondaryButtonText]="data.secondaryButtonText || 'Cancel'">
   <div modalBodyContent>
     <sg-modal-confirmation-dialog
       [headline]="data.headline"
