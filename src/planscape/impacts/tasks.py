@@ -7,6 +7,7 @@ from django.conf import settings
 from django.db import transaction
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
+from django.utils import timezone
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -23,8 +24,11 @@ from planscape.celery import app
 log = logging.getLogger(__name__)
 
 
-@app.task(autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5})
+@app.task(
+    bind=True, autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5}
+)
 def async_calculate_impacts_for_variable_action_year(
+    self,
     treatment_plan_pk: int,
     variable: ImpactVariable,
     action: TreatmentPrescriptionAction,
@@ -44,17 +48,31 @@ def async_calculate_impacts_for_variable_action_year(
     :rtype: List[int]
     """
     log.info(f"Getting already calculated impacts for {variable}")
-    treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
-        pk=treatment_plan_pk
-    )
-    calculate_impacts(
-        treatment_plan=treatment_plan, variable=variable, action=action, year=year
-    )
+    try:
+        treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+            pk=treatment_plan_pk
+        )
+        calculate_impacts(
+            treatment_plan=treatment_plan, variable=variable, action=action, year=year
+        )
+    except (OSError, RasterioIOError) as exc:
+        if self.request.retries >= self.max_retries:
+            log.exception("Task failed on all retries.")
+        else:
+            log.warning("Task failed. Retrying.")
+        raise exc
+    except Exception as exc:
+        log.exception(
+            "Task failed due to an unhandled exception. Not retrying execution."
+        )
+        raise exc
 
 
 @app.task()
 def async_set_status(
-    treatment_plan_pk: int, status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE
+    treatment_plan_pk: int,
+    status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE,
+    start: bool = False,
 ) -> Tuple[bool, int]:
     """sets the status of a treatment plan async.
     this is used as a callback in celery canvas.
@@ -64,6 +82,8 @@ def async_set_status(
             pk=treatment_plan_pk
         )
         treatment_plan.status = status
+        attr = "started_at" if start else "finished_at"
+        setattr(treatment_plan, attr, timezone.now())
         treatment_plan.save()
         log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
 
@@ -78,6 +98,7 @@ def async_calculate_persist_impacts_treatment_plan(
     async_set_status(
         treatment_plan_pk=treatment_plan_pk,
         status=TreatmentPlanStatus.RUNNING,
+        start=True,
     )
 
     treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
@@ -88,13 +109,16 @@ def async_calculate_persist_impacts_treatment_plan(
     )
     callback = chain(
         async_set_status.si(
-            treatment_plan_pk=treatment_plan_pk, status=TreatmentPlanStatus.SUCCESS
+            treatment_plan_pk=treatment_plan_pk,
+            status=TreatmentPlanStatus.SUCCESS,
+            start=False,
         ),
         async_send_email_process_finished.si(treatment_plan_pk=treatment_plan_pk),
     ).on_error(
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
             status=TreatmentPlanStatus.FAILURE,
+            start=False,
         )
     )
     tasks = [

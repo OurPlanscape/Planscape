@@ -299,7 +299,7 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   WHERE
       ss.\"size\" = {stand_size} AND
       ss.geometry && plan_scenario.geometry AND
-      ST_Intersects(ss.geometry, plan_scenario.geometry)"
+      ST_Within(ST_Centroid(ss.geometry), plan_scenario.geometry)"
   query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
 
   stands <- st_read(

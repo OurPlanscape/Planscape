@@ -1,6 +1,9 @@
 import logging
 import itertools
 import json
+import rasterio
+from rasterio.session import AWSSession
+from core.s3 import get_aws_session
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
 from django.db.models import Count, QuerySet, Sum, F, Case, When
@@ -320,17 +323,30 @@ def calculate_impacts(
     if year not in AVAILABLE_YEARS:
         raise ValueError(f"Year {year} not supported")
 
-    baseline_metrics = calculate_baseline_metrics(
-        treatment_plan=treatment_plan,
-        variable=variable,
-        year=year,
+    prescriptions = treatment_plan.tx_prescriptions.filter(
+        action=action
+    ).select_related(
+        "stand",
+        "treatment_plan",
+        "project_area",
     )
-    action_metrics = calculate_action_metrics(
-        treatment_plan=treatment_plan,
-        variable=variable,
-        action=action,
-        year=year,
-    )
+
+    stand_ids = prescriptions.values_list("stand_id", flat=True)
+    stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
+    aws_session = AWSSession(get_aws_session())
+    with rasterio.Env(aws_session):
+        baseline_metrics = calculate_metrics(
+            stands=stands,
+            variable=variable,
+            year=year,
+        )
+
+        action_metrics = calculate_metrics(
+            stands=stands,
+            variable=variable,
+            year=year,
+            action=action,
+        )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
@@ -424,42 +440,12 @@ def get_calculation_matrix(
     return list(itertools.product(variables, actions, years))
 
 
-def calculate_baseline_metrics(
-    treatment_plan: TreatmentPlan,
+def calculate_metrics(
+    stands: QuerySet[Stand],
     variable: ImpactVariable,
     year: int,
-) -> QuerySet[StandMetric]:
-    geometry = ProjectArea.objects.filter(scenario=treatment_plan.scenario).aggregate(
-        geometry=UnionOp("geometry")
-    )["geometry"]
-    stand_size = treatment_plan.scenario.get_stand_size()
-    stands = Stand.objects.within_polygon(geometry, stand_size).with_webmercator()
-    datalayer = ImpactVariable.get_datalayer(
-        impact_variable=variable,
-        year=year,
-    )
-    return calculate_stand_zonal_stats(
-        stands=stands,
-        datalayer=datalayer,
-    )
-
-
-def calculate_action_metrics(
-    treatment_plan: TreatmentPlan,
-    variable: ImpactVariable,
-    action: TreatmentPrescriptionAction,
-    year: int,
-) -> QuerySet[StandMetric]:
-    prescriptions = treatment_plan.tx_prescriptions.filter(
-        action=action
-    ).select_related(
-        "stand",
-        "treatment_plan",
-        "project_area",
-    )
-
-    stand_ids = prescriptions.values_list("stand_id", flat=True)
-    stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
+    action: Optional[TreatmentPrescriptionAction] = None,
+):
     datalayer = ImpactVariable.get_datalayer(
         impact_variable=variable,
         action=action,
@@ -516,8 +502,6 @@ def calculate_project_area_deltas(
     attribute = ImpactVariableAggregation.get_metric_attribute(
         ImpactVariableAggregation.MEAN
     )
-    # # merges both dicts, keep action dicts if they clash
-    new_action_dict = {**baseline_dict, **action_dict}
     baseline_sum = sum(
         [
             getattr(stand_metric, attribute, 0) or 0
@@ -528,7 +512,7 @@ def calculate_project_area_deltas(
     action_sum = sum(
         [
             getattr(stand_metric, attribute, 0) or 0
-            for _stand_id, stand_metric in new_action_dict.items()
+            for _stand_id, stand_metric in action_dict.items()
         ]
     )
     delta = (baseline_sum - action_sum) / (baseline_sum + 1)

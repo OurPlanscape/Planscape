@@ -113,7 +113,7 @@ def create_scenario(user: TUser, **kwargs) -> Scenario:
     return scenario
 
 
-def union_geojson(uploaded_geojson):
+def union_geojson(uploaded_geojson) -> GEOSGeometry:
     geometries = []
     if "features" in uploaded_geojson:
         for feature in uploaded_geojson["features"]:
