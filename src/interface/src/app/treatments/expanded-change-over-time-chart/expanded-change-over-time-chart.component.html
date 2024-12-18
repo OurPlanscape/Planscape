@@ -7,16 +7,16 @@
   width="xlarge"
   class="stand-data-modal">
   <div headerContent class="header-content">
-    <div class="left-title-box">
+    <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
       Project Area
       <mat-form-field appearance="outline" class="changes-chart-select">
         <mat-select
           class="project-area-selector"
           [ngModel]="selectedChartProjectArea"
-          (ngModelChange)="setChartProjectArea()">
+          (ngModelChange)="setChartProjectArea($event)">
           <mat-option [value]="null">All</mat-option>
           <mat-option
-            *ngFor="let projectArea of availableProjectAreas ?? []"
+            *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
             [value]="projectArea.project_area_id">
             {{ projectArea.project_area_name }}
           </mat-option>
@@ -24,6 +24,7 @@
       </mat-form-field>
     </div>
   </div>
+
   <div modalBodyContent class="expanded-stand-data">
     <app-change-over-time-chart></app-change-over-time-chart>
   </div>

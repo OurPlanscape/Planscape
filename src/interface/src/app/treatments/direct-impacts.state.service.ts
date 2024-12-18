@@ -18,6 +18,7 @@ export interface ImpactsResultData {
   dividend: number;
   divisor: number;
   value: number;
+  delta: number;
 }
 
 export interface ChangeOverTimeChartItem {
@@ -70,12 +71,12 @@ export class DirectImpactsStateService {
     //TODO: convert data to year, avg_value data...
     // for year, count from initial year
     //  average value??
-    const currentYear = 2024;
+    const currentYear = 2024; // TODO: this can't be right
     const chartData = data
       .map((d) => {
         return {
           year: d.year - currentYear,
-          avg_value: d.value, //idk....
+          avg_value: d.delta * 100,
           variable: d.variable,
         };
       })
@@ -90,10 +91,17 @@ export class DirectImpactsStateService {
   }
 
   getChangesOverTimeData() {
-    const testMetrics = this.selectedMetrics;
-    const treatmentPlanId = this._activeTreatmentPlan$.value!.id;
+    const treatmentPlanId = this._activeTreatmentPlan$.value?.id;
+    if (!treatmentPlanId) {
+      return;
+    }
+    const projId = this._selectedProjectAreaForChanges$.value?.project_area_id;
     this.treatmentsService
-      .getTreatmentImpactCharts(treatmentPlanId, testMetrics)
+      .getTreatmentImpactCharts(
+        treatmentPlanId,
+        this.selectedMetrics,
+        projId ?? null
+      )
       .subscribe({
         next: (response: any) => {
           const chartData = this.convertImpactResultToChartData(
@@ -112,7 +120,7 @@ export class DirectImpactsStateService {
     this.selectedMetrics = selections;
   }
 
-  setProjectAreaForChanges(projectArea: ImpactsProjectArea) {
+  setProjectAreaForChanges(projectArea: ImpactsProjectArea | null) {
     this._selectedProjectAreaForChanges$.next(projectArea);
 
     //then refresh the changes chart data

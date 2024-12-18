@@ -7,6 +7,8 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { FormsModule } from '@angular/forms';
+import { TreatmentsState } from '../treatments.state';
+import { map } from 'rxjs';
 import { ImpactsProjectArea } from '../direct-impacts/direct-impacts.component';
 
 @Component({
@@ -29,22 +31,19 @@ import { ImpactsProjectArea } from '../direct-impacts/direct-impacts.component';
 export class ExpandedChangeOverTimeChartComponent {
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
+    private treatmentsState: TreatmentsState,
     public dialogRef: MatDialogRef<ExpandedChangeOverTimeChartComponent>
   ) {}
+  selectedChartProjectArea: ImpactsProjectArea | null = null;
 
-  // TODO: Remove this example data -- this should come from...treatmentsState??
-  // but what's the right way to inject that here?
-  availableProjectAreas = [{ project_area_name: 'ok', project_area_id: 1 }];
-  // TODO: Remove this example data
-  selectedChartProjectArea: ImpactsProjectArea = {
-    project_area_id: 5,
-    project_area_name: 'replaceme',
-  };
+  availableProjectAreas$ = this.treatmentsState.summary$.pipe(
+    map((summary) => {
+      return summary?.project_areas;
+    })
+  );
 
-  setChartProjectArea() {
-    this.directImpactsStateService.setProjectAreaForChanges(
-      this.selectedChartProjectArea
-    );
+  setChartProjectArea(e: ImpactsProjectArea) {
+    this.directImpactsStateService.setProjectAreaForChanges(e);
   }
 
   close() {

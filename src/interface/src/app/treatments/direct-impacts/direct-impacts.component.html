@@ -47,19 +47,19 @@
         [buttons]="changeChartButtons"
         (clickedButton)="expandChangeChart()">
         <div panelTitle class="changes-chart-title">
-          <div class="left-title-box">
+          <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
             Project Area
             <mat-form-field appearance="outline" class="changes-chart-select">
               <mat-select
                 class="project-area-selector"
                 [ngModel]="selectedChartProjectArea"
-                (ngModelChange)="setChartProjectArea()">
+                (ngModelChange)="setChartProjectArea($event)">
                 <mat-option [value]="null">All</mat-option>
                 <mat-option
                   *ngFor="
                     let projectArea of (availableProjectAreas$ | async) ?? []
                   "
-                  [value]="projectArea.project_area_id">
+                  [value]="projectArea">
                   {{ projectArea.project_area_name }}
                 </mat-option>
               </mat-select>

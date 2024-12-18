@@ -132,11 +132,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
-  selectedChartProjectArea: ImpactsProjectArea = {
-    project_area_id: 1,
-    project_area_name: 'ok',
-  };
-
+  selectedChartProjectArea: ImpactsProjectArea | null = null;
   showTreatmentPrescription = false;
   changeChartButtons: PanelIconButton[] = [
     { icon: 'open_in_full', actionName: 'expand' },
@@ -189,15 +185,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   }
 
   handleChangedMetrics(data: string[]) {
-    //TODO: make sure we understand which slot corresponds to which number!!
     this.directImpactsStateService.setSelectedMetrics(data);
     this.directImpactsStateService.getChangesOverTimeData();
   }
 
-  setChartProjectArea() {
-    this.directImpactsStateService.setProjectAreaForChanges(
-      this.selectedChartProjectArea
-    );
+  setChartProjectArea(e: ImpactsProjectArea) {
+    this.directImpactsStateService.setProjectAreaForChanges(e);
   }
 
   expandChangeChart() {
