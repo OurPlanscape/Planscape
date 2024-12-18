@@ -679,14 +679,14 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         except PlanningArea.DoesNotExist:
             raise serializers.ValidationError("Planning area does not exist.")
 
-        if planning_area.geometry.contains(uploaded_geos):
+        if planning_area.geometry.contains_properly(uploaded_geos):
             return True
 
         all_stands_geometry = Stand.objects.within_polygon(
             planning_area.geometry, stand_size
         ).aggregate(geometry=UnionOp("geometry"))["geometry"]
 
-        if all_stands_geometry and all_stands_geometry.contains(uploaded_geos):
+        if all_stands_geometry and all_stands_geometry.contains_properly(uploaded_geos):
             return True
 
         return False
