@@ -674,20 +674,19 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
 
     def _is_inside_planning_area(self, geometry, planning_area_id, stand_size) -> bool:
         uploaded_geos = union_geojson(geometry)
-        uploaded_geos_for_test = uploaded_geos.transform(5070, clone=True).buffer(-0.01)
         try:
             planning_area = PlanningArea.objects.get(pk=planning_area_id)
         except PlanningArea.DoesNotExist:
             raise serializers.ValidationError("Planning area does not exist.")
 
-        if planning_area.geometry.covers(uploaded_geos_for_test):
+        if planning_area.geometry.covers(uploaded_geos):
             return True
 
         all_stands_geometry = Stand.objects.within_polygon(
             planning_area.geometry, stand_size
         ).aggregate(geometry=UnionOp("geometry"))["geometry"]
 
-        if all_stands_geometry and all_stands_geometry.covers(uploaded_geos_for_test):
+        if all_stands_geometry and all_stands_geometry.covers(uploaded_geos):
             return True
 
         return False

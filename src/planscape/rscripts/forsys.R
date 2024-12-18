@@ -262,7 +262,7 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
         ps.id = {scenario_id}
     )
     SELECT
-      ST_Transform(ST_Union(ST_Buffer(rr.geometry, 0)), 5070) as \"geometry\"
+      ST_Union(ST_Buffer(rr.geometry, 0)) as \"geometry\"
     FROM restrictions_restriction rr, plan_scenario
     WHERE
       type IN ({restrictions*}) AND
@@ -274,7 +274,7 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
     layer = NULL,
     query = restrictions_statement,
     geometry_column = "geometry",
-    crs = 5070
+    crs = 4269
   )
   return(restriction_data)
 }
@@ -293,7 +293,7 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   )
   SELECT
       ss.id AS \"stand_id\",
-      ST_Transform(ss.geometry, 5070) AS \"geometry\",
+      ss.geometry AS \"geometry\",
       ST_Area(ss.geometry::geography, TRUE) / 4047 as \"area_acres\"
   FROM stands_stand ss, plan_scenario
   WHERE
@@ -307,7 +307,7 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
     layer = NULL,
     query = query,
     geometry_column = "geometry",
-    crs = 5070
+    crs = 4269
   )
 
   if (length(restrictions) > 0) {
@@ -827,7 +827,7 @@ upsert_project_area <- function(
       {scenario_id},
       {name},
       {data},
-      ST_Multi(ST_Transform(ST_GeomFromGeoJSON({geometry}), 4269))
+      ST_Multi(ST_GeomFromGeoJSON({geometry}), 4269)
     )
     ON CONFLICT (scenario_id, name) DO UPDATE
     SET
