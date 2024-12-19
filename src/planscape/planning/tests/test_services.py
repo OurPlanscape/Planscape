@@ -3,6 +3,7 @@ import shutil
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 import fiona
+from planscape.tests.factories import UserFactory
 from fiona.crs import to_string
 from planning.services import (
     export_to_shapefile,
@@ -11,7 +12,13 @@ from planning.services import (
     get_schema,
     validate_scenario_treatment_ratio,
 )
-from planning.models import PlanningArea, Scenario, ScenarioResult, ScenarioResultStatus
+from planning.models import (
+    PlanningArea,
+    ProjectArea,
+    Scenario,
+    ScenarioResult,
+    ScenarioResultStatus,
+)
 from stands.models import Stand, StandSizeChoices
 
 
@@ -201,39 +208,43 @@ class ExportToShapefileTest(TransactionTestCase):
             export_to_shapefile(scenario)
 
     def test_export_creates_file(self):
+        user = UserFactory.create()
         unit_poly = GEOSGeometry(
             "MULTIPOLYGON (((0 0, 0 1, 1 1, 1 0, 0 0)))", srid=4269
         )
         planning = PlanningArea.objects.create(
-            name="foo", region_name="sierra-nevada", geometry=unit_poly
+            name="foo",
+            region_name="sierra-nevada",
+            geometry=unit_poly,
+            user=user,
         )
-        scenario = Scenario.objects.create(planning_area=planning, name="s1")
-        result = ScenarioResult.objects.create(
+        scenario = Scenario.objects.create(
+            planning_area=planning,
+            name="s1",
+            user=user,
+        )
+        data = {
+            "foo": "abc",
+            "bar": 1,
+            "baz": 1.2,
+            "now": str(datetime.now()),
+            "today": date.today(),
+        }
+        ProjectArea.objects.create(
             scenario=scenario,
-            status=ScenarioResultStatus.SUCCESS,
-            result={
-                "type": "FeatureCollection",
-                "features": [
-                    {
-                        "properties": {
-                            "foo": "abc",
-                            "bar": 1,
-                            "baz": 1.2,
-                            "now": str(datetime.now()),
-                            "today": date.today(),
-                        },
-                        "geometry": {
-                            "type": "Polygon",
-                            "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
-                        },
-                    }
-                ],
-            },
+            geometry=unit_poly,
+            data=data,
+            created_by=user,
+            name="foo",
         )
+        ScenarioResult.objects.create(
+            scenario=scenario, status=ScenarioResultStatus.SUCCESS
+        )
+
         output = export_to_shapefile(scenario)
         self.assertIsNotNone(output)
         path = output / "s1.shp"
         with fiona.open(path, "r", "ESRI Shapefile") as source:
             self.assertEqual(1, len(source))
-            self.assertEqual(to_string(source.crs), "EPSG:4326")
+            self.assertEqual(to_string(source.crs), "EPSG:4269")
             shutil.rmtree(str(output))

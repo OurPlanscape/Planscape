@@ -1,3 +1,4 @@
+import json
 import uuid
 from pathlib import Path
 from typing import Optional, Type
@@ -234,6 +235,18 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_stand_size(self) -> StandSizeChoices:
         return self.configuration.get("stand_size", {}) or StandSizeChoices.LARGE
 
+    def get_geojson_result(self):
+        features = [
+            {
+                "type": "Feature",
+                "properties": {**project_area.data, "name": project_area.name},
+                "id": project_area.id,
+                "geometry": json.loads(project_area.geometry.geojson),
+            }
+            for project_area in self.project_areas.all()
+        ]
+        return {"type": "FeatureCollection", "features": features}
+
     objects = ScenarioManager()
 
     class Meta(TypedModelMeta):
@@ -335,7 +348,9 @@ class ProjectArea(
 
     name = models.CharField(max_length=128, help_text="Name of the Project Area.")
 
-    data = models.JSONField(null=True, help_text="Project Area data from Forsys.")
+    data = models.JSONField(
+        null=True, help_text="Project Area data from Forsys.", encoder=DjangoJSONEncoder
+    )
 
     geometry = models.MultiPolygonField(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
