@@ -237,12 +237,18 @@ def generate_impact_results_data_to_plot(
 
     queryset = ProjectAreaTreatmentResult.objects.filter(**filters)
 
-    years = queryset.values_list("year", flat=True).distinct("year").order_by("year")
-    years = [year for year in years]
+    year_zero = (
+        queryset.values_list("year", flat=True)
+        .distinct("year")
+        .order_by("year")
+        .first()
+        or 0
+    )
 
     aggregated_values = (
         queryset.values("year", "variable")
         .annotate(
+            relative_year=(F("year") - year_zero),
             value_dividend=Sum(F("value") * F("stand_count")),
             baseline_dividend=Sum(F("baseline") * F("stand_count")),
             sum_baselines=Sum("baseline"),
