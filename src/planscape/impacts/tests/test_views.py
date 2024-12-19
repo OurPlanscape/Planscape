@@ -8,6 +8,7 @@ from django.contrib.auth import get_user_model
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
 from impacts.models import (
+    AVAILABLE_YEARS,
     TreatmentPlan,
     TreatmentPlanStatus,
     ImpactVariableAggregation,
@@ -304,7 +305,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
             scenario=self.scenario, created_by=self.user
         )
         self.client.force_authenticate(user=self.user)
-        self.years = [0, 5, 10, 15, 20]
+        self.years = AVAILABLE_YEARS
         self.patxrx_list = []
         for pa in self.project_areas:
             for variable in ImpactVariable.choices:

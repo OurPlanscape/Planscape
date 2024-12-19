@@ -6,6 +6,7 @@ from django.contrib.gis.db.models import Union
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from impacts.models import (
+    AVAILABLE_YEARS,
     ImpactVariable,
     ProjectAreaTreatmentResult,
     TreatmentPlan,
@@ -517,7 +518,7 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
         self.empty_tx_plan = TreatmentPlanFactory.create(
             scenario=self.scenario, created_by=self.user
         )
-        self.years = [0, 5, 10, 15, 20]
+        self.years = AVAILABLE_YEARS
         self.patxrx_list = []
         for pa in self.project_areas:
             for variable in ImpactVariable.choices:
@@ -548,6 +549,13 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIn(item.get("year"), self.years)
             self.assertIn(item.get("variable"), input_variables)
             self.assertIsNotNone(item.get("value"))
+            self.assertIsNotNone(item.get("baseline"))
+            self.assertIsNotNone(item.get("delta"))
+            self.assertIsNotNone(item.get("relative_year"))
+            self.assertIsNone(item.get("value_dividend"))
+            self.assertIsNone(item.get("baseline_dividend"))
+            self.assertIsNone(item.get("sum_baselines"))
+            self.assertIsNone(item.get("divisor"))
 
     def test_generate_data_to_plot__filter_by_project_areas(self):
         pa_pks = [project_area.pk for project_area in self.project_areas]
@@ -573,6 +581,11 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIsNotNone(item.get("value"))
             self.assertIsNotNone(item.get("baseline"))
             self.assertIsNotNone(item.get("delta"))
+            self.assertIsNotNone(item.get("relative_year"))
+            self.assertIsNone(item.get("value_dividend"))
+            self.assertIsNone(item.get("baseline_dividend"))
+            self.assertIsNone(item.get("sum_baselines"))
+            self.assertIsNone(item.get("divisor"))
 
     def test_generate_data_to_plot__filter_by_actions(self):
         input_variables = [
@@ -595,6 +608,7 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIsNotNone(item.get("value"))
             self.assertIsNotNone(item.get("baseline"))
             self.assertIsNotNone(item.get("delta"))
+            self.assertIsNotNone(item.get("relative_year"))
             self.assertIsNone(item.get("value_dividend"))
             self.assertIsNone(item.get("baseline_dividend"))
             self.assertIsNone(item.get("sum_baselines"))
@@ -650,3 +664,4 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIsNone(item.get("value"))
             self.assertIsNone(item.get("baseline"))
             self.assertIsNone(item.get("delta"))
+            self.assertIsNotNone(item.get("relative_year"))
