@@ -13,16 +13,12 @@ log = logging.getLogger(__name__)
 def collect_metric(event_name: AnyStr, **kwargs) -> None:
     if not settings.ANALYTICS_ENABLED:
         return
-    
-    event_params = {
-        "timestamp": now(),
-        **kwargs
-    }
+
+    event_params = {"timestamp": now(), **kwargs}
     if settings.ANALYTICS_DEBUG_MODE:
         event_params.update({"debug_mode": True})
-        
-    _async_collect_metric.delay(event_name, event_params)
 
+    _async_collect_metric.delay(event_name, event_params)
 
 
 @app.task()
