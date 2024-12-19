@@ -12,7 +12,7 @@
       <mat-form-field appearance="outline" class="changes-chart-select">
         <mat-select
           class="project-area-selector"
-          [ngModel]="selectedChartProjectArea"
+          [ngModel]="selectedChartProjectArea$ | async"
           (ngModelChange)="setChartProjectArea($event)">
           <mat-option [value]="null">All</mat-option>
           <mat-option
