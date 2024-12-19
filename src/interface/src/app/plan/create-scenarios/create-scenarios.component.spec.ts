@@ -54,6 +54,7 @@ describe('CreateScenariosComponent', () => {
     planning_area: '1',
     configuration: {},
     status: 'ACTIVE',
+    origin: 'SYSTEM',
     scenario_result: {
       status: 'PENDING',
       completed_at: '0',
@@ -95,6 +96,7 @@ describe('CreateScenariosComponent', () => {
         id: '1',
         name: 'name',
         planning_area: '1',
+        origin: 'SYSTEM',
         configuration: {
           max_budget: 200,
         },
@@ -193,8 +195,8 @@ describe('CreateScenariosComponent', () => {
       component.scenarioNameFormField?.setValue('scenarioName');
       component.scenarioNameFormField?.markAsDirty();
 
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-      component.constraintsPanelComponent.setFormData({
+      component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
+      component.constraintsPanelComponent?.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_treatment_area_ratio: 857,
@@ -209,7 +211,7 @@ describe('CreateScenariosComponent', () => {
       expect(isDisabled).toBe(true);
 
       // valid `max_treatment_area_ratio`
-      component.constraintsPanelComponent.setFormData({
+      component.constraintsPanelComponent?.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_treatment_area_ratio: 3000,
@@ -217,7 +219,7 @@ describe('CreateScenariosComponent', () => {
       isDisabled = await buttonHarness.isDisabled();
       expect(isDisabled).toBe(false);
 
-      component.constraintsPanelComponent.setFormData({
+      component.constraintsPanelComponent?.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_treatment_area_ratio: 3885733333333,
@@ -241,8 +243,8 @@ describe('CreateScenariosComponent', () => {
       component.scenarioNameFormField?.setValue('scenarioName');
       component.scenarioNameFormField?.markAsDirty();
 
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-      component.constraintsPanelComponent.setFormData({
+      component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
+      component.constraintsPanelComponent?.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_treatment_area_ratio: 3000,
@@ -283,7 +285,7 @@ describe('CreateScenariosComponent', () => {
       component.scenarioNameFormField?.setValue('scenarioName');
       component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
 
-      component.constraintsPanelComponent.setFormData({
+      component.constraintsPanelComponent?.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_treatment_area_ratio: 3000,
