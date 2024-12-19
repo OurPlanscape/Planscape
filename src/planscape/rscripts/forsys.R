@@ -431,8 +431,8 @@ to_properties <- function(
     forsys_project_outputs,
     project_stand_count,
     stand_size,
-    new_column_for_postprocessing = FALSE,
-    text_geometry) {
+    text_geometry
+    new_column_for_postprocessing = FALSE) {
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
@@ -491,8 +491,8 @@ to_project_data <- function(
     forsys_outputs$project_output,
     stand_count,
     stand_size,
-    new_column_for_postprocessing,
-    text_geometry
+    text_geometry,
+    new_column_for_postprocessing
   )
   return(list(
     type = "Feature",
@@ -846,7 +846,6 @@ upsert_project_area <- function(
       {scenario_id},
       {name},
       {data},
-      -- we have to convert to 4269 because ST_GeomFromGeoJSON assumes 4326
       ST_Multi(
         ST_SetSRID(ST_GeomFromText({geometry}), 4269)
       )
