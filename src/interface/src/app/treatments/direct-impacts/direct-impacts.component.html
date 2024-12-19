@@ -16,7 +16,9 @@
 <div class="direct-impacts">
   <div class="title-row">
     <h4 class="title">Direct Treatment Impacts</h4>
-    <mat-slide-toggle [(ngModel)]="showTreatmentPrescription"
+    <mat-slide-toggle
+      [checked]="(showTreatmentPrescription$ | async) || false"
+      (change)="saveShowTreatmentPrescription($event)"
       >View treatment prescription
     </mat-slide-toggle>
     <button sg-button variant="ghost" icon="download" [outlined]="true">
@@ -73,31 +75,34 @@
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandStandChart()">
-        <div panelTitle>{{ standChartPanelTitle$ | async }} /</div>
+        <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
         <app-stand-data-chart></app-stand-data-chart>
       </sg-panel>
 
       <sg-panel
         class="map-panel"
-        [ngClass]="{ prescriptions: showTreatmentPrescription }"
+        [ngClass]="{ prescriptions: showTreatmentPrescription$ | async }"
         [paddedContent]="false"
         [buttons]="[
           { icon: 'layers', actionName: 'layers' },
           { icon: 'open_in_full', actionName: 'expand' }
-        ]">
+        ]"
+        (clickedButton)="expandMaps()">
         <div panelTitle>{{ mapPanelTitle$ | async }}</div>
         <app-direct-impacts-synced-maps
-          *ngIf="!showTreatmentPrescription"></app-direct-impacts-synced-maps>
+          *ngIf="
+            (showTreatmentPrescription$ | async) === false
+          "></app-direct-impacts-synced-maps>
         <app-treatment-map
           [showProjectAreaTooltips]="false"
-          *ngIf="showTreatmentPrescription"></app-treatment-map>
+          *ngIf="showTreatmentPrescription$ | async"></app-treatment-map>
         <app-treatment-legend
-          *ngIf="showTreatmentPrescription"></app-treatment-legend>
+          *ngIf="showTreatmentPrescription$ | async"></app-treatment-legend>
       </sg-panel>
       <sg-panel
         class="legend-panel"
         [paddedContent]="false"
-        *ngIf="!showTreatmentPrescription">
+        *ngIf="(showTreatmentPrescription$ | async) === false">
         <app-direct-impacts-map-legend></app-direct-impacts-map-legend>
       </sg-panel>
     </section>

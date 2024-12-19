@@ -1,16 +1,24 @@
 import json
 import logging
-from stands.models import Stand, StandMetric
+from typing import Any, Dict, Iterable
+
+from core.s3 import get_aws_session
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
-from typing import Any, Dict, Iterable, List
-from gis.rasters import get_zonal_stats
+from rasterstats.io import Raster
+from shapely import total_bounds
+from shapely.geometry import shape
+import rasterio
+from rasterstats import zonal_stats
+from rasterio.session import AWSSession
+
+from stands.models import Stand, StandMetric
 
 log = logging.getLogger(__name__)
 
 
 def to_geojson(stand: Stand) -> Dict[str, Any]:
-    geometry = stand.geometry.transform(3857, clone=True)
+    geometry = stand.webmercator.json
     return {
         "type": "Feature",
         "id": stand.id,
@@ -18,25 +26,22 @@ def to_geojson(stand: Stand) -> Dict[str, Any]:
             "id": stand.id,
             "size": stand.size,
         },
-        "geometry": json.loads(geometry.json),
+        "geometry": json.loads(geometry),
     }
 
 
 def to_stand_metric(
     stats_result: Dict[str, Any],
     datalayer: DataLayer,
-    aggregations: List[str],
+    aggregations: Iterable[str],
 ) -> StandMetric:
     properties = stats_result.get("properties", {}) or {}
     stand_metric_data = {
         AGGREGATION_MODEL_MAP[agg]: properties.get(agg) for agg in aggregations
     }
-    stand_metric, _created = StandMetric.objects.update_or_create(
-        stand_id=stats_result.get("id"),
-        datalayer_id=datalayer.pk,
-        defaults=stand_metric_data,
+    return StandMetric(
+        stand_id=stats_result.get("id"), datalayer_id=datalayer.pk, **stand_metric_data
     )
-    return stand_metric
 
 
 DEFAULT_AGGREGATIONS = (
@@ -93,13 +98,20 @@ def calculate_stand_zonal_stats(
         )
 
     stand_geojson = list(map(to_geojson, missing_stands))
+    bounds = total_bounds([shape(f.get("geometry")) for f in stand_geojson])
     nodata = datalayer.info.get("nodata", 0) or 0 if datalayer.info else 0
-    stats = get_zonal_stats(
-        input_raster=datalayer.url,
-        features=stand_geojson,
-        aggregations=aggregations,
-        nodata=nodata,
-    )
+
+    with Raster(datalayer.url) as main_raster:
+        subset = main_raster.read(bounds=list(bounds))
+        stats = zonal_stats(
+            raster=subset.array,
+            affine=subset.affine,
+            vectors=stand_geojson,
+            stats=aggregations,
+            nodata=nodata,
+            geojson_out=True,
+            band=1,
+        )
 
     results = list(
         map(
@@ -110,6 +122,13 @@ def calculate_stand_zonal_stats(
             ),
             stats,
         )
+    )
+    StandMetric.objects.bulk_create(
+        results,
+        batch_size=100,
+        update_conflicts=True,
+        unique_fields=["stand_id", "datalayer_id"],
+        update_fields="min avg max sum count majority minority".split(),
     )
 
     log.info(f"Created/Updated {len(results)} stand metrics.")

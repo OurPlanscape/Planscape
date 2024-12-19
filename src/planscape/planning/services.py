@@ -113,7 +113,7 @@ def create_scenario(user: TUser, **kwargs) -> Scenario:
     return scenario
 
 
-def union_geojson(uploaded_geojson):
+def union_geojson(uploaded_geojson) -> GEOSGeometry:
     geometries = []
     if "features" in uploaded_geojson:
         for feature in uploaded_geojson["features"]:
@@ -134,11 +134,11 @@ def union_geojson(uploaded_geojson):
     return unioned_geometry
 
 
-def feature_to_project_area(user_id: int, scenario, feature, idx: int = None):
+def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] = None):
     try:
-        area_name = f"{scenario.name} project area"
+        area_name = f"{scenario.name}, Project Area"
         if idx is not None:
-            area_name += f":{idx}"
+            area_name += f" {idx}"
 
         project_area = {
             "geometry": MultiPolygon(
@@ -207,7 +207,9 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             f["properties"]["project_id"] = new_feature.pk
 
     # Store geometry with added properties into ScenarioResult.result
-    ScenarioResult.objects.create(scenario=scenario, result=uploaded_geom)
+    ScenarioResult.objects.create(
+        scenario=scenario, result=uploaded_geom, status="SUCCESS"
+    )
 
     return scenario
 

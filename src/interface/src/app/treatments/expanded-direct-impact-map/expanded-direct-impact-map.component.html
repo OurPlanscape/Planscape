@@ -1,0 +1,21 @@
+<sg-modal
+  [title]="(mapPanelTitle$ | async) || ''"
+  primaryButtonText="Create"
+  [scrollableContent]="false"
+  [showBorders]="true"
+  [hasFooter]="false"
+  (clickedClose)="close()"
+  width="full"
+  class="expanded-maps-modal">
+  <div modalBodyContent class="expanded-maps">
+    <app-direct-impacts-synced-maps
+      *ngIf="
+        (showTreatmentPrescription$ | async) === false
+      "></app-direct-impacts-synced-maps>
+    <app-treatment-map
+      [showProjectAreaTooltips]="false"
+      *ngIf="showTreatmentPrescription$ | async"></app-treatment-map>
+    <app-treatment-legend
+      *ngIf="showTreatmentPrescription$ | async"></app-treatment-legend>
+  </div>
+</sg-modal>

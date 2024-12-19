@@ -11,7 +11,7 @@ import {
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
@@ -25,7 +25,10 @@ import {
   ModalComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import {
+  MatSlideToggleChange,
+  MatSlideToggleModule,
+} from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
@@ -34,7 +37,6 @@ import { ImpactsMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
-import { MapGeoJSONFeature } from 'maplibre-gl';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
@@ -43,6 +45,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
 import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
+import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
+import { MapGeoJSONFeature } from 'maplibre-gl';
 
 export interface ImpactsProjectArea {
   project_area_id: number;
@@ -132,6 +136,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
+
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectAreaForChanges$;
   showTreatmentPrescription = false;
@@ -146,6 +151,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       );
     })
   );
+
+  showTreatmentPrescription$ =
+    this.directImpactsStateService.showTreatmentPrescription$;
 
   standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
     map((activeStand) => {
@@ -165,15 +173,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((m) => m.metric)
   );
 
-  // todo: placeholder to fill once we have project area filter
-  projectArea$ = of('All Project Areas');
-
-  mapPanelTitle$ = combineLatest([
-    this.directImpactsStateService.activeMetric$,
-    this.projectArea$,
-  ]).pipe(
-    map(([activeMetric, pa]) => `${activeMetric.metric.label} for ${pa}`)
-  );
+  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
 
   getValues(activeStand: MapGeoJSONFeature) {}
 
@@ -206,5 +206,15 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     this.dialog.open(ExpandedStandDataChartComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });
+  }
+
+  expandMaps() {
+    this.dialog.open(ExpandedDirectImpactMapComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
+  }
+
+  saveShowTreatmentPrescription(value: MatSlideToggleChange) {
+    this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
   }
 }

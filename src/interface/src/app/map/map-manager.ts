@@ -138,6 +138,7 @@ export class MapManager {
         weight: 5,
       },
       templineStyle: {
+        radius: 0,
         color: '#000',
         weight: 5,
       },

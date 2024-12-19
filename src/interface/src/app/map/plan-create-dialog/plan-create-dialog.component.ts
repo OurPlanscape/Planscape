@@ -8,6 +8,7 @@ import { Region, regionToString } from '@types';
 import { isValidTotalArea } from '../../plan/plan-helpers';
 import { Geometry } from 'geojson';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
+import { AnalyticsService } from '@services/analytics.service';
 
 export interface PlanCreateDialogData {
   shape: Geometry;
@@ -32,6 +33,7 @@ export class PlanCreateDialogComponent {
     private planService: PlanService,
     private sessionService: SessionService,
     private matSnackBar: MatSnackBar,
+    private analyticsService: AnalyticsService,
     @Inject(MAT_DIALOG_DATA) public data: PlanCreateDialogData
   ) {}
 
@@ -78,6 +80,12 @@ export class PlanCreateDialogComponent {
         next: (result) => {
           this.dialogRef.close(result!.id);
           this.submitting = false;
+          this.analyticsService.emitEvent(
+            'polygons_draw_explore',
+            undefined,
+            undefined,
+            (result as any).geometry?.coordinates?.length
+          );
         },
         error: (e) => {
           this.matSnackBar.open(

@@ -1,7 +1,7 @@
 from typing import Type, Union
 from django.contrib.gis.db import models
 from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.contrib.gis.db.models.functions import Centroid
+from django.contrib.gis.db.models.functions import Centroid, Transform
 from django_stubs_ext.db.models import TypedModelMeta
 from django.db.models import QuerySet
 from conditions.models import Condition
@@ -42,7 +42,12 @@ def area_from_size(size: StandSizeChoices) -> float:
     return STAND_AREA_ACRES[size]
 
 
-class StandManager(models.Manager):
+class StandQuerySet(models.QuerySet):
+    def with_webmercator(
+        self,
+    ):
+        return self.annotate(webmercator=Transform("geometry", srid=3857))
+
     def within_polygon(
         self,
         geometry: Union[Polygon, MultiPolygon],
@@ -57,6 +62,10 @@ class StandManager(models.Manager):
         )
 
 
+class StandManager(models.Manager):
+    pass
+
+
 class Stand(CreatedAtMixin, models.Model):
     id: int
     size = models.CharField(
@@ -68,7 +77,7 @@ class Stand(CreatedAtMixin, models.Model):
 
     area_m2 = models.FloatField()
 
-    objects: StandManager = StandManager()
+    objects: StandManager = StandManager.from_queryset(StandQuerySet)()
 
     class Meta(TypedModelMeta):
         indexes = [
@@ -119,7 +128,7 @@ class StandMetric(CreatedAtMixin, models.Model):
             models.UniqueConstraint(
                 fields=[
                     "stand",
-                    "condition",
+                    "datalayer",
                 ],
                 name="unique_stand_metric",
             )

@@ -1,9 +1,11 @@
 import logging
 from django.conf import settings
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, Iterable, List, Optional, Union
 from uuid import uuid4
 
+from numpy import ndarray
+from numpy.typing import NDArray
 import rasterio
 from rasterio.warp import Resampling, calculate_default_transform, reproject
 from rasterstats import zonal_stats
@@ -159,50 +161,3 @@ def warp(
                         resampling=resampling_method,
                     )
             return output_file
-
-
-def get_zonal_stats(
-    input_raster: str,
-    features: List[Dict[str, Any]],
-    aggregations: List[str] = ["mean"],
-    band: int = 1,
-    nodata: int = 0,
-) -> List[Dict[str, Any]]:
-    """Obtains zonal statistics for the list of features
-    in the input.
-
-    This method assumes that the features are in the same
-    Spatial Reference System as the raster. This method
-    makes no attempts to coerce and/or reproject these coordinates.
-
-    :param input_raster: _description_
-    :type input_raster: str
-    :param features: _description_
-    :type features: List[Dict[str, Any]]
-    :param aggregations: _description_, defaults to ["mean"]
-    :type aggregations: List[str], optional
-    :param band: _description_, defaults to 1
-    :type band: int, optional
-    :param nodata: _description_, defaults to 0
-    :type nodata: int, optional
-    :raises ValueError: _description_
-    :raises ValueError: _description_
-    :raises ValueError: _description_
-    :return: _description_
-    :rtype: List[Dict[str, Any]]
-    """
-    if not input_raster:
-        raise ValueError("input_raster is mandatory")
-    if not features:
-        raise ValueError("features is mandatory")
-    if not aggregations:
-        raise ValueError("aggregations is mandatory")
-
-    return zonal_stats(
-        features,
-        input_raster,
-        stats=aggregations,
-        band=band,
-        nodata=nodata,
-        geojson_out=True,
-    )
