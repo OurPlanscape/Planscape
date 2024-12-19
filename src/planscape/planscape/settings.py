@@ -405,7 +405,7 @@ CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
     "impacts.tasks.*": {"queue": "impacts"},
     "e2e.tasks.*": {"queue": "default"},
-    "analytics.tasks.*": {"queue": "default"},
+    "core.tasks.*": {"queue": "default"},
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)

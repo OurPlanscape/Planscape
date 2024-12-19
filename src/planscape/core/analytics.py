@@ -2,14 +2,31 @@ import logging
 import requests
 import json
 from typing import Dict, AnyStr, Any
+
 from django.conf import settings
+from django.utils.timezone import now
 from planscape.celery import app
 
 log = logging.getLogger(__name__)
 
 
+def collect_metric(event_name: AnyStr, **kwargs) -> None:
+    if not settings.ANALYTICS_ENABLED:
+        return
+    
+    event_params = {
+        "timestamp": now(),
+        **kwargs
+    }
+    if settings.ANALYTICS_DEBUG_MODE:
+        event_params.update({"debug_mode": True})
+        
+    _async_collect_metric.delay(event_name, event_params)
+
+
+
 @app.task()
-def async_collect_metric(event_name: AnyStr, event_params: Dict[str, Any]) -> None:
+def _async_collect_metric(event_name: AnyStr, event_params: Dict[str, Any]) -> None:
     """ """
     if not all(
         (
