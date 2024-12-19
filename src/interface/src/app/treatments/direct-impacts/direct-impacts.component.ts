@@ -132,7 +132,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
-  selectedChartProjectArea: ImpactsProjectArea | null = null;
+  selectedChartProjectArea$ =
+    this.directImpactsStateService.selectedProjectAreaForChanges$;
   showTreatmentPrescription = false;
   changeChartButtons: PanelIconButton[] = [
     { icon: 'open_in_full', actionName: 'expand' },

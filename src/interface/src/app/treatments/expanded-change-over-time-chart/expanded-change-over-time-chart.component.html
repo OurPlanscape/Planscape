@@ -4,8 +4,8 @@
   [showBorders]="true"
   [hasFooter]="false"
   (clickedClose)="close()"
-  width="xlarge"
-  class="stand-data-modal">
+  style="width: 100%"
+  class="change-over-time-chart-modal">
   <div headerContent class="header-content">
     <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
       Project Area
@@ -17,7 +17,7 @@
           <mat-option [value]="null">All</mat-option>
           <mat-option
             *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
-            [value]="projectArea.project_area_id">
+            [value]="projectArea">
             {{ projectArea.project_area_name }}
           </mat-option>
         </mat-select>
