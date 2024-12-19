@@ -138,7 +138,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   activeStand$ = this.directImpactsStateService.activeStand$;
 
   selectedChartProjectArea$ =
-    this.directImpactsStateService.selectedProjectAreaForChanges$;
+    this.directImpactsStateService.selectedProjectArea$;
   showTreatmentPrescription = false;
   changeChartButtons: PanelIconButton[] = [
     { icon: 'open_in_full', actionName: 'expand' },
@@ -187,11 +187,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     Chart.unregister(ChartDataLabels);
   }
 
-  handleChangedMetrics(data: string[]) {
-    this.directImpactsStateService.setSelectedMetrics(data);
-    this.directImpactsStateService.getChangesOverTimeData();
-  }
-
   setChartProjectArea(e: ImpactsProjectArea) {
     this.directImpactsStateService.setProjectAreaForChanges(e);
   }
@@ -216,5 +211,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   saveShowTreatmentPrescription(value: MatSlideToggleChange) {
     this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
+  }
+
+  handleChangedMetrics(data: string[]) {
+    this.directImpactsStateService.setSelectedMetrics(data);
+    this.directImpactsStateService.getChangesOverTimeData();
   }
 }

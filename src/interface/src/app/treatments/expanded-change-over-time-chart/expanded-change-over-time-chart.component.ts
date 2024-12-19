@@ -35,7 +35,7 @@ export class ExpandedChangeOverTimeChartComponent {
     public dialogRef: MatDialogRef<ExpandedChangeOverTimeChartComponent>
   ) {}
   selectedChartProjectArea$ =
-    this.directImpactsStateService.selectedProjectAreaForChanges$;
+    this.directImpactsStateService.selectedProjectArea$;
 
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(
     map((summary) => {

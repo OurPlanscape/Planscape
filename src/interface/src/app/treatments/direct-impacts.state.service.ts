@@ -1,4 +1,4 @@
-import { BehaviorSubject, combineLatest, map, of } from 'rxjs';
+import { BehaviorSubject, combineLatest, map } from 'rxjs';
 import {
   DEFAULT_SLOT,
   ImpactsMetric,
@@ -37,8 +37,8 @@ export class DirectImpactsStateService {
 
   public activeMetric$ = this._activeMetric$.asObservable();
 
-  //TODO: make this async? a behavior subject?
-  private selectedMetrics: string[] = [];
+  private _selectedMetrics$ = new BehaviorSubject<string[]>([]);
+  public selectedMetrics$ = this._selectedMetrics$.asObservable();
 
   private _filteredTreatmentTypes$ = new BehaviorSubject<PrescriptionAction[]>(
     []
@@ -52,18 +52,14 @@ export class DirectImpactsStateService {
   );
   public activeTreatmentPlan$ = this._activeTreatmentPlan$.asObservable();
 
-  private _selectedProjectAreaForChanges$ =
+  private _selectedProjectArea$ =
     new BehaviorSubject<ImpactsProjectArea | null>(null);
-  public selectedProjectAreaForChanges$ =
-    this._selectedProjectAreaForChanges$.asObservable();
+  public selectedProjectArea$ = this._selectedProjectArea$.asObservable();
 
   private _changeOverTimeData$ = new BehaviorSubject<
     ChangeOverTimeChartItem[][]
   >([[]]);
   public changeOverTimeData$ = this._changeOverTimeData$.asObservable();
-
-  // todo: placeholder to fill once we have project area filter
-  projectArea$ = of('All Project Areas');
 
   private _showTreatmentPrescription$ = new BehaviorSubject(false);
   public showTreatmentPrescription$ =
@@ -71,13 +67,13 @@ export class DirectImpactsStateService {
 
   mapPanelTitle$ = combineLatest([
     this.activeMetric$,
-    this.projectArea$,
+    this._selectedProjectArea$,
     this.showTreatmentPrescription$,
   ]).pipe(
     map(([activeMetric, pa, showTreatment]) =>
       showTreatment
         ? 'Applied Treatment Prescription'
-        : `${activeMetric.metric.label} for ${pa}`
+        : `${activeMetric.metric.label} for ${pa?.project_area_name ?? 'All Project Areas'}`
     )
   );
 
@@ -111,11 +107,11 @@ export class DirectImpactsStateService {
     if (!treatmentPlanId) {
       return;
     }
-    const projId = this._selectedProjectAreaForChanges$.value?.project_area_id;
+    const projId = this._selectedProjectArea$.value?.project_area_id;
     this.treatmentsService
       .getTreatmentImpactCharts(
         treatmentPlanId,
-        this.selectedMetrics,
+        this._selectedMetrics$.value,
         projId ?? null
       )
       .subscribe({
@@ -125,19 +121,15 @@ export class DirectImpactsStateService {
           );
           this._changeOverTimeData$.next(chartData);
         },
-        error: (error) => {
-          //TODO: replace with snackbar or similar
-        },
       });
   }
 
   setSelectedMetrics(selections: string[]) {
-    //TODO: make this a behavior subject??
-    this.selectedMetrics = selections;
+    this._selectedMetrics$.next(selections);
   }
 
   setProjectAreaForChanges(projectArea: ImpactsProjectArea | null) {
-    this._selectedProjectAreaForChanges$.next(projectArea);
+    this._selectedProjectArea$.next(projectArea);
 
     //then refresh the changes chart data
     this.getChangesOverTimeData();
