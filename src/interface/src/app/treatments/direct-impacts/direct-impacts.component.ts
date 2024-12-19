@@ -140,7 +140,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(
     map((summary) => {
-      return summary?.project_areas;
+      return summary?.project_areas.sort(
+        (a, b) => a.project_area_id - b.project_area_id // TODO: maybe semantic sort on backend?
+      );
     })
   );
 

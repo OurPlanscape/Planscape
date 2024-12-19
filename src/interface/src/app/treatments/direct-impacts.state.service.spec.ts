@@ -7,8 +7,8 @@ describe('DirectImpactsStateService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [DirectImpactsStateService],
       imports: [HttpClientTestingModule],
+      providers: [DirectImpactsStateService],
     });
     service = TestBed.inject(DirectImpactsStateService);
   });
