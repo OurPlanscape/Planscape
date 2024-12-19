@@ -19,6 +19,7 @@ export interface ImpactsResultData {
   divisor: number;
   value: number;
   delta: number;
+  relative_year: number;
 }
 
 export interface ChangeOverTimeChartItem {
@@ -87,14 +88,10 @@ export class DirectImpactsStateService {
   convertImpactResultToChartData(
     data: ImpactsResultData[]
   ): ChangeOverTimeChartItem[][] {
-    //TODO: convert data to year, avg_value data...
-    // for year, count from initial year
-    //  average value??
-    const currentYear = 2024; // TODO: this can't be right
     const chartData = data
       .map((d) => {
         return {
-          year: d.year - currentYear,
+          year: d.relative_year,
           avg_value: d.delta * 100,
           variable: d.variable,
         };
