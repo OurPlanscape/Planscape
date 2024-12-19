@@ -1,6 +1,9 @@
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ChangeOverTimeChartComponent } from './change-over-time-chart.component';
+import { MockProvider } from 'ng-mocks';
+import { BehaviorSubject } from 'rxjs';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('ChangeOverTimeChartComponent', () => {
   let component: ChangeOverTimeChartComponent;
@@ -8,7 +11,13 @@ describe('ChangeOverTimeChartComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ChangeOverTimeChartComponent],
+      imports: [HttpClientTestingModule, ChangeOverTimeChartComponent],
+      providers: [
+        MockProvider(DirectImpactsStateService, {
+          activeStand$: new BehaviorSubject(null),
+          changeOverTimeData$: new BehaviorSubject([[]]),
+        }),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ChangeOverTimeChartComponent);
