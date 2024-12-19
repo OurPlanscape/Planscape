@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
 
 describe('DirectImpactsStateService', () => {
@@ -8,6 +8,7 @@ describe('DirectImpactsStateService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       providers: [DirectImpactsStateService],
+      imports: [HttpClientTestingModule],
     });
     service = TestBed.inject(DirectImpactsStateService);
   });

@@ -23,9 +23,9 @@ const baseFont = {
 export class ChangeOverTimeChartComponent {
   constructor(private directImpactsStateService: DirectImpactsStateService) {}
 
-  @Input() projectAreaSelection = null;
-
   projectAreaChangeData$ = this.directImpactsStateService.changeOverTimeData$;
+
+  @Input() projectAreaSelection = null;
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
@@ -103,7 +103,7 @@ export class ChangeOverTimeChartComponent {
       },
     };
 
-  barChartData$ = this.projectAreaChangeData$.pipe(
+  barChartData$ = this.projectAreaChangeData$?.pipe(
     map((data) => {
       // if we don't have data here (eg., it hasn't loaded yet), it will be likely an empty array
       if (!data || data.length === 0) {
@@ -139,7 +139,7 @@ export class ChangeOverTimeChartComponent {
   );
 
   barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =
-    this.directImpactsStateService.activeMetric$.pipe(
+    this.directImpactsStateService.activeMetric$?.pipe(
       map((activeMetric) => {
         const slot = activeMetric.slot;
         const color = SLOT_COLORS[slot];

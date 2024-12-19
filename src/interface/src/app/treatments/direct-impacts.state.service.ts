@@ -62,7 +62,7 @@ export class DirectImpactsStateService {
   public changeOverTimeData$ = this._changeOverTimeData$.asObservable();
 
   constructor(private treatmentsService: TreatmentsService) {
-    this._changeOverTimeData$.next([]);
+    this._changeOverTimeData$.next([[]]);
   }
 
   convertImpactResultToChartData(
