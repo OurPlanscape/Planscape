@@ -4,7 +4,7 @@ import { AsyncPipe } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { map, Observable, combineLatest, BehaviorSubject } from 'rxjs';
-import { SLOT_COLORS } from '../metrics';
+import { SLOT_COLORS, ImpactsMetricSlot, Metric } from '../metrics';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentPlan, TreatmentProjectArea } from '@types';
 import { TreatmentsService } from '@services/treatments.service';
@@ -48,11 +48,10 @@ export class ChangeOverTimeChartComponent implements OnInit {
     private treatmentsService: TreatmentsService
   ) {}
 
-  projectAreaChangeData$ = new BehaviorSubject<
-    ChangeOverTimeChartItem[][] | null
-  >(null);
-
-  chartColorOrder = ['blue', 'purple', 'orange', 'green'];
+  projectAreaChangeData$ = new BehaviorSubject<Record<
+    ImpactsMetricSlot,
+    ChangeOverTimeChartItem[]
+  > | null>(null);
 
   ngOnInit(): void {
     combineLatest([
@@ -146,32 +145,30 @@ export class ChangeOverTimeChartComponent implements OnInit {
 
   barChartData$ = this.projectAreaChangeData$?.pipe(
     map((data) => {
-      // if we don't have data here (eg., it hasn't loaded yet), it will be likely an empty array
-      if (!data || data.length === 0 || !data[0][0]) {
+      if (!data) {
         return undefined;
       }
-
       return {
         labels: [0, 5, 10, 15, 20],
         datasets: [
           {
-            label: data[0][0].variable,
-            data: data[0].map((d) => d.avg_value),
+            label: data['blue'][0].variable,
+            data: data['blue'].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['blue'],
           },
           {
-            label: data[0][1].variable,
-            data: data[1].map((d) => d.avg_value),
+            label: data['purple'][1].variable,
+            data: data['purple'].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['purple'],
           },
           {
-            label: data[0][2].variable,
-            data: data[2].map((d) => d.avg_value),
+            label: data['orange'][2].variable,
+            data: data['orange'].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['orange'],
           },
           {
-            label: data[0][3].variable,
-            data: data[3].map((d) => d.avg_value),
+            label: data['green'][3].variable,
+            data: data['green'].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['green'],
           },
         ],
@@ -201,34 +198,39 @@ export class ChangeOverTimeChartComponent implements OnInit {
     );
 
   convertImpactResultToChartData(
-    data: ImpactsResultData[]
-  ): ChangeOverTimeChartItem[][] {
-    const chartData = data
-      .map((d) => {
-        return {
-          year: d.relative_year,
-          avg_value: d.delta * 100,
-          variable: d.variable,
-        };
-      })
-      .sort((a, b) => a.year - b.year);
-
-    const metricsVars = [...new Set(chartData.map((item) => item.variable))];
-    const converted = metricsVars.map((v) =>
-      chartData.filter((item) => item.variable === v)
-    );
-    return converted;
+    resultData: ImpactsResultData[],
+    metrics: Record<ImpactsMetricSlot, Metric>
+  ): Record<ImpactsMetricSlot, ChangeOverTimeChartItem[]> {
+    const chartData = resultData.map((d) => {
+      return {
+        year: d.relative_year,
+        avg_value: d.delta * 100,
+        variable: d.variable,
+      };
+    });
+    const dataBySlot = {
+      blue: chartData
+        .filter((item) => item.variable === metrics.blue.id)
+        .sort((a, b) => a.year - b.year),
+      green: chartData
+        .filter((item) => item.variable === metrics.green.id)
+        .sort((a, b) => a.year - b.year),
+      purple: chartData
+        .filter((item) => item.variable === metrics.purple.id)
+        .sort((a, b) => a.year - b.year),
+      orange: chartData
+        .filter((item) => item.variable === metrics.orange.id)
+        .sort((a, b) => a.year - b.year),
+    };
+    return dataBySlot;
   }
 
   updateChartData(
     treatmentPlan: TreatmentPlan,
-    metrics: any,
+    metrics: Record<ImpactsMetricSlot, Metric>,
     projectArea: TreatmentProjectArea | null
   ) {
-    const metricsArray = [];
-    for (let key in metrics) {
-      metricsArray.push(metrics[key].id);
-    }
+    const metricsArray = Object.values(metrics).map((m) => m.id);
 
     this.treatmentsService
       .getTreatmentImpactCharts(
@@ -239,7 +241,8 @@ export class ChangeOverTimeChartComponent implements OnInit {
       .subscribe({
         next: (response: any) => {
           const chartData = this.convertImpactResultToChartData(
-            response as ImpactsResultData[]
+            response as ImpactsResultData[],
+            metrics
           );
           this.projectAreaChangeData$.next(chartData);
         },
