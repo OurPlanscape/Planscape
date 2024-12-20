@@ -317,3 +317,14 @@ class TreatmentResultsPlotSerializer(serializers.Serializer):
     metrics = serializers.ListField(
         child=serializers.CharField(max_length=20), help_text="Metrics."
     )
+
+
+from rest_framework import serializers
+from stands.models import Stand
+
+
+class StandQuerySerializer(serializers.Serializer):
+    # Use PrimaryKeyRelatedField to ensure stand_id is valid PK from Stand model
+    stand_id = serializers.PrimaryKeyRelatedField(
+        queryset=Stand.objects.all(), required=True
+    )

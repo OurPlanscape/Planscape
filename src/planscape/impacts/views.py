@@ -257,74 +257,54 @@ class TreatmentPlanViewSet(
         )
         return Response(data=data_to_plot, status=status.HTTP_200_OK)
 
-
-
-    # Import endpoint database logic from impacts/services.py function
-    from impacts.services import get_treatment_result_for_stand
+    # Imports
+    from rest_framework import status, response
+    from rest_framework.decorators import action
+    from drf_spectacular.utils import extend_schema
+    from planscape.serializers import BaseErrorMessageSerializer
+    from impacts.serializers import StandQuerySerializer
+    from impacts.services import get_treatment_results_table_data
+    from impacts.models import TreatmentResult, ImpactVariable
 
     @extend_schema(
-        description = "Retrieve treatment result information for a specific stand.",
+        description="Retrieve treatment result information for a specific stand.",
         responses={
-            200: TreatmentResultSerializer, # Successful response with serialized data
-            404: BaseErrorMessageSerializer, # Stand not found
-            400: BaseErrorMessageSerializer, # Missing or invalid stand_id  
+            200: TreatmentResultSerializer,  # Successful response with serialized data
+            404: BaseErrorMessageSerializer,  # Stand not found
+            400: BaseErrorMessageSerializer,  # Missing or invalid stand_id
         },
     )
-
     @action(
-        detail = True, # creates custom endpoint applied to stands in specific treatment plan (pk)
-        methods = ["get"], # sets custom endpoint to only respond to HTTP GET requests
-        filterset_class = None, # No additional filtering needed
+        detail=True,  # creates custom endpoint applied to stands in specific treatment plan (pk)
+        methods=["get"],  # sets custom endpoint to only respond to HTTP GET requests
+        filterset_class=None,  # No additional filtering needed
+        url_path="stand-treatment-results",  # The custom endpoint name appended to the URL
     )
-
-    def stand_treatment_results(self, request):
+    def stand_treatment_results(self, request, pk=None):
         """
         Endpoint to retrieve treatment results for a specific stand ID.
         """
-        # Get stand id from query parameters (re: as a string from URL of HTTP request)
-        stand_id = request.query_params.get("stand_id")
-        
-        # Check if stand id is provided (re: not none, empty, etc.)
-        if not stand_id:
+        # Validates stand id by putting stand id from URL into custom serializer, then creates stand object
+        serializer = StandQuerySerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        stand = serializer.validated_data["stand_id"]
+
+        # Retrieves the treatment plan, using the PK from the URL
+        treatment_plan = self.get_object()
+
+        # Gets table data from the service function, returning error if not found
+        table_data = get_treatment_results_table_data(treatment_plan, stand.id)
+
+        if not table_data:
             return response.Response(
-                {"detail": "stand_id is required."},
-                status = status.HTTP_400_BAD_REQUEST,
-            )
-    
-        # Check if stand is a valid integer
-        try:
-            stand_id = int(stand_id)
-        except ValueError:
-            return response.Response(
-                {"detail": "stand_id must be an integer."},
-                status = status.HTTP_400_BAD_REQUEST,
-            )
-        
-        # Get treatment plan id using primary key, pk (re: from the URL of HTTP request)
-        try: 
-            treatment_plan = self.get_object()
-        except TreatmentPlan.DoesNotExist:
-            return response.Response(
-                {"detail": "stand_id must be an integer."},
-                status = status.HTTP_400_BAD_REQUEST,
-            )
-             
-        # Use function from impacts/services.py to get stand treatment result
-        try:
-            result = get_treatment_result_for_stand(treatment_plan, stand_id)
-        except ProjectAreaTreatmentResult.DoesNotExist:
-            return response.Response(
-                {"detail": "Stand treatment results not found in this treatment plan."},
-                status = status.HTTP_404_NOT_FOUND,
+                {
+                    "detail": "No treatment results found for this stand in the given treatment plan."
+                },
+                status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Serialize the stand treatment result and return serialized response
-        serializer = TreatmentResultSerializer(result)
-        return response.Response(serializer.data, status = status.HTTP_200_OK)
-
-
-
-
+        # Returns the data in the correct JSON format with a 200 OK status
+        return response.Response(table_data, status=status.HTTP_200_OK)
 
 
 @extend_schema_view(
