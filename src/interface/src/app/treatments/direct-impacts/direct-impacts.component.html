@@ -38,8 +38,9 @@
 
     <div class="metric-selection">
       <app-metric-filters
-        (metricSelected)="activateMetric($event)"
-        (selectionsChanged)="handleChangedMetrics($event)"></app-metric-filters>
+        [selectedOptions]="(filterOptions$ | async) || []"
+        (metricUpdated)="updateReportMetric($event)"
+        (metricSelected)="activateMetric($event)"></app-metric-filters>
     </div>
 
     <section class="direct-impacts-metrics">

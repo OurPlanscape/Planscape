@@ -1,8 +1,15 @@
-import { BehaviorSubject, combineLatest, map } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  switchMap,
+} from 'rxjs';
 import {
   DEFAULT_SLOT,
   ImpactsMetric,
   ImpactsMetricSlot,
+  Metric,
   METRICS,
 } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
@@ -29,12 +36,29 @@ export interface ChangeOverTimeChartItem {
 
 @Injectable()
 export class DirectImpactsStateService {
-  public _activeMetric$ = new BehaviorSubject<ImpactsMetric>({
-    metric: METRICS[0],
-    slot: DEFAULT_SLOT,
+  private _reportMetrics$ = new BehaviorSubject<
+    Record<ImpactsMetricSlot, Metric>
+  >({
+    blue: METRICS[0],
+    purple: METRICS[1],
+    orange: METRICS[2],
+    green: METRICS[3],
   });
 
-  public activeMetric$ = this._activeMetric$.asObservable();
+  public reportMetrics$ = this._reportMetrics$.asObservable();
+
+  private _activeSlot$ = new BehaviorSubject<ImpactsMetricSlot>(DEFAULT_SLOT);
+
+  public activeMetric$: Observable<ImpactsMetric> = this._activeSlot$.pipe(
+    switchMap((slot) =>
+      this.reportMetrics$.pipe(
+        map((metrics) => ({
+          metric: metrics[slot],
+          slot: slot,
+        }))
+      )
+    )
+  );
 
   private _selectedMetrics$ = new BehaviorSubject<string[]>([]);
   public selectedMetrics$ = this._selectedMetrics$.asObservable();
@@ -146,11 +170,19 @@ export class DirectImpactsStateService {
   }
 
   setActiveMetric(mapMetric: ImpactsMetric) {
-    this._activeMetric$.next(mapMetric);
+    this._activeSlot$.next(mapMetric.slot);
+    this.updateReportMetric(mapMetric);
+  }
+
+  updateReportMetric(mapMetric: ImpactsMetric) {
+    this._reportMetrics$.next({
+      ...this._reportMetrics$.value,
+      [mapMetric.slot]: mapMetric.metric,
+    });
   }
 
   isActiveSlot(slot: ImpactsMetricSlot) {
-    return this._activeMetric$.value.slot === slot;
+    return this._activeSlot$.value === slot;
   }
 
   setShowTreatmentPrescription(show: boolean) {

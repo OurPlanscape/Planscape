@@ -20,9 +20,10 @@ import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
 import {
   ButtonComponent,
+  ModalComponent,
   PanelComponent,
   PanelIconButton,
-  ModalComponent,
+  TreatmentTypeIconComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import {
@@ -39,7 +40,6 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
 import { MatSelectModule } from '@angular/material/select';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
@@ -169,9 +169,17 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((m) => m.metric)
   );
 
+  filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
+    map((metrics) => Object.values(metrics).map((metric) => metric.id))
+  );
+
   mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
 
   getValues(activeStand: MapGeoJSONFeature) {}
+
+  updateReportMetric(data: ImpactsMetric) {
+    this.directImpactsStateService.updateReportMetric(data);
+  }
 
   ngOnInit(): void {
     // Register the plugin only when this component is initialized
@@ -213,10 +221,5 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   saveShowTreatmentPrescription(value: MatSlideToggleChange) {
     this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
-  }
-
-  handleChangedMetrics(data: string[]) {
-    this.directImpactsStateService.setSelectedMetrics(data);
-    this.directImpactsStateService.getChangesOverTimeData();
   }
 }
