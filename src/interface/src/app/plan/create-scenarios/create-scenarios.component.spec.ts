@@ -6,20 +6,13 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
-// import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 
-import {
-  Scenario,
-  ScenarioResult,
-  TreatmentGoalConfig,
-  // TreatmentQuestionConfig,
-} from '@types';
+import { Scenario, ScenarioResult, TreatmentGoalConfig } from '@types';
 
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
-// import { HarnessLoader } from '@angular/cdk/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { PlanState, PlanStateService, ScenarioService } from '@services';
@@ -38,15 +31,6 @@ describe('CreateScenariosComponent', () => {
   let fixture: ComponentFixture<CreateScenariosComponent>;
   let fakePlanStateService: PlanStateService;
 
-  // let loader: HarnessLoader;
-  // let defaultSelectedQuestion: TreatmentQuestionConfig = {
-  //   short_question_text: '',
-  //   scenario_output_fields_paths: {},
-  //   scenario_priorities: [''],
-  //   stand_thresholds: [''],
-  //   global_thresholds: [''],
-  //   weights: [0],
-  // };
   let fakeScenario: Scenario = {
     id: '1',
     name: 'name',
@@ -156,7 +140,6 @@ describe('CreateScenariosComponent', () => {
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
-    // loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
   it('should create', () => {
