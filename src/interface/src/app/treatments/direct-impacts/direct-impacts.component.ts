@@ -47,11 +47,7 @@ import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-ti
 import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-
-export interface ImpactsProjectArea {
-  project_area_id: number;
-  project_area_name: string;
-}
+import { TreatmentProjectArea } from '@types';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -187,8 +183,14 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     Chart.unregister(ChartDataLabels);
   }
 
-  setChartProjectArea(e: ImpactsProjectArea) {
-    this.directImpactsStateService.setProjectAreaForChanges(e);
+  setChartProjectArea(pa: TreatmentProjectArea) {
+    this.directImpactsStateService.setProjectAreaForChanges(pa);
+    if (!pa) {
+      const s = this.treatmentsState.getCurrentSummary();
+      this.mapConfigState.updateMapCenter(s.extent);
+      return;
+    }
+    this.mapConfigState.updateMapCenter(pa.extent);
   }
 
   expandChangeChart() {

@@ -9,7 +9,7 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { FormsModule } from '@angular/forms';
 import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
-import { ImpactsProjectArea } from '../direct-impacts/direct-impacts.component';
+import { TreatmentProjectArea } from '@types';
 
 @Component({
   selector: 'app-expanded-change-over-time-chart',
@@ -43,7 +43,7 @@ export class ExpandedChangeOverTimeChartComponent {
     })
   );
 
-  setChartProjectArea(e: ImpactsProjectArea) {
+  setChartProjectArea(e: TreatmentProjectArea) {
     this.directImpactsStateService.setProjectAreaForChanges(e);
   }
 

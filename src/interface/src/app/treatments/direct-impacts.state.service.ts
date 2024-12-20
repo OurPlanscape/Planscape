@@ -6,11 +6,10 @@ import {
   METRICS,
 } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { ImpactsProjectArea } from './direct-impacts/direct-impacts.component';
 import { PrescriptionAction } from './prescriptions';
 import { TreatmentsService } from '@services/treatments.service';
 import { Injectable } from '@angular/core';
-import { TreatmentPlan } from '../types';
+import { TreatmentPlan, TreatmentProjectArea } from '../types';
 
 export interface ImpactsResultData {
   year: number;
@@ -53,7 +52,7 @@ export class DirectImpactsStateService {
   public activeTreatmentPlan$ = this._activeTreatmentPlan$.asObservable();
 
   private _selectedProjectArea$ =
-    new BehaviorSubject<ImpactsProjectArea | null>(null);
+    new BehaviorSubject<TreatmentProjectArea | null>(null);
   public selectedProjectArea$ = this._selectedProjectArea$.asObservable();
 
   private _changeOverTimeData$ = new BehaviorSubject<
@@ -128,9 +127,8 @@ export class DirectImpactsStateService {
     this._selectedMetrics$.next(selections);
   }
 
-  setProjectAreaForChanges(projectArea: ImpactsProjectArea | null) {
+  setProjectAreaForChanges(projectArea: TreatmentProjectArea | null) {
     this._selectedProjectArea$.next(projectArea);
-
     //then refresh the changes chart data
     this.getChangesOverTimeData();
   }
