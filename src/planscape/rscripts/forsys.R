@@ -431,7 +431,7 @@ to_properties <- function(
     forsys_project_outputs,
     project_stand_count,
     stand_size,
-    text_geometry
+    text_geometry,
     new_column_for_postprocessing = FALSE) {
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
