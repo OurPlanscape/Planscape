@@ -133,7 +133,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((m) => m.metric)
   );
 
-  reportMetrics$ = this.directImpactsStateService.reportMetrics$;
+  filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
+    map((metrics) => Object.values(metrics).map((metric) => metric.id))
+  );
 
   mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
 

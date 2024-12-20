@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 import { AsyncPipe, NgFor } from '@angular/common';
 
@@ -31,6 +31,7 @@ import { Observable } from 'rxjs';
   styleUrl: './metric-filters.component.scss',
 })
 export class MetricFiltersComponent implements OnInit {
+  @Input() selectedOptions: string[] = [];
   @Output() metricSelected = new EventEmitter<ImpactsMetric>();
   @Output() metricUpdated = new EventEmitter<ImpactsMetric>();
 
@@ -52,14 +53,6 @@ export class MetricFiltersComponent implements OnInit {
     [...this.initialOptions],
     [...this.initialOptions],
     [...this.initialOptions],
-  ];
-
-  // Storing the selected IDs
-  selectedOptions: string[] = [
-    this.initialOptions[0].id,
-    this.initialOptions[1].id,
-    this.initialOptions[2].id,
-    this.initialOptions[3].id,
   ];
 
   treatmentTypeOptions$: Observable<any> = this.treatmentState.summary$.pipe(
