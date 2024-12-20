@@ -18,7 +18,12 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { ButtonComponent, ModalComponent, PanelComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  ModalComponent,
+  PanelComponent,
+  TreatmentTypeIconComponent,
+} from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import {
   MatSlideToggleChange,
@@ -34,7 +39,6 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
@@ -129,10 +133,18 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((m) => m.metric)
   );
 
+  filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
+    map((metrics) => Object.values(metrics).map((metric) => metric.id))
+  );
+
   mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
 
   activateMetric(data: ImpactsMetric) {
     this.directImpactsStateService.setActiveMetric(data);
+  }
+
+  updateReportMetric(data: ImpactsMetric) {
+    this.directImpactsStateService.updateReportMetric(data);
   }
 
   ngOnInit(): void {

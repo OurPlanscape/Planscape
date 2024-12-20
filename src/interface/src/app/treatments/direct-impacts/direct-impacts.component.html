@@ -38,6 +38,8 @@
 
     <div class="metric-selection">
       <app-metric-filters
+        [selectedOptions]="(filterOptions$ | async) || []"
+        (metricUpdated)="updateReportMetric($event)"
         (metricSelected)="activateMetric($event)"></app-metric-filters>
     </div>
 
