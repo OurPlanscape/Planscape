@@ -5,10 +5,10 @@ import {
   JsonPipe,
   NgClass,
   NgIf,
+  NgFor,
   NgStyle,
 } from '@angular/common';
 import { SharedModule } from '@shared';
-
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, switchMap } from 'rxjs';
@@ -18,7 +18,12 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { ButtonComponent, ModalComponent, PanelComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  PanelComponent,
+  PanelIconButton,
+  ModalComponent,
+} from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import {
   MatSlideToggleChange,
@@ -35,9 +40,14 @@ import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.co
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
+import { MatSelectModule } from '@angular/material/select';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
+import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
+import { MapGeoJSONFeature } from 'maplibre-gl';
+import { TreatmentProjectArea } from '@types';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -49,7 +59,9 @@ import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/
     DirectImpactsSyncedMapsComponent,
     PanelComponent,
     MatIconModule,
+    MatSelectModule,
     NgIf,
+    NgFor,
     MatSlideToggleModule,
     ButtonComponent,
     DatePipe,
@@ -64,9 +76,10 @@ import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/
     JsonPipe,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
+    ChangeOverTimeChartComponent,
     ExpandedStandDataChartComponent,
+    ExpandedChangeOverTimeChartComponent,
     ModalComponent,
-    MatDialogModule,
   ],
   providers: [
     DirectImpactsStateService,
@@ -101,6 +114,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           this.mapConfigState.setShowFillProjectAreas(false);
           this.mapConfigState.updateShowTreatmentStands(true);
           this.mapConfigState.updateShowProjectAreas(true);
+          if (plan) {
+            this.directImpactsStateService.setActiveTreatmentPlan(plan);
+            //TOOD: do an initial chart rendering, based on default data
+            this.directImpactsStateService.getChangesOverTimeData();
+          }
+          this.directImpactsStateService.getChangesOverTimeData();
         }),
         catchError((error) => {
           this.router.navigate(['/']);
@@ -112,6 +131,22 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
+  activeStand$ = this.directImpactsStateService.activeStand$;
+
+  selectedChartProjectArea$ =
+    this.directImpactsStateService.selectedProjectArea$;
+  showTreatmentPrescription = false;
+  changeChartButtons: PanelIconButton[] = [
+    { icon: 'open_in_full', actionName: 'expand' },
+  ];
+
+  availableProjectAreas$ = this.treatmentsState.summary$.pipe(
+    map((summary) => {
+      return summary?.project_areas.sort(
+        (a, b) => a.project_area_id - b.project_area_id // TODO: maybe semantic sort on backend?
+      );
+    })
+  );
 
   showTreatmentPrescription$ =
     this.directImpactsStateService.showTreatmentPrescription$;
@@ -125,15 +160,18 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
+  activateMetric(data: ImpactsMetric) {
+    this.directImpactsStateService.setActiveMetric(data);
+    this.directImpactsStateService.getChangesOverTimeData();
+  }
+
   activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(
     map((m) => m.metric)
   );
 
   mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
 
-  activateMetric(data: ImpactsMetric) {
-    this.directImpactsStateService.setActiveMetric(data);
-  }
+  getValues(activeStand: MapGeoJSONFeature) {}
 
   ngOnInit(): void {
     // Register the plugin only when this component is initialized
@@ -143,6 +181,22 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     // Unregister the plugin when the component is destroyed
     Chart.unregister(ChartDataLabels);
+  }
+
+  setChartProjectArea(pa: TreatmentProjectArea) {
+    this.directImpactsStateService.setProjectAreaForChanges(pa);
+    if (!pa) {
+      const s = this.treatmentsState.getCurrentSummary();
+      this.mapConfigState.updateMapCenter(s.extent);
+      return;
+    }
+    this.mapConfigState.updateMapCenter(pa.extent);
+  }
+
+  expandChangeChart() {
+    this.dialog.open(ExpandedChangeOverTimeChartComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
   }
 
   expandStandChart() {
@@ -159,5 +213,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   saveShowTreatmentPrescription(value: MatSlideToggleChange) {
     this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
+  }
+
+  handleChangedMetrics(data: string[]) {
+    this.directImpactsStateService.setSelectedMetrics(data);
+    this.directImpactsStateService.getChangesOverTimeData();
   }
 }

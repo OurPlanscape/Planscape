@@ -1,0 +1,40 @@
+@import 'mixins';
+
+:host {
+  overflow: hidden;
+}
+
+.expanded-stand-data {
+  padding: 20px;
+  height: 100%;
+}
+
+.header-content {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+.left-title-box {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: baseline;
+  height: 38px;
+}
+
+::ng-deep .cdk-overlay-pane {
+  width: 1000px;
+
+}
+
+::ng-deep {
+  sg-modal.change-over-time-chart-modal {
+    .header {
+      @include h5();
+      height: 39px;
+    }
+  }
+}
