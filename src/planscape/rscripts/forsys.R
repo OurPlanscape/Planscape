@@ -376,11 +376,7 @@ get_stand_metrics <- function(
 get_project_geometry <- function(connection, stand_ids) {
   query <- glue_sql("SELECT
             ST_AsGeoJSON(
-              ST_Transform(
-                ST_Union(geometry),
-                4326),
-              6, -- max precision
-              0  -- output mode
+              ST_Union(geometry)
             )
             FROM stands_stand
             WHERE id IN ({stand_ids*})",
@@ -391,6 +387,19 @@ get_project_geometry <- function(connection, stand_ids) {
   return(fromJSON(result$st_asgeojson))
 }
 
+get_project_geometry_text <- function(connection, stand_ids) {
+  query <- glue_sql("SELECT
+            ST_AsText(
+              ST_Union(geometry)
+            ) as \"geometry\"
+            FROM stands_stand
+            WHERE id IN ({stand_ids*})",
+    stand_ids = stand_ids,
+    .con = connection
+  )
+  result <- dbGetQuery(connection, query)
+  return(result$geometry)
+}
 
 get_project_ids <- function(forsys_output) {
   return(unique(forsys_output$project_output$proj_id))
@@ -422,6 +431,7 @@ to_properties <- function(
     forsys_project_outputs,
     project_stand_count,
     stand_size,
+    text_geometry,
     new_column_for_postprocessing = FALSE) {
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
@@ -431,6 +441,7 @@ to_properties <- function(
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
+    mutate(text_geometry = text_geometry) %>%
     rename_with(.fn = rename_col)
 
   # post process
@@ -473,12 +484,14 @@ to_project_data <- function(
   stand_count <- nrow(project_stand_ids)
   project_stand_ids <- as.integer(project_stand_ids$stand_id)
   geometry <- get_project_geometry(connection, project_stand_ids)
+  text_geometry <- get_project_geometry_text(connection, project_stand_ids)
   properties <- to_properties(
     project_id,
     scenario,
     forsys_outputs$project_output,
     stand_count,
     stand_size,
+    text_geometry,
     new_column_for_postprocessing
   )
   return(list(
@@ -833,14 +846,8 @@ upsert_project_area <- function(
       {scenario_id},
       {name},
       {data},
-      -- we have to convert to 4269 because ST_GeomFromGeoJSON assumes 4326
       ST_Multi(
-        ST_Transform(
-          ST_GeomFromGeoJSON(
-            {geometry}
-          ),
-          4269
-        )
+        ST_SetSRID(ST_GeomFromText({geometry}), 4269)
       )
     )
     ON CONFLICT (scenario_id, name) DO UPDATE
@@ -858,7 +865,7 @@ upsert_project_area <- function(
       scenario_id=scenario$id,
       name=area_name,
       data=toJSON(project$properties),
-      geometry=toJSON(project$geometry),
+      geometry=project$properties$text_geometry,
       .con = connection
     )
     dbExecute(connection, query, immediate = TRUE)
