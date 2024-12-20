@@ -1,41 +1,45 @@
-import { BehaviorSubject, combineLatest, map, of } from 'rxjs';
+import {
+  BehaviorSubject,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  switchMap,
+} from 'rxjs';
 import {
   DEFAULT_SLOT,
   ImpactsMetric,
   ImpactsMetricSlot,
+  Metric,
   METRICS,
 } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
 
 export class DirectImpactsStateService {
-  private _reportMetrics$ = new BehaviorSubject<ImpactsMetric[]>([
-    {
-      metric: METRICS[0],
-      slot: 'blue',
-    },
-    {
-      metric: METRICS[1],
-      slot: 'purple',
-    },
-    {
-      metric: METRICS[2],
-      slot: 'orange',
-    },
-    {
-      metric: METRICS[3],
-      slot: 'green',
-    },
-  ]);
+  private _reportMetrics$ = new BehaviorSubject<
+    Record<ImpactsMetricSlot, Metric>
+  >({
+    blue: METRICS[0],
+    purple: METRICS[1],
+    orange: METRICS[2],
+    green: METRICS[3],
+  });
 
   public reportMetrics$ = this._reportMetrics$.asObservable();
 
-  public _activeMetric$ = new BehaviorSubject<ImpactsMetric>({
-    metric: METRICS[0],
-    slot: DEFAULT_SLOT,
-  });
+  private _activeSlot$ = new BehaviorSubject<ImpactsMetricSlot>(DEFAULT_SLOT);
 
-  public activeMetric$ = this._activeMetric$.asObservable();
+  public activeMetric$: Observable<ImpactsMetric> = this._activeSlot$.pipe(
+    switchMap((slot) =>
+      this.reportMetrics$.pipe(
+        map((metrics) => ({
+          metric: metrics[slot],
+          slot: slot,
+        }))
+      )
+    )
+  );
 
   private _filteredTreatmentTypes$ = new BehaviorSubject<PrescriptionAction[]>(
     []
@@ -74,20 +78,19 @@ export class DirectImpactsStateService {
   }
 
   setActiveMetric(mapMetric: ImpactsMetric) {
-    this._activeMetric$.next(mapMetric);
+    this._activeSlot$.next(mapMetric.slot);
     this.updateReportMetric(mapMetric);
   }
 
   updateReportMetric(mapMetric: ImpactsMetric) {
-    this._reportMetrics$.next(
-      this._reportMetrics$.value.map((metric) =>
-        metric.slot === mapMetric.slot ? mapMetric : metric
-      )
-    );
+    this._reportMetrics$.next({
+      ...this._reportMetrics$.value,
+      [mapMetric.slot]: mapMetric.metric,
+    });
   }
 
   isActiveSlot(slot: ImpactsMetricSlot) {
-    return this._activeMetric$.value.slot === slot;
+    return this._activeSlot$.value === slot;
   }
 
   setShowTreatmentPrescription(show: boolean) {
