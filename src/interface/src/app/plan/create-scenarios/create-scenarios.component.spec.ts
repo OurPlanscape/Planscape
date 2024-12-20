@@ -264,40 +264,40 @@ describe('CreateScenariosComponent', () => {
   //     expect(component.createScenario).toHaveBeenCalled();
   //   });
 
-    // it('should disable Generate button if form is invalid', async () => {
-    //   const buttonHarness: MatButtonHarness = await loader.getHarness(
-    //     MatButtonHarness.with({ text: /GENERATE/ })
-    //   );
-    //   component.prioritiesForm?.markAsDirty();
-    //   component.constrainsForm
-    //     ?.get('physicalConstraintForm.minDistanceFromRoad')
-    //     ?.setValue(-1);
-    //   fixture.detectChanges();
+  // it('should disable Generate button if form is invalid', async () => {
+  //   const buttonHarness: MatButtonHarness = await loader.getHarness(
+  //     MatButtonHarness.with({ text: /GENERATE/ })
+  //   );
+  //   component.prioritiesForm?.markAsDirty();
+  //   component.constrainsForm
+  //     ?.get('physicalConstraintForm.minDistanceFromRoad')
+  //     ?.setValue(-1);
+  //   fixture.detectChanges();
 
-    //   // Click on "GENERATE SCENARIO" button
-    //   await buttonHarness.click();
+  //   // Click on "GENERATE SCENARIO" button
+  //   await buttonHarness.click();
 
-    //   expect(await buttonHarness.isDisabled()).toBeTrue();
-    // });
+  //   expect(await buttonHarness.isDisabled()).toBeTrue();
+  // });
 
-    // it('should enable Generate button if form is valid', async () => {
-    //   const buttonHarness: MatButtonHarness = await loader.getHarness(
-    //     MatButtonHarness.with({ text: /GENERATE/ })
-    //   );
-    //   component.scenarioNameFormField?.setValue('scenarioName');
-    //   component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
+  // it('should enable Generate button if form is valid', async () => {
+  //   const buttonHarness: MatButtonHarness = await loader.getHarness(
+  //     MatButtonHarness.with({ text: /GENERATE/ })
+  //   );
+  //   component.scenarioNameFormField?.setValue('scenarioName');
+  //   component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
 
-    //   component.constraintsPanelComponent.setFormData({
-    //     max_slope: 1,
-    //     min_distance_from_road: 1,
-    //     max_treatment_area_ratio: 3000,
-    //   });
+  //   component.constraintsPanelComponent.setFormData({
+  //     max_slope: 1,
+  //     min_distance_from_road: 1,
+  //     max_treatment_area_ratio: 3000,
+  //   });
 
-    //   component.generatingScenario = false;
-    //   fixture.detectChanges();
+  //   component.generatingScenario = false;
+  //   fixture.detectChanges();
 
-    //   expect(await buttonHarness.isDisabled()).toBeFalse();
-    // });
+  //   expect(await buttonHarness.isDisabled()).toBeFalse();
+  // });
   // });
 
   // TODO Re-enable when support for uploading project areas in implemented
