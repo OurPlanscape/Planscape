@@ -114,12 +114,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           this.mapConfigState.setShowFillProjectAreas(false);
           this.mapConfigState.updateShowTreatmentStands(true);
           this.mapConfigState.updateShowProjectAreas(true);
-          if (plan) {
-            this.directImpactsStateService.setActiveTreatmentPlan(plan);
-            //TOOD: do an initial chart rendering, based on default data
-            this.directImpactsStateService.getChangesOverTimeData();
-          }
-          this.directImpactsStateService.getChangesOverTimeData();
         }),
         catchError((error) => {
           this.router.navigate(['/']);
@@ -162,7 +156,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   activateMetric(data: ImpactsMetric) {
     this.directImpactsStateService.setActiveMetric(data);
-    this.directImpactsStateService.getChangesOverTimeData();
   }
 
   activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(

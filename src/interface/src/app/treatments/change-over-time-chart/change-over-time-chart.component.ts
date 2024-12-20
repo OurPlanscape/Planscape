@@ -1,10 +1,14 @@
-import { Component, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { AsyncPipe } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map, Observable } from 'rxjs';
+import { map, Observable, combineLatest, BehaviorSubject } from 'rxjs';
 import { SLOT_COLORS } from '../metrics';
+import { TreatmentsState } from '../treatments.state';
+import { TreatmentPlan, TreatmentProjectArea } from '@types';
+import { TreatmentsService } from '@services/treatments.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 const baseFont = {
   family: 'Public Sans',
@@ -13,6 +17,23 @@ const baseFont = {
   weight: '600',
 };
 
+export interface ImpactsResultData {
+  year: number;
+  variable: string;
+  dividend: number;
+  divisor: number;
+  value: number;
+  delta: number;
+  relative_year: number;
+}
+
+export interface ChangeOverTimeChartItem {
+  variable: string;
+  year: number;
+  avg_value: number;
+}
+
+@UntilDestroy()
 @Component({
   selector: 'app-change-over-time-chart',
   standalone: true,
@@ -20,12 +41,32 @@ const baseFont = {
   templateUrl: './change-over-time-chart.component.html',
   styleUrl: './change-over-time-chart.component.scss',
 })
-export class ChangeOverTimeChartComponent {
-  constructor(private directImpactsStateService: DirectImpactsStateService) {}
+export class ChangeOverTimeChartComponent implements OnInit {
+  constructor(
+    private directImpactsStateService: DirectImpactsStateService,
+    private treatmentsState: TreatmentsState,
+    private treatmentsService: TreatmentsService
+  ) {}
 
-  projectAreaChangeData$ = this.directImpactsStateService.changeOverTimeData$;
+  projectAreaChangeData$ = new BehaviorSubject<
+    ChangeOverTimeChartItem[][] | null
+  >(null);
 
-  @Input() projectAreaSelection = null;
+  chartColorOrder = ['blue', 'purple', 'orange', 'green'];
+
+  ngOnInit(): void {
+    combineLatest([
+      this.treatmentsState.treatmentPlan$,
+      this.directImpactsStateService.reportMetrics$,
+      this.directImpactsStateService.selectedProjectArea$,
+    ])
+      .pipe(untilDestroyed(this))
+      .subscribe(([treatmentPlan, metrics, projectArea]) => {
+        if (treatmentPlan) {
+          this.updateChartData(treatmentPlan, metrics, projectArea);
+        }
+      });
+  }
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
@@ -158,4 +199,50 @@ export class ChangeOverTimeChartComponent {
         };
       })
     );
+
+  convertImpactResultToChartData(
+    data: ImpactsResultData[]
+  ): ChangeOverTimeChartItem[][] {
+    const chartData = data
+      .map((d) => {
+        return {
+          year: d.relative_year,
+          avg_value: d.delta * 100,
+          variable: d.variable,
+        };
+      })
+      .sort((a, b) => a.year - b.year);
+
+    const metricsVars = [...new Set(chartData.map((item) => item.variable))];
+    const converted = metricsVars.map((v) =>
+      chartData.filter((item) => item.variable === v)
+    );
+    return converted;
+  }
+
+  updateChartData(
+    treatmentPlan: TreatmentPlan,
+    metrics: any,
+    projectArea: TreatmentProjectArea | null
+  ) {
+    const metricsArray = [];
+    for (let key in metrics) {
+      metricsArray.push(metrics[key].id);
+    }
+
+    this.treatmentsService
+      .getTreatmentImpactCharts(
+        treatmentPlan.id,
+        metricsArray,
+        projectArea?.project_area_id ?? null
+      )
+      .subscribe({
+        next: (response: any) => {
+          const chartData = this.convertImpactResultToChartData(
+            response as ImpactsResultData[]
+          );
+          this.projectAreaChangeData$.next(chartData);
+        },
+      });
+  }
 }

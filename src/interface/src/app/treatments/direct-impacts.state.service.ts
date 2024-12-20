@@ -14,25 +14,8 @@ import {
 } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
-import { TreatmentsService } from '@services/treatments.service';
 import { Injectable } from '@angular/core';
 import { TreatmentPlan, TreatmentProjectArea } from '../types';
-
-export interface ImpactsResultData {
-  year: number;
-  variable: string;
-  dividend: number;
-  divisor: number;
-  value: number;
-  delta: number;
-  relative_year: number;
-}
-
-export interface ChangeOverTimeChartItem {
-  variable: string;
-  year: number;
-  avg_value: number;
-}
 
 @Injectable()
 export class DirectImpactsStateService {
@@ -60,9 +43,6 @@ export class DirectImpactsStateService {
     )
   );
 
-  private _selectedMetrics$ = new BehaviorSubject<string[]>([]);
-  public selectedMetrics$ = this._selectedMetrics$.asObservable();
-
   private _filteredTreatmentTypes$ = new BehaviorSubject<PrescriptionAction[]>(
     []
   );
@@ -78,11 +58,6 @@ export class DirectImpactsStateService {
   private _selectedProjectArea$ =
     new BehaviorSubject<TreatmentProjectArea | null>(null);
   public selectedProjectArea$ = this._selectedProjectArea$.asObservable();
-
-  private _changeOverTimeData$ = new BehaviorSubject<
-    ChangeOverTimeChartItem[][]
-  >([[]]);
-  public changeOverTimeData$ = this._changeOverTimeData$.asObservable();
 
   private _showTreatmentPrescription$ = new BehaviorSubject(false);
   public showTreatmentPrescription$ =
@@ -100,61 +75,10 @@ export class DirectImpactsStateService {
     )
   );
 
-  constructor(private treatmentsService: TreatmentsService) {
-    this._changeOverTimeData$.next([[]]);
-  }
-
-  convertImpactResultToChartData(
-    data: ImpactsResultData[]
-  ): ChangeOverTimeChartItem[][] {
-    const chartData = data
-      .map((d) => {
-        return {
-          year: d.relative_year,
-          avg_value: d.delta * 100,
-          variable: d.variable,
-        };
-      })
-      .sort((a, b) => a.year - b.year);
-    // Collect unique variables
-    const metricsVars = [...new Set(chartData.map((item) => item.variable))];
-    // Create arrays for each unique variable
-    const converted = metricsVars.map((v) =>
-      chartData.filter((item) => item.variable === v)
-    );
-    return converted;
-  }
-
-  getChangesOverTimeData() {
-    const treatmentPlanId = this._activeTreatmentPlan$.value?.id;
-    if (!treatmentPlanId) {
-      return;
-    }
-    const projId = this._selectedProjectArea$.value?.project_area_id;
-    this.treatmentsService
-      .getTreatmentImpactCharts(
-        treatmentPlanId,
-        this._selectedMetrics$.value,
-        projId ?? null
-      )
-      .subscribe({
-        next: (response: any) => {
-          const chartData = this.convertImpactResultToChartData(
-            response as ImpactsResultData[]
-          );
-          this._changeOverTimeData$.next(chartData);
-        },
-      });
-  }
-
-  setSelectedMetrics(selections: string[]) {
-    this._selectedMetrics$.next(selections);
-  }
+  constructor() {}
 
   setProjectAreaForChanges(projectArea: TreatmentProjectArea | null) {
     this._selectedProjectArea$.next(projectArea);
-    //then refresh the changes chart data
-    this.getChangesOverTimeData();
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {
