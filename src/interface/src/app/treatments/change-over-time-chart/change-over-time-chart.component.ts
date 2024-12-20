@@ -152,22 +152,18 @@ export class ChangeOverTimeChartComponent implements OnInit {
         labels: [0, 5, 10, 15, 20],
         datasets: [
           {
-            label: data['blue'][0].variable,
             data: data['blue'].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['blue'],
           },
           {
-            label: data['purple'][1].variable,
             data: data['purple'].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['purple'],
           },
           {
-            label: data['orange'][2].variable,
             data: data['orange'].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['orange'],
           },
           {
-            label: data['green'][3].variable,
             data: data['green'].map((d) => d.avg_value),
             backgroundColor: SLOT_COLORS['green'],
           },
@@ -203,6 +199,7 @@ export class ChangeOverTimeChartComponent implements OnInit {
   ): Record<ImpactsMetricSlot, ChangeOverTimeChartItem[]> {
     const chartData = resultData.map((d) => {
       return {
+        // map the returned data to data attributes for the map
         year: d.relative_year,
         avg_value: d.delta * 100,
         variable: d.variable,
