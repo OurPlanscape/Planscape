@@ -4,6 +4,8 @@ import { MockProvider } from 'ng-mocks';
 import { ChangeOverTimeChartComponent } from './change-over-time-chart.component';
 import { BehaviorSubject } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TreatmentsState } from '../treatments.state';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 
 describe('ChangeOverTimeChartComponent', () => {
   let component: ChangeOverTimeChartComponent;
@@ -13,9 +15,10 @@ describe('ChangeOverTimeChartComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ChangeOverTimeChartComponent, HttpClientTestingModule],
       providers: [
+        TreatedStandsState,
+        MockProvider(TreatmentsState),
         MockProvider(DirectImpactsStateService, {
           activeStand$: new BehaviorSubject(null),
-          changeOverTimeData$: new BehaviorSubject([[]]),
         }),
       ],
     }).compileComponents();
