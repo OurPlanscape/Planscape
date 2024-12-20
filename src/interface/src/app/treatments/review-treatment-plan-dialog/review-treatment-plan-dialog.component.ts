@@ -119,7 +119,8 @@ export class ReviewTreatmentPlanDialogComponent {
         this.dialog
           .open<PendingDialogComponent, DialogData>(PendingDialogComponent, {
             data: {
-              primaryButtonText: 'Return To Plan Overview',
+              primaryButtonText: 'Go to Planning Area',
+              secondaryButtonText: 'Close',
               headline: 'Planscape is creating your treatment plan',
               message:
                 'This may take up to 1 hour. You will receive an email when the treatment plan is created.',

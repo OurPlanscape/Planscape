@@ -1,10 +1,19 @@
 import logging
 from typing import Any, Dict, List, Optional
-
+from django.conf import settings
 import boto3
 import boto3.s3
+from boto3.session import Session
 import requests
 from botocore.exceptions import ClientError
+
+
+def get_aws_session() -> Session:
+    return Session(
+        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
+        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
+        region_name=settings.AWS_DEFAULT_REGION,
+    )
 
 
 def create_download_url(
