@@ -5,7 +5,31 @@
 <div
   class="create-scenarios-panel mat-elevation-z2"
   [ngClass]="{ hidden: scenarioNotFound }">
-  <div class="create-scenarios-panel-content">
+  <div
+    *ngIf="scenarioOrigin === 'USER'"
+    class="uploaded-scenario-panel-content">
+    <app-treatments-tab
+      class="uploaded-treatments-tab"
+      *ngIf="scenarioId"
+      [scenarioId]="scenarioId!"
+      [planningArea]="plan$ | async"></app-treatments-tab>
+    <section class="treatment-footer" *ngIf="showTreatmentFooter()">
+      <mat-spinner diameter="24" *ngIf="creatingTreatment"></mat-spinner>
+      <button
+        sg-button
+        variant="primary"
+        icon="add"
+        class="new-treatment"
+        [disabled]="creatingTreatment"
+        (click)="createTreatment()">
+        New Treatment Plan
+      </button>
+    </section>
+  </div>
+
+  <div
+    [hidden]="!scenarioOrigin || scenarioOrigin === 'SYSTEM'"
+    class="create-scenarios-panel-content">
     <div class="scenario-name">
       <form [formGroup]="forms!">
         <mat-form-field class="scenario-name-input">

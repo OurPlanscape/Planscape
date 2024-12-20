@@ -38,7 +38,6 @@ describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
   let fakePlanStateService: PlanStateService;
-
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
     short_question_text: '',
@@ -53,6 +52,7 @@ describe('CreateScenariosComponent', () => {
     name: 'name',
     planning_area: '1',
     configuration: {},
+    origin: 'SYSTEM',
     status: 'ACTIVE',
     scenario_result: {
       status: 'PENDING',
