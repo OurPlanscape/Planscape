@@ -6,13 +6,21 @@ import {
   TestBed,
   tick,
 } from '@angular/core/testing';
+import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { BehaviorSubject, of } from 'rxjs';
 
-import { Scenario, ScenarioResult, TreatmentGoalConfig } from '@types';
+import {
+  Scenario,
+  ScenarioResult,
+  TreatmentGoalConfig,
+  TreatmentQuestionConfig,
+} from '@types';
 
 import { PlanModule } from '../plan.module';
 import { CreateScenariosComponent } from './create-scenarios.component';
+import { HarnessLoader } from '@angular/cdk/testing';
+import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { PlanState, PlanStateService, ScenarioService } from '@services';
@@ -30,14 +38,22 @@ describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
   let fakePlanStateService: PlanStateService;
-
+  let loader: HarnessLoader;
+  let defaultSelectedQuestion: TreatmentQuestionConfig = {
+    short_question_text: '',
+    scenario_output_fields_paths: {},
+    scenario_priorities: [''],
+    stand_thresholds: [''],
+    global_thresholds: [''],
+    weights: [0],
+  };
   let fakeScenario: Scenario = {
     id: '1',
     name: 'name',
     planning_area: '1',
     configuration: {},
-    status: 'ACTIVE',
     origin: 'SYSTEM',
+    status: 'ACTIVE',
     scenario_result: {
       status: 'PENDING',
       completed_at: '0',
@@ -79,7 +95,6 @@ describe('CreateScenariosComponent', () => {
         id: '1',
         name: 'name',
         planning_area: '1',
-        origin: 'SYSTEM',
         configuration: {
           max_budget: 200,
         },
@@ -140,6 +155,7 @@ describe('CreateScenariosComponent', () => {
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
+    loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
   it('should create', () => {
@@ -163,6 +179,120 @@ describe('CreateScenariosComponent', () => {
       expect(
         component.constrainsForm?.get('budgetForm.maxCost')?.value
       ).toEqual(100);
+    });
+  });
+
+  describe('max area validation', () => {
+    beforeEach(() => {
+      // spy on polling to avoid dealing with async and timeouts
+      spyOn(component, 'pollForChanges');
+      fixture.detectChanges();
+      component.selectedTab = 0;
+    });
+    it('should validate max area is within range', async () => {
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.scenarioNameFormField?.markAsDirty();
+
+      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 857,
+      });
+
+      fixture.detectChanges();
+
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
+      let isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(true);
+
+      // valid `max_treatment_area_ratio`
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 3000,
+      });
+      isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(false);
+
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 3885733333333,
+      });
+      isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(true);
+    });
+  });
+
+  describe('generate button', () => {
+    beforeEach(() => {
+      // spy on polling to avoid dealing with async and timeouts
+      spyOn(component, 'pollForChanges');
+      fixture.detectChanges();
+      component.selectedTab = 0;
+    });
+
+    it('should emit create scenario event on Generate button click', async () => {
+      spyOn(component, 'createScenario');
+
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.scenarioNameFormField?.markAsDirty();
+
+      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 3000,
+      });
+
+      fixture.detectChanges();
+
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
+
+      // Click on "GENERATE SCENARIO" button
+      await buttonHarness.click();
+
+      expect(component.createScenario).toHaveBeenCalled();
+    });
+
+    it('should disable Generate button if form is invalid', async () => {
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
+      component.prioritiesForm?.markAsDirty();
+      component.constrainsForm
+        ?.get('physicalConstraintForm.minDistanceFromRoad')
+        ?.setValue(-1);
+      fixture.detectChanges();
+
+      // Click on "GENERATE SCENARIO" button
+      await buttonHarness.click();
+
+      expect(await buttonHarness.isDisabled()).toBeTrue();
+    });
+
+    it('should enable Generate button if form is valid', async () => {
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
+
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_treatment_area_ratio: 3000,
+      });
+
+      component.generatingScenario = false;
+      fixture.detectChanges();
+
+      expect(await buttonHarness.isDisabled()).toBeFalse();
     });
   });
 
