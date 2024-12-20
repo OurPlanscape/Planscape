@@ -9,6 +9,27 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
 
 export class DirectImpactsStateService {
+  private _reportMetrics$ = new BehaviorSubject<ImpactsMetric[]>([
+    {
+      metric: METRICS[0],
+      slot: 'blue',
+    },
+    {
+      metric: METRICS[1],
+      slot: 'purple',
+    },
+    {
+      metric: METRICS[2],
+      slot: 'orange',
+    },
+    {
+      metric: METRICS[3],
+      slot: 'green',
+    },
+  ]);
+
+  public reportMetrics$ = this._reportMetrics$.asObservable();
+
   public _activeMetric$ = new BehaviorSubject<ImpactsMetric>({
     metric: METRICS[0],
     slot: DEFAULT_SLOT,
@@ -54,6 +75,15 @@ export class DirectImpactsStateService {
 
   setActiveMetric(mapMetric: ImpactsMetric) {
     this._activeMetric$.next(mapMetric);
+    this.updateReportMetric(mapMetric);
+  }
+
+  updateReportMetric(mapMetric: ImpactsMetric) {
+    this._reportMetrics$.next(
+      this._reportMetrics$.value.map((metric) =>
+        metric.slot === mapMetric.slot ? mapMetric : metric
+      )
+    );
   }
 
   isActiveSlot(slot: ImpactsMetricSlot) {

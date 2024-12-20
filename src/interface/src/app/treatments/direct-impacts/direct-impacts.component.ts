@@ -129,10 +129,16 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((m) => m.metric)
   );
 
+  reportMetrics$ = this.directImpactsStateService.reportMetrics$;
+
   mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
 
   activateMetric(data: ImpactsMetric) {
     this.directImpactsStateService.setActiveMetric(data);
+  }
+
+  updateReportMetric(data: ImpactsMetric) {
+    this.directImpactsStateService.updateReportMetric(data);
   }
 
   ngOnInit(): void {

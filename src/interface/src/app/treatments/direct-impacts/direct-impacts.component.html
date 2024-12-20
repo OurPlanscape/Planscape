@@ -27,6 +27,7 @@
   </div>
 
   <div class="holder">
+    {{ reportMetrics$ | async | json }}
     <div>
       Select up to 4 metrics to view the relative change by project area(s) or
       stand.
@@ -38,6 +39,7 @@
 
     <div class="metric-selection">
       <app-metric-filters
+        (metricUpdated)="updateReportMetric($event)"
         (metricSelected)="activateMetric($event)"></app-metric-filters>
     </div>
 

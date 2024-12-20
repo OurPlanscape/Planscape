@@ -32,6 +32,7 @@ import { Observable } from 'rxjs';
 })
 export class MetricFiltersComponent implements OnInit {
   @Output() metricSelected = new EventEmitter<ImpactsMetric>();
+  @Output() metricUpdated = new EventEmitter<ImpactsMetric>();
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
@@ -105,6 +106,8 @@ export class MetricFiltersComponent implements OnInit {
     // setting the metric as active if slot is active
     if (this.directImpactsStateService.isActiveSlot(slot)) {
       this.activateMetric(metric, slot);
+    } else {
+      this.metricUpdated.emit({ metric, slot });
     }
   }
 
