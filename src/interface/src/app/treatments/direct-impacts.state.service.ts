@@ -3,7 +3,6 @@ import {
   combineLatest,
   map,
   Observable,
-  of,
   switchMap,
 } from 'rxjs';
 import {
@@ -15,7 +14,10 @@ import {
 } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
+import { Injectable } from '@angular/core';
+import { TreatmentPlan, TreatmentProjectArea } from '../types';
 
+@Injectable()
 export class DirectImpactsStateService {
   private _reportMetrics$ = new BehaviorSubject<
     Record<ImpactsMetricSlot, Metric>
@@ -48,8 +50,14 @@ export class DirectImpactsStateService {
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
 
-  // todo: placeholder to fill once we have project area filter
-  projectArea$ = of('All Project Areas');
+  private _activeTreatmentPlan$ = new BehaviorSubject<TreatmentPlan | null>(
+    null
+  );
+  public activeTreatmentPlan$ = this._activeTreatmentPlan$.asObservable();
+
+  private _selectedProjectArea$ =
+    new BehaviorSubject<TreatmentProjectArea | null>(null);
+  public selectedProjectArea$ = this._selectedProjectArea$.asObservable();
 
   private _showTreatmentPrescription$ = new BehaviorSubject(false);
   public showTreatmentPrescription$ =
@@ -57,20 +65,28 @@ export class DirectImpactsStateService {
 
   mapPanelTitle$ = combineLatest([
     this.activeMetric$,
-    this.projectArea$,
+    this._selectedProjectArea$,
     this.showTreatmentPrescription$,
   ]).pipe(
     map(([activeMetric, pa, showTreatment]) =>
       showTreatment
         ? 'Applied Treatment Prescription'
-        : `${activeMetric.metric.label} for ${pa}`
+        : `${activeMetric.metric.label} for ${pa?.project_area_name ?? 'All Project Areas'}`
     )
   );
 
   constructor() {}
 
+  setProjectAreaForChanges(projectArea: TreatmentProjectArea | null) {
+    this._selectedProjectArea$.next(projectArea);
+  }
+
   setActiveStand(standData: MapGeoJSONFeature) {
     this._activeStand$.next(standData);
+  }
+
+  setActiveTreatmentPlan(treatmentPlan: TreatmentPlan) {
+    this._activeTreatmentPlan$.next(treatmentPlan);
   }
 
   setFilteredTreatmentTypes(selection: PrescriptionAction[]) {
