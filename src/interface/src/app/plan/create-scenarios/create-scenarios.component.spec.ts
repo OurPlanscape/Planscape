@@ -18,7 +18,7 @@ import {
 } from '@types';
 
 import { PlanModule } from '../plan.module';
-// import { CreateScenariosComponent } from './create-scenarios.component';
+import { CreateScenariosComponent } from './create-scenarios.component';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import { RouterTestingModule } from '@angular/router/testing';

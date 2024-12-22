@@ -1,4 +1,4 @@
-@import "colors";
+@import 'colors';
 
 .create-scenarios-panel {
   box-sizing: border-box;
@@ -17,23 +17,6 @@
   &.collapsed {
     transform: rotate(180deg);
   }
-}
-
-.uploaded-scenario-panel-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  height: 100%;
-  width: 100%;
-  // z-index: 5;
-  top: 0;
-  left: 0;
-}
-
-.uploaded-treatments-tab {
-  flex-grow: 1;
-  width: 100%;
-  background-color: $color-soft-purple;
 }
 
 .create-scenarios-panel-content {
@@ -93,7 +76,6 @@
 
 :host {
   ::ng-deep .mat-tab-body-wrapper {
-
     background-color: #e6e9f4;
     flex-grow: 1;
   }
@@ -106,7 +88,6 @@
     padding: 0 32px;
   }
 }
-
 
 .flex-row {
   align-items: center;
@@ -129,7 +110,6 @@
   top: 0;
   z-index: 10;
   background: white;
-
 }
 
 .scenario-name-input {
@@ -142,7 +122,6 @@
   color: #f44336;
 }
 
-
 .hidden {
   display: none;
 }
@@ -150,7 +129,6 @@
 .results-container {
   padding: 0 20px 10px;
 }
-
 
 .treatment-footer {
   background-color: $color-white;

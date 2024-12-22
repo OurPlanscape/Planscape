@@ -34,6 +34,10 @@ export class UploadedScenarioViewComponent implements OnInit {
       .pipe(untilDestroyed(this), take(1))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
+        this.planStateService.updateStateWithScenario(
+          this.scenario?.id ?? null,
+          this.scenario?.name ?? null
+        );
       });
   }
 
