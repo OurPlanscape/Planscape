@@ -253,7 +253,6 @@ export class SavedScenariosComponent implements OnInit {
         if (res) {
           this.openConfirmationDialog(res.response);
         }
-        //TODO: handle error here
       });
   }
 }

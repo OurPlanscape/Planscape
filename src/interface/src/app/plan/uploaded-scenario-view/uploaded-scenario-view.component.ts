@@ -28,17 +28,17 @@ export class UploadedScenarioViewComponent implements OnInit {
   creatingTreatment = false;
 
   ngOnInit() {
-    //TODO: get a scenario if we don't have one
-
-    this.planStateService.planState$
-      .pipe(untilDestroyed(this), take(1))
-      .subscribe((planState) => {
-        this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.planStateService.updateStateWithScenario(
-          this.scenario?.id ?? null,
-          this.scenario?.name ?? null
-        );
-      });
+    if (this.scenario) {
+      this.planStateService.planState$
+        .pipe(untilDestroyed(this), take(1))
+        .subscribe((planState) => {
+          this.plan$.next(planState.all[planState.currentPlanId!]);
+          this.planStateService.updateStateWithScenario(
+            this.scenario?.id ?? null,
+            this.scenario?.name ?? null
+          );
+        });
+    }
   }
 
   showTreatmentFooter() {
