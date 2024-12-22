@@ -18,6 +18,8 @@ library("tidyr")
 library("friendlyeval")
 library("uuid")
 
+# do not use spherical geometries
+sf_use_s2(FALSE)
 readRenviron("../../.env")
 
 options <- list(
@@ -269,13 +271,15 @@ get_restrictions <- function(connection, scenario_id, restrictions) {
       rr.geometry && plan_scenario.geometry AND
       ST_Intersects(rr.geometry, plan_scenario.geometry)"
   restrictions_statement <- glue_sql(statement, scenario_id = scenario_id, restrictions = restrictions, .con = connection)
+  crs <- st_crs(5070)
   restriction_data <- st_read(
     dsn = connection,
     layer = NULL,
     query = restrictions_statement,
     geometry_column = "geometry",
-    crs = 5070
+    crs = crs
   )
+  log_info("restriction data using {crs}")
   return(restriction_data)
 }
 
@@ -299,16 +303,18 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   WHERE
       ss.\"size\" = {stand_size} AND
       ss.geometry && plan_scenario.geometry AND
-      ST_Intersects(ss.geometry, plan_scenario.geometry)"
+      ST_Within(ST_Centroid(ss.geometry), plan_scenario.geometry)"
   query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
-
+  crs <- st_crs(5070)
   stands <- st_read(
     dsn = connection,
     layer = NULL,
     query = query,
     geometry_column = "geometry",
-    crs = 5070
+    crs = crs
   )
+
+  log_info("stand data using {crs}")
 
   if (length(restrictions) > 0) {
     log_info("Restrictions found!")
@@ -370,11 +376,7 @@ get_stand_metrics <- function(
 get_project_geometry <- function(connection, stand_ids) {
   query <- glue_sql("SELECT
             ST_AsGeoJSON(
-              ST_Transform(
-                ST_Union(geometry),
-                4326),
-              6, -- max precision
-              0  -- output mode
+              ST_Union(geometry)
             )
             FROM stands_stand
             WHERE id IN ({stand_ids*})",
@@ -385,6 +387,19 @@ get_project_geometry <- function(connection, stand_ids) {
   return(fromJSON(result$st_asgeojson))
 }
 
+get_project_geometry_text <- function(connection, stand_ids) {
+  query <- glue_sql("SELECT
+            ST_AsText(
+              ST_Union(geometry)
+            ) as \"geometry\"
+            FROM stands_stand
+            WHERE id IN ({stand_ids*})",
+    stand_ids = stand_ids,
+    .con = connection
+  )
+  result <- dbGetQuery(connection, query)
+  return(result$geometry)
+}
 
 get_project_ids <- function(forsys_output) {
   return(unique(forsys_output$project_output$proj_id))
@@ -416,6 +431,7 @@ to_properties <- function(
     forsys_project_outputs,
     project_stand_count,
     stand_size,
+    text_geometry,
     new_column_for_postprocessing = FALSE) {
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
   project_data <- forsys_project_outputs %>%
@@ -425,6 +441,7 @@ to_properties <- function(
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
+    mutate(text_geometry = text_geometry) %>%
     rename_with(.fn = rename_col)
 
   # post process
@@ -467,12 +484,14 @@ to_project_data <- function(
   stand_count <- nrow(project_stand_ids)
   project_stand_ids <- as.integer(project_stand_ids$stand_id)
   geometry <- get_project_geometry(connection, project_stand_ids)
+  text_geometry <- get_project_geometry_text(connection, project_stand_ids)
   properties <- to_properties(
     project_id,
     scenario,
     forsys_outputs$project_output,
     stand_count,
     stand_size,
+    text_geometry,
     new_column_for_postprocessing
   )
   return(list(
@@ -827,7 +846,9 @@ upsert_project_area <- function(
       {scenario_id},
       {name},
       {data},
-      ST_Multi(ST_Transform(ST_GeomFromGeoJSON({geometry}), 4269))
+      ST_Multi(
+        ST_SetSRID(ST_GeomFromText({geometry}), 4269)
+      )
     )
     ON CONFLICT (scenario_id, name) DO UPDATE
     SET
@@ -844,7 +865,7 @@ upsert_project_area <- function(
       scenario_id=scenario$id,
       name=area_name,
       data=toJSON(project$properties),
-      geometry=toJSON(project$geometry),
+      geometry=project$properties$text_geometry,
       .con = connection
     )
     dbExecute(connection, query, immediate = TRUE)
