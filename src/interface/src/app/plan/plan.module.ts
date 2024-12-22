@@ -48,6 +48,7 @@ import { NotesSidebarComponent } from '../../styleguide/notes-sidebar/notes-side
 import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
 import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
 import { OpacityControlComponent } from './plan-map/opacity-control/opacity-control.component';
+import { UploadedScenarioViewComponent } from './uploaded-scenario-view/uploaded-scenario-view.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -78,6 +79,7 @@ import { OpacityControlComponent } from './plan-map/opacity-control/opacity-cont
     ScenariosTableListComponent,
     SetPrioritiesComponent,
     TreatmentsTabComponent,
+    UploadedScenarioViewComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
