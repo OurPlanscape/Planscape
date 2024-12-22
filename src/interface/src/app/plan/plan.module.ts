@@ -49,7 +49,7 @@ import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatmen
 import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
 import { OpacityControlComponent } from './plan-map/opacity-control/opacity-control.component';
 import { UploadedScenarioViewComponent } from './uploaded-scenario-view/uploaded-scenario-view.component';
-
+import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 /** Components used in the plan flow. */
 @NgModule({
   declarations: [
@@ -75,6 +75,7 @@ import { UploadedScenarioViewComponent } from './uploaded-scenario-view/uploaded
     ScenarioNotStartedComponent,
     ScenarioPendingComponent,
     ScenarioResultsComponent,
+    ScenarioRoutePlaceholderComponent,
     ScenarioTooltipComponent,
     ScenariosTableListComponent,
     SetPrioritiesComponent,

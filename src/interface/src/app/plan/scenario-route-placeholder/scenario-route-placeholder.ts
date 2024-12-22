@@ -7,7 +7,7 @@ import { PlanStateService } from '@services';
 
 @Component({
   selector: 'app-scenario-route-placeholder',
-  template: '<ng-container #container></ng-container>',
+  templateUrl: './scenario-route-placeholder.component.html',
   styleUrl: './scenario-route-placeholder.component.scss',
 })
 export class ScenarioRoutePlaceholderComponent implements OnInit {
@@ -20,6 +20,7 @@ export class ScenarioRoutePlaceholderComponent implements OnInit {
   ) {}
 
   scenario?: Scenario;
+  scenarioNotFound = false;
 
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
@@ -35,6 +36,9 @@ export class ScenarioRoutePlaceholderComponent implements OnInit {
           } else {
             this.container.createComponent(CreateScenariosComponent);
           }
+        },
+        error: () => {
+          this.scenarioNotFound = true;
         },
       });
     }
