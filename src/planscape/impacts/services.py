@@ -1,6 +1,9 @@
 import logging
 import itertools
 import json
+import rasterio
+from rasterio.session import AWSSession
+from core.s3 import get_aws_session
 from typing import Iterable, List, Optional, Dict, Tuple, Any
 from django.db import transaction
 from django.db.models import Count, QuerySet, Sum, F, Case, When
@@ -234,19 +237,36 @@ def generate_impact_results_data_to_plot(
 
     queryset = ProjectAreaTreatmentResult.objects.filter(**filters)
 
-    years = queryset.values_list("year", flat=True).distinct("year").order_by("year")
-    years = [year for year in years]
+    year_zero = (
+        queryset.values_list("year", flat=True)
+        .distinct("year")
+        .order_by("year")
+        .first()
+        or 0
+    )
 
     aggregated_values = (
         queryset.values("year", "variable")
         .annotate(
-            dividend=Sum(F("value") * F("stand_count")), divisor=Sum("stand_count")
+            relative_year=(F("year") - year_zero),
+            value_dividend=Sum(F("value") * F("stand_count")),
+            baseline_dividend=Sum(F("baseline") * F("stand_count")),
+            sum_baselines=Sum("baseline"),
+            divisor=Sum("stand_count"),
         )
         .annotate(
+            delta=Case(
+                When(sum_baselines=0, then=None),
+                default=((F("sum_baselines") - Sum("value")) / F("sum_baselines")),
+            ),
             value=Case(
                 When(divisor=0, then=None),
-                default=(F("dividend") / F("divisor")),
-            )
+                default=(F("value_dividend") / F("divisor")),
+            ),
+            baseline=Case(
+                When(divisor=0, then=None),
+                default=(F("baseline_dividend") / F("divisor")),
+            ),
         )
     )
 
@@ -258,6 +278,11 @@ def generate_impact_results_data_to_plot(
             f"{x.get('year')}{impact_variables_indexes[x.get('variable')]}"
         ),
     )
+    for value in values:
+        value.pop("value_dividend")
+        value.pop("baseline_dividend")
+        value.pop("sum_baselines")
+        value.pop("divisor")
 
     return values
 
@@ -330,19 +355,20 @@ def calculate_impacts(
 
     stand_ids = prescriptions.values_list("stand_id", flat=True)
     stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
+    aws_session = AWSSession(get_aws_session())
+    with rasterio.Env(aws_session):
+        baseline_metrics = calculate_metrics(
+            stands=stands,
+            variable=variable,
+            year=year,
+        )
 
-    baseline_metrics = calculate_metrics(
-        stands=stands,
-        variable=variable,
-        year=year,
-    )
-
-    action_metrics = calculate_metrics(
-        stands=stands,
-        variable=variable,
-        year=year,
-        action=action,
-    )
+        action_metrics = calculate_metrics(
+            stands=stands,
+            variable=variable,
+            year=year,
+            action=action,
+        )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}

@@ -113,7 +113,7 @@ def create_scenario(user: TUser, **kwargs) -> Scenario:
     return scenario
 
 
-def union_geojson(uploaded_geojson):
+def union_geojson(uploaded_geojson) -> GEOSGeometry:
     geometries = []
     if "features" in uploaded_geojson:
         for feature in uploaded_geojson["features"]:
@@ -350,14 +350,14 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
     if scenario.results.status != ScenarioResultStatus.SUCCESS:
         raise ValueError("Cannot export a scenario if it's result failed.")
-    geojson = scenario.results.result
+    geojson = scenario.get_geojson_result()
     schema = get_schema(geojson)
     shapefile_folder = scenario.get_shapefile_folder()
     shapefile_file = f"{scenario.name}.shp"
     shapefile_path = shapefile_folder / shapefile_file
     if not shapefile_folder.exists():
         shapefile_folder.mkdir(parents=True)
-    crs = from_epsg(4326)
+    crs = from_epsg(settings.CRS_INTERNAL_REPRESENTATION)
     with fiona.open(
         str(shapefile_path),
         "w",

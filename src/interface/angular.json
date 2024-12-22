@@ -46,7 +46,8 @@
               "shpjs",
               "geojson-rbush",
               "polylabel",
-              "file-saver"
+              "file-saver",
+              "canvg"
             ]
           },
           "configurations": {

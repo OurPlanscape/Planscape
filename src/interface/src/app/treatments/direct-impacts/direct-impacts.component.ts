@@ -11,16 +11,24 @@ import { SharedModule } from '@shared';
 
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, combineLatest, map, of, switchMap } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
-import { ButtonComponent, ModalComponent, PanelComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  ModalComponent,
+  PanelComponent,
+  TreatmentTypeIconComponent,
+} from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import {
+  MatSlideToggleChange,
+  MatSlideToggleModule,
+} from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
@@ -29,12 +37,11 @@ import { ImpactsMetric } from '../metrics';
 import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
-import { MapGeoJSONFeature } from 'maplibre-gl';
 import { Chart } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/expanded-stand-data-chart.component';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -110,7 +117,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   breadcrumbs$ = this.treatmentsState.breadcrumbs$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
 
-  showTreatmentPrescription = false;
+  showTreatmentPrescription$ =
+    this.directImpactsStateService.showTreatmentPrescription$;
 
   standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
     map((activeStand) => {
@@ -125,21 +133,19 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((m) => m.metric)
   );
 
-  // todo: placeholder to fill once we have project area filter
-  projectArea$ = of('All Project Areas');
-
-  mapPanelTitle$ = combineLatest([
-    this.directImpactsStateService.activeMetric$,
-    this.projectArea$,
-  ]).pipe(
-    map(([activeMetric, pa]) => `${activeMetric.metric.label} for ${pa}`)
+  filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
+    map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
+
+  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
 
   activateMetric(data: ImpactsMetric) {
     this.directImpactsStateService.setActiveMetric(data);
   }
 
-  getValues(activeStand: MapGeoJSONFeature) {}
+  updateReportMetric(data: ImpactsMetric) {
+    this.directImpactsStateService.updateReportMetric(data);
+  }
 
   ngOnInit(): void {
     // Register the plugin only when this component is initialized
@@ -155,5 +161,15 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     this.dialog.open(ExpandedStandDataChartComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });
+  }
+
+  expandMaps() {
+    this.dialog.open(ExpandedDirectImpactMapComponent, {
+      injector: this.injector, // Pass the current injector to the dialog
+    });
+  }
+
+  saveShowTreatmentPrescription(value: MatSlideToggleChange) {
+    this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
   }
 }
