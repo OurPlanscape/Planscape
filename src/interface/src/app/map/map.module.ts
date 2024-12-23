@@ -17,6 +17,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { FeaturesModule } from '../features/features.module';
 import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
 import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @NgModule({
   declarations: [
@@ -41,6 +42,7 @@ import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-d
     FormsModule,
     ReactiveFormsModule,
     FeaturesModule,
+    MatTabsModule,
   ],
   exports: [MapComponent],
 })
