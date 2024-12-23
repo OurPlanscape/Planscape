@@ -1,15 +1,20 @@
 from datetime import date, datetime
+import json
 import shutil
+from turtle import st
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 import fiona
+import shapely
 from planscape.tests.factories import UserFactory
+from planning.tests.factories import PlanningAreaFactory
 from fiona.crs import to_string
 from planning.services import (
     export_to_shapefile,
     get_max_treatable_area,
     get_max_treatable_stand_count,
     get_schema,
+    planning_area_covers,
     validate_scenario_treatment_ratio,
 )
 from planning.models import (
@@ -20,6 +25,7 @@ from planning.models import (
     ScenarioResultStatus,
 )
 from stands.models import Stand, StandSizeChoices
+from utils import geometry
 
 
 class MaxTreatableAreaTest(TestCase):
@@ -248,3 +254,46 @@ class ExportToShapefileTest(TransactionTestCase):
             self.assertEqual(1, len(source))
             self.assertEqual(to_string(source.crs), "EPSG:4269")
             shutil.rmtree(str(output))
+
+
+class TestPlanningAreaCovers(TestCase):
+    def setUp(self):
+        self.real_world_geom = "MULTIPOLYGON (((-120.592804 40.388397, -120.653229 40.089629, -121.098175 40.043386, -121.308289 40.179923, -121.059723 40.687928, -120.433502 41.088667, -120.013275 41.096947, -120.009155 40.701464, -120.010529 39.949753, -120.592804 40.388397)))"
+        self.real_world_planning_area = PlanningAreaFactory.create(
+            geometry=GEOSGeometry(self.real_world_geom, srid=4269)
+        )
+        self.covers_de9im = GEOSGeometry(
+            "POLYGON ((-121.13497533859726 40.378055548860004, -120.5974285753569 40.45918503498109, -120.0351560371661 40.02304123541387, -120.0295412055665 41.05622374781322, -120.40813814721828 41.0493352414621, -120.99739165146956 40.63587551109521, -121.13497533859726 40.378055548860004))",
+            srid=4269,
+        )
+        # in this is not necessary to create the stands, they are present by the usage of a migration
+        # that autoloads the LARGE stands.
+
+    def test_real_world(self):
+        with fiona.open(
+            "planning/tests/test_data/project_areas_for_pa_covers.shp"
+        ) as shapefile:
+            features = [f for f in shapefile]
+            # this convoluted conversion step is because Django automatically
+            # considers geometries coming FROM geojson to be 4326
+            geometries = [shapely.geometry.shape(f.geometry) for f in features]
+            geometries = MultiPolygon(
+                [GEOSGeometry(g.wkt, srid=4269) for g in geometries], srid=4269
+            )
+            test_geometry = geometries.unary_union
+        self.assertTrue(
+            planning_area_covers(
+                self.real_world_planning_area,
+                test_geometry,
+                stand_size=StandSizeChoices.LARGE,
+            )
+        )
+
+    def test_de9im_covers(self):
+        self.assertTrue(
+            planning_area_covers(
+                self.real_world_planning_area,
+                self.covers_de9im,
+                stand_size=StandSizeChoices.LARGE,
+            )
+        )

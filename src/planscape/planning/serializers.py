@@ -1,5 +1,6 @@
 import json
 from typing import List, Optional
+from numpy import require
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
@@ -19,7 +20,7 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.services import get_acreage, union_geojson
+from planning.services import get_acreage, planning_area_covers, union_geojson
 from planscape.exceptions import InvalidGeometry
 from stands.models import Stand, StandSizeChoices
 
@@ -238,8 +239,16 @@ class ScenarioResultSerializer(serializers.ModelSerializer):
 
 class ConfigurationSerializer(serializers.Serializer):
     question_id = serializers.IntegerField(allow_null=True, required=False)
-    weights = serializers.ListField(child=serializers.IntegerField(), allow_empty=True)
-    est_cost = serializers.FloatField(min_value=1)
+    weights = serializers.ListField(
+        child=serializers.IntegerField(),
+        allow_empty=True,
+        required=False,
+    )
+    est_cost = serializers.FloatField(
+        min_value=1,
+        default=2470,
+        required=False,
+    )
     max_budget = serializers.FloatField(
         allow_null=True,
         required=False,
@@ -256,38 +265,47 @@ class ConfigurationSerializer(serializers.Serializer):
         allow_null=True,
         required=False,
     )
-    stand_size = serializers.ChoiceField(choices=StandSizeChoices.choices)
+    stand_size = serializers.ChoiceField(
+        choices=StandSizeChoices.choices,
+        default=StandSizeChoices.LARGE,
+        required=False,
+    )
     excluded_areas = serializers.ListField(
         child=serializers.CharField(max_length=256),
         allow_empty=True,
         min_length=0,
+        required=False,
     )
     stand_thresholds = serializers.ListField(
         child=serializers.CharField(max_length=512),
         allow_empty=True,
         min_length=0,
+        required=False,
     )
     global_thresholds = serializers.ListField(
         child=serializers.CharField(max_length=512),
         allow_empty=True,
         min_length=0,
+        required=False,
     )
     scenario_priorities = serializers.ListField(
         child=serializers.CharField(max_length=256),
         min_length=1,
+        required=False,
     )
     scenario_output_fields = serializers.ListField(
         child=serializers.CharField(max_length=256),
         min_length=1,
+        required=False,
     )
     max_treatment_area_ratio = serializers.FloatField(
         min_value=100,
         required=False,
     )
 
-    def validate(self, data):
-        budget = data.get("max_budget")
-        max_area = data.get("max_treatment_area_ratio")
+    def validate(self, attrs):
+        budget = attrs.get("max_budget")
+        max_area = attrs.get("max_treatment_area_ratio")
 
         if budget and max_area:
             raise serializers.ValidationError(
@@ -298,7 +316,7 @@ class ConfigurationSerializer(serializers.Serializer):
             raise serializers.ValidationError(
                 "You should provide one of `max_budget` or `max_treatment_area_ratio`."
             )
-        return data
+        return attrs
 
 
 class ListScenarioSerializer(serializers.ModelSerializer):
@@ -679,14 +697,8 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         except PlanningArea.DoesNotExist:
             raise serializers.ValidationError("Planning area does not exist.")
 
-        if planning_area.geometry.covers(uploaded_geos):
-            return True
-
-        all_stands_geometry = Stand.objects.within_polygon(
-            planning_area.geometry, stand_size
-        ).aggregate(geometry=UnionOp("geometry"))["geometry"]
-
-        if all_stands_geometry and all_stands_geometry.covers(uploaded_geos):
-            return True
-
-        return False
+        return planning_area_covers(
+            planning_area=planning_area,
+            geometry=uploaded_geos,
+            stand_size=stand_size,
+        )

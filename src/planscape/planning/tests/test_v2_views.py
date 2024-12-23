@@ -1088,7 +1088,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         payload = {
             "geometry": json.dumps(self.riverside),
             "name": "new scenario",
-            "stand_size": "SMALL",
+            "stand_size": "LARGE",
             "planning_area": self.planning_area.pk,
         }
         response = self.client.post(
@@ -1127,7 +1127,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         payload = {
             "geometry": json.dumps(self.pasadena_pomona),
             "name": "new scenario",
-            "stand_size": "SMALL",
+            "stand_size": "LARGE",
             "planning_area": self.planning_area.pk,
         }
         response = self.client.post(
@@ -1155,7 +1155,7 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         payload = {
             "geometry": json.dumps(self.sandiego),
             "name": "new scenario",
-            "stand_size": "SMALL",
+            "stand_size": "LARGE",
             "planning_area": self.planning_area.pk,
         }
         response = self.client.post(
