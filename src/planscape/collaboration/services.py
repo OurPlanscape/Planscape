@@ -1,14 +1,14 @@
-from typing import Any, List
-from collaboration.models import Permissions, Role, UserObjectRole
-from django.db import transaction
-from django.db.models import Model
-from django.contrib.contenttypes.models import ContentType
-from django.contrib.auth import get_user_model
-from collaboration.permissions import CollaboratorPermission
-from collaboration.tasks import send_invitation
-from planning.models import PlanningArea
 import logging
 
+from django.contrib.auth import get_user_model
+from django.contrib.contenttypes.models import ContentType
+from django.db import transaction
+from django.db.models import Model, QuerySet
+from planning.models import PlanningArea
+
+from collaboration.models import Permissions, Role, UserObjectRole
+from collaboration.permissions import CollaboratorPermission
+from collaboration.tasks import send_invitation
 from planscape.exceptions import InvalidOwnership
 
 User = get_user_model()
@@ -105,7 +105,7 @@ def create_invite(
 
 
 @transaction.atomic()
-def link_invites(user) -> List[UserObjectRole]:
+def link_invites(user) -> "QuerySet[UserObjectRole]":
     """Links all invites to a fresh created user.
     Returns all the invitations that were linked.
     """

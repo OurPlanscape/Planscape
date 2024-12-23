@@ -3,20 +3,23 @@ import logging
 import math
 import os
 import zipfile
-import fiona
-
-from datetime import date, time, datetime
+from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Type, Union
+from typing import Any, Dict, Optional, Tuple, Type
+
+import fiona
+from actstream import action
+from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from django.conf import settings
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.contrib.gis.db.models import Union as UnionOp
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
-from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from planscape.typing import TLooseGeom, TUser
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planning.geometry import coerce_geojson
 from planning.models import (
     PlanningArea,
@@ -30,9 +33,7 @@ from planning.models import (
 )
 from planning.tasks import async_forsys_run
 from planscape.exceptions import InvalidGeometry
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-from actstream import action
+from planscape.typing import TLooseGeom, TUser
 
 logger = logging.getLogger(__name__)
 
@@ -152,6 +153,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] 
             "name": area_name,
             "created_by": user_id,
             "scenario": scenario,
+            "data": idx,
         }
         proj_area_obj = ProjectArea.objects.create(**project_area)
 
@@ -193,10 +195,14 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     # handle just one polygon
     if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
         new_feature = feature_to_project_area(
-            scenario.user, scenario, json.dumps(uploaded_geom)
+            scenario.user,
+            scenario,
+            json.dumps(uploaded_geom),
+            1,
         )
         uploaded_geom.setdefault("properties", {})
         uploaded_geom["properties"]["project_id"] = new_feature.pk
+        uploaded_geom["properties"]["treatment_rank"] = 1
 
     # handle a FeatureCollection
     if "features" in uploaded_geom:
@@ -206,6 +212,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             )
             f.setdefault("properties", {})
             f["properties"]["project_id"] = new_feature.pk
+            f["properties"]["treatment_rank"] = idx
 
     # Store geometry with added properties into ScenarioResult.result
     ScenarioResult.objects.create(
