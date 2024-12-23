@@ -1,4 +1,4 @@
-#Temporary endpoint imports
+# Temporary endpoint imports
 from collections import defaultdict
 from impacts.models import TreatmentResult, ImpactVariable
 

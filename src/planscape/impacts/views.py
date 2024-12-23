@@ -1,4 +1,4 @@
- # Temporary endpoint Imports
+# Temporary endpoint Imports
 from rest_framework import status, response
 from rest_framework.decorators import action
 from drf_spectacular.utils import extend_schema
@@ -265,8 +265,6 @@ class TreatmentPlanViewSet(
             tx_px_actions=actions,
         )
         return Response(data=data_to_plot, status=status.HTTP_200_OK)
-
-   
 
     @extend_schema(
         description="Retrieve treatment result information for a specific stand.",
