@@ -5,13 +5,17 @@
   display: flex;
   flex-direction: column;
   background-color: white;
-  max-height: 1000px;
   border-radius: 4px;
   justify-content: space-between;
   height: 90vh;
   position: relative;
   width: 80vw;
-  max-width: 1400px;
+  max-width: 1152px;
+  max-height: 922px;
+
+  &.narrow {
+    max-height: 717px;
+  }
 }
 
 .header {

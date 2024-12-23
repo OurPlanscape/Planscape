@@ -1,4 +1,4 @@
-<sg-expanded-panel (clickedClose)="close()">
+<sg-expanded-panel (clickedClose)="close()" height="narrow">
   <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
   <div panelContent>
     <app-stand-data-chart></app-stand-data-chart>

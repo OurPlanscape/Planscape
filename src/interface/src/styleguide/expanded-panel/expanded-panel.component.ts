@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+} from '@angular/core';
 import { CommonModule, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
@@ -25,10 +31,16 @@ import { MatButtonModule } from '@angular/material/button';
 })
 export class ExpandedPanelComponent {
   @Output() clickedClose = new EventEmitter<any>();
+  @Input() height: 'full' | 'narrow' = 'full';
 
   constructor() {}
 
   handleCloseButton() {
     this.clickedClose.emit();
+  }
+
+  @HostBinding('class.narrow')
+  get isNarrow() {
+    return this.height === 'narrow';
   }
 }

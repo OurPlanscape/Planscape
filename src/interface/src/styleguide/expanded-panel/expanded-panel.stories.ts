@@ -33,7 +33,7 @@ export default meta;
 type Story = StoryObj<ExpandedPanelComponent>;
 
 const containerStyle = `style="background-color: gray;
-    height: 400px;
+    height: 95vh;
     align-content: center;
     display: flex;
     flex-direction: row;
@@ -46,6 +46,18 @@ export const Default: Story = {
     props: args,
     template: `<div ${containerStyle}>
       <sg-expanded-panel ${argsToTemplate(args)}>
+        <div panelTitle>The title</div>
+        <div panelContent>Just a basic expaded panel</div>
+      </sg-expanded-panel><div>`,
+  }),
+};
+
+export const Narrow: Story = {
+  args: {},
+  render: (args) => ({
+    props: args,
+    template: `<div ${containerStyle}>
+      <sg-expanded-panel ${argsToTemplate(args)} height='narrow'>
         <div panelTitle>The title</div>
         <div panelContent>Just a basic expaded panel</div>
       </sg-expanded-panel><div>`,
