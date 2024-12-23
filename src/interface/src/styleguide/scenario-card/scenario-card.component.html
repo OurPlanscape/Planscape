@@ -1,7 +1,7 @@
 <div class="title-row">
   <div class="scenario-name">{{ name }}</div>
   <sg-status-chip
-    *ngIf="resultStatus"
+    *ngIf="resultStatus && origin === 'SYSTEM'"
     [status]="getChipStatus()"
     [label]="getChipLabel()"></sg-status-chip>
   <div *ngIf="hasFailed() && treatmentPlansEnabled" class="failed-message">

@@ -57,6 +57,7 @@ export class ScenarioCardComponent {
   @Input() creator?: string = '';
   @Input() created_at? = '';
   @Input() selected: boolean = false;
+  @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
 
   @Input() treatmentPlansEnabled = false;
   @Input() userCanArchiveScenario = false;
@@ -129,9 +130,5 @@ export class ScenarioCardComponent {
 
   handleMoreMenuClick(event: Event) {
     event.stopPropagation();
-  }
-
-  handleClick(event: Event) {
-    this.clicked.emit(event);
   }
 }

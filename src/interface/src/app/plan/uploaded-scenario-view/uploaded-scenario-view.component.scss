@@ -1,0 +1,48 @@
+@import 'colors';
+
+:host {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: $color-soft-purple;
+  display: flex;
+  align-items: center;
+  z-index: 5;
+  top: 0;
+  left: 0;
+}
+
+.uploaded-scenario-panel-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  z-index: 5;
+  top: 0;
+  left: 0;
+}
+
+.uploaded-treatments-tab {
+  flex-grow: 1;
+  width: 100%;
+  background-color: $color-soft-purple;
+}
+
+.treatment-footer {
+  background-color: $color-white;
+  padding: 16px 8px;
+  box-sizing: border-box;
+  bottom: 0;
+  width: 100%;
+  text-align: right;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  flex-grow: 0;
+  position: sticky;
+  z-index: 500;
+  border-top: 1px solid $color-soft-gray;
+}

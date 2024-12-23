@@ -424,16 +424,27 @@ class ScenarioSerializer(
         super().__init__(*args, **kwargs)
 
         origin = None
-        instance = kwargs.get("instance", None)
         if hasattr(self, "initial_data") and self.initial_data:
             origin = self.initial_data.get("origin")
-        elif instance and hasattr(instance, "origin"):
-            origin = instance.origin
+        elif "data" in kwargs:
+            origin = kwargs["data"].get("origin")
+        elif hasattr(self, "instance") and hasattr(self.instance, "origin"):
+            origin = self.instance.origin
+        elif "instance" in kwargs and hasattr(kwargs["instance"], "origin"):
+            origin = kwargs["instance"].origin
 
         if origin == "USER":
             self.fields["configuration"] = UploadedConfigurationSerializer()
         else:
             self.fields["configuration"] = ConfigurationSerializer()
+
+    def get_configuration(self, obj):
+        if obj.origin == "USER":
+            serializer = UploadedConfigurationSerializer(obj.configuration)
+        else:
+            serializer = ConfigurationSerializer(obj.configuration)
+        # Return the serialized data
+        return serializer.data
 
     def create(self, validated_data):
         validated_data["user"] = self.context["user"] or None
@@ -653,7 +664,7 @@ class GeoJSONSerializer(serializers.Serializer):
 class UploadedScenarioDataSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
     stand_size = serializers.ChoiceField(
-        choices=["SMALL", "MEDIUM", "LARGE"], required=False, allow_blank=False
+        choices=["SMALL", "MEDIUM", "LARGE"], required=True
     )
     planning_area = serializers.IntegerField(min_value=1, required=True)
     geometry = serializers.JSONField(required=True)
