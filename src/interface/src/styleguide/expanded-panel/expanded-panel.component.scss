@@ -1,0 +1,77 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  background-color: white;
+  border-radius: 4px;
+  justify-content: space-between;
+  height: 90vh;
+  position: relative;
+  width: 80vw;
+  max-width: 1152px;
+  max-height: 922px;
+
+  &.narrow {
+    max-height: 717px;
+  }
+}
+
+.header {
+  @include h5();
+  display: flex;
+  flex-shrink: 0;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  padding: 14px 9px 14px 24px;
+  border-bottom: 1px solid $color-soft-gray;
+  height: 60px;
+  box-sizing: border-box;
+}
+
+
+.title-buttons {
+
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  gap: 16px;
+
+  .button-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  button {
+    background: none;
+    border: none;
+    padding: 6px;
+    margin: 0;
+    line-height: 0;
+    cursor: pointer;
+    height: auto;
+    width: auto;
+  }
+}
+
+.header-title {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.modal-body {
+  height: 100%;
+}
+
+::ng-deep {
+  [panelcontent] {
+    height: 100%;
+  }
+}
+

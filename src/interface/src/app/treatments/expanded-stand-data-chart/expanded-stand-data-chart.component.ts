@@ -6,6 +6,7 @@ import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.co
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { map } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
+import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
 
 @Component({
   selector: 'app-expanded-stand-data-chart',
@@ -17,6 +18,7 @@ import { MatDialogRef } from '@angular/material/dialog';
     NgForOf,
     NgIf,
     StandDataChartComponent,
+    ExpandedPanelComponent,
   ],
   templateUrl: './expanded-stand-data-chart.component.html',
   styleUrl: './expanded-stand-data-chart.component.scss',
