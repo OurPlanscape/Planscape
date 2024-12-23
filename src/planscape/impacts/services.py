@@ -1,3 +1,7 @@
+# Temporary endpoint imports
+from collections import defaultdict
+from impacts.models import TreatmentResult, ImpactVariable
+
 import logging
 import itertools
 import json
@@ -550,3 +554,36 @@ def calculate_project_area_deltas(
         }
     )
     return results
+
+
+def get_treatment_results_table_data(treatment_plan, stand_id):
+    """
+    Retrieves a list of dictionaries, with each dictionary representing a year and its variables.
+    """
+    # Use single query to retrieve all results at once
+    queryset = TreatmentResult.objects.filter(
+        treatment_plan=treatment_plan,
+        stand_id=stand_id,
+    ).values("year", "variable", "value")
+
+    # If no results, return an empty list
+    if not queryset.exists():
+        return []
+
+    # Creates dictionary of { year: { variable: value } }
+    data_map = defaultdict(dict)
+
+    for row in queryset:
+        year = row["year"]
+        var = row["variable"]
+        val = row["value"]
+        data_map[year][var] = val
+
+    # Convert data_map into a sorted list by year
+    table_data = []
+    for year in sorted(data_map.keys()):
+        row = {"year": year}
+        row.update(data_map[year])
+        table_data.append(row)
+
+    return table_data
