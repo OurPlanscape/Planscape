@@ -5,7 +5,7 @@
     [scenarioId]="scenario.id!"
     [planningArea]="plan$ | async"></app-treatments-tab>
   <section class="treatment-footer" *ngIf="showTreatmentFooter()">
-    <!-- <mat-spinner diameter="24" *ngIf="creatingTreatment"></mat-spinner> -->
+    <mat-spinner diameter="24" *ngIf="creatingTreatment"></mat-spinner>
     <button
       sg-button
       variant="primary"
