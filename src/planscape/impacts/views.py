@@ -1,3 +1,12 @@
+ # Temporary endpoint Imports
+from rest_framework import status, response
+from rest_framework.decorators import action
+from drf_spectacular.utils import extend_schema
+from planscape.serializers import BaseErrorMessageSerializer
+from impacts.serializers import StandQuerySerializer
+from impacts.services import get_treatment_results_table_data
+from impacts.models import TreatmentResult, ImpactVariable
+
 import logging
 from rest_framework import mixins, viewsets, response, status
 from rest_framework.decorators import action
@@ -257,14 +266,7 @@ class TreatmentPlanViewSet(
         )
         return Response(data=data_to_plot, status=status.HTTP_200_OK)
 
-    # Imports
-    from rest_framework import status, response
-    from rest_framework.decorators import action
-    from drf_spectacular.utils import extend_schema
-    from planscape.serializers import BaseErrorMessageSerializer
-    from impacts.serializers import StandQuerySerializer
-    from impacts.services import get_treatment_results_table_data
-    from impacts.models import TreatmentResult, ImpactVariable
+   
 
     @extend_schema(
         description="Retrieve treatment result information for a specific stand.",
@@ -297,9 +299,7 @@ class TreatmentPlanViewSet(
 
         if not table_data:
             return response.Response(
-                {
-                    "detail": "No treatment results found for this stand in the given treatment plan."
-                },
+                {"detail": "No treatment results found."},
                 status=status.HTTP_404_NOT_FOUND,
             )
 

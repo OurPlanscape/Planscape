@@ -324,7 +324,6 @@ from stands.models import Stand
 
 
 class StandQuerySerializer(serializers.Serializer):
-    # Use PrimaryKeyRelatedField to ensure stand_id is valid PK from Stand model
     stand_id = serializers.PrimaryKeyRelatedField(
         queryset=Stand.objects.all(), required=True
     )
