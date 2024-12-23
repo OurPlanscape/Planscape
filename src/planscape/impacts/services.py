@@ -1,3 +1,7 @@
+#Temporary endpoint imports
+from collections import defaultdict
+from impacts.models import TreatmentResult, ImpactVariable
+
 import logging
 import itertools
 import json
@@ -552,56 +556,34 @@ def calculate_project_area_deltas(
     return results
 
 
-from impacts.models import TreatmentResult, ImpactVariable
-
-
 def get_treatment_results_table_data(treatment_plan, stand_id):
     """
-    Retrieves treatment results for RATE_OF_SPREAD and FLAME_LENGTH for the given stand and treatment plan.
-    Return a list of dictionaries: [{"year": ..., "rate_of_spread": ..., "flame_length": ...}, ...]
+    Retrieves a list of dictionaries, with each dictionary representing a year and its variables.
     """
-    # Filter results for the given stand and plan, for the two variables we need
+    # Use single query to retrieve all results at once
     queryset = TreatmentResult.objects.filter(
         treatment_plan=treatment_plan,
         stand_id=stand_id,
-        variable__in=[ImpactVariable.RATE_OF_SPREAD, ImpactVariable.FLAME_LENGTH],
-    )
+    ).values("year", "variable", "value")
 
     # If no results, return an empty list
     if not queryset.exists():
         return []
 
-    # Extract distinct years
-    years = queryset.values_list("year", flat=True).distinct().order_by("year")
+    # Creates dictionary of { year: { variable: value } }
+    data_map = defaultdict(dict)
 
-    # Build table rows
+    for row in queryset:
+        year = row["year"]
+        var = row["variable"]
+        val = row["value"]
+        data_map[year][var] = val
+
+    # Convert data_map into a sorted list by year
     table_data = []
-    for year in years:
-        # For each year, get the corresponding records
-        year_results = queryset.filter(year=year)
+    for year in sorted(data_map.keys()):
+        row = {"year": year}
+        row.update(data_map[year])
+        table_data.append(row)
 
-        # Extract the rate_of_spread value
-        rate_of_spread_val = (
-            year_results.filter(variable=ImpactVariable.RATE_OF_SPREAD)
-            .values_list("value", flat=True)
-            .first()
-        )
-
-        # Extract the flame_length value
-        flame_length_val = (
-            year_results.filter(variable=ImpactVariable.FLAME_LENGTH)
-            .values_list("Value", flat=True)
-            .first()
-        )
-
-        # Add a dictionary -- table row -- for each avaialble year
-        table_data.append(
-            {
-                "year": year,
-                "rate_of_spread": rate_of_spread_val,
-                "flame_length": flame_length_val,
-            }
-        )
-
-    # returns list of rows to view
     return table_data
