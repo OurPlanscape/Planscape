@@ -419,13 +419,17 @@ def planning_area_covers(
         stand_size,
     ).aggregate(geometry=UnionOp("geometry"))["geometry"]
 
-    if all_stands and all_stands.covers(geometry):
+    if all_stands is None:
+        return False
+
+    if all_stands.covers(geometry):
         logger.info("Planning Area covers geometry using stands DE9IM matrix.")
         return True
 
-    test_geometry = geometry.transform(settings.AREA_SRID, clone=True)
     # units here are in meters
+    test_geometry = geometry.transform(settings.AREA_SRID, clone=True)
     test_geometry = test_geometry.buffer(buffer_size).transform(4269, clone=True)
+
     if all_stands.covers(test_geometry):
         logger.info(
             "Planning Area covers geometry using a buffered version of test geometry."
