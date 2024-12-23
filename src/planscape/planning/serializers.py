@@ -19,7 +19,7 @@ from planning.models import (
     User,
     UserPrefs,
 )
-from planning.services import get_acreage, union_geojson
+from planning.services import get_acreage, planning_area_covers, union_geojson
 from planscape.exceptions import InvalidGeometry
 from stands.models import Stand, StandSizeChoices
 
@@ -679,14 +679,8 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         except PlanningArea.DoesNotExist:
             raise serializers.ValidationError("Planning area does not exist.")
 
-        if planning_area.geometry.covers(uploaded_geos):
-            return True
-
-        all_stands_geometry = Stand.objects.within_polygon(
-            planning_area.geometry, stand_size
-        ).aggregate(geometry=UnionOp("geometry"))["geometry"]
-
-        if all_stands_geometry and all_stands_geometry.covers(uploaded_geos):
-            return True
-
-        return False
+        return planning_area_covers(
+            planning_area=planning_area,
+            geometry=uploaded_geos,
+            stand_size=stand_size,
+        )

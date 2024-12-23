@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Type, Union
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.db.models import Union as UnionOp
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
@@ -29,7 +30,7 @@ from planning.models import (
 )
 from planning.tasks import async_forsys_run
 from planscape.exceptions import InvalidGeometry
-from stands.models import StandSizeChoices, area_from_size
+from stands.models import Stand, StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 from actstream import action
 
@@ -394,3 +395,40 @@ def create_projectarea_note(user: TUser, **kwargs) -> Scenario:
     }
     note = ProjectAreaNote.objects.create(**data)
     return note
+
+
+def planning_area_covers(
+    planning_area: PlanningArea,
+    geometry: GEOSGeometry,
+    stand_size: StandSizeChoices,
+    buffer_size: float = -1.0,
+) -> bool:
+    """Specialized version of `covers` predicate for Planning Area.
+    This is necessary because some times our users want to upload
+    project areas that are slightly off the planning area. So this
+    function first considers the Planning Area itself, then all the
+    stands that make up the planning area and lastly it considers
+    a buffered version of the test geometry (negative means smaller).
+    """
+    if planning_area.geometry.covers(geometry):
+        logger.info("Planning Area covers geometry using DE9IM matrix.")
+        return True
+
+    all_stands = Stand.objects.within_polygon(
+        planning_area.geometry,
+        stand_size,
+    ).aggregate(geometry=UnionOp("geometry"))["geometry"]
+
+    if all_stands and all_stands.covers(geometry):
+        logger.info("Planning Area covers geometry using stands DE9IM matrix.")
+        return True
+
+    test_geometry = geometry.transform(settings.AREA_SRID, clone=True)
+    # units here are in meters
+    test_geometry = test_geometry.buffer(buffer_size).transform(4269, clone=True)
+    if all_stands.covers(test_geometry):
+        logger.info(
+            "Planning Area covers geometry using a buffered version of test geometry."
+        )
+        return True
+    return False
