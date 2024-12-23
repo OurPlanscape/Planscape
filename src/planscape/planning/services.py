@@ -153,6 +153,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] 
             "name": area_name,
             "created_by": user_id,
             "scenario": scenario,
+            "data": idx,
         }
         proj_area_obj = ProjectArea.objects.create(**project_area)
 
@@ -194,10 +195,14 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     # handle just one polygon
     if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
         new_feature = feature_to_project_area(
-            scenario.user, scenario, json.dumps(uploaded_geom)
+            scenario.user,
+            scenario,
+            json.dumps(uploaded_geom),
+            1,
         )
         uploaded_geom.setdefault("properties", {})
         uploaded_geom["properties"]["project_id"] = new_feature.pk
+        uploaded_geom["properties"]["treatment_rank"] = 1
 
     # handle a FeatureCollection
     if "features" in uploaded_geom:
