@@ -1,5 +1,6 @@
 # Temporary endpoint imports
 from collections import defaultdict
+from typing import List, Dict, Any
 from impacts.models import TreatmentResult, ImpactVariable
 
 import logging
@@ -556,34 +557,90 @@ def calculate_project_area_deltas(
     return results
 
 
+def classify_flame_length(fl_value: float) -> str:
+    """
+    Converts numeric flame length into relative values.
+    These cut-off boundaries match BehavePlus6 spreadsheet on GD.
+    """
+    if fl_value < 2.0:
+        return "VL"
+    elif fl_value < 4.0:
+        return "L"
+    elif fl_value < 8.0:
+        return "M"
+    elif fl_value < 12.0:
+        return "H"
+    elif fl_value < 25.0:
+        return "VH"
+    else:
+        return "X"
+
+
+def classify_rate_of_spread(ros_value: float) -> str:
+    """
+    Converts numeric rate of spread into relative values.
+    These cut-off boundaries match BehavePlus6 spreadsheet on GD.
+    """
+    if ros_value < 3.0:
+        return "VL"
+    elif ros_value < 10.0:
+        return "L"
+    elif ros_value < 20.0:
+        return "M"
+    elif ros_value < 60.0:
+        return "H"
+    elif ros_value < 100.0:
+        return "VH"
+    else:
+        return "X"
+
+
 def get_treatment_results_table_data(treatment_plan, stand_id):
     """
-    Retrieves a list of dictionaries, with each dictionary representing a year and its variables.
+    Retrieves a list of dictionaries, with each dictionary representing
+    a year and its variables.
     """
-    # Use single query to retrieve all results at once
     queryset = TreatmentResult.objects.filter(
-        treatment_plan=treatment_plan,
-        stand_id=stand_id,
-    ).values("year", "variable", "value")
+        treatment_plan=treatment_plan, stand_id=stand_id
+    ).values("year", "variable", "value", "delta")
 
-    # If no results, return an empty list
     if not queryset.exists():
         return []
 
-    # Creates dictionary of { year: { variable: value } }
     data_map = defaultdict(dict)
 
     for row in queryset:
         year = row["year"]
-        var = row["variable"]
-        val = row["value"]
-        data_map[year][var] = val
+        var_code = row["variable"]  # e.g., 'FL', 'ROS', etc.
+        val = row["value"]  # numeric value
+        dlt = row["delta"]  # numeric delta
+
+        # Standardize the var_code to lowercase for JSON keys
+        var_key = var_code.lower()
+
+        # Default category = None (for variables that aren't FL/ROS)
+        category = None
+
+        # If it's flame length or ROS, classify relative values using two helper functions
+        if var_code == ImpactVariable.FLAME_LENGTH:
+            category = classify_flame_length(val)
+        elif var_code == ImpactVariable.RATE_OF_SPREAD:
+            category = classify_rate_of_spread(val)
+
+        data_map[year][var_key] = {
+            "value": val,
+            "delta": dlt,
+            "category": category,
+        }
 
     # Convert data_map into a sorted list by year
     table_data = []
-    for year in sorted(data_map.keys()):
-        row = {"year": year}
-        row.update(data_map[year])
+
+    for yr in sorted(data_map.keys()):
+        row = {"year": yr}  # keep the year key all-lowercase
+        # Attach the variable dictionaries for that year
+        for var_key, var_info in data_map[yr].items():
+            row[var_key] = var_info
         table_data.append(row)
 
     return table_data
