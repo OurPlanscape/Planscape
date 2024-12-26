@@ -55,6 +55,9 @@ export class DirectImpactsStateService {
   public showTreatmentPrescription$ =
     this._showTreatmentPrescription$.asObservable();
 
+  private _standsTxSourceLoaded$ = new BehaviorSubject(false);
+  public standsTxSourceLoaded$ = this._standsTxSourceLoaded$.asObservable();
+
   mapPanelTitle$ = combineLatest([
     this.activeMetric$,
     this.projectArea$,
@@ -95,5 +98,9 @@ export class DirectImpactsStateService {
 
   setShowTreatmentPrescription(show: boolean) {
     this._showTreatmentPrescription$.next(show);
+  }
+
+  setStandsTxSourceLoaded(val: boolean) {
+    this._standsTxSourceLoaded$.next(val);
   }
 }

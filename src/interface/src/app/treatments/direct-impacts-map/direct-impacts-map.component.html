@@ -14,7 +14,8 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest"
-  (zoomEvt)="saveZoom()">
+  (zoomEvt)="saveZoom()"
+  (sourceData)="sourceData($event)">
   <app-map-stands-tx-result
     [mapLibreMap]="mapLibreMap"
     [propertyName]="variables[year]"></app-map-stands-tx-result>
