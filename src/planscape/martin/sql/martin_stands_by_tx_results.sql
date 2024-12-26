@@ -15,7 +15,7 @@ BEGIN
     IF (query_params::jsonb) ? 'project_area_id' THEN
       SELECT 
         pa.name AS "name",
-        pa.geometry AS "geometry",
+        pa.geometry AS "geometry"
       FROM 
         planning_projectarea pa
       WHERE 
@@ -33,7 +33,7 @@ BEGIN
         tp.id = (query_params->>'treatment_plan_id')::int AND
         pa.deleted_at IS NULL
     END IF
-  ), WITH tx_result_year_0 AS(
+  ), tx_result_year_0 AS(
     SELECT
       tr.year AS "year",
       tr.value AS "value",
