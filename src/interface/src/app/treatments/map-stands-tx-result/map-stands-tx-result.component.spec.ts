@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MapStandsTxResultComponent } from './map-stands-tx-result.component';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { DEFAULT_SLOT, METRICS } from '../metrics';
 import {
   LayerComponent,
@@ -24,6 +24,7 @@ describe('MapStandsTxResultComponent', () => {
             slot: DEFAULT_SLOT,
           }),
           activeStand$: new BehaviorSubject(null),
+          standsTxSourceLoaded$: of(false),
         }),
         MockProvider(TreatmentsState),
       ],
