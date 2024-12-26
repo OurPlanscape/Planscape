@@ -2,7 +2,6 @@ CREATE OR REPLACE FUNCTION martin_stands_by_tx_result(z integer, x integer, y in
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
-  p_intersecting_area geometry;
   p_stand_size varchar;
   p_project_area_id int;
 BEGIN
