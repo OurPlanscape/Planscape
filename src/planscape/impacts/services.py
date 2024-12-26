@@ -563,17 +563,17 @@ def classify_flame_length(fl_value: float) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if fl_value < 2.0:
-        return "VERY_LOW"
+        return "Very Low"
     elif fl_value < 4.0:
-        return "LOW"
+        return "Low"
     elif fl_value < 8.0:
-        return "MEDIUM"
+        return "Moderate"
     elif fl_value < 12.0:
-        return "HIGH"
+        return "High"
     elif fl_value < 25.0:
-        return "VERY_HIGH"
+        return "Very High"
     else:
-        return "EXTREME"
+        return "Extreme"
 
 
 def classify_rate_of_spread(ros_value: float) -> str:
@@ -582,17 +582,17 @@ def classify_rate_of_spread(ros_value: float) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if ros_value < 3.0:
-        return "VERY_LOW"
+        return "Very Low"
     elif ros_value < 10.0:
-        return "LOW"
+        return "Low"
     elif ros_value < 20.0:
-        return "MEDIUM"
+        return "Moderate"
     elif ros_value < 60.0:
-        return "HIGH"
+        return "High"
     elif ros_value < 100.0:
-        return "VERY_HIGH"
+        return "Very High"
     else:
-        return "EXTREME"
+        return "Extreme"
 
 
 def get_treatment_results_table_data(
@@ -613,7 +613,7 @@ def get_treatment_results_table_data(
     """
     queryset = TreatmentResult.objects.filter(
         treatment_plan=treatment_plan, stand_id=stand_id
-    ).values("year", "variable", "value", "delta")
+    ).values("year", "variable", "value", "delta", "baseline")
 
     if not queryset.exists():
         return []
@@ -625,6 +625,7 @@ def get_treatment_results_table_data(
         variable = row["variable"]
         value = row["value"]
         delta = row["delta"]
+        baseline = row["baseline"]
 
         var_key = variable.lower()
 
@@ -639,6 +640,7 @@ def get_treatment_results_table_data(
         data_map[year][var_key] = {
             "value": value,
             "delta": delta,
+            "baseline": baseline,
             "category": category,
         }
 
