@@ -269,39 +269,28 @@ class TreatmentPlanViewSet(
     @extend_schema(
         description="Retrieve treatment result information for a specific stand.",
         responses={
-            200: TreatmentResultSerializer,  # Successful response with serialized data
-            404: BaseErrorMessageSerializer,  # Stand not found
-            400: BaseErrorMessageSerializer,  # Missing or invalid stand_id
+            200: TreatmentResultSerializer,
+            404: BaseErrorMessageSerializer,
+            400: BaseErrorMessageSerializer,
         },
     )
     @action(
-        detail=True,  # creates custom endpoint applied to stands in specific treatment plan (pk)
-        methods=["get"],  # sets custom endpoint to only respond to HTTP GET requests
-        filterset_class=None,  # No additional filtering needed
-        url_path="stand-treatment-results",  # The custom endpoint name appended to the URL
+        detail=True,
+        methods=["get"],
+        filterset_class=None,
+        url_path="stand-treatment-results",
     )
     def stand_treatment_results(self, request, pk=None):
         """
         Endpoint to retrieve treatment results for a specific stand ID.
         """
-        # Validates stand id by putting stand id from URL into custom serializer, then creates stand object
         serializer = StandQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         stand = serializer.validated_data["stand_id"]
 
-        # Retrieves the treatment plan, using the PK from the URL
         treatment_plan = self.get_object()
-
-        # Gets table data from the service function, returning error if not found
         table_data = get_treatment_results_table_data(treatment_plan, stand.id)
 
-        if not table_data:
-            return response.Response(
-                {"detail": "No treatment results found."},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # Returns the data in the correct JSON format with a 200 OK status
         return response.Response(table_data, status=status.HTTP_200_OK)
 
 

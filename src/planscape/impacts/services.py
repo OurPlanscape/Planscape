@@ -1,7 +1,7 @@
 # Temporary endpoint imports
 from collections import defaultdict
 from typing import List, Dict, Any
-from impacts.models import TreatmentResult, ImpactVariable
+from impacts.models import TreatmentPlan, TreatmentResult, ImpactVariable
 
 import logging
 import itertools
@@ -563,17 +563,17 @@ def classify_flame_length(fl_value: float) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if fl_value < 2.0:
-        return "VL"
+        return "VERY_LOW"
     elif fl_value < 4.0:
-        return "L"
+        return "LOW"
     elif fl_value < 8.0:
-        return "M"
+        return "MEDIUM"
     elif fl_value < 12.0:
-        return "H"
+        return "HIGH"
     elif fl_value < 25.0:
-        return "VH"
+        return "VERY_HIGH"
     else:
-        return "X"
+        return "EXTREME"
 
 
 def classify_rate_of_spread(ros_value: float) -> str:
@@ -582,23 +582,34 @@ def classify_rate_of_spread(ros_value: float) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if ros_value < 3.0:
-        return "VL"
+        return "VERY_LOW"
     elif ros_value < 10.0:
-        return "L"
+        return "LOW"
     elif ros_value < 20.0:
-        return "M"
+        return "MEDIUM"
     elif ros_value < 60.0:
-        return "H"
+        return "HIGH"
     elif ros_value < 100.0:
-        return "VH"
+        return "VERY_HIGH"
     else:
-        return "X"
+        return "EXTREME"
 
 
-def get_treatment_results_table_data(treatment_plan, stand_id):
+def get_treatment_results_table_data(
+    treatment_plan: TreatmentPlan, stand_id: int
+) -> List[Dict[str, Any]]:
     """
     Retrieves a list of dictionaries, with each dictionary representing
-    a year and its variables.
+    a year and its variables. Returns something like:
+    [
+      {
+        "year": 2024,
+        "flame_length": { ... },
+        "rate_of_spread": { ... },
+        ...
+      },
+      ...
+    ]
     """
     queryset = TreatmentResult.objects.filter(
         treatment_plan=treatment_plan, stand_id=stand_id
@@ -611,36 +622,29 @@ def get_treatment_results_table_data(treatment_plan, stand_id):
 
     for row in queryset:
         year = row["year"]
-        var_code = row["variable"]  # e.g., 'FL', 'ROS', etc.
-        val = row["value"]  # numeric value
-        dlt = row["delta"]  # numeric delta
+        variable = row["variable"]
+        value = row["value"]
+        delta = row["delta"]
 
-        # Standardize the var_code to lowercase for JSON keys
-        var_key = var_code.lower()
+        var_key = variable.lower()
 
-        # Default category = None (for variables that aren't FL/ROS)
-        category = None
-
-        # If it's flame length or ROS, classify relative values using two helper functions
-        if var_code == ImpactVariable.FLAME_LENGTH:
-            category = classify_flame_length(val)
-        elif var_code == ImpactVariable.RATE_OF_SPREAD:
-            category = classify_rate_of_spread(val)
+        match variable:
+            case ImpactVariable.FLAME_LENGTH:
+                category = classify_flame_length(value)
+            case ImpactVariable.RATE_OF_SPREAD:
+                category = classify_rate_of_spread(value)
+            case _:
+                category = None
 
         data_map[year][var_key] = {
-            "value": val,
-            "delta": dlt,
+            "value": value,
+            "delta": delta,
             "category": category,
         }
 
-    # Convert data_map into a sorted list by year
     table_data = []
 
-    for yr in sorted(data_map.keys()):
-        row = {"year": yr}  # keep the year key all-lowercase
-        # Attach the variable dictionaries for that year
-        for var_key, var_info in data_map[yr].items():
-            row[var_key] = var_info
-        table_data.append(row)
+    for year in sorted(data_map.keys()):
+        table_data.append({**data_map[year], "year": year})
 
     return table_data
