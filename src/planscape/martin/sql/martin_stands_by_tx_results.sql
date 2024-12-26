@@ -2,40 +2,38 @@ CREATE OR REPLACE FUNCTION martin_stands_by_tx_result(z integer, x integer, y in
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
-  p_intersecting_area geometry;
   p_stand_size varchar;
-  p_scenario_id int;
 BEGIN
 
-  IF (query_params::jsonb) ? 'project_area_id' THEN
-    SELECT INTO p_intersecting_area (
+  SELECT INTO 
+    p_stand_size
+    (configuration->>'stand_size')::varchar FROM planning_scenario sc
+    RIGHT JOIN impacts_treatmentplan tp ON (tp.scenario_id = sc.id)
+    WHERE tp.id = (query_params->>'treatment_plan_id')::int;
+
+  WITH resumed_project_area AS (
+    IF (query_params::jsonb) ? 'project_area_id' THEN
       SELECT 
-        geometry 
+        pa.name AS "name",
+        pa.geometry AS "geometry",
       FROM 
         planning_projectarea pa
       WHERE 
-        id = (query_params->>'project_area_id')::int AND
+        pa.id = (query_params->>'project_area_id')::int AND
         pa.deleted_at IS NULL
-    );
-  ELSE 
-    SELECT INTO p_intersecting_area (
-      SELECT ST_Union(geometry) FROM planning_projectarea pa
+    ELSE
+      SELECT 
+        pa.name AS "name",
+        pa.geometry AS "geometry",
+      FROM 
+        planning_projectarea pa
       LEFT JOIN planning_scenario sc ON (pa.scenario_id = sc.id)
       LEFT JOIN impacts_treatmentplan tp ON (sc.id = tp.scenario_id)
       WHERE 
         tp.id = (query_params->>'treatment_plan_id')::int AND
         pa.deleted_at IS NULL
-
-    );
-  END IF;
-
-  SELECT INTO 
-    p_scenario_id, p_stand_size
-    sc.id, (configuration->>'stand_size')::varchar FROM planning_scenario sc
-    RIGHT JOIN impacts_treatmentplan tp ON (tp.scenario_id = sc.id)
-    WHERE tp.id = (query_params->>'treatment_plan_id')::int;
-
-  WITH tx_result_year_0 AS(
+    END IF
+  ), WITH tx_result_year_0 AS(
     SELECT
       tr.year AS "year",
       tr.value AS "value",
@@ -44,18 +42,7 @@ BEGIN
       tr.variable AS "variable",
       tr.action AS "action",
       tr.delta as "delta",
-      tr.stand_id AS "stand_id",
-      (
-        SELECT 
-          pa.name
-        FROM
-          planning_projectarea pa
-        WHERE
-          pa.scenario_id = p_scenario_id AND
-          ss.id = tr.stand_id AND
-          pa.geometry && ss.geometry AND
-          ST_Within(ST_Centroid(ss.geometry), pa.geometry)
-      ) as "project_area_name"
+      tr.stand_id AS "stand_id"
       FROM impacts_treatmentresult tr
       LEFT JOIN stands_stand ss ON (tr.stand_id = ss.id)
       WHERE 
@@ -127,7 +114,7 @@ BEGIN
     SELECT 
       ss.id as "id",
       ss.size as "stand_size",
-      tr0.project_area_name as "project_area_name",
+      rpa.name as "project_area_name",
       tr0.variable as "variable",
       tr0.action as "action",
       (query_params->>'treatment_plan_id') as "treatment_plan_id",
@@ -151,6 +138,8 @@ BEGIN
           ST_TileEnvelope(z, x, y),
           4096, 64, true) AS geom
     FROM stands_stand ss
+      INNER JOIN resumed_project_area rpa ON ss.geometry && rpa.geometry AND
+                                             ST_Within(ST_Centroid(ss.geometry), rpa.geometry)
       LEFT JOIN tx_result_year_0 tr0 ON tr0.stand_id = ss.id
       LEFT JOIN tx_result_year_5 tr5 ON tr5.stand_id = ss.id
       LEFT JOIN tx_result_year_10 tr10 ON tr10.stand_id = ss.id
@@ -158,8 +147,7 @@ BEGIN
       LEFT JOIN tx_result_year_20 tr20 ON tr20.stand_id = ss.id
     WHERE
       ss.size = p_stand_size AND
-      ss.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269) AND
-        ss.geometry && p_intersecting_area AND ST_Within(ST_Centroid(ss.geometry), p_intersecting_area)
+      ss.geometry && ST_Transform(ST_TileEnvelope(z, x, y, margin => (64.0 / 4096)), 4269)
   ) as tile WHERE geom IS NOT NULL;
 
   RETURN p_mvt;
