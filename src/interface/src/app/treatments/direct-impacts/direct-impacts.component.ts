@@ -160,12 +160,14 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   expandStandChart() {
     this.dialog.open(ExpandedStandDataChartComponent, {
       injector: this.injector, // Pass the current injector to the dialog
+      autoFocus: false,
     });
   }
 
   expandMaps() {
     this.dialog.open(ExpandedDirectImpactMapComponent, {
       injector: this.injector, // Pass the current injector to the dialog
+      autoFocus: false,
     });
   }
 
