@@ -3,14 +3,7 @@ RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
   p_stand_size varchar;
-  p_project_area_id int;
 BEGIN
-
-  IF (query_params::jsonb) ? 'project_area_id' THEN
-    SELECT INTO p_project_area_id (query_params->>'project_area_id')::int;
-  ELSE
-    SELECT INTO p_project_area_id 0;
-  END IF;
 
   SELECT INTO 
     p_stand_size
@@ -27,8 +20,8 @@ BEGIN
     LEFT JOIN planning_scenario sc ON (pa.scenario_id = sc.id)
     LEFT JOIN impacts_treatmentplan tp ON (sc.id = tp.scenario_id)
     WHERE 
-      ((p_project_area_id <> 0 AND pa.id = p_project_area_id) OR
-      (p_project_area_id = 0 AND tp.id = (query_params->>'treatment_plan_id')::int)) AND
+      ((query_params->>'project_area_id') = NULL OR pa.id = (query_params->>'project_area_id')::int) AND
+      tp.id = (query_params->>'treatment_plan_id')::int AND
       pa.deleted_at IS NULL
   ), tx_result_year_0 AS(
     SELECT
