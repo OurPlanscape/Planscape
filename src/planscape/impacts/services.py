@@ -153,7 +153,6 @@ def generate_summary(
     plan_area = scenario.planning_area
     stand_size = scenario.configuration["stand_size"]
     stand_area = STAND_AREA_ACRES[stand_size]
-
     pa_filter = {"scenario": scenario}
     tp_filter = {"treatment_plan": treatment_plan}
 
@@ -173,6 +172,7 @@ def generate_summary(
     )
     project_areas = []
     project_area_queryset = ProjectArea.objects.filter(**pa_filter).order_by("name")
+
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]

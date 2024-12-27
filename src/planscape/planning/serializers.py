@@ -653,7 +653,7 @@ class GeoJSONSerializer(serializers.Serializer):
 class UploadedScenarioDataSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=100, required=True)
     stand_size = serializers.ChoiceField(
-        choices=["SMALL", "MEDIUM", "LARGE"], required=False, allow_blank=False
+        choices=["SMALL", "MEDIUM", "LARGE"], required=True
     )
     planning_area = serializers.IntegerField(min_value=1, required=True)
     geometry = serializers.JSONField(required=True)

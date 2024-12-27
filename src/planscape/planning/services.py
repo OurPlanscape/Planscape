@@ -175,6 +175,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] 
 def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
     uploaded_geom = validated_data["geometry"]
+
     scenario = Scenario.objects.create(
         name=validated_data["name"],
         planning_area=planning_area,
