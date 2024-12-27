@@ -1,13 +1,6 @@
-<sg-modal
-  [title]="(mapPanelTitle$ | async) || ''"
-  primaryButtonText="Create"
-  [scrollableContent]="false"
-  [showBorders]="true"
-  [hasFooter]="false"
-  (clickedClose)="close()"
-  width="full"
-  class="expanded-maps-modal">
-  <div modalBodyContent class="expanded-maps">
+<sg-expanded-panel (clickedClose)="close()">
+  <div panelTitle>{{ mapPanelTitle$ | async }}</div>
+  <div panelContent>
     <app-direct-impacts-synced-maps
       *ngIf="
         (showTreatmentPrescription$ | async) === false
@@ -18,4 +11,4 @@
     <app-treatment-legend
       *ngIf="showTreatmentPrescription$ | async"></app-treatment-legend>
   </div>
-</sg-modal>
+</sg-expanded-panel>

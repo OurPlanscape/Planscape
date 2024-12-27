@@ -50,6 +50,8 @@ import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatm
 import { OpacityControlComponent } from './plan-map/opacity-control/opacity-control.component';
 import { UploadedScenarioViewComponent } from './uploaded-scenario-view/uploaded-scenario-view.component';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
+import { MatTabsModule } from '@angular/material/tabs';
+
 /** Components used in the plan flow. */
 @NgModule({
   declarations: [
@@ -110,6 +112,7 @@ import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/
     NotesSidebarComponent,
     OpacitySliderComponent,
     OpacityControlComponent,
+    MatTabsModule,
   ],
 })
 export class PlanModule {}

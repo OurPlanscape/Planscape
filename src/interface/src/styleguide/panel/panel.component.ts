@@ -19,6 +19,8 @@ export interface PanelIconButton {
   styleUrl: './panel.component.scss',
 })
 export class PanelComponent {
+  constructor() {}
+
   /**
    * List of buttons to be displayed at the right side of the title
    */

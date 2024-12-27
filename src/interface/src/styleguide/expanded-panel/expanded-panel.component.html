@@ -1,0 +1,13 @@
+<section class="header">
+  <div class="header-title">
+    <ng-content select="[panelTitle]"></ng-content>
+  </div>
+  <div class="title-buttons">
+    <button mat-icon-button (click)="handleCloseButton()" aria-label="close">
+      <mat-icon class="close-btn">close_fullscreen</mat-icon>
+    </button>
+  </div>
+</section>
+<main class="modal-body">
+  <ng-content select="[panelContent]"></ng-content>
+</main>

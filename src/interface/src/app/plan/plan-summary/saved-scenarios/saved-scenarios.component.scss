@@ -177,3 +177,7 @@ app-section-loader {
   overflow: hidden;
   flex: 1;
 }
+
+.custom-tab-group ::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
+  flex-grow: 0;
+}
