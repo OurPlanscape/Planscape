@@ -1,32 +1,37 @@
 from unittest import mock
 from urllib.parse import urlencode
-from rest_framework.test import APITransactionTestCase
-from rest_framework import status
-from django.forms.models import model_to_dict
-from django.urls import reverse
-from django.contrib.auth import get_user_model
+
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
+from django.contrib.auth import get_user_model
+from django.forms.models import model_to_dict
+from django.urls import reverse
 from impacts.models import (
     AVAILABLE_YEARS,
+    ImpactVariable,
+    ImpactVariableAggregation,
     TreatmentPlan,
     TreatmentPlanStatus,
-    ImpactVariableAggregation,
     TreatmentPrescriptionAction,
 )
 from impacts.tests.factories import (
+    ImpactVariable,
+    ProjectAreaTreatmentResultFactory,
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
-    ProjectAreaTreatmentResultFactory,
-    ImpactVariable,
+    TreatmentResultFactory,
 )
 from planning.tests.factories import (
-    ScenarioFactory,
     PlanningAreaFactory,
     ProjectAreaFactory,
+    ScenarioFactory,
 )
-from planscape.tests.factories import UserFactory
+from rest_framework import status
+from rest_framework.test import APITestCase, APITransactionTestCase
 from stands.models import StandSizeChoices
+from stands.tests.factories import StandFactory
+
+from planscape.tests.factories import UserFactory
 
 User = get_user_model()
 
@@ -565,3 +570,63 @@ class TxPrescriptionBatchDeleteTest(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data["result"][0], 10)
+
+
+class StandTreatmentResultsViewTest(APITestCase):
+    def setUp(self):
+        self.treatment_plan = TreatmentPlanFactory()
+        self.stand = StandFactory()
+        self.url = reverse(
+            "api:impacts:treatmentplan-stand-treatment-results",
+            kwargs={"pk": self.treatment_plan.pk},
+        )
+
+    def test_no_results_returns_empty_list(self):
+        """
+        Ensures the endpoint returns a 200 with [] if there’s no data for stand_id.
+        """
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.json(), [])
+
+    def test_multiple_results(self):
+        """
+        Tests that the endpoint returns correct data when multiple TreatmentResult rows exist.
+        """
+        TreatmentResultFactory(
+            treatment_plan=self.treatment_plan,
+            stand=self.stand,
+            variable=ImpactVariable.FLAME_LENGTH,
+            year=2024,
+            value=3.5,
+        )
+        TreatmentResultFactory(
+            treatment_plan=self.treatment_plan,
+            stand=self.stand,
+            variable=ImpactVariable.RATE_OF_SPREAD,
+            year=2024,
+            value=2.5,
+        )
+
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data), 1, "Expected data for 1 year (2024)")
+        row_2024 = data[0]
+        self.assertEqual(row_2024["year"], 2024)
+        self.assertIn("flame_length", row_2024)
+        self.assertIn("rate_of_spread", row_2024)
+
+    def test_missing_stand_id(self):
+        """
+        If 'stand_id' param is missing, the serializer should raise a 400 error.
+        """
+        response = self.client.get(self.url)
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_invalid_stand_id(self):
+        """
+        If 'stand_id' doesn't exist in DB, we expect a 400 from the PrimaryKeyRelatedField.
+        """
+        response = self.client.get(f"{self.url}?stand_id=99999999")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -1,20 +1,15 @@
-# Temporary endpoint imports
-from rest_framework import serializers
-from stands.models import Stand
-
-from rest_framework import serializers
-from rest_framework.relations import PrimaryKeyRelatedField
-
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
+    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
-    ProjectAreaTreatmentResult,
 )
 from planning.models import ProjectArea
 from planning.services import get_acreage
+from rest_framework import serializers
+from rest_framework.relations import PrimaryKeyRelatedField
 from stands.models import Stand, area_from_size
 
 

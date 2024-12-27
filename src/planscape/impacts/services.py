@@ -1,20 +1,17 @@
-# Temporary endpoint imports
-from collections import defaultdict
-from typing import List, Dict, Any
-from impacts.models import TreatmentPlan, TreatmentResult, ImpactVariable
-
-import logging
 import itertools
 import json
+import logging
+from collections import defaultdict
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+
 import rasterio
-from rasterio.session import AWSSession
+from actstream import action as actstream_action
 from core.s3 import get_aws_session
-from typing import Iterable, List, Optional, Dict, Tuple, Any
-from django.db import transaction
-from django.db.models import Count, QuerySet, Sum, F, Case, When
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db import transaction
+from django.db.models import Case, Count, F, QuerySet, Sum, When
 from impacts.calculator import calculate_delta
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -26,13 +23,13 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentResult,
-    TTreatmentPlanCloneResult,
     TreatmentResultType,
+    TTreatmentPlanCloneResult,
     get_prescription_type,
 )
-from actstream import action as actstream_action
-from planning.models import Scenario, ProjectArea
-from stands.models import STAND_AREA_ACRES, StandMetric, Stand
+from planning.models import ProjectArea, Scenario
+from rasterio.session import AWSSession
+from stands.models import STAND_AREA_ACRES, Stand, StandMetric
 from stands.services import calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
