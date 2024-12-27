@@ -20,7 +20,7 @@ BEGIN
     LEFT JOIN planning_scenario sc ON (pa.scenario_id = sc.id)
     LEFT JOIN impacts_treatmentplan tp ON (sc.id = tp.scenario_id)
     WHERE 
-      ((query_params->>'project_area_id') = NULL OR pa.id = (query_params->>'project_area_id')::int) AND
+      ((query_params->>'project_area_id') IS NULL OR pa.id = (query_params->>'project_area_id')::int) AND
       tp.id = (query_params->>'treatment_plan_id')::int AND
       pa.deleted_at IS NULL
   ), tx_result_year_0 AS(
