@@ -7,9 +7,9 @@ from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
 from impacts.models import (
-    AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
+    AVAILABLE_YEARS,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescriptionAction,
