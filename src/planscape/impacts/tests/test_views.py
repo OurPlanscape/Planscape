@@ -27,7 +27,7 @@ from planning.tests.factories import (
     ScenarioFactory,
 )
 from rest_framework import status
-from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
 from stands.models import StandSizeChoices
 from stands.tests.factories import StandFactory
 
@@ -574,10 +574,18 @@ class TxPrescriptionBatchDeleteTest(APITransactionTestCase):
 
 class StandTreatmentResultsViewTest(APITestCase):
     def setUp(self):
-        self.treatment_plan = TreatmentPlanFactory()
+        self.user = UserFactory()
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        self.scenario = ScenarioFactory.create(planning_area__user=self.user)
+
+        self.treatment_plan = TreatmentPlanFactory(
+            scenario=self.scenario, created_by=self.user
+        )
+
         self.stand = StandFactory()
         self.url = reverse(
-            "api:impacts:treatmentplan-stand-treatment-results",
+            "api:impacts:tx-plans-stand-treatment-results",
             kwargs={"pk": self.treatment_plan.pk},
         )
 
@@ -614,8 +622,8 @@ class StandTreatmentResultsViewTest(APITestCase):
         self.assertEqual(len(data), 1, "Expected data for 1 year (2024)")
         row_2024 = data[0]
         self.assertEqual(row_2024["year"], 2024)
-        self.assertIn("flame_length", row_2024)
-        self.assertIn("rate_of_spread", row_2024)
+        self.assertIn("fl", row_2024)
+        self.assertIn("ros", row_2024)
 
     def test_missing_stand_id(self):
         """
