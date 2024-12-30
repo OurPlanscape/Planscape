@@ -1,16 +1,15 @@
-from rest_framework import serializers
-from rest_framework.relations import PrimaryKeyRelatedField
-
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
+    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
-    ProjectAreaTreatmentResult,
 )
 from planning.models import ProjectArea
 from planning.services import get_acreage
+from rest_framework import serializers
+from rest_framework.relations import PrimaryKeyRelatedField
 from stands.models import Stand, area_from_size
 
 
@@ -316,4 +315,10 @@ class TreatmentResultsPlotSerializer(serializers.Serializer):
     )
     metrics = serializers.ListField(
         child=serializers.CharField(max_length=20), help_text="Metrics."
+    )
+
+
+class StandQuerySerializer(serializers.Serializer):
+    stand_id = serializers.PrimaryKeyRelatedField(
+        queryset=Stand.objects.all(), required=True
     )

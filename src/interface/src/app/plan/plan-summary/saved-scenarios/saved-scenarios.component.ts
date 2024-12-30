@@ -14,6 +14,7 @@ import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
+import { TreatmentsService } from '@services/treatments.service';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -50,7 +51,8 @@ export class SavedScenariosComponent implements OnInit {
     private scenarioService: ScenarioService,
     private dialog: MatDialog,
     private featureService: FeatureService,
-    private planStateService: PlanStateService
+    private planStateService: PlanStateService,
+    private treatmentsService: TreatmentsService
   ) {}
 
   ngOnInit(): void {
@@ -206,19 +208,36 @@ export class SavedScenariosComponent implements OnInit {
     return isValidTotalArea(this.plan.area_acres);
   }
 
-  openConfirmationDialog(): void {
+  openConfirmationDialog(newScenarioResponse: any): void {
     this.dialog
-      .open(ScenarioCreateConfirmationComponent, {})
+      .open(ScenarioCreateConfirmationComponent, {
+        data: newScenarioResponse,
+      })
       .afterClosed()
-      .subscribe((response: any) => {
-        if (response) {
-          this.goToTreatmentPlans();
+      .subscribe((modalResponse: any) => {
+        if (modalResponse) {
+          this.createNewTreatmentPlan(newScenarioResponse?.id);
         }
       });
   }
 
-  goToTreatmentPlans(): void {
-    // TODO: route to next page
+  createNewTreatmentPlan(scenarioId: string): void {
+    this.treatmentsService
+      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .subscribe({
+        next: (result) => {
+          this.router.navigate(['config', scenarioId, 'treatment', result.id], {
+            relativeTo: this.route,
+          });
+        },
+        error: () => {
+          this.snackbar.open(
+            '[Error] Cannot create a new treatment plan',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        },
+      });
   }
 
   openUploadDialog(): void {
@@ -230,10 +249,9 @@ export class SavedScenariosComponent implements OnInit {
         },
       })
       .afterClosed()
-      .subscribe((response: any) => {
-        if (response) {
-          // if there's not an error...we open the confirmation dialog
-          this.openConfirmationDialog();
+      .subscribe((res: any) => {
+        if (res) {
+          this.openConfirmationDialog(res.response);
         }
       });
   }
