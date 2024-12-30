@@ -29,9 +29,7 @@ export class UploadedScenarioViewComponent implements OnInit {
 
   ngOnInit() {
     if (this.scenario) {
-      this.planStateService.updateStateWithShapes(
-          this.scenario?.scenario_result?.result.features
-      );
+    
       this.planStateService.planState$
         .pipe(untilDestroyed(this), take(1))
         .subscribe((planState) => {
@@ -40,6 +38,9 @@ export class UploadedScenarioViewComponent implements OnInit {
             this.scenario?.id ?? null,
             this.scenario?.name ?? null
           );
+          this.planStateService.updateStateWithShapes(
+            this.scenario?.scenario_result?.result.features
+        );
         });
     }
   }
