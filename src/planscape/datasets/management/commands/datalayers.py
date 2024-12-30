@@ -121,11 +121,20 @@ class Command(PlanscapeCommand):
             required=True,
         )
         create_parser.add_argument(
+            "--category",
+            type=int,
+            required=False,
+        )
+        create_parser.add_argument(
             "--input-file",
             required=True,
             type=str,
         )
-        create_parser.add_argument("--metadata", required=False, type=json.loads)
+        create_parser.add_argument(
+            "--metadata",
+            required=False,
+            type=json.loads,
+        )
         create_parser.add_argument(
             "--skip-existing",
             required=False,
@@ -238,11 +247,13 @@ class Command(PlanscapeCommand):
         headers = self.get_headers(**kwargs)
         mimetype = kwargs.get("mimetype")
         original_name = kwargs.get("original_name")
+        category = kwargs.get("category")
         metadata = kwargs.get("metadata", {}) or {}
         input_data = {
             "organization": org,
             "name": name,
             "dataset": dataset,
+            "category": category,
             "type": layer_type,
             "info": layer_info,
             "metadata": metadata,
