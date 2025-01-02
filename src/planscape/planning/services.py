@@ -153,7 +153,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] 
             "name": area_name,
             "created_by": user_id,
             "scenario": scenario,
-            "data": {"treatment_rank":idx},
+            "data": {"treatment_rank": idx},
         }
         proj_area_obj = ProjectArea.objects.create(**project_area)
 
