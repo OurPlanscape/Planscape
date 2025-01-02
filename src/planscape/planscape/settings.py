@@ -454,7 +454,5 @@ GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
 
 # Analytics
 ANALYTICS_ENABLED = config("ANALYTICS_ENABLED", default=False)
-ANALYTICS_DEBUG_MODE = config("ANALYTICS_DEBUG_MODE", default=False)
-FIREBASE_APP_ID = config("FIREBASE_APP_ID", default="")
-FIREBASE_APP_INSTANCE_ID = config("FIREBASE_APP_INSTANCE_ID", default="")
-FIREBASE_API_SECRET = config("FIREBASE_API_SECRET", default="")
+GA_TRACKING_ID = config("GA_TRACKING_ID", default="")
+GA_CLIENT_ID = config("GA_CLIENT_ID", default="")
