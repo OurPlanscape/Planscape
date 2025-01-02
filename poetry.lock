@@ -2518,6 +2518,21 @@ files = [
 ]
 
 [[package]]
+name = "pyga"
+version = "2.6.2"
+description = "Server side implementation of Google Analytics in Python."
+optional = false
+python-versions = "*"
+files = [
+    {file = "pyga-2.6.2-py3-none-any.whl", hash = "sha256:062e0468915130cde882d52e4ca5bc0a01d21d66b5f23b6e1fec045dcefc5942"},
+    {file = "pyga-2.6.2.tar.gz", hash = "sha256:09da0e36bc4d44a82ab3dbc6128300b14715b902d98311f0866162de45d2fddc"},
+]
+
+[package.dependencies]
+setuptools = "*"
+six = "*"
+
+[[package]]
 name = "pygments"
 version = "2.18.0"
 description = "Pygments is a syntax highlighting package written in Python."

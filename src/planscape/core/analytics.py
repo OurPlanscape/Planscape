@@ -6,13 +6,15 @@ from typing import Dict, AnyStr, Any
 from django.conf import settings
 from django.utils.timezone import now
 from planscape.celery import app
+from pyga.requests import Tracker
+from pyga.entities import Event, Session, Visitor
 
 log = logging.getLogger(__name__)
 
 
-def collect_metric(event_name: AnyStr, **kwargs) -> None:
+def track_metric(event_name: AnyStr, **kwargs) -> None:
     """
-    Collects a metric and sends it to Firebase.
+    Tracks metrics and sends them to Google Analytics.
     :param event_name: The name of the event.
     :param kwargs: Set of key values of the event e.g. (success=True, execution_time=5).
     """
@@ -26,42 +28,38 @@ def collect_metric(event_name: AnyStr, **kwargs) -> None:
 
     event_params = {**kwargs}
 
-    _async_collect_metric.delay(event_name, int(now().timestamp()), event_params)
+    _async_track_metric.delay(event_name, int(now().timestamp()), event_params)
 
 
 @app.task()
-def _async_collect_metric(
+def _async_track_metric(
     event_name: AnyStr, epoch_time: int, event_params: Dict[str, Any]
 ) -> None:
     """
-    Asynchronous task to collect a metric and send it to Firebase.
+    Asynchronous task to track metrics and send them to Google Analytics.
     :param event_name: The name of the event.
     :param epoch_time: The time the event occurred.
     :param event_params: Set of key values of the event e.g. ({success=True, execution_time=5}).
     """
-    if not all(
-        (
-            settings.FIREBASE_APP_ID,
-            settings.FIREBASE_APP_INSTANCE_ID,
-            settings.FIREBASE_API_SECRET,
-        )
-    ):
-        log.warning("Firebase not configured.")
+    if not all((settings.GA_TRACKING_ID, settings.GA_CLIENT_ID)):
+        log.warning("Google Analytics not configured.")
         return
 
-    if settings.ANALYTICS_DEBUG_MODE:
-        event_params.update({"debug_mode": settings.ANALYTICS_DEBUG_MODE})
+    event_params["time"] = epoch_time
 
-    url = (
-        "https://www.google-analytics.com/mp/collect?"
-        f"firebase_app_id={settings.FIREBASE_APP_ID}"
-        f"&api_secret={settings.FIREBASE_API_SECRET}"
+    tracker = Tracker(settings.GA_TRACKING_ID, settings.GA_CLIENT_ID)
+
+    event = Event(
+        category="Metric",
+        action=event_name,
+        label="Event",
+        value=event_params,
     )
-    payload = {
-        "app_instance_id": settings.FIREBASE_APP_INSTANCE_ID,
-        "timestamp_micros": epoch_time,
-        "events": [{"name": event_name, "params": event_params}],
-    }
-    r = requests.post(url, json=json.dumps(payload), verify=True)
 
-    log.debug(f"Event <{event_name}> collect returned {r.status_code}")
+    tracker.track_event(
+        event=event,
+        session=Session(),
+        visitor=Visitor(),
+    )
+
+    log.debug(f"Event <{event_name}> collected")

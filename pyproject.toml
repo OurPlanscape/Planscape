@@ -66,6 +66,7 @@ toml = "^0.10.2"
 rio-cogeo = "^5.3.6"
 django-json-widget = "^2.0.1"
 pygments = "^2.18.0"
+pyga = "^2.6.2"
 setuptools = "^75.7.0"
 
 [tool.poetry.group.dev.dependencies]
