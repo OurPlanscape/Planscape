@@ -174,8 +174,6 @@ def generate_summary(
     )
     project_areas = []
     project_area_queryset = ProjectArea.objects.filter(**pa_filter).order_by("name")
-
-    
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
