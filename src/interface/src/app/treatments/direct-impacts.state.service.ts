@@ -55,8 +55,9 @@ export class DirectImpactsStateService {
   );
   public activeTreatmentPlan$ = this._activeTreatmentPlan$.asObservable();
 
-  private _selectedProjectArea$ =
-    new BehaviorSubject<TreatmentProjectArea | null>(null);
+  private _selectedProjectArea$ = new BehaviorSubject<
+    TreatmentProjectArea | 'All'
+  >('All');
   public selectedProjectArea$ = this._selectedProjectArea$.asObservable();
 
   private _showTreatmentPrescription$ = new BehaviorSubject(false);
@@ -68,16 +69,22 @@ export class DirectImpactsStateService {
     this._selectedProjectArea$,
     this.showTreatmentPrescription$,
   ]).pipe(
-    map(([activeMetric, pa, showTreatment]) =>
-      showTreatment
+    map(([activeMetric, pa, showTreatment]) => {
+      let selectedAreaString = '';
+      if (pa === 'All') {
+        selectedAreaString = 'All Project areas';
+      } else {
+        selectedAreaString = `${pa.project_area_name}`;
+      }
+      return showTreatment
         ? 'Applied Treatment Prescription'
-        : `${activeMetric.metric.label} for ${pa?.project_area_name ?? 'All Project Areas'}`
-    )
+        : `${activeMetric.metric.label} for ${selectedAreaString}'}`;
+    })
   );
 
   constructor() {}
 
-  setProjectAreaForChanges(projectArea: TreatmentProjectArea | null) {
+  setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
     this._selectedProjectArea$.next(projectArea);
   }
 

@@ -187,13 +187,14 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     Chart.unregister(ChartDataLabels);
   }
 
-  setChartProjectArea(pa: TreatmentProjectArea) {
-    this.directImpactsStateService.setProjectAreaForChanges(pa);
-    if (!pa) {
+  setChartProjectArea(pa: TreatmentProjectArea | 'All') {
+    if (!pa || pa === 'All') {
+      this.directImpactsStateService.setProjectAreaForChanges('All');
       const s = this.treatmentsState.getCurrentSummary();
       this.mapConfigState.updateMapCenter(s.extent);
       return;
     }
+    this.directImpactsStateService.setProjectAreaForChanges(pa);
     this.mapConfigState.updateMapCenter(pa.extent);
   }
 

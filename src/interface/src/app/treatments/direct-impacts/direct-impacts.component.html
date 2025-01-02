@@ -57,7 +57,7 @@
                 class="project-area-selector"
                 [ngModel]="selectedChartProjectArea$ | async"
                 (ngModelChange)="setChartProjectArea($event)">
-                <mat-option [value]="null">All</mat-option>
+                <mat-option value="All">All</mat-option>
                 <mat-option
                   *ngFor="
                     let projectArea of (availableProjectAreas$ | async) ?? []

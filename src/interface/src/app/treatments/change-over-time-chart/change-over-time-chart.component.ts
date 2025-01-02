@@ -234,16 +234,16 @@ export class ChangeOverTimeChartComponent implements OnInit {
   updateChartData(
     treatmentPlan: TreatmentPlan,
     metrics: Record<ImpactsMetricSlot, Metric>,
-    projectArea: TreatmentProjectArea | null
+    projectArea: TreatmentProjectArea | 'All'
   ) {
     const metricsArray = Object.values(metrics).map((m) => m.id);
+    let selectedArea = null;
+    if (projectArea !== 'All') {
+      selectedArea = projectArea?.project_area_id;
+    }
 
     this.treatmentsService
-      .getTreatmentImpactCharts(
-        treatmentPlan.id,
-        metricsArray,
-        projectArea?.project_area_id ?? null
-      )
+      .getTreatmentImpactCharts(treatmentPlan.id, metricsArray, selectedArea)
       .subscribe({
         next: (response: any) => {
           const chartData = this.convertImpactResultToChartData(
