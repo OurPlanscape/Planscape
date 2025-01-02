@@ -135,6 +135,7 @@ DATABASES = {
         },
     }
 }
+CONN_MAX_AGE = 60
 
 # Password validation
 # https://docs.djangoproject.com/en/4.1/ref/settings/#auth-password-validators
