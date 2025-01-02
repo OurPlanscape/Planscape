@@ -56,8 +56,14 @@
     mat-raised-button
     type="button"
     [variant]="primaryButtonVariant"
-    [disabled]="primaryButtonDisabled"
+    [disabled]="primaryButtonDisabled || isInSpinState"
     (click)="handlePrimaryButton()">
-    {{ primaryButtonText }}
+    <mat-spinner
+      class="primary-spinner"
+      *ngIf="hasPrimarySpinner && isInSpinState"
+      diameter="24"></mat-spinner>
+    <span *ngIf="!hasPrimarySpinner || !isInSpinState">{{
+      primaryButtonText
+    }}</span>
   </button>
 </section>

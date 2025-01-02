@@ -15,6 +15,11 @@
     width: 100%;
   }
 
+  ::ng-deep .primary-button {
+    min-width: 70px;
+    justify-content: center;
+  }
+
   .field-row {
     height: 80px;
   }
