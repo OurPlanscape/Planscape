@@ -15,6 +15,7 @@ import { TreatmentsState } from '../treatments.state';
 import { TreatmentPlan, TreatmentProjectArea } from '@types';
 import { TreatmentsService } from '@services/treatments.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import deepEqual from 'fast-deep-equal';
 
 const baseFont = {
   family: 'Public Sans',
@@ -63,9 +64,7 @@ export class ChangeOverTimeChartComponent implements OnInit {
     combineLatest([
       this.treatmentsState.treatmentPlan$,
       this.directImpactsStateService.reportMetrics$?.pipe(
-        distinctUntilChanged(
-          (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
-        )
+        distinctUntilChanged((prev, curr) => deepEqual(prev, curr))
       ),
       this.directImpactsStateService.selectedProjectArea$,
     ])
