@@ -17,6 +17,7 @@
     source="stands"
     [paint]="layers.stands.paint"
     (layerMouseDown)="clickOnStand($event)"
+    (layerClick)="layerClick($event)"
     (layerMouseEnter)="setCursor()"
     (layerMouseLeave)="resetCursor()"
     [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
