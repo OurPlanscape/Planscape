@@ -62,7 +62,7 @@ export class ChangeOverTimeChartComponent implements OnInit {
   ngOnInit(): void {
     combineLatest([
       this.treatmentsState.treatmentPlan$,
-      this.directImpactsStateService.reportMetrics$.pipe(
+      this.directImpactsStateService.reportMetrics$?.pipe(
         distinctUntilChanged(
           (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
         )
