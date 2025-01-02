@@ -3,7 +3,13 @@ import { ChartConfiguration } from 'chart.js';
 import { AsyncPipe } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map, Observable, combineLatest, BehaviorSubject } from 'rxjs';
+import {
+  map,
+  Observable,
+  combineLatest,
+  BehaviorSubject,
+  distinctUntilChanged,
+} from 'rxjs';
 import { SLOT_COLORS, ImpactsMetricSlot, Metric } from '../metrics';
 import { TreatmentsState } from '../treatments.state';
 import { TreatmentPlan, TreatmentProjectArea } from '@types';
@@ -56,7 +62,11 @@ export class ChangeOverTimeChartComponent implements OnInit {
   ngOnInit(): void {
     combineLatest([
       this.treatmentsState.treatmentPlan$,
-      this.directImpactsStateService.reportMetrics$,
+      this.directImpactsStateService.reportMetrics$.pipe(
+        distinctUntilChanged(
+          (prev, curr) => JSON.stringify(prev) === JSON.stringify(curr)
+        )
+      ),
       this.directImpactsStateService.selectedProjectArea$,
     ])
       .pipe(untilDestroyed(this))
