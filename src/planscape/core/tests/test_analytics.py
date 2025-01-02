@@ -23,10 +23,12 @@ class AnalyticsTest(TestCase):
             "test_event", mock.ANY, {"success": True, "execution_time": 5}
         )
 
-    @mock.patch("core.analytics.Tracker", autospec=True, create=True)
+    @mock.patch(
+        "core.analytics.Tracker", return_value=mock.Mock(track_event=mock.Mock())
+    )
     def test_async_track_metric(self, tracker_mock):
         _async_track_metric(
             "test_event", 123456, {"success": True, "execution_time": 5}
         )
 
-        tracker_mock.track_event.assert_called_once()
+        tracker_mock.return_value.track_event.assert_called_once()
