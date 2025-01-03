@@ -33,12 +33,11 @@ export class ModalComponent {
   /**
    * Heading title
    */
-  @Input() title?: string;
+  @Input() title: string = 'Title';
   /**
    * Set horizontal size variant of the modal
    */
-  @Input() width: 'xsmall' | 'small' | 'medium' | 'large' | 'xlarge' | 'full' =
-    'medium';
+  @Input() width: 'xsmall' | 'small' | 'medium' | 'large' | 'full' = 'medium';
   /**
    * Optional Material icon name at left of header
    */
@@ -157,10 +156,6 @@ export class ModalComponent {
   @HostBinding('class.large')
   get isLarge() {
     return this.width === 'large';
-  }
-  @HostBinding('class.xlarge')
-  get isExtraLarge() {
-    return this.width === 'xlarge';
   }
   @HostBinding('class.full')
   get isFull() {

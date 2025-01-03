@@ -6,10 +6,7 @@
       [ngClass]="leadingIconVariant"
       >{{ leadingIcon }}</mat-icon
     >
-    <div>
-      {{ title }}
-      <ng-content class="header-content" select="[headerContent]"></ng-content>
-    </div>
+    <div>{{ title }}</div>
   </div>
   <div class="title-buttons">
     <button>
@@ -22,12 +19,12 @@
       </mat-menu>
     </button>
     <button
-      sg-button
-      [variant]="'icon-only'"
-      [icon]="'close-btn'"
+      mat-icon-button
       (click)="handleCloseButton()"
       aria-label="close"
-      *ngIf="showClose"></button>
+      *ngIf="showClose">
+      <mat-icon class="close-btn">close</mat-icon>
+    </button>
   </div>
 </section>
 <main
