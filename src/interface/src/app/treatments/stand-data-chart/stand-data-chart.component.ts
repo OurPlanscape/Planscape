@@ -108,7 +108,17 @@ export class StandDataChartComponent {
             font: baseFont as any,
             padding: 24,
             stepSize: 50,
-            callback: (value) => `${value}%`,
+            callback: (value) => {
+              let res = `${value}%`;
+
+              if (value === 100) {
+                res = '>' + res;
+              } else if (value === -100) {
+                res = '<' + res;
+              }
+
+              return res;
+            },
           },
           title: {
             display: false,
