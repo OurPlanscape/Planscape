@@ -13,6 +13,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatDialogModule } from '@angular/material/dialog';
 import { ButtonComponent, ButtonVariant } from '../button/button.component';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'sg-modal',
@@ -27,6 +28,7 @@ import { ButtonComponent, ButtonVariant } from '../button/button.component';
     MatIconModule,
     MatDividerModule,
     MatMenuModule,
+    MatProgressSpinnerModule,
   ],
 })
 export class ModalComponent {
@@ -63,6 +65,14 @@ export class ModalComponent {
    * Optional alternative style variant for the right-most bottom button
    */
   @Input() primaryButtonVariant: ButtonVariant = 'primary';
+  /**
+   * Whether or not the button has a spinner
+   */
+  @Input() hasPrimarySpinner: boolean = false;
+  /***
+   * Whether or not to display the spinner
+   */
+  @Input() isInSpinState: boolean = false;
   /**
    * Show/hide left-most bottom button
    */
