@@ -1,13 +1,5 @@
-<sg-modal
-  primaryButtonText="Create"
-  [scrollableContent]="false"
-  [showBorders]="true"
-  [hasFooter]="false"
-  (clickedClose)="close()"
-  width="xlarge"
-  class="change-over-time-chart-modal">
-  <div headerContent class="header-content">
-    <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
+<sg-expanded-panel (clickedClose)="close()" height="narrow">
+    <div panelTitle class="left-title-box" *ngIf="availableProjectAreas$ | async">
       Project Area
       <mat-form-field appearance="outline" class="changes-chart-select">
         <mat-select
@@ -23,9 +15,8 @@
         </mat-select>
       </mat-form-field>
     </div>
-  </div>
-
-  <div modalBodyContent class="expanded-stand-data">
+  <div panelContent>
     <app-change-over-time-chart></app-change-over-time-chart>
   </div>
-</sg-modal>
+</sg-expanded-panel>
+

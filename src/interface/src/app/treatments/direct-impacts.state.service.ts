@@ -81,7 +81,7 @@ export class DirectImpactsStateService {
       }
       return showTreatment
         ? 'Applied Treatment Prescription'
-        : `${activeMetric.metric.label} for ${selectedAreaString}'}`;
+        : `${activeMetric.metric.label} for ${selectedAreaString}`;
     })
   );
 

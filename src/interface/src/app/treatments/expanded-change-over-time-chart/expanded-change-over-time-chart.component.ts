@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { ModalComponent } from '@styleguide';
 import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MatSelectModule } from '@angular/material/select';
@@ -10,19 +9,19 @@ import { FormsModule } from '@angular/forms';
 import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
 import { TreatmentProjectArea } from '@types';
+import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
 
 @Component({
   selector: 'app-expanded-change-over-time-chart',
   standalone: true,
   imports: [
     AsyncPipe,
+    ExpandedPanelComponent,
     FormsModule,
     MatSlideToggleModule,
-    ModalComponent,
     MatSelectModule,
     NgForOf,
     NgIf,
-
     ChangeOverTimeChartComponent,
   ],
   templateUrl: './expanded-change-over-time-chart.component.html',
