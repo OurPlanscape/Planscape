@@ -1,22 +1,21 @@
 <sg-expanded-panel (clickedClose)="close()" height="narrow">
-    <div panelTitle class="left-title-box" *ngIf="availableProjectAreas$ | async">
-      Project Area
-      <mat-form-field appearance="outline" class="changes-chart-select">
-        <mat-select
-          class="project-area-selector"
-          [ngModel]="selectedChartProjectArea$ | async"
-          (ngModelChange)="setChartProjectArea($event)">
-          <mat-option value="All">All</mat-option>
-          <mat-option
-            *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
-            [value]="projectArea">
-            {{ projectArea.project_area_name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-    </div>
+  <div panelTitle class="left-title-box" *ngIf="availableProjectAreas$ | async">
+    Project Area
+    <mat-form-field appearance="outline" class="changes-chart-select">
+      <mat-select
+        class="project-area-selector"
+        [ngModel]="selectedChartProjectArea$ | async"
+        (ngModelChange)="setChartProjectArea($event)">
+        <mat-option value="All">All</mat-option>
+        <mat-option
+          *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
+          [value]="projectArea">
+          {{ projectArea.project_area_name }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </div>
   <div panelContent>
     <app-change-over-time-chart></app-change-over-time-chart>
   </div>
 </sg-expanded-panel>
-
