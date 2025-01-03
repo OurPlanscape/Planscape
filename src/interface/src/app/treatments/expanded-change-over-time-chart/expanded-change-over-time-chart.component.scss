@@ -1,0 +1,22 @@
+@import 'mixins';
+
+:host {
+  overflow: hidden;
+}
+
+
+.header-content {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  align-items: center;
+}
+
+.left-title-box {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: baseline;
+  height: 38px;
+}
