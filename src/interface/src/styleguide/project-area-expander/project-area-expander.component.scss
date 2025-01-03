@@ -49,7 +49,14 @@
 }
 
 .project-area-expander-panel {
+  padding: 0px;
+
   ::ng-deep {
+
+
+    .mat-expansion-panel-header {
+      padding: 0 12px 0 12px;
+    }
 
     .mat-expansion-panel-header.header-content .mat-content {
       display: flex;
@@ -59,6 +66,8 @@
       width: 100%;
       height: auto;
       padding: 12px;
+      padding-right: 0px;
+      padding-left: 0px;
     }
     .mat-expansion-panel-header.header-content.mat-expanded {
       height: auto;
@@ -88,7 +97,7 @@
 .header-title {
   line-height: 24px;
   height: auto;
-  padding: 0 4px;
+  padding: 0;
 }
 
 .left-content {
@@ -109,12 +118,12 @@
   align-items: center;
   justify-content: right;
   gap: 8px;
-  padding-right: 10px;
+  padding-right: 4px;
 }
 
 .stand-count,
 .treatment-hexagon {
-  color: $color-dark-gray;
+  color: $color-md-gray;
 }
 
 .empty-treatments {
@@ -127,14 +136,15 @@
   height: 24px;
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding-left: 40px;
-  padding-top: 4px;
+  gap: 12px;
+  padding-left: 30px;
+  padding-top: 0px;
   padding-bottom: 10px;
+  line-height: 24px;  
 }
 
 .rx-detail-name {
-  @include small-paragraph();
+  @include xs-label();
 }
 
 .rx-detail-value {
@@ -156,7 +166,8 @@
   --mat-expansion-header-expanded-state-height: 34px;
   --mat-expansion-header-collapsed-state-height: 34px;
   background-color: unset;
-  padding-right: 0px;
+  padding-right: 14px;
+  padding-left: 14px;
   
   ::ng-deep .mat-expansion-panel-body {
     padding-right: 0px;
@@ -174,16 +185,18 @@
 
 .sequence-treatment-line {
   @include small-paragraph();
-  padding-left: 36px;
+  padding-left: 24px;
   display: flex;
   flex-direction: row;
   color: $color-black;
   gap: 4px;
+  line-height: 30px;
+  height: 30px;
 }
 
 .sequence-icon {
   color: $color-md-gray;
   width: 20px;
   font-size: 20px;
-  line-height: 20px;
+  line-height: 30px;
 }
