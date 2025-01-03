@@ -56,14 +56,12 @@
     mat-raised-button
     type="button"
     [variant]="primaryButtonVariant"
-    [ngClass]="{'spinner-class': isInSpinState}"
+    [ngClass]="{ 'spinner-class': isInSpinState }"
     (click)="handlePrimaryButton()">
     <mat-spinner
       class="primary-spinner"
       *ngIf="hasPrimarySpinner && isInSpinState"
       diameter="20"></mat-spinner>
-    <span>{{
-      primaryButtonText
-    }}</span>
+    <span>{{ primaryButtonText }}</span>
   </button>
 </section>
