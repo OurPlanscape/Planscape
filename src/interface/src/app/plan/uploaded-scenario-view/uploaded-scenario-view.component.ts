@@ -37,6 +37,9 @@ export class UploadedScenarioViewComponent implements OnInit {
             this.scenario?.id ?? null,
             this.scenario?.name ?? null
           );
+          this.planStateService.updateStateWithShapes(
+            this.scenario?.scenario_result?.result.features
+          );
         });
     }
   }
