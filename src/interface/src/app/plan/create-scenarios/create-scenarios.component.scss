@@ -1,4 +1,4 @@
-@import "colors";
+@import 'colors';
 
 .create-scenarios-panel {
   box-sizing: border-box;
@@ -76,7 +76,6 @@
 
 :host {
   ::ng-deep .mat-tab-body-wrapper {
-
     background-color: #e6e9f4;
     flex-grow: 1;
   }
@@ -89,7 +88,6 @@
     padding: 0 32px;
   }
 }
-
 
 .flex-row {
   align-items: center;
@@ -112,7 +110,6 @@
   top: 0;
   z-index: 10;
   background: white;
-
 }
 
 .scenario-name-input {
@@ -125,7 +122,6 @@
   color: #f44336;
 }
 
-
 .hidden {
   display: none;
 }
@@ -133,7 +129,6 @@
 .results-container {
   padding: 0 20px 10px;
 }
-
 
 .treatment-footer {
   background-color: $color-white;
@@ -153,4 +148,8 @@
 
 .new-treatment {
   margin: 0 16px;
+}
+
+.create-scenarios-tab-group ::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
+  flex-grow: 0;
 }

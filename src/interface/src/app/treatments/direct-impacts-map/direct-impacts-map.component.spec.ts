@@ -5,6 +5,7 @@ import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { AuthService } from '@services';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 
 describe('DirectImpactsMapComponent', () => {
   let component: DirectImpactsMapComponent;
@@ -13,7 +14,9 @@ describe('DirectImpactsMapComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [DirectImpactsMapComponent],
-      providers: [MockProviders(MapConfigState, AuthService)],
+      providers: [
+        MockProviders(MapConfigState, AuthService, DirectImpactsStateService),
+      ],
       declarations: [MockDeclarations(MapComponent)],
     }).compileComponents();
 

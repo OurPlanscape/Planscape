@@ -1,46 +1,50 @@
 import json
 from unittest import mock
-from django.test import TransactionTestCase
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.contrib.gis.db.models import Union
+
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.db.models import Union
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.test import TransactionTestCase
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
+    ImpactVariableAggregation,
     ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
     TreatmentResult,
-    ImpactVariableAggregation,
 )
 from impacts.services import (
     calculate_delta,
     calculate_impacts,
+    classify_flame_length,
+    classify_rate_of_spread,
     clone_treatment_plan,
-    get_calculation_matrix,
-    upsert_treatment_prescriptions,
-    generate_summary,
     generate_impact_results_data_to_plot,
+    generate_summary,
+    get_calculation_matrix,
+    get_treatment_results_table_data,
+    upsert_treatment_prescriptions,
 )
-from impacts.tasks import (
-    async_calculate_impacts_for_variable_action_year,
-)
+from impacts.tasks import async_calculate_impacts_for_variable_action_year
 from impacts.tests.factories import (
+    ProjectAreaTreatmentResultFactory,
     TreatmentPlanFactory,
     TreatmentPrescriptionFactory,
-    ProjectAreaTreatmentResultFactory,
+    TreatmentResultFactory,
 )
 from planning.tests.factories import (
-    ProjectAreaFactory,
     PlanningAreaFactory,
+    ProjectAreaFactory,
     ScenarioFactory,
 )
-from planscape.tests.factories import UserFactory
 from stands.models import Stand, StandSizeChoices
 from stands.tests.factories import StandFactory
+
+from planscape.tests.factories import UserFactory
 
 
 class UpsertTreatmentPrescriptionTest(TransactionTestCase):
@@ -665,3 +669,103 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIsNone(item.get("baseline"))
             self.assertIsNone(item.get("delta"))
             self.assertIsNotNone(item.get("relative_year"))
+
+
+class GetTreatmentResultsTableDataTest(TransactionTestCase):
+    def setUp(self):
+        self.scenario = ScenarioFactory.create()
+        self.treatment_plan = TreatmentPlanFactory.create(scenario=self.scenario)
+        self.stand = StandFactory()
+
+    def test_returns_empty_if_no_data(self):
+        """
+        Checks that get_treatment_results_table_data() returns an empty list
+        when there's no TreatmentResult in the DB for the given plan + stand.
+        """
+        table_data = get_treatment_results_table_data(
+            self.treatment_plan, self.stand.id
+        )
+        self.assertEqual(table_data, [], "Expected an empty list when no data is found")
+
+    def test_returns_data_for_multiple_variables_and_years(self):
+        """
+        Ensures that multiple TreatmentResult rows for different years/variables
+        are grouped correctly into the final table_data structure.
+        """
+        TreatmentResultFactory(
+            treatment_plan=self.treatment_plan,
+            stand=self.stand,
+            variable=ImpactVariable.FLAME_LENGTH,
+            year=2024,
+            value=3.5,
+            delta=1.2,
+            baseline=2.3,
+        )
+        TreatmentResultFactory(
+            treatment_plan=self.treatment_plan,
+            stand=self.stand,
+            variable=ImpactVariable.RATE_OF_SPREAD,
+            year=2024,
+            value=2.0,
+            delta=0.5,
+            baseline=1.5,
+        )
+        TreatmentResultFactory(
+            treatment_plan=self.treatment_plan,
+            stand=self.stand,
+            variable=ImpactVariable.FLAME_LENGTH,
+            year=2029,
+            value=12.0,
+            baseline=2.0,
+        )
+
+        table_data = get_treatment_results_table_data(
+            self.treatment_plan, self.stand.id
+        )
+
+        # Expect 2 rows: one for 2024, one for 2029
+        self.assertEqual(len(table_data), 2)
+
+        # Check the first row (year=2024)
+        row_2024 = table_data[0]
+        self.assertEqual(row_2024["year"], 2024)
+        self.assertIn("fl", row_2024)
+        self.assertIn("ros", row_2024)
+
+        self.assertEqual(row_2024["fl"]["value"], 3.5)
+        self.assertEqual(row_2024["fl"]["delta"], 1.2)
+        self.assertEqual(row_2024["fl"]["baseline"], 2.3)
+        self.assertEqual(row_2024["fl"]["category"], "Low")
+
+        self.assertEqual(row_2024["ros"]["value"], 2.0)
+        self.assertEqual(row_2024["ros"]["delta"], 0.5)
+        self.assertEqual(row_2024["ros"]["baseline"], 1.5)
+        self.assertEqual(row_2024["ros"]["category"], "Very Low")
+
+        # Check the second row (year=2029)
+        row_2029 = table_data[1]
+        self.assertEqual(row_2029["year"], 2029)
+        self.assertIn("fl", row_2029)
+        self.assertEqual(row_2029["fl"]["value"], 12.0)
+        self.assertIsNone(row_2029["fl"]["delta"])
+        self.assertEqual(row_2029["fl"]["category"], "Very High")
+
+
+class ClassificationFunctionsTest(TransactionTestCase):
+    def test_classify_flame_length(self):
+        """
+        Checks the numeric boundaries for flame length classification.
+        """
+        self.assertEqual(classify_flame_length(1.5), "Very Low")
+        self.assertEqual(classify_flame_length(3.0), "Low")
+        self.assertEqual(classify_flame_length(8.0), "High")
+        self.assertEqual(classify_flame_length(25.0), "Extreme")
+
+    def test_classify_rate_of_spread(self):
+        """
+        Checks the numeric boundaries for rate of spread classification.
+        """
+        self.assertEqual(classify_rate_of_spread(2.0), "Very Low")
+        self.assertEqual(classify_rate_of_spread(9.5), "Low")
+        self.assertEqual(classify_rate_of_spread(20.0), "High")
+        self.assertEqual(classify_rate_of_spread(100.0), "Extreme")

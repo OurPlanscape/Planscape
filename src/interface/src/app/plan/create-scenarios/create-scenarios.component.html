@@ -31,8 +31,9 @@
     <div class="tab-container">
       <mat-tab-group
         [selectedIndex]="selectedTab"
+        class="create-scenarios-tab-group"
         [animationDuration]="tabAnimation">
-        <mat-tab label="Configuration">
+        <mat-tab label="Configurations">
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities></app-set-priorities>
             <app-identify-project-areas
@@ -94,7 +95,9 @@
               [scenarioState]="scenarioState"></app-scenario-failure>
           </div>
         </mat-tab>
-        <mat-tab label="Treatments" *ngIf="showTreatmentsTab && scenarioId">
+        <mat-tab
+          label="Treatment Plans"
+          *ngIf="showTreatmentsTab && scenarioId">
           <app-treatments-tab
             [scenarioId]="scenarioId"
             [planningArea]="plan$ | async"></app-treatments-tab>

@@ -1,15 +1,17 @@
-import logging
 import itertools
 import json
+import logging
+from collections import defaultdict
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+
 import rasterio
-from rasterio.session import AWSSession
+from actstream import action as actstream_action
 from core.s3 import get_aws_session
-from typing import Iterable, List, Optional, Dict, Tuple, Any
-from django.db import transaction
-from django.db.models import Count, QuerySet, Sum, F, Case, When
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
+from django.db import transaction
+from django.db.models import Case, Count, F, QuerySet, Sum, When
 from impacts.calculator import calculate_delta
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -21,13 +23,13 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentResult,
-    TTreatmentPlanCloneResult,
     TreatmentResultType,
+    TTreatmentPlanCloneResult,
     get_prescription_type,
 )
-from actstream import action as actstream_action
-from planning.models import Scenario, ProjectArea
-from stands.models import STAND_AREA_ACRES, StandMetric, Stand
+from planning.models import ProjectArea, Scenario
+from rasterio.session import AWSSession
+from stands.models import STAND_AREA_ACRES, Stand, StandMetric
 from stands.services import calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
@@ -151,9 +153,8 @@ def generate_summary(
 ) -> Dict[str, Any]:
     scenario = treatment_plan.scenario
     plan_area = scenario.planning_area
-    stand_size = scenario.configuration["stand_size"]
+    stand_size = scenario.get_stand_size()
     stand_area = STAND_AREA_ACRES[stand_size]
-
     pa_filter = {"scenario": scenario}
     tp_filter = {"treatment_plan": treatment_plan}
 
@@ -176,16 +177,15 @@ def generate_summary(
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
-    stand_size = treatment_plan.scenario.get_stand_size()
     for project in project_area_queryset:
-        stand_project_qs = Stand.objects.within_polygon(
+        stand_project_count = Stand.objects.within_polygon(
             project.geometry, stand_size
-        ).all()
+        ).count()
         project_areas.append(
             {
                 "project_area_id": project.id,
                 "project_area_name": project.name,
-                "total_stand_count": stand_project_qs.count(),
+                "total_stand_count": stand_project_count,
                 "extent": project.geometry.extent,
                 "centroid": json.loads(project.geometry.point_on_surface.json),
                 "prescriptions": [
@@ -550,3 +550,98 @@ def calculate_project_area_deltas(
         }
     )
     return results
+
+
+def classify_flame_length(fl_value: float) -> str:
+    """
+    Converts numeric flame length into relative values.
+    These cut-off boundaries match BehavePlus6 spreadsheet on GD.
+    """
+    if fl_value < 2.0:
+        return "Very Low"
+    elif fl_value < 4.0:
+        return "Low"
+    elif fl_value < 8.0:
+        return "Moderate"
+    elif fl_value < 12.0:
+        return "High"
+    elif fl_value < 25.0:
+        return "Very High"
+    else:
+        return "Extreme"
+
+
+def classify_rate_of_spread(ros_value: float) -> str:
+    """
+    Converts numeric rate of spread into relative values.
+    These cut-off boundaries match BehavePlus6 spreadsheet on GD.
+    """
+    if ros_value < 3.0:
+        return "Very Low"
+    elif ros_value < 10.0:
+        return "Low"
+    elif ros_value < 20.0:
+        return "Moderate"
+    elif ros_value < 60.0:
+        return "High"
+    elif ros_value < 100.0:
+        return "Very High"
+    else:
+        return "Extreme"
+
+
+def get_treatment_results_table_data(
+    treatment_plan: TreatmentPlan, stand_id: int
+) -> List[Dict[str, Any]]:
+    """
+    Retrieves a list of dictionaries, with each dictionary representing
+    a year and its variables. Returns something like:
+    [
+      {
+        "year": 2024,
+        "flame_length": { ... },
+        "rate_of_spread": { ... },
+        ...
+      },
+      ...
+    ]
+    """
+    queryset = TreatmentResult.objects.filter(
+        treatment_plan=treatment_plan, stand_id=stand_id
+    ).values("year", "variable", "value", "delta", "baseline")
+
+    if not queryset.exists():
+        return []
+
+    data_map = defaultdict(dict)
+
+    for row in queryset:
+        year = row["year"]
+        variable = row["variable"]
+        value = row["value"]
+        delta = row["delta"]
+        baseline = row["baseline"]
+
+        var_key = variable.lower()
+
+        match variable:
+            case ImpactVariable.FLAME_LENGTH:
+                category = classify_flame_length(value)
+            case ImpactVariable.RATE_OF_SPREAD:
+                category = classify_rate_of_spread(value)
+            case _:
+                category = None
+
+        data_map[year][var_key] = {
+            "value": value,
+            "delta": delta,
+            "baseline": baseline,
+            "category": category,
+        }
+
+    table_data = []
+
+    for year in sorted(data_map.keys()):
+        table_data.append({**data_map[year], "year": year})
+
+    return table_data

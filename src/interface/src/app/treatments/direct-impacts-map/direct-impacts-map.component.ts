@@ -8,7 +8,11 @@ import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { AuthService } from '@services';
-import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
+import {
+  Map as MapLibreMap,
+  MapSourceDataEvent,
+  RequestTransformFunction,
+} from 'maplibre-gl';
 import { addAuthHeaders } from '../maplibre.helper';
 import { MapStandsTxResultComponent } from '../map-stands-tx-result/map-stands-tx-result.component';
 import {
@@ -16,6 +20,7 @@ import {
   YEAR_INTERVAL_PROPERTY,
   YearInterval,
 } from '../metrics';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
 
 @Component({
   selector: 'app-direct-impacts-map',
@@ -38,6 +43,7 @@ import {
 export class DirectImpactsMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
+    private directImpactsStateService: DirectImpactsStateService,
     private authService: AuthService
   ) {}
 
@@ -70,6 +76,12 @@ export class DirectImpactsMapComponent {
 
   saveZoom() {
     this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
+  }
+
+  sourceData(event: MapSourceDataEvent) {
+    if (event.sourceId === 'stands_by_tx_result' && event.isSourceLoaded) {
+      this.directImpactsStateService.setStandsTxSourceLoaded(true);
+    }
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

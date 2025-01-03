@@ -26,7 +26,7 @@ export class ModalConfirmationDialogComponent {
    */
   @Input() dialogIcon?: string | null;
   /**
-   * The content of the headling
+   * The content of the headline
    */
   @Input() headline?: string | null = '';
   /**

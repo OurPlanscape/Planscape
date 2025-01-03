@@ -4,6 +4,7 @@ import { PlanComponent } from './plan.component';
 import { AuthGuard } from '@services';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
 import { ExploreComponent } from './explore/explore/explore.component';
+import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 
 const routes: Routes = [
   {
@@ -13,14 +14,14 @@ const routes: Routes = [
     canActivate: [AuthGuard],
     children: [
       {
-        path: 'config',
+        path: 'config/',
         title: 'Scenario Configuration',
         component: CreateScenariosComponent,
       },
       {
         path: 'config/:id',
         title: 'Scenario Configuration',
-        component: CreateScenariosComponent,
+        component: ScenarioRoutePlaceholderComponent,
       },
       {
         path: 'explore',

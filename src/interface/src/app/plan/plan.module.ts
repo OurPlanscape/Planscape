@@ -48,6 +48,9 @@ import { NotesSidebarComponent } from '../../styleguide/notes-sidebar/notes-side
 import { TreatmentCardComponent } from '../../styleguide/treatment-card/treatment-card.component';
 import { TreatmentsTabComponent } from './create-scenarios/treatments-tab/treatments-tab.component';
 import { OpacityControlComponent } from './plan-map/opacity-control/opacity-control.component';
+import { UploadedScenarioViewComponent } from './uploaded-scenario-view/uploaded-scenario-view.component';
+import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
+import { MatTabsModule } from '@angular/material/tabs';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -74,10 +77,12 @@ import { OpacityControlComponent } from './plan-map/opacity-control/opacity-cont
     ScenarioNotStartedComponent,
     ScenarioPendingComponent,
     ScenarioResultsComponent,
+    ScenarioRoutePlaceholderComponent,
     ScenarioTooltipComponent,
     ScenariosTableListComponent,
     SetPrioritiesComponent,
     TreatmentsTabComponent,
+    UploadedScenarioViewComponent,
   ],
   providers: [WINDOW_PROVIDERS],
   imports: [
@@ -107,6 +112,7 @@ import { OpacityControlComponent } from './plan-map/opacity-control/opacity-cont
     NotesSidebarComponent,
     OpacitySliderComponent,
     OpacityControlComponent,
+    MatTabsModule,
   ],
 })
 export class PlanModule {}

@@ -23,7 +23,9 @@ import { TreatmentsState } from '../treatments.state';
 import { filter } from 'rxjs/operators';
 import { descriptionForAction } from '../prescriptions';
 import { FilterByActionPipe } from './filter-by-action.pipe';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-map-stands-tx-result',
   standalone: true,
@@ -76,19 +78,37 @@ export class MapStandsTxResultComponent implements OnInit {
 
   treatments$ = this.directImpactsStateService.filteredTreatmentTypes$;
 
+  activeMetric$ = this.directImpactsStateService.activeMetric$;
+
   activeStandId$ = this.activeStand$.pipe(
     filter((s): s is MapGeoJSONFeature => s !== null),
     map((stand) => stand.id)
   );
 
+  private point: Point | null = null;
+
   setActiveStand(event: MapMouseEvent) {
-    const feature = this.getMapGeoJSONFeature(event.point);
-    this.directImpactsStateService.setActiveStand(feature);
+    this.point = event.point;
+    this.setActiveStandFromPoint(event.point);
     this.hideTooltip();
+  }
+
+  private setActiveStandFromPoint(point: Point) {
+    const feature = this.getMapGeoJSONFeature(point);
+    if (feature) {
+      this.directImpactsStateService.setActiveStand(feature);
+    }
   }
 
   ngOnInit(): void {
     this.paint = this.generatePaint(DEFAULT_SLOT);
+    this.directImpactsStateService.standsTxSourceLoaded$
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
+        if (this.point) {
+          this.setActiveStandFromPoint(this.point);
+        }
+      });
   }
 
   showTooltip(event: MapMouseEvent) {

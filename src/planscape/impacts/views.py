@@ -1,15 +1,14 @@
 import logging
-from rest_framework import mixins, viewsets, response, status
-from rest_framework.decorators import action
-from rest_framework.pagination import LimitOffsetPagination
+
 from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework.views import Response
 from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import (
+    ImpactVariable,
+    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
-    ProjectAreaTreatmentResult,
+    TreatmentResult,
 )
 from impacts.permissions import (
     TreatmentPlanViewPermission,
@@ -18,25 +17,32 @@ from impacts.permissions import (
 from impacts.serializers import (
     CreateTreatmentPlanSerializer,
     OutputSummarySerializer,
+    StandQuerySerializer,
     SummarySerializer,
     TreatmentPlanListSerializer,
-    TreatmentPlanUpdateSerializer,
     TreatmentPlanSerializer,
-    TreatmentPrescriptionSerializer,
-    TreatmentPrescriptionListSerializer,
-    TreatmentPrescriptionBatchDeleteSerializer,
+    TreatmentPlanUpdateSerializer,
     TreatmentPrescriptionBatchDeleteResponseSerializer,
-    UpsertTreamentPrescriptionSerializer,
+    TreatmentPrescriptionBatchDeleteSerializer,
+    TreatmentPrescriptionListSerializer,
+    TreatmentPrescriptionSerializer,
     TreatmentResultSerializer,
+    UpsertTreamentPrescriptionSerializer,
 )
 from impacts.services import (
     clone_treatment_plan,
     create_treatment_plan,
-    generate_summary,
-    upsert_treatment_prescriptions,
     generate_impact_results_data_to_plot,
+    generate_summary,
+    get_treatment_results_table_data,
+    upsert_treatment_prescriptions,
 )
 from impacts.tasks import async_calculate_persist_impacts_treatment_plan
+from rest_framework import mixins, response, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.views import Response
+
 from planscape.serializers import BaseErrorMessageSerializer
 
 log = logging.getLogger(__name__)
@@ -256,6 +262,33 @@ class TreatmentPlanViewSet(
             tx_px_actions=actions,
         )
         return Response(data=data_to_plot, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        description="Retrieve treatment result information for a specific stand.",
+        responses={
+            200: TreatmentResultSerializer,
+            404: BaseErrorMessageSerializer,
+            400: BaseErrorMessageSerializer,
+        },
+    )
+    @action(
+        detail=True,
+        methods=["get"],
+        filterset_class=None,
+        url_path="stand-treatment-results",
+    )
+    def stand_treatment_results(self, request, pk=None):
+        """
+        Endpoint to retrieve treatment results for a specific stand ID.
+        """
+        serializer = StandQuerySerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        stand = serializer.validated_data["stand_id"]
+
+        treatment_plan = self.get_object()
+        table_data = get_treatment_results_table_data(treatment_plan, stand.id)
+
+        return response.Response(table_data, status=status.HTTP_200_OK)
 
 
 @extend_schema_view(
