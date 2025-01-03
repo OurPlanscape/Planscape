@@ -405,6 +405,7 @@ CELERY_TASK_ROUTES = {
     "planning.tasks.*": {"queue": "forsys"},
     "impacts.tasks.*": {"queue": "impacts"},
     "e2e.tasks.*": {"queue": "default"},
+    "core.tasks.*": {"queue": "default"},
 }
 
 CELERY_ALWAYS_EAGER = config("CELERY_ALWAYS_EAGER", False)
@@ -450,3 +451,8 @@ boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
+
+# Analytics
+ANALYTICS_ENABLED = config("ANALYTICS_ENABLED", default=False)
+GA_TRACKING_ID = config("GA_TRACKING_ID", default="")
+GA_CLIENT_ID = config("GA_CLIENT_ID", default="")
