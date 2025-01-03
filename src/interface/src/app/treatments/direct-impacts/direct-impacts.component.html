@@ -84,10 +84,7 @@
         class="map-panel"
         [ngClass]="{ prescriptions: showTreatmentPrescription$ | async }"
         [paddedContent]="false"
-        [buttons]="[
-          { icon: 'layers', actionName: 'layers' },
-          { icon: 'open_in_full', actionName: 'expand' }
-        ]"
+        [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandMaps()">
         <div panelTitle>{{ mapPanelTitle$ | async }}</div>
         <app-direct-impacts-synced-maps
