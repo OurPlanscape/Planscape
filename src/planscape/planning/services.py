@@ -138,7 +138,7 @@ def union_geojson(uploaded_geojson) -> GEOSGeometry:
 
 def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] = None):
     try:
-        area_name = f"{scenario.name}, Project Area"
+        area_name = f"Project Area"
         if idx is not None:
             area_name += f" {idx}"
 
@@ -153,7 +153,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] 
             "name": area_name,
             "created_by": user_id,
             "scenario": scenario,
-            "data": idx,
+            "data": {"treatment_rank": idx},
         }
         proj_area_obj = ProjectArea.objects.create(**project_area)
 

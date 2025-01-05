@@ -252,6 +252,9 @@ export class MapStandsComponent implements OnChanges, OnInit {
     }
     const standId = this.getStandIdFromStandsLayer(event.point)[0];
     this.selectedStandsState.toggleStand(standId);
+  }
+
+  layerClick() {
     this.treatmentsState.setShowApplyTreatmentsDialog(true);
   }
 
@@ -269,7 +272,10 @@ export class MapStandsComponent implements OnChanges, OnInit {
       this.selectStandsWithinRectangle();
     }
     // if we end up dragging, show treatment apply dialog
-    if (this.isMouseEndEvent(changes['selectEnd'])) {
+    if (
+      this.isMouseEndEvent(changes['selectEnd']) &&
+      this.selectedStandsState.getSelectedStands().length > 0
+    ) {
       this.treatmentsState.setShowApplyTreatmentsDialog(true);
     }
   }
@@ -315,6 +321,9 @@ export class MapStandsComponent implements OnChanges, OnInit {
       // filter out existing stands
       (id) => !this.initialSelectedStands.includes(id)
     );
+    if (newStands.length === 0) {
+      return;
+    }
 
     // Combine the new stands with the existing ones
     const combinedStands = new Set([
