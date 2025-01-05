@@ -153,7 +153,7 @@ def generate_summary(
 ) -> Dict[str, Any]:
     scenario = treatment_plan.scenario
     plan_area = scenario.planning_area
-    stand_size = scenario.configuration["stand_size"]
+    stand_size = scenario.get_stand_size()
     stand_area = STAND_AREA_ACRES[stand_size]
     pa_filter = {"scenario": scenario}
     tp_filter = {"treatment_plan": treatment_plan}
@@ -174,20 +174,18 @@ def generate_summary(
     )
     project_areas = []
     project_area_queryset = ProjectArea.objects.filter(**pa_filter).order_by("name")
-
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
-    stand_size = treatment_plan.scenario.get_stand_size()
     for project in project_area_queryset:
-        stand_project_qs = Stand.objects.within_polygon(
+        stand_project_count = Stand.objects.within_polygon(
             project.geometry, stand_size
-        ).all()
+        ).count()
         project_areas.append(
             {
                 "project_area_id": project.id,
                 "project_area_name": project.name,
-                "total_stand_count": stand_project_qs.count(),
+                "total_stand_count": stand_project_count,
                 "extent": project.geometry.extent,
                 "centroid": json.loads(project.geometry.point_on_surface.json),
                 "prescriptions": [
