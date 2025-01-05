@@ -11,7 +11,7 @@
     [userCanDelete]="userCanDelete()"
     [userCanDuplicate]="userCanDuplicate()"
     (view)="goToTreatment(treatment.id, treatment.status)"
-    (delete)="deleteTreatment(treatment)"
+    (delete)="openDeleteDialog(treatment)"
     (duplicate)="duplicateTreatment(treatment)"
     *ngFor="let treatment of treatments"></sg-treatment-card>
 </div>

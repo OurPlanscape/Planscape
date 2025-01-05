@@ -8,6 +8,9 @@ import {
   canDeleteTreatmentPlan,
   canCloneTreatmentPlan,
 } from '../../permissions';
+import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
+import { take } from 'rxjs';
+import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-treatments-tab',
@@ -26,7 +29,8 @@ export class TreatmentsTabComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private treatmentsService: TreatmentsService,
-    private matSnackBar: MatSnackBar
+    private matSnackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -75,6 +79,7 @@ export class TreatmentsTabComponent implements OnInit {
         );
       },
       error: () => {
+        this.state = 'loaded';
         this.matSnackBar.open(
           `[Error] Cannot delete treatment plan '${treatment.name}'`,
           'Dismiss',
@@ -82,6 +87,26 @@ export class TreatmentsTabComponent implements OnInit {
         );
       },
     });
+  }
+
+  openDeleteDialog(treatment: TreatmentPlan) {
+    const dialogRef: MatDialogRef<DeleteDialogComponent> = this.dialog.open(
+      DeleteDialogComponent,
+      {
+        data: {
+          name: '"' + treatment.name + '"',
+        },
+      }
+    );
+    dialogRef
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((confirmed) => {
+        if (confirmed) {
+          this.state = 'loading';
+          this.deleteTreatment(treatment);
+        }
+      });
   }
 
   duplicateTreatment(treatment: TreatmentPlan) {
