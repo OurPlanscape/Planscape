@@ -15,7 +15,7 @@ export class DirectImpactsMapLegendComponent {
   constructor(private directImpactsStateService: DirectImpactsStateService) {}
 
   readonly SLOT_PALETTES = SLOT_PALETTES;
-  readonly steps = ['-100%', '-50%', '0% (No change)', '50%', '100%'];
+  readonly steps = ['<-100%', '-50%', '0% (No change)', '50%', '>100%'];
   readonly activeSlot$ = this.directImpactsStateService.activeMetric$.pipe(
     map((mapMetric) => mapMetric.slot)
   );
