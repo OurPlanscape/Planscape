@@ -3,7 +3,8 @@
 <div class="chart">
   <canvas
     baseChart
-    [data]="(barChartData$ | async) || undefined"
+    *ngIf="barChartData$ | async; let barChartData"
+    [data]="barChartData"
     [options]="(barChartOptions$ | async) ?? {}"
     [legend]="false"
     [type]="'bar'"></canvas>

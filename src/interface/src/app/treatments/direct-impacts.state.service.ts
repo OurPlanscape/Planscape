@@ -15,7 +15,7 @@ import {
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
 import { Injectable } from '@angular/core';
-import { TreatmentPlan, TreatmentProjectArea } from '../types';
+import { TreatmentProjectArea } from '../types';
 
 @Injectable()
 export class DirectImpactsStateService {
@@ -49,11 +49,6 @@ export class DirectImpactsStateService {
   public filteredTreatmentTypes$ = this._filteredTreatmentTypes$.asObservable();
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
-
-  private _activeTreatmentPlan$ = new BehaviorSubject<TreatmentPlan | null>(
-    null
-  );
-  public activeTreatmentPlan$ = this._activeTreatmentPlan$.asObservable();
 
   private _selectedProjectArea$ = new BehaviorSubject<
     TreatmentProjectArea | 'All'
@@ -93,10 +88,6 @@ export class DirectImpactsStateService {
 
   setActiveStand(standData: MapGeoJSONFeature) {
     this._activeStand$.next(standData);
-  }
-
-  setActiveTreatmentPlan(treatmentPlan: TreatmentPlan) {
-    this._activeTreatmentPlan$.next(treatmentPlan);
   }
 
   setFilteredTreatmentTypes(selection: PrescriptionAction[]) {

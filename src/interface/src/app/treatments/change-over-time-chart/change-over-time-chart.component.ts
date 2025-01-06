@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
@@ -44,7 +44,7 @@ export interface ChangeOverTimeChartItem {
 @Component({
   selector: 'app-change-over-time-chart',
   standalone: true,
-  imports: [NgChartsModule, AsyncPipe],
+  imports: [NgChartsModule, AsyncPipe, NgIf],
   templateUrl: './change-over-time-chart.component.html',
   styleUrl: './change-over-time-chart.component.scss',
 })
