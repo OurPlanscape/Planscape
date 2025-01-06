@@ -169,6 +169,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
+  reportMetrics$ = this.directImpactsStateService.reportMetrics$;
+
   mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
 
   getValues(activeStand: MapGeoJSONFeature) {}

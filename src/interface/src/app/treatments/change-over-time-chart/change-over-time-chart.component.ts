@@ -1,21 +1,14 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import {
-  map,
-  Observable,
-  combineLatest,
-  BehaviorSubject,
-  distinctUntilChanged,
-} from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { SLOT_COLORS, ImpactsMetricSlot, Metric } from '../metrics';
-import { TreatmentsState } from '../treatments.state';
+import { ChartData } from '../../../app/plan/project-areas-metrics/chart-data';
 import { TreatmentPlan, TreatmentProjectArea } from '@types';
 import { TreatmentsService } from '@services/treatments.service';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import deepEqual from 'fast-deep-equal';
+import { UntilDestroy } from '@ngneat/until-destroy';
 
 const baseFont = {
   family: 'Public Sans',
@@ -48,33 +41,15 @@ export interface ChangeOverTimeChartItem {
   templateUrl: './change-over-time-chart.component.html',
   styleUrl: './change-over-time-chart.component.scss',
 })
-export class ChangeOverTimeChartComponent implements OnInit {
+export class ChangeOverTimeChartComponent {
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
-    private treatmentsState: TreatmentsState,
     private treatmentsService: TreatmentsService
   ) {}
 
-  projectAreaChangeData$ = new BehaviorSubject<Record<
-    ImpactsMetricSlot,
-    ChangeOverTimeChartItem[]
-  > | null>(null);
-
-  ngOnInit(): void {
-    combineLatest([
-      this.treatmentsState.treatmentPlan$,
-      this.directImpactsStateService.reportMetrics$?.pipe(
-        distinctUntilChanged((prev, curr) => deepEqual(prev, curr))
-      ),
-      this.directImpactsStateService.selectedProjectArea$,
-    ])
-      .pipe(untilDestroyed(this))
-      .subscribe(([treatmentPlan, metrics, projectArea]) => {
-        if (treatmentPlan) {
-          this.updateChartData(treatmentPlan, metrics, projectArea);
-        }
-      });
-  }
+  @Input() treatmentPlan!: TreatmentPlan | null;
+  @Input() metrics!: Record<ImpactsMetricSlot, Metric> | null;
+  @Input() projectArea!: TreatmentProjectArea | string | null;
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
@@ -152,34 +127,32 @@ export class ChangeOverTimeChartComponent implements OnInit {
       },
     };
 
-  barChartData$ = this.projectAreaChangeData$?.pipe(
-    map((data) => {
-      if (!data) {
-        return undefined;
-      }
-      return {
-        labels: [0, 5, 10, 15, 20],
-        datasets: [
-          {
-            data: data['blue'].map((d) => d.avg_value),
-            backgroundColor: SLOT_COLORS['blue'],
-          },
-          {
-            data: data['purple'].map((d) => d.avg_value),
-            backgroundColor: SLOT_COLORS['purple'],
-          },
-          {
-            data: data['orange'].map((d) => d.avg_value),
-            backgroundColor: SLOT_COLORS['orange'],
-          },
-          {
-            data: data['green'].map((d) => d.avg_value),
-            backgroundColor: SLOT_COLORS['green'],
-          },
-        ],
-      } as ChartConfiguration<'bar'>['data'];
-    })
-  );
+  chartConfiguration(data: Record<any, any>) {
+    if (!data) {
+      return undefined;
+    }
+    return {
+      labels: [0, 5, 10, 15, 20],
+      datasets: [
+        {
+          data: data['blue'].map((d: ChangeOverTimeChartItem) => d.avg_value),
+          backgroundColor: SLOT_COLORS['blue'],
+        },
+        {
+          data: data['purple'].map((d: ChangeOverTimeChartItem) => d.avg_value),
+          backgroundColor: SLOT_COLORS['purple'],
+        },
+        {
+          data: data['orange'].map((d: ChangeOverTimeChartItem) => d.avg_value),
+          backgroundColor: SLOT_COLORS['orange'],
+        },
+        {
+          data: data['green'].map((d: ChangeOverTimeChartItem) => d.avg_value),
+          backgroundColor: SLOT_COLORS['green'],
+        },
+      ],
+    } as ChartConfiguration<'bar'>['data'];
+  }
 
   barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =
     this.directImpactsStateService.activeMetric$?.pipe(
@@ -231,27 +204,33 @@ export class ChangeOverTimeChartComponent implements OnInit {
     return dataBySlot;
   }
 
-  updateChartData(
-    treatmentPlan: TreatmentPlan,
-    metrics: Record<ImpactsMetricSlot, Metric>,
-    projectArea: TreatmentProjectArea | 'All'
-  ) {
-    const metricsArray = Object.values(metrics).map((m) => m.id);
-    let selectedArea = null;
-    if (projectArea !== 'All') {
-      selectedArea = projectArea?.project_area_id;
+  get barChartData$(): Observable<ChartData<'bar', number[], unknown>> | null {
+    if (!this.treatmentPlan || !this.metrics) {
+      return null;
     }
-
+    const metricsArray = Object.values(this.metrics).map((m) => m.id);
+    const metrics = this.metrics;
+    let selectedArea = null;
+    if (this.projectArea !== 'All') {
+      const pa = this.projectArea as TreatmentProjectArea;
+      selectedArea = pa.project_area_id;
+    }
     this.treatmentsService
-      .getTreatmentImpactCharts(treatmentPlan.id, metricsArray, selectedArea)
+      .getTreatmentImpactCharts(
+        this.treatmentPlan?.id,
+        metricsArray,
+        selectedArea
+      )
       .subscribe({
         next: (response: any) => {
-          const chartData = this.convertImpactResultToChartData(
-            response as ImpactsResultData[],
-            metrics
+          return this.chartConfiguration(
+            this.convertImpactResultToChartData(
+              response as ImpactsResultData[],
+              metrics
+            )
           );
-          this.projectAreaChangeData$.next(chartData);
         },
       });
+    return null;
   }
 }
