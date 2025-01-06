@@ -16,6 +16,10 @@ sg-treatment-card {
   justify-content: center;
 }
 
+.loader .loading {
+  margin-top: 5px;
+}
+
 .empty-state {
   color: $color-md-gray;
 
