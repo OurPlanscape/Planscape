@@ -69,12 +69,7 @@
             </mat-form-field>
           </div>
         </div>
-        <app-change-over-time-chart
-          [treatmentPlan]="treatmentPlan$ | async"
-          [metrics]="reportMetrics$ | async"
-          [projectArea]="
-            selectedChartProjectArea$ | async
-          "></app-change-over-time-chart>
+        <app-change-over-time-chart></app-change-over-time-chart>
       </sg-panel>
       <sg-panel
         class="chart-2"

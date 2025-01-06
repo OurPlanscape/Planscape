@@ -3,12 +3,20 @@ import { ChartConfiguration } from 'chart.js';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map, Observable } from 'rxjs';
+import {
+  map,
+  Observable,
+  combineLatest,
+  distinctUntilChanged,
+  switchMap,
+  filter,
+} from 'rxjs';
 import { SLOT_COLORS, ImpactsMetricSlot, Metric } from '../metrics';
-import { ChartData } from '../../../app/plan/project-areas-metrics/chart-data';
-import { TreatmentPlan, TreatmentProjectArea } from '@types';
 import { TreatmentsService } from '@services/treatments.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
+import { TreatmentPlan, TreatmentProjectArea } from '@types';
+import { TreatmentsState } from '../treatments.state';
+import deepEqual from 'fast-deep-equal';
 
 const baseFont = {
   family: 'Public Sans',
@@ -44,12 +52,11 @@ export interface ChangeOverTimeChartItem {
 export class ChangeOverTimeChartComponent {
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
+    private treatmentsState: TreatmentsState,
     private treatmentsService: TreatmentsService
   ) {}
 
-  @Input() treatmentPlan!: TreatmentPlan | null;
   @Input() metrics!: Record<ImpactsMetricSlot, Metric> | null;
-  @Input() projectArea!: TreatmentProjectArea | string | null;
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
@@ -204,33 +211,39 @@ export class ChangeOverTimeChartComponent {
     return dataBySlot;
   }
 
-  get barChartData$(): Observable<ChartData<'bar', number[], unknown>> | null {
-    if (!this.treatmentPlan || !this.metrics) {
-      return null;
-    }
-    const metricsArray = Object.values(this.metrics).map((m) => m.id);
-    const metrics = this.metrics;
-    let selectedArea = null;
-    if (this.projectArea !== 'All') {
-      const pa = this.projectArea as TreatmentProjectArea;
-      selectedArea = pa.project_area_id;
-    }
-    this.treatmentsService
-      .getTreatmentImpactCharts(
-        this.treatmentPlan?.id,
-        metricsArray,
-        selectedArea
-      )
-      .subscribe({
-        next: (response: any) => {
-          return this.chartConfiguration(
-            this.convertImpactResultToChartData(
-              response as ImpactsResultData[],
-              metrics
-            )
-          );
-        },
-      });
-    return null;
-  }
+  barChartData$ = combineLatest([
+    this.treatmentsState.treatmentPlan$,
+    this.directImpactsStateService.reportMetrics$?.pipe(
+      distinctUntilChanged((prev, curr) => deepEqual(prev, curr))
+    ),
+    this.directImpactsStateService.selectedProjectArea$,
+  ]).pipe(
+    filter(
+      (
+        args
+      ): args is [
+        TreatmentPlan,
+        Record<ImpactsMetricSlot, Metric>,
+        TreatmentProjectArea | 'All',
+      ] => !!args[0] && !!args[0].id
+    ),
+    switchMap(([plan, metrics, area]) => {
+      const metricsArray = Object.values(metrics).map((m) => m.id);
+      let selectedArea = null;
+      if (area !== 'All') {
+        selectedArea = area.project_area_id;
+      }
+      return this.treatmentsService
+        .getTreatmentImpactCharts(plan.id, metricsArray, selectedArea)
+        .pipe(
+          map((responseData) => ({ response: responseData, metrics: metrics }))
+        ); // we need the metrics for reviewing calculation, so passing it along here
+    }),
+    map((responseData) => {
+      const resultData = responseData.response as ImpactsResultData[];
+      return this.chartConfiguration(
+        this.convertImpactResultToChartData(resultData, responseData.metrics)
+      );
+    })
+  );
 }
