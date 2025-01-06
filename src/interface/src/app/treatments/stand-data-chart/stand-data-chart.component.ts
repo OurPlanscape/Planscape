@@ -97,6 +97,7 @@ export class StandDataChartComponent {
             // Check if the value has a decimal part
             return value % 1 === 0 ? value.toString() : value.toFixed(1);
           },
+          clamp: true,
         },
       },
       scales: {
@@ -108,7 +109,17 @@ export class StandDataChartComponent {
             font: baseFont as any,
             padding: 24,
             stepSize: 50,
-            callback: (value) => `${value}%`,
+            callback: (value) => {
+              let res = `${value}%`;
+
+              if (value === 100) {
+                res = '>' + res;
+              } else if (value === -100) {
+                res = '<' + res;
+              }
+
+              return res;
+            },
           },
           title: {
             display: false,
