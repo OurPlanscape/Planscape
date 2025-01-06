@@ -17,7 +17,7 @@ import {
 import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
 import { DEFAULT_SLOT, ImpactsMetricSlot, SLOT_PALETTES } from '../metrics';
-import { map } from 'rxjs';
+import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { filter } from 'rxjs/operators';
@@ -85,10 +85,7 @@ export class MapStandsTxResultComponent implements OnInit {
     map((stand) => stand.id)
   );
 
-  private point: Point | null = null;
-
   setActiveStand(event: MapMouseEvent) {
-    this.point = event.point;
     this.setActiveStandFromPoint(event.point);
     this.hideTooltip();
   }
@@ -103,10 +100,22 @@ export class MapStandsTxResultComponent implements OnInit {
   ngOnInit(): void {
     this.paint = this.generatePaint(DEFAULT_SLOT);
     this.directImpactsStateService.standsTxSourceLoaded$
-      .pipe(untilDestroyed(this))
-      .subscribe(() => {
-        if (this.point) {
-          this.setActiveStandFromPoint(this.point);
+      .pipe(
+        untilDestroyed(this),
+        switchMap((s) => this.activeStandId$.pipe(take(1)))
+      )
+      .subscribe((standId) => {
+        if (standId) {
+          const sourceFeatures = this.mapLibreMap.querySourceFeatures(
+            'stands_by_tx_result',
+            {
+              sourceLayer: 'stands_by_tx_result',
+              filter: ['==', ['get', 'id'], standId], // Filter for the specific stand ID
+            }
+          );
+          if (sourceFeatures[0]) {
+            this.directImpactsStateService.setActiveStand(sourceFeatures[0]);
+          }
         }
       });
   }
