@@ -102,24 +102,12 @@ export class StandDataChartComponent {
       },
       scales: {
         y: {
-          min: -100,
-          max: 100,
           ticks: {
             color: '#4A4A4A', // Text color
             font: baseFont as any,
             padding: 24,
             stepSize: 50,
-            callback: (value) => {
-              let res = `${value}%`;
-
-              if (value === 100) {
-                res = '>' + res;
-              } else if (value === -100) {
-                res = '<' + res;
-              }
-
-              return res;
-            },
+            callback: (value) => `${value}%`,
           },
           title: {
             display: false,
