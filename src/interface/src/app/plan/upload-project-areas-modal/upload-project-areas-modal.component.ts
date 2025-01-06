@@ -70,6 +70,7 @@ export class UploadProjectAreasModalComponent {
   readonly FormMessageType = FormMessageType;
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
+  uploadingData = false;
 
   constructor(
     private fb: FormBuilder,
@@ -155,6 +156,7 @@ export class UploadProjectAreasModalComponent {
 
   uploadData() {
     if (this.geometries !== null) {
+      this.uploadingData = true;
       this.planService
         .uploadGeometryForNewScenario(
           this.geometries,
@@ -166,8 +168,11 @@ export class UploadProjectAreasModalComponent {
         .subscribe({
           next: (response) => {
             this.dialogRef.close({ response: response });
+            this.uploadingData = false;
           },
           error: (err: any) => {
+            this.uploadingData = false;
+
             if (!!err.error?.global) {
               this.uploadError = err.error.global.join(' ');
             } else {
