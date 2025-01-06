@@ -68,9 +68,10 @@ export class TreatmentsTabComponent implements OnInit {
   }
 
   deleteTreatment(treatment: TreatmentPlan) {
+    const treatmentList = this.treatments;
+    this.treatments = this.treatments.filter((t) => t.id != treatment.id);
     this.treatmentsService.deleteTreatmentPlan(treatment.id).subscribe({
       next: () => {
-        this.treatments = this.treatments.filter((t) => t.id != treatment.id);
         this.state = this.treatments.length > 0 ? 'loaded' : 'empty';
         this.matSnackBar.open(
           `Deleted Treatment Plan '${treatment.name}'`,
@@ -80,6 +81,7 @@ export class TreatmentsTabComponent implements OnInit {
       },
       error: () => {
         this.state = 'loaded';
+        this.treatments = treatmentList;
         this.matSnackBar.open(
           `[Error] Cannot delete treatment plan '${treatment.name}'`,
           'Dismiss',
@@ -103,7 +105,6 @@ export class TreatmentsTabComponent implements OnInit {
       .pipe(take(1))
       .subscribe((confirmed) => {
         if (confirmed) {
-          this.state = 'loading';
           this.deleteTreatment(treatment);
         }
       });
