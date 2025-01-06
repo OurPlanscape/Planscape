@@ -70,7 +70,7 @@
   display: block;
   width: 100%;
   height: 100%;
-
+  background-color: $color-soft-purple;
   box-sizing: border-box;
 }
 
@@ -150,6 +150,12 @@
   margin: 0 16px;
 }
 
-.create-scenarios-tab-group ::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
-  flex-grow: 0;
+.create-scenarios-tab-group ::ng-deep {
+  .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
+    flex-grow: 0;
+  }
+
+  .mat-mdc-tab-header{
+    background-color: $color-white;
+  }
 }
