@@ -212,7 +212,9 @@ export class ChangeOverTimeChartComponent {
   }
 
   barChartData$ = combineLatest([
-    this.treatmentsState.treatmentPlan$.pipe(filter((plan): plan is TreatmentPlan => !!plan)),
+    this.treatmentsState.treatmentPlan$.pipe(
+      filter((plan): plan is TreatmentPlan => !!plan)
+    ),
     this.directImpactsStateService.reportMetrics$?.pipe(
       distinctUntilChanged((prev, curr) => deepEqual(prev, curr))
     ),
