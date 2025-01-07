@@ -313,6 +313,7 @@ def to_treatment_result(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     year: int,
+    stand_id: int,
     result: Dict[str, Any],
 ) -> TreatmentResult:
     """Transforms the result/output of rasterstats (a zonal statistic record)
@@ -320,14 +321,14 @@ def to_treatment_result(
     """
     instance, created = TreatmentResult.objects.update_or_create(
         treatment_plan_id=treatment_plan.id,
-        stand_id=result.get("stand_id"),
+        stand_id=stand_id,
         variable=variable,
-        aggregation=result.get("aggregation"),
+        aggregation=result.get("aggregation") or ImpactVariableAggregation.MEAN,
         year=year,
         defaults={
             "value": result.get("value"),
             "baseline": result.get("baseline"),
-            "delta": result.get("delta"),
+            "delta": result.get("delta") or 0,
             "action": result.get("action"),
         },
     )
@@ -355,12 +356,14 @@ def calculate_impacts(
     treated_stands = Stand.objects.filter(id__in=treated_stand_ids).with_webmercator()
 
     scenario = treatment_plan.scenario
-    project_area_stands = scenario.get_project_areas_stands().with_webmercator()
+    project_area_stand_ids = scenario.get_project_areas_stands().values_list(
+        "id", flat=True
+    )
 
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
         baseline_metrics = calculate_metrics(
-            stands=project_area_stands,
+            stands=treated_stands,
             variable=variable,
             year=year,
         )
@@ -379,7 +382,7 @@ def calculate_impacts(
     for stand_id in treated_stand_ids:
         baseline_treated_stands_dict[stand_id] = baseline_dict.get(stand_id)
 
-    deltas = calculate_stand_deltas(
+    deltas_dict = calculate_stand_deltas(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
         action=action,
@@ -409,8 +412,14 @@ def calculate_impacts(
     )
     treatment_results = list(
         map(
-            lambda x: to_treatment_result(treatment_plan, variable, year, result=x),
-            list(filter(lambda x: x.get("action") is not None, deltas)),
+            lambda x: to_treatment_result(
+                treatment_plan,
+                variable,
+                year,
+                stand_id=x,
+                result=deltas_dict.get(x) or {},
+            ),
+            project_area_stand_ids,
         )
     )
 
@@ -421,8 +430,8 @@ def calculate_stand_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     action: Optional[TreatmentPrescriptionAction] = None,
-) -> List[Dict[str, Any]]:
-    results = []
+) -> Dict[str, Dict[str, Any]]:
+    results = {}
     for stand_id, baseline in baseline_dict.items():
         action_metric = action_dict.get(stand_id)
         actual_action = action if stand_id in action_dict else None
@@ -437,9 +446,8 @@ def calculate_stand_deltas(
         )
 
         delta = calculate_delta(action_value, baseline_value)
-        results.append(
+        results[stand_id] = dict(
             {
-                "stand_id": stand_id,
                 "action": actual_action,
                 "aggregation": ImpactVariableAggregation.MEAN,
                 "value": action_value,
@@ -464,8 +472,17 @@ def get_calculation_matrix(
     )
     if not years:
         years = AVAILABLE_YEARS
-    variables = list(ImpactVariable)
+    variables = ImpactVariable.get_measurable_impact_variables()
     return list(itertools.product(variables, actions, years))
+
+
+def get_baseline_matrix(
+    years: Optional[Iterable[int]] = None,
+):
+    if not years:
+        years = AVAILABLE_YEARS
+    variables = ImpactVariable.get_baseline_only_impact_variables()
+    return list(itertools.product(variables, years))
 
 
 def calculate_metrics(

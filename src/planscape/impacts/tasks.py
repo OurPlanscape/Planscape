@@ -23,6 +23,7 @@ from impacts.services import (
     calculate_impacts,
     calculate_metrics,
     get_calculation_matrix,
+    get_baseline_matrix,
 )
 from planscape.celery import app
 
@@ -155,8 +156,11 @@ def async_calculate_persist_impacts_treatment_plan(
 
     treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
 
-    matrix = get_calculation_matrix(
+    calculation_matrix = get_calculation_matrix(
         treatment_plan=treatment_plan,
+        years=AVAILABLE_YEARS,
+    )
+    baseline_matrix = get_baseline_matrix(
         years=AVAILABLE_YEARS,
     )
     callback = chain(
@@ -180,13 +184,15 @@ def async_calculate_persist_impacts_treatment_plan(
             action=action,
             year=year,
         )
-        if variable not in [ImpactVariable.FLAME_LENGTH, ImpactVariable.RATE_OF_SPREAD]
-        else async_calculate_baseline_metrics_for_variable_year.si(
+        for variable, action, year in calculation_matrix
+    ]
+    tasks += [
+        async_calculate_baseline_metrics_for_variable_year.si(
             treatment_plan_pk=treatment_plan_pk,
             variable=variable,
             year=year,
         )
-        for variable, action, year in matrix
+        for variable, year in baseline_matrix
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     chord(tasks)(callback)

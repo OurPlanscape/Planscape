@@ -372,8 +372,16 @@ class ImpactVariable(models.TextChoices):
         return list([x for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
-    def get_baseline_only_impact_variables(cls):
+    def get_baseline_only_impact_variables(cls) -> List:
         return [cls.FLAME_LENGTH, cls.RATE_OF_SPREAD]
+
+    @classmethod
+    def get_measurable_impact_variables(cls) -> List:
+        variables = set(cls.choices)
+        for variable in variables:
+            if variable in cls.get_baseline_only_impact_variables():
+                variables.remove(variable)
+        return list(variables)
 
     @classmethod
     def get_datalayer(
