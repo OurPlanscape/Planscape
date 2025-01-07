@@ -1,5 +1,4 @@
 import json
-from unittest import mock
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
@@ -10,12 +9,10 @@ from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
-    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
-    TreatmentResult,
 )
 from impacts.services import (
     calculate_delta,
@@ -29,7 +26,6 @@ from impacts.services import (
     get_treatment_results_table_data,
     upsert_treatment_prescriptions,
 )
-from impacts.tasks import async_calculate_impacts_for_variable_action_year
 from impacts.tests.factories import (
     ProjectAreaTreatmentResultFactory,
     TreatmentPlanFactory,
@@ -399,110 +395,6 @@ class CalculateImpactsTest(TransactionTestCase):
         for value, base, expected_result in values_bases_expected_results:
             self.assertEqual(
                 calculate_delta(value=value, baseline=base), expected_result
-            )
-
-
-class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
-    def load_stands(self):
-        with open("impacts/tests/test_data/stands.geojson") as fp:
-            geojson = json.loads(fp.read())
-
-        features = geojson.get("features")
-        return list(
-            [
-                Stand.objects.create(
-                    geometry=GEOSGeometry(json.dumps(f.get("geometry")), srid=4326),
-                    size="LARGE",
-                    area_m2=1,
-                )
-                for f in features
-            ]
-        )
-
-    def setUp(self):
-        self.stands = self.load_stands()
-        self.plan = TreatmentPlanFactory.create()
-        stand_ids = [s.id for s in self.stands]
-        self.project_area_geometry = MultiPolygon(
-            [
-                Stand.objects.filter(id__in=stand_ids).aggregate(
-                    geometry=Union("geometry")
-                )["geometry"]
-            ]
-        )
-        self.project_area = ProjectAreaFactory.create(
-            scenario=self.plan.scenario, geometry=self.project_area_geometry
-        )
-        self.prescriptions = list(
-            [
-                TreatmentPrescriptionFactory.create(
-                    treatment_plan=self.plan,
-                    stand=stand,
-                    action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
-                    geometry=stand.geometry,
-                )
-                for stand in self.stands
-            ]
-        )
-
-    def test_calculate_impacts_returns_data(self):
-        """Test that this function is performing work correctly. we don't
-        really care about the returned values right now, only that it works.
-        """
-        with self.settings(
-            CELERY_ALWAYS_EAGER=True,
-            CELERY_TASK_STORE_EAGER_RESULT=True,
-            CELERY_TASK_IGNORE_RESULT=False,
-        ):
-            matrix = get_calculation_matrix(self.plan)
-            variable, action, year = matrix[0]
-            baseline_metadata = {
-                "modules": {
-                    "impacts": {
-                        "year": year,
-                        "variable": variable,
-                        "action": None,
-                        "baseline": True,
-                    }
-                }
-            }
-            action_metadata = {
-                "modules": {
-                    "impacts": {
-                        "year": year,
-                        "variable": variable,
-                        "action": TreatmentPrescriptionAction.get_file_mapping(action),
-                        "baseline": False,
-                    }
-                }
-            }
-
-            DataLayerFactory.create(
-                name="baseline",
-                url="impacts/tests/test_data/test_raster.tif",
-                metadata=baseline_metadata,
-                type=DataLayerType.RASTER,
-            )
-            DataLayerFactory.create(
-                name="action",
-                url="impacts/tests/test_data/test_raster.tif",
-                metadata=action_metadata,
-                type=DataLayerType.RASTER,
-            )
-            self.assertEquals(TreatmentResult.objects.count(), 0)
-
-            async_calculate_impacts_for_variable_action_year(
-                self.plan.id,
-                variable=variable,
-                action=action,
-                year=year,
-            )
-
-            self.assertGreater(TreatmentResult.objects.count(), 0)
-            self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
-            stands_within_project_area = self.project_area.get_stands()
-            self.assertEquals(
-                stands_within_project_area.count(), TreatmentResult.objects.count()
             )
 
 

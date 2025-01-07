@@ -2,7 +2,11 @@ import logging
 from typing import Tuple
 from urllib.parse import urljoin
 from celery import chord, chain
+
+import rasterio
 from rasterio.errors import RasterioIOError
+from rasterio.session import AWSSession
+from core.s3 import get_aws_session
 from django.conf import settings
 from django.db import transaction
 from django.core.mail import send_mail
@@ -17,6 +21,7 @@ from impacts.models import (
 )
 from impacts.services import (
     calculate_impacts,
+    calculate_metrics,
     get_calculation_matrix,
 )
 from planscape.celery import app
@@ -55,6 +60,53 @@ def async_calculate_impacts_for_variable_action_year(
         calculate_impacts(
             treatment_plan=treatment_plan, variable=variable, action=action, year=year
         )
+    except (OSError, RasterioIOError) as exc:
+        if self.request.retries >= self.max_retries:
+            log.exception("Task failed on all retries.")
+        else:
+            log.warning("Task failed. Retrying.")
+        raise exc
+    except Exception as exc:
+        log.exception(
+            "Task failed due to an unhandled exception. Not retrying execution."
+        )
+        raise exc
+
+
+@app.task(
+    bind=True, autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5}
+)
+def async_calculate_baseline_metrics_for_variable_year(
+    self,
+    treatment_plan_pk: int,
+    variable: ImpactVariable,
+    year: int,
+):
+    """Calculates baseline metrics for the variable, action year triple.
+
+    :param treatment_plan_pk: _description_
+    :type treatment_plan_pk: int
+    :param variable: _description_
+    :type variable: ImpactVariable
+    :param year: _description_
+    :type year: int
+    :return: _description_
+    :rtype: List[int]
+    """
+    log.info(f"Calculating baseline metrics for {variable}")
+    try:
+        treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+            pk=treatment_plan_pk
+        )
+        stands = treatment_plan.scenario.get_stands().with_webmercator()
+        aws_session = AWSSession(get_aws_session())
+        with rasterio.Env(aws_session):
+            baseline_metrics = calculate_metrics(
+                stands=stands,
+                variable=variable,
+                year=year,
+            )
+        log.info(f"Calculated {baseline_metrics.count()} metrics for {variable}")
     except (OSError, RasterioIOError) as exc:
         if self.request.retries >= self.max_retries:
             log.exception("Task failed on all retries.")
@@ -126,6 +178,12 @@ def async_calculate_persist_impacts_treatment_plan(
             treatment_plan_pk=treatment_plan_pk,
             variable=variable,
             action=action,
+            year=year,
+        )
+        if variable not in [ImpactVariable.FLAME_LENGTH, ImpactVariable.RATE_OF_SPREAD]
+        else async_calculate_baseline_metrics_for_variable_year.si(
+            treatment_plan_pk=treatment_plan_pk,
+            variable=variable,
             year=year,
         )
         for variable, action, year in matrix
