@@ -14,9 +14,9 @@ import {
 import { SLOT_COLORS, ImpactsMetricSlot, Metric } from '../metrics';
 import { TreatmentsService } from '@services/treatments.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
-import { TreatmentPlan, TreatmentProjectArea } from '@types';
 import { TreatmentsState } from '../treatments.state';
 import deepEqual from 'fast-deep-equal';
+import { TreatmentPlan } from '@types';
 
 const baseFont = {
   family: 'Public Sans',
@@ -212,21 +212,12 @@ export class ChangeOverTimeChartComponent {
   }
 
   barChartData$ = combineLatest([
-    this.treatmentsState.treatmentPlan$,
+    this.treatmentsState.treatmentPlan$.pipe(filter((plan): plan is TreatmentPlan => !!plan)),
     this.directImpactsStateService.reportMetrics$?.pipe(
       distinctUntilChanged((prev, curr) => deepEqual(prev, curr))
     ),
     this.directImpactsStateService.selectedProjectArea$,
   ]).pipe(
-    filter(
-      (
-        args
-      ): args is [
-        TreatmentPlan,
-        Record<ImpactsMetricSlot, Metric>,
-        TreatmentProjectArea | 'All',
-      ] => !!args[0] && !!args[0].id
-    ),
     switchMap(([plan, metrics, area]) => {
       const metricsArray = Object.values(metrics).map((m) => m.id);
       let selectedArea = null;
