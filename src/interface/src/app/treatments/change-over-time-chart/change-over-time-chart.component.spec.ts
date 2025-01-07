@@ -16,7 +16,8 @@ describe('ChangeOverTimeChartComponent', () => {
       imports: [ChangeOverTimeChartComponent, HttpClientTestingModule],
       providers: [
         TreatedStandsState,
-        MockProvider(TreatmentsState),
+        MockProvider(TreatmentsState, 
+          {treatmentPlan$: new BehaviorSubject(null)}),
         MockProvider(DirectImpactsStateService, {
           activeStand$: new BehaviorSubject(null),
         }),
