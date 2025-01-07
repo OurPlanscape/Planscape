@@ -178,9 +178,7 @@ def generate_summary(
         geometry=UnionOp("geometry")
     )["geometry"]
     for project in project_area_queryset:
-        stand_project_count = Stand.objects.within_polygon(
-            project.geometry, stand_size
-        ).count()
+        stand_project_count = project.get_stands().count()
         project_areas.append(
             {
                 "project_area_id": project.id,
