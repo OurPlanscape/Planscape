@@ -500,7 +500,10 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
 
             self.assertGreater(TreatmentResult.objects.count(), 0)
             self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
-            self.assertEquals(len(self.stands), TreatmentResult.objects.count())
+            stands_within_project_area = self.project_area.get_stands()
+            self.assertEquals(
+                stands_within_project_area.count(), TreatmentResult.objects.count()
+            )
 
 
 class ImpactResultsDataPlotTest(TransactionTestCase):

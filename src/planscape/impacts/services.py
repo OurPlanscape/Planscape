@@ -356,14 +356,7 @@ def calculate_impacts(
     treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
 
     scenario = treatment_plan.scenario
-    stand_size = scenario.get_stand_size()
-    project_areas = scenario.project_areas
-    project_areas_geometry = project_areas.all().aggregate(
-        geometry=UnionOp("geometry")
-    )["geometry"]
-    stands = Stand.objects.within_polygon(
-        project_areas_geometry, stand_size
-    ).with_webmercator()
+    stands = scenario.get_stands().with_webmercator()
 
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
@@ -523,12 +516,8 @@ def calculate_project_area_deltas(
     """
     # untreated stands just copy the values from baselines
     results = []
-    stand_size = project_area.scenario.get_stand_size()
     stands_in_project_area = list(
-        Stand.objects.within_polygon(project_area.geometry, stand_size).values_list(
-            "id",
-            flat=True,
-        )
+        project_area.get_stands().values_list("id", flat=True)
     )
 
     baseline_dict = {

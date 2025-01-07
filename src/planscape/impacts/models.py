@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Tuple, Type, Union
+from typing import List, Optional, Tuple
 
 from core.models import (
     AliveObjectsManager,
