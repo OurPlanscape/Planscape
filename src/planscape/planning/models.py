@@ -248,7 +248,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         ]
         return {"type": "FeatureCollection", "features": features}
 
-    def get_stands(self) -> QuerySet[Stand]:
+    def get_project_areas_stands(self) -> QuerySet[Stand]:
         project_areas = self.project_areas
         project_areas_geometry = project_areas.all().aggregate(
             geometry=UnionOp("geometry")

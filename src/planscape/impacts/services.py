@@ -352,20 +352,21 @@ def calculate_impacts(
     )
 
     treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
+    treated_stands = Stand.objects.filter(id__in=treated_stand_ids).with_webmercator()
 
     scenario = treatment_plan.scenario
-    stands = scenario.get_stands().with_webmercator()
+    project_area_stands = scenario.get_project_areas_stands().with_webmercator()
 
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
         baseline_metrics = calculate_metrics(
-            stands=stands,
+            stands=project_area_stands,
             variable=variable,
             year=year,
         )
 
         action_metrics = calculate_metrics(
-            stands=stands,
+            stands=treated_stands,
             variable=variable,
             year=year,
             action=action,
@@ -375,10 +376,8 @@ def calculate_impacts(
     action_dict = {m.stand_id: m for m in action_metrics}
 
     baseline_treated_stands_dict = {}
-    action_treated_stands_dict = {}
     for stand_id in treated_stand_ids:
         baseline_treated_stands_dict[stand_id] = baseline_dict.get(stand_id)
-        action_treated_stands_dict[stand_id] = action_dict.get(stand_id)
 
     deltas = calculate_stand_deltas(
         baseline_dict=baseline_dict,
@@ -392,7 +391,7 @@ def calculate_impacts(
             calculate_project_area_deltas(
                 project_area=project_area,
                 baseline_dict=baseline_treated_stands_dict,
-                action_dict=action_treated_stands_dict,
+                action_dict=action_dict,
                 action=action,
             )
         )

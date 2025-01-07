@@ -98,7 +98,7 @@ def async_calculate_baseline_metrics_for_variable_year(
         treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
             pk=treatment_plan_pk
         )
-        stands = treatment_plan.scenario.get_stands().with_webmercator()
+        stands = treatment_plan.scenario.get_project_areas_stands().with_webmercator()
         aws_session = AWSSession(get_aws_session())
         with rasterio.Env(aws_session):
             baseline_metrics = calculate_metrics(
