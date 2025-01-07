@@ -363,10 +363,6 @@ def calculate_impacts(
             variable=variable,
             year=year,
         )
-        if variable in [ImpactVariable.FLAME_LENGTH, ImpactVariable.RATE_OF_SPREAD]:
-            # Flame length and rate of spread are special cases
-            # where action metrics cannot be calculated.
-            return ([],[])
 
         action_metrics = calculate_metrics(
             stands=stands,
