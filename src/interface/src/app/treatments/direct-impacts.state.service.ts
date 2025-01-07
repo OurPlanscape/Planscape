@@ -14,10 +14,8 @@ import {
 } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
-import { Injectable } from '@angular/core';
 import { TreatmentProjectArea } from '../types';
 
-@Injectable()
 export class DirectImpactsStateService {
   private _reportMetrics$ = new BehaviorSubject<
     Record<ImpactsMetricSlot, Metric>
