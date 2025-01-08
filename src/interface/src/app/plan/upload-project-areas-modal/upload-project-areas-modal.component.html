@@ -5,7 +5,9 @@
   secondaryButtonText="Cancel"
   (clickedSecondary)="closeModal()"
   (clickedClose)="closeModal()"
-  (clickedPrimary)="handleCreateButton()">
+  (clickedPrimary)="handleCreateButton()"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="uploadingData">
   <div modalBodyContent>
     <sg-modal-info
       infoType="info"

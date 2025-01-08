@@ -24,6 +24,8 @@ import { MetricsService } from '@services/metrics.service';
 import { processScenarioResultsToChartData } from '../scenario-helpers';
 import { TreatmentsService } from '@services/treatments.service';
 import { canAddTreatmentPlan } from '../permissions';
+import { MatDialog } from '@angular/material/dialog';
+import { CreateTreatmentDialogComponent } from './create-treatment-dialog/create-treatment-dialog.component';
 
 enum ScenarioTabs {
   CONFIG,
@@ -84,7 +86,8 @@ export class CreateScenariosComponent implements OnInit {
     private featureService: FeatureService,
     private goalOverlayService: GoalOverlayService,
     private metricsService: MetricsService,
-    private treatmentsService: TreatmentsService
+    private treatmentsService: TreatmentsService,
+    private dialog: MatDialog
   ) {}
 
   createForms() {
@@ -353,7 +356,19 @@ export class CreateScenariosComponent implements OnInit {
     return this.showTreatmentsTab && !!plan && canAddTreatmentPlan(plan);
   }
 
-  createTreatment() {
+  openTreatmentDialog() {
+    this.dialog
+      .open(CreateTreatmentDialogComponent)
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((name) => {
+        if (name) {
+          this.createTreatment(name);
+        }
+      });
+  }
+
+  createTreatment(name: string) {
     this.creatingTreatment = true;
     const scenarioId = this.scenarioId;
     if (!scenarioId) {
@@ -361,7 +376,7 @@ export class CreateScenariosComponent implements OnInit {
     }
 
     this.treatmentsService
-      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .createTreatmentPlan(Number(scenarioId), name)
       .subscribe({
         next: (result) => {
           this.goToTreatment(result.id);

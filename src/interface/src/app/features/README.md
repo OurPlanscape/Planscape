@@ -57,10 +57,6 @@ fixture.detectChanges();
 
 ## Flag Descriptions
 
-### scenario_constraints
-
-This flag will display the Max slope, Distance from roads, and Stand size inputs on the Scenario configuration page.
-
 ### show_future_control_panel
 
 This flag will enable future condition options in the map control panel for all regions. A region-specific flag, "future_data", can be found for each
@@ -108,7 +104,6 @@ for angular tests to pass. You can start with this, but later enable settings.
 
 ```
 {
-  "scenario_constraints": false,
   "show_future_control_panel": false,
   "show_translated_control_panel": false
   "testFalseFeature": false,

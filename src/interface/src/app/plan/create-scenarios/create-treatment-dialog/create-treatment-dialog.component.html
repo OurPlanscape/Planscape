@@ -1,0 +1,35 @@
+<h3 mat-dialog-title class="title">Name Your Treatment Plan</h3>
+<form [formGroup]="treatmentForm" (ngSubmit)="submit()">
+  <mat-dialog-content>
+    <mat-form-field class="name-field">
+      <mat-label>Name</mat-label>
+      <input matInput formControlName="treatmentName" />
+    </mat-form-field>
+    <mat-error
+      *ngIf="
+        treatmentForm.get('treatmentName')?.touched &&
+        treatmentForm.get('treatmentName')?.invalid
+      ">
+      Treatment name is required.
+    </mat-error>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button
+      mat-button
+      color="primary"
+      type="button"
+      (click)="cancel()"
+      [disabled]="submitting">
+      CANCEL
+    </button>
+    <button
+      mat-button
+      type="submit"
+      color="primary"
+      data-id="save"
+      [disabled]="submitting || treatmentForm.get('treatmentName')?.invalid">
+      <mat-spinner *ngIf="submitting" diameter="24"></mat-spinner>
+      <span *ngIf="!submitting">SAVE</span>
+    </button>
+  </mat-dialog-actions>
+</form>

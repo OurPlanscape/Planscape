@@ -3,10 +3,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TreatmentsTabComponent } from './treatments-tab.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsService } from '@services/treatments.service';
-import { MockProvider } from 'ng-mocks';
+import { MockProvider, MockProviders } from 'ng-mocks';
 import { MatLegacySnackBarModule } from '@angular/material/legacy-snack-bar';
 import { of } from 'rxjs';
 import { MatIconModule } from '@angular/material/icon';
+import { MatDialog } from '@angular/material/dialog';
 
 describe('TreatmentsTabComponent', () => {
   let component: TreatmentsTabComponent;
@@ -17,6 +18,7 @@ describe('TreatmentsTabComponent', () => {
       imports: [RouterTestingModule, MatLegacySnackBarModule, MatIconModule],
       declarations: [TreatmentsTabComponent],
       providers: [
+        MockProviders(MatDialog),
         MockProvider(TreatmentsService, {
           listTreatmentPlans: () => of([]),
         }),

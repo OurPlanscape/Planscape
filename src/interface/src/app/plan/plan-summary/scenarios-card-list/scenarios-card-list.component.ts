@@ -19,6 +19,9 @@ import { TreatmentsService } from '@services/treatments.service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { OverlayLoaderComponent } from '../../../../styleguide/overlay-loader/overlay-loader.component';
 import { OverlayLoaderService } from '@services/overlay-loader.service';
+import { CreateTreatmentDialogComponent } from '../../create-scenarios/create-treatment-dialog/create-treatment-dialog.component';
+import { take } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -43,7 +46,8 @@ export class ScenariosCardListComponent {
     private treatmentsService: TreatmentsService,
     private router: Router,
     private route: ActivatedRoute,
-    private overlayLoaderService: OverlayLoaderService
+    private overlayLoaderService: OverlayLoaderService,
+    private dialog: MatDialog
   ) {}
 
   treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
@@ -109,16 +113,28 @@ export class ScenariosCardListComponent {
     }
   }
 
-  openNewTreatment(event: Event, s: Scenario) {
+  openNewTreatmentDialog(event: Event, s: Scenario) {
     event.stopPropagation();
     const scenarioId = s.id;
     if (!scenarioId) {
       return;
     }
+    this.dialog
+      .open(CreateTreatmentDialogComponent)
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((name) => {
+        if (name) {
+          this.createTreatmentPlan(scenarioId, name);
+        }
+      });
+  }
+
+  createTreatmentPlan(scenarioId: string, name: string) {
     this.overlayLoaderService.showLoader();
 
     this.treatmentsService
-      .createTreatmentPlan(Number(scenarioId), 'New Treatment Plan')
+      .createTreatmentPlan(Number(scenarioId), name)
       .subscribe({
         next: (result) => {
           this.overlayLoaderService.hideLoader();

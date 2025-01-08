@@ -1,5 +1,5 @@
 <div class="loader" *ngIf="state === 'loading'">
-  <mat-spinner diameter="48"></mat-spinner>
+  <mat-spinner class="loading" diameter="48"></mat-spinner>
 </div>
 
 <div class="treatments" *ngIf="state === 'loaded'">
@@ -11,7 +11,7 @@
     [userCanDelete]="userCanDelete()"
     [userCanDuplicate]="userCanDuplicate()"
     (view)="goToTreatment(treatment.id, treatment.status)"
-    (delete)="deleteTreatment(treatment)"
+    (delete)="openDeleteDialog(treatment)"
     (duplicate)="duplicateTreatment(treatment)"
     *ngFor="let treatment of treatments"></sg-treatment-card>
 </div>

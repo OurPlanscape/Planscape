@@ -3,7 +3,6 @@ import {
   combineLatest,
   map,
   Observable,
-  of,
   switchMap,
 } from 'rxjs';
 import {
@@ -15,6 +14,7 @@ import {
 } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
+import { TreatmentProjectArea } from '../types';
 
 export class DirectImpactsStateService {
   private _reportMetrics$ = new BehaviorSubject<
@@ -48,8 +48,10 @@ export class DirectImpactsStateService {
   private _activeStand$ = new BehaviorSubject<MapGeoJSONFeature | null>(null);
   public activeStand$ = this._activeStand$.asObservable();
 
-  // todo: placeholder to fill once we have project area filter
-  projectArea$ = of('All Project Areas');
+  private _selectedProjectArea$ = new BehaviorSubject<
+    TreatmentProjectArea | 'All'
+  >('All');
+  public selectedProjectArea$ = this._selectedProjectArea$.asObservable();
 
   private _showTreatmentPrescription$ = new BehaviorSubject(false);
   public showTreatmentPrescription$ =
@@ -60,17 +62,27 @@ export class DirectImpactsStateService {
 
   mapPanelTitle$ = combineLatest([
     this.activeMetric$,
-    this.projectArea$,
+    this._selectedProjectArea$,
     this.showTreatmentPrescription$,
   ]).pipe(
-    map(([activeMetric, pa, showTreatment]) =>
-      showTreatment
+    map(([activeMetric, pa, showTreatment]) => {
+      let selectedAreaString = '';
+      if (pa === 'All') {
+        selectedAreaString = 'All Project areas';
+      } else {
+        selectedAreaString = `${pa.project_area_name}`;
+      }
+      return showTreatment
         ? 'Applied Treatment Prescription'
-        : `${activeMetric.metric.label} for ${pa}`
-    )
+        : `${activeMetric.metric.label} for ${selectedAreaString}`;
+    })
   );
 
   constructor() {}
+
+  setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
+    this._selectedProjectArea$.next(projectArea);
+  }
 
   setActiveStand(standData: MapGeoJSONFeature) {
     this._activeStand$.next(standData);
