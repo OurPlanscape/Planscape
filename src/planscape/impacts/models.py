@@ -377,11 +377,10 @@ class ImpactVariable(models.TextChoices):
 
     @classmethod
     def get_measurable_impact_variables(cls) -> List:
-        variables = set(cls.choices)
-        for variable in variables:
-            if variable in cls.get_baseline_only_impact_variables():
-                variables.remove(variable)
-        return list(variables)
+        variables = list(cls)
+        for baseline_variable in cls.get_baseline_only_impact_variables():
+            variables.remove(baseline_variable)
+        return variables
 
     @classmethod
     def get_datalayer(
