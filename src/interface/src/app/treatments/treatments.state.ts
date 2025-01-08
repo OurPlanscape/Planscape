@@ -78,6 +78,7 @@ export class TreatmentsState {
     shareReplay(1)
   );
 
+  // determine navstate values based on various state conditions
   navState$ = combineLatest([
     this.activeProjectArea$,
     this.summary$,
@@ -86,12 +87,11 @@ export class TreatmentsState {
     map(([projectArea, summary, treatmentPlan]) => {
       if (!summary) {
         return {
-          currentView: 'Treatment Plan',
-          currentRecordName: treatmentPlan?.name ?? '',
+          currentView: '',
+          currentRecordName: '',
           backLink: '',
         };
       }
-      // determine navstate based on various conditions
       if (projectArea) {
         // if we are currently viewing a Project Area
         return {
@@ -99,19 +99,34 @@ export class TreatmentsState {
           currentRecordName: projectArea.project_area_name,
           backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`,
         };
-      } // if we are currently viewing a Treatment Plan
-      else if (!!treatmentPlan && !!treatmentPlan.name) {
+      } else if (
+        //  Impacts Planning - TODO: is there a cleaner/definitive way to determine this state? by route?
+        !!treatmentPlan &&
+        !!treatmentPlan.name &&
+        treatmentPlan.status === 'SUCCESS'
+      ) {
+        return {
+          currentView: 'Direct Treatment Impacts',
+          currentRecordName: treatmentPlan.name,
+          backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
+        };
+      } else if (
+        // if we are currently viewing a Treatment Plan
+        !!treatmentPlan &&
+        !!treatmentPlan.name &&
+        treatmentPlan.status !== 'SUCCESS'
+      ) {
         return {
           currentView: 'Treatment Plan',
           currentRecordName: treatmentPlan.name,
           backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
         };
       }
-      // TODO: determine states for Impacts Planning
+      // TODO: can we have a default?
       return {
-        currentView: 'Treatment',
-        currentRecordName: 'ok',
-        backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
+        currentView: '',
+        currentRecordName: '',
+        backLink: '',
       };
     })
   );

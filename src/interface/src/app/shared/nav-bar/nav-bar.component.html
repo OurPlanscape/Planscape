@@ -18,6 +18,7 @@
   <section class="nav-heading" *ngIf="navState">
     <button mat-icon-button aria-label="back">
       <mat-icon
+        *ngIf="navState.backLink !== ''"
         class="back-btn"
         [routerLink]="navState.backLink"
         [queryParams]="params"
@@ -25,7 +26,9 @@
         >arrow_back
       </mat-icon>
     </button>
-    <div class="current-page">
+    <div
+      class="current-page"
+      *ngIf="navState.currentView && navState.currentRecordName">
       {{ navState.currentView + ': ' + navState.currentRecordName }}
     </div>
   </section>
