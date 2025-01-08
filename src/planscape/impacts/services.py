@@ -178,9 +178,7 @@ def generate_summary(
         geometry=UnionOp("geometry")
     )["geometry"]
     for project in project_area_queryset:
-        stand_project_count = Stand.objects.within_polygon(
-            project.geometry, stand_size
-        ).count()
+        stand_project_count = project.get_stands().count()
         project_areas.append(
             {
                 "project_area_id": project.id,
@@ -315,22 +313,25 @@ def to_treatment_result(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     year: int,
-    result: Dict[str, Any],
+    stand_id: int,
+    result: Optional[Dict[str, Any]] = None,
 ) -> TreatmentResult:
     """Transforms the result/output of rasterstats (a zonal statistic record)
     into a TreamentResult
     """
     instance, created = TreatmentResult.objects.update_or_create(
         treatment_plan_id=treatment_plan.id,
-        stand_id=result.get("stand_id"),
+        stand_id=stand_id,
         variable=variable,
-        aggregation=result.get("aggregation"),
+        aggregation=result.get("aggregation")
+        if result
+        else ImpactVariableAggregation.MEAN,
         year=year,
         defaults={
-            "value": result.get("value"),
-            "baseline": result.get("baseline"),
-            "delta": result.get("delta"),
-            "action": result.get("action"),
+            "value": result.get("value") if result else None,
+            "baseline": result.get("baseline") if result else None,
+            "delta": result.get("delta") if result else 0,
+            "action": result.get("action") if result else None,
         },
     )
     return instance
@@ -353,18 +354,24 @@ def calculate_impacts(
         "project_area",
     )
 
-    stand_ids = prescriptions.values_list("stand_id", flat=True)
-    stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
+    treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
+    treated_stands = Stand.objects.filter(id__in=treated_stand_ids).with_webmercator()
+
+    scenario = treatment_plan.scenario
+    project_area_stand_ids = scenario.get_project_areas_stands().values_list(
+        "id", flat=True
+    )
+
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
         baseline_metrics = calculate_metrics(
-            stands=stands,
+            stands=treated_stands,
             variable=variable,
             year=year,
         )
 
         action_metrics = calculate_metrics(
-            stands=stands,
+            stands=treated_stands,
             variable=variable,
             year=year,
             action=action,
@@ -373,7 +380,11 @@ def calculate_impacts(
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
 
-    deltas = calculate_stand_deltas(
+    baseline_treated_stands_dict = {}
+    for stand_id in treated_stand_ids:
+        baseline_treated_stands_dict[stand_id] = baseline_dict.get(stand_id)
+
+    deltas_dict = calculate_stand_deltas(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
         action=action,
@@ -384,7 +395,7 @@ def calculate_impacts(
         project_area_deltas.extend(
             calculate_project_area_deltas(
                 project_area=project_area,
-                baseline_dict=baseline_dict,
+                baseline_dict=baseline_treated_stands_dict,
                 action_dict=action_dict,
                 action=action,
             )
@@ -401,10 +412,21 @@ def calculate_impacts(
             project_area_deltas,
         )
     )
+
+    # It iterates over all stands within the project areas
+    # and creates a TreatmentResult for each stand.
+    # If the stand is not treated (no delta calculated), it
+    # will create a TreatmentResult with delta=0.
     treatment_results = list(
         map(
-            lambda x: to_treatment_result(treatment_plan, variable, year, result=x),
-            list(filter(lambda x: x.get("action") is not None, deltas)),
+            lambda x: to_treatment_result(
+                treatment_plan,
+                variable,
+                year,
+                stand_id=x,
+                result=deltas_dict.get(x),
+            ),
+            project_area_stand_ids,
         )
     )
 
@@ -415,8 +437,8 @@ def calculate_stand_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     action: Optional[TreatmentPrescriptionAction] = None,
-) -> List[Dict[str, Any]]:
-    results = []
+) -> Dict[str, Dict[str, Any]]:
+    results = {}
     for stand_id, baseline in baseline_dict.items():
         action_metric = action_dict.get(stand_id)
         actual_action = action if stand_id in action_dict else None
@@ -431,9 +453,8 @@ def calculate_stand_deltas(
         )
 
         delta = calculate_delta(action_value, baseline_value)
-        results.append(
+        results[stand_id] = dict(
             {
-                "stand_id": stand_id,
                 "action": actual_action,
                 "aggregation": ImpactVariableAggregation.MEAN,
                 "value": action_value,
@@ -458,8 +479,17 @@ def get_calculation_matrix(
     )
     if not years:
         years = AVAILABLE_YEARS
-    variables = list(ImpactVariable)
+    variables = ImpactVariable.get_measurable_impact_variables()
     return list(itertools.product(variables, actions, years))
+
+
+def get_baseline_matrix(
+    years: Optional[Iterable[int]] = None,
+):
+    if not years:
+        years = AVAILABLE_YEARS
+    variables = ImpactVariable.get_baseline_only_impact_variables()
+    return list(itertools.product(variables, years))
 
 
 def calculate_metrics(
@@ -507,12 +537,8 @@ def calculate_project_area_deltas(
     """
     # untreated stands just copy the values from baselines
     results = []
-    stand_size = project_area.scenario.get_stand_size()
     stands_in_project_area = list(
-        Stand.objects.within_polygon(project_area.geometry, stand_size).values_list(
-            "id",
-            flat=True,
-        )
+        project_area.get_stands().values_list("id", flat=True)
     )
 
     baseline_dict = {

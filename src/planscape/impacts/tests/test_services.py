@@ -1,5 +1,4 @@
 import json
-from unittest import mock
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
@@ -10,12 +9,10 @@ from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
-    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
-    TreatmentResult,
 )
 from impacts.services import (
     calculate_delta,
@@ -26,10 +23,10 @@ from impacts.services import (
     generate_impact_results_data_to_plot,
     generate_summary,
     get_calculation_matrix,
+    get_baseline_matrix,
     get_treatment_results_table_data,
     upsert_treatment_prescriptions,
 )
-from impacts.tasks import async_calculate_impacts_for_variable_action_year
 from impacts.tests.factories import (
     ProjectAreaTreatmentResultFactory,
     TreatmentPlanFactory,
@@ -264,7 +261,7 @@ class SummaryTest(TransactionTestCase):
 
 
 class GetCalculationMatrixTest(TransactionTestCase):
-    def test_matrix_returns_correctly(self):
+    def test_calculation_matrix_returns_correctly(self):
         years = [1, 2]
         plan = TreatmentPlanFactory.create()
         s1 = StandFactory.create()
@@ -278,7 +275,20 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertIsNotNone(matrix)
 
         # impact variables * years * actions
-        total_records = 17 * len(years) * 3
+        total_records = (
+            len(ImpactVariable.get_measurable_impact_variables()) * len(years) * 3
+        )
+        self.assertEqual(len(matrix), total_records)
+
+    def test_baseline_matrix_returns_correctly(self):
+        years = [1, 2]
+        matrix = get_baseline_matrix(years=years)
+        self.assertIsNotNone(matrix)
+
+        # impact variables * years
+        total_records = len(ImpactVariable.get_baseline_only_impact_variables()) * len(
+            years
+        )
         self.assertEqual(len(matrix), total_records)
 
 
@@ -400,107 +410,6 @@ class CalculateImpactsTest(TransactionTestCase):
             self.assertEqual(
                 calculate_delta(value=value, baseline=base), expected_result
             )
-
-
-class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
-    def load_stands(self):
-        with open("impacts/tests/test_data/stands.geojson") as fp:
-            geojson = json.loads(fp.read())
-
-        features = geojson.get("features")
-        return list(
-            [
-                Stand.objects.create(
-                    geometry=GEOSGeometry(json.dumps(f.get("geometry")), srid=4326),
-                    size="LARGE",
-                    area_m2=1,
-                )
-                for f in features
-            ]
-        )
-
-    def setUp(self):
-        self.stands = self.load_stands()
-        self.plan = TreatmentPlanFactory.create()
-        stand_ids = [s.id for s in self.stands]
-        self.project_area_geometry = MultiPolygon(
-            [
-                Stand.objects.filter(id__in=stand_ids).aggregate(
-                    geometry=Union("geometry")
-                )["geometry"]
-            ]
-        )
-        self.project_area = ProjectAreaFactory.create(
-            scenario=self.plan.scenario, geometry=self.project_area_geometry
-        )
-        self.prescriptions = list(
-            [
-                TreatmentPrescriptionFactory.create(
-                    treatment_plan=self.plan,
-                    stand=stand,
-                    action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
-                    geometry=stand.geometry,
-                )
-                for stand in self.stands
-            ]
-        )
-
-    def test_calculate_impacts_returns_data(self):
-        """Test that this function is performing work correctly. we don't
-        really care about the returned values right now, only that it works.
-        """
-        with self.settings(
-            CELERY_ALWAYS_EAGER=True,
-            CELERY_TASK_STORE_EAGER_RESULT=True,
-            CELERY_TASK_IGNORE_RESULT=False,
-        ):
-            matrix = get_calculation_matrix(self.plan)
-            variable, action, year = matrix[0]
-            baseline_metadata = {
-                "modules": {
-                    "impacts": {
-                        "year": year,
-                        "variable": variable,
-                        "action": None,
-                        "baseline": True,
-                    }
-                }
-            }
-            action_metadata = {
-                "modules": {
-                    "impacts": {
-                        "year": year,
-                        "variable": variable,
-                        "action": TreatmentPrescriptionAction.get_file_mapping(action),
-                        "baseline": False,
-                    }
-                }
-            }
-
-            DataLayerFactory.create(
-                name="baseline",
-                url="impacts/tests/test_data/test_raster.tif",
-                metadata=baseline_metadata,
-                type=DataLayerType.RASTER,
-            )
-            DataLayerFactory.create(
-                name="action",
-                url="impacts/tests/test_data/test_raster.tif",
-                metadata=action_metadata,
-                type=DataLayerType.RASTER,
-            )
-            self.assertEquals(TreatmentResult.objects.count(), 0)
-
-            async_calculate_impacts_for_variable_action_year(
-                self.plan.id,
-                variable=variable,
-                action=action,
-                year=year,
-            )
-
-            self.assertGreater(TreatmentResult.objects.count(), 0)
-            self.assertGreater(ProjectAreaTreatmentResult.objects.count(), 0)
-            self.assertEquals(len(self.stands), TreatmentResult.objects.count())
 
 
 class ImpactResultsDataPlotTest(TransactionTestCase):

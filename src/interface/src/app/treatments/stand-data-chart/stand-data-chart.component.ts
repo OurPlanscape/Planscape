@@ -97,12 +97,11 @@ export class StandDataChartComponent {
             // Check if the value has a decimal part
             return value % 1 === 0 ? value.toString() : value.toFixed(1);
           },
+          clamp: true,
         },
       },
       scales: {
         y: {
-          min: -100,
-          max: 100,
           ticks: {
             color: '#4A4A4A', // Text color
             font: baseFont as any,
