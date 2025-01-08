@@ -314,7 +314,7 @@ def to_treatment_result(
     variable: ImpactVariable,
     year: int,
     stand_id: int,
-    result: Dict[str, Any],
+    result: Optional[Dict[str, Any]] = None,
 ) -> TreatmentResult:
     """Transforms the result/output of rasterstats (a zonal statistic record)
     into a TreamentResult
@@ -323,13 +323,15 @@ def to_treatment_result(
         treatment_plan_id=treatment_plan.id,
         stand_id=stand_id,
         variable=variable,
-        aggregation=result.get("aggregation") or ImpactVariableAggregation.MEAN,
+        aggregation=result.get("aggregation")
+        if result
+        else ImpactVariableAggregation.MEAN,
         year=year,
         defaults={
-            "value": result.get("value"),
-            "baseline": result.get("baseline"),
-            "delta": result.get("delta") or 0,
-            "action": result.get("action"),
+            "value": result.get("value") if result else None,
+            "baseline": result.get("baseline") if result else None,
+            "delta": result.get("delta") if result else 0,
+            "action": result.get("action") if result else None,
         },
     )
     return instance
@@ -422,7 +424,7 @@ def calculate_impacts(
                 variable,
                 year,
                 stand_id=x,
-                result=deltas_dict.get(x) or {},
+                result=deltas_dict.get(x),
             ),
             project_area_stand_ids,
         )
