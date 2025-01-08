@@ -11,7 +11,12 @@ import {
   switchMap,
   filter,
 } from 'rxjs';
-import { SLOT_COLORS, ImpactsMetricSlot, Metric } from '../metrics';
+import {
+  SLOT_COLORS,
+  ImpactsMetricSlot,
+  Metric,
+  SLOT_PALETTES,
+} from '../metrics';
 import { TreatmentsService } from '@services/treatments.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { TreatmentsState } from '../treatments.state';
@@ -144,18 +149,22 @@ export class ChangeOverTimeChartComponent {
         {
           data: data['blue'].map((d: ChangeOverTimeChartItem) => d.avg_value),
           backgroundColor: SLOT_COLORS['blue'],
+          hoverBackgroundColor: SLOT_PALETTES['blue'][0],
         },
         {
           data: data['purple'].map((d: ChangeOverTimeChartItem) => d.avg_value),
           backgroundColor: SLOT_COLORS['purple'],
+          hoverBackgroundColor: SLOT_PALETTES['purple'][0],
         },
         {
           data: data['orange'].map((d: ChangeOverTimeChartItem) => d.avg_value),
           backgroundColor: SLOT_COLORS['orange'],
+          hoverBackgroundColor: SLOT_PALETTES['orange'][0],
         },
         {
           data: data['green'].map((d: ChangeOverTimeChartItem) => d.avg_value),
           backgroundColor: SLOT_COLORS['green'],
+          hoverBackgroundColor: SLOT_PALETTES['green'][0],
         },
       ],
     } as ChartConfiguration<'bar'>['data'];
