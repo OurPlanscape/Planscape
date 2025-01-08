@@ -264,7 +264,7 @@ class TreatmentPlanViewSet(
         return Response(data=data_to_plot, status=status.HTTP_200_OK)
 
     @extend_schema(
-        description="Retrieve treatment result information for a specific stand.",
+        description="Retrieve treatment result information for a specific stand. id(path) is the treatment plan id, and stand_id(query) is the stand id.",
         responses={
             200: TreatmentResultSerializer,
             404: BaseErrorMessageSerializer,
