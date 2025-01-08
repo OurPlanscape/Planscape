@@ -1,20 +1,4 @@
 <div class="nav-bar mat-elevation-z2">
-  <section class="breadcrumb" *ngIf="breadcrumbs?.length && !navState">
-    <a
-      [routerLink]="['/home']"
-      [queryParams]="params"
-      queryParamsHandling="merge"
-      >{{ firstBreadcrumb$ | async }}</a
-    >
-    <ng-container *ngFor="let breadcrumb of breadcrumbs">
-      /
-      <a [routerLink]="breadcrumb.path" *ngIf="breadcrumb.path">
-        {{ breadcrumb.name }}</a
-      >
-      <span *ngIf="!breadcrumb.path">{{ breadcrumb.name }}</span>
-    </ng-container>
-  </section>
-
   <section class="nav-heading" *ngIf="navState">
     <button mat-icon-button aria-label="back">
       <mat-icon
