@@ -11,7 +11,12 @@ import {
   switchMap,
   filter,
 } from 'rxjs';
-import { SLOT_COLORS, ImpactsMetricSlot, Metric, SLOT_PALETTES } from '../metrics';
+import {
+  SLOT_COLORS,
+  ImpactsMetricSlot,
+  Metric,
+  SLOT_PALETTES,
+} from '../metrics';
 import { TreatmentsService } from '@services/treatments.service';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { TreatmentsState } from '../treatments.state';
@@ -54,7 +59,7 @@ export class ChangeOverTimeChartComponent {
     private directImpactsStateService: DirectImpactsStateService,
     private treatmentsState: TreatmentsState,
     private treatmentsService: TreatmentsService
-  ) { }
+  ) {}
 
   @Input() metrics!: Record<ImpactsMetricSlot, Metric> | null;
 
