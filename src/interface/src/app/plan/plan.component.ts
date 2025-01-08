@@ -91,10 +91,6 @@ export class PlanComponent implements OnInit {
     })
   );
 
-  //TODO: combine these into one object?
-  currentRecordName$ = new BehaviorSubject<string>('');
-  backLink$ = new BehaviorSubject<string>('');
-
   navState$ = combineLatest([
     this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
     this.scenarioName$,
@@ -103,11 +99,6 @@ export class PlanComponent implements OnInit {
       const path = this.getPathFromSnapshot();
       const scenarioId = this.route.children[0]?.snapshot.params['id'];
 
-      /* here, we are in one of two states:
-        'Planning Area' or 'Scenario'
-        if we're on the planning area, back goes to home
-        if we'e on the scenario, back goes to the planning area
-      */
       if (path === 'config' && !scenarioId && !scenarioName) {
         return {
           currentView: 'Scenario',
