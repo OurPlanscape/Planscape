@@ -30,7 +30,6 @@ import {
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
 import { PlanStateService } from '@services';
-
 /**
  * Class that holds data of the current state, and makes it available
  * through observables.
@@ -79,38 +78,41 @@ export class TreatmentsState {
     shareReplay(1)
   );
 
-  breadcrumbs$ = combineLatest([
+  navState$ = combineLatest([
     this.activeProjectArea$,
     this.summary$,
     this.treatmentPlan$,
   ]).pipe(
     map(([projectArea, summary, treatmentPlan]) => {
       if (!summary) {
-        return [];
+        return {
+          currentView: 'Treatment Plan',
+          currentRecordName: treatmentPlan?.name ?? '',
+          backLink: '',
+        };
       }
-      const crumbs = [
-        {
-          name: summary.planning_area_name,
-          path: `/plan/${summary.planning_area_id}`,
-        },
-        {
-          name: summary.scenario_name,
-          path: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
-        },
-        {
-          name: treatmentPlan?.name ?? summary.treatment_plan_name,
-          path: projectArea
-            ? `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`
-            : '',
-        },
-      ];
+      // determine navstate based on various conditions
       if (projectArea) {
-        crumbs.push({
-          name: projectArea.project_area_name,
-          path: '',
-        });
+        // if we are currently viewing a Project Area
+        return {
+          currentView: 'Project Area',
+          currentRecordName: projectArea.project_area_name,
+          backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`,
+        };
+      } // if we are currently viewing a Treatment Plan
+      else if (!!treatmentPlan && !!treatmentPlan.name) {
+        return {
+          currentView: 'Treatment Plan',
+          currentRecordName: treatmentPlan.name,
+          backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
+        };
       }
-      return crumbs;
+      // TODO: determine states for Impacts Planning
+      return {
+        currentView: 'Treatment',
+        currentRecordName: 'ok',
+        backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
+      };
     })
   );
 

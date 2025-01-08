@@ -1,5 +1,5 @@
 <app-nav-bar
-  [breadcrumbs]="(breadcrumbs$ | async) || []"
+  [navState]="(navState$ | async) || null"
   [area]="'TREATMENTS'"></app-nav-bar>
 
 <div *ngIf="treatmentPlan$ | async; let treatmentPlan" class="treatment-plan">

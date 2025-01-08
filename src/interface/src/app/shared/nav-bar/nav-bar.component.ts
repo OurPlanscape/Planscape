@@ -14,6 +14,12 @@ export interface Breadcrumb {
   path?: string;
 }
 
+export interface NavState {
+  currentView: string;
+  currentRecordName: string;
+  backLink?: string;
+}
+
 @Component({
   selector: 'app-nav-bar',
   templateUrl: './nav-bar.component.html',
@@ -23,6 +29,8 @@ export class NavBarComponent implements OnInit {
   @Input() breadcrumbs: Breadcrumb[] = [];
   @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' | 'TREATMENTS' =
     'EXPLORE';
+
+  @Input() navState?: NavState | null = null;
 
   params: Params | null = null;
 

@@ -27,7 +27,7 @@ import { getPlanPath } from './plan-helpers';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
-import { Breadcrumb, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -90,7 +90,12 @@ export class PlanComponent implements OnInit {
       return state.currentScenarioName;
     })
   );
-  breadcrumbs$ = combineLatest([
+
+  //TODO: combine these into one object?
+  currentRecordName$ = new BehaviorSubject<string>('');
+  backLink$ = new BehaviorSubject<string>('');
+
+  navState$ = combineLatest([
     this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
     this.scenarioName$,
   ]).pipe(
@@ -98,22 +103,29 @@ export class PlanComponent implements OnInit {
       const path = this.getPathFromSnapshot();
       const scenarioId = this.route.children[0]?.snapshot.params['id'];
 
-      const crumbs: Breadcrumb[] = [
-        {
-          name: plan.name,
-          path: path === 'config' ? getPlanPath(plan.id) : undefined,
-        },
-      ];
-
+      /* here, we are in one of two states:
+        'Planning Area' or 'Scenario'
+        if we're on the planning area, back goes to home
+        if we'e on the scenario, back goes to the planning area
+      */
       if (path === 'config' && !scenarioId && !scenarioName) {
-        crumbs.push({ name: 'New Scenario' });
+        return {
+          currentView: 'Scenario',
+          currentRecordName: 'New Scenario',
+          backLink: getPlanPath(plan.id),
+        };
+      } else if (scenarioName) {
+        return {
+          currentView: 'Scenario',
+          currentRecordName: scenarioName,
+          backLink: getPlanPath(plan.id),
+        };
       }
-
-      if (scenarioName) {
-        crumbs.push({ name: scenarioName });
-      }
-
-      return crumbs;
+      return {
+        currentView: 'Planning Area',
+        currentRecordName: plan.name,
+        backLink: path || '/',
+      };
     })
   );
 

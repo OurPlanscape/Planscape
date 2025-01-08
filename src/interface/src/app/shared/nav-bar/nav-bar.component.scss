@@ -49,3 +49,14 @@
     }
   }
 }
+
+.nav-heading {
+  @include h4();
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+}
