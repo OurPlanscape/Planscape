@@ -23,6 +23,7 @@ from impacts.services import (
     generate_impact_results_data_to_plot,
     generate_summary,
     get_calculation_matrix,
+    get_baseline_matrix,
     get_treatment_results_table_data,
     upsert_treatment_prescriptions,
 )
@@ -260,7 +261,7 @@ class SummaryTest(TransactionTestCase):
 
 
 class GetCalculationMatrixTest(TransactionTestCase):
-    def test_matrix_returns_correctly(self):
+    def test_calculation_matrix_returns_correctly(self):
         years = [1, 2]
         plan = TreatmentPlanFactory.create()
         s1 = StandFactory.create()
@@ -274,7 +275,20 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertIsNotNone(matrix)
 
         # impact variables * years * actions
-        total_records = 17 * len(years) * 3
+        total_records = (
+            len(ImpactVariable.get_measurable_impact_variables()) * len(years) * 3
+        )
+        self.assertEqual(len(matrix), total_records)
+
+    def test_baseline_matrix_returns_correctly(self):
+        years = [1, 2]
+        matrix = get_baseline_matrix(years=years)
+        self.assertIsNotNone(matrix)
+
+        # impact variables * years
+        total_records = len(ImpactVariable.get_baseline_only_impact_variables()) * len(
+            years
+        )
         self.assertEqual(len(matrix), total_records)
 
 
