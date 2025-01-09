@@ -94,7 +94,7 @@ export class TreatmentConfigComponent {
     )
   );
   @ViewChild(TreatmentMapComponent) mapElement: any;
-  breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+  navState$ = this.treatmentsState.navState$;
 
   loading = true;
 

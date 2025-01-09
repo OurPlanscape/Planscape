@@ -21,7 +21,7 @@ import {
   TreatmentSummary,
 } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
-
+import { NavState } from '@shared';
 import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
@@ -30,6 +30,7 @@ import {
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
 import { PlanStateService } from '@services';
+import { ActivatedRoute } from '@angular/router';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -41,7 +42,8 @@ export class TreatmentsState {
     private treatmentsService: TreatmentsService,
     private planStateService: PlanStateService,
     private treatedStandsState: TreatedStandsState,
-    private mapConfigState: MapConfigState
+    private mapConfigState: MapConfigState,
+    private route: ActivatedRoute
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
@@ -79,38 +81,51 @@ export class TreatmentsState {
     shareReplay(1)
   );
 
-  breadcrumbs$ = combineLatest([
+  // determine navstate values based on various state conditions
+  navState$: Observable<NavState> = combineLatest([
     this.activeProjectArea$,
     this.summary$,
     this.treatmentPlan$,
   ]).pipe(
     map(([projectArea, summary, treatmentPlan]) => {
+      const path = this.route.snapshot.routeConfig?.path;
+      const navStateObject: NavState = {
+        currentView: '',
+        currentRecordName: '',
+        backLink: '',
+      };
+
       if (!summary) {
-        return [];
+        return navStateObject;
       }
-      const crumbs = [
-        {
-          name: summary.planning_area_name,
-          path: `/plan/${summary.planning_area_id}`,
-        },
-        {
-          name: summary.scenario_name,
-          path: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
-        },
-        {
-          name: treatmentPlan?.name ?? summary.treatment_plan_name,
-          path: projectArea
-            ? `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`
-            : '',
-        },
-      ];
+      if (path === 'impacts') {
+        navStateObject.currentView = 'Direct Treatment Impacts';
+      }
+
       if (projectArea) {
-        crumbs.push({
-          name: projectArea.project_area_name,
-          path: '',
-        });
+        // if we are currently viewing a Project Area
+        navStateObject.currentView = 'Project Area';
+        navStateObject.currentRecordName = projectArea.project_area_name;
+        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
+      } else if (
+        !!treatmentPlan &&
+        !!treatmentPlan.name &&
+        path === 'impacts'
+      ) {
+        // if we are currently viewing Treatment Impacts
+        navStateObject.currentRecordName = treatmentPlan.name;
+        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+      } else if (
+        // if we are currently viewing a Treatment Plan
+        !!treatmentPlan &&
+        !!treatmentPlan.name &&
+        treatmentPlan.status !== 'SUCCESS'
+      ) {
+        navStateObject.currentView = 'Treatment Plan';
+        navStateObject.currentRecordName = treatmentPlan.name;
+        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
       }
-      return crumbs;
+      return navStateObject;
     })
   );
 
