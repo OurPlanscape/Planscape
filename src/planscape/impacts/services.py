@@ -12,6 +12,12 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, QuerySet, Sum, When
+from django.db.models.expressions import RawSQL
+from planning.models import ProjectArea, Scenario
+from rasterio.session import AWSSession
+from stands.models import STAND_AREA_ACRES, Stand, StandMetric
+from stands.services import calculate_stand_zonal_stats
+
 from impacts.calculator import calculate_delta
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -27,10 +33,6 @@ from impacts.models import (
     TTreatmentPlanCloneResult,
     get_prescription_type,
 )
-from planning.models import ProjectArea, Scenario
-from rasterio.session import AWSSession
-from stands.models import STAND_AREA_ACRES, Stand, StandMetric
-from stands.services import calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
 
@@ -173,17 +175,22 @@ def generate_summary(
         .order_by("project_area__id")
     )
     project_areas = []
-    project_area_queryset = ProjectArea.objects.filter(**pa_filter).order_by("name")
+    project_area_queryset = (
+        ProjectArea.objects.filter(**pa_filter)
+        .annotate(
+            treatment_rank=RawSQL("COALESCE((data->>'treatment_rank')::int, 1)", [])
+        )
+        .order_by("treatment_rank")
+    )
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
     for project in project_area_queryset:
-        stand_project_count = project.get_stands().count()
         project_areas.append(
             {
                 "project_area_id": project.id,
                 "project_area_name": project.name,
-                "total_stand_count": stand_project_count,
+                "total_stand_count": project.stand_count,
                 "extent": project.geometry.extent,
                 "centroid": json.loads(project.geometry.point_on_surface.json),
                 "prescriptions": [

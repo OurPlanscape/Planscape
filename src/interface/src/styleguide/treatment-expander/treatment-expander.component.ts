@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
@@ -25,6 +25,7 @@ import {
     NgFor,
     SequenceIconComponent,
     TreatmentTypeIconComponent,
+    DecimalPipe,
   ],
   templateUrl: './treatment-expander.component.html',
   styleUrl: './treatment-expander.component.scss',

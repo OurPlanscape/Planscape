@@ -367,6 +367,11 @@ class ProjectArea(
         help_text="Geometry of the Project Area.",
     )
 
+    @property
+    def stand_count(self) -> int:
+        stored_stand_count = self.data.get("stand_count") if self.data else None
+        return stored_stand_count or self.get_stands().count()
+
     def get_stands(self) -> QuerySet[Stand]:
         scenario = self.scenario
         return Stand.objects.within_polygon(self.geometry, scenario.get_stand_size())
