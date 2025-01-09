@@ -93,9 +93,10 @@
           "></app-direct-impacts-synced-maps>
         <app-treatment-map
           [showProjectAreaTooltips]="false"
-          *ngIf="showTreatmentPrescription$ | async"></app-treatment-map>
+          *ngIf="showTreatmentPrescription$ | async">
+        </app-treatment-map>
         <app-treatment-legend
-          *ngIf="showTreatmentPrescription$ | async"></app-treatment-legend>
+          *ngIf="showTreatmentLegend$ | async"></app-treatment-legend>
       </sg-panel>
       <sg-panel
         class="legend-panel"

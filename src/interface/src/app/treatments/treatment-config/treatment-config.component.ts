@@ -171,8 +171,4 @@ export class TreatmentConfigComponent {
       injector: this.injector, // Pass the current injector to the dialog
     });
   }
-
-  closeLegend() {
-    this.mapConfig.setTreatmentLegendVisible(false);
-  }
 }
