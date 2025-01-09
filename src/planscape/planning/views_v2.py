@@ -267,7 +267,7 @@ class CreatorViewSet(ReadOnlyModelViewSet):
 class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     queryset = (
         ProjectArea.objects.all()
-        .annotate(treatment_rank=RawSQL("(data->>treatment_rank)::int", []))
+        .annotate(treatment_rank=RawSQL("(data->>'treatment_rank')::int", []))
         .order_by("treatment_rank")
     )
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
