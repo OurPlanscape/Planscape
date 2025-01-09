@@ -48,6 +48,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentProjectArea } from '@types';
+import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -80,6 +81,7 @@ import { TreatmentProjectArea } from '@types';
     ExpandedStandDataChartComponent,
     ExpandedChangeOverTimeChartComponent,
     ModalComponent,
+    OverlayLoaderComponent,
   ],
   providers: [
     DirectImpactsStateService,
@@ -92,6 +94,7 @@ import { TreatmentProjectArea } from '@types';
   styleUrl: './direct-impacts.component.scss',
 })
 export class DirectImpactsComponent implements OnInit, OnDestroy {
+  loading = false;
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfigState: MapConfigState,
@@ -102,6 +105,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private injector: Injector // Angular's injector for passing shared services
   ) {
     const data = getMergedRouteData(this.route.snapshot);
+    this.loading = true;
     this.treatmentsState
       .loadTreatmentByRouteData(data)
       .pipe(
@@ -114,8 +118,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           this.mapConfigState.setShowFillProjectAreas(false);
           this.mapConfigState.updateShowTreatmentStands(true);
           this.mapConfigState.updateShowProjectAreas(true);
+          this.loading = false;
         }),
         catchError((error) => {
+          this.loading = false;
           this.router.navigate(['/']);
           throw error;
         })
