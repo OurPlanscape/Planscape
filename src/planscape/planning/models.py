@@ -369,8 +369,8 @@ class ProjectArea(
 
     @property
     def stand_count(self) -> int:
-        data = json.loads(self.data) if self.data else {}
-        return data.get("stand_count", 0)
+        stored_stand_count = self.data.get("stand_count") if self.data else None
+        return stored_stand_count or self.get_stands().count()
 
     def get_stands(self) -> QuerySet[Stand]:
         scenario = self.scenario
