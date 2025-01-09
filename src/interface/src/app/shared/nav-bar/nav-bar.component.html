@@ -1,20 +1,22 @@
 <div class="nav-bar mat-elevation-z2">
-  <section class="breadcrumb">
-    <a
-      [routerLink]="['/home']"
-      [queryParams]="params"
-      queryParamsHandling="merge"
-      >{{ firstBreadcrumb$ | async }}</a
-    >
-
-    <ng-container *ngFor="let breadcrumb of breadcrumbs">
-      /
-      <a [routerLink]="breadcrumb.path" *ngIf="breadcrumb.path">
-        {{ breadcrumb.name }}</a
-      >
-      <span *ngIf="!breadcrumb.path">{{ breadcrumb.name }}</span>
-    </ng-container>
+  <section class="nav-heading" *ngIf="navState">
+    <button mat-icon-button aria-label="back">
+      <mat-icon
+        *ngIf="navState.backLink !== ''"
+        class="back-btn"
+        [routerLink]="navState.backLink"
+        [queryParams]="params"
+        queryParamsHandling="merge"
+        >arrow_back
+      </mat-icon>
+    </button>
+    <div
+      class="current-page"
+      *ngIf="navState.currentView && navState.currentRecordName">
+      {{ navState.currentView + ': ' + navState.currentRecordName }}
+    </div>
   </section>
+
   <div class="actions">
     <button mat-icon-button class="help" [matMenuTriggerFor]="popoverMenu">
       <mat-icon class="material-symbols-outlined" color="primary">
@@ -104,7 +106,11 @@
       variant="text"
       (click)="sharePlan()"
       data-id="share"
-      *ngIf="area === 'SCENARIOS' && (canSharePlan$ | async)">
+      *ngIf="
+        area === 'SCENARIOS' &&
+        (canSharePlan$ | async) &&
+        navState?.currentRecordName
+      ">
       Share
     </button>
 

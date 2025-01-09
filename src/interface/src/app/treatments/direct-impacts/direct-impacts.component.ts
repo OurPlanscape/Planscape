@@ -129,7 +129,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+  navState$ = this.treatmentsState.navState$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
 
