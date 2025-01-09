@@ -56,9 +56,13 @@ class StandQuerySet(models.QuerySet):
         if not geometry.valid:
             raise ValueError("Invalid geometry")
 
-        return Stand.objects.annotate(centroid=Centroid("geometry")).filter(
-            centroid__within=geometry,
-            size=size,
+        return (
+            Stand.objects.filter(geometry__bboverlaps=geometry)
+            .annotate(centroid=Centroid("geometry"))
+            .filter(
+                centroid__within=geometry,
+                size=size,
+            )
         )
 
 
@@ -71,6 +75,7 @@ class Stand(CreatedAtMixin, models.Model):
     size = models.CharField(
         choices=StandSizeChoices.choices,
         max_length=16,
+        db_index=True,
     )
 
     geometry = models.PolygonField(srid=4269, spatial_index=True)

@@ -142,18 +142,24 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] 
         if idx is not None:
             area_name += f" {idx}"
 
+        geometry = MultiPolygon(
+            [
+                GEOSGeometry(feature, srid=4326).transform(
+                    settings.CRS_INTERNAL_REPRESENTATION, clone=True
+                ),
+            ]
+        )
+
+        stand_count = Stand.objects.within_polygon(
+            geometry, scenario.get_stand_size()
+        ).count()
+
         project_area = {
-            "geometry": MultiPolygon(
-                [
-                    GEOSGeometry(feature, srid=4326).transform(
-                        settings.CRS_INTERNAL_REPRESENTATION, clone=True
-                    )
-                ]
-            ),
+            "geometry": geometry,
             "name": area_name,
             "created_by": user_id,
             "scenario": scenario,
-            "data": {"treatment_rank": idx},
+            "data": {"treatment_rank": idx, "stand_count": stand_count},
         }
         proj_area_obj = ProjectArea.objects.create(**project_area)
 
