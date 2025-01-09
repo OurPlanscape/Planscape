@@ -21,7 +21,7 @@ import {
   TreatmentSummary,
 } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
-
+import { NavState } from '@shared';
 import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
@@ -79,7 +79,7 @@ export class TreatmentsState {
   );
 
   // determine navstate values based on various state conditions
-  navState$ = combineLatest([
+  navState$: Observable<NavState> = combineLatest([
     this.activeProjectArea$,
     this.summary$,
     this.treatmentPlan$,

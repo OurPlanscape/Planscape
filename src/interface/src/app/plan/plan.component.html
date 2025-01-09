@@ -1,5 +1,5 @@
 <app-nav-bar
-  [navState]="(navState$ | async) || undefined"
+  [navState]="(navState$ | async) || null"
   [area]="(area$ | async) || 'SCENARIOS'">
   <ng-container *appFeatureFlag="'new_planning_area'">
     <ng-container *ngIf="(area$ | async) === 'SCENARIOS'">

@@ -32,24 +32,6 @@
   padding: 20px;
 }
 
-.breadcrumb {
-  @include h4();
-  text-overflow: ellipsis;
-  overflow: hidden;
-  white-space: nowrap;
-
-  a {
-    color: $color-standard-blue;
-    text-decoration: none;
-
-    &:hover,
-    &:active {
-      text-decoration: underline;
-      color: $color-main-blue;
-    }
-  }
-}
-
 .nav-heading {
   @include h4();
   text-overflow: ellipsis;

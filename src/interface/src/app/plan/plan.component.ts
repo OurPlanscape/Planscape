@@ -27,7 +27,7 @@ import { getPlanPath } from './plan-helpers';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
-import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { NavState, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -91,7 +91,7 @@ export class PlanComponent implements OnInit {
     })
   );
 
-  navState$ = combineLatest([
+  navState$: Observable<NavState> = combineLatest([
     this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
     this.scenarioName$,
   ]).pipe(
@@ -115,7 +115,7 @@ export class PlanComponent implements OnInit {
       return {
         currentView: 'Planning Area',
         currentRecordName: plan.name,
-        backLink: path || '/',
+        backLink: path ?? '/',
       };
     })
   );

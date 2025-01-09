@@ -1,5 +1,5 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
-import { AuthService, PlanStateService, WINDOW } from '@services';
+import { PlanStateService, WINDOW } from '@services';
 
 import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
@@ -9,13 +9,17 @@ import { canViewCollaborators } from '../../plan/permissions';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
 
-export interface Breadcrumb {
-  name: string;
-  path?: string;
-}
+export type NavView =
+  | 'Explore'
+  | 'Planning Area'
+  | 'Scenario'
+  | 'Treatment Plan'
+  | 'Project Area'
+  | 'Direct Treatment Impacts'
+  | '';
 
 export interface NavState {
-  currentView: string;
+  currentView: NavView;
   currentRecordName: string;
   backLink?: string;
 }
@@ -26,7 +30,6 @@ export interface NavState {
   styleUrls: ['./nav-bar.component.scss'],
 })
 export class NavBarComponent implements OnInit {
-  @Input() breadcrumbs: Breadcrumb[] = [];
   @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' | 'TREATMENTS' =
     'EXPLORE';
 
@@ -41,17 +44,12 @@ export class NavBarComponent implements OnInit {
           .pipe(map((plan) => canViewCollaborators(plan)))
       : of(false);
 
-  firstBreadcrumb$ = this.authService.isLoggedIn$.pipe(
-    map((loggedIn) => (loggedIn ? 'Planning Areas' : 'Welcome'))
-  );
-
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private planStateService: PlanStateService,
-    private homeParametersStorageService: HomeParametersStorageService,
-    private authService: AuthService
+    private homeParametersStorageService: HomeParametersStorageService
   ) {}
 
   ngOnInit(): void {
@@ -69,7 +67,7 @@ export class NavBarComponent implements OnInit {
   sharePlan() {
     this.dialog.open(SharePlanDialogComponent, {
       data: {
-        planningAreaName: '"' + this.breadcrumbs[0].name + '"',
+        planningAreaName: this.navState?.currentRecordName,
         planningAreaId: this.route.snapshot.params['id'],
       },
       restoreFocus: false,

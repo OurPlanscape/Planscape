@@ -106,7 +106,11 @@
       variant="text"
       (click)="sharePlan()"
       data-id="share"
-      *ngIf="area === 'SCENARIOS' && (canSharePlan$ | async)">
+      *ngIf="
+        area === 'SCENARIOS' &&
+        (canSharePlan$ | async) &&
+        navState?.currentRecordName
+      ">
       Share
     </button>
 
