@@ -178,12 +178,11 @@ def generate_summary(
         geometry=UnionOp("geometry")
     )["geometry"]
     for project in project_area_queryset:
-        stand_project_count = project.get_stands().count()
         project_areas.append(
             {
                 "project_area_id": project.id,
                 "project_area_name": project.name,
-                "total_stand_count": stand_project_count,
+                "total_stand_count": project.stand_count,
                 "extent": project.geometry.extent,
                 "centroid": json.loads(project.geometry.point_on_surface.json),
                 "prescriptions": [
