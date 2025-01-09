@@ -177,7 +177,9 @@ def generate_summary(
     project_areas = []
     project_area_queryset = (
         ProjectArea.objects.filter(**pa_filter)
-        .annotate(treatment_rank=RawSQL("(data->>'treatment_rank')::int", []))
+        .annotate(
+            treatment_rank=RawSQL("COALESCE((data->>'treatment_rank')::int, 1)", [])
+        )
         .order_by("treatment_rank")
     )
     project_areas_geometry = project_area_queryset.all().aggregate(
