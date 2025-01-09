@@ -30,6 +30,8 @@ import {
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
 import { PlanStateService } from '@services';
+import { ActivatedRoute } from '@angular/router';
+
 /**
  * Class that holds data of the current state, and makes it available
  * through observables.
@@ -40,7 +42,8 @@ export class TreatmentsState {
     private treatmentsService: TreatmentsService,
     private planStateService: PlanStateService,
     private treatedStandsState: TreatedStandsState,
-    private mapConfigState: MapConfigState
+    private mapConfigState: MapConfigState,
+    private route: ActivatedRoute
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
@@ -85,49 +88,44 @@ export class TreatmentsState {
     this.treatmentPlan$,
   ]).pipe(
     map(([projectArea, summary, treatmentPlan]) => {
+      const path = this.route.snapshot.routeConfig?.path;
+      const navStateObject: NavState = {
+        currentView: '',
+        currentRecordName: '',
+        backLink: '',
+      };
+
       if (!summary) {
-        return {
-          currentView: '',
-          currentRecordName: '',
-          backLink: '',
-        };
+        return navStateObject;
       }
+      if (path === 'impacts') {
+        navStateObject.currentView = 'Direct Treatment Impacts';
+      }
+
       if (projectArea) {
         // if we are currently viewing a Project Area
-        return {
-          currentView: 'Project Area',
-          currentRecordName: projectArea.project_area_name,
-          backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`,
-        };
+        navStateObject.currentView = 'Project Area';
+        navStateObject.currentRecordName = projectArea.project_area_name;
+        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
       } else if (
-        //  Impacts Planning - TODO: is there a cleaner/definitive way to determine this state? by route?
         !!treatmentPlan &&
         !!treatmentPlan.name &&
-        treatmentPlan.status === 'SUCCESS'
+        path === 'impacts'
       ) {
-        return {
-          currentView: 'Direct Treatment Impacts',
-          currentRecordName: treatmentPlan.name,
-          backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
-        };
+        // if we are currently viewing Treatment Impacts
+        navStateObject.currentRecordName = treatmentPlan.name;
+        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
       } else if (
         // if we are currently viewing a Treatment Plan
         !!treatmentPlan &&
         !!treatmentPlan.name &&
         treatmentPlan.status !== 'SUCCESS'
       ) {
-        return {
-          currentView: 'Treatment Plan',
-          currentRecordName: treatmentPlan.name,
-          backLink: `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`,
-        };
+        navStateObject.currentView = 'Treatment Plan';
+        navStateObject.currentRecordName = treatmentPlan.name;
+        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
       }
-      // TODO: can we have a default?
-      return {
-        currentView: '',
-        currentRecordName: '',
-        backLink: '',
-      };
+      return navStateObject;
     })
   );
 

@@ -99,24 +99,25 @@ export class PlanComponent implements OnInit {
       const path = this.getPathFromSnapshot();
       const scenarioId = this.route.children[0]?.snapshot.params['id'];
 
-      if (path === 'config' && !scenarioId && !scenarioName) {
-        return {
-          currentView: 'Scenario',
-          currentRecordName: 'New Scenario',
-          backLink: getPlanPath(plan.id),
-        };
-      } else if (scenarioName) {
-        return {
-          currentView: 'Scenario',
-          currentRecordName: scenarioName,
-          backLink: getPlanPath(plan.id),
-        };
-      }
-      return {
+      const navStateObject: NavState = {
         currentView: 'Planning Area',
-        currentRecordName: plan.name,
-        backLink: path ?? '/',
+        currentRecordName: '',
+        backLink: '/home',
       };
+      if (path === 'config') {
+        navStateObject.currentView = 'Scenario';
+      }
+      if (path === 'config' && !scenarioId && !scenarioName) {
+        navStateObject.currentRecordName = 'New Scenario';
+        navStateObject.backLink = getPlanPath(plan.id);
+      } else if (scenarioName) {
+        navStateObject.currentRecordName = scenarioName;
+        navStateObject.backLink = getPlanPath(plan.id);
+      } else if (plan.name && !scenarioName) {
+        navStateObject.currentRecordName = plan.name;
+      }
+
+      return navStateObject;
     })
   );
 
