@@ -121,6 +121,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           this.loading = false;
         }),
         catchError((error) => {
+          this.loading = false;
           this.router.navigate(['/']);
           throw error;
         })
