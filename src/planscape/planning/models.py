@@ -1,7 +1,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import Optional, Type
+from typing import Optional
 
 from collaboration.models import UserObjectRole
 from core.models import (
@@ -15,11 +15,12 @@ from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
+from django.contrib.gis.db.models import Union as UnionOp
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
 from django_stubs_ext.db.models import TypedModelMeta
-from stands.models import StandSizeChoices
+from stands.models import StandSizeChoices, Stand
 from utils.uuid_utils import generate_short_uuid
 
 from planscape.typing import TUser
@@ -247,6 +248,15 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         ]
         return {"type": "FeatureCollection", "features": features}
 
+    def get_project_areas_stands(self) -> QuerySet[Stand]:
+        project_areas = self.project_areas
+        project_areas_geometry = project_areas.all().aggregate(
+            geometry=UnionOp("geometry")
+        )["geometry"]
+        return Stand.objects.within_polygon(
+            project_areas_geometry, self.get_stand_size()
+        )
+
     objects = ScenarioManager()
 
     class Meta(TypedModelMeta):
@@ -356,6 +366,15 @@ class ProjectArea(
         srid=settings.CRS_INTERNAL_REPRESENTATION,
         help_text="Geometry of the Project Area.",
     )
+
+    @property
+    def stand_count(self) -> int:
+        stored_stand_count = self.data.get("stand_count") if self.data else None
+        return stored_stand_count or self.get_stands().count()
+
+    def get_stands(self) -> QuerySet[Stand]:
+        scenario = self.scenario
+        return Stand.objects.within_polygon(self.geometry, scenario.get_stand_size())
 
     class Meta(TypedModelMeta):
         verbose_name = "Project Area"
