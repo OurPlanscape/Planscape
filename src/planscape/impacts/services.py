@@ -632,16 +632,16 @@ def get_treatment_results_table_data(
       ...
     ]
     """
-    queryset = TreatmentResult.objects.filter(
+    treated_results = TreatmentResult.objects.filter(
         treatment_plan=treatment_plan, stand_id=stand_id
     ).values("year", "variable", "value", "delta", "baseline")
 
-    if not queryset.exists():
+    if not treated_results.exists():
         return []
 
     data_map = defaultdict(dict)
 
-    for row in queryset:
+    for row in treated_results:
         year = row["year"]
         variable = row["variable"]
         value = row["value"]
@@ -665,9 +665,38 @@ def get_treatment_results_table_data(
             "category": category,
         }
 
+    untreated_metrics = (
+        StandMetric.objects.filter(
+            stand_id=stand_id,
+            datalayer_id__in=[
+                ImpactVariable.FLAME_LENGTH.value,
+                ImpactVariable.RATE_OF_SPREAD.value,
+            ]
+        )
+        .values("datalayer_id", "avg")
+    )
+
+    # Process untreated metrics and add to data_map
+    for metric in untreated_metrics:
+        datalayer_id = metric["datalayer_id"]
+        avg_value = metric["avg"]
+
+        if datalayer_id == ImpactVariable.FLAME_LENGTH:
+            data_map["untreated"]["flame_length"] = {
+                "value": avg_value,
+                "category": classify_flame_length(avg_value),
+            }
+        elif datalayer_id == ImpactVariable.RATE_OF_SPREAD:
+            data_map["untreated"]["rate_of_spread"] = {
+                "value": avg_value,
+                "category": classify_rate_of_spread(avg_value),
+            }
+
+    # Format data into a list
     table_data = []
 
     for year in sorted(data_map.keys()):
-        table_data.append({**data_map[year], "year": year})
+        entry = {**data_map[year], "year": year} if year != "untreated" else data_map[year]
+        table_data.append(entry)
 
     return table_data

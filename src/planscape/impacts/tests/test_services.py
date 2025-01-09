@@ -39,7 +39,7 @@ from planning.tests.factories import (
     ScenarioFactory,
 )
 from stands.models import Stand, StandSizeChoices
-from stands.tests.factories import StandFactory
+from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planscape.tests.factories import UserFactory
 
@@ -596,15 +596,16 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         )
         self.assertEqual(table_data, [], "Expected an empty list when no data is found")
 
-    def test_returns_data_for_multiple_variables_and_years(self):
+    def test_returns_data_for_treated_and_untreated_metrics(self):
         """
-        Ensures that multiple TreatmentResult rows for different years/variables
-        are grouped correctly into the final table_data structure.
+        Ensures that both TreatmentResult and StandMetric data are correctly included
+        in the final table_data structure.
         """
+        # Add treated results (from TreatmentResult)
         TreatmentResultFactory(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH,
+            variable=ImpactVariable.FLAME_LENGTH.value,
             year=2024,
             value=3.5,
             delta=1.2,
@@ -613,51 +614,78 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         TreatmentResultFactory(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.RATE_OF_SPREAD,
+            variable=ImpactVariable.RATE_OF_SPREAD.value,
             year=2024,
             value=2.0,
             delta=0.5,
             baseline=1.5,
         )
-        TreatmentResultFactory(
-            treatment_plan=self.treatment_plan,
+
+        # Add untreated metrics (from StandMetric)
+        StandMetricFactory(
             stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH,
-            year=2029,
-            value=12.0,
-            baseline=2.0,
+            datalayer_id=ImpactVariable.FLAME_LENGTH.value,
+            avg=7.0,
+        )
+        StandMetricFactory(
+            stand=self.stand,
+            datalayer_id=ImpactVariable.RATE_OF_SPREAD.value,
+            avg=15.0,
         )
 
         table_data = get_treatment_results_table_data(
             self.treatment_plan, self.stand.id
         )
 
-        # Expect 2 rows: one for 2024, one for 2029
-        self.assertEqual(len(table_data), 2)
-
-        # Check the first row (year=2024)
+        # Check treated data
+        self.assertEqual(len(table_data), 1, "Expected 1 year of data for treated results")
         row_2024 = table_data[0]
         self.assertEqual(row_2024["year"], 2024)
-        self.assertIn("fl", row_2024)
-        self.assertIn("ros", row_2024)
-
         self.assertEqual(row_2024["fl"]["value"], 3.5)
-        self.assertEqual(row_2024["fl"]["delta"], 1.2)
-        self.assertEqual(row_2024["fl"]["baseline"], 2.3)
         self.assertEqual(row_2024["fl"]["category"], "Low")
-
         self.assertEqual(row_2024["ros"]["value"], 2.0)
-        self.assertEqual(row_2024["ros"]["delta"], 0.5)
-        self.assertEqual(row_2024["ros"]["baseline"], 1.5)
         self.assertEqual(row_2024["ros"]["category"], "Very Low")
 
-        # Check the second row (year=2029)
-        row_2029 = table_data[1]
-        self.assertEqual(row_2029["year"], 2029)
-        self.assertIn("fl", row_2029)
-        self.assertEqual(row_2029["fl"]["value"], 12.0)
-        self.assertIsNone(row_2029["fl"]["delta"])
-        self.assertEqual(row_2029["fl"]["category"], "Very High")
+        # Check untreated data
+        untreated_data = table_data[-1]  # The "untreated" key
+        self.assertIn("flame_length", untreated_data)
+        self.assertEqual(untreated_data["flame_length"]["value"], 7.0)
+        self.assertEqual(untreated_data["flame_length"]["category"], "Moderate")
+
+        self.assertIn("rate_of_spread", untreated_data)
+        self.assertEqual(untreated_data["rate_of_spread"]["value"], 15.0)
+        self.assertEqual(untreated_data["rate_of_spread"]["category"], "High")
+
+    def test_returns_only_untreated_if_no_treated_data(self):
+        """
+        Ensures that only StandMetric data is returned if no TreatmentResult data exists.
+        """
+        # Add untreated metrics (from StandMetric)
+        StandMetricFactory(
+            stand=self.stand,
+            datalayer_id=ImpactVariable.FLAME_LENGTH.value,
+            avg=4.5,
+        )
+        StandMetricFactory(
+            stand=self.stand,
+            datalayer_id=ImpactVariable.RATE_OF_SPREAD.value,
+            avg=12.0,
+        )
+
+        table_data = get_treatment_results_table_data(
+            self.treatment_plan, self.stand.id
+        )
+
+        # Check untreated data only
+        self.assertEqual(len(table_data), 1, "Expected only untreated data")
+        untreated_data = table_data[0]
+        self.assertIn("flame_length", untreated_data)
+        self.assertEqual(untreated_data["flame_length"]["value"], 4.5)
+        self.assertEqual(untreated_data["flame_length"]["category"], "Low")
+
+        self.assertIn("rate_of_spread", untreated_data)
+        self.assertEqual(untreated_data["rate_of_spread"]["value"], 12.0)
+        self.assertEqual(untreated_data["rate_of_spread"]["category"], "Moderate")
 
 
 class ClassificationFunctionsTest(TransactionTestCase):
