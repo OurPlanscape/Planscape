@@ -30,6 +30,10 @@
 
 .tooltip {
   padding: 20px;
+
+  p:last-child {
+    margin-bottom: 0;
+  }
 }
 
 .nav-heading {

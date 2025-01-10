@@ -1,6 +1,8 @@
 <sg-overlay-loader *ngIf="loading" [offsetTop]="48"></sg-overlay-loader>
 
-<app-nav-bar [navState]="(navState$ | async) || null">
+<app-nav-bar
+  [navState]="(navState$ | async) || null"
+  [area]="($navBarArea$ | async) || 'TREATMENTS'">
   <app-treatment-navbar-menu
     [treatmentPlanName]="(treatmentPlanName$ | async) || ''"
     (treatmentPlanDeleted)="redirectToScenario()"
