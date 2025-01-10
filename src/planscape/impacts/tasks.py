@@ -24,6 +24,8 @@ from impacts.services import (
     calculate_metrics,
     get_calculation_matrix,
     get_baseline_matrix,
+    get_calculation_matrix_wo_action,
+    fill_impacts_for_untreated_stands,
 )
 from planscape.celery import app
 
@@ -122,6 +124,32 @@ def async_calculate_baseline_metrics_for_variable_year(
 
 
 @app.task()
+def async_fill_impacts_for_non_treated_stands_action_year(
+    treatment_plan_pk: int,
+    variable: ImpactVariable,
+    year: int,
+) -> None:
+    """Fills impacts for non-treated stands for the variable, year pair.
+
+    :param treatment_plan_pk: TreatmentPlan primary key
+    :type treatment_plan_pk: int
+    :param variable: ImpactVariable instance
+    :type variable: ImpactVariable
+    :param year: Year of calculation
+    :type year: int
+    :return: None
+    """
+    treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+        pk=treatment_plan_pk
+    )
+    fill_impacts_for_untreated_stands(
+        treatment_plan=treatment_plan,
+        variable=variable,
+        year=year,
+    )
+
+
+@app.task()
 def async_set_status(
     treatment_plan_pk: int,
     status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE,
@@ -163,6 +191,9 @@ def async_calculate_persist_impacts_treatment_plan(
     baseline_matrix = get_baseline_matrix(
         years=AVAILABLE_YEARS,
     )
+    untreated_stands_matrix = get_calculation_matrix_wo_action(
+        years=AVAILABLE_YEARS,
+    )
     callback = chain(
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
@@ -193,6 +224,14 @@ def async_calculate_persist_impacts_treatment_plan(
             year=year,
         )
         for variable, year in baseline_matrix
+    ]
+    tasks += [
+        async_fill_impacts_for_non_treated_stands_action_year.si(
+            treatment_plan_pk=treatment_plan_pk,
+            variable=variable,
+            year=year,
+        )
+        for variable, year in untreated_stands_matrix
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     chord(tasks)(callback)
