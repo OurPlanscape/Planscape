@@ -638,7 +638,9 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         )
 
         # Check treated data
-        self.assertEqual(len(table_data), 1, "Expected 1 year of data for treated results")
+        self.assertEqual(
+            len(table_data), 1, "Expected 1 year of data for treated results"
+        )
         row_2024 = table_data[0]
         self.assertEqual(row_2024["year"], 2024)
         self.assertEqual(row_2024["fl"]["value"], 3.5)
