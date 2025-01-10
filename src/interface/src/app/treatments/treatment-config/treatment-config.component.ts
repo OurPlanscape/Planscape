@@ -96,6 +96,10 @@ export class TreatmentConfigComponent {
   @ViewChild(TreatmentMapComponent) mapElement: any;
   navState$ = this.treatmentsState.navState$;
 
+  $navBarArea$ = this.projectAreaId$.pipe(
+    map((id) => (id ? 'TREATMENTS_PROJECT_AREA' : 'TREATMENTS'))
+  );
+
   loading = true;
 
   constructor(
