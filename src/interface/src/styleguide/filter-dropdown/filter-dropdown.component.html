@@ -49,24 +49,26 @@
         else noCategory
       ">
       <div *ngFor="let categoryGroup of displayedItems">
-        <details class="expander" open (click)="$event.stopPropagation()">
-          <summary>{{ categoryGroup.category }}</summary>
-          <div *ngFor="let item of categoryGroup.options">
-            <button
-              mat-menu-item
-              role="menuitemcheckbox"
-              (click)="toggleSelection($event, item)">
-              <div class="menu-item-content">
-                <span class="menu-item-text">{{
-                  displayField ? item[displayField] : item
-                }}</span>
-                <mat-checkbox
-                  [color]="'primary'"
-                  [checked]="isInSelection(item)"></mat-checkbox>
-              </div>
-            </button>
-          </div>
-        </details>
+        <ng-container *ngIf="categoryGroup.options?.length > 0">
+          <details class="expander" open (click)="$event.stopPropagation()">
+            <summary>{{ categoryGroup.category }}</summary>
+            <div *ngFor="let item of categoryGroup.options">
+              <button
+                mat-menu-item
+                role="menuitemcheckbox"
+                (click)="toggleSelection($event, item)">
+                <div class="menu-item-content">
+                  <span class="menu-item-text">{{
+                    displayField ? item[displayField] : item
+                  }}</span>
+                  <mat-checkbox
+                    [color]="'primary'"
+                    [checked]="isInSelection(item)"></mat-checkbox>
+                </div>
+              </button>
+            </div>
+          </details>
+        </ng-container>
       </div>
     </ng-container>
     <ng-template #noCategory>
