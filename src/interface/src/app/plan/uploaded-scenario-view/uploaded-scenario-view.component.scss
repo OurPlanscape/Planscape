@@ -1,4 +1,5 @@
 @import 'colors';
+@import "mixins";
 
 :host {
   flex: 1;
@@ -45,4 +46,11 @@
   position: sticky;
   z-index: 500;
   border-top: 1px solid $color-soft-gray;
+}
+
+.title {
+  @include h4();
+  line-height: 32px;
+  align-self: flex-start;
+  margin: 16px 16px 6px;
 }
