@@ -30,8 +30,13 @@ export interface NavState {
   styleUrls: ['./nav-bar.component.scss'],
 })
 export class NavBarComponent implements OnInit {
-  @Input() area: 'SCENARIOS' | 'EXPLORE' | 'SCENARIO' | 'TREATMENTS' =
-    'EXPLORE';
+  @Input() area:
+    | 'SCENARIOS'
+    | 'EXPLORE'
+    | 'SCENARIO'
+    | 'TREATMENTS'
+    | 'TREATMENTS_PROJECT_AREA'
+    | 'DIRECT_IMPACTS' = 'EXPLORE';
 
   @Input() navState?: NavState | null = null;
 
