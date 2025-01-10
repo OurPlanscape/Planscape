@@ -409,10 +409,6 @@ def calculate_impacts(
         )
     )
 
-    # It iterates over all stands within the project areas
-    # and creates a TreatmentResult for each stand.
-    # If the stand is not treated (no delta calculated), it
-    # will create a TreatmentResult with delta=0.
     treatment_results = list(
         map(
             lambda x: to_treatment_result(
