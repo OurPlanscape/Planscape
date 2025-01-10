@@ -4,8 +4,8 @@ import {
   DatePipe,
   JsonPipe,
   NgClass,
-  NgIf,
   NgFor,
+  NgIf,
   NgStyle,
 } from '@angular/common';
 import { SharedModule } from '@shared';
@@ -46,7 +46,6 @@ import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/ex
 import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
-import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 
@@ -132,6 +131,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   navState$ = this.treatmentsState.navState$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
+  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
+  showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
@@ -163,10 +164,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  activateMetric(data: ImpactsMetric) {
-    this.directImpactsStateService.setActiveMetric(data);
-  }
-
   activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(
     map((m) => m.metric)
   );
@@ -175,11 +172,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
-  reportMetrics$ = this.directImpactsStateService.reportMetrics$;
-
-  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
-
-  getValues(activeStand: MapGeoJSONFeature) {}
+  activateMetric(data: ImpactsMetric) {
+    this.directImpactsStateService.setActiveMetric(data);
+  }
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
@@ -227,6 +222,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   }
 
   saveShowTreatmentPrescription(value: MatSlideToggleChange) {
+    this.mapConfigState.setTreatmentLegendVisible(value.checked);
     this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
   }
 }

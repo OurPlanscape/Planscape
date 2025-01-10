@@ -21,6 +21,8 @@ sg-treatment-card {
 }
 
 .empty-state {
+  padding-top: 24px;
+  display: block;
   color: $color-md-gray;
 
   mat-icon {
