@@ -8,9 +8,8 @@ export const environment = {
   google_analytics_id: '', // Replace with actual ID.
   tile_endpoint: 'https://dev-geo.planscape.org/geoserver/', // Replace with actual URL
   download_endpoint: '', // Replace with actual URL
-  stadiamaps_key: '',
-  arcgis_key: '',
   martin_server: 'https://dev.planscape.org/tiles/',
+  mapbox_key: '',
 };
 
 /*
