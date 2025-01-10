@@ -195,12 +195,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       this.directImpactsStateService.setProjectAreaForChanges('All');
       const s = this.treatmentsState.getCurrentSummary();
       this.mapConfigState.updateMapCenter(s.extent);
-      this.directImpactsStateService.resetActiveStand();
       return;
     }
     this.directImpactsStateService.setProjectAreaForChanges(pa);
     this.mapConfigState.updateMapCenter(pa.extent);
-    this.directImpactsStateService.resetActiveStand();
   }
 
   expandChangeChart() {
