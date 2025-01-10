@@ -17,14 +17,19 @@
     <form [formGroup]="uploadProjectsForm!" class="upload-scenario-form">
       <app-form-message
         [messageType]="FormMessageType.ERROR"
-        *ngIf="uploadError"
+        *ngIf="uploadFormError"
         title="Upload was unsuccessful"
-        message="{{ uploadError }}">
+        message="{{ uploadFormError }}">
       </app-form-message>
 
       <div class="field-row">
         <div class="field-label">Scenario name</div>
-        <sg-input-field [disabled]="false" class="scenario-input">
+        <sg-input-field
+          [disabled]="false"
+          [error]="uploadProjectsForm.get('scenarioName')?.errors !== null"
+          class="scenario-input"
+          [supportMessage]="nameError"
+          showSupportMessage="on-error">
           <input
             sgInput
             #inputElement
