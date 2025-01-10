@@ -457,6 +457,52 @@ def calculate_stand_deltas(
     return results
 
 
+def fill_impacts_for_untreated_stands(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    year: int,
+) -> List[TreatmentResult]:
+    prescriptions = treatment_plan.tx_prescriptions.select_related(
+        "stand",
+        "treatment_plan",
+        "scenario",
+        "project_area",
+    )
+    treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
+    untreated_stand_ids = (
+        treatment_plan.scenario.get_project_areas_stands()
+        .exclude(id__in=treated_stand_ids)
+        .values_list("stand_id", flat=True)
+    )
+
+    results = []
+    for stand_id in untreated_stand_ids:
+        results.append(
+            {
+                "stand_id": stand_id,
+                "action": None,
+                "aggregation": ImpactVariableAggregation.MEAN,
+                "value": None,
+                "baseline": None,
+                "delta": 0,
+            }
+        )
+
+    treatment_results = list(
+        map(
+            lambda x: to_treatment_result(
+                treatment_plan,
+                variable,
+                year,
+                result=x,
+            ),
+            results,
+        )
+    )
+
+    return treatment_results
+
+
 def get_calculation_matrix(
     treatment_plan: TreatmentPlan,
     years: Optional[Iterable[int]] = None,
@@ -473,6 +519,15 @@ def get_calculation_matrix(
         years = AVAILABLE_YEARS
     variables = ImpactVariable.get_measurable_impact_variables()
     return list(itertools.product(variables, actions, years))
+
+
+def get_calculation_matrix_wo_action(
+    years: Optional[Iterable[int]] = None,
+) -> List[Tuple]:
+    if not years:
+        years = AVAILABLE_YEARS
+    variables = ImpactVariable.get_measurable_impact_variables()
+    return list(itertools.product(variables, years))
 
 
 def get_baseline_matrix(
