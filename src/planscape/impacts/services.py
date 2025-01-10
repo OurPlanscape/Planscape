@@ -362,8 +362,8 @@ def calculate_impacts(
     treated_stands = Stand.objects.filter(id__in=treated_stand_ids).with_webmercator()
 
     scenario = treatment_plan.scenario
-    project_area_stand_ids = scenario.get_project_areas_stands().values_list(
-        "id", flat=True
+    project_area_stand_ids = list(
+        scenario.get_project_areas_stands().values_list("id", flat=True)
     )
 
     aws_session = AWSSession(get_aws_session())
@@ -384,7 +384,7 @@ def calculate_impacts(
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
 
-    deltas_dict = calculate_stand_deltas(
+    deltas_list = calculate_stand_deltas(
         project_areas_stand_ids=project_area_stand_ids,
         baseline_dict=baseline_dict,
         action_dict=action_dict,
@@ -426,7 +426,7 @@ def calculate_impacts(
                 year,
                 result=x,
             ),
-            deltas_dict,
+            deltas_list,
         )
     )
 
@@ -441,6 +441,10 @@ def calculate_stand_deltas(
 ) -> List[Dict[str, Any]]:
     results = []
     for stand_id in project_areas_stand_ids:
+        actual_action = None
+        action_value = None
+        baseline_value = None
+        delta = 0
         baseline = baseline_dict.get(stand_id)
         if baseline:
             action_metric = action_dict.get(stand_id)
@@ -456,27 +460,17 @@ def calculate_stand_deltas(
             )
 
             delta = calculate_delta(action_value, baseline_value)
-            results.append(
-                {
-                    "stand_id": stand_id,
-                    "action": actual_action,
-                    "aggregation": ImpactVariableAggregation.MEAN,
-                    "value": action_value,
-                    "baseline": baseline_value,
-                    "delta": delta,
-                }
-            )
-        else:
-            results.append(
-                {
-                    "stand_id": stand_id,
-                    "action": None,
-                    "aggregation": ImpactVariableAggregation.MEAN,
-                    "value": None,
-                    "baseline": None,
-                    "delta": 0,
-                }
-            )
+
+        results.append(
+            {
+                "stand_id": stand_id,
+                "action": actual_action,
+                "aggregation": ImpactVariableAggregation.MEAN,
+                "value": action_value,
+                "baseline": baseline_value,
+                "delta": delta,
+            }
+        )
     return results
 
 
