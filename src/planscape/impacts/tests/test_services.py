@@ -605,7 +605,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         TreatmentResultFactory(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH.value,
+            variable=ImpactVariable.FLAME_LENGTH,
             year=2024,
             value=3.5,
             delta=1.2,
@@ -614,7 +614,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         TreatmentResultFactory(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.RATE_OF_SPREAD.value,
+            variable=ImpactVariable.RATE_OF_SPREAD,
             year=2024,
             value=2.0,
             delta=0.5,
@@ -624,12 +624,12 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         # Add untreated metrics (from StandMetric)
         StandMetricFactory(
             stand=self.stand,
-            datalayer_id=ImpactVariable.FLAME_LENGTH.value,
+            datalayer_id=ImpactVariable.FLAME_LENGTH,
             avg=7.0,
         )
         StandMetricFactory(
             stand=self.stand,
-            datalayer_id=ImpactVariable.RATE_OF_SPREAD.value,
+            datalayer_id=ImpactVariable.RATE_OF_SPREAD,
             avg=15.0,
         )
 
@@ -665,12 +665,12 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         # Add untreated metrics (from StandMetric)
         StandMetricFactory(
             stand=self.stand,
-            datalayer_id=ImpactVariable.FLAME_LENGTH.value,
+            datalayer_id=ImpactVariable.FLAME_LENGTH,
             avg=4.5,
         )
         StandMetricFactory(
             stand=self.stand,
-            datalayer_id=ImpactVariable.RATE_OF_SPREAD.value,
+            datalayer_id=ImpactVariable.RATE_OF_SPREAD,
             avg=12.0,
         )
 
