@@ -115,4 +115,8 @@ export class DirectImpactsStateService {
   setStandsTxSourceLoaded(val: boolean) {
     this._standsTxSourceLoaded$.next(val);
   }
+
+  resetActiveStand() {
+    this._activeStand$.next(null);
+  }
 }
