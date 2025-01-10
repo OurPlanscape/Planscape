@@ -320,25 +320,22 @@ def to_treatment_result(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     year: int,
-    stand_id: int,
-    result: Optional[Dict[str, Any]] = None,
+    result: Dict[str, Any],
 ) -> TreatmentResult:
     """Transforms the result/output of rasterstats (a zonal statistic record)
     into a TreamentResult
     """
     instance, created = TreatmentResult.objects.update_or_create(
         treatment_plan_id=treatment_plan.id,
-        stand_id=stand_id,
+        stand_id=result.get("stand_id"),
         variable=variable,
-        aggregation=result.get("aggregation")
-        if result
-        else ImpactVariableAggregation.MEAN,
+        aggregation=result.get("aggregation"),
         year=year,
         defaults={
-            "value": result.get("value") if result else None,
-            "baseline": result.get("baseline") if result else None,
-            "delta": result.get("delta") if result else 0,
-            "action": result.get("action") if result else None,
+            "value": result.get("value"),
+            "baseline": result.get("baseine"),
+            "delta": result.get("delta"),
+            "action": result.get("action"),
         },
     )
     return instance
@@ -387,11 +384,8 @@ def calculate_impacts(
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
 
-    baseline_treated_stands_dict = {}
-    for stand_id in treated_stand_ids:
-        baseline_treated_stands_dict[stand_id] = baseline_dict.get(stand_id)
-
     deltas_dict = calculate_stand_deltas(
+        project_areas_stand_ids=project_area_stand_ids,
         baseline_dict=baseline_dict,
         action_dict=action_dict,
         action=action,
@@ -402,7 +396,7 @@ def calculate_impacts(
         project_area_deltas.extend(
             calculate_project_area_deltas(
                 project_area=project_area,
-                baseline_dict=baseline_treated_stands_dict,
+                baseline_dict=baseline_dict,
                 action_dict=action_dict,
                 action=action,
             )
@@ -430,10 +424,9 @@ def calculate_impacts(
                 treatment_plan,
                 variable,
                 year,
-                stand_id=x,
-                result=deltas_dict.get(x),
+                result=x,
             ),
-            project_area_stand_ids,
+            deltas_dict,
         )
     )
 
@@ -441,34 +434,49 @@ def calculate_impacts(
 
 
 def calculate_stand_deltas(
+    project_areas_stand_ids: List[int],
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     action: Optional[TreatmentPrescriptionAction] = None,
-) -> Dict[str, Dict[str, Any]]:
-    results = {}
-    for stand_id, baseline in baseline_dict.items():
-        action_metric = action_dict.get(stand_id)
-        actual_action = action if stand_id in action_dict else None
-        attribute_to_lookup = ImpactVariableAggregation.get_metric_attribute(
-            ImpactVariableAggregation.MEAN
-        )
-        baseline_value = getattr(baseline, attribute_to_lookup)
-        action_value = (
-            getattr(action_metric, attribute_to_lookup) or baseline_value
-            if action_metric
-            else baseline_value
-        )
+) -> List[Dict[str, Any]]:
+    results = []
+    for stand_id in project_areas_stand_ids:
+        baseline = baseline_dict.get(stand_id)
+        if baseline:
+            action_metric = action_dict.get(stand_id)
+            actual_action = action if stand_id in action_dict else None
+            attribute_to_lookup = ImpactVariableAggregation.get_metric_attribute(
+                ImpactVariableAggregation.MEAN
+            )
+            baseline_value = getattr(baseline, attribute_to_lookup)
+            action_value = (
+                getattr(action_metric, attribute_to_lookup) or baseline_value
+                if action_metric
+                else baseline_value
+            )
 
-        delta = calculate_delta(action_value, baseline_value)
-        results[stand_id] = dict(
-            {
-                "action": actual_action,
-                "aggregation": ImpactVariableAggregation.MEAN,
-                "value": action_value,
-                "baseline": baseline_value,
-                "delta": delta,
-            }
-        )
+            delta = calculate_delta(action_value, baseline_value)
+            results.append(
+                {
+                    "stand_id": stand_id,
+                    "action": actual_action,
+                    "aggregation": ImpactVariableAggregation.MEAN,
+                    "value": action_value,
+                    "baseline": baseline_value,
+                    "delta": delta,
+                }
+            )
+        else:
+            results.append(
+                {
+                    "stand_id": stand_id,
+                    "action": None,
+                    "aggregation": ImpactVariableAggregation.MEAN,
+                    "value": None,
+                    "baseline": None,
+                    "delta": 0,
+                }
+            )
     return results
 
 
