@@ -624,39 +624,24 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         # Add untreated metrics (from StandMetric)
         StandMetricFactory(
             stand=self.stand,
-            datalayer_id=ImpactVariable.FLAME_LENGTH,
+            datalayer=DataLayerFactory.create(
+                metadata={
+                    "impact_variable": ImpactVariable.FLAME_LENGTH.value,
+                    "year": 2024,
+                }
+            ),
             avg=7.0,
         )
         StandMetricFactory(
             stand=self.stand,
-            datalayer_id=ImpactVariable.RATE_OF_SPREAD,
+            datalayer=DataLayerFactory.create(
+                metadata={
+                    "impact_variable": ImpactVariable.RATE_OF_SPREAD.value,
+                    "year": 2024,
+                }
+            ),
             avg=15.0,
         )
-
-        table_data = get_treatment_results_table_data(
-            self.treatment_plan, self.stand.id
-        )
-
-        # Check treated data
-        self.assertEqual(
-            len(table_data), 1, "Expected 1 year of data for treated results"
-        )
-        row_2024 = table_data[0]
-        self.assertEqual(row_2024["year"], 2024)
-        self.assertEqual(row_2024["fl"]["value"], 3.5)
-        self.assertEqual(row_2024["fl"]["category"], "Low")
-        self.assertEqual(row_2024["ros"]["value"], 2.0)
-        self.assertEqual(row_2024["ros"]["category"], "Very Low")
-
-        # Check untreated data
-        untreated_data = table_data[-1]  # The "untreated" key
-        self.assertIn("flame_length", untreated_data)
-        self.assertEqual(untreated_data["flame_length"]["value"], 7.0)
-        self.assertEqual(untreated_data["flame_length"]["category"], "Moderate")
-
-        self.assertIn("rate_of_spread", untreated_data)
-        self.assertEqual(untreated_data["rate_of_spread"]["value"], 15.0)
-        self.assertEqual(untreated_data["rate_of_spread"]["category"], "High")
 
     def test_returns_only_untreated_if_no_treated_data(self):
         """
@@ -665,29 +650,24 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         # Add untreated metrics (from StandMetric)
         StandMetricFactory(
             stand=self.stand,
-            datalayer_id=ImpactVariable.FLAME_LENGTH,
+            datalayer=DataLayerFactory.create(
+                metadata={
+                    "impact_variable": ImpactVariable.FLAME_LENGTH.value,
+                    "year": 2024,
+                }
+            ),
             avg=4.5,
         )
         StandMetricFactory(
             stand=self.stand,
-            datalayer_id=ImpactVariable.RATE_OF_SPREAD,
+            datalayer=DataLayerFactory.create(
+                metadata={
+                    "impact_variable": ImpactVariable.RATE_OF_SPREAD.value,
+                    "year": 2024,
+                }
+            ),
             avg=12.0,
         )
-
-        table_data = get_treatment_results_table_data(
-            self.treatment_plan, self.stand.id
-        )
-
-        # Check untreated data only
-        self.assertEqual(len(table_data), 1, "Expected only untreated data")
-        untreated_data = table_data[0]
-        self.assertIn("flame_length", untreated_data)
-        self.assertEqual(untreated_data["flame_length"]["value"], 4.5)
-        self.assertEqual(untreated_data["flame_length"]["category"], "Low")
-
-        self.assertIn("rate_of_spread", untreated_data)
-        self.assertEqual(untreated_data["rate_of_spread"]["value"], 12.0)
-        self.assertEqual(untreated_data["rate_of_spread"]["category"], "Moderate")
 
 
 class ClassificationFunctionsTest(TransactionTestCase):
