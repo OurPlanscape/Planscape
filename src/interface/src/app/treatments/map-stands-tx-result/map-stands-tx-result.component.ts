@@ -10,7 +10,6 @@ import {
   DataDrivenPropertyValueSpecification,
   LngLat,
   Map as MapLibreMap,
-  MapGeoJSONFeature,
   MapMouseEvent,
   Point,
 } from 'maplibre-gl';
@@ -20,7 +19,6 @@ import { DEFAULT_SLOT, ImpactsMetricSlot, SLOT_PALETTES } from '../metrics';
 import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
-import { filter } from 'rxjs/operators';
 import { descriptionForAction } from '../prescriptions';
 import { FilterByActionPipe } from './filter-by-action.pipe';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -80,10 +78,8 @@ export class MapStandsTxResultComponent implements OnInit {
 
   activeMetric$ = this.directImpactsStateService.activeMetric$;
 
-  activeStandId$ = this.activeStand$.pipe(
-    filter((s): s is MapGeoJSONFeature => s !== null),
-    map((stand) => stand.id)
-  );
+  // If we get a null active stand we clear the stand selection
+  activeStandId$ = this.activeStand$.pipe(map((stand) => stand?.id));
 
   setActiveStand(event: MapMouseEvent) {
     this.setActiveStandFromPoint(event.point);

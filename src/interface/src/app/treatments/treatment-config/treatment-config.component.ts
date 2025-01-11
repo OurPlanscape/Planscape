@@ -94,7 +94,11 @@ export class TreatmentConfigComponent {
     )
   );
   @ViewChild(TreatmentMapComponent) mapElement: any;
-  breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+  navState$ = this.treatmentsState.navState$;
+
+  $navBarArea$ = this.projectAreaId$.pipe(
+    map((id) => (id ? 'TREATMENTS_PROJECT_AREA' : 'TREATMENTS'))
+  );
 
   loading = true;
 
@@ -170,9 +174,5 @@ export class TreatmentConfigComponent {
     this.dialog.open(ReviewTreatmentPlanDialogComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });
-  }
-
-  closeLegend() {
-    this.mapConfig.setTreatmentLegendVisible(false);
   }
 }

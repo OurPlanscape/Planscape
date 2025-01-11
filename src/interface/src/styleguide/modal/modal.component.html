@@ -57,6 +57,7 @@
     type="button"
     [variant]="primaryButtonVariant"
     [ngClass]="{ 'spinner-class': isInSpinState }"
+    [disabled]="primaryButtonDisabled"
     (click)="handlePrimaryButton()">
     <mat-spinner
       class="primary-spinner"

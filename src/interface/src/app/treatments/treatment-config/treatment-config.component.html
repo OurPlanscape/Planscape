@@ -1,5 +1,8 @@
 <sg-overlay-loader *ngIf="loading" [offsetTop]="48"></sg-overlay-loader>
-<app-nav-bar [breadcrumbs]="(breadcrumbs$ | async) || []" [area]="'TREATMENTS'">
+
+<app-nav-bar
+  [navState]="(navState$ | async) || null"
+  [area]="($navBarArea$ | async) || 'TREATMENTS'">
   <app-treatment-navbar-menu
     [treatmentPlanName]="(treatmentPlanName$ | async) || ''"
     (treatmentPlanDeleted)="redirectToScenario()"
@@ -52,7 +55,6 @@
       *ngIf="showApplyTreatments$ | async"></app-apply-treatment>
 
     <app-treatment-legend
-      *ngIf="(showTreatmentLegend$ | async) || false"
-      (handleCloseLegend)="closeLegend()"></app-treatment-legend>
+      *ngIf="(showTreatmentLegend$ | async) || false"></app-treatment-legend>
   </div>
 </section>

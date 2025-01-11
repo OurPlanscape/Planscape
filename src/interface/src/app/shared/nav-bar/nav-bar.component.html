@@ -1,20 +1,22 @@
 <div class="nav-bar mat-elevation-z2">
-  <section class="breadcrumb">
-    <a
-      [routerLink]="['/home']"
-      [queryParams]="params"
-      queryParamsHandling="merge"
-      >{{ firstBreadcrumb$ | async }}</a
-    >
-
-    <ng-container *ngFor="let breadcrumb of breadcrumbs">
-      /
-      <a [routerLink]="breadcrumb.path" *ngIf="breadcrumb.path">
-        {{ breadcrumb.name }}</a
-      >
-      <span *ngIf="!breadcrumb.path">{{ breadcrumb.name }}</span>
-    </ng-container>
+  <section class="nav-heading" *ngIf="navState">
+    <button mat-icon-button aria-label="back">
+      <mat-icon
+        *ngIf="navState.backLink !== ''"
+        class="back-btn"
+        [routerLink]="navState.backLink"
+        [queryParams]="params"
+        queryParamsHandling="merge"
+        >arrow_back
+      </mat-icon>
+    </button>
+    <div
+      class="current-page"
+      *ngIf="navState.currentView && navState.currentRecordName">
+      {{ navState.currentView + ': ' + navState.currentRecordName }}
+    </div>
   </section>
+
   <div class="actions">
     <button mat-icon-button class="help" [matMenuTriggerFor]="popoverMenu">
       <mat-icon class="material-symbols-outlined" color="primary">
@@ -23,36 +25,79 @@
       <mat-menu #popoverMenu="matMenu">
         <div [ngSwitch]="area" class="tooltip">
           <div *ngSwitchCase="'SCENARIO'">
-            <p>
-              Start planning your scenario to generate your project areas. Enter
-              a name for your scenario at the top left, select your management
-              question, enter your constraints and select Generate. You can only
-              select one management question per run. Note that the run will
-              take longer if you select Medium or Small stand sizes, and we
-              recommend that you start with Large to review your outputs.
-            </p>
+            <div *appFeatureFlag="'treatments'; hide: true">
+              <p>
+                Start planning your scenario to generate your project areas.
+              </p>
+              <p>
+                Enter a name for your scenario at the top left, select your
+                management question, enter your constraints and select Generate.
+                You can only select one management question per run.
+              </p>
+              <p>
+                Note that the run will take longer if you select Medium or Small
+                stand sizes, and we recommend that you start with Large to
+                review your outputs.
+              </p>
+            </div>
+            <div *appFeatureFlag="'treatments'">
+              <p>Start planning scenarios to generate project areas.</p>
+              <p>
+                Enter a name for the scenario at the top left, select the
+                management question, enter the constraints and select Generate.
+                Only one management question can be selected per run.
+              </p>
+              <p>
+                After project areas have been generated, select "+ New Treatment
+                Plan" to begin Impacts planning. Treatment plans can be reviewed
+                by selecting the Treatment Plans tab at the top left.
+              </p>
+            </div>
           </div>
 
           <div *ngSwitchCase="'SCENARIOS'">
             <p>
               The scenario page allows you to create and view all the scenarios
-              that you have created for a specific Planning Area . This page
-              lists the Planning Area creator, number of acres, number of
-              scenarios and gives you the ability to go back to the map of the
-              Planning Area.
+              that you have created for a specific Planning Area, including
+              treatment impacts.
             </p>
 
             <p>
               For each scenario that has been started or completed, you will see
-              the number of project areas and the status of each scenario.
+              the number of project areas and the status of each scenario. Click
+              on the scenario summary to go into the scenario. Archived
+              scenarios can also be accessed from this page.
             </p>
 
             <p>
               In the left panel you’ll find the collaborative Notes panel, where
               all members of the planning team can leave important information
-              regarding the Project. These are viewable to all users who have
+              regarding the Project. Notes are viewable to all users who have
               access to that Planning Area.
             </p>
+          </div>
+          <div *ngSwitchCase="'TREATMENTS'">
+            <p>
+              The treatment plan page shows all project areas and the number of
+              stands with treatments applied per project area. Click on the
+              project area on the map to begin treatments. To search on applied
+              treatments, use the search box at the left. Selecting "View
+              Treatment Layers" will display all stands with their applied
+              treatments on the map. When planning is complete, select “Run
+              Treatment Analysis” to generate the impacts analysis.
+            </p>
+          </div>
+          <div *ngSwitchCase="'TREATMENTS_PROJECT_AREA'">
+            <p>
+              To apply treatments, select stands by clicking or dragging over an
+              area. Selecting one/many stands will bring up the "Apply
+              Treatment" popup, which allows selection from various treatment
+              types for each stand. The pop-up also enables the selection of
+              single treatments, or sequenced treatments.
+            </p>
+          </div>
+          <div *ngSwitchCase="'IMPACTS'">
+            <p></p>
           </div>
           <div *ngSwitchCase="'EXPLORE'">
             <p>
@@ -79,7 +124,7 @@
 
     <button
       sg-button
-      *ngIf="area !== 'TREATMENTS'"
+      *ngIf="area !== 'TREATMENTS' && area !== 'TREATMENTS_PROJECT_AREA'"
       variant="text"
       icon="print"
       [outlined]="true"
@@ -104,7 +149,11 @@
       variant="text"
       (click)="sharePlan()"
       data-id="share"
-      *ngIf="area === 'SCENARIOS' && (canSharePlan$ | async)">
+      *ngIf="
+        area === 'SCENARIOS' &&
+        (canSharePlan$ | async) &&
+        navState?.currentRecordName
+      ">
       Share
     </button>
 

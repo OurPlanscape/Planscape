@@ -4,8 +4,8 @@ import {
   DatePipe,
   JsonPipe,
   NgClass,
-  NgIf,
   NgFor,
+  NgIf,
   NgStyle,
 } from '@angular/common';
 import { SharedModule } from '@shared';
@@ -46,8 +46,8 @@ import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/ex
 import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
-import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentProjectArea } from '@types';
+import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -80,6 +80,7 @@ import { TreatmentProjectArea } from '@types';
     ExpandedStandDataChartComponent,
     ExpandedChangeOverTimeChartComponent,
     ModalComponent,
+    OverlayLoaderComponent,
   ],
   providers: [
     DirectImpactsStateService,
@@ -92,6 +93,7 @@ import { TreatmentProjectArea } from '@types';
   styleUrl: './direct-impacts.component.scss',
 })
 export class DirectImpactsComponent implements OnInit, OnDestroy {
+  loading = false;
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfigState: MapConfigState,
@@ -102,6 +104,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private injector: Injector // Angular's injector for passing shared services
   ) {
     const data = getMergedRouteData(this.route.snapshot);
+    this.loading = true;
     this.treatmentsState
       .loadTreatmentByRouteData(data)
       .pipe(
@@ -114,8 +117,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           this.mapConfigState.setShowFillProjectAreas(false);
           this.mapConfigState.updateShowTreatmentStands(true);
           this.mapConfigState.updateShowProjectAreas(true);
+          this.loading = false;
         }),
         catchError((error) => {
+          this.loading = false;
           this.router.navigate(['/']);
           throw error;
         })
@@ -123,9 +128,11 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       .subscribe();
   }
 
-  breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+  navState$ = this.treatmentsState.navState$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
+  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
+  showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
@@ -157,10 +164,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  activateMetric(data: ImpactsMetric) {
-    this.directImpactsStateService.setActiveMetric(data);
-  }
-
   activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(
     map((m) => m.metric)
   );
@@ -169,11 +172,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
-  reportMetrics$ = this.directImpactsStateService.reportMetrics$;
-
-  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
-
-  getValues(activeStand: MapGeoJSONFeature) {}
+  activateMetric(data: ImpactsMetric) {
+    this.directImpactsStateService.setActiveMetric(data);
+  }
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
@@ -221,6 +222,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   }
 
   saveShowTreatmentPrescription(value: MatSlideToggleChange) {
+    this.mapConfigState.setTreatmentLegendVisible(value.checked);
     this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
   }
 }
