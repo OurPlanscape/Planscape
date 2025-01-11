@@ -329,9 +329,9 @@ def to_treatment_result(
         treatment_plan_id=treatment_plan.id,
         stand_id=result.get("stand_id"),
         variable=variable,
-        aggregation=result.get("aggregation")
-        if result
-        else ImpactVariableAggregation.MEAN,
+        aggregation=(
+            result.get("aggregation") if result else ImpactVariableAggregation.MEAN
+        ),
         year=year,
         defaults={
             "value": result.get("value"),
@@ -513,7 +513,7 @@ def calculate_project_area_deltas(
     - s2_C = 200 tons
     - s3_C = 300 tons
 
-    Post-tx: 
+    Post-tx:
     - s1_C = 50 tons
     - s2_C = 200 tons
     - s3_C = 300 tons
@@ -570,42 +570,46 @@ def calculate_project_area_deltas(
     return results
 
 
-def classify_flame_length(fl_value: float) -> str:
+def classify_flame_length(fl_value: Optional[float]) -> str:
     """
     Converts numeric flame length into relative values.
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
+    if fl_value is None:
+        return ""
     if fl_value < 2.0:
         return "Very Low"
-    elif fl_value < 4.0:
+    if fl_value < 4.0:
         return "Low"
-    elif fl_value < 8.0:
+    if fl_value < 8.0:
         return "Moderate"
-    elif fl_value < 12.0:
+    if fl_value < 12.0:
         return "High"
-    elif fl_value < 25.0:
+    if fl_value < 25.0:
         return "Very High"
-    else:
-        return "Extreme"
+
+    return "Extreme"
 
 
-def classify_rate_of_spread(ros_value: float) -> str:
+def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     """
     Converts numeric rate of spread into relative values.
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
+    if ros_value is None:
+        return ""
     if ros_value < 3.0:
         return "Very Low"
-    elif ros_value < 10.0:
+    if ros_value < 10.0:
         return "Low"
-    elif ros_value < 20.0:
+    if ros_value < 20.0:
         return "Moderate"
-    elif ros_value < 60.0:
+    if ros_value < 60.0:
         return "High"
-    elif ros_value < 100.0:
+    if ros_value < 100.0:
         return "Very High"
-    else:
-        return "Extreme"
+
+    return "Extreme"
 
 
 def get_treatment_results_table_data(
@@ -624,16 +628,46 @@ def get_treatment_results_table_data(
       ...
     ]
     """
-    queryset = TreatmentResult.objects.filter(
+    # Fetch treatment results
+    treated_results = TreatmentResult.objects.filter(
         treatment_plan=treatment_plan, stand_id=stand_id
     ).values("year", "variable", "value", "delta", "baseline")
 
-    if not queryset.exists():
+    if not treated_results.exists():
         return []
 
     data_map = defaultdict(dict)
 
-    for row in queryset:
+    for year in AVAILABLE_YEARS:
+        flame_length = ImpactVariable.get_datalayer(
+            impact_variable=ImpactVariable.FLAME_LENGTH,
+            year=year,
+        )
+        rate_of_spread = ImpactVariable.get_datalayer(
+            impact_variable=ImpactVariable.RATE_OF_SPREAD,
+            year=year,
+        )
+        fl_metric = StandMetric.objects.get(stand_id=stand_id, datalayer=flame_length)
+        ros_metric = StandMetric.objects.get(
+            stand_id=stand_id, datalayer=rate_of_spread
+        )
+
+        data_map[year][ImpactVariable.FLAME_LENGTH.lower()] = {
+            "value": None,
+            "delta": None,
+            "baseline": fl_metric.avg,
+            "category": classify_flame_length(fl_metric.avg),
+        }
+
+        data_map[year][ImpactVariable.RATE_OF_SPREAD.lower()] = {
+            "value": None,
+            "delta": None,
+            "baseline": ros_metric.avg,
+            "category": classify_rate_of_spread(ros_metric.avg),
+        }
+
+    # Populate data_map with treatment results
+    for row in treated_results:
         year = row["year"]
         variable = row["variable"]
         value = row["value"]
@@ -642,21 +676,14 @@ def get_treatment_results_table_data(
 
         var_key = variable.lower()
 
-        match variable:
-            case ImpactVariable.FLAME_LENGTH:
-                category = classify_flame_length(value)
-            case ImpactVariable.RATE_OF_SPREAD:
-                category = classify_rate_of_spread(value)
-            case _:
-                category = None
-
         data_map[year][var_key] = {
             "value": value,
             "delta": delta,
             "baseline": baseline,
-            "category": category,
+            "category": None,
         }
 
+    # Format data into a list
     table_data = []
 
     for year in sorted(data_map.keys()):
