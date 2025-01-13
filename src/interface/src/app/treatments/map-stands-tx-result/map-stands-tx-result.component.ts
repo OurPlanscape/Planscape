@@ -154,6 +154,7 @@ export class MapStandsTxResultComponent implements OnInit {
     const features = this.mapLibreMap.queryRenderedFeatures(point, {
       layers: ['standsFill'],
     });
+
     return features[0];
   }
 
@@ -161,11 +162,11 @@ export class MapStandsTxResultComponent implements OnInit {
     return {
       'fill-color': [
         'case',
-        // Check if 'action' property is null
-        ['==', ['get', 'action'], ['literal', null]],
-        '#ffffff', // White for null 'action'
+        // Check if 'variable' property is null
+        ['==', ['get', 'variable'], ['literal', null]],
+        '#ffffff', // White for null 'variable'
         [
-          // If 'action' is not null, apply the existing logic
+          // If 'variable' is not null, apply the existing logic
           'case',
           ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
           '#ffffff', // White for null 'propertyName'
