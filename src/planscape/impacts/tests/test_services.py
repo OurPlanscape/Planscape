@@ -13,6 +13,7 @@ from impacts.models import (
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
+    TreatmentResult,
 )
 from impacts.services import (
     calculate_delta,
@@ -20,10 +21,12 @@ from impacts.services import (
     classify_flame_length,
     classify_rate_of_spread,
     clone_treatment_plan,
+    fill_impacts_for_untreated_stands,
     generate_impact_results_data_to_plot,
     generate_summary,
     get_calculation_matrix,
     get_baseline_matrix,
+    get_calculation_matrix_wo_action,
     get_treatment_results_table_data,
     upsert_treatment_prescriptions,
 )
@@ -292,6 +295,27 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertEqual(len(matrix), total_records)
 
 
+class GetCalculationMatricsWoActionTest(TransactionTestCase):
+    def test_calculation_matrix_wo_action_returns_correctly(self):
+        years = [1, 2]
+        matrix = get_calculation_matrix_wo_action(years=years)
+
+        total_records = len(ImpactVariable.get_measurable_impact_variables()) * len(
+            years
+        )
+
+        self.assertEqual(len(matrix), total_records)
+
+    def test_calculation_matrix_wo_action_null_years(self):
+        matrix = get_calculation_matrix_wo_action()
+
+        total_records = len(ImpactVariable.get_measurable_impact_variables()) * len(
+            AVAILABLE_YEARS
+        )
+
+        self.assertEqual(len(matrix), total_records)
+
+
 class CalculateImpactsTest(TransactionTestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
@@ -410,6 +434,71 @@ class CalculateImpactsTest(TransactionTestCase):
             self.assertEqual(
                 calculate_delta(value=value, baseline=base), expected_result
             )
+
+
+class FillImpactsForUntreatedStandsTest(TransactionTestCase):
+    def load_stands(self):
+        with open("impacts/tests/test_data/stands.geojson") as fp:
+            geojson = json.loads(fp.read())
+
+        features = geojson.get("features")
+        return list(
+            [
+                Stand.objects.create(
+                    geometry=GEOSGeometry(json.dumps(f.get("geometry")), srid=4326),
+                    size="LARGE",
+                    area_m2=1,
+                )
+                for f in features
+            ]
+        )
+
+    def setUp(self):
+        self.stands = self.load_stands()
+        self.plan = TreatmentPlanFactory.create()
+        stand_ids = [s.id for s in self.stands]
+        self.project_area_geometry = MultiPolygon(
+            [
+                Stand.objects.filter(id__in=stand_ids).aggregate(
+                    geometry=Union("geometry")
+                )["geometry"]
+            ]
+        )
+        self.project_area = ProjectAreaFactory.create(
+            scenario=self.plan.scenario, geometry=self.project_area_geometry
+        )
+        self.treated_stands = self.stands[:3]
+        self.prescriptions = list(
+            [
+                TreatmentPrescriptionFactory.create(
+                    treatment_plan=self.plan,
+                    stand=stand,
+                    action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                    geometry=stand.geometry,
+                )
+                for stand in self.treated_stands
+            ]
+        )
+
+    def test_fill_impacts_for_untreated_stands(self):
+        treatment_results = fill_impacts_for_untreated_stands(
+            self.plan, ImpactVariable.CANOPY_BASE_HEIGHT, year=AVAILABLE_YEARS[0]
+        )
+
+        self.assertIsNotNone(treatment_results)
+        self.assertEqual(
+            TreatmentResult.objects.count(),
+            self.project_area.get_stands().count() - len(self.treated_stands),
+        )
+
+        for treatment_result in TreatmentResult.objects.all():
+            self.assertEqual(
+                treatment_result.variable, ImpactVariable.CANOPY_BASE_HEIGHT
+            )
+            self.assertEqual(treatment_result.action, None)
+            self.assertEqual(treatment_result.value, None)
+            self.assertEqual(treatment_result.baseline, None)
+            self.assertEqual(treatment_result.delta, 0)
 
 
 class ImpactResultsDataPlotTest(TransactionTestCase):
