@@ -9,13 +9,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { NgIf } from '@angular/common';
 import { TreatmentsService } from '@services/treatments.service';
 
-interface MetricResult {
-  baseline: number;
-  category: string;
-  delta: number;
-  value: number;
-}
-
 @UntilDestroy()
 @Component({
   selector: 'app-non-forested-data',
@@ -39,7 +32,7 @@ export class NonForestedDataComponent {
     this.directImpactsStateService.activeStand$
       .pipe(
         untilDestroyed(this),
-        distinctUntilChanged(),
+        distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
         tap((_) => (this.loading = true)),
         switchMap((s) =>
           this.treatmentsService.getStandResult(
@@ -48,53 +41,8 @@ export class NonForestedDataComponent {
           )
         )
       )
-      .subscribe((s) => {
-        const d: Record<'FL' | 'ROS', MetricResult>[] = [
-          {
-            FL: {
-              baseline: 12,
-              category: 'Mid',
-              delta: 12,
-              value: 1,
-            } as MetricResult,
-            ROS: {
-              baseline: 12,
-              category: 'Mid',
-              delta: 12,
-              value: 1,
-            } as MetricResult,
-          },
-          {
-            FL: {
-              baseline: 12,
-              category: 'Strong',
-              delta: 12,
-              value: 1,
-            } as MetricResult,
-            ROS: {
-              baseline: 12,
-              category: 'Strong',
-              delta: 12,
-              value: 1,
-            } as MetricResult,
-          },
-          {
-            FL: {
-              baseline: 12,
-              category: 'Extreme',
-              delta: 12,
-              value: 1,
-            } as MetricResult,
-            ROS: {
-              baseline: 12,
-              category: 'Extreme',
-              delta: 12,
-              value: 1,
-            } as MetricResult,
-          },
-        ];
-
-        this.dataSource = d.map((data, i) => {
+      .subscribe((dataset) => {
+        this.dataSource = dataset.map((data, i) => {
           return {
             time_step: i * 5,
             rate_of_spread: data.ROS.category,
