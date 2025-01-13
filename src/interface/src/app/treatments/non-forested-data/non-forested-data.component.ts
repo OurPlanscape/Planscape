@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { distinctUntilChanged, map, switchMap, tap } from 'rxjs';
+import { distinctUntilChanged, switchMap, tap } from 'rxjs';
 
 import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -18,10 +18,6 @@ import { TreatmentsService } from '@services/treatments.service';
   styleUrl: './non-forested-data.component.scss',
 })
 export class NonForestedDataComponent {
-  activeStandId$ = this.directImpactsStateService.activeStand$.pipe(
-    map((s) => s?.id)
-  );
-
   loading = true;
 
   constructor(

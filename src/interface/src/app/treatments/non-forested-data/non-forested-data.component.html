@@ -1,4 +1,7 @@
-<mat-spinner diameter="20" *ngIf="loading; else table"></mat-spinner>
+<div *ngIf="loading; else table" class="loader">
+  <mat-spinner diameter="24"></mat-spinner>
+</div>
+
 <ng-template #table>
   <table
     mat-table
