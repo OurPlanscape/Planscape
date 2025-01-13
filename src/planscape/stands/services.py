@@ -1,16 +1,13 @@
 import json
 import logging
-from typing import Any, Dict, Iterable
+from typing import Any, Collection, Dict
 
-from core.s3 import get_aws_session
 from datasets.models import DataLayer, DataLayerType
 from django.db.models import QuerySet
 from rasterstats.io import Raster
 from shapely import total_bounds
 from shapely.geometry import shape
-import rasterio
 from rasterstats import zonal_stats
-from rasterio.session import AWSSession
 
 from stands.models import Stand, StandMetric
 
@@ -33,7 +30,7 @@ def to_geojson(stand: Stand) -> Dict[str, Any]:
 def to_stand_metric(
     stats_result: Dict[str, Any],
     datalayer: DataLayer,
-    aggregations: Iterable[str],
+    aggregations: Collection[str],
 ) -> StandMetric:
     properties = stats_result.get("properties", {}) or {}
     stand_metric_data = {
@@ -69,7 +66,7 @@ MODEL_AGGREGATION_MAP = {value: key for key, value in AGGREGATION_MODEL_MAP.item
 def calculate_stand_zonal_stats(
     stands: QuerySet["Stand"],
     datalayer: DataLayer,
-    aggregations: Iterable[str] = DEFAULT_AGGREGATIONS,
+    aggregations: Collection[str] = DEFAULT_AGGREGATIONS,
 ) -> QuerySet[StandMetric]:
     """This function calculates zonal stats for
     a collection of stands. This function skips
