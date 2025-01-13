@@ -837,4 +837,4 @@ def export_shapefile(treatment_plan: TreatmentPlan) -> str:
                     },
                 }
             )
-    return str(shapefile_path)
+    return str(fiona_path)
