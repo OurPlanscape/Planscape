@@ -809,11 +809,19 @@ def fetch_treatment_plan_data(
     )
 
 
+def force_field_type(schema: Dict[str, Any], field_type: str) -> Dict[str, Any]:
+    for key, type in schema.get("properties", {}).items():
+        if type is None or type == "":
+            schema["properties"][key] = field_type
+    return schema
+
+
 def export_shapefile(treatment_plan: TreatmentPlan) -> str:
     shapefile_path = Path(get_shapefile_path(treatment_plan))
     fiona_path = f"{str(shapefile_path)}.zip"
     data = fetch_treatment_plan_data(treatment_plan)
-    shapefile_schema = get_schema(data)
+    shapefile_schema = force_field_type(get_schema(data), "float")
+
     shapefile_path.unlink(missing_ok=True)
     if not shapefile_path.exists():
         shapefile_path.mkdir(parents=True)
