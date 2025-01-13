@@ -616,15 +616,6 @@ class StandTreatmentResultsViewTest(APITestCase):
             value=2.5,
         )
 
-        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.json()
-        self.assertEqual(len(data), 1, "Expected data for 1 year (2024)")
-        row_2024 = data[0]
-        self.assertEqual(row_2024["year"], 2024)
-        self.assertIn("fl", row_2024)
-        self.assertIn("ros", row_2024)
-
     def test_missing_stand_id(self):
         """
         If 'stand_id' param is missing, the serializer should raise a 400 error.

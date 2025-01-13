@@ -48,21 +48,37 @@
       <div>
         <div class="field-label">
           <div>Select a stand size</div>
-          <mat-icon class="stands-info-icon" color="primary"
-            >info_outline</mat-icon
-          >
+
+          <button
+            sg-button
+            variant="icon-only"
+            icon="info_outline"
+            [outlined]="true"
+            class="stands-info-icon"
+            [matMenuTriggerFor]="standsTooltip"></button>
+
+          <mat-menu #standsTooltip="matMenu">
+            <div class="tooltip">
+              <p>The stand sizes represent the number of acres per stand.</p>
+              <p>
+                <strong>Small</strong> stand size is 10 acres/stand. <br />
+                <strong>Medium</strong> stand size is 100 acres/stand.<br />
+                <strong>Large</strong> stand size is 500 acres/stand.
+              </p>
+            </div>
+          </mat-menu>
         </div>
         <mat-form-field class="stand-picker-field" appearance="outline">
           <mat-select name="standSize" formControlName="standSize">
             <mat-option class="nav-page-item" value="SMALL"
-              >Small (10 acres)</mat-option
-            >
+              >Small (10 acres)
+            </mat-option>
             <mat-option class="nav-page-item" value="MEDIUM"
-              >Medium (100 acres)</mat-option
-            >
+              >Medium (100 acres)
+            </mat-option>
             <mat-option class="nav-page-item" value="LARGE"
-              >Large (500 acres)</mat-option
-            >
+              >Large (500 acres)
+            </mat-option>
           </mat-select>
         </mat-form-field>
       </div>

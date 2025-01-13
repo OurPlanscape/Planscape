@@ -136,11 +136,10 @@ def union_geojson(uploaded_geojson) -> GEOSGeometry:
     return unioned_geometry
 
 
-def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] = None):
+def feature_to_project_area(user_id: int, scenario, feature, idx: int = 1):
     try:
-        area_name = f"Project Area"
-        if idx is not None:
-            area_name += f" {idx}"
+        area_name = f"Project Area {idx}"
+        logger.info("creating project area %s %s", area_name, feature)
 
         geometry = MultiPolygon(
             [
@@ -173,7 +172,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] 
         return proj_area_obj
 
     except Exception as e:
-        logger.error(f"Unable to create project area for {scenario.name} {e}")
+        logger.exception("Unable to create project area for scenario %s", scenario.name)
         raise e
 
 
@@ -207,19 +206,24 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             json.dumps(uploaded_geom),
             1,
         )
+        logger.info(f"Processing feature {new_feature}")
         uploaded_geom.setdefault("properties", {})
         uploaded_geom["properties"]["project_id"] = new_feature.pk
         uploaded_geom["properties"]["treatment_rank"] = 1
 
     # handle a FeatureCollection
     if "features" in uploaded_geom:
-        for idx, f in enumerate(uploaded_geom["features"], 1):
+        for idx, feature in enumerate(uploaded_geom["features"], 1):
+            logger.info(f"Processing feature {feature}")
             new_feature = feature_to_project_area(
-                scenario.user, scenario, json.dumps(f["geometry"]), idx
+                scenario.user,
+                scenario,
+                json.dumps(feature["geometry"]),
+                idx,
             )
-            f.setdefault("properties", {})
-            f["properties"]["project_id"] = new_feature.pk
-            f["properties"]["treatment_rank"] = idx
+            feature.setdefault("properties", {})
+            feature["properties"]["project_id"] = new_feature.pk
+            feature["properties"]["treatment_rank"] = idx
 
     # Store geometry with added properties into ScenarioResult.result
     ScenarioResult.objects.create(
