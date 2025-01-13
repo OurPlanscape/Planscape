@@ -10,6 +10,7 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 import { MatTableModule } from '@angular/material/table';
 import { NonForestedDataComponent } from '../non-forested-data/non-forested-data.component';
+import { standIsForested } from '../stands';
 
 const baseFont = {
   family: 'Public Sans',
@@ -39,9 +40,7 @@ export class StandDataChartComponent {
   activeStand$ = this.directImpactsStateService.activeStand$;
 
   activeStandIsForested$ = this.activeStand$.pipe(
-    map((d) => {
-      return d && !!d.properties['delta_0'];
-    })
+    map((d) => standIsForested(d))
   );
 
   activeStandValues$: Observable<number[]> =
