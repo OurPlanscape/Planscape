@@ -178,10 +178,9 @@ class TreatmentPlanNoteViewPermission(PlanscapePermission):
                     treatment_plan = TreatmentPlan.objects.select_related(
                         "scenario", "scenario__planning_area"
                     ).get(id=treatment_plan_id)
+                    return TreatmentPlanPermission.can_view(request.user, treatment_plan)
                 except TreatmentPlan.DoesNotExist:
                     return False
-                planning_area = treatment_plan.scenario.planning_area
-                return PlanningAreaPermission.can_view(request.user, planning_area)
 
             case "destroy" | "retrieve":
                 # fallthrough to has_object_permissions
@@ -204,7 +203,7 @@ class TreatmentPlanNotePermission(CheckPermissionMixin):
     @staticmethod
     def can_view(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):
         # depends on planning_area view permission
-        planning_area = treatment_plan.scenario.planning_area
+        planning_area = treatment_plan_note.treatment_plan.scenario.planning_area
         if is_creator(user, planning_area):
             return True
         return check_for_permission(user.id, planning_area, "view_planningarea")

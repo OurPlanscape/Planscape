@@ -11,6 +11,7 @@ from impacts.models import (
     ImpactVariableAggregation,
     AVAILABLE_YEARS,
     TreatmentPlan,
+    TreatmentPlanNote,
     TreatmentPlanStatus,
     TreatmentPrescriptionAction,
 )
@@ -715,130 +716,136 @@ class TxPlanNoteTest(APITransactionTestCase):
         print(f"what is the respone? {response}")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # def test_get_notes_for_project_area(self):
-    #     self.client.force_authenticate(self.user)
-    #     ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user, content="I am a note"
-    #     )
-    #     ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user, content="I am a second note"
-    #     )
-    #     ProjectAreaNote.objects.create(
-    #         project_area=self.project_area,
-    #         user=self.other_user,
-    #         content="I am a third note",
-    #     )
-    #     # creating a note for a separate project area, so it shouldnt be in results
-    #     ProjectAreaNote.objects.create(
-    #         project_area=self.other_project_area,
-    #         user=self.other_user,
-    #         content="I am a third note",
-    #     )
-    #     response = self.client.get(
-    #         reverse(
-    #             "api:planning:project-areas-notes-list",
-    #             kwargs={"project_area_id": self.project_area.pk},
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     response_data = response.json()
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(len(response_data), 3)
-    #     for rec in response_data:
-    #         self.assertIn("can_delete", rec)
-    #         self.assertEqual(rec["can_delete"], True)
+    def test_get_notes_for_treatment_plan(self):
+        self.client.force_authenticate(self.user)
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am a note"
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am a second note"
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.other_user,
+            content="I am a third note",
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.other_user,
+            content="I am a third note",
+        )
+        # create a note for a different treatment plan
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.other_user_treatment_plan,
+            user=self.other_user,
+            content="I am a new note on a different tx plan",
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_data), 4)
+        for rec in response_data:
+            self.assertIn("can_delete", rec)
+            self.assertEqual(rec["can_delete"], True)
 
-    # def test_get_notes_for_unauthorized_user(self):
-    #     self.client.force_authenticate(self.other_user)
-    #     ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user, content="I am a note"
-    #     )
-    #     ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user, content="I am a second note"
-    #     )
-    #     response = self.client.get(
-    #         reverse(
-    #             "api:planning:project-areas-notes-list",
-    #             kwargs={"project_area_id": self.project_area.pk},
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    def test_get_notes_for_unauthorized_user(self):
+        self.client.force_authenticate(self.other_user)
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am a note"
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am a second note"
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # def test_get_single_note(self):
-    #     self.client.force_authenticate(self.user)
-    #     visible_note = ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user, content="I am just one note"
-    #     )
-    #     response = self.client.get(
-    #         reverse(
-    #             "api:planning:project-areas-notes-detail",
-    #             kwargs={"project_area_id": self.project_area.pk, "pk": visible_note.pk},
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     response_data = response.json()
-    #     self.assertEqual(response.status_code, status.HTTP_200_OK)
-    #     self.assertEqual(response_data["content"], "I am just one note")
+    def test_get_single_note(self):
+        self.client.force_authenticate(self.user)
+        visible_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am just one note"
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": visible_note.pk},
+            ),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["content"], "I am just one note")
 
-    # def test_get_single_note_no_perms(self):
-    #     self.client.force_authenticate(self.other_user)
-    #     visible_note = ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user, content="I am a note"
-    #     )
-    #     response = self.client.get(
-    #         reverse(
-    #             "api:planning:project-areas-notes-detail",
-    #             kwargs={"project_area_id": self.project_area.pk, "pk": visible_note.pk},
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+    def test_get_single_note_no_perms(self):
+        self.client.force_authenticate(self.other_user)
+        visible_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="A note"
+        )
 
-    # def test_delete_note(self):
-    #     self.client.force_authenticate(self.user)
-    #     new_note = ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user
-    #     )
-    #     response = self.client.delete(
-    #         reverse(
-    #             "api:planning:project-areas-notes-detail",
-    #             kwargs={"project_area_id": self.project_area.pk, "pk": new_note.pk},
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": visible_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
-    # def test_delete_nonexistent_note(self):
-    #     self.client.force_authenticate(self.user)
-    #     new_note = ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user
-    #     )
-    #     response = self.client.delete(
-    #         reverse(
-    #             "api:planning:project-areas-notes-detail",
-    #             kwargs={
-    #                 "project_area_id": self.project_area.pk,
-    #                 "pk": (new_note.pk + 1),
-    #             },
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_delete_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk,  "pk": new_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
 
-    # def test_delete_note_no_permissions(self):
-    #     self.client.force_authenticate(self.other_user)
-    #     new_note = ProjectAreaNote.objects.create(
-    #         project_area=self.project_area, user=self.user
-    #     )
-    #     response = self.client.delete(
-    #         reverse(
-    #             "api:planning:project-areas-notes-detail",
-    #             kwargs={
-    #                 "project_area_id": self.project_area.pk,
-    #                 "pk": (new_note.pk + 1),
-    #             },
-    #         ),
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+    def test_delete_nonexistent_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={
+                    "tx_plan_pk": self.treatment_plan.pk,
+                    "pk": (new_note.pk + 1),
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_note_no_permissions(self):
+        self.client.force_authenticate(self.other_user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={
+                    "tx_plan_pk": self.treatment_plan.pk,
+                    "pk": new_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
