@@ -6,7 +6,6 @@ from pathlib import Path
 from django.conf import settings
 from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple
 import fiona
-from shapely import from_wkt, to_geojson
 
 import rasterio
 from actstream import action as actstream_action
