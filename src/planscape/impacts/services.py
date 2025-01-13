@@ -320,25 +320,24 @@ def to_treatment_result(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     year: int,
-    stand_id: int,
-    result: Optional[Dict[str, Any]] = None,
+    result: Dict[str, Any],
 ) -> TreatmentResult:
     """Transforms the result/output of rasterstats (a zonal statistic record)
     into a TreamentResult
     """
     instance, created = TreatmentResult.objects.update_or_create(
         treatment_plan_id=treatment_plan.id,
-        stand_id=stand_id,
+        stand_id=result.get("stand_id"),
         variable=variable,
-        aggregation=result.get("aggregation")
-        if result
-        else ImpactVariableAggregation.MEAN,
+        aggregation=(
+            result.get("aggregation") if result else ImpactVariableAggregation.MEAN
+        ),
         year=year,
         defaults={
-            "value": result.get("value") if result else None,
-            "baseline": result.get("baseline") if result else None,
-            "delta": result.get("delta") if result else 0,
-            "action": result.get("action") if result else None,
+            "value": result.get("value"),
+            "baseline": result.get("baseline"),
+            "delta": result.get("delta"),
+            "action": result.get("action"),
         },
     )
     return instance
@@ -360,25 +359,19 @@ def calculate_impacts(
         "treatment_plan",
         "project_area",
     )
-
-    treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
-    treated_stands = Stand.objects.filter(id__in=treated_stand_ids).with_webmercator()
-
-    scenario = treatment_plan.scenario
-    project_area_stand_ids = scenario.get_project_areas_stands().values_list(
-        "id", flat=True
-    )
+    stand_ids = prescriptions.values_list("stand_id", flat=True)
+    stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
 
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
         baseline_metrics = calculate_metrics(
-            stands=treated_stands,
+            stands=stands,
             variable=variable,
             year=year,
         )
 
         action_metrics = calculate_metrics(
-            stands=treated_stands,
+            stands=stands,
             variable=variable,
             year=year,
             action=action,
@@ -387,11 +380,7 @@ def calculate_impacts(
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
     action_dict = {m.stand_id: m for m in action_metrics}
 
-    baseline_treated_stands_dict = {}
-    for stand_id in treated_stand_ids:
-        baseline_treated_stands_dict[stand_id] = baseline_dict.get(stand_id)
-
-    deltas_dict = calculate_stand_deltas(
+    deltas_list = calculate_stand_deltas(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
         action=action,
@@ -402,7 +391,7 @@ def calculate_impacts(
         project_area_deltas.extend(
             calculate_project_area_deltas(
                 project_area=project_area,
-                baseline_dict=baseline_treated_stands_dict,
+                baseline_dict=baseline_dict,
                 action_dict=action_dict,
                 action=action,
             )
@@ -420,20 +409,15 @@ def calculate_impacts(
         )
     )
 
-    # It iterates over all stands within the project areas
-    # and creates a TreatmentResult for each stand.
-    # If the stand is not treated (no delta calculated), it
-    # will create a TreatmentResult with delta=0.
     treatment_results = list(
         map(
             lambda x: to_treatment_result(
                 treatment_plan,
                 variable,
                 year,
-                stand_id=x,
-                result=deltas_dict.get(x),
+                result=x,
             ),
-            project_area_stand_ids,
+            deltas_list,
         )
     )
 
@@ -444,8 +428,8 @@ def calculate_stand_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     action: Optional[TreatmentPrescriptionAction] = None,
-) -> Dict[str, Dict[str, Any]]:
-    results = {}
+) -> List[Dict[str, Any]]:
+    results = []
     for stand_id, baseline in baseline_dict.items():
         action_metric = action_dict.get(stand_id)
         actual_action = action if stand_id in action_dict else None
@@ -460,8 +444,9 @@ def calculate_stand_deltas(
         )
 
         delta = calculate_delta(action_value, baseline_value)
-        results[stand_id] = dict(
+        results.append(
             {
+                "stand_id": stand_id,
                 "action": actual_action,
                 "aggregation": ImpactVariableAggregation.MEAN,
                 "value": action_value,
@@ -528,7 +513,7 @@ def calculate_project_area_deltas(
     - s2_C = 200 tons
     - s3_C = 300 tons
 
-    Post-tx: 
+    Post-tx:
     - s1_C = 50 tons
     - s2_C = 200 tons
     - s3_C = 300 tons
@@ -585,42 +570,46 @@ def calculate_project_area_deltas(
     return results
 
 
-def classify_flame_length(fl_value: float) -> str:
+def classify_flame_length(fl_value: Optional[float]) -> str:
     """
     Converts numeric flame length into relative values.
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
+    if fl_value is None:
+        return ""
     if fl_value < 2.0:
         return "Very Low"
-    elif fl_value < 4.0:
+    if fl_value < 4.0:
         return "Low"
-    elif fl_value < 8.0:
+    if fl_value < 8.0:
         return "Moderate"
-    elif fl_value < 12.0:
+    if fl_value < 12.0:
         return "High"
-    elif fl_value < 25.0:
+    if fl_value < 25.0:
         return "Very High"
-    else:
-        return "Extreme"
+
+    return "Extreme"
 
 
-def classify_rate_of_spread(ros_value: float) -> str:
+def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     """
     Converts numeric rate of spread into relative values.
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
+    if ros_value is None:
+        return ""
     if ros_value < 3.0:
         return "Very Low"
-    elif ros_value < 10.0:
+    if ros_value < 10.0:
         return "Low"
-    elif ros_value < 20.0:
+    if ros_value < 20.0:
         return "Moderate"
-    elif ros_value < 60.0:
+    if ros_value < 60.0:
         return "High"
-    elif ros_value < 100.0:
+    if ros_value < 100.0:
         return "Very High"
-    else:
-        return "Extreme"
+
+    return "Extreme"
 
 
 def get_treatment_results_table_data(
@@ -639,39 +628,60 @@ def get_treatment_results_table_data(
       ...
     ]
     """
-    queryset = TreatmentResult.objects.filter(
+    # Fetch treatment results
+    treated_results = TreatmentResult.objects.filter(
         treatment_plan=treatment_plan, stand_id=stand_id
     ).values("year", "variable", "value", "delta", "baseline")
 
-    if not queryset.exists():
+    if not treated_results.exists():
         return []
 
     data_map = defaultdict(dict)
 
-    for row in queryset:
+    for year in AVAILABLE_YEARS:
+        flame_length = ImpactVariable.get_datalayer(
+            impact_variable=ImpactVariable.FLAME_LENGTH,
+            year=year,
+        )
+        rate_of_spread = ImpactVariable.get_datalayer(
+            impact_variable=ImpactVariable.RATE_OF_SPREAD,
+            year=year,
+        )
+        fl_metric = StandMetric.objects.get(stand_id=stand_id, datalayer=flame_length)
+        ros_metric = StandMetric.objects.get(
+            stand_id=stand_id, datalayer=rate_of_spread
+        )
+
+        data_map[year][ImpactVariable.FLAME_LENGTH] = {
+            "value": None,
+            "delta": None,
+            "baseline": fl_metric.avg,
+            "category": classify_flame_length(fl_metric.avg),
+        }
+
+        data_map[year][ImpactVariable.RATE_OF_SPREAD] = {
+            "value": None,
+            "delta": None,
+            "baseline": ros_metric.avg,
+            "category": classify_rate_of_spread(ros_metric.avg),
+        }
+
+    # Populate data_map with treatment results
+    for row in treated_results:
         year = row["year"]
         variable = row["variable"]
         value = row["value"]
         delta = row["delta"]
         baseline = row["baseline"]
 
-        var_key = variable.lower()
-
-        match variable:
-            case ImpactVariable.FLAME_LENGTH:
-                category = classify_flame_length(value)
-            case ImpactVariable.RATE_OF_SPREAD:
-                category = classify_rate_of_spread(value)
-            case _:
-                category = None
-
-        data_map[year][var_key] = {
+        data_map[year][variable] = {
             "value": value,
             "delta": delta,
             "baseline": baseline,
-            "category": category,
+            "category": None,
         }
 
+    # Format data into a list
     table_data = []
 
     for year in sorted(data_map.keys()):
