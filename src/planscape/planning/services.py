@@ -139,7 +139,7 @@ def union_geojson(uploaded_geojson) -> GEOSGeometry:
 def feature_to_project_area(user_id: int, scenario, feature, idx: int = 1):
     try:
         area_name = f"Project Area {idx}"
-        logger.info("creating project area %s", area_name)
+        logger.info("creating project area %s %s", area_name, feature)
 
         geometry = MultiPolygon(
             [
@@ -206,6 +206,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             json.dumps(uploaded_geom),
             1,
         )
+        logger.info(f"Processing feature {new_feature}")
         uploaded_geom.setdefault("properties", {})
         uploaded_geom["properties"]["project_id"] = new_feature.pk
         uploaded_geom["properties"]["treatment_rank"] = 1
