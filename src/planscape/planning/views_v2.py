@@ -245,10 +245,12 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             )
         except IntegrityError as ve:
             reason = ve.args[0]
+            field = "global"
             if "(planning_area_id, name)" in ve.args[0]:
                 reason = "A scenario with this name already exists."
+                field = "name"
             return Response(
-                {"name": [reason]},
+                {field: [reason]},
                 content_type="application/json",
                 status=status.HTTP_400_BAD_REQUEST,
             )
