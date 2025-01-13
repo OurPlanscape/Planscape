@@ -662,6 +662,20 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         geometry = attrs.get("geometry")
         planning_area_id = attrs.get("planning_area")
         stand_size = attrs.get("stand_size")
+        name = attrs.get("name")
+
+        exists = Scenario.objects.filter(
+            name=name,
+            planning_area=planning_area_id,
+        )
+        if self.instance:
+            exists = exists.exclude(pk=self.instance.pk)
+            
+        if exists.exists():
+            raise serializers.ValidationError({
+                'name': 'A scenario with this name already exists.'
+            })
+
         if not self._is_inside_planning_area(geometry, planning_area_id, stand_size):
             raise serializers.ValidationError(
                 "The uploaded geometry is not within the selected planning area."
