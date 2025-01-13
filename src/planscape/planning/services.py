@@ -12,6 +12,7 @@ import fiona
 from actstream import action
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
@@ -34,6 +35,8 @@ from planning.models import (
 from planning.tasks import async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from planscape.typing import TLooseGeom, TUser
+
+User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
@@ -136,34 +139,40 @@ def union_geojson(uploaded_geojson) -> GEOSGeometry:
     return unioned_geometry
 
 
-def feature_to_project_area(user_id: int, scenario, feature, idx: int = 1):
+def feature_to_project_area(
+    user: User,
+    scenario: Scenario,
+    geometry_dict: Dict[str, Any],
+    idx: int = 1,
+):
     try:
         area_name = f"Project Area {idx}"
-        logger.info("creating project area %s %s", area_name, feature)
-
+        logger.info("creating project area %s %s", area_name, geometry_dict)
+        _bbox = geometry_dict.pop("bbox", None)
         geometry = MultiPolygon(
             [
-                GEOSGeometry(feature, srid=4326).transform(
+                GEOSGeometry(json.dumps(geometry_dict), srid=4326).transform(
                     settings.CRS_INTERNAL_REPRESENTATION, clone=True
                 ),
             ]
         )
 
         stand_count = Stand.objects.within_polygon(
-            geometry, scenario.get_stand_size()
+            geometry,
+            scenario.get_stand_size(),
         ).count()
 
         project_area = {
-            "geometry": geometry,
+            "geometry": geometry_dict,
             "name": area_name,
-            "created_by": user_id,
+            "created_by": user,
             "scenario": scenario,
             "data": {"treatment_rank": idx, "stand_count": stand_count},
         }
         proj_area_obj = ProjectArea.objects.create(**project_area)
 
         action.send(
-            user_id,
+            user,
             verb="created",
             action_object=proj_area_obj,
             target=scenario,
@@ -199,11 +208,11 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     )
     # Create project areas from features...
     # handle just one polygon
-    if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
+    if "type" in uploaded_geom and uploaded_geom["type"] in ["Polygon", "MultiPolygon"]:
         new_feature = feature_to_project_area(
             scenario.user,
             scenario,
-            json.dumps(uploaded_geom),
+            uploaded_geom,
             1,
         )
         logger.info(f"Processing feature {new_feature}")
@@ -218,7 +227,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             new_feature = feature_to_project_area(
                 scenario.user,
                 scenario,
-                json.dumps(feature["geometry"]),
+                feature["geometry"],
                 idx,
             )
             feature.setdefault("properties", {})
