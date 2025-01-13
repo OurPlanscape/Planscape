@@ -56,6 +56,7 @@ export class StandDataChartComponent {
 
   barChartData$ = this.activeStandValues$.pipe(
     map((data) => {
+      this.updateYAxisRange(data); // Updating the range dinamically
       return {
         labels: [0, 5, 10, 15, 20],
         datasets: [
@@ -164,4 +165,16 @@ export class StandDataChartComponent {
         };
       })
     );
+
+  private updateYAxisRange(data: number[]) {
+    const maxValue = Math.max(...data.map(Math.abs));
+    const minRange = 25;
+    const roundedMax =
+      maxValue < minRange ? minRange : Math.ceil(maxValue / 50) * 50;
+
+    (this.staticBarChartOptions as any).scales!.y!.min = -roundedMax;
+    (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
+    (this.staticBarChartOptions as any).scales!.y!.ticks!.stepSize =
+      roundedMax / 2;
+  }
 }
