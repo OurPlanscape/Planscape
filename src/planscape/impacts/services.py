@@ -828,11 +828,10 @@ def export_shapefile(treatment_plan: TreatmentPlan) -> str:
         allow_unsupported_drivers=True,
     ) as out:
         for record in data:
-            geom = record.pop("geometry", None)
             out.write(
                 {
                     "id": record.pop("id", None),
-                    "geometry": geom,
+                    "geometry": record.pop("geometry", None),
                     "properties": {
                         key: value
                         for key, value in record.get("properties", {}).items()
