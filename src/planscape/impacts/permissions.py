@@ -2,7 +2,7 @@ from collaboration.models import Role
 from collaboration.permissions import CheckPermissionMixin
 from collaboration.utils import check_for_permission, is_creator
 from django.shortcuts import get_object_or_404
-from impacts.models import TreatmentPlan
+from impacts.models import TreatmentPlan, TreatmentPlanNote
 from planning.models import Scenario
 from planscape.permissions import PlanscapePermission
 from django.contrib.auth.models import AbstractUser
@@ -151,3 +151,36 @@ class TreatmentPrescriptionViewPermission(PlanscapePermission):
                 return TreatmentPlanPermission.can_change(
                     request.user, object.treatment_plan
                 )
+
+class TreatmentPlanNotePermission(CheckPermissionMixin):
+    def has_permission(self, request, view):
+        match view.action:
+            case "create":
+                scenario_pk = request.data.get("scenario", 0)
+                scenario = get_object_or_404(Scenario, id=scenario_pk)
+                return TreatmentPlanPermission.can_add(
+                    request.user,
+                    scenario,
+                )
+            case _:
+                return super().has_permission(request, view)
+
+    @staticmethod
+    def can_view(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):
+        # depends on planning_area view permission
+        planning_area = treatment_plan.scenario.planning_area
+        if is_creator(user, planning_area):
+            return True
+        return check_for_permission(user.id, planning_area, "view_planningarea")
+
+    @staticmethod
+    def can_add(user: AbstractUser, treatment_plan: TreatmentPlan):
+        planning_area = treatment_plan.scenario.planning_area
+        if is_creator(user, planning_area):
+            return True
+        return check_for_permission(user.id, planning_area, "view_planningarea")
+
+    @staticmethod
+    def can_remove(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):
+        planning_area = treatment_plan_note.treatment_plan.scenario.planning_area
+        return is_creator(user, planning_area) or is_creator(user, treatment_plan_note)

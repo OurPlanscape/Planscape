@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from datasets.models import DataLayer, DataLayerType
-from planning.models import ProjectArea, Scenario
+from planning.models import ProjectArea, Scenario, PlanningArea
 from stands.models import Stand
 from typing_extensions import Self
 
@@ -87,7 +87,7 @@ class TreatmentPlanNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
     user_id: int
     user = models.ForeignKey(
-        User, related_name="projectarea_notes", on_delete=models.SET_NULL, null=True, blank=True
+        User, related_name="treatment_plan_notes", on_delete=models.SET_NULL, null=True, blank=True
     )
     content = models.TextField(null=True)
 

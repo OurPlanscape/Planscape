@@ -3,9 +3,10 @@ from django_filters import rest_framework as filters
 from django.db.models import QuerySet
 from rest_framework.request import Request
 from impacts.models import (
-    TreatmentPlan,
-    TreatmentPlanStatus,
     ImpactVariable,
+    TreatmentPlan,
+    TreatmentPlanNote,
+    TreatmentPlanStatus,
 )
 from planning.models import Scenario
 from planning.filters import get_planning_areas_for_filter
@@ -43,3 +44,11 @@ class TreatmentPlanFilterSet(filters.FilterSet):
             "name",
             "status",
         )
+
+
+class TreatmentPlanNoteFilterSet(filters.FilterSet):
+    treatment_plan = filters.NumberFilter(field_name="tx_plan_pk")
+
+    class Meta:
+        model = TreatmentPlanNote
+        fields = ["treatment_plan"]

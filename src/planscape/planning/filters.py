@@ -128,10 +128,3 @@ class ProjectAreaNoteFilterSet(filters.FilterSet):
     class Meta:
         model = ProjectAreaNote
         fields = ["project_area"]
-
-class TreatmentPlanNoteFilterSet(filters.FilterSet):
-    treatment_plan = filters.NumberFilter(field_name="tx_plan_pk")
-
-    class Meta:
-        model = TreatmentPlanNote
-        fields = ["treatment_plan"]

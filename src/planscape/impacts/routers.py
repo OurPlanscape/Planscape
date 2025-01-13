@@ -3,6 +3,7 @@ from rest_framework.routers import SimpleRouter
 from impacts.views import (
     TreatmentPlanViewSet,
     TreatmentPrescriptionViewSet,
+    TreatmentPlanNoteViewSet
 )
 
 router = SimpleRouter()
@@ -21,6 +22,6 @@ router.register(
 router.register(
     "treatment_plans/(?P<tx_plan_pk>\d+)/note",
     TreatmentPlanNoteViewSet,
-    basename="treatment_plans_notes",
+    basename="tx-plan-notes",
 )
 

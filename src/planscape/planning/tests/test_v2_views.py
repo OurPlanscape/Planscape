@@ -1170,3 +1170,5 @@ class CreateScenariosFromUpload(APITransactionTestCase):
             b'{"global":["The uploaded geometry is not within the selected planning area."]}',
             response.content,
         )
+
+
