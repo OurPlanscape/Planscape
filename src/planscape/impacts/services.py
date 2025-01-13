@@ -522,10 +522,8 @@ def get_calculation_matrix(
 
 
 def get_calculation_matrix_wo_action(
-    years: Optional[Iterable[int]] = None,
+    years: Optional[Iterable[int]] = AVAILABLE_YEARS,
 ) -> List[Tuple]:
-    if not years:
-        years = AVAILABLE_YEARS
     variables = ImpactVariable.get_measurable_impact_variables()
     return list(itertools.product(variables, years))
 
