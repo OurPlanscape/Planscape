@@ -242,7 +242,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
             out_serializer.data,
             status=status.HTTP_201_CREATED,
         )
-        
 
 
 # TODO: migrate this to an action inside the planning area viewset

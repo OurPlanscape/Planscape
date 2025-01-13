@@ -670,11 +670,11 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
         )
         if self.instance:
             exists = exists.exclude(pk=self.instance.pk)
-            
+
         if exists.exists():
-            raise serializers.ValidationError({
-                'name': 'A scenario with this name already exists.'
-            })
+            raise serializers.ValidationError(
+                {"name": "A scenario with this name already exists."}
+            )
 
         if not self._is_inside_planning_area(geometry, planning_area_id, stand_size):
             raise serializers.ValidationError(
