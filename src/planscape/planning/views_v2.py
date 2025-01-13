@@ -233,18 +233,17 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     def upload_shapefiles(self, request, pk=None, *args, **kwargs):
         serializer = UploadedScenarioDataSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        new_scenario = ''
         try:
             new_scenario = create_scenario_from_upload(
-            validated_data=serializer.validated_data,
-             user=request.user,
+                validated_data=serializer.validated_data,
+                user=request.user,
             )
             out_serializer = ScenarioAndProjectAreasSerializer(instance=new_scenario)
             return Response(
                 out_serializer.data,
                 status=status.HTTP_201_CREATED,
             )
-        except IntegrityError as ve:    
+        except IntegrityError as ve:
             reason = ve.args[0]
             if "(planning_area_id, name)" in ve.args[0]:
                 reason = "A scenario with this name already exists."
@@ -253,6 +252,7 @@ class ScenarioViewSet(viewsets.ModelViewSet):
                 content_type="application/json",
                 status=status.HTTP_400_BAD_REQUEST,
             )
+
 
 # TODO: migrate this to an action inside the planning area viewset
 @extend_schema_view(
