@@ -152,18 +152,54 @@ class TreatmentPrescriptionViewPermission(PlanscapePermission):
                     request.user, object.treatment_plan
                 )
 
-class TreatmentPlanNotePermission(CheckPermissionMixin):
+class TreatmentPlanNoteViewPermission(PlanscapePermission):
+    permission_set = TreatmentPlanPermission
+
     def has_permission(self, request, view):
+        if not self.is_authenticated(request):
+            return False
+
+        treatment_plan_id = view.kwargs.get("tx_plan_pk")
+
         match view.action:
             case "create":
-                scenario_pk = request.data.get("scenario", 0)
-                scenario = get_object_or_404(Scenario, id=scenario_pk)
-                return TreatmentPlanPermission.can_add(
-                    request.user,
-                    scenario,
-                )
+                if not treatment_plan_id:
+                    return False
+                try:
+                    treatment_plan = TreatmentPlan.objects.get(id=treatment_plan_id)
+                except TreatmentPlan.DoesNotExist:
+                    return False
+                return TreatmentPlanNotePermission.can_add(request.user, treatment_plan)
+
+            case "list":
+                if not treatment_plan_id:
+                    raise ValidationError(f"Missing required treatment_plan_id")
+                try:
+                    treatment_plan = TreatmentPlan.objects.select_related(
+                        "scenario", "scenario__planning_area"
+                    ).get(id=treatment_plan_id)
+                except TreatmentPlan.DoesNotExist:
+                    return False
+                planning_area = treatment_plan.scenario.planning_area
+                return PlanningAreaPermission.can_view(request.user, planning_area)
+
+            case "destroy" | "retrieve":
+                # fallthrough to has_object_permissions
+                return True
+
+            case "update" | "partial_update" | _:
+                return False  # operations unsupported
+
+    def has_object_permission(self, request, view, object):
+        match view.action:
+            case "destroy":
+                method = TreatmentPlanNotePermission.can_remove
             case _:
-                return super().has_permission(request, view)
+                method = TreatmentPlanNotePermission.can_view
+        return method(request.user, object)
+
+
+class TreatmentPlanNotePermission(CheckPermissionMixin):
 
     @staticmethod
     def can_view(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):

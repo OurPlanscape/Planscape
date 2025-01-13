@@ -671,8 +671,8 @@ class TxPlanNoteTest(APITransactionTestCase):
             new_note,
             content_type="application/json",
         )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(
             response_data["content"], "Here is a note about a treatment plan."
         )
@@ -712,6 +712,7 @@ class TxPlanNoteTest(APITransactionTestCase):
             new_note,
             content_type="application/json",
         )
+        print(f"what is the respone? {response}")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     # def test_get_notes_for_project_area(self):

@@ -373,7 +373,7 @@ class TreatmentPlanNoteCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         treatment_plan_id = self.context["view"].kwargs.get("tx_plan_pk")
         try:
-            treatment_plan = TreatmentPlan.objects.get(id=tx_plan_pk)
+            treatment_plan = TreatmentPlan.objects.get(id=treatment_plan_id)
         except TreatmentPlan.DoesNotExist:
             raise serializers.ValidationError("Invalid tx_plan_pk")
         user = self.context["request"].user

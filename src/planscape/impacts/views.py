@@ -13,7 +13,7 @@ from impacts.models import (
     TreatmentResult,
 )
 from impacts.permissions import (
-    TreatmentPlanNotePermission,
+    TreatmentPlanNoteViewPermission,
     TreatmentPlanViewPermission,
     TreatmentPrescriptionViewPermission,
 )
@@ -402,7 +402,7 @@ class TreatmentPrescriptionViewSet(
 class TreatmentPlanNoteViewSet(viewsets.ModelViewSet):
     queryset = TreatmentPlanNote.objects.all()
     serializer_class = TreatmentPlanNoteSerializer
-    permission_classes = [TreatmentPlanNotePermission]
+    permission_classes = [TreatmentPlanNoteViewPermission]
     serializer_classes = {
         "list": TreatmentPlanNoteListSerializer,
         "create": TreatmentPlanNoteCreateSerializer,

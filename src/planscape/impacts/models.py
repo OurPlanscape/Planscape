@@ -81,7 +81,7 @@ class TreatmentPlanNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
     id: int
     treatment_plan_id: int
     treatment_plan = models.ForeignKey(
-        PlanningArea,
+        TreatmentPlan,
         related_name="treatment_plan_notes",
         on_delete=models.CASCADE,
     )
