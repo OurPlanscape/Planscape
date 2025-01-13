@@ -21,7 +21,7 @@ from fiona.crs import from_epsg
 from stands.models import Stand, StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 
-from planning.geometry import coerce_geojson
+from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -149,13 +149,7 @@ def feature_to_project_area(
         area_name = f"Project Area {idx}"
         logger.info("creating project area %s %s", area_name, geometry_dict)
         _bbox = geometry_dict.pop("bbox", None)
-        geometry = MultiPolygon(
-            [
-                GEOSGeometry(json.dumps(geometry_dict), srid=4326).transform(
-                    settings.CRS_INTERNAL_REPRESENTATION, clone=True
-                ),
-            ]
-        )
+        geometry = coerce_geometry(geometry_dict)
 
         stand_count = Stand.objects.within_polygon(
             geometry,
@@ -163,7 +157,7 @@ def feature_to_project_area(
         ).count()
 
         project_area = {
-            "geometry": geometry_dict,
+            "geometry": geometry,
             "name": area_name,
             "created_by": user,
             "scenario": scenario,
