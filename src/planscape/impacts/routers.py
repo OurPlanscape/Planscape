@@ -17,3 +17,10 @@ router.register(
     TreatmentPrescriptionViewSet,
     basename="tx-prescriptions",
 )
+
+router.register(
+    "treatment_plans/(?P<tx_plan_pk>\d+)/note",
+    TreatmentPlanNoteViewSet,
+    basename="treatment_plans_notes",
+)
+
