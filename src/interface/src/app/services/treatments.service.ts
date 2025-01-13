@@ -124,4 +124,16 @@ export class TreatmentsService {
       params: variableParams,
     });
   }
+
+  getStandResult(treatmentPlanId: number, standId: number) {
+    return this.http.get(
+      `${this.baseUrl}/${treatmentPlanId}/stand-treatment-results/`,
+      {
+        withCredentials: true,
+        params: {
+          stand_id: standId,
+        },
+      }
+    );
+  }
 }
