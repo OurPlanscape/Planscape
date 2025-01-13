@@ -652,14 +652,14 @@ def get_treatment_results_table_data(
             stand_id=stand_id, datalayer=rate_of_spread
         )
 
-        data_map[year][ImpactVariable.FLAME_LENGTH.lower()] = {
+        data_map[year][ImpactVariable.FLAME_LENGTH] = {
             "value": None,
             "delta": None,
             "baseline": fl_metric.avg,
             "category": classify_flame_length(fl_metric.avg),
         }
 
-        data_map[year][ImpactVariable.RATE_OF_SPREAD.lower()] = {
+        data_map[year][ImpactVariable.RATE_OF_SPREAD] = {
             "value": None,
             "delta": None,
             "baseline": ros_metric.avg,
@@ -674,9 +674,7 @@ def get_treatment_results_table_data(
         delta = row["delta"]
         baseline = row["baseline"]
 
-        var_key = variable.lower()
-
-        data_map[year][var_key] = {
+        data_map[year][variable] = {
             "value": value,
             "delta": delta,
             "baseline": baseline,
