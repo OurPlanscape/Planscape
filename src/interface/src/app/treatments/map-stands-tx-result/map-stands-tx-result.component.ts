@@ -161,21 +161,15 @@ export class MapStandsTxResultComponent implements OnInit {
   private generatePaint(slot: ImpactsMetricSlot) {
     return {
       'fill-color': [
+        // If 'variable' is not null, apply the existing logic
         'case',
-        // Check if 'variable' property is null
-        ['==', ['get', 'variable'], ['literal', null]],
-        '#ffffff', // White for null 'variable'
+        ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
+        '#ffffff', // White for null 'propertyName'
         [
-          // If 'variable' is not null, apply the existing logic
-          'case',
-          ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
-          '#ffffff', // White for null 'propertyName'
-          [
-            'interpolate',
-            ['linear'],
-            ['get', this.propertyName],
-            ...this.getPalette(slot),
-          ],
+          'interpolate',
+          ['linear'],
+          ['get', this.propertyName],
+          ...this.getPalette(slot),
         ],
       ] as DataDrivenPropertyValueSpecification<ColorSpecification>,
       'fill-opacity': 0.8,
