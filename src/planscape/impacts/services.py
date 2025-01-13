@@ -472,7 +472,7 @@ def fill_impacts_for_untreated_stands(
     untreated_stand_ids = (
         treatment_plan.scenario.get_project_areas_stands()
         .exclude(id__in=treated_stand_ids)
-        .values_list("stand_id", flat=True)
+        .values_list("id", flat=True)
     )
 
     results = []
