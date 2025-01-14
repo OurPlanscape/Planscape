@@ -168,13 +168,12 @@ export class StandDataChartComponent {
 
   private updateYAxisRange(data: number[]) {
     const maxValue = Math.max(...data.map(Math.abs));
-    const minRange = 25;
-    const roundedMax =
-      maxValue < minRange ? minRange : Math.ceil(maxValue / 50) * 50;
-
+    let roundedMax = Math.ceil(maxValue / 50) * 50;
+    if (roundedMax < 100) {
+      roundedMax = 100;
+    }
     (this.staticBarChartOptions as any).scales!.y!.min = -roundedMax;
     (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
-    (this.staticBarChartOptions as any).scales!.y!.ticks!.stepSize =
-      roundedMax / 2;
+    (this.staticBarChartOptions as any).scales!.y!.ticks!.stepSize = 50;
   }
 }
