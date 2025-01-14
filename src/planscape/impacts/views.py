@@ -1,15 +1,14 @@
 import logging
 
-from drf_spectacular.utils import extend_schema, extend_schema_view
+from django.http import FileResponse
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiTypes
 from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import (
-    ImpactVariable,
-    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescription,
-    TreatmentResult,
 )
+from rest_framework.response import Response
 from impacts.permissions import (
     TreatmentPlanViewPermission,
     TreatmentPrescriptionViewPermission,
@@ -32,6 +31,7 @@ from impacts.serializers import (
 from impacts.services import (
     clone_treatment_plan,
     create_treatment_plan,
+    export_shapefile,
     generate_impact_results_data_to_plot,
     generate_summary,
     get_treatment_results_table_data,
@@ -41,7 +41,6 @@ from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from rest_framework import mixins, response, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.views import Response
 
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -160,6 +159,22 @@ class TreatmentPlanViewSet(
         return response.Response(
             serializer.data,
             status=status.HTTP_201_CREATED,
+        )
+
+    @extend_schema(
+        description="exports a treatment plan in a zipped shapefile format.",
+        responses={
+            200: OpenApiTypes.BINARY,
+            404: BaseErrorMessageSerializer,
+        },
+    )
+    @action(detail=True, methods=["get"], filterset_class=None)
+    def shapefile(self, request, pk=None):
+        treatment_plan = self.get_object()
+        output_path = export_shapefile(treatment_plan)
+        return FileResponse(
+            open(output_path, "rb"),
+            as_attachment=True,
         )
 
     @extend_schema(

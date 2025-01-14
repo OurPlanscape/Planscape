@@ -13,7 +13,7 @@ from impacts.models import (
     get_prescription_type,
 )
 from planning.tests.factories import ScenarioFactory, ProjectAreaFactory
-from stands.models import StandSizeChoices
+from stands.models import Stand, StandSizeChoices
 from stands.tests.factories import StandFactory
 
 
@@ -46,13 +46,14 @@ class TreatmentResultFactory(factory.django.DjangoModelFactory):
         model = TreatmentResult
 
     treatment_plan = factory.SubFactory(TreatmentPlanFactory)
-    variable = factory.fuzzy.FuzzyChoice(ImpactVariable.values)
-    aggregation = factory.fuzzy.FuzzyChoice(ImpactVariableAggregation.values)
+    stand = factory.SubFactory(StandFactory)
+    variable = factory.fuzzy.FuzzyChoice([v for v in ImpactVariable])
+    aggregation = ImpactVariableAggregation.MEAN
     year = factory.fuzzy.FuzzyInteger(low=0, high=20)
     value = factory.fuzzy.FuzzyFloat(low=0, high=100)
     baseline = factory.fuzzy.FuzzyFloat(low=0, high=100)
     type = TreatmentResultType.DIRECT
-    action = factory.fuzzy.FuzzyChoice(TreatmentPrescriptionAction.choices)
+    action = factory.fuzzy.FuzzyChoice([a for a in TreatmentPrescriptionAction])
 
 
 class ProjectAreaTreatmentResultFactory(factory.django.DjangoModelFactory):

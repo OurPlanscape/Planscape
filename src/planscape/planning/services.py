@@ -6,7 +6,7 @@ import zipfile
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Type
+from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
@@ -352,12 +352,21 @@ def map_property(key_value_pair):
     return (key, type)
 
 
-def get_schema(geojson: Dict[str, Any]) -> Dict[str, Any]:
-    features = geojson.get("features", [])
-    first = features[0]
-    field_type_pairs = list(map(map_property, first.get("properties", {}).items()))
+def get_schema(
+    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]]
+) -> Dict[str, Any]:
+    feature = {}
+    match geojson:
+        case {"type": "FeatureCollection", "features": features}:
+            feature = features[0]
+        case {"properties": _properties, "geometry": _geometry}:
+            feature = geojson
+        case list() as features:
+            feature = features[0]
+
+    field_type_pairs = list(map(map_property, feature.get("properties", {}).items()))
     schema = {
-        "geometry": first.get("geometry", {}).get("type", "MultiPolygon")
+        "geometry": feature.get("geometry", {}).get("type", "MultiPolygon")
         or "MultiPolygon",
         "properties": field_type_pairs,
     }

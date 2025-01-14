@@ -2,7 +2,10 @@ import itertools
 import json
 import logging
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from pathlib import Path
+from django.conf import settings
+from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple
+import fiona
 
 import rasterio
 from actstream import action as actstream_action
@@ -13,8 +16,9 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, QuerySet, Sum, When
 from django.db.models.expressions import RawSQL
-from planning.models import ProjectArea, Scenario
+from planning.models import PlanningArea, ProjectArea, Scenario
 from rasterio.session import AWSSession
+from planning.services import get_schema
 from stands.models import STAND_AREA_ACRES, Stand, StandMetric
 from stands.services import calculate_stand_zonal_stats
 
@@ -457,9 +461,61 @@ def calculate_stand_deltas(
     return results
 
 
+def calculate_impacts_for_untreated_stands(
+    treatment_plan: TreatmentPlan,
+    variable: ImpactVariable,
+    year: int,
+) -> List[TreatmentResult]:
+    prescriptions = treatment_plan.tx_prescriptions.select_related(
+        "stand",
+        "treatment_plan",
+        "scenario",
+        "project_area",
+    )
+    treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
+    untreated_stands = (
+        treatment_plan.scenario.get_project_areas_stands()
+        .exclude(id__in=treated_stand_ids)
+        .with_webmercator()
+    )
+
+    aws_session = AWSSession(get_aws_session())
+    with rasterio.Env(aws_session):
+        baseline_metrics = calculate_metrics(
+            stands=untreated_stands,
+            variable=variable,
+            year=year,
+        )
+    baseline_dict = {m.stand_id: m for m in baseline_metrics}
+
+    # Calculating deltas using baseline_dict on both entries
+    # because it will generate delta zero, which mean no change,
+    # and set `value` and `baseline` to the same value.
+    # For non-forested stands, `value`, `baseline` and `delta` will be null.
+    deltas_list = calculate_stand_deltas(
+        baseline_dict=baseline_dict,
+        action_dict=baseline_dict,
+        action=None,
+    )
+
+    treatment_results = list(
+        map(
+            lambda x: to_treatment_result(
+                treatment_plan,
+                variable,
+                year,
+                result=x,
+            ),
+            deltas_list,
+        )
+    )
+
+    return treatment_results
+
+
 def get_calculation_matrix(
     treatment_plan: TreatmentPlan,
-    years: Optional[Iterable[int]] = None,
+    years: Optional[Collection[int]] = None,
 ) -> List[Tuple]:
     actions = list(
         [
@@ -475,8 +531,15 @@ def get_calculation_matrix(
     return list(itertools.product(variables, actions, years))
 
 
+def get_calculation_matrix_wo_action(
+    years: Optional[Iterable[int]] = AVAILABLE_YEARS,
+) -> List[Tuple]:
+    variables = ImpactVariable.get_measurable_impact_variables()
+    return list(itertools.product(variables, years))
+
+
 def get_baseline_matrix(
-    years: Optional[Iterable[int]] = None,
+    years: Optional[Collection[int]] = None,
 ):
     if not years:
         years = AVAILABLE_YEARS
@@ -688,3 +751,105 @@ def get_treatment_results_table_data(
         table_data.append({**data_map[year], "year": year})
 
     return table_data
+
+
+def get_shapefile_path(treatment_plan: TreatmentPlan) -> str:
+    return (
+        settings.OUTPUT_DIR
+        / "shapefile"
+        / f"{treatment_plan.pk}"
+        / f"{treatment_plan.pk}.shp"
+    )
+
+
+def tretment_result_to_json(
+    stand: Stand,
+    stand_result: Dict[str, Any],
+    scenario: Scenario,
+    planning_area: PlanningArea,
+) -> Dict[str, Any]:
+    return {
+        "geometry": json.loads(stand.geometry.geojson),
+        "properties": {
+            "stand_id": stand.pk,
+            "stand_size": scenario.get_stand_size(),
+            "pa_id": planning_area.pk,
+            "pa_name": planning_area.name,
+            "sc_id": scenario.pk,
+            "sc_name": scenario.name,
+            **stand_result,
+        },
+    }
+
+
+def fetch_treatment_plan_data(
+    treatment_plan: TreatmentPlan,
+) -> Collection[Dict[str, Any]]:
+    scenario = treatment_plan.scenario
+    planning_area = scenario.planning_area
+    results = (
+        TreatmentResult.objects.filter(treatment_plan=treatment_plan)
+        .order_by("stand", "variable", "year")
+        .select_related("stand", "treatment_plan__scenario")
+    )
+    treatment_results_data = {r.stand_id: r for r in results}
+    result_data = defaultdict(dict)
+    stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
+    for result in results:
+        field_name = f"{result.variable}_{result.year}"
+        result_data[result.stand_id][field_name] = result.delta
+        result_data[result.stand_id]["action"] = treatment_results_data[
+            result.stand_id
+        ].action
+
+    return list(
+        map(
+            lambda stand: tretment_result_to_json(
+                stand,
+                result_data[stand.id],
+                scenario,
+                planning_area,
+            ),
+            stands,
+        )
+    )
+
+
+def force_field_type(schema: Dict[str, Any], field_type: str) -> Dict[str, Any]:
+    new_properties = []
+    for field_name, type in schema.get("properties", []):
+        type = type if type != "" else field_type
+        new_properties.append((field_name, type))
+    return {**schema, "properties": new_properties}
+
+
+def export_shapefile(treatment_plan: TreatmentPlan) -> str:
+    shapefile_path = Path(get_shapefile_path(treatment_plan))
+    fiona_path = f"{str(shapefile_path)}.zip"
+    data = fetch_treatment_plan_data(treatment_plan)
+    shapefile_schema = force_field_type(get_schema(data), "float")
+
+    Path(fiona_path).unlink(missing_ok=True)
+    if not shapefile_path.exists():
+        shapefile_path.mkdir(parents=True)
+    with fiona.open(
+        fiona_path,
+        "w",
+        driver="ESRI Shapefile",
+        layer=f"treatment_plan_{treatment_plan.pk}",
+        crs="EPSG:4326",
+        schema=shapefile_schema,
+        allow_unsupported_drivers=True,
+    ) as out:
+        for record in data:
+            out.write(
+                {
+                    "id": record.pop("id", None),
+                    "geometry": record.pop("geometry", None),
+                    "properties": {
+                        key: value
+                        for key, value in record.get("properties", {}).items()
+                    },
+                }
+            )
+    return str(fiona_path)
