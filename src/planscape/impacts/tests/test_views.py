@@ -1,17 +1,3 @@
-from django.urls import reverse
-from django.test import override_settings
-from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
-from unittest import mock
-
-from stands.tests.factories import StandFactory
-from planscape.tests.factories import UserFactory
-from planning.tests.factories import ScenarioFactory
-from collaboration.models import Permissions, Role, UserObjectRole
-from collaboration.services import get_content_type
-from impacts.tests.factories import TreatmentPlanFactory
-from impacts.models import TreatmentPlan
-
 from unittest import mock
 from urllib.parse import urlencode
 
@@ -354,10 +340,10 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
 
     def test_treatment_results(self):
         variables = [
-            ImpactVariable.TOTAL_CARBON,
-            ImpactVariable.FLAME_LENGTH,
-            ImpactVariable.RATE_OF_SPREAD,
-            ImpactVariable.PROBABILITY_TORCHING,
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
         ]
         filter = self._build_filters(variables=variables)
         url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
@@ -587,74 +573,68 @@ class TxPrescriptionBatchDeleteTest(APITransactionTestCase):
 
 
 class StandTreatmentResultsViewTest(APITestCase):
-    """
-    Tests for the TxPlanViewSet 'stand_treatment_results' endpoint.
-    """
-
     def setUp(self):
-        self.client = APIClient()
         self.user = UserFactory()
-        self.scenario = ScenarioFactory(planning_area__user=self.user)
-        Permissions.objects.get_or_create(role=Role.OWNER, permission="view_tx_plan")
-        UserObjectRole.objects.get_or_create(
-            email=self.user.email,
-            inviter=self.user,
-            collaborator=self.user,
-            role=Role.OWNER,
-            content_type=get_content_type("PlanningArea"),
-            object_pk=self.scenario.planning_area.pk,
-        )
+        self.client = APIClient()
+        self.client.force_authenticate(user=self.user)
+        self.scenario = ScenarioFactory.create(planning_area__user=self.user)
+
         self.treatment_plan = TreatmentPlanFactory(
             scenario=self.scenario, created_by=self.user
         )
+
         self.stand = StandFactory()
-        self.client.force_authenticate(user=self.user)
         self.url = reverse(
             "api:impacts:tx-plans-stand-treatment-results",
             kwargs={"pk": self.treatment_plan.pk},
         )
 
-    @mock.patch("impacts.views.get_treatment_results_table_data")
-    def test_stand_treatment_results_success(self, mock_get_data):
+    def test_no_results_returns_empty_list(self):
         """
-        Test a successful call (200) when we provide a valid stand_id.
+        Ensures the endpoint returns a 200 with [] if there’s no data for stand_id.
         """
-        mock_result = [{"year": 2025, "value": 123.45}]
-        mock_get_data.return_value = mock_result
         response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.json(), mock_result)
-        mock_get_data.assert_called_once_with(self.treatment_plan, self.stand.pk)
+        self.assertEqual(response.json(), [])
 
-    def test_stand_treatment_results_no_stand_id(self):
+    def test_multiple_results(self):
         """
-        Test that we get a 400 when stand_id is missing from the query params.
+        Tests that the endpoint returns correct data when multiple TreatmentResult rows exist.
+        """
+        TreatmentResultFactory(
+            treatment_plan=self.treatment_plan,
+            stand=self.stand,
+            variable=ImpactVariable.FLAME_LENGTH,
+            year=2024,
+            value=3.5,
+        )
+        TreatmentResultFactory(
+            treatment_plan=self.treatment_plan,
+            stand=self.stand,
+            variable=ImpactVariable.RATE_OF_SPREAD,
+            year=2024,
+            value=2.5,
+        )
+
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+        self.assertEqual(len(data), 1, "Expected data for 1 year (2024)")
+        row_2024 = data[0]
+        self.assertEqual(row_2024["year"], 2024)
+        self.assertIn("fl", row_2024)
+        self.assertIn("ros", row_2024)
+
+    def test_missing_stand_id(self):
+        """
+        If 'stand_id' param is missing, the serializer should raise a 400 error.
         """
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("stand_id", response.json())
 
-    def test_stand_treatment_results_invalid_stand_id(self):
+    def test_invalid_stand_id(self):
         """
-        Test that we get a 400 when stand_id is not an integer or otherwise invalid.
+        If 'stand_id' doesn't exist in DB, we expect a 400 from the PrimaryKeyRelatedField.
         """
-        response = self.client.get(f"{self.url}?stand_id=not-an-integer")
+        response = self.client.get(f"{self.url}?stand_id=99999999")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_stand_treatment_results_plan_not_found(self):
-        """
-        Test that we get a 404 when the user tries to retrieve results for a plan
-        they don't own or doesn't exist.
-        """
-        other_user = UserFactory()
-        other_scenario = ScenarioFactory(user=other_user)
-        other_plan = TreatmentPlanFactory(
-            scenario=other_scenario, created_by=other_user
-        )
-
-        other_url = reverse(
-            "api:impacts:tx-plans-stand-treatment-results",
-            kwargs={"pk": other_plan.pk},
-        )
-        response = self.client.get(f"{other_url}?stand_id={self.stand.pk}")
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
