@@ -810,10 +810,11 @@ def fetch_treatment_plan_data(
 
 
 def force_field_type(schema: Dict[str, Any], field_type: str) -> Dict[str, Any]:
-    for key, type in schema.get("properties", {}).items():
-        if type is None or type == "":
-            schema["properties"][key] = field_type
-    return schema
+    new_properties = []
+    for field_name, type in schema.get("properties", []):
+        type = type if type != "" else field_type
+        new_properties.append((field_name, type))
+    return {**schema, "properties": new_properties}
 
 
 def export_shapefile(treatment_plan: TreatmentPlan) -> str:
@@ -822,7 +823,7 @@ def export_shapefile(treatment_plan: TreatmentPlan) -> str:
     data = fetch_treatment_plan_data(treatment_plan)
     shapefile_schema = force_field_type(get_schema(data), "float")
 
-    shapefile_path.unlink(missing_ok=True)
+    Path(fiona_path).unlink(missing_ok=True)
     if not shapefile_path.exists():
         shapefile_path.mkdir(parents=True)
     with fiona.open(
