@@ -340,10 +340,10 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
 
     def test_treatment_results(self):
         variables = [
-            ImpactVariable.TOTAL_CARBON.value,
-            ImpactVariable.FLAME_LENGTH.value,
-            ImpactVariable.RATE_OF_SPREAD.value,
-            ImpactVariable.PROBABILITY_TORCHING.value,
+            ImpactVariable.TOTAL_CARBON,
+            ImpactVariable.FLAME_LENGTH,
+            ImpactVariable.RATE_OF_SPREAD,
+            ImpactVariable.PROBABILITY_TORCHING,
         ]
         filter = self._build_filters(variables=variables)
         url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
