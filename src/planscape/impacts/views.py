@@ -3,7 +3,7 @@ import logging
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import FileResponse
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiTypes
-from impacts.filters import TreatmentPlanFilterSet
+from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
 from impacts.models import (
     TreatmentPlan,
     TreatmentPlanNote,

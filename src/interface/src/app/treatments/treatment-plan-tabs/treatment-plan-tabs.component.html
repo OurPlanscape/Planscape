@@ -8,7 +8,14 @@
   <mat-tab label="Base Maps">
     <app-map-base-layer></app-map-base-layer>
   </mat-tab>
-  <mat-tab label="About">
-    <app-treatment-plan-about-tab></app-treatment-plan-about-tab>
+  <mat-tab label="Notes">
+    <sg-notes-sidebar
+      [notes]="(notes$ | async) || []"
+      [notesState]="notesSidebarState"
+      (createNote)="addNote($event)"
+      (deleteNote)="handleNoteDelete($event)"
+      noNotesTitleText="No Treatment Plan Notes Yet"
+      noNotesDetailText="Start adding notes to help your team learn more about this treatment plan.">
+    </sg-notes-sidebar>
   </mat-tab>
 </mat-tab-group>

@@ -17,7 +17,7 @@ export type NotesModelName = 'planning_area' | 'project_area';
   providedIn: 'root',
 })
 export abstract class BaseNotesService {
-  constructor(protected http: HttpClient) {}
+  constructor(protected http: HttpClient) { }
   protected abstract baseUrl: string;
   protected resource = '/note/';
 
@@ -74,4 +74,8 @@ export class PlanningAreaNotesService extends BaseNotesService {
 @Injectable()
 export class ProjectAreaNotesService extends BaseNotesService {
   protected baseUrl = '/v2/project-areas/';
+}
+@Injectable()
+export class TreatmentPlanNotesService extends BaseNotesService {
+  protected baseUrl = '/v2/treatment_plans/';
 }

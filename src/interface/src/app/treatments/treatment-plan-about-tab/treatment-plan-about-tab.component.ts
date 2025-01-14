@@ -5,6 +5,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { Scenario } from '@types';
 import { ScenarioService } from '@services';
 
+//TODO: remove this component
+
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-plan-about-tab',
@@ -17,7 +19,7 @@ export class TreatmentPlanAboutTabComponent implements OnInit {
   constructor(
     private treatmentsState: TreatmentsState,
     private scenarioService: ScenarioService
-  ) {}
+  ) { }
   summary$ = this.treatmentsState.summary$;
   scenarioId = this.treatmentsState.getScenarioId();
   areaAcres: number | undefined = undefined;
