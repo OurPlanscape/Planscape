@@ -753,12 +753,12 @@ def get_treatment_results_table_data(
     return table_data
 
 
-def get_shapefile_path(treatment_plan: TreatmentPlan) -> str:
+def get_export_path(treatment_plan: TreatmentPlan) -> str:
     return (
         settings.OUTPUT_DIR
         / "shapefile"
         / f"{treatment_plan.pk}"
-        / f"{treatment_plan.pk}.shp"
+        / f"{treatment_plan.pk}.gpkg"
     )
 
 
@@ -823,13 +823,31 @@ def force_field_type(schema: Dict[str, Any], field_type: str) -> Dict[str, Any]:
     return {**schema, "properties": new_properties}
 
 
-def export_shapefile(treatment_plan: TreatmentPlan) -> str:
-    shapefile_path = Path(get_shapefile_path(treatment_plan))
+def get_treament_result_schema():
+    numeric_fields_iterator = itertools.product(
+        [i for i in ImpactVariable], AVAILABLE_YEARS
+    )
+    fields = list([(f"{i}_{year}", "float") for i, year in numeric_fields_iterator])
+    return {
+        "geometry": "Polygon",
+        "properties": [
+            ("stand_id", "int"),
+            ("stand_size", "str:64"),
+            ("planning_area_id", "int"),
+            ("planning_area_name", "str:256"),
+            ("scenario_id", "int"),
+            ("scenario_name", "str:256"),
+            ("action", "str:64"),
+            *fields,
+        ],
+    }
+
+
+def export_geopackage(treatment_plan: TreatmentPlan) -> str:
+    shapefile_path = Path(get_export_path(treatment_plan))
     fiona_path = f"{str(shapefile_path)}.zip"
     data = fetch_treatment_plan_data(treatment_plan)
-    shapefile_schema = get_schema(data)
-    shapefile_schema["properties"]["action"] = "str:128"
-    shapefile_schema = force_field_type(shapefile_schema, "float")
+    shapefile_schema = get_treament_result_schema()
 
     Path(fiona_path).unlink(missing_ok=True)
     if not shapefile_path.exists():
