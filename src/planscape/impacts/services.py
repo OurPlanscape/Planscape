@@ -461,7 +461,7 @@ def calculate_stand_deltas(
     return results
 
 
-def fill_impacts_for_untreated_stands(
+def calculate_impacts_for_untreated_stands(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     year: int,
@@ -473,24 +473,30 @@ def fill_impacts_for_untreated_stands(
         "project_area",
     )
     treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
-    untreated_stand_ids = (
+    untreated_stands = (
         treatment_plan.scenario.get_project_areas_stands()
         .exclude(id__in=treated_stand_ids)
-        .values_list("id", flat=True)
+        .with_webmercator()
     )
 
-    results = []
-    for stand_id in untreated_stand_ids:
-        results.append(
-            {
-                "stand_id": stand_id,
-                "action": None,
-                "aggregation": ImpactVariableAggregation.MEAN,
-                "value": None,
-                "baseline": None,
-                "delta": 0,
-            }
+    aws_session = AWSSession(get_aws_session())
+    with rasterio.Env(aws_session):
+        baseline_metrics = calculate_metrics(
+            stands=untreated_stands,
+            variable=variable,
+            year=year,
         )
+    baseline_dict = {m.stand_id: m for m in baseline_metrics}
+
+    # Calculating deltas using baseline_dict on both entries
+    # because it will generate delta zero, which mean no change,
+    # and set `value` and `baseline` to the same value.
+    # For non-forested stands, `value`, `baseline` and `delta` will be null.
+    deltas_list = calculate_stand_deltas(
+        baseline_dict=baseline_dict,
+        action_dict=baseline_dict,
+        action=None,
+    )
 
     treatment_results = list(
         map(
@@ -500,7 +506,7 @@ def fill_impacts_for_untreated_stands(
                 year,
                 result=x,
             ),
-            results,
+            deltas_list,
         )
     )
 
