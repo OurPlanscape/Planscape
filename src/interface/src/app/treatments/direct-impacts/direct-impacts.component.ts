@@ -232,13 +232,13 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
   }
 
-  downloadShapefile() {
+  download() {
     this.downloadingShapefile = true;
     const filename =
       'treatment_plan_' + this.treatmentsState.getTreatmentPlanId();
 
     this.treatmentsService
-      .downloadShapefiles(this.treatmentsState.getTreatmentPlanId())
+      .downloadTreatment(this.treatmentsState.getTreatmentPlanId())
       .subscribe((data) => {
         const blob = new Blob([data], {
           type: 'application/zip',
