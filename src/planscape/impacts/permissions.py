@@ -219,3 +219,4 @@ class TreatmentPlanNotePermission(CheckPermissionMixin):
     def can_remove(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):
         planning_area = treatment_plan_note.treatment_plan.scenario.planning_area
         return is_creator(user, planning_area) or is_creator(user, treatment_plan_note)
+    

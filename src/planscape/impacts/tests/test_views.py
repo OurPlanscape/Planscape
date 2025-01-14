@@ -668,26 +668,7 @@ class TxPlanNoteTest(APITransactionTestCase):
         self.assertEqual(
             response_data["content"], "Here is a note about a treatment plan."
         )
-
-    # # this fails if a user is projectarea owner, but not planningarea owner or note owner
-    # def test_create_note_as_projectarea_owner(self):
-    #     self.client.force_authenticate(self.other_user)
-    #     new_note = json.dumps(
-    #         {
-    #             "content": "Here is a note about a project area.",
-    #             "project_area": self.other_user_project_area.pk,
-    #         }
-    #     )
-    #     response = self.client.post(
-    #         reverse(
-    #             "api:planning:project-areas-notes-list",
-    #             kwargs={"project_area_id": self.project_area.pk},
-    #         ),
-    #         new_note,
-    #         content_type="application/json",
-    #     )
-    #     self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
+        
     def test_create_note_without_permission(self):
         self.client.force_authenticate(self.other_user)
         new_note = json.dumps(
