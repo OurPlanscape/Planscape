@@ -64,7 +64,7 @@ export class ApplyTreatmentComponent {
     this.projectAreaName$,
   ]).pipe(
     map(([hasTreated, projectAreaName]) => {
-      const title = hasTreated ? 'Edit Treatment on ' : 'Apply Treatment to ';
+      const title = hasTreated ? 'Edit Treatment in ' : 'Apply Treatment to ';
       return title + '"' + projectAreaName + '"';
     })
   );
