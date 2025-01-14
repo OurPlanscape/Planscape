@@ -1,10 +1,9 @@
-@import "media";
-@import "colors";
-@import "mixins";
+@import 'media';
+@import 'colors';
+@import 'mixins';
 
 :host {
   display: block;
-
 }
 
 .treatment-plan {
@@ -26,11 +25,61 @@
   padding: 16px;
 }
 
+.changes-chart-select {
+  height: 38px;
+  border: 1px;
+  border-radius: 4px;
+}
+.changes-chart-title {
+  line-height: 24px;
+  font-weight: 600;
+  letter-spacing: normal;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  height: 38px;
+}
+
+.left-title-box {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  justify-content: space-between;
+  align-items: center;
+  height: 38px;
+}
+
+::ng-deep .changes-chart-select .mat-mdc-text-field-wrapper,
+.mat-mdc-form-field-flex {
+  height: 38px;
+}
+
+::ng-deep
+  .mat-mdc-text-field-wrapper.mdc-text-field--outlined
+  .mat-mdc-form-field-infix {
+  padding: 0px;
+  line-height: 38px;
+  height: 38px;
+}
+
+.expansion-icon {
+  background-color: $color-light-gray;
+}
+
 .title-row {
   display: flex;
   gap: 16px;
   align-items: center;
   padding: 5px 0;
+
+  padding-top: 11px;
+  padding-bottom: 11px;
+  padding-left: 14px;
+  padding-right: 14px;
+
   @include on-small() {
     flex-direction: column;
     align-items: flex-start;
@@ -79,7 +128,6 @@
     width: 100%;
   }
 
-
   .chart-1 {
     grid-column: 1;
     grid-row: 1/7;
@@ -110,4 +158,19 @@
   }
 }
 
+.empty-state {
+  @include regular-paragraph();
+  color: $color-md-gray;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  text-align: center;
+  padding: 0 80px;
 
+  sg-treatment-type-icon {
+    position: relative;
+    top: 6px;
+  }
+}

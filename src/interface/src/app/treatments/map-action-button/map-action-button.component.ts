@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class MapActionButtonComponent {
   constructor() {}
+
   @Output() clickedActionButton = new EventEmitter();
 
   handleClick() {

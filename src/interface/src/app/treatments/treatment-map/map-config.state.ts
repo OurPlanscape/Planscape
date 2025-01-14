@@ -32,6 +32,10 @@ export class MapConfigState {
   private _standSelectionEnabled$ = new BehaviorSubject(false);
   public standSelectionEnabled$ = this._standSelectionEnabled$.asObservable();
 
+  private _showTreatmentLayersToggle$ = new BehaviorSubject(false);
+  public showTreatmentLayersToggle$ =
+    this._showTreatmentLayersToggle$.asObservable();
+
   private _cursor$ = new BehaviorSubject('');
   public cursor$ = this._cursor$.asObservable();
 
@@ -109,5 +113,9 @@ export class MapConfigState {
 
   setTreatedStandsOpacity(value: number) {
     this._treatedStandsOpacity.next(value);
+  }
+
+  setShowTreatmentLayersToggle(value: boolean) {
+    this._showTreatmentLayersToggle$.next(value);
   }
 }

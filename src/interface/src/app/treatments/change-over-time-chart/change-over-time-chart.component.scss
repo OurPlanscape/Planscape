@@ -1,0 +1,32 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.chart-heading {
+  @include h5();
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  height: 60px;
+  align-items: flex-end;
+}
+
+.chart {
+  height: calc(100% - 140px);
+  padding-bottom: 20px;
+}
+
+canvas {
+  flex: 1;
+  max-height: 100%;
+}
+
+.title {
+  padding: 24px 24px 0;
+  color: $color-text-gray;
+}

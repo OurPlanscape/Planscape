@@ -60,7 +60,7 @@ export class ProjectAreasTabComponent {
   }
 
   doSearch(searchString: string) {
-    this.searchString = searchString;
+    this.searchString = searchString.toLowerCase();
     if (!this.searchString) {
       this.filteredProjectAreas$ = this.projectAreas$;
     } else {

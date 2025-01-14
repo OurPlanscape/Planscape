@@ -10,17 +10,15 @@ import {
   DataDrivenPropertyValueSpecification,
   LngLat,
   Map as MapLibreMap,
-  MapGeoJSONFeature,
   MapMouseEvent,
   Point,
 } from 'maplibre-gl';
 import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
 import { DEFAULT_SLOT, ImpactsMetricSlot, SLOT_PALETTES } from '../metrics';
-import { map, switchMap, take } from 'rxjs';
+import { combineLatest, map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
-import { filter } from 'rxjs/operators';
 import { descriptionForAction } from '../prescriptions';
 import { FilterByActionPipe } from './filter-by-action.pipe';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -80,10 +78,8 @@ export class MapStandsTxResultComponent implements OnInit {
 
   activeMetric$ = this.directImpactsStateService.activeMetric$;
 
-  activeStandId$ = this.activeStand$.pipe(
-    filter((s): s is MapGeoJSONFeature => s !== null),
-    map((stand) => stand.id)
-  );
+  // If we get a null active stand we clear the stand selection
+  activeStandId$ = this.activeStand$.pipe(map((stand) => stand?.id));
 
   setActiveStand(event: MapMouseEvent) {
     this.setActiveStandFromPoint(event.point);
@@ -98,6 +94,7 @@ export class MapStandsTxResultComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.updateStandOnTreatmentChanges();
     this.paint = this.generatePaint(DEFAULT_SLOT);
     this.directImpactsStateService.standsTxSourceLoaded$
       .pipe(
@@ -116,6 +113,22 @@ export class MapStandsTxResultComponent implements OnInit {
           if (sourceFeatures[0]) {
             this.directImpactsStateService.setActiveStand(sourceFeatures[0]);
           }
+        }
+      });
+  }
+
+  updateStandOnTreatmentChanges() {
+    combineLatest([
+      this.directImpactsStateService.filteredTreatmentTypes$,
+      this.directImpactsStateService.activeStand$,
+    ])
+      .pipe(untilDestroyed(this))
+      .subscribe(([treatments, stand]) => {
+        if (
+          treatments?.length &&
+          !treatments.includes(stand?.properties?.['action'])
+        ) {
+          this.directImpactsStateService.resetActiveStand();
         }
       });
   }
@@ -141,27 +154,22 @@ export class MapStandsTxResultComponent implements OnInit {
     const features = this.mapLibreMap.queryRenderedFeatures(point, {
       layers: ['standsFill'],
     });
+
     return features[0];
   }
 
   private generatePaint(slot: ImpactsMetricSlot) {
     return {
       'fill-color': [
+        // If 'variable' is not null, apply the existing logic
         'case',
-        // Check if 'action' property is null
-        ['==', ['get', 'action'], ['literal', null]],
-        '#ffffff', // White for null 'action'
+        ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
+        '#ffffff', // White for null 'propertyName'
         [
-          // If 'action' is not null, apply the existing logic
-          'case',
-          ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
-          '#ffffff', // White for null 'propertyName'
-          [
-            'interpolate',
-            ['linear'],
-            ['get', this.propertyName],
-            ...this.getPalette(slot),
-          ],
+          'interpolate',
+          ['linear'],
+          ['get', this.propertyName],
+          ...this.getPalette(slot),
         ],
       ] as DataDrivenPropertyValueSpecification<ColorSpecification>,
       'fill-opacity': 0.8,

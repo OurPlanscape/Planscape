@@ -9,6 +9,7 @@ import { firstValueFrom, of, throwError } from 'rxjs';
 import { RemovingStandsError, UpdatingStandsError } from './treatment-errors';
 import { MOCK_SUMMARY, MOCK_TREATMENT_PLAN } from './mocks';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;
@@ -16,9 +17,20 @@ describe('TreatmentsState', () => {
   let treatedStandsState: TreatedStandsState;
 
   beforeEach(() => {
+    const fakeRoute = jasmine.createSpyObj(
+      'ActivatedRoute',
+      {},
+      {
+        snapshot: {
+          paramMap: convertToParamMap({ id: '24' }),
+        },
+      }
+    );
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
       providers: [
+        { provide: ActivatedRoute, useValue: fakeRoute },
+
         TreatmentsState,
         MockProviders(MapConfigState, TreatedStandsState, TreatmentsService),
       ],

@@ -9,7 +9,7 @@
   height: $navbar-height;
   position: relative;
   z-index: 200;
-  padding-left: 18px;
+  padding-left: 10px;
   gap: 10px;
 
   .mat-icon-button .mat-icon {
@@ -30,22 +30,19 @@
 
 .tooltip {
   padding: 20px;
+
+  p:last-child {
+    margin-bottom: 0;
+  }
 }
 
-.breadcrumb {
+.nav-heading {
   @include h4();
   text-overflow: ellipsis;
   overflow: hidden;
   white-space: nowrap;
-
-  a {
-    color: $color-standard-blue;
-    text-decoration: none;
-
-    &:hover,
-    &:active {
-      text-decoration: underline;
-      color: $color-main-blue;
-    }
-  }
+  align-items: center;
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
 }

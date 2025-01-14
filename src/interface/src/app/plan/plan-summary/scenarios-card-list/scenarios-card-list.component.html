@@ -15,7 +15,7 @@
   (openScenario)="handleOpenScenario(s)"
   [selected]="isSelected(s)"
   [treatmentPlansEnabled]="treatmentPlansEnabled"
-  (openNewTreatment)="openNewTreatment($event, s)"
+  (openNewTreatment)="openNewTreatmentDialog($event, s)"
   [userCanArchiveScenario]="userCanArchiveScenario(s)"
   (toggleArchiveStatus)="toggleScenarioStatus(s)">
 </sg-scenario-card>
