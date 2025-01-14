@@ -1,14 +1,11 @@
 import logging
 from django.conf import settings
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Union
+from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
-from numpy import ndarray
-from numpy.typing import NDArray
 import rasterio
 from rasterio.warp import Resampling, calculate_default_transform, reproject
-from rasterstats import zonal_stats
 from rio_cogeo.cogeo import cog_translate
 from rio_cogeo.cogeo import cog_validate
 from rio_cogeo.profiles import cog_profiles
