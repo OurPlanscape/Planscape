@@ -169,7 +169,7 @@ class TreatmentPlanViewSet(
         },
     )
     @action(detail=True, methods=["get"], filterset_class=None)
-    def shapefile(self, request, pk=None):
+    def download(self, request, pk=None):
         treatment_plan = self.get_object()
         output_path = export_geopackage(treatment_plan)
         return FileResponse(
