@@ -27,7 +27,7 @@ from impacts.services import (
     classify_flame_length,
     classify_rate_of_spread,
     clone_treatment_plan,
-    fill_impacts_for_untreated_stands,
+    calculate_impacts_for_untreated_stands,
     export_shapefile,
     fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
@@ -303,7 +303,7 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertEqual(len(matrix), total_records)
 
 
-class GetCalculationMatricsWoActionTest(TransactionTestCase):
+class GetCalculationMetricsWoActionTest(TransactionTestCase):
     def test_calculation_matrix_wo_action_returns_correctly(self):
         years = [1, 2]
         matrix = get_calculation_matrix_wo_action(years=years)
@@ -444,7 +444,7 @@ class CalculateImpactsTest(TransactionTestCase):
             )
 
 
-class FillImpactsForUntreatedStandsTest(TransactionTestCase):
+class CalculateImpactsForUntreatedStandsTest(TransactionTestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
@@ -487,9 +487,25 @@ class FillImpactsForUntreatedStandsTest(TransactionTestCase):
                 for stand in self.treated_stands
             ]
         )
+        baseline_metadata = {
+            "modules": {
+                "impacts": {
+                    "year": AVAILABLE_YEARS[0],
+                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "action": None,
+                    "baseline": True,
+                }
+            }
+        }
+        DataLayerFactory.create(
+            name="baseline",
+            url="impacts/tests/test_data/test_raster.tif",
+            metadata=baseline_metadata,
+            type=DataLayerType.RASTER,
+        )
 
-    def test_fill_impacts_for_untreated_stands(self):
-        treatment_results = fill_impacts_for_untreated_stands(
+    def test_calculate_impacts_for_untreated_stands(self):
+        treatment_results = calculate_impacts_for_untreated_stands(
             self.plan, ImpactVariable.CANOPY_BASE_HEIGHT, year=AVAILABLE_YEARS[0]
         )
 
@@ -504,8 +520,7 @@ class FillImpactsForUntreatedStandsTest(TransactionTestCase):
                 treatment_result.variable, ImpactVariable.CANOPY_BASE_HEIGHT
             )
             self.assertEqual(treatment_result.action, None)
-            self.assertEqual(treatment_result.value, None)
-            self.assertEqual(treatment_result.baseline, None)
+            self.assertEqual(treatment_result.value, treatment_result.baseline)
             self.assertEqual(treatment_result.delta, 0)
 
 
