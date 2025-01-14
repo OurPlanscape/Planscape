@@ -43,7 +43,9 @@ import { SNACK_ERROR_CONFIG } from '@shared';
   styleUrl: './apply-treatment.component.scss',
 })
 export class ApplyTreatmentComponent {
-  projectArea$ = this.treatmentsState.activeProjectArea$;
+  projectAreaName$ = this.treatmentsState.activeProjectArea$.pipe(
+    map((pa) => pa?.project_area_name)
+  );
   hasSelectedStands$ = this.selectedStandsState.hasSelectedStands$;
 
   hasSelectedTreatedStands$ = combineLatest([
@@ -54,6 +56,16 @@ export class ApplyTreatmentComponent {
       return treatedStands.some((treatedStand) =>
         selectedStands.includes(treatedStand.id)
       );
+    })
+  );
+
+  modalTitle$ = combineLatest([
+    this.hasSelectedTreatedStands$,
+    this.projectAreaName$,
+  ]).pipe(
+    map(([hasTreated, projectAreaName]) => {
+      const title = hasTreated ? 'Edit Treatment on ' : 'Apply Treatment to ';
+      return title + '"' + projectAreaName + '"';
     })
   );
 
