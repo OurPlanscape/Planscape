@@ -25,7 +25,6 @@ from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
     ProjectArea,
-    ProjectAreaNote,
     Scenario,
     ScenarioOrigin,
     ScenarioResult,
@@ -415,17 +414,6 @@ def toggle_scenario_status(scenario: Scenario, user: TUser) -> Scenario:
     scenario.save()
     action.send(user, verb=verb, action_object=scenario)
     return scenario
-
-
-@transaction.atomic()
-def create_projectarea_note(user: TUser, **kwargs) -> Scenario:
-    data = {
-        "user": user,
-        **kwargs,
-    }
-    note = ProjectAreaNote.objects.create(**data)
-    return note
-
 
 def planning_area_covers(
     planning_area: PlanningArea,
