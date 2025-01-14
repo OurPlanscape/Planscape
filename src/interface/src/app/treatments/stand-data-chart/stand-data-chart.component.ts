@@ -174,6 +174,5 @@ export class StandDataChartComponent {
     }
     (this.staticBarChartOptions as any).scales!.y!.min = -roundedMax;
     (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
-    (this.staticBarChartOptions as any).scales!.y!.ticks!.stepSize = 50;
   }
 }
