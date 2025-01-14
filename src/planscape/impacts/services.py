@@ -827,7 +827,9 @@ def export_shapefile(treatment_plan: TreatmentPlan) -> str:
     shapefile_path = Path(get_shapefile_path(treatment_plan))
     fiona_path = f"{str(shapefile_path)}.zip"
     data = fetch_treatment_plan_data(treatment_plan)
-    shapefile_schema = force_field_type(get_schema(data), "float")
+    shapefile_schema = get_schema(data)
+    shapefile_schema["properties"]["action"] = "str:128"
+    shapefile_schema = force_field_type(shapefile_schema, "float")
 
     Path(fiona_path).unlink(missing_ok=True)
     if not shapefile_path.exists():
