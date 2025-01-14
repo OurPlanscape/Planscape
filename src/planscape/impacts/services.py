@@ -674,27 +674,16 @@ def get_treatment_results_table_data(
 ) -> List[Dict[str, Any]]:
     """
     Retrieves a list of dictionaries, with each dictionary representing
-    a year and its variables. Returns something like:
-    [
-      {
-        "year": 2024,
-        "flame_length": { ... },
-        "rate_of_spread": { ... },
-        ...
-      },
-      ...
-    ]
+    a year and its variables.
     """
     # Fetch treatment results
     treated_results = TreatmentResult.objects.filter(
         treatment_plan=treatment_plan, stand_id=stand_id
     ).values("year", "variable", "value", "delta", "baseline")
 
-    if not treated_results.exists():
-        return []
-
     data_map = defaultdict(dict)
 
+    # Fetch baseline data for all years
     for year in AVAILABLE_YEARS:
         flame_length = ImpactVariable.get_datalayer(
             impact_variable=ImpactVariable.FLAME_LENGTH,
@@ -704,23 +693,28 @@ def get_treatment_results_table_data(
             impact_variable=ImpactVariable.RATE_OF_SPREAD,
             year=year,
         )
-        fl_metric = StandMetric.objects.get(stand_id=stand_id, datalayer=flame_length)
-        ros_metric = StandMetric.objects.get(
-            stand_id=stand_id, datalayer=rate_of_spread
-        )
+        try:
+            fl_metric = StandMetric.objects.get(
+                stand_id=stand_id, datalayer=flame_length
+            )
+            ros_metric = StandMetric.objects.get(
+                stand_id=stand_id, datalayer=rate_of_spread
+            )
+        except StandMetric.DoesNotExist:
+            fl_metric = ros_metric = None
 
         data_map[year][ImpactVariable.FLAME_LENGTH] = {
             "value": None,
             "delta": None,
-            "baseline": fl_metric.avg,
-            "category": classify_flame_length(fl_metric.avg),
+            "baseline": fl_metric.avg if fl_metric else None,
+            "category": classify_flame_length(fl_metric.avg) if fl_metric else None,
         }
 
         data_map[year][ImpactVariable.RATE_OF_SPREAD] = {
             "value": None,
             "delta": None,
-            "baseline": ros_metric.avg,
-            "category": classify_rate_of_spread(ros_metric.avg),
+            "baseline": ros_metric.avg if ros_metric else None,
+            "category": classify_rate_of_spread(ros_metric.avg) if ros_metric else None,
         }
 
     # Populate data_map with treatment results

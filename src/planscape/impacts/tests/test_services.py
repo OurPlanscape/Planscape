@@ -10,7 +10,7 @@ from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TransactionTestCase
+from django.test import TransactionTestCase, TestCase
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -677,114 +677,130 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIsNotNone(item.get("relative_year"))
 
 
-class GetTreatmentResultsTableDataTest(TransactionTestCase):
+class GetTreatmentResultsTableDataTest(TestCase):
     def setUp(self):
-        self.scenario = ScenarioFactory.create()
-        self.treatment_plan = TreatmentPlanFactory.create(scenario=self.scenario)
-        self.stand = StandFactory()
+        # Set up a treatment plan and a stand
+        self.treatment_plan = TreatmentPlanFactory.create()
+        self.stand = StandFactory.create()
+        self.fl_datalayer = DataLayerFactory.create(name="Flame Length")
+        self.ros_datalayer = DataLayerFactory.create(name="Rate of Spread")
 
-    def test_returns_empty_if_no_data(self):
+        # Mock ImpactVariable.get_datalayer
+        ImpactVariable.get_datalayer = lambda impact_variable, year, action=None: (
+            self.fl_datalayer
+            if impact_variable == ImpactVariable.FLAME_LENGTH
+            else self.ros_datalayer
+        )
+
+        # Add baseline metrics for the stand
+        StandMetricFactory.create(
+            stand=self.stand, datalayer=self.fl_datalayer, avg=40.2
+        )
+        StandMetricFactory.create(
+            stand=self.stand, datalayer=self.ros_datalayer, avg=109.34
+        )
+
+    def test_treated_stand(self):
         """
-        Checks that get_treatment_results_table_data() returns an empty list
-        when there's no TreatmentResult in the DB for the given plan + stand.
+        Test that the function correctly returns data for a treated stand.
         """
+        # Add treatment results for the stand
+        for year in AVAILABLE_YEARS:
+            TreatmentResultFactory.create(
+                treatment_plan=self.treatment_plan,
+                stand=self.stand,
+                year=year,
+                variable=ImpactVariable.CANOPY_BASE_HEIGHT,
+                value=50.0,
+                baseline=40.0,
+                delta=0.25,
+            )
+
+        # Call the function under test
         table_data = get_treatment_results_table_data(
             self.treatment_plan, self.stand.id
         )
-        self.assertEqual(table_data, [], "Expected an empty list when no data is found")
 
-    def test_returns_data_for_treated_and_untreated_metrics(self):
+        # Assert that data is returned for all AVAILABLE_YEARS
+        self.assertEqual(len(table_data), len(AVAILABLE_YEARS))
+        for year_data in table_data:
+            self.assertIn("year", year_data)
+            self.assertIn("FL", year_data)
+            self.assertEqual(year_data["FL"]["baseline"], 40.2)
+            self.assertEqual(year_data["FL"]["category"], "Extreme")
+            self.assertIn("ROS", year_data)
+            self.assertEqual(year_data["ROS"]["baseline"], 109.34)
+            self.assertEqual(year_data["ROS"]["category"], "Extreme")
+            self.assertIn(ImpactVariable.CANOPY_BASE_HEIGHT, year_data)
+            self.assertEqual(
+                year_data[ImpactVariable.CANOPY_BASE_HEIGHT]["value"], 50.0
+            )
+            self.assertEqual(
+                year_data[ImpactVariable.CANOPY_BASE_HEIGHT]["delta"], 0.25
+            )
+            self.assertEqual(
+                year_data[ImpactVariable.CANOPY_BASE_HEIGHT]["baseline"], 40.0
+            )
+
+    def test_untreated_stand(self):
         """
-        Ensures that both TreatmentResult and StandMetric data are correctly included
-        in the final table_data structure.
+        Test that the function correctly returns baseline data for an untreated stand.
         """
-        # Add treated results (from TreatmentResult)
-        TreatmentResultFactory.create(
-            treatment_plan=self.treatment_plan,
-            stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH,
-            year=2024,
-            value=3.5,
-            delta=1.2,
-            baseline=2.3,
-        )
-        TreatmentResultFactory.create(
-            treatment_plan=self.treatment_plan,
-            stand=self.stand,
-            variable=ImpactVariable.RATE_OF_SPREAD,
-            year=2024,
-            value=2.0,
-            delta=0.5,
-            baseline=1.5,
+        # Call the function under test
+        table_data = get_treatment_results_table_data(
+            self.treatment_plan, self.stand.id
         )
 
-        # Add untreated metrics (from StandMetric)
-        StandMetricFactory.create(
-            stand=self.stand,
-            datalayer=DataLayerFactory.create(
-                metadata={
-                    "impact_variable": ImpactVariable.FLAME_LENGTH.value,
-                    "year": 2024,
-                }
-            ),
-            avg=7.0,
-        )
-        StandMetricFactory.create(
-            stand=self.stand,
-            datalayer=DataLayerFactory.create(
-                metadata={
-                    "impact_variable": ImpactVariable.RATE_OF_SPREAD.value,
-                    "year": 2024,
-                }
-            ),
-            avg=15.0,
-        )
+        # Assert that data is returned for all AVAILABLE_YEARS
+        self.assertEqual(len(table_data), len(AVAILABLE_YEARS))
+        for year_data in table_data:
+            self.assertIn("year", year_data)
+            self.assertIn("FL", year_data)
+            self.assertEqual(year_data["FL"]["baseline"], 40.2)
+            self.assertEqual(year_data["FL"]["category"], "Extreme")
+            self.assertIn("ROS", year_data)
+            self.assertEqual(year_data["ROS"]["baseline"], 109.34)
+            self.assertEqual(year_data["ROS"]["category"], "Extreme")
 
-    def test_returns_only_untreated_if_no_treated_data(self):
-        """
-        Ensures that only StandMetric data is returned if no TreatmentResult data exists.
-        """
-        # Add untreated metrics (from StandMetric)
-        StandMetricFactory.create(
-            stand=self.stand,
-            datalayer=DataLayerFactory.create(
-                metadata={
-                    "impact_variable": ImpactVariable.FLAME_LENGTH.value,
-                    "year": 2024,
-                }
-            ),
-            avg=4.5,
-        )
-        StandMetricFactory.create(
-            stand=self.stand,
-            datalayer=DataLayerFactory.create(
-                metadata={
-                    "impact_variable": ImpactVariable.RATE_OF_SPREAD.value,
-                    "year": 2024,
-                }
-            ),
-            avg=12.0,
-        )
+            # Ensure untreated variables have null values and zero deltas
+            for variable in year_data:
+                if variable not in ["FL", "ROS", "year"]:
+                    self.assertIsNone(year_data[variable]["value"])
+                    self.assertEqual(year_data[variable]["delta"], 0.0)
+                    self.assertIsNone(year_data[variable]["baseline"])
+                    self.assertIsNone(year_data[variable]["category"])
 
 
-class ClassificationFunctionsTest(TransactionTestCase):
+class ClassifyFlameLengthTest(TestCase):
     def test_classify_flame_length(self):
-        """
-        Checks the numeric boundaries for flame length classification.
-        """
-        self.assertEqual(classify_flame_length(1.5), "Very Low")
-        self.assertEqual(classify_flame_length(3.0), "Low")
-        self.assertEqual(classify_flame_length(8.0), "High")
-        self.assertEqual(classify_flame_length(25.0), "Extreme")
+        test_cases = [
+            (None, ""),
+            (1.5, "Very Low"),
+            (3.0, "Low"),
+            (6.0, "Moderate"),
+            (10.0, "High"),
+            (20.0, "Very High"),
+            (30.0, "Extreme"),
+        ]
+        for value, expected in test_cases:
+            with self.subTest(value=value):
+                self.assertEqual(classify_flame_length(value), expected)
 
+
+class ClassifyRateOfSpreadTest(TestCase):
     def test_classify_rate_of_spread(self):
-        """
-        Checks the numeric boundaries for rate of spread classification.
-        """
-        self.assertEqual(classify_rate_of_spread(2.0), "Very Low")
-        self.assertEqual(classify_rate_of_spread(9.5), "Low")
-        self.assertEqual(classify_rate_of_spread(20.0), "High")
-        self.assertEqual(classify_rate_of_spread(100.0), "Extreme")
+        test_cases = [
+            (None, ""),
+            (2.0, "Very Low"),
+            (5.0, "Low"),
+            (15.0, "Moderate"),
+            (40.0, "High"),
+            (80.0, "Very High"),
+            (150.0, "Extreme"),
+        ]
+        for value, expected in test_cases:
+            with self.subTest(value=value):
+                self.assertEqual(classify_rate_of_spread(value), expected)
 
 
 class FetchTreatmentPlanDataTest(TransactionTestCase):
