@@ -488,6 +488,9 @@ def calculate_impacts_for_untreated_stands(
         )
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
 
+    # Using only the baseline dict to calculate deltas
+    # as the stands are untreated (no action applied),
+    # and reuse existing calculation functions.
     deltas_list = calculate_stand_deltas(
         baseline_dict=baseline_dict,
         action_dict=baseline_dict,
