@@ -25,7 +25,7 @@ from impacts.services import (
     get_calculation_matrix,
     get_baseline_matrix,
     get_calculation_matrix_wo_action,
-    fill_impacts_for_untreated_stands,
+    calculate_impacts_for_untreated_stands,
 )
 from planscape.celery import app
 
@@ -123,13 +123,16 @@ def async_calculate_baseline_metrics_for_variable_year(
         raise exc
 
 
-@app.task()
-def async_fill_impacts_for_non_treated_stands_action_year(
+@app.task(
+    bind=True, autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5}
+)
+def async_calculate_impacts_for_non_treated_stands_action_year(
+    self,
     treatment_plan_pk: int,
     variable: ImpactVariable,
     year: int,
 ) -> None:
-    """Fills impacts for non-treated stands for the variable, year pair.
+    """Calculate impacts for non-treated stands for the variable, year pair.
 
     :param treatment_plan_pk: TreatmentPlan primary key
     :type treatment_plan_pk: int
@@ -139,14 +142,27 @@ def async_fill_impacts_for_non_treated_stands_action_year(
     :type year: int
     :return: None
     """
-    treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
-        pk=treatment_plan_pk
-    )
-    fill_impacts_for_untreated_stands(
-        treatment_plan=treatment_plan,
-        variable=variable,
-        year=year,
-    )
+    log.info(f"Calculating baseline metrics for {variable} on non-treated stands")
+    try:
+        treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+            pk=treatment_plan_pk
+        )
+        calculate_impacts_for_untreated_stands(
+            treatment_plan=treatment_plan,
+            variable=variable,
+            year=year,
+        )
+    except (OSError, RasterioIOError) as exc:
+        if self.request.retries >= self.max_retries:
+            log.exception("Task failed on all retries.")
+        else:
+            log.warning("Task failed. Retrying.")
+        raise exc
+    except Exception as exc:
+        log.exception(
+            "Task failed due to an unhandled exception. Not retrying execution."
+        )
+        raise exc
 
 
 @app.task()
@@ -226,7 +242,7 @@ def async_calculate_persist_impacts_treatment_plan(
         for variable, year in baseline_matrix
     ]
     tasks += [
-        async_fill_impacts_for_non_treated_stands_action_year.si(
+        async_calculate_impacts_for_non_treated_stands_action_year.si(
             treatment_plan_pk=treatment_plan_pk,
             variable=variable,
             year=year,
