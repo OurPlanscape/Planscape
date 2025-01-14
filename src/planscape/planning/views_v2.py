@@ -2,7 +2,6 @@ import logging
 
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
-from django.db import IntegrityError
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
 from rest_framework import mixins, pagination, permissions, status, viewsets
