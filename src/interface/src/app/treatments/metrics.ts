@@ -104,3 +104,10 @@ export const YEAR_INTERVAL_PROPERTY: Record<YearInterval, string> = {
   fifteen: 'delta_15',
   twenty: 'delta_20',
 };
+
+export interface MetricResult {
+  baseline: number;
+  category: string;
+  delta: number;
+  value: number;
+}

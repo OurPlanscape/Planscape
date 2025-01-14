@@ -1,4 +1,10 @@
 import json
+import itertools
+from pathlib import Path
+import random
+from unittest import TestCase
+
+from numpy import var
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
@@ -21,7 +27,9 @@ from impacts.services import (
     classify_flame_length,
     classify_rate_of_spread,
     clone_treatment_plan,
-    fill_impacts_for_untreated_stands,
+    calculate_impacts_for_untreated_stands,
+    export_geopackage,
+    fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
     generate_summary,
     get_calculation_matrix,
@@ -295,7 +303,7 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertEqual(len(matrix), total_records)
 
 
-class GetCalculationMatricsWoActionTest(TransactionTestCase):
+class GetCalculationMetricsWoActionTest(TransactionTestCase):
     def test_calculation_matrix_wo_action_returns_correctly(self):
         years = [1, 2]
         matrix = get_calculation_matrix_wo_action(years=years)
@@ -436,7 +444,7 @@ class CalculateImpactsTest(TransactionTestCase):
             )
 
 
-class FillImpactsForUntreatedStandsTest(TransactionTestCase):
+class CalculateImpactsForUntreatedStandsTest(TransactionTestCase):
     def load_stands(self):
         with open("impacts/tests/test_data/stands.geojson") as fp:
             geojson = json.loads(fp.read())
@@ -479,9 +487,25 @@ class FillImpactsForUntreatedStandsTest(TransactionTestCase):
                 for stand in self.treated_stands
             ]
         )
+        baseline_metadata = {
+            "modules": {
+                "impacts": {
+                    "year": AVAILABLE_YEARS[0],
+                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "action": None,
+                    "baseline": True,
+                }
+            }
+        }
+        DataLayerFactory.create(
+            name="baseline",
+            url="impacts/tests/test_data/test_raster.tif",
+            metadata=baseline_metadata,
+            type=DataLayerType.RASTER,
+        )
 
-    def test_fill_impacts_for_untreated_stands(self):
-        treatment_results = fill_impacts_for_untreated_stands(
+    def test_calculate_impacts_for_untreated_stands(self):
+        treatment_results = calculate_impacts_for_untreated_stands(
             self.plan, ImpactVariable.CANOPY_BASE_HEIGHT, year=AVAILABLE_YEARS[0]
         )
 
@@ -496,8 +520,7 @@ class FillImpactsForUntreatedStandsTest(TransactionTestCase):
                 treatment_result.variable, ImpactVariable.CANOPY_BASE_HEIGHT
             )
             self.assertEqual(treatment_result.action, None)
-            self.assertEqual(treatment_result.value, None)
-            self.assertEqual(treatment_result.baseline, None)
+            self.assertEqual(treatment_result.value, treatment_result.baseline)
             self.assertEqual(treatment_result.delta, 0)
 
 
@@ -691,7 +714,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         in the final table_data structure.
         """
         # Add treated results (from TreatmentResult)
-        TreatmentResultFactory(
+        TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
             variable=ImpactVariable.FLAME_LENGTH,
@@ -700,7 +723,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
             delta=1.2,
             baseline=2.3,
         )
-        TreatmentResultFactory(
+        TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
             variable=ImpactVariable.RATE_OF_SPREAD,
@@ -711,7 +734,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         )
 
         # Add untreated metrics (from StandMetric)
-        StandMetricFactory(
+        StandMetricFactory.create(
             stand=self.stand,
             datalayer=DataLayerFactory.create(
                 metadata={
@@ -721,7 +744,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
             ),
             avg=7.0,
         )
-        StandMetricFactory(
+        StandMetricFactory.create(
             stand=self.stand,
             datalayer=DataLayerFactory.create(
                 metadata={
@@ -737,7 +760,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         Ensures that only StandMetric data is returned if no TreatmentResult data exists.
         """
         # Add untreated metrics (from StandMetric)
-        StandMetricFactory(
+        StandMetricFactory.create(
             stand=self.stand,
             datalayer=DataLayerFactory.create(
                 metadata={
@@ -747,7 +770,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
             ),
             avg=4.5,
         )
-        StandMetricFactory(
+        StandMetricFactory.create(
             stand=self.stand,
             datalayer=DataLayerFactory.create(
                 metadata={
@@ -777,3 +800,55 @@ class ClassificationFunctionsTest(TransactionTestCase):
         self.assertEqual(classify_rate_of_spread(9.5), "Low")
         self.assertEqual(classify_rate_of_spread(20.0), "High")
         self.assertEqual(classify_rate_of_spread(100.0), "Extreme")
+
+
+class FetchTreatmentPlanDataTest(TransactionTestCase):
+    def test_fetch_treatment_plan_data_returns_results(self):
+        treatment_plan = TreatmentPlanFactory.create()
+        _ = ProjectAreaFactory.create(scenario=treatment_plan.scenario)
+        variables = [ImpactVariable.CANOPY_BASE_HEIGHT, ImpactVariable.CANOPY_COVER]
+        years = [2024, 2029]
+        stand1 = StandFactory.create()
+        stand2 = StandFactory.create()
+        calcs = itertools.product(variables, years, [stand1, stand2])
+        for variable, year, stand in calcs:
+            TreatmentResultFactory.create(
+                treatment_plan=treatment_plan,
+                variable=variable,
+                year=year,
+                value=random.randrange(0, 100),
+                baseline=random.randrange(0, 100),
+                delta=random.randrange(0, 100),
+                stand=stand,
+            )
+
+        data = fetch_treatment_plan_data(treatment_plan)
+        self.assertEqual(len(data), 2)
+        stand_ids = [x.get("properties", {}).get("stand_id") for x in data]
+        self.assertIn(stand1.pk, stand_ids)
+        self.assertIn(stand2.pk, stand_ids)
+
+
+class ExportShapefileTest(TransactionTestCase):
+    def test_export_creates_file(self):
+        treatment_plan = TreatmentPlanFactory.create()
+        _ = ProjectAreaFactory.create(scenario=treatment_plan.scenario)
+        variables = [ImpactVariable.CANOPY_BASE_HEIGHT, ImpactVariable.CANOPY_COVER]
+        years = [2024, 2029]
+        stand1 = StandFactory.create()
+        stand2 = StandFactory.create()
+        calcs = itertools.product(variables, years, [stand1, stand2])
+        for variable, year, stand in calcs:
+            TreatmentResultFactory.create(
+                treatment_plan=treatment_plan,
+                variable=variable,
+                year=year,
+                value=random.randrange(0, 100),
+                baseline=random.randrange(0, 100),
+                delta=random.randrange(0, 100),
+                stand=stand,
+            )
+
+        shapefile = export_geopackage(treatment_plan)
+        path = Path(shapefile)
+        self.assertTrue(path.exists())

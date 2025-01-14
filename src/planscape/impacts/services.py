@@ -2,8 +2,13 @@ import itertools
 import json
 import logging
 from collections import defaultdict
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from pathlib import Path
+import re
+from django.conf import settings
+from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple
+import fiona
 
+from numpy import rec
 import rasterio
 from actstream import action as actstream_action
 from core.s3 import get_aws_session
@@ -13,8 +18,9 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, QuerySet, Sum, When
 from django.db.models.expressions import RawSQL
-from planning.models import ProjectArea, Scenario
+from planning.models import PlanningArea, ProjectArea, Scenario
 from rasterio.session import AWSSession
+from planning.services import get_schema
 from stands.models import STAND_AREA_ACRES, Stand, StandMetric
 from stands.services import calculate_stand_zonal_stats
 
@@ -457,7 +463,7 @@ def calculate_stand_deltas(
     return results
 
 
-def fill_impacts_for_untreated_stands(
+def calculate_impacts_for_untreated_stands(
     treatment_plan: TreatmentPlan,
     variable: ImpactVariable,
     year: int,
@@ -469,24 +475,30 @@ def fill_impacts_for_untreated_stands(
         "project_area",
     )
     treated_stand_ids = prescriptions.values_list("stand_id", flat=True)
-    untreated_stand_ids = (
+    untreated_stands = (
         treatment_plan.scenario.get_project_areas_stands()
         .exclude(id__in=treated_stand_ids)
-        .values_list("id", flat=True)
+        .with_webmercator()
     )
 
-    results = []
-    for stand_id in untreated_stand_ids:
-        results.append(
-            {
-                "stand_id": stand_id,
-                "action": None,
-                "aggregation": ImpactVariableAggregation.MEAN,
-                "value": None,
-                "baseline": None,
-                "delta": 0,
-            }
+    aws_session = AWSSession(get_aws_session())
+    with rasterio.Env(aws_session):
+        baseline_metrics = calculate_metrics(
+            stands=untreated_stands,
+            variable=variable,
+            year=year,
         )
+    baseline_dict = {m.stand_id: m for m in baseline_metrics}
+
+    # Calculating deltas using baseline_dict on both entries
+    # because it will generate delta zero, which mean no change,
+    # and set `value` and `baseline` to the same value.
+    # For non-forested stands, `value`, `baseline` and `delta` will be null.
+    deltas_list = calculate_stand_deltas(
+        baseline_dict=baseline_dict,
+        action_dict=baseline_dict,
+        action=None,
+    )
 
     treatment_results = list(
         map(
@@ -496,7 +508,7 @@ def fill_impacts_for_untreated_stands(
                 year,
                 result=x,
             ),
-            results,
+            deltas_list,
         )
     )
 
@@ -505,7 +517,7 @@ def fill_impacts_for_untreated_stands(
 
 def get_calculation_matrix(
     treatment_plan: TreatmentPlan,
-    years: Optional[Iterable[int]] = None,
+    years: Optional[Collection[int]] = None,
 ) -> List[Tuple]:
     actions = list(
         [
@@ -529,7 +541,7 @@ def get_calculation_matrix_wo_action(
 
 
 def get_baseline_matrix(
-    years: Optional[Iterable[int]] = None,
+    years: Optional[Collection[int]] = None,
 ):
     if not years:
         years = AVAILABLE_YEARS
@@ -629,7 +641,7 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if fl_value is None:
-        return ""
+        return "N/A"
     if fl_value < 2.0:
         return "Very Low"
     if fl_value < 4.0:
@@ -650,7 +662,7 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if ros_value is None:
-        return ""
+        return "N/A"
     if ros_value < 3.0:
         return "Very Low"
     if ros_value < 10.0:
@@ -741,3 +753,132 @@ def get_treatment_results_table_data(
         table_data.append({**data_map[year], "year": year})
 
     return table_data
+
+
+def get_export_path(treatment_plan: TreatmentPlan) -> str:
+    return (
+        settings.OUTPUT_DIR
+        / "shapefile"
+        / f"{treatment_plan.pk}"
+        / f"{treatment_plan.pk}.gpkg"
+    )
+
+
+def get_treament_result_schema():
+    numeric_fields_iterator = itertools.product(
+        [i for i in ImpactVariable], AVAILABLE_YEARS
+    )
+    fields = list([(f"{i}_{year}", "float:4.2") for i, year in numeric_fields_iterator])
+    return {
+        "geometry": "Polygon",
+        "properties": [
+            ("stand_id", "int"),
+            ("stand_size", "str:64"),
+            ("planning_area_id", "int"),
+            ("planning_area_name", "str:256"),
+            ("scenario_id", "int"),
+            ("scenario_name", "str:256"),
+            ("action", "str:64"),
+            *fields,
+        ],
+    }
+
+
+def tretment_result_to_json(
+    stand: Stand,
+    stand_result: Dict[str, Any],
+    scenario: Scenario,
+    planning_area: PlanningArea,
+) -> Dict[str, Any]:
+    return {
+        "geometry": json.loads(stand.geometry.geojson),
+        "properties": {
+            "stand_id": stand.pk,
+            "stand_size": scenario.get_stand_size(),
+            "planning_area_id": planning_area.pk,
+            "planning_area_name": planning_area.name,
+            "scenario_id": scenario.pk,
+            "scenario_name": scenario.name,
+            **stand_result,
+        },
+    }
+
+
+def fetch_treatment_plan_data(
+    treatment_plan: TreatmentPlan,
+) -> Collection[Dict[str, Any]]:
+    scenario = treatment_plan.scenario
+    planning_area = scenario.planning_area
+    results = (
+        TreatmentResult.objects.filter(treatment_plan=treatment_plan)
+        .order_by("stand", "variable", "year")
+        .select_related("stand", "treatment_plan__scenario")
+    )
+    treatment_results_data = {r.stand_id: r for r in results}
+    result_data = defaultdict(dict)
+    stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
+    for result in results:
+        field_name = f"{result.variable}_{result.year}"
+        result_data[result.stand_id][field_name] = result.delta
+        result_data[result.stand_id]["action"] = treatment_results_data[
+            result.stand_id
+        ].action
+
+    return list(
+        map(
+            lambda stand: tretment_result_to_json(
+                stand,
+                result_data[stand.id],
+                scenario,
+                planning_area,
+            ),
+            stands,
+        )
+    )
+
+
+def force_field_type(schema: Dict[str, Any], field_type: str) -> Dict[str, Any]:
+    new_properties = []
+    for field_name, type in schema.get("properties", []):
+        type = type if type != "" else field_type
+        new_properties.append((field_name, type))
+    return {**schema, "properties": new_properties}
+
+
+def match_schema(record: Dict[str, Any], schema: Dict[str, Any]):
+    for key, _type in schema.get("properties", []):
+        if key not in record.get("properties", {}):
+            record["properties"][key] = None
+    return record
+
+
+def export_geopackage(treatment_plan: TreatmentPlan) -> str:
+    bare_export_path = Path(get_export_path(treatment_plan))
+    fiona_path = f"{str(bare_export_path)}.zip"
+    data = fetch_treatment_plan_data(treatment_plan)
+    treatment_result_schema = get_treament_result_schema()
+    Path(fiona_path).unlink(missing_ok=True)
+    if not bare_export_path.parent.exists():
+        bare_export_path.parent.mkdir(parents=True)
+    with fiona.open(
+        fiona_path,
+        "w",
+        layer=f"treatment_plan_{treatment_plan.pk}",
+        crs="EPSG:4326",
+        driver="GPKG",
+        schema=treatment_result_schema,
+        allow_unsupported_drivers=True,
+    ) as out:
+        for record in data:
+            record = match_schema(record, treatment_result_schema)
+            out.write(
+                {
+                    "id": record.pop("id", None),
+                    "geometry": record.pop("geometry", None),
+                    "properties": {
+                        key: value
+                        for key, value in record.get("properties", {}).items()
+                    },
+                }
+            )
+    return str(fiona_path)

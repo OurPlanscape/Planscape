@@ -154,27 +154,22 @@ export class MapStandsTxResultComponent implements OnInit {
     const features = this.mapLibreMap.queryRenderedFeatures(point, {
       layers: ['standsFill'],
     });
+
     return features[0];
   }
 
   private generatePaint(slot: ImpactsMetricSlot) {
     return {
       'fill-color': [
+        // If 'variable' is not null, apply the existing logic
         'case',
-        // Check if 'action' property is null
-        ['==', ['get', 'action'], ['literal', null]],
-        '#ffffff', // White for null 'action'
+        ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
+        '#ffffff', // White for null 'propertyName'
         [
-          // If 'action' is not null, apply the existing logic
-          'case',
-          ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
-          '#ffffff', // White for null 'propertyName'
-          [
-            'interpolate',
-            ['linear'],
-            ['get', this.propertyName],
-            ...this.getPalette(slot),
-          ],
+          'interpolate',
+          ['linear'],
+          ['get', this.propertyName],
+          ...this.getPalette(slot),
         ],
       ] as DataDrivenPropertyValueSpecification<ColorSpecification>,
       'fill-opacity': 0.8,

@@ -48,6 +48,8 @@ import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
 import { TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
+import { TreatmentsService } from '@services/treatments.service';
+import { FileSaverService } from '@services';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -94,12 +96,16 @@ import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-lo
 })
 export class DirectImpactsComponent implements OnInit, OnDestroy {
   loading = false;
+  downloadingShapefile = false;
+
   constructor(
     private treatmentsState: TreatmentsState,
+    private treatmentsService: TreatmentsService,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private router: Router,
     private directImpactsStateService: DirectImpactsStateService,
+    private fileSaverService: FileSaverService,
     private dialog: MatDialog,
     private injector: Injector // Angular's injector for passing shared services
   ) {
@@ -224,5 +230,21 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   saveShowTreatmentPrescription(value: MatSlideToggleChange) {
     this.mapConfigState.setTreatmentLegendVisible(value.checked);
     this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
+  }
+
+  download() {
+    this.downloadingShapefile = true;
+    const filename =
+      'treatment_plan_' + this.treatmentsState.getTreatmentPlanId();
+
+    this.treatmentsService
+      .downloadTreatment(this.treatmentsState.getTreatmentPlanId())
+      .subscribe((data) => {
+        const blob = new Blob([data], {
+          type: 'application/zip',
+        });
+        this.fileSaverService.saveAs(blob, filename);
+        this.downloadingShapefile = false;
+      });
   }
 }
