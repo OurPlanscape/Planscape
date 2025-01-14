@@ -82,6 +82,7 @@ export class DirectImpactsStateService {
 
   setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
     this._selectedProjectArea$.next(projectArea);
+    this.resetActiveStand();
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {
@@ -114,5 +115,9 @@ export class DirectImpactsStateService {
 
   setStandsTxSourceLoaded(val: boolean) {
     this._standsTxSourceLoaded$.next(val);
+  }
+
+  resetActiveStand() {
+    this._activeStand$.next(null);
   }
 }

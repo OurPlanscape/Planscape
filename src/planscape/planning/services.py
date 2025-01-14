@@ -6,12 +6,13 @@ import zipfile
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Type
+from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
@@ -20,7 +21,7 @@ from fiona.crs import from_epsg
 from stands.models import Stand, StandSizeChoices, area_from_size
 from utils.geometry import to_multi
 
-from planning.geometry import coerce_geojson
+from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -34,6 +35,8 @@ from planning.models import (
 from planning.tasks import async_forsys_run
 from planscape.exceptions import InvalidGeometry
 from planscape.typing import TLooseGeom, TUser
+
+User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
@@ -136,35 +139,34 @@ def union_geojson(uploaded_geojson) -> GEOSGeometry:
     return unioned_geometry
 
 
-def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] = None):
+def feature_to_project_area(
+    user: User,
+    scenario: Scenario,
+    geometry_dict: Dict[str, Any],
+    idx: int = 1,
+):
     try:
-        area_name = f"Project Area"
-        if idx is not None:
-            area_name += f" {idx}"
-
-        geometry = MultiPolygon(
-            [
-                GEOSGeometry(feature, srid=4326).transform(
-                    settings.CRS_INTERNAL_REPRESENTATION, clone=True
-                ),
-            ]
-        )
+        area_name = f"Project Area {idx}"
+        logger.info("creating project area %s %s", area_name, geometry_dict)
+        _bbox = geometry_dict.pop("bbox", None)
+        geometry = coerce_geometry(geometry_dict)
 
         stand_count = Stand.objects.within_polygon(
-            geometry, scenario.get_stand_size()
+            geometry,
+            scenario.get_stand_size(),
         ).count()
 
         project_area = {
             "geometry": geometry,
             "name": area_name,
-            "created_by": user_id,
+            "created_by": user,
             "scenario": scenario,
             "data": {"treatment_rank": idx, "stand_count": stand_count},
         }
         proj_area_obj = ProjectArea.objects.create(**project_area)
 
         action.send(
-            user_id,
+            user,
             verb="created",
             action_object=proj_area_obj,
             target=scenario,
@@ -173,7 +175,7 @@ def feature_to_project_area(user_id: int, scenario, feature, idx: Optional[int] 
         return proj_area_obj
 
     except Exception as e:
-        logger.error(f"Unable to create project area for {scenario.name} {e}")
+        logger.exception("Unable to create project area for scenario %s", scenario.name)
         raise e
 
 
@@ -200,26 +202,31 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
     )
     # Create project areas from features...
     # handle just one polygon
-    if "type" in uploaded_geom and uploaded_geom["type"] == "Polygon":
+    if "type" in uploaded_geom and uploaded_geom["type"] in ["Polygon", "MultiPolygon"]:
         new_feature = feature_to_project_area(
             scenario.user,
             scenario,
-            json.dumps(uploaded_geom),
+            uploaded_geom,
             1,
         )
+        logger.info(f"Processing feature {new_feature}")
         uploaded_geom.setdefault("properties", {})
         uploaded_geom["properties"]["project_id"] = new_feature.pk
         uploaded_geom["properties"]["treatment_rank"] = 1
 
     # handle a FeatureCollection
     if "features" in uploaded_geom:
-        for idx, f in enumerate(uploaded_geom["features"], 1):
+        for idx, feature in enumerate(uploaded_geom["features"], 1):
+            logger.info(f"Processing feature {feature}")
             new_feature = feature_to_project_area(
-                scenario.user, scenario, json.dumps(f["geometry"]), idx
+                scenario.user,
+                scenario,
+                feature["geometry"],
+                idx,
             )
-            f.setdefault("properties", {})
-            f["properties"]["project_id"] = new_feature.pk
-            f["properties"]["treatment_rank"] = idx
+            feature.setdefault("properties", {})
+            feature["properties"]["project_id"] = new_feature.pk
+            feature["properties"]["treatment_rank"] = idx
 
     # Store geometry with added properties into ScenarioResult.result
     ScenarioResult.objects.create(
@@ -345,12 +352,21 @@ def map_property(key_value_pair):
     return (key, type)
 
 
-def get_schema(geojson: Dict[str, Any]) -> Dict[str, Any]:
-    features = geojson.get("features", [])
-    first = features[0]
-    field_type_pairs = list(map(map_property, first.get("properties", {}).items()))
+def get_schema(
+    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]]
+) -> Dict[str, Any]:
+    feature = {}
+    match geojson:
+        case {"type": "FeatureCollection", "features": features}:
+            feature = features[0]
+        case {"properties": _properties, "geometry": _geometry}:
+            feature = geojson
+        case list() as features:
+            feature = features[0]
+
+    field_type_pairs = list(map(map_property, feature.get("properties", {}).items()))
     schema = {
-        "geometry": first.get("geometry", {}).get("type", "MultiPolygon")
+        "geometry": feature.get("geometry", {}).get("type", "MultiPolygon")
         or "MultiPolygon",
         "properties": field_type_pairs,
     }

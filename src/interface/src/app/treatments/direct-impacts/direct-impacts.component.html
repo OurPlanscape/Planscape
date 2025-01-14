@@ -2,7 +2,7 @@
 
 <app-nav-bar
   [navState]="(navState$ | async) || null"
-  [area]="'TREATMENTS'"></app-nav-bar>
+  [area]="'DIRECT_IMPACTS'"></app-nav-bar>
 
 <div *ngIf="treatmentPlan$ | async; let treatmentPlan" class="treatment-plan">
   <div class="item">
@@ -23,7 +23,14 @@
       (change)="saveShowTreatmentPrescription($event)"
       >View treatment prescription
     </mat-slide-toggle>
-    <button sg-button variant="ghost" icon="download" [outlined]="true">
+    <button
+      sg-button
+      variant="ghost"
+      icon="download"
+      [outlined]="true"
+      [disabled]="downloadingShapefile"
+      [loading]="downloadingShapefile"
+      (click)="downloadShapefile()">
       Download Shapefile
     </button>
   </div>

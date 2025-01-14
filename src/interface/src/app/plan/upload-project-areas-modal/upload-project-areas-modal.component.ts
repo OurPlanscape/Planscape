@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import {
+  FormBuilder,
   FormGroup,
   FormsModule,
-  FormBuilder,
-  Validators,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -29,6 +29,8 @@ import { PlanService } from '@services';
 import { take } from 'rxjs';
 
 import * as shp from 'shpjs';
+import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { MatLegacyMenuModule } from '@angular/material/legacy-menu';
 
 export interface DialogData {
   planning_area_name: string;
@@ -56,6 +58,8 @@ export interface DialogData {
     NgIf,
     SharedModule,
     ReactiveFormsModule,
+    MatLegacyButtonModule,
+    MatLegacyMenuModule,
   ],
 })
 export class UploadProjectAreasModalComponent {
