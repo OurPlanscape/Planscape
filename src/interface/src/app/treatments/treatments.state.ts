@@ -187,6 +187,9 @@ export class TreatmentsState {
     this.mapConfigState.setShowFillProjectAreas(
       data.showMapProjectAreas || false
     );
+    this.mapConfigState.setShowTreatmentLayersToggle(
+      data.showTreatmentLayersToggle || false
+    );
     this.mapConfigState.setShowMapControls(data.showTreatmentStands || false);
   }
 

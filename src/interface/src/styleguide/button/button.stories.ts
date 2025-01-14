@@ -94,3 +94,13 @@ export const Icon: Story = {
 <button sg-button ${argsToTemplate(args)} [hasError]='true'></button>`,
   }),
 };
+
+export const Loading: Story = {
+  args: {
+    variant: 'ghost',
+    loading: true,
+    icon: 'explore',
+    outlined: true,
+    content: 'Loading stuff',
+  },
+};
