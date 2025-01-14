@@ -1,6 +1,6 @@
 import logging
 
-from django.http import FileResponse
+from django.http import FileResponse, HttpResponse
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiTypes
 from impacts.filters import TreatmentPlanFilterSet
 from impacts.models import (
@@ -172,10 +172,13 @@ class TreatmentPlanViewSet(
     def shapefile(self, request, pk=None):
         treatment_plan = self.get_object()
         output_path = export_shapefile(treatment_plan)
-        return FileResponse(
-            open(output_path, "rb"),
-            as_attachment=True,
-        )
+        with open(output_path, "rb") as fi:
+            data = fi.read()
+        response = HttpResponse(data, content_type="application/zip")
+        response[
+            "Content-Disposition"
+        ] = f'attachment;filename="treament_plan_{treatment_plan.pk}"'
+        return response
 
     @extend_schema(
         description="Runs a Treatment Plan.",
