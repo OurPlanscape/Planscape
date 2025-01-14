@@ -138,9 +138,10 @@ export class TreatmentsService {
     );
   }
 
-  getShapefiles(treatmentPlanId: number) {
+  downloadShapefiles(treatmentPlanId: number) {
     return this.http.get(`${this.baseUrl}/${treatmentPlanId}/shapefile/`, {
       withCredentials: true,
+      responseType: 'blob',
     });
   }
 }

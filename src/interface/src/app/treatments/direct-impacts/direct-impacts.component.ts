@@ -49,6 +49,7 @@ import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/
 import { TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 import { TreatmentsService } from '@services/treatments.service';
+import { FileSaverService } from '@services';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -95,6 +96,7 @@ import { TreatmentsService } from '@services/treatments.service';
 })
 export class DirectImpactsComponent implements OnInit, OnDestroy {
   loading = false;
+  downloadingShapefile = false;
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -103,6 +105,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private route: ActivatedRoute,
     private router: Router,
     private directImpactsStateService: DirectImpactsStateService,
+    private fileSaverService: FileSaverService,
     private dialog: MatDialog,
     private injector: Injector // Angular's injector for passing shared services
   ) {
@@ -230,8 +233,18 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   }
 
   downloadShapefile() {
+    this.downloadingShapefile = true;
+    const filename =
+      'treatment_plan_' + this.treatmentsState.getTreatmentPlanId();
+
     this.treatmentsService
-      .getShapefiles(this.treatmentsState.getTreatmentPlanId())
-      .subscribe();
+      .downloadShapefiles(this.treatmentsState.getTreatmentPlanId())
+      .subscribe((data) => {
+        const blob = new Blob([data], {
+          type: 'application/zip',
+        });
+        this.fileSaverService.saveAs(blob, filename);
+        this.downloadingShapefile = false;
+      });
   }
 }

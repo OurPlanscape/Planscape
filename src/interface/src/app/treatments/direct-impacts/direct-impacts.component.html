@@ -28,6 +28,8 @@
       variant="ghost"
       icon="download"
       [outlined]="true"
+      [disabled]="downloadingShapefile"
+      [loading]="downloadingShapefile"
       (click)="downloadShapefile()">
       Download Shapefile
     </button>
