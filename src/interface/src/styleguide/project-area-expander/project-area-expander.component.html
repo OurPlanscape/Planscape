@@ -16,11 +16,8 @@
     </div>
     <div class="right-content">
       <div class="stand-count">
-        {{ treatedStandCount() + '/' + projectArea.total_stand_count }}
+        {{ treatedStandCount() | number: '1.0-1' }}% Treated
       </div>
-      <mat-icon class="material-symbols-outlined treatment-hexagon"
-        >hexagon_outline
-      </mat-icon>
     </div>
   </mat-expansion-panel-header>
   <div class="empty-treatments" *ngIf="projectArea.prescriptions.length === 0">
