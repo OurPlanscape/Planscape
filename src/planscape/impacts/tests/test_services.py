@@ -426,7 +426,7 @@ class CalculateImpactsTest(TransactionTestCase):
 
     def test_calculate_delta(self):
         values_bases_expected_results = [
-            (0, 0, -1),
+            (0, 0, 0),
             (0, 1, -1),
             (1, 0, 0),
             (1, 1, 0),
