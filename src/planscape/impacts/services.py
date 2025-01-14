@@ -639,7 +639,7 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if fl_value is None:
-        return ""
+        return "N/A"
     if fl_value < 2.0:
         return "Very Low"
     if fl_value < 4.0:
@@ -660,7 +660,7 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if ros_value is None:
-        return ""
+        return "N/A"
     if ros_value < 3.0:
         return "Very Low"
     if ros_value < 10.0:
