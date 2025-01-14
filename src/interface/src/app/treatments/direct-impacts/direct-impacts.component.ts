@@ -48,6 +48,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
 import { TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
+import { TreatmentsService } from '@services/treatments.service';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -94,8 +95,10 @@ import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-lo
 })
 export class DirectImpactsComponent implements OnInit, OnDestroy {
   loading = false;
+
   constructor(
     private treatmentsState: TreatmentsState,
+    private treatmentsService: TreatmentsService,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private router: Router,
@@ -224,5 +227,11 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   saveShowTreatmentPrescription(value: MatSlideToggleChange) {
     this.mapConfigState.setTreatmentLegendVisible(value.checked);
     this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
+  }
+
+  downloadShapefile() {
+    this.treatmentsService
+      .getShapefiles(this.treatmentsState.getTreatmentPlanId())
+      .subscribe();
   }
 }
