@@ -1,6 +1,7 @@
 import { Component, HostBinding, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 export type ButtonVariant =
   | 'primary'
@@ -14,7 +15,7 @@ export type ButtonVariant =
   // eslint-disable-next-line @angular-eslint/component-selector
   selector: 'button[sg-button], a[sg-button]',
   standalone: true,
-  imports: [CommonModule, MatIconModule],
+  imports: [CommonModule, MatIconModule, MatProgressSpinnerModule],
   templateUrl: './button.component.html',
   styleUrls: ['./button.component.scss'],
 })
@@ -36,6 +37,8 @@ export class ButtonComponent {
   @Input() outlined = false;
 
   @Input() hasError = false;
+
+  @Input() loading = false;
 
   @HostBinding('class.ghost-button')
   get isVariantGhost() {

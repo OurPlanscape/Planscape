@@ -1,6 +1,7 @@
 import { Component, Input } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
+  ControlComponent,
   DraggableDirective,
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -27,13 +28,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
-import { addAuthHeaders } from '../maplibre.helper';
+import { addRequestHeaders } from '../maplibre.helper';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 import { Geometry } from 'geojson';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
+import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 
 @UntilDestroy()
 @Component({
@@ -59,6 +61,8 @@ import { canEditTreatmentPlan } from 'src/app/plan/permissions';
     PopupComponent,
     MapTooltipComponent,
     PlanningAreaLayerComponent,
+    ControlComponent,
+    MatLegacySlideToggleModule,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -166,6 +170,8 @@ export class TreatmentMapComponent {
     map((area) => area.geometry as Geometry)
   );
 
+  showTreatmentLayersToggle$ = this.mapConfigState.showTreatmentLayersToggle$;
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
@@ -266,6 +272,10 @@ export class TreatmentMapComponent {
     this.mapConfigState.setTreatmentLegendVisible(true);
   }
 
+  toggleShowTreatmentLayers() {
+    this.mapConfigState.toggleShowTreatmentStands();
+  }
+
   transformRequest: RequestTransformFunction = (url, resourceType) =>
-    addAuthHeaders(url, resourceType, this.authService.getAuthCookie());
+    addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 }

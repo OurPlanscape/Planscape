@@ -20,6 +20,7 @@ const routes: Routes = [
         data: {
           showMapProjectAreas: true,
           showTreatmentStands: false,
+          showTreatmentLayersToggle: true,
         },
       },
       { path: 'project-area', redirectTo: '', pathMatch: 'full' },

@@ -3,10 +3,12 @@ import json
 import logging
 from collections import defaultdict
 from pathlib import Path
+import re
 from django.conf import settings
 from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple
 import fiona
 
+from numpy import rec
 import rasterio
 from actstream import action as actstream_action
 from core.s3 import get_aws_session
@@ -639,7 +641,7 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if fl_value is None:
-        return ""
+        return "N/A"
     if fl_value < 2.0:
         return "Very Low"
     if fl_value < 4.0:
@@ -660,7 +662,7 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     These cut-off boundaries match BehavePlus6 spreadsheet on GD.
     """
     if ros_value is None:
-        return ""
+        return "N/A"
     if ros_value < 3.0:
         return "Very Low"
     if ros_value < 10.0:
@@ -753,13 +755,33 @@ def get_treatment_results_table_data(
     return table_data
 
 
-def get_shapefile_path(treatment_plan: TreatmentPlan) -> str:
+def get_export_path(treatment_plan: TreatmentPlan) -> str:
     return (
         settings.OUTPUT_DIR
         / "shapefile"
         / f"{treatment_plan.pk}"
-        / f"{treatment_plan.pk}.shp"
+        / f"{treatment_plan.pk}.gpkg"
     )
+
+
+def get_treament_result_schema():
+    numeric_fields_iterator = itertools.product(
+        [i for i in ImpactVariable], AVAILABLE_YEARS
+    )
+    fields = list([(f"{i}_{year}", "float:4.2") for i, year in numeric_fields_iterator])
+    return {
+        "geometry": "Polygon",
+        "properties": [
+            ("stand_id", "int"),
+            ("stand_size", "str:64"),
+            ("planning_area_id", "int"),
+            ("planning_area_name", "str:256"),
+            ("scenario_id", "int"),
+            ("scenario_name", "str:256"),
+            ("action", "str:64"),
+            *fields,
+        ],
+    }
 
 
 def tretment_result_to_json(
@@ -773,10 +795,10 @@ def tretment_result_to_json(
         "properties": {
             "stand_id": stand.pk,
             "stand_size": scenario.get_stand_size(),
-            "pa_id": planning_area.pk,
-            "pa_name": planning_area.name,
-            "sc_id": scenario.pk,
-            "sc_name": scenario.name,
+            "planning_area_id": planning_area.pk,
+            "planning_area_name": planning_area.name,
+            "scenario_id": scenario.pk,
+            "scenario_name": scenario.name,
             **stand_result,
         },
     }
@@ -823,25 +845,32 @@ def force_field_type(schema: Dict[str, Any], field_type: str) -> Dict[str, Any]:
     return {**schema, "properties": new_properties}
 
 
-def export_shapefile(treatment_plan: TreatmentPlan) -> str:
-    shapefile_path = Path(get_shapefile_path(treatment_plan))
-    fiona_path = f"{str(shapefile_path)}.zip"
-    data = fetch_treatment_plan_data(treatment_plan)
-    shapefile_schema = force_field_type(get_schema(data), "float")
+def match_schema(record: Dict[str, Any], schema: Dict[str, Any]):
+    for key, _type in schema.get("properties", []):
+        if key not in record.get("properties", {}):
+            record["properties"][key] = None
+    return record
 
+
+def export_geopackage(treatment_plan: TreatmentPlan) -> str:
+    bare_export_path = Path(get_export_path(treatment_plan))
+    fiona_path = f"{str(bare_export_path)}.zip"
+    data = fetch_treatment_plan_data(treatment_plan)
+    treatment_result_schema = get_treament_result_schema()
     Path(fiona_path).unlink(missing_ok=True)
-    if not shapefile_path.exists():
-        shapefile_path.mkdir(parents=True)
+    if not bare_export_path.parent.exists():
+        bare_export_path.parent.mkdir(parents=True)
     with fiona.open(
         fiona_path,
         "w",
-        driver="ESRI Shapefile",
         layer=f"treatment_plan_{treatment_plan.pk}",
         crs="EPSG:4326",
-        schema=shapefile_schema,
+        driver="GPKG",
+        schema=treatment_result_schema,
         allow_unsupported_drivers=True,
     ) as out:
         for record in data:
+            record = match_schema(record, treatment_result_schema)
             out.write(
                 {
                     "id": record.pop("id", None),

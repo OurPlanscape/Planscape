@@ -9,6 +9,7 @@ export interface TreatmentRoutingData extends Data {
   showMapProjectAreas?: boolean;
   showTreatmentStands?: boolean;
   showMapControls?: boolean;
+  showTreatmentLayersToggle?: boolean;
 }
 
 export function getMergedRouteData(

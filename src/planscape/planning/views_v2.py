@@ -232,7 +232,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     def upload_shapefiles(self, request, pk=None, *args, **kwargs):
         serializer = UploadedScenarioDataSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         new_scenario = create_scenario_from_upload(
             validated_data=serializer.validated_data,
             user=request.user,

@@ -1,4 +1,9 @@
 import { Map as MapLibreMap, Point, ResourceType } from 'maplibre-gl';
+import {
+  isMapboxURL,
+  transformMapboxUrl,
+} from 'maplibregl-mapbox-request-transformer';
+import { environment } from '../../environments/environment';
 
 export function getBoundingBox(
   startPoint: Point,
@@ -26,6 +31,17 @@ export function addAuthHeaders(
     };
   }
   return { url }; // Return unchanged if not applying headers
+}
+
+export function addRequestHeaders(
+  url: string,
+  resourceType: ResourceType | undefined,
+  cookie: string
+) {
+  if (isMapboxURL(url) && resourceType) {
+    return transformMapboxUrl(url, resourceType, environment.mapbox_key);
+  }
+  return addAuthHeaders(url, resourceType, cookie);
 }
 
 /**
