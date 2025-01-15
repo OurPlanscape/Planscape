@@ -338,6 +338,7 @@ class TreatmentPlanNoteSerializer(serializers.ModelSerializer):
         )
         model = TreatmentPlanNote
 
+
 class TreatmentPlanNoteListSerializer(serializers.ModelSerializer):
     can_delete = serializers.SerializerMethodField()
 
@@ -364,6 +365,7 @@ class TreatmentPlanNoteListSerializer(serializers.ModelSerializer):
             "can_delete",
         )
         model = TreatmentPlanNote
+
 
 class TreatmentPlanNoteCreateSerializer(serializers.ModelSerializer):
     class Meta:

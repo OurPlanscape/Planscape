@@ -152,6 +152,7 @@ class TreatmentPrescriptionViewPermission(PlanscapePermission):
                     request.user, object.treatment_plan
                 )
 
+
 class TreatmentPlanNoteViewPermission(PlanscapePermission):
     permission_set = TreatmentPlanPermission
 
@@ -201,7 +202,6 @@ class TreatmentPlanNoteViewPermission(PlanscapePermission):
 
 
 class TreatmentPlanNotePermission(CheckPermissionMixin):
-
     @staticmethod
     def can_view(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):
         # depends on planning_area view permission
