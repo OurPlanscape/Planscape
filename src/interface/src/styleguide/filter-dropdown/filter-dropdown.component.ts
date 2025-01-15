@@ -3,8 +3,10 @@ import {
   EventEmitter,
   HostBinding,
   Input,
+  OnChanges,
   OnInit,
   Output,
+  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -34,7 +36,7 @@ import { SearchBarComponent } from '../search-bar/search-bar.component';
   templateUrl: './filter-dropdown.component.html',
   styleUrls: ['./filter-dropdown.component.scss'],
 })
-export class FilterDropdownComponent<T> implements OnInit {
+export class FilterDropdownComponent<T> implements OnInit, OnChanges {
   @ViewChild(SearchBarComponent) searchbar!: SearchBarComponent;
 
   /**
@@ -92,8 +94,13 @@ export class FilterDropdownComponent<T> implements OnInit {
   private previousSelections: T[] = [];
 
   ngOnInit(): void {
-    this.displayCategories = this.menuItems.some((e) => (e as any).category);
     this.displayedItems = this.menuItems;
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['menuItems']) {
+      this.displayCategories = this.menuItems.some((e) => (e as any).category);
+    }
   }
 
   hasSelections(): boolean {

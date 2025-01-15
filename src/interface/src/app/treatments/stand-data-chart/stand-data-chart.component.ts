@@ -10,6 +10,7 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
 import { MatTableModule } from '@angular/material/table';
 import { NonForestedDataComponent } from '../non-forested-data/non-forested-data.component';
+import { standIsForested } from '../stands';
 
 const baseFont = {
   family: 'Public Sans',
@@ -39,9 +40,7 @@ export class StandDataChartComponent {
   activeStand$ = this.directImpactsStateService.activeStand$;
 
   activeStandIsForested$ = this.activeStand$.pipe(
-    map((d) => {
-      return d && !!d.properties['delta_0'];
-    })
+    map((d) => standIsForested(d))
   );
 
   activeStandValues$: Observable<number[]> =
@@ -56,6 +55,7 @@ export class StandDataChartComponent {
 
   barChartData$ = this.activeStandValues$.pipe(
     map((data) => {
+      this.updateYAxisRange(data); // Updating the range dinamically
       return {
         labels: [0, 5, 10, 15, 20],
         datasets: [
@@ -97,12 +97,11 @@ export class StandDataChartComponent {
             // Check if the value has a decimal part
             return value % 1 === 0 ? value.toString() : value.toFixed(1);
           },
+          clamp: true,
         },
       },
       scales: {
         y: {
-          min: -100,
-          max: 100,
           ticks: {
             color: '#4A4A4A', // Text color
             font: baseFont as any,
@@ -165,4 +164,14 @@ export class StandDataChartComponent {
         };
       })
     );
+
+  private updateYAxisRange(data: number[]) {
+    const maxValue = Math.max(...data.map(Math.abs));
+    let roundedMax = Math.ceil(maxValue / 50) * 50;
+    if (roundedMax < 100) {
+      roundedMax = 100;
+    }
+    (this.staticBarChartOptions as any).scales!.y!.min = -roundedMax;
+    (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
+  }
 }

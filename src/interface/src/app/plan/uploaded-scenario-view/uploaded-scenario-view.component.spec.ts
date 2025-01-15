@@ -3,6 +3,7 @@ import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { UploadedScenarioViewComponent } from './uploaded-scenario-view.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDialogModule } from '@angular/material/dialog';
 
 describe('UploadedScenarioViewComponent', () => {
   let component: UploadedScenarioViewComponent;
@@ -19,7 +20,7 @@ describe('UploadedScenarioViewComponent', () => {
       }
     );
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MatSnackBarModule],
+      imports: [HttpClientTestingModule, MatSnackBarModule, MatDialogModule],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
         UploadedScenarioViewComponent,

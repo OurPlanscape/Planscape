@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { TreatmentPlan, TreatmentSummary } from '@types';
+import { MetricResult } from '../treatments/metrics';
 
 @Injectable({
   providedIn: 'root',
@@ -105,5 +106,42 @@ export class TreatmentsService {
         withCredentials: true,
       }
     );
+  }
+
+  getTreatmentImpactCharts(
+    treatmentPlanId: number,
+    metrics: string[],
+    projectAreaId: number | null
+  ) {
+    let variableParams = new HttpParams();
+    metrics.forEach((m) => {
+      variableParams = variableParams.append('variables', m);
+    });
+    if (projectAreaId) {
+      variableParams = variableParams.append('project_areas', projectAreaId);
+    }
+    return this.http.get(this.baseUrl + treatmentPlanId + '/plot/', {
+      withCredentials: true,
+      params: variableParams,
+    });
+  }
+
+  getStandResult(treatmentPlanId: number, standId: number) {
+    return this.http.get<Record<'FL' | 'ROS', MetricResult>[]>(
+      `${this.baseUrl}/${treatmentPlanId}/stand-treatment-results/`,
+      {
+        withCredentials: true,
+        params: {
+          stand_id: standId,
+        },
+      }
+    );
+  }
+
+  downloadTreatment(treatmentPlanId: number) {
+    return this.http.get(`${this.baseUrl}/${treatmentPlanId}/download/`, {
+      withCredentials: true,
+      responseType: 'blob',
+    });
   }
 }

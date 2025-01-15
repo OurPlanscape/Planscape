@@ -6,10 +6,14 @@ log = logging.getLogger(__name__)
 
 
 def log_login_failure(sender, credentials, request, **kwargs):
-    email = credentials["email"]
+    login_user_identifier = (
+        credentials.get("email")
+        or credentials.get("username")
+        or "no identifier provided"
+    )
     log.warning(
         "Failed to login: %s via %s",
-        email,
+        login_user_identifier,
         request,
     )
 

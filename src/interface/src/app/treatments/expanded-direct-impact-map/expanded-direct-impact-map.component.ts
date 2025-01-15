@@ -8,6 +8,7 @@ import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @Component({
   selector: 'app-expanded-direct-impact-map',
@@ -28,6 +29,7 @@ import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expan
 export class ExpandedDirectImpactMapComponent {
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
+    private mapConfigState: MapConfigState,
     public dialogRef: MatDialogRef<ExpandedDirectImpactMapComponent>
   ) {}
 
@@ -35,6 +37,8 @@ export class ExpandedDirectImpactMapComponent {
     this.directImpactsStateService.showTreatmentPrescription$;
 
   mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
+
+  showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   close() {
     this.dialogRef.close();

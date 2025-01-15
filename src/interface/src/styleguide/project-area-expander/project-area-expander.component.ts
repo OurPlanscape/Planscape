@@ -7,7 +7,7 @@ import {
   AfterViewInit,
   ChangeDetectorRef,
 } from '@angular/core';
-import { NgClass, NgFor, NgIf } from '@angular/common';
+import { NgClass, NgFor, NgIf, DecimalPipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import {
   MatExpansionModule,
@@ -37,6 +37,7 @@ import {
     NgFor,
     SequenceIconComponent,
     TreatmentTypeIconComponent,
+    DecimalPipe,
   ],
   templateUrl: './project-area-expander.component.html',
   styleUrl: './project-area-expander.component.scss',
@@ -110,9 +111,11 @@ export class ProjectAreaExpanderComponent implements AfterViewInit {
   }
 
   treatedStandCount(): number {
-    return this.projectArea.prescriptions
+    const treatedStands = this.projectArea.prescriptions
       .map((record) => record.treated_stand_count)
       .reduce((acc, count) => acc + count, 0);
+
+    return (treatedStands * 100) / this.projectArea.total_stand_count;
   }
 
   sequenceActions(action: string): string[] {

@@ -1,11 +1,11 @@
 import { Component, inject } from '@angular/core';
 import { NgIf } from '@angular/common';
 import {
+  FormBuilder,
   FormGroup,
   FormsModule,
-  FormBuilder,
-  Validators,
   ReactiveFormsModule,
+  Validators,
 } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import {
@@ -29,6 +29,8 @@ import { PlanService } from '@services';
 import { take } from 'rxjs';
 
 import * as shp from 'shpjs';
+import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { MatLegacyMenuModule } from '@angular/material/legacy-menu';
 
 export interface DialogData {
   planning_area_name: string;
@@ -56,6 +58,8 @@ export interface DialogData {
     NgIf,
     SharedModule,
     ReactiveFormsModule,
+    MatLegacyButtonModule,
+    MatLegacyMenuModule,
   ],
 })
 export class UploadProjectAreasModalComponent {
@@ -70,6 +74,7 @@ export class UploadProjectAreasModalComponent {
   readonly FormMessageType = FormMessageType;
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
   readonly data = inject<DialogData>(MAT_DIALOG_DATA);
+  uploadingData = false;
 
   constructor(
     private fb: FormBuilder,
@@ -155,6 +160,7 @@ export class UploadProjectAreasModalComponent {
 
   uploadData() {
     if (this.geometries !== null) {
+      this.uploadingData = true;
       this.planService
         .uploadGeometryForNewScenario(
           this.geometries,
@@ -166,8 +172,11 @@ export class UploadProjectAreasModalComponent {
         .subscribe({
           next: (response) => {
             this.dialogRef.close({ response: response });
+            this.uploadingData = false;
           },
           error: (err: any) => {
+            this.uploadingData = false;
+
             if (!!err.error?.global) {
               this.uploadError = err.error.global.join(' ');
             } else {

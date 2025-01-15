@@ -16,7 +16,13 @@ sg-treatment-card {
   justify-content: center;
 }
 
+.loader .loading {
+  margin-top: 35px;
+}
+
 .empty-state {
+  padding-top: 24px;
+  display: block;
   color: $color-md-gray;
 
   mat-icon {

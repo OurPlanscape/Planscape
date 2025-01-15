@@ -40,6 +40,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 import { canRunTreatmentAnalysis } from '../../plan/permissions';
 import { Plan } from '@types';
+import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @UntilDestroy()
 @Component({
@@ -64,6 +66,8 @@ import { Plan } from '@types';
     RouterLink,
     MatProgressSpinnerModule,
     OverlayLoaderComponent,
+    ControlComponent,
+    MatTooltipModule,
   ],
   providers: [
     TreatmentsState,
@@ -94,7 +98,11 @@ export class TreatmentConfigComponent {
     )
   );
   @ViewChild(TreatmentMapComponent) mapElement: any;
-  breadcrumbs$ = this.treatmentsState.breadcrumbs$;
+  navState$ = this.treatmentsState.navState$;
+
+  $navBarArea$ = this.projectAreaId$.pipe(
+    map((id) => (id ? 'TREATMENTS_PROJECT_AREA' : 'TREATMENTS'))
+  );
 
   loading = true;
 
@@ -170,9 +178,5 @@ export class TreatmentConfigComponent {
     this.dialog.open(ReviewTreatmentPlanDialogComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });
-  }
-
-  closeLegend() {
-    this.mapConfig.setTreatmentLegendVisible(false);
   }
 }

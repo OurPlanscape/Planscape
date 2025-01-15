@@ -1,6 +1,8 @@
+<sg-overlay-loader *ngIf="loading" [offsetTop]="48"></sg-overlay-loader>
+
 <app-nav-bar
-  [breadcrumbs]="(breadcrumbs$ | async) || []"
-  [area]="'TREATMENTS'"></app-nav-bar>
+  [navState]="(navState$ | async) || null"
+  [area]="'DIRECT_IMPACTS'"></app-nav-bar>
 
 <div *ngIf="treatmentPlan$ | async; let treatmentPlan" class="treatment-plan">
   <div class="item">
@@ -21,8 +23,15 @@
       (change)="saveShowTreatmentPrescription($event)"
       >View treatment prescription
     </mat-slide-toggle>
-    <button sg-button variant="ghost" icon="download" [outlined]="true">
-      Download Shapefile
+    <button
+      sg-button
+      variant="ghost"
+      icon="download"
+      [outlined]="true"
+      [disabled]="downloadingShapefile"
+      [loading]="downloadingShapefile"
+      (click)="download()">
+      Download
     </button>
   </div>
 
@@ -44,9 +53,32 @@
     </div>
 
     <section class="direct-impacts-metrics">
-      <sg-panel class="chart-1">
-        <div panelTitle>Chart 1</div>
-        <div>the chart</div>
+      <sg-panel
+        class="chart-1"
+        [paddedContent]="false"
+        [buttons]="changeChartButtons"
+        (clickedButton)="expandChangeChart()">
+        <div panelTitle class="changes-chart-title">
+          <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
+            Project Area
+            <mat-form-field appearance="outline" class="changes-chart-select">
+              <mat-select
+                class="project-area-selector"
+                [ngModel]="selectedChartProjectArea$ | async"
+                (ngModelChange)="setChartProjectArea($event)">
+                <mat-option value="All">All</mat-option>
+                <mat-option
+                  *ngFor="
+                    let projectArea of (availableProjectAreas$ | async) ?? []
+                  "
+                  [value]="projectArea">
+                  {{ projectArea.project_area_name }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </div>
+        <app-change-over-time-chart></app-change-over-time-chart>
       </sg-panel>
       <sg-panel
         class="chart-2"
@@ -61,10 +93,7 @@
         class="map-panel"
         [ngClass]="{ prescriptions: showTreatmentPrescription$ | async }"
         [paddedContent]="false"
-        [buttons]="[
-          { icon: 'layers', actionName: 'layers' },
-          { icon: 'open_in_full', actionName: 'expand' }
-        ]"
+        [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandMaps()">
         <div panelTitle>{{ mapPanelTitle$ | async }}</div>
         <app-direct-impacts-synced-maps
@@ -73,9 +102,10 @@
           "></app-direct-impacts-synced-maps>
         <app-treatment-map
           [showProjectAreaTooltips]="false"
-          *ngIf="showTreatmentPrescription$ | async"></app-treatment-map>
+          *ngIf="showTreatmentPrescription$ | async">
+        </app-treatment-map>
         <app-treatment-legend
-          *ngIf="showTreatmentPrescription$ | async"></app-treatment-legend>
+          *ngIf="showTreatmentLegend$ | async"></app-treatment-legend>
       </sg-panel>
       <sg-panel
         class="legend-panel"

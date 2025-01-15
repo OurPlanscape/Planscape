@@ -7,6 +7,8 @@ import { BehaviorSubject, take } from 'rxjs';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
+import { CreateTreatmentDialogComponent } from '../create-scenarios/create-treatment-dialog/create-treatment-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 
 @UntilDestroy()
 @Component({
@@ -20,7 +22,8 @@ export class UploadedScenarioViewComponent implements OnInit {
     private route: ActivatedRoute,
     private planStateService: PlanStateService,
     private treatmentsService: TreatmentsService,
-    private matSnackBar: MatSnackBar
+    private matSnackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   @Input() scenario?: Scenario;
@@ -54,14 +57,26 @@ export class UploadedScenarioViewComponent implements OnInit {
     });
   }
 
-  createTreatment() {
+  openNewTreatmentDialog() {
+    this.dialog
+      .open(CreateTreatmentDialogComponent)
+      .afterClosed()
+      .pipe(take(1))
+      .subscribe((name) => {
+        if (name) {
+          this.createTreatmentPlan(name);
+        }
+      });
+  }
+
+  createTreatmentPlan(name: string) {
     this.creatingTreatment = true;
     if (!this.scenario) {
       return;
     }
 
     this.treatmentsService
-      .createTreatmentPlan(Number(this.scenario?.id), 'New Treatment Plan')
+      .createTreatmentPlan(Number(this.scenario?.id), name)
       .subscribe({
         next: (result) => {
           this.goToTreatment(result.id);
