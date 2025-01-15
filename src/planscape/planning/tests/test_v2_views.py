@@ -957,7 +957,45 @@ class CreateScenariosFromUpload(APITransactionTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEquals(
+        self.assertEqual(
             b'{"global":["The uploaded geometry is not within the selected planning area."]}',
+            response.content,
+        )
+
+    def test_create_with_duplicate_names(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.riverside),
+            "name": "Some New Scenario",
+            "stand_size": "SMALL",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse(
+                "api:planning:scenarios-upload-shapefiles",
+            ),
+            data=payload,
+            format="json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(response_data["project_areas"]), 1)
+
+        payload2 = {
+            "geometry": json.dumps(self.riverside),
+            "name": "Some New Scenario",
+            "stand_size": "SMALL",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse(
+                "api:planning:scenarios-upload-shapefiles",
+            ),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            b'{"name":["A scenario with this name already exists."]}',
             response.content,
         )
