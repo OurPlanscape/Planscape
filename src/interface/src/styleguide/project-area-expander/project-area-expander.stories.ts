@@ -19,7 +19,10 @@ const samplePoint: Point = { type: 'Point', coordinates: [] };
 const sampleProjectAreaResult = {
   project_area_id: 1,
   project_area_name: 'Project Area 1',
-  total_stand_count: 20,
+  total_area_acres: 100,
+  total_stand_count: 10,
+  total_treated_area_acres: 12,
+  total_treated_stand_count: 1120,
   prescriptions: [
     {
       action: 'MODERATE_THINNING_BIOMASS',
@@ -84,7 +87,10 @@ const sampleProjectAreaResult = {
 const areaWithNoTreatments = {
   project_area_id: 1,
   project_area_name: 'Project Area 2',
-  total_stand_count: 20,
+  total_area_acres: 100,
+  total_stand_count: 10,
+  total_treated_area_acres: 12,
+  total_treated_stand_count: 1120,
   prescriptions: [],
   extent: sampleExtent,
   centroid: samplePoint,
@@ -101,7 +107,7 @@ const meta: Meta<ProjectAreaExpanderComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div ${containerStyle}><div style="width:400px;"><sg-project-area-expander ${argsToTemplate(args)}></sg-project-area-expander></div>`,
+    template: `<div ${containerStyle}><div style='width:400px;'><sg-project-area-expander ${argsToTemplate(args)}></sg-project-area-expander></div>`,
   }),
 };
 

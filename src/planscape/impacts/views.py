@@ -46,6 +46,7 @@ from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from rest_framework import mixins, response, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -284,7 +285,11 @@ class TreatmentPlanViewSet(
         return Response(data=data_to_plot, status=status.HTTP_200_OK)
 
     @extend_schema(
-        description="Retrieve treatment result information for a specific stand.",
+        description=(
+            "Retrieve treatment results for a specific stand (via `stand_id`) "
+            "within the specified Treatment Plan (via path parameter `id`)."
+        ),
+        parameters=[StandQuerySerializer],
         responses={
             200: TreatmentResultSerializer,
             404: BaseErrorMessageSerializer,
