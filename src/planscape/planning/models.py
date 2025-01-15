@@ -19,6 +19,7 @@ from django.contrib.gis.db.models import Union as UnionOp
 from django.core.serializers.json import DjangoJSONEncoder
 from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
+from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
 from stands.models import StandSizeChoices, Stand
 from utils.uuid_utils import generate_short_uuid
@@ -367,7 +368,7 @@ class ProjectArea(
         help_text="Geometry of the Project Area.",
     )
 
-    @property
+    @cached_property
     def stand_count(self) -> int:
         stored_stand_count = self.data.get("stand_count") if self.data else None
         return stored_stand_count or self.get_stands().count()
