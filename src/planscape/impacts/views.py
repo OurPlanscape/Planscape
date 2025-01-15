@@ -289,7 +289,7 @@ class TreatmentPlanViewSet(
             "Retrieve treatment results for a specific stand (via `stand_id`) "
             "within the specified Treatment Plan (via path parameter `id`)."
         ),
-        query_serializer=StandQuerySerializer,
+        parameters=[StandQuerySerializer],
         responses={
             200: TreatmentResultSerializer,
             404: BaseErrorMessageSerializer,
@@ -304,7 +304,7 @@ class TreatmentPlanViewSet(
     )
     def stand_treatment_results(self, request, pk=None):
         """
-        Endpoint to retrieve treatment results for a specific stand.
+        Endpoint to retrieve treatment results for a specific stand ID.
         """
         serializer = StandQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)

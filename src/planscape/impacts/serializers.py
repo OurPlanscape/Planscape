@@ -323,7 +323,7 @@ class StandQuerySerializer(serializers.Serializer):
     stand_id = serializers.PrimaryKeyRelatedField(
         queryset=Stand.objects.all(),
         required=True,
-        help_text="The primary key (ID) of the stand to retrieve result from.",
+        help_text="The primary key (ID) of the stand for which to retrieve results.",
     )
 
 
