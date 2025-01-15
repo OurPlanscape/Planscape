@@ -3,6 +3,7 @@ from impacts.models import (
     ImpactVariable,
     ProjectAreaTreatmentResult,
     TreatmentPlan,
+    TreatmentPlanNote,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
 )
@@ -322,3 +323,62 @@ class StandQuerySerializer(serializers.Serializer):
     stand_id = serializers.PrimaryKeyRelatedField(
         queryset=Stand.objects.all(), required=True
     )
+
+
+class TreatmentPlanNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "content",
+            "treatment_plan",
+            "user_id",
+            "user_name",
+        )
+        model = TreatmentPlanNote
+
+
+class TreatmentPlanNoteListSerializer(serializers.ModelSerializer):
+    can_delete = serializers.SerializerMethodField()
+
+    def get_can_delete(self, obj):
+        user = self.context["request"].user
+        if user:
+            return (
+                (user == obj.user)
+                or (user == obj.treatment_plan.scenario.planning_area.user)
+                or PlanningAreaPermission.can_remove(
+                    user, obj.treatment_plan.scenario.planning_area
+                )
+            )
+
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "content",
+            "treatment_plan",
+            "user_id",
+            "user_name",
+            "can_delete",
+        )
+        model = TreatmentPlanNote
+
+
+class TreatmentPlanNoteCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentPlanNote
+        fields = ["content"]
+
+    def create(self, validated_data):
+        treatment_plan_id = self.context["view"].kwargs.get("tx_plan_pk")
+        try:
+            treatment_plan = TreatmentPlan.objects.get(id=treatment_plan_id)
+        except TreatmentPlan.DoesNotExist:
+            raise serializers.ValidationError("Invalid tx_plan_pk")
+        user = self.context["request"].user
+        validated_data["treatment_plan"] = treatment_plan
+        validated_data["user"] = user
+        return super().create(validated_data)

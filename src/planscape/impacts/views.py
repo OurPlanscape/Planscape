@@ -1,15 +1,17 @@
 import logging
-
+from django_filters.rest_framework import DjangoFilterBackend
 from django.http import FileResponse
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiTypes
-from impacts.filters import TreatmentPlanFilterSet
+from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
 from impacts.models import (
     TreatmentPlan,
+    TreatmentPlanNote,
     TreatmentPlanStatus,
     TreatmentPrescription,
 )
 from rest_framework.response import Response
 from impacts.permissions import (
+    TreatmentPlanNoteViewPermission,
     TreatmentPlanViewPermission,
     TreatmentPrescriptionViewPermission,
 )
@@ -20,6 +22,9 @@ from impacts.serializers import (
     SummarySerializer,
     TreatmentPlanListSerializer,
     TreatmentPlanSerializer,
+    TreatmentPlanNoteSerializer,
+    TreatmentPlanNoteCreateSerializer,
+    TreatmentPlanNoteListSerializer,
     TreatmentPlanUpdateSerializer,
     TreatmentPrescriptionBatchDeleteResponseSerializer,
     TreatmentPrescriptionBatchDeleteSerializer,
@@ -406,3 +411,30 @@ class TreatmentPrescriptionViewSet(
         ).delete()
 
         return response.Response({"result": delete_result}, status=status.HTTP_200_OK)
+
+
+class TreatmentPlanNoteViewSet(viewsets.ModelViewSet):
+    queryset = TreatmentPlanNote.objects.all()
+    serializer_class = TreatmentPlanNoteSerializer
+    permission_classes = [TreatmentPlanNoteViewPermission]
+    serializer_classes = {
+        "list": TreatmentPlanNoteListSerializer,
+        "create": TreatmentPlanNoteCreateSerializer,
+    }
+    filterset_class = TreatmentPlanNoteFilterSet
+    filter_backends = [DjangoFilterBackend]
+
+    def get_serializer_class(self):
+        return (
+            self.serializer_classes.get(self.action, self.serializer_class)
+            or self.serializer_class
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        tx_plan_pk = self.kwargs.get("tx_plan_pk")
+        if tx_plan_pk is None:
+            raise ValueError("treatment plan id is required")
+        return self.queryset.filter(treatment_plan_id=tx_plan_pk)
