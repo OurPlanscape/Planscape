@@ -38,7 +38,7 @@
     .mat-expansion-panel-header.header-content .mat-content {
       display: flex;
       justify-content: space-between;
-      align-items: center;
+      align-items: flex-start;
       cursor: pointer;
       width: 100%;
       gap: 4px;
@@ -73,7 +73,7 @@
 .left-content {
   @include xs-label();
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
   margin-left: 4px;
@@ -102,6 +102,7 @@
   color: $color-md-gray;
   display: flex;
   align-items: center;
+  line-height: 24px;
   justify-content: right;
   gap: 4px;
   padding-right: 6px;

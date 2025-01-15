@@ -86,6 +86,7 @@ export class ProjectAreaTreatmentsTabComponent {
                 PRESCRIPTIONS.SEQUENCE[
                   p.action as PrescriptionSequenceAction
                 ].details
+                  .map((d) => d.description)
                   .join(' ')
                   .toLowerCase()
                   .includes(this.searchString))
