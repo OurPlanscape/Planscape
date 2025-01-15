@@ -385,3 +385,34 @@ class ProjectArea(
                 name="scenario_name_unique_constraint",
             )
         ]
+
+
+class ProjectAreaNote(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
+    id: int
+    project_area_id: int
+    project_area = models.ForeignKey(
+        ProjectArea,
+        related_name="project_area",
+        on_delete=models.CASCADE,
+    )
+    # if the user is deleted, their notes are also deleted
+    user_id: int
+    user = models.ForeignKey(
+        User,
+        related_name="projectarea_notes",
+        on_delete=models.CASCADE,
+    )
+    content = models.TextField(null=True)
+
+    def user_name(self):
+        return self.user.get_full_name()
+
+    class Meta:
+        indexes = [
+            models.Index(
+                fields=[
+                    "user",
+                ]
+            )
+        ]
+        ordering = ["user", "-created_at"]
