@@ -21,6 +21,7 @@ import {
   PRESCRIPTIONS,
   PrescriptionSingleAction,
   PrescriptionSequenceAction,
+  SequenceDetail,
 } from 'src/app/treatments/prescriptions';
 /**
  * Project Area Expander component
@@ -118,7 +119,7 @@ export class ProjectAreaExpanderComponent implements AfterViewInit {
     return (treatedStands * 100) / this.projectArea.total_stand_count;
   }
 
-  sequenceActions(action: string): string[] {
+  sequenceActions(action: string): SequenceDetail[] {
     let title = action as PrescriptionSequenceAction;
     if (title !== null) {
       return PRESCRIPTIONS.SEQUENCE[title].details;

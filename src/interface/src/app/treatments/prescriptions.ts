@@ -23,9 +23,13 @@ export type PrescriptionSequenceAction =
   | 'HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE'
   | 'MODERATE_MASTICATION_PLUS_RX_FIRE';
 
+export interface SequenceDetail {
+  description: string;
+  year: number;
+}
 export interface SequenceAttributes {
   name: string;
-  details: string[];
+  details: SequenceDetail[];
 }
 
 // All possible prescription keys
@@ -92,54 +96,61 @@ export const SEQUENCE_ACTIONS: Record<
   SequenceAttributes
 > = {
   MODERATE_THINNING_BURN_PLUS_RX_FIRE: {
+    //keep the name?
     name: 'Sequence 1',
     details: [
-      'Moderate Thinning & Pile Burn (year 0)',
-      'Prescribed Burn (year 10)',
+      { description: 'Moderate Thin & Pile Burn', year: 0 },
+      { description: 'Prescribed Burn', year: 10 },
     ],
   },
   MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: {
     name: 'Sequence 2',
     details: [
-      'Moderate Thinning & Pile Burn (year 0)',
-      'Moderate Thinning & Pile Burn (year 10)',
+      { description: 'Moderate Thin & Pile Burn', year: 0 },
+      { description: 'Moderate Thin & Pile Burn', year: 10 },
     ],
   },
   HEAVY_THINNING_BURN_PLUS_RX_FIRE: {
     name: 'Sequence 3',
     details: [
-      'Heavy Thinning & Pile Burn (year 0)',
-      'Prescribed Burn (year 10)',
+      { description: 'Heavy Thin & Pile Burn', year: 0 },
+      { description: 'Prescribed Burn', year: 10 },
     ],
   },
   HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: {
     name: 'Sequence 4',
     details: [
-      'Heavy Thinning & Pile Burn (year 0)',
-      'Heavy Thinning & Pile Burn (year 10)',
+      { description: 'Heavy Thin & Pile Burn', year: 0 },
+      { description: 'Heavy Thin & Pile Burn', year: 10 },
     ],
   },
   RX_FIRE_PLUS_RX_FIRE: {
     name: 'Sequence 5',
-    details: ['Prescribed Fire (year 0)', 'Prescribed Fire (year 10)'],
+    details: [
+      { description: 'Prescribed Fire', year: 0 },
+      { description: 'Prescribed Fire', year: 10 },
+    ],
   },
   MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: {
     name: 'Sequence 6',
     details: [
-      'Moderate Mastication (year 0)',
-      'Moderate Mastication (year 10)',
+      { description: 'Moderate Mastication', year: 0 },
+      { description: 'Moderate Mastication', year: 10 },
     ],
   },
   HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: {
     name: 'Sequence 7',
     details: [
-      'Heavy Thinning & Biomass Removal (year 0)',
-      'Prescribed Fire (year 10)',
+      { description: 'Heavy Thin & Biomass Removal', year: 0 },
+      { description: 'Prescribed Fire', year: 10 },
     ],
   },
   MODERATE_MASTICATION_PLUS_RX_FIRE: {
     name: 'Sequence 8',
-    details: ['Moderate Mastication (year 0)', 'Prescribed Fire (year 10)'],
+    details: [
+      { description: 'Moderate Mastication', year: 0 },
+      { description: 'Prescribed Fire', year: 10 },
+    ],
   },
 };
 

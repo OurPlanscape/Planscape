@@ -87,8 +87,11 @@ export class TreatmentExpanderComponent {
     } else if (this.treatmentType === 'SINGLE') {
       return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
     } else if (this.treatmentType === 'SEQUENCE') {
-      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .name;
+      const details =
+        PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+          .details;
+      //TODO: this is a placeholder
+      return details.map((d) => d.description).join(' ');
     }
     return 'No Treatment';
   }
@@ -111,8 +114,9 @@ export class TreatmentExpanderComponent {
 
   sequenceDetails(): string[] {
     if (this.treatmentType === 'SEQUENCE') {
-      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .details;
+      // return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+      //   .details;
+      return ['placeholder'];
     }
     return [];
   }
