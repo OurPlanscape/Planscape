@@ -1,5 +1,4 @@
 import logging
-
 from django_filters.rest_framework import DjangoFilterBackend
 from django.http import FileResponse
 from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiTypes
@@ -37,7 +36,7 @@ from impacts.serializers import (
 from impacts.services import (
     clone_treatment_plan,
     create_treatment_plan,
-    export_shapefile,
+    export_geopackage,
     generate_impact_results_data_to_plot,
     generate_summary,
     get_treatment_results_table_data,
@@ -175,9 +174,9 @@ class TreatmentPlanViewSet(
         },
     )
     @action(detail=True, methods=["get"], filterset_class=None)
-    def shapefile(self, request, pk=None):
+    def download(self, request, pk=None):
         treatment_plan = self.get_object()
-        output_path = export_shapefile(treatment_plan)
+        output_path = export_geopackage(treatment_plan)
         return FileResponse(
             open(output_path, "rb"),
             as_attachment=True,

@@ -13,14 +13,12 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 from planning.filters import (
     PlanningAreaFilter,
     PlanningAreaOrderingFilter,
-    ProjectAreaNoteFilterSet,
     ScenarioFilter,
     ScenarioOrderingFilter,
 )
-from planning.models import PlanningArea, ProjectArea, ProjectAreaNote, Scenario
+from planning.models import PlanningArea, ProjectArea, Scenario
 from planning.permissions import (
     PlanningAreaViewPermission,
-    ProjectAreaNoteViewPermission,
     ScenarioViewPermission,
 )
 from planning.serializers import (
@@ -30,9 +28,6 @@ from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     PlanningAreaSerializer,
-    ProjectAreaNoteCreateSerializer,
-    ProjectAreaNoteListSerializer,
-    ProjectAreaNoteSerializer,
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
     ScenarioSerializer,
@@ -40,7 +35,6 @@ from planning.serializers import (
 )
 from planning.services import (
     create_planning_area,
-    create_projectarea_note,
     create_scenario,
     create_scenario_from_upload,
     delete_planning_area,
@@ -232,7 +226,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     def upload_shapefiles(self, request, pk=None, *args, **kwargs):
         serializer = UploadedScenarioDataSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         new_scenario = create_scenario_from_upload(
             validated_data=serializer.validated_data,
             user=request.user,
@@ -277,30 +270,3 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_classes = {
         "retrieve": ProjectAreaSerializer,
     }
-
-
-class ProjectAreaNoteViewSet(viewsets.ModelViewSet):
-    queryset = ProjectAreaNote.objects.all()
-    serializer_class = ProjectAreaNoteSerializer
-    permission_classes = [ProjectAreaNoteViewPermission]
-    serializer_classes = {
-        "list": ProjectAreaNoteListSerializer,
-        "create": ProjectAreaNoteCreateSerializer,
-    }
-    filterset_class = ProjectAreaNoteFilterSet
-    filter_backends = [DjangoFilterBackend]
-
-    def get_serializer_class(self):
-        return (
-            self.serializer_classes.get(self.action, self.serializer_class)
-            or self.serializer_class
-        )
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def get_queryset(self):
-        project_area_id = self.kwargs.get("project_area_id")
-        if project_area_id is None:
-            raise ValueError("project_area_id is required")
-        return self.queryset.filter(project_area_id=project_area_id)

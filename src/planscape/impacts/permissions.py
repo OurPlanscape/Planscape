@@ -178,7 +178,9 @@ class TreatmentPlanNoteViewPermission(PlanscapePermission):
                     treatment_plan = TreatmentPlan.objects.select_related(
                         "scenario", "scenario__planning_area"
                     ).get(id=treatment_plan_id)
-                    return TreatmentPlanPermission.can_view(request.user, treatment_plan)
+                    return TreatmentPlanPermission.can_view(
+                        request.user, treatment_plan
+                    )
                 except TreatmentPlan.DoesNotExist:
                     return False
 

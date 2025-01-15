@@ -4,7 +4,7 @@ from django.db.models import F, Func, Value, ExpressionWrapper, FloatField, Quer
 from django.contrib.gis.db.models.functions import Area, Transform
 from django.conf import settings
 from planscape.filters import MultipleValueFilter
-from planning.models import PlanningArea, Scenario, RegionChoices, ProjectAreaNote
+from planning.models import PlanningArea, Scenario, RegionChoices
 from rest_framework.request import Request
 from rest_framework.filters import OrderingFilter
 from django.db.models.functions import Coalesce
@@ -120,11 +120,3 @@ class ScenarioFilter(filters.FilterSet):
     class Meta:
         model = Scenario
         fields = ["name", "planning_area"]
-
-
-class ProjectAreaNoteFilterSet(filters.FilterSet):
-    project_area = filters.NumberFilter(field_name="project_area__pk")
-
-    class Meta:
-        model = ProjectAreaNote
-        fields = ["project_area"]

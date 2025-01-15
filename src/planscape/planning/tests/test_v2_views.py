@@ -13,7 +13,7 @@ from impacts.permissions import (
     OWNER_PERMISSIONS,
 )
 from impacts.tests.factories import TreatmentPlanFactory
-from planning.models import PlanningArea, RegionChoices, ProjectAreaNote, ScenarioResult
+from planning.models import PlanningArea, RegionChoices, ScenarioResult
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
@@ -863,215 +863,6 @@ class ListPlanningAreasWithPermissionsTest(APITestCase):
         self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
 
 
-class ProjectAreaNoteTest(APITransactionTestCase):
-    def setUp(self):
-        self.user = UserFactory()
-        self.other_user = UserFactory()
-
-        # explicitly creating these objects, so same user is planningarea creator
-        self.planning_area = PlanningAreaFactory.create(user=self.user)
-
-        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
-        self.treatment_plan = TreatmentPlanFactory.create(
-            created_by=self.user, scenario=self.scenario
-        )
-        self.project_area = ProjectAreaFactory.create(
-            created_by_id=self.user.pk, scenario=self.treatment_plan.scenario
-        )
-        self.other_project_area = ProjectAreaFactory.create(
-            created_by_id=self.user.pk, scenario=self.treatment_plan.scenario
-        )
-        self.other_user_project_area = ProjectAreaFactory.create(
-            created_by_id=self.other_user.pk, scenario=self.treatment_plan.scenario
-        )
-
-    def test_create_note(self):
-        self.client.force_authenticate(self.user)
-        new_note = json.dumps(
-            {
-                "content": "Here is a note about a project area.",
-            }
-        )
-        response = self.client.post(
-            reverse(
-                "api:planning:project-areas-notes-list",
-                kwargs={"project_area_id": self.project_area.pk},
-            ),
-            new_note,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        response_data = response.json()
-        self.assertEqual(
-            response_data["content"], "Here is a note about a project area."
-        )
-
-    # this fails if a user is projectarea owner, but not planningarea owner or note owner
-    def test_create_note_as_projectarea_owner(self):
-        self.client.force_authenticate(self.other_user)
-        new_note = json.dumps(
-            {
-                "content": "Here is a note about a project area.",
-                "project_area": self.other_user_project_area.pk,
-            }
-        )
-        response = self.client.post(
-            reverse(
-                "api:planning:project-areas-notes-list",
-                kwargs={"project_area_id": self.project_area.pk},
-            ),
-            new_note,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_create_note_without_permission(self):
-        self.client.force_authenticate(self.other_user)
-        new_note = json.dumps(
-            {
-                "content": "Here is a note about a project area.",
-                "project_area": self.project_area.pk,
-            }
-        )
-        response = self.client.post(
-            reverse(
-                "api:planning:project-areas-notes-list",
-                kwargs={"project_area_id": self.project_area.pk},
-            ),
-            new_note,
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_get_notes_for_project_area(self):
-        self.client.force_authenticate(self.user)
-        ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a note"
-        )
-        ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a second note"
-        )
-        ProjectAreaNote.objects.create(
-            project_area=self.project_area,
-            user=self.other_user,
-            content="I am a third note",
-        )
-        # creating a note for a separate project area, so it shouldnt be in results
-        ProjectAreaNote.objects.create(
-            project_area=self.other_project_area,
-            user=self.other_user,
-            content="I am a third note",
-        )
-        response = self.client.get(
-            reverse(
-                "api:planning:project-areas-notes-list",
-                kwargs={"project_area_id": self.project_area.pk},
-            ),
-            content_type="application/json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(response_data), 3)
-        for rec in response_data:
-            self.assertIn("can_delete", rec)
-            self.assertEqual(rec["can_delete"], True)
-
-    def test_get_notes_for_unauthorized_user(self):
-        self.client.force_authenticate(self.other_user)
-        ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a note"
-        )
-        ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a second note"
-        )
-        response = self.client.get(
-            reverse(
-                "api:planning:project-areas-notes-list",
-                kwargs={"project_area_id": self.project_area.pk},
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_get_single_note(self):
-        self.client.force_authenticate(self.user)
-        visible_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am just one note"
-        )
-        response = self.client.get(
-            reverse(
-                "api:planning:project-areas-notes-detail",
-                kwargs={"project_area_id": self.project_area.pk, "pk": visible_note.pk},
-            ),
-            content_type="application/json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response_data["content"], "I am just one note")
-
-    def test_get_single_note_no_perms(self):
-        self.client.force_authenticate(self.other_user)
-        visible_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user, content="I am a note"
-        )
-        response = self.client.get(
-            reverse(
-                "api:planning:project-areas-notes-detail",
-                kwargs={"project_area_id": self.project_area.pk, "pk": visible_note.pk},
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-
-    def test_delete_note(self):
-        self.client.force_authenticate(self.user)
-        new_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user
-        )
-        response = self.client.delete(
-            reverse(
-                "api:planning:project-areas-notes-detail",
-                kwargs={"project_area_id": self.project_area.pk, "pk": new_note.pk},
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
-
-    def test_delete_nonexistent_note(self):
-        self.client.force_authenticate(self.user)
-        new_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user
-        )
-        response = self.client.delete(
-            reverse(
-                "api:planning:project-areas-notes-detail",
-                kwargs={
-                    "project_area_id": self.project_area.pk,
-                    "pk": (new_note.pk + 1),
-                },
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-    def test_delete_note_no_permissions(self):
-        self.client.force_authenticate(self.other_user)
-        new_note = ProjectAreaNote.objects.create(
-            project_area=self.project_area, user=self.user
-        )
-        response = self.client.delete(
-            reverse(
-                "api:planning:project-areas-notes-detail",
-                kwargs={
-                    "project_area_id": self.project_area.pk,
-                    "pk": (new_note.pk + 1),
-                },
-            ),
-            content_type="application/json",
-        )
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-
-
 class CreateScenariosFromUpload(APITransactionTestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
@@ -1166,9 +957,45 @@ class CreateScenariosFromUpload(APITransactionTestCase):
             format="json",
         )
         self.assertEqual(response.status_code, 400)
-        self.assertEquals(
+        self.assertEqual(
             b'{"global":["The uploaded geometry is not within the selected planning area."]}',
             response.content,
         )
 
+    def test_create_with_duplicate_names(self):
+        self.client.force_authenticate(self.owner_user)
+        payload = {
+            "geometry": json.dumps(self.riverside),
+            "name": "Some New Scenario",
+            "stand_size": "SMALL",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse(
+                "api:planning:scenarios-upload-shapefiles",
+            ),
+            data=payload,
+            format="json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, 201)
+        self.assertEqual(len(response_data["project_areas"]), 1)
 
+        payload2 = {
+            "geometry": json.dumps(self.riverside),
+            "name": "Some New Scenario",
+            "stand_size": "SMALL",
+            "planning_area": self.planning_area.pk,
+        }
+        response = self.client.post(
+            reverse(
+                "api:planning:scenarios-upload-shapefiles",
+            ),
+            data=payload,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 400)
+        self.assertEqual(
+            b'{"name":["A scenario with this name already exists."]}',
+            response.content,
+        )
