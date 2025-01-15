@@ -352,4 +352,10 @@ export class TreatmentsState {
   runTreatmentPlan() {
     return this.treatmentsService.runTreatmentPlan(this.getTreatmentPlanId());
   }
+
+  findProjectAreaByName(name: string) {
+    const summary = this._summary$.value;
+    if (!summary) return;
+    return summary.project_areas.find((pa) => pa.project_area_name === name);
+  }
 }

@@ -142,7 +142,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
-  showTreatmentPrescription = false;
+
   changeChartButtons: PanelIconButton[] = [
     { icon: 'open_in_full', actionName: 'expand' },
   ];

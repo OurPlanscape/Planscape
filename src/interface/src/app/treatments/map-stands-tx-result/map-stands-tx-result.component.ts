@@ -90,6 +90,14 @@ export class MapStandsTxResultComponent implements OnInit {
     const feature = this.getMapGeoJSONFeature(point);
     if (feature) {
       this.directImpactsStateService.setActiveStand(feature);
+      const name = feature.properties['project_area_name'];
+
+      if (!this.directImpactsStateService.standIsInSelectedProjectArea(name)) {
+        const pa = this.treatmentsState.findProjectAreaByName(name);
+        if (pa) {
+          this.directImpactsStateService.setProjectAreaForChanges(pa, false);
+        }
+      }
     }
   }
 

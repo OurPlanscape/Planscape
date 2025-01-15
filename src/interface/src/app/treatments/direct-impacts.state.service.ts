@@ -80,9 +80,14 @@ export class DirectImpactsStateService {
 
   constructor() {}
 
-  setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
+  setProjectAreaForChanges(
+    projectArea: TreatmentProjectArea | 'All',
+    resetActiveStand = true
+  ) {
     this._selectedProjectArea$.next(projectArea);
-    this.resetActiveStand();
+    if (resetActiveStand) {
+      this.resetActiveStand();
+    }
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {
@@ -119,5 +124,13 @@ export class DirectImpactsStateService {
 
   resetActiveStand() {
     this._activeStand$.next(null);
+  }
+
+  standIsInSelectedProjectArea(projectArea: string) {
+    const pa = this._selectedProjectArea$.value;
+    if (pa === 'All') {
+      return true;
+    }
+    return pa.project_area_name === projectArea;
   }
 }
