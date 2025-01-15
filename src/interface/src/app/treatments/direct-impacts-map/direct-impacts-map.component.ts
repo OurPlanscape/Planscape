@@ -13,7 +13,7 @@ import {
   MapSourceDataEvent,
   RequestTransformFunction,
 } from 'maplibre-gl';
-import { addAuthHeaders } from '../maplibre.helper';
+import { addRequestHeaders } from '../maplibre.helper';
 import { MapStandsTxResultComponent } from '../map-stands-tx-result/map-stands-tx-result.component';
 import {
   YEAR_INTERVAL_LABELS,
@@ -85,5 +85,5 @@ export class DirectImpactsMapComponent {
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
-    addAuthHeaders(url, resourceType, this.authService.getAuthCookie());
+    addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 }
