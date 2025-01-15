@@ -68,8 +68,9 @@ export class UploadProjectAreasModalComponent {
   file: File | null = null;
   uploadElementStatus: 'default' | 'failed' | 'running' | 'uploaded' =
     'default';
-  uploadError?: string | null = null;
+  uploadFormError?: string | null = null;
   alertMessage?: string | null = null;
+  nameError = '';
   geometries: GeoJSON.GeoJSON | null = null;
   readonly FormMessageType = FormMessageType;
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
@@ -87,7 +88,7 @@ export class UploadProjectAreasModalComponent {
   }
 
   handleFileEvent(file: File | undefined): void {
-    this.uploadError = null;
+    this.uploadFormError = null;
     this.uploadElementStatus = 'running';
 
     if (file !== undefined) {
@@ -125,16 +126,16 @@ export class UploadProjectAreasModalComponent {
         this.geometries = geojson;
       } else if (Array.isArray(geojson)) {
         this.uploadElementStatus = 'failed';
-        this.uploadError =
+        this.uploadFormError =
           'The upload contains multiple shapefiles and could not be processed.';
       } else {
         //unknown failure
         this.uploadElementStatus = 'failed';
-        this.uploadError = 'The file cannot be converted to GeoJSON.';
+        this.uploadFormError = 'The file cannot be converted to GeoJSON.';
       }
     } catch (e) {
       this.uploadElementStatus = 'failed';
-      this.uploadError =
+      this.uploadFormError =
         'The zip file does not appear to contain a valid shapefile.';
     }
   }
@@ -153,7 +154,7 @@ export class UploadProjectAreasModalComponent {
       );
     } else {
       this.uploadElementStatus = 'failed';
-      this.uploadError = 'A file was not uploaded.';
+      this.uploadFormError = 'A file was not uploaded.';
     }
     this.uploadData();
   }
@@ -178,9 +179,19 @@ export class UploadProjectAreasModalComponent {
             this.uploadingData = false;
 
             if (!!err.error?.global) {
-              this.uploadError = err.error.global.join(' ');
+              this.uploadFormError = err.error.global.join(' ');
+            } else if (err.error?.name) {
+              const nameControl = this.uploadProjectsForm.get('scenarioName');
+              nameControl?.setErrors({
+                customError: true,
+              });
+              if (err.error.name?.join(' ').includes('blank.')) {
+                this.nameError = 'Name must not be blank';
+              }
+              if (err.error.name?.join(' ').includes('name already exists.'))
+                this.nameError = 'A scenario with this name already exists.';
             } else {
-              this.uploadError =
+              this.uploadFormError =
                 'An unknown error occured when trying to create a scenario.';
             }
           },

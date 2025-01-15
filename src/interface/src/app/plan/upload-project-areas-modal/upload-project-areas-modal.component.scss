@@ -5,10 +5,10 @@
   .upload-scenario-form {
     display: flex;
     flex-direction: column;
-    gap: 15px;
-    padding-left: 15px;
-    padding-right: 20px;
-    padding-top: 10px;
+    gap: 20px;
+    padding-left: 20px;
+    padding-right: 24px;
+    padding-top: 20px;
   }
 
   ::ng-deep .input-wrapper {
@@ -30,7 +30,7 @@
   }
 
   .field-row {
-    height: 80px;
+    height: 76px;
   }
 
   .file-upload-input {
@@ -46,13 +46,21 @@
   }
 
   .field-label {
-    @include standard-label();
-    height: 36px;
+    @include standard-input-label();
+    height: 24px;
+    font-weight: 500;
+    font-size: 16px;
     color: $color-black;
     flex-direction: row;
     display: flex;
-    justify-content: space-between;
-    line-height: 36px;
+    justify-content: flex-start;
+    line-height: 22px;
+    margin-bottom: 2px;
+  }
+
+  .required-star {
+    color: $color-error;
+    padding-left: 2px;
   }
 
   .optional-label {
@@ -64,7 +72,6 @@
   .stands-info-icon {
     color: $color-standard-blue;
   }
-
 }
 
 .tooltip {
