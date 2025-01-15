@@ -708,7 +708,6 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         Ensures that both TreatmentResult and StandMetric data are correctly included
         in the final table_data structure.
         """
-        # LARGE_TREE_BIOMASS: TREATABLE VARIABLE
         TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
@@ -742,7 +741,6 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
                 avg=70.0,
             )
 
-        # FLAME_LENGTH: BASELINE ONLY
         for year in AVAILABLE_YEARS:
             flame_length_metadata = {
                 "modules": {
@@ -766,7 +764,6 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
                 avg=4.5,
             )
 
-        # RATE_OF_SPREAD: BASELINE ONLY
         for year in AVAILABLE_YEARS:
             rate_of_spread_metadata = {
                 "modules": {
@@ -790,7 +787,6 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
                 avg=12.0,
             )
 
-        # RUN FUNCTION: TABLE
         table_data = get_treatment_results_table_data(
             self.treatment_plan, self.stand.id
         )
@@ -798,20 +794,17 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         self.assertEqual(len(row_2024_list), 1, "Expected exactly 1 row for 2024")
         row_2024 = row_2024_list[0]
 
-        # LARGE_TREE_BIOMASS: VALUE-CHECK
         biomass_data = row_2024[ImpactVariable.LARGE_TREE_BIOMASS]
         self.assertEqual(biomass_data["value"], 80.0)
         self.assertEqual(biomass_data["delta"], 10.0)
         self.assertEqual(biomass_data["baseline"], 70.0)
 
-        # FLAME_LENGTH: VALUE-CHECK
         fl_data = row_2024[ImpactVariable.FLAME_LENGTH]
         self.assertEqual(fl_data["value"], None)
         self.assertEqual(fl_data["delta"], None)
         self.assertEqual(fl_data["baseline"], 4.5)
         self.assertEqual(fl_data["category"], "Moderate")
 
-        # RATE_OF_SPREAD: VALUE-CHECK
         ros_data = row_2024[ImpactVariable.RATE_OF_SPREAD]
         self.assertEqual(ros_data["value"], None)
         self.assertEqual(ros_data["delta"], None)
@@ -822,7 +815,6 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         """
         Ensures that only StandMetric data is returned, as long as TreatmentResult exists.
         """
-        # Dummy TreatmentResult data
         TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
@@ -834,7 +826,6 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
             action=None,
         )
 
-        # FLAME_LENGTH: BASELINE ONLY
         for year in AVAILABLE_YEARS:
             flame_length_metadata = {
                 "modules": {
@@ -858,7 +849,6 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
                 avg=4.5,
             )
 
-        # RATE_OF_SPREAD: BASELINE ONLY
         for year in AVAILABLE_YEARS:
             rate_of_spread_metadata = {
                 "modules": {
@@ -882,7 +872,6 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
                 avg=12.0,
             )
 
-        # RUN FUNCTION: TABLE
         table_data = get_treatment_results_table_data(
             self.treatment_plan, self.stand.id
         )
@@ -890,12 +879,10 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         self.assertEqual(len(row_2024_list), 1, "Expected exactly 1 row for 2024")
         row_2024 = row_2024_list[0]
 
-        # FLAME_LENGTH: VALUE-CHECK
         fl_data = row_2024[ImpactVariable.FLAME_LENGTH]
         self.assertEqual(fl_data["baseline"], 4.5)
         self.assertEqual(fl_data["category"], "Moderate")
 
-        # RATE_OF_SPREAD: VALUE-CHECK
         ros_data = row_2024[ImpactVariable.RATE_OF_SPREAD]
         self.assertEqual(ros_data["baseline"], 12.0)
         self.assertEqual(ros_data["category"], "Moderate")

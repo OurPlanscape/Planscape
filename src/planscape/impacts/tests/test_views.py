@@ -627,7 +627,6 @@ class StandTreatmentResultsViewTest(APITestCase):
             aggregation=ImpactVariableAggregation.SUM,
         )
 
-        # LARGE_TREE_BIOMASS: BASELINE
         for year in AVAILABLE_YEARS:
             biomass_meta = {
                 "modules": {
@@ -651,7 +650,6 @@ class StandTreatmentResultsViewTest(APITestCase):
                 avg=70.0,
             )
 
-            # FLAME_LENGTH: BASELINE
             flame_length_meta = {
                 "modules": {
                     "impacts": {
@@ -674,7 +672,6 @@ class StandTreatmentResultsViewTest(APITestCase):
                 avg=4.5,
             )
 
-            # RATE_OF_SPREAD: BASELINE
             ros_meta = {
                 "modules": {
                     "impacts": {
@@ -697,12 +694,10 @@ class StandTreatmentResultsViewTest(APITestCase):
                 avg=12.0,
             )
 
-        # ENDPOINT: CALL
         response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         data = response.json()
 
-        # TABLE: CHECK ROWS
         self.assertEqual(
             len(data),
             len(AVAILABLE_YEARS),
@@ -712,7 +707,6 @@ class StandTreatmentResultsViewTest(APITestCase):
         self.assertEqual(len(row_2024_list), 1, "Expected exactly one row for 2024")
         row_2024 = row_2024_list[0]
 
-        # MULTIPLE-ROW: VALUE-CHECK
         self.assertIn(ImpactVariable.FLAME_LENGTH, row_2024)
         self.assertIn(ImpactVariable.RATE_OF_SPREAD, row_2024)
 
