@@ -191,30 +191,38 @@ def generate_summary(
     project_areas_geometry = project_area_queryset.all().aggregate(
         geometry=UnionOp("geometry")
     )["geometry"]
+    total_stands = 0
+    treated_stands = 0
     for project in project_area_queryset:
-        project_areas.append(
-            {
-                "project_area_id": project.id,
-                "project_area_name": project.name,
-                "total_stand_count": project.stand_count,
-                "extent": project.geometry.extent,
-                "centroid": json.loads(project.geometry.point_on_surface.json),
-                "prescriptions": [
-                    {
-                        "action": p["action"],
-                        "type": p["type"],
-                        "treated_stand_count": p["treated_stand_count"],
-                        "area_acres": p["treated_stand_count"] * stand_area,
-                        "stand_ids": p["stand_ids"],
-                    }
-                    for p in filter(
-                        lambda p: p["project_area__id"] == project.id,
-                        prescriptions,
-                    )
-                ],
-            }
+        project_area_dict = {
+            "project_area_id": project.id,
+            "project_area_name": project.name,
+            "total_stand_count": project.stand_count,
+            "total_area_acres": project.stand_count * stand_area,
+            "extent": project.geometry.extent,
+            "centroid": json.loads(project.geometry.point_on_surface.json),
+            "prescriptions": [
+                {
+                    "action": p["action"],
+                    "type": p["type"],
+                    "treated_stand_count": p["treated_stand_count"],
+                    "area_acres": p["treated_stand_count"] * stand_area,
+                    "stand_ids": p["stand_ids"],
+                }
+                for p in filter(
+                    lambda p: p["project_area__id"] == project.id,
+                    prescriptions,
+                )
+            ],
+        }
+        project_areas.append(project_area_dict)
+        total_stands += project.stand_count
+        treated_stands += sum(
+            p["treated_stand_count"] for p in project_area_dict["prescriptions"]
         )
 
+    total_area_acres = total_stands * stand_area
+    total_treated_area_acres = treated_stands * stand_area
     data = {
         "planning_area_id": plan_area.id,
         "planning_area_name": plan_area.name,
@@ -222,6 +230,10 @@ def generate_summary(
         "scenario_name": scenario.name,
         "treatment_plan_id": treatment_plan.pk,
         "treatment_plan_name": treatment_plan.name,
+        "total_stand_count": total_stands,
+        "total_area_acres": total_area_acres,
+        "total_treated_stand_count": treated_stands,
+        "total_treated_area_acres": total_treated_area_acres,
         "project_areas": project_areas,
         "extent": project_areas_geometry.extent,
     }
