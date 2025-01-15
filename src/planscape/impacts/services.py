@@ -215,11 +215,20 @@ def generate_summary(
                 )
             ],
         }
-        project_areas.append(project_area_dict)
-        total_stands += project.stand_count
-        treated_stands += sum(
+        project_treated_stands = sum(
             p["treated_stand_count"] for p in project_area_dict["prescriptions"]
         )
+        project_treated_stands_area = treated_stands * stand_area
+        project_area_dict.update(
+            {
+                "total_treated_stand_count": project_treated_stands,
+                "total_treated_area_acres": project_treated_stands_area,
+            }
+        )
+        project_areas.append(project_area_dict)
+
+        total_stands += project.stand_count
+        treated_stands += project_treated_stands
 
     total_area_acres = total_stands * stand_area
     total_treated_area_acres = treated_stands * stand_area
