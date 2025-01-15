@@ -129,6 +129,9 @@ export class TreatmentsState {
     })
   );
 
+  private _reloadingSummary$ = new BehaviorSubject(false);
+  public reloadingSummary$ = this._reloadingSummary$.asObservable();
+
   getTreatmentPlanId() {
     if (this._treatmentPlanId === undefined) {
       throw new Error('no treatment plan id!');
@@ -233,10 +236,12 @@ export class TreatmentsState {
   }
 
   reloadSummary() {
+    this._reloadingSummary$.next(true);
     return this.treatmentsService
       .getTreatmentPlanSummary(this.getTreatmentPlanId())
       .pipe(
         map((summary) => {
+          this._reloadingSummary$.next(false);
           this._summary$.next(summary);
         }),
         catchError(() => {
@@ -286,11 +291,13 @@ export class TreatmentsState {
     this.treatedStandsState.updateTreatedStands(
       standIds.map((standId) => ({ id: standId, action: action }))
     );
+    this._reloadingSummary$.next(true);
     return this.treatmentsService
       .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
       .pipe(
         // if setting treatments failed, rollback and throw error
         catchError(() => {
+          this._reloadingSummary$.next(false);
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
           // throws specific error message to identify on the component
@@ -304,10 +311,12 @@ export class TreatmentsState {
   removeTreatments(standIds: number[]) {
     const currentTreatedStands = this.treatedStandsState.getTreatedStands();
     this.treatedStandsState.removeTreatments(standIds);
+    this._reloadingSummary$.next(true);
     return this.treatmentsService
       .removeTreatments(this.getTreatmentPlanId(), standIds)
       .pipe(
         catchError(() => {
+          this._reloadingSummary$.next(false);
           // rolls back to previous treated stands
           this.treatedStandsState.setTreatedStands(currentTreatedStands);
           throw new RemovingStandsError();

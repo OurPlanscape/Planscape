@@ -1,7 +1,8 @@
 <ng-container *ngIf="totals$ | async; let totals">
   <div class="black">Acres Treated:</div>
-  <div>
+  <div [ngClass]="{ outdated: reloading$ | async }">
     {{ totals.total_treated_area_acres | number: '1.0-0' }} /
     {{ totals.total_area_acres | number: '1.0-0' }}
   </div>
+  <mat-spinner diameter="20" *ngIf="reloading$ | async"></mat-spinner>
 </ng-container>

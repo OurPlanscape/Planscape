@@ -1,14 +1,15 @@
 import { Component } from '@angular/core';
 
-import { AsyncPipe, DecimalPipe, NgIf } from '@angular/common';
+import { AsyncPipe, DecimalPipe, NgClass, NgIf } from '@angular/common';
 import { TreatmentsState } from '../treatments.state';
-import { distinctUntilChanged, filter, map, of, switchMap } from 'rxjs';
+import { distinctUntilChanged, filter, of, switchMap } from 'rxjs';
 import { TreatmentSummary } from '@types';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @Component({
   selector: 'app-acres-treated',
   standalone: true,
-  imports: [DecimalPipe, AsyncPipe, NgIf],
+  imports: [DecimalPipe, AsyncPipe, NgIf, MatProgressSpinnerModule, NgClass],
   templateUrl: './acres-treated.component.html',
   styleUrl: './acres-treated.component.scss',
 })
@@ -27,10 +28,7 @@ export class AcresTreatedComponent {
     })
   );
 
-  totalAcres$ = this.totals$.pipe(map((ts) => ts.total_area_acres));
-  totalTreatedAcres$ = this.totals$.pipe(
-    map((ts) => ts.total_treated_area_acres)
-  );
+  reloading$ = this.treatmentsState.reloadingSummary$;
 
   constructor(private treatmentsState: TreatmentsState) {}
 }
