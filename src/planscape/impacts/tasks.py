@@ -24,6 +24,8 @@ from impacts.services import (
     calculate_metrics,
     get_calculation_matrix,
     get_baseline_matrix,
+    get_calculation_matrix_wo_action,
+    calculate_impacts_for_untreated_stands,
 )
 from planscape.celery import app
 
@@ -121,6 +123,48 @@ def async_calculate_baseline_metrics_for_variable_year(
         raise exc
 
 
+@app.task(
+    bind=True, autoretry_for=(OSError, RasterioIOError), retry_kwargs={"max_retries": 5}
+)
+def async_calculate_impacts_for_non_treated_stands_action_year(
+    self,
+    treatment_plan_pk: int,
+    variable: ImpactVariable,
+    year: int,
+) -> None:
+    """Calculate impacts for non-treated stands for the variable, year pair.
+
+    :param treatment_plan_pk: TreatmentPlan primary key
+    :type treatment_plan_pk: int
+    :param variable: ImpactVariable instance
+    :type variable: ImpactVariable
+    :param year: Year of calculation
+    :type year: int
+    :return: None
+    """
+    log.info(f"Calculating baseline metrics for {variable} on non-treated stands")
+    try:
+        treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+            pk=treatment_plan_pk
+        )
+        calculate_impacts_for_untreated_stands(
+            treatment_plan=treatment_plan,
+            variable=variable,
+            year=year,
+        )
+    except (OSError, RasterioIOError) as exc:
+        if self.request.retries >= self.max_retries:
+            log.exception("Task failed on all retries.")
+        else:
+            log.warning("Task failed. Retrying.")
+        raise exc
+    except Exception as exc:
+        log.exception(
+            "Task failed due to an unhandled exception. Not retrying execution."
+        )
+        raise exc
+
+
 @app.task()
 def async_set_status(
     treatment_plan_pk: int,
@@ -163,6 +207,9 @@ def async_calculate_persist_impacts_treatment_plan(
     baseline_matrix = get_baseline_matrix(
         years=AVAILABLE_YEARS,
     )
+    untreated_stands_matrix = get_calculation_matrix_wo_action(
+        years=AVAILABLE_YEARS,
+    )
     callback = chain(
         async_set_status.si(
             treatment_plan_pk=treatment_plan_pk,
@@ -193,6 +240,14 @@ def async_calculate_persist_impacts_treatment_plan(
             year=year,
         )
         for variable, year in baseline_matrix
+    ]
+    tasks += [
+        async_calculate_impacts_for_non_treated_stands_action_year.si(
+            treatment_plan_pk=treatment_plan_pk,
+            variable=variable,
+            year=year,
+        )
+        for variable, year in untreated_stands_matrix
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     chord(tasks)(callback)

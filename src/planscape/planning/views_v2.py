@@ -1,25 +1,27 @@
 import logging
+
 from django.contrib.auth import get_user_model
+from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import viewsets, status, mixins, permissions, pagination
+from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import mixins, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from drf_spectacular.utils import extend_schema, extend_schema_view
-from planscape.serializers import BaseErrorMessageSerializer
+
 from planning.filters import (
     PlanningAreaFilter,
-    ScenarioFilter,
     PlanningAreaOrderingFilter,
-    ScenarioOrderingFilter,
     ProjectAreaNoteFilterSet,
+    ScenarioFilter,
+    ScenarioOrderingFilter,
 )
 from planning.models import PlanningArea, ProjectArea, ProjectAreaNote, Scenario
 from planning.permissions import (
     PlanningAreaViewPermission,
-    ScenarioViewPermission,
     ProjectAreaNoteViewPermission,
+    ScenarioViewPermission,
 )
 from planning.serializers import (
     CreatePlanningAreaSerializer,
@@ -28,26 +30,24 @@ from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
     PlanningAreaSerializer,
-    ProjectAreaNoteSerializer,
-    ProjectAreaNoteListSerializer,
     ProjectAreaNoteCreateSerializer,
+    ProjectAreaNoteListSerializer,
+    ProjectAreaNoteSerializer,
     ProjectAreaSerializer,
-    ScenarioSerializer,
     ScenarioAndProjectAreasSerializer,
-    ProjectAreaSerializer,
     ScenarioSerializer,
-    ListCreatorSerializer,
     UploadedScenarioDataSerializer,
 )
 from planning.services import (
     create_planning_area,
+    create_projectarea_note,
     create_scenario,
+    create_scenario_from_upload,
     delete_planning_area,
     delete_scenario,
     toggle_scenario_status,
-    create_projectarea_note,
-    create_scenario_from_upload,
 )
+from planscape.serializers import BaseErrorMessageSerializer
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -232,7 +232,6 @@ class ScenarioViewSet(viewsets.ModelViewSet):
     def upload_shapefiles(self, request, pk=None, *args, **kwargs):
         serializer = UploadedScenarioDataSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-
         new_scenario = create_scenario_from_upload(
             validated_data=serializer.validated_data,
             user=request.user,
@@ -265,7 +264,13 @@ class CreatorViewSet(ReadOnlyModelViewSet):
     retrieve=extend_schema(description="Project Area of a Planning Areas.")
 )
 class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
-    queryset = ProjectArea.objects.all()
+    queryset = (
+        ProjectArea.objects.all()
+        .annotate(
+            treatment_rank=RawSQL("COALESCE((data->>'treatment_rank')::int, 1)", [])
+        )
+        .order_by("treatment_rank")
+    )
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = ProjectAreaSerializer
     serializer_classes = {

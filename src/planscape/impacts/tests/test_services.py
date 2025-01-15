@@ -1,4 +1,7 @@
 import json
+import random
+from collections import defaultdict
+from pathlib import Path
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
@@ -7,24 +10,31 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TransactionTestCase
 from impacts.models import (
     AVAILABLE_YEARS,
+    DataLayer,
     ImpactVariable,
     ImpactVariableAggregation,
     TreatmentPlan,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
     TreatmentPrescriptionType,
+    TreatmentResult,
 )
 from impacts.services import (
     calculate_delta,
     calculate_impacts,
+    calculate_impacts_for_untreated_stands,
     classify_flame_length,
     classify_rate_of_spread,
     clone_treatment_plan,
+    export_geopackage,
+    fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
     generate_summary,
-    get_calculation_matrix,
     get_baseline_matrix,
+    get_calculation_matrix,
+    get_calculation_matrix_wo_action,
     get_treatment_results_table_data,
+    itertools,
     upsert_treatment_prescriptions,
 )
 from impacts.tests.factories import (
@@ -38,8 +48,8 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from stands.models import Stand, StandSizeChoices
-from stands.tests.factories import StandFactory
+from stands.models import Stand, StandMetric, StandSizeChoices
+from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planscape.tests.factories import UserFactory
 
@@ -185,6 +195,10 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("scenario_name", summary)
         self.assertIn("treatment_plan_id", summary)
         self.assertIn("treatment_plan_name", summary)
+        self.assertIn("total_stand_count", summary)
+        self.assertIn("total_area_acres", summary)
+        self.assertIn("total_treated_stand_count", summary)
+        self.assertIn("total_treated_area_acres", summary)
         self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 3)
 
@@ -211,17 +225,30 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("type", proj_area_1.get("centroid"))
         self.assertIn("coordinates", proj_area_1.get("centroid"))
         self.assertIn("extent", proj_area_1)
+        self.assertIn("total_stand_count", proj_area_1)
+        self.assertIn("total_area_acres", proj_area_1)
+        self.assertIn("total_treated_stand_count", proj_area_1)
+        self.assertIn("total_treated_area_acres", proj_area_1)
         self.assertEqual(len(proj_area_1["prescriptions"]), 1)
         stands1 = proj_area_1["prescriptions"][0]["stand_ids"]
         self.assertGreater(len(stands1), 0)
+
         self.assertIn("prescriptions", proj_area_2)
         self.assertIn("centroid", proj_area_2)
         self.assertIn("extent", proj_area_2)
+        self.assertIn("total_stand_count", proj_area_2)
+        self.assertIn("total_area_acres", proj_area_2)
+        self.assertIn("total_treated_stand_count", proj_area_2)
+        self.assertIn("total_treated_area_acres", proj_area_2)
         self.assertEqual(len(proj_area_2["prescriptions"]), 1)
 
         self.assertIn("prescriptions", proj_area_3)
         self.assertIn("centroid", proj_area_3)
         self.assertIn("extent", proj_area_3)
+        self.assertIn("total_stand_count", proj_area_3)
+        self.assertIn("total_area_acres", proj_area_3)
+        self.assertIn("total_treated_stand_count", proj_area_3)
+        self.assertIn("total_treated_area_acres", proj_area_3)
         self.assertEqual(len(proj_area_3["prescriptions"]), 1)
 
     def test_summary_is_returned_correctly_filter_by_project_area(self):
@@ -234,6 +261,10 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("scenario_name", summary)
         self.assertIn("treatment_plan_id", summary)
         self.assertIn("treatment_plan_name", summary)
+        self.assertIn("total_stand_count", summary)
+        self.assertIn("total_area_acres", summary)
+        self.assertIn("total_treated_stand_count", summary)
+        self.assertIn("total_treated_area_acres", summary)
         self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 1)
         proj_area_1 = list(
@@ -289,6 +320,27 @@ class GetCalculationMatrixTest(TransactionTestCase):
         total_records = len(ImpactVariable.get_baseline_only_impact_variables()) * len(
             years
         )
+        self.assertEqual(len(matrix), total_records)
+
+
+class GetCalculationMetricsWoActionTest(TransactionTestCase):
+    def test_calculation_matrix_wo_action_returns_correctly(self):
+        years = [1, 2]
+        matrix = get_calculation_matrix_wo_action(years=years)
+
+        total_records = len(ImpactVariable.get_measurable_impact_variables()) * len(
+            years
+        )
+
+        self.assertEqual(len(matrix), total_records)
+
+    def test_calculation_matrix_wo_action_null_years(self):
+        matrix = get_calculation_matrix_wo_action()
+
+        total_records = len(ImpactVariable.get_measurable_impact_variables()) * len(
+            AVAILABLE_YEARS
+        )
+
         self.assertEqual(len(matrix), total_records)
 
 
@@ -394,7 +446,7 @@ class CalculateImpactsTest(TransactionTestCase):
 
     def test_calculate_delta(self):
         values_bases_expected_results = [
-            (0, 0, -1),
+            (0, 0, 0),
             (0, 1, -1),
             (1, 0, 0),
             (1, 1, 0),
@@ -410,6 +462,86 @@ class CalculateImpactsTest(TransactionTestCase):
             self.assertEqual(
                 calculate_delta(value=value, baseline=base), expected_result
             )
+
+
+class CalculateImpactsForUntreatedStandsTest(TransactionTestCase):
+    def load_stands(self):
+        with open("impacts/tests/test_data/stands.geojson") as fp:
+            geojson = json.loads(fp.read())
+
+        features = geojson.get("features")
+        return list(
+            [
+                Stand.objects.create(
+                    geometry=GEOSGeometry(json.dumps(f.get("geometry")), srid=4326),
+                    size="LARGE",
+                    area_m2=1,
+                )
+                for f in features
+            ]
+        )
+
+    def setUp(self):
+        self.stands = self.load_stands()
+        self.plan = TreatmentPlanFactory.create()
+        stand_ids = [s.id for s in self.stands]
+        self.project_area_geometry = MultiPolygon(
+            [
+                Stand.objects.filter(id__in=stand_ids).aggregate(
+                    geometry=Union("geometry")
+                )["geometry"]
+            ]
+        )
+        self.project_area = ProjectAreaFactory.create(
+            scenario=self.plan.scenario, geometry=self.project_area_geometry
+        )
+        self.treated_stands = self.stands[:3]
+        self.prescriptions = list(
+            [
+                TreatmentPrescriptionFactory.create(
+                    treatment_plan=self.plan,
+                    stand=stand,
+                    action=TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                    geometry=stand.geometry,
+                )
+                for stand in self.treated_stands
+            ]
+        )
+        baseline_metadata = {
+            "modules": {
+                "impacts": {
+                    "year": AVAILABLE_YEARS[0],
+                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "action": None,
+                    "baseline": True,
+                }
+            }
+        }
+        DataLayerFactory.create(
+            name="baseline",
+            url="impacts/tests/test_data/test_raster.tif",
+            metadata=baseline_metadata,
+            type=DataLayerType.RASTER,
+        )
+
+    def test_calculate_impacts_for_untreated_stands(self):
+        treatment_results = calculate_impacts_for_untreated_stands(
+            self.plan, ImpactVariable.CANOPY_BASE_HEIGHT, year=AVAILABLE_YEARS[0]
+        )
+
+        self.assertIsNotNone(treatment_results)
+        self.assertEqual(
+            TreatmentResult.objects.count(),
+            self.project_area.get_stands().count() - len(self.treated_stands),
+        )
+
+        for treatment_result in TreatmentResult.objects.all():
+            self.assertEqual(
+                treatment_result.variable, ImpactVariable.CANOPY_BASE_HEIGHT
+            )
+            self.assertEqual(treatment_result.action, None)
+            self.assertEqual(treatment_result.value, treatment_result.baseline)
+            self.assertEqual(treatment_result.delta, 0)
 
 
 class ImpactResultsDataPlotTest(TransactionTestCase):
@@ -596,68 +728,189 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         )
         self.assertEqual(table_data, [], "Expected an empty list when no data is found")
 
-    def test_returns_data_for_multiple_variables_and_years(self):
+    def test_returns_data_for_treated_and_untreated_metrics(self):
         """
-        Ensures that multiple TreatmentResult rows for different years/variables
-        are grouped correctly into the final table_data structure.
+        Ensures that both TreatmentResult and StandMetric data are correctly included
+        in the final table_data structure.
         """
-        TreatmentResultFactory(
+        TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH,
+            variable=ImpactVariable.LARGE_TREE_BIOMASS,
             year=2024,
-            value=3.5,
-            delta=1.2,
-            baseline=2.3,
+            value=80.0,
+            delta=10.0,
+            baseline=70.0,
+            action=None,
         )
-        TreatmentResultFactory(
-            treatment_plan=self.treatment_plan,
-            stand=self.stand,
-            variable=ImpactVariable.RATE_OF_SPREAD,
-            year=2024,
-            value=2.0,
-            delta=0.5,
-            baseline=1.5,
-        )
-        TreatmentResultFactory(
-            treatment_plan=self.treatment_plan,
-            stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH,
-            year=2029,
-            value=12.0,
-            baseline=2.0,
-        )
+        for year in AVAILABLE_YEARS:
+            biomass_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "baseline": True,
+                        "variable": ImpactVariable.LARGE_TREE_BIOMASS,
+                        "action": None,
+                    }
+                }
+            }
+            biomass_layer = DataLayerFactory.create(
+                name=f"biomass_layer_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=biomass_metadata,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=biomass_layer,
+                avg=70.0,
+            )
+
+        for year in AVAILABLE_YEARS:
+            flame_length_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": ImpactVariable.FLAME_LENGTH,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            flame_length_layer = DataLayerFactory.create(
+                name=f"flame_length_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=flame_length_metadata,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=flame_length_layer,
+                avg=4.5,
+            )
+
+        for year in AVAILABLE_YEARS:
+            rate_of_spread_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": ImpactVariable.RATE_OF_SPREAD,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            rate_of_spread_layer = DataLayerFactory.create(
+                name=f"rate_of_spread_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=rate_of_spread_metadata,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=rate_of_spread_layer,
+                avg=12.0,
+            )
 
         table_data = get_treatment_results_table_data(
             self.treatment_plan, self.stand.id
         )
+        row_2024_list = [row for row in table_data if row["year"] == 2024]
+        self.assertEqual(len(row_2024_list), 1, "Expected exactly 1 row for 2024")
+        row_2024 = row_2024_list[0]
 
-        # Expect 2 rows: one for 2024, one for 2029
-        self.assertEqual(len(table_data), 2)
+        biomass_data = row_2024[ImpactVariable.LARGE_TREE_BIOMASS]
+        self.assertEqual(biomass_data["value"], 80.0)
+        self.assertEqual(biomass_data["delta"], 10.0)
+        self.assertEqual(biomass_data["baseline"], 70.0)
 
-        # Check the first row (year=2024)
-        row_2024 = table_data[0]
-        self.assertEqual(row_2024["year"], 2024)
-        self.assertIn("fl", row_2024)
-        self.assertIn("ros", row_2024)
+        fl_data = row_2024[ImpactVariable.FLAME_LENGTH]
+        self.assertEqual(fl_data["value"], None)
+        self.assertEqual(fl_data["delta"], None)
+        self.assertEqual(fl_data["baseline"], 4.5)
+        self.assertEqual(fl_data["category"], "Moderate")
 
-        self.assertEqual(row_2024["fl"]["value"], 3.5)
-        self.assertEqual(row_2024["fl"]["delta"], 1.2)
-        self.assertEqual(row_2024["fl"]["baseline"], 2.3)
-        self.assertEqual(row_2024["fl"]["category"], "Low")
+        ros_data = row_2024[ImpactVariable.RATE_OF_SPREAD]
+        self.assertEqual(ros_data["value"], None)
+        self.assertEqual(ros_data["delta"], None)
+        self.assertEqual(ros_data["baseline"], 12.0)
+        self.assertEqual(ros_data["category"], "Moderate")
 
-        self.assertEqual(row_2024["ros"]["value"], 2.0)
-        self.assertEqual(row_2024["ros"]["delta"], 0.5)
-        self.assertEqual(row_2024["ros"]["baseline"], 1.5)
-        self.assertEqual(row_2024["ros"]["category"], "Very Low")
+    def test_returns_only_untreated_if_no_treated_data(self):
+        """
+        Ensures that only StandMetric data is returned, as long as TreatmentResult exists.
+        """
+        TreatmentResultFactory.create(
+            treatment_plan=self.treatment_plan,
+            stand=self.stand,
+            variable=ImpactVariable.TOTAL_CARBON,
+            year=2029,
+            value=999.0,
+            delta=0.0,
+            baseline=999.0,
+            action=None,
+        )
 
-        # Check the second row (year=2029)
-        row_2029 = table_data[1]
-        self.assertEqual(row_2029["year"], 2029)
-        self.assertIn("fl", row_2029)
-        self.assertEqual(row_2029["fl"]["value"], 12.0)
-        self.assertIsNone(row_2029["fl"]["delta"])
-        self.assertEqual(row_2029["fl"]["category"], "Very High")
+        for year in AVAILABLE_YEARS:
+            flame_length_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": ImpactVariable.FLAME_LENGTH,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            flame_length_layer = DataLayerFactory.create(
+                name=f"flame_length_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=flame_length_metadata,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=flame_length_layer,
+                avg=4.5,
+            )
+
+        for year in AVAILABLE_YEARS:
+            rate_of_spread_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": ImpactVariable.RATE_OF_SPREAD,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            rate_of_spread_layer = DataLayerFactory.create(
+                name=f"rate_of_spread{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=rate_of_spread_metadata,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=rate_of_spread_layer,
+                avg=12.0,
+            )
+
+        table_data = get_treatment_results_table_data(
+            self.treatment_plan, self.stand.id
+        )
+        row_2024_list = [row for row in table_data if row["year"] == 2024]
+        self.assertEqual(len(row_2024_list), 1, "Expected exactly 1 row for 2024")
+        row_2024 = row_2024_list[0]
+
+        fl_data = row_2024[ImpactVariable.FLAME_LENGTH]
+        self.assertEqual(fl_data["baseline"], 4.5)
+        self.assertEqual(fl_data["category"], "Moderate")
+
+        ros_data = row_2024[ImpactVariable.RATE_OF_SPREAD]
+        self.assertEqual(ros_data["baseline"], 12.0)
+        self.assertEqual(ros_data["category"], "Moderate")
 
 
 class ClassificationFunctionsTest(TransactionTestCase):
@@ -678,3 +931,55 @@ class ClassificationFunctionsTest(TransactionTestCase):
         self.assertEqual(classify_rate_of_spread(9.5), "Low")
         self.assertEqual(classify_rate_of_spread(20.0), "High")
         self.assertEqual(classify_rate_of_spread(100.0), "Extreme")
+
+
+class FetchTreatmentPlanDataTest(TransactionTestCase):
+    def test_fetch_treatment_plan_data_returns_results(self):
+        treatment_plan = TreatmentPlanFactory.create()
+        _ = ProjectAreaFactory.create(scenario=treatment_plan.scenario)
+        variables = [ImpactVariable.CANOPY_BASE_HEIGHT, ImpactVariable.CANOPY_COVER]
+        years = [2024, 2029]
+        stand1 = StandFactory.create()
+        stand2 = StandFactory.create()
+        calcs = itertools.product(variables, years, [stand1, stand2])
+        for variable, year, stand in calcs:
+            TreatmentResultFactory.create(
+                treatment_plan=treatment_plan,
+                variable=variable,
+                year=year,
+                value=random.randrange(0, 100),
+                baseline=random.randrange(0, 100),
+                delta=random.randrange(0, 100),
+                stand=stand,
+            )
+
+        data = fetch_treatment_plan_data(treatment_plan)
+        self.assertEqual(len(data), 2)
+        stand_ids = [x.get("properties", {}).get("stand_id") for x in data]
+        self.assertIn(stand1.pk, stand_ids)
+        self.assertIn(stand2.pk, stand_ids)
+
+
+class ExportShapefileTest(TransactionTestCase):
+    def test_export_creates_file(self):
+        treatment_plan = TreatmentPlanFactory.create()
+        _ = ProjectAreaFactory.create(scenario=treatment_plan.scenario)
+        variables = [ImpactVariable.CANOPY_BASE_HEIGHT, ImpactVariable.CANOPY_COVER]
+        years = [2024, 2029]
+        stand1 = StandFactory.create()
+        stand2 = StandFactory.create()
+        calcs = itertools.product(variables, years, [stand1, stand2])
+        for variable, year, stand in calcs:
+            TreatmentResultFactory.create(
+                treatment_plan=treatment_plan,
+                variable=variable,
+                year=year,
+                value=random.randrange(0, 100),
+                baseline=random.randrange(0, 100),
+                delta=random.randrange(0, 100),
+                stand=stand,
+            )
+
+        shapefile = export_geopackage(treatment_plan)
+        path = Path(shapefile)
+        self.assertTrue(path.exists())
