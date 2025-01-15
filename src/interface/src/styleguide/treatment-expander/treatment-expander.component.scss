@@ -143,6 +143,10 @@
   gap: 4px;
 }
 
+.rx-detail-year {
+  color: $color-md-gray;
+}
+
 .rx-detail-name {
   @include small-paragraph();
 

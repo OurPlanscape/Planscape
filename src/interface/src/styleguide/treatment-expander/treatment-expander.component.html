@@ -13,9 +13,12 @@
         *ngIf="treatmentType === 'SEQUENCE'"
         [action]="action"></sg-sequence-icon>
 
-      <div class="treatment-type-text">
+      <div class="treatment-type-text" *ngIf="treatmentType === 'SINGLE'">
         <ng-container
-          *ngFor="let titlePart of splitTextLine(titleText()); let i = index">
+          *ngFor="
+            let titlePart of splitTextLine(singleRxTitleText());
+            let i = index
+          ">
           <span class="highlighted" *ngIf="isMatch(titlePart)">{{
             titlePart
           }}</span>
@@ -23,6 +26,23 @@
             titlePart
           }}</span>
         </ng-container>
+      </div>
+      <div class="treatment-type-text" *ngIf="treatmentType === 'SEQUENCE'">
+        <div *ngFor="let seqTitle of sequenceTitles()">
+          <ng-container
+            *ngFor="
+              let titlePart of splitTextLine(seqTitle.description);
+              let i = index
+            ">
+            <span class="highlighted" *ngIf="isMatch(titlePart)">{{
+              titlePart
+            }}</span>
+            <span *ngIf="!isMatch(titlePart)" class="regular">{{
+              titlePart
+            }}</span>
+          </ng-container>
+          <span class="rx-detail-year"> (Year {{ seqTitle.year }})</span>
+        </div>
       </div>
     </div>
     <div class="right-content">
@@ -38,20 +58,6 @@
       </mat-icon>
     </div>
   </mat-expansion-panel-header>
-
-  <div class="rx-detail" *ngFor="let seqDetail of sequenceDetails()">
-    <mat-icon class="material-symbols-outlined">medication_outline</mat-icon>
-    <div class="rx-detail-name">
-      <ng-container *ngFor="let seqDetailPart of splitTextLine(seqDetail)">
-        <span class="highlighted" *ngIf="isMatch(seqDetailPart)"
-          >{{ seqDetailPart }}
-        </span>
-        <span class="regular" *ngIf="!isMatch(seqDetailPart)">{{
-          seqDetailPart
-        }}</span>
-      </ng-container>
-    </div>
-  </div>
 
   <div class="treatment-detail">
     <span class="treatment-detail-name">Total:</span

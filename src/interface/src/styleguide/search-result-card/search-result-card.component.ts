@@ -49,13 +49,21 @@ export class SearchResultCardComponent implements OnInit {
     this.cardClick.emit(true);
   }
 
+  // this extracts the relevant searchable non-title text from project areas into strings
   extractProjectLines(): string[] {
     const lines = this.projectArea.prescriptions.map((rx) => {
       if (rx.type === 'SINGLE') {
         return PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
       } else if (rx.type === 'SEQUENCE')
-        return PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
-          .name;
+        return (
+          PRESCRIPTIONS.SEQUENCE[
+            rx.action as PrescriptionSequenceAction
+          ].details
+            .map((d) => d.description)
+            // TODO: show just the unique prescriptions in the result?
+            .filter((item, index, arr) => arr.indexOf(item) === index)
+            .join(', ')
+        );
       else return '';
     });
 

@@ -44,6 +44,8 @@ export class ProjectAreasTabComponent {
     private route: ActivatedRoute
   ) {}
 
+  // this just returns a boolean for whether or not the prescriptions have a match
+  //  the text highlighting happens as these expanders are rendered
   prescriptionsHaveMatch(prescriptions: Prescription[]) {
     return prescriptions.some((rx) => {
       return (
@@ -52,7 +54,11 @@ export class ProjectAreasTabComponent {
             .toLowerCase()
             .includes(this.searchString)) ||
         (rx.type === 'SEQUENCE' &&
-          PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction].name
+          PRESCRIPTIONS.SEQUENCE[
+            rx.action as PrescriptionSequenceAction
+          ].details
+            .map((d) => d.description)
+            .join(' ')
             .toLowerCase()
             .includes(this.searchString))
       );

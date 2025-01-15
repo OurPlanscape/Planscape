@@ -8,6 +8,7 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
+  SequenceDetail,
 } from '../../app/treatments/prescriptions';
 
 /**
@@ -81,7 +82,7 @@ export class TreatmentExpanderComponent {
 
   // If a title is explicity set, use that.
   // Otherwise, determine title from either treatment type or sequence num
-  titleText(): string {
+  singleRxTitleText(): string {
     if (this.title !== null) {
       return this.title;
     } else if (this.treatmentType === 'SINGLE') {
@@ -90,7 +91,25 @@ export class TreatmentExpanderComponent {
       const details =
         PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
           .details;
-      //TODO: this is a placeholder
+      return details.map((d) => d.description).join(' ');
+    }
+    return 'No Treatment';
+  }
+
+  sequenceTitles(): SequenceDetail[] {
+    return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+      .details;
+  }
+
+  sequenceRxTitleText(): string {
+    if (this.title !== null) {
+      return this.title;
+    } else if (this.treatmentType === 'SINGLE') {
+      return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
+    } else if (this.treatmentType === 'SEQUENCE') {
+      const details =
+        PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+          .details;
       return details.map((d) => d.description).join(' ');
     }
     return 'No Treatment';
