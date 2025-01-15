@@ -218,7 +218,7 @@ def generate_summary(
         project_treated_stands = sum(
             p["treated_stand_count"] for p in project_area_dict["prescriptions"]
         )
-        project_treated_stands_area = treated_stands * stand_area
+        project_treated_stands_area = project_treated_stands * stand_area
         project_area_dict.update(
             {
                 "total_treated_stand_count": project_treated_stands,
