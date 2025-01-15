@@ -1,7 +1,5 @@
 <sg-modal
-  [title]="
-    (hasSelectedTreatedStands$ | async) ? 'Edit Treatment' : 'Apply Treatment'
-  "
+  [title]="(modalTitle$ | async) || ''"
   (clickedClose)="cancel()"
   (clickedPrimary)="apply()"
   (clickedSecondary)="clickSecondary()"
