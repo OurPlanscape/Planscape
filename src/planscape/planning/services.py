@@ -415,6 +415,7 @@ def toggle_scenario_status(scenario: Scenario, user: TUser) -> Scenario:
     action.send(user, verb=verb, action_object=scenario)
     return scenario
 
+
 def planning_area_covers(
     planning_area: PlanningArea,
     geometry: GEOSGeometry,

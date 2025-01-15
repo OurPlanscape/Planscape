@@ -862,6 +862,7 @@ class ListPlanningAreasWithPermissionsTest(APITestCase):
         self.assertEqual(the_area["role"], "Viewer")
         self.assertCountEqual(the_area["permissions"], VIEWER_PERMISSIONS)
 
+
 class CreateScenariosFromUpload(APITransactionTestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()

@@ -668,7 +668,7 @@ class TxPlanNoteTest(APITransactionTestCase):
         self.assertEqual(
             response_data["content"], "Here is a note about a treatment plan."
         )
-        
+
     def test_create_note_without_permission(self):
         self.client.force_authenticate(self.other_user)
         new_note = json.dumps(
@@ -694,7 +694,9 @@ class TxPlanNoteTest(APITransactionTestCase):
             treatment_plan=self.treatment_plan, user=self.user, content="I am a note"
         )
         TreatmentPlanNote.objects.create(
-            treatment_plan=self.treatment_plan, user=self.user, content="I am a second note"
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am a second note",
         )
         TreatmentPlanNote.objects.create(
             treatment_plan=self.treatment_plan,
@@ -732,7 +734,9 @@ class TxPlanNoteTest(APITransactionTestCase):
             treatment_plan=self.treatment_plan, user=self.user, content="I am a note"
         )
         TreatmentPlanNote.objects.create(
-            treatment_plan=self.treatment_plan, user=self.user, content="I am a second note"
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am a second note",
         )
         response = self.client.get(
             reverse(
@@ -746,7 +750,9 @@ class TxPlanNoteTest(APITransactionTestCase):
     def test_get_single_note(self):
         self.client.force_authenticate(self.user)
         visible_note = TreatmentPlanNote.objects.create(
-            treatment_plan=self.treatment_plan, user=self.user, content="I am just one note"
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am just one note",
         )
         response = self.client.get(
             reverse(
@@ -782,7 +788,7 @@ class TxPlanNoteTest(APITransactionTestCase):
         response = self.client.delete(
             reverse(
                 "api:impacts:tx-plan-notes-detail",
-                kwargs={"tx_plan_pk": self.treatment_plan.pk,  "pk": new_note.pk},
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": new_note.pk},
             ),
             content_type="application/json",
         )

@@ -77,6 +77,7 @@ class TreatmentPlan(
         verbose_name = "Treatment Plan"
         verbose_name_plural = "Treatment Plans"
 
+
 class TreatmentPlanNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
     id: int
     treatment_plan_id: int
@@ -87,7 +88,11 @@ class TreatmentPlanNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
     )
     user_id: int
     user = models.ForeignKey(
-        User, related_name="treatment_plan_notes", on_delete=models.SET_NULL, null=True, blank=True
+        User,
+        related_name="treatment_plan_notes",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
     )
     content = models.TextField(null=True)
 

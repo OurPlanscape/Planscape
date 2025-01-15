@@ -152,6 +152,7 @@ class TreatmentPrescriptionViewPermission(PlanscapePermission):
                     request.user, object.treatment_plan
                 )
 
+
 class TreatmentPlanNoteViewPermission(PlanscapePermission):
     permission_set = TreatmentPlanPermission
 
@@ -178,7 +179,9 @@ class TreatmentPlanNoteViewPermission(PlanscapePermission):
                     treatment_plan = TreatmentPlan.objects.select_related(
                         "scenario", "scenario__planning_area"
                     ).get(id=treatment_plan_id)
-                    return TreatmentPlanPermission.can_view(request.user, treatment_plan)
+                    return TreatmentPlanPermission.can_view(
+                        request.user, treatment_plan
+                    )
                 except TreatmentPlan.DoesNotExist:
                     return False
 
@@ -199,7 +202,6 @@ class TreatmentPlanNoteViewPermission(PlanscapePermission):
 
 
 class TreatmentPlanNotePermission(CheckPermissionMixin):
-
     @staticmethod
     def can_view(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):
         # depends on planning_area view permission
@@ -219,4 +221,3 @@ class TreatmentPlanNotePermission(CheckPermissionMixin):
     def can_remove(user: AbstractUser, treatment_plan_note: TreatmentPlanNote):
         planning_area = treatment_plan_note.treatment_plan.scenario.planning_area
         return is_creator(user, planning_area) or is_creator(user, treatment_plan_note)
-    
