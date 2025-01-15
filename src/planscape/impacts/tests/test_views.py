@@ -3,13 +3,15 @@ from urllib.parse import urlencode
 import json
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
+from datasets.models import DataLayerType
+from datasets.tests.factories import DataLayerFactory
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
 from impacts.models import (
+    AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
-    AVAILABLE_YEARS,
     TreatmentPlan,
     TreatmentPlanNote,
     TreatmentPlanStatus,
@@ -30,7 +32,7 @@ from planning.tests.factories import (
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
 from stands.models import StandSizeChoices
-from stands.tests.factories import StandFactory
+from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planscape.tests.factories import UserFactory
 
@@ -341,10 +343,10 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
 
     def test_treatment_results(self):
         variables = [
-            ImpactVariable.TOTAL_CARBON,
-            ImpactVariable.FLAME_LENGTH,
-            ImpactVariable.RATE_OF_SPREAD,
-            ImpactVariable.PROBABILITY_TORCHING,
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
         ]
         filter = self._build_filters(variables=variables)
         url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
@@ -602,20 +604,117 @@ class StandTreatmentResultsViewTest(APITestCase):
         """
         Tests that the endpoint returns correct data when multiple TreatmentResult rows exist.
         """
-        TreatmentResultFactory(
+        TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH,
+            variable=ImpactVariable.LARGE_TREE_BIOMASS,
             year=2024,
-            value=3.5,
+            value=80.0,
+            delta=10.0,
+            baseline=70.0,
+            action=None,
+            aggregation=ImpactVariableAggregation.MEAN,
         )
-        TreatmentResultFactory(
+
+        TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.RATE_OF_SPREAD,
+            variable=ImpactVariable.LARGE_TREE_BIOMASS,
             year=2024,
-            value=2.5,
+            value=105.0,
+            delta=12.0,
+            baseline=45.0,
+            action=None,
+            aggregation=ImpactVariableAggregation.SUM,
         )
+
+        for year in AVAILABLE_YEARS:
+            biomass_meta = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "baseline": True,
+                        "variable": ImpactVariable.LARGE_TREE_BIOMASS,
+                        "action": None,
+                    }
+                }
+            }
+            biomass_layer = DataLayerFactory.create(
+                name=f"biomass_layer_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=biomass_meta,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=biomass_layer,
+                avg=70.0,
+            )
+
+            flame_length_meta = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": ImpactVariable.FLAME_LENGTH,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            fl_layer = DataLayerFactory.create(
+                name=f"flame_length_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=flame_length_meta,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=fl_layer,
+                avg=4.5,
+            )
+
+            ros_meta = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": ImpactVariable.RATE_OF_SPREAD,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            ros_layer = DataLayerFactory.create(
+                name=f"rate_of_spread_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=ros_meta,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=ros_layer,
+                avg=12.0,
+            )
+
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        self.assertEqual(
+            len(data),
+            len(AVAILABLE_YEARS),
+            f"Expected {len(AVAILABLE_YEARS)} rows (one for each year).",
+        )
+        row_2024_list = [row for row in data if row["year"] == 2024]
+        self.assertEqual(len(row_2024_list), 1, "Expected exactly one row for 2024")
+        row_2024 = row_2024_list[0]
+
+        self.assertIn(ImpactVariable.FLAME_LENGTH, row_2024)
+        self.assertIn(ImpactVariable.RATE_OF_SPREAD, row_2024)
+
+        biomass_data = row_2024.get(ImpactVariable.LARGE_TREE_BIOMASS)
+        self.assertEqual(biomass_data["value"], 105.0)
+        self.assertEqual(biomass_data["delta"], 12.0)
+        self.assertEqual(biomass_data["baseline"], 45.0)
 
     def test_missing_stand_id(self):
         """
