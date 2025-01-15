@@ -1,6 +1,6 @@
 from unittest import mock
 from urllib.parse import urlencode
-
+import json
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
 from datasets.models import DataLayerType
@@ -13,6 +13,7 @@ from impacts.models import (
     ImpactVariable,
     ImpactVariableAggregation,
     TreatmentPlan,
+    TreatmentPlanNote,
     TreatmentPlanStatus,
     TreatmentPrescriptionAction,
 )
@@ -728,3 +729,200 @@ class StandTreatmentResultsViewTest(APITestCase):
         """
         response = self.client.get(f"{self.url}?stand_id=99999999")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class TxPlanNoteTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.other_user = UserFactory()
+
+        # explicitly creating these objects, so same user is planningarea creator
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        self.treatment_plan = TreatmentPlanFactory.create(
+            created_by=self.user, scenario=self.scenario
+        )
+        self.other_user_treatment_plan = TreatmentPlanFactory.create(
+            created_by_id=self.other_user.pk, scenario=self.scenario
+        )
+
+    def test_create_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = json.dumps(
+            {
+                "content": "Here is a note about a treatment plan.",
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            new_note,
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response_data["content"], "Here is a note about a treatment plan."
+        )
+
+    def test_create_note_without_permission(self):
+        self.client.force_authenticate(self.other_user)
+        new_note = json.dumps(
+            {
+                "content": "Here is a note about a treatment area.",
+                "treatment_plan": self.treatment_plan.pk,
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            new_note,
+            content_type="application/json",
+        )
+        print(f"what is the respone? {response}")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_notes_for_treatment_plan(self):
+        self.client.force_authenticate(self.user)
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am a note"
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am a second note",
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.other_user,
+            content="I am a third note",
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.other_user,
+            content="I am a third note",
+        )
+        # create a note for a different treatment plan
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.other_user_treatment_plan,
+            user=self.other_user,
+            content="I am a new note on a different tx plan",
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_data), 4)
+        for rec in response_data:
+            self.assertIn("can_delete", rec)
+            self.assertEqual(rec["can_delete"], True)
+
+    def test_get_notes_for_unauthorized_user(self):
+        self.client.force_authenticate(self.other_user)
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am a note"
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am a second note",
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_single_note(self):
+        self.client.force_authenticate(self.user)
+        visible_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am just one note",
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": visible_note.pk},
+            ),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["content"], "I am just one note")
+
+    def test_get_single_note_no_perms(self):
+        self.client.force_authenticate(self.other_user)
+        visible_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="A note"
+        )
+
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": visible_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": new_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_nonexistent_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={
+                    "tx_plan_pk": self.treatment_plan.pk,
+                    "pk": (new_note.pk + 1),
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_note_no_permissions(self):
+        self.client.force_authenticate(self.other_user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={
+                    "tx_plan_pk": self.treatment_plan.pk,
+                    "pk": new_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
