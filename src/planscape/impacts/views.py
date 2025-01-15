@@ -294,7 +294,7 @@ class TreatmentPlanViewSet(
     )
     def stand_treatment_results(self, request, pk=None):
         """
-        Endpoint to retrieve treatment results for a specific stand ID.
+        Endpoint to retrieve treatment results for a specific stand.
         """
         serializer = StandQuerySerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
