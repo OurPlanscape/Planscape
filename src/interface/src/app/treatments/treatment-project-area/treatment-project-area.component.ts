@@ -1,7 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
-import { TreatmentStandsProgressBarComponent } from '@styleguide';
 import { SharedModule } from '@shared';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatTabsModule } from '@angular/material/tabs';
@@ -9,8 +8,8 @@ import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
-import { getTreatedStandsTotal } from '../prescriptions';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
+import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 
 @Component({
   selector: 'app-project-area',
@@ -24,7 +23,7 @@ import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.componen
     NgIf,
     ProjectAreaTreatmentsTabComponent,
     SharedModule,
-    TreatmentStandsProgressBarComponent,
+    AcresTreatedComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
@@ -39,8 +38,6 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   opacity = this.mapConfigState.treatedStandsOpacity$;
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
   projectAreaId?: number;
-
-  getTreatedStandsTotal = getTreatedStandsTotal;
 
   changeValue(num: number) {
     this.mapConfigState.setTreatedStandsOpacity(num);
