@@ -43,6 +43,7 @@
       display: inline-block;
       padding-left: 8px;
       padding-right: 8px;
+      margin-top: 4px; // Adjust this value to fine-tune vertical position
     }
 
     .mat-expansion-indicator:hover {
@@ -56,8 +57,6 @@
   padding: 0px;
 
   ::ng-deep {
-
-
     .mat-expansion-panel-header {
       padding: 0 12px 0 12px;
     }
@@ -154,7 +153,6 @@
   line-height: 24px;
 }
 
-
 .rx-sequence-detail {
   @include xs-label();
   display: flex;
@@ -172,7 +170,6 @@
   @include xs-label();
   line-height: 20px;
 }
-
 
 .rx-detail-value {
   @include small-paragraph();
@@ -201,7 +198,6 @@
   ::ng-deep .mat-expansion-panel-body {
     padding-right: 0px;
   }
-
 }
 
 .rx-single-submenu-header {
@@ -211,7 +207,6 @@
   justify-content: left;
   align-items: center;
   gap: 6px;
-  
 }
 
 .rx-sequence-submenu-header {
@@ -222,7 +217,12 @@
   justify-content: flex-start;
   align-items: center;
   gap: 6px;
-  
+
+  ::ng-deep .mat-expansion-indicator {
+    position: absolute;
+    top: -4px;
+    right: 14px;
+  }
 }
 
 .rx-submenu-single-title {
