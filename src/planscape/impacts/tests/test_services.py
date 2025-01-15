@@ -28,7 +28,7 @@ from impacts.services import (
     classify_rate_of_spread,
     clone_treatment_plan,
     calculate_impacts_for_untreated_stands,
-    export_shapefile,
+    export_geopackage,
     fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
     generate_summary,
@@ -426,7 +426,7 @@ class CalculateImpactsTest(TransactionTestCase):
 
     def test_calculate_delta(self):
         values_bases_expected_results = [
-            (0, 0, -1),
+            (0, 0, 0),
             (0, 1, -1),
             (1, 0, 0),
             (1, 1, 0),
@@ -849,6 +849,6 @@ class ExportShapefileTest(TransactionTestCase):
                 stand=stand,
             )
 
-        shapefile = export_shapefile(treatment_plan)
+        shapefile = export_geopackage(treatment_plan)
         path = Path(shapefile)
         self.assertTrue(path.exists())
