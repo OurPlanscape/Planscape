@@ -12,7 +12,6 @@ from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
     ProjectArea,
-    ProjectAreaNote,
     Scenario,
     ScenarioResult,
     SharedLink,
@@ -525,65 +524,6 @@ class ListCreatorSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ("id", "email", "full_name")
-
-
-class ProjectAreaNoteSerializer(serializers.ModelSerializer):
-    class Meta:
-        fields = (
-            "id",
-            "created_at",
-            "updated_at",
-            "content",
-            "project_area",
-            "user_id",
-            "user_name",
-        )
-        model = ProjectAreaNote
-
-
-class ProjectAreaNoteCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = ProjectAreaNote
-        fields = ["content"]
-
-    def create(self, validated_data):
-        project_area_id = self.context["view"].kwargs.get("project_area_id")
-        try:
-            project_area = ProjectArea.objects.get(id=project_area_id)
-        except ProjectArea.DoesNotExist:
-            raise serializers.ValidationError("Invalid project_area_id")
-        user = self.context["request"].user
-        validated_data["project_area"] = project_area
-        validated_data["user"] = user
-        return super().create(validated_data)
-
-
-class ProjectAreaNoteListSerializer(serializers.ModelSerializer):
-    can_delete = serializers.SerializerMethodField()
-
-    def get_can_delete(self, obj):
-        user = self.context["request"].user
-        if user:
-            return (
-                (user == obj.user)
-                or (user == obj.project_area.scenario.planning_area.user)
-                or PlanningAreaPermission.can_remove(
-                    user, obj.project_area.scenario.planning_area
-                )
-            )
-
-    class Meta:
-        fields = (
-            "id",
-            "created_at",
-            "updated_at",
-            "content",
-            "project_area",
-            "user_id",
-            "user_name",
-            "can_delete",
-        )
-        model = ProjectAreaNote
 
 
 class GeoJSONSerializer(serializers.Serializer):
