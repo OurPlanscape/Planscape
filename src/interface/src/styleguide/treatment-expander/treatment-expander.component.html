@@ -42,14 +42,16 @@
   <div class="rx-detail" *ngFor="let seqDetail of sequenceDetails()">
     <mat-icon class="material-symbols-outlined">medication_outline</mat-icon>
     <div class="rx-detail-name">
-      <ng-container *ngFor="let seqDetailPart of splitTextLine(seqDetail)">
-        <span class="highlighted" *ngIf="isMatch(seqDetailPart)"
-          >{{ seqDetailPart }}
-        </span>
-        <span class="regular" *ngIf="!isMatch(seqDetailPart)">{{
-          seqDetailPart
-        }}</span>
-      </ng-container>
+      {{ seqDetail.action }} {{ seqDetail.timeStep }}
+      <!--        TODO search highlight-->
+      <!--      <ng-container *ngFor="let seqDetailPart of splitTextLine(seqDetail)">-->
+      <!--        <span class="highlighted" *ngIf="isMatch(seqDetailPart)"-->
+      <!--          >{{ seqDetailPart }}-->
+      <!--        </span>-->
+      <!--        <span class="regular" *ngIf="!isMatch(seqDetailPart)">{{-->
+      <!--          seqDetailPart-->
+      <!--        }}</span>-->
+      <!--      </ng-container>-->
     </div>
   </div>
 

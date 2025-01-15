@@ -1,13 +1,13 @@
 import {
+  AfterViewInit,
+  ChangeDetectorRef,
   Component,
   EventEmitter,
   Input,
   Output,
   ViewChild,
-  AfterViewInit,
-  ChangeDetectorRef,
 } from '@angular/core';
-import { NgClass, NgFor, NgIf, DecimalPipe } from '@angular/common';
+import { DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import {
   MatExpansionModule,
@@ -20,8 +20,8 @@ import { TreatmentProjectArea } from '@types';
 import {
   PRESCRIPTIONS,
   PrescriptionSingleAction,
-  PrescriptionSequenceAction,
 } from 'src/app/treatments/prescriptions';
+
 /**
  * Project Area Expander component
  * A component to be used in the Project Area panel to show project area details
@@ -98,10 +98,10 @@ export class ProjectAreaExpanderComponent implements AfterViewInit {
         return PRESCRIPTIONS.SINGLE[title];
       }
     } else if (type === 'SEQUENCE') {
-      let title = action as PrescriptionSequenceAction;
-      if (title !== null) {
-        return PRESCRIPTIONS.SEQUENCE[title].name;
-      }
+      //let title = action as PrescriptionSequenceAction;
+      // if (title !== null) {
+      //   return PRESCRIPTIONS.SEQUENCE[title].name;
+      // }
     }
     return '';
   }
@@ -119,10 +119,10 @@ export class ProjectAreaExpanderComponent implements AfterViewInit {
   }
 
   sequenceActions(action: string): string[] {
-    let title = action as PrescriptionSequenceAction;
-    if (title !== null) {
-      return PRESCRIPTIONS.SEQUENCE[title].details;
-    }
+    //let title = action as PrescriptionSequenceAction;
+    // if (title !== null) {
+    //   return PRESCRIPTIONS.SEQUENCE[title].details;
+    // }
     return [];
   }
 

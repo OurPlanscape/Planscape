@@ -2,17 +2,14 @@ import { Component } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
-import { TreatmentSummary, Prescription } from '@types';
+import { Prescription, TreatmentSummary } from '@types';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
 import { map } from 'rxjs';
 import { SearchResultCardComponent } from '../../../styleguide/search-result-card/search-result-card.component';
-import {
-  PRESCRIPTIONS,
-  PrescriptionSingleAction,
-  PrescriptionSequenceAction,
-} from '../prescriptions';
+import { PRESCRIPTIONS, PrescriptionSingleAction } from '../prescriptions';
+
 @Component({
   selector: 'app-project-areas-tab',
   standalone: true,
@@ -47,14 +44,15 @@ export class ProjectAreasTabComponent {
   prescriptionsHaveMatch(prescriptions: Prescription[]) {
     return prescriptions.some((rx) => {
       return (
-        (rx.type === 'SINGLE' &&
-          PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction]
-            .toLowerCase()
-            .includes(this.searchString)) ||
-        (rx.type === 'SEQUENCE' &&
-          PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction].name
-            .toLowerCase()
-            .includes(this.searchString))
+        rx.type === 'SINGLE' &&
+        PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction]
+          .toLowerCase()
+          .includes(this.searchString)
+        //||
+        // (rx.type === 'SEQUENCE' &&
+        //   PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction].name
+        //     .toLowerCase()
+        //     .includes(this.searchString))
       );
     });
   }

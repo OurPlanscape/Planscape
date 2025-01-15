@@ -10,11 +10,6 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { Prescription } from '@types';
 import { combineLatest, map, Observable } from 'rxjs';
-import {
-  PRESCRIPTIONS,
-  PrescriptionSequenceAction,
-  PrescriptionSingleAction,
-} from '../prescriptions';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
@@ -72,27 +67,27 @@ export class ProjectAreaTreatmentsTabComponent {
       //no search string
       this.filteredPrescriptions$ = this.prescriptions$;
     } else {
-      this.filteredPrescriptions$ = this.prescriptions$.pipe(
-        map((prescriptions) =>
-          prescriptions.filter((p) => {
-            return (
-              this.searchString === null ||
-              p.action.toLowerCase().includes(this.searchString) ||
-              (p.type === 'SINGLE' &&
-                PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
-                  .toLowerCase()
-                  .includes(this.searchString)) ||
-              (p.type === 'SEQUENCE' &&
-                PRESCRIPTIONS.SEQUENCE[
-                  p.action as PrescriptionSequenceAction
-                ].details
-                  .join(' ')
-                  .toLowerCase()
-                  .includes(this.searchString))
-            );
-          })
-        )
-      );
+      // this.filteredPrescriptions$ = this.prescriptions$.pipe(
+      //   map((prescriptions) =>
+      //     prescriptions.filter((p) => {
+      //       return (
+      //         this.searchString === null ||
+      //         p.action.toLowerCase().includes(this.searchString) ||
+      //         (p.type === 'SINGLE' &&
+      //           PRESCRIPTIONS.SINGLE[p.action as PrescriptionSingleAction]
+      //             .toLowerCase()
+      //             .includes(this.searchString)) ||
+      //         (p.type === 'SEQUENCE' &&
+      //           PRESCRIPTIONS.SEQUENCE[
+      //             p.action as PrescriptionSequenceAction
+      //           ].details
+      //             .join(' ')
+      //             .toLowerCase()
+      //             .includes(this.searchString))
+      //       );
+      //     })
+      //   )
+      // );
     }
   }
 

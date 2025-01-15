@@ -74,7 +74,8 @@ export class MetricFiltersComponent implements OnInit {
             prescription,
             options,
             PRESCRIPTIONS.SINGLE,
-            PRESCRIPTIONS.SEQUENCE
+            {}
+            //PRESCRIPTIONS.SEQUENCE
           );
         });
       });

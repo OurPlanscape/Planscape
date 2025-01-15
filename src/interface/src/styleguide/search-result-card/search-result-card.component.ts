@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -8,8 +8,8 @@ import { TreatmentProjectArea } from 'src/app/types';
 import {
   PRESCRIPTIONS,
   PrescriptionSingleAction,
-  PrescriptionSequenceAction,
 } from '../../app/treatments/prescriptions';
+
 /**
  * Search Result Card Component
  * A component to be used in the left panel to highlight matching results
@@ -53,9 +53,11 @@ export class SearchResultCardComponent implements OnInit {
     const lines = this.projectArea.prescriptions.map((rx) => {
       if (rx.type === 'SINGLE') {
         return PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
-      } else if (rx.type === 'SEQUENCE')
-        return PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
-          .name;
+      }
+      // else if (rx.type === 'SEQUENCE'){
+      //   return PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
+      //     .name;
+      // }
       else return '';
     });
 

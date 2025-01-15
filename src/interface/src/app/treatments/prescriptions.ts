@@ -86,61 +86,49 @@ const SINGLE_ACTIONS: Record<PrescriptionSingleAction, string> = {
   HEAVY_THINNING_RX_FIRE: 'Heavy Thinning & Prescribed Fire',
   MASTICATION_RX_FIRE: 'Mastication & Prescribed Fire',
 };
+
+interface SequenceDescription {
+  action: string;
+  timeStep: string;
+}
+
 // User facing names for sequence actions
 export const SEQUENCE_ACTIONS: Record<
   PrescriptionSequenceAction,
-  SequenceAttributes
+  SequenceDescription[]
 > = {
-  MODERATE_THINNING_BURN_PLUS_RX_FIRE: {
-    name: 'Sequence 1',
-    details: [
-      'Moderate Thinning & Pile Burn (year 0)',
-      'Prescribed Burn (year 10)',
-    ],
-  },
-  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: {
-    name: 'Sequence 2',
-    details: [
-      'Moderate Thinning & Pile Burn (year 0)',
-      'Moderate Thinning & Pile Burn (year 10)',
-    ],
-  },
-  HEAVY_THINNING_BURN_PLUS_RX_FIRE: {
-    name: 'Sequence 3',
-    details: [
-      'Heavy Thinning & Pile Burn (year 0)',
-      'Prescribed Burn (year 10)',
-    ],
-  },
-  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: {
-    name: 'Sequence 4',
-    details: [
-      'Heavy Thinning & Pile Burn (year 0)',
-      'Heavy Thinning & Pile Burn (year 10)',
-    ],
-  },
-  RX_FIRE_PLUS_RX_FIRE: {
-    name: 'Sequence 5',
-    details: ['Prescribed Fire (year 0)', 'Prescribed Fire (year 10)'],
-  },
-  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: {
-    name: 'Sequence 6',
-    details: [
-      'Moderate Mastication (year 0)',
-      'Moderate Mastication (year 10)',
-    ],
-  },
-  HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: {
-    name: 'Sequence 7',
-    details: [
-      'Heavy Thinning & Biomass Removal (year 0)',
-      'Prescribed Fire (year 10)',
-    ],
-  },
-  MODERATE_MASTICATION_PLUS_RX_FIRE: {
-    name: 'Sequence 8',
-    details: ['Moderate Mastication (year 0)', 'Prescribed Fire (year 10)'],
-  },
+  MODERATE_THINNING_BURN_PLUS_RX_FIRE: [
+    { action: 'Moderate Thinning & Pile Burn', timeStep: '(Year 0)' },
+    { action: 'Prescribed Burn', timeStep: '(Year 10)' },
+  ],
+  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: [
+    { action: 'Moderate Thinning & Pile Burn', timeStep: '(Year 0)' },
+    { action: 'Moderate Thinning & Pile Burn', timeStep: '(Year 10)' },
+  ],
+  HEAVY_THINNING_BURN_PLUS_RX_FIRE: [
+    { action: 'Heavy Thinning & Pile Burn', timeStep: '(Year 0)' },
+    { action: 'Prescribed Burn', timeStep: '(Year 10)' },
+  ],
+  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: [
+    { action: 'Heavy Thinning & Pile Burn', timeStep: '(Year 0)' },
+    { action: 'Heavy Thinning & Pile Burn', timeStep: '(Year 10)' },
+  ],
+  RX_FIRE_PLUS_RX_FIRE: [
+    { action: 'Prescribed Fire', timeStep: '(Year 0)' },
+    { action: 'Prescribed Fire', timeStep: '(Year 10)' },
+  ],
+  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: [
+    { action: 'Moderate Mastication', timeStep: '(Year 0)' },
+    { action: 'Moderate Mastication', timeStep: '(Year 10)' },
+  ],
+  HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: [
+    { action: 'Heavy Thinning & Biomass Removal', timeStep: '(Year 0)' },
+    { action: 'Prescribed Fire', timeStep: '(Year 10)' },
+  ],
+  MODERATE_MASTICATION_PLUS_RX_FIRE: [
+    { action: 'Moderate Mastication', timeStep: '(Year 0)' },
+    { action: 'Prescribed Fire', timeStep: '(Year 10)' },
+  ],
 };
 
 // User facing names for all prescriptions
@@ -169,7 +157,8 @@ export function nameForTypeAndAction(
   } else if (type === 'SEQUENCE') {
     let title = action as PrescriptionSequenceAction;
     if (title !== null) {
-      return PRESCRIPTIONS.SEQUENCE[title].name;
+      return 'FIX ME';
+      // return PRESCRIPTIONS.SEQUENCE[title].name;
     }
   }
   return null;
@@ -177,18 +166,14 @@ export function nameForTypeAndAction(
 
 export function nameForAction(action: string): string {
   return (
-    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
-    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].name ||
-    ''
+    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] || 'FIX ME'
+    // PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].name ||
   );
 }
 
 export function descriptionForAction(action: string): string {
   return (
-    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
-    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].details.join(
-      ', '
-    ) ||
-    ''
+    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] || 'FIX ME'
+    //PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].details.join(
   );
 }

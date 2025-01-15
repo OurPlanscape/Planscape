@@ -18,8 +18,8 @@
       <mat-expansion-panel-header class="legend-expander-heading">
         <div class="expander-heading-content">
           <mat-icon class="material-symbols-outlined expander-heading-icon"
-            >medication_outline</mat-icon
-          >
+            >medication_outline
+          </mat-icon>
           Single Treatment
         </div>
       </mat-expansion-panel-header>
@@ -39,8 +39,9 @@
       <mat-expansion-panel-header class="legend-expander-heading">
         <div class="expander-heading-content">
           <mat-icon class="material-symbols-outlined expander-heading-icon"
-            >repeat</mat-icon
-          >Treatment Sequencing
+            >repeat
+          </mat-icon>
+          Treatment Sequencing
         </div>
       </mat-expansion-panel-header>
       <div class="legend-section">
@@ -48,7 +49,11 @@
           class="legend-row"
           *ngFor="let seq of sequencePrescriptions | keyvalue: originalOrder">
           <sg-sequence-icon [action]="seq.key"></sg-sequence-icon>
-          <div class="legend-text">{{ seq.value.name }}</div>
+          <div class="legend-text">
+            <div *ngFor="let details of seq.value">
+              {{ details.action }} <span>{{ details.timeStep }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </mat-expansion-panel>

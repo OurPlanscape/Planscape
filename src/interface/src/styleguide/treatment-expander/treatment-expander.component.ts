@@ -86,10 +86,11 @@ export class TreatmentExpanderComponent {
       return this.title;
     } else if (this.treatmentType === 'SINGLE') {
       return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
-    } else if (this.treatmentType === 'SEQUENCE') {
-      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .name;
     }
+    // else if (this.treatmentType === 'SEQUENCE') {
+    //   return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+    //     .name;
+    // }
     return 'No Treatment';
   }
 
@@ -109,10 +110,9 @@ export class TreatmentExpanderComponent {
     return part.toLowerCase() === this.searchString.toLowerCase();
   }
 
-  sequenceDetails(): string[] {
+  sequenceDetails() {
     if (this.treatmentType === 'SEQUENCE') {
-      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .details;
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
     }
     return [];
   }

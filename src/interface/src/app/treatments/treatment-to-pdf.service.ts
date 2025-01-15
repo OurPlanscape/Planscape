@@ -2,15 +2,13 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
-  PRESCRIPTIONS,
-  PrescriptionSequenceAction,
-  nameForTypeAndAction,
   nameForAction,
+  nameForTypeAndAction,
   PrescriptionAction,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
-import { TreatmentSummary, Prescription, TreatmentProjectArea } from '@types';
+import { Prescription, TreatmentProjectArea, TreatmentSummary } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
 
 import { TreatmentsState } from './treatments.state';
@@ -211,14 +209,14 @@ export class TreatmentToPDFService {
         const actionName = nameForTypeAndAction(rx.type, rx.action);
         rxInfo += actionName + '\n';
 
-        if (rx.type === 'SEQUENCE') {
-          const seqActions =
-            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
-              .details;
-          seqActions.forEach((aeqAction) => {
-            rxInfo += '\t' + aeqAction + '\n';
-          });
-        }
+        // if (rx.type === 'SEQUENCE') {
+        //   const seqActions =
+        //     PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
+        //       .details;
+        //   seqActions.forEach((aeqAction) => {
+        //     rxInfo += '\t' + aeqAction + '\n';
+        //   });
+        // }
       });
       const treatedStands = `Treated stands: ${this.treatedStandCount(p)}/${p.total_stand_count}`;
       const projectInfo = `${p.project_area_name} \n ${treatedStands} \n\n ${rxInfo}`;
