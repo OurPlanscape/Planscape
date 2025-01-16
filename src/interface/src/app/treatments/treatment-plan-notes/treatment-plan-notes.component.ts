@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
-import { TreatmentPlanAboutTabComponent } from '../treatment-plan-about-tab/treatment-plan-about-tab.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { NotesSidebarComponent, NotesSidebarState } from '@styleguide';
@@ -14,7 +13,6 @@ import { BehaviorSubject, take, distinctUntilChanged } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
-
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-plan-notes',
@@ -23,7 +21,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     AsyncPipe,
     MatTabsModule,
     NotesSidebarComponent,
-    TreatmentPlanAboutTabComponent,
     ProjectAreasTabComponent,
     MapBaseLayerComponent,
   ],
@@ -37,7 +34,7 @@ export class TreatmentPlanNotesComponent implements OnInit {
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private treatmentsState: TreatmentsState
-  ) { }
+  ) {}
 
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   treatmentPlanId?: number;
@@ -46,7 +43,6 @@ export class TreatmentPlanNotesComponent implements OnInit {
   notes$ = new BehaviorSubject<Note[]>([]);
   notesSidebarState: NotesSidebarState = 'READY';
 
-
   ngOnInit(): void {
     this.treatmentPlan$
       .pipe(untilDestroyed(this), distinctUntilChanged())
@@ -54,9 +50,7 @@ export class TreatmentPlanNotesComponent implements OnInit {
         this.treatmentPlanId = treatmentPlan?.id;
         this.loadNotes();
       });
-
   }
-
 
   //notes handling functions
   addNote(comment: string) {
@@ -121,5 +115,4 @@ export class TreatmentPlanNotesComponent implements OnInit {
         });
     }
   }
-
 }
