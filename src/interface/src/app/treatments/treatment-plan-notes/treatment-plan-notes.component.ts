@@ -1,8 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
-import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
-import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { NotesSidebarComponent, NotesSidebarState } from '@styleguide';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -17,13 +15,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 @Component({
   selector: 'app-treatment-plan-notes',
   standalone: true,
-  imports: [
-    AsyncPipe,
-    MatTabsModule,
-    NotesSidebarComponent,
-    ProjectAreasTabComponent,
-    MapBaseLayerComponent,
-  ],
+  imports: [AsyncPipe, MatTabsModule, NotesSidebarComponent],
   providers: [TreatmentPlanNotesService],
   templateUrl: './treatment-plan-notes.component.html',
   styleUrl: './treatment-plan-notes.component.scss',
@@ -36,27 +28,25 @@ export class TreatmentPlanNotesComponent implements OnInit {
     private treatmentsState: TreatmentsState
   ) {}
 
-  treatmentPlan$ = this.treatmentsState.treatmentPlan$;
-  treatmentPlanId?: number;
   // notes data
-  notesModel = 'project_area';
+  treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   notes$ = new BehaviorSubject<Note[]>([]);
   notesSidebarState: NotesSidebarState = 'READY';
 
   ngOnInit(): void {
     this.treatmentPlan$
       .pipe(untilDestroyed(this), distinctUntilChanged())
-      .subscribe((treatmentPlan) => {
-        this.treatmentPlanId = treatmentPlan?.id;
+      .subscribe(() => {
         this.loadNotes();
       });
   }
 
   //notes handling functions
   addNote(comment: string) {
-    if (this.treatmentPlanId) {
-      this.notesSidebarState = 'SAVING';
-      this.notesService.addNote(this.treatmentPlanId, comment).subscribe({
+    this.notesSidebarState = 'SAVING';
+    this.notesService
+      .addNote(this.treatmentsState.getTreatmentPlanId(), comment)
+      .subscribe({
         next: () => {
           this.loadNotes();
         },
@@ -71,7 +61,6 @@ export class TreatmentPlanNotesComponent implements OnInit {
           this.notesSidebarState = 'READY';
         },
       });
-    }
   }
 
   handleNoteDelete(note: Note) {
@@ -80,9 +69,9 @@ export class TreatmentPlanNotesComponent implements OnInit {
       .afterClosed()
       .pipe(take(1))
       .subscribe((confirmed) => {
-        if (confirmed && this.treatmentPlanId) {
+        if (confirmed) {
           this.notesService
-            .deleteNote(this.treatmentPlanId, note.id)
+            .deleteNote(this.treatmentsState.getTreatmentPlanId(), note.id)
             .subscribe({
               next: () => {
                 this.snackbar.open(
@@ -107,12 +96,10 @@ export class TreatmentPlanNotesComponent implements OnInit {
   }
 
   loadNotes() {
-    if (this.treatmentPlanId) {
-      this.notesService
-        .getNotes(this.treatmentPlanId)
-        .subscribe((notes: Note[]) => {
-          this.notes$.next(notes);
-        });
-    }
+    this.notesService
+      .getNotes(this.treatmentsState.getTreatmentPlanId())
+      .subscribe((notes: Note[]) => {
+        this.notes$.next(notes);
+      });
   }
 }
