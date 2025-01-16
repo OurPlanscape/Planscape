@@ -91,6 +91,14 @@ export class DirectImpactsStateService {
 
   setFilteredTreatmentTypes(selection: PrescriptionAction[]) {
     this._filteredTreatmentTypes$.next(selection);
+    const stand = this._activeStand$.value;
+    // deselect stand if the stand action doesn't match any of the selected actions
+    if (
+      selection.length > 0 &&
+      !selection.includes(stand?.properties['action'])
+    ) {
+      this.resetActiveStand();
+    }
   }
 
   setActiveMetric(mapMetric: ImpactsMetric) {
