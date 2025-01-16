@@ -7,7 +7,7 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 echo "Script directory: $SCRIPT_DIR"
 
-# Set relative paths based on the script's location, 3 levels up to root directory
+# Set relative paths based on the script's location, 3 levels up to root
 PLANSCAPE_CONFIG="$SCRIPT_DIR/../../../.planconfig"
 CSV_FILE="$SCRIPT_DIR/layers.csv"
 
