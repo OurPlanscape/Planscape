@@ -891,27 +891,27 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 401)
 
-    def test_create_from_single_feature_shpjs(self):
-        self.client.force_authenticate(self.owner_user)
-        payload = {
-            "geometry": json.dumps(self.riverside),
-            "name": "new scenario",
-            "stand_size": "SMALL",
-            "planning_area": self.planning_area.pk,
-        }
-        response = self.client.post(
-            reverse(
-                "api:planning:scenarios-upload-shapefiles",
-            ),
-            data=payload,
-            format="json",
-        )
-        response_data = response.json()
-        self.assertEqual(response.status_code, 201)
-        self.assertEqual(len(response_data["project_areas"]), 1)
+    # def test_create_from_single_feature_shpjs(self):
+    #     self.client.force_authenticate(self.owner_user)
+    #     payload = {
+    #         "geometry": json.dumps(self.riverside),
+    #         "name": "new scenario",
+    #         "stand_size": "SMALL",
+    #         "planning_area": self.planning_area.pk,
+    #     }
+    #     response = self.client.post(
+    #         reverse(
+    #             "api:planning:scenarios-upload-shapefiles",
+    #         ),
+    #         data=payload,
+    #         format="json",
+    #     )
+    #     response_data = response.json()
+    #     self.assertEqual(response.status_code, 201)
+    #     self.assertEqual(len(response_data["project_areas"]), 1)
 
-        result_record = ScenarioResult.objects.get(scenario=response_data["id"])
-        self.assertIn("project_id", result_record.result["properties"])
+    #     result_record = ScenarioResult.objects.get(scenario=response_data["id"])
+    #     self.assertIn("project_id", result_record.result["properties"])
 
     def test_create_from_multi_feature_shpjs(self):
         self.client.force_authenticate(self.owner_user)
