@@ -1,3 +1,4 @@
+import enum
 import json
 import logging
 import math
@@ -19,6 +20,7 @@ from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
 from stands.models import Stand, StandSizeChoices, area_from_size
+from utils import geometry
 from utils.geometry import to_multi
 
 from planning.geometry import coerce_geojson, coerce_geometry
@@ -139,11 +141,12 @@ def union_geojson(uploaded_geojson) -> GEOSGeometry:
 
 
 def feature_to_project_area(
-    user: User,
     scenario: Scenario,
     geometry_dict: Dict[str, Any],
     idx: int = 1,
 ):
+    user = scenario.user
+    stand_size = scenario.get_stand_size()
     try:
         area_name = f"Project Area {idx}"
         logger.info("creating project area %s %s", area_name, geometry_dict)
@@ -152,7 +155,7 @@ def feature_to_project_area(
 
         stand_count = Stand.objects.within_polygon(
             geometry,
-            scenario.get_stand_size(),
+            stand_size,
         ).count()
 
         project_area = {
@@ -160,9 +163,11 @@ def feature_to_project_area(
             "name": area_name,
             "created_by": user,
             "scenario": scenario,
-            "data": {"treatment_rank": idx, "stand_count": stand_count},
         }
+        data = {"treatment_rank": idx, "stand_count": stand_count}
         proj_area_obj = ProjectArea.objects.create(**project_area)
+        proj_area_obj.data = {**data, "project_id": proj_area_obj.pk}
+        proj_area_obj.save()
 
         action.send(
             user,
@@ -181,7 +186,7 @@ def feature_to_project_area(
 @transaction.atomic()
 def create_scenario_from_upload(validated_data, user) -> Scenario:
     planning_area = PlanningArea.objects.get(pk=validated_data["planning_area"])
-    uploaded_geom = validated_data["geometry"]
+    feature_collection = validated_data["geometry"]
 
     scenario = Scenario.objects.create(
         name=validated_data["name"],
@@ -199,37 +204,31 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
             target=scenario.planning_area,
         )
     )
-    # Create project areas from features...
-    # handle just one polygon
-    if "type" in uploaded_geom and uploaded_geom["type"] in ["Polygon", "MultiPolygon"]:
-        new_feature = feature_to_project_area(
-            scenario.user,
-            scenario,
-            uploaded_geom,
-            1,
+    project_areas = list(
+        map(
+            lambda i: feature_to_project_area(
+                scenario=scenario,
+                idx=i[0],
+                geometry_dict=i[1].get("geometry", {}),
+            ),
+            enumerate(feature_collection.get("features"), 1),
         )
-        logger.info(f"Processing feature {new_feature}")
-        uploaded_geom.setdefault("properties", {})
-        uploaded_geom["properties"]["project_id"] = new_feature.pk
-        uploaded_geom["properties"]["treatment_rank"] = 1
-
-    # handle a FeatureCollection
-    if "features" in uploaded_geom:
-        for idx, feature in enumerate(uploaded_geom["features"], 1):
-            logger.info(f"Processing feature {feature}")
-            new_feature = feature_to_project_area(
-                scenario.user,
-                scenario,
-                feature["geometry"],
-                idx,
-            )
-            feature.setdefault("properties", {})
-            feature["properties"]["project_id"] = new_feature.pk
-            feature["properties"]["treatment_rank"] = idx
-
-    # Store geometry with added properties into ScenarioResult.result
+    )
+    result = {
+        "type": "FeatureCollection",
+        "features": [
+            {
+                "type": "feature",
+                "geometry": json.loads(pa.geometry.json),
+                "properties": pa.data,
+            }
+            for pa in project_areas
+        ],
+    }
     ScenarioResult.objects.create(
-        scenario=scenario, result=uploaded_geom, status="SUCCESS"
+        scenario=scenario,
+        result=result,
+        status="SUCCESS",
     )
 
     return scenario
