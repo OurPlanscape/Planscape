@@ -128,7 +128,7 @@ export class MapProjectAreasComponent implements OnInit {
       'match',
       ['get', 'rank'],
     ];
-    for (let i = 1; i < 11; i++) {
+    for (let i = 1; i <= this.treatmentsState.projectAreaCount(); i++) {
       matchExpression.push(i.toString(), getColorForProjectPosition(i));
     }
     matchExpression.push(defaultColor);
