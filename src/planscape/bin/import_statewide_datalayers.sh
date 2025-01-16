@@ -3,22 +3,17 @@
 # Stop the script if any command fails
 set -e
 
-# Log the current working directory
-echo "Current directory: $(pwd)"
+# Get the directory of the current script
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+echo "Script directory: $SCRIPT_DIR"
 
-# Absolute path to .planconfig
-export PLANSCAPE_CONFIG="/usr/src/app/.planconfig"
+# Set relative paths based on the script's location, 3 levels up to root directory
+PLANSCAPE_CONFIG="$SCRIPT_DIR/../../../.planconfig"
+CSV_FILE="$SCRIPT_DIR/layers.csv"
+
+# Log the paths being used
 echo "Using PLANSCAPE_CONFIG: $PLANSCAPE_CONFIG"
-
-# Absolute path to CSV file
-CSV_FILE="/usr/src/app/src/planscape/bin/layers.csv"
 echo "Using CSV_FILE: $CSV_FILE"
-
-# Check if .planconfig exists
-if [[ ! -f "$PLANSCAPE_CONFIG" ]]; then
-  echo "Error: .planconfig file not found at $PLANSCAPE_CONFIG"
-  exit 1
-fi
 
 # Check if layers.csv exists
 if [[ ! -f "$CSV_FILE" ]]; then
