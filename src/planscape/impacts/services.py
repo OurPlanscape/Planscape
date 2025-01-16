@@ -587,20 +587,22 @@ def calculate_project_area_deltas(
     - s1_C = 100 tons (avg of cells w/i stand)
     - s2_C = 200 tons
     - s3_C = 300 tons
+    Total = 600 tons
 
     Post-tx:
     - s1_C = 50 tons
     - s2_C = 200 tons
     - s3_C = 300 tons
+    Total = 550 tons
 
     Per-stand deltas:
-    - s1 = -50%
-    - s2 = 0%
-    - s3 =0%
+    - s1 (50-100)/100 = -50%
+    - s2 (200-200)/200 = 0%
+    - s3 (300-300)/300 = 0%
 
     PA delta:
-    (600-550)/600 = -8.3%
-    (sum of all baselines - sum of actions) / sum of all baselines
+    (550-600)/600 = -8.3%
+    (sum of actions - sum of all baselines) / sum of all baselines
     """
     # untreated stands just copy the values from baselines
     results = []
@@ -630,7 +632,7 @@ def calculate_project_area_deltas(
             for _stand_id, stand_metric in action_dict.items()
         ]
     )
-    delta = (baseline_sum - action_sum) / (baseline_sum + 1)
+    delta = calculate_delta(action_sum, baseline_sum)
     results.append(
         {
             "project_area_id": project_area.id,
