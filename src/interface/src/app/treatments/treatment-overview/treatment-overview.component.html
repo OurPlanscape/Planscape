@@ -6,9 +6,6 @@
   [currentMode$]="nameFieldStatus$"
   [errorMessage]="errorSavingName"
   (textValueUpdated)="handleNameChange($event)"></sg-debounce-input>
-<sg-treatment-progress
-  [totalStands]="(totalStands$ | async) ?? 0"
-  [treatedStands]="
-    (treatedStands$ | async)?.length ?? 0
-  "></sg-treatment-progress>
+
+<app-acres-treated></app-acres-treated>
 <app-treatment-plan-tabs></app-treatment-plan-tabs>

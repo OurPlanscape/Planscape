@@ -1,6 +1,8 @@
+<sg-overlay-loader *ngIf="loading" [offsetTop]="48"></sg-overlay-loader>
+
 <app-nav-bar
-  [breadcrumbs]="(breadcrumbs$ | async) || []"
-  [area]="'TREATMENTS'"></app-nav-bar>
+  [navState]="(navState$ | async) || null"
+  [area]="'DIRECT_IMPACTS'"></app-nav-bar>
 
 <div *ngIf="treatmentPlan$ | async; let treatmentPlan" class="treatment-plan">
   <div class="item">
@@ -21,8 +23,15 @@
       (change)="saveShowTreatmentPrescription($event)"
       >View treatment prescription
     </mat-slide-toggle>
-    <button sg-button variant="ghost" icon="download" [outlined]="true">
-      Download Shapefile
+    <button
+      sg-button
+      variant="ghost"
+      icon="download"
+      [outlined]="true"
+      [disabled]="downloadingShapefile"
+      [loading]="downloadingShapefile"
+      (click)="download()">
+      Download
     </button>
   </div>
 
@@ -93,9 +102,10 @@
           "></app-direct-impacts-synced-maps>
         <app-treatment-map
           [showProjectAreaTooltips]="false"
-          *ngIf="showTreatmentPrescription$ | async"></app-treatment-map>
+          *ngIf="showTreatmentPrescription$ | async">
+        </app-treatment-map>
         <app-treatment-legend
-          *ngIf="showTreatmentPrescription$ | async"></app-treatment-legend>
+          *ngIf="showTreatmentLegend$ | async"></app-treatment-legend>
       </sg-panel>
       <sg-panel
         class="legend-panel"

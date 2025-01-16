@@ -91,10 +91,10 @@ export type YearInterval = 'zero' | 'five' | 'ten' | 'fifteen' | 'twenty';
 
 export const YEAR_INTERVAL_LABELS: Record<YearInterval, string> = {
   zero: 'Baseline',
-  five: '5 Years',
-  ten: '10 Years',
-  fifteen: '15 Years',
-  twenty: '20 Years',
+  five: 'Year 5',
+  ten: 'Year 10',
+  fifteen: 'Year 15',
+  twenty: 'Year 20',
 };
 
 export const YEAR_INTERVAL_PROPERTY: Record<YearInterval, string> = {
@@ -104,3 +104,10 @@ export const YEAR_INTERVAL_PROPERTY: Record<YearInterval, string> = {
   fifteen: 'delta_15',
   twenty: 'delta_20',
 };
+
+export interface MetricResult {
+  baseline: number;
+  category: string;
+  delta: number;
+  value: number;
+}

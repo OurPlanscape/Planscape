@@ -5,6 +5,7 @@ import { MockProvider } from 'ng-mocks';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { BehaviorSubject } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 describe('ExpandedDirectImpactMapComponent', () => {
   let component: ExpandedDirectImpactMapComponent;
@@ -17,6 +18,7 @@ describe('ExpandedDirectImpactMapComponent', () => {
         MockProvider(DirectImpactsStateService, {
           activeStand$: new BehaviorSubject(null),
         }),
+        MockProvider(MapConfigState),
         { provide: MatDialogRef, useValue: {} },
       ],
     }).compileComponents();

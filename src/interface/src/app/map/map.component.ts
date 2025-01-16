@@ -56,7 +56,7 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { AreaCreationAction, LEGEND } from './map.constants';
-import { Breadcrumb, SNACK_ERROR_CONFIG } from '@shared';
+import { NavState, SNACK_ERROR_CONFIG } from '@shared';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   addGeoJSONToMap,
@@ -141,7 +141,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   ]).pipe(map(([selectedMap]) => !!selectedMap?.config.dataLayerConfig.layer));
 
   showConfirmAreaButton$ = new BehaviorSubject(false);
-  breadcrumbs$ = new BehaviorSubject<Breadcrumb[]>([{ name: 'New Plan' }]);
+  navState$ = new BehaviorSubject<NavState>({
+    currentRecordName: 'New Plan',
+    currentView: 'Explore',
+    backLink: '/',
+  });
 
   totalArea$ = this.showConfirmAreaButton$.asObservable().pipe(
     switchMap((show) => {
@@ -292,9 +296,11 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           }
 
           this.drawPlanningArea(plan);
-          this.breadcrumbs$.next([
-            { name: plan.name, path: getPlanPath(plan.id) },
-          ]);
+          this.navState$.next({
+            currentRecordName: plan.name,
+            backLink: getPlanPath(plan.id),
+            currentView: '',
+          });
         },
         error: (error) => {
           // this.planNotFound = true;

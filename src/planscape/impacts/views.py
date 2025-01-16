@@ -1,16 +1,17 @@
 import logging
-
-from drf_spectacular.utils import extend_schema, extend_schema_view
-from impacts.filters import TreatmentPlanFilterSet
+from django_filters.rest_framework import DjangoFilterBackend
+from django.http import FileResponse
+from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiTypes
+from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
 from impacts.models import (
-    ImpactVariable,
-    ProjectAreaTreatmentResult,
     TreatmentPlan,
+    TreatmentPlanNote,
     TreatmentPlanStatus,
     TreatmentPrescription,
-    TreatmentResult,
 )
+from rest_framework.response import Response
 from impacts.permissions import (
+    TreatmentPlanNoteViewPermission,
     TreatmentPlanViewPermission,
     TreatmentPrescriptionViewPermission,
 )
@@ -21,6 +22,9 @@ from impacts.serializers import (
     SummarySerializer,
     TreatmentPlanListSerializer,
     TreatmentPlanSerializer,
+    TreatmentPlanNoteSerializer,
+    TreatmentPlanNoteCreateSerializer,
+    TreatmentPlanNoteListSerializer,
     TreatmentPlanUpdateSerializer,
     TreatmentPrescriptionBatchDeleteResponseSerializer,
     TreatmentPrescriptionBatchDeleteSerializer,
@@ -32,6 +36,7 @@ from impacts.serializers import (
 from impacts.services import (
     clone_treatment_plan,
     create_treatment_plan,
+    export_geopackage,
     generate_impact_results_data_to_plot,
     generate_summary,
     get_treatment_results_table_data,
@@ -41,7 +46,7 @@ from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from rest_framework import mixins, response, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.views import Response
+from rest_framework.response import Response
 
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -163,6 +168,22 @@ class TreatmentPlanViewSet(
         )
 
     @extend_schema(
+        description="exports a treatment plan in a zipped shapefile format.",
+        responses={
+            200: OpenApiTypes.BINARY,
+            404: BaseErrorMessageSerializer,
+        },
+    )
+    @action(detail=True, methods=["get"], filterset_class=None)
+    def download(self, request, pk=None):
+        treatment_plan = self.get_object()
+        output_path = export_geopackage(treatment_plan)
+        return FileResponse(
+            open(output_path, "rb"),
+            as_attachment=True,
+        )
+
+    @extend_schema(
         description="Runs a Treatment Plan.",
         responses={
             201: TreatmentPlanSerializer,
@@ -264,7 +285,11 @@ class TreatmentPlanViewSet(
         return Response(data=data_to_plot, status=status.HTTP_200_OK)
 
     @extend_schema(
-        description="Retrieve treatment result information for a specific stand. id(path) is the treatment plan id, and stand_id(query) is the stand id.",
+        description=(
+            "Retrieve treatment results for a specific stand (via `stand_id`) "
+            "within the specified Treatment Plan (via path parameter `id`)."
+        ),
+        parameters=[StandQuerySerializer],
         responses={
             200: TreatmentResultSerializer,
             404: BaseErrorMessageSerializer,
@@ -391,3 +416,30 @@ class TreatmentPrescriptionViewSet(
         ).delete()
 
         return response.Response({"result": delete_result}, status=status.HTTP_200_OK)
+
+
+class TreatmentPlanNoteViewSet(viewsets.ModelViewSet):
+    queryset = TreatmentPlanNote.objects.all()
+    serializer_class = TreatmentPlanNoteSerializer
+    permission_classes = [TreatmentPlanNoteViewPermission]
+    serializer_classes = {
+        "list": TreatmentPlanNoteListSerializer,
+        "create": TreatmentPlanNoteCreateSerializer,
+    }
+    filterset_class = TreatmentPlanNoteFilterSet
+    filter_backends = [DjangoFilterBackend]
+
+    def get_serializer_class(self):
+        return (
+            self.serializer_classes.get(self.action, self.serializer_class)
+            or self.serializer_class
+        )
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        tx_plan_pk = self.kwargs.get("tx_plan_pk")
+        if tx_plan_pk is None:
+            raise ValueError("treatment plan id is required")
+        return self.queryset.filter(treatment_plan_id=tx_plan_pk)

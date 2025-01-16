@@ -5,7 +5,10 @@ export const MOCK_SUMMARY: TreatmentSummary = {
     {
       project_area_id: 1,
       project_area_name: 'Area 1',
+      total_area_acres: 100,
       total_stand_count: 10,
+      total_treated_area_acres: 12,
+      total_treated_stand_count: 1120,
       prescriptions: [
         {
           action: 'cut',
@@ -36,6 +39,10 @@ export const MOCK_SUMMARY: TreatmentSummary = {
   scenario_name: 'Test Scenario',
   treatment_plan_id: 3,
   treatment_plan_name: 'Test Treatment Plan',
+  total_area_acres: 100,
+  total_stand_count: 10,
+  total_treated_area_acres: 12,
+  total_treated_stand_count: 1120,
 };
 
 export const MOCK_TREATMENT_PLAN: TreatmentPlan = {

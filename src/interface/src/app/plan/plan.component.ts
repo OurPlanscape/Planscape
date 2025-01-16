@@ -27,7 +27,7 @@ import { getPlanPath } from './plan-helpers';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
-import { Breadcrumb, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { NavState, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
@@ -90,7 +90,8 @@ export class PlanComponent implements OnInit {
       return state.currentScenarioName;
     })
   );
-  breadcrumbs$ = combineLatest([
+
+  navState$: Observable<NavState> = combineLatest([
     this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
     this.scenarioName$,
   ]).pipe(
@@ -98,22 +99,25 @@ export class PlanComponent implements OnInit {
       const path = this.getPathFromSnapshot();
       const scenarioId = this.route.children[0]?.snapshot.params['id'];
 
-      const crumbs: Breadcrumb[] = [
-        {
-          name: plan.name,
-          path: path === 'config' ? getPlanPath(plan.id) : undefined,
-        },
-      ];
-
+      const navStateObject: NavState = {
+        currentView: '',
+        currentRecordName: '',
+        backLink: '/home',
+      };
       if (path === 'config' && !scenarioId && !scenarioName) {
-        crumbs.push({ name: 'New Scenario' });
+        navStateObject.currentView = 'Scenario';
+        navStateObject.currentRecordName = 'New Scenario';
+        navStateObject.backLink = getPlanPath(plan.id);
+      } else if (scenarioName) {
+        navStateObject.currentView = 'Scenario';
+        navStateObject.currentRecordName = scenarioName;
+        navStateObject.backLink = getPlanPath(plan.id);
+      } else if (path !== 'config' && plan.name && !scenarioName) {
+        navStateObject.currentView = 'Planning Area';
+        navStateObject.currentRecordName = plan.name;
       }
 
-      if (scenarioName) {
-        crumbs.push({ name: scenarioName });
-      }
-
-      return crumbs;
+      return navStateObject;
     })
   );
 

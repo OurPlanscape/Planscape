@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Tuple, Type, Union
+from typing import List, Optional, Tuple
 
 from core.models import (
     AliveObjectsManager,
@@ -13,7 +13,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
 from datasets.models import DataLayer, DataLayerType
-from planning.models import ProjectArea, Scenario
+from planning.models import ProjectArea, Scenario, PlanningArea
 from stands.models import Stand
 from typing_extensions import Self
 
@@ -76,6 +76,38 @@ class TreatmentPlan(
     class Meta(TypedModelMeta):
         verbose_name = "Treatment Plan"
         verbose_name_plural = "Treatment Plans"
+
+
+class TreatmentPlanNote(CreatedAtMixin, UpdatedAtMixin, models.Model):
+    id: int
+    treatment_plan_id: int
+    treatment_plan = models.ForeignKey(
+        TreatmentPlan,
+        related_name="treatment_plan_notes",
+        on_delete=models.CASCADE,
+    )
+    user_id: int
+    user = models.ForeignKey(
+        User,
+        related_name="treatment_plan_notes",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
+    content = models.TextField(null=True)
+
+    def user_name(self) -> str:
+        return self.user.get_full_name()
+
+    class Meta(TypedModelMeta):
+        indexes = [
+            models.Index(
+                fields=[
+                    "user",
+                ]
+            )
+        ]
+        ordering = ["user", "-created_at"]
 
 
 class TreatmentPrescriptionType(models.TextChoices):
@@ -370,6 +402,17 @@ class ImpactVariable(models.TextChoices):
             ],
         }
         return list([x for x in AGGREGATIONS[impact_variable]])
+
+    @classmethod
+    def get_baseline_only_impact_variables(cls) -> List:
+        return [cls.FLAME_LENGTH, cls.RATE_OF_SPREAD]
+
+    @classmethod
+    def get_measurable_impact_variables(cls) -> List:
+        variables = list(cls)
+        for baseline_variable in cls.get_baseline_only_impact_variables():
+            variables.remove(baseline_variable)
+        return variables
 
     @classmethod
     def get_datalayer(

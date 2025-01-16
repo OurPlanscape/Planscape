@@ -1,4 +1,7 @@
-<mat-icon *ngIf="icon" [ngClass]="{ 'material-symbols-outlined': outlined }">{{
-  icon
-}}</mat-icon>
+<mat-icon
+  *ngIf="icon && !loading"
+  [ngClass]="{ 'material-symbols-outlined': outlined }"
+  >{{ icon }}</mat-icon
+>
+<mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
 <ng-content></ng-content>
