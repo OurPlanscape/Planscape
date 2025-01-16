@@ -1,9 +1,4 @@
-<sg-treatment-progress
-  *ngIf="activeProjectArea$ | async; let activeProjectArea"
-  [totalStands]="activeProjectArea.total_stand_count"
-  [treatedStands]="
-    getTreatedStandsTotal(activeProjectArea.prescriptions)
-  "></sg-treatment-progress>
+<app-acres-treated></app-acres-treated>
 <mat-tab-group
   class="summary-tab-group"
   mat-align-tabs="start"
@@ -13,15 +8,5 @@
   </mat-tab>
   <mat-tab label="Base Maps">
     <app-map-base-layer></app-map-base-layer>
-  </mat-tab>
-  <mat-tab label="Notes">
-    <sg-notes-sidebar
-      [notes]="notes"
-      [notesState]="notesSidebarState"
-      (createNote)="addNote($event)"
-      (deleteNote)="handleNoteDelete($event)"
-      noNotesTitleText="No Project Area Notes Yet"
-      noNotesDetailText="Start adding notes to help your team learn more about this project area.">
-    </sg-notes-sidebar>
   </mat-tab>
 </mat-tab-group>

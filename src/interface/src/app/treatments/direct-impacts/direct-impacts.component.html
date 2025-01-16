@@ -28,8 +28,10 @@
       variant="ghost"
       icon="download"
       [outlined]="true"
-      (click)="downloadShapefile()">
-      Download Shapefile
+      [disabled]="downloadingShapefile"
+      [loading]="downloadingShapefile"
+      (click)="download()">
+      Download
     </button>
   </div>
 

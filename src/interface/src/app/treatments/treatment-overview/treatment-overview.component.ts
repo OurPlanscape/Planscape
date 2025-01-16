@@ -1,17 +1,13 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, DecimalPipe, JsonPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
-import {
-  DebounceEditState,
-  DebounceInputComponent,
-  TreatmentStandsProgressBarComponent,
-} from '@styleguide';
+import { DebounceEditState, DebounceInputComponent } from '@styleguide';
 import { TreatmentPlan, TreatmentSummary } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { TreatmentsState } from '../treatments.state';
+import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -20,35 +16,27 @@ import { TreatmentsState } from '../treatments.state';
     AsyncPipe,
     TreatmentMapComponent,
     TreatmentPlanTabsComponent,
-    TreatmentStandsProgressBarComponent,
+
     MapBaseLayerComponent,
     DebounceInputComponent,
     NgIf,
+    JsonPipe,
+    DecimalPipe,
+    AcresTreatedComponent,
   ],
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  constructor(
-    private treatmentsState: TreatmentsState,
-    private treatedStandsState: TreatedStandsState
-  ) {}
+  constructor(private treatmentsState: TreatmentsState) {}
+
   nameFieldStatus$ = new BehaviorSubject<DebounceEditState>('INITIAL');
-  treatmentPlan$ = this.treatmentsState.treatmentPlan$;
-  savingStatus$ = new BehaviorSubject<boolean>(false);
+
   errorSavingName: string | null = null;
   summary$ = this.treatmentsState.summary$;
   projectAreas$ = this.summary$?.pipe(
     map((summary: TreatmentSummary | null) => summary?.project_areas)
   );
-
-  totalStands$ = this.projectAreas$?.pipe(
-    map(
-      (areas) =>
-        areas?.reduce((sum, area) => sum + area.total_stand_count, 0) ?? 0
-    )
-  );
-  treatedStands$ = this.treatedStandsState.treatedStands$;
 
   currentPlan$ = this.treatmentsState.treatmentPlan$;
 
