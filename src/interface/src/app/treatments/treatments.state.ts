@@ -361,4 +361,9 @@ export class TreatmentsState {
   runTreatmentPlan() {
     return this.treatmentsService.runTreatmentPlan(this.getTreatmentPlanId());
   }
+
+  projectAreaCount() {
+    const d = this._summary$.value;
+    return d ? d.project_areas.length : 0;
+  }
 }
