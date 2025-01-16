@@ -538,7 +538,7 @@ def calculate_impacts_for_untreated_stands(
 
 def get_calculation_matrix(
     treatment_plan: TreatmentPlan,
-    years: Optional[Collection[int]] = None,
+    years: Optional[Collection[int]] = AVAILABLE_YEARS,
 ) -> List[Tuple]:
     actions = list(
         [
@@ -548,25 +548,14 @@ def get_calculation_matrix(
             ).distinct()
         ]
     )
-    if not years:
-        years = AVAILABLE_YEARS
-    variables = ImpactVariable.get_measurable_impact_variables()
+    variables = list(ImpactVariable)
     return list(itertools.product(variables, actions, years))
 
 
 def get_calculation_matrix_wo_action(
     years: Optional[Iterable[int]] = AVAILABLE_YEARS,
 ) -> List[Tuple]:
-    variables = ImpactVariable.get_measurable_impact_variables()
-    return list(itertools.product(variables, years))
-
-
-def get_baseline_matrix(
-    years: Optional[Collection[int]] = None,
-):
-    if not years:
-        years = AVAILABLE_YEARS
-    variables = ImpactVariable.get_baseline_only_impact_variables()
+    variables = list(ImpactVariable)
     return list(itertools.product(variables, years))
 
 
