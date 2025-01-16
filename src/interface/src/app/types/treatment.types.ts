@@ -19,13 +19,22 @@ export interface TreatmentPlan {
   updated_at: string;
 }
 
-export interface TreatmentProjectArea {
+interface Totals {
+  total_area_acres: number;
+  total_stand_count: number;
+  total_treated_area_acres: number;
+  total_treated_stand_count: number;
+}
+
+export interface TreatmentProjectArea extends Totals {
   project_area_id: number;
   project_area_name: string;
   total_stand_count: number;
   prescriptions: Prescription[];
   extent: Extent;
   centroid: Point;
+  total_treated_area_acres: number;
+  total_treated_stand_count: number;
 }
 
 export interface Prescription {
@@ -41,7 +50,7 @@ export interface TreatedStand {
   action: string;
 }
 
-export interface TreatmentSummary {
+export interface TreatmentSummary extends Totals {
   project_areas: TreatmentProjectArea[];
   extent: Extent;
   planning_area_id: number;
