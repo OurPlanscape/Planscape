@@ -140,16 +140,26 @@ export class MetricFiltersComponent implements OnInit {
     sequencedActions: Record<string, SequenceAttributes>
   ) {
     if (singleActions[prescription.action]) {
-      options[0].options.push({
-        key: prescription.action,
-        value: singleActions[prescription.action],
-      });
+      // Preventing repeated options
+      if (
+        !options[0].options.some((item) => item.key === prescription.action)
+      ) {
+        options[0].options.push({
+          key: prescription.action,
+          value: singleActions[prescription.action],
+        });
+      }
     } else if (sequencedActions[prescription.action]) {
-      options[1].options.push(
-        ...sequencedActions[prescription.action].details.map((x) => {
-          return { key: prescription.action, value: x };
-        })
-      );
+      // Preventing repeated options
+      if (
+        !options[1].options.some((item) => item.key === prescription.action)
+      ) {
+        options[1].options.push(
+          ...sequencedActions[prescription.action].details.map((x) => {
+            return { key: prescription.action, value: x };
+          })
+        );
+      }
     }
   }
 }
