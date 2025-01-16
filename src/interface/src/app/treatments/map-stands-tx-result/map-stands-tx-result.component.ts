@@ -16,7 +16,7 @@ import {
 import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
 import { environment } from '../../../environments/environment';
 import { DEFAULT_SLOT, ImpactsMetricSlot, SLOT_PALETTES } from '../metrics';
-import { combineLatest, map, switchMap, take } from 'rxjs';
+import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { descriptionForAction } from '../prescriptions';
@@ -94,7 +94,6 @@ export class MapStandsTxResultComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.updateStandOnTreatmentChanges();
     this.paint = this.generatePaint(DEFAULT_SLOT);
     this.directImpactsStateService.standsTxSourceLoaded$
       .pipe(
@@ -113,22 +112,6 @@ export class MapStandsTxResultComponent implements OnInit {
           if (sourceFeatures[0]) {
             this.directImpactsStateService.setActiveStand(sourceFeatures[0]);
           }
-        }
-      });
-  }
-
-  updateStandOnTreatmentChanges() {
-    combineLatest([
-      this.directImpactsStateService.filteredTreatmentTypes$,
-      this.directImpactsStateService.activeStand$,
-    ])
-      .pipe(untilDestroyed(this))
-      .subscribe(([treatments, stand]) => {
-        if (
-          treatments?.length &&
-          !treatments.includes(stand?.properties?.['action'])
-        ) {
-          this.directImpactsStateService.resetActiveStand();
         }
       });
   }
