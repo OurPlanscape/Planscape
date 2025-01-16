@@ -146,7 +146,7 @@ def feature_to_project_area(
     idx: int = 1,
 ):
     user = scenario.user
-    stand_dize = scenario.get_stand_size()
+    stand_size = scenario.get_stand_size()
     try:
         area_name = f"Project Area {idx}"
         logger.info("creating project area %s %s", area_name, geometry_dict)
@@ -155,7 +155,7 @@ def feature_to_project_area(
 
         stand_count = Stand.objects.within_polygon(
             geometry,
-            stand_dize,
+            stand_size,
         ).count()
 
         project_area = {
