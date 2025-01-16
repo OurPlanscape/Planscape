@@ -28,6 +28,7 @@ export class TreatmentPlanNotesComponent {
     private treatmentsState: TreatmentsState
   ) {}
   // notes data
+
   notes$ = this.notesService.getNotes(
     this.treatmentsState.getTreatmentPlanId()
   );

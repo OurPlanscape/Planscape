@@ -22,7 +22,7 @@ export abstract class BaseNotesService {
   protected resource = '/note/';
 
   getNotes(objectId: string | number) {
-    objectId = objectId.toString();
+    objectId = objectId?.toString();
     return this.http.get<Note[]>(
       environment.backend_endpoint.concat(
         this.baseUrl,
