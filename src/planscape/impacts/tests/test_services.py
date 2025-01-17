@@ -30,7 +30,6 @@ from impacts.services import (
     fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
     generate_summary,
-    get_baseline_matrix,
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
     get_treatment_results_table_data,
@@ -306,20 +305,7 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertIsNotNone(matrix)
 
         # impact variables * years * actions
-        total_records = (
-            len(ImpactVariable.get_measurable_impact_variables()) * len(years) * 3
-        )
-        self.assertEqual(len(matrix), total_records)
-
-    def test_baseline_matrix_returns_correctly(self):
-        years = [1, 2]
-        matrix = get_baseline_matrix(years=years)
-        self.assertIsNotNone(matrix)
-
-        # impact variables * years
-        total_records = len(ImpactVariable.get_baseline_only_impact_variables()) * len(
-            years
-        )
+        total_records = len(list(ImpactVariable)) * len(years) * 3
         self.assertEqual(len(matrix), total_records)
 
 
@@ -328,18 +314,14 @@ class GetCalculationMetricsWoActionTest(TransactionTestCase):
         years = [1, 2]
         matrix = get_calculation_matrix_wo_action(years=years)
 
-        total_records = len(ImpactVariable.get_measurable_impact_variables()) * len(
-            years
-        )
+        total_records = len(list(ImpactVariable)) * len(years)
 
         self.assertEqual(len(matrix), total_records)
 
     def test_calculation_matrix_wo_action_null_years(self):
         matrix = get_calculation_matrix_wo_action()
 
-        total_records = len(ImpactVariable.get_measurable_impact_variables()) * len(
-            AVAILABLE_YEARS
-        )
+        total_records = len(list(ImpactVariable)) * len(AVAILABLE_YEARS)
 
         self.assertEqual(len(matrix), total_records)
 

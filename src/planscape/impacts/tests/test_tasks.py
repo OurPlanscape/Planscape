@@ -9,7 +9,6 @@ from impacts.tests.factories import TreatmentPlanFactory
 from impacts.tasks import (
     async_send_email_process_finished,
     async_calculate_impacts_for_variable_action_year,
-    async_calculate_baseline_metrics_for_variable_year,
 )
 from stands.models import Stand
 from impacts.services import (
@@ -190,37 +189,3 @@ class AsyncCalculateBaselineMetricsForVariableYearTest(TransactionTestCase):
         self.project_area = ProjectAreaFactory.create(
             scenario=self.plan.scenario, geometry=self.project_area_geometry
         )
-
-    def test_calculate_baseline_metrics_for_variable_year(self):
-        with self.settings(
-            CELERY_ALWAYS_EAGER=True,
-            CELERY_TASK_STORE_EAGER_RESULT=True,
-            CELERY_TASK_IGNORE_RESULT=False,
-        ):
-            variable = ImpactVariable.FLAME_LENGTH
-            year = AVAILABLE_YEARS[0]
-            baseline_metadata = {
-                "modules": {
-                    "impacts": {
-                        "year": year,
-                        "variable": variable,
-                        "action": None,
-                        "baseline": True,
-                    }
-                }
-            }
-            DataLayerFactory.create(
-                name="baseline",
-                url="impacts/tests/test_data/test_raster.tif",
-                metadata=baseline_metadata,
-                type=DataLayerType.RASTER,
-            )
-            async_calculate_baseline_metrics_for_variable_year(
-                self.plan.id,
-                variable=variable,
-                year=year,
-            )
-            stands_within_project_area = self.project_area.get_stands()
-            self.assertEquals(
-                stands_within_project_area.count(), StandMetric.objects.count()
-            )
