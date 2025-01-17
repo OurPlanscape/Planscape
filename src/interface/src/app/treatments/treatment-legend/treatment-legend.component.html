@@ -24,12 +24,13 @@
         </div>
       </mat-expansion-panel-header>
       <div class="legend-section">
-        <div
-          class="legend-row"
-          *ngFor="let tx of singlePrescriptions | keyvalue: originalOrder">
-          <sg-treatment-type-icon [treatment]="tx.key"></sg-treatment-type-icon>
-          <div class="legend-text">{{ tx.value }}</div>
-        </div>
+        <ng-container *ngFor="let tx of singleRxTypes">
+          <div class="legend-row" *ngIf="inDisplayedTreatments(tx.type)">
+            <sg-treatment-type-icon
+              [treatment]="tx.type"></sg-treatment-type-icon>
+            <div class="legend-text">{{ tx.value }}</div>
+          </div>
+        </ng-container>
       </div>
     </mat-expansion-panel>
     <mat-divider class="tx-divider"></mat-divider>
@@ -44,12 +45,14 @@
         </div>
       </mat-expansion-panel-header>
       <div class="legend-section">
-        <div
-          class="legend-row"
-          *ngFor="let seq of sequencePrescriptions | keyvalue: originalOrder">
-          <sg-sequence-icon [action]="seq.key"></sg-sequence-icon>
-          <div class="legend-text">{{ seq.value.name }}</div>
-        </div>
+        <ng-container *ngFor="let tx of sequenceRxTypes">
+          <div class="legend-row" *ngIf="inDisplayedTreatments(tx.type)">
+            <sg-sequence-icon [action]="tx.type"></sg-sequence-icon>
+            <sg-treatment-type-icon
+              [treatment]="tx.type"></sg-treatment-type-icon>
+            <div class="legend-text">{{ tx.value.details }}</div>
+          </div>
+        </ng-container>
       </div>
     </mat-expansion-panel>
   </div>
