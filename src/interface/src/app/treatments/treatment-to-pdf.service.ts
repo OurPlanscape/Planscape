@@ -43,7 +43,7 @@ export class TreatmentToPDFService {
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState
-  ) { }
+  ) {}
 
   activeMap: MapLibreMap | null = null;
   pdfDoc: jsPDF | null = null;
@@ -209,7 +209,8 @@ export class TreatmentToPDFService {
       let rxInfo = '';
       p.prescriptions.forEach((rx) => {
         if (rx.type === 'SINGLE') {
-          const actionName = PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
+          const actionName =
+            PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
           rxInfo += actionName + '\n';
         }
 
@@ -217,7 +218,8 @@ export class TreatmentToPDFService {
           const seqActions =
             PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction];
           seqActions.forEach((seqAction) => {
-            rxInfo += seqAction.description + '(Year ' + seqAction.year + ') \n ';
+            rxInfo +=
+              seqAction.description + '(Year ' + seqAction.year + ') \n ';
           });
         }
       });
