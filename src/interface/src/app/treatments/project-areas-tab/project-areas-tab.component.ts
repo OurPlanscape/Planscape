@@ -54,9 +54,7 @@ export class ProjectAreasTabComponent {
             .toLowerCase()
             .includes(this.searchString)) ||
         (rx.type === 'SEQUENCE' &&
-          PRESCRIPTIONS.SEQUENCE[
-            rx.action as PrescriptionSequenceAction
-          ].details
+          PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
             .map((d) => d.description)
             .join(' ')
             .toLowerCase()

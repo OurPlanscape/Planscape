@@ -55,15 +55,9 @@ export class SearchResultCardComponent implements OnInit {
       if (rx.type === 'SINGLE') {
         return PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
       } else if (rx.type === 'SEQUENCE')
-        return (
-          PRESCRIPTIONS.SEQUENCE[
-            rx.action as PrescriptionSequenceAction
-          ].details
-            .map((d) => d.description)
-            // TODO: show just the unique prescriptions in the result?
-            .filter((item, index, arr) => arr.indexOf(item) === index)
-            .join(', ')
-        );
+        return PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
+          .map((d) => d.description)
+          .join(', ');
       else return '';
     });
 

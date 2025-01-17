@@ -74,7 +74,9 @@ export class MetricFiltersComponent implements OnInit {
             prescription,
             options,
             PRESCRIPTIONS.SINGLE,
-            PRESCRIPTIONS.SEQUENCE
+            //TODO: Fix this
+            {}
+            //PRESCRIPTIONS.SEQUENCE
           );
         });
       });
@@ -144,12 +146,14 @@ export class MetricFiltersComponent implements OnInit {
         key: prescription.action,
         value: singleActions[prescription.action],
       });
-    } else if (sequencedActions[prescription.action]) {
-      options[1].options.push(
-        ...sequencedActions[prescription.action].details.map((x) => {
-          return { key: prescription.action, value: x };
-        })
-      );
     }
+    //TODO: fix this:
+    //  else if (sequencedActions[prescription.action]) {
+    //   options[1].options.push(
+    //     ...sequencedActions[prescription.action].description.map((x) => {
+    //       return { key: prescription.action, value: x };
+    //     })
+    //   );
+    // }
   }
 }

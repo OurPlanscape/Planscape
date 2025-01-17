@@ -213,8 +213,7 @@ export class TreatmentToPDFService {
 
         if (rx.type === 'SEQUENCE') {
           const seqActions =
-            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
-              .details;
+            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction];
           seqActions.forEach((aeqAction) => {
             rxInfo += '\t' + aeqAction + '\n';
           });

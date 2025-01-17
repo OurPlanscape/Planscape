@@ -23,13 +23,9 @@ export type PrescriptionSequenceAction =
   | 'HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE'
   | 'MODERATE_MASTICATION_PLUS_RX_FIRE';
 
-export interface SequenceDetail {
+export interface SequenceAttributes {
   description: string;
   year: number;
-}
-export interface SequenceAttributes {
-  name: string;
-  details: SequenceDetail[];
 }
 
 // All possible prescription keys
@@ -93,65 +89,42 @@ const SINGLE_ACTIONS: Record<PrescriptionSingleAction, string> = {
 // User facing names for sequence actions
 export const SEQUENCE_ACTIONS: Record<
   PrescriptionSequenceAction,
-  SequenceAttributes
+  SequenceAttributes[]
 > = {
-  MODERATE_THINNING_BURN_PLUS_RX_FIRE: {
-    //keep the name?
-    name: 'Sequence 1',
-    details: [
-      { description: 'Moderate Thin & Pile Burn', year: 0 },
-      { description: 'Prescribed Burn', year: 10 },
-    ],
-  },
-  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: {
-    name: 'Sequence 2',
-    details: [
-      { description: 'Moderate Thin & Pile Burn', year: 0 },
-      { description: 'Moderate Thin & Pile Burn', year: 10 },
-    ],
-  },
-  HEAVY_THINNING_BURN_PLUS_RX_FIRE: {
-    name: 'Sequence 3',
-    details: [
-      { description: 'Heavy Thin & Pile Burn', year: 0 },
-      { description: 'Prescribed Burn', year: 10 },
-    ],
-  },
-  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: {
-    name: 'Sequence 4',
-    details: [
-      { description: 'Heavy Thin & Pile Burn', year: 0 },
-      { description: 'Heavy Thin & Pile Burn', year: 10 },
-    ],
-  },
-  RX_FIRE_PLUS_RX_FIRE: {
-    name: 'Sequence 5',
-    details: [
-      { description: 'Prescribed Fire', year: 0 },
-      { description: 'Prescribed Fire', year: 10 },
-    ],
-  },
-  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: {
-    name: 'Sequence 6',
-    details: [
-      { description: 'Moderate Mastication', year: 0 },
-      { description: 'Moderate Mastication', year: 10 },
-    ],
-  },
-  HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: {
-    name: 'Sequence 7',
-    details: [
-      { description: 'Heavy Thin & Biomass Removal', year: 0 },
-      { description: 'Prescribed Fire', year: 10 },
-    ],
-  },
-  MODERATE_MASTICATION_PLUS_RX_FIRE: {
-    name: 'Sequence 8',
-    details: [
-      { description: 'Moderate Mastication', year: 0 },
-      { description: 'Prescribed Fire', year: 10 },
-    ],
-  },
+  MODERATE_THINNING_BURN_PLUS_RX_FIRE: [
+    { description: 'Moderate Thin & Pile Burn', year: 0 },
+    { description: 'Prescribed Burn', year: 10 },
+  ],
+  MODERATE_THINNING_BURN_PLUS_MODERATE_THINNING_BURN: [
+    { description: 'Moderate Thin & Pile Burn', year: 0 },
+    { description: 'Moderate Thin & Pile Burn', year: 10 },
+  ],
+  HEAVY_THINNING_BURN_PLUS_RX_FIRE: [
+    { description: 'Heavy Thin & Pile Burn', year: 0 },
+    { description: 'Prescribed Burn', year: 10 },
+  ],
+
+  HEAVY_THINNING_BURN_PLUS_HEAVY_THINNING_BURN: [
+    { description: 'Heavy Thin & Pile Burn', year: 0 },
+    { description: 'Heavy Thin & Pile Burn', year: 10 },
+  ],
+
+  RX_FIRE_PLUS_RX_FIRE: [
+    { description: 'Prescribed Fire', year: 0 },
+    { description: 'Prescribed Fire', year: 10 },
+  ],
+  MODERATE_MASTICATION_PLUS_MODERATE_MASTICATION: [
+    { description: 'Moderate Mastication', year: 0 },
+    { description: 'Moderate Mastication', year: 10 },
+  ],
+  HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: [
+    { description: 'Heavy Thin & Biomass Removal', year: 0 },
+    { description: 'Prescribed Fire', year: 10 },
+  ],
+  MODERATE_MASTICATION_PLUS_RX_FIRE: [
+    { description: 'Moderate Mastication', year: 0 },
+    { description: 'Prescribed Fire', year: 10 },
+  ],
 };
 
 // User facing names for all prescriptions
@@ -180,7 +153,8 @@ export function nameForTypeAndAction(
   } else if (type === 'SEQUENCE') {
     let title = action as PrescriptionSequenceAction;
     if (title !== null) {
-      return PRESCRIPTIONS.SEQUENCE[title].name;
+      //TODO: fix
+      return PRESCRIPTIONS.SEQUENCE[title].join(' ');
     }
   }
   return null;
@@ -189,7 +163,8 @@ export function nameForTypeAndAction(
 export function nameForAction(action: string): string {
   return (
     PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
-    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].name ||
+    // TODO: fix
+    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].join(' ') ||
     ''
   );
 }
@@ -197,9 +172,7 @@ export function nameForAction(action: string): string {
 export function descriptionForAction(action: string): string {
   return (
     PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
-    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].details.join(
-      ', '
-    ) ||
+    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].join(', ') ||
     ''
   );
 }

@@ -49,7 +49,7 @@
           *ngFor="let seq of sequencePrescriptions | keyvalue: originalOrder">
           <sg-sequence-icon [action]="seq.key"></sg-sequence-icon>
           <div class="legend-labels">
-            <div *ngFor="let detail of seq.value.details" class="legend-text">
+            <div *ngFor="let detail of seq.value" class="legend-text">
               <span>{{ detail.description }}</span
               ><span class="seq-year"> (Year {{ detail.year }})</span>
             </div>

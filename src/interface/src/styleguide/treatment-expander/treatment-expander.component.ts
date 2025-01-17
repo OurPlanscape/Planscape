@@ -8,7 +8,7 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
-  SequenceDetail,
+  SequenceAttributes,
 } from '../../app/treatments/prescriptions';
 
 /**
@@ -88,17 +88,15 @@ export class TreatmentExpanderComponent {
     } else if (this.treatmentType === 'SINGLE') {
       return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
     } else if (this.treatmentType === 'SEQUENCE') {
-      const details =
-        PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-          .details;
-      return details.map((d) => d.description).join(' ');
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+        .map((d) => d.description)
+        .join(' ');
     }
     return 'No Treatment';
   }
 
-  sequenceTitles(): SequenceDetail[] {
-    return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-      .details;
+  sequenceTitles(): SequenceAttributes[] {
+    return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
   }
 
   sequenceRxTitleText(): string {
@@ -107,10 +105,9 @@ export class TreatmentExpanderComponent {
     } else if (this.treatmentType === 'SINGLE') {
       return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
     } else if (this.treatmentType === 'SEQUENCE') {
-      const details =
-        PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-          .details;
-      return details.map((d) => d.description).join(' ');
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+        .map((d) => d.description)
+        .join(' ');
     }
     return 'No Treatment';
   }
