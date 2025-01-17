@@ -218,7 +218,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         "type": "FeatureCollection",
         "features": [
             {
-                "type": "feature",
+                "type": "Feature",
                 "geometry": json.loads(pa.geometry.json),
                 "properties": pa.data,
             }
