@@ -4,7 +4,7 @@ import autoTable from 'jspdf-autotable';
 import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
-  nameForTypeAndAction,
+  PrescriptionSingleAction,
   nameForAction,
   PrescriptionAction,
 } from './prescriptions';
@@ -43,7 +43,7 @@ export class TreatmentToPDFService {
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState
-  ) {}
+  ) { }
 
   activeMap: MapLibreMap | null = null;
   pdfDoc: jsPDF | null = null;
@@ -208,14 +208,16 @@ export class TreatmentToPDFService {
     currentSummary.project_areas.forEach((p) => {
       let rxInfo = '';
       p.prescriptions.forEach((rx) => {
-        const actionName = nameForTypeAndAction(rx.type, rx.action);
-        rxInfo += actionName + '\n';
+        if (rx.type === 'SINGLE') {
+          const actionName = PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
+          rxInfo += actionName + '\n';
+        }
 
         if (rx.type === 'SEQUENCE') {
           const seqActions =
             PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction];
-          seqActions.forEach((aeqAction) => {
-            rxInfo += '\t' + aeqAction + '\n';
+          seqActions.forEach((seqAction) => {
+            rxInfo += seqAction.description + '(Year ' + seqAction.year + ') \n ';
           });
         }
       });

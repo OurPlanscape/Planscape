@@ -142,26 +142,6 @@ export function getTreatedStandsTotal(prescriptions: Prescription[]) {
 }
 
 // Currently used for PDF rendering
-export function nameForTypeAndAction(
-  type: string,
-  action: string
-): string | null {
-  if (type === 'SINGLE') {
-    let title = action as PrescriptionSingleAction;
-    if (title !== null) {
-      return PRESCRIPTIONS.SINGLE[title];
-    }
-  } else if (type === 'SEQUENCE') {
-    let title = action as PrescriptionSequenceAction;
-    if (title !== null) {
-      // we can use newlines here, as they're recognized by the PDF
-      return PRESCRIPTIONS.SEQUENCE[title].join('\n');
-    }
-  }
-  return null;
-}
-
-// Currently used for PDF rendering
 export function nameForAction(action: string): string {
   return (
     PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
