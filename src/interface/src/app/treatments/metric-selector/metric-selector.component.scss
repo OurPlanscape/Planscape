@@ -11,7 +11,7 @@
 }
 
 .fixed-width {
-  width: fit-content;
+  width: max-content;
 }
 
 .flexible-width {
@@ -54,4 +54,17 @@ mat-select {
   .container {
     grid-template-columns: auto 1fr;
   }
+}
+
+::ng-deep .metric-selector {
+    min-width: 300px;
+
+  .metric-option {
+    font-size: 12px;
+  }
+}
+
+
+.flexible-width ::ng-deep .mat-mdc-select-value-text {
+  font-size: 12px;
 }

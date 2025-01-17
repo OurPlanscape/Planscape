@@ -18,8 +18,14 @@
   </div>
 
   <div class="flexible-width">
-    <mat-select [ngModel]="selectedOption" (ngModelChange)="onSelect($event)">
-      <mat-option *ngFor="let option of metrics" [value]="option.id">
+    <mat-select
+      panelClass="metric-selector"
+      [ngModel]="selectedOption"
+      (ngModelChange)="onSelect($event)">
+      <mat-option
+        class="metric-option"
+        *ngFor="let option of metrics"
+        [value]="option.id">
         {{ option.label }}
       </mat-option>
     </mat-select>
