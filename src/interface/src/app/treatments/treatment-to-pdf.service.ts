@@ -3,10 +3,10 @@ import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
   nameForAction,
-  nameForTypeAndAction,
   PrescriptionAction,
-  PRESCRIPTIONS,
   PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+  PRESCRIPTIONS,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
@@ -211,15 +211,18 @@ export class TreatmentToPDFService {
     currentSummary.project_areas.forEach((p) => {
       let rxInfo = '';
       p.prescriptions.forEach((rx) => {
-        const actionName = nameForTypeAndAction(rx.type, rx.action);
-        rxInfo += actionName + '\n';
+        if (rx.type === 'SINGLE') {
+          const actionName =
+            PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
+          rxInfo += actionName + '\n';
+        }
 
         if (rx.type === 'SEQUENCE') {
           const seqActions =
-            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
-              .details;
-          seqActions.forEach((aeqAction) => {
-            rxInfo += '\t' + aeqAction + '\n';
+            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction];
+          seqActions.forEach((seqAction) => {
+            rxInfo +=
+              seqAction.description + '(Year ' + seqAction.year + ') \n ';
           });
         }
       });

@@ -49,11 +49,18 @@
   padding-top: 10px;
 }
 
-.legend-section {
+.simple-rx-section {
   background-color: $color-white;
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.sequence-rx-section {
+  background-color: $color-white;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
 }
 
 .legend-expander-panel {
@@ -118,11 +125,20 @@
   overflow: hidden;
 }
 
-.legend-row {
+.legend-simple-row {
   display: flex;
   flex-direction: row;
   justify-content: left;
   height: 22px;
+  gap: 6px;
+  width: 100%;
+}
+
+.legend-sequence-row {
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  height: 44px;
   gap: 6px;
   width: 100%;
 }
@@ -133,6 +149,13 @@
   font-family: Public Sans;
   font-size: 14px;
   font-weight: 500;
-  line-height: 20px;
+  line-height: 22px;
   text-align: left;
+  letter-spacing: normal;
+  height: 22px;
+
+  .seq-year {
+    color: $color-md-gray;
+  }
+
 }

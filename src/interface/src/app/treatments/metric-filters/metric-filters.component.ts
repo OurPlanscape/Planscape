@@ -14,7 +14,11 @@ import {
 import { FilterDropdownComponent } from 'src/styleguide';
 import { TreatmentsState } from '../treatments.state';
 import { filter, map, take } from 'rxjs/operators';
-import { PRESCRIPTIONS, SequenceAttributes } from '../prescriptions';
+import {
+  PRESCRIPTIONS,
+  SequenceAttributes,
+  PrescriptionSequenceAction,
+} from '../prescriptions';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -137,16 +141,20 @@ export class MetricFiltersComponent implements OnInit {
     prescription: any,
     options: { category: string; options: any[] }[],
     singleActions: Record<string, string>,
-    sequencedActions: Record<string, SequenceAttributes>
+    sequencedActions: Record<PrescriptionSequenceAction, SequenceAttributes[]>
   ) {
     if (singleActions[prescription.action]) {
       options[0].options.push({
         key: prescription.action,
         value: singleActions[prescription.action],
       });
-    } else if (sequencedActions[prescription.action]) {
+    } else if (
+      sequencedActions[prescription.action as PrescriptionSequenceAction]
+    ) {
       options[1].options.push(
-        ...sequencedActions[prescription.action].details.map((x) => {
+        ...sequencedActions[
+          prescription.action as PrescriptionSequenceAction
+        ].map((x) => {
           return { key: prescription.action, value: x };
         })
       );

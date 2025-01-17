@@ -23,9 +23,9 @@
           Single Treatment
         </div>
       </mat-expansion-panel-header>
-      <div class="legend-section">
+      <div class="simple-rx-section">
         <div
-          class="legend-row"
+          class="legend-simple-row"
           *ngFor="let tx of singlePrescriptions | keyvalue: originalOrder">
           <sg-treatment-type-icon [treatment]="tx.key"></sg-treatment-type-icon>
           <div class="legend-text">{{ tx.value }}</div>
@@ -43,12 +43,17 @@
           >Treatment Sequencing
         </div>
       </mat-expansion-panel-header>
-      <div class="legend-section">
+      <div class="sequence-rx-section">
         <div
-          class="legend-row"
+          class="legend-sequence-row"
           *ngFor="let seq of sequencePrescriptions | keyvalue: originalOrder">
           <sg-sequence-icon [action]="seq.key"></sg-sequence-icon>
-          <div class="legend-text">{{ seq.value.name }}</div>
+          <div class="legend-labels">
+            <div *ngFor="let detail of seq.value" class="legend-text">
+              <span>{{ detail.description }}</span
+              ><span class="seq-year"> (Year {{ detail.year }})</span>
+            </div>
+          </div>
         </div>
       </div>
     </mat-expansion-panel>
