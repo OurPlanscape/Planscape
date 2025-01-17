@@ -1,0 +1,19 @@
+@import "mixins";
+@import "colors";
+
+:host {
+  @include xs-label();
+  line-height: 20px;
+  padding: 14px 16px;
+  color: $color-md-gray;
+  display: flex;
+  gap: 8px;
+}
+
+.black {
+  color: $color-black;
+}
+
+.outdated {
+  color: $color-md-gray-disabled;
+}

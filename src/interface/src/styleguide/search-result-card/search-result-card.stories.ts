@@ -24,7 +24,7 @@ const meta: Meta<SearchResultCardComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div ${containerStyle}><div style="width:400px;"><sg-search-result-card ${argsToTemplate(args)}></sg-search-result-card></div>`,
+    template: `<div ${containerStyle}><div style='width:400px;'><sg-search-result-card ${argsToTemplate(args)}></sg-search-result-card></div>`,
   }),
 };
 
@@ -34,7 +34,10 @@ type Story = StoryObj<SearchResultCardComponent>;
 const exampleProjectArea: TreatmentProjectArea = {
   project_area_id: 20,
   project_area_name: 'hello i am a project',
-  total_stand_count: 100,
+  total_area_acres: 100,
+  total_stand_count: 10,
+  total_treated_area_acres: 12,
+  total_treated_stand_count: 1120,
   prescriptions: [
     {
       action: 'RX_FIRE',
