@@ -58,9 +58,11 @@
                 role="menuitemcheckbox"
                 (click)="toggleSelection($event, item)">
                 <div class="menu-item-content">
-                  <span class="menu-item-text">{{
-                    displayField ? item[displayField] : item
-                  }}</span>
+                  <span
+                    class="menu-item-text"
+                    [innerText]="
+                      displayField ? item[displayField] : item
+                    "></span>
                   <mat-checkbox
                     [color]="'primary'"
                     [checked]="isInSelection(item)"></mat-checkbox>
