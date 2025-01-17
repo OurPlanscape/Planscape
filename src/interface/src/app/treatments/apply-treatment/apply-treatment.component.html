@@ -59,7 +59,8 @@
           ">
           <mat-radio-button [value]="action.key" class="sequence-details">
             <div *ngFor="let detail of action.value" class="detail">
-              <span>{{ detail.description }}:</span> {{ detail.year }}
+              <span>{{ detail.description }}:</span>
+              {{ '(Year ' + detail.year + ')' }}
             </div>
           </mat-radio-button>
         </ng-container>
