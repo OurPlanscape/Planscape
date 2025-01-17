@@ -2,20 +2,22 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
-  PRESCRIPTIONS,
-  PrescriptionSequenceAction,
-  PrescriptionSingleAction,
   nameForAction,
   PrescriptionAction,
+  PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+  PRESCRIPTIONS,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
-import { TreatmentSummary, Prescription, TreatmentProjectArea } from '@types';
+import { Prescription, TreatmentProjectArea, TreatmentSummary } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
 
 import { TreatmentsState } from './treatments.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import * as txIcons from '../../assets/base64/stand_icons/treatments';
+import { addRequestHeaders } from './maplibre.helper';
+import { AuthService } from '@services';
 
 const treatmentIcons: Record<PrescriptionAction, string> = {
   MODERATE_THINNING_BIOMASS: txIcons.treatment_blue,
@@ -42,7 +44,8 @@ export class TreatmentToPDFService {
   constructor(
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState,
-    private mapConfigState: MapConfigState
+    private mapConfigState: MapConfigState,
+    private authService: AuthService
   ) {}
 
   activeMap: MapLibreMap | null = null;
@@ -270,6 +273,8 @@ export class TreatmentToPDFService {
       bearing: this.activeMap.getBearing(),
       pitch: this.activeMap.getPitch(),
       bounds: this.activeMap.getBounds(),
+      transformRequest: (url, resourceType) =>
+        addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
     });
   }
 
