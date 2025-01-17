@@ -148,8 +148,7 @@ export class MetricFiltersComponent implements OnInit {
         key: prescription.action,
         value: singleActions[prescription.action],
       });
-    }
-    else if (
+    } else if (
       sequencedActions[prescription.action as PrescriptionSequenceAction]
     ) {
       options[1].options.push(
