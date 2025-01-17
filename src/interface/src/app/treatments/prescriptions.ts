@@ -141,6 +141,7 @@ export function getTreatedStandsTotal(prescriptions: Prescription[]) {
   }, 0);
 }
 
+// Currently used for PDF rendering
 export function nameForTypeAndAction(
   type: string,
   action: string
@@ -153,18 +154,18 @@ export function nameForTypeAndAction(
   } else if (type === 'SEQUENCE') {
     let title = action as PrescriptionSequenceAction;
     if (title !== null) {
-      //TODO: fix
-      return PRESCRIPTIONS.SEQUENCE[title].join(' ');
+      // we can use newlines here, as they're recognized by the PDF
+      return PRESCRIPTIONS.SEQUENCE[title].join('\n');
     }
   }
   return null;
 }
 
+// Currently used for PDF rendering
 export function nameForAction(action: string): string {
   return (
     PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
-    // TODO: fix
-    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].join(' ') ||
+    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].join('\n') ||
     ''
   );
 }

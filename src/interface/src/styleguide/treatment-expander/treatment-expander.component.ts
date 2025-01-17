@@ -128,15 +128,6 @@ export class TreatmentExpanderComponent {
     return part.toLowerCase() === this.searchString.toLowerCase();
   }
 
-  sequenceDetails(): string[] {
-    if (this.treatmentType === 'SEQUENCE') {
-      // return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-      //   .details;
-      return ['placeholder'];
-    }
-    return [];
-  }
-
   treatmentIconType(): PrescriptionSingleAction | null {
     if (this.action !== null) {
       return this.action as PrescriptionSingleAction;
