@@ -71,3 +71,7 @@ export abstract class BaseNotesService {
 export class PlanningAreaNotesService extends BaseNotesService {
   protected baseUrl = '/planning/planning_area/';
 }
+@Injectable()
+export class TreatmentPlanNotesService extends BaseNotesService {
+  protected baseUrl = '/v2/treatment_plans/';
+}
