@@ -211,6 +211,14 @@ export class FilterDropdownComponent<T> implements OnInit, OnChanges {
       .filter((item) => item !== null);
   }
 
+  getLabel(item: any): string {
+    if (typeof item.value === 'string') {
+      return item;
+    } else {
+      return item.value.join(',\n');
+    }
+  }
+
   applyChanges(e: Event) {
     this.confirmedSelection.emit(this.selectedItems);
   }
