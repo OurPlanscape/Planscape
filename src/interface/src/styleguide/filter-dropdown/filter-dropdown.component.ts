@@ -9,7 +9,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, KeyValue, KeyValuePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -32,6 +32,7 @@ import { SearchBarComponent } from '../search-bar/search-bar.component';
     SearchBarComponent,
     FormsModule,
     ButtonComponent,
+    KeyValuePipe,
   ],
   templateUrl: './filter-dropdown.component.html',
   styleUrls: ['./filter-dropdown.component.scss'],
@@ -115,16 +116,21 @@ export class FilterDropdownComponent<T> implements OnInit, OnChanges {
     }
   }
 
-  isInSelection(term: T): boolean {
+  isInSelection(term: any): boolean {
     return this.selectedItems.includes(term);
   }
 
-  toggleSelection(e: Event, item: T) {
-    if (!this.selectedItems.includes(item)) {
-      this.selectedItems.push(item);
+  toggleSelection(e: Event, item: any): void {
+    const key = (item as KeyValue<string, string>).key || item;
+
+    if (!this.selectedItems.includes(key as T)) {
+      this.selectedItems.push(key as T);
     } else {
-      this.selectedItems = this.selectedItems.filter((e) => e !== item);
+      this.selectedItems = this.selectedItems.filter(
+        (selected) => selected !== key
+      );
     }
+
     e.stopPropagation();
     this.changedSelection.emit(this.selectedItems);
   }

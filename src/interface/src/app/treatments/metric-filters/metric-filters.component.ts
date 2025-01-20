@@ -15,7 +15,12 @@ import { FilterDropdownComponent } from 'src/styleguide';
 import { TreatmentsState } from '../treatments.state';
 import { filter, map, take } from 'rxjs/operators';
 import { Observable } from 'rxjs';
-import { PRESCRIPTIONS } from '../../../app/treatments/prescriptions';
+import {
+  PRESCRIPTIONS,
+  PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+} from '../../../app/treatments/prescriptions';
+import { Prescription } from '@types';
 
 @Component({
   selector: 'app-metric-filters',
@@ -34,6 +39,8 @@ export class MetricFiltersComponent implements OnInit {
   @Input() selectedOptions: string[] = [];
   @Output() metricSelected = new EventEmitter<ImpactsMetric>();
   @Output() metricUpdated = new EventEmitter<ImpactsMetric>();
+
+  prescriptions = PRESCRIPTIONS;
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
@@ -59,9 +66,21 @@ export class MetricFiltersComponent implements OnInit {
     filter((summary) => summary !== null),
     take(1),
     map((summary) => {
-      const initialValue = [
-        { category: 'Single Treatment', options: [] },
-        { category: 'Sequenced Treatment', options: [] },
+      const singlePrescriptions: Partial<
+        Record<PrescriptionSingleAction, string>
+      > = {};
+      const sequencePrescriptions: Partial<
+        Record<PrescriptionSequenceAction, string>
+      > = {};
+
+      const initialValue: {
+        category: string;
+        options: Partial<
+          Record<PrescriptionSingleAction | PrescriptionSequenceAction, string>
+        >;
+      }[] = [
+        { category: 'Single Treatment', options: singlePrescriptions },
+        { category: 'Sequenced Treatment', options: sequencePrescriptions },
       ];
 
       if (!summary?.project_areas) {
@@ -69,42 +88,42 @@ export class MetricFiltersComponent implements OnInit {
       }
 
       // Getting all prescriptions
-      const prescriptions = summary.project_areas.flatMap((project_area) =>
-        project_area.prescriptions.filter((prescription) => prescription)
+      const prescriptions: Prescription[] = summary.project_areas.flatMap(
+        (project_area) =>
+          project_area.prescriptions.filter((prescription) => prescription)
       );
 
       const options = prescriptions.reduce(
-        (acc: any, currentPrescription: any) => {
-          if (currentPrescription.type === 'SINGLE') {
+        (acc: any, currentPrescription: Prescription) => {
+          if (currentPrescription.action in PRESCRIPTIONS.SINGLE) {
+            // Check if the action already exists in singlePrescriptions
             if (
-              !acc[0].options.some(
-                (item: any) => item.action === currentPrescription.action
-              )
+              !acc[0].options[
+                currentPrescription.action as keyof typeof PRESCRIPTIONS.SINGLE
+              ]
             ) {
-              acc[0].options.push({
-                key: currentPrescription.action,
-                value: (PRESCRIPTIONS.SINGLE as any)[
-                  currentPrescription.action
-                ],
-              });
+              acc[0].options[
+                currentPrescription.action as keyof typeof PRESCRIPTIONS.SINGLE
+              ] =
+                PRESCRIPTIONS.SINGLE[
+                  currentPrescription.action as keyof typeof PRESCRIPTIONS.SINGLE
+                ];
             }
-          } else if (currentPrescription.type === 'SEQUENCE') {
-            const prescriptionList: string[] = (PRESCRIPTIONS.SEQUENCE as any)[
-              currentPrescription.action
-            ].details;
-
+          } else if (currentPrescription.action in PRESCRIPTIONS.SEQUENCE) {
+            // Check if the action already exists in sequencePrescriptions
             if (
-              !acc[1].options.some(
-                (item: any) => item.key === currentPrescription.action
-              )
+              !acc[1].options[
+                currentPrescription.action as keyof typeof PRESCRIPTIONS.SEQUENCE
+              ]
             ) {
-              acc[1].options.push({
-                key: currentPrescription.action,
-                value: prescriptionList.join('\n'),
-              });
+              acc[1].options[
+                currentPrescription.action as keyof typeof PRESCRIPTIONS.SEQUENCE
+              ] =
+                PRESCRIPTIONS.SEQUENCE[
+                  currentPrescription.action as keyof typeof PRESCRIPTIONS.SEQUENCE
+                ].details.join('\n');
             }
           }
-
           return acc;
         },
         initialValue
@@ -160,8 +179,6 @@ export class MetricFiltersComponent implements OnInit {
   }
 
   onConfirmedSelection(selection: any) {
-    this.directImpactsStateService.setFilteredTreatmentTypes(
-      selection.map((x: { key: string; value: string }): string => x.key)
-    );
+    this.directImpactsStateService.setFilteredTreatmentTypes([...selection]);
   }
 }
