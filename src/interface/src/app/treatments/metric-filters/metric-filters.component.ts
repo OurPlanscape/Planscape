@@ -14,12 +14,9 @@ import {
 import { FilterDropdownComponent } from 'src/styleguide';
 import { TreatmentsState } from '../treatments.state';
 import { filter, map, take } from 'rxjs/operators';
+import { PRESCRIPTIONS, PrescriptionSequenceAction } from '../prescriptions';
 import { Observable } from 'rxjs';
-import {
-  PRESCRIPTIONS,
-  PrescriptionSequenceAction,
-  PrescriptionSingleAction,
-} from '../../../app/treatments/prescriptions';
+import { PrescriptionSingleAction } from '../../../app/treatments/prescriptions';
 import { Prescription } from '@types';
 
 @Component({
@@ -121,7 +118,7 @@ export class MetricFiltersComponent implements OnInit {
               ] =
                 PRESCRIPTIONS.SEQUENCE[
                   currentPrescription.action as keyof typeof PRESCRIPTIONS.SEQUENCE
-                ].details.join('\n');
+                ];
             }
           }
           return acc;
@@ -181,4 +178,28 @@ export class MetricFiltersComponent implements OnInit {
   onConfirmedSelection(selection: any) {
     this.directImpactsStateService.setFilteredTreatmentTypes([...selection]);
   }
+
+  /*private addTreatmentOption(
+    prescription: any,
+    options: { category: string; options: any[] }[],
+    singleActions: Record<string, string>,
+    sequencedActions: Record<PrescriptionSequenceAction, SequenceAttributes[]>
+  ) {
+    if (singleActions[prescription.action]) {
+      options[0].options.push({
+        key: prescription.action,
+        value: singleActions[prescription.action],
+      });
+    } else if (
+      sequencedActions[prescription.action as PrescriptionSequenceAction]
+    ) {
+      options[1].options.push(
+        ...sequencedActions[
+          prescription.action as PrescriptionSequenceAction
+        ].map((x) => {
+          return { key: prescription.action, value: x };
+        })
+      );
+    }
+  }*/
 }

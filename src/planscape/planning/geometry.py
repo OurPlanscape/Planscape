@@ -47,6 +47,7 @@ GEOMETRY_OPERATIONS = [
     fix_geometry,
     to_multipolygon,
     drop_z,
+    lambda geometry: geometry.normalize(clone=True),
 ]
 
 

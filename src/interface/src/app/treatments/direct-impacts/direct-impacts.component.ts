@@ -17,19 +17,15 @@ import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
-import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
+
 import {
   ButtonComponent,
   ModalComponent,
   PanelComponent,
-  PanelIconButton,
   TreatmentTypeIconComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  MatSlideToggleChange,
-  MatSlideToggleModule,
-} from '@angular/material/slide-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
@@ -58,7 +54,6 @@ import { FileSaverService } from '@services';
     AsyncPipe,
     SharedModule,
     DirectImpactsMapComponent,
-    DirectImpactsSyncedMapsComponent,
     PanelComponent,
     MatIconModule,
     MatSelectModule,
@@ -137,15 +132,11 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   navState$ = this.treatmentsState.navState$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
-  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
+
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
-  showTreatmentPrescription = false;
-  changeChartButtons: PanelIconButton[] = [
-    { icon: 'open_in_full', actionName: 'expand' },
-  ];
 
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(
     map((summary) => {
@@ -157,9 +148,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       );
     })
   );
-
-  showTreatmentPrescription$ =
-    this.directImpactsStateService.showTreatmentPrescription$;
 
   standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
     map((activeStand) => {
@@ -225,11 +213,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       injector: this.injector, // Pass the current injector to the dialog
       autoFocus: false,
     });
-  }
-
-  saveShowTreatmentPrescription(value: MatSlideToggleChange) {
-    this.mapConfigState.setTreatmentLegendVisible(value.checked);
-    this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
   }
 
   download() {

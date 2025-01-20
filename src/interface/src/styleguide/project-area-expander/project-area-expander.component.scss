@@ -43,6 +43,7 @@
       display: inline-block;
       padding-left: 8px;
       padding-right: 8px;
+      margin-top: 4px; // Adjust this value to fine-tune vertical position
     }
 
     .mat-expansion-indicator:hover {
@@ -56,8 +57,6 @@
   padding: 0px;
 
   ::ng-deep {
-
-
     .mat-expansion-panel-header {
       padding: 0 12px 0 12px;
     }
@@ -109,7 +108,7 @@
 .left-content {
   @include xs-label();
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 8px;
   margin-left: 4px;
@@ -144,18 +143,32 @@
 
 .rx-details {
   @include xs-label();
-  height: 24px;
+  height: 40px;
   display: flex;
   align-items: center;
   gap: 12px;
-  padding-left: 30px;
+  padding-left: 28px;
   padding-top: 0px;
-  padding-bottom: 10px;
+  padding-bottom: 0px;
   line-height: 24px;
+}
+
+.rx-sequence-detail {
+  @include xs-label();
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rx-sequence-desc {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .rx-detail-name {
   @include xs-label();
+  line-height: 20px;
 }
 
 .rx-detail-value {
@@ -167,6 +180,7 @@
   display: flex;
   flex-direction: column;
   padding-bottom: 20px;
+  gap: 16px;
 }
 
 .rx-icon {
@@ -186,12 +200,46 @@
   }
 }
 
-.rx-submenu-header {
+.rx-single-submenu-header {
   height: var(--mat-expansion-header-expanded-state-height);
   display: flex;
   flex-direction: row;
   justify-content: left;
   align-items: center;
+  gap: 6px;
+}
+
+.rx-sequence-submenu-header {
+  --mat-expansion-header-expanded-state-height: 48px;
+  height: var(--mat-expansion-header-expanded-state-height);
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+
+  ::ng-deep .mat-expansion-indicator {
+    position: absolute;
+    top: -4px;
+    right: 14px;
+  }
+}
+
+.rx-submenu-single-title {
+  height: var(--mat-expansion-header-expanded-state-height);
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+  gap: 6px;
+}
+
+.rx-submenu-seq-title {
+  height: var(--mat-expansion-header-expanded-state-height);
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: flex-start;
   gap: 6px;
 }
 
@@ -205,7 +253,10 @@
   line-height: 30px;
   height: 30px;
 }
-
+.rx-detail-year {
+  color: $color-md-gray;
+  white-space: nowrap;
+}
 .sequence-icon {
   color: $color-md-gray;
   width: 20px;

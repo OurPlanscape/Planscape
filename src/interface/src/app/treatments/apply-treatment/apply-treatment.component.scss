@@ -2,17 +2,18 @@
 
 .prescription {
   display: block;
-  margin-bottom: 8px;
+  padding: 4px 4px 4px 16px;
+  margin-bottom: 4px;
+
+  &:hover {
+    background-color: $color-light-gray;
+  }
 }
 
 .form-fixed {
   padding: 16px 16px 0;
 }
 
-.prescriptions {
-  padding: 16px;
-  overflow-y: auto;
-}
 
 .prescription-sequence {
   display: block;
@@ -62,9 +63,8 @@
 
 sg-modal {
   max-height: 100%;
-  box-shadow:
-    0px 4px 4px 0px rgba(0, 0, 0, 0.1),
-    0px 2px 2px 0px rgba(0, 0, 0, 0.1);
+  box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.1),
+  0px 2px 2px 0px rgba(0, 0, 0, 0.1);
 
   ::ng-deep {
     .modal-body {
@@ -101,12 +101,48 @@ sg-modal {
   }
 }
 
+
 .sequence-details {
-  padding-left: 28px;
-  padding-bottom: 12px;
-  margin-bottom: 16px;
+  display: block;
   border-bottom: 1px solid $color-soft-gray;
   color: $color-dark-gray;
+  padding-left: 16px;
+
+  &:hover {
+    background-color: $color-light-gray;
+  }
+
+  span {
+    color: $color-dark-gray;
+    text-transform: capitalize;
+  }
+
+  &::ng-deep {
+    .mdc-radio {
+      position: relative;
+      top: 12px;
+    }
+
+    .mdc-form-field {
+      align-items: flex-start;
+    }
+
+    .mdc-label {
+      color: $color-dark-gray;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      padding-left: 10px;
+    }
+
+    .mdc-label:hover {
+      background-color: transparent;
+    }
+  }
+
+  .detail + .detail {
+    margin-top: 8px;
+  }
+
 }
 
 .sequence-details:last-child {
