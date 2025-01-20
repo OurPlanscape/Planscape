@@ -72,6 +72,8 @@ export class DirectImpactsMapComponent {
 
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
+  standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
+
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
     this.mapCreated.emit(this.mapLibreMap);
