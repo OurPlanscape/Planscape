@@ -17,7 +17,7 @@ import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
-import { DirectImpactsSyncedMapsComponent } from '../direct-impacts-synced-maps/direct-impacts-synced-maps.component';
+
 import {
   ButtonComponent,
   ModalComponent,
@@ -58,7 +58,6 @@ import { FileSaverService } from '@services';
     AsyncPipe,
     SharedModule,
     DirectImpactsMapComponent,
-    DirectImpactsSyncedMapsComponent,
     PanelComponent,
     MatIconModule,
     MatSelectModule,

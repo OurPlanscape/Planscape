@@ -1,10 +1,6 @@
 <sg-expanded-panel (clickedClose)="close()">
   <div panelTitle>Treatment Prescriptions</div>
   <div panelContent class="content">
-    <app-direct-impacts-synced-maps
-      *ngIf="
-        (showTreatmentPrescription$ | async) === false
-      "></app-direct-impacts-synced-maps>
     <app-treatment-map
       [showProjectAreaTooltips]="false"
       *ngIf="showTreatmentPrescription$ | async"></app-treatment-map>

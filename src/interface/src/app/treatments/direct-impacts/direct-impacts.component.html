@@ -87,20 +87,25 @@
       </sg-panel>
 
       <sg-panel
-        class="map-panel"
         [ngClass]="{ prescriptions: showTreatmentPrescription$ | async }"
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandMaps()">
         <div panelTitle>Treatment Prescriptions</div>
-        <app-direct-impacts-synced-maps
-          *ngIf="
-            (showTreatmentPrescription$ | async) === false
-          "></app-direct-impacts-synced-maps>
-        <app-treatment-map
-          [showProjectAreaTooltips]="false"
-          *ngIf="showTreatmentPrescription$ | async">
-        </app-treatment-map>
+        <div class="map-panel-content">
+          <app-direct-impacts-map></app-direct-impacts-map>
+          <div class="attribution">
+            <a href="https://maplibre.org/" target="_blank">MapLibre</a> |
+            <a href="https://www.mapbox.com/about/maps" target="_blank"
+              >© Mapbox</a
+            >&nbsp;<a
+              href="https://www.openstreetmap.org/about/"
+              target="_blank"
+              >© OpenStreetMap</a
+            >
+          </div>
+        </div>
+
         <app-treatment-legend
           *ngIf="showTreatmentLegend$ | async"></app-treatment-legend>
       </sg-panel>
