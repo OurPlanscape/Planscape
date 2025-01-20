@@ -36,8 +36,6 @@ export class ExpandedDirectImpactMapComponent {
   showTreatmentPrescription$ =
     this.directImpactsStateService.showTreatmentPrescription$;
 
-  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
-
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   close() {

@@ -1,10 +1,4 @@
-import {
-  BehaviorSubject,
-  combineLatest,
-  map,
-  Observable,
-  switchMap,
-} from 'rxjs';
+import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
 import {
   DEFAULT_SLOT,
   ImpactsMetric,
@@ -59,24 +53,6 @@ export class DirectImpactsStateService {
 
   private _standsTxSourceLoaded$ = new BehaviorSubject(false);
   public standsTxSourceLoaded$ = this._standsTxSourceLoaded$.asObservable();
-
-  mapPanelTitle$ = combineLatest([
-    this.activeMetric$,
-    this._selectedProjectArea$,
-    this.showTreatmentPrescription$,
-  ]).pipe(
-    map(([activeMetric, pa, showTreatment]) => {
-      let selectedAreaString = '';
-      if (pa === 'All') {
-        selectedAreaString = 'All Project areas';
-      } else {
-        selectedAreaString = `${pa.project_area_name}`;
-      }
-      return showTreatment
-        ? 'Applied Treatment Prescription'
-        : `${activeMetric.metric.label} for ${selectedAreaString}`;
-    })
-  );
 
   constructor() {}
 

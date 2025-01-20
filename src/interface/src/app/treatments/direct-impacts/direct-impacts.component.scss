@@ -23,6 +23,10 @@
 .direct-impacts {
   background-color: $color-soft-purple;
   padding: 16px;
+
+  sg-panel + sg-panel {
+    margin-top: 16px;
+  }
 }
 
 .changes-chart-select {
@@ -30,6 +34,7 @@
   border: 1px;
   border-radius: 4px;
 }
+
 .changes-chart-title {
   line-height: 24px;
   font-weight: 600;
@@ -58,8 +63,8 @@
 }
 
 ::ng-deep
-  .mat-mdc-text-field-wrapper.mdc-text-field--outlined
-  .mat-mdc-form-field-infix {
+.mat-mdc-text-field-wrapper.mdc-text-field--outlined
+.mat-mdc-form-field-infix {
   padding: 0px;
   line-height: 38px;
   height: 38px;
@@ -91,25 +96,10 @@
   margin: 0 auto 0 0;
 }
 
-.holder {
-  background-color: $color-white;
-  padding: 24px;
-  margin-top: 16px;
-}
-
-.hexagon-help {
-  @include xs-label();
-  display: flex;
-  align-items: center;
-  margin-top: 24px;
-  gap: 8px;
-  color: $color-standard-blue;
-}
 
 .metric-selection {
-  background-color: $color-light-gray;
-  margin-top: 24px;
   //placeholder styles
+  margin-top: 24px;
   padding: 20px;
   display: flex;
 }
@@ -117,7 +107,7 @@
 .direct-impacts-metrics {
   display: grid;
   grid-template-columns: 50% 50%;
-  grid-template-rows: repeat(12, 86px);
+  grid-template-rows:  600px; // todo what about this size?
   gap: 16px;
   padding: 16px 0;
   width: calc(100% - 16px);
@@ -128,34 +118,7 @@
     width: 100%;
   }
 
-  .chart-1 {
-    grid-column: 1;
-    grid-row: 1/7;
-  }
 
-  .chart-2 {
-    grid-column: 1;
-    grid-row: 7/13;
-  }
-
-  .map-panel {
-    grid-column: 2;
-    grid-row: 1/12;
-
-    @include on-small() {
-      height: 90vh;
-    }
-
-    &.prescriptions {
-      grid-row: 1/13;
-    }
-  }
-
-  .legend-panel {
-    grid-column: 2;
-    grid-row: 12;
-    padding: 16px;
-  }
 }
 
 .empty-state {

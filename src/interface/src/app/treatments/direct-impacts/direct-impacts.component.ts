@@ -137,7 +137,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   navState$ = this.treatmentsState.navState$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
-  mapPanelTitle$ = this.directImpactsStateService.mapPanelTitle$;
+
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   selectedChartProjectArea$ =
