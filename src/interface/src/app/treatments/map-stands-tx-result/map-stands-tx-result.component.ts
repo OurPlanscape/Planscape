@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
   LayerComponent,
@@ -6,7 +6,7 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { LngLat, Map as MapLibreMap, MapMouseEvent, Point } from 'maplibre-gl';
-import { SINGLE_STAND_SELECTED } from '../map.styles';
+import { SINGLE_STAND_HOVER, SINGLE_STAND_SELECTED } from '../map.styles';
 import { environment } from '../../../environments/environment';
 import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
@@ -37,6 +37,7 @@ export class MapStandsTxResultComponent implements OnInit {
    */
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
+  @Output() afterStandSelected = new EventEmitter<void>();
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -44,6 +45,7 @@ export class MapStandsTxResultComponent implements OnInit {
   ) {}
 
   readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
+  readonly SINGLE_STAND_HOVER = SINGLE_STAND_HOVER;
   paint = {};
 
   tooltipLongLat: null | LngLat = null;
@@ -68,9 +70,12 @@ export class MapStandsTxResultComponent implements OnInit {
   // If we get a null active stand we clear the stand selection
   activeStandId$ = this.activeStand$.pipe(map((stand) => stand?.id));
 
+  hoverStand: number | string | null = null;
+
   setActiveStand(event: MapMouseEvent) {
     this.setActiveStandFromPoint(event.point);
-    this.hideTooltip();
+    this.hoverOutStand();
+    this.afterStandSelected.emit();
   }
 
   private setActiveStandFromPoint(point: Point) {
@@ -102,10 +107,15 @@ export class MapStandsTxResultComponent implements OnInit {
       });
   }
 
-  showTooltip(event: MapMouseEvent) {
+  hoverOnStand(event: MapMouseEvent) {
     this.tooltipLongLat = event.lngLat;
     const feature = this.getMapGeoJSONFeature(event.point);
     const action = feature.properties['action'];
+
+    if (feature && feature.id) {
+      this.hoverStand = feature.id;
+    }
+
     if (action) {
       this.appliedTreatment = descriptionForAction(
         feature.properties['action']
@@ -115,8 +125,9 @@ export class MapStandsTxResultComponent implements OnInit {
     }
   }
 
-  hideTooltip() {
+  hoverOutStand() {
     this.tooltipLongLat = null;
+    this.hoverStand = null;
   }
 
   private getMapGeoJSONFeature(point: Point) {

@@ -68,6 +68,8 @@ export class DirectImpactsMapComponent {
    */
   mapLibreMap!: MapLibreMap;
 
+  showThings = false;
+
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
     this.mapCreated.emit(this.mapLibreMap);
@@ -82,6 +84,11 @@ export class DirectImpactsMapComponent {
     if (event.sourceId === 'stands_by_tx_result' && event.isSourceLoaded) {
       this.directImpactsStateService.setStandsTxSourceLoaded(true);
     }
+  }
+
+  afterStandSelected() {
+    this.mapLibreMap.moveLayer('stands-layer', 'standSelected');
+    this.mapLibreMap.moveLayer('stands-outline-layer', 'standHover');
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

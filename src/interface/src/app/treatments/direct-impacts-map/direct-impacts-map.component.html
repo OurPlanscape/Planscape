@@ -29,5 +29,6 @@
 
   <app-map-stands-tx-result
     [mapLibreMap]="mapLibreMap"
-    [propertyName]="variables[year]"></app-map-stands-tx-result>
+    [propertyName]="variables[year]"
+    (afterStandSelected)="afterStandSelected()"></app-map-stands-tx-result>
 </mgl-map>
