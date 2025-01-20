@@ -213,9 +213,13 @@ export class FilterDropdownComponent<T> implements OnInit, OnChanges {
 
   getLabel(item: any): string {
     if (typeof item.value === 'string') {
-      return item;
+      return item.value;
     } else {
-      return item.value.join(',\n');
+      return item.value
+        .map((x: any) => {
+          return `${x.description} (year ${x.year})`;
+        })
+        .join(',\n');
     }
   }
 

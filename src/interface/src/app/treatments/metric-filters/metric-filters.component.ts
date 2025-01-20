@@ -77,7 +77,10 @@ export class MetricFiltersComponent implements OnInit {
       const initialValue: {
         category: string;
         options: Partial<
-          Record<PrescriptionSingleAction | PrescriptionSequenceAction, string>
+          Record<
+            PrescriptionSingleAction | PrescriptionSequenceAction,
+            string | SequenceAttributes[]
+          >
         >;
       }[] = [
         { category: 'Single Treatment', options: singlePrescriptions },
@@ -108,9 +111,7 @@ export class MetricFiltersComponent implements OnInit {
               currentPrescription.action as PrescriptionSequenceAction
             ] = (PRESCRIPTIONS.SEQUENCE as any)[
               currentPrescription.action as PrescriptionSingleAction
-            ].map((d: SequenceAttributes) => {
-              return `${d.description} (year ${d.year})`;
-            });
+            ];
           }
           return acc;
         },
