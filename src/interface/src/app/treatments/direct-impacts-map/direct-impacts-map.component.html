@@ -4,7 +4,7 @@
   (mapLoad)="mapLoaded($event)"
   [boxZoom]="false"
   [doubleClickZoom]="true"
-  [dragPan]="true"
+  [dragPan]="(standSelectionEnabled$ | async) === false"
   [dragRotate]="false"
   [fitBoundsOptions]="{ padding: 20 }"
   [fitBounds]="bounds"
@@ -16,6 +16,11 @@
   [transformRequest]="transformRequest"
   (zoomEvt)="saveZoom()"
   (sourceData)="sourceData($event)">
+  <app-map-controls
+    [userCanEditStands]="true"
+    [showClear]="false"
+    [mapLibreMap]="mapLibreMap"></app-map-controls>
+
   <app-map-stands
     [userCanEditStands]="false"
     sourceId="stands"

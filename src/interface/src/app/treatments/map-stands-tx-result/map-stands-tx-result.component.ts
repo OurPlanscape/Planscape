@@ -14,6 +14,7 @@ import { TreatmentsState } from '../treatments.state';
 import { descriptionForAction } from '../prescriptions';
 import { FilterByActionPipe } from './filter-by-action.pipe';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @UntilDestroy()
 @Component({
@@ -40,6 +41,7 @@ export class MapStandsTxResultComponent implements OnInit {
 
   constructor(
     private treatmentsState: TreatmentsState,
+    private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService
   ) {}
 
@@ -72,6 +74,9 @@ export class MapStandsTxResultComponent implements OnInit {
   hoverStand: number | string | null = null;
 
   setActiveStand(event: MapMouseEvent) {
+    if (!this.mapConfigState.isStandSelectionEnabled()) {
+      return;
+    }
     this.setActiveStandFromPoint(event.point);
     this.hoverOutStand();
   }
@@ -106,6 +111,10 @@ export class MapStandsTxResultComponent implements OnInit {
   }
 
   hoverOnStand(event: MapMouseEvent) {
+    if (!this.mapConfigState.isStandSelectionEnabled()) {
+      return;
+    }
+
     this.tooltipLongLat = event.lngLat;
     const feature = this.getMapGeoJSONFeature(event.point);
     const action = feature.properties['action'];
