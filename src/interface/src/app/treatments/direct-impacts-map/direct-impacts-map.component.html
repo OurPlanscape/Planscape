@@ -29,6 +29,10 @@
 
   <app-map-stands-tx-result
     [mapLibreMap]="mapLibreMap"
-    [propertyName]="variables[year]"
-    (afterStandSelected)="afterStandSelected()"></app-map-stands-tx-result>
+    [propertyName]="variables[year]"></app-map-stands-tx-result>
+
+  <app-action-button
+    *ngIf="(showLegend$ | async) === false"
+    (clickedActionButton)="openTreatmentLegend()">
+  </app-action-button>
 </mgl-map>

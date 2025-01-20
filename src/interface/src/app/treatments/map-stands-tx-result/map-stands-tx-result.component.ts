@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import {
   LayerComponent,
@@ -37,7 +37,6 @@ export class MapStandsTxResultComponent implements OnInit {
    */
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
-  @Output() afterStandSelected = new EventEmitter<void>();
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -75,7 +74,6 @@ export class MapStandsTxResultComponent implements OnInit {
   setActiveStand(event: MapMouseEvent) {
     this.setActiveStandFromPoint(event.point);
     this.hoverOutStand();
-    this.afterStandSelected.emit();
   }
 
   private setActiveStandFromPoint(point: Point) {

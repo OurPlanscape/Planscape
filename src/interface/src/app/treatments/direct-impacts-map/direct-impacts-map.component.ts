@@ -21,6 +21,7 @@ import {
   YearInterval,
 } from '../metrics';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
 
 @Component({
   selector: 'app-direct-impacts-map',
@@ -36,6 +37,7 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
     NgIf,
     ControlComponent,
     MapStandsTxResultComponent,
+    MapActionButtonComponent,
   ],
   templateUrl: './direct-impacts-map.component.html',
   styleUrl: './direct-impacts-map.component.scss',
@@ -68,7 +70,7 @@ export class DirectImpactsMapComponent {
    */
   mapLibreMap!: MapLibreMap;
 
-  showThings = false;
+  showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
@@ -83,12 +85,24 @@ export class DirectImpactsMapComponent {
   sourceData(event: MapSourceDataEvent) {
     if (event.sourceId === 'stands_by_tx_result' && event.isSourceLoaded) {
       this.directImpactsStateService.setStandsTxSourceLoaded(true);
+      this.moveLayers();
     }
   }
 
-  afterStandSelected() {
-    this.mapLibreMap.moveLayer('stands-layer', 'standSelected');
-    this.mapLibreMap.moveLayer('stands-outline-layer', 'standHover');
+  // need to manually move the order of the layers so the
+  // stands results sits on top
+  private moveLayers() {
+    if (
+      this.mapLibreMap.getLayer('stands-layer') &&
+      this.mapLibreMap.getLayer('stands-outline-layer')
+    ) {
+      this.mapLibreMap.moveLayer('stands-layer', 'standSelected');
+      this.mapLibreMap.moveLayer('stands-outline-layer', 'standHover');
+    }
+  }
+
+  openTreatmentLegend() {
+    this.mapConfigState.setTreatmentLegendVisible(true);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
