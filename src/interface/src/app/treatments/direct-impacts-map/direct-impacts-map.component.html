@@ -16,10 +16,18 @@
   [transformRequest]="transformRequest"
   (zoomEvt)="saveZoom()"
   (sourceData)="sourceData($event)">
-  <app-map-stands-tx-result
+  <app-map-stands
+    [userCanEditStands]="false"
+    sourceId="stands"
     [mapLibreMap]="mapLibreMap"
-    [propertyName]="variables[year]"></app-map-stands-tx-result>
+    [selectStart]="null"
+    [selectEnd]="null"></app-map-stands>
+
   <app-map-project-areas
     [withFill]="false"
     [showTooltips]="false"></app-map-project-areas>
+
+  <app-map-stands-tx-result
+    [mapLibreMap]="mapLibreMap"
+    [propertyName]="variables[year]"></app-map-stands-tx-result>
 </mgl-map>

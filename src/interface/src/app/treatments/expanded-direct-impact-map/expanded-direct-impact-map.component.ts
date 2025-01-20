@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ModalComponent } from '@styleguide';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MatDialogRef } from '@angular/material/dialog';
 
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
@@ -27,13 +26,9 @@ import { MapConfigState } from '../treatment-map/map-config.state';
 })
 export class ExpandedDirectImpactMapComponent {
   constructor(
-    private directImpactsStateService: DirectImpactsStateService,
     private mapConfigState: MapConfigState,
     public dialogRef: MatDialogRef<ExpandedDirectImpactMapComponent>
   ) {}
-
-  showTreatmentPrescription$ =
-    this.directImpactsStateService.showTreatmentPrescription$;
 
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 

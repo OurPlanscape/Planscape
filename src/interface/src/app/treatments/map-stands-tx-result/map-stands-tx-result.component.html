@@ -7,18 +7,13 @@
   id="standsFill"
   type="fill"
   source="stands_by_tx_result"
-  [paint]="paint"
+  [paint]="{
+    'fill-color': '#FFF',
+    'fill-opacity': 0.5
+  }"
   (layerClick)="setActiveStand($event)"
   (layerMouseMove)="showTooltip($event)"
   (layerMouseOut)="hideTooltip()"
-  [filter]="treatments$ | async | filterByAction"
-  sourceLayer="stands_by_tx_result"></mgl-layer>
-
-<mgl-layer
-  id="standsOutline"
-  type="line"
-  source="stands_by_tx_result"
-  [paint]="STANDS_CELL_PAINT"
   [filter]="treatments$ | async | filterByAction"
   sourceLayer="stands_by_tx_result"></mgl-layer>
 

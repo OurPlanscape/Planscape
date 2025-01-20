@@ -8,7 +8,7 @@ import {
 } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
-import { TreatmentProjectArea } from '../types';
+import { TreatmentProjectArea } from '@types';
 
 export class DirectImpactsStateService {
   private _reportMetrics$ = new BehaviorSubject<
@@ -46,10 +46,6 @@ export class DirectImpactsStateService {
     TreatmentProjectArea | 'All'
   >('All');
   public selectedProjectArea$ = this._selectedProjectArea$.asObservable();
-
-  private _showTreatmentPrescription$ = new BehaviorSubject(false);
-  public showTreatmentPrescription$ =
-    this._showTreatmentPrescription$.asObservable();
 
   private _standsTxSourceLoaded$ = new BehaviorSubject(false);
   public standsTxSourceLoaded$ = this._standsTxSourceLoaded$.asObservable();
@@ -91,10 +87,6 @@ export class DirectImpactsStateService {
 
   isActiveSlot(slot: ImpactsMetricSlot) {
     return this._activeSlot$.value === slot;
-  }
-
-  setShowTreatmentPrescription(show: boolean) {
-    this._showTreatmentPrescription$.next(show);
   }
 
   setStandsTxSourceLoaded(val: boolean) {

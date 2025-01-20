@@ -37,7 +37,7 @@
   <sg-panel
     class="chart-1"
     [paddedContent]="false"
-    [buttons]="changeChartButtons"
+    [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
     (clickedButton)="expandChangeChart()">
     <div panelTitle class="changes-chart-title">
       <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
@@ -87,7 +87,6 @@
       </sg-panel>
 
       <sg-panel
-        [ngClass]="{ prescriptions: showTreatmentPrescription$ | async }"
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandMaps()">

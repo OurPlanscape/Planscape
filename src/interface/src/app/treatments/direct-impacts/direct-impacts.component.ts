@@ -22,14 +22,10 @@ import {
   ButtonComponent,
   ModalComponent,
   PanelComponent,
-  PanelIconButton,
   TreatmentTypeIconComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import {
-  MatSlideToggleChange,
-  MatSlideToggleModule,
-} from '@angular/material/slide-toggle';
+import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
@@ -141,10 +137,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
-  showTreatmentPrescription = false;
-  changeChartButtons: PanelIconButton[] = [
-    { icon: 'open_in_full', actionName: 'expand' },
-  ];
 
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(
     map((summary) => {
@@ -156,9 +148,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       );
     })
   );
-
-  showTreatmentPrescription$ =
-    this.directImpactsStateService.showTreatmentPrescription$;
 
   standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
     map((activeStand) => {
@@ -224,11 +213,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       injector: this.injector, // Pass the current injector to the dialog
       autoFocus: false,
     });
-  }
-
-  saveShowTreatmentPrescription(value: MatSlideToggleChange) {
-    this.mapConfigState.setTreatmentLegendVisible(value.checked);
-    this.directImpactsStateService.setShowTreatmentPrescription(value.checked);
   }
 
   download() {
