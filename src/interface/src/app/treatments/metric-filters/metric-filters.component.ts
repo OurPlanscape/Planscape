@@ -15,6 +15,7 @@ import { FilterDropdownComponent } from 'src/styleguide';
 import { TreatmentsState } from '../treatments.state';
 import { filter, map, take } from 'rxjs/operators';
 import {
+  PrescriptionAction,
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   SequenceAttributes,
@@ -77,10 +78,7 @@ export class MetricFiltersComponent implements OnInit {
       const initialValue: {
         category: string;
         options: Partial<
-          Record<
-            PrescriptionSingleAction | PrescriptionSequenceAction,
-            string | SequenceAttributes[]
-          >
+          Record<PrescriptionAction, string | SequenceAttributes[]>
         >;
       }[] = [
         { category: 'Single Treatment', options: singlePrescriptions },
@@ -98,7 +96,7 @@ export class MetricFiltersComponent implements OnInit {
       );
 
       const options = prescriptions.reduce(
-        (acc: any, currentPrescription: Prescription) => {
+        (acc: typeof initialValue, currentPrescription: Prescription) => {
           if (currentPrescription.type === 'SINGLE') {
             initialValue[0].options[
               currentPrescription.action as PrescriptionSingleAction
@@ -109,9 +107,10 @@ export class MetricFiltersComponent implements OnInit {
           } else if (currentPrescription.type === 'SEQUENCE') {
             initialValue[1].options[
               currentPrescription.action as PrescriptionSequenceAction
-            ] = (PRESCRIPTIONS.SEQUENCE as any)[
-              currentPrescription.action as PrescriptionSingleAction
-            ];
+            ] =
+              PRESCRIPTIONS.SEQUENCE[
+                currentPrescription.action as PrescriptionSequenceAction
+              ];
           }
           return acc;
         },
