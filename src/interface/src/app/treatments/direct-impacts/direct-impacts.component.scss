@@ -108,7 +108,6 @@
   grid-template-columns: 50% 50%;
   grid-template-rows:  600px; // todo what about this size?
   gap: 16px;
-  padding: 16px 0;
   width: calc(100% - 16px);
 
   @include on-small() {
