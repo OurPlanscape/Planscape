@@ -1,4 +1,4 @@
-import { Prescription } from '@types';
+import { Prescription, TreatmentSummary } from '@types';
 
 // Single prescription keys
 export type PrescriptionSingleAction =
@@ -161,4 +161,56 @@ export function descriptionForPrescription(prescription: Prescription) {
       .join(', ');
   }
   return '';
+}
+
+export function getPrescriptionsFromSummary(
+  summary: TreatmentSummary
+): Prescription[] {
+  return summary.project_areas
+    .flatMap((project_area) => project_area.prescriptions)
+    .reduce((unique: Prescription[], prescription) => {
+      if (!unique.find((p) => p.action === prescription.action)) {
+        unique.push(prescription);
+      }
+      return unique;
+    }, []);
+}
+
+export function getTreatmentTypeOptions(summary: TreatmentSummary | null): {
+  category: string;
+  options: { key: PrescriptionAction; value: string }[];
+}[] {
+  const initialValue = [
+    {
+      category: 'Single Treatment',
+      options: [] as { key: PrescriptionSingleAction; value: string }[],
+    },
+    {
+      category: 'Sequenced Treatment',
+      options: [] as { key: PrescriptionAction; value: string }[],
+    },
+  ];
+
+  if (!summary?.project_areas) {
+    return initialValue;
+  }
+  const prescriptions: Prescription[] = getPrescriptionsFromSummary(summary);
+
+  return prescriptions.reduce(
+    (acc: typeof initialValue, currentPrescription: Prescription) => {
+      if (currentPrescription.type === 'SINGLE') {
+        initialValue[0].options.push({
+          key: currentPrescription.action,
+          value: descriptionForPrescription(currentPrescription),
+        });
+      } else if (currentPrescription.type === 'SEQUENCE') {
+        initialValue[1].options.push({
+          key: currentPrescription.action,
+          value: descriptionForPrescription(currentPrescription),
+        });
+      }
+      return acc;
+    },
+    initialValue
+  );
 }

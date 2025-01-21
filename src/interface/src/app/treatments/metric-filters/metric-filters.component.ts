@@ -14,13 +14,8 @@ import {
 import { FilterDropdownComponent } from 'src/styleguide';
 import { TreatmentsState } from '../treatments.state';
 import { filter, map, take } from 'rxjs/operators';
-import {
-  descriptionForPrescription,
-  PrescriptionAction,
-  PrescriptionSingleAction,
-} from '../prescriptions';
+import { getTreatmentTypeOptions } from '../prescriptions';
 import { Observable } from 'rxjs';
-import { Prescription } from '@types';
 
 @Component({
   selector: 'app-metric-filters',
@@ -64,46 +59,7 @@ export class MetricFiltersComponent implements OnInit {
     filter((summary) => summary !== null),
     take(1),
     map((summary) => {
-      const initialValue = [
-        {
-          category: 'Single Treatment',
-          options: [] as { key: PrescriptionSingleAction; value: string }[],
-        },
-        {
-          category: 'Sequenced Treatment',
-          options: [] as { key: PrescriptionAction; value: string }[],
-        },
-      ];
-
-      if (!summary?.project_areas) {
-        return initialValue;
-      }
-      const prescriptions: Prescription[] = summary.project_areas
-        .flatMap((project_area) => project_area.prescriptions)
-        .reduce((unique: Prescription[], prescription) => {
-          if (!unique.find((p) => p.action === prescription.action)) {
-            unique.push(prescription);
-          }
-          return unique;
-        }, []);
-
-      return prescriptions.reduce(
-        (acc: typeof initialValue, currentPrescription: Prescription) => {
-          if (currentPrescription.type === 'SINGLE') {
-            initialValue[0].options.push({
-              key: currentPrescription.action,
-              value: descriptionForPrescription(currentPrescription),
-            });
-          } else if (currentPrescription.type === 'SEQUENCE') {
-            initialValue[1].options.push({
-              key: currentPrescription.action,
-              value: descriptionForPrescription(currentPrescription),
-            });
-          }
-          return acc;
-        },
-        initialValue
-      );
+      return getTreatmentTypeOptions(summary);
     })
   );
 
