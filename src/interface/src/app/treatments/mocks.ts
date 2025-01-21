@@ -52,4 +52,5 @@ export const MOCK_TREATMENT_PLAN: TreatmentPlan = {
   created_at: '2024-01-01T00:00:00Z',
   updated_at: '2024-01-01T00:00:00Z',
   creator_name: 'John Doe',
+  scenario: 2,
 };
