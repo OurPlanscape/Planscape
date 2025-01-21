@@ -17,6 +17,7 @@ export interface TreatmentPlan {
   created_at: string;
   creator_name: string;
   updated_at: string;
+  scenario: number;
 }
 
 interface Totals {

@@ -17,6 +17,16 @@
     display: flex;
     gap: 8px;
     align-items: center;
+    color: $color-dark-gray;
+    font-weight: 500;
+
+    .material-symbols-outlined {
+      color: $color-standard-blue;
+    }
+
+    &-label {
+      font-weight: 600;
+    }
   }
 }
 

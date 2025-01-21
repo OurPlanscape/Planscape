@@ -42,10 +42,11 @@ import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/ex
 import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
-import { TreatmentProjectArea } from '@types';
+import { Scenario, TreatmentPlan, TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 import { TreatmentsService } from '@services/treatments.service';
-import { FileSaverService } from '@services';
+import { FileSaverService, ScenarioService } from '@services';
+import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -92,6 +93,8 @@ import { FileSaverService } from '@services';
 export class DirectImpactsComponent implements OnInit, OnDestroy {
   loading = false;
   downloadingShapefile = false;
+  scenarioId: string | null = null;
+  scenario: Scenario | null = null;
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -102,7 +105,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private directImpactsStateService: DirectImpactsStateService,
     private fileSaverService: FileSaverService,
     private dialog: MatDialog,
-    private injector: Injector // Angular's injector for passing shared services
+    private injector: Injector, // Angular's injector for passing shared services
+    private scenarioService: ScenarioService
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.loading = true;
@@ -118,7 +122,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           this.mapConfigState.setShowFillProjectAreas(false);
           this.mapConfigState.updateShowTreatmentStands(true);
           this.mapConfigState.updateShowProjectAreas(true);
-          this.loading = false;
+          return plan as TreatmentPlan;
         }),
         catchError((error) => {
           this.loading = false;
@@ -126,7 +130,21 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           throw error;
         })
       )
-      .subscribe();
+      .subscribe((plan) => {
+        if (plan?.scenario) {
+          this.scenarioService.getScenario(String(plan.scenario)).subscribe({
+            next: (scenario: Scenario) => {
+              this.scenario = scenario;
+              this.loading = false;
+            },
+            error: () => {
+              this.loading = false;
+            },
+          });
+        } else {
+          this.loading = false;
+        }
+      });
   }
 
   navState$ = this.treatmentsState.navState$;
@@ -137,6 +155,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
+
+  projectArea$ = this.treatmentsState.summary$;
 
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(
     map((summary) => {
@@ -229,5 +249,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
         this.fileSaverService.saveAs(blob, filename);
         this.downloadingShapefile = false;
       });
+  }
+
+  getStandSizeValue(): string {
+    if (!this.scenario?.configuration?.stand_size) {
+      return '';
+    }
+    return `${STAND_SIZES_LABELS[this.scenario.configuration.stand_size]} (${STAND_SIZES[this.scenario.configuration.stand_size]} acres)`;
   }
 }
