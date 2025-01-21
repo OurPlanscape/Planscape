@@ -18,7 +18,7 @@ import { TreatmentsService } from '@services/treatments.service';
   styleUrl: './non-forested-data.component.scss',
 })
 export class NonForestedDataComponent {
-  loading = true;
+  state: 'LOADING' | 'TABLE' | 'NON_BURNABLE' = 'LOADING';
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
@@ -29,7 +29,7 @@ export class NonForestedDataComponent {
       .pipe(
         untilDestroyed(this),
         distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
-        tap((_) => (this.loading = true)),
+        tap((_) => (this.state = 'LOADING')),
         switchMap((s) =>
           this.treatmentsService.getStandResult(
             this.treatmentsState.getTreatmentPlanId(),
@@ -38,6 +38,7 @@ export class NonForestedDataComponent {
         )
       )
       .subscribe((dataset) => {
+        this.state = 'TABLE';
         this.dataSource = dataset.map((data, i) => {
           return {
             time_step: i * 5,
@@ -45,8 +46,23 @@ export class NonForestedDataComponent {
             flame_length: data.FL.category,
           };
         });
-        this.loading = false;
+        // if any its null mark the area as non-burnable
+        if (this.dataSource.some((data) => data.rate_of_spread === null)) {
+          this.state = 'NON_BURNABLE';
+        }
       });
+  }
+
+  get isLoading() {
+    return this.state === 'LOADING';
+  }
+
+  get showTable() {
+    return this.state === 'TABLE';
+  }
+
+  get showNonBurnable() {
+    return this.state === 'NON_BURNABLE';
   }
 
   dataSource: {
