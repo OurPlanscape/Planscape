@@ -26,6 +26,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTreatmentDialogComponent } from './create-treatment-dialog/create-treatment-dialog.component';
+import { AnalyticsService } from '@services/analytics.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -87,7 +88,8 @@ export class CreateScenariosComponent implements OnInit {
     private goalOverlayService: GoalOverlayService,
     private metricsService: MetricsService,
     private treatmentsService: TreatmentsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private analyticsService: AnalyticsService
   ) {}
 
   createForms() {
@@ -357,6 +359,11 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   openTreatmentDialog() {
+    this.analyticsService.emitEvent(
+      'new_treatment_plan',
+      'scenario_view_page',
+      'New Treatment Plan'
+    );
     this.dialog
       .open(CreateTreatmentDialogComponent)
       .afterClosed()
