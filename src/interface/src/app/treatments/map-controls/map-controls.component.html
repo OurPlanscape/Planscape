@@ -34,6 +34,7 @@
       <mat-icon class="material-symbols-outlined">pan_tool</mat-icon>
     </button>
     <button
+      *ngIf="showClear"
       type="button"
       (click)="clearAll()"
       matTooltip="Clear Selection"

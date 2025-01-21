@@ -8,6 +8,7 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
+  SequenceAttributes,
 } from '../../app/treatments/prescriptions';
 
 /**
@@ -81,14 +82,32 @@ export class TreatmentExpanderComponent {
 
   // If a title is explicity set, use that.
   // Otherwise, determine title from either treatment type or sequence num
-  titleText(): string {
+  singleRxTitleText(): string {
     if (this.title !== null) {
       return this.title;
     } else if (this.treatmentType === 'SINGLE') {
       return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
     } else if (this.treatmentType === 'SEQUENCE') {
       return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .name;
+        .map((d) => d.description)
+        .join(' ');
+    }
+    return 'No Treatment';
+  }
+
+  sequenceTitles(): SequenceAttributes[] {
+    return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
+  }
+
+  sequenceRxTitleText(): string {
+    if (this.title !== null) {
+      return this.title;
+    } else if (this.treatmentType === 'SINGLE') {
+      return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
+    } else if (this.treatmentType === 'SEQUENCE') {
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+        .map((d) => d.description)
+        .join(' ');
     }
     return 'No Treatment';
   }
@@ -107,14 +126,6 @@ export class TreatmentExpanderComponent {
   isMatch(part: string): boolean {
     if (!this.searchString) return false;
     return part.toLowerCase() === this.searchString.toLowerCase();
-  }
-
-  sequenceDetails(): string[] {
-    if (this.treatmentType === 'SEQUENCE') {
-      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .details;
-    }
-    return [];
   }
 
   treatmentIconType(): PrescriptionSingleAction | null {

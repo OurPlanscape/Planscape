@@ -289,7 +289,7 @@ def generate_impact_results_data_to_plot(
         .annotate(
             delta=Case(
                 When(sum_baselines=0, then=None),
-                default=((F("sum_baselines") - Sum("value")) / F("sum_baselines")),
+                default=((Sum("value") - F("sum_baselines")) / F("sum_baselines")),
             ),
             value=Case(
                 When(divisor=0, then=None),

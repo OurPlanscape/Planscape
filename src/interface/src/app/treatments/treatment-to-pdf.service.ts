@@ -2,11 +2,11 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
-  nameForAction,
-  nameForTypeAndAction,
+  descriptionsForAction,
   PrescriptionAction,
-  PRESCRIPTIONS,
   PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+  PRESCRIPTIONS,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
@@ -160,7 +160,7 @@ export class TreatmentToPDFService {
     treatmentsUsed: Set<string>
   ) {
     const treatments = Array.from(treatmentsUsed).map((t) => ({
-      name: nameForAction(t),
+      name: descriptionsForAction(t),
       icon: treatmentIcons[t as PrescriptionAction],
     }));
 
@@ -200,6 +200,11 @@ export class TreatmentToPDFService {
           const x = data.cell.x + 1; // Add some padding
           const y = data.cell.y; // Add some padding
           data.doc.addImage(treatments[idx].icon, 'PNG', x, y, 3, 3);
+          treatments[idx].name.forEach((n) => {
+            data.doc.text(treatments[idx].name, x + 4, y + 2.5);
+            data.row.height += 1.5;
+          });
+          data.doc.addImage(treatments[idx].icon, 'PNG', x, y, 3, 3);
           data.doc.text(treatments[idx].name, x + 4, y + 3);
         }
       },
@@ -211,15 +216,18 @@ export class TreatmentToPDFService {
     currentSummary.project_areas.forEach((p) => {
       let rxInfo = '';
       p.prescriptions.forEach((rx) => {
-        const actionName = nameForTypeAndAction(rx.type, rx.action);
-        rxInfo += actionName + '\n';
+        if (rx.type === 'SINGLE') {
+          const actionName =
+            PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
+          rxInfo += actionName + '\n';
+        }
 
         if (rx.type === 'SEQUENCE') {
           const seqActions =
-            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
-              .details;
-          seqActions.forEach((aeqAction) => {
-            rxInfo += '\t' + aeqAction + '\n';
+            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction];
+          seqActions.forEach((seqAction) => {
+            rxInfo +=
+              seqAction.description + '(Year ' + seqAction.year + ') \n ';
           });
         }
       });

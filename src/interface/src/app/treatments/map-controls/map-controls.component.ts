@@ -36,6 +36,7 @@ import { Map as MapLibreMap } from 'maplibre-gl';
 })
 export class MapControlsComponent {
   @Input() mapLibreMap!: MapLibreMap;
+  @Input() showClear = true;
   @Input() userCanEditStands: boolean = false;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
 
