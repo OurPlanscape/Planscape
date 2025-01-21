@@ -141,19 +141,14 @@ export function getTreatedStandsTotal(prescriptions: Prescription[]) {
   }, 0);
 }
 
-// Currently used for PDF rendering
-export function nameForAction(action: string): string {
-  return (
-    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
-    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].join('\n') ||
-    ''
-  );
-}
-
-export function descriptionForAction(action: string): string {
-  return (
-    PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction] ||
-    PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction].join(', ') ||
-    ''
-  );
+export function descriptionsForAction(action: string): string[] {
+  let treatments: string[] = [];
+  if (PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction]) {
+    treatments.push(PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction]);
+  } else if (PRESCRIPTIONS.SEQUENCE[action as PrescriptionSequenceAction]) {
+    treatments = PRESCRIPTIONS.SEQUENCE[
+      action as PrescriptionSequenceAction
+    ].map((d) => `${d.description} (Year ${d.year})`);
+  }
+  return treatments;
 }
