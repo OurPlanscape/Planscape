@@ -72,7 +72,7 @@ export class MetricFiltersComponent implements OnInit {
         Record<PrescriptionSingleAction, string>
       > = {};
       const sequencePrescriptions: Partial<
-        Record<PrescriptionSequenceAction, string>
+        Record<PrescriptionSequenceAction, SequenceAttributes[]>
       > = {};
 
       const initialValue: {
