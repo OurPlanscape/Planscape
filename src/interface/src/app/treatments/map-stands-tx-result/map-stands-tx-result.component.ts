@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf, NgFor } from '@angular/common';
 import {
   LayerComponent,
   PopupComponent,
@@ -11,7 +11,7 @@ import { environment } from '../../../environments/environment';
 import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
-import { descriptionForAction } from '../prescriptions';
+import { descriptionsForAction } from '../prescriptions';
 import { FilterByActionPipe } from './filter-by-action.pipe';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapConfigState } from '../treatment-map/map-config.state';
@@ -25,6 +25,7 @@ import { MapConfigState } from '../treatment-map/map-config.state';
     LayerComponent,
     VectorSourceComponent,
     PopupComponent,
+    NgFor,
     NgIf,
     FilterByActionPipe,
   ],
@@ -50,7 +51,7 @@ export class MapStandsTxResultComponent implements OnInit {
   paint = {};
 
   tooltipLongLat: null | LngLat = null;
-  appliedTreatment = '';
+  appliedTreatment: string[] = [];
 
   vectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
     map((mapMetric) => {
@@ -124,11 +125,11 @@ export class MapStandsTxResultComponent implements OnInit {
     }
 
     if (action) {
-      this.appliedTreatment = descriptionForAction(
+      this.appliedTreatment = descriptionsForAction(
         feature.properties['action']
       );
     } else {
-      this.appliedTreatment = 'No Treatment';
+      this.appliedTreatment = ['No Treatment'];
     }
   }
 
