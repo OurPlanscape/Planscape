@@ -1,5 +1,12 @@
+import rasterio
+
+from core.s3 import get_aws_session
 from subprocess import CalledProcessError, TimeoutExpired
+from datasets.models import DataLayer, DataLayerType
 from planning.models import Scenario, ScenarioResultStatus
+from stands.models import Stand
+from stands.services import calculate_stand_zonal_stats
+from rasterio.session import AWSSession
 import logging
 from utils.cli_utils import call_forsys
 from planscape.celery import app
@@ -43,3 +50,21 @@ def async_forsys_run(scenario_id: int) -> None:
         log.error(
             f"A panic error happened while trying to call forsys for {scenario_id}"
         )
+
+
+def async_calculate_stand_metrics(scenario_id: int, condition_name: int) -> None:
+    scenario = Scenario.objects.get(id=scenario_id)
+    stand_size = scenario.get_stand_size()
+    scenario.get_project_areas_stands()
+    geometry = scenario.planning_area.geometry
+
+    stands = Stand.objects.within_polygon(geometry, stand_size).with_webmercator()
+
+    aws_session = AWSSession(get_aws_session())
+    with rasterio.Env(aws_session):
+        query = {"modules": {"forsys": {"legacy_name": condition_name}}}
+        datalayer = DataLayer.objects.get(
+            type=DataLayerType.RASTER,
+            metadata__contains=query,
+        )
+        calculate_stand_zonal_stats(stands, datalayer)
