@@ -39,5 +39,5 @@
   [closeButton]="false"
   className="treatment-tooltip">
   <div class="tooltip-title">Applied Treatment</div>
-  {{ appliedTreatment }}
+  <div *ngFor="let tx of appliedTreatment">{{ tx }}</div>
 </mgl-popup>

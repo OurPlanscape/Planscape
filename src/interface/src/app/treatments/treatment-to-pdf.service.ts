@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
-  nameForAction,
+  descriptionsForAction,
   PrescriptionAction,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
@@ -160,7 +160,7 @@ export class TreatmentToPDFService {
     treatmentsUsed: Set<string>
   ) {
     const treatments = Array.from(treatmentsUsed).map((t) => ({
-      name: nameForAction(t),
+      name: descriptionsForAction(t),
       icon: treatmentIcons[t as PrescriptionAction],
     }));
 
@@ -199,6 +199,11 @@ export class TreatmentToPDFService {
           const idx = data.row.index;
           const x = data.cell.x + 1; // Add some padding
           const y = data.cell.y; // Add some padding
+          data.doc.addImage(treatments[idx].icon, 'PNG', x, y, 3, 3);
+          treatments[idx].name.forEach((n) => {
+            data.doc.text(treatments[idx].name, x + 4, y + 2.5);
+            data.row.height += 1.5;
+          });
           data.doc.addImage(treatments[idx].icon, 'PNG', x, y, 3, 3);
           data.doc.text(treatments[idx].name, x + 4, y + 3);
         }
