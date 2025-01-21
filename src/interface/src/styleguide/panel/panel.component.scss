@@ -17,6 +17,10 @@ $panel-title-height: 60px;
     text-overflow: ellipsis;
     margin-right: 8px;
   }
+
+  &.no-divider > .title-row {
+    border-bottom-color: transparent;
+  }
 }
 
 .title-row:not(:empty) {
@@ -32,8 +36,8 @@ $panel-title-height: 60px;
   mat-icon {
     cursor: pointer;
   }
-
 }
+
 
 .content {
   height: calc(100% - $panel-title-height);
