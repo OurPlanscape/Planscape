@@ -145,24 +145,6 @@ export function descriptionsForAction(action: string): string[] {
   return treatments;
 }
 
-export function descriptionForPrescription(prescription: Prescription) {
-  if (prescription.type == 'SINGLE') {
-    return PRESCRIPTIONS.SINGLE[
-      prescription.action as PrescriptionSingleAction
-    ];
-  } else if (prescription.type === 'SEQUENCE') {
-    return PRESCRIPTIONS.SEQUENCE[
-      prescription.action as PrescriptionSequenceAction
-    ]
-      .map(
-        (attributes) =>
-          attributes.description + ' (Year ' + attributes.year + ')'
-      )
-      .join(', ');
-  }
-  return '';
-}
-
 export function getPrescriptionsFromSummary(
   summary: TreatmentSummary
 ): Prescription[] {
@@ -201,12 +183,12 @@ export function getTreatmentTypeOptions(summary: TreatmentSummary | null): {
       if (currentPrescription.type === 'SINGLE') {
         initialValue[0].options.push({
           key: currentPrescription.action,
-          value: descriptionForPrescription(currentPrescription),
+          value: descriptionsForAction(currentPrescription.action).join(', '),
         });
       } else if (currentPrescription.type === 'SEQUENCE') {
         initialValue[1].options.push({
           key: currentPrescription.action,
-          value: descriptionForPrescription(currentPrescription),
+          value: descriptionsForAction(currentPrescription.action).join(', '),
         });
       }
       return acc;
