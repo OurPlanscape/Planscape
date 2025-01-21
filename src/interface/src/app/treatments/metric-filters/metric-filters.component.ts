@@ -15,11 +15,12 @@ import { FilterDropdownComponent } from 'src/styleguide';
 import { TreatmentsState } from '../treatments.state';
 import { filter, map, take } from 'rxjs/operators';
 import {
-  PRESCRIPTIONS,
-  SequenceAttributes,
-  PrescriptionSequenceAction,
+  descriptionForPrescription,
+  PrescriptionAction,
+  PrescriptionSingleAction,
 } from '../prescriptions';
 import { Observable } from 'rxjs';
+import { Prescription } from '@types';
 
 @Component({
   selector: 'app-metric-filters',
@@ -63,26 +64,46 @@ export class MetricFiltersComponent implements OnInit {
     filter((summary) => summary !== null),
     take(1),
     map((summary) => {
-      const options = [
-        { category: 'Single Treatment', options: [] },
-        { category: 'Sequenced Treatment', options: [] },
+      const initialValue = [
+        {
+          category: 'Single Treatment',
+          options: [] as { key: PrescriptionSingleAction; value: string }[],
+        },
+        {
+          category: 'Sequenced Treatment',
+          options: [] as { key: PrescriptionAction; value: string }[],
+        },
       ];
 
       if (!summary?.project_areas) {
-        return options;
+        return initialValue;
       }
+      const prescriptions: Prescription[] = summary.project_areas
+        .flatMap((project_area) => project_area.prescriptions)
+        .reduce((unique: Prescription[], prescription) => {
+          if (!unique.find((p) => p.action === prescription.action)) {
+            unique.push(prescription);
+          }
+          return unique;
+        }, []);
 
-      summary.project_areas.forEach((project_area) => {
-        project_area.prescriptions.forEach((prescription) => {
-          this.addTreatmentOption(
-            prescription,
-            options,
-            PRESCRIPTIONS.SINGLE,
-            PRESCRIPTIONS.SEQUENCE
-          );
-        });
-      });
-      return options;
+      return prescriptions.reduce(
+        (acc: typeof initialValue, currentPrescription: Prescription) => {
+          if (currentPrescription.type === 'SINGLE') {
+            initialValue[0].options.push({
+              key: currentPrescription.action,
+              value: descriptionForPrescription(currentPrescription),
+            });
+          } else if (currentPrescription.type === 'SEQUENCE') {
+            initialValue[1].options.push({
+              key: currentPrescription.action,
+              value: descriptionForPrescription(currentPrescription),
+            });
+          }
+          return acc;
+        },
+        initialValue
+      );
     })
   );
 
@@ -135,29 +156,5 @@ export class MetricFiltersComponent implements OnInit {
     this.directImpactsStateService.setFilteredTreatmentTypes(
       selection.map((x: { key: string; value: string }): string => x.key)
     );
-  }
-
-  private addTreatmentOption(
-    prescription: any,
-    options: { category: string; options: any[] }[],
-    singleActions: Record<string, string>,
-    sequencedActions: Record<PrescriptionSequenceAction, SequenceAttributes[]>
-  ) {
-    if (singleActions[prescription.action]) {
-      options[0].options.push({
-        key: prescription.action,
-        value: singleActions[prescription.action],
-      });
-    } else if (
-      sequencedActions[prescription.action as PrescriptionSequenceAction]
-    ) {
-      options[1].options.push(
-        ...sequencedActions[
-          prescription.action as PrescriptionSequenceAction
-        ].map((x) => {
-          return { key: prescription.action, value: x };
-        })
-      );
-    }
   }
 }

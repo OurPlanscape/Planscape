@@ -133,14 +133,6 @@ export const PRESCRIPTIONS = {
   SEQUENCE: SEQUENCE_ACTIONS,
 };
 
-// Tabulate the total treated stands count from a prescriptions array
-export function getTreatedStandsTotal(prescriptions: Prescription[]) {
-  return prescriptions.reduce((total: number, prescription) => {
-    total = total + prescription.treated_stand_count;
-    return total;
-  }, 0);
-}
-
 export function descriptionsForAction(action: string): string[] {
   let treatments: string[] = [];
   if (PRESCRIPTIONS.SINGLE[action as PrescriptionSingleAction]) {
@@ -151,4 +143,22 @@ export function descriptionsForAction(action: string): string[] {
     ].map((d) => `${d.description} (Year ${d.year})`);
   }
   return treatments;
+}
+
+export function descriptionForPrescription(prescription: Prescription) {
+  if (prescription.type == 'SINGLE') {
+    return PRESCRIPTIONS.SINGLE[
+      prescription.action as PrescriptionSingleAction
+    ];
+  } else if (prescription.type === 'SEQUENCE') {
+    return PRESCRIPTIONS.SEQUENCE[
+      prescription.action as PrescriptionSequenceAction
+    ]
+      .map(
+        (attributes) =>
+          attributes.description + ' (Year ' + attributes.year + ')'
+      )
+      .join(', ');
+  }
+  return '';
 }

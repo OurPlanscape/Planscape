@@ -1,5 +1,5 @@
 import { Point } from 'geojson';
-import { PRESCRIPTIONS } from '../treatments/prescriptions';
+import { PrescriptionAction, PRESCRIPTIONS } from '../treatments/prescriptions';
 
 export type TreatmentStatus =
   | 'FAILURE'
@@ -38,7 +38,7 @@ export interface TreatmentProjectArea extends Totals {
 }
 
 export interface Prescription {
-  action: string;
+  action: PrescriptionAction;
   area_acres: number;
   treated_stand_count: number;
   type: TreatmentType;
