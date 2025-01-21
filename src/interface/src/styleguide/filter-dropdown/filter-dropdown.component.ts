@@ -9,7 +9,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { CommonModule, KeyValue, KeyValuePipe } from '@angular/common';
+import { CommonModule, KeyValuePipe } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -116,18 +116,16 @@ export class FilterDropdownComponent<T> implements OnInit, OnChanges {
     }
   }
 
-  isInSelection(term: any): boolean {
+  isInSelection(term: T): boolean {
     return this.selectedItems.includes(term);
   }
 
-  toggleSelection(e: Event, item: any): void {
-    const key = (item as KeyValue<string, string>).key || item;
-
-    if (!this.selectedItems.includes(key as T)) {
-      this.selectedItems.push(key as T);
+  toggleSelection(e: Event, item: T): void {
+    if (!this.selectedItems.includes(item)) {
+      this.selectedItems.push(item);
     } else {
       this.selectedItems = this.selectedItems.filter(
-        (selected) => selected !== key
+        (selected) => selected !== item
       );
     }
 
