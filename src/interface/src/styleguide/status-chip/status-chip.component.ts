@@ -1,5 +1,6 @@
 import { Component, HostBinding, Input } from '@angular/core';
 import { NgIf, NgSwitch } from '@angular/common';
+import { MatIconModule } from '@angular/material/icon';
 
 export type StatusChipStatus = 'inProgress' | 'success' | 'failed' | 'running';
 
@@ -10,7 +11,7 @@ export type StatusChipStatus = 'inProgress' | 'success' | 'failed' | 'running';
 @Component({
   selector: 'sg-status-chip',
   standalone: true,
-  imports: [NgIf, NgSwitch],
+  imports: [NgIf, NgSwitch, MatIconModule],
   templateUrl: './status-chip.component.html',
   styleUrl: './status-chip.component.scss',
 })
@@ -23,6 +24,8 @@ export class StatusChipComponent {
    * Optional label
    */
   @Input() label? = '';
+
+  @Input() icon?: string;
 
   /**
    * @ignore
