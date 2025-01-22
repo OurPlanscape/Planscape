@@ -22,6 +22,7 @@ import {
   ButtonComponent,
   ModalComponent,
   PanelComponent,
+  StatusChipComponent,
   TreatmentTypeIconComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
@@ -78,6 +79,7 @@ import { FileSaverService } from '@services';
     ExpandedChangeOverTimeChartComponent,
     ModalComponent,
     OverlayLoaderComponent,
+    StatusChipComponent,
   ],
   providers: [
     DirectImpactsStateService,
