@@ -22,6 +22,7 @@ import {
   ButtonComponent,
   ModalComponent,
   PanelComponent,
+  StatusChipComponent,
   TreatmentTypeIconComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
@@ -79,6 +80,7 @@ import { PrescriptionAction } from '../prescriptions';
     ExpandedChangeOverTimeChartComponent,
     ModalComponent,
     OverlayLoaderComponent,
+    StatusChipComponent,
   ],
   providers: [
     DirectImpactsStateService,

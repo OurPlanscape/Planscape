@@ -1,4 +1,4 @@
-<ng-container *ngIf="label; else defaultByStatus">
-  {{ label }}
-</ng-container>
-<ng-template #defaultByStatus>{{ defaultTextByStatus[status] }}</ng-template>
+<mat-icon *ngIf="icon">{{ icon }}</mat-icon>
+<div class="label">
+  {{ label || defaultTextByStatus[status] }}
+</div>
