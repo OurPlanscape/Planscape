@@ -81,10 +81,10 @@ export class ChangeOverTimeChartComponent {
         },
         datalabels: {
           color: '#000', // Label color (inside bar)
-          anchor: 'end', // Position the label at the center
+          anchor: 'end', // Position the label
           align: (context) => {
             const value = context.dataset.data[context.dataIndex] as number;
-            return value < 0 ? 'bottom' : 'top';
+            return value < 0 ? 'start' : 'end';
           },
           offset: (context) => {
             const value = context.dataset.data[context.dataIndex] as number;
