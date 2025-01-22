@@ -48,25 +48,6 @@ $stand-progress-height: 72px;
   }
 }
 
-.left-loading-overlay {
-  height: calc(100% - 50px);
-  background-color: white;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-}
-
-.left-loading-content {
-  @include xs-label();
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-}
-
 .content-area {
   display: flex;
   flex: 1;
