@@ -32,7 +32,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
 import { ImpactsMetric, Metric, METRICS } from '../metrics';
-import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
+
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { Chart } from 'chart.js';
@@ -73,7 +73,6 @@ import { MetricSelectorComponent } from '../metric-selector/metric-selector.comp
     MetricFiltersComponent,
     MetricFiltersComponent,
     NgStyle,
-    DirectImpactsMapLegendComponent,
     JsonPipe,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
@@ -189,23 +188,16 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(
-    map((m) => m.metric)
-  );
+  activeMetric$ = this.directImpactsStateService.activeMetric$;
 
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
   metrics: Metric[] = METRICS;
-  selectedMetric = this.metrics[0].id;
 
-  metricChanged(event: any) {
-    console.log(event);
-  }
-
-  activateMetric(data: ImpactsMetric) {
-    this.directImpactsStateService.setActiveMetric(data);
+  metricChanged(metric: Metric) {
+    this.directImpactsStateService.setActiveMetric(metric);
   }
 
   updateReportMetric(data: ImpactsMetric) {

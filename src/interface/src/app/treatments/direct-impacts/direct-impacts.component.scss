@@ -185,3 +185,13 @@ $panel-height: 600px;
   align-items: center;
   gap: 16px;
 }
+
+.stand-metric-selector {
+  padding: 16px;
+}
+
+.chart-2 ::ng-deep .content {
+  display: flex;
+  flex-direction: column;
+}
+

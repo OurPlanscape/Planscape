@@ -7,7 +7,7 @@ import { map, Observable } from 'rxjs';
 import { SLOT_COLORS, YEAR_INTERVAL_PROPERTY } from '../metrics';
 import { filter } from 'rxjs/operators';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { TreatmentTypeIconComponent } from '@styleguide';
 import { MatTableModule } from '@angular/material/table';
 import { NonForestedDataComponent } from '../non-forested-data/non-forested-data.component';
 import { standIsForested } from '../stands';
@@ -150,8 +150,7 @@ export class StandDataChartComponent {
   barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =
     this.directImpactsStateService.activeMetric$.pipe(
       map((activeMetric) => {
-        const slot = activeMetric.slot;
-        const color = SLOT_COLORS[slot];
+        const color = SLOT_COLORS['blue'];
         const options = {
           backgroundColor: color,
           borderColor: color,

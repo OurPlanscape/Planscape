@@ -1,11 +1,5 @@
-import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
-import {
-  DEFAULT_SLOT,
-  ImpactsMetric,
-  ImpactsMetricSlot,
-  Metric,
-  METRICS,
-} from './metrics';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { ImpactsMetric, ImpactsMetricSlot, Metric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
 import { TreatmentProjectArea } from '@types';
@@ -22,18 +16,8 @@ export class DirectImpactsStateService {
 
   public reportMetrics$ = this._reportMetrics$.asObservable();
 
-  private _activeSlot$ = new BehaviorSubject<ImpactsMetricSlot>(DEFAULT_SLOT);
-
-  public activeMetric$: Observable<ImpactsMetric> = this._activeSlot$.pipe(
-    switchMap((slot) =>
-      this.reportMetrics$.pipe(
-        map((metrics) => ({
-          metric: metrics[slot],
-          slot: slot,
-        }))
-      )
-    )
-  );
+  private _activeMetric$ = new BehaviorSubject(METRICS[0]);
+  public activeMetric$: Observable<Metric> = this._activeMetric$.asObservable();
 
   private _filteredTreatmentTypes$ = new BehaviorSubject<PrescriptionAction[]>(
     []
@@ -73,9 +57,8 @@ export class DirectImpactsStateService {
     }
   }
 
-  setActiveMetric(mapMetric: ImpactsMetric) {
-    this._activeSlot$.next(mapMetric.slot);
-    this.updateReportMetric(mapMetric);
+  setActiveMetric(metric: Metric) {
+    this._activeMetric$.next(metric);
   }
 
   updateReportMetric(mapMetric: ImpactsMetric) {
@@ -83,10 +66,6 @@ export class DirectImpactsStateService {
       ...this._reportMetrics$.value,
       [mapMetric.slot]: mapMetric.metric,
     });
-  }
-
-  isActiveSlot(slot: ImpactsMetricSlot) {
-    return this._activeSlot$.value === slot;
   }
 
   setStandsTxSourceLoaded(val: boolean) {

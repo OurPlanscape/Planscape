@@ -4,16 +4,16 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
-  map,
   combineLatest,
   distinctUntilChanged,
-  switchMap,
   filter,
+  map,
+  switchMap,
 } from 'rxjs';
 import {
-  SLOT_COLORS,
   ImpactsMetricSlot,
   Metric,
+  SLOT_COLORS,
   SLOT_PALETTES,
 } from '../metrics';
 import { TreatmentsService } from '@services/treatments.service';

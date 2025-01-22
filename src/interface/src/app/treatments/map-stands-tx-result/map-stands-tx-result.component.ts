@@ -1,5 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
+
 import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
+
 import {
   LayerComponent,
   PopupComponent,
@@ -59,7 +61,7 @@ export class MapStandsTxResultComponent implements OnInit {
       const plan = this.treatmentsState.getTreatmentPlanId();
       return (
         environment.martin_server +
-        `stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=${plan}&variable=${mapMetric.metric.id}`
+        `stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=${plan}&variable=${mapMetric.id}`
       );
     })
   );
