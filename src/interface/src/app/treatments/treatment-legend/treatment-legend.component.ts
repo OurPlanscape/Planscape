@@ -49,7 +49,7 @@ export class TreatmentLegendComponent {
   @Input() defaultExpanded = true;
   @Input() displayedTreatments: PrescriptionAction[] | null = null;
 
-  constructor(private mapConfigState: MapConfigState) { }
+  constructor(private mapConfigState: MapConfigState) {}
 
   originalOrder = (): number => {
     return 0;

@@ -26,12 +26,12 @@
       <div class="simple-rx-section">
         <ng-container *ngFor="let tx of singleRxTypes">
           <div class="legend-simple-row" *ngIf="inDisplayedTreatments(tx.type)">
-            <sg-treatment-type-icon [treatment]="tx.type"></sg-treatment-type-icon>
+            <sg-treatment-type-icon
+              [treatment]="tx.type"></sg-treatment-type-icon>
             <div class="legend-text">{{ tx.value }}</div>
           </div>
         </ng-container>
       </div>
-
     </mat-expansion-panel>
     <mat-divider class="tx-divider"></mat-divider>
     <mat-expansion-panel
@@ -46,7 +46,9 @@
       </mat-expansion-panel-header>
       <div class="sequence-rx-section">
         <ng-container *ngFor="let tx of sequenceRxTypes">
-          <div class="legend-sequence-row" *ngIf="inDisplayedTreatments(tx.type)">
+          <div
+            class="legend-sequence-row"
+            *ngIf="inDisplayedTreatments(tx.type)">
             <sg-sequence-icon [action]="tx.type"></sg-sequence-icon>
             <div class="legend-labels">
               <div *ngFor="let detail of tx.value" class="legend-text">

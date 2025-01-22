@@ -136,7 +136,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   activeStand$ = this.directImpactsStateService.activeStand$;
 
   treatmentActionsUsed$ = this.treatedStandsState.treatedStands$.pipe(
-    map((stands) => [...new Set(stands.map(s => s.action as PrescriptionAction))])
+    map((stands) => [
+      ...new Set(stands.map((s) => s.action as PrescriptionAction)),
+    ])
   );
 
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
