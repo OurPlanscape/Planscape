@@ -59,3 +59,19 @@ class AsyncCalculateStandMetricsTest(TestCase):
         async_calculate_stand_metrics(self.scenario.pk, self.datalayer_name)
 
         self.assertNotEqual(StandMetric.objects.count(), Stand.objects.count())
+
+    def test_async_calculate_stand_metrics_no_stands(self):
+        self.assertEqual(StandMetric.objects.count(), 0)
+
+        self.scenario.planning_area.geometry = MultiPolygon()
+        self.scenario.planning_area.save()
+
+        async_calculate_stand_metrics(self.scenario.pk, self.datalayer_name)
+
+        self.assertEqual(StandMetric.objects.count(), 0)
+
+    def test_async_calculate_stand_metrics_no_datalayer(self):
+        self.assertEqual(StandMetric.objects.count(), 0)
+        async_calculate_stand_metrics(self.scenario.pk, "foo_bar")
+
+        self.assertEqual(StandMetric.objects.count(), 0)

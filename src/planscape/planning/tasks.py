@@ -60,11 +60,15 @@ def async_calculate_stand_metrics(scenario_id: int, datalayer_name: str) -> None
 
     stands = Stand.objects.within_polygon(geometry, stand_size).with_webmercator()
 
-    aws_session = AWSSession(get_aws_session())
-    with rasterio.Env(aws_session):
-        query = {"modules": {"forsys": {"legacy_name": datalayer_name}}}
-        datalayer = DataLayer.objects.get(
-            type=DataLayerType.RASTER,
-            metadata__contains=query,
-        )
-        calculate_stand_zonal_stats(stands, datalayer)
+    try:
+        aws_session = AWSSession(get_aws_session())
+        with rasterio.Env(aws_session):
+            query = {"modules": {"forsys": {"legacy_name": datalayer_name}}}
+            datalayer = DataLayer.objects.get(
+                type=DataLayerType.RASTER,
+                metadata__contains=query,
+            )
+            calculate_stand_zonal_stats(stands, datalayer)
+    except DataLayer.DoesNotExist:
+        log.warning(f"DataLayer with name {datalayer_name} does not exist.")
+        return
