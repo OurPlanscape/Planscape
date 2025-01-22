@@ -20,6 +20,12 @@ export const STAND_SIZES: Record<string, number> = {
   LARGE: 500,
 };
 
+export const STAND_SIZES_LABELS: Record<string, string> = {
+  SMALL: 'Small',
+  MEDIUM: 'Medium',
+  LARGE: 'Large',
+};
+
 export function parseResultsToProjectAreas(
   results: ScenarioResult
 ): ProjectAreaReport[] {

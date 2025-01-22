@@ -7,7 +7,7 @@
 <div class="direct-impacts">
   <sg-panel>
     <div class="title-row">
-      <h4 class="title">Direct Treatment Impacts</h4>
+      <h4 class="title">Direct Treatment Effects Analysis</h4>
       <button
         sg-button
         variant="ghost"
@@ -24,12 +24,26 @@
       class="treatment-plan">
       <div class="item">
         <mat-icon class="material-symbols-outlined">person</mat-icon>
-        {{ treatmentPlan.creator_name }}
+        <span class="item-label">Run By:</span> {{ treatmentPlan.creator_name }}
       </div>
 
       <div class="item">
         <mat-icon class="material-symbols-outlined">calendar_month</mat-icon>
+        <span class="item-label">Run Date:</span>
         {{ treatmentPlan.updated_at | date }}
+      </div>
+
+      <div class="item">
+        <mat-icon class="material-symbols-outlined"
+          >check_box_outline_blank</mat-icon
+        >
+        <span class="item-label">Total Planning Area Acres:</span>
+        {{ (summary$ | async)?.total_area_acres }}
+      </div>
+
+      <div class="item">
+        <mat-icon class="material-symbols-outlined">hexagon</mat-icon>
+        <span class="item-label">Stand Size:</span> {{ getStandSizeValue() }}
       </div>
     </div>
   </sg-panel>
