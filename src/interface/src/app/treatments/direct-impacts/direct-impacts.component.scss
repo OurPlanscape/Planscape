@@ -85,6 +85,10 @@ $panel-height: 600px;
   justify-content: space-between;
   align-items: center;
   height: 38px;
+
+  .title-label {
+    color: $color-md-gray;
+  }
 }
 
 ::ng-deep .changes-chart-select .mat-mdc-text-field-wrapper,

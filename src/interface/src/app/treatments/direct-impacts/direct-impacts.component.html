@@ -55,7 +55,10 @@
     (clickedButton)="expandChangeChart()">
     <div panelTitle class="changes-chart-title">
       <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
-        Project Area
+        <span>
+          Percentage Change From Baseline
+          <span class="title-label">(Forested Stands)</span>
+        </span>
       </div>
     </div>
     <div class="chart-filters">
