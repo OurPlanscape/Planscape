@@ -8,7 +8,11 @@ const meta: Meta<StatusChipComponent> = {
   tags: ['autodocs'],
   render: (args) => ({
     props: args,
-    template: `<sg-status-chip ${argsToTemplate(args)}></sg-status-chip>`,
+    template: `<div style='width: 500px;
+    white-space: nowrap;
+    display: flex;
+    gap: 16px;
+    align-items: center;'>Some Title or Important thing  <sg-status-chip ${argsToTemplate(args)}></sg-status-chip></div>`,
   }),
 };
 
@@ -44,5 +48,21 @@ export const AnyLabel: Story = {
   args: {
     status: 'success',
     label: 'done deal',
+  },
+};
+
+export const WithIcon: Story = {
+  args: {
+    status: 'inProgress',
+    icon: 'hexagon',
+  },
+};
+
+export const VeryLongOne: Story = {
+  args: {
+    status: 'inProgress',
+    icon: 'hexagon',
+    label:
+      'Select a stand to get stand level effects that will be displayed on a chart next to other things',
   },
 };

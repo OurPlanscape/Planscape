@@ -90,7 +90,15 @@
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandMaps()">
-        <div panelTitle>Treatment Prescriptions</div>
+        <div panelTitle>
+          <div class="map-title">
+            <div>Treatment Prescriptions</div>
+
+            <sg-status-chip
+              icon="hexagon"
+              label="Select a stand to get stand level effects"></sg-status-chip>
+          </div>
+        </div>
         <div class="map-panel-content">
           <app-direct-impacts-map></app-direct-impacts-map>
           <div class="attribution">
