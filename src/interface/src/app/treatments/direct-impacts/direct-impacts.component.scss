@@ -2,6 +2,8 @@
 @import 'colors';
 @import 'mixins';
 
+$panel-height: 600px;
+
 :host {
   display: block;
 }
@@ -106,14 +108,19 @@
 .direct-impacts-metrics {
   display: grid;
   grid-template-columns: 50% 50%;
-  grid-template-rows:  600px; // todo what about this size?
+  grid-template-rows:  $panel-height;
   gap: 16px;
   width: calc(100% - 16px);
 
   @include on-small() {
-    display: flex;
-    flex-direction: column;
+
+    grid-template-columns: 100%;
+    grid-template-rows:  $panel-height $panel-height;
     width: 100%;
+
+    .chart-2 {
+      order: 1;
+    }
   }
 
 
@@ -158,3 +165,5 @@
     }
   }
 }
+
+
