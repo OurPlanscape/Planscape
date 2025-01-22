@@ -56,8 +56,8 @@ class CreateScenarioTest(APITestCase):
         "planning.views.validate_scenario_treatment_ratio",
         return_value=(True, "all good"),
     )
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_create_scenario(self, validation, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_create_scenario(self, validation, chord_mock):
         self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
@@ -82,13 +82,14 @@ class CreateScenarioTest(APITestCase):
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, "test notes")
         self.assertEqual(scenario.user, self.owner_user)
+        self.assertEqual(chord_mock.call_count, 1)
 
     @mock.patch(
         "planning.views.validate_scenario_treatment_ratio",
         return_value=(True, "all good"),
     )
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_create_scenario_no_notes(self, validation, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_create_scenario_no_notes(self, validation, chord_mock):
         self.client.force_authenticate(self.owner_user)
         payload = json.dumps(
             {
@@ -113,6 +114,7 @@ class CreateScenarioTest(APITestCase):
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, None)
         self.assertEqual(scenario.user, self.owner_user)
+        self.assertEqual(chord_mock.call_count, 1)
 
     def test_create_scenario_missing_planning_area(self):
         self.client.force_authenticate(self.owner_user)
@@ -156,8 +158,8 @@ class CreateScenarioTest(APITestCase):
         self.assertEqual(response.status_code, 400)
         self.assertRegex(str(response.content), r"This field is required")
 
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_create_scenario_duplicate_name(self, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_create_scenario_duplicate_name(self, chord_mock):
         self.client.force_authenticate(self.owner_user)
         first_payload = json.dumps(
             {
@@ -190,6 +192,7 @@ class CreateScenarioTest(APITestCase):
             second_response.content,
             {"global": ["The fields planning_area, name must make a unique set."]},
         )
+        self.assertEqual(chord_mock.call_count, 1)
 
     def test_create_scenario_not_logged_in(self):
         payload = json.dumps(
@@ -223,8 +226,8 @@ class CreateScenarioTest(APITestCase):
         )
         self.assertEqual(response.status_code, 400)
 
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_create_scenario_collab_user(self, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_create_scenario_collab_user(self, chord_mock):
         self.client.force_authenticate(self.collab_user)
         payload = json.dumps(
             {
@@ -247,6 +250,7 @@ class CreateScenarioTest(APITestCase):
         self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test collab scenario")
         self.assertEqual(scenario.user, self.collab_user)
+        self.assertEqual(chord_mock.call_count, 1)
 
     def test_create_scenario_viewer_user(self):
         self.client.force_authenticate(self.viewer_user)
