@@ -1,8 +1,11 @@
 <app-acres-treated></app-acres-treated>
-<mat-tab-group
-  class="summary-tab-group"
-  mat-align-tabs="start"
-  disablePagination="true">
+<div class="left-loading-overlay" *ngIf="refreshing$ | async">
+  <div class="left-loading-content">
+    <mat-spinner *ngIf="true" diameter="36"></mat-spinner>
+    <div>Updating treatment details...</div>
+  </div>
+</div>
+<mat-tab-group class="summary-tab-group" mat-align-tabs="start" disablePagination="true">
   <mat-tab label="Treatments">
     <app-project-area-tx-tab></app-project-area-tx-tab>
   </mat-tab>
