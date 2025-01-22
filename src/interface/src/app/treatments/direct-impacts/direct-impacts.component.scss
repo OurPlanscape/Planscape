@@ -185,3 +185,10 @@ $panel-height: 600px;
     }
   }
 }
+
+.map-title {
+  justify-items: center;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
