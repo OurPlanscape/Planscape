@@ -14,11 +14,7 @@ import {
 import { FilterDropdownComponent } from 'src/styleguide';
 import { TreatmentsState } from '../treatments.state';
 import { filter, map, take } from 'rxjs/operators';
-import {
-  PRESCRIPTIONS,
-  SequenceAttributes,
-  PrescriptionSequenceAction,
-} from '../prescriptions';
+import { getTreatmentTypeOptions } from '../prescriptions';
 import { Observable } from 'rxjs';
 
 @Component({
@@ -63,26 +59,7 @@ export class MetricFiltersComponent implements OnInit {
     filter((summary) => summary !== null),
     take(1),
     map((summary) => {
-      const options = [
-        { category: 'Single Treatment', options: [] },
-        { category: 'Sequenced Treatment', options: [] },
-      ];
-
-      if (!summary?.project_areas) {
-        return options;
-      }
-
-      summary.project_areas.forEach((project_area) => {
-        project_area.prescriptions.forEach((prescription) => {
-          this.addTreatmentOption(
-            prescription,
-            options,
-            PRESCRIPTIONS.SINGLE,
-            PRESCRIPTIONS.SEQUENCE
-          );
-        });
-      });
-      return options;
+      return getTreatmentTypeOptions(summary);
     })
   );
 
@@ -135,29 +112,5 @@ export class MetricFiltersComponent implements OnInit {
     this.directImpactsStateService.setFilteredTreatmentTypes(
       selection.map((x: { key: string; value: string }): string => x.key)
     );
-  }
-
-  private addTreatmentOption(
-    prescription: any,
-    options: { category: string; options: any[] }[],
-    singleActions: Record<string, string>,
-    sequencedActions: Record<PrescriptionSequenceAction, SequenceAttributes[]>
-  ) {
-    if (singleActions[prescription.action]) {
-      options[0].options.push({
-        key: prescription.action,
-        value: singleActions[prescription.action],
-      });
-    } else if (
-      sequencedActions[prescription.action as PrescriptionSequenceAction]
-    ) {
-      options[1].options.push(
-        ...sequencedActions[
-          prescription.action as PrescriptionSequenceAction
-        ].map((x) => {
-          return { key: prescription.action, value: x };
-        })
-      );
-    }
   }
 }
