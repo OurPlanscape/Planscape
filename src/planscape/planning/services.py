@@ -116,14 +116,14 @@ def create_scenario(user: TUser, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    conditions = scenario.configuration.get(
+    datalayer_names = scenario.configuration.get(
         "scenario_priorities", []
     ) + scenario.configuration.get("scenario_output_fields", [])
     tasks = [
         async_calculate_stand_metrics.si(
-            scenario_id=scenario.pk, condition_name=condition
+            scenario_id=scenario.pk, datalayer_name=datalayer_name
         )
-        for condition in conditions
+        for datalayer_name in datalayer_names
     ]
     chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
     return scenario
