@@ -80,9 +80,17 @@ export class ChangeOverTimeChartComponent {
           enabled: false,
         },
         datalabels: {
-          color: '#fff', // Label color (inside bar)
-          anchor: 'center', // Position the label at the center
-          align: 'center', // Align the label horizontally
+          color: '#000', // Label color (inside bar)
+          anchor: 'end', // Position the label at the center
+          align: (context) => {
+            const value = context.dataset.data[context.dataIndex] as number;
+            return value < 0 ? 'bottom' : 'top';
+          },
+          offset: (context) => {
+            const value = context.dataset.data[context.dataIndex] as number;
+            return value < 0 ? 12 : 0;
+          },
+          padding: 5,
           font: {
             ...(baseFont as any),
             size: 10, // Font size
