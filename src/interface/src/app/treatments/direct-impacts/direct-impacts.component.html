@@ -106,7 +106,7 @@
         </div>
 
         <app-treatment-legend
-          [displayedTreatments]="treatmentActionsUsed$ | async"
+          [appliedTreatments]="treatmentActionsUsed$ | async"
           *ngIf="showTreatmentLegend$ | async"></app-treatment-legend>
       </sg-panel>
     </section>

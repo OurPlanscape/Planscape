@@ -30,16 +30,12 @@ import { MapConfigState } from '../treatment-map/map-config.state';
   styleUrl: './treatment-legend.component.scss',
 })
 export class TreatmentLegendComponent {
-  readonly singlePrescriptions = PRESCRIPTIONS.SINGLE;
-  readonly sequencePrescriptions = PRESCRIPTIONS.SEQUENCE;
-
-  singleRxTypes: { type: PrescriptionAction; value: string }[] = Object.entries(
-    PRESCRIPTIONS.SINGLE
-  ).map(([key, value]) => ({
-    type: key as PrescriptionAction,
-    value,
-  }));
-  sequenceRxTypes = Object.entries(PRESCRIPTIONS.SEQUENCE).map(
+  readonly singleRxTypes: { type: PrescriptionAction; value: string }[] =
+    Object.entries(PRESCRIPTIONS.SINGLE).map(([key, value]) => ({
+      type: key as PrescriptionAction,
+      value,
+    }));
+  readonly sequenceRxTypes = Object.entries(PRESCRIPTIONS.SEQUENCE).map(
     ([key, value]) => ({
       type: key as PrescriptionAction,
       value,
@@ -47,7 +43,7 @@ export class TreatmentLegendComponent {
   );
 
   @Input() defaultExpanded = true;
-  @Input() displayedTreatments: PrescriptionAction[] | null = null;
+  @Input() appliedTreatments: PrescriptionAction[] | null = null;
 
   constructor(private mapConfigState: MapConfigState) {}
 
@@ -61,15 +57,33 @@ export class TreatmentLegendComponent {
 
   //this is meant to keep compatibility for when we want to show all treatments,
   // so we only filter when the array is not null
-  inDisplayedTreatments(pa: PrescriptionAction) {
-    // if the displayedTreatments list is null, return true
-    if (!this.displayedTreatments) {
+  inAppliedTreatments(pa: PrescriptionAction) {
+    // if the appliedTreatments list is null, return true
+    if (!this.appliedTreatments) {
       return true;
     }
     //otherwise check if the item is in the list first
-    if (this.displayedTreatments.includes(pa)) {
+    if (this.appliedTreatments.includes(pa)) {
       return true;
     }
     return false;
+  }
+
+  hasSingleTreatments() {
+    if (!this.appliedTreatments) {
+      return true;
+    }
+    return this.appliedTreatments.some((dt) =>
+      this.singleRxTypes.map((rx) => rx.type).includes(dt)
+    );
+  }
+
+  hasSequenceTreatments() {
+    if (!this.appliedTreatments) {
+      return true;
+    }
+    return this.appliedTreatments.some((dt) =>
+      this.sequenceRxTypes.map((rx) => rx.type).includes(dt)
+    );
   }
 }
