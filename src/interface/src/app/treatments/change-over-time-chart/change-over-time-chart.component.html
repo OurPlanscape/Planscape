@@ -5,7 +5,7 @@
     baseChart
     *ngIf="barChartData$ | async; let barChartData"
     [data]="barChartData"
-    [options]="(barChartOptions$ | async) ?? {}"
+    [options]="staticBarChartOptions"
     [legend]="false"
     [type]="'bar'"></canvas>
 </div>

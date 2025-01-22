@@ -5,7 +5,6 @@ import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
   map,
-  Observable,
   combineLatest,
   distinctUntilChanged,
   switchMap,
@@ -63,7 +62,7 @@ export class ChangeOverTimeChartComponent {
 
   @Input() metrics!: Record<ImpactsMetricSlot, Metric> | null;
 
-  private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
+  readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
       responsive: true,
       maintainAspectRatio: false,
@@ -178,26 +177,6 @@ export class ChangeOverTimeChartComponent {
     } as ChartConfiguration<'bar'>['data'];
   }
 
-  barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =
-    this.directImpactsStateService.activeMetric$?.pipe(
-      map((activeMetric) => {
-        const slot = activeMetric.slot;
-        const color = SLOT_COLORS[slot];
-        const options = {
-          backgroundColor: color,
-          borderColor: color,
-          elements: {
-            bar: {
-              hoverBackgroundColor: color,
-            },
-          },
-        };
-        return {
-          ...options,
-          ...this.staticBarChartOptions,
-        };
-      })
-    );
 
   convertImpactResultToChartData(
     resultData: ImpactsResultData[],
