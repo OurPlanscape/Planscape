@@ -46,6 +46,7 @@ import { TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService } from '@services';
+import { PrescriptionAction } from '../prescriptions';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -96,6 +97,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   constructor(
     private treatmentsState: TreatmentsState,
     private treatmentsService: TreatmentsService,
+    private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private router: Router,
@@ -132,6 +134,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   navState$ = this.treatmentsState.navState$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
+
+  treatmentActionsUsed$ = this.treatedStandsState.treatedStands$.pipe(
+    map((stands) => [...new Set(stands.map(s => s.action as PrescriptionAction))])
+  );
 
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 

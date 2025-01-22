@@ -49,7 +49,7 @@ export class TreatmentLegendComponent {
   @Input() defaultExpanded = true;
   @Input() displayedTreatments: PrescriptionAction[] | null = null;
 
-  constructor(private mapConfigState: MapConfigState) {}
+  constructor(private mapConfigState: MapConfigState) { }
 
   originalOrder = (): number => {
     return 0;
@@ -59,6 +59,8 @@ export class TreatmentLegendComponent {
     this.mapConfigState.setTreatmentLegendVisible(false);
   }
 
+  //this is meant to keep compatibility for when we want to show all treatments,
+  // so we only filter when the array is not null
   inDisplayedTreatments(pa: PrescriptionAction) {
     // if the displayedTreatments list is null, return true
     if (!this.displayedTreatments) {

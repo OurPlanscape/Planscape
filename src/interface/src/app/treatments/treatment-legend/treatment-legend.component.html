@@ -23,22 +23,15 @@
           Single Treatment
         </div>
       </mat-expansion-panel-header>
-      <!-- <div class="legend-section">
+      <div class="simple-rx-section">
         <ng-container *ngFor="let tx of singleRxTypes">
-          <div class="legend-row" *ngIf="inDisplayedTreatments(tx.type)">
-            <sg-treatment-type-icon
-              [treatment]="tx.type"></sg-treatment-type-icon>
+          <div class="legend-simple-row" *ngIf="inDisplayedTreatments(tx.type)">
+            <sg-treatment-type-icon [treatment]="tx.type"></sg-treatment-type-icon>
             <div class="legend-text">{{ tx.value }}</div>
           </div>
-        </ng-container> -->
-      <div class="simple-rx-section">
-        <div
-          class="legend-simple-row"
-          *ngFor="let tx of singlePrescriptions | keyvalue: originalOrder">
-          <sg-treatment-type-icon [treatment]="tx.key"></sg-treatment-type-icon>
-          <div class="legend-text">{{ tx.value }}</div>
-        </div>
+        </ng-container>
       </div>
+
     </mat-expansion-panel>
     <mat-divider class="tx-divider"></mat-divider>
     <mat-expansion-panel
@@ -51,27 +44,18 @@
           >Treatment Sequencing
         </div>
       </mat-expansion-panel-header>
-      <!-- <div class="legend-section">
-        <ng-container *ngFor="let tx of sequenceRxTypes">
-          <div class="legend-row" *ngIf="inDisplayedTreatments(tx.type)">
-            <sg-sequence-icon [action]="tx.type"></sg-sequence-icon>
-            <sg-treatment-type-icon
-              [treatment]="tx.type"></sg-treatment-type-icon>
-            <div class="legend-text">{{ tx.value.details }}</div>
-          </div>
-        </ng-container> -->
       <div class="sequence-rx-section">
-        <div
-          class="legend-sequence-row"
-          *ngFor="let seq of sequencePrescriptions | keyvalue: originalOrder">
-          <sg-sequence-icon [action]="seq.key"></sg-sequence-icon>
-          <div class="legend-labels">
-            <div *ngFor="let detail of seq.value" class="legend-text">
-              <span>{{ detail.description }}</span
-              ><span class="seq-year"> (Year {{ detail.year }})</span>
+        <ng-container *ngFor="let tx of sequenceRxTypes">
+          <div class="legend-sequence-row" *ngIf="inDisplayedTreatments(tx.type)">
+            <sg-sequence-icon [action]="tx.type"></sg-sequence-icon>
+            <div class="legend-labels">
+              <div *ngFor="let detail of tx.value" class="legend-text">
+                <span>{{ detail.description }}</span
+                ><span class="seq-year"> (Year {{ detail.year }})</span>
+              </div>
             </div>
           </div>
-        </div>
+        </ng-container>
       </div>
     </mat-expansion-panel>
   </div>
