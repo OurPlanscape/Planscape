@@ -4,9 +4,8 @@
     [metrics]="list"
     [label]="'Metric ' + (i + 1)"
     [color]="metricColors[i].value"
-    (metricChanged)="optionSelected(i, metricColors[i].key, $event)"
-    (activated)="
-      activateMetric($event, metricColors[i].key)
+    (metricChanged)="
+      optionSelected(i, metricColors[i].key, $event)
     "></app-metric-selector>
 </div>
 

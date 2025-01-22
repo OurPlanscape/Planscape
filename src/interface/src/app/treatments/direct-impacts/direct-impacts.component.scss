@@ -92,13 +92,6 @@ $panel-height: 600px;
   height: 38px;
 }
 
-::ng-deep
-  .mat-mdc-text-field-wrapper.mdc-text-field--outlined
-  .mat-mdc-form-field-infix {
-  padding: 0px;
-  line-height: 38px;
-  height: 38px;
-}
 
 .expansion-icon {
   background-color: $color-light-gray;

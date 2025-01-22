@@ -35,8 +35,8 @@
 
       <div class="item">
         <mat-icon class="material-symbols-outlined"
-          >check_box_outline_blank</mat-icon
-        >
+          >check_box_outline_blank
+        </mat-icon>
         <span class="item-label">Total Planning Area Acres:</span>
         {{ (summary$ | async)?.total_area_acres }}
       </div>
@@ -98,6 +98,14 @@
         (clickedButton)="expandStandChart()">
         <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
         <app-stand-data-chart></app-stand-data-chart>
+        <div>
+          <app-metric-selector
+            [selectedOption]="selectedMetric"
+            [metrics]="metrics"
+            color="blue"
+            label="Metric"
+            (metricChanged)="metricChanged($event)"></app-metric-selector>
+        </div>
       </sg-panel>
 
       <sg-panel
