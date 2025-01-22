@@ -251,9 +251,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   }
 
   getStandSizeValue(): string {
-    if (!this.scenario?.configuration?.stand_size) {
+    const stand_size = this.scenario?.configuration?.stand_size;
+    if (!stand_size) {
       return '';
     }
-    return `${STAND_SIZES_LABELS[this.scenario.configuration.stand_size]} (${STAND_SIZES[this.scenario.configuration.stand_size]} acres)`;
+    return `${STAND_SIZES_LABELS[stand_size]} (${STAND_SIZES[stand_size]} acres)`;
   }
 }
