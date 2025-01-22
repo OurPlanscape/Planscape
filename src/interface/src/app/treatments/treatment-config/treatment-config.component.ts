@@ -42,6 +42,7 @@ import { canRunTreatmentAnalysis } from '../../plan/permissions';
 import { Plan } from '@types';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AnalyticsService } from '@services/analytics.service';
 
 @UntilDestroy()
 @Component({
@@ -113,7 +114,8 @@ export class TreatmentConfigComponent {
     private router: Router,
     private dialog: MatDialog,
     private pdfService: TreatmentToPDFService,
-    private injector: Injector // Angular's injector for passing shared services
+    private injector: Injector, // Angular's injector for passing shared services
+    private analiticsService: AnalyticsService
   ) {
     this.router.events
       .pipe(
@@ -175,6 +177,11 @@ export class TreatmentConfigComponent {
   }
 
   showReviewDialog() {
+    this.analiticsService.emitEvent(
+      'run_treatment_analysis',
+      'treatment_plan_page',
+      'Run Treatment Analysis'
+    );
     this.dialog.open(ReviewTreatmentPlanDialogComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });

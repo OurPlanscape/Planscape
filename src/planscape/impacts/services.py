@@ -3,15 +3,13 @@ import json
 import logging
 from collections import defaultdict
 from pathlib import Path
-import re
-from django.conf import settings
 from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple
-import fiona
 
-from numpy import rec
+import fiona
 import rasterio
 from actstream import action as actstream_action
 from core.s3 import get_aws_session
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -20,7 +18,6 @@ from django.db.models import Case, Count, F, QuerySet, Sum, When
 from django.db.models.expressions import RawSQL
 from planning.models import PlanningArea, ProjectArea, Scenario
 from rasterio.session import AWSSession
-from planning.services import get_schema
 from stands.models import STAND_AREA_ACRES, Stand, StandMetric
 from stands.services import calculate_stand_zonal_stats
 
@@ -706,9 +703,16 @@ def get_treatment_results_table_data(
     ]
     """
     # Fetch treatment results
-    treated_results = TreatmentResult.objects.filter(
-        treatment_plan=treatment_plan, stand_id=stand_id
-    ).values("year", "variable", "value", "delta", "baseline")
+    treated_results = (
+        TreatmentResult.objects.filter(
+            treatment_plan=treatment_plan,
+            stand_id=stand_id,
+        )
+        .exclude(
+            variable__in=[ImpactVariable.FLAME_LENGTH, ImpactVariable.RATE_OF_SPREAD]
+        )
+        .values("year", "variable", "value", "delta", "baseline")
+    )
 
     if not treated_results.exists():
         return []

@@ -9,6 +9,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { CreateTreatmentDialogComponent } from '../create-scenarios/create-treatment-dialog/create-treatment-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { AnalyticsService } from '@services/analytics.service';
 
 @UntilDestroy()
 @Component({
@@ -23,7 +24,8 @@ export class UploadedScenarioViewComponent implements OnInit {
     private planStateService: PlanStateService,
     private treatmentsService: TreatmentsService,
     private matSnackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private analyticsService: AnalyticsService
   ) {}
 
   @Input() scenario?: Scenario;
@@ -58,6 +60,11 @@ export class UploadedScenarioViewComponent implements OnInit {
   }
 
   openNewTreatmentDialog() {
+    this.analyticsService.emitEvent(
+      'new_treatment_plan',
+      'uploaded_scenario_page',
+      'New Treatment Plan'
+    );
     this.dialog
       .open(CreateTreatmentDialogComponent)
       .afterClosed()
