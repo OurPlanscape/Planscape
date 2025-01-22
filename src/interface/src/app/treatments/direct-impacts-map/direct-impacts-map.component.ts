@@ -98,6 +98,7 @@ export class DirectImpactsMapComponent {
       this.mapLibreMap.getLayer('stands-layer') &&
       this.mapLibreMap.getLayer('stands-outline-layer')
     ) {
+      this.mapLibreMap.moveLayer('map-project-areas-line', 'standHover');
       this.mapLibreMap.moveLayer('stands-layer', 'standSelected');
       this.mapLibreMap.moveLayer('stands-outline-layer', 'standHover');
     }
