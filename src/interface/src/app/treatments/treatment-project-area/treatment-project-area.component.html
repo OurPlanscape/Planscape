@@ -1,5 +1,6 @@
 <app-acres-treated></app-acres-treated>
-<app-left-loading-overlay></app-left-loading-overlay>
+<app-left-loading-overlay
+  *ngIf="refreshing$ | async"></app-left-loading-overlay>
 <mat-tab-group
   class="summary-tab-group"
   mat-align-tabs="start"
