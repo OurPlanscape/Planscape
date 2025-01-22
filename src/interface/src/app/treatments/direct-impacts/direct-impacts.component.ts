@@ -42,7 +42,7 @@ import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/ex
 import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
-import { Scenario, TreatmentPlan, TreatmentProjectArea } from '@types';
+import { Scenario, TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService, ScenarioService } from '@services';
@@ -93,7 +93,6 @@ import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 export class DirectImpactsComponent implements OnInit, OnDestroy {
   loading = false;
   downloadingShapefile = false;
-  scenarioId: string | null = null;
   scenario: Scenario | null = null;
 
   constructor(
@@ -122,7 +121,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           this.mapConfigState.setShowFillProjectAreas(false);
           this.mapConfigState.updateShowTreatmentStands(true);
           this.mapConfigState.updateShowProjectAreas(true);
-          return plan as TreatmentPlan;
         }),
         catchError((error) => {
           this.loading = false;
@@ -130,9 +128,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           throw error;
         })
       )
-      .subscribe((plan) => {
-        if (plan?.scenario) {
-          this.scenarioService.getScenario(String(plan.scenario)).subscribe({
+      .subscribe(() => {
+        const scenarioId = this.treatmentsState.getScenarioId();
+        if (scenarioId) {
+          this.scenarioService.getScenario(scenarioId.toString()).subscribe({
             next: (scenario: Scenario) => {
               this.scenario = scenario;
               this.loading = false;
@@ -156,7 +155,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
 
-  projectArea$ = this.treatmentsState.summary$;
+  summary$ = this.treatmentsState.summary$;
 
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(
     map((summary) => {

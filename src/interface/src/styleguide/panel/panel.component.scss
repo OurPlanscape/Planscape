@@ -30,7 +30,7 @@ $panel-title-height: 60px;
   display: flex;
   align-items: center;
 
-  padding: 14px 16px 14px 24px;
+  padding: 16px;
   border-bottom: 1px solid $color-soft-gray;
 
   mat-icon {
@@ -53,7 +53,7 @@ $panel-title-height: 60px;
 
 
 .padded {
-  padding: 14px 16px 14px 24px;
+  padding: 0px 16px 16px 16px;
 
   &.content {
     height: calc(100% - $panel-title-height - 28px);
