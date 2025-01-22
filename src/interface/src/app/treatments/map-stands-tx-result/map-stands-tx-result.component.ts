@@ -43,6 +43,18 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
 
+  readonly vectorSourceName = 'stands_by_tx_result';
+
+  hoverPaint = {
+    'line-color': [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false],
+      '#f8f802',
+      '#00000000',
+    ],
+    'line-width': 4,
+  } as any;
+
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfigState: MapConfigState,
@@ -67,10 +79,6 @@ export class MapStandsTxResultComponent implements OnInit {
   );
 
   activeStand$ = this.directImpactsStateService.activeStand$;
-
-  treatments$ = this.directImpactsStateService.filteredTreatmentTypes$;
-
-  activeMetric$ = this.directImpactsStateService.activeMetric$;
 
   // If we get a null active stand we clear the stand selection
   activeStandId$ = this.activeStand$.pipe(map((stand) => stand?.id));
@@ -103,9 +111,9 @@ export class MapStandsTxResultComponent implements OnInit {
       .subscribe((standId) => {
         if (standId) {
           const sourceFeatures = this.mapLibreMap.querySourceFeatures(
-            'stands_by_tx_result',
+            this.vectorSourceName,
             {
-              sourceLayer: 'stands_by_tx_result',
+              sourceLayer: this.vectorSourceName,
               filter: ['==', ['get', 'id'], standId], // Filter for the specific stand ID
             }
           );
@@ -116,6 +124,8 @@ export class MapStandsTxResultComponent implements OnInit {
       });
   }
 
+  hoveredStands: (string | number)[] = [];
+
   hoverOnStand(event: MapMouseEvent) {
     if (!this.mapConfigState.isStandSelectionEnabled()) {
       return;
@@ -125,7 +135,9 @@ export class MapStandsTxResultComponent implements OnInit {
     const feature = this.getMapGeoJSONFeature(event.point);
     const action = feature.properties['action'];
 
-    if (feature && feature.id) {
+    if (feature && feature.id && feature.id != this.hoverStand) {
+      this.removePreviousHover();
+      this.paintHover(feature.id);
       this.hoverStand = feature.id;
     }
     const projectAreaName = feature.properties['project_area_name'];
@@ -142,9 +154,33 @@ export class MapStandsTxResultComponent implements OnInit {
     }
   }
 
+  private removePreviousHover() {
+    this.hoveredStands.forEach((id) => {
+      this.mapLibreMap.removeFeatureState({
+        source: this.vectorSourceName,
+        sourceLayer: this.vectorSourceName,
+        id: id,
+      });
+    });
+    this.hoveredStands = [];
+  }
+
+  private paintHover(id: string | number) {
+    this.hoveredStands.push(id);
+    this.mapLibreMap.setFeatureState(
+      {
+        source: this.vectorSourceName,
+        sourceLayer: this.vectorSourceName,
+        id: id,
+      },
+      { hover: true }
+    );
+  }
+
   hoverOutStand() {
     this.tooltipLongLat = null;
     this.hoverStand = null;
+    this.removePreviousHover();
   }
 
   private getMapGeoJSONFeature(point: Point) {

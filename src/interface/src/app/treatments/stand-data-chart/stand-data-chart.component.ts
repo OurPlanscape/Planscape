@@ -3,7 +3,7 @@ import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map, Observable } from 'rxjs';
+import { map, Observable, skip, switchMap, tap } from 'rxjs';
 import { SLOT_COLORS, YEAR_INTERVAL_PROPERTY } from '../metrics';
 import { filter } from 'rxjs/operators';
 import { MapGeoJSONFeature } from 'maplibre-gl';
@@ -35,8 +35,6 @@ const baseFont = {
   styleUrl: './stand-data-chart.component.scss',
 })
 export class StandDataChartComponent {
-  constructor(private directImpactsStateService: DirectImpactsStateService) {}
-
   activeStand$ = this.directImpactsStateService.activeStand$;
 
   activeStandIsForested$ = this.activeStand$.pipe(
@@ -67,6 +65,29 @@ export class StandDataChartComponent {
       } as ChartConfiguration<'bar'>['data'];
     })
   );
+
+  loading = false;
+
+  constructor(private directImpactsStateService: DirectImpactsStateService) {
+    // this puts a loader when we change the metric
+    // and removes it once we get a new value from standsTxSourceLoaded$
+    // TODO add onDestroy
+    this.directImpactsStateService.activeMetric$
+      .pipe(
+        tap((_) => {
+          console.log('set active metric');
+          this.loading = true;
+        }),
+        switchMap((s) =>
+          this.directImpactsStateService.standsTxSourceLoaded$.pipe(skip(1))
+        ),
+        tap((_) => {
+          console.log('set standsTxSourceLoaded$');
+          this.loading = false;
+        })
+      )
+      .subscribe();
+  }
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {

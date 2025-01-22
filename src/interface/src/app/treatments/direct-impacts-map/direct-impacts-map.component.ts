@@ -85,7 +85,11 @@ export class DirectImpactsMapComponent {
   }
 
   sourceData(event: MapSourceDataEvent) {
-    if (event.sourceId === 'stands_by_tx_result' && event.isSourceLoaded) {
+    if (
+      event.sourceId === 'stands_by_tx_result' &&
+      event.isSourceLoaded &&
+      !event.sourceDataType
+    ) {
       this.directImpactsStateService.setStandsTxSourceLoaded(true);
       this.moveLayers();
     }

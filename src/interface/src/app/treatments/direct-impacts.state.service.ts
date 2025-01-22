@@ -38,7 +38,6 @@ export class DirectImpactsStateService {
 
   setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
     this._selectedProjectArea$.next(projectArea);
-    this.resetActiveStand();
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {
@@ -47,14 +46,6 @@ export class DirectImpactsStateService {
 
   setFilteredTreatmentTypes(selection: PrescriptionAction[]) {
     this._filteredTreatmentTypes$.next(selection);
-    const stand = this._activeStand$.value;
-    // deselect stand if the stand action doesn't match any of the selected actions
-    if (
-      selection.length > 0 &&
-      !selection.includes(stand?.properties['action'])
-    ) {
-      this.resetActiveStand();
-    }
   }
 
   setActiveMetric(metric: Metric) {
@@ -70,9 +61,5 @@ export class DirectImpactsStateService {
 
   setStandsTxSourceLoaded(val: boolean) {
     this._standsTxSourceLoaded$.next(val);
-  }
-
-  resetActiveStand() {
-    this._activeStand$.next(null);
   }
 }
