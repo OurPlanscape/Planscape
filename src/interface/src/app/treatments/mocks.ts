@@ -11,14 +11,14 @@ export const MOCK_SUMMARY: TreatmentSummary = {
       total_treated_stand_count: 1120,
       prescriptions: [
         {
-          action: 'cut',
+          action: 'MODERATE_THINNING_BIOMASS',
           area_acres: 100,
           treated_stand_count: 3,
           type: 'SINGLE',
           stand_ids: [1, 2, 3],
         },
         {
-          action: 'burn',
+          action: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
           area_acres: 50,
           treated_stand_count: 2,
           type: 'SEQUENCE',
