@@ -19,7 +19,11 @@ export class AnalyticsService {
    * @param properties Additional parametters we want to send i.e. {product_id: "123", price: 99.99, currency: "USD"}
    */
   emitEvent(
-    action: 'polygons_draw_explore' | 'shapefiles_uploaded_explore',
+    action:
+      | 'polygons_draw_explore'
+      | 'shapefiles_uploaded_explore'
+      | 'run_treatment_analysis'
+      | 'new_treatment_plan',
     category?: string,
     label?: string,
     value?: number,
