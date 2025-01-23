@@ -6,8 +6,6 @@
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
-  align-items: center;
-  gap: 6px;
   position: relative;
 }
 
@@ -23,13 +21,14 @@
   @include h5();
   height: 32px;
   margin-top: 20px;
+  align-self: center;
+  line-height: 32px;
 }
 
 .y-axis-title {
   @include xs-label();
   padding: 24px 24px 0;
   color: $color-text-gray;
-  align-self: flex-start;
 }
 
 .empty-state {
