@@ -113,7 +113,7 @@ export class MapStandsTxResultComponent implements OnInit {
         switchMap((s) => this.activeStandId$.pipe(take(1)))
       )
       .subscribe((standId) => {
-        if (standId) {
+        if (standId && this.mapLibreMap) {
           // get data from the map, specific for this stand id
           const sourceFeatures = this.mapLibreMap.querySourceFeatures(
             this.resultsVectorSourceName,

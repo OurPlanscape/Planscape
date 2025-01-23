@@ -12,7 +12,7 @@ import {
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, map, switchMap } from 'rxjs';
+import { catchError, map, Observable, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
@@ -21,6 +21,7 @@ import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-
 
 import {
   ButtonComponent,
+  FilterDropdownComponent,
   ModalComponent,
   PanelComponent,
   StatusChipComponent,
@@ -49,8 +50,11 @@ import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-lo
 import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService, ScenarioService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
-import { PrescriptionAction } from '../prescriptions';
+import { standIsForested } from '../stands';
+import { MapGeoJSONFeature } from 'maplibre-gl';
+import { getTreatmentTypeOptions } from '../prescriptions';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -85,6 +89,7 @@ import { MetricSelectorComponent } from '../metric-selector/metric-selector.comp
     StatusChipComponent,
     DecimalPipe,
     MetricSelectorComponent,
+    FilterDropdownComponent,
   ],
   providers: [
     DirectImpactsStateService,
@@ -157,11 +162,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
 
-  treatmentActionsUsed$ = this.treatedStandsState.treatedStands$.pipe(
-    map((stands) => [
-      ...new Set(stands.map((s) => s.action as PrescriptionAction)),
-    ])
-  );
+  treatmentActionsUsed$ = this.treatedStandsState.treatmentActionsUsed$;
 
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 
@@ -185,17 +186,30 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
-    map((activeStand) => {
-      if (!activeStand) {
-        return 'Stand Level Data Unavailable';
-      }
-      return `${activeStand.properties['project_area_name']}, Stand ${activeStand.properties['id']}`;
-    })
-  );
+  standChartTitle(standFeature: MapGeoJSONFeature) {
+    if (standIsForested(standFeature)) {
+      return 'Percentage Change From Baseline';
+    } else {
+      return 'Direct Effects';
+    }
+  }
+
+  forestedLabel(standFeature: MapGeoJSONFeature) {
+    if (standIsForested(standFeature)) {
+      return `(Forested Stand)`;
+    } else return `(Non-forested Stand)`;
+  }
 
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
+  );
+
+  treatmentTypeOptions$: Observable<any> = this.treatmentsState.summary$.pipe(
+    filter((summary) => summary !== null),
+    take(1),
+    map((summary) => {
+      return getTreatmentTypeOptions(summary);
+    })
   );
 
   updateReportMetric(data: ImpactsMetric) {
@@ -276,6 +290,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     }
     return this.treatmentsState.getAcresForProjectArea(
       selectedProjectArea.project_area_name
+    );
+  }
+
+  onConfirmedSelection(selection: any) {
+    this.directImpactsStateService.setFilteredTreatmentTypes(
+      selection.map((x: { key: string; value: string }): string => x.key)
     );
   }
 }
