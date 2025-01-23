@@ -192,3 +192,24 @@ $panel-height: 600px;
   align-items: center;
   gap: 16px;
 }
+
+.chart-filters {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+}
+
+.filter-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: $color-black;
+}
+
+.filter-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: $color-dark-gray;
+}

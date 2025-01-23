@@ -86,8 +86,12 @@ export class StandDataChartComponent {
           enabled: false,
         },
         datalabels: {
-          color: '#000', // Label color (inside bar)
-          anchor: 'start', // Position the label
+          color: '#000', // Label color (outside the bar)
+          backgroundColor: '#fff',
+          anchor: (context) => {
+            const value = context.dataset.data[context.dataIndex] as number;
+            return value < 0 ? 'start' : 'end';
+          }, // Position the label
           align: (context) => {
             const value = context.dataset.data[context.dataIndex] as number;
             return value < 0 ? 'bottom' : 'top';

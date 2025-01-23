@@ -2,6 +2,7 @@ import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
+  DecimalPipe,
   JsonPipe,
   NgClass,
   NgFor,
@@ -82,6 +83,7 @@ import { PrescriptionAction } from '../prescriptions';
     ModalComponent,
     OverlayLoaderComponent,
     StatusChipComponent,
+    DecimalPipe,
   ],
   providers: [
     DirectImpactsStateService,
@@ -266,5 +268,16 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       return '';
     }
     return `${STAND_SIZES_LABELS[stand_size]} (${STAND_SIZES[stand_size]} acres)`;
+  }
+
+  getProjectAreaAcres(
+    projectArea: TreatmentProjectArea | 'All' | null
+  ): number {
+    const allAcres = !projectArea || projectArea === 'All';
+    if (allAcres) {
+      const treatmentSummary = this.treatmentsState.getCurrentSummary();
+      return treatmentSummary.total_area_acres;
+    }
+    return projectArea.total_area_acres;
   }
 }

@@ -38,7 +38,7 @@
           >check_box_outline_blank</mat-icon
         >
         <span class="item-label">Total Planning Area Acres:</span>
-        {{ (summary$ | async)?.total_area_acres }}
+        {{ (summary$ | async)?.total_area_acres | number: '1.0-0' }}
       </div>
 
       <div class="item">
@@ -59,7 +59,7 @@
       </div>
     </div>
     <div class="chart-filters">
-      <div>Project Area:</div>
+      <div class="filter-label">Project Area:</div>
       <mat-form-field appearance="outline" class="changes-chart-select">
         <mat-select
           class="project-area-selector"
@@ -73,8 +73,16 @@
           </mat-option>
         </mat-select>
       </mat-form-field>
-      <div>Acres: todo</div>
-      <div>Filter by</div>
+      <div *ngIf="summary$ | async">
+        <span class="filter-value">
+          Acres:
+          {{
+            getProjectAreaAcres(selectedChartProjectArea$ | async)
+              | number: '1.0-0'
+          }}
+        </span>
+      </div>
+      <div class="filter-label">Filter by</div>
       <div>dropdown</div>
     </div>
     <app-change-over-time-chart></app-change-over-time-chart>
