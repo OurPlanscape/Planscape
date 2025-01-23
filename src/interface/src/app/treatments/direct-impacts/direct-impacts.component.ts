@@ -49,6 +49,8 @@ import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService, ScenarioService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { PrescriptionAction } from '../prescriptions';
+import { standIsForested } from '../stands';
+import { MapGeoJSONFeature } from 'maplibre-gl';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -178,14 +180,19 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
-    map((activeStand) => {
-      if (!activeStand) {
-        return 'Stand Level Data Unavailable';
-      }
-      return `${activeStand.properties['project_area_name']}, Stand ${activeStand.properties['id']}`;
-    })
-  );
+  standChartTitle(standFeature: MapGeoJSONFeature) {
+    if (standIsForested(standFeature)) {
+      return 'Percentage Change From Baseline';
+    } else {
+      return 'Direct Effects';
+    }
+  }
+
+  forestedLabel(standFeature: MapGeoJSONFeature) {
+    if (standIsForested(standFeature)) {
+      return `(Forested Stand)`;
+    } else return `(Non-forested Stand)`;
+  }
 
   activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(
     map((m) => m.metric)

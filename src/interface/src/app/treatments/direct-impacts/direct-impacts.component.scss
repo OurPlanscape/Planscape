@@ -170,6 +170,11 @@ $panel-height: 600px;
   flex-direction: column;
 }
 
+.stand-forested-type {
+  @include h5();
+  color: $color-md-gray;
+}
+
 .attribution {
   background-color: $color-white;
   white-space: nowrap;

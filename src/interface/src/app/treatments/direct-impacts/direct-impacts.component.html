@@ -96,7 +96,17 @@
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandStandChart()">
-        <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
+        <div
+          panelTitle
+          *ngIf="activeStand$ | async as activeStand; else noStand">
+          {{ standChartTitle(activeStand) }}
+          <span class="stand-forested-type">{{
+            forestedLabel(activeStand)
+          }}</span>
+        </div>
+        <ng-template #noStand>
+          <div panelTitle #noStand>Stand Level Data Unavailable</div>
+        </ng-template>
         <app-stand-data-chart></app-stand-data-chart>
       </sg-panel>
 
