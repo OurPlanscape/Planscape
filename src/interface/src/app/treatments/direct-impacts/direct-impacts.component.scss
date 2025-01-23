@@ -81,10 +81,13 @@ $panel-height: 600px;
 .left-title-box {
   display: flex;
   flex-direction: row;
-  gap: 20px;
   justify-content: space-between;
   align-items: center;
   height: 38px;
+
+  .title-label {
+    color: $color-md-gray;
+  }
 }
 
 ::ng-deep .changes-chart-select .mat-mdc-text-field-wrapper,
