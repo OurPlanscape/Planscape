@@ -366,4 +366,13 @@ export class TreatmentsState {
     const d = this._summary$.value;
     return d ? d.project_areas.length : 0;
   }
+
+  getAcresForProjectArea(name: string) {
+    const summary = this.getCurrentSummary();
+    const pa = summary.project_areas.find((pa) => pa.project_area_name == name);
+    if (!pa) {
+      return 0;
+    }
+    return pa.total_area_acres;
+  }
 }

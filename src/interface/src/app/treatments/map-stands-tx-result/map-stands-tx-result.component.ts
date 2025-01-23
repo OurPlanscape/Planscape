@@ -1,5 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AsyncPipe, NgIf, NgFor } from '@angular/common';
+import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
 import {
   LayerComponent,
   PopupComponent,
@@ -28,6 +28,7 @@ import { MapConfigState } from '../treatment-map/map-config.state';
     NgFor,
     NgIf,
     FilterByActionPipe,
+    DecimalPipe,
   ],
   templateUrl: './map-stands-tx-result.component.html',
   styleUrl: './map-stands-tx-result.component.scss',
@@ -73,6 +74,8 @@ export class MapStandsTxResultComponent implements OnInit {
   activeStandId$ = this.activeStand$.pipe(map((stand) => stand?.id));
 
   hoverStand: number | string | null = null;
+
+  projectAreaData = { name: '', acres: 0 };
 
   setActiveStand(event: MapMouseEvent) {
     if (!this.mapConfigState.isStandSelectionEnabled()) {
@@ -123,7 +126,11 @@ export class MapStandsTxResultComponent implements OnInit {
     if (feature && feature.id) {
       this.hoverStand = feature.id;
     }
-
+    const projectAreaName = feature.properties['project_area_name'];
+    this.projectAreaData = {
+      name: projectAreaName,
+      acres: this.treatmentsState.getAcresForProjectArea(projectAreaName),
+    };
     if (action) {
       this.appliedTreatment = descriptionsForAction(
         feature.properties['action']
