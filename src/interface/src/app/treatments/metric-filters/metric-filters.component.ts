@@ -3,7 +3,6 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { AsyncPipe, NgFor } from '@angular/common';
 
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
   ImpactsMetric,
   ImpactsMetricSlot,
@@ -12,10 +11,6 @@ import {
   SLOT_COLORS,
 } from '../metrics';
 import { FilterDropdownComponent } from 'src/styleguide';
-import { TreatmentsState } from '../treatments.state';
-import { filter, map, take } from 'rxjs/operators';
-import { getTreatmentTypeOptions } from '../prescriptions';
-import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-metric-filters',
@@ -34,10 +29,7 @@ export class MetricFiltersComponent implements OnInit {
   @Input() selectedOptions: string[] = [];
   @Output() metricSelected = new EventEmitter<ImpactsMetric>();
 
-  constructor(
-    private directImpactsStateService: DirectImpactsStateService,
-    private treatmentState: TreatmentsState
-  ) {}
+  constructor() {}
 
   initialOptions: Metric[] = METRICS;
 
@@ -53,14 +45,6 @@ export class MetricFiltersComponent implements OnInit {
     [...this.initialOptions],
     [...this.initialOptions],
   ];
-
-  treatmentTypeOptions$: Observable<any> = this.treatmentState.summary$.pipe(
-    filter((summary) => summary !== null),
-    take(1),
-    map((summary) => {
-      return getTreatmentTypeOptions(summary);
-    })
-  );
 
   ngOnInit(): void {
     // Updating every list based on the default selected values
@@ -95,12 +79,6 @@ export class MetricFiltersComponent implements OnInit {
             m.id === this.selectedOptions[listIndex]
         );
       }
-    );
-  }
-
-  onConfirmedSelection(selection: any) {
-    this.directImpactsStateService.setFilteredTreatmentTypes(
-      selection.map((x: { key: string; value: string }): string => x.key)
     );
   }
 }

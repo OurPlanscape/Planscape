@@ -12,7 +12,7 @@ import {
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, map, switchMap } from 'rxjs';
+import { catchError, map, Observable, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
@@ -21,6 +21,7 @@ import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-
 
 import {
   ButtonComponent,
+  FilterDropdownComponent,
   ModalComponent,
   PanelComponent,
   StatusChipComponent,
@@ -51,7 +52,9 @@ import { FileSaverService, ScenarioService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
+import { getTreatmentTypeOptions } from '../prescriptions';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
+import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -86,6 +89,7 @@ import { MetricSelectorComponent } from '../metric-selector/metric-selector.comp
     StatusChipComponent,
     DecimalPipe,
     MetricSelectorComponent,
+    FilterDropdownComponent,
   ],
   providers: [
     DirectImpactsStateService,
@@ -200,6 +204,14 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
+  treatmentTypeOptions$: Observable<any> = this.treatmentsState.summary$.pipe(
+    filter((summary) => summary !== null),
+    take(1),
+    map((summary) => {
+      return getTreatmentTypeOptions(summary);
+    })
+  );
+
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
   }
@@ -278,6 +290,12 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     }
     return this.treatmentsState.getAcresForProjectArea(
       selectedProjectArea.project_area_name
+    );
+  }
+
+  onConfirmedSelection(selection: any) {
+    this.directImpactsStateService.setFilteredTreatmentTypes(
+      selection.map((x: { key: string; value: string }): string => x.key)
     );
   }
 }
