@@ -6,7 +6,7 @@ import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { MockProvider } from 'ng-mocks';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { BehaviorSubject } from 'rxjs';
-import { DEFAULT_SLOT, METRICS } from '../metrics';
+import { METRICS } from '../metrics';
 
 describe('StandDataChartComponent', () => {
   let component: StandDataChartComponent;
@@ -18,10 +18,7 @@ describe('StandDataChartComponent', () => {
       providers: [
         MockProvider(DirectImpactsStateService, {
           activeStand$: new BehaviorSubject(null),
-          activeMetric$: new BehaviorSubject({
-            metric: METRICS[0],
-            slot: DEFAULT_SLOT,
-          }),
+          activeMetric$: new BehaviorSubject(METRICS[0]),
         }),
       ],
     }).compileComponents();

@@ -41,9 +41,14 @@ export const SINGLE_STAND_SELECTED = {
   'fill-opacity': 1,
 };
 export const SINGLE_STAND_HOVER = {
-  'line-color': BASE_COLORS.yellow,
-  'line-width': 3,
-};
+  'line-color': [
+    'case',
+    ['boolean', ['feature-state', 'hover'], false],
+    BASE_COLORS.yellow,
+    '#00000000',
+  ],
+  'line-width': 4,
+} as any;
 
 export const PROJECT_AREA_OUTLINE_PAINT = {
   'line-color': BASE_COLORS.dark,

@@ -3,6 +3,7 @@ import { MetricSelectorComponent } from './metric-selector.component';
 import { MockProviders } from 'ng-mocks';
 import { METRICS } from '../metrics';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('MetricSelectorComponent', () => {
   let component: MetricSelectorComponent;
@@ -10,7 +11,7 @@ describe('MetricSelectorComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MetricSelectorComponent],
+      imports: [MetricSelectorComponent, NoopAnimationsModule],
       providers: [MockProviders(DirectImpactsStateService)],
     }).compileComponents();
 

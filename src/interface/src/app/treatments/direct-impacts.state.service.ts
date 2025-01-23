@@ -1,11 +1,5 @@
-import { BehaviorSubject, map, Observable, switchMap } from 'rxjs';
-import {
-  DEFAULT_SLOT,
-  ImpactsMetric,
-  ImpactsMetricSlot,
-  Metric,
-  METRICS,
-} from './metrics';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { ImpactsMetric, ImpactsMetricSlot, Metric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
 import { TreatmentProjectArea } from '@types';
@@ -22,18 +16,8 @@ export class DirectImpactsStateService {
 
   public reportMetrics$ = this._reportMetrics$.asObservable();
 
-  private _activeSlot$ = new BehaviorSubject<ImpactsMetricSlot>(DEFAULT_SLOT);
-
-  public activeMetric$: Observable<ImpactsMetric> = this._activeSlot$.pipe(
-    switchMap((slot) =>
-      this.reportMetrics$.pipe(
-        map((metrics) => ({
-          metric: metrics[slot],
-          slot: slot,
-        }))
-      )
-    )
-  );
+  private _activeMetric$ = new BehaviorSubject(METRICS[0]);
+  public activeMetric$: Observable<Metric> = this._activeMetric$.asObservable();
 
   private _filteredTreatmentTypes$ = new BehaviorSubject<PrescriptionAction[]>(
     []
@@ -54,7 +38,6 @@ export class DirectImpactsStateService {
 
   setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
     this._selectedProjectArea$.next(projectArea);
-    this.resetActiveStand();
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {
@@ -63,19 +46,10 @@ export class DirectImpactsStateService {
 
   setFilteredTreatmentTypes(selection: PrescriptionAction[]) {
     this._filteredTreatmentTypes$.next(selection);
-    const stand = this._activeStand$.value;
-    // deselect stand if the stand action doesn't match any of the selected actions
-    if (
-      selection.length > 0 &&
-      !selection.includes(stand?.properties['action'])
-    ) {
-      this.resetActiveStand();
-    }
   }
 
-  setActiveMetric(mapMetric: ImpactsMetric) {
-    this._activeSlot$.next(mapMetric.slot);
-    this.updateReportMetric(mapMetric);
+  setActiveMetric(metric: Metric) {
+    this._activeMetric$.next(metric);
   }
 
   updateReportMetric(mapMetric: ImpactsMetric) {
@@ -85,15 +59,7 @@ export class DirectImpactsStateService {
     });
   }
 
-  isActiveSlot(slot: ImpactsMetricSlot) {
-    return this._activeSlot$.value === slot;
-  }
-
   setStandsTxSourceLoaded(val: boolean) {
     this._standsTxSourceLoaded$.next(val);
-  }
-
-  resetActiveStand() {
-    this._activeStand$.next(null);
   }
 }

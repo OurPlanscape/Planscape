@@ -16,6 +16,19 @@
         [legend]="false"
         [type]="'bar'"></canvas>
     </div>
+
+    <div *ngIf="loading" class="loader">
+      <mat-spinner diameter="24"></mat-spinner>
+    </div>
+
+    <div class="stand-metric-selector">
+      <app-metric-selector
+        [selectedOption]="(activeMetric$ | async)?.id || ''"
+        [metrics]="metrics"
+        color="blue"
+        label="Metric"
+        (metricChanged)="metricChanged($event)"></app-metric-selector>
+    </div>
   </ng-container>
 
   <ng-template #nonForested>

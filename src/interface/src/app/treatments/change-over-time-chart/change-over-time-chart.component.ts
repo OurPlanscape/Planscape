@@ -4,16 +4,16 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
-  map,
   combineLatest,
   distinctUntilChanged,
-  switchMap,
   filter,
+  map,
+  switchMap,
 } from 'rxjs';
 import {
-  SLOT_COLORS,
   ImpactsMetricSlot,
   Metric,
+  SLOT_COLORS,
   SLOT_PALETTES,
 } from '../metrics';
 import { TreatmentsService } from '@services/treatments.service';
@@ -78,17 +78,16 @@ export class ChangeOverTimeChartComponent {
         enabled: false,
       },
       datalabels: {
-        color: '#000', // Label color (inside bar)
-        anchor: 'end', // Position the label
-        align: (context) => {
+        color: '#000', // Label color (outside the bar)
+        backgroundColor: '#fff',
+        anchor: (context) => {
           const value = context.dataset.data[context.dataIndex] as number;
           return value < 0 ? 'start' : 'end';
-        },
-        offset: (context) => {
+        }, // Position the label
+        align: (context) => {
           const value = context.dataset.data[context.dataIndex] as number;
-          return value < 0 ? 12 : 0;
+          return value < 0 ? 'bottom' : 'top';
         },
-        padding: 5,
         font: {
           ...(baseFont as any),
           size: 10, // Font size
