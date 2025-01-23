@@ -82,7 +82,16 @@
         </span>
       </div>
       <div class="filter-label">Filter by</div>
-      <div>dropdown</div>
+
+      <sg-filter-dropdown
+        menuLabel="Treatment Type"
+        [menuItems]="(treatmentTypeOptions$ | async) || []"
+        [hasSearch]="false"
+        displayField="value"
+        [disabled]="(treatmentTypeOptions$ | async) === null"
+        (confirmedSelection)="
+          onConfirmedSelection($event)
+        "></sg-filter-dropdown>
     </div>
     <app-change-over-time-chart></app-change-over-time-chart>
 
