@@ -3,6 +3,7 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { TreatmentPlan, TreatmentSummary } from '@types';
 import { MetricResult } from '../treatments/metrics';
+import { PrescriptionAction } from '../treatments/prescriptions';
 
 @Injectable({
   providedIn: 'root',
@@ -111,7 +112,8 @@ export class TreatmentsService {
   getTreatmentImpactCharts(
     treatmentPlanId: number,
     metrics: string[],
-    projectAreaId: number | null
+    projectAreaId: number | null,
+    txTypes: PrescriptionAction[]
   ) {
     let variableParams = new HttpParams();
     metrics.forEach((m) => {
@@ -120,6 +122,9 @@ export class TreatmentsService {
     if (projectAreaId) {
       variableParams = variableParams.append('project_areas', projectAreaId);
     }
+    txTypes.forEach((tx) => {
+      variableParams = variableParams.append('actions', tx);
+    });
     return this.http.get(this.baseUrl + treatmentPlanId + '/plot/', {
       withCredentials: true,
       params: variableParams,
