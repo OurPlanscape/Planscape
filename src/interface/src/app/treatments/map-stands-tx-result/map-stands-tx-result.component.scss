@@ -1,6 +1,8 @@
 @import "colors";
 @import "mixins";
 
+$tooltip-background: #000000D9;
+
 ::ng-deep {
   .treatment-tooltip {
     @include public-sans();
@@ -8,10 +10,10 @@
     font-style: normal;
     font-weight: 400;
     line-height: 22px;
-    min-width: 260px;
+
 
     .maplibregl-popup-content {
-      background-color: $color-black;
+      background-color: $tooltip-background;
       color: $color-white;
       padding: 8px 12px;
       border-radius: 8px;
@@ -20,25 +22,25 @@
     // overriding tip colors for each corner
 
     &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
-      border-left-color: $color-black;
+      border-left-color: $tooltip-background;
     }
 
     &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
-      border-right-color: $color-black;
+      border-right-color: $tooltip-background;
     }
 
     &.maplibregl-popup-anchor-top .maplibregl-popup-tip {
-      border-bottom-color: $color-black;
+      border-bottom-color: $tooltip-background;
     }
 
     &.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-      border-top-color: $color-black;
+      border-top-color: $tooltip-background;
     }
 
     // overriding tip color for diagonals
     &.maplibregl-popup-anchor-bottom-right {
       .maplibregl-popup-tip {
-        border-top-color: $color-black;
+        border-top-color: $tooltip-background;
       }
 
       .maplibregl-popup-content {
@@ -48,7 +50,7 @@
 
     &.maplibregl-popup-anchor-bottom-left {
       .maplibregl-popup-tip {
-        border-top-color: $color-black;
+        border-top-color: $tooltip-background;
       }
 
       .maplibregl-popup-content {
@@ -58,7 +60,7 @@
 
     &.maplibregl-popup-anchor-top-left {
       .maplibregl-popup-tip {
-        border-bottom-color: $color-black;
+        border-bottom-color: $tooltip-background;
       }
 
       .maplibregl-popup-content {
@@ -68,7 +70,7 @@
 
     &.maplibregl-popup-anchor-top-right {
       .maplibregl-popup-tip {
-        border-bottom-color: $color-black;
+        border-bottom-color: $tooltip-background;
       }
 
       .maplibregl-popup-content {
@@ -79,9 +81,16 @@
     .tooltip-title {
       color: $color-soft-gray;
       font-weight: 600;
-      line-height: 14px; /* 116.667% */
       font-style: normal;
-      margin-bottom: 4px;
+      white-space: nowrap;
     }
+
+    .tooltip-content {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 8px 0;
+    }
+
+
   }
 }
