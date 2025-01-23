@@ -78,17 +78,16 @@ export class ChangeOverTimeChartComponent {
         enabled: false,
       },
       datalabels: {
-        color: '#000', // Label color (inside bar)
-        anchor: 'end', // Position the label
-        align: (context) => {
+        color: '#000', // Label color (outside the bar)
+        backgroundColor: '#fff',
+        anchor: (context) => {
           const value = context.dataset.data[context.dataIndex] as number;
           return value < 0 ? 'start' : 'end';
-        },
-        offset: (context) => {
+        }, // Position the label
+        align: (context) => {
           const value = context.dataset.data[context.dataIndex] as number;
-          return value < 0 ? 12 : 0;
+          return value < 0 ? 'bottom' : 'top';
         },
-        padding: 5,
         font: {
           ...(baseFont as any),
           size: 10, // Font size
@@ -213,15 +212,16 @@ export class ChangeOverTimeChartComponent {
       distinctUntilChanged((prev, curr) => deepEqual(prev, curr))
     ),
     this.directImpactsStateService.selectedProjectArea$,
+    this.directImpactsStateService.filteredTreatmentTypes$,
   ]).pipe(
-    switchMap(([plan, metrics, area]) => {
+    switchMap(([plan, metrics, area, txTypes]) => {
       const metricsArray = Object.values(metrics).map((m) => m.id);
       let selectedArea = null;
       if (area !== 'All') {
         selectedArea = area.project_area_id;
       }
       return this.treatmentsService
-        .getTreatmentImpactCharts(plan.id, metricsArray, selectedArea)
+        .getTreatmentImpactCharts(plan.id, metricsArray, selectedArea, txTypes)
         .pipe(
           map((responseData) => ({ response: responseData, metrics: metrics }))
         ); // we need the metrics for reviewing calculation, so passing it along here

@@ -35,8 +35,8 @@ class CreateScenarioTest(APITransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
 
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_create_scenario(self, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_create_scenario(self, chord_mock):
         self.client.force_authenticate(self.user)
         data = {
             "planning_area": self.planning_area.pk,
@@ -49,9 +49,10 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(response.json().get("id"))
+        self.assertEqual(chord_mock.call_count, 1)
 
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_create_uploaded_scenario(self, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_create_uploaded_scenario(self, chord_mock):
         self.client.force_authenticate(self.user)
         uploaded_scenario = {
             "planning_area": self.planning_area.pk,
@@ -64,6 +65,7 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(upload_response.status_code, 201)
         self.assertIsNotNone(upload_response.json().get("id"))
+        self.assertEqual(chord_mock.call_count, 1)
 
 
 class ListScenariosForPlanningAreaTest(APITestCase):
