@@ -4,7 +4,12 @@ import { NgChartsModule } from 'ng2-charts';
 import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { map, Observable, skip, switchMap, tap } from 'rxjs';
-import { SLOT_COLORS, YEAR_INTERVAL_PROPERTY } from '../metrics';
+import {
+  Metric,
+  METRICS,
+  SLOT_COLORS,
+  YEAR_INTERVAL_PROPERTY,
+} from '../metrics';
 import { filter } from 'rxjs/operators';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { TreatmentTypeIconComponent } from '@styleguide';
@@ -13,6 +18,7 @@ import { NonForestedDataComponent } from '../non-forested-data/non-forested-data
 import { standIsForested } from '../stands';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 
 const baseFont = {
   family: 'Public Sans',
@@ -34,12 +40,14 @@ const baseFont = {
     MatTableModule,
     NonForestedDataComponent,
     MatProgressSpinnerModule,
+    MetricSelectorComponent,
   ],
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',
 })
 export class StandDataChartComponent {
   activeStand$ = this.directImpactsStateService.activeStand$;
+  activeMetric$ = this.directImpactsStateService.activeMetric$;
 
   activeStandIsForested$ = this.activeStand$.pipe(
     map((d) => standIsForested(d))
@@ -72,6 +80,8 @@ export class StandDataChartComponent {
 
   loading = false;
 
+  metrics: Metric[] = METRICS;
+
   constructor(private directImpactsStateService: DirectImpactsStateService) {
     // this puts a loader when we change the metric
     // and removes it once we get a new value from standsTxSourceLoaded$
@@ -84,6 +94,10 @@ export class StandDataChartComponent {
         untilDestroyed(this)
       )
       .subscribe(() => (this.loading = false));
+  }
+
+  metricChanged(metric: Metric) {
+    this.directImpactsStateService.setActiveMetric(metric);
   }
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =

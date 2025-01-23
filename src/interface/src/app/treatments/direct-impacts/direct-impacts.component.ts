@@ -31,7 +31,7 @@ import { FormsModule } from '@angular/forms';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
-import { ImpactsMetric, Metric, METRICS } from '../metrics';
+import { ImpactsMetric } from '../metrics';
 
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
@@ -188,17 +188,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  activeMetric$ = this.directImpactsStateService.activeMetric$;
-
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
-
-  metrics: Metric[] = METRICS;
-
-  metricChanged(metric: Metric) {
-    this.directImpactsStateService.setActiveMetric(metric);
-  }
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);

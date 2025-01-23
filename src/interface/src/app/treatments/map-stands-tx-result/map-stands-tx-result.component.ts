@@ -44,7 +44,9 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() propertyName!: string;
 
   readonly resultsVectorSourceName = 'stands_by_tx_result';
+  readonly resultsVectorSourceLayerName = 'stands_by_tx_result';
   readonly treatmentStandsSourceName = 'treatment_stands';
+  readonly treatmentStandsSourceLayer = 'stands_by_tx_plan';
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -159,8 +161,8 @@ export class MapStandsTxResultComponent implements OnInit {
   private removePreviousHover() {
     this.hoveredStands.forEach((id) => {
       this.mapLibreMap.removeFeatureState({
-        source: this.resultsVectorSourceName,
-        sourceLayer: this.resultsVectorSourceName,
+        source: this.treatmentStandsSourceName,
+        sourceLayer: this.treatmentStandsSourceLayer,
         id: id,
       });
     });
@@ -171,8 +173,8 @@ export class MapStandsTxResultComponent implements OnInit {
     this.hoveredStands.push(id);
     this.mapLibreMap.setFeatureState(
       {
-        source: this.resultsVectorSourceName,
-        sourceLayer: this.resultsVectorSourceName,
+        source: this.treatmentStandsSourceName,
+        sourceLayer: this.treatmentStandsSourceLayer,
         id: id,
       },
       { hover: true }
