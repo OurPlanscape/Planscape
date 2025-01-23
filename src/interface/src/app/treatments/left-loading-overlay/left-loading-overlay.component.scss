@@ -1,0 +1,23 @@
+@import 'variables';
+@import 'mixins';
+@import "colors";
+
+:host {
+    height: calc(100% - 50px);
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+    .content {
+    @include xs-label();
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    justify-content: center;
+  }
+  
