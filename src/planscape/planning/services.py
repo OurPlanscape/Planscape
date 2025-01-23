@@ -4,6 +4,7 @@ import logging
 import math
 import os
 import zipfile
+from celery import chord
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
@@ -33,7 +34,7 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
 )
-from planning.tasks import async_forsys_run
+from planning.tasks import async_forsys_run, async_calculate_stand_metrics
 from planscape.exceptions import InvalidGeometry
 from planscape.typing import TLooseGeom, TUser
 
@@ -115,7 +116,16 @@ def create_scenario(user: TUser, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    async_forsys_run.delay(scenario.pk)
+    datalayer_names = scenario.configuration.get(
+        "scenario_priorities", []
+    ) + scenario.configuration.get("scenario_output_fields", [])
+    tasks = [
+        async_calculate_stand_metrics.si(
+            scenario_id=scenario.pk, datalayer_name=datalayer_name
+        )
+        for datalayer_name in datalayer_names
+    ]
+    chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
     return scenario
 
 
