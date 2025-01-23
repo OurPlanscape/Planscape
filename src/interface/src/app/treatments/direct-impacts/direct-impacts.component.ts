@@ -271,13 +271,14 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   }
 
   getProjectAreaAcres(
-    projectArea: TreatmentProjectArea | 'All' | null
+    selectedProjectArea: TreatmentProjectArea | 'All' | null
   ): number {
-    const allAcres = !projectArea || projectArea === 'All';
+    const allAcres = !selectedProjectArea || selectedProjectArea === 'All';
     if (allAcres) {
-      const treatmentSummary = this.treatmentsState.getCurrentSummary();
-      return treatmentSummary.total_area_acres;
+      return this.treatmentsState.getTotalAcres();
     }
-    return projectArea.total_area_acres;
+    return this.treatmentsState.getAcresForProjectArea(
+      selectedProjectArea.project_area_name
+    );
   }
 }
