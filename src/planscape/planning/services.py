@@ -125,7 +125,9 @@ def create_scenario(user: TUser, **kwargs) -> Scenario:
         )
         for datalayer_name in datalayer_names
     ]
-    chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    transaction.on_commit(
+        lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
+    )
     return scenario
 
 
