@@ -49,6 +49,7 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(response.json().get("id"))
+        self.assertEqual(chord_mock.call_count, 1)
 
     @mock.patch("planning.services.chord", autospec=True)
     def test_create_uploaded_scenario(self, chord_mock):
@@ -64,6 +65,7 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(upload_response.status_code, 201)
         self.assertIsNotNone(upload_response.json().get("id"))
+        self.assertEqual(chord_mock.call_count, 1)
 
 
 class ListScenariosForPlanningAreaTest(APITestCase):

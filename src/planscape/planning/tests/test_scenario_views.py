@@ -114,7 +114,6 @@ class CreateScenarioTest(APITestCase):
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, None)
         self.assertEqual(scenario.user, self.owner_user)
-        self.assertEqual(chord_mock.call_count, 1)
 
     def test_create_scenario_missing_planning_area(self):
         self.client.force_authenticate(self.owner_user)
@@ -192,7 +191,8 @@ class CreateScenarioTest(APITestCase):
             second_response.content,
             {"global": ["The fields planning_area, name must make a unique set."]},
         )
-        self.assertEqual(chord_mock.call_count, 1)
+        # Tasks are not called if scenario creations fails
+        self.assertEqual(chord_mock.call_count, 0)
 
     def test_create_scenario_not_logged_in(self):
         payload = json.dumps(
