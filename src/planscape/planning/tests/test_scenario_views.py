@@ -114,6 +114,7 @@ class CreateScenarioTest(APITestCase):
         self.assertEqual(scenario.name, "test scenario")
         self.assertEqual(scenario.notes, None)
         self.assertEqual(scenario.user, self.owner_user)
+        self.assertEqual(chord_mock.call_count, 1)
 
     def test_create_scenario_missing_planning_area(self):
         self.client.force_authenticate(self.owner_user)
@@ -250,7 +251,6 @@ class CreateScenarioTest(APITestCase):
         self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test collab scenario")
         self.assertEqual(scenario.user, self.collab_user)
-        self.assertEqual(chord_mock.call_count, 1)
 
     def test_create_scenario_viewer_user(self):
         self.client.force_authenticate(self.viewer_user)
