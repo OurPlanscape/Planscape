@@ -37,7 +37,14 @@
   *ngIf="tooltipLongLat"
   [lngLat]="tooltipLongLat"
   [closeButton]="false"
+  maxWidth="500px"
   className="treatment-tooltip">
-  <div class="tooltip-title">Applied Treatment</div>
-  <div *ngFor="let tx of appliedTreatment">{{ tx }}</div>
+  <div class="tooltip-content">
+    <div class="tooltip-title">{{ projectAreaData.name }}:</div>
+    <div>{{ projectAreaData.acres | number: '1.0-0' }} Acres</div>
+    <div class="tooltip-title">Applied Treatment:</div>
+    <div>
+      <div *ngFor="let tx of appliedTreatment" class="no-wrap">{{ tx }}</div>
+    </div>
+  </div>
 </mgl-popup>
