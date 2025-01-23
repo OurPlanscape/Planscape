@@ -1,7 +1,9 @@
 <sg-expanded-panel (clickedClose)="close()">
   <div panelTitle>Treatment Prescriptions</div>
   <div panelContent class="content">
+    <app-direct-impacts-map></app-direct-impacts-map>
     <app-treatment-legend
+      [appliedTreatments]="treatmentActionsUsed$ | async"
       *ngIf="showTreatmentLegend$ | async"></app-treatment-legend>
   </div>
 </sg-expanded-panel>
