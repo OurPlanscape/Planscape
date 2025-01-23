@@ -7,17 +7,15 @@
 </div>
 <ng-template #chart>
   <ng-container *ngIf="activeStandIsForested$ | async; else nonForested">
-    <ng-container>
-      <div class="title">Change (%)</div>
-      <div class="chart">
-        <canvas
-          baseChart
-          [data]="(barChartData$ | async) || undefined"
-          [options]="(barChartOptions$ | async) ?? {}"
-          [legend]="false"
-          [type]="'bar'"></canvas>
-      </div>
-    </ng-container>
+    <div class="title">Change (%)</div>
+    <div class="chart">
+      <canvas
+        baseChart
+        [data]="(barChartData$ | async) || undefined"
+        [options]="(barChartOptions$ | async) ?? {}"
+        [legend]="false"
+        [type]="'bar'"></canvas>
+    </div>
 
     <div *ngIf="loading" class="loader">
       <mat-spinner diameter="24"></mat-spinner>
