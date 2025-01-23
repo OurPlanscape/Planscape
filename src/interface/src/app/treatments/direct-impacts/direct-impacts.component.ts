@@ -49,7 +49,6 @@ import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-lo
 import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService, ScenarioService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
-import { PrescriptionAction } from '../prescriptions';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
@@ -159,11 +158,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
 
-  treatmentActionsUsed$ = this.treatedStandsState.treatedStands$.pipe(
-    map((stands) => [
-      ...new Set(stands.map((s) => s.action as PrescriptionAction)),
-    ])
-  );
+  treatmentActionsUsed$ = this.treatedStandsState.treatmentActionsUsed$;
 
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
 

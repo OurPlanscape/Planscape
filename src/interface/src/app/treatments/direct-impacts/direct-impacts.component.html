@@ -61,7 +61,9 @@
     </div>
     <div class="chart-filters">
       <div class="filter-label">Project Area:</div>
-      <mat-form-field appearance="outline" class="changes-chart-select">
+      <mat-form-field
+        appearance="outline"
+        class="changes-chart-select project-area-selector">
         <mat-select
           class="project-area-selector"
           [ngModel]="selectedChartProjectArea$ | async"
@@ -129,16 +131,6 @@
         </div>
         <div class="map-panel-content">
           <app-direct-impacts-map></app-direct-impacts-map>
-          <div class="attribution">
-            <a href="https://maplibre.org/" target="_blank">MapLibre</a> |
-            <a href="https://www.mapbox.com/about/maps" target="_blank"
-              >© Mapbox</a
-            >&nbsp;<a
-              href="https://www.openstreetmap.org/about/"
-              target="_blank"
-              >© OpenStreetMap</a
-            >
-          </div>
         </div>
 
         <app-treatment-legend
