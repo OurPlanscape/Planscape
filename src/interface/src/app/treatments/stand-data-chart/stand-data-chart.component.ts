@@ -11,6 +11,8 @@ import { TreatmentTypeIconComponent } from '@styleguide';
 import { MatTableModule } from '@angular/material/table';
 import { NonForestedDataComponent } from '../non-forested-data/non-forested-data.component';
 import { standIsForested } from '../stands';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 const baseFont = {
   family: 'Public Sans',
@@ -19,6 +21,7 @@ const baseFont = {
   weight: '600',
 };
 
+@UntilDestroy()
 @Component({
   selector: 'app-stand-data-chart',
   standalone: true,
@@ -30,6 +33,7 @@ const baseFont = {
     TreatmentTypeIconComponent,
     MatTableModule,
     NonForestedDataComponent,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',
@@ -71,22 +75,15 @@ export class StandDataChartComponent {
   constructor(private directImpactsStateService: DirectImpactsStateService) {
     // this puts a loader when we change the metric
     // and removes it once we get a new value from standsTxSourceLoaded$
-    // TODO add onDestroy
     this.directImpactsStateService.activeMetric$
       .pipe(
-        tap((_) => {
-          console.log('set active metric');
-          this.loading = true;
-        }),
+        tap(() => (this.loading = true)),
         switchMap((s) =>
           this.directImpactsStateService.standsTxSourceLoaded$.pipe(skip(1))
         ),
-        tap((_) => {
-          console.log('set standsTxSourceLoaded$');
-          this.loading = false;
-        })
+        untilDestroyed(this)
       )
-      .subscribe();
+      .subscribe(() => (this.loading = false));
   }
 
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
