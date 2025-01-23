@@ -167,6 +167,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
 
+  projectAreaAcres$ = this.selectedChartProjectArea$.pipe(
+    map((pa) => this.getProjectAreaAcres(pa))
+  );
+
   summary$ = this.treatmentsState.summary$;
 
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(

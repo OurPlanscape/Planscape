@@ -75,11 +75,7 @@
       </mat-form-field>
       <div *ngIf="summary$ | async">
         <span class="filter-value">
-          Acres:
-          {{
-            getProjectAreaAcres(selectedChartProjectArea$ | async)
-              | number: '1.0-0'
-          }}
+          Acres: {{ projectAreaAcres$ | async | number: '1.0-0' }}
         </span>
       </div>
       <div class="filter-label">Filter by</div>
