@@ -61,7 +61,9 @@
     </div>
     <div class="chart-filters">
       <div class="filter-label">Project Area:</div>
-      <mat-form-field appearance="outline" class="changes-chart-select">
+      <mat-form-field
+        appearance="outline"
+        class="changes-chart-select project-area-selector">
         <mat-select
           class="project-area-selector"
           [ngModel]="selectedChartProjectArea$ | async"
