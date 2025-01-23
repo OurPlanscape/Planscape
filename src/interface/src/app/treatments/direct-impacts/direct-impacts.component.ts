@@ -49,6 +49,8 @@ import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-lo
 import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService, ScenarioService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
+import { standIsForested } from '../stands';
+import { MapGeoJSONFeature } from 'maplibre-gl';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 
 @Component({
@@ -180,14 +182,19 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
-    map((activeStand) => {
-      if (!activeStand) {
-        return 'Stand Level Data Unavailable';
-      }
-      return `${activeStand.properties['project_area_name']}, Stand ${activeStand.properties['id']}`;
-    })
-  );
+  standChartTitle(standFeature: MapGeoJSONFeature) {
+    if (standIsForested(standFeature)) {
+      return 'Percentage Change From Baseline';
+    } else {
+      return 'Direct Effects';
+    }
+  }
+
+  forestedLabel(standFeature: MapGeoJSONFeature) {
+    if (standIsForested(standFeature)) {
+      return `(Forested Stand)`;
+    } else return `(Non-forested Stand)`;
+  }
 
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
