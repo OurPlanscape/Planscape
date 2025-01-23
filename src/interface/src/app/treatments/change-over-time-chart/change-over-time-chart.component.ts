@@ -5,7 +5,6 @@ import { NgChartsModule } from 'ng2-charts';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
   map,
-  Observable,
   combineLatest,
   distinctUntilChanged,
   switchMap,
@@ -63,89 +62,88 @@ export class ChangeOverTimeChartComponent {
 
   @Input() metrics!: Record<ImpactsMetricSlot, Metric> | null;
 
-  private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
-    {
-      responsive: true,
-      maintainAspectRatio: false,
-      layout: {
-        padding: {
-          left: 0, // Add 20px padding between the tick labels and the chart content
-          right: 24,
-          top: 0,
-          bottom: 0,
+  readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] = {
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: {
+        left: 0, // Add 20px padding between the tick labels and the chart content
+        right: 24,
+        top: 0,
+        bottom: 0,
+      },
+    },
+    plugins: {
+      tooltip: {
+        enabled: false,
+      },
+      datalabels: {
+        color: '#000', // Label color (inside bar)
+        anchor: 'end', // Position the label
+        align: (context) => {
+          const value = context.dataset.data[context.dataIndex] as number;
+          return value < 0 ? 'start' : 'end';
+        },
+        offset: (context) => {
+          const value = context.dataset.data[context.dataIndex] as number;
+          return value < 0 ? 12 : 0;
+        },
+        padding: 5,
+        font: {
+          ...(baseFont as any),
+          size: 10, // Font size
+        },
+        formatter: (value: number) => {
+          // Check if the value has a decimal part
+          return value % 1 === 0 ? value.toString() : value.toFixed(0);
         },
       },
-      plugins: {
-        tooltip: {
-          enabled: false,
+    },
+    scales: {
+      y: {
+        min: -100,
+        max: 100,
+        ticks: {
+          color: '#4A4A4A', // Text color
+          font: baseFont as any,
+          padding: 24,
+          stepSize: 50,
+          callback: (value) => `${value}%`,
         },
-        datalabels: {
-          color: '#000', // Label color (inside bar)
-          anchor: 'end', // Position the label
-          align: (context) => {
-            const value = context.dataset.data[context.dataIndex] as number;
-            return value < 0 ? 'start' : 'end';
-          },
-          offset: (context) => {
-            const value = context.dataset.data[context.dataIndex] as number;
-            return value < 0 ? 12 : 0;
-          },
-          padding: 5,
-          font: {
-            ...(baseFont as any),
-            size: 10, // Font size
-          },
-          formatter: (value: number) => {
-            // Check if the value has a decimal part
-            return value % 1 === 0 ? value.toString() : value.toFixed(0);
-          },
+        title: {
+          display: false,
+        },
+        grid: {
+          drawBorder: false, // Remove the border along the y-axis
+          drawTicks: false,
+          lineWidth: 1, // Set line width for dotted lines
+          color: '#979797', // Dotted line color
+          borderDash: [5, 5], // Define the dash pattern (4px dash, 4px gap)
         },
       },
-      scales: {
-        y: {
-          min: -100,
-          max: 100,
-          ticks: {
-            color: '#4A4A4A', // Text color
-            font: baseFont as any,
-            padding: 24,
-            stepSize: 50,
-            callback: (value) => `${value}%`,
-          },
-          title: {
-            display: false,
-          },
-          grid: {
-            drawBorder: false, // Remove the border along the y-axis
-            drawTicks: false,
-            lineWidth: 1, // Set line width for dotted lines
-            color: '#979797', // Dotted line color
-            borderDash: [5, 5], // Define the dash pattern (4px dash, 4px gap)
-          },
+      x: {
+        grid: {
+          display: false, // Disable grid lines for the x-axis
+          drawBorder: false, // Remove the bottom border (x-axis line)
+          drawTicks: false, // Remove the tick marks on the x-axis
         },
-        x: {
-          grid: {
-            display: false, // Disable grid lines for the x-axis
-            drawBorder: false, // Remove the bottom border (x-axis line)
-            drawTicks: false, // Remove the tick marks on the x-axis
-          },
-          ticks: {
-            autoSkip: false,
-            maxRotation: 0,
-            minRotation: 0,
-            font: baseFont as any,
-            padding: 24,
-          },
-          title: {
-            display: true,
-            text: 'Time Steps (Years)',
-            align: 'start',
-            color: '#898989', // Text color
-            font: baseFont as any,
-          },
+        ticks: {
+          autoSkip: false,
+          maxRotation: 0,
+          minRotation: 0,
+          font: baseFont as any,
+          padding: 24,
+        },
+        title: {
+          display: true,
+          text: 'Time Steps (Years)',
+          align: 'start',
+          color: '#898989', // Text color
+          font: baseFont as any,
         },
       },
-    };
+    },
+  };
 
   chartConfiguration(data: Record<any, any>) {
     if (!data) {
@@ -177,27 +175,6 @@ export class ChangeOverTimeChartComponent {
       ],
     } as ChartConfiguration<'bar'>['data'];
   }
-
-  barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =
-    this.directImpactsStateService.activeMetric$?.pipe(
-      map((activeMetric) => {
-        const slot = activeMetric.slot;
-        const color = SLOT_COLORS[slot];
-        const options = {
-          backgroundColor: color,
-          borderColor: color,
-          elements: {
-            bar: {
-              hoverBackgroundColor: color,
-            },
-          },
-        };
-        return {
-          ...options,
-          ...this.staticBarChartOptions,
-        };
-      })
-    );
 
   convertImpactResultToChartData(
     resultData: ImpactsResultData[],

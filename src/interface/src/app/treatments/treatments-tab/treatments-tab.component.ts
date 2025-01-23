@@ -18,6 +18,7 @@ import {
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
+import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 
 @Component({
   selector: 'app-project-area-tx-tab',
@@ -32,6 +33,7 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
     OpacitySliderComponent,
     SearchBarComponent,
     TreatmentExpanderComponent,
+    LeftLoadingOverlayComponent,
   ],
   templateUrl: './treatments-tab.component.html',
   styleUrl: './treatments-tab.component.scss',
@@ -45,6 +47,8 @@ export class ProjectAreaTreatmentsTabComponent {
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
   searchString: string = '';
+
+  reloadingSummary$ = this.treatmentsState.reloadingSummary$;
 
   prescriptions$: Observable<Prescription[]> = combineLatest([
     this.treatmentsState.summary$,
