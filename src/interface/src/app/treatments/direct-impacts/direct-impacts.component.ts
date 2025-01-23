@@ -32,7 +32,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
 import { ImpactsMetric } from '../metrics';
-import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
+
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { Chart } from 'chart.js';
@@ -49,6 +49,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { FileSaverService, ScenarioService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { PrescriptionAction } from '../prescriptions';
+import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -72,7 +73,6 @@ import { PrescriptionAction } from '../prescriptions';
     MetricFiltersComponent,
     MetricFiltersComponent,
     NgStyle,
-    DirectImpactsMapLegendComponent,
     JsonPipe,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
@@ -82,6 +82,7 @@ import { PrescriptionAction } from '../prescriptions';
     ModalComponent,
     OverlayLoaderComponent,
     StatusChipComponent,
+    MetricSelectorComponent,
   ],
   providers: [
     DirectImpactsStateService,
@@ -187,17 +188,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     })
   );
 
-  activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(
-    map((m) => m.metric)
-  );
-
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
-
-  activateMetric(data: ImpactsMetric) {
-    this.directImpactsStateService.setActiveMetric(data);
-  }
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);

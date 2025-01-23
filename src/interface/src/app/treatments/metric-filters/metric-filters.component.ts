@@ -33,7 +33,6 @@ import { Observable } from 'rxjs';
 export class MetricFiltersComponent implements OnInit {
   @Input() selectedOptions: string[] = [];
   @Output() metricSelected = new EventEmitter<ImpactsMetric>();
-  @Output() metricUpdated = new EventEmitter<ImpactsMetric>();
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
@@ -77,12 +76,7 @@ export class MetricFiltersComponent implements OnInit {
     this.selectedOptions[dropdownIndex] = metric.id;
     // Updating the dropdowns
     this.updateDropdownOptions(dropdownIndex);
-    // setting the metric as active if slot is active
-    if (this.directImpactsStateService.isActiveSlot(slot)) {
-      this.activateMetric(metric, slot);
-    } else {
-      this.metricUpdated.emit({ metric, slot });
-    }
+    this.metricSelected.emit({ metric, slot });
   }
 
   updateDropdownOptions(updatedDropdownIndex: number | null): void {
@@ -102,10 +96,6 @@ export class MetricFiltersComponent implements OnInit {
         );
       }
     );
-  }
-
-  activateMetric(metric: Metric, slot: ImpactsMetricSlot): void {
-    this.metricSelected.emit({ metric, slot });
   }
 
   onConfirmedSelection(selection: any) {

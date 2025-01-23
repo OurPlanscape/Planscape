@@ -35,8 +35,8 @@
 
       <div class="item">
         <mat-icon class="material-symbols-outlined"
-          >check_box_outline_blank</mat-icon
-        >
+          >check_box_outline_blank
+        </mat-icon>
         <span class="item-label">Total Planning Area Acres:</span>
         {{ (summary$ | async)?.total_area_acres }}
       </div>
@@ -83,8 +83,7 @@
     <div class="metric-selection">
       <app-metric-filters
         [selectedOptions]="(filterOptions$ | async) || []"
-        (metricUpdated)="updateReportMetric($event)"
-        (metricSelected)="activateMetric($event)"></app-metric-filters>
+        (metricSelected)="updateReportMetric($event)"></app-metric-filters>
     </div>
   </sg-panel>
 

@@ -6,6 +6,7 @@
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
+  position: relative;
 }
 
 .chart {
@@ -36,4 +37,19 @@
     position: relative;
     top: 6px;
   }
+}
+
+.loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  position: absolute;
+  background: white;
+  width: 100%;
+}
+
+.stand-metric-selector {
+  padding: 16px;
 }
