@@ -6,16 +6,19 @@
   </div>
 </div>
 <ng-template #chart>
-  <ng-container *ngIf="activeStandIsForested$ | async; else nonForested">
-    <div class="title">Change (%)</div>
-    <div class="chart">
-      <canvas
-        baseChart
-        [data]="(barChartData$ | async) || undefined"
-        [options]="(barChartOptions$ | async) ?? {}"
-        [legend]="false"
-        [type]="'bar'"></canvas>
-    </div>
+  <ng-container *ngIf="activeStand$ | async as activeStand">
+    <ng-container *ngIf="activeStandIsForested$ | async; else nonForested">
+      <div class="title">{{ chartTitle(activeStand) }}</div>
+      <div class="y-axis-title">Change (%)</div>
+      <div class="chart">
+        <canvas
+          baseChart
+          [data]="(barChartData$ | async) || undefined"
+          [options]="(barChartOptions$ | async) ?? {}"
+          [legend]="false"
+          [type]="'bar'"></canvas>
+      </div>
+    </ng-container>
   </ng-container>
 
   <ng-template #nonForested>

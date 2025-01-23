@@ -6,19 +6,29 @@
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
+  align-items: center;
+  gap: 6px;
 }
 
 .chart {
   flex: 1;
-
+  width: 100%;
   canvas {
     padding-bottom: 20px;
   }
 }
 
 .title {
+  @include h5();
+  height: 32px;
+  margin-top: 20px;
+}
+
+.y-axis-title {
+  @include xs-label();
   padding: 24px 24px 0;
   color: $color-text-gray;
+  align-self: flex-start;
 }
 
 .empty-state {
