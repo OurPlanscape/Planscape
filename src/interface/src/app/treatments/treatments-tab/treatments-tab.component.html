@@ -28,10 +28,15 @@
         [inputHeight]="'regular'"
         (searchString)="setSearchString($event)"></sg-search-bar>
     </div>
+    <app-left-loading-overlay
+      *ngIf="reloadingSummary$ | async"></app-left-loading-overlay>
 
     <div
       class="expanders-container"
-      *ngIf="filteredPrescriptions$ | async as filteredRxs">
+      *ngIf="
+        (reloadingSummary$ | async) === false &&
+        (filteredPrescriptions$ | async) as filteredRxs
+      ">
       <ng-container
         *ngIf="
           searchString !== '' && searchString !== null && filteredRxs.length > 0
