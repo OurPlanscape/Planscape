@@ -35,8 +35,8 @@
 
       <div class="item">
         <mat-icon class="material-symbols-outlined"
-          >check_box_outline_blank</mat-icon
-        >
+          >check_box_outline_blank
+        </mat-icon>
         <span class="item-label">Total Planning Area Acres:</span>
         {{ (summary$ | async)?.total_area_acres | number: '1.0-0' }}
       </div>
@@ -55,7 +55,8 @@
     (clickedButton)="expandChangeChart()">
     <div panelTitle class="changes-chart-title">
       <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
-        Project Area
+        Percentage Change From Baseline
+        <span class="title-label">&nbsp;(Forested Stands)</span>
       </div>
     </div>
     <div class="chart-filters">
@@ -86,8 +87,7 @@
     <div class="metric-selection">
       <app-metric-filters
         [selectedOptions]="(filterOptions$ | async) || []"
-        (metricUpdated)="updateReportMetric($event)"
-        (metricSelected)="activateMetric($event)"></app-metric-filters>
+        (metricSelected)="updateReportMetric($event)"></app-metric-filters>
     </div>
   </sg-panel>
 

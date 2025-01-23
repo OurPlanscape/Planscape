@@ -1,27 +1,21 @@
-<div class="container">
-  <div class="fixed-width">
-    <mat-icon
-      class="material-symbols-outlined"
-      [style.color]="
-        (activeMetric$ | async)?.metric?.id === selectedOption
-          ? color
-          : '#898989'
-      "
-      color="primary"
-      (click)="onActivate()">
-      map
-    </mat-icon>
-    <i class="metric-color" [style.backgroundColor]="color"></i>
-    <span class="metric-label">
-      {{ label }}
-    </span>
-  </div>
-
-  <div class="flexible-width">
-    <mat-select [ngModel]="selectedOption" (ngModelChange)="onSelect($event)">
-      <mat-option *ngFor="let option of metrics" [value]="option.id">
-        {{ option.label }}
-      </mat-option>
-    </mat-select>
-  </div>
+<div class="label">
+  <i class="metric-color" [style.backgroundColor]="color"></i>
+  <span class="metric-label">
+    {{ label }}
+  </span>
 </div>
+
+<mat-form-field
+  appearance="outline"
+  subscriptSizing="dynamic"
+  class="metric-selector">
+  <mat-select
+    [ngModel]="selectedOption"
+    (ngModelChange)="onSelect($event)"
+    [panelClass]="'custom-panel'"
+    panelWidth="400px">
+    <mat-option *ngFor="let option of metrics" [value]="option.id">
+      {{ option.label }}
+    </mat-option>
+  </mat-select>
+</mat-form-field>
