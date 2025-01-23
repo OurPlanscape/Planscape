@@ -9,6 +9,7 @@ import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.c
 import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 
 @Component({
   selector: 'app-expanded-direct-impact-map',
@@ -29,10 +30,12 @@ import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-
 export class ExpandedDirectImpactMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
+    private treatedStandsState: TreatedStandsState,
     public dialogRef: MatDialogRef<ExpandedDirectImpactMapComponent>
   ) {}
 
   showTreatmentLegend$ = this.mapConfigState.showTreatmentLegend$;
+  treatmentActionsUsed$ = this.treatedStandsState.treatmentActionsUsed$;
 
   close() {
     this.dialogRef.close();

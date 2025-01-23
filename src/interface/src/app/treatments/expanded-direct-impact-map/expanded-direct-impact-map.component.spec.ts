@@ -1,11 +1,13 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ExpandedDirectImpactMapComponent } from './expanded-direct-impact-map.component';
-import { MockProvider } from 'ng-mocks';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { BehaviorSubject } from 'rxjs';
+import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { MatDialogRef } from '@angular/material/dialog';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { of } from 'rxjs';
+import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
+import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 
 describe('ExpandedDirectImpactMapComponent', () => {
   let component: ExpandedDirectImpactMapComponent;
@@ -15,11 +17,14 @@ describe('ExpandedDirectImpactMapComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ExpandedDirectImpactMapComponent],
       providers: [
-        MockProvider(DirectImpactsStateService, {
-          activeStand$: new BehaviorSubject(null),
+        MockProvider(TreatedStandsState, {
+          treatmentActionsUsed$: of([]),
         }),
         MockProvider(MapConfigState),
         { provide: MatDialogRef, useValue: {} },
+      ],
+      declarations: [
+        MockDeclarations(DirectImpactsMapComponent, TreatmentLegendComponent),
       ],
     }).compileComponents();
 
