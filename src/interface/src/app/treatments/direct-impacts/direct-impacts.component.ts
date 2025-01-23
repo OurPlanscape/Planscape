@@ -2,6 +2,7 @@ import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
+  DecimalPipe,
   JsonPipe,
   NgClass,
   NgFor,
@@ -32,7 +33,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { MetricFiltersComponent } from '../metric-filters/metric-filters.component';
 import { ImpactsMetric } from '../metrics';
-import { DirectImpactsMapLegendComponent } from '../direct-impacts-map-legend/direct-impacts-map-legend.component';
+
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { Chart } from 'chart.js';
@@ -51,6 +52,7 @@ import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { PrescriptionAction } from '../prescriptions';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
+import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -74,7 +76,6 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
     MetricFiltersComponent,
     MetricFiltersComponent,
     NgStyle,
-    DirectImpactsMapLegendComponent,
     JsonPipe,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
@@ -84,6 +85,8 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
     ModalComponent,
     OverlayLoaderComponent,
     StatusChipComponent,
+    DecimalPipe,
+    MetricSelectorComponent,
   ],
   providers: [
     DirectImpactsStateService,
@@ -167,6 +170,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
 
+  projectAreaAcres$ = this.selectedChartProjectArea$.pipe(
+    map((pa) => this.getProjectAreaAcres(pa))
+  );
+
   summary$ = this.treatmentsState.summary$;
 
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(
@@ -194,17 +201,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     } else return `(Non-forested Stand)`;
   }
 
-  activeMetric$ = this.directImpactsStateService.activeMetric$.pipe(
-    map((m) => m.metric)
-  );
-
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
-
-  activateMetric(data: ImpactsMetric) {
-    this.directImpactsStateService.setActiveMetric(data);
-  }
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
@@ -273,5 +272,17 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       return '';
     }
     return `${STAND_SIZES_LABELS[stand_size]} (${STAND_SIZES[stand_size]} acres)`;
+  }
+
+  getProjectAreaAcres(
+    selectedProjectArea: TreatmentProjectArea | 'All' | null
+  ): number {
+    const allAcres = !selectedProjectArea || selectedProjectArea === 'All';
+    if (allAcres) {
+      return this.treatmentsState.getTotalAcres();
+    }
+    return this.treatmentsState.getAcresForProjectArea(
+      selectedProjectArea.project_area_name
+    );
   }
 }

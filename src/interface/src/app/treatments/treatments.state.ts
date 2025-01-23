@@ -375,4 +375,9 @@ export class TreatmentsState {
     }
     return pa.total_area_acres;
   }
+
+  getTotalAcres() {
+    const summary = this.getCurrentSummary();
+    return summary.total_area_acres;
+  }
 }

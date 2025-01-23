@@ -4,7 +4,6 @@ import { MatSelectModule } from '@angular/material/select';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Metric } from '../metrics';
-import { DirectImpactsStateService } from '../direct-impacts.state.service';
 
 @Component({
   selector: 'app-metric-selector',
@@ -19,13 +18,10 @@ export class MetricSelectorComponent implements OnInit {
   @Input() metrics!: Metric[];
   @Input() selectedOption!: string;
   @Output() metricChanged = new EventEmitter<Metric>();
-  @Output() activated = new EventEmitter<Metric>();
 
   selectedMetric: any;
 
-  activeMetric$ = this.directImpactsStateService.activeMetric$;
-
-  constructor(private directImpactsStateService: DirectImpactsStateService) {}
+  constructor() {}
 
   ngOnInit(): void {
     this.selectedMetric = this.metrics.find(
@@ -38,9 +34,5 @@ export class MetricSelectorComponent implements OnInit {
       (metric: any) => metric.id === selectedMetricID
     );
     this.metricChanged.emit(this.selectedMetric);
-  }
-
-  onActivate() {
-    this.activated.emit(this.selectedMetric);
   }
 }

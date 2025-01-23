@@ -95,14 +95,6 @@ $panel-height: 600px;
   height: 38px;
 }
 
-::ng-deep
-  .mat-mdc-text-field-wrapper.mdc-text-field--outlined
-  .mat-mdc-form-field-infix {
-  padding: 0px;
-  line-height: 38px;
-  height: 38px;
-}
-
 .expansion-icon {
   background-color: $color-light-gray;
 }
@@ -199,4 +191,30 @@ $panel-height: 600px;
   display: flex;
   align-items: center;
   gap: 16px;
+}
+
+.chart-filters {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+}
+
+.filter-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: $color-black;
+}
+
+.filter-value {
+  font-size: 16px;
+  font-weight: 500;
+  color: $color-dark-gray;
+}
+
+.chart-2 ::ng-deep .content {
+  display: flex;
+  flex-direction: column;
 }
