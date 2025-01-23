@@ -1477,8 +1477,8 @@ class EndtoEndPlanningAreaAndScenarioTest(APITransactionTestCase):
         "planning.views.validate_scenario_treatment_ratio",
         return_value=(True, "all good"),
     )
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_end_to_end(self, validation, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_end_to_end(self, validation, chord_mock):
         self.client.force_authenticate(self.user)
 
         # List - returns 0
