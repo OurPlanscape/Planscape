@@ -95,17 +95,11 @@ export class DirectImpactsMapComponent {
     }
   }
 
-  // need to manually move the order of the layers so the
-  // stands results sits on top
+  // Move layers so the hover and selected stand layer sit at the top
   private moveLayers() {
-    if (
-      this.mapLibreMap.getLayer('stands-layer') &&
-      this.mapLibreMap.getLayer('stands-outline-layer')
-    ) {
-      this.mapLibreMap.moveLayer('map-project-areas-line', 'standHover');
-      this.mapLibreMap.moveLayer('stands-layer', 'standSelected');
-      this.mapLibreMap.moveLayer('stands-outline-layer', 'standHover');
-    }
+    this.mapLibreMap.moveLayer('map-project-areas-line');
+    this.mapLibreMap.moveLayer('standHover');
+    this.mapLibreMap.moveLayer('standSelected');
   }
 
   openTreatmentLegend() {
