@@ -2,6 +2,7 @@ import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
 import {
   AsyncPipe,
   DatePipe,
+  DecimalPipe,
   JsonPipe,
   NgClass,
   NgFor,
@@ -82,6 +83,7 @@ import { MetricSelectorComponent } from '../metric-selector/metric-selector.comp
     ModalComponent,
     OverlayLoaderComponent,
     StatusChipComponent,
+    DecimalPipe,
     MetricSelectorComponent,
   ],
   providers: [
@@ -165,6 +167,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   selectedChartProjectArea$ =
     this.directImpactsStateService.selectedProjectArea$;
+
+  projectAreaAcres$ = this.selectedChartProjectArea$.pipe(
+    map((pa) => this.getProjectAreaAcres(pa))
+  );
 
   summary$ = this.treatmentsState.summary$;
 
@@ -259,5 +265,17 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       return '';
     }
     return `${STAND_SIZES_LABELS[stand_size]} (${STAND_SIZES[stand_size]} acres)`;
+  }
+
+  getProjectAreaAcres(
+    selectedProjectArea: TreatmentProjectArea | 'All' | null
+  ): number {
+    const allAcres = !selectedProjectArea || selectedProjectArea === 'All';
+    if (allAcres) {
+      return this.treatmentsState.getTotalAcres();
+    }
+    return this.treatmentsState.getAcresForProjectArea(
+      selectedProjectArea.project_area_name
+    );
   }
 }
