@@ -8,6 +8,7 @@ import { TreatmentMapComponent } from '../treatment-map/treatment-map.component'
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 
 @Component({
   selector: 'app-expanded-direct-impact-map',
@@ -20,6 +21,7 @@ import { MapConfigState } from '../treatment-map/map-config.state';
     TreatmentLegendComponent,
     NgIf,
     ExpandedPanelComponent,
+    DirectImpactsMapComponent,
   ],
   templateUrl: './expanded-direct-impact-map.component.html',
   styleUrl: './expanded-direct-impact-map.component.scss',
