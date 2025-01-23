@@ -192,7 +192,8 @@ class CreateScenarioTest(APITestCase):
             second_response.content,
             {"global": ["The fields planning_area, name must make a unique set."]},
         )
-        self.assertEqual(chord_mock.call_count, 1)
+        # Tasks are not called if scenario creations fails
+        self.assertEqual(chord_mock.call_count, 0)
 
     def test_create_scenario_not_logged_in(self):
         payload = json.dumps(
@@ -250,7 +251,6 @@ class CreateScenarioTest(APITestCase):
         self.assertEqual(scenario.configuration, self.configuration)
         self.assertEqual(scenario.name, "test collab scenario")
         self.assertEqual(scenario.user, self.collab_user)
-        self.assertEqual(chord_mock.call_count, 1)
 
     def test_create_scenario_viewer_user(self):
         self.client.force_authenticate(self.viewer_user)
