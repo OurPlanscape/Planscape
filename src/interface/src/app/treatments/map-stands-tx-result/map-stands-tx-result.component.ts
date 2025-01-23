@@ -43,17 +43,8 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
 
-  readonly vectorSourceName = 'stands_by_tx_result';
-
-  hoverPaint = {
-    'line-color': [
-      'case',
-      ['boolean', ['feature-state', 'hover'], false],
-      '#f8f802',
-      '#00000000',
-    ],
-    'line-width': 4,
-  } as any;
+  readonly resultsVectorSourceName = 'stands_by_tx_result';
+  readonly treatmentStandsSourceName = 'treatment_stands';
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -63,12 +54,11 @@ export class MapStandsTxResultComponent implements OnInit {
 
   readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
   readonly SINGLE_STAND_HOVER = SINGLE_STAND_HOVER;
-  paint = {};
 
   tooltipLongLat: null | LngLat = null;
   appliedTreatment: string[] = [];
 
-  vectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
+  standsResultVectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
     map((mapMetric) => {
       const plan = this.treatmentsState.getTreatmentPlanId();
       return (
@@ -78,12 +68,24 @@ export class MapStandsTxResultComponent implements OnInit {
     })
   );
 
+  // Use the stands_by_tx_plan layer for drawing the selected stand, to avoid
+  // the selected stand being hidden / not draw when `standsResultVectorLayer$` changes
+  get standsVectorLayer() {
+    const plan = this.treatmentsState.getTreatmentPlanId();
+    return (
+      environment.martin_server +
+      `stands_by_tx_plan/{z}/{x}/{y}?treatment_plan_id=${plan}`
+    );
+  }
+
   activeStand$ = this.directImpactsStateService.activeStand$;
 
   // If we get a null active stand we clear the stand selection
   activeStandId$ = this.activeStand$.pipe(map((stand) => stand?.id));
 
-  hoverStand: number | string | null = null;
+  private hoverStandId: number | string | null = null;
+  // list of previous hovered stands, used to clean hover feature state
+  private hoveredStands: (string | number)[] = [];
 
   projectAreaData = { name: '', acres: 0 };
 
@@ -110,21 +112,21 @@ export class MapStandsTxResultComponent implements OnInit {
       )
       .subscribe((standId) => {
         if (standId) {
+          // get data from the map, specific for this stand id
           const sourceFeatures = this.mapLibreMap.querySourceFeatures(
-            this.vectorSourceName,
+            this.resultsVectorSourceName,
             {
-              sourceLayer: this.vectorSourceName,
-              filter: ['==', ['get', 'id'], standId], // Filter for the specific stand ID
+              sourceLayer: this.resultsVectorSourceName,
+              filter: ['==', ['get', 'id'], standId],
             }
           );
+          // if we got data, update the active stand data with the new version
           if (sourceFeatures[0]) {
             this.directImpactsStateService.setActiveStand(sourceFeatures[0]);
           }
         }
       });
   }
-
-  hoveredStands: (string | number)[] = [];
 
   hoverOnStand(event: MapMouseEvent) {
     if (!this.mapConfigState.isStandSelectionEnabled()) {
@@ -135,10 +137,10 @@ export class MapStandsTxResultComponent implements OnInit {
     const feature = this.getMapGeoJSONFeature(event.point);
     const action = feature.properties['action'];
 
-    if (feature && feature.id && feature.id != this.hoverStand) {
+    if (feature && feature.id && feature.id != this.hoverStandId) {
       this.removePreviousHover();
       this.paintHover(feature.id);
-      this.hoverStand = feature.id;
+      this.hoverStandId = feature.id;
     }
     const projectAreaName = feature.properties['project_area_name'];
     this.projectAreaData = {
@@ -157,8 +159,8 @@ export class MapStandsTxResultComponent implements OnInit {
   private removePreviousHover() {
     this.hoveredStands.forEach((id) => {
       this.mapLibreMap.removeFeatureState({
-        source: this.vectorSourceName,
-        sourceLayer: this.vectorSourceName,
+        source: this.resultsVectorSourceName,
+        sourceLayer: this.resultsVectorSourceName,
         id: id,
       });
     });
@@ -169,8 +171,8 @@ export class MapStandsTxResultComponent implements OnInit {
     this.hoveredStands.push(id);
     this.mapLibreMap.setFeatureState(
       {
-        source: this.vectorSourceName,
-        sourceLayer: this.vectorSourceName,
+        source: this.resultsVectorSourceName,
+        sourceLayer: this.resultsVectorSourceName,
         id: id,
       },
       { hover: true }
@@ -179,7 +181,7 @@ export class MapStandsTxResultComponent implements OnInit {
 
   hoverOutStand() {
     this.tooltipLongLat = null;
-    this.hoverStand = null;
+    this.hoverStandId = null;
     this.removePreviousHover();
   }
 
