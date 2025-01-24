@@ -1,0 +1,7 @@
+@import "colors";
+@import "mixins";
+
+.stand-forested-type {
+  @include h5();
+  color: $color-md-gray;
+}

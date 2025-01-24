@@ -6,12 +6,14 @@
   flex-direction: column;
   height: 100%;
   box-sizing: border-box;
-  position: relative;
+
 }
 
 .chart {
   flex: 1;
   width: 100%;
+  position: relative;
+
   canvas {
     padding-bottom: 20px;
   }
@@ -53,12 +55,14 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: calc(100% + 20px);
   position: absolute;
   background: white;
+  top: -20px;
   width: 100%;
 }
 
 .stand-metric-selector {
   padding: 16px;
+
 }
