@@ -1,9 +1,7 @@
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.response import Response
-from rest_framework import status
 from django.contrib.postgres.search import SearchVector, SearchQuery
 from core.serializers import MultiSerializerMixin
 from datasets.filters import DataLayerFilterSet
