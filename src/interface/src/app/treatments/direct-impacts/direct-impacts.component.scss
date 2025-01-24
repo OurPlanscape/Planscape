@@ -230,17 +230,6 @@ $panel-height: 600px;
   }
 }
 
-.project-area-chart {
-  height: 400px;
-  padding: 18px 40px;
-  max-width: 1024px;
-  margin: 0 auto;
-
-  @include on-small() {
-    padding: 0;
-  }
-}
-
 .treatment-dropdown ::ng-deep .dropdown-button {
   border: 1px solid $color-soft-gray;
 }
