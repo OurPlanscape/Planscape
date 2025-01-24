@@ -118,9 +118,7 @@ $panel-height: 600px;
 }
 
 .metric-selection {
-  //placeholder styles
-  margin-top: 24px;
-  padding: 20px;
+  padding: 36px 16px;
   display: flex;
 }
 
@@ -163,6 +161,11 @@ $panel-height: 600px;
   height: 100%;
   display: flex;
   flex-direction: column;
+}
+
+.stand-forested-type {
+  @include h5();
+  color: $color-md-gray;
 }
 
 .attribution {

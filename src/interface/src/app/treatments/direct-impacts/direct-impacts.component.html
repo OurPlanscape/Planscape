@@ -58,6 +58,15 @@
         Percentage Change From Baseline
         <span class="title-label">&nbsp;(Forested Stands)</span>
       </div>
+      <a
+        sg-button
+        icon="help"
+        variant="text"
+        [outlined]="true"
+        href="https://github.com/OurPlanscape/Planscape/wiki/Planscape-Treatment-Impacts-User-Guide"
+        target="_blank"
+        >Learn About Metrics</a
+      >
     </div>
     <div class="chart-filters">
       <div class="filter-label">Project Area:</div>
@@ -82,7 +91,16 @@
         </span>
       </div>
       <div class="filter-label">Filter by</div>
-      <div>dropdown</div>
+
+      <sg-filter-dropdown
+        menuLabel="Treatment Type"
+        [menuItems]="(treatmentTypeOptions$ | async) || []"
+        [hasSearch]="false"
+        displayField="value"
+        [disabled]="(treatmentTypeOptions$ | async) === null"
+        (confirmedSelection)="
+          onConfirmedSelection($event)
+        "></sg-filter-dropdown>
     </div>
 
     <app-change-over-time-chart
@@ -104,7 +122,17 @@
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandStandChart()">
-        <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
+        <div
+          panelTitle
+          *ngIf="activeStand$ | async as activeStand; else noStand">
+          {{ standChartTitle(activeStand) }}
+          <span class="stand-forested-type">{{
+            forestedLabel(activeStand)
+          }}</span>
+        </div>
+        <ng-template #noStand>
+          <div panelTitle #noStand>Stand Level Data Unavailable</div>
+        </ng-template>
         <app-stand-data-chart></app-stand-data-chart>
       </sg-panel>
 
@@ -123,16 +151,6 @@
         </div>
         <div class="map-panel-content">
           <app-direct-impacts-map></app-direct-impacts-map>
-          <div class="attribution">
-            <a href="https://maplibre.org/" target="_blank">MapLibre</a> |
-            <a href="https://www.mapbox.com/about/maps" target="_blank"
-              >© Mapbox</a
-            >&nbsp;<a
-              href="https://www.openstreetmap.org/about/"
-              target="_blank"
-              >© OpenStreetMap</a
-            >
-          </div>
         </div>
 
         <app-treatment-legend

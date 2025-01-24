@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { map, Observable, skip, switchMap, tap } from 'rxjs';
 import {
@@ -29,7 +29,6 @@ import { getBasicChartOptions } from '../chart-helper';
     NgChartsModule,
     NgIf,
     AsyncPipe,
-    JsonPipe,
     TreatmentTypeIconComponent,
     MatTableModule,
     NonForestedDataComponent,
@@ -46,6 +45,13 @@ export class StandDataChartComponent {
   activeStandIsForested$ = this.activeStand$.pipe(
     map((d) => standIsForested(d))
   );
+
+  chartTitle(s: MapGeoJSONFeature) {
+    if (!s.properties['project_area_name'] || !s.properties['id']) {
+      return '';
+    }
+    return `${s.properties['project_area_name']}, Stand ${s.properties['id']}`;
+  }
 
   activeStandValues$: Observable<number[]> =
     this.directImpactsStateService.activeStand$.pipe(
