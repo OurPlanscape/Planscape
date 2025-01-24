@@ -90,9 +90,10 @@
           Acres: {{ projectAreaAcres$ | async | number: '1.0-0' }}
         </span>
       </div>
-      <div class="filter-label">Filter by</div>
+      <div class="filter-label filter-label-treatment">Filter by</div>
 
       <sg-filter-dropdown
+        class="treatment-dropdown"
         menuLabel="Treatment Type"
         [menuItems]="(treatmentTypeOptions$ | async) || []"
         [hasSearch]="false"
@@ -102,6 +103,7 @@
           onConfirmedSelection($event)
         "></sg-filter-dropdown>
     </div>
+
     <app-change-over-time-chart></app-change-over-time-chart>
 
     <div class="metric-selection">

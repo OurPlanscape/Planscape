@@ -1,24 +1,23 @@
 @import 'colors';
 @import 'mixins';
+@import 'media';
 
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
-}
+  height: 400px;
+  padding: 18px 40px;
+  max-width: 1024px;
+  margin: 0 auto;
 
-.chart-heading {
-  @include h5();
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  height: 60px;
-  align-items: flex-end;
+  @include on-small() {
+    padding: 0;
+  }
 }
 
 .chart {
-  height: calc(100% - 140px);
-  padding-bottom: 20px;
+  height: 100%;
+  display: block;
 }
 
 canvas {
@@ -27,6 +26,7 @@ canvas {
 }
 
 .title {
-  padding: 24px 24px 0;
+  padding: 0 24px;
   color: $color-text-gray;
+  font-weight: 600;
 }
