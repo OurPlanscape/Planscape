@@ -57,6 +57,20 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(1, data.get("count"))
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
 
+    def test_filter_by_full_text_search(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(dataset=self.dataset, name="foo")
+        another_datalayer = DataLayerFactory.create(dataset=self.dataset, name="bar")
+        filter = {
+            "search": "foo",
+        }
+        url = f"{reverse('api:datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(1, data.get("count"))
+        self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
+
     def test_get_by_normal_user_fails(self):
         self.client.force_authenticate(user=self.normal)
         url = reverse("api:datasets:datalayers-list")
