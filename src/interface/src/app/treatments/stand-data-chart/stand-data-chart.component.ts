@@ -19,7 +19,7 @@ import { standIsForested } from '../stands';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
-import { getBasicChartOptions } from '../chart-helper';
+import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
 
 @UntilDestroy()
 @Component({
@@ -65,7 +65,7 @@ export class StandDataChartComponent {
 
   barChartData$ = this.activeStandValues$.pipe(
     map((data) => {
-      this.updateYAxisRange(data); // Updating the range dinamically
+      updateYAxisRange(data, this.staticBarChartOptions); // Updating the range dinamically
       return {
         labels: [0, 5, 10, 15, 20],
         datasets: [
@@ -126,13 +126,4 @@ export class StandDataChartComponent {
         };
       })
     );
-
-  private updateYAxisRange(data: number[]) {
-    const maxValue = Math.max(...data.map(Math.abs));
-    const minValue = Math.min(...data.map(Math.abs));
-    const roundedMax = Math.ceil(maxValue / 50) * 50;
-    const roundedMin = Math.floor(minValue / 50) * 50;
-    (this.staticBarChartOptions as any).scales!.y!.min = roundedMin;
-    (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
-  }
 }

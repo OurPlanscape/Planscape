@@ -85,6 +85,21 @@ export const getSharedTitleConfig = (yAxis = true): any => {
       };
 };
 
+export const updateYAxisRange = (
+  data: number[],
+  chartOptions: ChartConfiguration<'bar'>['options']
+) => {
+  const maxValue = Math.max(...data);
+  const minValue = Math.min(...data);
+  const roundedMax = Math.ceil(maxValue / 50) * 50;
+  const roundedMin = Math.floor(minValue / 50) * 50;
+
+  (chartOptions as any).scales!.y!.min = roundedMin;
+  (chartOptions as any).scales!.y!.max = roundedMax;
+
+  return chartOptions;
+};
+
 export const getBasicChartOptions =
   (): ChartConfiguration<'bar'>['options'] => ({
     responsive: true,

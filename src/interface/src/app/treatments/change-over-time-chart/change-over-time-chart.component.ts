@@ -21,7 +21,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { TreatmentsState } from '../treatments.state';
 import deepEqual from 'fast-deep-equal';
 import { TreatmentPlan } from '@types';
-import { getBasicChartOptions } from '../chart-helper';
+import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
 
 export interface ImpactsResultData {
   year: number;
@@ -68,7 +68,10 @@ export class ChangeOverTimeChartComponent {
     if (!data) {
       return undefined;
     }
-    this.updateYAxisRange(data as any);
+    const allValues = Object.values(data).flatMap((entries) =>
+      entries.map((entry) => entry.avg_value)
+    );
+    updateYAxisRange(allValues, this.staticBarChartOptions);
     return {
       labels: [0, 5, 10, 15, 20],
       datasets: [
@@ -154,21 +157,4 @@ export class ChangeOverTimeChartComponent {
       );
     })
   );
-
-  updateYAxisRange(
-    data: Record<ImpactsMetricSlot, ChangeOverTimeChartItem[]>
-  ): void {
-    const allValues = Object.values(data).flatMap((entries) =>
-      entries.map((entry) => entry.avg_value)
-    );
-
-    const maxValue = Math.max(...allValues);
-    const minValue = Math.min(...allValues);
-
-    const roundedMax = Math.ceil(maxValue / 50) * 50;
-    const roundedMin = Math.floor(minValue / 50) * 50;
-
-    (this.staticBarChartOptions as any).scales!.y!.min = roundedMin;
-    (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
-  }
 }
