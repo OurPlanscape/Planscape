@@ -17,7 +17,14 @@ class TestDataLayerViewSet(APITransactionTestCase):
     def setUp(self) -> None:
         self.admin = UserFactory.create(is_staff=True)
         self.normal = UserFactory.create()
-        self.dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        self.organization = OrganizationFactory.create(
+            created_by=self.admin, name="Green Organization"
+        )
+        self.dataset = DatasetFactory.create(
+            visibility=VisibilityOptions.PUBLIC,
+            name="US West Coast",
+            organization=self.organization,
+        )
 
     def test_list_by_normal_user_succeeds(self):
         self.client.force_authenticate(user=self.normal)
@@ -57,12 +64,14 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(1, data.get("count"))
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
 
-    def test_filter_by_full_text_search(self):
+    def test_filter_by_full_text_search_datalayer_name(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(dataset=self.dataset, name="foo")
-        another_datalayer = DataLayerFactory.create(dataset=self.dataset, name="bar")
+        datalayer = DataLayerFactory.create(dataset=self.dataset, name="Forest")
+        for i in range(10):
+            DataLayerFactory.create(dataset=self.dataset, name=f"Foo {i}")
+            DataLayerFactory.create(dataset=self.dataset, name=f"Bar {i}")
         filter = {
-            "search": "foo",
+            "search": "Forest",
         }
         url = f"{reverse('api:datasets:datalayers-list')}?{urlencode(filter)}"
         response = self.client.get(url)
@@ -70,6 +79,51 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, data.get("count"))
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
+
+    def test_filter_by_full_text_search_datalayer_name_multiple_return(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(dataset=self.dataset, name="Forest")
+        for i in range(10):
+            DataLayerFactory.create(dataset=self.dataset, name=f"Foo {i}")
+            DataLayerFactory.create(dataset=self.dataset, name=f"Bar {i}")
+        filter = {
+            "search": "Foos",
+        }
+        url = f"{reverse('api:datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(10, data.get("count"))
+
+    def test_filter_by_full_text_search_dataset_name(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(dataset=self.dataset, name="Forest")
+        for i in range(10):
+            DataLayerFactory.create(dataset=self.dataset, name=f"Foo {i}")
+            DataLayerFactory.create(dataset=self.dataset, name=f"Bar {i}")
+        filter = {
+            "search": "West coast",
+        }
+        url = f"{reverse('api:datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(21, data.get("count"))
+
+    def test_filter_by_full_text_search_organization_name(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(dataset=self.dataset, name="Forest")
+        for i in range(10):
+            DataLayerFactory.create(dataset=self.dataset, name=f"Foo {i}")
+            DataLayerFactory.create(dataset=self.dataset, name=f"Bar {i}")
+        filter = {
+            "search": "organization",
+        }
+        url = f"{reverse('api:datasets:datalayers-list')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(21, data.get("count"))
 
     def test_get_by_normal_user_fails(self):
         self.client.force_authenticate(user=self.normal)
