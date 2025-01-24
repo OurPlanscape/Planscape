@@ -17,10 +17,10 @@
           [options]="(barChartOptions$ | async) ?? {}"
           [legend]="false"
           [type]="'bar'"></canvas>
-      </div>
 
-      <div *ngIf="loading" class="loader">
-        <mat-spinner diameter="24"></mat-spinner>
+        <div *ngIf="loading" class="loader">
+          <mat-spinner diameter="24"></mat-spinner>
+        </div>
       </div>
 
       <div class="stand-metric-selector">

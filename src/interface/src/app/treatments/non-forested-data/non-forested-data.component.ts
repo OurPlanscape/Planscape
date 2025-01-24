@@ -47,7 +47,12 @@ export class NonForestedDataComponent {
           };
         });
         // if any its null mark the area as non-burnable
-        if (this.dataSource.some((data) => data.rate_of_spread === null)) {
+        if (
+          this.dataSource.some(
+            (data) =>
+              data.rate_of_spread === null || data.rate_of_spread === 'N/A'
+          )
+        ) {
           this.state = 'NON_BURNABLE';
         }
       });
