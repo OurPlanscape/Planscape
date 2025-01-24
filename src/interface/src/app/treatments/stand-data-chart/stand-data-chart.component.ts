@@ -1,9 +1,16 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map, Observable, skip, switchMap, tap } from 'rxjs';
+import {
+  distinctUntilChanged,
+  map,
+  Observable,
+  skip,
+  switchMap,
+  tap,
+} from 'rxjs';
 import {
   Metric,
   METRICS,
@@ -44,7 +51,12 @@ const baseFont = {
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',
 })
-export class StandDataChartComponent {
+export class StandDataChartComponent implements OnInit {
+  /**
+   * flag to determine if we dont want to wait for the initial change on active metric
+   * and map standsTxSourceLoaded$
+   */
+  @Input() skipFirstLoad = false;
   activeStand$ = this.directImpactsStateService.activeStand$;
   activeMetric$ = this.directImpactsStateService.activeMetric$;
 
@@ -88,11 +100,15 @@ export class StandDataChartComponent {
 
   metrics: Metric[] = METRICS;
 
-  constructor(private directImpactsStateService: DirectImpactsStateService) {
+  constructor(private directImpactsStateService: DirectImpactsStateService) {}
+
+  ngOnInit() {
     // this puts a loader when we change the metric
     // and removes it once we get a new value from standsTxSourceLoaded$
     this.directImpactsStateService.activeMetric$
       .pipe(
+        distinctUntilChanged((prev, curr) => prev.id === curr.id),
+        skip(this.skipFirstLoad ? 1 : 0),
         tap(() => (this.loading = true)),
         switchMap((s) =>
           this.directImpactsStateService.standsTxSourceLoaded$.pipe(skip(1))
