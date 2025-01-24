@@ -132,7 +132,7 @@ export class StandDataChartComponent {
     const minValue = Math.min(...data.map(Math.abs));
     const roundedMax = Math.ceil(maxValue / 50) * 50;
     const roundedMin = Math.floor(minValue / 50) * 50;
-    (this.staticBarChartOptions as any).scales!.y!.min = roundedMax;
-    (this.staticBarChartOptions as any).scales!.y!.max = roundedMin;
+    (this.staticBarChartOptions as any).scales!.y!.min = roundedMin;
+    (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
   }
 }
