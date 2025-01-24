@@ -85,30 +85,29 @@ export const getSharedTitleConfig = (yAxis = true): any => {
       };
 };
 
-export const getBasicChartOptions = (
-  isStatic = false
-): ChartConfiguration<'bar'>['options'] => ({
-  responsive: true,
-  maintainAspectRatio: false,
-  layout: {
-    padding: { ...getChartPaddingConfiguration() },
-  },
-  plugins: {
-    tooltip: {
-      enabled: false,
+export const getBasicChartOptions =
+  (): ChartConfiguration<'bar'>['options'] => ({
+    responsive: true,
+    maintainAspectRatio: false,
+    layout: {
+      padding: { ...getChartPaddingConfiguration() },
     },
-    datalabels: { ...getSharedDataLabelsConfig() },
-  },
-  scales: {
-    y: {
-      ticks: { ...getSharedTicksConfig() },
-      title: { ...getSharedTitleConfig() },
-      grid: { ...getSharedGridConfig() },
+    plugins: {
+      tooltip: {
+        enabled: false,
+      },
+      datalabels: { ...getSharedDataLabelsConfig() },
     },
-    x: {
-      grid: { ...getSharedGridConfig(false) },
-      ticks: { ...getSharedTicksConfig(false) },
-      title: { ...getSharedTitleConfig(false) },
+    scales: {
+      y: {
+        ticks: { ...getSharedTicksConfig() },
+        title: { ...getSharedTitleConfig() },
+        grid: { ...getSharedGridConfig() },
+      },
+      x: {
+        grid: { ...getSharedGridConfig(false) },
+        ticks: { ...getSharedTicksConfig(false) },
+        title: { ...getSharedTitleConfig(false) },
+      },
     },
-  },
-});
+  });
