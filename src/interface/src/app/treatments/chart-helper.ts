@@ -47,7 +47,7 @@ export const getSharedTicksConfig = (yAxis = true): any =>
         autoSkip: false,
         maxRotation: 0,
         minRotation: 0,
-        font: { ...getChartFontConfig },
+        font: baseFont,
         padding: 24,
       };
 
@@ -81,7 +81,7 @@ export const getSharedTitleConfig = (yAxis = true): any => {
         text: 'Time Steps (Years)',
         align: 'start',
         color: '#898989', // Text color
-        font: { ...getChartFontConfig },
+        font: baseFont,
       };
 };
 
