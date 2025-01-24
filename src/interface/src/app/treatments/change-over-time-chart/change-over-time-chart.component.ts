@@ -21,13 +21,7 @@ import { UntilDestroy } from '@ngneat/until-destroy';
 import { TreatmentsState } from '../treatments.state';
 import deepEqual from 'fast-deep-equal';
 import { TreatmentPlan } from '@types';
-
-const baseFont = {
-  family: 'Public Sans',
-  size: 14,
-  style: 'normal',
-  weight: '600',
-};
+import { getBasicChartOptions } from '../chart-helper';
 
 export interface ImpactsResultData {
   year: number;
@@ -62,92 +56,19 @@ export class ChangeOverTimeChartComponent {
 
   @Input() metrics!: Record<ImpactsMetricSlot, Metric> | null;
 
+  baseOptions = getBasicChartOptions();
+
   readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] = {
-    responsive: true,
-    maintainAspectRatio: false,
-    layout: {
-      padding: {
-        left: 0, // Add 20px padding between the tick labels and the chart content
-        right: 24,
-        top: 0,
-        bottom: 0,
-      },
-    },
-    plugins: {
-      tooltip: {
-        enabled: false,
-      },
-      datalabels: {
-        color: '#000', // Label color (outside the bar)
-        backgroundColor: '#fff',
-        anchor: (context) => {
-          const value = context.dataset.data[context.dataIndex] as number;
-          return value < 0 ? 'start' : 'end';
-        }, // Position the label
-        align: (context) => {
-          const value = context.dataset.data[context.dataIndex] as number;
-          return value < 0 ? 'bottom' : 'top';
-        },
-        font: {
-          ...(baseFont as any),
-          size: 10, // Font size
-        },
-        formatter: (value: number) => {
-          // Check if the value has a decimal part
-          return value % 1 === 0 ? value.toString() : value.toFixed(0);
-        },
-      },
-    },
-    scales: {
-      y: {
-        min: -100,
-        max: 100,
-        ticks: {
-          color: '#4A4A4A', // Text color
-          font: baseFont as any,
-          padding: 24,
-          stepSize: 50,
-          callback: (value) => `${value}%`,
-        },
-        title: {
-          display: false,
-        },
-        grid: {
-          drawBorder: false, // Remove the border along the y-axis
-          drawTicks: false,
-          lineWidth: 1, // Set line width for dotted lines
-          color: '#979797', // Dotted line color
-          borderDash: [5, 5], // Define the dash pattern (4px dash, 4px gap)
-        },
-      },
-      x: {
-        grid: {
-          display: false, // Disable grid lines for the x-axis
-          drawBorder: false, // Remove the bottom border (x-axis line)
-          drawTicks: false, // Remove the tick marks on the x-axis
-        },
-        ticks: {
-          autoSkip: false,
-          maxRotation: 0,
-          minRotation: 0,
-          font: baseFont as any,
-          padding: 24,
-        },
-        title: {
-          display: true,
-          text: 'Time Steps (Years)',
-          align: 'start',
-          color: '#898989', // Text color
-          font: baseFont as any,
-        },
-      },
-    },
+    ...this.baseOptions,
   };
 
-  chartConfiguration(data: Record<any, any>) {
+  chartConfiguration(
+    data: Record<ImpactsMetricSlot, ChangeOverTimeChartItem[]>
+  ) {
     if (!data) {
       return undefined;
     }
+    this.updateYAxisRange(data as any);
     return {
       labels: [0, 5, 10, 15, 20],
       datasets: [
@@ -233,4 +154,21 @@ export class ChangeOverTimeChartComponent {
       );
     })
   );
+
+  updateYAxisRange(
+    data: Record<ImpactsMetricSlot, ChangeOverTimeChartItem[]>
+  ): void {
+    const allValues = Object.values(data).flatMap((entries) =>
+      entries.map((entry) => entry.avg_value)
+    );
+
+    const maxValue = Math.max(...allValues);
+    const minValue = Math.min(...allValues);
+
+    const roundedMax = Math.ceil(maxValue / 50) * 50;
+    const roundedMin = Math.floor(minValue / 50) * 50;
+
+    (this.staticBarChartOptions as any).scales!.y!.min = roundedMin;
+    (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
+  }
 }
