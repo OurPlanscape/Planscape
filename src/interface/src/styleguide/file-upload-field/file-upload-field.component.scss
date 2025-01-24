@@ -17,8 +17,7 @@
 
 .field-label {
   @include standard-input-label();
-  color: $color-dark-gray;
-  font-size: 14px;
+  color: $color-black;
   font-weight: 500;
   line-height: 22px;
   text-align: left;
@@ -61,8 +60,8 @@
 }
 
 .placeholder-label {
-  @include standard-input-label();
-  color: $color-text-gray;
+  @include small-input-label();
+  color: $color-md-gray;
   line-height: 22px;
   font-size: 16px;
   text-align: left;
