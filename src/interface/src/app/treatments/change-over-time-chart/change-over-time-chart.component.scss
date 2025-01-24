@@ -9,7 +9,6 @@
 
 .chart {
   height: 100%;
-  padding-bottom: 20px;
   display: block;
 }
 
@@ -19,6 +18,6 @@ canvas {
 }
 
 .title {
-  padding: 24px 24px 0;
+  padding: 0 24px;
   color: $color-text-gray;
 }

@@ -72,7 +72,7 @@ export const getSharedDataLabelsConfig = (): any => ({
 });
 
 export const getSharedTitleConfig = (yAxis = true): any => {
-  yAxis
+  return yAxis
     ? {
         display: false,
       }
@@ -91,13 +91,17 @@ export const updateYAxisRange = (
 ) => {
   const maxValue = Math.max(...data);
   const minValue = Math.min(...data);
-  const roundedMax = Math.ceil(maxValue / 50) * 50;
-  const roundedMin = Math.floor(minValue / 50) * 50;
 
-  (chartOptions as any).scales!.y!.min = roundedMin;
-  (chartOptions as any).scales!.y!.max = roundedMax;
-
-  return chartOptions;
+  // As per business requeriment if all values are 0 we should display 0% and 50%
+  if (minValue === 0 && maxValue === 0) {
+    (chartOptions as any).scales!.y!.min = 0;
+    (chartOptions as any).scales!.y!.max = 50;
+  } else {
+    const roundedMax = Math.ceil(maxValue / 50) * 50;
+    const roundedMin = Math.floor(minValue / 50) * 50;
+    (chartOptions as any).scales!.y!.min = roundedMin;
+    (chartOptions as any).scales!.y!.max = roundedMax;
+  }
 };
 
 export const getBasicChartOptions =

@@ -225,3 +225,14 @@ $panel-height: 600px;
     padding: 8px 0;
   }
 }
+
+.project-area-chart {
+  height: 400px;
+  padding: 18px 40px;
+  max-width: 1024px;
+  margin: 0 auto;
+
+  @include on-small() {
+    padding: 0;
+  }
+}
