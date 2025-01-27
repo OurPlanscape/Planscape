@@ -80,8 +80,7 @@ export class ExpandedChangeOverTimeChartComponent {
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
-  treatmentTypeOptions$: Observable<any> =
-    this.treatmentsState.treatmentTypeOptions$;
+  treatmentTypeOptions$ = this.treatmentsState.treatmentTypeOptions$;
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
