@@ -45,7 +45,7 @@
         menuLabel="Treatment Type"
         [menuItems]="(treatmentTypeOptions$ | async) || []"
         [hasSearch]="false"
-        displayField="value"
+        [displayField]="valueKey"
         [disabled]="(treatmentTypeOptions$ | async) === null"
         [selectedItems]="filterOptions$ | async"
         (confirmedSelection)="
