@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
@@ -13,8 +13,6 @@ import { MetricFiltersComponent } from '../metric-filters/metric-filters.compone
 import { ImpactsMetric } from '../metrics';
 
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { Chart } from 'chart.js';
-import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { ChangeOverTimeChartComponent } from '../change-over-time-chart/change-over-time-chart.component';
 import { MatSelectModule } from '@angular/material/select';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -44,7 +42,7 @@ import { ExpandedPanelComponent } from 'src/styleguide/expanded-panel/expanded-p
   templateUrl: './expanded-change-over-time-chart.component.html',
   styleUrl: './expanded-change-over-time-chart.component.scss',
 })
-export class ExpandedChangeOverTimeChartComponent implements OnInit, OnDestroy {
+export class ExpandedChangeOverTimeChartComponent {
   loading = false;
   downloadingShapefile = false;
   scenario: Scenario | null = null;
@@ -87,16 +85,6 @@ export class ExpandedChangeOverTimeChartComponent implements OnInit, OnDestroy {
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
-  }
-
-  ngOnInit(): void {
-    // Register the plugin only when this component is initialized
-    Chart.register(ChartDataLabels);
-  }
-
-  ngOnDestroy(): void {
-    // Unregister the plugin when the component is destroyed
-    Chart.unregister(ChartDataLabels);
   }
 
   setChartProjectArea(pa: TreatmentProjectArea | 'All') {
