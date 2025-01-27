@@ -22,7 +22,9 @@ import {
 } from '../metrics';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-direct-impacts-map',
   standalone: true,
@@ -78,6 +80,12 @@ export class DirectImpactsMapComponent {
     this.mapLibreMap = event;
     this.mapCreated.emit(this.mapLibreMap);
     this.saveZoom();
+
+    this.mapConfigState.standSelectionEnabled$
+      .pipe(untilDestroyed(this))
+      .subscribe((enabled) => {
+        this.mapLibreMap.getCanvas().style.cursor = enabled ? 'pointer' : '';
+      });
   }
 
   saveZoom() {
