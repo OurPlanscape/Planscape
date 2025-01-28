@@ -52,9 +52,7 @@ import { FileSaverService, ScenarioService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { getTreatmentTypeOptions } from '../prescriptions';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
-import { filter, take } from 'rxjs/operators';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -204,13 +202,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
-  treatmentTypeOptions$: Observable<any> = this.treatmentsState.summary$.pipe(
-    filter((summary) => summary !== null),
-    take(1),
-    map((summary) => {
-      return getTreatmentTypeOptions(summary);
-    })
-  );
+  treatmentTypeOptions$: Observable<any> =
+    this.treatmentsState.treatmentTypeOptions$;
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
