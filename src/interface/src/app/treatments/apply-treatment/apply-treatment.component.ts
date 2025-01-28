@@ -70,8 +70,8 @@ export class ApplyTreatmentComponent {
   );
 
   readonly sequenceTypes: Record<keyof typeof PRESCRIPTIONS, string> = {
-    SINGLE: 'Single',
-    SEQUENCE: 'Sequence',
+    SINGLE: 'Single Activity',
+    SEQUENCE: 'Sequenced Activity',
   };
   prescriptionForm = new FormGroup({
     sequenceType: new FormControl<keyof typeof PRESCRIPTIONS>(
