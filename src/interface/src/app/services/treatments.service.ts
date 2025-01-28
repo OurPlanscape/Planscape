@@ -28,6 +28,7 @@ export class TreatmentsService {
       withCredentials: true,
       params: {
         scenario: scenarioId,
+        ordering: '-created_at',
       },
     });
   }
