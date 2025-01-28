@@ -160,7 +160,7 @@ export function getPrescriptionsFromSummary(
 
 export function getTreatmentTypeOptions(
   summary: TreatmentSummary | null
-): string[] | [] {
+): PrescriptionAction[] {
   if (!summary?.project_areas) {
     return [];
   }

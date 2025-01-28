@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { map } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import {
   descriptionsForAction,
   PrescriptionAction,
@@ -43,15 +43,16 @@ export class TreatmentFilterComponent implements OnInit {
 
   treatmentTypeOptions$ = this.treatmentsState.treatmentTypeOptions$;
 
-  sequenceTypeOptions$ = this.treatmentsState.treatmentTypeOptions$.pipe(
-    map((treatmentTypes: string[]) => {
-      const sequenceActionKeys = Object.keys(PRESCRIPTIONS.SEQUENCE);
-      return treatmentTypes.filter((t) => sequenceActionKeys.includes(t));
-    })
-  );
+  sequenceTypeOptions$: Observable<PrescriptionAction[]> =
+    this.treatmentsState.treatmentTypeOptions$.pipe(
+      map((treatmentTypes: PrescriptionAction[]) => {
+        const sequenceActionKeys = Object.keys(PRESCRIPTIONS.SEQUENCE);
+        return treatmentTypes.filter((t) => sequenceActionKeys.includes(t));
+      })
+    );
 
   singleTypeOptions$ = this.treatmentsState.treatmentTypeOptions$.pipe(
-    map((treatmentTypes: string[]) => {
+    map((treatmentTypes: PrescriptionAction[]) => {
       const singleActionKeys = Object.keys(PRESCRIPTIONS.SINGLE);
       return treatmentTypes.filter((t) => singleActionKeys.includes(t));
     })
@@ -71,7 +72,7 @@ export class TreatmentFilterComponent implements OnInit {
       });
   }
 
-  getActionLabel(key: string): any {
+  getActionLabel(key: PrescriptionAction): any {
     return descriptionsForAction(key);
   }
 
@@ -119,7 +120,7 @@ export class TreatmentFilterComponent implements OnInit {
 
   applyChanges() {
     this.directImpactsState.setFilteredTreatmentTypes([
-      ...(this.unconfirmedSelection as PrescriptionAction[]),
+      ...this.unconfirmedSelection,
     ]);
   }
 
@@ -127,9 +128,9 @@ export class TreatmentFilterComponent implements OnInit {
     return this.unconfirmedSelection.includes(item);
   }
 
-  toggleSelection(e: Event, item: string) {
-    if (!this.unconfirmedSelection.includes(item as PrescriptionAction)) {
-      this.unconfirmedSelection.push(item as PrescriptionAction);
+  toggleSelection(e: Event, item: PrescriptionAction) {
+    if (!this.unconfirmedSelection.includes(item)) {
+      this.unconfirmedSelection.push(item);
     } else {
       this.unconfirmedSelection = this.unconfirmedSelection.filter(
         (e) => e !== item
