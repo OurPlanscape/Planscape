@@ -5,7 +5,7 @@ import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
 
-import { ButtonComponent, FilterDropdownComponent } from '@styleguide';
+import { ButtonComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
@@ -37,7 +37,6 @@ import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.c
     MetricFiltersComponent,
     ChangeOverTimeChartComponent,
     DecimalPipe,
-    FilterDropdownComponent,
     ExpandedPanelComponent,
     TreatmentFilterComponent,
   ],
@@ -109,12 +108,6 @@ export class ExpandedChangeOverTimeChartComponent {
     }
     return this.treatmentsState.getAcresForProjectArea(
       selectedProjectArea.project_area_name
-    );
-  }
-
-  onConfirmedSelection(selection: any) {
-    this.directImpactsStateService.setFilteredTreatmentTypes(
-      selection.map((x: { key: string; value: string }): string => x.key)
     );
   }
 

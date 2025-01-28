@@ -287,10 +287,4 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       selectedProjectArea.project_area_name
     );
   }
-
-  onConfirmedSelection(selection: any) {
-    this.directImpactsStateService.setFilteredTreatmentTypes(
-      selection.map((x: { key: string; value: string }): string => x.key)
-    );
-  }
 }

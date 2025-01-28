@@ -1,13 +1,20 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, HostBinding, Input, OnInit } from '@angular/core';
 import { TreatmentsState } from '../treatments.state';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule, MenuCloseReason } from '@angular/material/menu';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { map } from 'rxjs';
-import { descriptionsForAction, PRESCRIPTIONS } from '../prescriptions';
+import {
+  descriptionsForAction,
+  PrescriptionAction,
+  PRESCRIPTIONS,
+} from '../prescriptions';
 import { ButtonComponent } from '@styleguide';
+import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-treatment-filter',
   standalone: true,
@@ -21,15 +28,18 @@ import { ButtonComponent } from '@styleguide';
   templateUrl: './treatment-filter.component.html',
   styleUrl: './treatment-filter.component.scss',
 })
-export class TreatmentFilterComponent {
-  @Input() selectedItems: string[] = [];
+export class TreatmentFilterComponent implements OnInit {
   @Input() disabled: boolean = false;
-  @Input() menuLabel: string = 'Select';
-  @Output() confirmedSelection = new EventEmitter<string[]>();
+  @Input() size: 'small' | 'medium' | 'large' = 'medium';
 
-  private previousSelections: string[] = [];
+  menuLabel: string = 'Treatment Type';
 
-  constructor(private treatmentsState: TreatmentsState) {}
+  unconfirmedSelection: PrescriptionAction[] = [];
+
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private directImpactsState: DirectImpactsStateService
+  ) {}
 
   treatmentTypeOptions$ = this.treatmentsState.treatmentTypeOptions$;
 
@@ -47,16 +57,31 @@ export class TreatmentFilterComponent {
     })
   );
 
+  get selectedItems() {
+    return this.directImpactsState.getFilteredTreatments();
+  }
+
+  ngOnInit(): void {
+    this.unconfirmedSelection = [...this.selectedItems];
+
+    this.directImpactsState.filteredTreatmentTypes$
+      .pipe(untilDestroyed(this))
+      .subscribe((selection) => {
+        this.unconfirmedSelection = [...selection];
+      });
+  }
+
   getActionLabel(key: string): any {
     return descriptionsForAction(key);
   }
+
   hasSelections(): boolean {
-    return this.selectedItems.length > 0;
+    return this.unconfirmedSelection.length > 0;
   }
 
   get selectionText(): string {
-    if (this.selectedItems.length > 0) {
-      const displayedSelections = this.selectedItems.map((key) => {
+    if (this.unconfirmedSelection.length > 0) {
+      const displayedSelections = this.unconfirmedSelection.map((key) => {
         return this.getActionLabel(key);
       });
       return `: ${displayedSelections.join(', ')}`;
@@ -65,8 +90,12 @@ export class TreatmentFilterComponent {
   }
 
   clearAndConfirmSelections(e: Event): void {
-    this.clearSelections(e);
-    this.confirmedSelection.emit(this.selectedItems);
+    // When we click the "X" we want to clear the selection and confirm it.
+    e.stopPropagation();
+    this.unconfirmedSelection = [];
+    this.directImpactsState.setFilteredTreatmentTypes([
+      ...this.unconfirmedSelection,
+    ]);
   }
 
   handleClosedMenu(e: MenuCloseReason): void {
@@ -78,28 +107,49 @@ export class TreatmentFilterComponent {
   }
 
   handleCancel() {
-    this.selectedItems = this.previousSelections.slice();
-    this.previousSelections = [];
+    // If we select some items, but we click outside the menu, that cancel our selection and keep it as it was.
+    this.unconfirmedSelection = [];
+    this.unconfirmedSelection = [...this.selectedItems];
   }
 
   clearSelections(event: any) {
-    this.previousSelections = [];
+    event.stopPropagation();
+    this.unconfirmedSelection = [];
   }
 
-  applyChanges(e: Event) {
-    this.confirmedSelection.emit(this.selectedItems);
+  applyChanges() {
+    this.directImpactsState.setFilteredTreatmentTypes([
+      ...(this.unconfirmedSelection as PrescriptionAction[]),
+    ]);
   }
 
   isInSelection(item: any): boolean {
-    return this.selectedItems.includes(item);
+    return this.unconfirmedSelection.includes(item);
   }
 
   toggleSelection(e: Event, item: string) {
-    if (!this.selectedItems.includes(item)) {
-      this.selectedItems.push(item);
+    if (!this.unconfirmedSelection.includes(item as PrescriptionAction)) {
+      this.unconfirmedSelection.push(item as PrescriptionAction);
     } else {
-      this.selectedItems = this.selectedItems.filter((e) => e !== item);
+      this.unconfirmedSelection = this.unconfirmedSelection.filter(
+        (e) => e !== item
+      );
     }
     e.stopPropagation();
+  }
+
+  @HostBinding('class.small')
+  get isSmall() {
+    return this.size === 'small';
+  }
+
+  @HostBinding('class.medium')
+  get isMedium() {
+    return this.size === 'medium';
+  }
+
+  @HostBinding('class.large')
+  get isLarge() {
+    return this.size === 'large';
   }
 }

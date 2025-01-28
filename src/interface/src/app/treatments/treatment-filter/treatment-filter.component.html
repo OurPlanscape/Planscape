@@ -13,7 +13,7 @@
     <div class="right-items-box">
       <div *ngIf="hasSelections()" class="more-items-box">
         <div class="selected-count-chip">
-          {{ selectedItems.length }}
+          {{ unconfirmedSelection.length }}
         </div>
       </div>
       <mat-icon *ngIf="!hasSelections()">keyboard_arrow_down</mat-icon>
@@ -87,7 +87,7 @@
           sg-button
           variant="primary"
           type="submit"
-          (click)="applyChanges($event)">
+          (click)="applyChanges()">
           Apply
         </button>
       </div>
