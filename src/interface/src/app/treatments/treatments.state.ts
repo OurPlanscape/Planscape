@@ -201,6 +201,9 @@ export class TreatmentsState {
     this.mapConfigState.setShowTreatmentLayersToggle(
       data.showTreatmentLayersToggle || false
     );
+    this.mapConfigState.setTreatmentLegendVisible(
+      data.showTreatmentLegend || false
+    );
     this.mapConfigState.setShowMapControls(data.showTreatmentStands || false);
   }
 
