@@ -66,6 +66,10 @@ export class ProjectAreaTreatmentsTabComponent {
 
   filteredPrescriptions$ = this.prescriptions$;
 
+  projectAreaTotalAcres$ = this.treatmentsState.activeProjectArea$.pipe(
+    map((pa) => pa?.total_area_acres)
+  );
+
   handleOpacityChange(opacity: number) {
     this.mapConfigState.setTreatedStandsOpacity(opacity);
   }
