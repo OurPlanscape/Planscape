@@ -173,8 +173,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   summary$ = this.treatmentsState.summary$;
 
-  valueKey = 'value' as any;
-
   availableProjectAreas$ = this.treatmentsState.summary$.pipe(
     map((summary) => {
       // TODO: can remove this, in favor of using natsort on backend,
@@ -201,7 +199,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   }
 
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
-    map((metrics) => Object.values(metrics).map((metric) => metric.id) as any)
+    map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
   treatmentTypeOptions$: Observable<any> =

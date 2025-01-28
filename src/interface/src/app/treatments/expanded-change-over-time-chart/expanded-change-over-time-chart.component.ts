@@ -78,7 +78,7 @@ export class ExpandedChangeOverTimeChartComponent {
   );
 
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
-    map((metrics) => Object.values(metrics).map((metric) => metric.id) as any)
+    map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
   treatmentTypeOptions$ = this.treatmentsState.treatmentTypeOptions$;

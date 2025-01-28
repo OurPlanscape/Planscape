@@ -97,7 +97,7 @@
         menuLabel="Treatment Type"
         [menuItems]="(treatmentTypeOptions$ | async) || []"
         [hasSearch]="false"
-        [displayField]="valueKey"
+        displayField="value"
         [disabled]="(treatmentTypeOptions$ | async) === null"
         (confirmedSelection)="
           onConfirmedSelection($event)
