@@ -31,6 +31,7 @@ import {
 import { TreatmentRoutingData } from './treatments-routing-data';
 import { PlanStateService } from '@services';
 import { ActivatedRoute } from '@angular/router';
+import { getTreatmentTypeOptions } from './prescriptions';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -58,6 +59,13 @@ export class TreatmentsState {
 
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
+
+  public treatmentTypeOptions$ = this.summary$.pipe(
+    filter((summary) => summary !== null),
+    map((summary) => {
+      return getTreatmentTypeOptions(summary);
+    })
+  );
 
   private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
   public showApplyTreatmentsDialog$ =

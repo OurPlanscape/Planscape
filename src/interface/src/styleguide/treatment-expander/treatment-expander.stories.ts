@@ -23,7 +23,7 @@ const meta: Meta<TreatmentExpanderComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div ${containerStyle}><div style="width:400px;"><sg-treatment-expander ${argsToTemplate(args)}></sg-treatment-expander></div>`,
+    template: `<div ${containerStyle}><div style='width:400px;'><sg-treatment-expander ${argsToTemplate(args)}></sg-treatment-expander></div>`,
   }),
 };
 
@@ -37,6 +37,7 @@ export const Default: Story = {
     standIds: [1, 2, 3, 8, 10],
     areaAcres: 117,
     treatmentType: 'SINGLE',
+    projectAreaTotalAcres: 1200,
   },
 };
 
@@ -47,6 +48,7 @@ export const Sequence1: Story = {
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
     treatedStandCount: 1,
+    projectAreaTotalAcres: 1200,
   },
 };
 export const Sequence5: Story = {
@@ -56,6 +58,7 @@ export const Sequence5: Story = {
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
     treatedStandCount: 5,
+    projectAreaTotalAcres: 1200,
   },
 };
 
@@ -66,6 +69,7 @@ export const TreatmentModerateMastication: Story = {
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
     treatedStandCount: 8,
+    projectAreaTotalAcres: 1200,
   },
 };
 
@@ -76,6 +80,7 @@ export const TreatmentHeavyMastication: Story = {
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
     treatedStandCount: 600,
+    projectAreaTotalAcres: 1200,
   },
 };
 
@@ -86,6 +91,7 @@ export const TreatmentHeavyThinning: Story = {
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
     treatedStandCount: 5,
+    projectAreaTotalAcres: 1200,
   },
 };
 
@@ -97,6 +103,7 @@ export const TreatmentMasticationAndFireSelected: Story = {
     standIds: [1, 2, 3, 8, 10],
     areaAcres: 117,
     selected: true,
+    projectAreaTotalAcres: 1200,
   },
 };
 
@@ -108,6 +115,7 @@ export const OverriddenTitle: Story = {
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
     treatedStandCount: 11,
+    projectAreaTotalAcres: 1200,
   },
 };
 
@@ -120,5 +128,6 @@ export const WrappedTitle: Story = {
     areaAcres: 117,
     standIds: [1, 2, 3, 8, 10],
     treatedStandCount: 11,
+    projectAreaTotalAcres: 1200,
   },
 };

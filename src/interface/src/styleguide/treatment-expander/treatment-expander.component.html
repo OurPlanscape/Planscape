@@ -46,16 +46,9 @@
       </div>
     </div>
     <div class="right-content">
-      <div class="stand-count" *ngIf="treatmentType === 'SINGLE'">
-        {{ treatedStandCount }}
-      </div>
-      <div class="stand-count" *ngIf="treatmentType === 'SEQUENCE'">
-        {{ treatedStandCount + '/' + totalStands() }}
-      </div>
-
-      <mat-icon class="material-symbols-outlined treatment-hexagon"
-        >hexagon_outline
-      </mat-icon>
+      <span class="percentage-total" *ngIf="areaAcres">{{
+        areaAcres / projectAreaTotalAcres | percent: '1.0-1'
+      }}</span>
     </div>
   </mat-expansion-panel-header>
 

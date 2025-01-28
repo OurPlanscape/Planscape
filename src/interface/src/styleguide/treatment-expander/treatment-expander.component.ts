@@ -1,5 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
+import {
+  DecimalPipe,
+  NgClass,
+  NgFor,
+  NgIf,
+  PercentPipe,
+} from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
@@ -27,6 +33,7 @@ import {
     SequenceIconComponent,
     TreatmentTypeIconComponent,
     DecimalPipe,
+    PercentPipe,
   ],
   templateUrl: './treatment-expander.component.html',
   styleUrl: './treatment-expander.component.scss',
@@ -56,10 +63,7 @@ export class TreatmentExpanderComponent {
    * Stand Ids
    */
   @Input() standIds: number[] = [];
-  /**
-   * Total number of acres
-   */
-  @Input() totalAcres = 100;
+
   /***
    * Whether this component is selected, for styling
    */
@@ -68,6 +72,11 @@ export class TreatmentExpanderComponent {
    * Search string - a string to be highlighted if it appears
    */
   @Input() searchString: string | null = null;
+
+  /**
+   * Total of project area acres
+   */
+  @Input() projectAreaTotalAcres = 0;
   /***
    * an event emitted when the expander is toggled
    */

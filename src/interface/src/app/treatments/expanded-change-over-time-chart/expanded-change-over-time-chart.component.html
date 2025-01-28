@@ -1,21 +1,67 @@
-<sg-expanded-panel (clickedClose)="close()" height="narrow">
-  <div panelTitle class="left-title-box" *ngIf="availableProjectAreas$ | async">
-    Project Area
-    <mat-form-field appearance="outline" class="changes-chart-select">
-      <mat-select
-        class="project-area-selector"
-        [ngModel]="selectedChartProjectArea$ | async"
-        (ngModelChange)="setChartProjectArea($event)">
-        <mat-option value="All">All</mat-option>
-        <mat-option
-          *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
-          [value]="projectArea">
-          {{ projectArea.project_area_name }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+<sg-expanded-panel
+  (clickedClose)="close()"
+  height="full"
+  class="expanded-change-over-time">
+  <div panelTitle class="changes-chart-title">
+    <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
+      Percentage Change From Baseline
+      <span class="title-label">&nbsp;(Forested Stands)</span>
+    </div>
+    <a
+      sg-button
+      icon="help"
+      variant="text"
+      [outlined]="true"
+      href="https://github.com/OurPlanscape/Planscape/wiki/Planscape-Treatment-Impacts-User-Guide"
+      target="_blank"
+      >Learn About Metrics</a
+    >
   </div>
+
   <div panelContent>
+    <div class="chart-filters">
+      <div class="filter-label">Project Area:</div>
+      <mat-form-field
+        appearance="outline"
+        class="changes-chart-select project-area-selector">
+        <mat-select
+          class="project-area-selector"
+          [ngModel]="selectedChartProjectArea$ | async"
+          (ngModelChange)="setChartProjectArea($event)">
+          <mat-option value="All">All</mat-option>
+          <mat-option
+            *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
+            [value]="projectArea">
+            {{ projectArea.project_area_name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div *ngIf="summary$ | async">
+        <span class="filter-value">
+          Acres: {{ projectAreaAcres$ | async | number: '1.0-0' }}
+        </span>
+      </div>
+      <div class="filter-label filter-label-treatment">Filter by</div>
+
+      <sg-filter-dropdown
+        class="treatment-dropdown"
+        menuLabel="Treatment Type"
+        [menuItems]="(treatmentTypeOptions$ | async) || []"
+        [hasSearch]="false"
+        [displayField]="valueKey"
+        [disabled]="(treatmentTypeOptions$ | async) === null"
+        (confirmedSelection)="
+          onConfirmedSelection($event)
+        "></sg-filter-dropdown>
+    </div>
+
     <app-change-over-time-chart></app-change-over-time-chart>
+
+    <div class="metric-selection">
+      <app-metric-filters
+        class="expanded-metric-filters"
+        [selectedOptions]="(filterOptions$ | async) || []"
+        (metricSelected)="updateReportMetric($event)"></app-metric-filters>
+    </div>
   </div>
 </sg-expanded-panel>
