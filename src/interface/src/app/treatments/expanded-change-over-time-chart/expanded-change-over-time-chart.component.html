@@ -1,4 +1,7 @@
-<sg-expanded-panel (clickedClose)="close()" height="full">
+<sg-expanded-panel
+  (clickedClose)="close()"
+  height="full"
+  class="expanded-change-over-time">
   <div panelTitle class="changes-chart-title">
     <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
       Percentage Change From Baseline
@@ -47,7 +50,6 @@
         [hasSearch]="false"
         [displayField]="valueKey"
         [disabled]="(treatmentTypeOptions$ | async) === null"
-        [selectedItems]="filterOptions$ | async"
         (confirmedSelection)="
           onConfirmedSelection($event)
         "></sg-filter-dropdown>
@@ -57,6 +59,7 @@
 
     <div class="metric-selection">
       <app-metric-filters
+        class="expanded-metric-filters"
         [selectedOptions]="(filterOptions$ | async) || []"
         (metricSelected)="updateReportMetric($event)"></app-metric-filters>
     </div>

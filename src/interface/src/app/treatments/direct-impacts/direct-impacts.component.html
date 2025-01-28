@@ -99,7 +99,6 @@
         [hasSearch]="false"
         [displayField]="valueKey"
         [disabled]="(treatmentTypeOptions$ | async) === null"
-        [selectedItems]="filterOptions$ | async"
         (confirmedSelection)="
           onConfirmedSelection($event)
         "></sg-filter-dropdown>

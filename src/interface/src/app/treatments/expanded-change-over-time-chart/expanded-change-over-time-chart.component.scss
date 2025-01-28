@@ -80,3 +80,13 @@
 .treatment-dropdown ::ng-deep .dropdown-button {
   border: 1px solid $color-soft-gray;
 }
+
+@include on-extra-large() {
+  .expanded-metric-filters {
+    grid-template-columns: repeat(2, max-content);
+  }
+}
+
+.expanded-change-over-time ::ng-deep .header-title {
+  width: 100%;
+}
