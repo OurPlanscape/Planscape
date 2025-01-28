@@ -55,7 +55,8 @@
         [areaAcres]="tx.area_acres"
         [treatedStandCount]="tx.treated_stand_count"
         [standIds]="tx.stand_ids"
-        [searchString]="searchString">
+        [searchString]="searchString"
+        [projectAreaTotalAcres]="(projectAreaTotalAcres$ | async) || 0">
         {{ tx.type }}
       </sg-treatment-expander>
       <ng-container
@@ -66,8 +67,8 @@
         ">
         <div class="no-results-box">
           <mat-icon class="material-symbols-outlined no-results-icon"
-            >find_in_page</mat-icon
-          >
+            >find_in_page
+          </mat-icon>
           <div class="no-results-title">
             No results for &quot;{{ searchString }}&quot;
           </div>
