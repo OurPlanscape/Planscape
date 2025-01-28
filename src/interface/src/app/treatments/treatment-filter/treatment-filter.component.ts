@@ -100,11 +100,7 @@ export class TreatmentFilterComponent implements OnInit {
   }
 
   handleClosedMenu(e: MenuCloseReason): void {
-    // if menu was closed because of the apply button,
-    // we don't cancel the selections
-    if (e !== 'click') {
-      this.handleCancel();
-    }
+    this.handleCancel();
   }
 
   handleCancel() {
