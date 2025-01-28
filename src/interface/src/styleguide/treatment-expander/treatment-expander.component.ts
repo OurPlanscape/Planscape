@@ -63,10 +63,7 @@ export class TreatmentExpanderComponent {
    * Stand Ids
    */
   @Input() standIds: number[] = [];
-  /**
-   * Total number of acres
-   */
-  @Input() totalAcres = 100;
+
   /***
    * Whether this component is selected, for styling
    */
@@ -76,6 +73,9 @@ export class TreatmentExpanderComponent {
    */
   @Input() searchString: string | null = null;
 
+  /**
+   * Total of project area acres
+   */
   @Input() projectAreaTotalAcres = 0;
   /***
    * an event emitted when the expander is toggled
