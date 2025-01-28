@@ -18,6 +18,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Scenario, TreatmentProjectArea } from '@types';
 import { ExpandedPanelComponent } from 'src/styleguide/expanded-panel/expanded-panel.component';
+import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 
 @Component({
   selector: 'app-expanded-change-over-time-chart',
@@ -38,6 +39,7 @@ import { ExpandedPanelComponent } from 'src/styleguide/expanded-panel/expanded-p
     DecimalPipe,
     FilterDropdownComponent,
     ExpandedPanelComponent,
+    TreatmentFilterComponent,
   ],
   templateUrl: './expanded-change-over-time-chart.component.html',
   styleUrl: './expanded-change-over-time-chart.component.scss',

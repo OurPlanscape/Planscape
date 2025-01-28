@@ -92,6 +92,9 @@
       </div>
       <div class="filter-label filter-label-treatment">Filter by</div>
 
+      <app-treatment-filter></app-treatment-filter>
+
+      <!--
       <sg-filter-dropdown
         class="treatment-dropdown"
         menuLabel="Treatment Type"
@@ -102,7 +105,7 @@
         (confirmedSelection)="
           onConfirmedSelection($event)
         "></sg-filter-dropdown>
-    </div>
+    --></div>
 
     <app-change-over-time-chart></app-change-over-time-chart>
 

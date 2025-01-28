@@ -158,41 +158,12 @@ export function getPrescriptionsFromSummary(
     }, []);
 }
 
-export function getTreatmentTypeOptions(summary: TreatmentSummary | null): {
-  category: string;
-  options: { key: PrescriptionAction; value: string }[];
-}[] {
-  const initialValue = [
-    {
-      category: 'Single Treatment',
-      options: [] as { key: PrescriptionSingleAction; value: string }[],
-    },
-    {
-      category: 'Sequenced Treatment',
-      options: [] as { key: PrescriptionAction; value: string }[],
-    },
-  ];
-
+export function getTreatmentTypeOptions(
+  summary: TreatmentSummary | null
+): string[] | [] {
   if (!summary?.project_areas) {
-    return initialValue;
+    return [];
   }
   const prescriptions: Prescription[] = getPrescriptionsFromSummary(summary);
-
-  return prescriptions.reduce(
-    (acc: typeof initialValue, currentPrescription: Prescription) => {
-      if (currentPrescription.type === 'SINGLE') {
-        initialValue[0].options.push({
-          key: currentPrescription.action,
-          value: descriptionsForAction(currentPrescription.action).join(', '),
-        });
-      } else if (currentPrescription.type === 'SEQUENCE') {
-        initialValue[1].options.push({
-          key: currentPrescription.action,
-          value: descriptionsForAction(currentPrescription.action).join(', '),
-        });
-      }
-      return acc;
-    },
-    initialValue
-  );
+  return prescriptions.map((p) => p.action);
 }
