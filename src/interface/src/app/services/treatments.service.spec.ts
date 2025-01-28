@@ -54,7 +54,9 @@ describe('TreatmentsService', () => {
       expect(response).toEqual(dummyResponse as TreatmentPlan[]);
     });
 
-    const req = httpMock.expectOne(`${service.baseUrl}?scenario=${scenarioId}`);
+    const req = httpMock.expectOne(
+      `${service.baseUrl}?scenario=${scenarioId}&ordering=-created_at`
+    );
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBeTrue();
     req.flush(dummyResponse);
