@@ -108,7 +108,10 @@ export class DirectImpactsMapComponent {
     this.mapLibreMap.moveLayer('map-project-areas-line');
     this.mapLibreMap.moveLayer('standHover');
     this.mapLibreMap.moveLayer('standSelected');
-    this.mapLibreMap.moveLayer('map-project-areas-labels');
+
+    if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
+      this.mapLibreMap.moveLayer('map-project-areas-labels');
+    }
   }
 
   openTreatmentLegend() {
