@@ -5,7 +5,7 @@ import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
 
-import { ButtonComponent, FilterDropdownComponent } from '@styleguide';
+import { ButtonComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +18,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatDialogRef } from '@angular/material/dialog';
 import { Scenario, TreatmentProjectArea } from '@types';
 import { ExpandedPanelComponent } from 'src/styleguide/expanded-panel/expanded-panel.component';
+import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 
 @Component({
   selector: 'app-expanded-change-over-time-chart',
@@ -36,8 +37,8 @@ import { ExpandedPanelComponent } from 'src/styleguide/expanded-panel/expanded-p
     MetricFiltersComponent,
     ChangeOverTimeChartComponent,
     DecimalPipe,
-    FilterDropdownComponent,
     ExpandedPanelComponent,
+    TreatmentFilterComponent,
   ],
   templateUrl: './expanded-change-over-time-chart.component.html',
   styleUrl: './expanded-change-over-time-chart.component.scss',
@@ -107,12 +108,6 @@ export class ExpandedChangeOverTimeChartComponent {
     }
     return this.treatmentsState.getAcresForProjectArea(
       selectedProjectArea.project_area_name
-    );
-  }
-
-  onConfirmedSelection(selection: any) {
-    this.directImpactsStateService.setFilteredTreatmentTypes(
-      selection.map((x: { key: string; value: string }): string => x.key)
     );
   }
 

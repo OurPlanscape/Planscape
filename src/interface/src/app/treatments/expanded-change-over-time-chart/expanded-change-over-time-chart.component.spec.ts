@@ -39,6 +39,7 @@ describe('ExpandedChangeOverTimeChartComponent', () => {
         MapConfigState,
         { provide: ActivatedRoute, useValue: fakeRoute },
         MockProvider(DirectImpactsStateService, {
+          filteredTreatmentTypes$: new BehaviorSubject([]),
           activeStand$: new BehaviorSubject(null),
           selectedProjectArea$: of('All' as any),
           reportMetrics$: of(null as any),
