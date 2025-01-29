@@ -33,6 +33,7 @@ import { FeaturesModule } from '../../../features/features.module';
 import { MOCK_PLAN } from '@services/mocks';
 import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';
 import { ButtonComponent } from '@styleguide';
+import { MatTabsModule } from '@angular/material/tabs';
 
 const SCENARIO_ROW: ScenarioRow = {
   id: '1',
@@ -90,6 +91,7 @@ describe('SavedScenariosComponent', () => {
         NoopAnimationsModule,
         FeaturesModule,
         ButtonComponent,
+        MatTabsModule,
       ],
       declarations: [
         SavedScenariosComponent,

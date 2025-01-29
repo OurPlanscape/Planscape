@@ -7,16 +7,7 @@ describe('getTreatmentTypeOptions', () => {
     const mock: TreatmentSummary = Object.assign({}, MOCK_SUMMARY);
     mock.project_areas = [];
     const result = getTreatmentTypeOptions(mock);
-    expect(result).toEqual([
-      {
-        category: 'Single Treatment',
-        options: [],
-      },
-      {
-        category: 'Sequenced Treatment',
-        options: [],
-      },
-    ]);
+    expect(result).toEqual([]);
   });
 
   it('should return just single options and no repeated', () => {
@@ -38,21 +29,7 @@ describe('getTreatmentTypeOptions', () => {
       },
     ];
     const result = getTreatmentTypeOptions(mock);
-    expect(result).toEqual([
-      {
-        category: 'Single Treatment',
-        options: [
-          {
-            key: 'MODERATE_THINNING_BIOMASS',
-            value: 'Moderate Thinning & Biomass Removal',
-          },
-        ],
-      },
-      {
-        category: 'Sequenced Treatment',
-        options: [],
-      },
-    ]);
+    expect(result).toEqual(['MODERATE_THINNING_BIOMASS']);
   });
 
   it('should return just sequence options and no repeated', () => {
@@ -74,22 +51,7 @@ describe('getTreatmentTypeOptions', () => {
       },
     ];
     const result = getTreatmentTypeOptions(mock);
-    expect(result).toEqual([
-      {
-        category: 'Single Treatment',
-        options: [],
-      },
-      {
-        category: 'Sequenced Treatment',
-        options: [
-          {
-            key: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
-            value:
-              'Moderate Thin & Pile Burn (Year 0), Prescribed Burn (Year 10)',
-          },
-        ],
-      },
-    ]);
+    expect(result).toEqual(['MODERATE_THINNING_BURN_PLUS_RX_FIRE']);
   });
 
   it('should return no repeated options  ', () => {
@@ -126,25 +88,8 @@ describe('getTreatmentTypeOptions', () => {
     ];
     const result = getTreatmentTypeOptions(mock);
     expect(result).toEqual([
-      {
-        category: 'Single Treatment',
-        options: [
-          {
-            key: 'MODERATE_THINNING_BIOMASS',
-            value: 'Moderate Thinning & Biomass Removal',
-          },
-        ],
-      },
-      {
-        category: 'Sequenced Treatment',
-        options: [
-          {
-            key: 'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
-            value:
-              'Moderate Thin & Pile Burn (Year 0), Prescribed Burn (Year 10)',
-          },
-        ],
-      },
+      'MODERATE_THINNING_BURN_PLUS_RX_FIRE',
+      'MODERATE_THINNING_BIOMASS',
     ]);
   });
 });
