@@ -19,40 +19,49 @@
   </div>
 
   <div panelContent>
-    <div class="chart-filters">
-      <div class="filter-label">Project Area:</div>
-      <mat-form-field
-        appearance="outline"
-        class="changes-chart-select project-area-selector">
-        <mat-select
-          class="project-area-selector"
-          [ngModel]="selectedChartProjectArea$ | async"
-          (ngModelChange)="setChartProjectArea($event)">
-          <mat-option value="All">All</mat-option>
-          <mat-option
-            *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
-            [value]="projectArea">
-            {{ projectArea.project_area_name }}
-          </mat-option>
-        </mat-select>
-      </mat-form-field>
-      <div *ngIf="summary$ | async">
-        <span class="filter-value">
-          Acres: {{ projectAreaAcres$ | async | number: '1.0-0' }}
-        </span>
+    <div class="container">
+      <div class="no-grow">
+        <div class="chart-filters">
+          <div class="filter-label">Project Area:</div>
+          <mat-form-field
+            appearance="outline"
+            class="changes-chart-select project-area-selector">
+            <mat-select
+              class="project-area-selector"
+              [ngModel]="selectedChartProjectArea$ | async"
+              (ngModelChange)="setChartProjectArea($event)">
+              <mat-option value="All">All</mat-option>
+              <mat-option
+                *ngFor="
+                  let projectArea of (availableProjectAreas$ | async) ?? []
+                "
+                [value]="projectArea">
+                {{ projectArea.project_area_name }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+          <div *ngIf="summary$ | async">
+            <span class="filter-value">
+              Acres: {{ projectAreaAcres$ | async | number: '1.0-0' }}
+            </span>
+          </div>
+          <div class="filter-label filter-label-treatment">Filter by</div>
+
+          <app-treatment-filter
+            class="treatment-dropdown"></app-treatment-filter>
+        </div>
       </div>
-      <div class="filter-label filter-label-treatment">Filter by</div>
-
-      <app-treatment-filter class="treatment-dropdown"></app-treatment-filter>
-    </div>
-
-    <app-change-over-time-chart></app-change-over-time-chart>
-
-    <div class="metric-selection">
-      <app-metric-filters
-        class="expanded-metric-filters"
-        [selectedOptions]="(filterOptions$ | async) || []"
-        (metricSelected)="updateReportMetric($event)"></app-metric-filters>
+      <div class="grow">
+        <app-change-over-time-chart></app-change-over-time-chart>
+      </div>
+      <div class="no-grow">
+        <div class="metric-selection">
+          <app-metric-filters
+            class="expanded-metric-filters"
+            [selectedOptions]="(filterOptions$ | async) || []"
+            (metricSelected)="updateReportMetric($event)"></app-metric-filters>
+        </div>
+      </div>
     </div>
   </div>
 </sg-expanded-panel>

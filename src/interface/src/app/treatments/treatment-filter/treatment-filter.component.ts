@@ -30,7 +30,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 })
 export class TreatmentFilterComponent implements OnInit {
   @Input() disabled: boolean = false;
-  @Input() size: 'small' | 'medium' | 'large' = 'medium';
+
+  size = 'medium';
 
   menuLabel: string = 'Treatment Type';
 
@@ -58,8 +59,8 @@ export class TreatmentFilterComponent implements OnInit {
     })
   );
 
-  get selectedItems() {
-    return this.directImpactsState.getFilteredTreatments();
+  get selectedItems(): PrescriptionAction[] {
+    return this.directImpactsState.getFilteredTreatments() || [];
   }
 
   ngOnInit(): void {
@@ -135,18 +136,8 @@ export class TreatmentFilterComponent implements OnInit {
     e.stopPropagation();
   }
 
-  @HostBinding('class.small')
-  get isSmall() {
-    return this.size === 'small';
-  }
-
   @HostBinding('class.medium')
   get isMedium() {
     return this.size === 'medium';
-  }
-
-  @HostBinding('class.large')
-  get isLarge() {
-    return this.size === 'large';
   }
 }
