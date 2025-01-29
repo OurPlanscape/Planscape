@@ -807,7 +807,8 @@ call_forsys <- function(
     patchmax_SDW = sdw,
     patchmax_EPW = epw,
     patchmax_exclusion_limit = exclusion_limit,
-    patchmax_sample_frac = sample_frac
+    patchmax_sample_frac = sample_frac,
+    patchmax_sample_seed = configuration$seed,
   )
   return(out)
 }
@@ -921,6 +922,10 @@ main <- function(scenario_id) {
   connection <- get_connection()
   scenario <- get_scenario_data(connection, scenario_id)
   configuration <- get_configuration(scenario)
+  if (!is.null(configuration$seed)) {
+    log_info(glue("Using user-provided RNG seed: {configuration$seed}"))
+    set.seed(configuration$seed)
+  }
   priorities <- get_priorities(
     connection,
     scenario,

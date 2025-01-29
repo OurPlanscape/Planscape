@@ -335,6 +335,32 @@ class CreateScenarioTest(APITestCase):
             },
         )
 
+    def test_create_scenario_with_seed(self):
+        self.client.force_authenticate(self.owner_user)
+        config_with_seed = self.configuration.copy()
+        config_with_seed["seed"] = 42
+
+        payload = {
+            "planning_area": self.planning_area.pk,
+            "configuration": config_with_seed,
+            "name": "test scenario with seed",
+            "notes": "testing seed storage",
+        }
+
+        response = self.client.post(
+            reverse("planning:create_scenario"),
+            data=json.dumps(payload),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        data = response.json()
+        scenario_id = data["id"]
+        scenario = Scenario.objects.get(pk=scenario_id)
+
+        self.assertIn("seed", scenario.configuration)
+        self.assertEqual(scenario.configuration["seed"], 42)
+
 
 class UpdateScenarioTest(APITestCase):
     def setUp(self):

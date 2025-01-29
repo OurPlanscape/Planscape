@@ -545,10 +545,13 @@ def create_scenario(request: Request) -> Response:
     Required params:
       name (str): The user-provided name of the Scenario.
       planning_area (int): The ID of the planning area that will recieve the new Scenario.
-      configuration (str): A JSON string representing the scenario configuration (e.g. query parameters, weights).
+      configuration (dict): A JSON-friendly dict/string representing the scenario configuration (e.g., query parameters, weights).
 
     Optional params:
       notes (str): User-provided notes for this scenario.
+      seed (int): An integer used to initialize the random number generator in Forsys. If
+      provided, subsequent runs of Forsys for this scenario become reproducible, yielding the
+      same results every time. If omitted, Forsys defaults to standard random behavior.
     """
     try:
         user = request.user
@@ -558,11 +561,11 @@ def create_scenario(request: Request) -> Response:
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        # Check for all needed fields
+        # Validate request data via function's serializer
         serializer = ScenarioSerializer(data=request.data, context={"user": user})
         serializer.is_valid(raise_exception=True)
 
-        # no need to convert this anymore, serializer resolves it.
+        # Ensure user can add a scenario in the specified planning area
         planning_area = serializer.validated_data.get("planning_area")
         if not PlanningAreaPermission.can_add_scenario(user, planning_area):
             return Response(
@@ -573,12 +576,27 @@ def create_scenario(request: Request) -> Response:
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # TODO: Parse configuration field into further components.
+        # Retrieve the scenario configuration parsed by the serializer
+        configuration = serializer.validated_data.get("configuration") or {}
+
+        # Parse the seed from request.data
+        seed_value = request.data.get("seed")
+        if seed_value is not None:
+            try:
+                # Attempt to convert to integer
+                seed_value = int(seed_value)
+                configuration["seed"] = seed_value
+            except ValueError:
+                return Response(
+                    {"error": "Seed must be an integer"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # Validate scenarion configuration (e.g., check treatment ratio)
         result, reason = validate_scenario_treatment_ratio(
             planning_area,
-            serializer.validated_data.get("configuration"),
+            configuration,
         )
-
         if not result:
             return Response(
                 {"reason": reason},
@@ -586,11 +604,17 @@ def create_scenario(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Create the scenario, passing in updated configuration
         scenario = create_scenario_service(
-            user=request.user, **serializer.validated_data
+            user=request.user,
+            **{
+                **serializer.validated_data,
+                "configuration": configuration,
+            },
         )
 
         return Response({"id": scenario.pk}, content_type="application/json")
+
     except PlanningArea.DoesNotExist:
         return Response(
             {"error": "a matching Planning Area does not exist"},
