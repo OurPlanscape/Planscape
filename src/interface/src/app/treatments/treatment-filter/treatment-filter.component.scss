@@ -34,14 +34,14 @@
   border: 1px $color-text-gray solid;
   border-radius: 4px;
   padding: 8px 8px 8px 8px;
-  height: 40px;
+  height: 38px;
   width: 100%;
   align-items: center;
   cursor: pointer;
 
   &:hover {
     border-color: $color-text-gray;
-    background: $color-soft-gray;
+    background: $color-white;
   }
 
   &:active {
@@ -89,7 +89,7 @@
   text-align: left;
   line-height: 22px;
   color: $color-black;
-  font-weight: 500;
+  font-weight: 400;
   white-space: nowrap;
   height: 22px;
   display: flex;
