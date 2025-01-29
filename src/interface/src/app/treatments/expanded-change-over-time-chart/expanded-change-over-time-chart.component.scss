@@ -90,3 +90,18 @@
 .expanded-change-over-time ::ng-deep .header-title {
   width: 100%;
 }
+
+.container {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.no-grow {
+  flex-grow: 0;
+}
+
+.grow {
+  flex: 1;
+}

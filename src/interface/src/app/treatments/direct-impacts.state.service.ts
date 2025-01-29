@@ -62,4 +62,8 @@ export class DirectImpactsStateService {
   setStandsTxSourceLoaded(val: boolean) {
     this._standsTxSourceLoaded$.next(val);
   }
+
+  getFilteredTreatments() {
+    return this._filteredTreatmentTypes$.value;
+  }
 }
