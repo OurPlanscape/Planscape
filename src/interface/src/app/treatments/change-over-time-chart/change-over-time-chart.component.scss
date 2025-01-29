@@ -5,7 +5,7 @@
 :host {
   display: flex;
   flex-direction: column;
-  height: 400px;
+  height: calc(100% - 36px);
   padding: 18px 40px;
   max-width: 1024px;
   margin: 0 auto;

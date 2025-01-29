@@ -233,3 +233,7 @@ $panel-height: 600px;
 .treatment-dropdown ::ng-deep .dropdown-button {
   border: 1px solid $color-soft-gray;
 }
+
+app-change-over-time-chart {
+  height: 400px;
+}
