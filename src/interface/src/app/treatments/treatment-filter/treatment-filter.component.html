@@ -34,7 +34,7 @@
   <div class="options-section">
     <ng-container *ngIf="(singleTypeOptions$ | async) !== []">
       <details class="expander" open (click)="$event.stopPropagation()">
-        <summary>Single actions</summary>
+        <summary>Single Activity</summary>
         <div *ngFor="let key of singleTypeOptions$ | async">
           <button
             mat-menu-item
@@ -52,7 +52,7 @@
     </ng-container>
     <ng-container *ngIf="(sequenceTypeOptions$ | async) !== []">
       <details class="expander" open (click)="$event.stopPropagation()">
-        <summary>Sequence actions</summary>
+        <summary>Sequenced Activity</summary>
         <div *ngFor="let key of sequenceTypeOptions$ | async">
           <button
             mat-menu-item
