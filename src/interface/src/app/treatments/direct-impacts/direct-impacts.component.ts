@@ -214,6 +214,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Register the plugin only when this component is initialized
     Chart.register(ChartDataLabels);
+    this.mapConfigState.setStandSelectionEnabled(true);
   }
 
   ngOnDestroy(): void {
