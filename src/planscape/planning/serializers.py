@@ -302,6 +302,12 @@ class ConfigurationSerializer(serializers.Serializer):
         required=False,
     )
 
+    seed = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text="Optional seed for reproducible randomization.",
+    )
+
     def validate(self, attrs):
         budget = attrs.get("max_budget")
         max_area = attrs.get("max_treatment_area_ratio")

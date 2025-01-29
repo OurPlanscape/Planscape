@@ -151,6 +151,17 @@ class PlanningAreaViewSet(viewsets.ModelViewSet):
         description="Update Scenario.",
         responses={200: ScenarioSerializer, 404: BaseErrorMessageSerializer},
     ),
+    create=extend_schema(
+        description=(
+            "Create a Scenario. "
+            "In the `configuration` JSON, users can include a `seed` (integer) "
+            "to make ForSys runs reproducible."
+        ),
+        responses={
+            201: ScenarioSerializer,
+            400: BaseErrorMessageSerializer,
+        },
+    ),
 )
 class ScenarioViewSet(viewsets.ModelViewSet):
     queryset = Scenario.objects.none()
