@@ -9,6 +9,10 @@ from celery import chain, group, shared_task
 
 from planning.models import PlanningArea, Scenario
 from planning.tasks import async_forsys_run
+from stands.models import Stand
+from impacts.services import create_treatment_plan, upsert_treatment_prescriptions
+from impacts.models import ProjectArea, TreatmentResult
+from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from planscape.celery import app
 from e2e.validation import load_schema, validation_results
 from django.conf import settings
@@ -179,3 +183,107 @@ def review_results(sid, validation_schema) -> object:
     except Exception:
         log.error("ERROR: Could not get a scenario result for scenario id %s", sid)
         raise
+
+
+class E2EImpactsTests:
+    """
+    TBD: End-to-end tests for impacts features
+    * Create Treatment Plan
+    * Fill up prescriptions
+    * Execute impacts
+    * Analyze results
+    * Delete Treatment Plan
+    """
+
+    def __init__(self, config: dict) -> None:
+        user_id = config.get("user_id")
+        scenario_id = config.get("scenario_id")
+        self.user = User.objects.get(id=user_id)
+        self.scenario = Scenario.objects.get(id=scenario_id)
+
+        """
+        [
+            {"action": "action_name", "project_area_id": 1, "stand_ids": [1, 2, 3]},
+        ]
+        """
+        self.prescriptions_map = config.get("prescriptions_map", [])
+
+        """
+        [
+            {"stand_id": 1, [
+                {"variable": "FL", "value": 0.1, "year": 2024},
+                {"variable": "FL", "value": 0.2, "year": 2029},]
+            },
+            {"stand_id": 2, [
+                {"variable": "FL", "value": 0.3, "year": 2024},
+                {"variable": "FL", "value": 0.2, "year": 2029},]
+            },
+        ]
+        """
+        self.result_map = config.get("result_map", [])
+
+        self.treatment_plan_name = config.get("treatment_plan_name")
+        self.treatment_plan = None
+
+    def run_tests(self):
+        self.create_treatment_plan()
+        self.fill_prescriptions()
+        self.execute_impacts()
+        self.analyze_results()
+        self.delete_treatment_plan()
+
+    def create_treatment_plan(self):
+        try:
+            assert self.treatment_plan_name is not None
+            self.treatment_plan = create_treatment_plan(
+                self.scenario, self.treatment_plan_name, self.user
+            )
+            assert self.treatment_plan is not None
+        except AssertionError:
+            log.error("E2E Impacts: Failed to create treatment plan.")
+            raise
+
+    def fill_prescriptions(self):
+        if not self.treatment_plan:
+            raise ValueError("Treatment plan is not created.")
+
+        for prescription in self.prescriptions_map:
+            action = prescription.get("action")
+            project_area_id = prescription.get("project_area_id")
+            project_area = ProjectArea.objects.get(id=project_area_id)
+            stand_ids = prescription.get("stand_ids")
+            stands = list(Stand.objects.filter(id__in=stand_ids).all())
+            upsert_treatment_prescriptions(
+                treatment_plan=self.treatment_plan,
+                project_area=project_area,
+                stands=stands,
+                action=action,
+                created_by=self.user,
+            )
+
+    def execute_impacts(self):
+        async_calculate_persist_impacts_treatment_plan.delay(self.treatment_plan.id)
+
+    def analyze_results(self):
+        for result in self.result_map:
+            stand_id = result.get("stand_id")
+            stand = Stand.objects.get(id=stand_id)
+            for impact in result.get("impacts"):
+                variable = impact.get("variable")
+                value = impact.get("value")
+                year = impact.get("year")
+                treatment_result = TreatmentResult.objects.get(
+                    treatment_plan=self.treatment_plan,
+                    stand=stand,
+                    variable=variable,
+                    year=year,
+                )
+                try:
+                    assert treatment_result.value == value
+                except AssertionError:
+                    log.error("E2E Impacts: Failed to analyze results.")
+                    raise
+
+    def delete_treatment_plan(self):
+        if self.treatment_plan:
+            self.treatment_plan.delete()
