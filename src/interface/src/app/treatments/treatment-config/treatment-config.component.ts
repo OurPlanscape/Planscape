@@ -17,7 +17,7 @@ import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import { catchError, combineLatest, map, switchMap } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -83,21 +83,12 @@ import { AnalyticsService } from '@services/analytics.service';
 })
 export class TreatmentConfigComponent {
   projectAreaId$ = this.treatmentsState.projectAreaId$;
-  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
+
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
   showApplyTreatments$ = this.treatmentsState.showApplyTreatmentsDialog$;
-  showTreatmentLayer$ = this.mapConfig.showTreatmentStandsLayer$;
-  showTreatmentLegend$ = combineLatest([
-    this.treatmentsState.projectAreaId$.pipe(map((activeArea) => !!activeArea)),
-    this.showTreatmentLayer$,
-    this.mapConfig.showTreatmentLegend$,
-  ]).pipe(
-    map(
-      ([activeArea, showTreatmentLayer, shouldShowLegend]) =>
-        !activeArea && showTreatmentLayer && shouldShowLegend
-    )
-  );
+
+  showTreatmentLegend$ = this.mapConfig.showTreatmentLegend$;
   @ViewChild(TreatmentMapComponent) mapElement: any;
   navState$ = this.treatmentsState.navState$;
 
