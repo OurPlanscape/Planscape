@@ -95,6 +95,8 @@ export class StandDataChartComponent implements OnInit {
   metrics: Metric[] = METRICS;
   baseOptions = getBasicChartOptions();
 
+  slotColor = SLOT_COLORS['blue'];
+
   constructor(private directImpactsStateService: DirectImpactsStateService) {}
 
   ngOnInit() {
