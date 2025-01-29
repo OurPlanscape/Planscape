@@ -38,11 +38,15 @@
                 {
                     "variable": "FL",
                     "value": 0.1,
+                    "baseline": 0.2,
+                    "delta": -0.1,
                     "year": 2024
                 },
                 {
                     "variable": "FL",
                     "value": 0.2,
+                    "baseline": 0.2,
+                    "delta": 0,
                     "year": 2029
                 }
             ]
@@ -53,11 +57,15 @@
                 {
                     "variable": "FL",
                     "value": 0.3,
+                    "baseline": 0.2,
+                    "delta": 0.1,
                     "year": 2024
                 },
                 {
                     "variable": "FL",
                     "value": 0.2,
+                    "baseline": 0.2,
+                    "delta": 0,
                     "year": 2029
                 }
             ]
