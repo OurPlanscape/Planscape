@@ -31,7 +31,7 @@ import {
 import { TreatmentRoutingData } from './treatments-routing-data';
 import { PlanStateService } from '@services';
 import { ActivatedRoute } from '@angular/router';
-import { getTreatmentTypeOptions } from './prescriptions';
+import { getPrescriptionsFromSummary } from './prescriptions';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -63,7 +63,8 @@ export class TreatmentsState {
   public treatmentTypeOptions$ = this.summary$.pipe(
     filter((summary) => summary !== null),
     map((summary) => {
-      return getTreatmentTypeOptions(summary);
+      1;
+      return getPrescriptionsFromSummary(summary).map((p) => p.action);
     })
   );
 

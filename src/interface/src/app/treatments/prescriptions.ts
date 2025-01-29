@@ -146,8 +146,11 @@ export function descriptionsForAction(action: string): string[] {
 }
 
 export function getPrescriptionsFromSummary(
-  summary: TreatmentSummary
+  summary: TreatmentSummary | null
 ): Prescription[] {
+  if (!summary?.project_areas) {
+    return [];
+  }
   return summary.project_areas
     .flatMap((project_area) => project_area.prescriptions)
     .reduce((unique: Prescription[], prescription) => {
@@ -156,14 +159,4 @@ export function getPrescriptionsFromSummary(
       }
       return unique;
     }, []);
-}
-
-export function getTreatmentTypeOptions(
-  summary: TreatmentSummary | null
-): PrescriptionAction[] {
-  if (!summary?.project_areas) {
-    return [];
-  }
-  const prescriptions: Prescription[] = getPrescriptionsFromSummary(summary);
-  return prescriptions.map((p) => p.action);
 }

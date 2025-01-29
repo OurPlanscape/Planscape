@@ -1,4 +1,4 @@
-import { Component, HostBinding, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { TreatmentsState } from '../treatments.state';
 import { CommonModule } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,10 +30,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 })
 export class TreatmentFilterComponent implements OnInit {
   @Input() disabled: boolean = false;
-
-  size = 'medium';
-
-  menuLabel: string = 'Treatment Type';
 
   unconfirmedSelection: PrescriptionAction[] = [];
 
@@ -134,10 +130,5 @@ export class TreatmentFilterComponent implements OnInit {
       );
     }
     e.stopPropagation();
-  }
-
-  @HostBinding('class.medium')
-  get isMedium() {
-    return this.size === 'medium';
   }
 }
