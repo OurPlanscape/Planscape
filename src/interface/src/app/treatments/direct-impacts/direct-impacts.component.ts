@@ -52,9 +52,8 @@ import { FileSaverService, ScenarioService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { getTreatmentTypeOptions } from '../prescriptions';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
-import { filter, take } from 'rxjs/operators';
+import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -90,6 +89,7 @@ import { filter, take } from 'rxjs/operators';
     DecimalPipe,
     MetricSelectorComponent,
     FilterDropdownComponent,
+    TreatmentFilterComponent,
   ],
   providers: [
     DirectImpactsStateService,
@@ -204,13 +204,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
 
-  treatmentTypeOptions$: Observable<any> = this.treatmentsState.summary$.pipe(
-    filter((summary) => summary !== null),
-    take(1),
-    map((summary) => {
-      return getTreatmentTypeOptions(summary);
-    })
-  );
+  treatmentTypeOptions$: Observable<any> =
+    this.treatmentsState.treatmentTypeOptions$;
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
@@ -219,6 +214,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     // Register the plugin only when this component is initialized
     Chart.register(ChartDataLabels);
+    this.mapConfigState.setStandSelectionEnabled(true);
   }
 
   ngOnDestroy(): void {
@@ -290,12 +286,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     }
     return this.treatmentsState.getAcresForProjectArea(
       selectedProjectArea.project_area_name
-    );
-  }
-
-  onConfirmedSelection(selection: any) {
-    this.directImpactsStateService.setFilteredTreatmentTypes(
-      selection.map((x: { key: string; value: string }): string => x.key)
     );
   }
 }

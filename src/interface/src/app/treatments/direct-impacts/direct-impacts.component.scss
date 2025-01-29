@@ -204,10 +204,14 @@ $panel-height: 600px;
   font-size: 14px;
   font-weight: 600;
   color: $color-black;
+
+  &-treatment {
+    padding-left: 20px;
+  }
 }
 
 .filter-value {
-  font-size: 16px;
+  font-size: 14px;
   font-weight: 500;
   color: $color-dark-gray;
 }
@@ -224,4 +228,8 @@ $panel-height: 600px;
     min-height: 38px;
     padding: 8px 0;
   }
+}
+
+.treatment-dropdown ::ng-deep .dropdown-button {
+  border: 1px solid $color-soft-gray;
 }

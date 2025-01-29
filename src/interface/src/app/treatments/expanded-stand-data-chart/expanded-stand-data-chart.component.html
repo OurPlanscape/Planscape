@@ -1,6 +1,12 @@
 <sg-expanded-panel (clickedClose)="close()" height="narrow">
-  <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
+  <div panelTitle *ngIf="activeStand$ | async as activeStand; else noStand">
+    {{ standChartTitle(activeStand) }}
+    <span class="stand-forested-type">{{ forestedLabel(activeStand) }}</span>
+  </div>
+  <ng-template #noStand>
+    <div panelTitle #noStand>Stand Level Data</div>
+  </ng-template>
   <div panelContent>
-    <app-stand-data-chart></app-stand-data-chart>
+    <app-stand-data-chart [skipFirstLoad]="true"></app-stand-data-chart>
   </div>
 </sg-expanded-panel>

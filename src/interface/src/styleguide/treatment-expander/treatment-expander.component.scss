@@ -26,7 +26,7 @@
     }
 
     .mat-expansion-panel:hover:not([class*='selected']) {
-      background-color: $color-light-gray ;
+      background-color: $color-light-gray;
       border-left: none;
       border-right: none;
     }
@@ -45,9 +45,11 @@
       height: auto;
       padding: 12px;
     }
+
     .mat-expansion-panel-header.header-content.mat-expanded {
       height: auto;
     }
+
     .mat-expansion-panel-header .mat-expansion-indicator {
       position: absolute;
       padding-bottom: 6px;
@@ -131,8 +133,7 @@
   @include small-paragraph();
 }
 
-.stand-count,
-.treatment-hexagon {
+.percentage-total {
   color: $color-dark-gray;
 }
 
@@ -160,6 +161,7 @@
     border-radius: 4px;
     color: $color-original-purple;
   }
+
   .regular {
     color: $color-black;
   }
