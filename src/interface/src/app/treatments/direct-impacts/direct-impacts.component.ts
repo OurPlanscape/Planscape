@@ -53,6 +53,7 @@ import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
+import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -88,6 +89,7 @@ import { MetricSelectorComponent } from '../metric-selector/metric-selector.comp
     DecimalPipe,
     MetricSelectorComponent,
     FilterDropdownComponent,
+    TreatmentFilterComponent,
   ],
   providers: [
     DirectImpactsStateService,
@@ -284,12 +286,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     }
     return this.treatmentsState.getAcresForProjectArea(
       selectedProjectArea.project_area_name
-    );
-  }
-
-  onConfirmedSelection(selection: any) {
-    this.directImpactsStateService.setFilteredTreatmentTypes(
-      selection.map((x: { key: string; value: string }): string => x.key)
     );
   }
 }
