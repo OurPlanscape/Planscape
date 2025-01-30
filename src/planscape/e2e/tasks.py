@@ -13,14 +13,11 @@ from rest_framework.test import APIClient
 from planning.models import PlanningArea, Scenario
 from planning.tasks import async_forsys_run
 from stands.models import Stand
-from impacts.services import create_treatment_plan, upsert_treatment_prescriptions
 from impacts.models import (
-    ProjectArea,
     TreatmentResult,
     TreatmentPlan,
     TreatmentPlanStatus,
 )
-from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from planscape.celery import app
 from e2e.validation import load_schema, validation_results
 from django.conf import settings
@@ -222,12 +219,12 @@ class E2EImpactsTests:
         """
         [
             {"stand_id": 1, [
-                {"variable": "FL", "value": 0.1, "year": 2024},
-                {"variable": "FL", "value": 0.2, "year": 2029},]
+                {"variable": "FL", "value": 0.1, "baseline": 0.2, "delta": 0.1, "year": 2024},
+                {"variable": "FL", "value": 0.2, "baseline": 0.2, "delta": 0, "year": 2029},]
             },
             {"stand_id": 2, [
-                {"variable": "FL", "value": 0.3, "year": 2024},
-                {"variable": "FL", "value": 0.2, "year": 2029},]
+                {"variable": "FL", "value": 0.3, "baseline": 0.2, "delta": -0.1,"year": 2024},
+                {"variable": "FL", "value": 0.2, "baseline": 0.2, "delta": 0, "year": 2029},]
             },
         ]
         """
