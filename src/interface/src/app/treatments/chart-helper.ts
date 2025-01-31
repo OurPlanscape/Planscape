@@ -78,10 +78,10 @@ export const getSharedTitleConfig = (yAxis = true): any => {
       }
     : {
         display: true,
-        text: 'Time Steps (Years)',
+        text: '(Immediately post-treatment)',
         align: 'start',
         color: '#898989', // Text color
-        font: baseFont,
+        font: { ...baseFont, ...{ style: 'italic' } },
       };
 };
 
