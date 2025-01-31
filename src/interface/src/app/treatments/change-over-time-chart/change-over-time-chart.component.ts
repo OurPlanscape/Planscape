@@ -60,6 +60,21 @@ export class ChangeOverTimeChartComponent {
 
   readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] = {
     ...this.baseOptions,
+    animation: false,
+    scales: {
+      ...this.baseOptions?.scales,
+      x: {
+        ...this.baseOptions?.scales?.['x'],
+        title: {
+          ...this.baseOptions?.scales?.['x']?.['title'],
+          ...{
+            padding: {
+              ...{ top: -20 },
+            },
+          },
+        },
+      },
+    },
   };
 
   chartConfiguration(
