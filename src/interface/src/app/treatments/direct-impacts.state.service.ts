@@ -42,6 +42,8 @@ export class DirectImpactsStateService {
 
   setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
     this._selectedProjectArea$.next(projectArea);
+    // Clean the Treatment type selection if the project area changed
+    this.setFilteredTreatmentTypes([]);
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {
