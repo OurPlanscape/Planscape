@@ -32,10 +32,14 @@
   class="filtermenu"
   (closed)="handleClosedMenu($event)">
   <div class="options-section">
-    <ng-container *ngIf="(singleTypeOptions$ | async) !== []">
-      <details class="expander" open (click)="$event.stopPropagation()">
+    <ng-container *ngIf="singleTypeOptions$ | async as singleOptions">
+      <details
+        class="expander"
+        open
+        (click)="$event.stopPropagation()"
+        *ngIf="(singleOptions ?? []).length > 0">
         <summary>Single Activity</summary>
-        <div *ngFor="let key of singleTypeOptions$ | async">
+        <div *ngFor="let key of singleOptions">
           <button
             mat-menu-item
             role="menuitemcheckbox"
@@ -50,10 +54,14 @@
         </div>
       </details>
     </ng-container>
-    <ng-container *ngIf="(sequenceTypeOptions$ | async) !== []">
-      <details class="expander" open (click)="$event.stopPropagation()">
+    <ng-container *ngIf="sequenceTypeOptions$ | async as sequenceOptions">
+      <details
+        class="expander"
+        open
+        (click)="$event.stopPropagation()"
+        *ngIf="(sequenceOptions ?? []).length > 0">
         <summary>Sequenced Activity</summary>
-        <div *ngFor="let key of sequenceTypeOptions$ | async">
+        <div *ngFor="let key of sequenceOptions">
           <button
             mat-menu-item
             role="menuitemcheckbox"

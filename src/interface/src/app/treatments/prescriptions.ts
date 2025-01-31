@@ -1,4 +1,4 @@
-import { Prescription, TreatmentSummary } from '@types';
+import { Prescription, TreatmentProjectArea, TreatmentSummary } from '@types';
 
 // Single prescription keys
 export type PrescriptionSingleAction =
@@ -146,12 +146,18 @@ export function descriptionsForAction(action: string): string[] {
 }
 
 export function getPrescriptionsFromSummary(
-  summary: TreatmentSummary | null
+  summary: TreatmentSummary | null,
+  selectedProjectArea: TreatmentProjectArea | 'All' = 'All'
 ): Prescription[] {
   if (!summary?.project_areas) {
     return [];
   }
   return summary.project_areas
+    .filter((project_area: TreatmentProjectArea) =>
+      selectedProjectArea === 'All'
+        ? true
+        : project_area.project_area_id === selectedProjectArea.project_area_id
+    )
     .flatMap((project_area) => project_area.prescriptions)
     .reduce((unique: Prescription[], prescription) => {
       if (!unique.find((p) => p.action === prescription.action)) {

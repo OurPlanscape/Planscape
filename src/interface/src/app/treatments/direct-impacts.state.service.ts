@@ -3,7 +3,11 @@ import { ImpactsMetric, ImpactsMetricSlot, Metric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
 import { TreatmentProjectArea } from '@types';
+import { Injectable } from '@angular/core';
 
+@Injectable({
+  providedIn: 'root',
+})
 export class DirectImpactsStateService {
   private _reportMetrics$ = new BehaviorSubject<
     Record<ImpactsMetricSlot, Metric>
@@ -38,6 +42,8 @@ export class DirectImpactsStateService {
 
   setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
     this._selectedProjectArea$.next(projectArea);
+    // Clean the Treatment type selection if the project area changed
+    this.setFilteredTreatmentTypes([]);
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {
