@@ -1,3 +1,6 @@
+@import 'colors';
+@import 'mixins';
+
 :host {
     display: block;
 }
@@ -9,6 +12,24 @@ mat-form-field {
 .name-field {
     margin-top: 32px;
 }
+
+::ng-deep .name-field .input-wrapper {
+    width: 100%;
+  }
+  
+.input-label {
+    @include standard-label();
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    gap: 4px;
+  }
+  
+.name-required-star {
+    color: $color-error;
+  }
+  
 
 .title {
     margin: 24px 24px 0;

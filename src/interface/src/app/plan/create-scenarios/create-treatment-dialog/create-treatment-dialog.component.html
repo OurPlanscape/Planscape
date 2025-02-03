@@ -1,10 +1,10 @@
 <h3 mat-dialog-title class="title">Name Your Treatment Plan</h3>
 <form [formGroup]="treatmentForm" (ngSubmit)="submit()">
   <mat-dialog-content>
-    <mat-form-field class="name-field">
-      <mat-label>Name</mat-label>
+    <div class="input-label">Treatment name<span class="name-required-star">*</span></div>
+    <sg-input-field class="name-field">
       <input matInput formControlName="treatmentName" />
-    </mat-form-field>
+    </sg-input-field>
     <mat-error
       *ngIf="
         treatmentForm.get('treatmentName')?.touched &&

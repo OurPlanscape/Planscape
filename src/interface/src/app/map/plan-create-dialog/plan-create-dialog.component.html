@@ -13,10 +13,11 @@
       >
     </div>
 
-    <mat-form-field class="name-field">
-      <mat-label>Name</mat-label>
+
+    <div class="input-label">Plan name<span class="name-required-star">*</span></div>
+    <sg-input-field class="name-field">
       <input matInput formControlName="planName" />
-    </mat-form-field>
+    </sg-input-field>
     <mat-error *ngIf="planForm.hasError('planNameExists')">
       There is already a planning area with that name.
     </mat-error>

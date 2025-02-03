@@ -1,4 +1,5 @@
 @import 'colors';
+@import 'mixins';
 
 .create-scenarios-panel {
   box-sizing: border-box;
@@ -114,12 +115,26 @@
 
 .scenario-name-input {
   width: 100%;
-  height: 40px;
-  font-weight: bold;
+}
+
+::ng-deep .scenario-name-input .input-wrapper {
+  width: 100%;
+}
+.scenario-name-label {
+  @include standard-label();
+  display: flex;
+width: 100%;
+flex-direction: row;
+justify-content: flex-start;
+gap: 4px;
+}
+
+.name-required-star {
+  color: $color-error;
 }
 
 .error {
-  color: #f44336;
+  color: $color-error;
 }
 
 .hidden {

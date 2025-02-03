@@ -18,6 +18,7 @@ import { FeaturesModule } from '../features/features.module';
 import { OutsideRegionDialogComponent } from './outside-region-dialog/outside-region-dialog.component';
 import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-dialog.component';
 import { MatTabsModule } from '@angular/material/tabs';
+import { InputDirective, InputFieldComponent } from '@styleguide';
 
 @NgModule({
   declarations: [
@@ -38,6 +39,8 @@ import { MatTabsModule } from '@angular/material/tabs';
   imports: [
     CommonModule,
     SharedModule,
+    InputDirective,
+    InputFieldComponent,
     LegacyMaterialModule,
     FormsModule,
     ReactiveFormsModule,

@@ -8,12 +8,15 @@ import {
 } from '@angular/forms';
 import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { LegacyMaterialModule } from 'src/app/material/legacy-material.module';
+import { InputDirective, InputFieldComponent } from '@styleguide';
 
 @Component({
   selector: 'app-create-treatment-dialog',
   standalone: true,
   imports: [
     CommonModule,
+    InputDirective, 
+    InputFieldComponent,
     ReactiveFormsModule,
     MatDialogModule,
     LegacyMaterialModule,
