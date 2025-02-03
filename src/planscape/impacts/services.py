@@ -3,7 +3,7 @@ import json
 import logging
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 
 import fiona
 import rasterio
@@ -782,9 +782,16 @@ def get_export_path(treatment_plan: TreatmentPlan) -> str:
 
 def get_treament_result_schema():
     numeric_fields_iterator = itertools.product(
-        [i for i in ImpactVariable], AVAILABLE_YEARS
+        [i for i in ImpactVariable.numerical_variables()],
+        AVAILABLE_YEARS,
+    )
+    other_fields_iterator = itertools.product(
+        [i for i in ImpactVariable.categorical_variables()], AVAILABLE_YEARS
     )
     fields = list([(f"{i}_{year}", "float:4.2") for i, year in numeric_fields_iterator])
+    other_fields = list(
+        [(f"{i}_{year}", "str:64") for i, year in other_fields_iterator]
+    )
     return {
         "geometry": "Polygon",
         "properties": [
@@ -796,6 +803,7 @@ def get_treament_result_schema():
             ("scenario_name", "str:256"),
             ("action", "str:64"),
             *fields,
+            *other_fields,
         ],
     }
 
@@ -820,6 +828,18 @@ def tretment_result_to_json(
     }
 
 
+def get_treatment_result_value_for_export(
+    treatment_result: TreatmentResult,
+) -> Optional[Union[float, str]]:
+    match treatment_result.variable:
+        case ImpactVariable.FLAME_LENGTH:
+            return classify_flame_length(treatment_result.baseline)
+        case ImpactVariable.RATE_OF_SPREAD:
+            return classify_rate_of_spread(treatment_result.baseline)
+        case _:
+            return treatment_result.delta
+
+
 def fetch_treatment_plan_data(
     treatment_plan: TreatmentPlan,
 ) -> Collection[Dict[str, Any]]:
@@ -829,13 +849,16 @@ def fetch_treatment_plan_data(
         TreatmentResult.objects.filter(treatment_plan=treatment_plan)
         .order_by("stand", "variable", "year")
         .select_related("stand", "treatment_plan__scenario")
+        .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
     )
     treatment_results_data = {r.stand_id: r for r in results}
     result_data = defaultdict(dict)
     stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
     for result in results:
         field_name = f"{result.variable}_{result.year}"
-        result_data[result.stand_id][field_name] = result.delta
+        result_data[result.stand_id][field_name] = (
+            get_treatment_result_value_for_export(result)
+        )
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
