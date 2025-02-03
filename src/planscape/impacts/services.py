@@ -856,9 +856,9 @@ def fetch_treatment_plan_data(
     stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
     for result in results:
         field_name = f"{result.variable}_{result.year}"
-        result_data[result.stand_id][field_name] = (
-            get_treatment_result_value_for_export(result)
-        )
+        result_data[result.stand_id][
+            field_name
+        ] = get_treatment_result_value_for_export(result)
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
