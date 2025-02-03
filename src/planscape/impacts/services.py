@@ -785,8 +785,14 @@ def get_treament_result_schema():
         [i for i in ImpactVariable.numerical_variables()],
         AVAILABLE_YEARS,
     )
+    # we don't want to export FBFM.
     other_fields_iterator = itertools.product(
-        [i for i in ImpactVariable.categorical_variables()], AVAILABLE_YEARS
+        [
+            i
+            for i in ImpactVariable.categorical_variables()
+            if i != ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL
+        ],
+        AVAILABLE_YEARS,
     )
     fields = list([(f"{i}_{year}", "float:4.2") for i, year in numeric_fields_iterator])
     other_fields = list(
@@ -856,9 +862,9 @@ def fetch_treatment_plan_data(
     stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
     for result in results:
         field_name = f"{result.variable}_{result.year}"
-        result_data[result.stand_id][
-            field_name
-        ] = get_treatment_result_value_for_export(result)
+        result_data[result.stand_id][field_name] = (
+            get_treatment_result_value_for_export(result)
+        )
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
