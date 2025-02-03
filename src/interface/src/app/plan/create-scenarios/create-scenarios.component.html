@@ -8,12 +8,14 @@
   <div class="create-scenarios-panel-content">
     <div class="scenario-name">
       <form [formGroup]="forms!" *ngIf="scenarioState === 'NOT_STARTED'">
-        <div class="scenario-name-label">Scenario name<span class="name-required-star">*</span></div>
-        <sg-input-field class="scenario-name-input"
-        placeholder="Scenario Name:"
-      >
-        <input sgInput formControlName="scenarioName"  />
-      </sg-input-field>
+        <div class="scenario-name-label">
+          Scenario name<span class="name-required-star">*</span>
+        </div>
+        <sg-input-field
+          class="scenario-name-input"
+          placeholder="Scenario Name:">
+          <input sgInput formControlName="scenarioName" />
+        </sg-input-field>
       </form>
       <div
         *ngIf="

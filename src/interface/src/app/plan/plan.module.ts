@@ -38,7 +38,12 @@ import { GoalOverlayComponent } from './create-scenarios/goal-overlay/goal-overl
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { MapLayerSelectDialogComponent } from './map-layer-select-dialog/map-layer-select-dialog.component';
 import { PlanRoutingModule } from './plan-routing.module';
-import { ButtonComponent, OpacitySliderComponent, InputFieldComponent, InputDirective} from '@styleguide';
+import {
+  ButtonComponent,
+  OpacitySliderComponent,
+  InputFieldComponent,
+  InputDirective,
+} from '@styleguide';
 import { DeleteDialogComponent } from '../standalone/delete-dialog/delete-dialog.component';
 import { UploadProjectAreasModalComponent } from './upload-project-areas-modal/upload-project-areas-modal.component';
 import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';

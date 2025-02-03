@@ -1,7 +1,9 @@
 <h3 mat-dialog-title class="title">Name Your Treatment Plan</h3>
 <form [formGroup]="treatmentForm" (ngSubmit)="submit()">
   <mat-dialog-content>
-    <div class="input-label">Treatment name<span class="name-required-star">*</span></div>
+    <div class="input-label">
+      Treatment name<span class="name-required-star">*</span>
+    </div>
     <sg-input-field class="name-field">
       <input matInput formControlName="treatmentName" />
     </sg-input-field>

@@ -15,7 +15,7 @@ import { InputDirective, InputFieldComponent } from '@styleguide';
   standalone: true,
   imports: [
     CommonModule,
-    InputDirective, 
+    InputDirective,
     InputFieldComponent,
     ReactiveFormsModule,
     MatDialogModule,
