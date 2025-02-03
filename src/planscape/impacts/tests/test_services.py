@@ -768,7 +768,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
             StandMetricFactory.create(
                 stand=self.stand,
                 datalayer=flame_length_layer,
-                avg=4.5,
+                majority=4.5,
             )
 
         for year in AVAILABLE_YEARS:
@@ -791,7 +791,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
             StandMetricFactory.create(
                 stand=self.stand,
                 datalayer=rate_of_spread_layer,
-                avg=12.0,
+                majority=12.0,
             )
 
         table_data = get_treatment_results_table_data(
@@ -853,7 +853,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
             StandMetricFactory.create(
                 stand=self.stand,
                 datalayer=flame_length_layer,
-                avg=4.5,
+                majority=4.5,
             )
 
         for year in AVAILABLE_YEARS:
@@ -876,7 +876,7 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
             StandMetricFactory.create(
                 stand=self.stand,
                 datalayer=rate_of_spread_layer,
-                avg=12.0,
+                majority=12.0,
             )
 
         table_data = get_treatment_results_table_data(

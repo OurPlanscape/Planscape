@@ -95,6 +95,8 @@ export class StandDataChartComponent implements OnInit {
   metrics: Metric[] = METRICS;
   baseOptions = getBasicChartOptions();
 
+  slotColor = SLOT_COLORS['blue'];
+
   constructor(private directImpactsStateService: DirectImpactsStateService) {}
 
   ngOnInit() {
@@ -121,6 +123,22 @@ export class StandDataChartComponent implements OnInit {
     {
       ...this.baseOptions,
       animation: false,
+      scales: {
+        ...this.baseOptions?.scales,
+        x: {
+          ...this.baseOptions?.scales?.['x'],
+          title: {
+            ...this.baseOptions?.scales?.['x']?.['title'],
+            ...{
+              text: 'Time Steps (Years)',
+              font: {
+                ...this.baseOptions?.scales?.['x']?.['title']?.['font'],
+                ...{ style: 'normal' },
+              },
+            },
+          },
+        },
+      },
     };
 
   barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =

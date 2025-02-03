@@ -92,16 +92,7 @@
       </div>
       <div class="filter-label filter-label-treatment">Filter by</div>
 
-      <sg-filter-dropdown
-        class="treatment-dropdown"
-        menuLabel="Treatment Type"
-        [menuItems]="(treatmentTypeOptions$ | async) || []"
-        [hasSearch]="false"
-        displayField="value"
-        [disabled]="(treatmentTypeOptions$ | async) === null"
-        (confirmedSelection)="
-          onConfirmedSelection($event)
-        "></sg-filter-dropdown>
+      <app-treatment-filter class="treatment-dropdown"></app-treatment-filter>
     </div>
 
     <app-change-over-time-chart></app-change-over-time-chart>
@@ -131,7 +122,7 @@
           }}</span>
         </div>
         <ng-template #noStand>
-          <div panelTitle #noStand>Stand Level Data Unavailable</div>
+          <div panelTitle #noStand>Stand Level Data</div>
         </ng-template>
         <app-stand-data-chart></app-stand-data-chart>
       </sg-panel>

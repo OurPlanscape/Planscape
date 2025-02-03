@@ -27,7 +27,7 @@
         <app-metric-selector
           [selectedOption]="(activeMetric$ | async)?.id || ''"
           [metrics]="metrics"
-          color="blue"
+          [color]="slotColor"
           label="Metric"
           (metricChanged)="metricChanged($event)"></app-metric-selector>
       </div>
