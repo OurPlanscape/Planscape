@@ -736,15 +736,15 @@ def get_treatment_results_table_data(
         data_map[year][ImpactVariable.FLAME_LENGTH] = {
             "value": None,
             "delta": None,
-            "baseline": fl_metric.majority,
-            "category": classify_flame_length(fl_metric.majority),
+            "baseline": fl_metric.avg,
+            "category": classify_flame_length(fl_metric.avg),
         }
 
         data_map[year][ImpactVariable.RATE_OF_SPREAD] = {
             "value": None,
             "delta": None,
-            "baseline": ros_metric.majority,
-            "category": classify_rate_of_spread(ros_metric.majority),
+            "baseline": ros_metric.avg,
+            "category": classify_rate_of_spread(ros_metric.avg),
         }
 
     # Populate data_map with treatment results
