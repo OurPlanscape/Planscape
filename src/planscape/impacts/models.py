@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Tuple
+from typing import Collection, List, Optional, Tuple
 
 from core.models import (
     AliveObjectsManager,
@@ -8,12 +8,12 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
-from datasets.models import DataLayer, DataLayerType
-from planning.models import ProjectArea, Scenario, PlanningArea
+from planning.models import ProjectArea, Scenario
 from stands.models import Stand
 from typing_extensions import Self
 
@@ -364,6 +364,24 @@ class ImpactVariable(models.TextChoices):
     TOTAL_HEIGHT = "TH", "Total Height"
     TOTAL_FLAME_SEVERITY = "TOT_FLAME_SEV", "Total Flame Severity"
     TOTAL_CARBON = "TOTAL_CARBON", "Total Carbon"
+
+    @classmethod
+    def categorical_variables_names(cls):
+        return [
+            "FL",
+            "FBFM",
+            "ROS",
+        ]
+
+    @classmethod
+    def numerical_variables(cls) -> Collection[Self]:
+        return [
+            cls(x) for x in cls.values if x not in cls.categorical_variables_names()
+        ]
+
+    @classmethod
+    def categorical_variables(cls) -> Collection[Self]:
+        return [cls(x) for x in cls.values if x in cls.categorical_variables_names()]
 
     @classmethod
     def get_aggregations(cls, impact_variable) -> List[ImpactVariableAggregation]:
