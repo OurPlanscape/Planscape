@@ -6,7 +6,7 @@
         {
             "action": "MODERATE_THINNING_BIOMASS",
             "project_area_id": 1,
-            "stands_ids": [
+            "stand_ids": [
                 3431143,
                 3423411,
                 3423412
@@ -15,7 +15,7 @@
         {
             "action": "MODERATE_MASTICATION",
             "project_area_id": 1,
-            "stands_ids": [
+            "stand_ids": [
                 3431180,
                 3423481,
                 3423482
@@ -24,7 +24,7 @@
         {
             "action": "MODERATE_THINNING_BIOMASS",
             "project_area_id": 2,
-            "stands_ids": [
+            "stand_ids": [
                 3431555,
                 3423556,
                 3423557
