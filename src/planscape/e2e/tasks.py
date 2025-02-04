@@ -244,7 +244,7 @@ class E2EImpactsTests:
         try:
             assert self.treatment_plan_name is not None
 
-            url = reverse("api:impacts:tx-plans")
+            url = reverse("api:impacts:tx-plans-list")
             data = {"name": self.treatment_plan_name, "scenario": self.scenario.id}
             response = self.client.post(url, data, format="json")
             assert response.status_code == 201
@@ -271,7 +271,7 @@ class E2EImpactsTests:
                 stand_ids = prescription.get("stand_ids")
 
                 tx_prescriptions_url = reverse(
-                    "api:impacts:tx-prescriptions",
+                    "api:impacts:tx-prescriptions-list",
                     kwargs={"tx_plan_pk": self.treatment_plan.pk},
                 )
                 payload = {
@@ -293,7 +293,7 @@ class E2EImpactsTests:
 
         try:
             url = reverse(
-                "api:impacts:tx-plans-execute", kwargs={"pk": self.treatment_plan.pk}
+                "api:impacts:tx-plans-run", kwargs={"pk": self.treatment_plan.pk}
             )
             response = self.client.post(url, format="json")
             assert response.status_code == 202
