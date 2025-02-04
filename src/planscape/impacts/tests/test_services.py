@@ -47,7 +47,7 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from stands.models import Stand, StandMetric, StandSizeChoices
+from stands.models import Stand, STAND_AREA_ACRES, StandSizeChoices
 from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planscape.tests.factories import UserFactory
@@ -183,12 +183,14 @@ class SummaryTest(TransactionTestCase):
             action=TreatmentPrescriptionAction.MODERATE_MASTICATION_PLUS_RX_FIRE,
             stand__size=StandSizeChoices.SMALL,
         )
+        self.stand_area = STAND_AREA_ACRES[StandSizeChoices.SMALL]
 
     def test_summary_is_returned_correctly(self):
         summary = generate_summary(self.tx_plan, project_area=None)
         self.assertIsNotNone(summary)
         self.assertIn("planning_area_id", summary)
         self.assertIn("planning_area_name", summary)
+        self.assertIn("prescriptions", summary)
         self.assertIn("project_areas", summary)
         self.assertIn("scenario_id", summary)
         self.assertIn("scenario_name", summary)
@@ -200,7 +202,6 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("total_treated_area_acres", summary)
         self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 3)
-
         proj_area_1 = list(
             filter(
                 lambda x: x["project_area_id"] == self.proj1.id,
@@ -250,11 +251,45 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("total_treated_area_acres", proj_area_3)
         self.assertEqual(len(proj_area_3["prescriptions"]), 1)
 
+        precription_1 = list(
+            filter(
+                lambda x: x["action"] == TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                summary["prescriptions"],
+            )
+        )[0]
+        precription_2 = list(
+            filter(
+                lambda x: x["action"]
+                == TreatmentPrescriptionAction.HEAVY_THINNING_BIOMASS,
+                summary["prescriptions"],
+            )
+        )[0]
+        precription_3 = list(
+            filter(
+                lambda x: x["action"]
+                == TreatmentPrescriptionAction.MODERATE_MASTICATION_PLUS_RX_FIRE,
+                summary["prescriptions"],
+            )
+        )[0]
+
+        self.assertEqual(precription_1["stand_count"], 4)
+        self.assertEqual(precription_1["area_acres"], 4 * self.stand_area)
+        self.assertAlmostEqual(precription_1["area_percent"], 9.52, places=2)
+
+        self.assertEqual(precription_2["stand_count"], 5)
+        self.assertEqual(precription_2["area_acres"], 5 * self.stand_area)
+        self.assertAlmostEqual(precription_2["area_percent"], 11.9, places=2)
+
+        self.assertEqual(precription_3["stand_count"], 5)
+        self.assertEqual(precription_3["area_acres"], 5 * self.stand_area)
+        self.assertAlmostEqual(precription_3["area_percent"], 11.9, places=2)
+
     def test_summary_is_returned_correctly_filter_by_project_area(self):
         summary = generate_summary(self.tx_plan, project_area=self.proj1)
         self.assertIsNotNone(summary)
         self.assertIn("planning_area_id", summary)
         self.assertIn("planning_area_name", summary)
+        self.assertIn("prescriptions", summary)
         self.assertIn("project_areas", summary)
         self.assertIn("scenario_id", summary)
         self.assertIn("scenario_name", summary)
@@ -285,9 +320,17 @@ class SummaryTest(TransactionTestCase):
             )
         )
         self.assertIn("prescriptions", proj_area_1)
+
         self.assertEqual(len(proj_area_1["prescriptions"]), 1)
         self.assertEqual(proj_area_2, [])
         self.assertEqual(proj_area_3, [])
+
+        self.assertEquals(len(summary["prescriptions"]), 1)
+        precription = summary["prescriptions"][0]
+
+        self.assertEqual(precription["stand_count"], 4)
+        self.assertEqual(precription["area_acres"], 4 * self.stand_area)
+        self.assertAlmostEqual(precription["area_percent"], 28.57, places=2)
 
 
 class GetCalculationMatrixTest(TransactionTestCase):
