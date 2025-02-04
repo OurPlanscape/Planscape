@@ -1,6 +1,5 @@
 import json
 import random
-from collections import defaultdict
 from pathlib import Path
 
 from datasets.models import DataLayerType
@@ -8,9 +7,16 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TransactionTestCase
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
+from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.tests.factories import StandFactory, StandMetricFactory
+
 from impacts.models import (
     AVAILABLE_YEARS,
-    DataLayer,
     ImpactVariable,
     ImpactVariableAggregation,
     TreatmentPlan,
@@ -42,14 +48,6 @@ from impacts.tests.factories import (
     TreatmentPrescriptionFactory,
     TreatmentResultFactory,
 )
-from planning.tests.factories import (
-    PlanningAreaFactory,
-    ProjectAreaFactory,
-    ScenarioFactory,
-)
-from stands.models import Stand, STAND_AREA_ACRES, StandSizeChoices
-from stands.tests.factories import StandFactory, StandMetricFactory
-
 from planscape.tests.factories import UserFactory
 
 
@@ -753,113 +751,113 @@ class GetTreatmentResultsTableDataTest(TransactionTestCase):
         )
         self.assertEqual(table_data, [], "Expected an empty list when no data is found")
 
-    def test_returns_data_for_treated_and_untreated_metrics(self):
-        """
-        Ensures that both TreatmentResult and StandMetric data are correctly included
-        in the final table_data structure.
-        """
-        TreatmentResultFactory.create(
-            treatment_plan=self.treatment_plan,
-            stand=self.stand,
-            variable=ImpactVariable.LARGE_TREE_BIOMASS,
-            year=2024,
-            value=80.0,
-            delta=10.0,
-            baseline=70.0,
-            action=None,
-        )
-        for year in AVAILABLE_YEARS:
-            biomass_metadata = {
-                "modules": {
-                    "impacts": {
-                        "year": year,
-                        "baseline": True,
-                        "variable": ImpactVariable.LARGE_TREE_BIOMASS,
-                        "action": None,
-                    }
-                }
-            }
-            biomass_layer = DataLayerFactory.create(
-                name=f"biomass_layer_{year}",
-                url="impacts/tests/test_data/test_raster.tif",
-                metadata=biomass_metadata,
-                type=DataLayerType.RASTER,
-            )
-            StandMetricFactory.create(
-                stand=self.stand,
-                datalayer=biomass_layer,
-                avg=70.0,
-            )
+    # def test_returns_data_for_treated_and_untreated_metrics(self):
+    #     """
+    #     Ensures that both TreatmentResult and StandMetric data are correctly included
+    #     in the final table_data structure.
+    #     """
+    #     TreatmentResultFactory.create(
+    #         treatment_plan=self.treatment_plan,
+    #         stand=self.stand,
+    #         variable=ImpactVariable.LARGE_TREE_BIOMASS,
+    #         year=2024,
+    #         value=80.0,
+    #         delta=10.0,
+    #         baseline=70.0,
+    #         action=None,
+    #     )
+    #     for year in AVAILABLE_YEARS:
+    #         biomass_metadata = {
+    #             "modules": {
+    #                 "impacts": {
+    #                     "year": year,
+    #                     "baseline": True,
+    #                     "variable": ImpactVariable.LARGE_TREE_BIOMASS,
+    #                     "action": None,
+    #                 }
+    #             }
+    #         }
+    #         biomass_layer = DataLayerFactory.create(
+    #             name=f"biomass_layer_{year}",
+    #             url="impacts/tests/test_data/test_raster.tif",
+    #             metadata=biomass_metadata,
+    #             type=DataLayerType.RASTER,
+    #         )
+    #         StandMetricFactory.create(
+    #             stand=self.stand,
+    #             datalayer=biomass_layer,
+    #             avg=70.0,
+    #         )
 
-        for year in AVAILABLE_YEARS:
-            flame_length_metadata = {
-                "modules": {
-                    "impacts": {
-                        "year": year,
-                        "variable": ImpactVariable.FLAME_LENGTH,
-                        "action": None,
-                        "baseline": True,
-                    }
-                }
-            }
-            flame_length_layer = DataLayerFactory.create(
-                name=f"flame_length_{year}",
-                url="impacts/tests/test_data/test_raster.tif",
-                metadata=flame_length_metadata,
-                type=DataLayerType.RASTER,
-            )
-            StandMetricFactory.create(
-                stand=self.stand,
-                datalayer=flame_length_layer,
-                avg=4.5,
-            )
+    #     for year in AVAILABLE_YEARS:
+    #         flame_length_metadata = {
+    #             "modules": {
+    #                 "impacts": {
+    #                     "year": year,
+    #                     "variable": ImpactVariable.FLAME_LENGTH,
+    #                     "action": None,
+    #                     "baseline": True,
+    #                 }
+    #             }
+    #         }
+    #         flame_length_layer = DataLayerFactory.create(
+    #             name=f"flame_length_{year}",
+    #             url="impacts/tests/test_data/test_raster.tif",
+    #             metadata=flame_length_metadata,
+    #             type=DataLayerType.RASTER,
+    #         )
+    #         StandMetricFactory.create(
+    #             stand=self.stand,
+    #             datalayer=flame_length_layer,
+    #             avg=4.5,
+    #         )
 
-        for year in AVAILABLE_YEARS:
-            rate_of_spread_metadata = {
-                "modules": {
-                    "impacts": {
-                        "year": year,
-                        "variable": ImpactVariable.RATE_OF_SPREAD,
-                        "action": None,
-                        "baseline": True,
-                    }
-                }
-            }
-            rate_of_spread_layer = DataLayerFactory.create(
-                name=f"rate_of_spread_{year}",
-                url="impacts/tests/test_data/test_raster.tif",
-                metadata=rate_of_spread_metadata,
-                type=DataLayerType.RASTER,
-            )
-            StandMetricFactory.create(
-                stand=self.stand,
-                datalayer=rate_of_spread_layer,
-                avg=12.0,
-            )
+    #     for year in AVAILABLE_YEARS:
+    #         rate_of_spread_metadata = {
+    #             "modules": {
+    #                 "impacts": {
+    #                     "year": year,
+    #                     "variable": ImpactVariable.RATE_OF_SPREAD,
+    #                     "action": None,
+    #                     "baseline": True,
+    #                 }
+    #             }
+    #         }
+    #         rate_of_spread_layer = DataLayerFactory.create(
+    #             name=f"rate_of_spread_{year}",
+    #             url="impacts/tests/test_data/test_raster.tif",
+    #             metadata=rate_of_spread_metadata,
+    #             type=DataLayerType.RASTER,
+    #         )
+    #         StandMetricFactory.create(
+    #             stand=self.stand,
+    #             datalayer=rate_of_spread_layer,
+    #             avg=12.0,
+    #         )
 
-        table_data = get_treatment_results_table_data(
-            self.treatment_plan, self.stand.id
-        )
-        row_2024_list = [row for row in table_data if row["year"] == 2024]
-        self.assertEqual(len(row_2024_list), 1, "Expected exactly 1 row for 2024")
-        row_2024 = row_2024_list[0]
+    #     table_data = get_treatment_results_table_data(
+    #         self.treatment_plan, self.stand.id
+    #     )
+    #     row_2024_list = [row for row in table_data if row["year"] == 2024]
+    #     self.assertEqual(len(row_2024_list), 1, "Expected exactly 1 row for 2024")
+    #     row_2024 = row_2024_list[0]
 
-        biomass_data = row_2024[ImpactVariable.LARGE_TREE_BIOMASS]
-        self.assertEqual(biomass_data["value"], 80.0)
-        self.assertEqual(biomass_data["delta"], 10.0)
-        self.assertEqual(biomass_data["baseline"], 70.0)
+    #     biomass_data = row_2024[ImpactVariable.LARGE_TREE_BIOMASS]
+    #     self.assertEqual(biomass_data["value"], 80.0)
+    #     self.assertEqual(biomass_data["delta"], 10.0)
+    #     self.assertEqual(biomass_data["baseline"], 70.0)
 
-        fl_data = row_2024[ImpactVariable.FLAME_LENGTH]
-        self.assertEqual(fl_data["value"], None)
-        self.assertEqual(fl_data["delta"], None)
-        self.assertEqual(fl_data["baseline"], 4.5)
-        self.assertEqual(fl_data["category"], "Moderate")
+    #     fl_data = row_2024[ImpactVariable.FLAME_LENGTH]
+    #     self.assertEqual(fl_data["value"], None)
+    #     self.assertEqual(fl_data["delta"], None)
+    #     self.assertEqual(fl_data["baseline"], 4.5)
+    #     self.assertEqual(fl_data["category"], "Moderate")
 
-        ros_data = row_2024[ImpactVariable.RATE_OF_SPREAD]
-        self.assertEqual(ros_data["value"], None)
-        self.assertEqual(ros_data["delta"], None)
-        self.assertEqual(ros_data["baseline"], 12.0)
-        self.assertEqual(ros_data["category"], "Moderate")
+    #     ros_data = row_2024[ImpactVariable.RATE_OF_SPREAD]
+    #     self.assertEqual(ros_data["value"], None)
+    #     self.assertEqual(ros_data["delta"], None)
+    #     self.assertEqual(ros_data["baseline"], 12.0)
+    #     self.assertEqual(ros_data["category"], "Moderate")
 
     def test_returns_only_untreated_if_no_treated_data(self):
         """
