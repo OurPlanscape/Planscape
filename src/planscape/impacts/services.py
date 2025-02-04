@@ -229,9 +229,28 @@ def generate_summary(
 
     total_area_acres = total_stands * stand_area
     total_treated_area_acres = treated_stands * stand_area
+
+    prescriptions_qs = (
+        TreatmentPrescription.objects.filter(**tp_filter)
+        .values(
+            "action",
+        )
+        .annotate(stand_count=Count("stand"))
+    )
+    prescriptions_data = [
+        {
+            "action": p["action"],
+            "stand_count": p["stand_count"],
+            "area_acres": p["stand_count"] * stand_area,
+            "area_percent": (p["stand_count"] / total_stands) * 100,
+        }
+        for p in prescriptions_qs
+    ]
+
     data = {
         "planning_area_id": plan_area.id,
         "planning_area_name": plan_area.name,
+        "prescriptions": prescriptions_data,
         "scenario_id": scenario.id,
         "scenario_name": scenario.name,
         "treatment_plan_id": treatment_plan.pk,
