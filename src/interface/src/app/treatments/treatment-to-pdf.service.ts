@@ -163,7 +163,6 @@ export class TreatmentToPDFService {
       name: descriptionsForAction(t),
       icon: treatmentIcons[t as PrescriptionAction],
     }));
-
     autoTable(this.pdfDoc, {
       styles: {
         fillColor: [255, 255, 255],
@@ -185,12 +184,12 @@ export class TreatmentToPDFService {
       tableLineWidth: 0.3,
       tableLineColor: [0, 0, 0],
       margin: {
-        left: startX,
+        left: startX - 2,
         right: 20,
         top: 10,
         bottom: 20,
       },
-      tableWidth: 50,
+      tableWidth: 52,
       horizontalPageBreak: true,
       head: [['Treatment Legend']],
       body: treatments,
@@ -204,8 +203,6 @@ export class TreatmentToPDFService {
             data.doc.text(treatments[idx].name, x + 4, y + 2.5);
             data.row.height += 1.5;
           });
-          data.doc.addImage(treatments[idx].icon, 'PNG', x, y, 3, 3);
-          data.doc.text(treatments[idx].name, x + 4, y + 3);
         }
       },
     });
