@@ -1,21 +1,16 @@
 import logging
 
-from django.contrib.auth.models import User
-from allauth.account.utils import send_email_confirmation
+from collaboration.services import link_invites
 from dj_rest_auth.registration.serializers import RegisterSerializer
 from dj_rest_auth.serializers import (
-    LoginSerializer,
     PasswordChangeSerializer,
-    PasswordResetSerializer,
     PasswordResetConfirmSerializer,
+    PasswordResetSerializer,
 )
-from django.conf import settings
 from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
-from django.template import Context
 from django.template.loader import get_template
 from rest_framework import serializers
-from collaboration.services import link_invites
 
 from users.forms import CustomAllAuthPasswordResetForm
 

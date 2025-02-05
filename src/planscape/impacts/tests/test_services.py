@@ -1,6 +1,5 @@
 import json
 import random
-from collections import defaultdict
 from pathlib import Path
 
 from datasets.models import DataLayerType
@@ -8,9 +7,16 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TransactionTestCase
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
+from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.tests.factories import StandFactory, StandMetricFactory
+
 from impacts.models import (
     AVAILABLE_YEARS,
-    DataLayer,
     ImpactVariable,
     ImpactVariableAggregation,
     TreatmentPlan,
@@ -42,14 +48,6 @@ from impacts.tests.factories import (
     TreatmentPrescriptionFactory,
     TreatmentResultFactory,
 )
-from planning.tests.factories import (
-    PlanningAreaFactory,
-    ProjectAreaFactory,
-    ScenarioFactory,
-)
-from stands.models import Stand, STAND_AREA_ACRES, StandSizeChoices
-from stands.tests.factories import StandFactory, StandMetricFactory
-
 from planscape.tests.factories import UserFactory
 
 
@@ -943,19 +941,29 @@ class ClassificationFunctionsTest(TransactionTestCase):
         """
         Checks the numeric boundaries for flame length classification.
         """
-        self.assertEqual(classify_flame_length(1.5), "Very Low")
-        self.assertEqual(classify_flame_length(3.0), "Low")
-        self.assertEqual(classify_flame_length(8.0), "High")
-        self.assertEqual(classify_flame_length(25.0), "Extreme")
+        self.assertEqual(classify_flame_length(1.0), "Very Low")
+        self.assertEqual(classify_flame_length(1.1), "Low")
+        self.assertEqual(classify_flame_length(4.0), "Low")
+        self.assertEqual(classify_flame_length(4.1), "Moderate")
+        self.assertEqual(classify_flame_length(8.0), "Moderate")
+        self.assertEqual(classify_flame_length(8.1), "High")
+        self.assertEqual(classify_flame_length(12.0), "High")
+        self.assertEqual(classify_flame_length(12.1), "Very High")
+        self.assertEqual(classify_flame_length(25.0), "Very High")
+        self.assertEqual(classify_flame_length(26.0), "Extreme")
 
     def test_classify_rate_of_spread(self):
         """
         Checks the numeric boundaries for rate of spread classification.
         """
         self.assertEqual(classify_rate_of_spread(2.0), "Very Low")
-        self.assertEqual(classify_rate_of_spread(9.5), "Low")
-        self.assertEqual(classify_rate_of_spread(20.0), "High")
-        self.assertEqual(classify_rate_of_spread(100.0), "Extreme")
+        self.assertEqual(classify_rate_of_spread(4.5), "Low")
+        self.assertEqual(classify_rate_of_spread(20.0), "Moderate")
+        self.assertEqual(classify_rate_of_spread(21.0), "High")
+        self.assertEqual(classify_rate_of_spread(50.0), "High")
+        self.assertEqual(classify_rate_of_spread(50.1), "Very High")
+        self.assertEqual(classify_rate_of_spread(150.0), "Very High")
+        self.assertEqual(classify_rate_of_spread(150.1), "Extreme")
 
 
 class FetchTreatmentPlanDataTest(TransactionTestCase):
