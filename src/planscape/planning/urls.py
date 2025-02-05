@@ -1,28 +1,27 @@
 from django.conf.urls import include
 from django.urls import path
+
 from planning.views import (
-    validate_planning_area,
+    PlanningAreaNotes,
     create_planning_area,
+    create_scenario,
+    create_shared_link,
     delete_planning_area,
-    get_planning_area_by_id,
+    delete_scenario,
     download_csv,
     download_shapefile,
-    list_planning_areas,
-    update_planning_area,
-    create_scenario,
-    delete_scenario,
+    get_planning_area_by_id,
     get_scenario_by_id,
+    get_shared_link,
+    list_planning_areas,
     list_scenarios_for_planning_area,
     treatment_goals_config,
+    update_planning_area,
     update_scenario,
     update_scenario_result,
-    create_shared_link,
-    get_shared_link,
-    PlanningAreaNotes,
+    validate_planning_area,
 )
-
 from planning.views_userprefs import UserPreferencesView
-from planning.routers import router
 
 app_name = "planning"
 

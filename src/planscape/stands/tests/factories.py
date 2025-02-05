@@ -1,9 +1,9 @@
 import factory
 import factory.fuzzy
-from django.contrib.gis.geos import Polygon
-from impacts.models import ImpactVariable
-from stands.models import Stand, StandMetric, StandSizeChoices
 from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.geos import Polygon
+
+from stands.models import Stand, StandMetric, StandSizeChoices
 
 
 class StandFactory(factory.django.DjangoModelFactory):

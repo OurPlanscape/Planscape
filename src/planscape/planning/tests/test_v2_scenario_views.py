@@ -1,18 +1,17 @@
 import copy
 from unittest import mock
+
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase, APITestCase
-from planning.models import (
-    Scenario,
-    ScenarioResult,
-)
-from planscape.tests.factories import UserFactory
+from rest_framework.test import APITestCase, APITransactionTestCase
+
+from planning.models import Scenario, ScenarioResult
 from planning.tests.factories import (
     PlanningAreaFactory,
+    ProjectAreaFactory,
     ScenarioFactory,
     ScenarioResultFactory,
-    ProjectAreaFactory,
 )
+from planscape.tests.factories import UserFactory
 
 
 class CreateScenarioTest(APITransactionTestCase):
@@ -120,7 +119,9 @@ class ListScenariosForPlanningAreaTest(APITestCase):
             configuration=self.configuration,
             user=self.owner_user,
         )
-        project_areas = ProjectAreaFactory.create_batch(size=10, scenario=self.scenario)
+        _project_areas = ProjectAreaFactory.create_batch(
+            size=10, scenario=self.scenario
+        )
         self.scenario_res = ScenarioResultFactory(scenario=self.scenario2)
         self.scenario3 = ScenarioFactory.create(
             planning_area=self.planning_area,
