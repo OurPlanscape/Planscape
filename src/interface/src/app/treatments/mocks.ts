@@ -32,6 +32,7 @@ export const MOCK_SUMMARY: TreatmentSummary = {
       },
     },
   ],
+  prescriptions: [],
   extent: [1, 2, 3, 4],
   planning_area_id: 1,
   planning_area_name: 'Test',

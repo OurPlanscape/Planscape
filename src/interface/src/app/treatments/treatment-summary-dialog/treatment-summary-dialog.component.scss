@@ -1,0 +1,73 @@
+@import 'colors';
+
+.treatment-summary-title {
+  padding: 16px 24px;
+  margin: 0;
+  border-bottom: 1px solid $color-soft-gray;
+  font-size: 18px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.treatment-summary-content {
+  padding: 24px;
+  margin: 0;
+}
+
+.treatment-summary-legend {
+  font-family: 'Public Sans';
+  font-size: 14px;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 22px;
+  margin-bottom: 16px;
+}
+
+.treatment-summary-table {
+  border-radius: 4px;
+  border: 1px solid $color-soft-gray;
+
+  .mat-mdc-header-cell {
+    padding: 24px 16px;
+
+    border-bottom: 1px solid $color-soft-gray;
+    background: $color-soft-gray;
+
+    font-family: 'Public Sans';
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 14px;
+  }
+
+  .mat-mdc-cell {
+    font-family: 'Public Sans';
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 22px;
+  }
+}
+
+.treatment-summary-icon {
+  position: relative;
+  top: 7px;
+}
+
+.treatment-summary-button {
+  float: inline-end;
+  background-color: transparent;
+  border: 0;
+  cursor: pointer;
+
+  .mat-icon {
+    position: relative;
+    top: 3px;
+  }
+}
+
+.action-label {
+  display: inline-flex;
+  padding-left: 5px;
+}
