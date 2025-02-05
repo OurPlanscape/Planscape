@@ -24,7 +24,9 @@
           class="treatment-summary-icon"
           *ngIf="!isSequence(element.action)"
           [treatment]="element.action"></sg-treatment-type-icon>
-        {{ getActionLabel(element.action) || '-' }}
+        <div style="display: inline-flex">
+          <span [innerText]="getActionLabel(element.action) || '-'"> </span>
+        </div>
       </td>
     </ng-container>
 
