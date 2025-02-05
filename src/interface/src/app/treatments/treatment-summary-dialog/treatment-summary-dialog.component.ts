@@ -1,14 +1,16 @@
-import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
-import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { CommonModule, DecimalPipe } from '@angular/common';
+import { Component, Inject, OnInit } from '@angular/core';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 import { MatTableModule } from '@angular/material/table';
 import { descriptionsForAction, PRESCRIPTIONS } from '../prescriptions';
 import { SequenceIconComponent, TreatmentTypeIconComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
-import { TreatmentsState } from '../treatments.state';
-import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { MapConfigState } from '../treatment-map/map-config.state';
-import { map } from 'rxjs';
+import { SummaryPrescription } from '@types';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-treatment-summary-dialog',
@@ -20,20 +22,27 @@ import { map } from 'rxjs';
     TreatmentTypeIconComponent,
     SequenceIconComponent,
     MatIconModule,
+    DecimalPipe,
   ],
-  providers: [TreatmentsState, TreatedStandsState, MapConfigState],
   templateUrl: './treatment-summary-dialog.component.html',
   styleUrl: './treatment-summary-dialog.component.scss',
 })
-export class TreatmentSummaryDialogComponent {
-  prescriptions$ = this.treatmentStateService.summary$.pipe(
-    map((summary) => summary?.prescriptions)
-  );
-  displayedColumns: string[] = ['action', 'area_acres', 'area_percent'];
+export class TreatmentSummaryDialogComponent implements OnInit {
   constructor(
     private dialogRef: MatDialogRef<TreatmentSummaryDialogComponent>,
-    private treatmentStateService: TreatmentsState
+    @Inject(MAT_DIALOG_DATA)
+    public data: {
+      prescriptions: Observable<SummaryPrescription[]>;
+    }
   ) {}
+
+  prescriptions!: Observable<SummaryPrescription[]>;
+
+  displayedColumns: string[] = ['action', 'area_acres', 'area_percent'];
+
+  ngOnInit(): void {
+    this.prescriptions = this.data.prescriptions;
+  }
 
   getActionLabel(key: string): any {
     if (!key) {

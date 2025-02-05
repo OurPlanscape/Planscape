@@ -46,6 +46,13 @@ export interface Prescription {
   stand_ids: number[];
 }
 
+export interface SummaryPrescription {
+  action: PrescriptionAction;
+  stand_count: number;
+  area_acres: number;
+  area_percent: number;
+}
+
 export interface TreatedStand {
   id: number;
   action: string;
@@ -56,12 +63,7 @@ export interface TreatmentSummary extends Totals {
   extent: Extent;
   planning_area_id: number;
   planning_area_name: string;
-  prescriptions: {
-    action: PrescriptionAction;
-    stand_count: number;
-    area_acres: number;
-    area_percent: number;
-  }[];
+  prescriptions: SummaryPrescription[];
   scenario_id: number;
   scenario_name: string;
   treatment_plan_id: number;
