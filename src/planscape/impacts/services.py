@@ -705,28 +705,9 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     return "Extreme"
 
 
-def classify_if_needed(treatment_result: Dict[str, Any]) -> Optional[str | float]:
-    match treatment_result:
-        case {
-            "variable": ImpactVariable.FLAME_LENGTH,
-            "value": value,
-            "baseline": baseline,
-            "action": action,
-        }:
-            return value if action is not None else baseline
-        case {
-            "variable": ImpactVariable.RATE_OF_SPREAD,
-            "value": value,
-            "baseline": baseline,
-            "action": action,
-        }:
-            return value if action is not None else baseline
-        case _:
-            return None
-
-
 def get_treatment_results_table_data(
-    treatment_plan: TreatmentPlan, stand_id: int
+    treatment_plan: TreatmentPlan,
+    stand_id: int,
 ) -> List[Dict[str, Any]]:
     """
     Retrieves a list of dictionaries, with each dictionary representing
@@ -741,64 +722,25 @@ def get_treatment_results_table_data(
       ...
     ]
     """
-    # Fetch treatment results
-    treated_results = TreatmentResult.objects.filter(
-        treatment_plan=treatment_plan,
-        stand_id=stand_id,
-    ).values("year", "variable", "value", "delta", "baseline", "action")
+    datamap = defaultdict(dict)
+    results = (
+        TreatmentResult.objects.filter(treatment_plan=treatment_plan)
+        .order_by("stand", "variable", "year")
+        .select_related("stand", "treatment_plan__scenario")
+        .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
+    )
 
-    if not treated_results.exists():
-        return []
-
-    data_map = defaultdict(dict)
-    for year in AVAILABLE_YEARS:
-        flame_length = ImpactVariable.get_datalayer(
-            impact_variable=ImpactVariable.FLAME_LENGTH,
-            year=year,
-        )
-        rate_of_spread = ImpactVariable.get_datalayer(
-            impact_variable=ImpactVariable.RATE_OF_SPREAD,
-            year=year,
-        )
-        fl_metric = StandMetric.objects.get(stand_id=stand_id, datalayer=flame_length)
-        ros_metric = StandMetric.objects.get(
-            stand_id=stand_id, datalayer=rate_of_spread
-        )
-
-        data_map[year][ImpactVariable.FLAME_LENGTH] = {
-            "value": None,
-            "delta": None,
-            "baseline": fl_metric.avg,
-            "category": classify_flame_length(fl_metric.avg),
+    for result in results:
+        datamap[result.year][result.variable] = {
+            "value": result.value,
+            "delta": result.delta,
+            "baseline": result.baseline,
+            "category": get_category(result),
         }
-
-        data_map[year][ImpactVariable.RATE_OF_SPREAD] = {
-            "value": None,
-            "delta": None,
-            "baseline": ros_metric.avg,
-            "category": classify_rate_of_spread(ros_metric.avg),
-        }
-
-    for row in treated_results:
-        year = row["year"]
-        variable = row["variable"]
-        value = row["value"]
-        delta = row["delta"]
-        baseline = row["baseline"]
-
-        data_map[year][variable] = {
-            "value": value,
-            "delta": delta,
-            "baseline": baseline,
-            "category": classify_if_needed(row),
-        }
-
-    # Format data into a list
     table_data = []
 
-    for year in sorted(data_map.keys()):
-        table_data.append({**data_map[year], "year": year})
-
+    for year in sorted(datamap.keys()):
+        table_data.append({**datamap[year], "year": year})
     return table_data
 
 
@@ -865,7 +807,27 @@ def tretment_result_to_json(
     }
 
 
-def get_treatment_result_value_for_export(
+def get_category(treatment_result: TreatmentResult) -> Optional[str]:
+    match treatment_result.variable:
+        case ImpactVariable.FLAME_LENGTH:
+            val = (
+                treatment_result.value
+                if treatment_result.action
+                else treatment_result.baseline
+            )
+            return classify_flame_length(val)
+        case ImpactVariable.RATE_OF_SPREAD:
+            val = (
+                treatment_result.value
+                if treatment_result.action
+                else treatment_result.baseline
+            )
+            return classify_rate_of_spread(val)
+        case _:
+            return None
+
+
+def get_treatment_result_value(
     treatment_result: TreatmentResult,
 ) -> Optional[Union[float, str]]:
     match treatment_result.variable:
@@ -892,6 +854,7 @@ def fetch_treatment_plan_data(
 ) -> Collection[Dict[str, Any]]:
     scenario = treatment_plan.scenario
     planning_area = scenario.planning_area
+
     results = (
         TreatmentResult.objects.filter(treatment_plan=treatment_plan)
         .order_by("stand", "variable", "year")
@@ -903,9 +866,7 @@ def fetch_treatment_plan_data(
     stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
     for result in results:
         field_name = f"{result.variable}_{result.year}"
-        result_data[result.stand_id][
-            field_name
-        ] = get_treatment_result_value_for_export(result)
+        result_data[result.stand_id][field_name] = get_treatment_result_value(result)
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
