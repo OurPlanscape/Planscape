@@ -724,7 +724,10 @@ def get_treatment_results_table_data(
     """
     datamap = defaultdict(dict)
     results = (
-        TreatmentResult.objects.filter(treatment_plan=treatment_plan)
+        TreatmentResult.objects.filter(
+            treatment_plan=treatment_plan,
+            stand_id=stand_id,
+        )
         .order_by("stand", "variable", "year")
         .select_related("stand", "treatment_plan__scenario")
         .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
