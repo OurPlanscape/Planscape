@@ -670,15 +670,15 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
     """
     if fl_value is None:
         return "N/A"
-    if fl_value < 2.0:
+    if fl_value <= 10.0:
         return "Very Low"
-    if fl_value < 4.0:
+    if fl_value <= 40.0:
         return "Low"
-    if fl_value < 8.0:
+    if fl_value <= 80.0:
         return "Moderate"
-    if fl_value < 12.0:
+    if fl_value <= 120.0:
         return "High"
-    if fl_value < 25.0:
+    if fl_value <= 250.0:
         return "Very High"
 
     return "Extreme"
@@ -691,18 +691,38 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     """
     if ros_value is None:
         return "N/A"
-    if ros_value < 3.0:
+    if ros_value <= 20.0:
         return "Very Low"
-    if ros_value < 10.0:
+    if ros_value <= 50.0:
         return "Low"
-    if ros_value < 20.0:
+    if ros_value <= 200.0:
         return "Moderate"
-    if ros_value < 60.0:
+    if ros_value <= 500.0:
         return "High"
-    if ros_value < 100.0:
+    if ros_value <= 1500.0:
         return "Very High"
 
     return "Extreme"
+
+
+def classify_if_needed(treatment_result: Dict[str, Any]) -> Optional[str | float]:
+    match treatment_result:
+        case {
+            "variable": ImpactVariable.FLAME_LENGTH,
+            "value": value,
+            "baseline": baseline,
+            "action": action,
+        }:
+            return value if action is not None else baseline
+        case {
+            "variable": ImpactVariable.RATE_OF_SPREAD,
+            "value": value,
+            "baseline": baseline,
+            "action": action,
+        }:
+            return value if action is not None else baseline
+        case _:
+            return None
 
 
 def get_treatment_results_table_data(
@@ -722,22 +742,15 @@ def get_treatment_results_table_data(
     ]
     """
     # Fetch treatment results
-    treated_results = (
-        TreatmentResult.objects.filter(
-            treatment_plan=treatment_plan,
-            stand_id=stand_id,
-        )
-        .exclude(
-            variable__in=[ImpactVariable.FLAME_LENGTH, ImpactVariable.RATE_OF_SPREAD]
-        )
-        .values("year", "variable", "value", "delta", "baseline")
-    )
+    treated_results = TreatmentResult.objects.filter(
+        treatment_plan=treatment_plan,
+        stand_id=stand_id,
+    ).values("year", "variable", "value", "delta", "baseline", "action")
 
     if not treated_results.exists():
         return []
 
     data_map = defaultdict(dict)
-
     for year in AVAILABLE_YEARS:
         flame_length = ImpactVariable.get_datalayer(
             impact_variable=ImpactVariable.FLAME_LENGTH,
@@ -766,7 +779,6 @@ def get_treatment_results_table_data(
             "category": classify_rate_of_spread(ros_metric.avg),
         }
 
-    # Populate data_map with treatment results
     for row in treated_results:
         year = row["year"]
         variable = row["variable"]
@@ -778,7 +790,7 @@ def get_treatment_results_table_data(
             "value": value,
             "delta": delta,
             "baseline": baseline,
-            "category": None,
+            "category": classify_if_needed(row),
         }
 
     # Format data into a list
@@ -858,9 +870,9 @@ def get_treatment_result_value_for_export(
 ) -> Optional[Union[float, str]]:
     match treatment_result.variable:
         case ImpactVariable.FLAME_LENGTH:
-            return classify_flame_length(treatment_result.baseline)
+            return classify_flame_length(treatment_result.value)
         case ImpactVariable.RATE_OF_SPREAD:
-            return classify_rate_of_spread(treatment_result.baseline)
+            return classify_rate_of_spread(treatment_result.value)
         case _:
             return treatment_result.delta
 

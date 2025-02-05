@@ -12,6 +12,9 @@ line-length = 88
 target-version = ['py310']
 exclude = 'migrations'
 
+[tool.ruff]
+line-length = 88
+
 [tool.poetry]
 name = "planscape"
 version = "0.1.0"
