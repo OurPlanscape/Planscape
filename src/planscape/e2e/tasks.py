@@ -4,11 +4,20 @@ import os
 import logging
 import json
 import sentry_sdk
+import time
 
 from celery import chain, group, shared_task
 
+from django.urls import reverse
+from rest_framework.test import APIClient
 from planning.models import PlanningArea, Scenario
 from planning.tasks import async_forsys_run
+from stands.models import Stand
+from impacts.models import (
+    TreatmentResult,
+    TreatmentPlan,
+    TreatmentPlanStatus,
+)
 from planscape.celery import app
 from e2e.validation import load_schema, validation_results
 from django.conf import settings
@@ -179,3 +188,186 @@ def review_results(sid, validation_schema) -> object:
     except Exception:
         log.error("ERROR: Could not get a scenario result for scenario id %s", sid)
         raise
+
+
+class E2EImpactsTests:
+    """
+    TBD: End-to-end tests for impacts features
+    * Create Treatment Plan
+    * Fill up prescriptions
+    * Execute impacts
+    * Analyze results
+    * Delete Treatment Plan
+    """
+
+    def __init__(self, config: dict) -> None:
+        self.client = APIClient()
+        user_id = config.get("user_id")
+        scenario_id = config.get("scenario_id")
+        self.user = User.objects.get(id=user_id)
+        self.client.force_authenticate(user=self.user)
+
+        self.scenario = Scenario.objects.get(id=scenario_id)
+
+        """
+        [
+            {"action": "action_name", "project_area_id": 1, "stand_ids": [1, 2, 3]},
+        ]
+        """
+        self.prescriptions = config.get("prescriptions", [])
+
+        """
+        [
+            {"stand_id": 1, [
+                {"variable": "FL", "value": 0.1, "baseline": 0.2, "delta": 0.1, "year": 2024},
+                {"variable": "FL", "value": 0.2, "baseline": 0.2, "delta": 0, "year": 2029},]
+            },
+            {"stand_id": 2, [
+                {"variable": "FL", "value": 0.3, "baseline": 0.2, "delta": -0.1,"year": 2024},
+                {"variable": "FL", "value": 0.2, "baseline": 0.2, "delta": 0, "year": 2029},]
+            },
+        ]
+        """
+        self.result_map = config.get("result_map", [])
+
+        self.treatment_plan_name = f"{config.get('treatment_plan_name')}-{datetime.strftime(datetime.now(), '%Y%m%d%H%M%S')}"
+        self.treatment_plan = None
+
+    def run_tests(self):
+        self.create_treatment_plan()
+        self.fill_prescriptions()
+        self.execute_impacts()
+        self.analyze_results()
+        self.delete_treatment_plan()
+
+    def create_treatment_plan(self):
+        try:
+            assert self.treatment_plan_name is not None
+
+            url = reverse("api:impacts:tx-plans-list")
+            data = {"name": self.treatment_plan_name, "scenario": self.scenario.id}
+            response = self.client.post(url, data, format="json")
+            assert response.status_code == 201
+
+            self.treatment_plan = TreatmentPlan.objects.get(
+                name=self.treatment_plan_name,
+                scenario=self.scenario,
+                created_by=self.user,
+            )
+        except AssertionError:
+            log.error("E2E Impacts: Failed to create treatment plan.")
+            raise
+        except TreatmentPlan.DoesNotExist:
+            log.error("E2E Impacts: Treatment plan not created.")
+            raise
+
+    def fill_prescriptions(self):
+        if not self.treatment_plan:
+            raise ValueError("Treatment plan is not created.")
+        try:
+            for prescription in self.prescriptions:
+                action = prescription.get("action")
+                project_area_id = prescription.get("project_area_id")
+                stand_ids = prescription.get("stand_ids")
+
+                tx_prescriptions_url = reverse(
+                    "api:impacts:tx-prescriptions-list",
+                    kwargs={"tx_plan_pk": self.treatment_plan.pk},
+                )
+                payload = {
+                    "action": action,
+                    "project_area": project_area_id,
+                    "stands": stand_ids,
+                    "treatment_plan": self.treatment_plan.pk,
+                }
+                response = self.client.post(
+                    tx_prescriptions_url, payload, format="json"
+                )
+                assert response.status_code == 201
+        except AssertionError:
+            log.error("E2E Impacts: Failed to fill prescriptions.")
+            raise
+
+    def execute_impacts(self):
+        if not self.treatment_plan:
+            raise ValueError("Treatment plan is not created.")
+
+        try:
+            url = reverse(
+                "api:impacts:tx-plans-run", kwargs={"pk": self.treatment_plan.pk}
+            )
+            response = self.client.post(url, format="json")
+            assert response.status_code == 202
+        except AssertionError:
+            log.error("E2E Impacts: Failed to execute impacts.")
+            raise
+
+        self.treatment_plan.refresh_from_db()
+        count_down = 60
+        while (
+            self.treatment_plan.status
+            not in (TreatmentPlanStatus.SUCCESS, TreatmentPlanStatus.FAILURE)
+            and count_down > 0
+        ):
+            log.info(
+                f"Waiting for treatment plan {self.treatment_plan.pk} to complete. Count down: {count_down}"
+            )
+            time.sleep(10)
+            self.treatment_plan.refresh_from_db()
+            count_down -= 1
+
+        try:
+            assert self.treatment_plan.status == TreatmentPlanStatus.SUCCESS
+        except AssertionError:
+            log.error("E2E Impacts: Failed to execute impacts.")
+
+    def analyze_results(self):
+        if not self.treatment_plan:
+            raise ValueError("Treatment plan is not created.")
+
+        for result in self.result_map:
+            stand_id = result.get("stand_id")
+            try:
+                stand = Stand.objects.get(id=stand_id)
+            except Stand.DoesNotExist:
+                log.error(f"E2E Impacts: Stand not found for id {stand_id}")
+                raise
+
+            for treatment_result in result.get("treatment_results"):
+                variable = treatment_result.get("variable")
+                year = treatment_result.get("year")
+                value = treatment_result.get("value")
+                baseline = treatment_result.get("baseline")
+                delta = treatment_result.get("delta")
+                try:
+                    treatment_result = TreatmentResult.objects.get(
+                        treatment_plan=self.treatment_plan,
+                        stand=stand,
+                        variable=variable,
+                        year=year,
+                    )
+                    assert treatment_result.value == value
+                    assert treatment_result.baseline == baseline
+                    assert treatment_result.delta == delta
+                except TreatmentResult.DoesNotExist:
+                    log.error(
+                        f"E2E Impacts: Treatment result not found for stand {stand_id}, variable {variable}, year {year}"
+                    )
+                    raise
+                except AssertionError:
+                    log.error("E2E Impacts: Failed to analyze results.")
+                    raise
+
+    def delete_treatment_plan(self):
+        try:
+            if self.treatment_plan:
+                url = reverse(
+                    "api:impacts:tx-plans-detail", kwargs={"pk": self.treatment_plan.pk}
+                )
+                response = self.client.delete(url)
+                assert response.status_code == 204
+                self.treatment_plan.refresh_from_db()
+                assert self.treatment_plan.deleted_at is not None
+        except AssertionError:
+            log.error("E2E Impacts: Failed to delete treatment plan.")
+            raise

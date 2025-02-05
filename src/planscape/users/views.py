@@ -1,5 +1,6 @@
 import json
 import logging
+
 from allauth.account.utils import has_verified_email
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -78,7 +79,7 @@ def unset_jwt_cookies(response):
                 refresh_cookie_name, path=refresh_cookie_path, samesite=cookie_samesite
             )
     except KeyError as ke:
-        logger.error("Could not read cookie settings: {ke}")
+        logger.error(f"Could not read cookie settings: {ke}")
         raise
 
 

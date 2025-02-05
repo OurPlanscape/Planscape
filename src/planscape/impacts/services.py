@@ -3,7 +3,7 @@ import json
 import logging
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 
 import fiona
 import rasterio
@@ -229,9 +229,28 @@ def generate_summary(
 
     total_area_acres = total_stands * stand_area
     total_treated_area_acres = treated_stands * stand_area
+
+    prescriptions_qs = (
+        TreatmentPrescription.objects.filter(**tp_filter)
+        .values(
+            "action",
+        )
+        .annotate(stand_count=Count("stand"))
+    )
+    prescriptions_data = [
+        {
+            "action": p["action"],
+            "stand_count": p["stand_count"],
+            "area_acres": p["stand_count"] * stand_area,
+            "area_percent": (p["stand_count"] / total_stands) * 100,
+        }
+        for p in prescriptions_qs
+    ]
+
     data = {
         "planning_area_id": plan_area.id,
         "planning_area_name": plan_area.name,
+        "prescriptions": prescriptions_data,
         "scenario_id": scenario.id,
         "scenario_name": scenario.name,
         "treatment_plan_id": treatment_plan.pk,
@@ -651,15 +670,15 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
     """
     if fl_value is None:
         return "N/A"
-    if fl_value < 2.0:
+    if fl_value <= 10.0:
         return "Very Low"
-    if fl_value < 4.0:
+    if fl_value <= 40.0:
         return "Low"
-    if fl_value < 8.0:
+    if fl_value <= 80.0:
         return "Moderate"
-    if fl_value < 12.0:
+    if fl_value <= 120.0:
         return "High"
-    if fl_value < 25.0:
+    if fl_value <= 250.0:
         return "Very High"
 
     return "Extreme"
@@ -672,18 +691,38 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     """
     if ros_value is None:
         return "N/A"
-    if ros_value < 3.0:
+    if ros_value <= 20.0:
         return "Very Low"
-    if ros_value < 10.0:
+    if ros_value <= 50.0:
         return "Low"
-    if ros_value < 20.0:
+    if ros_value <= 200.0:
         return "Moderate"
-    if ros_value < 60.0:
+    if ros_value <= 500.0:
         return "High"
-    if ros_value < 100.0:
+    if ros_value <= 1500.0:
         return "Very High"
 
     return "Extreme"
+
+
+def classify_if_needed(treatment_result: Dict[str, Any]) -> Optional[str | float]:
+    match treatment_result:
+        case {
+            "variable": ImpactVariable.FLAME_LENGTH,
+            "value": value,
+            "baseline": baseline,
+            "action": action,
+        }:
+            return value if action is not None else baseline
+        case {
+            "variable": ImpactVariable.RATE_OF_SPREAD,
+            "value": value,
+            "baseline": baseline,
+            "action": action,
+        }:
+            return value if action is not None else baseline
+        case _:
+            return None
 
 
 def get_treatment_results_table_data(
@@ -703,22 +742,15 @@ def get_treatment_results_table_data(
     ]
     """
     # Fetch treatment results
-    treated_results = (
-        TreatmentResult.objects.filter(
-            treatment_plan=treatment_plan,
-            stand_id=stand_id,
-        )
-        .exclude(
-            variable__in=[ImpactVariable.FLAME_LENGTH, ImpactVariable.RATE_OF_SPREAD]
-        )
-        .values("year", "variable", "value", "delta", "baseline")
-    )
+    treated_results = TreatmentResult.objects.filter(
+        treatment_plan=treatment_plan,
+        stand_id=stand_id,
+    ).values("year", "variable", "value", "delta", "baseline", "action")
 
     if not treated_results.exists():
         return []
 
     data_map = defaultdict(dict)
-
     for year in AVAILABLE_YEARS:
         flame_length = ImpactVariable.get_datalayer(
             impact_variable=ImpactVariable.FLAME_LENGTH,
@@ -736,18 +768,17 @@ def get_treatment_results_table_data(
         data_map[year][ImpactVariable.FLAME_LENGTH] = {
             "value": None,
             "delta": None,
-            "baseline": fl_metric.majority,
-            "category": classify_flame_length(fl_metric.majority),
+            "baseline": fl_metric.avg,
+            "category": classify_flame_length(fl_metric.avg),
         }
 
         data_map[year][ImpactVariable.RATE_OF_SPREAD] = {
             "value": None,
             "delta": None,
-            "baseline": ros_metric.majority,
-            "category": classify_rate_of_spread(ros_metric.majority),
+            "baseline": ros_metric.avg,
+            "category": classify_rate_of_spread(ros_metric.avg),
         }
 
-    # Populate data_map with treatment results
     for row in treated_results:
         year = row["year"]
         variable = row["variable"]
@@ -759,7 +790,7 @@ def get_treatment_results_table_data(
             "value": value,
             "delta": delta,
             "baseline": baseline,
-            "category": None,
+            "category": classify_if_needed(row),
         }
 
     # Format data into a list
@@ -782,9 +813,22 @@ def get_export_path(treatment_plan: TreatmentPlan) -> str:
 
 def get_treament_result_schema():
     numeric_fields_iterator = itertools.product(
-        [i for i in ImpactVariable], AVAILABLE_YEARS
+        [i for i in ImpactVariable.numerical_variables()],
+        AVAILABLE_YEARS,
+    )
+    # we don't want to export FBFM.
+    other_fields_iterator = itertools.product(
+        [
+            i
+            for i in ImpactVariable.categorical_variables()
+            if i != ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL
+        ],
+        AVAILABLE_YEARS,
     )
     fields = list([(f"{i}_{year}", "float:4.2") for i, year in numeric_fields_iterator])
+    other_fields = list(
+        [(f"{i}_{year}", "str:64") for i, year in other_fields_iterator]
+    )
     return {
         "geometry": "Polygon",
         "properties": [
@@ -796,6 +840,7 @@ def get_treament_result_schema():
             ("scenario_name", "str:256"),
             ("action", "str:64"),
             *fields,
+            *other_fields,
         ],
     }
 
@@ -820,6 +865,18 @@ def tretment_result_to_json(
     }
 
 
+def get_treatment_result_value_for_export(
+    treatment_result: TreatmentResult,
+) -> Optional[Union[float, str]]:
+    match treatment_result.variable:
+        case ImpactVariable.FLAME_LENGTH:
+            return classify_flame_length(treatment_result.value)
+        case ImpactVariable.RATE_OF_SPREAD:
+            return classify_rate_of_spread(treatment_result.value)
+        case _:
+            return treatment_result.delta
+
+
 def fetch_treatment_plan_data(
     treatment_plan: TreatmentPlan,
 ) -> Collection[Dict[str, Any]]:
@@ -829,13 +886,16 @@ def fetch_treatment_plan_data(
         TreatmentResult.objects.filter(treatment_plan=treatment_plan)
         .order_by("stand", "variable", "year")
         .select_related("stand", "treatment_plan__scenario")
+        .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
     )
     treatment_results_data = {r.stand_id: r for r in results}
     result_data = defaultdict(dict)
     stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
     for result in results:
         field_name = f"{result.variable}_{result.year}"
-        result_data[result.stand_id][field_name] = result.delta
+        result_data[result.stand_id][
+            field_name
+        ] = get_treatment_result_value_for_export(result)
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action

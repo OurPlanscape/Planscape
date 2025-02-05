@@ -1,14 +1,20 @@
-from datetime import date, datetime
-import json
 import shutil
-from turtle import st
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
-from django.test import TestCase, TransactionTestCase
+from datetime import date, datetime
+
 import fiona
 import shapely
-from planscape.tests.factories import UserFactory
-from planning.tests.factories import PlanningAreaFactory
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
+from stands.models import StandSizeChoices
+
+from planning.models import (
+    PlanningArea,
+    ProjectArea,
+    Scenario,
+    ScenarioResult,
+    ScenarioResultStatus,
+)
 from planning.services import (
     export_to_shapefile,
     get_max_treatable_area,
@@ -17,15 +23,8 @@ from planning.services import (
     planning_area_covers,
     validate_scenario_treatment_ratio,
 )
-from planning.models import (
-    PlanningArea,
-    ProjectArea,
-    Scenario,
-    ScenarioResult,
-    ScenarioResultStatus,
-)
-from stands.models import Stand, StandSizeChoices
-from utils import geometry
+from planning.tests.factories import PlanningAreaFactory
+from planscape.tests.factories import UserFactory
 
 
 class MaxTreatableAreaTest(TestCase):

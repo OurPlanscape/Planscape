@@ -1,11 +1,12 @@
-import re
 import json
+import re
+
 from allauth.account.models import EmailAddress
 from django.contrib.auth.models import User
 from django.core import mail
 from django.test import TransactionTestCase, override_settings
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase, force_authenticate
+from rest_framework.test import APITransactionTestCase
 
 
 class CreateUserTest(APITransactionTestCase):

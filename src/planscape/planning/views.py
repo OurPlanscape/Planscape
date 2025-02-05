@@ -1,59 +1,55 @@
 import json
 import logging
 import os
+
 from base.region_name import display_name_to_region
-from django.conf import settings
-from django.db import transaction
-from django.db import IntegrityError
-from django.db.models import Count, Max
-from django.db.models.functions import Coalesce
-from django.http import (
-    HttpResponse,
-    QueryDict,
-)
-from django.shortcuts import get_object_or_404
 from collaboration.permissions import (
+    PlanningAreaNotePermission,
     PlanningAreaPermission,
     ScenarioPermission,
-    PlanningAreaNotePermission,
 )
+from django.conf import settings
+from django.db import IntegrityError, transaction
+from django.db.models import Count, Max
+from django.db.models.functions import Coalesce
+from django.http import HttpResponse, QueryDict
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
-    SharedLink,
     ScenarioStatus,
+    SharedLink,
 )
 from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    PlanningAreaNoteListSerializer,
+    PlanningAreaNoteSerializer,
     PlanningAreaSerializer,
     ScenarioSerializer,
     SharedLinkSerializer,
-    PlanningAreaNoteSerializer,
-    PlanningAreaNoteListSerializer,
     ValidatePlanningAreaOutputSerializer,
     ValidatePlanningAreaSerializer,
 )
+from planning.services import create_planning_area as create_planning_area_service
+from planning.services import create_scenario as create_scenario_service
+from planning.services import delete_planning_area as delete_planning_area_service
+from planning.services import delete_scenario as delete_scenario_service
 from planning.services import (
     export_to_shapefile,
     get_acreage,
     validate_scenario_treatment_ratio,
     zip_directory,
-    create_planning_area as create_planning_area_service,
-    create_scenario as create_scenario_service,
-    delete_planning_area as delete_planning_area_service,
-    delete_scenario as delete_scenario_service,
 )
-from planning.tasks import async_forsys_run
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.request import Request
-from rest_framework import status
-
 from planscape.exceptions import InvalidGeometry
 
 logger = logging.getLogger(__name__)
@@ -200,7 +196,7 @@ def delete_planning_area(request: Request) -> Response:
         # opens up a transaction.
         # any calls to the delete method will open a new checkpoint
         with transaction.atomic():
-            results = [delete_planning_area_service(user, pa) for pa in planning_areas]
+            _results = [delete_planning_area_service(user, pa) for pa in planning_areas]
 
         # We still report that the full set of planning area IDs requested were deleted,
         # since from the user's perspective, there are no planning areas with that ID.

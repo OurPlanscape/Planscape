@@ -1,0 +1,74 @@
+{
+    "user_id": 1,
+    "scenario_id": 10,
+    "treatment_plan_name": "E2E Test Treatment Plan",
+    "prescriptions": [
+        {
+            "action": "MODERATE_THINNING_BIOMASS",
+            "project_area_id": 1,
+            "stand_ids": [
+                3431143,
+                3423411,
+                3423412
+            ]
+        },
+        {
+            "action": "MODERATE_MASTICATION",
+            "project_area_id": 1,
+            "stand_ids": [
+                3431180,
+                3423481,
+                3423482
+            ]
+        },
+        {
+            "action": "MODERATE_THINNING_BIOMASS",
+            "project_area_id": 2,
+            "stand_ids": [
+                3431555,
+                3423556,
+                3423557
+            ]
+        }
+    ],
+    "results": [
+        {
+            "stand_id": 13431143,
+            "treatment_results": [
+                {
+                    "variable": "FL",
+                    "value": 0.1,
+                    "baseline": 0.2,
+                    "delta": -0.1,
+                    "year": 2024
+                },
+                {
+                    "variable": "FL",
+                    "value": 0.2,
+                    "baseline": 0.2,
+                    "delta": 0,
+                    "year": 2029
+                }
+            ]
+        },
+        {
+            "stand_id": 3423411,
+            "treatment_results": [
+                {
+                    "variable": "FL",
+                    "value": 0.3,
+                    "baseline": 0.2,
+                    "delta": 0.1,
+                    "year": 2024
+                },
+                {
+                    "variable": "FL",
+                    "value": 0.2,
+                    "baseline": 0.2,
+                    "delta": 0,
+                    "year": 2029
+                }
+            ]
+        }
+    ]
+}
