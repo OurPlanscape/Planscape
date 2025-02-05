@@ -670,15 +670,15 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
     """
     if fl_value is None:
         return "N/A"
-    if fl_value <= 1.0:
+    if fl_value <= 10.0:
         return "Very Low"
-    if fl_value <= 4.0:
+    if fl_value <= 40.0:
         return "Low"
-    if fl_value <= 8.0:
+    if fl_value <= 80.0:
         return "Moderate"
-    if fl_value <= 12.0:
+    if fl_value <= 120.0:
         return "High"
-    if fl_value <= 25.0:
+    if fl_value <= 250.0:
         return "Very High"
 
     return "Extreme"
@@ -691,15 +691,15 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     """
     if ros_value is None:
         return "N/A"
-    if ros_value <= 2.0:
-        return "Very Low"
-    if ros_value <= 5.0:
-        return "Low"
     if ros_value <= 20.0:
-        return "Moderate"
+        return "Very Low"
     if ros_value <= 50.0:
+        return "Low"
+    if ros_value <= 200.0:
+        return "Moderate"
+    if ros_value <= 500.0:
         return "High"
-    if ros_value <= 150.0:
+    if ros_value <= 1500.0:
         return "Very High"
 
     return "Extreme"
