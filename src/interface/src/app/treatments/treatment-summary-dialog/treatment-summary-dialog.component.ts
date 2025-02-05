@@ -48,7 +48,7 @@ export class TreatmentSummaryDialogComponent implements OnInit {
     if (!key) {
       return 'No Treatment';
     }
-    return descriptionsForAction(key).join('\n');
+    return descriptionsForAction(key).join('<br>');
   }
 
   isSequence(key: string) {
