@@ -697,7 +697,7 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
         return "Low"
     if ros_value <= 20.0:
         return "Moderate"
-    if ros_value <= 50:
+    if ros_value <= 50.0:
         return "High"
     if ros_value <= 150.0:
         return "Very High"
