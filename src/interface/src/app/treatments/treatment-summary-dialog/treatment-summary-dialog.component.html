@@ -25,7 +25,7 @@
           *ngIf="!isSequence(element.action)"
           [treatment]="element.action"></sg-treatment-type-icon>
         <div class="action-label">
-          <span [innerText]="getActionLabel(element.action) || '-'"> </span>
+          <span [innerHTML]="getActionLabel(element.action) || '-'"> </span>
         </div>
       </td>
     </ng-container>
