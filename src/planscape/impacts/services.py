@@ -870,9 +870,19 @@ def get_treatment_result_value_for_export(
 ) -> Optional[Union[float, str]]:
     match treatment_result.variable:
         case ImpactVariable.FLAME_LENGTH:
-            return classify_flame_length(treatment_result.value)
+            val = (
+                treatment_result.value
+                if treatment_result.action
+                else treatment_result.baseline
+            )
+            return classify_flame_length(val)
         case ImpactVariable.RATE_OF_SPREAD:
-            return classify_rate_of_spread(treatment_result.value)
+            val = (
+                treatment_result.value
+                if treatment_result.action
+                else treatment_result.baseline
+            )
+            return classify_rate_of_spread(val)
         case _:
             return treatment_result.delta
 
