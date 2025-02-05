@@ -277,7 +277,7 @@ class E2EImpactsTests:
                 payload = {
                     "action": action,
                     "project_area": project_area_id,
-                    "stand_ids": stand_ids,
+                    "stands": stand_ids,
                     "treatment_plan": self.treatment_plan.pk,
                 }
                 response = self.client.post(
