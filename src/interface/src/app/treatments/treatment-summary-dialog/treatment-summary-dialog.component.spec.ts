@@ -8,10 +8,9 @@ describe('TreatmentSummaryDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentSummaryDialogComponent]
-    })
-    .compileComponents();
-    
+      imports: [TreatmentSummaryDialogComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(TreatmentSummaryDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
