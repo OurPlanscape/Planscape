@@ -1,6 +1,11 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { TreatmentSummaryDialogComponent } from './treatment-summary-dialog.component';
+import {
+  MAT_DIALOG_DATA,
+  MatDialogModule,
+  MatDialogRef,
+} from '@angular/material/dialog';
 
 describe('TreatmentSummaryDialogComponent', () => {
   let component: TreatmentSummaryDialogComponent;
@@ -8,7 +13,19 @@ describe('TreatmentSummaryDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [TreatmentSummaryDialogComponent],
+      imports: [TreatmentSummaryDialogComponent, MatDialogModule],
+      providers: [
+        {
+          provide: MatDialogRef,
+          useValue: {
+            close: () => {},
+          },
+        },
+        {
+          provide: MAT_DIALOG_DATA,
+          useValue: {},
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(TreatmentSummaryDialogComponent);
