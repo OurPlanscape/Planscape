@@ -17,6 +17,7 @@ library("glue")
 library("tidyr")
 library("friendlyeval")
 library("uuid")
+library("featureflag")
 
 # do not use spherical geometries
 sf_use_s2(FALSE)
@@ -59,6 +60,8 @@ STAND_AREAS_ACRES <- list(
   MEDIUM = 98.84,
   LARGE = 494.2
 )
+
+stand_metrics_with_datalayer <- create_bool_feature_flag(value = FALSE)
 
 average_per_stand <- function(value, stand_count, stand_size = NA, metric = NA) {
   return(round(value / stand_count, digits = 2))
@@ -351,6 +354,17 @@ get_metric_column <- function(condition_name) {
 }
 
 get_stand_metrics <- function(
+      connection,
+      condition_id,
+      condition_name,
+      stand_ids) {
+    if (is_enabled(stand_metrics_with_datalayer)) {
+        return(get_stand_metrics_new(connection, condition_name, stand_ids))
+    }
+    return(get_stand_metrics_legacy(connection, condition_id, condition_name, stand_ids))
+}
+
+get_stand_metrics_legacy <- function(
     connection,
     condition_id,
     condition_name,
@@ -366,6 +380,28 @@ get_stand_metrics <- function(
        stand_id IN ({stand_ids*})",
     condition_id = condition_id,
     condition_name = condition_name,
+    stand_ids = stand_ids,
+    .con = connection
+  )
+  result <- dbGetQuery(connection, query) %>% preprocess_metrics(condition_name)
+  return(result)
+}
+
+get_stand_metrics_new <- function(
+    connection,
+    datalyer_name,
+    stands_ids) {
+    uery <- glue_sql(
+    "SELECT
+      stand_id,
+      COALESCE(avg, 0) AS {`datalyer_name`}
+     FROM stands_standmetric sm
+     INNER JOIN datasets_datalayer dl
+      ON dl.id = sm.datalayer_id
+     WHERE
+       dl.metadata ? \{\"modules\": \{\"forsys\": \{\"legacy_name\": `datalayer_name`\}\}\} 
+       AND stand_id IN ({stand_ids*})",
+    datalyer_name = datalyer_name,
     stand_ids = stand_ids,
     .con = connection
   )
