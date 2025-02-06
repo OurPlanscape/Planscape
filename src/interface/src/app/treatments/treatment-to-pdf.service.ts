@@ -269,12 +269,15 @@ export class TreatmentToPDFService {
     if (!this.activeMap) {
       return;
     }
-  
-    const loadImageToMap = (map: MapLibreMap, patternName: string): Promise<void> => {
+
+    const loadImageToMap = (
+      map: MapLibreMap,
+      patternName: string
+    ): Promise<void> => {
       return new Promise((resolve) => {
         // Create an HTML Image element (similar to what mgl-image does)
         const img = new Image();
-        
+
         img.onload = () => {
           // Add the loaded image to the map
           map.addImage(patternName, img);
@@ -283,7 +286,7 @@ export class TreatmentToPDFService {
         img.src = `/assets/png/patterns/${patternName}.png`;
       });
     };
-  
+
     const printMap = new MapLibreMap({
       container: 'printable-map',
       style: this.activeMap.getStyle(),
@@ -295,13 +298,15 @@ export class TreatmentToPDFService {
       transformRequest: (url, resourceType) =>
         addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
     });
-  
+
     // Wait for both map load and all images to load
     await Promise.all([
-      new Promise(resolve => printMap.on('load', resolve)),
-      ...this.knownPatterns.map(patternName => loadImageToMap(printMap, patternName))
+      new Promise((resolve) => printMap.on('load', resolve)),
+      ...this.knownPatterns.map((patternName) =>
+        loadImageToMap(printMap, patternName)
+      ),
     ]);
-  
+
     return printMap;
   }
 
