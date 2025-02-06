@@ -275,11 +275,8 @@ export class TreatmentToPDFService {
       patternName: string
     ): Promise<void> => {
       return new Promise((resolve) => {
-        // Create an HTML Image element (similar to what mgl-image does)
         const img = new Image();
-
         img.onload = () => {
-          // Add the loaded image to the map
           map.addImage(patternName, img);
           resolve();
         };
@@ -299,7 +296,7 @@ export class TreatmentToPDFService {
         addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
     });
 
-    // Wait for both map load and all images to load
+    // ensure we *also* wait for the patterns to be loaded
     await Promise.all([
       new Promise((resolve) => printMap.on('load', resolve)),
       ...this.knownPatterns.map((patternName) =>
