@@ -8,6 +8,7 @@ import { TreatmentPlan, TreatmentSummary } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
+import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -23,6 +24,7 @@ import { AcresTreatedComponent } from '../acres-treated/acres-treated.component'
     JsonPipe,
     DecimalPipe,
     AcresTreatedComponent,
+    TreatmentSummaryComponent,
   ],
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',

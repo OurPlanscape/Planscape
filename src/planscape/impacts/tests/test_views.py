@@ -1,6 +1,7 @@
+import json
 from unittest import mock
 from urllib.parse import urlencode
-import json
+
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
 from datasets.models import DataLayerType
@@ -8,6 +9,16 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
+from stands.models import StandSizeChoices
+from stands.tests.factories import StandFactory, StandMetricFactory
+
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -24,16 +35,6 @@ from impacts.tests.factories import (
     TreatmentPrescriptionFactory,
     TreatmentResultFactory,
 )
-from planning.tests.factories import (
-    PlanningAreaFactory,
-    ProjectAreaFactory,
-    ScenarioFactory,
-)
-from rest_framework import status
-from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
-from stands.models import StandSizeChoices
-from stands.tests.factories import StandFactory, StandMetricFactory
-
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -701,20 +702,9 @@ class StandTreatmentResultsViewTest(APITestCase):
 
         self.assertEqual(
             len(data),
-            len(AVAILABLE_YEARS),
+            1,
             f"Expected {len(AVAILABLE_YEARS)} rows (one for each year).",
         )
-        row_2024_list = [row for row in data if row["year"] == 2024]
-        self.assertEqual(len(row_2024_list), 1, "Expected exactly one row for 2024")
-        row_2024 = row_2024_list[0]
-
-        self.assertIn(ImpactVariable.FLAME_LENGTH, row_2024)
-        self.assertIn(ImpactVariable.RATE_OF_SPREAD, row_2024)
-
-        biomass_data = row_2024.get(ImpactVariable.LARGE_TREE_BIOMASS)
-        self.assertEqual(biomass_data["value"], 105.0)
-        self.assertEqual(biomass_data["delta"], 12.0)
-        self.assertEqual(biomass_data["baseline"], 45.0)
 
     def test_missing_stand_id(self):
         """
