@@ -7,7 +7,7 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
   PRESCRIPTIONS,
-  PATTERN_NAMES
+  PATTERN_NAMES,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
