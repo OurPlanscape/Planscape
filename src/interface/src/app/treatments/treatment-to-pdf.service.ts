@@ -263,11 +263,28 @@ export class TreatmentToPDFService {
     });
   }
 
-  copyActiveMap() {
+  knownPatterns = ['stripes-purple', 'stripes-black', 'stripes-red'];
+
+  async copyActiveMap() {
     if (!this.activeMap) {
       return;
     }
-    return new MapLibreMap({
+  
+    const loadImageToMap = (map: MapLibreMap, patternName: string): Promise<void> => {
+      return new Promise((resolve) => {
+        // Create an HTML Image element (similar to what mgl-image does)
+        const img = new Image();
+        
+        img.onload = () => {
+          // Add the loaded image to the map
+          map.addImage(patternName, img);
+          resolve();
+        };
+        img.src = `/assets/png/patterns/${patternName}.png`;
+      });
+    };
+  
+    const printMap = new MapLibreMap({
       container: 'printable-map',
       style: this.activeMap.getStyle(),
       center: this.activeMap.getBounds().getCenter(),
@@ -278,6 +295,14 @@ export class TreatmentToPDFService {
       transformRequest: (url, resourceType) =>
         addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
     });
+  
+    // Wait for both map load and all images to load
+    await Promise.all([
+      new Promise(resolve => printMap.on('load', resolve)),
+      ...this.knownPatterns.map(patternName => loadImageToMap(printMap, patternName))
+    ]);
+  
+    return printMap;
   }
 
   async addMap(
@@ -290,8 +315,7 @@ export class TreatmentToPDFService {
       return;
     }
 
-    const printMap = this.copyActiveMap();
-    await new Promise((resolve) => printMap?.on('load', resolve));
+    const printMap = await this.copyActiveMap();
     const canvas = printMap?.getCanvas();
     const imgData = canvas?.toDataURL('image/png');
     if (imgData) {
