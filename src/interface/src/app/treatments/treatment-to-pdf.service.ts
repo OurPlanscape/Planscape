@@ -7,6 +7,7 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
   PRESCRIPTIONS,
+  PATTERN_NAMES,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
@@ -261,11 +262,26 @@ export class TreatmentToPDFService {
     });
   }
 
-  copyActiveMap() {
+  async copyActiveMap() {
     if (!this.activeMap) {
       return;
     }
-    return new MapLibreMap({
+
+    const loadImageToMap = (
+      map: MapLibreMap,
+      patternName: string
+    ): Promise<void> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          map.addImage(patternName, img);
+          resolve();
+        };
+        img.src = `/assets/png/patterns/${patternName}.png`;
+      });
+    };
+
+    const printMap = new MapLibreMap({
       container: 'printable-map',
       style: this.activeMap.getStyle(),
       center: this.activeMap.getBounds().getCenter(),
@@ -276,6 +292,16 @@ export class TreatmentToPDFService {
       transformRequest: (url, resourceType) =>
         addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
     });
+
+    // ensure we *also* wait for the patterns to be loaded
+    await Promise.all([
+      new Promise((resolve) => printMap.on('load', resolve)),
+      ...PATTERN_NAMES.map((patternName) =>
+        loadImageToMap(printMap, patternName)
+      ),
+    ]);
+
+    return printMap;
   }
 
   async addMap(
@@ -288,8 +314,7 @@ export class TreatmentToPDFService {
       return;
     }
 
-    const printMap = this.copyActiveMap();
-    await new Promise((resolve) => printMap?.on('load', resolve));
+    const printMap = await this.copyActiveMap();
     const canvas = printMap?.getCanvas();
     const imgData = canvas?.toDataURL('image/png');
     if (imgData) {
