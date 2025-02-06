@@ -272,13 +272,3 @@ export const WithSearchTerm: Story = {
     ],
   },
 };
-
-export const WithExpansionCategories: Story = {
-  args: {
-    menuLabel: 'With categories',
-    menuItems: [
-      { category: 'Primary', options: ['hello', 'is'] },
-      { category: 'Secondary', options: ['this', 'selectable'] },
-    ],
-  },
-};
