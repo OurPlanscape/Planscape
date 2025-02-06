@@ -35,7 +35,10 @@
   #multiSelectMenu="matMenu"
   class="filtermenu"
   (closed)="handleClosedMenu($event)">
-  <div class="search-section" *ngIf="hasSearch">
+  <div
+    class="search-section"
+    *ngIf="hasSearch"
+    (click)="$event.stopPropagation()">
     <sg-search-bar
       [debounceInterval]="0"
       searchPlaceholder="Search for {{ menuLabel }}"
