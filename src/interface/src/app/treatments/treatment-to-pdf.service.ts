@@ -7,6 +7,7 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
   PRESCRIPTIONS,
+  PATTERN_NAMES
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
@@ -263,8 +264,6 @@ export class TreatmentToPDFService {
     });
   }
 
-  knownPatterns = ['stripes-purple', 'stripes-black', 'stripes-red'];
-
   async copyActiveMap() {
     if (!this.activeMap) {
       return;
@@ -299,7 +298,7 @@ export class TreatmentToPDFService {
     // ensure we *also* wait for the patterns to be loaded
     await Promise.all([
       new Promise((resolve) => printMap.on('load', resolve)),
-      ...this.knownPatterns.map((patternName) =>
+      ...PATTERN_NAMES.map((patternName) =>
         loadImageToMap(printMap, patternName)
       ),
     ]);
