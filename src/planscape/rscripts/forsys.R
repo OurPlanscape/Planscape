@@ -391,7 +391,7 @@ get_stand_metrics_new <- function(
     connection,
     datalyer_name,
     stands_ids) {
-    uery <- glue_sql(
+    query <- glue_sql(
     "SELECT
       stand_id,
       COALESCE(avg, 0) AS {`datalyer_name`}
