@@ -61,7 +61,9 @@ STAND_AREAS_ACRES <- list(
   LARGE = 494.2
 )
 
-stand_metrics_with_datalayer <- create_bool_feature_flag(value = FALSE)
+stand_metrics_with_datalayer <- create_bool_feature_flag(
+  value = as.logical(Sys.getenv("FF_STAND_METRICS_WITH_DATALAYER", "False"))
+)
 
 average_per_stand <- function(value, stand_count, stand_size = NA, metric = NA) {
   return(round(value / stand_count, digits = 2))
