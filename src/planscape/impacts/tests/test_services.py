@@ -419,7 +419,7 @@ class CalculateImpactsTest(TransactionTestCase):
             "modules": {
                 "impacts": {
                     "year": 2024,
-                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "variable": str(ImpactVariable.CANOPY_BASE_HEIGHT).upper(),
                     "action": None,
                     "baseline": True,
                 }
@@ -429,7 +429,7 @@ class CalculateImpactsTest(TransactionTestCase):
             "modules": {
                 "impacts": {
                     "year": 2024,
-                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "variable": str(ImpactVariable.CANOPY_BASE_HEIGHT).upper(),
                     "action": TreatmentPrescriptionAction.get_file_mapping(
                         TreatmentPrescriptionAction.HEAVY_MASTICATION
                     ),

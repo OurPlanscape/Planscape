@@ -194,7 +194,7 @@ class TreatmentPrescriptionAction(models.TextChoices):
             cls.HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: "Seq_7",
             cls.MODERATE_MASTICATION_PLUS_RX_FIRE: "Seq_8",
         }
-        return data[action]
+        return data[action].upper()
 
     @classmethod
     def json(cls):
@@ -437,7 +437,7 @@ class ImpactVariable(models.TextChoices):
                 "impacts": {
                     "year": year,
                     "baseline": baseline,
-                    "variable": str(impact_variable),
+                    "variable": str(impact_variable).upper(),
                     "action": action_query,
                 }
             }
