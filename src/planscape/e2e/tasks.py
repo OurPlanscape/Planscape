@@ -276,8 +276,9 @@ class E2EImpactsTests:
                 )
                 payload = {
                     "action": action,
-                    "project_area_id": project_area_id,
-                    "stand_ids": stand_ids,
+                    "project_area": project_area_id,
+                    "stands": stand_ids,
+                    "treatment_plan": self.treatment_plan.pk,
                 }
                 response = self.client.post(
                     tx_prescriptions_url, payload, format="json"

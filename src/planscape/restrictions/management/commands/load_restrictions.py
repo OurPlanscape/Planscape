@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand, CommandParser
-from django.db import connection
+
 from restrictions.loader import MAPPINGS, load_data
 from restrictions.models import Restriction
 

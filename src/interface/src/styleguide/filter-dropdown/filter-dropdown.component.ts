@@ -3,10 +3,8 @@ import {
   EventEmitter,
   HostBinding,
   Input,
-  OnChanges,
   OnInit,
   Output,
-  SimpleChanges,
   ViewChild,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -36,7 +34,7 @@ import { SearchBarComponent } from '../search-bar/search-bar.component';
   templateUrl: './filter-dropdown.component.html',
   styleUrls: ['./filter-dropdown.component.scss'],
 })
-export class FilterDropdownComponent<T> implements OnInit, OnChanges {
+export class FilterDropdownComponent<T> implements OnInit {
   @ViewChild(SearchBarComponent) searchbar!: SearchBarComponent;
 
   /**
@@ -79,8 +77,6 @@ export class FilterDropdownComponent<T> implements OnInit, OnChanges {
 
   displayedItems: any[] = [];
 
-  displayCategories: boolean = false;
-
   /**
    * the items already selected
    */
@@ -95,12 +91,6 @@ export class FilterDropdownComponent<T> implements OnInit, OnChanges {
 
   ngOnInit(): void {
     this.displayedItems = this.menuItems;
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['menuItems']) {
-      this.displayCategories = this.menuItems.some((e) => (e as any).category);
-    }
   }
 
   hasSelections(): boolean {
@@ -181,19 +171,6 @@ export class FilterDropdownComponent<T> implements OnInit, OnChanges {
 
         if (this.displayField && typeof item !== 'string') {
           value = item[this.displayField] as string;
-        }
-
-        if (this.displayCategories && (item as any).options) {
-          const filteredOptions = (item as any).options.filter(
-            (subItem: any) => {
-              return subItem.toLowerCase().includes(searchTerm.toLowerCase());
-            }
-          );
-
-          if (filteredOptions.length > 0) {
-            matches = true;
-            return { ...item, options: filteredOptions };
-          }
         }
 
         if (value.toLowerCase().includes(searchTerm.toLowerCase())) {
