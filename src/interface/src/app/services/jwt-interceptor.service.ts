@@ -51,6 +51,8 @@ export class JwtInterceptor implements HttpInterceptor {
   }
 
   hasRefreshToken(): boolean {
-    return document.cookie.split(';').some((cookie) => cookie.trim().startsWith(authTokenRefreshKey));
+    return document.cookie
+      .split(';')
+      .some((cookie) => cookie.trim().startsWith(authTokenRefreshKey));
   }
 }
