@@ -401,7 +401,7 @@ get_stand_metrics_new <- function(
      INNER JOIN datasets_datalayer dl
       ON dl.id = sm.datalayer_id
      WHERE
-       dl.metadata @> '{\"modules\": {\"forsys\": {\"legacy_name\": `datalayer_name`}}}'::jsonb 
+       dl.metadata @> '{\"modules\": {\"forsys\": {\"legacy_name\": \"`datalayer_name`\"}}}'::jsonb 
        AND stand_id IN ({stand_ids*})",
     datalyer_name = datalyer_name,
     stand_ids = stand_ids,
