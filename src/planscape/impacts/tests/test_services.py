@@ -468,16 +468,18 @@ class CalculateImpactsTest(TransactionTestCase):
 
     def test_calculate_delta(self):
         values_bases_expected_results = [
-            (0, 0, 0),
-            (0, 1, -1),
+            # non-burnable
+            (None, None, None),
+            # non-forested
+            (1, None, 0),
+            # value = 0 -> non-forested
+            (0, 1, 0),
+            # baseline = 0 -> non-forested
             (1, 0, 0),
             (1, 1, 0),
             (2, 1, 1),
             (1.5, 1, 0.5),
             (40, 20, 1),
-            (None, 1, -1),
-            (1, None, 0),
-            (None, None, None),
         ]
 
         for value, base, expected_result in values_bases_expected_results:
