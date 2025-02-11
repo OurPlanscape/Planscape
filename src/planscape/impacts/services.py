@@ -14,9 +14,9 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
-from django.db.models import Case, Count, F, QuerySet, Sum, When
+from django.db.models import Case, Count, F, QuerySet, Subquery, Sum, When
 from django.db.models.expressions import RawSQL
-from datasets.models import DataLayer
+from datasets.models import DataLayer, DataLayerType
 from planning.models import PlanningArea, ProjectArea, Scenario
 from rasterio.session import AWSSession
 from stands.models import STAND_AREA_ACRES, pixels_from_size, Stand, StandMetric
@@ -732,29 +732,35 @@ def get_treatment_results_table_data(
         .order_by("stand", "variable", "year")
         .select_related("stand", "treatment_plan__scenario")
         .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
+        .annotate(
+            stand_metric_count=Subquery(
+                StandMetric.objects.select_related("datalayer")
+                .filter(
+                    stand_id=F("stand_id"),
+                    datalayer__metadata__contains={
+                        "modules": {
+                            "impacts": {
+                                "year": F("year"),
+                                "baseline": True,
+                                "variable": F("variable"),
+                                "action": None,
+                            }
+                        }
+                    },
+                )
+                .values("count")
+            ),
+        )
     )
 
     for result in results:
-        try:
-            datalayer = ImpactVariable.get_datalayer(
-                impact_variable=result.variable,
-                year=result.year,
-            )
-            stand_metric = StandMetric.objects.select_related("stand").get(
-                stand_id=stand_id, datalayer=datalayer
-            )
-            forested_rate = float(stand_metric.count) / float(
-                pixels_from_size(stand_metric.stand.size)
-            )
-        except StandMetric.DoesNotExist or DataLayer.DoesNotExist:
-            forested_rate = None    
-
         datamap[result.year][result.variable] = {
             "value": result.value,
             "delta": result.delta,
             "baseline": result.baseline,
             "category": get_category(result),
-            "forested_rate": forested_rate,
+            "forested_rate": float(result.stand_metric_count)
+            / float(pixels_from_size(result.stand.size)),
         }
     table_data = []
 
