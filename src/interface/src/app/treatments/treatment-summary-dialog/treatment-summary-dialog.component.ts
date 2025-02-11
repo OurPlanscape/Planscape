@@ -38,7 +38,7 @@ export class TreatmentSummaryDialogComponent {
 
   prescriptions$: Observable<SummaryPrescription[]> = this.data.prescriptions;
 
-  hasPrescriptions$ = this.prescriptions$.pipe(map((p) => p.length > 0));
+  hasPrescriptions$ = this.prescriptions$?.pipe(map((p) => p.length > 0));
 
   displayedColumns: string[] = ['action', 'area_acres', 'area_percent'];
 
