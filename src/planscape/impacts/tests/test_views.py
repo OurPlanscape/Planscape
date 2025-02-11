@@ -706,6 +706,17 @@ class StandTreatmentResultsViewTest(APITestCase):
             f"Expected {len(AVAILABLE_YEARS)} rows (one for each year).",
         )
 
+        first_year = data[0]
+        self.assertEqual(first_year.get("year"), 2024)
+
+        biomass = first_year.get(ImpactVariable.LARGE_TREE_BIOMASS)
+        self.assertIsNotNone(biomass)
+
+        self.assertIsNotNone(biomass.get("value"))
+        self.assertIsNotNone(biomass.get("delta"))
+        self.assertIsNotNone(biomass.get("baseline"))
+        self.assertIsNotNone(biomass.get("forested_rate"))
+
     def test_missing_stand_id(self):
         """
         If 'stand_id' param is missing, the serializer should raise a 400 error.
