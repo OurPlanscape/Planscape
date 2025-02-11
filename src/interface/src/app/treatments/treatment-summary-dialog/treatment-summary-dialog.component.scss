@@ -1,4 +1,18 @@
 @import 'colors';
+@import 'media';
+
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 300px;
+  max-height: 700px;
+
+  width: 480px;
+
+  @include on-large() {
+    width: 680px;
+  }
+}
 
 .treatment-summary-title {
   padding: 16px 24px;
@@ -13,6 +27,7 @@
 .treatment-summary-content {
   padding: 24px;
   margin: 0;
+  align-content: center;
 }
 
 .treatment-summary-legend {
@@ -70,4 +85,36 @@
 .action-label {
   display: inline-flex;
   padding-left: 5px;
+}
+
+.treatment-summary-empty {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  min-width: 400px;
+
+  &.icon {
+    .material-symbols-outlined {
+      width: 36px;
+      height: 36px;
+      font-size: 36px;
+      color: #898989;
+    }
+  }
+
+  &.title {
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 600;
+    line-height: 32px; /* 200% */
+  }
+
+  &.label {
+    color: #767575;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: 22px; /* 157.143% */
+  }
 }
