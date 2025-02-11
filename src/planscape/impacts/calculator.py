@@ -5,11 +5,15 @@ def calculate_delta(
     value: Optional[float], baseline: Optional[float]
 ) -> Optional[float]:
     if value is None and baseline is None:
+        # non-burnable stand
         return None
 
-    if value == 0 and baseline == 0:
+    if baseline is None:
+        # non-forested stand
         return 0
 
-    value = value if value else 0
-    baseline = baseline if baseline else 1
-    return (value - baseline) / baseline
+    if value == 0 or baseline == 0:
+        # non-forested
+        return 0
+
+    return (value - baseline) / baseline  # type: ignore
