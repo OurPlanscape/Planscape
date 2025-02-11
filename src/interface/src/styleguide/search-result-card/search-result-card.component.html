@@ -5,22 +5,48 @@
         let titlePart of splitTextLine(extractProjectTitle());
         let i = index
       ">
-      <div class="highlighted" *ngIf="isMatch(titlePart)">
+      <div class="highlighted" *ngIf="partMatches(titlePart)">
         <span>{{ titlePart }}</span>
       </div>
-      <div class="regular" *ngIf="!isMatch(titlePart)">
+      <div class="regular" *ngIf="!partMatches(titlePart)">
         <span>{{ titlePart }}</span>
       </div>
     </ng-container>
   </div>
-  <div class="text-line" *ngFor="let textLine of projectLines">
-    <mat-icon>subdirectory_arrow_right</mat-icon>
-    <div *ngFor="let part of splitTextLine(textLine); let i = index">
-      <div class="highlighted" *ngIf="isMatch(part)">
-        <span>{{ part }}</span>
+  <div *ngFor="let rx of projectArea.prescriptions">
+    <div *ngIf="treatmentIsSingle(rx) && singleRxMatches(rx)" class="text-line">
+      <mat-icon>subdirectory_arrow_right</mat-icon>
+      <div *ngFor="let part of splitTextLine(singleRxText(rx)); let i = index">
+        <div class="highlighted" *ngIf="partMatches(part)">
+          <span>{{ part }}</span>
+        </div>
+        <div class="regular" *ngIf="!partMatches(part)">
+          <span>{{ part }}</span>
+        </div>
       </div>
-      <div class="regular" *ngIf="!isMatch(part)">
-        <span>{{ part }}</span>
+    </div>
+
+    <div *ngIf="!treatmentIsSingle(rx)">
+      <!-- iterate through each line of sequence text -->
+      <div *ngFor="let rxAttributes of sequenceRxAttributes(rx)">
+        <div
+          *ngIf="sequenceDescriptionMatches(rxAttributes.description)"
+          class="text-line">
+          <mat-icon>subdirectory_arrow_right</mat-icon>
+          <div
+            *ngFor="
+              let part of splitTextLine(rxAttributes.description);
+              let i = index
+            ">
+            <div class="highlighted" *ngIf="partMatches(part)">
+              <span>{{ part }}</span>
+            </div>
+            <div class="regular" *ngIf="!partMatches(part)">
+              <span>{{ part }}</span>
+            </div>
+          </div>
+          <span class="year-details"> (Year {{ rxAttributes.year }})</span>
+        </div>
       </div>
     </div>
   </div>
