@@ -6,7 +6,7 @@
 </h3>
 
 <div mat-dialog-content class="treatment-summary-content">
-  <ng-container *ngIf="((prescriptions | async) ?? []).length > 0">
+  <ng-container *ngIf="hasPrescriptions$ | async">
     <p class="treatment-summary-legend">
       View a breakdown of the total acreage for each treatment applied across
       all project areas.
@@ -14,7 +14,7 @@
 
     <table
       mat-table
-      [dataSource]="prescriptions"
+      [dataSource]="prescriptions$"
       class="treatment-summary-table">
       <!-- Treatment name column -->
       <ng-container matColumnDef="action">
@@ -54,7 +54,7 @@
       <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
     </table>
   </ng-container>
-  <ng-container *ngIf="((prescriptions | async) ?? []).length === 0">
+  <ng-container *ngIf="(hasPrescriptions$ | async) === false">
     <div class="treatment-summary-empty icon">
       <mat-icon class="material-symbols-outlined" color="primary">
         summarize
