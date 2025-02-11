@@ -1,5 +1,6 @@
 @import 'colors';
 @import 'media';
+@import 'mixins';
 
 :host {
   display: flex;
@@ -15,13 +16,13 @@
 }
 
 .treatment-summary-title {
+  @include h4();
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: baseline;
   padding: 16px 24px;
   margin: 0;
   border-bottom: 1px solid $color-soft-gray;
-  font-size: 18px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 32px;
 }
 
 .treatment-summary-content {
@@ -31,11 +32,7 @@
 }
 
 .treatment-summary-legend {
-  font-family: 'Public Sans';
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 400;
-  line-height: 22px;
+  @include small-paragraph();
   margin-bottom: 16px;
 }
 
@@ -45,23 +42,13 @@
 
   .mat-mdc-header-cell {
     padding: 24px 16px;
-
     border-bottom: 1px solid $color-soft-gray;
     background: $color-soft-gray;
-
-    font-family: 'Public Sans';
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 14px;
+    @include xs-label();
   }
 
   .mat-mdc-cell {
-    font-family: 'Public Sans';
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 22px;
+    @include small-paragraph();
   }
 }
 
@@ -99,22 +86,16 @@
       width: 36px;
       height: 36px;
       font-size: 36px;
-      color: #898989;
+      color: $color-text-gray;
     }
   }
 
   &.title {
-    font-size: 16px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: 32px; /* 200% */
+    @include h5();
   }
 
   &.label {
-    color: #767575;
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 400;
-    line-height: 22px; /* 157.143% */
+    @include small-paragraph();
+    color: $color-md-gray;
   }
 }
