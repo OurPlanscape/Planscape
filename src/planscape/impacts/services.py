@@ -16,12 +16,6 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, QuerySet, Sum, When
 from django.db.models.expressions import RawSQL
-from datasets.models import DataLayer, DataLayerType
-from planning.models import PlanningArea, ProjectArea, Scenario
-from rasterio.session import AWSSession
-from stands.models import STAND_AREA_ACRES, pixels_from_size, Stand, StandMetric
-from stands.services import calculate_stand_zonal_stats
-
 from impacts.calculator import calculate_delta
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -37,6 +31,10 @@ from impacts.models import (
     TTreatmentPlanCloneResult,
     get_prescription_type,
 )
+from planning.models import PlanningArea, ProjectArea, Scenario
+from rasterio.session import AWSSession
+from stands.models import STAND_AREA_ACRES, Stand, StandMetric, pixels_from_size
+from stands.services import calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
 
@@ -685,6 +683,34 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
     return "Extreme"
 
 
+def get_forested_rate(
+    treatment_result: TreatmentResult,
+) -> Optional[float]:
+    try:
+        stand_metric = StandMetric.objects.select_related("datalayer").get(
+            stand_id=treatment_result.stand_id,
+            datalayer__metadata__contains={
+                "modules": {
+                    "impacts": {
+                        "year": treatment_result.year,
+                        "baseline": True,
+                        "variable": treatment_result.variable,
+                        "action": None,
+                    }
+                }
+            },
+        )
+    except StandMetric.DoesNotExist:
+        log.exception(
+            "Could not find stand metric related to treatment result %s.",
+            treatment_result,
+        )
+        raise
+
+    count = stand_metric.count if stand_metric.count else 0
+    return float(count) / float(pixels_from_size(treatment_result.stand.size))
+
+
 def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     """
     Converts numeric rate of spread into relative values.
@@ -735,28 +761,7 @@ def get_treatment_results_table_data(
     )
 
     for result in results:
-        try:
-            stand_metric = StandMetric.objects.select_related("datalayer").get(
-                stand_id=stand_id,
-                datalayer__metadata__contains={
-                    "modules": {
-                        "impacts": {
-                            "year": result.year,
-                            "baseline": True,
-                            "variable": result.variable,
-                            "action": None,
-                        }
-                    }
-                },
-            )
-        except StandMetric.DoesNotExist:
-            stand_metric = None
-
-        forested_rate = (
-            float(stand_metric.count) / float(pixels_from_size(result.stand.size))
-            if stand_metric
-            else None
-        )
+        forested_rate = get_forested_rate(result)
 
         datamap[result.year][result.variable] = {
             "value": result.value,
