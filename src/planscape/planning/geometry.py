@@ -1,6 +1,6 @@
 import json
 from django.conf import settings
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict
 from django.contrib.gis.geos import MultiPolygon, GEOSGeometry
 from planscape.typing import TLooseGeom
 from planscape.exceptions import InvalidGeometry

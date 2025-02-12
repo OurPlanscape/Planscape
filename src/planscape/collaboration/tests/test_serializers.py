@@ -1,5 +1,4 @@
 from rest_framework.test import APITestCase
-from rest_framework.exceptions import ValidationError
 from collaboration.serializers import CreateUserObjectRolesSerializer
 from collaboration.models import Role
 
