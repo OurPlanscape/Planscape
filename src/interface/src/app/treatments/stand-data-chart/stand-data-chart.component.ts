@@ -1,9 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf, PercentPipe } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
+  combineLatest,
   distinctUntilChanged,
   map,
   Observable,
@@ -27,6 +28,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
+import { TreatmentsService } from '@services/treatments.service';
+import { TreatmentsState } from '../treatments.state';
 
 @UntilDestroy()
 @Component({
@@ -41,6 +44,8 @@ import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
     NonForestedDataComponent,
     MatProgressSpinnerModule,
     MetricSelectorComponent,
+    JsonPipe,
+    PercentPipe,
   ],
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',
@@ -53,6 +58,10 @@ export class StandDataChartComponent implements OnInit {
   @Input() skipFirstLoad = false;
   activeStand$ = this.directImpactsStateService.activeStand$;
   activeMetric$ = this.directImpactsStateService.activeMetric$;
+
+  loadingForestedRate = false;
+
+  forestedRate = 0;
 
   activeStandIsForested$ = this.activeStand$.pipe(
     map((d) => standIsForested(d))
@@ -97,12 +106,16 @@ export class StandDataChartComponent implements OnInit {
 
   slotColor = SLOT_COLORS['blue'];
 
-  constructor(private directImpactsStateService: DirectImpactsStateService) {}
+  constructor(
+    private directImpactsStateService: DirectImpactsStateService,
+    private treatmentsService: TreatmentsService,
+    private treatmentsState: TreatmentsState
+  ) {}
 
   ngOnInit() {
     // this puts a loader when we change the metric
     // and removes it once we get a new value from standsTxSourceLoaded$
-    this.directImpactsStateService.activeMetric$
+    this.activeMetric$
       .pipe(
         distinctUntilChanged((prev, curr) => prev.id === curr.id),
         skip(this.skipFirstLoad ? 1 : 0),
@@ -113,6 +126,29 @@ export class StandDataChartComponent implements OnInit {
         untilDestroyed(this)
       )
       .subscribe(() => (this.loading = false));
+
+    combineLatest([
+      this.activeStand$.pipe(
+        filter((stand): stand is MapGeoJSONFeature => !!stand)
+      ),
+      this.activeMetric$,
+    ])
+      .pipe(
+        untilDestroyed(this),
+        switchMap(([stand, metric]) => {
+          this.loadingForestedRate = true;
+          return this.treatmentsService
+            .getStandResult(
+              this.treatmentsState.getTreatmentPlanId(),
+              stand.id as number
+            )
+            .pipe(map((result) => result[0][metric.id].forested_rate));
+        })
+      )
+      .subscribe((rate) => {
+        this.forestedRate = rate;
+        this.loadingForestedRate = false;
+      });
   }
 
   metricChanged(metric: Metric) {

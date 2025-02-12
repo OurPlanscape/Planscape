@@ -9,16 +9,6 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
-from planning.tests.factories import (
-    PlanningAreaFactory,
-    ProjectAreaFactory,
-    ScenarioFactory,
-)
-from rest_framework import status
-from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
-from stands.models import StandSizeChoices
-from stands.tests.factories import StandFactory, StandMetricFactory
-
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -35,6 +25,16 @@ from impacts.tests.factories import (
     TreatmentPrescriptionFactory,
     TreatmentResultFactory,
 )
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
+from rest_framework import status
+from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
+from stands.models import StandSizeChoices
+from stands.tests.factories import StandFactory, StandMetricFactory
+
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -613,6 +613,7 @@ class StandTreatmentResultsViewTest(APITestCase):
             value=80.0,
             delta=10.0,
             baseline=70.0,
+            forested_rate=1,
             action=None,
             aggregation=ImpactVariableAggregation.MEAN,
         )
@@ -625,6 +626,7 @@ class StandTreatmentResultsViewTest(APITestCase):
             value=105.0,
             delta=12.0,
             baseline=45.0,
+            forested_rate=1,
             action=None,
             aggregation=ImpactVariableAggregation.SUM,
         )
