@@ -4,7 +4,6 @@ from urllib.parse import urljoin
 from celery import chord, chain
 
 from rasterio.errors import RasterioIOError
-from core.s3 import get_aws_session
 from django.conf import settings
 from django.db import transaction
 from django.core.mail import send_mail

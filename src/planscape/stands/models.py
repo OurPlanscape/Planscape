@@ -1,12 +1,13 @@
-from typing import Type, Union
-from django.contrib.gis.db import models
-from django.contrib.gis.geos import MultiPolygon, Polygon
-from django.contrib.gis.db.models.functions import Centroid, Transform
-from django_stubs_ext.db.models import TypedModelMeta
-from django.db.models import QuerySet
+from typing import Union
+
 from conditions.models import Condition
 from core.models import CreatedAtMixin
 from datasets.models import DataLayer
+from django.contrib.gis.db import models
+from django.contrib.gis.db.models.functions import Centroid, Transform
+from django.contrib.gis.geos import MultiPolygon, Polygon
+from django.db.models import QuerySet
+from django_stubs_ext.db.models import TypedModelMeta
 
 
 class StandSizeChoices(models.TextChoices):
@@ -35,11 +36,11 @@ STAND_AREA_ACRES = {
 
 STAND_PIXELS = {
     # 200 ha / 500ac
-    StandSizeChoices.LARGE: 2229,
+    StandSizeChoices.LARGE: 3960,
     # 40 ha / 100ac
-    StandSizeChoices.MEDIUM: 438,
+    StandSizeChoices.MEDIUM: 775,
     # 4ha / 10ac
-    StandSizeChoices.SMALL: 43,
+    StandSizeChoices.SMALL: 77,
 }
 
 
@@ -151,7 +152,3 @@ class StandMetric(CreatedAtMixin, models.Model):
                 name="unique_stand_metric",
             )
         ]
-
-
-TStand = Type[Stand]
-TStandMetric = Type[StandMetric]

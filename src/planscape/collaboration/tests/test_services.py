@@ -1,6 +1,6 @@
 from django.test import TransactionTestCase
 from django.contrib.contenttypes.models import ContentType
-from collaboration.models import Permissions, UserObjectRole, Role
+from collaboration.models import UserObjectRole, Role
 from collaboration.services import link_invites, validate_ownership, get_permissions
 from planning.models import PlanningArea
 from django.contrib.auth.models import User

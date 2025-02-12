@@ -3,8 +3,7 @@ from collaboration.permissions import (
     PlanningAreaPermission,
     ScenarioPermission,
 )
-from planning.models import PlanningArea, ProjectArea
-from rest_framework.exceptions import ValidationError
+from planning.models import PlanningArea
 
 
 class PlanningAreaViewPermission(PlanscapePermission):
