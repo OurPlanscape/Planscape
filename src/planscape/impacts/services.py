@@ -16,7 +16,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, QuerySet, Sum, When
 from django.db.models.expressions import RawSQL
-from impacts.calculator import calculate_delta
+from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -705,7 +705,9 @@ def get_forested_rate(
         stand_metric = None
 
     count = stand_metric.count if stand_metric and stand_metric.count else 0
-    return float(count) / float(pixels_from_size(treatment_result.stand.size))
+    return truncate_result(
+        float(count) / float(pixels_from_size(treatment_result.stand.size))  # type: ignore
+    )
 
 
 def classify_rate_of_spread(ros_value: Optional[float]) -> str:
@@ -879,7 +881,7 @@ def get_treatment_result_value(
         case _:
             if not treatment_result.delta:
                 return None
-            return treatment_result.delta * 100
+            return truncate_result(treatment_result.delta * 100)
 
 
 def fetch_treatment_plan_data(

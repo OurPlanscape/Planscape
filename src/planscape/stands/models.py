@@ -1,4 +1,4 @@
-from typing import Type, Union
+from typing import Union
 
 from conditions.models import Condition
 from core.models import CreatedAtMixin
@@ -152,8 +152,3 @@ class StandMetric(CreatedAtMixin, models.Model):
                 name="unique_stand_metric",
             )
         ]
-
-
-TStand = Type[Stand]
-TStandMetric = Type[StandMetric]
-TStandMetric = Type[StandMetric]
