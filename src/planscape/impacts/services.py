@@ -609,20 +609,6 @@ def get_calculation_matrix_wo_action(
     return list(itertools.product(variables, years))
 
 
-def calculate_metrics(
-    stands: QuerySet[Stand],
-    variable: ImpactVariable,
-    year: int,
-    action: Optional[TreatmentPrescriptionAction] = None,
-):
-    datalayer = ImpactVariable.get_datalayer(
-        impact_variable=variable,
-        action=action,
-        year=year,
-    )
-    return calculate_stand_zonal_stats(stands=stands, datalayer=datalayer)
-
-
 def calculate_project_area_deltas(
     project_area: ProjectArea,
     baseline_dict: Dict[int, StandMetric],
