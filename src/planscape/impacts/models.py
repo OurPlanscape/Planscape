@@ -587,6 +587,10 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Type of Treatment Result (choice).",
         null=True,
     )
+    forested_rate = models.FloatField(
+        null=True,
+        help_text="number between 0 and 1 that represents the rate of forested pixels in this result.",
+    )
 
     class Meta(TypedModelMeta):
         constraints = [
