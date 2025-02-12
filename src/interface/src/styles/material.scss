@@ -1,5 +1,5 @@
 // material overrides
-@import "colors";
+@import 'colors';
 
 .mat-tooltip {
   font-size: 12px;
@@ -14,7 +14,6 @@
   padding: 0;
 }
 
-
 .mat-card mat-card-title.mat-card-title {
   font-size: 24px;
   line-height: 20px;
@@ -27,12 +26,11 @@
 
 // default styles for menu
 body {
-  --mat-menu-item-label-text-font: "Public Sans", sans-serif;
+  --mat-menu-item-label-text-font: 'Public Sans', sans-serif;
   --mat-menu-item-label-text-size: 14px;
   --mat-menu-item-label-text-tracking: 0;
   --mat-menu-item-label-text-line-height: 22px;
   --mat-menu-item-label-text-weight: 400;
-
 
   --mat-table-header-headline-size: 14px;
 }
@@ -49,7 +47,7 @@ body {
     padding: 0;
 
     &::before {
-      display: none
+      display: none;
     }
   }
 }
@@ -81,7 +79,6 @@ mat-radio-button:not([disabled]) .mdc-label {
     color: $color-error;
   }
 }
-
 
 .mat-mdc-radio-button.mat-warn {
   --mdc-radio-unselected-icon-color: #{$color-error};
@@ -117,5 +114,14 @@ mat-radio-button:not([disabled]) .mdc-label {
   .mat-mdc-tab {
     position: relative;
     top: 2px;
+  }
+}
+
+// material dropdown styles
+.dropdown-selector .mdc-text-field {
+  .mat-mdc-form-field-infix {
+    min-height: 38px;
+    padding: 0;
+    align-content: center;
   }
 }
