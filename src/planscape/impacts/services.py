@@ -9,6 +9,7 @@ import fiona
 import rasterio
 from actstream import action as actstream_action
 from core.s3 import get_aws_session
+from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
@@ -33,7 +34,13 @@ from impacts.models import (
 )
 from planning.models import PlanningArea, ProjectArea, Scenario
 from rasterio.session import AWSSession
-from stands.models import STAND_AREA_ACRES, Stand, StandMetric, pixels_from_size
+from stands.models import (
+    STAND_AREA_ACRES,
+    Stand,
+    StandMetric,
+    StandSizeChoices,
+    pixels_from_size,
+)
 from stands.services import calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
@@ -380,6 +387,7 @@ def to_treatment_result(
             "baseline": result.get("baseline"),
             "delta": result.get("delta"),
             "action": result.get("action"),
+            "forested_rate": result.get("forested_rate"),
         },
     )
     return instance
@@ -398,25 +406,32 @@ def calculate_impacts(
         action=action
     ).select_related(
         "stand",
+        "scenario",
         "treatment_plan",
         "project_area",
     )
     stand_ids = prescriptions.values_list("stand_id", flat=True)
     stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
-
+    stand_size = treatment_plan.scenario.get_stand_size()
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
-        baseline_metrics = calculate_metrics(
-            stands=stands,
-            variable=variable,
+        baseline_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
+            action=None,
             year=year,
         )
-
-        action_metrics = calculate_metrics(
+        baseline_metrics = calculate_stand_zonal_stats(
             stands=stands,
-            variable=variable,
-            year=year,
+            datalayer=baseline_layer,
+        )
+        action_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
             action=action,
+            year=year,
+        )
+        action_metrics = calculate_stand_zonal_stats(
+            stands=stands,
+            datalayer=action_layer,
         )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
@@ -426,6 +441,8 @@ def calculate_impacts(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
         action=action,
+        action_datalayer=action_layer,
+        stand_size=stand_size,
     )
 
     project_area_deltas = []
@@ -470,6 +487,8 @@ def calculate_stand_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     action: Optional[TreatmentPrescriptionAction] = None,
+    action_datalayer: Optional[DataLayer] = None,
+    stand_size: Optional[StandSizeChoices] = None,
 ) -> List[Dict[str, Any]]:
     results = []
     for stand_id, baseline in baseline_dict.items():
@@ -485,6 +504,13 @@ def calculate_stand_deltas(
             else baseline_value
         )
 
+        if action_datalayer and stand_size:
+            forested_rate = get_forested_rate(
+                stand_metric=action_metric,  # type: ignore
+                stand_size=stand_size,
+            )  # type: ignore
+        else:
+            forested_rate = None
         delta = calculate_delta(action_value, baseline_value)
         results.append(
             {
@@ -494,6 +520,7 @@ def calculate_stand_deltas(
                 "value": action_value,
                 "baseline": baseline_value,
                 "delta": delta,
+                "forested_rate": forested_rate,
             }
         )
     return results
@@ -569,7 +596,7 @@ def get_calculation_matrix(
 
 def get_calculation_matrix_wo_action(
     years: Optional[Iterable[int]] = AVAILABLE_YEARS,
-) -> List[Tuple]:
+) -> Collection[Tuple]:
     variables = list(ImpactVariable)
     return list(itertools.product(variables, years))
 
@@ -684,29 +711,13 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
 
 
 def get_forested_rate(
-    treatment_result: TreatmentResult,
+    stand_metric: StandMetric,
+    stand_size: StandSizeChoices,
 ) -> Optional[float]:
     """Returns forested rate based on a treatment result."""
-    try:
-        stand_metric = StandMetric.objects.select_related("datalayer").get(
-            stand_id=treatment_result.stand_id,
-            datalayer__metadata__contains={
-                "modules": {
-                    "impacts": {
-                        "year": treatment_result.year,
-                        "baseline": True,
-                        "variable": treatment_result.variable,
-                        "action": None,
-                    }
-                }
-            },
-        )
-    except StandMetric.DoesNotExist:
-        stand_metric = None
-
     count = stand_metric.count if stand_metric and stand_metric.count else 0
     return truncate_result(
-        float(count) / float(pixels_from_size(treatment_result.stand.size))  # type: ignore
+        float(count) / float(pixels_from_size(stand_size))  # type: ignore
     )
 
 
@@ -760,14 +771,12 @@ def get_treatment_results_table_data(
     )
 
     for result in results:
-        forested_rate = get_forested_rate(result)
-
         datamap[result.year][result.variable] = {
             "value": result.value,
             "delta": result.delta,
             "baseline": result.baseline,
             "category": get_category(result),
-            "forested_rate": forested_rate,
+            "forested_rate": result.forested_rate,
         }
     table_data = []
 
@@ -905,7 +914,9 @@ def fetch_treatment_plan_data(
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
-        result_data[result.stand_id]["forested_rate"] = get_forested_rate(result)
+        result_data[result.stand_id]["forested_rate"] = treatment_results_data[
+            result.stand_id
+        ].forested_rate
 
     return list(
         map(
