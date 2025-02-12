@@ -323,6 +323,30 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
 
+    def test_list_tx_plan(self):
+        now = timezone.now()
+        started_at = now - timezone.timedelta(seconds=10)
+        TreatmentPlanFactory.create_batch(
+            5, scenario=self.scenario, started_at=started_at, finished_at=now
+        )
+
+        self.client.force_authenticate(user=self.scenario.user)
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-list"),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_data), 5)
+        self.assertEqual(
+            response_data[0].get("started_at"),
+            started_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        )
+        self.assertEqual(
+            response_data[0].get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(response_data[0].get("elapsed_time_seconds"), 10)
+
 
 class TxPlanViewSetPlotTest(APITransactionTestCase):
     def setUp(self):

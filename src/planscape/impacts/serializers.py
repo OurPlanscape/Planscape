@@ -73,9 +73,17 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
     creator_name = serializers.SerializerMethodField(
         help_text="Name of the Creator of the Treatment Plan."
     )
+    elapsed_time_seconds = serializers.SerializerMethodField(
+        help_text="Impacts execution elapsed time in seconds."
+    )
 
     def get_creator_name(self, instance):
         return instance.created_by.get_full_name()
+
+    def get_elapsed_time_seconds(self, instance):
+        if instance.finished_at and instance.started_at:
+            return (instance.finished_at - instance.started_at).total_seconds()
+        return None
 
     class Meta:
         model = TreatmentPlan
@@ -87,6 +95,9 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
             "scenario",
             "name",
             "status",
+            "started_at",
+            "finished_at",
+            "elapsed_time_seconds",
         )
 
 
