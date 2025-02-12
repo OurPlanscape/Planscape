@@ -33,6 +33,15 @@ STAND_AREA_ACRES = {
     StandSizeChoices.SMALL: 9.884,
 }
 
+STAND_PIXELS = {
+    # 200 ha / 500ac
+    StandSizeChoices.LARGE: 2229,
+    # 40 ha / 100ac
+    StandSizeChoices.MEDIUM: 438,
+    # 4ha / 10ac
+    StandSizeChoices.SMALL: 43,
+}
+
 
 def length_from_size(size: StandSizeChoices) -> float:
     return STAND_LENGTH_METERS[size]
@@ -40,6 +49,10 @@ def length_from_size(size: StandSizeChoices) -> float:
 
 def area_from_size(size: StandSizeChoices) -> float:
     return STAND_AREA_ACRES[size]
+
+
+def pixels_from_size(size: StandSizeChoices) -> int:
+    return STAND_PIXELS[size]
 
 
 class StandQuerySet(models.QuerySet):

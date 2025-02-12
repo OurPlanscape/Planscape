@@ -16,9 +16,10 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, QuerySet, Sum, When
 from django.db.models.expressions import RawSQL
+from datasets.models import DataLayer, DataLayerType
 from planning.models import PlanningArea, ProjectArea, Scenario
 from rasterio.session import AWSSession
-from stands.models import STAND_AREA_ACRES, Stand, StandMetric
+from stands.models import STAND_AREA_ACRES, pixels_from_size, Stand, StandMetric
 from stands.services import calculate_stand_zonal_stats
 
 from impacts.calculator import calculate_delta
@@ -734,11 +735,35 @@ def get_treatment_results_table_data(
     )
 
     for result in results:
+        try:
+            stand_metric = StandMetric.objects.select_related("datalayer").get(
+                stand_id=stand_id,
+                datalayer__metadata__contains={
+                    "modules": {
+                        "impacts": {
+                            "year": result.year,
+                            "baseline": True,
+                            "variable": result.variable,
+                            "action": None,
+                        }
+                    }
+                },
+            )
+        except StandMetric.DoesNotExist:
+            stand_metric = None
+
+        forested_rate = (
+            float(stand_metric.count) / float(pixels_from_size(result.stand.size))
+            if stand_metric
+            else None
+        )
+
         datamap[result.year][result.variable] = {
             "value": result.value,
             "delta": result.delta,
             "baseline": result.baseline,
             "category": get_category(result),
+            "forested_rate": forested_rate,
         }
     table_data = []
 
