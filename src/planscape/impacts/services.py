@@ -686,6 +686,7 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
 def get_forested_rate(
     treatment_result: TreatmentResult,
 ) -> Optional[float]:
+    """Returns forested rate based on a treatment result."""
     try:
         stand_metric = StandMetric.objects.select_related("datalayer").get(
             stand_id=treatment_result.stand_id,
@@ -701,13 +702,9 @@ def get_forested_rate(
             },
         )
     except StandMetric.DoesNotExist:
-        log.exception(
-            "Could not find stand metric related to treatment result %s.",
-            treatment_result,
-        )
-        raise
+        stand_metric = None
 
-    count = stand_metric.count if stand_metric.count else 0
+    count = stand_metric.count if stand_metric and stand_metric.count else 0
     return float(count) / float(pixels_from_size(treatment_result.stand.size))
 
 
@@ -814,6 +811,7 @@ def get_treament_result_schema():
             ("scenario_id", "int"),
             ("scenario_name", "str:256"),
             ("action", "str:64"),
+            ("forested_rate", "float"),
             *fields,
             *other_fields,
         ],
@@ -879,7 +877,9 @@ def get_treatment_result_value(
             )
             return classify_rate_of_spread(val)
         case _:
-            return treatment_result.delta
+            if not treatment_result.delta:
+                return None
+            return treatment_result.delta * 100
 
 
 def fetch_treatment_plan_data(
@@ -903,6 +903,7 @@ def fetch_treatment_plan_data(
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
+        result_data[result.stand_id]["forested_rate"] = get_forested_rate(result)
 
     return list(
         map(
