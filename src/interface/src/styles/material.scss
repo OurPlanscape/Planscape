@@ -118,10 +118,13 @@ mat-radio-button:not([disabled]) .mdc-label {
 }
 
 // material dropdown styles
-.dropdown-selector .mdc-text-field {
-  .mat-mdc-form-field-infix {
-    min-height: 38px;
-    padding: 0;
-    align-content: center;
+.mat-mdc-form-field {
+  --mdc-outlined-text-field-outline-color: #{$color-fields-gray};
+  .mdc-text-field {
+    .mat-mdc-form-field-infix {
+      min-height: 38px;
+      padding: 0;
+      align-content: center;
+    }
   }
 }
