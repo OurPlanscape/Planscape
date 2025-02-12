@@ -14,7 +14,6 @@ import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { descriptionsForAction } from '../prescriptions';
-import { FilterByActionPipe } from './filter-by-action.pipe';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapConfigState } from '../treatment-map/map-config.state';
 
@@ -29,7 +28,6 @@ import { MapConfigState } from '../treatment-map/map-config.state';
     PopupComponent,
     NgFor,
     NgIf,
-    FilterByActionPipe,
     DecimalPipe,
   ],
   templateUrl: './map-stands-tx-result.component.html',
