@@ -914,9 +914,10 @@ def fetch_treatment_plan_data(
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
-        result_data[result.stand_id]["forested_rate"] = treatment_results_data[
-            result.stand_id
-        ].forested_rate
+        forested_rate = treatment_results_data[result.stand_id].forested_rate
+        if forested_rate:
+            forested_rate = truncate_result(forested_rate * 100)
+        result_data[result.stand_id]["forested_rate"] = forested_rate
 
     return list(
         map(

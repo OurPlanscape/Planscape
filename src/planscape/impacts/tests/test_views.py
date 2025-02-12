@@ -613,6 +613,7 @@ class StandTreatmentResultsViewTest(APITestCase):
             value=80.0,
             delta=10.0,
             baseline=70.0,
+            forested_rate=1,
             action=None,
             aggregation=ImpactVariableAggregation.MEAN,
         )
