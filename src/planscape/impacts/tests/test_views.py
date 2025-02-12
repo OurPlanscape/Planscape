@@ -9,6 +9,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
+from django.utils import timezone
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -157,6 +158,35 @@ class TxPlanViewSetTest(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data["name"], "it's a bold plan")
+        self.assertIsNone(response.get("started_at"))
+        self.assertIsNone(response.get("finished_at"))
+        self.assertIsNone(response.get("elapsed_time_seconds"))
+
+    def test_get_tx_plan_with_elapsed_time(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        now = timezone.now()
+        started_at = now - timezone.timedelta(seconds=10)
+
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            name="it's a bold plan",
+            started_at=started_at,
+            finished_at=now,
+        )
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data.get("name"), "it's a bold plan")
+        self.assertEqual(
+            response_data.get("started_at"), started_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(
+            response_data.get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(response_data.get("elapsed_time_seconds"), 10)
 
     def test_get_tx_plan_with_role(self):
         self.client.force_authenticate(user=self.scenario.user)
