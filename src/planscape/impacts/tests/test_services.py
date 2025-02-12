@@ -7,14 +7,6 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TransactionTestCase
-from planning.tests.factories import (
-    PlanningAreaFactory,
-    ProjectAreaFactory,
-    ScenarioFactory,
-)
-from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
-from stands.tests.factories import StandFactory
-
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -47,6 +39,14 @@ from impacts.tests.factories import (
     TreatmentPrescriptionFactory,
     TreatmentResultFactory,
 )
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
+from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.tests.factories import StandFactory
+
 from planscape.tests.factories import UserFactory
 
 
@@ -468,16 +468,18 @@ class CalculateImpactsTest(TransactionTestCase):
 
     def test_calculate_delta(self):
         values_bases_expected_results = [
-            (0, 0, 0),
-            (0, 1, -1),
+            # non-burnable
+            (None, None, None),
+            # non-forested
+            (1, None, 0),
+            # value = 0 -> non-forested
+            (0, 1, 0),
+            # baseline = 0 -> non-forested
             (1, 0, 0),
             (1, 1, 0),
             (2, 1, 1),
             (1.5, 1, 0.5),
             (40, 20, 1),
-            (None, 1, -1),
-            (1, None, 0),
-            (None, None, None),
         ]
 
         for value, base, expected_result in values_bases_expected_results:

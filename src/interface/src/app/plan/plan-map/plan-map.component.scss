@@ -14,14 +14,13 @@
 :host {
   // Styling for legend on mousehover
   ::ng-deep .legend:hover {
-    width: 100%;
     overflow-y: scroll;
     text-overflow: ellipsis;
     height: auto;
-    max-width: auto;
     max-height: 80%;
     opacity: 1;
     transition-duration: 0.8s;
+    max-width: 100%;
   }
 
   // Setting heights for built-in leaflet styles to be able to configure relative max-height
@@ -37,14 +36,12 @@
 
   // Default styling for legend
   ::ng-deep .legend {
-    top: 40px;
-    bottom: 40px;
+
     margin: 10px;
     font-weight: bold;
-    color: solid #2491ff;
     text-align: left;
     height: auto;
-    width: 65px;
+    max-width: 65px;
     text-overflow: ellipsis;
     overflow-x: hidden;
     line-height: 18px;
@@ -54,7 +51,11 @@
     display: inline-block;
     border: 2px #aaa solid;
     border-radius: 5px;
-    transition: width 0.8s;
+    transition: max-width 0.8s;
+    position: absolute;
+    top: 60px;
+    left: 4px;
+    padding-right: 10px;
   }
 
   // Parent legend class
@@ -133,9 +134,11 @@
     transition: width 0.8s;
     box-shadow: 2px 2px 6px 0px #00000029;
   }
+
   ::ng-deep .base-layer-control:hover {
     background: lightgray;
   }
+
   ::ng-deep .layer-icon {
     color: black;
     height: 40px;
