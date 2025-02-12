@@ -244,3 +244,15 @@ $panel-height: 600px;
 app-change-over-time-chart {
   height: 400px;
 }
+
+.summary-link {
+  margin-top: -10px;
+}
+
+.summary-link ::ng-deep .treatment-summary-container {
+  padding: 0;
+
+  mat-icon {
+    margin-right: 8px;
+  }
+}
