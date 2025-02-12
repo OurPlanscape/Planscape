@@ -1,3 +1,4 @@
+from decimal import ROUND_HALF_UP, Decimal
 from typing import Optional
 
 
@@ -17,3 +18,7 @@ def calculate_delta(
         return 0
 
     return (value - baseline) / baseline  # type: ignore
+
+
+def truncate_result(value: float, quantize=".01") -> float:
+    return float(Decimal(value).quantize(Decimal(quantize), rounding=ROUND_HALF_UP))

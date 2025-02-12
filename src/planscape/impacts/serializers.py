@@ -1,7 +1,6 @@
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
-    ProjectAreaTreatmentResult,
     TreatmentPlan,
     TreatmentPlanNote,
     TreatmentPrescription,

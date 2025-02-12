@@ -5,9 +5,7 @@ from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from django.contrib.gis.db.models import Union as UnionOp
 from collaboration.services import get_role, get_permissions
-from collaboration.permissions import PlanningAreaPermission
 from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -21,7 +19,7 @@ from planning.models import (
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
 from planscape.exceptions import InvalidGeometry
-from stands.models import Stand, StandSizeChoices
+from stands.models import StandSizeChoices
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
