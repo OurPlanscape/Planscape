@@ -8,7 +8,6 @@ from impacts.models import (
     TreatmentPlanStatus,
 )
 from planning.models import Scenario
-from planning.filters import get_planning_areas_for_filter
 
 
 def get_scenarios_for_filter(request: Optional[Request]) -> QuerySet:

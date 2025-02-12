@@ -1,10 +1,8 @@
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 from rest_framework import serializers
 from core.loaders import get_python_object
-from core.s3 import create_download_url
 from datasets.models import Category, Dataset, DataLayer
-from impacts.models import ImpactVariable
 
 
 class CategorySerializer(serializers.ModelSerializer[Category]):

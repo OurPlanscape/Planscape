@@ -13,7 +13,7 @@ from impacts.models import (
     get_prescription_type,
 )
 from planning.tests.factories import ScenarioFactory, ProjectAreaFactory
-from stands.models import Stand, StandSizeChoices
+from stands.models import StandSizeChoices
 from stands.tests.factories import StandFactory
 
 

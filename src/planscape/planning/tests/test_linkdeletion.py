@@ -1,12 +1,7 @@
 import json
-import os
-from unittest import mock
-from django.db import connection
-from django.conf import settings
+
 from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TransactionTestCase
-from django.urls import reverse
 
 from planning.models import SharedLink
 import planning.cron as cron

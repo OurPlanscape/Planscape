@@ -1,7 +1,6 @@
 import json
 from fiona.transform import transform_geom
 from typing import Any, Dict
-from unittest import TestCase
 
 
 def get_geojson_test_features():
