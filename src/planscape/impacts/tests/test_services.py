@@ -7,14 +7,6 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.gis.db.models import Union
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TransactionTestCase
-from planning.tests.factories import (
-    PlanningAreaFactory,
-    ProjectAreaFactory,
-    ScenarioFactory,
-)
-from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
-from stands.tests.factories import StandFactory
-
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -47,6 +39,14 @@ from impacts.tests.factories import (
     TreatmentPrescriptionFactory,
     TreatmentResultFactory,
 )
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ProjectAreaFactory,
+    ScenarioFactory,
+)
+from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.tests.factories import StandFactory
+
 from planscape.tests.factories import UserFactory
 
 
