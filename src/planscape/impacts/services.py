@@ -711,7 +711,8 @@ def get_forested_rate(
     """Returns forested rate based on a treatment result."""
     count = stand_metric.count if stand_metric and stand_metric.count else 0
     return truncate_result(
-        float(count) / float(pixels_from_size(stand_size))  # type: ignore
+        value=(float(count) / float(pixels_from_size(stand_size))),
+        quantize=".0001",  # type: ignore
     )
 
 
