@@ -3,7 +3,7 @@ from django.test import TestCase
 from collaboration.models import Role, UserObjectRole
 from collaboration.services import get_content_type
 from impacts.tests.factories import TreatmentPlanFactory
-from impacts.permissions import PERMISSIONS, TreatmentPlanPermission
+from impacts.permissions import TreatmentPlanPermission
 from planscape.tests.factories import UserFactory
 
 

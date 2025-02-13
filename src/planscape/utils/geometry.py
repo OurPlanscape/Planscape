@@ -1,7 +1,3 @@
-from django.contrib.gis.geos import GEOSGeometry
-from django.conf import settings
-
-
 def to_multi(geometry):
     if geometry["type"].startswith("Multi"):
         return geometry

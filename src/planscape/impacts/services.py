@@ -3,12 +3,13 @@ import json
 import logging
 from collections import defaultdict
 from pathlib import Path
-from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 
 import fiona
 import rasterio
 from actstream import action as actstream_action
 from core.s3 import get_aws_session
+from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
@@ -16,12 +17,7 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, QuerySet, Sum, When
 from django.db.models.expressions import RawSQL
-from planning.models import PlanningArea, ProjectArea, Scenario
-from rasterio.session import AWSSession
-from stands.models import STAND_AREA_ACRES, Stand, StandMetric
-from stands.services import calculate_stand_zonal_stats
-
-from impacts.calculator import calculate_delta
+from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -36,6 +32,16 @@ from impacts.models import (
     TTreatmentPlanCloneResult,
     get_prescription_type,
 )
+from planning.models import PlanningArea, ProjectArea, Scenario
+from rasterio.session import AWSSession
+from stands.models import (
+    STAND_AREA_ACRES,
+    Stand,
+    StandMetric,
+    StandSizeChoices,
+    pixels_from_size,
+)
+from stands.services import calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
 
@@ -229,9 +235,28 @@ def generate_summary(
 
     total_area_acres = total_stands * stand_area
     total_treated_area_acres = treated_stands * stand_area
+
+    prescriptions_qs = (
+        TreatmentPrescription.objects.filter(**tp_filter)
+        .values(
+            "action",
+        )
+        .annotate(stand_count=Count("stand"))
+    )
+    prescriptions_data = [
+        {
+            "action": p["action"],
+            "stand_count": p["stand_count"],
+            "area_acres": p["stand_count"] * stand_area,
+            "area_percent": (p["stand_count"] / total_stands) * 100,
+        }
+        for p in prescriptions_qs
+    ]
+
     data = {
         "planning_area_id": plan_area.id,
         "planning_area_name": plan_area.name,
+        "prescriptions": prescriptions_data,
         "scenario_id": scenario.id,
         "scenario_name": scenario.name,
         "treatment_plan_id": treatment_plan.pk,
@@ -362,6 +387,7 @@ def to_treatment_result(
             "baseline": result.get("baseline"),
             "delta": result.get("delta"),
             "action": result.get("action"),
+            "forested_rate": result.get("forested_rate"),
         },
     )
     return instance
@@ -380,25 +406,32 @@ def calculate_impacts(
         action=action
     ).select_related(
         "stand",
+        "scenario",
         "treatment_plan",
         "project_area",
     )
     stand_ids = prescriptions.values_list("stand_id", flat=True)
     stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
-
+    stand_size = treatment_plan.scenario.get_stand_size()
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
-        baseline_metrics = calculate_metrics(
-            stands=stands,
-            variable=variable,
+        baseline_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
+            action=None,
             year=year,
         )
-
-        action_metrics = calculate_metrics(
+        baseline_metrics = calculate_stand_zonal_stats(
             stands=stands,
-            variable=variable,
-            year=year,
+            datalayer=baseline_layer,
+        )
+        action_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
             action=action,
+            year=year,
+        )
+        action_metrics = calculate_stand_zonal_stats(
+            stands=stands,
+            datalayer=action_layer,
         )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
@@ -408,6 +441,8 @@ def calculate_impacts(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
         action=action,
+        action_datalayer=action_layer,
+        stand_size=stand_size,
     )
 
     project_area_deltas = []
@@ -452,6 +487,8 @@ def calculate_stand_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     action: Optional[TreatmentPrescriptionAction] = None,
+    action_datalayer: Optional[DataLayer] = None,
+    stand_size: Optional[StandSizeChoices] = None,
 ) -> List[Dict[str, Any]]:
     results = []
     for stand_id, baseline in baseline_dict.items():
@@ -467,6 +504,13 @@ def calculate_stand_deltas(
             else baseline_value
         )
 
+        if action_datalayer and stand_size:
+            forested_rate = get_forested_rate(
+                stand_metric=action_metric,  # type: ignore
+                stand_size=stand_size,
+            )  # type: ignore
+        else:
+            forested_rate = None
         delta = calculate_delta(action_value, baseline_value)
         results.append(
             {
@@ -476,6 +520,7 @@ def calculate_stand_deltas(
                 "value": action_value,
                 "baseline": baseline_value,
                 "delta": delta,
+                "forested_rate": forested_rate,
             }
         )
     return results
@@ -551,7 +596,7 @@ def get_calculation_matrix(
 
 def get_calculation_matrix_wo_action(
     years: Optional[Iterable[int]] = AVAILABLE_YEARS,
-) -> List[Tuple]:
+) -> Collection[Tuple]:
     variables = list(ImpactVariable)
     return list(itertools.product(variables, years))
 
@@ -651,18 +696,29 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
     """
     if fl_value is None:
         return "N/A"
-    if fl_value < 2.0:
+    if fl_value <= 10.0:
         return "Very Low"
-    if fl_value < 4.0:
+    if fl_value <= 40.0:
         return "Low"
-    if fl_value < 8.0:
+    if fl_value <= 80.0:
         return "Moderate"
-    if fl_value < 12.0:
+    if fl_value <= 120.0:
         return "High"
-    if fl_value < 25.0:
+    if fl_value <= 250.0:
         return "Very High"
 
     return "Extreme"
+
+
+def get_forested_rate(
+    stand_metric: StandMetric,
+    stand_size: StandSizeChoices,
+) -> Optional[float]:
+    """Returns forested rate based on a treatment result."""
+    count = stand_metric.count if stand_metric and stand_metric.count else 0
+    return truncate_result(
+        float(count) / float(pixels_from_size(stand_size))  # type: ignore
+    )
 
 
 def classify_rate_of_spread(ros_value: Optional[float]) -> str:
@@ -672,22 +728,23 @@ def classify_rate_of_spread(ros_value: Optional[float]) -> str:
     """
     if ros_value is None:
         return "N/A"
-    if ros_value < 3.0:
+    if ros_value <= 20.0:
         return "Very Low"
-    if ros_value < 10.0:
+    if ros_value <= 50.0:
         return "Low"
-    if ros_value < 20.0:
+    if ros_value <= 200.0:
         return "Moderate"
-    if ros_value < 60.0:
+    if ros_value <= 500.0:
         return "High"
-    if ros_value < 100.0:
+    if ros_value <= 1500.0:
         return "Very High"
 
     return "Extreme"
 
 
 def get_treatment_results_table_data(
-    treatment_plan: TreatmentPlan, stand_id: int
+    treatment_plan: TreatmentPlan,
+    stand_id: int,
 ) -> List[Dict[str, Any]]:
     """
     Retrieves a list of dictionaries, with each dictionary representing
@@ -702,72 +759,29 @@ def get_treatment_results_table_data(
       ...
     ]
     """
-    # Fetch treatment results
-    treated_results = (
+    datamap = defaultdict(dict)
+    results = (
         TreatmentResult.objects.filter(
             treatment_plan=treatment_plan,
             stand_id=stand_id,
         )
-        .exclude(
-            variable__in=[ImpactVariable.FLAME_LENGTH, ImpactVariable.RATE_OF_SPREAD]
-        )
-        .values("year", "variable", "value", "delta", "baseline")
+        .order_by("stand", "variable", "year")
+        .select_related("stand", "treatment_plan__scenario")
+        .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
     )
 
-    if not treated_results.exists():
-        return []
-
-    data_map = defaultdict(dict)
-
-    for year in AVAILABLE_YEARS:
-        flame_length = ImpactVariable.get_datalayer(
-            impact_variable=ImpactVariable.FLAME_LENGTH,
-            year=year,
-        )
-        rate_of_spread = ImpactVariable.get_datalayer(
-            impact_variable=ImpactVariable.RATE_OF_SPREAD,
-            year=year,
-        )
-        fl_metric = StandMetric.objects.get(stand_id=stand_id, datalayer=flame_length)
-        ros_metric = StandMetric.objects.get(
-            stand_id=stand_id, datalayer=rate_of_spread
-        )
-
-        data_map[year][ImpactVariable.FLAME_LENGTH] = {
-            "value": None,
-            "delta": None,
-            "baseline": fl_metric.majority,
-            "category": classify_flame_length(fl_metric.majority),
+    for result in results:
+        datamap[result.year][result.variable] = {
+            "value": result.value,
+            "delta": result.delta,
+            "baseline": result.baseline,
+            "category": get_category(result),
+            "forested_rate": result.forested_rate,
         }
-
-        data_map[year][ImpactVariable.RATE_OF_SPREAD] = {
-            "value": None,
-            "delta": None,
-            "baseline": ros_metric.majority,
-            "category": classify_rate_of_spread(ros_metric.majority),
-        }
-
-    # Populate data_map with treatment results
-    for row in treated_results:
-        year = row["year"]
-        variable = row["variable"]
-        value = row["value"]
-        delta = row["delta"]
-        baseline = row["baseline"]
-
-        data_map[year][variable] = {
-            "value": value,
-            "delta": delta,
-            "baseline": baseline,
-            "category": None,
-        }
-
-    # Format data into a list
     table_data = []
 
-    for year in sorted(data_map.keys()):
-        table_data.append({**data_map[year], "year": year})
-
+    for year in sorted(datamap.keys()):
+        table_data.append({**datamap[year], "year": year})
     return table_data
 
 
@@ -782,9 +796,22 @@ def get_export_path(treatment_plan: TreatmentPlan) -> str:
 
 def get_treament_result_schema():
     numeric_fields_iterator = itertools.product(
-        [i for i in ImpactVariable], AVAILABLE_YEARS
+        [i for i in ImpactVariable.numerical_variables()],
+        AVAILABLE_YEARS,
+    )
+    # we don't want to export FBFM.
+    other_fields_iterator = itertools.product(
+        [
+            i
+            for i in ImpactVariable.categorical_variables()
+            if i != ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL
+        ],
+        AVAILABLE_YEARS,
     )
     fields = list([(f"{i}_{year}", "float:4.2") for i, year in numeric_fields_iterator])
+    other_fields = list(
+        [(f"{i}_{year}", "str:64") for i, year in other_fields_iterator]
+    )
     return {
         "geometry": "Polygon",
         "properties": [
@@ -795,7 +822,9 @@ def get_treament_result_schema():
             ("scenario_id", "int"),
             ("scenario_name", "str:256"),
             ("action", "str:64"),
+            ("forested_pct", "float"),
             *fields,
+            *other_fields,
         ],
     }
 
@@ -820,25 +849,75 @@ def tretment_result_to_json(
     }
 
 
+def get_category(treatment_result: TreatmentResult) -> Optional[str]:
+    match treatment_result.variable:
+        case ImpactVariable.FLAME_LENGTH:
+            val = (
+                treatment_result.value
+                if treatment_result.action
+                else treatment_result.baseline
+            )
+            return classify_flame_length(val)
+        case ImpactVariable.RATE_OF_SPREAD:
+            val = (
+                treatment_result.value
+                if treatment_result.action
+                else treatment_result.baseline
+            )
+            return classify_rate_of_spread(val)
+        case _:
+            return None
+
+
+def get_treatment_result_value(
+    treatment_result: TreatmentResult,
+) -> Optional[Union[float, str]]:
+    match treatment_result.variable:
+        case ImpactVariable.FLAME_LENGTH:
+            val = (
+                treatment_result.value
+                if treatment_result.action
+                else treatment_result.baseline
+            )
+            return classify_flame_length(val)
+        case ImpactVariable.RATE_OF_SPREAD:
+            val = (
+                treatment_result.value
+                if treatment_result.action
+                else treatment_result.baseline
+            )
+            return classify_rate_of_spread(val)
+        case _:
+            if not treatment_result.delta:
+                return None
+            return truncate_result(treatment_result.delta * 100)
+
+
 def fetch_treatment_plan_data(
     treatment_plan: TreatmentPlan,
 ) -> Collection[Dict[str, Any]]:
     scenario = treatment_plan.scenario
     planning_area = scenario.planning_area
+
     results = (
         TreatmentResult.objects.filter(treatment_plan=treatment_plan)
         .order_by("stand", "variable", "year")
         .select_related("stand", "treatment_plan__scenario")
+        .exclude(variable=ImpactVariable.FIRE_BEHAVIOR_FUEL_MODEL)
     )
     treatment_results_data = {r.stand_id: r for r in results}
     result_data = defaultdict(dict)
     stands = Stand.objects.filter(id__in=[r.stand_id for r in results])
     for result in results:
         field_name = f"{result.variable}_{result.year}"
-        result_data[result.stand_id][field_name] = result.delta
+        result_data[result.stand_id][field_name] = get_treatment_result_value(result)
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
+        forested_rate = treatment_results_data[result.stand_id].forested_rate
+        if forested_rate:
+            forested_rate = truncate_result(forested_rate * 100)
+        result_data[result.stand_id]["forested_pct"] = forested_rate
 
     return list(
         map(
