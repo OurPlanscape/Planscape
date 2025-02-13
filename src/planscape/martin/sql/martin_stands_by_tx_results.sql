@@ -33,8 +33,7 @@ BEGIN
       tr.action AS "action",
       tr.delta as "delta",
       tr.stand_id AS "stand_id",
-      CASE WHEN (tr.forested_rate IS NULL) THEN NULL
-           ELSE (tr.forested_rate * 100)
+      tr.forested_rate as "forested_rate",
       END as "forested_pct",
       CASE WHEN (tr.value IS NULL) AND (tr.baseline IS NULL) THEN 'NON_BURNABLE'
            WHEN (tr.baseline IS NULL) THEN 'NON_FORESTED'
@@ -115,7 +114,7 @@ BEGIN
       rpa.name as "project_area_name",
       tr0.variable as "variable",
       tr0.action as "action",
-      tr0.forested_pct as "forested_pct",
+      tr0.forested_rate as "forested_rate",
       tr0.display_type as "display_type",
       (query_params->>'treatment_plan_id') as "treatment_plan_id",
       tr0.baseline AS "baseline_0",
