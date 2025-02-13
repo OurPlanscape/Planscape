@@ -7,13 +7,13 @@ import { map } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
 
 @Component({
-  selector: 'app-treatment-summary',
+  selector: 'app-treatment-summary-button',
   standalone: true,
   imports: [MatIconModule, ButtonComponent],
-  templateUrl: './treatment-summary.component.html',
-  styleUrl: './treatment-summary.component.scss',
+  templateUrl: './treatment-summary-button.component.html',
+  styleUrl: './treatment-summary-button.component.scss',
 })
-export class TreatmentSummaryComponent {
+export class TreatmentSummaryButtonComponent {
   constructor(
     private dialog: MatDialog,
     private treatmentState: TreatmentsState

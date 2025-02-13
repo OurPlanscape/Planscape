@@ -54,7 +54,7 @@ import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
-import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
+import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -91,7 +91,7 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
     MetricSelectorComponent,
     FilterDropdownComponent,
     TreatmentFilterComponent,
-    TreatmentSummaryComponent,
+    TreatmentSummaryButtonComponent,
   ],
   providers: [
     DirectImpactsStateService,
