@@ -15,7 +15,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
-from django.db.models import Case, Count, F, QuerySet, Sum, When
+from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
 from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
@@ -771,6 +771,7 @@ def get_treatment_results_table_data(
             "baseline": result.baseline,
             "category": get_category(result),
             "forested_rate": result.forested_rate,
+            "display_type": result.get_display_type(),
         }
     table_data = []
 
