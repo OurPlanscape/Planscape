@@ -566,6 +566,7 @@ class CalculateImpactsForUntreatedStandsTest(TransactionTestCase):
             self.assertEqual(treatment_result.action, None)
             self.assertEqual(treatment_result.value, treatment_result.baseline)
             self.assertEqual(treatment_result.delta, 0)
+            self.assertIsNotNone(treatment_result.forested_rate)
 
 
 class ImpactResultsDataPlotTest(TransactionTestCase):

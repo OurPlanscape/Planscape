@@ -531,6 +531,7 @@ def calculate_impacts_for_untreated_stands(
     variable: ImpactVariable,
     year: int,
 ) -> List[TreatmentResult]:
+    stand_size = treatment_plan.scenario.get_stand_size()
     prescriptions = treatment_plan.tx_prescriptions.select_related(
         "stand",
         "treatment_plan",
@@ -546,11 +547,16 @@ def calculate_impacts_for_untreated_stands(
 
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
-        baseline_metrics = calculate_metrics(
-            stands=untreated_stands,
-            variable=variable,
+        baseline_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
+            action=None,
             year=year,
         )
+        baseline_metrics = calculate_stand_zonal_stats(
+            stands=untreated_stands,
+            datalayer=baseline_layer,
+        )
+
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
 
     # Calculating deltas using baseline_dict on both entries
@@ -561,6 +567,8 @@ def calculate_impacts_for_untreated_stands(
         baseline_dict=baseline_dict,
         action_dict=baseline_dict,
         action=None,
+        action_datalayer=baseline_layer,
+        stand_size=stand_size,
     )
 
     treatment_results = list(
@@ -599,20 +607,6 @@ def get_calculation_matrix_wo_action(
 ) -> Collection[Tuple]:
     variables = list(ImpactVariable)
     return list(itertools.product(variables, years))
-
-
-def calculate_metrics(
-    stands: QuerySet[Stand],
-    variable: ImpactVariable,
-    year: int,
-    action: Optional[TreatmentPrescriptionAction] = None,
-):
-    datalayer = ImpactVariable.get_datalayer(
-        impact_variable=variable,
-        action=action,
-        year=year,
-    )
-    return calculate_stand_zonal_stats(stands=stands, datalayer=datalayer)
 
 
 def calculate_project_area_deltas(
