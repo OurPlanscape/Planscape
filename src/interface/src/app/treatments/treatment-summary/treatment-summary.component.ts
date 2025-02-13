@@ -4,11 +4,12 @@ import { TreatmentSummaryDialogComponent } from '../treatment-summary-dialog/tre
 import { MatDialog } from '@angular/material/dialog';
 import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-treatment-summary',
   standalone: true,
-  imports: [MatIconModule],
+  imports: [MatIconModule, ButtonComponent],
   templateUrl: './treatment-summary.component.html',
   styleUrl: './treatment-summary.component.scss',
 })

@@ -1,17 +1,12 @@
 @import 'colors';
 
-.treatment-summary-container {
-  padding: 16px;
-  padding-top: 0;
+:host {
+  padding: 0px;
   font-size: 14px;
   color: $color-standard-blue;
+}
 
-  span {
-    cursor: pointer;
-  }
-
-  .material-symbols-outlined {
-    position: relative;
-    top: 6px;
-  }
+button {
+  padding-left: 0;
+  padding-right: 0;
 }

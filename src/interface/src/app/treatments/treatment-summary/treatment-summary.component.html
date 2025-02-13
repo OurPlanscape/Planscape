@@ -1,7 +1,8 @@
-<div class="treatment-summary-container">
-  <span href="#" (click)="openTreatmentSummaryDialog($event)">
-    <mat-icon class="material-symbols-outlined" color="primary">
-      summarize </mat-icon
-    >View treatment summary
-  </span>
-</div>
+<button
+  sg-button
+  variant="text"
+  [outlined]="true"
+  icon="summarize"
+  (click)="openTreatmentSummaryDialog($event)">
+  View treatment summary
+</button>
