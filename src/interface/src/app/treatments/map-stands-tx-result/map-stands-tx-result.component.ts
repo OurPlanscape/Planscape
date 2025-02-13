@@ -100,7 +100,6 @@ export class MapStandsTxResultComponent implements OnInit {
   private setActiveStandFromPoint(point: Point) {
     const feature = this.getMapGeoJSONFeature(point);
     if (feature) {
-      console.log(feature);
       this.directImpactsStateService.setActiveStand(feature);
     }
   }
