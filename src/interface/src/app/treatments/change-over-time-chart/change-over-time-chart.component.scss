@@ -34,3 +34,28 @@ canvas {
 .center-text {
   text-align: center;
 }
+
+.empty-data-overlay {
+  width: 100%;
+  background-color: lightblue;
+  height: 100%;
+  opacity: 50%;
+  z-index: 1000;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.empty-data-heading {
+  @include h5();
+  color: black;
+  opacity: unset;
+}
+
+.empty-data-detail {
+  @include small-paragraph();
+  color: $color-md-gray;
+  opacity: unset;
+}

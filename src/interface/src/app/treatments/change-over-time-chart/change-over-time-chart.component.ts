@@ -58,6 +58,8 @@ export class ChangeOverTimeChartComponent {
 
   baseOptions = getBasicChartOptions();
 
+  emptyData = true;
+
   readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] = {
     ...this.baseOptions,
     animation: false,
@@ -114,6 +116,8 @@ export class ChangeOverTimeChartComponent {
     } as ChartConfiguration<'bar'>['data'];
   }
 
+  
+
   convertImpactResultToChartData(
     resultData: ImpactsResultData[],
     metrics: Record<ImpactsMetricSlot, Metric>
@@ -143,6 +147,10 @@ export class ChangeOverTimeChartComponent {
     return dataBySlot;
   }
 
+  isDataEmpty(givenData : any[]) : boolean {
+    return givenData.every(e => !e.value);
+  }
+
   barChartData$ = combineLatest([
     this.treatmentsState.treatmentPlan$.pipe(
       filter((plan): plan is TreatmentPlan => !!plan)
@@ -154,11 +162,14 @@ export class ChangeOverTimeChartComponent {
     this.directImpactsStateService.filteredTreatmentTypes$,
   ]).pipe(
     switchMap(([plan, metrics, area, txTypes]) => {
+
       const metricsArray = Object.values(metrics).map((m) => m.id);
       let selectedArea = null;
       if (area !== 'All') {
         selectedArea = area.project_area_id;
       }
+      this.emptyData = false;
+
       return this.treatmentsService
         .getTreatmentImpactCharts(plan.id, metricsArray, selectedArea, txTypes)
         .pipe(
@@ -167,6 +178,7 @@ export class ChangeOverTimeChartComponent {
     }),
     map((responseData) => {
       const resultData = responseData.response as ImpactsResultData[];
+      this.emptyData = this.isDataEmpty(resultData);
       return this.chartConfiguration(
         this.convertImpactResultToChartData(resultData, responseData.metrics)
       );
