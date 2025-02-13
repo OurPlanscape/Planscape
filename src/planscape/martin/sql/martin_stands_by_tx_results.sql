@@ -34,7 +34,6 @@ BEGIN
       tr.delta as "delta",
       tr.stand_id AS "stand_id",
       tr.forested_rate as "forested_rate",
-      END as "forested_pct",
       CASE WHEN (tr.value IS NULL) AND (tr.baseline IS NULL) THEN 'NON_BURNABLE'
            WHEN (tr.baseline IS NULL) THEN 'NON_FORESTED'
            WHEN (tr.value = 0) OR (tr.baseline = 0) THEN 'NON_FORESTED'
