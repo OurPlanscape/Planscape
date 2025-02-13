@@ -37,15 +37,16 @@ canvas {
 
 .empty-data-overlay {
   width: 100%;
-  background-color: lightblue;
-  height: 100%;
-  opacity: 50%;
+  height: 420px;
+  background-color: rgba(255, 255, 255, 0.8);
   z-index: 1000;
-  position: relative;
+  position: absolute;
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  top: 80px;
+  left: 0;
 }
 
 .empty-data-heading {
