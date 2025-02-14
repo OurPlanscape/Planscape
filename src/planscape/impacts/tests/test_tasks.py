@@ -9,19 +9,18 @@ from impacts.tests.factories import TreatmentPlanFactory
 from impacts.tasks import (
     async_send_email_process_finished,
     async_calculate_impacts_for_variable_action_year,
+    async_set_status,
 )
 from stands.models import Stand
 from impacts.services import (
     get_calculation_matrix,
 )
 from impacts.models import (
-    AVAILABLE_YEARS,
     ProjectAreaTreatmentResult,
     TreatmentPrescriptionAction,
     TreatmentResult,
-    ImpactVariable,
+    TreatmentPlanStatus,
 )
-from stands.models import StandMetric
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
 from impacts.tests.factories import (
@@ -189,3 +188,32 @@ class AsyncCalculateBaselineMetricsForVariableYearTest(TransactionTestCase):
         self.project_area = ProjectAreaFactory.create(
             scenario=self.plan.scenario, geometry=self.project_area_geometry
         )
+
+
+class AsyncTestStatusTest(TransactionTestCase):
+    def setUp(self):
+        self.plan = TreatmentPlanFactory.create()
+
+    @mock.patch("impacts.tasks.metrics", autospec=True, return_value=True)
+    def test_status(self, metrics_mock):
+        async_set_status(
+            treatment_plan_pk=self.plan.pk,
+            status=TreatmentPlanStatus.RUNNING,
+            start=True,
+        )
+        self.plan.refresh_from_db()
+        self.assertEquals(self.plan.status, TreatmentPlanStatus.RUNNING)
+        self.assertIsNotNone(self.plan.started_at)
+        self.assertIsNone(self.plan.finished_at)
+        self.assertFalse(metrics_mock.gauge.called)
+
+        async_set_status(
+            treatment_plan_pk=self.plan.pk,
+            status=TreatmentPlanStatus.SUCCESS,
+            start=False,
+        )
+        self.plan.refresh_from_db()
+        self.assertEquals(self.plan.status, TreatmentPlanStatus.SUCCESS)
+        self.assertIsNotNone(self.plan.started_at)
+        self.assertIsNotNone(self.plan.finished_at)
+        self.assertTrue(metrics_mock.gauge.called)
