@@ -818,6 +818,7 @@ def get_treament_result_schema():
             ("scenario_id", "int"),
             ("scenario_name", "str:256"),
             ("action", "str:64"),
+            ("type", "str:64"),
             ("forested_pct", "float"),
             *fields,
             *other_fields,
@@ -914,6 +915,7 @@ def fetch_treatment_plan_data(
         if forested_rate:
             forested_rate = truncate_result(forested_rate * 100)
         result_data[result.stand_id]["forested_pct"] = forested_rate
+        result_data[result.stand_id]["type"] = result.get_display_type()
 
     return list(
         map(
