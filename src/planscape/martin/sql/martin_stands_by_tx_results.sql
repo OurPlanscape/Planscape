@@ -32,7 +32,13 @@ BEGIN
       tr.variable AS "variable",
       tr.action AS "action",
       tr.delta as "delta",
-      tr.stand_id AS "stand_id"
+      tr.stand_id AS "stand_id",
+      tr.forested_rate as "forested_rate",
+      CASE WHEN (tr.value IS NULL) AND (tr.baseline IS NULL) THEN 'NON_BURNABLE'
+           WHEN (tr.baseline IS NULL) THEN 'NON_FORESTED'
+           WHEN (tr.value = 0) OR (tr.baseline = 0) THEN 'NON_FORESTED'
+           ELSE 'FORESTED'
+      END as "display_type"
       FROM impacts_treatmentresult tr
       LEFT JOIN stands_stand ss ON (tr.stand_id = ss.id)
       WHERE 
@@ -107,6 +113,8 @@ BEGIN
       rpa.name as "project_area_name",
       tr0.variable as "variable",
       tr0.action as "action",
+      tr0.forested_rate as "forested_rate",
+      tr0.display_type as "display_type",
       (query_params->>'treatment_plan_id') as "treatment_plan_id",
       tr0.baseline AS "baseline_0",
       tr0.value AS "value_0",

@@ -541,6 +541,12 @@ class ProjectAreaTreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         ]
 
 
+class TreatmentResultDisplayType(models.TextChoices):
+    FORESTED = ("FORESTED", "Forested")
+    NON_FORESTED = ("NON_FORESTED", "Non Forested")
+    NON_BURNABLE = ("NON_BURNABLE", "Non Burnable")
+
+
 class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     treatment_plan_id: int
@@ -591,6 +597,11 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
         help_text="number between 0 and 1 that represents the rate of forested pixels in this result.",
     )
+
+    def get_display_type(self) -> TreatmentResultDisplayType:
+        from impacts.calculator import get_display_type
+
+        return get_display_type(self.value, self.baseline)
 
     class Meta(TypedModelMeta):
         constraints = [

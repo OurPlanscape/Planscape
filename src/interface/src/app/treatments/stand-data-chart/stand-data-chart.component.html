@@ -13,7 +13,7 @@
       <div class="percent-forested">
         <mat-spinner *ngIf="loadingForestedRate" diameter="20"></mat-spinner>
         <div *ngIf="!loadingForestedRate">
-          {{ forestedRate | percent }} Forested
+          {{ forestedRate < 0.01 ? '<1%' : (forestedRate | percent) }} Forested
         </div>
       </div>
 
