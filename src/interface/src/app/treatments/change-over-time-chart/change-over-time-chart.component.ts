@@ -82,7 +82,7 @@ export class ChangeOverTimeChartComponent {
   chartConfiguration(
     data: Record<ImpactsMetricSlot, ChangeOverTimeChartItem[]>
   ) {
-    if (!data) {
+    if (!data || this.emptyData) {
       return undefined;
     }
     const allValues = Object.values(data).flatMap((entries) =>
