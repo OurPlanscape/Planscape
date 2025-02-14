@@ -2,20 +2,23 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import {
-  PRESCRIPTIONS,
-  PrescriptionSequenceAction,
-  nameForTypeAndAction,
-  nameForAction,
+  descriptionsForAction,
   PrescriptionAction,
+  PrescriptionSequenceAction,
+  PrescriptionSingleAction,
+  PRESCRIPTIONS,
+  PATTERN_NAMES,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
-import { TreatmentSummary, Prescription, TreatmentProjectArea } from '@types';
+import { Prescription, TreatmentProjectArea, TreatmentSummary } from '@types';
 import { MapConfigState } from './treatment-map/map-config.state';
 
 import { TreatmentsState } from './treatments.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import * as txIcons from '../../assets/base64/stand_icons/treatments';
+import { addRequestHeaders } from './maplibre.helper';
+import { AuthService } from '@services';
 
 const treatmentIcons: Record<PrescriptionAction, string> = {
   MODERATE_THINNING_BIOMASS: txIcons.treatment_blue,
@@ -42,7 +45,8 @@ export class TreatmentToPDFService {
   constructor(
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState,
-    private mapConfigState: MapConfigState
+    private mapConfigState: MapConfigState,
+    private authService: AuthService
   ) {}
 
   activeMap: MapLibreMap | null = null;
@@ -157,10 +161,9 @@ export class TreatmentToPDFService {
     treatmentsUsed: Set<string>
   ) {
     const treatments = Array.from(treatmentsUsed).map((t) => ({
-      name: nameForAction(t),
+      name: descriptionsForAction(t),
       icon: treatmentIcons[t as PrescriptionAction],
     }));
-
     autoTable(this.pdfDoc, {
       styles: {
         fillColor: [255, 255, 255],
@@ -182,12 +185,12 @@ export class TreatmentToPDFService {
       tableLineWidth: 0.3,
       tableLineColor: [0, 0, 0],
       margin: {
-        left: startX,
+        left: startX - 2,
         right: 20,
         top: 10,
         bottom: 20,
       },
-      tableWidth: 50,
+      tableWidth: 52,
       horizontalPageBreak: true,
       head: [['Treatment Legend']],
       body: treatments,
@@ -197,7 +200,8 @@ export class TreatmentToPDFService {
           const x = data.cell.x + 1; // Add some padding
           const y = data.cell.y; // Add some padding
           data.doc.addImage(treatments[idx].icon, 'PNG', x, y, 3, 3);
-          data.doc.text(treatments[idx].name, x + 4, y + 3);
+          data.row.height += 1.5 * treatments[idx].name.length; // expand height per name line
+          data.doc.text(treatments[idx].name, x + 4, y + 2.5);
         }
       },
     });
@@ -208,15 +212,18 @@ export class TreatmentToPDFService {
     currentSummary.project_areas.forEach((p) => {
       let rxInfo = '';
       p.prescriptions.forEach((rx) => {
-        const actionName = nameForTypeAndAction(rx.type, rx.action);
-        rxInfo += actionName + '\n';
+        if (rx.type === 'SINGLE') {
+          const actionName =
+            PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
+          rxInfo += actionName + '\n';
+        }
 
         if (rx.type === 'SEQUENCE') {
           const seqActions =
-            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction]
-              .details;
-          seqActions.forEach((aeqAction) => {
-            rxInfo += '\t' + aeqAction + '\n';
+            PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction];
+          seqActions.forEach((seqAction) => {
+            rxInfo +=
+              seqAction.description + '(Year ' + seqAction.year + ') \n ';
           });
         }
       });
@@ -255,11 +262,26 @@ export class TreatmentToPDFService {
     });
   }
 
-  copyActiveMap() {
+  async copyActiveMap() {
     if (!this.activeMap) {
       return;
     }
-    return new MapLibreMap({
+
+    const loadImageToMap = (
+      map: MapLibreMap,
+      patternName: string
+    ): Promise<void> => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          map.addImage(patternName, img);
+          resolve();
+        };
+        img.src = `/assets/png/patterns/${patternName}.png`;
+      });
+    };
+
+    const printMap = new MapLibreMap({
       container: 'printable-map',
       style: this.activeMap.getStyle(),
       center: this.activeMap.getBounds().getCenter(),
@@ -267,7 +289,19 @@ export class TreatmentToPDFService {
       bearing: this.activeMap.getBearing(),
       pitch: this.activeMap.getPitch(),
       bounds: this.activeMap.getBounds(),
+      transformRequest: (url, resourceType) =>
+        addRequestHeaders(url, resourceType, this.authService.getAuthCookie()),
     });
+
+    // ensure we *also* wait for the patterns to be loaded
+    await Promise.all([
+      new Promise((resolve) => printMap.on('load', resolve)),
+      ...PATTERN_NAMES.map((patternName) =>
+        loadImageToMap(printMap, patternName)
+      ),
+    ]);
+
+    return printMap;
   }
 
   async addMap(
@@ -280,8 +314,7 @@ export class TreatmentToPDFService {
       return;
     }
 
-    const printMap = this.copyActiveMap();
-    await new Promise((resolve) => printMap?.on('load', resolve));
+    const printMap = await this.copyActiveMap();
     const canvas = printMap?.getCanvas();
     const imgData = canvas?.toDataURL('image/png');
     if (imgData) {

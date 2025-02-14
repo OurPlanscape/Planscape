@@ -4,115 +4,152 @@
   [navState]="(navState$ | async) || null"
   [area]="'DIRECT_IMPACTS'"></app-nav-bar>
 
-<div *ngIf="treatmentPlan$ | async; let treatmentPlan" class="treatment-plan">
-  <div class="item">
-    <mat-icon class="material-symbols-outlined">person</mat-icon>
-    {{ treatmentPlan.creator_name }}
-  </div>
-
-  <div class="item">
-    <mat-icon class="material-symbols-outlined">calendar_month</mat-icon>
-    {{ treatmentPlan.updated_at | date }}
-  </div>
-</div>
 <div class="direct-impacts">
-  <div class="title-row">
-    <h4 class="title">Direct Treatment Impacts</h4>
-    <mat-slide-toggle
-      [checked]="(showTreatmentPrescription$ | async) || false"
-      (change)="saveShowTreatmentPrescription($event)"
-      >View treatment prescription
-    </mat-slide-toggle>
-    <button
-      sg-button
-      variant="ghost"
-      icon="download"
-      [outlined]="true"
-      [disabled]="downloadingShapefile"
-      [loading]="downloadingShapefile"
-      (click)="download()">
-      Download
-    </button>
-  </div>
+  <sg-panel>
+    <div class="title-row">
+      <h4 class="title">Direct Treatment Effects Analysis</h4>
+      <button
+        sg-button
+        variant="ghost"
+        icon="download"
+        [outlined]="true"
+        [disabled]="downloadingShapefile"
+        [loading]="downloadingShapefile"
+        (click)="download()">
+        Export GeoPackage
+      </button>
+    </div>
+    <div
+      *ngIf="treatmentPlan$ | async; let treatmentPlan"
+      class="treatment-plan">
+      <div class="item">
+        <mat-icon class="material-symbols-outlined">person</mat-icon>
+        <span class="item-label">Run By:</span> {{ treatmentPlan.creator_name }}
+      </div>
 
-  <div class="holder">
-    <div>
-      Select up to 4 metrics to view the relative change by project area(s) or
-      stand.
+      <div class="item">
+        <mat-icon class="material-symbols-outlined">calendar_month</mat-icon>
+        <span class="item-label">Run Date:</span>
+        {{ treatmentPlan.updated_at | date }}
+      </div>
+
+      <div class="item">
+        <mat-icon class="material-symbols-outlined"
+          >check_box_outline_blank
+        </mat-icon>
+        <span class="item-label">Total Planning Area Acres:</span>
+        {{ (summary$ | async)?.total_area_acres | number: '1.0-0' }}
+      </div>
+
+      <div class="item">
+        <mat-icon class="material-symbols-outlined">hexagon</mat-icon>
+        <span class="item-label">Stand Size:</span> {{ getStandSizeValue() }}
+      </div>
+
+      <app-treatment-summary-button class="item"></app-treatment-summary-button>
     </div>
-    <div class="hexagon-help">
-      <mat-icon class="material-symbols-outlined">info</mat-icon>
-      Hexagon = Stand
+  </sg-panel>
+
+  <sg-panel
+    class="chart-1"
+    [paddedContent]="false"
+    [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
+    (clickedButton)="expandChangeChart()">
+    <div panelTitle class="changes-chart-title">
+      <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
+        Percentage Change From Baseline
+        <span class="title-label">&nbsp;(Forested Stands)</span>
+      </div>
+      <a
+        sg-button
+        icon="help"
+        variant="text"
+        [outlined]="true"
+        href="https://github.com/OurPlanscape/Planscape/wiki/Planscape-Treatment-Impacts-User-Guide"
+        target="_blank"
+        >Learn About Metrics</a
+      >
     </div>
+    <div class="chart-filters">
+      <div class="filter-label">Project Area:</div>
+      <mat-form-field
+        appearance="outline"
+        class="changes-chart-select project-area-selector">
+        <mat-select
+          class="project-area-selector"
+          [ngModel]="selectedChartProjectArea$ | async"
+          (ngModelChange)="setChartProjectArea($event)">
+          <mat-option value="All">All</mat-option>
+          <mat-option
+            *ngFor="let projectArea of (availableProjectAreas$ | async) ?? []"
+            [value]="projectArea">
+            {{ projectArea.project_area_name }}
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+      <div *ngIf="summary$ | async">
+        <span class="filter-value">
+          Acres: {{ projectAreaAcres$ | async | number: '1.0-0' }}
+        </span>
+      </div>
+      <div class="filter-label filter-label-treatment">Filter by</div>
+
+      <app-treatment-filter class="treatment-dropdown"></app-treatment-filter>
+    </div>
+
+    <app-change-over-time-chart></app-change-over-time-chart>
 
     <div class="metric-selection">
       <app-metric-filters
         [selectedOptions]="(filterOptions$ | async) || []"
-        (metricUpdated)="updateReportMetric($event)"
-        (metricSelected)="activateMetric($event)"></app-metric-filters>
+        (metricSelected)="updateReportMetric($event)"></app-metric-filters>
     </div>
+  </sg-panel>
+
+  <sg-panel [showDivider]="false">
+    <div panelTitle>Explore Direct Effects at the Stand Level</div>
 
     <section class="direct-impacts-metrics">
-      <sg-panel
-        class="chart-1"
-        [paddedContent]="false"
-        [buttons]="changeChartButtons"
-        (clickedButton)="expandChangeChart()">
-        <div panelTitle class="changes-chart-title">
-          <div class="left-title-box" *ngIf="availableProjectAreas$ | async">
-            Project Area
-            <mat-form-field appearance="outline" class="changes-chart-select">
-              <mat-select
-                class="project-area-selector"
-                [ngModel]="selectedChartProjectArea$ | async"
-                (ngModelChange)="setChartProjectArea($event)">
-                <mat-option value="All">All</mat-option>
-                <mat-option
-                  *ngFor="
-                    let projectArea of (availableProjectAreas$ | async) ?? []
-                  "
-                  [value]="projectArea">
-                  {{ projectArea.project_area_name }}
-                </mat-option>
-              </mat-select>
-            </mat-form-field>
-          </div>
-        </div>
-        <app-change-over-time-chart></app-change-over-time-chart>
-      </sg-panel>
       <sg-panel
         class="chart-2"
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandStandChart()">
-        <div panelTitle>{{ standChartPanelTitle$ | async }}</div>
+        <div
+          panelTitle
+          *ngIf="activeStand$ | async as activeStand; else noStand">
+          {{ standChartTitle(activeStand) }}
+          <span class="stand-forested-type">{{
+            forestedLabel(activeStand)
+          }}</span>
+        </div>
+        <ng-template #noStand>
+          <div panelTitle #noStand>Stand Level Data</div>
+        </ng-template>
         <app-stand-data-chart></app-stand-data-chart>
       </sg-panel>
 
       <sg-panel
-        class="map-panel"
-        [ngClass]="{ prescriptions: showTreatmentPrescription$ | async }"
         [paddedContent]="false"
         [buttons]="[{ icon: 'open_in_full', actionName: 'expand' }]"
         (clickedButton)="expandMaps()">
-        <div panelTitle>{{ mapPanelTitle$ | async }}</div>
-        <app-direct-impacts-synced-maps
-          *ngIf="
-            (showTreatmentPrescription$ | async) === false
-          "></app-direct-impacts-synced-maps>
-        <app-treatment-map
-          [showProjectAreaTooltips]="false"
-          *ngIf="showTreatmentPrescription$ | async">
-        </app-treatment-map>
+        <div panelTitle>
+          <div class="map-title">
+            <div>Treatment Prescriptions</div>
+
+            <sg-status-chip
+              icon="hexagon"
+              label="Select a stand to get stand level effects"></sg-status-chip>
+          </div>
+        </div>
+        <div class="map-panel-content">
+          <app-direct-impacts-map></app-direct-impacts-map>
+        </div>
+
         <app-treatment-legend
+          [appliedTreatments]="treatmentActionsUsed$ | async"
           *ngIf="showTreatmentLegend$ | async"></app-treatment-legend>
       </sg-panel>
-      <sg-panel
-        class="legend-panel"
-        [paddedContent]="false"
-        *ngIf="(showTreatmentPrescription$ | async) === false">
-        <app-direct-impacts-map-legend></app-direct-impacts-map-legend>
-      </sg-panel>
     </section>
-  </div>
+  </sg-panel>
 </div>

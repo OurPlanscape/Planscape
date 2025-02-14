@@ -7,8 +7,8 @@ import { getColorForProjectPosition } from '../../plan/plan-helpers';
 import {
   LayerSpecification,
   LngLat,
-  MapGeoJSONFeature,
   Map as MapLibreMap,
+  MapGeoJSONFeature,
   MapMouseEvent,
   Point,
 } from 'maplibre-gl';
@@ -16,10 +16,10 @@ import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
-import { getTreatedStandsTotal } from '../prescriptions';
+
 import { TreatmentProjectArea } from '@types';
 import {
   combineLatest,
@@ -48,6 +48,7 @@ type MapLayerData = {
     NgIf,
     AsyncPipe,
     MapTooltipComponent,
+    PercentPipe,
   ],
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
@@ -62,7 +63,6 @@ export class MapProjectAreasComponent implements OnInit {
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
   fillColor!: any;
-  getTreatedStandsTotal = getTreatedStandsTotal;
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
@@ -128,7 +128,7 @@ export class MapProjectAreasComponent implements OnInit {
       'match',
       ['get', 'rank'],
     ];
-    for (let i = 1; i < 11; i++) {
+    for (let i = 1; i <= this.treatmentsState.projectAreaCount(); i++) {
       matchExpression.push(i.toString(), getColorForProjectPosition(i));
     }
     matchExpression.push(defaultColor);

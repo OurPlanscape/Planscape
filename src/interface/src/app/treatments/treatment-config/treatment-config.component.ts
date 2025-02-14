@@ -17,7 +17,7 @@ import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../treatment-map/map-config.state';
-import { catchError, combineLatest, map, switchMap } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -42,6 +42,7 @@ import { canRunTreatmentAnalysis } from '../../plan/permissions';
 import { Plan } from '@types';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AnalyticsService } from '@services/analytics.service';
 
 @UntilDestroy()
 @Component({
@@ -82,21 +83,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 })
 export class TreatmentConfigComponent {
   projectAreaId$ = this.treatmentsState.projectAreaId$;
-  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
+
   summary$ = this.treatmentsState.summary$;
   treatmentPlanName$ = this.summary$.pipe(map((s) => s?.treatment_plan_name));
   showApplyTreatments$ = this.treatmentsState.showApplyTreatmentsDialog$;
-  showTreatmentLayer$ = this.mapConfig.showTreatmentStandsLayer$;
-  showTreatmentLegend$ = combineLatest([
-    this.treatmentsState.projectAreaId$.pipe(map((activeArea) => !!activeArea)),
-    this.showTreatmentLayer$,
-    this.mapConfig.showTreatmentLegend$,
-  ]).pipe(
-    map(
-      ([activeArea, showTreatmentLayer, shouldShowLegend]) =>
-        !activeArea && showTreatmentLayer && shouldShowLegend
-    )
-  );
+
+  showTreatmentLegend$ = this.mapConfig.showTreatmentLegend$;
   @ViewChild(TreatmentMapComponent) mapElement: any;
   navState$ = this.treatmentsState.navState$;
 
@@ -113,7 +105,8 @@ export class TreatmentConfigComponent {
     private router: Router,
     private dialog: MatDialog,
     private pdfService: TreatmentToPDFService,
-    private injector: Injector // Angular's injector for passing shared services
+    private injector: Injector, // Angular's injector for passing shared services
+    private analiticsService: AnalyticsService
   ) {
     this.router.events
       .pipe(
@@ -175,6 +168,11 @@ export class TreatmentConfigComponent {
   }
 
   showReviewDialog() {
+    this.analiticsService.emitEvent(
+      'run_treatment_analysis',
+      'treatment_plan_page',
+      'Run Treatment Analysis'
+    );
     this.dialog.open(ReviewTreatmentPlanDialogComponent, {
       injector: this.injector, // Pass the current injector to the dialog
     });

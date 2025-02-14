@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { ProjectAreaExpanderComponent } from './project-area-expander.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { Extent, TreatmentType } from '@types';
+import { Extent, Prescription, TreatmentType } from '@types';
 import { Point } from 'geojson';
 
 const containerStyle = `style="display: flex;
@@ -19,7 +19,10 @@ const samplePoint: Point = { type: 'Point', coordinates: [] };
 const sampleProjectAreaResult = {
   project_area_id: 1,
   project_area_name: 'Project Area 1',
-  total_stand_count: 20,
+  total_area_acres: 100,
+  total_stand_count: 10,
+  total_treated_area_acres: 12,
+  total_treated_stand_count: 1120,
   prescriptions: [
     {
       action: 'MODERATE_THINNING_BIOMASS',
@@ -77,14 +80,17 @@ const sampleProjectAreaResult = {
       type: 'SEQUENCE' as TreatmentType,
       stand_ids: [4, 5],
     },
-  ],
+  ] as Prescription[],
   extent: sampleExtent,
   centroid: samplePoint,
 };
 const areaWithNoTreatments = {
   project_area_id: 1,
   project_area_name: 'Project Area 2',
-  total_stand_count: 20,
+  total_area_acres: 100,
+  total_stand_count: 10,
+  total_treated_area_acres: 12,
+  total_treated_stand_count: 1120,
   prescriptions: [],
   extent: sampleExtent,
   centroid: samplePoint,
@@ -101,7 +107,7 @@ const meta: Meta<ProjectAreaExpanderComponent> = {
   tags: ['autodocs'],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div ${containerStyle}><div style="width:400px;"><sg-project-area-expander ${argsToTemplate(args)}></sg-project-area-expander></div>`,
+    template: `<div ${containerStyle}><div style='width:400px;'><sg-project-area-expander ${argsToTemplate(args)}></sg-project-area-expander></div>`,
   }),
 };
 

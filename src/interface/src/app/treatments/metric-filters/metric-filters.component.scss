@@ -2,12 +2,11 @@
 
 :host {
   width: 100%;
-}
-
-:host{
   display: grid;
   gap: 16px; // Space between metrics
   grid-template-columns: repeat(1, 1fr); // 1 column by default
+
+
   .grid-item {
     margin-top: 8px;
     margin-bottom: 8px;
@@ -15,23 +14,21 @@
 }
 
 @include on-medium() {
-  :host{
-    grid-template-columns: repeat(2, 1fr); // 2 columns in md-desktop
+  :host {
+    grid-template-columns: repeat(2, max-content); // 2 columns in md-desktop
+    justify-content: center;
+    align-items: center;
+    justify-items: center;
   }
-  
-  .grid-item {
-    margin-top: inherit;
-    margin-bottom: inherit;
-  }
+
+
 }
 
 @include on-extra-large() {
-  :host{
-      grid-template-columns: repeat(4, 1fr); // 4 columns in xl-desktop
+  :host {
+    grid-template-columns: repeat(4, max-content); // 4 columns in xl-desktop
+
+
   }
-  
-  .grid-item {
-      margin-top: inherit;
-      margin-bottom: inherit;
-  }
+
 }

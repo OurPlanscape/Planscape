@@ -4,9 +4,10 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { ModalComponent } from '@styleguide';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map } from 'rxjs';
 import { MatDialogRef } from '@angular/material/dialog';
 import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
+import { MapGeoJSONFeature } from 'maplibre-gl';
+import { standIsForested } from '../stands';
 
 @Component({
   selector: 'app-expanded-stand-data-chart',
@@ -24,19 +25,26 @@ import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expan
   styleUrl: './expanded-stand-data-chart.component.scss',
 })
 export class ExpandedStandDataChartComponent {
+  activeStand$ = this.directImpactsStateService.activeStand$;
+
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
     public dialogRef: MatDialogRef<ExpandedStandDataChartComponent>
   ) {}
 
-  standChartPanelTitle$ = this.directImpactsStateService.activeStand$.pipe(
-    map((activeStand) => {
-      if (!activeStand) {
-        return 'Stand Level Data Unavailable';
-      }
-      return `${activeStand.properties['project_area_name']}, Stand ${activeStand.properties['id']}`;
-    })
-  );
+  standChartTitle(standFeature: MapGeoJSONFeature) {
+    if (standIsForested(standFeature)) {
+      return 'Percentage Change From Baseline';
+    } else {
+      return 'Direct Effects';
+    }
+  }
+
+  forestedLabel(standFeature: MapGeoJSONFeature) {
+    if (standIsForested(standFeature)) {
+      return `(Forested Stand)`;
+    } else return `(Non-forested Stand)`;
+  }
 
   close() {
     this.dialogRef.close();

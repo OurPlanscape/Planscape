@@ -1,11 +1,11 @@
-<div class="chart-heading">Average Change Over Time</div>
 <div class="title">Change (%)</div>
 <div class="chart">
   <canvas
     baseChart
     *ngIf="barChartData$ | async; let barChartData"
     [data]="barChartData"
-    [options]="(barChartOptions$ | async) ?? {}"
+    [options]="staticBarChartOptions"
     [legend]="false"
     [type]="'bar'"></canvas>
 </div>
+<div class="title center-text">Years after initial treatment</div>

@@ -1,7 +1,8 @@
 import logging
-from django_filters.rest_framework import DjangoFilterBackend
+
 from django.http import FileResponse
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiTypes
+from django_filters.rest_framework import DjangoFilterBackend
+from drf_spectacular.utils import OpenApiTypes, extend_schema, extend_schema_view
 from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
 from impacts.models import (
     TreatmentPlan,
@@ -9,7 +10,6 @@ from impacts.models import (
     TreatmentPlanStatus,
     TreatmentPrescription,
 )
-from rest_framework.response import Response
 from impacts.permissions import (
     TreatmentPlanNoteViewPermission,
     TreatmentPlanViewPermission,
@@ -21,10 +21,10 @@ from impacts.serializers import (
     StandQuerySerializer,
     SummarySerializer,
     TreatmentPlanListSerializer,
-    TreatmentPlanSerializer,
-    TreatmentPlanNoteSerializer,
     TreatmentPlanNoteCreateSerializer,
     TreatmentPlanNoteListSerializer,
+    TreatmentPlanNoteSerializer,
+    TreatmentPlanSerializer,
     TreatmentPlanUpdateSerializer,
     TreatmentPrescriptionBatchDeleteResponseSerializer,
     TreatmentPrescriptionBatchDeleteSerializer,
@@ -46,6 +46,7 @@ from impacts.tasks import async_calculate_persist_impacts_treatment_plan
 from rest_framework import mixins, response, status, viewsets
 from rest_framework.decorators import action
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
 
 from planscape.serializers import BaseErrorMessageSerializer
 
@@ -284,7 +285,11 @@ class TreatmentPlanViewSet(
         return Response(data=data_to_plot, status=status.HTTP_200_OK)
 
     @extend_schema(
-        description="Retrieve treatment result information for a specific stand.",
+        description=(
+            "Retrieve treatment results for a specific stand (via `stand_id`) "
+            "within the specified Treatment Plan (via path parameter `id`)."
+        ),
+        parameters=[StandQuerySerializer],
         responses={
             200: TreatmentResultSerializer,
             404: BaseErrorMessageSerializer,
@@ -437,4 +442,5 @@ class TreatmentPlanNoteViewSet(viewsets.ModelViewSet):
         tx_plan_pk = self.kwargs.get("tx_plan_pk")
         if tx_plan_pk is None:
             raise ValueError("treatment plan id is required")
+        return self.queryset.filter(treatment_plan_id=tx_plan_pk)
         return self.queryset.filter(treatment_plan_id=tx_plan_pk)

@@ -1,10 +1,11 @@
 import json
-from planning.models import UserPrefs
+
 from django.contrib.auth.models import User
 from django.urls import reverse
-from rest_framework.test import APITestCase, APITransactionTestCase
-
+from planning.models import PlanningArea, Scenario, UserPrefs
 from planning.tests.test_geometry import read_shapefile, to_geometry
+from rest_framework import status
+from rest_framework.test import APITestCase, APITransactionTestCase
 
 
 class ValidatePlanningAreaTest(APITestCase):
@@ -430,3 +431,75 @@ class EmptyUserPrefsAPIViewTest(APITransactionTestCase):
         self.assertIsNone(
             response_data["preferences"],
         )
+
+
+class CreateScenarioSeedTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="seedtester", password="testpass")
+        self.client.force_authenticate(self.user)
+
+        self.planning_area = PlanningArea.objects.create(
+            user=self.user,
+            name="Seed Test Planning Area",
+            region_name="SierraNevada",  # adapt to your region choices
+            geometry="SRID=4326;MULTIPOLYGON(((0 0, 0 0.0001, 0.0001 0.0001, 0.0001 0, 0 0)))",  # minimal valid geometry
+        )
+
+        self.url = reverse("planning:create_scenario")
+
+    def test_create_scenario_no_seed(self):
+        """
+        Test creating a scenario without specifying a seed.
+        Should succeed and result in no 'seed' in scenario.configuration.
+        """
+        payload = {
+            "name": "ScenarioNoSeed",
+            "planning_area": self.planning_area.id,
+            "configuration": {"max_budget": 999999},
+            # No 'seed' key
+        }
+
+        response = self.client.post(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        scenario_id = response.data["id"]
+
+        scenario = Scenario.objects.get(pk=scenario_id)
+        self.assertNotIn("seed", scenario.configuration, "seed should not be in config")
+
+    def test_create_scenario_with_seed(self):
+        """
+        Test creating a scenario with a valid integer seed.
+        Should succeed and add the seed to scenario.configuration.
+        """
+        payload = {
+            "name": "ScenarioWithSeed",
+            "planning_area": self.planning_area.id,
+            "configuration": {"max_budget": 999999},
+            "seed": 42,
+        }
+
+        response = self.client.post(self.url, payload, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK, response.data)
+        scenario_id = response.data["id"]
+
+        scenario = Scenario.objects.get(pk=scenario_id)
+        self.assertIn("seed", scenario.configuration)
+        self.assertEqual(scenario.configuration["seed"], 42)
+
+    def test_create_scenario_invalid_seed(self):
+        """
+        Test creating a scenario with an invalid (non-integer) seed.
+        Should return 400 error with message: "Seed must be an integer".
+        """
+        payload = {
+            "name": "ScenarioInvalidSeed",
+            "planning_area": self.planning_area.id,
+            "configuration": {"max_budget": 999999},
+            "seed": "notanumber",  # invalid seed
+        }
+
+        response = self.client.post(self.url, payload, format="json")
+        self.assertEqual(
+            response.status_code, status.HTTP_400_BAD_REQUEST, response.data
+        )
+        self.assertIn("Seed must be an integer", response.data["error"])

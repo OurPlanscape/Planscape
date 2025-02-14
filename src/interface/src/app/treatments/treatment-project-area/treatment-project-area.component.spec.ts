@@ -11,6 +11,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { of } from 'rxjs';
 import { Geometry } from 'geojson';
+import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 
 describe('TreatmentProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -53,7 +54,11 @@ describe('TreatmentProjectAreaComponent', () => {
         },
       ],
       declarations: [
-        MockDeclarations(TreatmentMapComponent, MapBaseLayerComponent),
+        MockDeclarations(
+          TreatmentMapComponent,
+          MapBaseLayerComponent,
+          AcresTreatedComponent
+        ),
       ],
     }).compileComponents();
 

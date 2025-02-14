@@ -2,27 +2,61 @@
 @import 'colors';
 @import 'mixins';
 
+$panel-height: 600px;
+
 :host {
   display: block;
 }
 
 .treatment-plan {
   display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 16px;
-  padding: 16px;
-  align-items: center;
+  padding: 16px 0 0 0;
 
   .item {
     @include xs-label();
     display: flex;
     gap: 8px;
     align-items: center;
+    color: $color-dark-gray;
+    font-weight: 500;
+
+    .material-symbols-outlined {
+      color: $color-standard-blue;
+    }
+
+    &-label {
+      font-weight: 600;
+    }
+  }
+
+  @include on-medium() {
+    display: block;
+    .item {
+      width: 50%;
+      display: inline-flex;
+    }
+  }
+
+  @include on-extra-large() {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    .item {
+      width: auto;
+      display: flex;
+    }
   }
 }
 
 .direct-impacts {
   background-color: $color-soft-purple;
   padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .changes-chart-select {
@@ -30,6 +64,7 @@
   border: 1px;
   border-radius: 4px;
 }
+
 .changes-chart-title {
   line-height: 24px;
   font-weight: 600;
@@ -46,22 +81,17 @@
 .left-title-box {
   display: flex;
   flex-direction: row;
-  gap: 20px;
   justify-content: space-between;
   align-items: center;
   height: 38px;
+
+  .title-label {
+    color: $color-md-gray;
+  }
 }
 
 ::ng-deep .changes-chart-select .mat-mdc-text-field-wrapper,
 .mat-mdc-form-field-flex {
-  height: 38px;
-}
-
-::ng-deep
-  .mat-mdc-text-field-wrapper.mdc-text-field--outlined
-  .mat-mdc-form-field-infix {
-  padding: 0px;
-  line-height: 38px;
   height: 38px;
 }
 
@@ -73,12 +103,7 @@
   display: flex;
   gap: 16px;
   align-items: center;
-  padding: 5px 0;
-
-  padding-top: 11px;
-  padding-bottom: 11px;
-  padding-left: 14px;
-  padding-right: 14px;
+  padding: 0;
 
   @include on-small() {
     flex-direction: column;
@@ -87,74 +112,31 @@
 }
 
 .title {
-  @include h4();
+  @include h5();
+  font-size: 18px;
   margin: 0 auto 0 0;
 }
 
-.holder {
-  background-color: $color-white;
-  padding: 24px;
-  margin-top: 16px;
-}
-
-.hexagon-help {
-  @include xs-label();
-  display: flex;
-  align-items: center;
-  margin-top: 24px;
-  gap: 8px;
-  color: $color-standard-blue;
-}
-
 .metric-selection {
-  background-color: $color-light-gray;
-  margin-top: 24px;
-  //placeholder styles
-  padding: 20px;
+  padding: 36px 16px;
   display: flex;
 }
 
 .direct-impacts-metrics {
   display: grid;
   grid-template-columns: 50% 50%;
-  grid-template-rows: repeat(12, 86px);
+  grid-template-rows: $panel-height;
   gap: 16px;
-  padding: 16px 0;
   width: calc(100% - 16px);
 
   @include on-small() {
-    display: flex;
-    flex-direction: column;
+    grid-template-columns: 100%;
+    grid-template-rows: $panel-height $panel-height;
     width: 100%;
-  }
 
-  .chart-1 {
-    grid-column: 1;
-    grid-row: 1/7;
-  }
-
-  .chart-2 {
-    grid-column: 1;
-    grid-row: 7/13;
-  }
-
-  .map-panel {
-    grid-column: 2;
-    grid-row: 1/12;
-
-    @include on-small() {
-      height: 90vh;
+    .chart-2 {
+      order: 1;
     }
-
-    &.prescriptions {
-      grid-row: 1/13;
-    }
-  }
-
-  .legend-panel {
-    grid-column: 2;
-    grid-row: 12;
-    padding: 16px;
   }
 }
 
@@ -173,4 +155,92 @@
     position: relative;
     top: 6px;
   }
+}
+
+.map-panel-content {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.stand-forested-type {
+  @include h5();
+  color: $color-md-gray;
+}
+
+.attribution {
+  background-color: $color-white;
+  white-space: nowrap;
+  padding: 8px 16px;
+  text-align: right;
+
+  a {
+    color: black;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.map-title {
+  justify-items: center;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.chart-filters {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 16px;
+}
+
+.filter-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: $color-black;
+
+  &-treatment {
+    padding-left: 20px;
+  }
+}
+
+.filter-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: $color-dark-gray;
+}
+
+.chart-2 ::ng-deep .content {
+  display: flex;
+  flex-direction: column;
+}
+
+.project-area-selector {
+  --mdc-outlined-text-field-outline-color: #{$color-fields-gray};
+
+  ::ng-deep .mat-mdc-form-field-infix {
+    height: 38px;
+    padding: 8px 0;
+  }
+
+  ::ng-deep .mat-mdc-select-trigger {
+    top: -2px;
+    color: $color-black;
+    font-size: 14px;
+    font-weight: 400;
+  }
+}
+
+.treatment-dropdown ::ng-deep .dropdown-button {
+  border: 1px solid $color-soft-gray;
+}
+
+app-change-over-time-chart {
+  height: 400px;
 }

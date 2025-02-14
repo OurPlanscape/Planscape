@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from collaboration.models import Role, UserObjectRole
 from collaboration.services import get_permissions
-from django.contrib.auth.models import User
 
 
 class CreateUserObjectRolesSerializer(serializers.Serializer):

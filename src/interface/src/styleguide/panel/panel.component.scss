@@ -1,5 +1,5 @@
-@import "colors";
-@import "mixins";
+@import 'colors';
+@import 'mixins';
 
 $panel-title-height: 60px;
 
@@ -8,7 +8,7 @@ $panel-title-height: 60px;
   border-radius: 4px;
   border: 1px solid $color-soft-gray;
   background: $color-white;
-  box-shadow: 0 6px 6px 0 rgba(0, 0, 0, 0.20);
+  box-shadow: 0 6px 6px 0 rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
 
   ::ng-deep *[panelTitle] {
@@ -16,6 +16,10 @@ $panel-title-height: 60px;
     overflow: hidden;
     text-overflow: ellipsis;
     margin-right: 8px;
+  }
+
+  &.no-divider > .title-row {
+    border-bottom-color: transparent;
   }
 }
 
@@ -26,13 +30,12 @@ $panel-title-height: 60px;
   display: flex;
   align-items: center;
 
-  padding: 14px 16px 14px 24px;
+  padding: 16px;
   border-bottom: 1px solid $color-soft-gray;
 
   mat-icon {
     cursor: pointer;
   }
-
 }
 
 .content {
@@ -47,12 +50,10 @@ $panel-title-height: 60px;
   gap: 16px;
 }
 
-
 .padded {
-  padding: 14px 16px 14px 24px;
+  padding: 16px;
 
   &.content {
     height: calc(100% - $panel-title-height - 28px);
   }
 }
-

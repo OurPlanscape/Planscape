@@ -21,7 +21,10 @@ import {
   YearInterval,
 } from '../metrics';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-direct-impacts-map',
   standalone: true,
@@ -36,6 +39,7 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
     NgIf,
     ControlComponent,
     MapStandsTxResultComponent,
+    MapActionButtonComponent,
   ],
   templateUrl: './direct-impacts-map.component.html',
   styleUrl: './direct-impacts-map.component.scss',
@@ -68,10 +72,20 @@ export class DirectImpactsMapComponent {
    */
   mapLibreMap!: MapLibreMap;
 
+  showLegend$ = this.mapConfigState.showTreatmentLegend$;
+
+  standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
+
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
     this.mapCreated.emit(this.mapLibreMap);
     this.saveZoom();
+
+    this.mapConfigState.standSelectionEnabled$
+      .pipe(untilDestroyed(this))
+      .subscribe((enabled) => {
+        this.mapLibreMap.getCanvas().style.cursor = enabled ? 'pointer' : '';
+      });
   }
 
   saveZoom() {
@@ -79,9 +93,29 @@ export class DirectImpactsMapComponent {
   }
 
   sourceData(event: MapSourceDataEvent) {
-    if (event.sourceId === 'stands_by_tx_result' && event.isSourceLoaded) {
+    if (
+      event.sourceId === 'stands_by_tx_result' &&
+      event.isSourceLoaded &&
+      !event.sourceDataType
+    ) {
       this.directImpactsStateService.setStandsTxSourceLoaded(true);
+      this.moveLayers();
     }
+  }
+
+  // Move layers so the hover and selected stand layer sit at the top
+  private moveLayers() {
+    this.mapLibreMap.moveLayer('map-project-areas-line');
+    this.mapLibreMap.moveLayer('standHover');
+    this.mapLibreMap.moveLayer('standSelected');
+
+    if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
+      this.mapLibreMap.moveLayer('map-project-areas-labels');
+    }
+  }
+
+  openTreatmentLegend() {
+    this.mapConfigState.setTreatmentLegendVisible(true);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

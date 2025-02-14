@@ -1,5 +1,4 @@
 import { Component, Input } from '@angular/core';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import {
@@ -39,10 +38,7 @@ export class MapControlsComponent {
   @Input() userCanEditStands: boolean = false;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
 
-  constructor(
-    private selectedStandsState: SelectedStandsState,
-    private mapConfigState: MapConfigState
-  ) {}
+  constructor(private mapConfigState: MapConfigState) {}
 
   zoomIn() {
     this.mapLibreMap.zoomIn();
@@ -58,13 +54,5 @@ export class MapControlsComponent {
 
   togglePan() {
     this.mapConfigState.setStandSelectionEnabled(false);
-  }
-
-  undoLastAction() {
-    this.selectedStandsState.undo();
-  }
-
-  clearAll() {
-    this.selectedStandsState.clearStands();
   }
 }

@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { MatTabsModule } from '@angular/material/tabs';
-import { TreatmentPlanAboutTabComponent } from '../treatment-plan-about-tab/treatment-plan-about-tab.component';
+import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 
@@ -9,7 +9,7 @@ import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.componen
   standalone: true,
   imports: [
     MatTabsModule,
-    TreatmentPlanAboutTabComponent,
+    TreatmentPlanNotesComponent,
     ProjectAreasTabComponent,
     MapBaseLayerComponent,
   ],

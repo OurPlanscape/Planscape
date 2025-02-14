@@ -1,5 +1,23 @@
+export type MetricId =
+  | 'CBD'
+  | 'CBH'
+  | 'CC'
+  | 'LARGE_TREE_BIOMASS'
+  | 'MERCH_BIOMASS'
+  | 'NON_MERCH_BIOMASS'
+  | 'MORTALITY'
+  | 'POTENTIAL_SMOKE'
+  | 'PTORCH'
+  | 'QMD'
+  | 'SDI'
+  | 'TH'
+  | 'TOT_FLAME_SEV'
+  | 'TOTAL_CARBON'
+  | 'ROS'
+  | 'FL';
+
 export interface Metric {
-  id: string;
+  id: MetricId;
   label: string;
 }
 
@@ -110,4 +128,5 @@ export interface MetricResult {
   category: string;
   delta: number;
   value: number;
+  forested_rate: number;
 }

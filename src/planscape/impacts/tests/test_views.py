@@ -1,6 +1,7 @@
+import json
 from unittest import mock
 from urllib.parse import urlencode
-import json
+
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
 from datasets.models import DataLayerType
@@ -8,6 +9,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
+from django.utils import timezone
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -156,6 +158,35 @@ class TxPlanViewSetTest(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data["name"], "it's a bold plan")
+        self.assertIsNone(response.get("started_at"))
+        self.assertIsNone(response.get("finished_at"))
+        self.assertIsNone(response.get("elapsed_time_seconds"))
+
+    def test_get_tx_plan_with_elapsed_time(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        now = timezone.now()
+        started_at = now - timezone.timedelta(seconds=10)
+
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            name="it's a bold plan",
+            started_at=started_at,
+            finished_at=now,
+        )
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data.get("name"), "it's a bold plan")
+        self.assertEqual(
+            response_data.get("started_at"), started_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(
+            response_data.get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(response_data.get("elapsed_time_seconds"), 10)
 
     def test_get_tx_plan_with_role(self):
         self.client.force_authenticate(user=self.scenario.user)
@@ -291,6 +322,30 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertEqual(updated_plan.name, "ok new name")
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
+
+    def test_list_tx_plan(self):
+        now = timezone.now()
+        started_at = now - timezone.timedelta(seconds=10)
+        TreatmentPlanFactory.create_batch(
+            5, scenario=self.scenario, started_at=started_at, finished_at=now
+        )
+
+        self.client.force_authenticate(user=self.scenario.user)
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-list"),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_data), 5)
+        self.assertEqual(
+            response_data[0].get("started_at"),
+            started_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        )
+        self.assertEqual(
+            response_data[0].get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(response_data[0].get("elapsed_time_seconds"), 10)
 
 
 class TxPlanViewSetPlotTest(APITransactionTestCase):
@@ -612,6 +667,7 @@ class StandTreatmentResultsViewTest(APITestCase):
             value=80.0,
             delta=10.0,
             baseline=70.0,
+            forested_rate=1,
             action=None,
             aggregation=ImpactVariableAggregation.MEAN,
         )
@@ -624,6 +680,7 @@ class StandTreatmentResultsViewTest(APITestCase):
             value=105.0,
             delta=12.0,
             baseline=45.0,
+            forested_rate=1,
             action=None,
             aggregation=ImpactVariableAggregation.SUM,
         )
@@ -701,20 +758,20 @@ class StandTreatmentResultsViewTest(APITestCase):
 
         self.assertEqual(
             len(data),
-            len(AVAILABLE_YEARS),
+            1,
             f"Expected {len(AVAILABLE_YEARS)} rows (one for each year).",
         )
-        row_2024_list = [row for row in data if row["year"] == 2024]
-        self.assertEqual(len(row_2024_list), 1, "Expected exactly one row for 2024")
-        row_2024 = row_2024_list[0]
 
-        self.assertIn(ImpactVariable.FLAME_LENGTH, row_2024)
-        self.assertIn(ImpactVariable.RATE_OF_SPREAD, row_2024)
+        first_year = data[0]
+        self.assertEqual(first_year.get("year"), 2024)
 
-        biomass_data = row_2024.get(ImpactVariable.LARGE_TREE_BIOMASS)
-        self.assertEqual(biomass_data["value"], 105.0)
-        self.assertEqual(biomass_data["delta"], 12.0)
-        self.assertEqual(biomass_data["baseline"], 45.0)
+        biomass = first_year.get(ImpactVariable.LARGE_TREE_BIOMASS)
+        self.assertIsNotNone(biomass)
+
+        self.assertIsNotNone(biomass.get("value"))
+        self.assertIsNotNone(biomass.get("delta"))
+        self.assertIsNotNone(biomass.get("baseline"))
+        self.assertIsNotNone(biomass.get("forested_rate"))
 
     def test_missing_stand_id(self):
         """

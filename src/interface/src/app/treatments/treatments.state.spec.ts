@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { TreatmentsState } from './treatments.state';
-import { MockProviders } from 'ng-mocks';
+import { MockProvider, MockProviders } from 'ng-mocks';
 import { MapConfigState } from './treatment-map/map-config.state';
 import { TreatedStand } from '@types';
 import { firstValueFrom, of, throwError } from 'rxjs';
@@ -10,6 +10,7 @@ import { RemovingStandsError, UpdatingStandsError } from './treatment-errors';
 import { MOCK_SUMMARY, MOCK_TREATMENT_PLAN } from './mocks';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { DirectImpactsStateService } from './direct-impacts.state.service';
 
 describe('TreatmentsState', () => {
   let service: TreatmentsState;
@@ -33,6 +34,9 @@ describe('TreatmentsState', () => {
 
         TreatmentsState,
         MockProviders(MapConfigState, TreatedStandsState, TreatmentsService),
+        MockProvider(DirectImpactsStateService, {
+          selectedProjectArea$: of('All' as any),
+        }),
       ],
     });
 

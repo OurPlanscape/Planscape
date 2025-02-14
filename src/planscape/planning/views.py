@@ -1,59 +1,55 @@
 import json
 import logging
 import os
+
 from base.region_name import display_name_to_region
-from django.conf import settings
-from django.db import transaction
-from django.db import IntegrityError
-from django.db.models import Count, Max
-from django.db.models.functions import Coalesce
-from django.http import (
-    HttpResponse,
-    QueryDict,
-)
-from django.shortcuts import get_object_or_404
 from collaboration.permissions import (
+    PlanningAreaNotePermission,
     PlanningAreaPermission,
     ScenarioPermission,
-    PlanningAreaNotePermission,
 )
+from django.conf import settings
+from django.db import IntegrityError, transaction
+from django.db.models import Count, Max
+from django.db.models.functions import Coalesce
+from django.http import HttpResponse, QueryDict
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
     Scenario,
     ScenarioResult,
     ScenarioResultStatus,
-    SharedLink,
     ScenarioStatus,
+    SharedLink,
 )
 from planning.serializers import (
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
+    PlanningAreaNoteListSerializer,
+    PlanningAreaNoteSerializer,
     PlanningAreaSerializer,
     ScenarioSerializer,
     SharedLinkSerializer,
-    PlanningAreaNoteSerializer,
-    PlanningAreaNoteListSerializer,
     ValidatePlanningAreaOutputSerializer,
     ValidatePlanningAreaSerializer,
 )
+from planning.services import create_planning_area as create_planning_area_service
+from planning.services import create_scenario as create_scenario_service
+from planning.services import delete_planning_area as delete_planning_area_service
+from planning.services import delete_scenario as delete_scenario_service
 from planning.services import (
     export_to_shapefile,
     get_acreage,
     validate_scenario_treatment_ratio,
     zip_directory,
-    create_planning_area as create_planning_area_service,
-    create_scenario as create_scenario_service,
-    delete_planning_area as delete_planning_area_service,
-    delete_scenario as delete_scenario_service,
 )
-from planning.tasks import async_forsys_run
-from rest_framework.views import APIView
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework.request import Request
-from rest_framework import status
-
 from planscape.exceptions import InvalidGeometry
 
 logger = logging.getLogger(__name__)
@@ -200,7 +196,7 @@ def delete_planning_area(request: Request) -> Response:
         # opens up a transaction.
         # any calls to the delete method will open a new checkpoint
         with transaction.atomic():
-            results = [delete_planning_area_service(user, pa) for pa in planning_areas]
+            _results = [delete_planning_area_service(user, pa) for pa in planning_areas]
 
         # We still report that the full set of planning area IDs requested were deleted,
         # since from the user's perspective, there are no planning areas with that ID.
@@ -545,10 +541,13 @@ def create_scenario(request: Request) -> Response:
     Required params:
       name (str): The user-provided name of the Scenario.
       planning_area (int): The ID of the planning area that will recieve the new Scenario.
-      configuration (str): A JSON string representing the scenario configuration (e.g. query parameters, weights).
+      configuration (dict): A JSON-friendly dict/string representing the scenario configuration (e.g., query parameters, weights).
 
     Optional params:
       notes (str): User-provided notes for this scenario.
+      seed (int): An integer used to initialize the random number generator in Forsys. If
+      provided, subsequent runs of Forsys for this scenario become reproducible, yielding the
+      same results every time. If omitted, Forsys defaults to standard random behavior.
     """
     try:
         user = request.user
@@ -558,11 +557,11 @@ def create_scenario(request: Request) -> Response:
                 status=status.HTTP_401_UNAUTHORIZED,
             )
 
-        # Check for all needed fields
+        # Validate request data via function's serializer
         serializer = ScenarioSerializer(data=request.data, context={"user": user})
         serializer.is_valid(raise_exception=True)
 
-        # no need to convert this anymore, serializer resolves it.
+        # Ensure user can add a scenario in the specified planning area
         planning_area = serializer.validated_data.get("planning_area")
         if not PlanningAreaPermission.can_add_scenario(user, planning_area):
             return Response(
@@ -573,12 +572,27 @@ def create_scenario(request: Request) -> Response:
                 status=status.HTTP_403_FORBIDDEN,
             )
 
-        # TODO: Parse configuration field into further components.
+        # Retrieve the scenario configuration parsed by the serializer
+        configuration = serializer.validated_data.get("configuration") or {}
+
+        # Parse the seed from request.data
+        seed_value = request.data.get("seed")
+        if seed_value is not None:
+            try:
+                # Attempt to convert to integer
+                seed_value = int(seed_value)
+                configuration["seed"] = seed_value
+            except ValueError:
+                return Response(
+                    {"error": "Seed must be an integer"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+
+        # Validate scenarion configuration (e.g., check treatment ratio)
         result, reason = validate_scenario_treatment_ratio(
             planning_area,
-            serializer.validated_data.get("configuration"),
+            configuration,
         )
-
         if not result:
             return Response(
                 {"reason": reason},
@@ -586,11 +600,17 @@ def create_scenario(request: Request) -> Response:
                 status=status.HTTP_400_BAD_REQUEST,
             )
 
+        # Create the scenario, passing in updated configuration
         scenario = create_scenario_service(
-            user=request.user, **serializer.validated_data
+            user=request.user,
+            **{
+                **serializer.validated_data,
+                "configuration": configuration,
+            },
         )
 
         return Response({"id": scenario.pk}, content_type="application/json")
+
     except PlanningArea.DoesNotExist:
         return Response(
             {"error": "a matching Planning Area does not exist"},

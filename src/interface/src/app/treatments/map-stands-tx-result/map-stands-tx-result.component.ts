@@ -1,27 +1,21 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+
+import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
+
 import {
   LayerComponent,
   PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import {
-  ColorSpecification,
-  DataDrivenPropertyValueSpecification,
-  LngLat,
-  Map as MapLibreMap,
-  MapMouseEvent,
-  Point,
-} from 'maplibre-gl';
-import { SINGLE_STAND_SELECTED, STANDS_CELL_PAINT } from '../map.styles';
+import { LngLat, Map as MapLibreMap, MapMouseEvent, Point } from 'maplibre-gl';
+import { SINGLE_STAND_HOVER, SINGLE_STAND_SELECTED } from '../map.styles';
 import { environment } from '../../../environments/environment';
-import { DEFAULT_SLOT, ImpactsMetricSlot, SLOT_PALETTES } from '../metrics';
-import { combineLatest, map, switchMap, take } from 'rxjs';
+import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
-import { descriptionForAction } from '../prescriptions';
-import { FilterByActionPipe } from './filter-by-action.pipe';
+import { descriptionsForAction } from '../prescriptions';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MapConfigState } from '../treatment-map/map-config.state';
 
 @UntilDestroy()
 @Component({
@@ -32,8 +26,9 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     LayerComponent,
     VectorSourceComponent,
     PopupComponent,
+    NgFor,
     NgIf,
-    FilterByActionPipe,
+    DecimalPipe,
   ],
   templateUrl: './map-stands-tx-result.component.html',
   styleUrl: './map-stands-tx-result.component.scss',
@@ -46,44 +41,60 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
 
+  readonly resultsVectorSourceName = 'stands_by_tx_result';
+  readonly resultsVectorSourceLayerName = 'stands_by_tx_result';
+  readonly treatmentStandsSourceName = 'treatment_stands';
+  readonly treatmentStandsSourceLayer = 'stands_by_tx_plan';
+
   constructor(
     private treatmentsState: TreatmentsState,
+    private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService
-  ) {
-    this.directImpactsStateService.activeMetric$.pipe().subscribe((m) => {
-      this.paint = this.generatePaint(m.slot);
-    });
-  }
+  ) {}
 
-  readonly STANDS_CELL_PAINT = STANDS_CELL_PAINT;
   readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
-  paint = {};
+  readonly SINGLE_STAND_HOVER = SINGLE_STAND_HOVER;
 
   tooltipLongLat: null | LngLat = null;
-  appliedTreatment = '';
+  appliedTreatment: string[] = [];
 
-  vectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
+  standsResultVectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
     map((mapMetric) => {
       const plan = this.treatmentsState.getTreatmentPlanId();
       return (
         environment.martin_server +
-        `stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=${plan}&variable=${mapMetric.metric.id}`
+        `stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=${plan}&variable=${mapMetric.id}`
       );
     })
   );
 
+  // Use the stands_by_tx_plan layer for drawing the selected stand, to avoid
+  // the selected stand being hidden / not draw when `standsResultVectorLayer$` changes
+  get standsVectorLayer() {
+    const plan = this.treatmentsState.getTreatmentPlanId();
+    return (
+      environment.martin_server +
+      `stands_by_tx_plan/{z}/{x}/{y}?treatment_plan_id=${plan}`
+    );
+  }
+
   activeStand$ = this.directImpactsStateService.activeStand$;
-
-  treatments$ = this.directImpactsStateService.filteredTreatmentTypes$;
-
-  activeMetric$ = this.directImpactsStateService.activeMetric$;
 
   // If we get a null active stand we clear the stand selection
   activeStandId$ = this.activeStand$.pipe(map((stand) => stand?.id));
 
+  private hoverStandId: number | string | null = null;
+  // list of previous hovered stands, used to clean hover feature state
+  private hoveredStands: (string | number)[] = [];
+
+  projectAreaData = { name: '', acres: 0 };
+
   setActiveStand(event: MapMouseEvent) {
+    if (!this.mapConfigState.isStandSelectionEnabled()) {
+      return;
+    }
     this.setActiveStandFromPoint(event.point);
-    this.hideTooltip();
+    this.hoverOutStand();
   }
 
   private setActiveStandFromPoint(point: Point) {
@@ -94,22 +105,22 @@ export class MapStandsTxResultComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.updateStandOnTreatmentChanges();
-    this.paint = this.generatePaint(DEFAULT_SLOT);
     this.directImpactsStateService.standsTxSourceLoaded$
       .pipe(
         untilDestroyed(this),
         switchMap((s) => this.activeStandId$.pipe(take(1)))
       )
       .subscribe((standId) => {
-        if (standId) {
+        if (standId && this.mapLibreMap) {
+          // get data from the map, specific for this stand id
           const sourceFeatures = this.mapLibreMap.querySourceFeatures(
-            'stands_by_tx_result',
+            this.resultsVectorSourceName,
             {
-              sourceLayer: 'stands_by_tx_result',
-              filter: ['==', ['get', 'id'], standId], // Filter for the specific stand ID
+              sourceLayer: this.resultsVectorSourceName,
+              filter: ['==', ['get', 'id'], standId],
             }
           );
+          // if we got data, update the active stand data with the new version
           if (sourceFeatures[0]) {
             this.directImpactsStateService.setActiveStand(sourceFeatures[0]);
           }
@@ -117,37 +128,61 @@ export class MapStandsTxResultComponent implements OnInit {
       });
   }
 
-  updateStandOnTreatmentChanges() {
-    combineLatest([
-      this.directImpactsStateService.filteredTreatmentTypes$,
-      this.directImpactsStateService.activeStand$,
-    ])
-      .pipe(untilDestroyed(this))
-      .subscribe(([treatments, stand]) => {
-        if (
-          treatments?.length &&
-          !treatments.includes(stand?.properties?.['action'])
-        ) {
-          this.directImpactsStateService.resetActiveStand();
-        }
-      });
-  }
+  hoverOnStand(event: MapMouseEvent) {
+    if (!this.mapConfigState.isStandSelectionEnabled()) {
+      return;
+    }
 
-  showTooltip(event: MapMouseEvent) {
     this.tooltipLongLat = event.lngLat;
     const feature = this.getMapGeoJSONFeature(event.point);
     const action = feature.properties['action'];
+
+    if (feature && feature.id && feature.id != this.hoverStandId) {
+      this.removePreviousHover();
+      this.paintHover(feature.id);
+      this.hoverStandId = feature.id;
+    }
+    const projectAreaName = feature.properties['project_area_name'];
+    this.projectAreaData = {
+      name: projectAreaName,
+      acres: this.treatmentsState.getAcresForProjectArea(projectAreaName),
+    };
     if (action) {
-      this.appliedTreatment = descriptionForAction(
+      this.appliedTreatment = descriptionsForAction(
         feature.properties['action']
       );
     } else {
-      this.appliedTreatment = 'No Treatment';
+      this.appliedTreatment = ['No Treatment'];
     }
   }
 
-  hideTooltip() {
+  private removePreviousHover() {
+    this.hoveredStands.forEach((id) => {
+      this.mapLibreMap.removeFeatureState({
+        source: this.treatmentStandsSourceName,
+        sourceLayer: this.treatmentStandsSourceLayer,
+        id: id,
+      });
+    });
+    this.hoveredStands = [];
+  }
+
+  private paintHover(id: string | number) {
+    this.hoveredStands.push(id);
+    this.mapLibreMap.setFeatureState(
+      {
+        source: this.treatmentStandsSourceName,
+        sourceLayer: this.treatmentStandsSourceLayer,
+        id: id,
+      },
+      { hover: true }
+    );
+  }
+
+  hoverOutStand() {
     this.tooltipLongLat = null;
+    this.hoverStandId = null;
+    this.removePreviousHover();
   }
 
   private getMapGeoJSONFeature(point: Point) {
@@ -156,39 +191,5 @@ export class MapStandsTxResultComponent implements OnInit {
     });
 
     return features[0];
-  }
-
-  private generatePaint(slot: ImpactsMetricSlot) {
-    return {
-      'fill-color': [
-        // If 'variable' is not null, apply the existing logic
-        'case',
-        ['==', ['get', this.propertyName], ['literal', null]], // Check for null values
-        '#ffffff', // White for null 'propertyName'
-        [
-          'interpolate',
-          ['linear'],
-          ['get', this.propertyName],
-          ...this.getPalette(slot),
-        ],
-      ] as DataDrivenPropertyValueSpecification<ColorSpecification>,
-      'fill-opacity': 0.8,
-    };
-  }
-
-  private getPalette(slot: ImpactsMetricSlot) {
-    const palette = SLOT_PALETTES[slot];
-    return [
-      -1,
-      palette[0],
-      -0.5,
-      palette[1],
-      0,
-      palette[2],
-      0.5,
-      palette[3],
-      1,
-      palette[4],
-    ];
   }
 }
