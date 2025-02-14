@@ -7,7 +7,7 @@ import {
   HttpRequest,
 } from '@angular/common/http';
 import { catchError, Observable, switchMap } from 'rxjs';
-import { AuthService, authTokenRefreshKey } from './auth.service';
+import { AuthService } from './auth.service';
 
 @Injectable({
   providedIn: 'root',
@@ -28,7 +28,7 @@ export class JwtInterceptor implements HttpInterceptor {
           error instanceof HttpErrorResponse &&
           !request.url.includes('login') &&
           error.status === 401 &&
-          this.hasRefreshToken()
+          this.auth.refreshTokenIsSet()
         ) {
           return this.handle401Error(request, next);
         }
@@ -48,11 +48,5 @@ export class JwtInterceptor implements HttpInterceptor {
         return next.handle(request);
       })
     );
-  }
-
-  hasRefreshToken(): boolean {
-    return document.cookie
-      .split(';')
-      .some((cookie) => cookie.trim().startsWith(authTokenRefreshKey));
   }
 }

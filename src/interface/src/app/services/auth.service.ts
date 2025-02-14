@@ -33,13 +33,12 @@ export interface PasswordResetToken {
   token: string;
 }
 
-export const authTokenRefreshKey = 'my-refresh-token';
-
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private readonly authTokenKey = 'my-app-auth';
+  private readonly authTokenRefreshKey = 'my-refresh-token';
   loggedInStatus$ = new BehaviorSubject<boolean | null>(null);
   isLoggedIn$: Observable<boolean | null> = this.loggedInStatus$;
   loggedInUser$ = new BehaviorSubject<User | null | undefined>(undefined);
@@ -55,6 +54,12 @@ export class AuthService {
 
   currentUser() {
     return this.loggedInUser$.value;
+  }
+
+  refreshTokenIsSet(): boolean {
+    return document.cookie
+      .split(';')
+      .some((cookie) => cookie.trim().startsWith(this.authTokenRefreshKey));
   }
 
   login(email: string, password: string) {
@@ -145,7 +150,7 @@ export class AuthService {
     return this.http
       .post(
         this.API_ROOT.concat('token/refresh/'),
-        { refresh: this.cookieService.get(authTokenRefreshKey) },
+        { refresh: this.cookieService.get(this.authTokenRefreshKey) },
         { withCredentials: true }
       )
       .pipe(
@@ -178,7 +183,7 @@ export class AuthService {
    * removes the cookies for tokens
    */
   removeCookie() {
-    this.cookieService.delete(authTokenRefreshKey);
+    this.cookieService.delete(this.authTokenRefreshKey);
     this.cookieService.delete(this.authTokenKey);
   }
 
