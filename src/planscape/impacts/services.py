@@ -15,7 +15,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
-from django.db.models import Case, Count, F, QuerySet, Sum, When
+from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
 from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
@@ -711,7 +711,8 @@ def get_forested_rate(
     """Returns forested rate based on a treatment result."""
     count = stand_metric.count if stand_metric and stand_metric.count else 0
     return truncate_result(
-        float(count) / float(pixels_from_size(stand_size))  # type: ignore
+        value=(float(count) / float(pixels_from_size(stand_size))),
+        quantize=".0001",  # type: ignore
     )
 
 
@@ -771,6 +772,7 @@ def get_treatment_results_table_data(
             "baseline": result.baseline,
             "category": get_category(result),
             "forested_rate": result.forested_rate,
+            "display_type": result.get_display_type(),
         }
     table_data = []
 
@@ -816,6 +818,7 @@ def get_treament_result_schema():
             ("scenario_id", "int"),
             ("scenario_name", "str:256"),
             ("action", "str:64"),
+            ("type", "str:64"),
             ("forested_pct", "float"),
             *fields,
             *other_fields,
@@ -912,6 +915,7 @@ def fetch_treatment_plan_data(
         if forested_rate:
             forested_rate = truncate_result(forested_rate * 100)
         result_data[result.stand_id]["forested_pct"] = forested_rate
+        result_data[result.stand_id]["type"] = result.get_display_type()
 
     return list(
         map(

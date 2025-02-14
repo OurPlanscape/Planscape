@@ -11,9 +11,8 @@
     <ng-container *ngIf="activeStandIsForested$ | async; else nonForested">
       <div class="title">{{ chartTitle(activeStand) }}</div>
       <div class="percent-forested">
-        <mat-spinner *ngIf="loadingForestedRate" diameter="20"></mat-spinner>
-        <div *ngIf="!loadingForestedRate">
-          {{ forestedRate | percent }} Forested
+        <div *ngIf="activeStand.properties['forested_rate'] as forestedRate">
+          {{ forestedRate < 0.01 ? '<1%' : (forestedRate | percent) }} Forested
         </div>
       </div>
 
