@@ -37,6 +37,7 @@ from stands.models import StandSizeChoices
 from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planscape.tests.factories import UserFactory
+from collaboration.tests.factories import UserObjectRoleFactory
 
 User = get_user_model()
 
@@ -350,8 +351,8 @@ class TxPlanViewSetTest(APITransactionTestCase):
 
 class TxPlanViewSetPlotTest(APITransactionTestCase):
     def setUp(self):
-        self.user = UserFactory.create()
-        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        self.owner = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(user=self.owner)
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             configuration={"stand_size": StandSizeChoices.SMALL},
@@ -362,12 +363,11 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
             ProjectAreaFactory.create(scenario=self.scenario),
         ]
         self.tx_plan = TreatmentPlanFactory.create(
-            scenario=self.scenario, created_by=self.user
+            scenario=self.scenario, created_by=self.owner
         )
         self.empty_tx_plan = TreatmentPlanFactory.create(
-            scenario=self.scenario, created_by=self.user
+            scenario=self.scenario, created_by=self.owner
         )
-        self.client.force_authenticate(user=self.user)
         self.years = AVAILABLE_YEARS
         self.patxrx_list = []
         for pa in self.project_areas:
@@ -397,28 +397,48 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
         return filters
 
     def test_treatment_results(self):
-        variables = [
-            ImpactVariable.TOTAL_CARBON.value,
-            ImpactVariable.FLAME_LENGTH.value,
-            ImpactVariable.RATE_OF_SPREAD.value,
-            ImpactVariable.PROBABILITY_TORCHING.value,
-        ]
-        filter = self._build_filters(variables=variables)
-        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
-        response = self.client.get(
-            url,
-            content_type="application/json",
+        collab_user = UserFactory.create()
+        user_object_role_collab = UserObjectRoleFactory.create(
+            inviter=self.owner,
+            collaborator=collab_user,
+            email=collab_user.email,
+            role=Role.COLLABORATOR,
+            associated_model=self.planning_area,
         )
-        self.assertEqual(response.status_code, status.HTTP_200_OK)
-        response_data = response.json()
-        self.assertIsNotNone(response_data)
-        self.assertEqual(len(response_data), len(self.years) * 4)
-        for item in response_data:
-            self.assertIn(item.get("year"), self.years)
-            self.assertIn(item.get("variable"), variables)
-            self.assertIsNotNone(item.get("value"))
+
+        viewer_user = UserFactory.create()
+        user_object_role_viewer = UserObjectRoleFactory.create(
+            inviter=self.owner,
+            collaborator=viewer_user,
+            email=viewer_user.email,
+            role=Role.VIEWER,
+            associated_model=self.planning_area,
+        )
+        for user in [self.owner, collab_user, viewer_user]:
+            self.client.force_authenticate(user=user)
+            variables = [
+                ImpactVariable.TOTAL_CARBON.value,
+                ImpactVariable.FLAME_LENGTH.value,
+                ImpactVariable.RATE_OF_SPREAD.value,
+                ImpactVariable.PROBABILITY_TORCHING.value,
+            ]
+            filter = self._build_filters(variables=variables)
+            url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+            response = self.client.get(
+                url,
+                content_type="application/json",
+            )
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
+            response_data = response.json()
+            self.assertIsNotNone(response_data)
+            self.assertEqual(len(response_data), len(self.years) * 4)
+            for item in response_data:
+                self.assertIn(item.get("year"), self.years)
+                self.assertIn(item.get("variable"), variables)
+                self.assertIsNotNone(item.get("value"))
 
     def test_empty_tx_plan(self):
+        self.client.force_authenticate(user=self.owner)
         variables = [
             ImpactVariable.TOTAL_CARBON.value,
             ImpactVariable.FLAME_LENGTH.value,
@@ -436,6 +456,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
         self.assertEqual(response_data, [])
 
     def test_filter_by_project_areas(self):
+        self.client.force_authenticate(user=self.owner)
         pa_pks = [project_area.pk for project_area in self.project_areas]
         pa_pks.pop(0)
         pa_pks.sort()
@@ -463,6 +484,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
             self.assertIsNotNone(item.get("value"))
 
     def test_filter_by_actions(self):
+        self.client.force_authenticate(user=self.owner)
         variables = [
             ImpactVariable.TOTAL_CARBON.value,
             ImpactVariable.FLAME_LENGTH.value,
@@ -488,6 +510,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
             self.assertIsNotNone(item.get("value"))
 
     def test_filter_by_not_applied_actions(self):
+        self.client.force_authenticate(user=self.owner)
         variables = [
             ImpactVariable.TOTAL_CARBON.value,
             ImpactVariable.FLAME_LENGTH.value,
@@ -508,6 +531,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
         self.assertEqual(response_data, [])
 
     def test_someone_elses_tx_plan(self):
+        self.client.force_authenticate(user=self.owner)
         variables = [
             ImpactVariable.TOTAL_CARBON.value,
             ImpactVariable.FLAME_LENGTH.value,
@@ -634,7 +658,6 @@ class StandTreatmentResultsViewTest(APITestCase):
     def setUp(self):
         self.user = UserFactory()
         self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
         self.scenario = ScenarioFactory.create(planning_area__user=self.user)
 
         self.treatment_plan = TreatmentPlanFactory(
@@ -685,6 +708,7 @@ class StandTreatmentResultsViewTest(APITestCase):
             aggregation=ImpactVariableAggregation.SUM,
         )
 
+        self.client.force_authenticate(user=self.user)
         for year in AVAILABLE_YEARS:
             biomass_meta = {
                 "modules": {
@@ -777,6 +801,7 @@ class StandTreatmentResultsViewTest(APITestCase):
         """
         If 'stand_id' param is missing, the serializer should raise a 400 error.
         """
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -784,8 +809,32 @@ class StandTreatmentResultsViewTest(APITestCase):
         """
         If 'stand_id' doesn't exist in DB, we expect a 400 from the PrimaryKeyRelatedField.
         """
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(f"{self.url}?stand_id=99999999")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_permissions(self):
+        collab_user = UserFactory.create()
+        user_object_role_collab = UserObjectRoleFactory.create(
+            inviter=self.user,
+            collaborator=collab_user,
+            email=collab_user.email,
+            role=Role.COLLABORATOR,
+            associated_model=self.scenario.planning_area,
+        )
+
+        viewer_user = UserFactory.create()
+        user_object_role_viewer = UserObjectRoleFactory.create(
+            inviter=self.user,
+            collaborator=viewer_user,
+            email=viewer_user.email,
+            role=Role.VIEWER,
+            associated_model=self.scenario.planning_area,
+        )
+        for user in [self.user, collab_user, viewer_user]:
+            self.client.force_authenticate(user=user)
+            response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+            self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TxPlanNoteTest(APITransactionTestCase):
