@@ -89,7 +89,7 @@ button {
 
 .standard-label {
   @include standard-input-label();
-  color: $color-dark-gray;
+  color: $color-black;
 }
 
 .required-blurb {

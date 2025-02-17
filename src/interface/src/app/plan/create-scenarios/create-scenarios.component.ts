@@ -396,6 +396,10 @@ export class CreateScenariosComponent implements OnInit {
     );
     this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
   }
+
+  goToPlan() {
+    this.router.navigate(['/plan', this.planId]);
+  }
 }
 
 function scenarioNameMustBeNew(

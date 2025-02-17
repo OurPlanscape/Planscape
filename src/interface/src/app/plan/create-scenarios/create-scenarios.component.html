@@ -89,6 +89,7 @@
                 scenarioState === 'TIMED_OUT'
               "
               (tryAgain)="goToConfig()"
+              (goBack)="goToPlan()"
               [scenarioName]="scenarioNameFormField?.value"
               [scenarioId]="scenarioId!"
               [scenarioState]="scenarioState"></app-scenario-failure>
