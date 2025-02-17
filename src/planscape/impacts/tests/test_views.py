@@ -43,7 +43,12 @@ User = get_user_model()
 
 class TxPlanViewSetTest(APITransactionTestCase):
     def setUp(self):
-        self.scenario = ScenarioFactory.create()
+        self.owner = UserFactory.create()
+        self.collab_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner, owners=[self.owner], collaborators=[self.collab_user]
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
 
     def test_create_tx_plan_returns_201(self):
         self.client.force_authenticate(user=self.scenario.user)
@@ -143,6 +148,40 @@ class TxPlanViewSetTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(async_task.called)
+
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_as_collab__tx_plan_created_by_owner(self, async_task):
+        self.client.force_authenticate(user=self.collab_user)
+        treatment_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            created_by=self.owner,
+        )
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(async_task.called)
+
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_as_collab__tx_plan_created_by_collab(self, async_task):
+        self.client.force_authenticate(user=self.collab_user)
+        treatment_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            created_by=self.collab_user,
+        )
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(async_task.called)
 
     def test_get_tx_plan(self):
         self.client.force_authenticate(user=self.scenario.user)

@@ -108,6 +108,8 @@ class TreatmentPlanViewPermission(PlanscapePermission):
                 return TreatmentPlanPermission.can_clone(request.user, object)
             case "retrieve" | "summary" | "download" | "plot" | "stand_treatment_results":
                 return TreatmentPlanPermission.can_view(request.user, object)
+            case "run":
+                return TreatmentPlanPermission.can_run(request.user, object)
             case _:
                 return TreatmentPlanPermission.can_change(request.user, object)
 
