@@ -12,6 +12,8 @@ def is_creator(user: AbstractUser, instance: TCreatable) -> bool:
 
 
 def check_for_owner_permission(user_id: int, model: Any, permission_name: str) -> bool:
+    if user_id is None:
+        return False
     try:
         content_type = ContentType.objects.get_for_model(model)
         entry = UserObjectRole.objects.get(
