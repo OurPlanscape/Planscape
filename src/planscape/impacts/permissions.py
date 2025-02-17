@@ -1,6 +1,10 @@
 from collaboration.models import Role
 from collaboration.permissions import CheckPermissionMixin
-from collaboration.utils import check_for_permission, is_creator
+from collaboration.utils import (
+    check_for_permission,
+    is_creator,
+    check_for_owner_permission,
+)
 from django.shortcuts import get_object_or_404
 from impacts.models import TreatmentPlan, TreatmentPlanNote
 from planning.models import Scenario
@@ -20,6 +24,7 @@ COLLABORATOR_PERMISSIONS = VIEWER_PERMISSIONS + [
     "remove_tx_plan",
     "add_tx_prescription",
     "remove_tx_prescription",
+    "run_tx",
 ]
 OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "change_scenario",
@@ -27,7 +32,6 @@ OWNER_PERMISSIONS = COLLABORATOR_PERMISSIONS + [
     "add_collaborator",
     "delete_collaborator",
     "change_collaborator",
-    "run_tx",
 ]
 PERMISSIONS = {
     Role.OWNER: OWNER_PERMISSIONS,
@@ -91,7 +95,7 @@ class TreatmentPlanPermission(CheckPermissionMixin):
     def can_run(user: AbstractUser, tx_plan: TreatmentPlan):
         is_creator_pa = is_creator(user, tx_plan.scenario.planning_area)
         is_creator_tx = tx_plan.created_by.pk == user.pk
-        has_perm = check_for_permission(
+        has_perm = check_for_owner_permission(
             user.pk, tx_plan.scenario.planning_area, "run_tx"
         )
         return any([is_creator_pa, is_creator_tx, has_perm])

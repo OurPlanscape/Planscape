@@ -50,6 +50,8 @@ class TxPlanViewSetTest(APITransactionTestCase):
         )
         self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
 
+        Permissions.objects.get_or_create(role=Role.OWNER, permission="run_tx")
+
     def test_create_tx_plan_returns_201(self):
         self.client.force_authenticate(user=self.scenario.user)
         payload = {"scenario": str(self.scenario.pk), "name": "my cool name"}
