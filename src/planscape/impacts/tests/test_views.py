@@ -851,12 +851,17 @@ class StandTreatmentResultsViewTest(APITestCase):
         response = self.client.get(f"{self.url}?stand_id=99999999")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_permissions(self):
+    def test_permissions_collab(self):
         api_client = APIClient()
-        for user in [self.user, self.collab_user, self.viewer_user]:
-            api_client.force_authenticate(user=user)
-            response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
-            self.assertEqual(response.status_code, status.HTTP_200_OK)
+        api_client.force_authenticate(user=self.collab_user)
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_permissions_viewer(self):
+        api_client = APIClient()
+        api_client.force_authenticate(user=self.viewer_user)
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TxPlanNoteTest(APITransactionTestCase):
