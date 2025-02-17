@@ -61,6 +61,7 @@ export class ScenarioCardComponent {
 
   @Input() treatmentPlansEnabled = false;
   @Input() userCanArchiveScenario = false;
+  @Input() userCanCreateTreatmentPlans = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();
