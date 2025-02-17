@@ -18,10 +18,13 @@
   </section>
 
   <div class="actions">
-    <button mat-icon-button class="help" [matMenuTriggerFor]="popoverMenu">
-      <mat-icon class="material-symbols-outlined" color="primary">
-        info_outline
-      </mat-icon>
+    <button
+      sg-button
+      class="help"
+      variant="text"
+      icon="info_outline"
+      [outlined]="true"
+      [matMenuTriggerFor]="popoverMenu">
       <mat-menu #popoverMenu="matMenu">
         <div [ngSwitch]="area" class="tooltip">
           <div *ngSwitchCase="'SCENARIO'">
