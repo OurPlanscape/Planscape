@@ -1,15 +1,14 @@
 <div class="nav-bar mat-elevation-z2">
   <section class="nav-heading" *ngIf="navState">
-    <button mat-icon-button>
-      <mat-icon
-        *ngIf="navState.backLink !== ''"
-        class="back-btn"
-        [routerLink]="navState.backLink"
-        [queryParams]="params"
-        queryParamsHandling="merge"
-        >arrow_back
-      </mat-icon>
-    </button>
+    <button
+      sg-button
+      class="help black-icon"
+      variant="icon-only"
+      icon="arrow_back"
+      [outlined]="true"
+      [routerLink]="navState.backLink"
+      [queryParams]="params"
+      queryParamsHandling="merge"></button>
     <div
       class="current-page"
       *ngIf="navState.currentView && navState.currentRecordName">
