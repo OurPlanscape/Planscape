@@ -29,7 +29,7 @@
 
 .y-axis-title {
   @include xs-label();
-  padding: 24px 24px 0;
+  padding: 14px 24px 0;
   color: $color-text-gray;
 }
 
@@ -65,4 +65,11 @@
 .stand-metric-selector {
   padding: 16px;
 
+}
+
+.percent-forested {
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  display: flex;
 }
