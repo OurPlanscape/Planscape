@@ -19,7 +19,7 @@
       <!-- Treatment name column -->
       <ng-container matColumnDef="action">
         <th mat-header-cell *matHeaderCellDef>Treatment Name</th>
-        <td mat-cell *matCellDef="let element">
+        <td mat-cell *matCellDef="let element" class="treatment-name">
           <sg-sequence-icon
             class="treatment-summary-icon"
             *ngIf="isSequence(element.action)"
@@ -46,7 +46,8 @@
       <ng-container matColumnDef="area_percent">
         <th mat-header-cell *matHeaderCellDef>% of Planning Area</th>
         <td mat-cell *matCellDef="let element">
-          {{ (element.area_percent | number: '1.2-2') || '-' }}
+          {{ (element.area_percent | number: '1.2-2') || '-'
+          }}<span *ngIf="element.area_percent">%</span>
         </td>
       </ng-container>
 

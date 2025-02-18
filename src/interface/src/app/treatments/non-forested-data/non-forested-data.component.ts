@@ -2,23 +2,28 @@ import { Component } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { distinctUntilChanged, switchMap, tap } from 'rxjs';
+import { distinctUntilChanged, map, switchMap, tap } from 'rxjs';
 
 import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentsService } from '@services/treatments.service';
+import { standIsNonBurnable } from '../stands';
 
 @UntilDestroy()
 @Component({
   selector: 'app-non-forested-data',
   standalone: true,
-  imports: [MatTableModule, MatProgressSpinnerModule, NgIf],
+  imports: [MatTableModule, MatProgressSpinnerModule, NgIf, AsyncPipe],
   templateUrl: './non-forested-data.component.html',
   styleUrl: './non-forested-data.component.scss',
 })
 export class NonForestedDataComponent {
-  state: 'LOADING' | 'TABLE' | 'NON_BURNABLE' = 'LOADING';
+  loading = false;
+
+  standIsNonBurnable$ = this.directImpactsStateService.activeStand$.pipe(
+    map((d) => standIsNonBurnable(d))
+  );
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
@@ -29,7 +34,7 @@ export class NonForestedDataComponent {
       .pipe(
         untilDestroyed(this),
         distinctUntilChanged((prev, curr) => prev?.id === curr?.id),
-        tap((_) => (this.state = 'LOADING')),
+        tap((_) => (this.loading = true)),
         switchMap((s) =>
           this.treatmentsService.getStandResult(
             this.treatmentsState.getTreatmentPlanId(),
@@ -38,7 +43,7 @@ export class NonForestedDataComponent {
         )
       )
       .subscribe((dataset) => {
-        this.state = 'TABLE';
+        this.loading = false;
         this.dataSource = dataset.map((data, i) => {
           return {
             time_step: i * 5,
@@ -46,28 +51,7 @@ export class NonForestedDataComponent {
             flame_length: data.FL.category,
           };
         });
-        // if any its null mark the area as non-burnable
-        if (
-          this.dataSource.some(
-            (data) =>
-              data.rate_of_spread === null || data.rate_of_spread === 'N/A'
-          )
-        ) {
-          this.state = 'NON_BURNABLE';
-        }
       });
-  }
-
-  get isLoading() {
-    return this.state === 'LOADING';
-  }
-
-  get showTable() {
-    return this.state === 'TABLE';
-  }
-
-  get showNonBurnable() {
-    return this.state === 'NON_BURNABLE';
   }
 
   dataSource: {
