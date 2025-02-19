@@ -51,4 +51,9 @@
   .regular {
     background-color:inherit;
   }
+
+  .year-details {
+    @include small-paragraph();
+    color: $color-md-gray;
+  }
 }

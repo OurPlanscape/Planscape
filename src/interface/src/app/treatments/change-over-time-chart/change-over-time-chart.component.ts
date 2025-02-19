@@ -58,6 +58,8 @@ export class ChangeOverTimeChartComponent {
 
   baseOptions = getBasicChartOptions();
 
+  emptyData = false;
+
   readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] = {
     ...this.baseOptions,
     animation: false,
@@ -80,7 +82,7 @@ export class ChangeOverTimeChartComponent {
   chartConfiguration(
     data: Record<ImpactsMetricSlot, ChangeOverTimeChartItem[]>
   ) {
-    if (!data) {
+    if (!data || this.emptyData) {
       return undefined;
     }
     const allValues = Object.values(data).flatMap((entries) =>
@@ -143,6 +145,10 @@ export class ChangeOverTimeChartComponent {
     return dataBySlot;
   }
 
+  isDataEmpty(givenData: any[]): boolean {
+    return givenData.every((e) => !e.value);
+  }
+
   barChartData$ = combineLatest([
     this.treatmentsState.treatmentPlan$.pipe(
       filter((plan): plan is TreatmentPlan => !!plan)
@@ -159,6 +165,8 @@ export class ChangeOverTimeChartComponent {
       if (area !== 'All') {
         selectedArea = area.project_area_id;
       }
+      this.emptyData = false;
+
       return this.treatmentsService
         .getTreatmentImpactCharts(plan.id, metricsArray, selectedArea, txTypes)
         .pipe(
@@ -167,6 +175,7 @@ export class ChangeOverTimeChartComponent {
     }),
     map((responseData) => {
       const resultData = responseData.response as ImpactsResultData[];
+      this.emptyData = this.isDataEmpty(resultData);
       return this.chartConfiguration(
         this.convertImpactResultToChartData(resultData, responseData.metrics)
       );
