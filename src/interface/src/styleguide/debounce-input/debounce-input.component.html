@@ -53,4 +53,7 @@
   <div class="error-blurb" *ngIf="errorMessage">
     <span>{{ errorMessage }}</span>
   </div>
+  <div class="error-blurb disabled-message" *ngIf="disabled">
+    <span>{{ disabledMessage }}</span>
+  </div>
 </div>
