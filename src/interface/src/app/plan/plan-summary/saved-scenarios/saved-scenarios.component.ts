@@ -10,7 +10,7 @@ import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
 
 import { canAddScenario } from '../../permissions';
-import { SNACK_BOTTOM_NOTICE_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
+import { SNACK_ERROR_CONFIG } from '@shared';
 import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
@@ -109,27 +109,6 @@ export class SavedScenariosComponent implements OnInit {
     return canAddScenario(this.plan);
   }
 
-  get showArchiveScenario() {
-    if (!this.plan) {
-      return false;
-    }
-    // Users that can add scenarios can potentially archive them.
-    // Users that cannot add scenarios can never archive/restore.
-    return this.plan.permissions.includes('add_scenario');
-  }
-
-  //TODO: Remove this when we permanently switch to new_planning_area
-  get canArchiveScenario() {
-    if (!this.plan || !this.highlightedScenarioRow) {
-      return false;
-    }
-    const user = this.authService.currentUser();
-    return (
-      user?.id === this.plan.user ||
-      user?.id == this.highlightedScenarioRow?.user
-    );
-  }
-
   openConfig(configId?: number): void {
     if (!configId) {
       this.router.navigate(['config', ''], {
@@ -140,19 +119,6 @@ export class SavedScenariosComponent implements OnInit {
     }
   }
 
-  viewScenario(): void {
-    // Updating planstate with the selected scenario name and ID
-    if (this.highlightedScenarioRow) {
-      this.planStateService.updateStateWithScenario(
-        this.highlightedScenarioRow.id,
-        this.highlightedScenarioRow.name
-      );
-    }
-    this.router.navigate(['config', this.highlightedScenarioRow?.id], {
-      relativeTo: this.route,
-    });
-  }
-
   navigateToScenario(clickedScenario: ScenarioRow): void {
     this.planStateService.updateStateWithScenario(
       clickedScenario.id,
@@ -161,38 +127,6 @@ export class SavedScenariosComponent implements OnInit {
     this.router.navigate(['config', clickedScenario.id], {
       relativeTo: this.route,
     });
-  }
-
-  highlightScenario(row: ScenarioRow): void {
-    this.highlightedScenarioRow = row;
-  }
-
-  //TODO: Remove this from here we permanently switch to new_planning_area
-  toggleScenarioStatus(archive: boolean) {
-    const id = this.highlightedScenarioRow?.id;
-
-    if (id) {
-      this.scenarioService.toggleScenarioStatus(Number(id)).subscribe({
-        next: () => {
-          this.snackbar.open(
-            `"${this.highlightedScenarioRow?.name}" has been ${
-              archive ? 'archived' : 'restored'
-            }`,
-            'Dismiss',
-            SNACK_BOTTOM_NOTICE_CONFIG
-          );
-          this.highlightedScenarioRow = null;
-          this.fetchScenarios();
-        },
-        error: (err) => {
-          this.snackbar.open(
-            `Error: ${err.error.error}`,
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-        },
-      });
-    }
   }
 
   tabChange(data: { index: number; tab: MatTab }) {
