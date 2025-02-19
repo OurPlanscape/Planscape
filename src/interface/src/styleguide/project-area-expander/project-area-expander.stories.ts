@@ -2,7 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { ProjectAreaExpanderComponent } from './project-area-expander.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { Extent, TreatmentType } from '@types';
+import { Extent, Prescription, TreatmentType } from '@types';
 import { Point } from 'geojson';
 
 const containerStyle = `style="display: flex;
@@ -80,7 +80,7 @@ const sampleProjectAreaResult = {
       type: 'SEQUENCE' as TreatmentType,
       stand_ids: [4, 5],
     },
-  ],
+  ] as Prescription[],
   extent: sampleExtent,
   centroid: samplePoint,
 };

@@ -1,11 +1,13 @@
-from django.test import TestCase
+import json
 from unittest import mock
-from datasets.models import DataLayer, DataLayerType
+
+from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
+from django.contrib.gis.geos import GEOSGeometry
+from django.test import TestCase
+
 from stands.models import Stand, StandMetric
 from stands.services import calculate_stand_zonal_stats
-from django.contrib.gis.geos import GEOSGeometry
-import json
 
 
 class CalculateStandZonalStatsTestCase(TestCase):

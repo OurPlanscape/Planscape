@@ -1,7 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapControlsComponent } from './map-controls.component';
-import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { MockDeclarations, MockProviders } from 'ng-mocks';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
@@ -13,7 +12,7 @@ describe('MapControlsComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MapControlsComponent],
-      providers: [MockProviders(MapConfigState, SelectedStandsState)],
+      providers: [MockProviders(MapConfigState)],
       declarations: MockDeclarations(ControlComponent),
     }).compileComponents();
 

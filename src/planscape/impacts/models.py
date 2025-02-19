@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import List, Optional, Tuple
+from typing import Collection, List, Optional, Tuple
 
 from core.models import (
     AliveObjectsManager,
@@ -8,12 +8,12 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
 from django_stubs_ext.db.models import TypedModelMeta
-from datasets.models import DataLayer, DataLayerType
-from planning.models import ProjectArea, Scenario, PlanningArea
+from planning.models import ProjectArea, Scenario
 from stands.models import Stand
 from typing_extensions import Self
 
@@ -194,7 +194,7 @@ class TreatmentPrescriptionAction(models.TextChoices):
             cls.HEAVY_THINNING_BIOMASS_PLUS_RX_FIRE: "Seq_7",
             cls.MODERATE_MASTICATION_PLUS_RX_FIRE: "Seq_8",
         }
-        return data[action]
+        return data[action].upper()
 
     @classmethod
     def json(cls):
@@ -366,6 +366,24 @@ class ImpactVariable(models.TextChoices):
     TOTAL_CARBON = "TOTAL_CARBON", "Total Carbon"
 
     @classmethod
+    def categorical_variables_names(cls):
+        return [
+            "FL",
+            "FBFM",
+            "ROS",
+        ]
+
+    @classmethod
+    def numerical_variables(cls) -> Collection[Self]:
+        return [
+            cls(x) for x in cls.values if x not in cls.categorical_variables_names()
+        ]
+
+    @classmethod
+    def categorical_variables(cls) -> Collection[Self]:
+        return [cls(x) for x in cls.values if x in cls.categorical_variables_names()]
+
+    @classmethod
     def get_aggregations(cls, impact_variable) -> List[ImpactVariableAggregation]:
         AGGREGATIONS = {
             cls.CROWN_BULK_DENSITY: [ImpactVariableAggregation.MEAN],
@@ -404,17 +422,6 @@ class ImpactVariable(models.TextChoices):
         return list([x for x in AGGREGATIONS[impact_variable]])
 
     @classmethod
-    def get_baseline_only_impact_variables(cls) -> List:
-        return [cls.FLAME_LENGTH, cls.RATE_OF_SPREAD]
-
-    @classmethod
-    def get_measurable_impact_variables(cls) -> List:
-        variables = list(cls)
-        for baseline_variable in cls.get_baseline_only_impact_variables():
-            variables.remove(baseline_variable)
-        return variables
-
-    @classmethod
     def get_datalayer(
         cls,
         impact_variable: Self,
@@ -430,7 +437,7 @@ class ImpactVariable(models.TextChoices):
                 "impacts": {
                     "year": year,
                     "baseline": baseline,
-                    "variable": str(impact_variable),
+                    "variable": str(impact_variable).upper(),
                     "action": action_query,
                 }
             }
@@ -534,6 +541,12 @@ class ProjectAreaTreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         ]
 
 
+class TreatmentResultDisplayType(models.TextChoices):
+    FORESTED = ("FORESTED", "Forested")
+    NON_FORESTED = ("NON_FORESTED", "Non Forested")
+    NON_BURNABLE = ("NON_BURNABLE", "Non Burnable")
+
+
 class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     treatment_plan_id: int
@@ -580,6 +593,15 @@ class TreatmentResult(CreatedAtMixin, DeletedAtMixin, models.Model):
         help_text="Type of Treatment Result (choice).",
         null=True,
     )
+    forested_rate = models.FloatField(
+        null=True,
+        help_text="number between 0 and 1 that represents the rate of forested pixels in this result.",
+    )
+
+    def get_display_type(self) -> TreatmentResultDisplayType:
+        from impacts.calculator import get_display_type
+
+        return get_display_type(self.value, self.baseline)
 
     class Meta(TypedModelMeta):
         constraints = [

@@ -19,13 +19,11 @@ import { SetPrioritiesComponent } from './set-priorities/set-priorities.componen
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 import { FeatureService } from '../../features/feature.service';
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
-import { ChartData } from '../project-areas-metrics/chart-data';
-import { MetricsService } from '@services/metrics.service';
-import { processScenarioResultsToChartData } from '../scenario-helpers';
 import { TreatmentsService } from '@services/treatments.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTreatmentDialogComponent } from './create-treatment-dialog/create-treatment-dialog.component';
+import { AnalyticsService } from '@services/analytics.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -58,7 +56,6 @@ export class CreateScenariosComponent implements OnInit {
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
   priorities: string[] = [];
-  scenarioChartData: ChartData[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
     on: '500ms',
     off: '0ms',
@@ -85,9 +82,9 @@ export class CreateScenariosComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private featureService: FeatureService,
     private goalOverlayService: GoalOverlayService,
-    private metricsService: MetricsService,
     private treatmentsService: TreatmentsService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private analyticsService: AnalyticsService
   ) {}
 
   createForms() {
@@ -279,18 +276,6 @@ export class CreateScenariosComponent implements OnInit {
   processScenarioResults(scenario: Scenario) {
     let plan = this.plan$.getValue();
     if (scenario && this.scenarioResults && plan) {
-      this.metricsService
-        .getMetricsForRegion(plan.region_name)
-        .subscribe((metrics) => {
-          if (this.scenarioResults) {
-            this.scenarioChartData = processScenarioResultsToChartData(
-              metrics,
-              scenario.configuration,
-              this.scenarioResults
-            );
-          }
-        });
-
       this.planStateService.updateStateWithShapes(
         this.scenarioResults?.result.features
       );
@@ -357,6 +342,11 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   openTreatmentDialog() {
+    this.analyticsService.emitEvent(
+      'new_treatment_plan',
+      'scenario_view_page',
+      'New Treatment Plan'
+    );
     this.dialog
       .open(CreateTreatmentDialogComponent)
       .afterClosed()
@@ -405,6 +395,10 @@ export class CreateScenariosComponent implements OnInit {
       this.scenarioName
     );
     this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
+  }
+
+  goToPlan() {
+    this.router.navigate(['/plan', this.planId]);
   }
 }
 

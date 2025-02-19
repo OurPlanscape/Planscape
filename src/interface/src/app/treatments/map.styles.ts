@@ -38,8 +38,17 @@ export const SELECTED_STANDS_PAINT = {
 
 export const SINGLE_STAND_SELECTED = {
   'fill-color': BASE_COLORS.yellow,
-  'fill-opacity': 0.7,
+  'fill-opacity': 1,
 };
+export const SINGLE_STAND_HOVER = {
+  'line-color': [
+    'case',
+    ['boolean', ['feature-state', 'hover'], false],
+    BASE_COLORS.yellow,
+    '#00000000',
+  ],
+  'line-width': 4,
+} as any;
 
 export const PROJECT_AREA_OUTLINE_PAINT = {
   'line-color': BASE_COLORS.dark,

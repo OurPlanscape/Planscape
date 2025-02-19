@@ -18,11 +18,14 @@
     height: 70px;
     padding: 4px 16px;
     border-bottom: 1px $color-soft-gray solid;
+    position: sticky;
+    top: 0;
+    background: $color-white;
+    z-index: 100;
   }
 
   .results-count {
     @include h5();
-    height: 60;
     padding: 16px;
   }
 
@@ -47,6 +50,7 @@
       @include h5();
       color: $color-black;
     }
+
     .no-results-detail {
       @include small-paragraph;
       text-align: center;

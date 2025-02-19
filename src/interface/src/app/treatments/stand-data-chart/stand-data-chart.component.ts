@@ -1,24 +1,34 @@
-import { Component } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
-import { AsyncPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf, PercentPipe } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { map, Observable } from 'rxjs';
-import { SLOT_COLORS, YEAR_INTERVAL_PROPERTY } from '../metrics';
+import {
+  distinctUntilChanged,
+  map,
+  Observable,
+  skip,
+  switchMap,
+  tap,
+} from 'rxjs';
+import {
+  Metric,
+  METRICS,
+  SLOT_COLORS,
+  YEAR_INTERVAL_PROPERTY,
+} from '../metrics';
 import { filter } from 'rxjs/operators';
 import { MapGeoJSONFeature } from 'maplibre-gl';
-import { TreatmentTypeIconComponent } from '../../../styleguide/treatment-type-icon/treatment-type-icon.component';
+import { TreatmentTypeIconComponent } from '@styleguide';
 import { MatTableModule } from '@angular/material/table';
 import { NonForestedDataComponent } from '../non-forested-data/non-forested-data.component';
 import { standIsForested } from '../stands';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
+import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
 
-const baseFont = {
-  family: 'Public Sans',
-  size: 14,
-  style: 'normal',
-  weight: '600',
-};
-
+@UntilDestroy()
 @Component({
   selector: 'app-stand-data-chart',
   standalone: true,
@@ -26,22 +36,36 @@ const baseFont = {
     NgChartsModule,
     NgIf,
     AsyncPipe,
-    JsonPipe,
     TreatmentTypeIconComponent,
     MatTableModule,
     NonForestedDataComponent,
+    MatProgressSpinnerModule,
+    MetricSelectorComponent,
+    JsonPipe,
+    PercentPipe,
   ],
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',
 })
-export class StandDataChartComponent {
-  constructor(private directImpactsStateService: DirectImpactsStateService) {}
-
+export class StandDataChartComponent implements OnInit {
+  /**
+   * flag to determine if we dont want to wait for the initial change on active metric
+   * and map standsTxSourceLoaded$
+   */
+  @Input() skipFirstLoad = false;
   activeStand$ = this.directImpactsStateService.activeStand$;
+  activeMetric$ = this.directImpactsStateService.activeMetric$;
 
   activeStandIsForested$ = this.activeStand$.pipe(
     map((d) => standIsForested(d))
   );
+
+  chartTitle(s: MapGeoJSONFeature) {
+    if (!s.properties['project_area_name'] || !s.properties['id']) {
+      return '';
+    }
+    return `${s.properties['project_area_name']}, Stand ${s.properties['id']}`;
+  }
 
   activeStandValues$: Observable<number[]> =
     this.directImpactsStateService.activeStand$.pipe(
@@ -55,7 +79,7 @@ export class StandDataChartComponent {
 
   barChartData$ = this.activeStandValues$.pipe(
     map((data) => {
-      this.updateYAxisRange(data); // Updating the range dinamically
+      updateYAxisRange(data, this.staticBarChartOptions); // Updating the range dinamically
       return {
         labels: [0, 5, 10, 15, 20],
         datasets: [
@@ -68,77 +92,52 @@ export class StandDataChartComponent {
     })
   );
 
+  loading = false;
+
+  metrics: Metric[] = METRICS;
+  baseOptions = getBasicChartOptions();
+
+  slotColor = SLOT_COLORS['blue'];
+
+  constructor(private directImpactsStateService: DirectImpactsStateService) {}
+
+  ngOnInit() {
+    // this puts a loader when we change the metric
+    // and removes it once we get a new value from standsTxSourceLoaded$
+    this.activeMetric$
+      .pipe(
+        distinctUntilChanged((prev, curr) => prev.id === curr.id),
+        skip(this.skipFirstLoad ? 1 : 0),
+        tap(() => (this.loading = true)),
+        switchMap((s) =>
+          this.directImpactsStateService.standsTxSourceLoaded$.pipe(skip(1))
+        ),
+        untilDestroyed(this)
+      )
+      .subscribe(() => (this.loading = false));
+  }
+
+  metricChanged(metric: Metric) {
+    this.directImpactsStateService.setActiveMetric(metric);
+  }
+
   private readonly staticBarChartOptions: ChartConfiguration<'bar'>['options'] =
     {
-      responsive: true,
-      maintainAspectRatio: false,
+      ...this.baseOptions,
       animation: false,
-      layout: {
-        padding: {
-          left: 0, // Add 20px padding between the tick labels and the chart content
-          right: 24,
-          top: 0,
-          bottom: 0,
-        },
-      },
-      plugins: {
-        tooltip: {
-          enabled: false,
-        },
-        datalabels: {
-          color: '#fff', // Label color (inside bar)
-          anchor: 'center', // Position the label at the center
-          align: 'center', // Align the label horizontally
-          font: {
-            ...(baseFont as any),
-            size: 10, // Font size
-          },
-          formatter: (value: number) => {
-            // Check if the value has a decimal part
-            return value % 1 === 0 ? value.toString() : value.toFixed(1);
-          },
-          clamp: true,
-        },
-      },
       scales: {
-        y: {
-          ticks: {
-            color: '#4A4A4A', // Text color
-            font: baseFont as any,
-            padding: 24,
-            stepSize: 50,
-            callback: (value) => `${value}%`,
-          },
-          title: {
-            display: false,
-          },
-          grid: {
-            drawBorder: false, // Remove the border along the y-axis
-            drawTicks: false,
-            lineWidth: 1, // Set line width for dotted lines
-            color: '#979797', // Dotted line color
-            borderDash: [5, 5], // Define the dash pattern (4px dash, 4px gap)
-          },
-        },
+        ...this.baseOptions?.scales,
         x: {
-          grid: {
-            display: false, // Disable grid lines for the x-axis
-            drawBorder: false, // Remove the bottom border (x-axis line)
-            drawTicks: false, // Remove the tick marks on the x-axis
-          },
-          ticks: {
-            autoSkip: false,
-            maxRotation: 0,
-            minRotation: 0,
-            font: baseFont as any,
-            padding: 24,
-          },
+          ...this.baseOptions?.scales?.['x'],
           title: {
-            display: true,
-            text: 'Time Steps (Years)',
-            align: 'start',
-            color: '#898989', // Text color
-            font: baseFont as any,
+            ...this.baseOptions?.scales?.['x']?.['title'],
+            ...{
+              text: 'Time Steps (Years)',
+              font: {
+                ...this.baseOptions?.scales?.['x']?.['title']?.['font'],
+                ...{ style: 'normal' },
+              },
+            },
           },
         },
       },
@@ -147,8 +146,7 @@ export class StandDataChartComponent {
   barChartOptions$: Observable<ChartConfiguration<'bar'>['options']> =
     this.directImpactsStateService.activeMetric$.pipe(
       map((activeMetric) => {
-        const slot = activeMetric.slot;
-        const color = SLOT_COLORS[slot];
+        const color = SLOT_COLORS['blue'];
         const options = {
           backgroundColor: color,
           borderColor: color,
@@ -164,14 +162,4 @@ export class StandDataChartComponent {
         };
       })
     );
-
-  private updateYAxisRange(data: number[]) {
-    const maxValue = Math.max(...data.map(Math.abs));
-    let roundedMax = Math.ceil(maxValue / 50) * 50;
-    if (roundedMax < 100) {
-      roundedMax = 100;
-    }
-    (this.staticBarChartOptions as any).scales!.y!.min = -roundedMax;
-    (this.staticBarChartOptions as any).scales!.y!.max = roundedMax;
-  }
 }

@@ -10,6 +10,7 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
+import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 
 @Component({
   selector: 'app-project-area',
@@ -24,6 +25,7 @@ import { AcresTreatedComponent } from '../acres-treated/acres-treated.component'
     ProjectAreaTreatmentsTabComponent,
     SharedModule,
     AcresTreatedComponent,
+    LeftLoadingOverlayComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
@@ -38,6 +40,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   opacity = this.mapConfigState.treatedStandsOpacity$;
   activeProjectArea$ = this.treatmentsState.activeProjectArea$;
   projectAreaId?: number;
+  refreshing$ = this.treatmentsState.reloadingSummary$;
 
   changeValue(num: number) {
     this.mapConfigState.setTreatedStandsOpacity(num);

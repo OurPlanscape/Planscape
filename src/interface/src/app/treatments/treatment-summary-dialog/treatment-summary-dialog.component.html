@@ -1,0 +1,69 @@
+<h3 mat-dialog-title class="treatment-summary-title">
+  Treatment Summary
+  <button class="treatment-summary-button" mat-icon-button (click)="onClose()">
+    <mat-icon>close</mat-icon>
+  </button>
+</h3>
+
+<div mat-dialog-content class="treatment-summary-content">
+  <ng-container *ngIf="hasPrescriptions$ | async">
+    <p class="treatment-summary-legend">
+      View a breakdown of the total acreage for each treatment applied across
+      all project areas.
+    </p>
+
+    <table
+      mat-table
+      [dataSource]="prescriptions$"
+      class="treatment-summary-table">
+      <!-- Treatment name column -->
+      <ng-container matColumnDef="action">
+        <th mat-header-cell *matHeaderCellDef>Treatment Name</th>
+        <td mat-cell *matCellDef="let element" class="treatment-name">
+          <sg-sequence-icon
+            class="treatment-summary-icon"
+            *ngIf="isSequence(element.action)"
+            [action]="element.action"></sg-sequence-icon>
+          <sg-treatment-type-icon
+            class="treatment-summary-icon"
+            *ngIf="!isSequence(element.action)"
+            [treatment]="element.action"></sg-treatment-type-icon>
+          <div class="action-label">
+            <span [innerHTML]="getActionLabel(element.action) || '-'"> </span>
+          </div>
+        </td>
+      </ng-container>
+
+      <!-- Total acreage column -->
+      <ng-container matColumnDef="area_acres">
+        <th mat-header-cell *matHeaderCellDef>Total Acreage</th>
+        <td mat-cell *matCellDef="let element">
+          {{ (element.area_acres | number: '1.2-2') || '-' }}
+        </td>
+      </ng-container>
+
+      <!-- % of Planning area -->
+      <ng-container matColumnDef="area_percent">
+        <th mat-header-cell *matHeaderCellDef>% of Planning Area</th>
+        <td mat-cell *matCellDef="let element">
+          {{ (element.area_percent | number: '1.2-2') || '-'
+          }}<span *ngIf="element.area_percent">%</span>
+        </td>
+      </ng-container>
+
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+    </table>
+  </ng-container>
+  <ng-container *ngIf="(hasPrescriptions$ | async) === false">
+    <div class="treatment-summary-empty icon">
+      <mat-icon class="material-symbols-outlined" color="primary">
+        summarize
+      </mat-icon>
+    </div>
+    <div class="treatment-summary-empty title">No Treatment Applied Yet</div>
+    <div class="treatment-summary-empty label">
+      Start applying treatments to view a treatment summary
+    </div>
+  </ng-container>
+</div>

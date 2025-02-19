@@ -1,35 +1,30 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MetricFiltersComponent } from './metric-filters.component';
-import { DEFAULT_SLOT, Metric, METRICS } from '../metrics';
+import { Metric, METRICS } from '../metrics';
 import { MockProvider } from 'ng-mocks';
 import { BehaviorSubject } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 
-export const MockMetrics = [
+export const MockMetrics: Metric[] = [
   {
-    id: 'ID_1',
-    color: '',
+    id: 'FL',
     label: 'Mock metric 1',
   },
   {
-    id: 'ID_2',
-    color: '',
+    id: 'TOT_FLAME_SEV',
     label: 'Mock metric 2',
   },
   {
-    id: 'ID_3',
-    color: '',
+    id: 'SDI',
     label: 'Mock metric 2',
   },
   {
-    id: 'ID_4',
-    color: '',
+    id: 'QMD',
     label: 'Mock metric 4',
   },
   {
-    id: 'ID_5',
-    color: '',
+    id: 'CBD',
     label: 'Mock metric 5',
   },
 ];
@@ -43,10 +38,7 @@ describe('MetricFiltersComponent', () => {
       imports: [MetricFiltersComponent],
       providers: [
         MockProvider(DirectImpactsStateService, {
-          activeMetric$: new BehaviorSubject({
-            metric: METRICS[0],
-            slot: DEFAULT_SLOT,
-          }),
+          activeMetric$: new BehaviorSubject(METRICS[0]),
         }),
         MockProvider(TreatmentsState, {
           summary$: new BehaviorSubject(null),
@@ -86,7 +78,7 @@ describe('MetricFiltersComponent', () => {
   it('should update the selected option and call updateDropdownOptions when optionSelected is called', () => {
     spyOn(component, 'updateDropdownOptions').and.callFake(() => {});
     const dropdownIndex = 1;
-    const metric: Metric = { id: 'Test', label: '' };
+    const metric: Metric = { id: 'POTENTIAL_SMOKE', label: '' };
     component.optionSelected(dropdownIndex, 'blue', metric);
     // The selected option for this dropdown should be updated with the corresponding ID
     expect(component.selectedOptions[dropdownIndex]).toEqual(metric.id);

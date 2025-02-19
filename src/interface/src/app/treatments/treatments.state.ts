@@ -31,6 +31,8 @@ import {
 import { TreatmentRoutingData } from './treatments-routing-data';
 import { PlanStateService } from '@services';
 import { ActivatedRoute } from '@angular/router';
+import { getPrescriptionsFromSummary } from './prescriptions';
+import { DirectImpactsStateService } from './direct-impacts.state.service';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -43,7 +45,8 @@ export class TreatmentsState {
     private planStateService: PlanStateService,
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private directImpactsState: DirectImpactsStateService
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
@@ -58,6 +61,18 @@ export class TreatmentsState {
 
   public summary$ = this._summary$.asObservable();
   public treatmentPlan$ = this._treatmentPlan.asObservable();
+
+  public treatmentTypeOptions$ = combineLatest([
+    this.summary$,
+    this.directImpactsState.selectedProjectArea$.pipe(distinctUntilChanged()),
+  ]).pipe(
+    filter((summary) => summary !== null),
+    map(([summary, project_area]) => {
+      return getPrescriptionsFromSummary(summary, project_area).map(
+        (p) => p.action
+      );
+    })
+  );
 
   private _showApplyTreatmentsDialog$ = new BehaviorSubject(false);
   public showApplyTreatmentsDialog$ =
@@ -192,6 +207,9 @@ export class TreatmentsState {
     );
     this.mapConfigState.setShowTreatmentLayersToggle(
       data.showTreatmentLayersToggle || false
+    );
+    this.mapConfigState.setTreatmentLegendVisible(
+      data.showTreatmentLegend || false
     );
     this.mapConfigState.setShowMapControls(data.showTreatmentStands || false);
   }
@@ -365,5 +383,19 @@ export class TreatmentsState {
   projectAreaCount() {
     const d = this._summary$.value;
     return d ? d.project_areas.length : 0;
+  }
+
+  getAcresForProjectArea(name: string) {
+    const summary = this.getCurrentSummary();
+    const pa = summary.project_areas.find((pa) => pa.project_area_name == name);
+    if (!pa) {
+      return 0;
+    }
+    return pa.total_area_acres;
+  }
+
+  getTotalAcres() {
+    const summary = this.getCurrentSummary();
+    return summary.total_area_acres;
   }
 }

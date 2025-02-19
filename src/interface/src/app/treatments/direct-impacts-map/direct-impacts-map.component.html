@@ -1,10 +1,9 @@
 <mgl-map
-  [attributionControl]="false"
   *ngIf="mapExtent$ | async; let bounds"
   (mapLoad)="mapLoaded($event)"
   [boxZoom]="false"
   [doubleClickZoom]="true"
-  [dragPan]="true"
+  [dragPan]="(standSelectionEnabled$ | async) === false"
   [dragRotate]="false"
   [fitBoundsOptions]="{ padding: 20 }"
   [fitBounds]="bounds"
@@ -16,13 +15,27 @@
   [transformRequest]="transformRequest"
   (zoomEvt)="saveZoom()"
   (sourceData)="sourceData($event)">
-  <app-map-stands-tx-result
+  <app-map-controls
+    [userCanEditStands]="true"
+    [mapLibreMap]="mapLibreMap"></app-map-controls>
+
+  <app-map-stands
+    [userCanEditStands]="false"
+    sourceId="stands"
     [mapLibreMap]="mapLibreMap"
-    [propertyName]="variables[year]"></app-map-stands-tx-result>
+    [selectStart]="null"
+    [selectEnd]="null"></app-map-stands>
+
   <app-map-project-areas
     [withFill]="false"
     [showTooltips]="false"></app-map-project-areas>
-  <mgl-control position="bottom-left">
-    <div class="label">{{ labels[year] }}</div>
-  </mgl-control>
+
+  <app-map-stands-tx-result
+    [mapLibreMap]="mapLibreMap"
+    [propertyName]="variables[year]"></app-map-stands-tx-result>
+
+  <app-action-button
+    *ngIf="(showLegend$ | async) === false"
+    (clickedActionButton)="openTreatmentLegend()">
+  </app-action-button>
 </mgl-map>

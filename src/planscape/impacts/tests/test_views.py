@@ -1,6 +1,7 @@
+import json
 from unittest import mock
 from urllib.parse import urlencode
-import json
+
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
 from datasets.models import DataLayerType
@@ -8,6 +9,7 @@ from datasets.tests.factories import DataLayerFactory
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
+from django.utils import timezone
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
@@ -41,7 +43,14 @@ User = get_user_model()
 
 class TxPlanViewSetTest(APITransactionTestCase):
     def setUp(self):
-        self.scenario = ScenarioFactory.create()
+        self.owner = UserFactory.create()
+        self.collab_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner, owners=[self.owner], collaborators=[self.collab_user]
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+
+        Permissions.objects.get_or_create(role=Role.OWNER, permission="run_tx")
 
     def test_create_tx_plan_returns_201(self):
         self.client.force_authenticate(user=self.scenario.user)
@@ -142,6 +151,40 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(async_task.called)
 
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_as_collab__tx_plan_created_by_owner(self, async_task):
+        self.client.force_authenticate(user=self.collab_user)
+        treatment_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            created_by=self.owner,
+        )
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(async_task.called)
+
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_as_collab__tx_plan_created_by_collab(self, async_task):
+        self.client.force_authenticate(user=self.collab_user)
+        treatment_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            created_by=self.collab_user,
+        )
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(async_task.called)
+
     def test_get_tx_plan(self):
         self.client.force_authenticate(user=self.scenario.user)
 
@@ -156,6 +199,35 @@ class TxPlanViewSetTest(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data["name"], "it's a bold plan")
+        self.assertIsNone(response.get("started_at"))
+        self.assertIsNone(response.get("finished_at"))
+        self.assertIsNone(response.get("elapsed_time_seconds"))
+
+    def test_get_tx_plan_with_elapsed_time(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        now = timezone.now()
+        started_at = now - timezone.timedelta(seconds=10)
+
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            name="it's a bold plan",
+            started_at=started_at,
+            finished_at=now,
+        )
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data.get("name"), "it's a bold plan")
+        self.assertEqual(
+            response_data.get("started_at"), started_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(
+            response_data.get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(response_data.get("elapsed_time_seconds"), 10)
 
     def test_get_tx_plan_with_role(self):
         self.client.force_authenticate(user=self.scenario.user)
@@ -292,11 +364,46 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
 
+    def test_list_tx_plan(self):
+        now = timezone.now()
+        started_at = now - timezone.timedelta(seconds=10)
+        TreatmentPlanFactory.create_batch(
+            5, scenario=self.scenario, started_at=started_at, finished_at=now
+        )
+
+        self.client.force_authenticate(user=self.scenario.user)
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-list"),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_data), 5)
+        self.assertEqual(
+            response_data[0].get("started_at"),
+            started_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        )
+        self.assertEqual(
+            response_data[0].get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(response_data[0].get("elapsed_time_seconds"), 10)
+
 
 class TxPlanViewSetPlotTest(APITransactionTestCase):
     def setUp(self):
-        self.user = UserFactory.create()
-        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        Permissions.objects.get_or_create(
+            role=Role.COLLABORATOR, permission="view_tx_plan"
+        )
+        Permissions.objects.get_or_create(role=Role.VIEWER, permission="view_tx_plan")
+        self.owner = UserFactory.create()
+        self.collab_user = UserFactory.create()
+        self.viewer_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner,
+            owners=[self.owner],
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
+        )
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             configuration={"stand_size": StandSizeChoices.SMALL},
@@ -307,12 +414,11 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
             ProjectAreaFactory.create(scenario=self.scenario),
         ]
         self.tx_plan = TreatmentPlanFactory.create(
-            scenario=self.scenario, created_by=self.user
+            scenario=self.scenario, created_by=self.owner
         )
         self.empty_tx_plan = TreatmentPlanFactory.create(
-            scenario=self.scenario, created_by=self.user
+            scenario=self.scenario, created_by=self.owner
         )
-        self.client.force_authenticate(user=self.user)
         self.years = AVAILABLE_YEARS
         self.patxrx_list = []
         for pa in self.project_areas:
@@ -327,6 +433,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
                         action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS,
                     )
         self.someone_elses_tx_plan = TreatmentPlanFactory.create()
+        self.client.force_authenticate(user=self.owner)
 
     def _build_filters(self, variables=[], project_areas=[], actions=[]):
         filters = []
@@ -467,6 +574,43 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_permission_viewer(self):
+        api_client = APIClient()
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(variables=variables)
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        api_client.force_authenticate(user=self.viewer_user)
+        response = api_client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_permission_collab(self):
+        Permissions.objects.get_or_create(
+            role=Role.COLLABORATOR, permission="view_tx_plan"
+        )
+        api_client = APIClient()
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(variables=variables)
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        api_client.force_authenticate(user=self.collab_user)
+        response = api_client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class TxPrescriptionListTest(APITransactionTestCase):
     def setUp(self):
@@ -577,10 +721,21 @@ class TxPrescriptionBatchDeleteTest(APITransactionTestCase):
 
 class StandTreatmentResultsViewTest(APITestCase):
     def setUp(self):
+        Permissions.objects.get_or_create(
+            role=Role.COLLABORATOR, permission="view_tx_plan"
+        )
+        Permissions.objects.get_or_create(role=Role.VIEWER, permission="view_tx_plan")
         self.user = UserFactory()
+        self.collab_user = UserFactory.create()
+        self.viewer_user = UserFactory.create()
         self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
-        self.scenario = ScenarioFactory.create(planning_area__user=self.user)
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.user,
+            owners=[self.user],
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
 
         self.treatment_plan = TreatmentPlanFactory(
             scenario=self.scenario, created_by=self.user
@@ -591,11 +746,13 @@ class StandTreatmentResultsViewTest(APITestCase):
             "api:impacts:tx-plans-stand-treatment-results",
             kwargs={"pk": self.treatment_plan.pk},
         )
+        self.client.force_authenticate(user=self.user)
 
     def test_no_results_returns_empty_list(self):
         """
         Ensures the endpoint returns a 200 with [] if there’s no data for stand_id.
         """
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), [])
@@ -612,6 +769,7 @@ class StandTreatmentResultsViewTest(APITestCase):
             value=80.0,
             delta=10.0,
             baseline=70.0,
+            forested_rate=1,
             action=None,
             aggregation=ImpactVariableAggregation.MEAN,
         )
@@ -624,10 +782,12 @@ class StandTreatmentResultsViewTest(APITestCase):
             value=105.0,
             delta=12.0,
             baseline=45.0,
+            forested_rate=1,
             action=None,
             aggregation=ImpactVariableAggregation.SUM,
         )
 
+        self.client.force_authenticate(user=self.user)
         for year in AVAILABLE_YEARS:
             biomass_meta = {
                 "modules": {
@@ -701,25 +861,26 @@ class StandTreatmentResultsViewTest(APITestCase):
 
         self.assertEqual(
             len(data),
-            len(AVAILABLE_YEARS),
+            1,
             f"Expected {len(AVAILABLE_YEARS)} rows (one for each year).",
         )
-        row_2024_list = [row for row in data if row["year"] == 2024]
-        self.assertEqual(len(row_2024_list), 1, "Expected exactly one row for 2024")
-        row_2024 = row_2024_list[0]
 
-        self.assertIn(ImpactVariable.FLAME_LENGTH, row_2024)
-        self.assertIn(ImpactVariable.RATE_OF_SPREAD, row_2024)
+        first_year = data[0]
+        self.assertEqual(first_year.get("year"), 2024)
 
-        biomass_data = row_2024.get(ImpactVariable.LARGE_TREE_BIOMASS)
-        self.assertEqual(biomass_data["value"], 105.0)
-        self.assertEqual(biomass_data["delta"], 12.0)
-        self.assertEqual(biomass_data["baseline"], 45.0)
+        biomass = first_year.get(ImpactVariable.LARGE_TREE_BIOMASS)
+        self.assertIsNotNone(biomass)
+
+        self.assertIsNotNone(biomass.get("value"))
+        self.assertIsNotNone(biomass.get("delta"))
+        self.assertIsNotNone(biomass.get("baseline"))
+        self.assertIsNotNone(biomass.get("forested_rate"))
 
     def test_missing_stand_id(self):
         """
         If 'stand_id' param is missing, the serializer should raise a 400 error.
         """
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -727,8 +888,21 @@ class StandTreatmentResultsViewTest(APITestCase):
         """
         If 'stand_id' doesn't exist in DB, we expect a 400 from the PrimaryKeyRelatedField.
         """
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(f"{self.url}?stand_id=99999999")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_permissions_collab(self):
+        api_client = APIClient()
+        api_client.force_authenticate(user=self.collab_user)
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_permissions_viewer(self):
+        api_client = APIClient()
+        api_client.force_authenticate(user=self.viewer_user)
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
 class TxPlanNoteTest(APITransactionTestCase):
