@@ -52,3 +52,13 @@ export const TooltipText: Story = {
     tooltipContent: 'Clicking this does something',
   },
 };
+
+export const DisabledInput: Story = {
+  args: {
+    ...Default,
+    textValue: '',
+    title: 'Treatment plan name',
+    tooltipContent: 'Clicking this does something',
+    disabled: true,
+  },
+};

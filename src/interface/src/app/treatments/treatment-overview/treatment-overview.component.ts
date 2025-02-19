@@ -9,6 +9,9 @@ import { BehaviorSubject, map } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
+import { PlanStateService } from '@services';
+import { ActivatedRoute } from '@angular/router';
+import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -30,7 +33,11 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private planStateService: PlanStateService,
+    private route: ActivatedRoute
+  ) {}
 
   nameFieldStatus$ = new BehaviorSubject<DebounceEditState>('INITIAL');
 
@@ -41,6 +48,14 @@ export class TreatmentOverviewComponent {
   );
 
   currentPlan$ = this.treatmentsState.treatmentPlan$;
+
+  disableInput$ = this.planStateService
+    .getPlan(this.route.snapshot.params?.['planId'])
+    .pipe(
+      map((plan) => {
+        return !canEditTreatmentPlan(plan);
+      })
+    );
 
   handleNameChange(name: string) {
     if (name.length < 1) {

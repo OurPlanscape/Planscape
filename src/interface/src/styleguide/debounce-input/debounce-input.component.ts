@@ -54,6 +54,7 @@ export class DebounceInputComponent implements OnInit, OnDestroy {
   @Input() tooltipContent: string | null = null;
   @Input() hasClearButton = true;
   @Input() currentMode$ = new BehaviorSubject<DebounceEditState>('INITIAL');
+  @Input() disabled = false;
 
   @Output() textValueUpdated = new EventEmitter<string>();
   @Input() debounceInterval = 10;

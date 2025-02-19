@@ -5,6 +5,7 @@
   title="Treatment Plan Name"
   [currentMode$]="nameFieldStatus$"
   [errorMessage]="errorSavingName"
+  [disabled]="(disableInput$ | async) ?? true"
   (textValueUpdated)="handleNameChange($event)"></sg-debounce-input>
 
 <app-acres-treated></app-acres-treated>
