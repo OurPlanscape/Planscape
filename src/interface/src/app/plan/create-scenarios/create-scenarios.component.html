@@ -36,9 +36,6 @@
         <mat-tab label="Configurations">
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities></app-set-priorities>
-            <app-identify-project-areas
-              *ngIf="project_area_upload_enabled"
-              [formGroup]="projectAreasForm"></app-identify-project-areas>
             <app-constraints-panel
               [planningAreaAcres]="(acres$ | async) || 0"
               [showWarning]="
@@ -58,9 +55,6 @@
                 (click)="createScenario()">
                 {{ generatingScenario ? 'GENERATING SCENARIO...' : 'GENERATE' }}
               </button>
-              <div *ngIf="project_area_upload_enabled">
-                Estimated time ??????
-              </div>
             </div>
           </div>
         </mat-tab>

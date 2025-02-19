@@ -17,7 +17,6 @@ import { PlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
-import { FeatureService } from '../../features/feature.service';
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { TreatmentsService } from '@services/treatments.service';
 import { canAddTreatmentPlan } from '../permissions';
@@ -47,11 +46,6 @@ export class CreateScenariosComponent implements OnInit {
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   existingScenarioNames: string[] = [];
   forms: FormGroup = this.fb.group({});
-
-  project_area_upload_enabled = this.featureService.isFeatureEnabled(
-    'upload_project_area'
-  );
-
   // this value gets updated once we load the scenario result.
   scenarioState: ScenarioResultStatus = 'NOT_STARTED';
   scenarioResults: ScenarioResult | null = null;
@@ -80,7 +74,6 @@ export class CreateScenariosComponent implements OnInit {
     private router: Router,
     private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
-    private featureService: FeatureService,
     private goalOverlayService: GoalOverlayService,
     private treatmentsService: TreatmentsService,
     private dialog: MatDialog,
@@ -329,10 +322,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   get showTreatmentsTab() {
-    return (
-      this.scenarioState === 'SUCCESS' &&
-      this.featureService.isFeatureEnabled('treatments')
-    );
+    return this.scenarioState === 'SUCCESS';
   }
 
   showTreatmentFooter() {
