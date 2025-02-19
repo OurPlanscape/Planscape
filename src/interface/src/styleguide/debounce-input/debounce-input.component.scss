@@ -20,12 +20,13 @@
   }
 
   .title {
-    @include small-input-label();
+    @include standard-input-label();
     font-size: 14px;
     font-weight: 500;
     line-height: 22px;
     text-align: left;
     height: 22px;
+    color: $color-black;
   }
 
   .plain-text-box {

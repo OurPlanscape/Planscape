@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgIf, PercentPipe } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
   distinctUntilChanged,
@@ -41,6 +41,8 @@ import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
     NonForestedDataComponent,
     MatProgressSpinnerModule,
     MetricSelectorComponent,
+    JsonPipe,
+    PercentPipe,
   ],
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',
@@ -102,7 +104,7 @@ export class StandDataChartComponent implements OnInit {
   ngOnInit() {
     // this puts a loader when we change the metric
     // and removes it once we get a new value from standsTxSourceLoaded$
-    this.directImpactsStateService.activeMetric$
+    this.activeMetric$
       .pipe(
         distinctUntilChanged((prev, curr) => prev.id === curr.id),
         skip(this.skipFirstLoad ? 1 : 0),

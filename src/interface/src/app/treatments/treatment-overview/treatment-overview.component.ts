@@ -8,10 +8,10 @@ import { TreatmentPlan, TreatmentSummary } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
-import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
 import { PlanStateService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
+import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -27,7 +27,7 @@ import { canEditTreatmentPlan } from 'src/app/plan/permissions';
     JsonPipe,
     DecimalPipe,
     AcresTreatedComponent,
-    TreatmentSummaryComponent,
+    TreatmentSummaryButtonComponent,
   ],
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',

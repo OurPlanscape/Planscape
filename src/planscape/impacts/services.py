@@ -9,12 +9,13 @@ import fiona
 import rasterio
 from actstream import action as actstream_action
 from core.s3 import get_aws_session
+from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
-from django.db.models import Case, Count, F, QuerySet, Sum, When
+from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
 from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
@@ -33,7 +34,13 @@ from impacts.models import (
 )
 from planning.models import PlanningArea, ProjectArea, Scenario
 from rasterio.session import AWSSession
-from stands.models import STAND_AREA_ACRES, Stand, StandMetric, pixels_from_size
+from stands.models import (
+    STAND_AREA_ACRES,
+    Stand,
+    StandMetric,
+    StandSizeChoices,
+    pixels_from_size,
+)
 from stands.services import calculate_stand_zonal_stats
 
 log = logging.getLogger(__name__)
@@ -380,6 +387,7 @@ def to_treatment_result(
             "baseline": result.get("baseline"),
             "delta": result.get("delta"),
             "action": result.get("action"),
+            "forested_rate": result.get("forested_rate"),
         },
     )
     return instance
@@ -398,25 +406,32 @@ def calculate_impacts(
         action=action
     ).select_related(
         "stand",
+        "scenario",
         "treatment_plan",
         "project_area",
     )
     stand_ids = prescriptions.values_list("stand_id", flat=True)
     stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
-
+    stand_size = treatment_plan.scenario.get_stand_size()
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
-        baseline_metrics = calculate_metrics(
-            stands=stands,
-            variable=variable,
+        baseline_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
+            action=None,
             year=year,
         )
-
-        action_metrics = calculate_metrics(
+        baseline_metrics = calculate_stand_zonal_stats(
             stands=stands,
-            variable=variable,
-            year=year,
+            datalayer=baseline_layer,
+        )
+        action_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
             action=action,
+            year=year,
+        )
+        action_metrics = calculate_stand_zonal_stats(
+            stands=stands,
+            datalayer=action_layer,
         )
 
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
@@ -426,6 +441,8 @@ def calculate_impacts(
         baseline_dict=baseline_dict,
         action_dict=action_dict,
         action=action,
+        action_datalayer=action_layer,
+        stand_size=stand_size,
     )
 
     project_area_deltas = []
@@ -470,6 +487,8 @@ def calculate_stand_deltas(
     baseline_dict: Dict[int, StandMetric],
     action_dict: Dict[int, StandMetric],
     action: Optional[TreatmentPrescriptionAction] = None,
+    action_datalayer: Optional[DataLayer] = None,
+    stand_size: Optional[StandSizeChoices] = None,
 ) -> List[Dict[str, Any]]:
     results = []
     for stand_id, baseline in baseline_dict.items():
@@ -485,6 +504,13 @@ def calculate_stand_deltas(
             else baseline_value
         )
 
+        if action_datalayer and stand_size:
+            forested_rate = get_forested_rate(
+                stand_metric=action_metric,  # type: ignore
+                stand_size=stand_size,
+            )  # type: ignore
+        else:
+            forested_rate = None
         delta = calculate_delta(action_value, baseline_value)
         results.append(
             {
@@ -494,6 +520,7 @@ def calculate_stand_deltas(
                 "value": action_value,
                 "baseline": baseline_value,
                 "delta": delta,
+                "forested_rate": forested_rate,
             }
         )
     return results
@@ -504,6 +531,7 @@ def calculate_impacts_for_untreated_stands(
     variable: ImpactVariable,
     year: int,
 ) -> List[TreatmentResult]:
+    stand_size = treatment_plan.scenario.get_stand_size()
     prescriptions = treatment_plan.tx_prescriptions.select_related(
         "stand",
         "treatment_plan",
@@ -519,11 +547,16 @@ def calculate_impacts_for_untreated_stands(
 
     aws_session = AWSSession(get_aws_session())
     with rasterio.Env(aws_session):
-        baseline_metrics = calculate_metrics(
-            stands=untreated_stands,
-            variable=variable,
+        baseline_layer = ImpactVariable.get_datalayer(
+            impact_variable=variable,
+            action=None,
             year=year,
         )
+        baseline_metrics = calculate_stand_zonal_stats(
+            stands=untreated_stands,
+            datalayer=baseline_layer,
+        )
+
     baseline_dict = {m.stand_id: m for m in baseline_metrics}
 
     # Calculating deltas using baseline_dict on both entries
@@ -534,6 +567,8 @@ def calculate_impacts_for_untreated_stands(
         baseline_dict=baseline_dict,
         action_dict=baseline_dict,
         action=None,
+        action_datalayer=baseline_layer,
+        stand_size=stand_size,
     )
 
     treatment_results = list(
@@ -569,23 +604,9 @@ def get_calculation_matrix(
 
 def get_calculation_matrix_wo_action(
     years: Optional[Iterable[int]] = AVAILABLE_YEARS,
-) -> List[Tuple]:
+) -> Collection[Tuple]:
     variables = list(ImpactVariable)
     return list(itertools.product(variables, years))
-
-
-def calculate_metrics(
-    stands: QuerySet[Stand],
-    variable: ImpactVariable,
-    year: int,
-    action: Optional[TreatmentPrescriptionAction] = None,
-):
-    datalayer = ImpactVariable.get_datalayer(
-        impact_variable=variable,
-        action=action,
-        year=year,
-    )
-    return calculate_stand_zonal_stats(stands=stands, datalayer=datalayer)
 
 
 def calculate_project_area_deltas(
@@ -684,29 +705,14 @@ def classify_flame_length(fl_value: Optional[float]) -> str:
 
 
 def get_forested_rate(
-    treatment_result: TreatmentResult,
+    stand_metric: StandMetric,
+    stand_size: StandSizeChoices,
 ) -> Optional[float]:
     """Returns forested rate based on a treatment result."""
-    try:
-        stand_metric = StandMetric.objects.select_related("datalayer").get(
-            stand_id=treatment_result.stand_id,
-            datalayer__metadata__contains={
-                "modules": {
-                    "impacts": {
-                        "year": treatment_result.year,
-                        "baseline": True,
-                        "variable": treatment_result.variable,
-                        "action": None,
-                    }
-                }
-            },
-        )
-    except StandMetric.DoesNotExist:
-        stand_metric = None
-
     count = stand_metric.count if stand_metric and stand_metric.count else 0
     return truncate_result(
-        float(count) / float(pixels_from_size(treatment_result.stand.size))  # type: ignore
+        value=(float(count) / float(pixels_from_size(stand_size))),
+        quantize=".0001",  # type: ignore
     )
 
 
@@ -760,14 +766,13 @@ def get_treatment_results_table_data(
     )
 
     for result in results:
-        forested_rate = get_forested_rate(result)
-
         datamap[result.year][result.variable] = {
             "value": result.value,
             "delta": result.delta,
             "baseline": result.baseline,
             "category": get_category(result),
-            "forested_rate": forested_rate,
+            "forested_rate": result.forested_rate,
+            "display_type": result.get_display_type(),
         }
     table_data = []
 
@@ -813,7 +818,8 @@ def get_treament_result_schema():
             ("scenario_id", "int"),
             ("scenario_name", "str:256"),
             ("action", "str:64"),
-            ("forested_rate", "float"),
+            ("type", "str:64"),
+            ("forested_pct", "float"),
             *fields,
             *other_fields,
         ],
@@ -905,7 +911,11 @@ def fetch_treatment_plan_data(
         result_data[result.stand_id]["action"] = treatment_results_data[
             result.stand_id
         ].action
-        result_data[result.stand_id]["forested_rate"] = get_forested_rate(result)
+        forested_rate = treatment_results_data[result.stand_id].forested_rate
+        if forested_rate:
+            forested_rate = truncate_result(forested_rate * 100)
+        result_data[result.stand_id]["forested_pct"] = forested_rate
+        result_data[result.stand_id]["type"] = result.get_display_type()
 
     return list(
         map(

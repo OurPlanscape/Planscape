@@ -17,6 +17,7 @@ STORYBOOK_WWW_DIR=/var/www/html/storybook/
 SYS_CTL=systemctl --user
 TAG=main
 VERSION="$$(date '+%Y.%m.%d')-$$(git log --abbrev=10 --format=%h | head -1)"
+E2E_IMPACTS=impacts_e2e_config.json
 
 help:
 	@echo 'Available commands:'
@@ -116,6 +117,9 @@ load-restrictions:
 
 test-scenarios:
 	cd src/planscape && python3 manage.py test_scenarios
+
+test-impacts:
+	cd src/planscape && python3 manage.py e2e_impacts --config_file=$(E2E_IMPACTS)
 
 SERID=$(shell id -u)
 GROUPID=$(shell id -g)
