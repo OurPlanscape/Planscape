@@ -169,30 +169,30 @@
       (selectedTabChange)="tabChange($event)">
       <mat-tab label="Active">
         <mat-card-content>
-          <ng-container *ngIf="activeScenarios.length > 0">
-            <div class="scenario-list-controls">
-              <mat-slide-toggle
-                color="primary"
-                class="slide-toggle-my-scenarios"
-                [(ngModel)]="showOnlyMyScenarios"
-                (change)="fetchScenarios()">
-                Show only my scenarios
-              </mat-slide-toggle>
-              <div class="scenario-sort-picker">
-                Sort by:
-                <mat-select
-                  class="sort-select"
-                  [(ngModel)]="sortSelection"
-                  (selectionChange)="handleSortChange()">
-                  <mat-option value="-created_at">
-                    Created date (Newest first)
-                  </mat-option>
-                  <mat-option value="created_at">
-                    Created date (Oldest first)
-                  </mat-option>
-                </mat-select>
-              </div>
+          <div class="scenario-list-controls">
+            <mat-slide-toggle
+              color="primary"
+              class="slide-toggle-my-scenarios"
+              [(ngModel)]="showOnlyMyScenarios"
+              (change)="fetchScenarios()">
+              Show only my scenarios
+            </mat-slide-toggle>
+            <div class="scenario-sort-picker">
+              Sort by:
+              <mat-select
+                class="sort-select"
+                [(ngModel)]="sortSelection"
+                (selectionChange)="handleSortChange()">
+                <mat-option value="-created_at">
+                  Created date (Newest first)
+                </mat-option>
+                <mat-option value="created_at">
+                  Created date (Oldest first)
+                </mat-option>
+              </mat-select>
             </div>
+          </div>
+          <ng-container *ngIf="activeScenarios.length > 0">
             <app-scenarios-card-list
               [scenarios]="activeScenarios"
               [plan]="plan"
@@ -206,30 +206,30 @@
       </mat-tab>
       <mat-tab label="Archived">
         <mat-card-content>
-          <ng-container *ngIf="archivedScenarios.length > 0">
-            <div class="scenario-list-controls">
-              <mat-slide-toggle
-                color="primary"
-                class="slide-toggle-my-scenarios"
-                [(ngModel)]="showOnlyMyScenarios"
-                (change)="fetchScenarios()">
-                Show only my scenarios
-              </mat-slide-toggle>
-              <div class="scenario-sort-picker">
-                Sort by:
-                <mat-select
-                  class="sort-select"
-                  [(ngModel)]="sortSelection"
-                  (selectionChange)="handleSortChange()">
-                  <mat-option value="-created_at">
-                    Created date (Newest first)
-                  </mat-option>
-                  <mat-option value="created_at">
-                    Created date (Oldest first)
-                  </mat-option>
-                </mat-select>
-              </div>
+          <div class="scenario-list-controls">
+            <mat-slide-toggle
+              color="primary"
+              class="slide-toggle-my-scenarios"
+              [(ngModel)]="showOnlyMyScenarios"
+              (change)="fetchScenarios()">
+              Show only my scenarios
+            </mat-slide-toggle>
+            <div class="scenario-sort-picker">
+              Sort by:
+              <mat-select
+                class="sort-select"
+                [(ngModel)]="sortSelection"
+                (selectionChange)="handleSortChange()">
+                <mat-option value="-created_at">
+                  Created date (Newest first)
+                </mat-option>
+                <mat-option value="created_at">
+                  Created date (Oldest first)
+                </mat-option>
+              </mat-select>
             </div>
+          </div>
+          <ng-container *ngIf="archivedScenarios.length > 0">
             <app-scenarios-card-list
               [scenarios]="archivedScenarios"
               [plan]="plan"
