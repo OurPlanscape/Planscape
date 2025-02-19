@@ -17,5 +17,6 @@
   [treatmentPlansEnabled]="treatmentPlansEnabled"
   (openNewTreatment)="openNewTreatmentDialog($event, s)"
   [userCanArchiveScenario]="userCanArchiveScenario(s)"
+  [userCanCreateTreatmentPlans]="userCanCreateTreatmentPlan()"
   (toggleArchiveStatus)="toggleScenarioStatus(s)">
 </sg-scenario-card>

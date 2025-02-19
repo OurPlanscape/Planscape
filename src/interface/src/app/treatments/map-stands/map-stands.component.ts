@@ -255,7 +255,9 @@ export class MapStandsComponent implements OnChanges, OnInit {
   }
 
   layerClick() {
-    this.treatmentsState.setShowApplyTreatmentsDialog(true);
+    if (this.mapConfigState.isStandSelectionEnabled()) {
+      this.treatmentsState.setShowApplyTreatmentsDialog(true);
+    }
   }
 
   ngOnChanges(changes: SimpleChanges) {
