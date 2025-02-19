@@ -46,9 +46,3 @@
   flex-direction: row;
   gap: 4px;
 }
-
-.black-icon {
-  ::ng-deep mat-icon {
-    color: $color-black;
-  }
-}
