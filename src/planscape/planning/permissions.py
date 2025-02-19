@@ -2,10 +2,8 @@ from planscape.permissions import PlanscapePermission
 from collaboration.permissions import (
     PlanningAreaPermission,
     ScenarioPermission,
-    ProjectAreaNotePermission,
 )
-from planning.models import PlanningArea, ProjectArea
-from rest_framework.exceptions import ValidationError
+from planning.models import PlanningArea
 
 
 class PlanningAreaViewPermission(PlanscapePermission):
@@ -41,50 +39,3 @@ class ScenarioViewPermission(PlanscapePermission):
             case _:
                 method = PlanningAreaPermission.can_view
         return method(request.user, planning_area)
-
-
-class ProjectAreaNoteViewPermission(PlanscapePermission):
-    permission_set = ProjectAreaNotePermission
-
-    def has_permission(self, request, view):
-        if not self.is_authenticated(request):
-            return False
-
-        project_area_id = view.kwargs.get("project_area_id")
-
-        match view.action:
-            case "create":
-                if not project_area_id:
-                    return False
-                try:
-                    project_area = ProjectArea.objects.get(id=project_area_id)
-                except ProjectArea.DoesNotExist:
-                    return False
-                return ProjectAreaNotePermission.can_add(request.user, project_area)
-
-            case "list":
-                if not project_area_id:
-                    raise ValidationError(f"Missing required project_area_pk")
-                try:
-                    project_area = ProjectArea.objects.select_related(
-                        "scenario", "scenario__planning_area"
-                    ).get(id=project_area_id)
-                except ProjectArea.DoesNotExist:
-                    return False
-                planning_area = project_area.scenario.planning_area
-                return PlanningAreaPermission.can_view(request.user, planning_area)
-
-            case "destroy" | "retrieve":
-                # fallthrough to has_object_permissions
-                return True
-
-            case "update" | "partial_update" | _:
-                return False  # operations unsupported
-
-    def has_object_permission(self, request, view, object):
-        match view.action:
-            case "destroy":
-                method = ProjectAreaNotePermission.can_remove
-            case _:
-                method = ProjectAreaNotePermission.can_view
-        return method(request.user, object)

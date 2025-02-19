@@ -1,4 +1,10 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  HostBinding,
+  Input,
+  Output,
+} from '@angular/core';
 import { ButtonComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { NgClass, NgForOf, NgIf } from '@angular/common';
@@ -35,7 +41,17 @@ export class PanelComponent {
    */
   @Output() clickedButton = new EventEmitter<string>();
 
+  /**
+   * Show line dividing title and content
+   */
+  @Input() showDivider = true;
+
   clickButton(actionName: string) {
     this.clickedButton.emit(actionName);
+  }
+
+  @HostBinding('class.no-divider')
+  get noDivider() {
+    return !this.showDivider;
   }
 }

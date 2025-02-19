@@ -2,7 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { TreatmentPlan, TreatmentSummary } from '@types';
-import { MetricResult } from '../treatments/metrics';
+import { MetricId, MetricResult } from '../treatments/metrics';
+import { PrescriptionAction } from '../treatments/prescriptions';
 
 @Injectable({
   providedIn: 'root',
@@ -27,6 +28,7 @@ export class TreatmentsService {
       withCredentials: true,
       params: {
         scenario: scenarioId,
+        ordering: '-created_at',
       },
     });
   }
@@ -111,7 +113,8 @@ export class TreatmentsService {
   getTreatmentImpactCharts(
     treatmentPlanId: number,
     metrics: string[],
-    projectAreaId: number | null
+    projectAreaId: number | null,
+    txTypes: PrescriptionAction[]
   ) {
     let variableParams = new HttpParams();
     metrics.forEach((m) => {
@@ -120,6 +123,9 @@ export class TreatmentsService {
     if (projectAreaId) {
       variableParams = variableParams.append('project_areas', projectAreaId);
     }
+    txTypes.forEach((tx) => {
+      variableParams = variableParams.append('actions', tx);
+    });
     return this.http.get(this.baseUrl + treatmentPlanId + '/plot/', {
       withCredentials: true,
       params: variableParams,
@@ -127,7 +133,7 @@ export class TreatmentsService {
   }
 
   getStandResult(treatmentPlanId: number, standId: number) {
-    return this.http.get<Record<'FL' | 'ROS', MetricResult>[]>(
+    return this.http.get<Record<MetricId, MetricResult>[]>(
       `${this.baseUrl}/${treatmentPlanId}/stand-treatment-results/`,
       {
         withCredentials: true,

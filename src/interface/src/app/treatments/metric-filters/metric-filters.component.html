@@ -1,21 +1,10 @@
-<div class="grid-item" *ngFor="let list of dropdownOptions; let i = index">
-  <app-metric-selector
-    [selectedOption]="selectedOptions[i]"
-    [metrics]="list"
-    [label]="'Metric ' + (i + 1)"
-    [color]="metricColors[i].value"
-    (metricChanged)="optionSelected(i, metricColors[i].key, $event)"
-    (activated)="
-      activateMetric($event, metricColors[i].key)
-    "></app-metric-selector>
-</div>
-
-<div class="grid-item">
-  <sg-filter-dropdown
-    menuLabel="Treatment Type"
-    [menuItems]="(treatmentTypeOptions$ | async) || []"
-    [hasSearch]="false"
-    displayField="value"
-    [disabled]="(treatmentTypeOptions$ | async) === null"
-    (confirmedSelection)="onConfirmedSelection($event)"></sg-filter-dropdown>
-</div>
+<app-metric-selector
+  class="grid-item"
+  *ngFor="let list of dropdownOptions; let i = index"
+  [selectedOption]="selectedOptions[i]"
+  [metrics]="list"
+  [label]="'Metric ' + (i + 1)"
+  [color]="metricColors[i].value"
+  (metricChanged)="
+    optionSelected(i, metricColors[i].key, $event)
+  "></app-metric-selector>

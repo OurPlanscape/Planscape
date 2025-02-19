@@ -21,7 +21,11 @@ import { MatSelectModule } from '@angular/material/select';
 import { ModalComponent } from 'src/styleguide/modal/modal.component';
 import { ModalInfoComponent } from 'src/styleguide/modal-info-box/modal-info.component';
 
-import { ButtonComponent, InputFieldComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  InputDirective,
+  InputFieldComponent,
+} from '@styleguide';
 import { FileUploadFieldComponent } from '../../../styleguide/file-upload-field/file-upload-field.component';
 import { SharedModule } from '../../shared/shared.module';
 import { FormMessageType } from '@types';
@@ -60,6 +64,7 @@ export interface DialogData {
     ReactiveFormsModule,
     MatLegacyButtonModule,
     MatLegacyMenuModule,
+    InputDirective,
   ],
 })
 export class UploadProjectAreasModalComponent {

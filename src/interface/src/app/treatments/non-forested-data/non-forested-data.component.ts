@@ -2,23 +2,28 @@ import { Component } from '@angular/core';
 import { MatTableModule } from '@angular/material/table';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
-import { distinctUntilChanged, switchMap, tap } from 'rxjs';
+import { distinctUntilChanged, map, switchMap, tap } from 'rxjs';
 
 import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { NgIf } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentsService } from '@services/treatments.service';
+import { standIsNonBurnable } from '../stands';
 
 @UntilDestroy()
 @Component({
   selector: 'app-non-forested-data',
   standalone: true,
-  imports: [MatTableModule, MatProgressSpinnerModule, NgIf],
+  imports: [MatTableModule, MatProgressSpinnerModule, NgIf, AsyncPipe],
   templateUrl: './non-forested-data.component.html',
   styleUrl: './non-forested-data.component.scss',
 })
 export class NonForestedDataComponent {
-  loading = true;
+  loading = false;
+
+  standIsNonBurnable$ = this.directImpactsStateService.activeStand$.pipe(
+    map((d) => standIsNonBurnable(d))
+  );
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
@@ -38,6 +43,7 @@ export class NonForestedDataComponent {
         )
       )
       .subscribe((dataset) => {
+        this.loading = false;
         this.dataSource = dataset.map((data, i) => {
           return {
             time_step: i * 5,
@@ -45,7 +51,6 @@ export class NonForestedDataComponent {
             flame_length: data.FL.category,
           };
         });
-        this.loading = false;
       });
   }
 

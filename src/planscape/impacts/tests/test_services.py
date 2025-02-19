@@ -1,10 +1,6 @@
 import json
-import itertools
-from pathlib import Path
 import random
-from unittest import TestCase
-
-from numpy import var
+from pathlib import Path
 
 from datasets.models import DataLayerType
 from datasets.tests.factories import DataLayerFactory
@@ -24,18 +20,17 @@ from impacts.models import (
 from impacts.services import (
     calculate_delta,
     calculate_impacts,
+    calculate_impacts_for_untreated_stands,
     classify_flame_length,
     classify_rate_of_spread,
     clone_treatment_plan,
-    calculate_impacts_for_untreated_stands,
     export_geopackage,
     fetch_treatment_plan_data,
     generate_impact_results_data_to_plot,
     generate_summary,
     get_calculation_matrix,
-    get_baseline_matrix,
     get_calculation_matrix_wo_action,
-    get_treatment_results_table_data,
+    itertools,
     upsert_treatment_prescriptions,
 )
 from impacts.tests.factories import (
@@ -49,8 +44,8 @@ from planning.tests.factories import (
     ProjectAreaFactory,
     ScenarioFactory,
 )
-from stands.models import Stand, StandSizeChoices
-from stands.tests.factories import StandFactory, StandMetricFactory
+from stands.models import STAND_AREA_ACRES, Stand, StandSizeChoices
+from stands.tests.factories import StandFactory
 
 from planscape.tests.factories import UserFactory
 
@@ -185,20 +180,25 @@ class SummaryTest(TransactionTestCase):
             action=TreatmentPrescriptionAction.MODERATE_MASTICATION_PLUS_RX_FIRE,
             stand__size=StandSizeChoices.SMALL,
         )
+        self.stand_area = STAND_AREA_ACRES[StandSizeChoices.SMALL]
 
     def test_summary_is_returned_correctly(self):
         summary = generate_summary(self.tx_plan, project_area=None)
         self.assertIsNotNone(summary)
         self.assertIn("planning_area_id", summary)
         self.assertIn("planning_area_name", summary)
+        self.assertIn("prescriptions", summary)
         self.assertIn("project_areas", summary)
         self.assertIn("scenario_id", summary)
         self.assertIn("scenario_name", summary)
         self.assertIn("treatment_plan_id", summary)
         self.assertIn("treatment_plan_name", summary)
+        self.assertIn("total_stand_count", summary)
+        self.assertIn("total_area_acres", summary)
+        self.assertIn("total_treated_stand_count", summary)
+        self.assertIn("total_treated_area_acres", summary)
         self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 3)
-
         proj_area_1 = list(
             filter(
                 lambda x: x["project_area_id"] == self.proj1.id,
@@ -222,29 +222,80 @@ class SummaryTest(TransactionTestCase):
         self.assertIn("type", proj_area_1.get("centroid"))
         self.assertIn("coordinates", proj_area_1.get("centroid"))
         self.assertIn("extent", proj_area_1)
+        self.assertIn("total_stand_count", proj_area_1)
+        self.assertIn("total_area_acres", proj_area_1)
+        self.assertIn("total_treated_stand_count", proj_area_1)
+        self.assertIn("total_treated_area_acres", proj_area_1)
         self.assertEqual(len(proj_area_1["prescriptions"]), 1)
         stands1 = proj_area_1["prescriptions"][0]["stand_ids"]
         self.assertGreater(len(stands1), 0)
+
         self.assertIn("prescriptions", proj_area_2)
         self.assertIn("centroid", proj_area_2)
         self.assertIn("extent", proj_area_2)
+        self.assertIn("total_stand_count", proj_area_2)
+        self.assertIn("total_area_acres", proj_area_2)
+        self.assertIn("total_treated_stand_count", proj_area_2)
+        self.assertIn("total_treated_area_acres", proj_area_2)
         self.assertEqual(len(proj_area_2["prescriptions"]), 1)
 
         self.assertIn("prescriptions", proj_area_3)
         self.assertIn("centroid", proj_area_3)
         self.assertIn("extent", proj_area_3)
+        self.assertIn("total_stand_count", proj_area_3)
+        self.assertIn("total_area_acres", proj_area_3)
+        self.assertIn("total_treated_stand_count", proj_area_3)
+        self.assertIn("total_treated_area_acres", proj_area_3)
         self.assertEqual(len(proj_area_3["prescriptions"]), 1)
+
+        precription_1 = list(
+            filter(
+                lambda x: x["action"] == TreatmentPrescriptionAction.HEAVY_MASTICATION,
+                summary["prescriptions"],
+            )
+        )[0]
+        precription_2 = list(
+            filter(
+                lambda x: x["action"]
+                == TreatmentPrescriptionAction.HEAVY_THINNING_BIOMASS,
+                summary["prescriptions"],
+            )
+        )[0]
+        precription_3 = list(
+            filter(
+                lambda x: x["action"]
+                == TreatmentPrescriptionAction.MODERATE_MASTICATION_PLUS_RX_FIRE,
+                summary["prescriptions"],
+            )
+        )[0]
+
+        self.assertEqual(precription_1["stand_count"], 4)
+        self.assertEqual(precription_1["area_acres"], 4 * self.stand_area)
+        self.assertAlmostEqual(precription_1["area_percent"], 9.52, places=2)
+
+        self.assertEqual(precription_2["stand_count"], 5)
+        self.assertEqual(precription_2["area_acres"], 5 * self.stand_area)
+        self.assertAlmostEqual(precription_2["area_percent"], 11.9, places=2)
+
+        self.assertEqual(precription_3["stand_count"], 5)
+        self.assertEqual(precription_3["area_acres"], 5 * self.stand_area)
+        self.assertAlmostEqual(precription_3["area_percent"], 11.9, places=2)
 
     def test_summary_is_returned_correctly_filter_by_project_area(self):
         summary = generate_summary(self.tx_plan, project_area=self.proj1)
         self.assertIsNotNone(summary)
         self.assertIn("planning_area_id", summary)
         self.assertIn("planning_area_name", summary)
+        self.assertIn("prescriptions", summary)
         self.assertIn("project_areas", summary)
         self.assertIn("scenario_id", summary)
         self.assertIn("scenario_name", summary)
         self.assertIn("treatment_plan_id", summary)
         self.assertIn("treatment_plan_name", summary)
+        self.assertIn("total_stand_count", summary)
+        self.assertIn("total_area_acres", summary)
+        self.assertIn("total_treated_stand_count", summary)
+        self.assertIn("total_treated_area_acres", summary)
         self.assertIn("extent", summary)
         self.assertEqual(len(summary["project_areas"]), 1)
         proj_area_1 = list(
@@ -266,9 +317,17 @@ class SummaryTest(TransactionTestCase):
             )
         )
         self.assertIn("prescriptions", proj_area_1)
+
         self.assertEqual(len(proj_area_1["prescriptions"]), 1)
         self.assertEqual(proj_area_2, [])
         self.assertEqual(proj_area_3, [])
+
+        self.assertEquals(len(summary["prescriptions"]), 1)
+        precription = summary["prescriptions"][0]
+
+        self.assertEqual(precription["stand_count"], 4)
+        self.assertEqual(precription["area_acres"], 4 * self.stand_area)
+        self.assertAlmostEqual(precription["area_percent"], 28.57, places=2)
 
 
 class GetCalculationMatrixTest(TransactionTestCase):
@@ -286,20 +345,7 @@ class GetCalculationMatrixTest(TransactionTestCase):
         self.assertIsNotNone(matrix)
 
         # impact variables * years * actions
-        total_records = (
-            len(ImpactVariable.get_measurable_impact_variables()) * len(years) * 3
-        )
-        self.assertEqual(len(matrix), total_records)
-
-    def test_baseline_matrix_returns_correctly(self):
-        years = [1, 2]
-        matrix = get_baseline_matrix(years=years)
-        self.assertIsNotNone(matrix)
-
-        # impact variables * years
-        total_records = len(ImpactVariable.get_baseline_only_impact_variables()) * len(
-            years
-        )
+        total_records = len(list(ImpactVariable)) * len(years) * 3
         self.assertEqual(len(matrix), total_records)
 
 
@@ -308,18 +354,14 @@ class GetCalculationMetricsWoActionTest(TransactionTestCase):
         years = [1, 2]
         matrix = get_calculation_matrix_wo_action(years=years)
 
-        total_records = len(ImpactVariable.get_measurable_impact_variables()) * len(
-            years
-        )
+        total_records = len(list(ImpactVariable)) * len(years)
 
         self.assertEqual(len(matrix), total_records)
 
     def test_calculation_matrix_wo_action_null_years(self):
         matrix = get_calculation_matrix_wo_action()
 
-        total_records = len(ImpactVariable.get_measurable_impact_variables()) * len(
-            AVAILABLE_YEARS
-        )
+        total_records = len(list(ImpactVariable)) * len(AVAILABLE_YEARS)
 
         self.assertEqual(len(matrix), total_records)
 
@@ -377,7 +419,7 @@ class CalculateImpactsTest(TransactionTestCase):
             "modules": {
                 "impacts": {
                     "year": 2024,
-                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "variable": str(ImpactVariable.CANOPY_BASE_HEIGHT).upper(),
                     "action": None,
                     "baseline": True,
                 }
@@ -387,7 +429,7 @@ class CalculateImpactsTest(TransactionTestCase):
             "modules": {
                 "impacts": {
                     "year": 2024,
-                    "variable": ImpactVariable.CANOPY_BASE_HEIGHT,
+                    "variable": str(ImpactVariable.CANOPY_BASE_HEIGHT).upper(),
                     "action": TreatmentPrescriptionAction.get_file_mapping(
                         TreatmentPrescriptionAction.HEAVY_MASTICATION
                     ),
@@ -426,16 +468,18 @@ class CalculateImpactsTest(TransactionTestCase):
 
     def test_calculate_delta(self):
         values_bases_expected_results = [
-            (0, 0, 0),
-            (0, 1, -1),
+            # non-burnable
+            (None, None, None),
+            # non-forested
+            (1, None, 0),
+            # value = 0 -> non-forested
+            (0, 1, 0),
+            # baseline = 0 -> non-forested
             (1, 0, 0),
             (1, 1, 0),
             (2, 1, 1),
             (1.5, 1, 0.5),
             (40, 20, 1),
-            (None, 1, -1),
-            (1, None, 0),
-            (None, None, None),
         ]
 
         for value, base, expected_result in values_bases_expected_results:
@@ -522,6 +566,7 @@ class CalculateImpactsForUntreatedStandsTest(TransactionTestCase):
             self.assertEqual(treatment_result.action, None)
             self.assertEqual(treatment_result.value, treatment_result.baseline)
             self.assertEqual(treatment_result.delta, 0)
+            self.assertIsNotNone(treatment_result.forested_rate)
 
 
 class ImpactResultsDataPlotTest(TransactionTestCase):
@@ -692,114 +737,31 @@ class ImpactResultsDataPlotTest(TransactionTestCase):
             self.assertIsNotNone(item.get("relative_year"))
 
 
-class GetTreatmentResultsTableDataTest(TransactionTestCase):
-    def setUp(self):
-        self.scenario = ScenarioFactory.create()
-        self.treatment_plan = TreatmentPlanFactory.create(scenario=self.scenario)
-        self.stand = StandFactory()
-
-    def test_returns_empty_if_no_data(self):
-        """
-        Checks that get_treatment_results_table_data() returns an empty list
-        when there's no TreatmentResult in the DB for the given plan + stand.
-        """
-        table_data = get_treatment_results_table_data(
-            self.treatment_plan, self.stand.id
-        )
-        self.assertEqual(table_data, [], "Expected an empty list when no data is found")
-
-    def test_returns_data_for_treated_and_untreated_metrics(self):
-        """
-        Ensures that both TreatmentResult and StandMetric data are correctly included
-        in the final table_data structure.
-        """
-        # Add treated results (from TreatmentResult)
-        TreatmentResultFactory.create(
-            treatment_plan=self.treatment_plan,
-            stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH,
-            year=2024,
-            value=3.5,
-            delta=1.2,
-            baseline=2.3,
-        )
-        TreatmentResultFactory.create(
-            treatment_plan=self.treatment_plan,
-            stand=self.stand,
-            variable=ImpactVariable.RATE_OF_SPREAD,
-            year=2024,
-            value=2.0,
-            delta=0.5,
-            baseline=1.5,
-        )
-
-        # Add untreated metrics (from StandMetric)
-        StandMetricFactory.create(
-            stand=self.stand,
-            datalayer=DataLayerFactory.create(
-                metadata={
-                    "impact_variable": ImpactVariable.FLAME_LENGTH.value,
-                    "year": 2024,
-                }
-            ),
-            avg=7.0,
-        )
-        StandMetricFactory.create(
-            stand=self.stand,
-            datalayer=DataLayerFactory.create(
-                metadata={
-                    "impact_variable": ImpactVariable.RATE_OF_SPREAD.value,
-                    "year": 2024,
-                }
-            ),
-            avg=15.0,
-        )
-
-    def test_returns_only_untreated_if_no_treated_data(self):
-        """
-        Ensures that only StandMetric data is returned if no TreatmentResult data exists.
-        """
-        # Add untreated metrics (from StandMetric)
-        StandMetricFactory.create(
-            stand=self.stand,
-            datalayer=DataLayerFactory.create(
-                metadata={
-                    "impact_variable": ImpactVariable.FLAME_LENGTH.value,
-                    "year": 2024,
-                }
-            ),
-            avg=4.5,
-        )
-        StandMetricFactory.create(
-            stand=self.stand,
-            datalayer=DataLayerFactory.create(
-                metadata={
-                    "impact_variable": ImpactVariable.RATE_OF_SPREAD.value,
-                    "year": 2024,
-                }
-            ),
-            avg=12.0,
-        )
-
-
 class ClassificationFunctionsTest(TransactionTestCase):
     def test_classify_flame_length(self):
         """
         Checks the numeric boundaries for flame length classification.
         """
-        self.assertEqual(classify_flame_length(1.5), "Very Low")
-        self.assertEqual(classify_flame_length(3.0), "Low")
-        self.assertEqual(classify_flame_length(8.0), "High")
-        self.assertEqual(classify_flame_length(25.0), "Extreme")
+        self.assertEqual(classify_flame_length(10.0), "Very Low")
+        self.assertEqual(classify_flame_length(40.0), "Low")
+        self.assertEqual(classify_flame_length(41.0), "Moderate")
+        self.assertEqual(classify_flame_length(80.0), "Moderate")
+        self.assertEqual(classify_flame_length(80.1), "High")
+        self.assertEqual(classify_flame_length(120.0), "High")
+        self.assertEqual(classify_flame_length(120.1), "Very High")
+        self.assertEqual(classify_flame_length(250.0), "Very High")
+        self.assertEqual(classify_flame_length(260.0), "Extreme")
 
     def test_classify_rate_of_spread(self):
         """
         Checks the numeric boundaries for rate of spread classification.
         """
-        self.assertEqual(classify_rate_of_spread(2.0), "Very Low")
-        self.assertEqual(classify_rate_of_spread(9.5), "Low")
-        self.assertEqual(classify_rate_of_spread(20.0), "High")
-        self.assertEqual(classify_rate_of_spread(100.0), "Extreme")
+        self.assertEqual(classify_rate_of_spread(20.0), "Very Low")
+        self.assertEqual(classify_rate_of_spread(50.0), "Low")
+        self.assertEqual(classify_rate_of_spread(51.0), "Moderate")
+        self.assertEqual(classify_rate_of_spread(500.0), "High")
+        self.assertEqual(classify_rate_of_spread(501.0), "Very High")
+        self.assertEqual(classify_rate_of_spread(1500.1), "Extreme")
 
 
 class FetchTreatmentPlanDataTest(TransactionTestCase):

@@ -1,18 +1,17 @@
 import copy
 from unittest import mock
+
 from django.urls import reverse
-from rest_framework.test import APITransactionTestCase, APITestCase
-from planning.models import (
-    Scenario,
-    ScenarioResult,
-)
-from planscape.tests.factories import UserFactory
+from rest_framework.test import APITestCase, APITransactionTestCase
+
+from planning.models import Scenario, ScenarioResult
 from planning.tests.factories import (
     PlanningAreaFactory,
+    ProjectAreaFactory,
     ScenarioFactory,
     ScenarioResultFactory,
-    ProjectAreaFactory,
 )
+from planscape.tests.factories import UserFactory
 
 
 class CreateScenarioTest(APITransactionTestCase):
@@ -35,8 +34,8 @@ class CreateScenarioTest(APITransactionTestCase):
             "max_treatment_area_ratio": 40000,
         }
 
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_create_scenario(self, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_create_scenario(self, chord_mock):
         self.client.force_authenticate(self.user)
         data = {
             "planning_area": self.planning_area.pk,
@@ -49,9 +48,10 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, 201)
         self.assertIsNotNone(response.json().get("id"))
+        self.assertEqual(chord_mock.call_count, 1)
 
-    @mock.patch("planning.services.async_forsys_run.delay", return_value=None)
-    def test_create_uploaded_scenario(self, _forsys_run):
+    @mock.patch("planning.services.chord", autospec=True)
+    def test_create_uploaded_scenario(self, chord_mock):
         self.client.force_authenticate(self.user)
         uploaded_scenario = {
             "planning_area": self.planning_area.pk,
@@ -64,6 +64,7 @@ class CreateScenarioTest(APITransactionTestCase):
         )
         self.assertEqual(upload_response.status_code, 201)
         self.assertIsNotNone(upload_response.json().get("id"))
+        self.assertEqual(chord_mock.call_count, 1)
 
 
 class ListScenariosForPlanningAreaTest(APITestCase):
@@ -118,7 +119,9 @@ class ListScenariosForPlanningAreaTest(APITestCase):
             configuration=self.configuration,
             user=self.owner_user,
         )
-        project_areas = ProjectAreaFactory.create_batch(size=10, scenario=self.scenario)
+        _project_areas = ProjectAreaFactory.create_batch(
+            size=10, scenario=self.scenario
+        )
         self.scenario_res = ScenarioResultFactory(scenario=self.scenario2)
         self.scenario3 = ScenarioFactory.create(
             planning_area=self.planning_area,

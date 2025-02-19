@@ -1,9 +1,8 @@
 from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.mixins import ListModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.response import Response
-from rest_framework import status
+from django.contrib.postgres.search import SearchVector, SearchQuery
 from core.serializers import MultiSerializerMixin
 from datasets.filters import DataLayerFilterSet
 from datasets.models import DataLayer, Dataset, VisibilityOptions
@@ -43,6 +42,23 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: afterwards we need to implement the filtering
         # by organization visibility too, so we return the public ones
         # PLUS all the datalayers accessible by the organization
-        return DataLayer.objects.filter(
+
+        queryset = DataLayer.objects.filter(
             dataset__visibility=VisibilityOptions.PUBLIC,
         )
+
+        if self.action == "list" and (
+            search_query := self.request.query_params.get("search")
+        ):
+            vector = SearchVector(
+                "name",
+                "category__name",
+                "dataset__name",
+                "dataset__description",
+                "organization__name",
+            )
+            return queryset.annotate(search=vector).filter(
+                search=SearchQuery(search_query)
+            )
+
+        return queryset

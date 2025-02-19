@@ -18,6 +18,7 @@ import {
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
+import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 
 @Component({
   selector: 'app-project-area-tx-tab',
@@ -32,6 +33,7 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
     OpacitySliderComponent,
     SearchBarComponent,
     TreatmentExpanderComponent,
+    LeftLoadingOverlayComponent,
   ],
   templateUrl: './treatments-tab.component.html',
   styleUrl: './treatments-tab.component.scss',
@@ -45,6 +47,8 @@ export class ProjectAreaTreatmentsTabComponent {
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
   searchString: string = '';
+
+  reloadingSummary$ = this.treatmentsState.reloadingSummary$;
 
   prescriptions$: Observable<Prescription[]> = combineLatest([
     this.treatmentsState.summary$,
@@ -61,6 +65,10 @@ export class ProjectAreaTreatmentsTabComponent {
   );
 
   filteredPrescriptions$ = this.prescriptions$;
+
+  projectAreaTotalAcres$ = this.treatmentsState.activeProjectArea$.pipe(
+    map((pa) => pa?.total_area_acres)
+  );
 
   handleOpacityChange(opacity: number) {
     this.mapConfigState.setTreatedStandsOpacity(opacity);
@@ -83,9 +91,8 @@ export class ProjectAreaTreatmentsTabComponent {
                   .toLowerCase()
                   .includes(this.searchString)) ||
               (p.type === 'SEQUENCE' &&
-                PRESCRIPTIONS.SEQUENCE[
-                  p.action as PrescriptionSequenceAction
-                ].details
+                PRESCRIPTIONS.SEQUENCE[p.action as PrescriptionSequenceAction]
+                  .map((d) => d.description)
                   .join(' ')
                   .toLowerCase()
                   .includes(this.searchString))

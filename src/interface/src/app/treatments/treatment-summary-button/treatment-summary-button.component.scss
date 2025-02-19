@@ -1,0 +1,12 @@
+@import 'colors';
+
+:host {
+  padding: 0px;
+  font-size: 14px;
+  color: $color-standard-blue;
+}
+
+button {
+  padding-left: 0;
+  padding-right: 0;
+}

@@ -28,10 +28,15 @@
         [inputHeight]="'regular'"
         (searchString)="setSearchString($event)"></sg-search-bar>
     </div>
+    <app-left-loading-overlay
+      *ngIf="reloadingSummary$ | async"></app-left-loading-overlay>
 
     <div
       class="expanders-container"
-      *ngIf="filteredPrescriptions$ | async as filteredRxs">
+      *ngIf="
+        (reloadingSummary$ | async) === false &&
+        (filteredPrescriptions$ | async) as filteredRxs
+      ">
       <ng-container
         *ngIf="
           searchString !== '' && searchString !== null && filteredRxs.length > 0
@@ -50,7 +55,8 @@
         [areaAcres]="tx.area_acres"
         [treatedStandCount]="tx.treated_stand_count"
         [standIds]="tx.stand_ids"
-        [searchString]="searchString">
+        [searchString]="searchString"
+        [projectAreaTotalAcres]="(projectAreaTotalAcres$ | async) || 0">
         {{ tx.type }}
       </sg-treatment-expander>
       <ng-container
@@ -61,8 +67,8 @@
         ">
         <div class="no-results-box">
           <mat-icon class="material-symbols-outlined no-results-icon"
-            >find_in_page</mat-icon
-          >
+            >find_in_page
+          </mat-icon>
           <div class="no-results-title">
             No results for &quot;{{ searchString }}&quot;
           </div>

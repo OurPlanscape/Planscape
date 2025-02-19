@@ -1,24 +1,24 @@
 @import 'colors';
 @import 'mixins';
+@import 'media';
 
 :host {
   display: flex;
   flex-direction: column;
-  height: 100%;
-}
+  height: calc(100% - 36px);
+  padding: 18px 40px;
+  max-width: 1024px;
+  margin: 0 auto;
+  position: relative;
 
-.chart-heading {
-  @include h5();
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  height: 60px;
-  align-items: flex-end;
+  @include on-small() {
+    padding: 0;
+  }
 }
 
 .chart {
-  height: calc(100% - 140px);
-  padding-bottom: 20px;
+  height: 100%;
+  display: block;
 }
 
 canvas {
@@ -27,6 +27,39 @@ canvas {
 }
 
 .title {
-  padding: 24px 24px 0;
+  padding: 0 24px;
   color: $color-text-gray;
+  font-weight: 600;
+}
+
+.center-text {
+  text-align: center;
+}
+
+.empty-data-overlay {
+  width: 100%;
+  height: 400px;
+  background-color: rgba(255, 255, 255, 0.8);
+  z-index: 100;
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  left: 0;
+  gap: 4px;
+}
+
+.empty-data-heading {
+  @include h5();
+  color: black;
+  opacity: unset;
+}
+
+.empty-data-detail {
+  @include small-paragraph();
+  color: $color-md-gray;
+  opacity: unset;
+  padding: 10px;
+  text-align: center;
 }

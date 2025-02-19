@@ -32,7 +32,7 @@
   [sourceLayer]="layers.projectAreasOutline.sourceLayer"
   [paint]="{
     'line-color': visible ? layers.projectAreasOutline.color : 'transparent',
-    'line-width': 2
+    'line-width': 4
   }"></mgl-layer>
 
 <mgl-layer
@@ -54,9 +54,10 @@
   <app-map-tooltip
     [lngLat]="mouseLngLat"
     *ngIf="hoveredProjectArea$ | async; let curProjectArea">
-    <mat-icon class="material-symbols-outlined">medication</mat-icon>
-    {{ getTreatedStandsTotal(curProjectArea.prescriptions) }}
-    /
-    {{ curProjectArea.total_stand_count }}
+    {{
+      curProjectArea.total_treated_area_acres / curProjectArea.total_area_acres
+        | percent: '1.0-1'
+    }}
+    Treated
   </app-map-tooltip>
 </ng-container>

@@ -5,7 +5,7 @@
     <sg-search-bar
       class="search-bar"
       [debounceInterval]="160"
-      searchPlaceholder="Search a project area or treatment prescription"
+      searchPlaceholder="Search project areas or treatments"
       [inputHeight]="'regular'"
       (searchString)="doSearch($event)"></sg-search-bar>
   </div>
@@ -32,8 +32,8 @@
   <div *ngIf="searchString !== '' && areas.length < 1" class="no-results">
     <div class="no-results-box">
       <mat-icon class="material-symbols-outlined no-results-icon"
-        >find_in_page</mat-icon
-      >
+        >find_in_page
+      </mat-icon>
       <div class="no-results-title">
         No results for &quot;{{ searchString }}&quot;
       </div>

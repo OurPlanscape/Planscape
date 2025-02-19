@@ -1,21 +1,13 @@
-import {
-  BehaviorSubject,
-  combineLatest,
-  map,
-  Observable,
-  switchMap,
-} from 'rxjs';
-import {
-  DEFAULT_SLOT,
-  ImpactsMetric,
-  ImpactsMetricSlot,
-  Metric,
-  METRICS,
-} from './metrics';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { ImpactsMetric, ImpactsMetricSlot, Metric, METRICS } from './metrics';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { PrescriptionAction } from './prescriptions';
-import { TreatmentProjectArea } from '../types';
+import { TreatmentProjectArea } from '@types';
+import { Injectable } from '@angular/core';
 
+@Injectable({
+  providedIn: 'root',
+})
 export class DirectImpactsStateService {
   private _reportMetrics$ = new BehaviorSubject<
     Record<ImpactsMetricSlot, Metric>
@@ -28,18 +20,8 @@ export class DirectImpactsStateService {
 
   public reportMetrics$ = this._reportMetrics$.asObservable();
 
-  private _activeSlot$ = new BehaviorSubject<ImpactsMetricSlot>(DEFAULT_SLOT);
-
-  public activeMetric$: Observable<ImpactsMetric> = this._activeSlot$.pipe(
-    switchMap((slot) =>
-      this.reportMetrics$.pipe(
-        map((metrics) => ({
-          metric: metrics[slot],
-          slot: slot,
-        }))
-      )
-    )
-  );
+  private _activeMetric$ = new BehaviorSubject(METRICS[0]);
+  public activeMetric$: Observable<Metric> = this._activeMetric$.asObservable();
 
   private _filteredTreatmentTypes$ = new BehaviorSubject<PrescriptionAction[]>(
     []
@@ -53,36 +35,15 @@ export class DirectImpactsStateService {
   >('All');
   public selectedProjectArea$ = this._selectedProjectArea$.asObservable();
 
-  private _showTreatmentPrescription$ = new BehaviorSubject(false);
-  public showTreatmentPrescription$ =
-    this._showTreatmentPrescription$.asObservable();
-
   private _standsTxSourceLoaded$ = new BehaviorSubject(false);
   public standsTxSourceLoaded$ = this._standsTxSourceLoaded$.asObservable();
-
-  mapPanelTitle$ = combineLatest([
-    this.activeMetric$,
-    this._selectedProjectArea$,
-    this.showTreatmentPrescription$,
-  ]).pipe(
-    map(([activeMetric, pa, showTreatment]) => {
-      let selectedAreaString = '';
-      if (pa === 'All') {
-        selectedAreaString = 'All Project areas';
-      } else {
-        selectedAreaString = `${pa.project_area_name}`;
-      }
-      return showTreatment
-        ? 'Applied Treatment Prescription'
-        : `${activeMetric.metric.label} for ${selectedAreaString}`;
-    })
-  );
 
   constructor() {}
 
   setProjectAreaForChanges(projectArea: TreatmentProjectArea | 'All') {
     this._selectedProjectArea$.next(projectArea);
-    this.resetActiveStand();
+    // Clean the Treatment type selection if the project area changed
+    this.setFilteredTreatmentTypes([]);
   }
 
   setActiveStand(standData: MapGeoJSONFeature) {
@@ -93,9 +54,8 @@ export class DirectImpactsStateService {
     this._filteredTreatmentTypes$.next(selection);
   }
 
-  setActiveMetric(mapMetric: ImpactsMetric) {
-    this._activeSlot$.next(mapMetric.slot);
-    this.updateReportMetric(mapMetric);
+  setActiveMetric(metric: Metric) {
+    this._activeMetric$.next(metric);
   }
 
   updateReportMetric(mapMetric: ImpactsMetric) {
@@ -105,19 +65,11 @@ export class DirectImpactsStateService {
     });
   }
 
-  isActiveSlot(slot: ImpactsMetricSlot) {
-    return this._activeSlot$.value === slot;
-  }
-
-  setShowTreatmentPrescription(show: boolean) {
-    this._showTreatmentPrescription$.next(show);
-  }
-
   setStandsTxSourceLoaded(val: boolean) {
     this._standsTxSourceLoaded$.next(val);
   }
 
-  resetActiveStand() {
-    this._activeStand$.next(null);
+  getFilteredTreatments() {
+    return this._filteredTreatmentTypes$.value;
   }
 }

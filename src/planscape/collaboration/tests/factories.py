@@ -3,7 +3,7 @@ import factory
 from django.contrib.contenttypes.models import ContentType
 from django.db import models
 
-from collaboration.models import UserObjectRole, Role
+from collaboration.models import UserObjectRole, Role, Permissions
 from planscape.tests.factories import UserFactory
 
 

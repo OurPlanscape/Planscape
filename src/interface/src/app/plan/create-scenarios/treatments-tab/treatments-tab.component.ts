@@ -5,13 +5,16 @@ import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { Plan, TreatmentPlan, TreatmentStatus } from '@types';
 import {
-  canDeleteTreatmentPlan,
   canCloneTreatmentPlan,
+  canDeleteTreatmentPlan,
 } from '../../permissions';
 import { DeleteDialogComponent } from 'src/app/standalone/delete-dialog/delete-dialog.component';
-import { take } from 'rxjs';
+import { interval, take } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
+import { POLLING_INTERVAL } from '../../plan-helpers';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-treatments-tab',
   templateUrl: './treatments-tab.component.html',
@@ -34,7 +37,15 @@ export class TreatmentsTabComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.pollForChanges();
+  }
+
+  private pollForChanges() {
     this.loadTreatments();
+    // we might want to check if any scenario is still pending in order to poll
+    interval(POLLING_INTERVAL)
+      .pipe(untilDestroyed(this))
+      .subscribe(() => this.loadTreatments());
   }
 
   loadTreatments() {

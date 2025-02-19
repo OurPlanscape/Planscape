@@ -1,8 +1,8 @@
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
-    ProjectAreaTreatmentResult,
     TreatmentPlan,
+    TreatmentPlanNote,
     TreatmentPrescription,
     TreatmentPrescriptionAction,
 )
@@ -40,9 +40,17 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
     creator_name = serializers.SerializerMethodField(
         help_text="Name of the Creator of the Treatment Plan."
     )
+    elapsed_time_seconds = serializers.SerializerMethodField(
+        help_text="Impacts execution elapsed time in seconds."
+    )
 
     def get_creator_name(self, instance):
         return instance.created_by.get_full_name()
+
+    def get_elapsed_time_seconds(self, instance):
+        if instance.finished_at and instance.started_at:
+            return (instance.finished_at - instance.started_at).total_seconds()
+        return None
 
     class Meta:
         model = TreatmentPlan
@@ -55,6 +63,9 @@ class TreatmentPlanSerializer(serializers.ModelSerializer):
             "scenario",
             "name",
             "status",
+            "started_at",
+            "finished_at",
+            "elapsed_time_seconds",
         )
 
 
@@ -62,9 +73,17 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
     creator_name = serializers.SerializerMethodField(
         help_text="Name of the Creator of the Treatment Plan."
     )
+    elapsed_time_seconds = serializers.SerializerMethodField(
+        help_text="Impacts execution elapsed time in seconds."
+    )
 
     def get_creator_name(self, instance):
         return instance.created_by.get_full_name()
+
+    def get_elapsed_time_seconds(self, instance):
+        if instance.finished_at and instance.started_at:
+            return (instance.finished_at - instance.started_at).total_seconds()
+        return None
 
     class Meta:
         model = TreatmentPlan
@@ -76,6 +95,9 @@ class TreatmentPlanListSerializer(serializers.ModelSerializer):
             "scenario",
             "name",
             "status",
+            "started_at",
+            "finished_at",
+            "elapsed_time_seconds",
         )
 
 
@@ -320,5 +342,66 @@ class TreatmentResultsPlotSerializer(serializers.Serializer):
 
 class StandQuerySerializer(serializers.Serializer):
     stand_id = serializers.PrimaryKeyRelatedField(
-        queryset=Stand.objects.all(), required=True
+        queryset=Stand.objects.all(),
+        required=True,
+        help_text="The primary key (ID) of the stand for which to retrieve results.",
     )
+
+
+class TreatmentPlanNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "content",
+            "treatment_plan",
+            "user_id",
+            "user_name",
+        )
+        model = TreatmentPlanNote
+
+
+class TreatmentPlanNoteListSerializer(serializers.ModelSerializer):
+    can_delete = serializers.SerializerMethodField()
+
+    def get_can_delete(self, obj):
+        user = self.context["request"].user
+        if user:
+            return (
+                (user == obj.user)
+                or (user == obj.treatment_plan.scenario.planning_area.user)
+                or PlanningAreaPermission.can_remove(
+                    user, obj.treatment_plan.scenario.planning_area
+                )
+            )
+
+    class Meta:
+        fields = (
+            "id",
+            "created_at",
+            "updated_at",
+            "content",
+            "treatment_plan",
+            "user_id",
+            "user_name",
+            "can_delete",
+        )
+        model = TreatmentPlanNote
+
+
+class TreatmentPlanNoteCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentPlanNote
+        fields = ["content"]
+
+    def create(self, validated_data):
+        treatment_plan_id = self.context["view"].kwargs.get("tx_plan_pk")
+        try:
+            treatment_plan = TreatmentPlan.objects.get(id=treatment_plan_id)
+        except TreatmentPlan.DoesNotExist:
+            raise serializers.ValidationError("Invalid tx_plan_pk")
+        user = self.context["request"].user
+        validated_data["treatment_plan"] = treatment_plan
+        validated_data["user"] = user
+        return super().create(validated_data)

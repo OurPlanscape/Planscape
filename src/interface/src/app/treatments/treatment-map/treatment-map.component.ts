@@ -28,7 +28,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
-import { addAuthHeaders } from '../maplibre.helper';
+import { addRequestHeaders } from '../maplibre.helper';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -187,10 +187,16 @@ export class TreatmentMapComponent {
         }
       });
 
-    this.treatmentsState.planningArea$
+    combineLatest([
+      this.treatmentsState.planningArea$,
+      this.treatmentsState.projectAreaId$,
+    ])
       .pipe(untilDestroyed(this))
-      .subscribe((plan) => {
+      .subscribe(([plan]) => {
         this.userCanEditStands = plan ? canEditTreatmentPlan(plan) : false;
+        if (!this.userCanEditStands) {
+          this.mapConfigState.setStandSelectionEnabled(false);
+        }
       });
 
     this.mapConfigState.baseLayer$
@@ -277,5 +283,5 @@ export class TreatmentMapComponent {
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
-    addAuthHeaders(url, resourceType, this.authService.getAuthCookie());
+    addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 }

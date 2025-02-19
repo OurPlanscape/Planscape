@@ -5,12 +5,13 @@ import { MockDeclaration, MockProvider } from 'ng-mocks';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { MatDialogRef } from '@angular/material/dialog';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('ExpandedChangeOverTimeChartComponent', () => {
   let component: ExpandedChangeOverTimeChartComponent;
@@ -27,14 +28,21 @@ describe('ExpandedChangeOverTimeChartComponent', () => {
       }
     );
     await TestBed.configureTestingModule({
-      imports: [ExpandedChangeOverTimeChartComponent, HttpClientTestingModule],
+      imports: [
+        ExpandedChangeOverTimeChartComponent,
+        HttpClientTestingModule,
+        BrowserAnimationsModule,
+      ],
       providers: [
         TreatmentsState,
         TreatedStandsState,
         MapConfigState,
         { provide: ActivatedRoute, useValue: fakeRoute },
         MockProvider(DirectImpactsStateService, {
+          filteredTreatmentTypes$: new BehaviorSubject([]),
           activeStand$: new BehaviorSubject(null),
+          selectedProjectArea$: of('All' as any),
+          reportMetrics$: of(null as any),
         }),
         { provide: MatDialogRef, useValue: {} },
       ],

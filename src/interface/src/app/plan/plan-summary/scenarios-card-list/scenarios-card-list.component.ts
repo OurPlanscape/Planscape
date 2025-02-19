@@ -22,6 +22,8 @@ import { OverlayLoaderService } from '@services/overlay-loader.service';
 import { CreateTreatmentDialogComponent } from '../../create-scenarios/create-treatment-dialog/create-treatment-dialog.component';
 import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
+import { AnalyticsService } from '@services/analytics.service';
+import { canAddTreatmentPlan } from '../../permissions';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -47,7 +49,8 @@ export class ScenariosCardListComponent {
     private router: Router,
     private route: ActivatedRoute,
     private overlayLoaderService: OverlayLoaderService,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private analyticsService: AnalyticsService
   ) {}
 
   treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
@@ -90,6 +93,13 @@ export class ScenariosCardListComponent {
     return user?.id === this.plan?.user || user?.id == scenario.user;
   }
 
+  userCanCreateTreatmentPlan() {
+    if (!this.plan) {
+      return false;
+    }
+    return canAddTreatmentPlan(this.plan);
+  }
+
   toggleScenarioStatus(scenario: Scenario) {
     if (scenario.id) {
       const originalStatus = scenario.status;
@@ -115,6 +125,11 @@ export class ScenariosCardListComponent {
 
   openNewTreatmentDialog(event: Event, s: Scenario) {
     event.stopPropagation();
+    this.analyticsService.emitEvent(
+      'new_treatment_plan',
+      'scenario_list_page',
+      'New Treatment Plan'
+    );
     const scenarioId = s.id;
     if (!scenarioId) {
       return;

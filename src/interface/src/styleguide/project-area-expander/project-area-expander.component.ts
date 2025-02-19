@@ -21,6 +21,7 @@ import {
   PRESCRIPTIONS,
   PrescriptionSingleAction,
   PrescriptionSequenceAction,
+  SequenceAttributes,
 } from 'src/app/treatments/prescriptions';
 /**
  * Project Area Expander component
@@ -100,7 +101,7 @@ export class ProjectAreaExpanderComponent implements AfterViewInit {
     } else if (type === 'SEQUENCE') {
       let title = action as PrescriptionSequenceAction;
       if (title !== null) {
-        return PRESCRIPTIONS.SEQUENCE[title].name;
+        return PRESCRIPTIONS.SEQUENCE[title].join(' ');
       }
     }
     return '';
@@ -118,10 +119,10 @@ export class ProjectAreaExpanderComponent implements AfterViewInit {
     return (treatedStands * 100) / this.projectArea.total_stand_count;
   }
 
-  sequenceActions(action: string): string[] {
+  sequenceActions(action: string): SequenceAttributes[] {
     let title = action as PrescriptionSequenceAction;
     if (title !== null) {
-      return PRESCRIPTIONS.SEQUENCE[title].details;
+      return PRESCRIPTIONS.SEQUENCE[title];
     }
     return [];
   }

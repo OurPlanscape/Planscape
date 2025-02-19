@@ -1,4 +1,8 @@
-import type { Meta, StoryObj } from '@storybook/angular';
+import {
+  applicationConfig,
+  type Meta,
+  type StoryObj,
+} from '@storybook/angular';
 import { InputFieldComponent } from './input/input-field.component';
 import { Component } from '@angular/core';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,6 +14,8 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ButtonComponent } from '@styleguide';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatSelectModule } from '@angular/material/select';
+import { provideAnimations } from '@angular/platform-browser/animations';
 
 @Component({
   selector: 'sg-demo-form',
@@ -25,6 +31,7 @@ import { MatRadioModule } from '@angular/material/radio';
     ButtonComponent,
     MatCheckboxModule,
     MatRadioModule,
+    MatSelectModule,
   ],
   styles: `
     form {
@@ -60,6 +67,11 @@ const meta: Meta<DemoFormComponent> = {
   title: 'Components/Form Demo',
   component: DemoFormComponent,
   tags: [''],
+  decorators: [
+    applicationConfig({
+      providers: [provideAnimations()],
+    }),
+  ],
 };
 
 export default meta;

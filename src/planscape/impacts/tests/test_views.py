@@ -1,16 +1,21 @@
+import json
 from unittest import mock
 from urllib.parse import urlencode
 
 from collaboration.models import Permissions, Role, UserObjectRole
 from collaboration.services import get_content_type
+from datasets.models import DataLayerType
+from datasets.tests.factories import DataLayerFactory
 from django.contrib.auth import get_user_model
 from django.forms.models import model_to_dict
 from django.urls import reverse
+from django.utils import timezone
 from impacts.models import (
+    AVAILABLE_YEARS,
     ImpactVariable,
     ImpactVariableAggregation,
-    AVAILABLE_YEARS,
     TreatmentPlan,
+    TreatmentPlanNote,
     TreatmentPlanStatus,
     TreatmentPrescriptionAction,
 )
@@ -29,7 +34,7 @@ from planning.tests.factories import (
 from rest_framework import status
 from rest_framework.test import APIClient, APITestCase, APITransactionTestCase
 from stands.models import StandSizeChoices
-from stands.tests.factories import StandFactory
+from stands.tests.factories import StandFactory, StandMetricFactory
 
 from planscape.tests.factories import UserFactory
 
@@ -38,7 +43,14 @@ User = get_user_model()
 
 class TxPlanViewSetTest(APITransactionTestCase):
     def setUp(self):
-        self.scenario = ScenarioFactory.create()
+        self.owner = UserFactory.create()
+        self.collab_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner, owners=[self.owner], collaborators=[self.collab_user]
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+
+        Permissions.objects.get_or_create(role=Role.OWNER, permission="run_tx")
 
     def test_create_tx_plan_returns_201(self):
         self.client.force_authenticate(user=self.scenario.user)
@@ -139,6 +151,40 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertFalse(async_task.called)
 
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_as_collab__tx_plan_created_by_owner(self, async_task):
+        self.client.force_authenticate(user=self.collab_user)
+        treatment_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            created_by=self.owner,
+        )
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertFalse(async_task.called)
+
+    @mock.patch(
+        "impacts.views.async_calculate_persist_impacts_treatment_plan.delay",
+        return_value=None,
+    )
+    def test_run_tx_plan_as_collab__tx_plan_created_by_collab(self, async_task):
+        self.client.force_authenticate(user=self.collab_user)
+        treatment_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            created_by=self.collab_user,
+        )
+        response = self.client.post(
+            reverse("api:impacts:tx-plans-run", kwargs={"pk": treatment_plan.pk}),
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_202_ACCEPTED)
+        self.assertTrue(async_task.called)
+
     def test_get_tx_plan(self):
         self.client.force_authenticate(user=self.scenario.user)
 
@@ -153,6 +199,35 @@ class TxPlanViewSetTest(APITransactionTestCase):
         response_data = response.json()
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response_data["name"], "it's a bold plan")
+        self.assertIsNone(response.get("started_at"))
+        self.assertIsNone(response.get("finished_at"))
+        self.assertIsNone(response.get("elapsed_time_seconds"))
+
+    def test_get_tx_plan_with_elapsed_time(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        now = timezone.now()
+        started_at = now - timezone.timedelta(seconds=10)
+
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario,
+            name="it's a bold plan",
+            started_at=started_at,
+            finished_at=now,
+        )
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data.get("name"), "it's a bold plan")
+        self.assertEqual(
+            response_data.get("started_at"), started_at.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(
+            response_data.get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(response_data.get("elapsed_time_seconds"), 10)
 
     def test_get_tx_plan_with_role(self):
         self.client.force_authenticate(user=self.scenario.user)
@@ -289,11 +364,46 @@ class TxPlanViewSetTest(APITransactionTestCase):
         self.assertNotEqual(updated_plan.created_by, other_user)
         self.assertNotEqual(updated_plan.scenario.pk, new_scenario.pk)
 
+    def test_list_tx_plan(self):
+        now = timezone.now()
+        started_at = now - timezone.timedelta(seconds=10)
+        TreatmentPlanFactory.create_batch(
+            5, scenario=self.scenario, started_at=started_at, finished_at=now
+        )
+
+        self.client.force_authenticate(user=self.scenario.user)
+        response = self.client.get(
+            reverse("api:impacts:tx-plans-list"),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_data), 5)
+        self.assertEqual(
+            response_data[0].get("started_at"),
+            started_at.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        )
+        self.assertEqual(
+            response_data[0].get("finished_at"), now.strftime("%Y-%m-%dT%H:%M:%SZ")
+        )
+        self.assertEqual(response_data[0].get("elapsed_time_seconds"), 10)
+
 
 class TxPlanViewSetPlotTest(APITransactionTestCase):
     def setUp(self):
-        self.user = UserFactory.create()
-        self.planning_area = PlanningAreaFactory.create(user=self.user)
+        Permissions.objects.get_or_create(
+            role=Role.COLLABORATOR, permission="view_tx_plan"
+        )
+        Permissions.objects.get_or_create(role=Role.VIEWER, permission="view_tx_plan")
+        self.owner = UserFactory.create()
+        self.collab_user = UserFactory.create()
+        self.viewer_user = UserFactory.create()
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.owner,
+            owners=[self.owner],
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
+        )
         self.scenario = ScenarioFactory.create(
             planning_area=self.planning_area,
             configuration={"stand_size": StandSizeChoices.SMALL},
@@ -304,12 +414,11 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
             ProjectAreaFactory.create(scenario=self.scenario),
         ]
         self.tx_plan = TreatmentPlanFactory.create(
-            scenario=self.scenario, created_by=self.user
+            scenario=self.scenario, created_by=self.owner
         )
         self.empty_tx_plan = TreatmentPlanFactory.create(
-            scenario=self.scenario, created_by=self.user
+            scenario=self.scenario, created_by=self.owner
         )
-        self.client.force_authenticate(user=self.user)
         self.years = AVAILABLE_YEARS
         self.patxrx_list = []
         for pa in self.project_areas:
@@ -324,6 +433,7 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
                         action=TreatmentPrescriptionAction.MODERATE_THINNING_BIOMASS,
                     )
         self.someone_elses_tx_plan = TreatmentPlanFactory.create()
+        self.client.force_authenticate(user=self.owner)
 
     def _build_filters(self, variables=[], project_areas=[], actions=[]):
         filters = []
@@ -340,10 +450,10 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
 
     def test_treatment_results(self):
         variables = [
-            ImpactVariable.TOTAL_CARBON,
-            ImpactVariable.FLAME_LENGTH,
-            ImpactVariable.RATE_OF_SPREAD,
-            ImpactVariable.PROBABILITY_TORCHING,
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
         ]
         filter = self._build_filters(variables=variables)
         url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
@@ -464,6 +574,43 @@ class TxPlanViewSetPlotTest(APITransactionTestCase):
         )
         self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
 
+    def test_permission_viewer(self):
+        api_client = APIClient()
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(variables=variables)
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        api_client.force_authenticate(user=self.viewer_user)
+        response = api_client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_permission_collab(self):
+        Permissions.objects.get_or_create(
+            role=Role.COLLABORATOR, permission="view_tx_plan"
+        )
+        api_client = APIClient()
+        variables = [
+            ImpactVariable.TOTAL_CARBON.value,
+            ImpactVariable.FLAME_LENGTH.value,
+            ImpactVariable.RATE_OF_SPREAD.value,
+            ImpactVariable.PROBABILITY_TORCHING.value,
+        ]
+        filter = self._build_filters(variables=variables)
+        url = f"{reverse('api:impacts:tx-plans-plot', kwargs={'pk': self.tx_plan.pk})}?{urlencode(filter)}"
+        api_client.force_authenticate(user=self.collab_user)
+        response = api_client.get(
+            url,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
 
 class TxPrescriptionListTest(APITransactionTestCase):
     def setUp(self):
@@ -574,10 +721,21 @@ class TxPrescriptionBatchDeleteTest(APITransactionTestCase):
 
 class StandTreatmentResultsViewTest(APITestCase):
     def setUp(self):
+        Permissions.objects.get_or_create(
+            role=Role.COLLABORATOR, permission="view_tx_plan"
+        )
+        Permissions.objects.get_or_create(role=Role.VIEWER, permission="view_tx_plan")
         self.user = UserFactory()
+        self.collab_user = UserFactory.create()
+        self.viewer_user = UserFactory.create()
         self.client = APIClient()
-        self.client.force_authenticate(user=self.user)
-        self.scenario = ScenarioFactory.create(planning_area__user=self.user)
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.user,
+            owners=[self.user],
+            collaborators=[self.collab_user],
+            viewers=[self.viewer_user],
+        )
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
 
         self.treatment_plan = TreatmentPlanFactory(
             scenario=self.scenario, created_by=self.user
@@ -588,11 +746,13 @@ class StandTreatmentResultsViewTest(APITestCase):
             "api:impacts:tx-plans-stand-treatment-results",
             kwargs={"pk": self.treatment_plan.pk},
         )
+        self.client.force_authenticate(user=self.user)
 
     def test_no_results_returns_empty_list(self):
         """
         Ensures the endpoint returns a 200 with [] if there’s no data for stand_id.
         """
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.json(), [])
@@ -601,25 +761,126 @@ class StandTreatmentResultsViewTest(APITestCase):
         """
         Tests that the endpoint returns correct data when multiple TreatmentResult rows exist.
         """
-        TreatmentResultFactory(
+        TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.FLAME_LENGTH,
+            variable=ImpactVariable.LARGE_TREE_BIOMASS,
             year=2024,
-            value=3.5,
+            value=80.0,
+            delta=10.0,
+            baseline=70.0,
+            forested_rate=1,
+            action=None,
+            aggregation=ImpactVariableAggregation.MEAN,
         )
-        TreatmentResultFactory(
+
+        TreatmentResultFactory.create(
             treatment_plan=self.treatment_plan,
             stand=self.stand,
-            variable=ImpactVariable.RATE_OF_SPREAD,
+            variable=ImpactVariable.LARGE_TREE_BIOMASS,
             year=2024,
-            value=2.5,
+            value=105.0,
+            delta=12.0,
+            baseline=45.0,
+            forested_rate=1,
+            action=None,
+            aggregation=ImpactVariableAggregation.SUM,
         )
+
+        self.client.force_authenticate(user=self.user)
+        for year in AVAILABLE_YEARS:
+            biomass_meta = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "baseline": True,
+                        "variable": ImpactVariable.LARGE_TREE_BIOMASS,
+                        "action": None,
+                    }
+                }
+            }
+            biomass_layer = DataLayerFactory.create(
+                name=f"biomass_layer_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=biomass_meta,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=biomass_layer,
+                avg=70.0,
+            )
+
+            flame_length_meta = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": ImpactVariable.FLAME_LENGTH,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            fl_layer = DataLayerFactory.create(
+                name=f"flame_length_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=flame_length_meta,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=fl_layer,
+                avg=4.5,
+            )
+
+            ros_meta = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": ImpactVariable.RATE_OF_SPREAD,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            ros_layer = DataLayerFactory.create(
+                name=f"rate_of_spread_{year}",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=ros_meta,
+                type=DataLayerType.RASTER,
+            )
+            StandMetricFactory.create(
+                stand=self.stand,
+                datalayer=ros_layer,
+                avg=12.0,
+            )
+
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
+
+        self.assertEqual(
+            len(data),
+            1,
+            f"Expected {len(AVAILABLE_YEARS)} rows (one for each year).",
+        )
+
+        first_year = data[0]
+        self.assertEqual(first_year.get("year"), 2024)
+
+        biomass = first_year.get(ImpactVariable.LARGE_TREE_BIOMASS)
+        self.assertIsNotNone(biomass)
+
+        self.assertIsNotNone(biomass.get("value"))
+        self.assertIsNotNone(biomass.get("delta"))
+        self.assertIsNotNone(biomass.get("baseline"))
+        self.assertIsNotNone(biomass.get("forested_rate"))
 
     def test_missing_stand_id(self):
         """
         If 'stand_id' param is missing, the serializer should raise a 400 error.
         """
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -627,5 +888,215 @@ class StandTreatmentResultsViewTest(APITestCase):
         """
         If 'stand_id' doesn't exist in DB, we expect a 400 from the PrimaryKeyRelatedField.
         """
+        self.client.force_authenticate(user=self.user)
         response = self.client.get(f"{self.url}?stand_id=99999999")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_permissions_collab(self):
+        api_client = APIClient()
+        api_client.force_authenticate(user=self.collab_user)
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_permissions_viewer(self):
+        api_client = APIClient()
+        api_client.force_authenticate(user=self.viewer_user)
+        response = self.client.get(f"{self.url}?stand_id={self.stand.pk}")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class TxPlanNoteTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.other_user = UserFactory()
+
+        # explicitly creating these objects, so same user is planningarea creator
+        self.planning_area = PlanningAreaFactory.create(user=self.user)
+
+        self.scenario = ScenarioFactory.create(planning_area=self.planning_area)
+        self.treatment_plan = TreatmentPlanFactory.create(
+            created_by=self.user, scenario=self.scenario
+        )
+        self.other_user_treatment_plan = TreatmentPlanFactory.create(
+            created_by_id=self.other_user.pk, scenario=self.scenario
+        )
+
+    def test_create_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = json.dumps(
+            {
+                "content": "Here is a note about a treatment plan.",
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            new_note,
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(
+            response_data["content"], "Here is a note about a treatment plan."
+        )
+
+    def test_create_note_without_permission(self):
+        self.client.force_authenticate(self.other_user)
+        new_note = json.dumps(
+            {
+                "content": "Here is a note about a treatment area.",
+                "treatment_plan": self.treatment_plan.pk,
+            }
+        )
+        response = self.client.post(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            new_note,
+            content_type="application/json",
+        )
+        print(f"what is the respone? {response}")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_notes_for_treatment_plan(self):
+        self.client.force_authenticate(self.user)
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am a note"
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am a second note",
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.other_user,
+            content="I am a third note",
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.other_user,
+            content="I am a third note",
+        )
+        # create a note for a different treatment plan
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.other_user_treatment_plan,
+            user=self.other_user,
+            content="I am a new note on a different tx plan",
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response_data), 4)
+        for rec in response_data:
+            self.assertIn("can_delete", rec)
+            self.assertEqual(rec["can_delete"], True)
+
+    def test_get_notes_for_unauthorized_user(self):
+        self.client.force_authenticate(self.other_user)
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="I am a note"
+        )
+        TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am a second note",
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-list",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_single_note(self):
+        self.client.force_authenticate(self.user)
+        visible_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan,
+            user=self.user,
+            content="I am just one note",
+        )
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": visible_note.pk},
+            ),
+            content_type="application/json",
+        )
+        response_data = response.json()
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response_data["content"], "I am just one note")
+
+    def test_get_single_note_no_perms(self):
+        self.client.force_authenticate(self.other_user)
+        visible_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user, content="A note"
+        )
+
+        response = self.client.get(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": visible_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={"tx_plan_pk": self.treatment_plan.pk, "pk": new_note.pk},
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+
+    def test_delete_nonexistent_note(self):
+        self.client.force_authenticate(self.user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={
+                    "tx_plan_pk": self.treatment_plan.pk,
+                    "pk": (new_note.pk + 1),
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_delete_note_no_permissions(self):
+        self.client.force_authenticate(self.other_user)
+        new_note = TreatmentPlanNote.objects.create(
+            treatment_plan=self.treatment_plan, user=self.user
+        )
+        response = self.client.delete(
+            reverse(
+                "api:impacts:tx-plan-notes-detail",
+                kwargs={
+                    "tx_plan_pk": self.treatment_plan.pk,
+                    "pk": new_note.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)

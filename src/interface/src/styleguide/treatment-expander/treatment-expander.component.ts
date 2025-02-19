@@ -1,5 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { DecimalPipe, NgClass, NgFor, NgIf } from '@angular/common';
+import {
+  DecimalPipe,
+  NgClass,
+  NgFor,
+  NgIf,
+  PercentPipe,
+} from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { TreatmentTypeIconComponent } from '../treatment-type-icon/treatment-type-icon.component';
@@ -8,6 +14,7 @@ import {
   PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
+  SequenceAttributes,
 } from '../../app/treatments/prescriptions';
 
 /**
@@ -26,6 +33,7 @@ import {
     SequenceIconComponent,
     TreatmentTypeIconComponent,
     DecimalPipe,
+    PercentPipe,
   ],
   templateUrl: './treatment-expander.component.html',
   styleUrl: './treatment-expander.component.scss',
@@ -55,10 +63,7 @@ export class TreatmentExpanderComponent {
    * Stand Ids
    */
   @Input() standIds: number[] = [];
-  /**
-   * Total number of acres
-   */
-  @Input() totalAcres = 100;
+
   /***
    * Whether this component is selected, for styling
    */
@@ -67,6 +72,11 @@ export class TreatmentExpanderComponent {
    * Search string - a string to be highlighted if it appears
    */
   @Input() searchString: string | null = null;
+
+  /**
+   * Total of project area acres
+   */
+  @Input() projectAreaTotalAcres = 0;
   /***
    * an event emitted when the expander is toggled
    */
@@ -81,14 +91,32 @@ export class TreatmentExpanderComponent {
 
   // If a title is explicity set, use that.
   // Otherwise, determine title from either treatment type or sequence num
-  titleText(): string {
+  singleRxTitleText(): string {
     if (this.title !== null) {
       return this.title;
     } else if (this.treatmentType === 'SINGLE') {
       return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
     } else if (this.treatmentType === 'SEQUENCE') {
       return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .name;
+        .map((d) => d.description)
+        .join(' ');
+    }
+    return 'No Treatment';
+  }
+
+  sequenceTitles(): SequenceAttributes[] {
+    return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
+  }
+
+  sequenceRxTitleText(): string {
+    if (this.title !== null) {
+      return this.title;
+    } else if (this.treatmentType === 'SINGLE') {
+      return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
+    } else if (this.treatmentType === 'SEQUENCE') {
+      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
+        .map((d) => d.description)
+        .join(' ');
     }
     return 'No Treatment';
   }
@@ -107,14 +135,6 @@ export class TreatmentExpanderComponent {
   isMatch(part: string): boolean {
     if (!this.searchString) return false;
     return part.toLowerCase() === this.searchString.toLowerCase();
-  }
-
-  sequenceDetails(): string[] {
-    if (this.treatmentType === 'SEQUENCE') {
-      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .details;
-    }
-    return [];
   }
 
   treatmentIconType(): PrescriptionSingleAction | null {

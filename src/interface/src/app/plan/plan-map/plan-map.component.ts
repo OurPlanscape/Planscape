@@ -243,7 +243,10 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       layerTiles = satelliteTiles();
     }
     this.currentBaseLayer = selectedLayer;
-    this.map.addLayer(layerTiles);
+    if (this.map) {
+      this.map.addLayer(layerTiles);
+    }
+
     // redraw the condition layer
     this.setCondition(this.layer);
   }
@@ -274,7 +277,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         opacity: 0.7,
       }
     );
-    this.map.addLayer(this.tileLayer);
+    if (this.map) {
+      this.map.addLayer(this.tileLayer);
+    }
 
     // Map legend request
     var dataUnit = '';
@@ -420,6 +425,9 @@ function addTooltipAtCenter(
     .setLatLng([center[1], center[0]])
     .setContent(content);
 
-  tooltip.addTo(map);
+  if (map) {
+    tooltip.addTo(map);
+  }
+
   return tooltip;
 }
