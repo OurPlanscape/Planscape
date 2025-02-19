@@ -11,7 +11,7 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
-import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
+import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
 
 describe('TreatmentOverviewComponent', () => {
   let component: TreatmentOverviewComponent;
@@ -24,7 +24,7 @@ describe('TreatmentOverviewComponent', () => {
         TreatmentOverviewComponent,
         RouterTestingModule,
         BrowserAnimationsModule,
-        MockComponent(TreatmentSummaryComponent),
+        MockComponent(TreatmentSummaryButtonComponent),
       ],
       declarations: [
         MockDeclarations(

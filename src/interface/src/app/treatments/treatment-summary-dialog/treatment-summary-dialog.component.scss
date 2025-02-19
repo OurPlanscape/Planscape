@@ -49,12 +49,12 @@
 
   .mat-mdc-cell {
     @include small-paragraph();
+    align-items: flex-start;
   }
 }
 
 .treatment-summary-icon {
-  position: relative;
-  top: 7px;
+  display: flex;
 }
 
 .treatment-summary-button {
@@ -98,4 +98,11 @@
     @include small-paragraph();
     color: $color-md-gray;
   }
+}
+
+.treatment-name {
+  display: flex;
+  height: 100%;
+  align-items: flex-start;
+  padding: 14px 16px;
 }

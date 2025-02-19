@@ -23,6 +23,7 @@ import { CreateTreatmentDialogComponent } from '../../create-scenarios/create-tr
 import { take } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
+import { canAddTreatmentPlan } from '../../permissions';
 
 @Component({
   selector: 'app-scenarios-card-list',
@@ -90,6 +91,13 @@ export class ScenariosCardListComponent {
     }
     const user = this.authService.currentUser();
     return user?.id === this.plan?.user || user?.id == scenario.user;
+  }
+
+  userCanCreateTreatmentPlan() {
+    if (!this.plan) {
+      return false;
+    }
+    return canAddTreatmentPlan(this.plan);
   }
 
   toggleScenarioStatus(scenario: Scenario) {
