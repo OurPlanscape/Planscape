@@ -51,43 +51,6 @@
   margin-right: 8px;
 }
 
-.no-scenarios-overlay {
-  align-items: center;
-  backdrop-filter: blur(2px);
-  background: rgba(79, 79, 79, 0.8);
-  border-radius: 16px;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  justify-content: center;
-  position: absolute;
-  top: 0;
-  width: 100%;
-  z-index: 2;
-
-  p {
-    color: white;
-    font-size: 18px;
-    font-weight: 400;
-    line-height: 24px;
-  }
-}
-
-.new-scenario-button {
-  right: 5px;
-  margin-left: auto;
-
-  .mat-icon {
-    line-height: 21px;
-  }
-}
-
-.scenario-table-head {
-  display: flex;
-  gap: 50%;
-  align-items: center;
-  margin-bottom: 20px;
-}
 
 .margin-top {
   margin-top: 30px;
