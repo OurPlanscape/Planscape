@@ -6,7 +6,6 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { By } from '@angular/platform-browser';
 import { FileSaverService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
-import { ProjectAreasMetricsComponent } from '../project-areas-metrics/project-areas-metrics.component';
 import { ProjectAreasComponent } from '../project-areas/project-areas.component';
 import { of } from 'rxjs';
 
@@ -20,7 +19,6 @@ describe('ScenarioResultsComponent', () => {
     await TestBed.configureTestingModule({
       declarations: [
         ScenarioResultsComponent,
-        MockComponent(ProjectAreasMetricsComponent),
         MockComponent(ProjectAreasComponent),
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
