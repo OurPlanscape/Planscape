@@ -1,3 +1,5 @@
+<mat-drawer-container class="notes-drawer-container" [hasBackdrop]="false">
+  <mat-drawer-content>
 <sg-debounce-input
   class="name-input-box"
   *ngIf="currentPlan$ | async; let plan"
@@ -9,7 +11,33 @@
 
 <app-acres-treated></app-acres-treated>
 
+<div class="button-actions-row">
 <app-treatment-summary-button
   class="treatment-summary"></app-treatment-summary-button>
 
+  <button
+  sg-button
+  variant="text"
+  icon="note_stacks"
+  [outlined]="true"
+  (click)="drawer.toggle()"
+ >
+  Notes
+</button>
+</div>
+
 <app-treatment-plan-tabs></app-treatment-plan-tabs>
+
+  <mat-drawer class="notes-drawer" mode="over" #drawer >
+    <div class="notes-heading">Notes
+      <button sg-button variant="icon-only" (click)="drawer.close()">close</button>
+    </div>
+    <div class="notes-content">
+      <app-treatment-plan-notes></app-treatment-plan-notes>
+</div>
+
+
+  </mat-drawer>
+</mat-drawer-content>
+
+</mat-drawer-container>

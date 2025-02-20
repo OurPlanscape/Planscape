@@ -15,3 +15,30 @@
   padding-left: 16px;
   display: block;
 }
+
+.button-actions-row {
+  display: flex;
+  flex-direction: row;
+  gap:16px;
+}
+
+.notes-drawer-container {
+  position: relative;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  }
+
+
+.notes-drawer {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.notes-heading {
+  height: 60;
+}
+
+.notes-content { flex-grow: 1;}
