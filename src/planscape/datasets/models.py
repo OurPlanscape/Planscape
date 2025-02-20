@@ -1,15 +1,15 @@
 from typing import Optional
-from django.contrib.auth import get_user_model
-from django.core.validators import URLValidator
-from django.conf import settings
-from django.contrib.gis.db import models
-from django_stubs_ext.db.models import TypedModelMeta
-from treebeard.mp_tree import MP_Node
 
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
 from core.s3 import create_download_url
 from core.schemes import SUPPORTED_SCHEMES
+from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.contrib.gis.db import models
+from django.core.validators import URLValidator
+from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
+from treebeard.mp_tree import MP_Node
 
 User = get_user_model()
 
@@ -132,6 +132,58 @@ class DataLayerManager(models.Manager):
         return self.get_queryset().filter(metadata__modules__has_key=module)
 
 
+class Style(
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    DeletedAtMixin,
+    models.Model,
+):
+    id: int
+
+    uuid = models.UUIDField(
+        null=True,
+    )
+
+    created_by_id: int
+    created_by = models.ForeignKey(
+        User,
+        related_name="created_styles",
+        on_delete=models.RESTRICT,
+    )
+
+    organization_id: int
+    organization = models.ForeignKey(
+        Organization,
+        related_name="styles",
+        on_delete=models.RESTRICT,
+        null=True,
+    )
+
+    name = models.CharField(max_length=128)
+
+    type = models.CharField(
+        choices=DataLayerType.choices,
+        default=DataLayerType.RASTER,
+    )
+
+    data = models.JSONField()
+
+    class Meta(TypedModelMeta):
+        ordering = ("organization", "id")
+        verbose_name = "Style"
+        verbose_name_plural = "Styles"
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "organization",
+                    "name",
+                    "type",
+                ],
+                name="style_unique_constraint",
+            )
+        ]
+
+
 class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
@@ -219,6 +271,12 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     # that depends on the type of the datalyer might be appropriate
     metadata = models.JSONField(null=True)
 
+    styles = models.ManyToManyField(
+        to=Style,
+        through="DataLayerHasStyle",
+        through_fields=("datalayer", "style"),
+    )
+
     objects: "Manager[DataLayer]" = DataLayerManager()
 
     def get_public_url(self) -> Optional[str]:
@@ -242,5 +300,42 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
                     "type",
                 ],
                 name="datalayer_unique_constraint",
+            )
+        ]
+
+
+class DataLayerHasStyle(
+    CreatedAtMixin,
+    UpdatedAtMixin,
+    models.Model,
+):
+    datalayer = models.ForeignKey(
+        DataLayer,
+        on_delete=models.CASCADE,
+        related_name="rel_styles",
+    )
+    style = models.ForeignKey(
+        Style,
+        on_delete=models.CASCADE,
+        related_name="rel_styles",
+    )
+    default = models.BooleanField(
+        default=True,
+    )
+
+    class Meta:
+        ordering = (
+            "datalayer",
+            "style",
+        )
+        verbose_name = "DataLayer has Style"
+        verbose_name_plural = "DataLayer Has Styles"
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "datalayer",
+                    "style",
+                ],
+                name="datalayerhasstyle_unique_constraint",
             )
         ]
