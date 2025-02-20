@@ -12,10 +12,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
 import { of } from 'rxjs';
 import { LegacyMaterialModule } from '../../../material/legacy-material.module';
-import {
-  SavedScenariosComponent,
-  ScenarioRow,
-} from './saved-scenarios.component';
+import { SavedScenariosComponent } from './saved-scenarios.component';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { By } from '@angular/platform-browser';
 import {
@@ -34,16 +31,6 @@ import { MOCK_PLAN } from '@services/mocks';
 import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';
 import { ButtonComponent } from '@styleguide';
 import { MatTabsModule } from '@angular/material/tabs';
-
-const SCENARIO_ROW: ScenarioRow = {
-  id: '1',
-  name: 'name',
-  planning_area: '1',
-  configuration: {
-    max_budget: 200,
-  },
-  status: 'ACTIVE',
-};
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -171,36 +158,5 @@ describe('SavedScenariosComponent', () => {
       By.css('[data-id="new-scenario"]')
     );
     expect(newScenarioButton).toBeNull();
-  });
-
-  describe('archiving/restoring', () => {
-    it('should not show button at all if the user cannot add scenarios', () => {
-      component.plan = { ...MOCK_PLAN, permissions: [''] };
-      expect(component.showArchiveScenario).toBe(false);
-    });
-    it('should show if the user can potentially add scenarios', () => {
-      expect(component.showArchiveScenario).toBe(true);
-    });
-
-    it('should enable the button if the user is owner of the planning area', () => {
-      const auth = TestBed.inject(AuthService);
-      spyOn(auth, 'currentUser').and.returnValue({ id: 1 });
-      component.highlightedScenarioRow = SCENARIO_ROW;
-      expect(component.canArchiveScenario).toBe(true);
-    });
-
-    it('should enable the button if the user is owner of the scenario', () => {
-      const auth = TestBed.inject(AuthService);
-      spyOn(auth, 'currentUser').and.returnValue({ id: 2 });
-      component.highlightedScenarioRow = { ...SCENARIO_ROW, user: 2 };
-      expect(component.canArchiveScenario).toBe(true);
-    });
-
-    it('should disable the button if the user is not the owner of the planning area or the scenario', () => {
-      const auth = TestBed.inject(AuthService);
-      spyOn(auth, 'currentUser').and.returnValue({ id: 5 });
-      component.highlightedScenarioRow = { ...SCENARIO_ROW, user: 2 };
-      expect(component.canArchiveScenario).toBe(false);
-    });
   });
 });

@@ -1,109 +1,4 @@
-<!--Current live version (new_planning_area off)-->
-<div
-  class="saved-scenarios-wrapper"
-  *appFeatureFlag="'new_planning_area'; hide: true">
-  <mat-card [style.margin-top]="'24px'">
-    <div class="scenario-table-head">
-      <mat-card-title>Scenarios</mat-card-title>
-      <div class="new-scenario-button">
-        <button
-          matTooltip="Planning Area is Less than 100 Acres"
-          [matTooltipDisabled]="isValidPlanningArea"
-          matSuffix
-          mat-raised-button
-          color="primary"
-          *ngIf="canAddScenarioForPlan"
-          [disabled]="!isValidPlanningArea"
-          data-id="new-scenario"
-          (click)="openConfig()">
-          <mat-icon class="material-symbols-outlined">add_box</mat-icon>
-          NEW SCENARIO
-        </button>
-      </div>
-    </div>
-    <app-section-loader
-      [isLoading]="loading"
-      [hasData]="totalScenarios > 0"
-      [ngClass]="{
-        'margin-top': totalScenarios === 0
-      }"
-      emptyStateTitle="No scenarios yet"
-      [emptyStateContent]="
-        canAddScenarioForPlan
-          ? 'Click “New scenario” to start creating your scenarios.'
-          : ''
-      ">
-      <mat-slide-toggle
-        color="primary"
-        class="slide-toggle-my-scenarios"
-        [(ngModel)]="showOnlyMyScenarios"
-        (change)="fetchScenarios()">
-        Show only my scenarios
-      </mat-slide-toggle>
-      <mat-tab-group
-        mat-align-tabs="start"
-        class="custom-tab-group"
-        (selectedTabChange)="tabChange($event)">
-        <mat-tab label="ACTIVE">
-          <mat-card-content>
-            <div class="empty-state" *ngIf="activeScenarios.length === 0">
-              No active scenarios
-            </div>
-          </mat-card-content>
-          <mat-card-content>
-            <app-scenarios-table-list
-              *ngIf="activeScenarios.length > 0"
-              [scenarios]="activeScenarios"
-              [highlightedScenarioRow]="highlightedScenarioRow"
-              (viewScenario)="viewScenario()"
-              (selectScenario)="
-                highlightScenario($event)
-              "></app-scenarios-table-list>
-
-            <div class="empty-state" *ngIf="activeScenarios.length === 0">
-              No active scenarios
-            </div>
-          </mat-card-content>
-        </mat-tab>
-        <mat-tab label="ARCHIVED">
-          <mat-card-content>
-            <app-scenarios-table-list
-              *ngIf="archivedScenarios.length > 0"
-              [scenarios]="archivedScenarios"
-              [highlightedScenarioRow]="highlightedScenarioRow"
-              (viewScenario)="viewScenario()"
-              (selectScenario)="
-                highlightScenario($event)
-              "></app-scenarios-table-list>
-            <div class="empty-state" *ngIf="archivedScenarios.length === 0">
-              No scenarios in Archived.
-            </div>
-          </mat-card-content>
-        </mat-tab>
-      </mat-tab-group>
-
-      <mat-card-actions align="end">
-        <button
-          sg-button
-          *ngIf="showArchiveScenario"
-          [disabled]="!canArchiveScenario"
-          (click)="toggleScenarioStatus(selectedTabIndex === 0)"
-          [icon]="selectedTabIndex === 0 ? 'archive' : 'unarchive'">
-          {{ selectedTabIndex === 0 ? 'Archive' : 'Restore' }}
-        </button>
-        <button
-          sg-button
-          [disabled]="highlightedScenarioRow === null"
-          (click)="viewScenario()"
-          icon="description">
-          View scenario
-        </button>
-      </mat-card-actions>
-    </app-section-loader>
-  </mat-card>
-</div>
-<!--Next version (new_planning_area on)  -->
-<div class="saved-scenarios-wrapper" *appFeatureFlag="'new_planning_area'">
+<div class="saved-scenarios-wrapper">
   <h3 class="plan-name">{{ plan?.name }}</h3>
 
   <div class="overview">
@@ -130,7 +25,6 @@
   <div class="scenarios-header">
     <h4 class="scenarios-title">Scenarios</h4>
     <button
-      *ngIf="treatmentPlansEnabled"
       sg-button
       icon="drive_folder_upload"
       [outlined]="true"

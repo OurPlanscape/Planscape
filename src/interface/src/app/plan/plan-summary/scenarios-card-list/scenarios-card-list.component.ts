@@ -11,7 +11,6 @@ import {
   parseResultsToProjectAreas,
   parseResultsToTotals,
 } from '../../plan-helpers';
-import { FeatureService } from '../../../features/feature.service';
 import { Plan, Scenario, ScenarioResult } from '@types';
 import { AuthService, ScenarioService } from '@services';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -41,7 +40,6 @@ export class ScenariosCardListComponent {
   @Output() triggerRefresh = new EventEmitter<ScenarioRow>();
 
   constructor(
-    private featureService: FeatureService,
     private authService: AuthService,
     private snackbar: MatSnackBar,
     private scenarioService: ScenarioService,
@@ -52,8 +50,6 @@ export class ScenariosCardListComponent {
     private dialog: MatDialog,
     private analyticsService: AnalyticsService
   ) {}
-
-  treatmentPlansEnabled = this.featureService.isFeatureEnabled('treatments');
 
   numberOfAreas(scenario: Scenario) {
     return scenario.scenario_result?.result?.features?.length;
@@ -97,7 +93,7 @@ export class ScenariosCardListComponent {
     if (!this.plan) {
       return false;
     }
-    return canAddTreatmentPlan(this.plan);
+    return canAddTreatmentPlan(this.plan) || false;
   }
 
   toggleScenarioStatus(scenario: Scenario) {
