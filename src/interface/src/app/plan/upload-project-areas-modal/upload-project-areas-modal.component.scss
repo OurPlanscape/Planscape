@@ -5,10 +5,8 @@
   .upload-scenario-form {
     display: flex;
     flex-direction: column;
-    gap: 20px;
-    padding-left: 20px;
-    padding-right: 24px;
-    padding-top: 20px;
+    gap: 24px;
+    padding: 24px;
   }
 
   ::ng-deep .input-wrapper {
@@ -30,7 +28,9 @@
   }
 
   .field-row {
-    height: 76px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
   }
 
   .file-upload-input {
@@ -45,18 +45,29 @@
     width: 100%;
   }
 
-  .field-label {
+  .field-label-row {
+    height: 24px;
+    font-weight: 500;
+    font-size: 16px;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    line-height: 24px;
+  }
+
+  .field-label-required {
     @include standard-input-label();
     height: 24px;
     font-weight: 500;
     font-size: 16px;
+    letter-spacing: normal;
     color: $color-black;
     flex-direction: row;
     display: flex;
     justify-content: flex-start;
     line-height: 22px;
-    margin-bottom: 2px;
   }
+
 
   .required-star {
     color: $color-error;
@@ -72,6 +83,17 @@
   .stands-info-icon {
     color: $color-standard-blue;
   }
+
+  ::ng-deep .sg-modal .footer {
+    border-top: 1px solid #E1E1E1;
+  padding-right: 16px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-shrink: 0;
+  }
 }
 
 .tooltip {
@@ -80,4 +102,6 @@
   p:last-child {
     margin-bottom: 0;
   }
+
+
 }

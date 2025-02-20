@@ -23,19 +23,18 @@
       </app-form-message>
 
       <div class="field-row">
-        <div class="field-label">
+        <div class="field-label-required">
           Scenario name
           <div class="required-star">*</div>
         </div>
         <sg-input-field
           [disabled]="false"
-          [error]="false"
+          [error]="hasNameError"
           class="scenario-input"
           [supportMessage]="nameError"
           showSupportMessage="on-error">
           <input
             sgInput
-            #inputElement
             placeholder="Scenario name"
             name="scenarioName"
             formControlName="scenarioName"
@@ -43,8 +42,8 @@
         </sg-input-field>
       </div>
 
-      <div>
-        <div class="field-label">
+      <div class="field-row">
+        <div class="field-label-required">
           Upload a project area
           <div class="required-star">*</div>
         </div>
@@ -56,10 +55,12 @@
         </div>
       </div>
 
-      <div>
-        <div class="field-label">
-          <div>Select a stand size</div>
-          <div class="required-star">*</div>
+      <div class="field-row">
+        <div class="field-label-row">
+          <div class="field-label-required">
+            <div>Select a stand size</div>
+            <div class="required-star">*</div>
+          </div>
           <button
             sg-button
             variant="icon-only"

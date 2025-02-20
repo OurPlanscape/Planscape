@@ -76,6 +76,7 @@ export class UploadProjectAreasModalComponent {
   uploadFormError?: string | null = null;
   alertMessage?: string | null = null;
   nameError = '';
+  hasNameError = false;
   geometries: GeoJSON.GeoJSON | null = null;
   readonly FormMessageType = FormMessageType;
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
@@ -182,7 +183,7 @@ export class UploadProjectAreasModalComponent {
           },
           error: (err: any) => {
             this.uploadingData = false;
-
+            console.error('error: ', err);
             if (!!err.error?.global) {
               this.uploadFormError = err.error.global.join(' ');
             } else if (err.error?.name) {
@@ -190,6 +191,7 @@ export class UploadProjectAreasModalComponent {
               nameControl?.setErrors({
                 customError: true,
               });
+              this.hasNameError = true;
               if (err.error.name?.join(' ').includes('blank.')) {
                 this.nameError = 'Name must not be blank';
               }
