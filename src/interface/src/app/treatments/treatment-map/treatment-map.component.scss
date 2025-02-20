@@ -1,4 +1,4 @@
-@import "colors";
+@import 'colors';
 
 :host {
   width: 100%;
@@ -26,13 +26,40 @@ app-map-controls {
   padding: 10px 14px;
   border-radius: 4px;
   border: 1px solid $color-soft-gray;
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25), 0 2px 2px 0 rgba(0, 0, 0, 0.10);
+  box-shadow:
+    0 4px 4px 0 rgba(0, 0, 0, 0.25),
+    0 2px 2px 0 rgba(0, 0, 0, 0.1);
 
-  font-family: "Public Sans";
+  font-family: 'Public Sans';
   font-size: 14px;
   font-style: normal;
   font-weight: 500;
   line-height: 22px;
+  margin-top: 70px !important;
 }
 
+.map-navbar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 40px;
+  background: #00000066;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  z-index: 10; /* Asegura que esté sobre el mapa */
 
+  .navbar-slider {
+    height: 40px;
+    ::ng-deep .slider-card {
+      height: 40px;
+    }
+  }
+}
+
+.map-header {
+  background-color: red;
+  width: 100%;
+}

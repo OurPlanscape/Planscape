@@ -1,5 +1,11 @@
-import { Component, Input } from '@angular/core';
-import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import {
+  AfterViewInit,
+  Component,
+  ElementRef,
+  Input,
+  ViewChild,
+} from '@angular/core';
+import { AsyncPipe, JsonPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
   DraggableDirective,
@@ -36,6 +42,7 @@ import { SelectedStandsState } from './selected-stands.state';
 import { Geometry } from 'geojson';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
+import { OpacitySliderComponent } from '@styleguide';
 
 @UntilDestroy()
 @Component({
@@ -63,12 +70,15 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
     PlanningAreaLayerComponent,
     ControlComponent,
     MatLegacySlideToggleModule,
+    OpacitySliderComponent,
+    NgClass,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
 })
-export class TreatmentMapComponent {
+export class TreatmentMapComponent implements AfterViewInit {
   @Input() showProjectAreaTooltips = true;
+  @ViewChild('mapNavbar') mapNavbar!: ElementRef;
   /**
    * Flag to determine if the user is currently dragging to select stands
    */
@@ -172,6 +182,8 @@ export class TreatmentMapComponent {
 
   showTreatmentLayersToggle$ = this.mapConfigState.showTreatmentLayersToggle$;
 
+  opacity$ = this.mapConfigState.treatedStandsOpacity$;
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
@@ -206,6 +218,34 @@ export class TreatmentMapComponent {
     this.standsSourceLoaded$.pipe(untilDestroyed(this)).subscribe((s) => {
       this.selectedStandsState.restoreSelectedStands();
     });
+  }
+
+  onMapLoad(map: any) {
+    this.mapLibreMap = map;
+    this.waitForMapLibreControls();
+  }
+
+  ngAfterViewInit() {
+    this.waitForMapLibreControls();
+  }
+
+  /**
+   * Espera hasta que MapLibre haya agregado los controles al DOM antes de insertar el navbar.
+   */
+  waitForMapLibreControls() {
+    const checkExist = setInterval(() => {
+      const controlContainer = document.querySelector(
+        '.maplibregl-control-container'
+      );
+
+      if (controlContainer && this.mapNavbar) {
+        console.log('✔️ Contenedor encontrado. Insertando navbar...');
+        controlContainer.prepend(this.mapNavbar.nativeElement);
+        clearInterval(checkExist); // Detiene la espera
+      } else {
+        console.log('⏳ Esperando a que se cree el contenedor de controles...');
+      }
+    }, 500); // Reintentar cada 500ms
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
@@ -274,6 +314,10 @@ export class TreatmentMapComponent {
 
   toggleShowTreatmentLayers() {
     this.mapConfigState.toggleShowTreatmentStands();
+  }
+
+  handleOpacityChange(opacity: number) {
+    this.mapConfigState.setTreatedStandsOpacity(opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
