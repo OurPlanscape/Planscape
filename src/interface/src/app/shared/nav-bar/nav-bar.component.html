@@ -27,34 +27,17 @@
       <mat-menu #popoverMenu="matMenu">
         <div [ngSwitch]="area" class="tooltip">
           <div *ngSwitchCase="'SCENARIO'">
-            <div *appFeatureFlag="'treatments'; hide: true">
-              <p>
-                Start planning your scenario to generate your project areas.
-              </p>
-              <p>
-                Enter a name for your scenario at the top left, select your
-                management question, enter your constraints and select Generate.
-                You can only select one management question per run.
-              </p>
-              <p>
-                Note that the run will take longer if you select Medium or Small
-                stand sizes, and we recommend that you start with Large to
-                review your outputs.
-              </p>
-            </div>
-            <div *appFeatureFlag="'treatments'">
-              <p>Start planning scenarios to generate project areas.</p>
-              <p>
-                Enter a name for the scenario at the top left, select the
-                management question, enter the constraints and select Generate.
-                Only one management question can be selected per run.
-              </p>
-              <p>
-                After project areas have been generated, select "+ New Treatment
-                Plan" to begin Impacts planning. Treatment plans can be reviewed
-                by selecting the Treatment Plans tab at the top left.
-              </p>
-            </div>
+            <p>Start planning scenarios to generate project areas.</p>
+            <p>
+              Enter a name for the scenario at the top left, select the
+              management question, enter the constraints and select Generate.
+              Only one management question can be selected per run.
+            </p>
+            <p>
+              After project areas have been generated, select "+ New Treatment
+              Plan" to begin Impacts planning. Treatment plans can be reviewed
+              by selecting the Treatment Plans tab at the top left.
+            </p>
           </div>
 
           <div *ngSwitchCase="'SCENARIOS'">

@@ -8,8 +8,8 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
 import {
   AuthService,
-  PlanStateService,
   PlanningAreaNotesService,
+  PlanStateService,
 } from '@services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
@@ -20,6 +20,7 @@ import { NavBarComponent } from '@shared';
 import { MOCK_PLAN } from '@services/mocks';
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PlanningAreaTitlebarMenuComponent } from '../standalone/planning-area-titlebar-menu/planning-area-titlebar-menu.component';
 
 describe('PlanComponent', () => {
   let component: PlanComponent;
@@ -108,6 +109,7 @@ describe('PlanComponent', () => {
         PlanMapComponent,
         PlanOverviewComponent,
         MockComponent(NavBarComponent),
+        MockComponent(PlanningAreaTitlebarMenuComponent),
       ],
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
