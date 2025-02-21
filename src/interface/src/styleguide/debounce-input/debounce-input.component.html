@@ -18,7 +18,8 @@
     size="small"
     class="name-input"
     (mouseover)="onHover()"
-    (mouseleave)="outHover()">
+    (mouseleave)="outHover()"
+    [disabled]="disabled">
     <input
       class="debounce-input"
       sgInput
@@ -28,16 +29,16 @@
       (ngModelChange)="clearError()"
       (keyup.enter)="emitTextValue($event)"
       (blur)="onBlur()"
-      [disabled]="curMode === 'INITIAL'" />
+      [disabled]="curMode === 'INITIAL' || disabled" />
     <button
-      *ngIf="curMode === 'EDIT'"
+      *ngIf="curMode === 'EDIT' && !disabled"
       mat-icon-button
       aria-label="Clear"
       (click)="saveText()">
       <mat-icon>check</mat-icon>
     </button>
     <button
-      *ngIf="hovering && curMode === 'INITIAL'"
+      *ngIf="hovering && curMode === 'INITIAL' && !disabled"
       mat-icon-button
       aria-label="Edit"
       (click)="setToEditMode()">
@@ -51,5 +52,8 @@
   </sg-input-field>
   <div class="error-blurb" *ngIf="errorMessage">
     <span>{{ errorMessage }}</span>
+  </div>
+  <div class="error-blurb disabled-message" *ngIf="disabled">
+    <span>{{ disabledMessage }}</span>
   </div>
 </div>

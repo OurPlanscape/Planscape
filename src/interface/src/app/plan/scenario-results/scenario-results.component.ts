@@ -13,13 +13,9 @@ export class ScenarioResultsComponent implements OnChanges {
   @Input() scenarioId!: string;
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
-  @Input() scenarioChartData: any[] = [];
   @Input() priorities: string[] = [];
 
   areas: ProjectAreaReport[] = [];
-  data: any[] = [];
-
-  selectedCharts: any[] = [];
 
   constructor(
     private scenarioService: ScenarioService,
@@ -30,16 +26,6 @@ export class ScenarioResultsComponent implements OnChanges {
     // parse ScenarioResult
     if (this.results) {
       this.areas = parseResultsToProjectAreas(this.results);
-
-      this.data = this.scenarioChartData.sort((a, b) => {
-        // First, compare the isPrimary property
-        if (a.is_primary !== b.is_primary) {
-          return a.is_primary ? -1 : 1;
-        } else {
-          return a.label.localeCompare(b.label);
-        }
-      });
-      this.selectedCharts = this.data.slice(0, 4);
     }
   }
 

@@ -1,12 +1,10 @@
 <app-nav-bar
   [navState]="(navState$ | async) || null"
   [area]="(area$ | async) || 'SCENARIOS'">
-  <ng-container *appFeatureFlag="'new_planning_area'">
-    <ng-container *ngIf="(area$ | async) === 'SCENARIOS'">
-      <app-planning-area-titlebar-menu
-        *ngIf="currentPlan$ | async; let currentPlan"
-        [plan]="currentPlan"></app-planning-area-titlebar-menu>
-    </ng-container>
+  <ng-container *ngIf="(area$ | async) === 'SCENARIOS'">
+    <app-planning-area-titlebar-menu
+      *ngIf="currentPlan$ | async; let currentPlan"
+      [plan]="currentPlan"></app-planning-area-titlebar-menu>
   </ng-container>
 </app-nav-bar>
 <div class="root-container" [ngClass]="{ overview: (showOverview$ | async) }">
@@ -14,32 +12,15 @@
     *ngIf="planNotFound"
     resource="plan"></app-resource-unavailable>
   <ng-container *ngIf="currentPlan$ | async as plan">
-    <div *appFeatureFlag="'new_planning_area'; hide: true">
-      <div class="plan-summary-panel" *ngIf="showOverview$ | async">
-        <mat-tab-group
-          mat-align-tabs="start"
-          mat-stretch-tabs
-          disablePagination="true">
-          <mat-tab label="ABOUT">
-            <app-area-details [plan]="plan"></app-area-details>
-          </mat-tab>
-          <mat-tab label="NOTES">
-            <app-area-notes [plan]="plan"></app-area-notes>
-          </mat-tab>
-        </mat-tab-group>
-      </div>
-    </div>
-    <div *appFeatureFlag="'new_planning_area'">
-      <div class="plan-summary-panel full-height" *ngIf="showOverview$ | async">
-        <sg-notes-sidebar
-          [showHeader]="true"
-          [notes]="sidebarNotes"
-          [notesState]="notesSidebarState"
-          (createNote)="addNote($event)"
-          (deleteNote)="handleNoteDelete($event)"
-          noNotesTitleText="No Notes For This Planning Area Yet"
-          noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
-      </div>
+    <div class="plan-summary-panel full-height" *ngIf="showOverview$ | async">
+      <sg-notes-sidebar
+        [showHeader]="true"
+        [notes]="sidebarNotes"
+        [notesState]="notesSidebarState"
+        (createNote)="addNote($event)"
+        (deleteNote)="handleNoteDelete($event)"
+        noNotesTitleText="No Notes For This Planning Area Yet"
+        noNotesDetailText="Start adding notes to help your team learn more about this planning area."></sg-notes-sidebar>
     </div>
 
     <mat-divider [vertical]="true" *ngIf="showOverview$ | async"></mat-divider>

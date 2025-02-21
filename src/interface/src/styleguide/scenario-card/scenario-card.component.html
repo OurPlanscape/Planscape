@@ -4,7 +4,7 @@
     *ngIf="resultStatus && origin === 'SYSTEM'"
     [status]="getChipStatus()"
     [label]="getChipLabel()"></sg-status-chip>
-  <div *ngIf="hasFailed() && treatmentPlansEnabled" class="failed-message">
+  <div *ngIf="hasFailed()" class="failed-message">
     <mat-icon class="error-icon">error</mat-icon>
     Create a new scenario to proceed to treatment plan
   </div>
@@ -15,7 +15,7 @@
       class="new-treatment-btn"
       [disabled]="!isDone()"
       type="button"
-      *ngIf="treatmentPlansEnabled"
+      *ngIf="userCanCreateTreatmentPlans"
       (click)="openNewTreatment.emit($event)">
       New Treatment Plan
     </button>
@@ -65,13 +65,13 @@
       <div class="detail-header">Areas</div>
       <div class="detail-info">{{ areas ?? 'N/A' }}</div>
     </div>
-    <div class="detail-column hide-on-small" *ngIf="treatmentPlansEnabled">
+    <div class="detail-column hide-on-small">
       <div class="detail-header">Est Budget</div>
       <div class="detail-info">
         {{ (budget | currency: 'USD' : 'symbol' : '1.0-0') ?? 'N/A' }}
       </div>
     </div>
-    <div class="detail-column hide-on-small" *ngIf="treatmentPlansEnabled">
+    <div class="detail-column hide-on-small">
       <div class="detail-header">Treatment Plans</div>
       <div class="detail-info">{{ treatmentPlansCount }}</div>
     </div>

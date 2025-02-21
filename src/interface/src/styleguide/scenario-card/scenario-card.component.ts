@@ -13,10 +13,10 @@ import {
   NgSwitch,
 } from '@angular/common';
 import {
+  ButtonComponent,
   StatusChipComponent,
   StatusChipStatus,
-} from '../status-chip/status-chip.component';
-import { ButtonComponent } from '../button/button.component';
+} from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
@@ -58,9 +58,8 @@ export class ScenarioCardComponent {
   @Input() created_at? = '';
   @Input() selected: boolean = false;
   @Input() origin?: 'USER' | 'SYSTEM' = 'SYSTEM';
-
-  @Input() treatmentPlansEnabled = false;
   @Input() userCanArchiveScenario = false;
+  @Input() userCanCreateTreatmentPlans = false;
 
   @Output() openScenario = new EventEmitter();
   @Output() openPlanningProgress = new EventEmitter();

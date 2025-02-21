@@ -19,7 +19,6 @@ import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanNavigationBarComponent } from './plan-navigation-bar/plan-navigation-bar.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { ProjectAreasComponent } from './project-areas/project-areas.component';
-import { ProjectAreasMetricsComponent } from './project-areas-metrics/project-areas-metrics.component';
 import { ReportChartComponent } from './report-chart/report-chart.component';
 import { ResourceUnavailableComponent } from './resource-unavailable/resource-unavailable.component';
 import { RouterModule } from '@angular/router';
@@ -69,7 +68,6 @@ import { MatTabsModule } from '@angular/material/tabs';
     PlanNavigationBarComponent,
     PlanOverviewComponent,
     ProjectAreasComponent,
-    ProjectAreasMetricsComponent,
     ReportChartComponent,
     ResourceUnavailableComponent,
     SavedScenariosComponent,

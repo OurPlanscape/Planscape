@@ -20,12 +20,13 @@
   }
 
   .title {
-    @include small-input-label();
+    @include standard-input-label();
     font-size: 14px;
     font-weight: 500;
     line-height: 22px;
     text-align: left;
     height: 22px;
+    color: $color-black;
   }
 
   .plain-text-box {
@@ -54,6 +55,10 @@
     @include small-input-label();
     color: $color-dark-red;
     height: 24px;
+  }
+
+  .disabled-message {
+    color: $color-text-gray;
   }
 
   .save-spinner {

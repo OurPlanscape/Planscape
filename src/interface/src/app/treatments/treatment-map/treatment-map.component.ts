@@ -193,10 +193,16 @@ export class TreatmentMapComponent {
         }
       });
 
-    this.treatmentsState.planningArea$
+    combineLatest([
+      this.treatmentsState.planningArea$,
+      this.treatmentsState.projectAreaId$,
+    ])
       .pipe(untilDestroyed(this))
-      .subscribe((plan) => {
+      .subscribe(([plan]) => {
         this.userCanEditStands = plan ? canEditTreatmentPlan(plan) : false;
+        if (!this.userCanEditStands) {
+          this.mapConfigState.setStandSelectionEnabled(false);
+        }
       });
 
     this.mapConfigState.baseLayer$

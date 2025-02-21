@@ -8,7 +8,8 @@ import { TreatmentPlan, TreatmentSummary } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
-import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
+import { canEditTreatmentPlan } from 'src/app/plan/permissions';
+import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -24,7 +25,7 @@ import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summar
     JsonPipe,
     DecimalPipe,
     AcresTreatedComponent,
-    TreatmentSummaryComponent,
+    TreatmentSummaryButtonComponent,
   ],
   templateUrl: './treatment-overview.component.html',
   styleUrl: './treatment-overview.component.scss',
@@ -41,6 +42,12 @@ export class TreatmentOverviewComponent {
   );
 
   currentPlan$ = this.treatmentsState.treatmentPlan$;
+
+  disableInput$ = this.treatmentsState.planningArea$.pipe(
+    map((plan) => {
+      return !canEditTreatmentPlan(plan);
+    })
+  );
 
   handleNameChange(name: string) {
     if (name.length < 1) {

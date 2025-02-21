@@ -1,7 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { TreatmentOverviewComponent } from './treatment-overview.component';
-import { MockComponent, MockDeclarations, MockProviders } from 'ng-mocks';
+import {
+  MockComponent,
+  MockDeclarations,
+  MockProvider,
+  MockProviders,
+} from 'ng-mocks';
 import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsState } from '../treatments.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
@@ -11,7 +16,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
-import { TreatmentSummaryComponent } from '../treatment-summary/treatment-summary.component';
+import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
+import { BehaviorSubject } from 'rxjs';
 
 describe('TreatmentOverviewComponent', () => {
   let component: TreatmentOverviewComponent;
@@ -24,7 +30,7 @@ describe('TreatmentOverviewComponent', () => {
         TreatmentOverviewComponent,
         RouterTestingModule,
         BrowserAnimationsModule,
-        MockComponent(TreatmentSummaryComponent),
+        MockComponent(TreatmentSummaryButtonComponent),
       ],
       declarations: [
         MockDeclarations(
@@ -35,7 +41,10 @@ describe('TreatmentOverviewComponent', () => {
         ),
       ],
       providers: [
-        MockProviders(TreatmentsState, MapConfigState, TreatedStandsState),
+        MockProviders(MapConfigState, TreatedStandsState),
+        MockProvider(TreatmentsState, {
+          planningArea$: new BehaviorSubject({} as any),
+        }),
       ],
     }).compileComponents();
 
