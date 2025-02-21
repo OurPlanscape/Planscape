@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, Renderer2 } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
@@ -36,6 +36,9 @@ import { SelectedStandsState } from './selected-stands.state';
 import { Geometry } from 'geojson';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
+import { OpacitySliderComponent } from '@styleguide';
+import { FeaturesModule } from 'src/app/features/features.module';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -63,6 +66,8 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
     PlanningAreaLayerComponent,
     ControlComponent,
     MatLegacySlideToggleModule,
+    OpacitySliderComponent,
+    FeaturesModule,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -172,11 +177,15 @@ export class TreatmentMapComponent {
 
   showTreatmentLayersToggle$ = this.mapConfigState.showTreatmentLayersToggle$;
 
+  opacity$ = this.mapConfigState.treatedStandsOpacity$;
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private treatmentsState: TreatmentsState,
-    private selectedStandsState: SelectedStandsState
+    private selectedStandsState: SelectedStandsState,
+    private featureService: FeatureService,
+    private renderer: Renderer2
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -212,6 +221,13 @@ export class TreatmentMapComponent {
     this.standsSourceLoaded$.pipe(untilDestroyed(this)).subscribe((s) => {
       this.selectedStandsState.restoreSelectedStands();
     });
+
+    // If FF statewide_datalayers is On we want to add a clase to the body to apply some global styles
+    if (this.featureService.isFeatureEnabled('statewide_datalayers')) {
+      this.renderer.addClass(document.body, 'statewide-datalayers');
+    } else {
+      this.renderer.removeClass(document.body, 'statewide-datalayers');
+    }
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
@@ -280,6 +296,10 @@ export class TreatmentMapComponent {
 
   toggleShowTreatmentLayers() {
     this.mapConfigState.toggleShowTreatmentStands();
+  }
+
+  handleOpacityChange(opacity: number) {
+    this.mapConfigState.setTreatedStandsOpacity(opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
