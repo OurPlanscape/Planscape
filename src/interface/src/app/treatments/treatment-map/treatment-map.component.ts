@@ -214,10 +214,6 @@ export class TreatmentMapComponent {
     });
   }
 
-  onMapLoad(map: any) {
-    this.mapLibreMap = map;
-  }
-
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {
       return;
