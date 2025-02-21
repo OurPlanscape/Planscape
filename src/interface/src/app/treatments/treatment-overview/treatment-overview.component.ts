@@ -14,7 +14,6 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 
-
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
@@ -74,7 +73,6 @@ export class TreatmentOverviewComponent {
   }
 
   closeNotesDrawer(): void {
-    console.log('are we clicking?');
     this.showNotes = false;
   }
 

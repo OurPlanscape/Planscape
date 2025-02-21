@@ -1,49 +1,48 @@
 <mat-drawer-container class="notes-drawer-container" [hasBackdrop]="false">
   <mat-drawer-content>
-<sg-debounce-input
-  class="name-input-box"
-  *ngIf="currentPlan$ | async; let plan"
-  [textValue]="plan.name"
-  title="Treatment Plan Name"
-  [currentMode$]="nameFieldStatus$"
-  [errorMessage]="errorSavingName"
-  (textValueUpdated)="handleNameChange($event)"></sg-debounce-input>
+    <sg-debounce-input
+      class="name-input-box"
+      *ngIf="currentPlan$ | async; let plan"
+      [textValue]="plan.name"
+      title="Treatment Plan Name"
+      [currentMode$]="nameFieldStatus$"
+      [errorMessage]="errorSavingName"
+      (textValueUpdated)="handleNameChange($event)"></sg-debounce-input>
 
-<app-acres-treated></app-acres-treated>
+    <app-acres-treated></app-acres-treated>
 
-<div class="button-actions-row">
-<app-treatment-summary-button
-  class="treatment-summary"></app-treatment-summary-button>
+    <div class="button-actions-row">
+      <app-treatment-summary-button
+        class="treatment-summary"></app-treatment-summary-button>
 
-  <button
-  sg-button
-  variant="text"
-  icon="note_stacks"
-  [outlined]="true"
-  (click)="drawer.toggle()"
- >
-  Notes
-</button>
-</div>
+      <button
+        sg-button
+        variant="text"
+        icon="note_stacks"
+        [outlined]="true"
+        (click)="drawer.toggle()">
+        Notes
+      </button>
+    </div>
 
-<app-treatment-plan-tabs></app-treatment-plan-tabs>
+    <app-treatment-plan-tabs></app-treatment-plan-tabs>
 
-  <mat-drawer class="notes-drawer" mode="over" #drawer >
-    <div class="notes-container">
-    <div class="notes-heading">
-      <div class="notes-heading-content">
-        <button sg-button variant="icon-only" icon="close"
-       (click)="drawer.close()"></button>
-      <div>Notes</div>
+    <mat-drawer class="notes-drawer" mode="over" #drawer>
+      <div class="notes-container">
+        <div class="notes-heading">
+          <div class="notes-heading-content">
+            <button
+              sg-button
+              variant="icon-only"
+              icon="close"
+              (click)="drawer.close()"></button>
+            <div>Notes</div>
+          </div>
+        </div>
+        <div class="notes-content">
+          <app-treatment-plan-notes></app-treatment-plan-notes>
+        </div>
       </div>
-    </div>
-    <div class="notes-content">
-      <app-treatment-plan-notes></app-treatment-plan-notes>
-    </div>
-</div>
-
-
-  </mat-drawer>
-</mat-drawer-content>
-
+    </mat-drawer>
+  </mat-drawer-content>
 </mat-drawer-container>
