@@ -56,6 +56,12 @@ export class AuthService {
     return this.loggedInUser$.value;
   }
 
+  refreshTokenIsSet(): boolean {
+    return document.cookie
+      .split(';')
+      .some((cookie) => cookie.trim().startsWith(this.authTokenRefreshKey));
+  }
+
   login(email: string, password: string) {
     return this.http
       .post(

@@ -7,6 +7,8 @@
       title="Treatment Plan Name"
       [currentMode$]="nameFieldStatus$"
       [errorMessage]="errorSavingName"
+      [disabled]="(disableInput$ | async) ?? true"
+      disabledMessage="You don't have permission to edit."
       (textValueUpdated)="handleNameChange($event)"></sg-debounce-input>
 
     <app-acres-treated></app-acres-treated>

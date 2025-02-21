@@ -1,16 +1,16 @@
 import logging
-from django.conf import settings
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 from uuid import uuid4
 
 import rasterio
+from django.conf import settings
 from rasterio.warp import Resampling, calculate_default_transform, reproject
-from rio_cogeo.cogeo import cog_translate
-from rio_cogeo.cogeo import cog_validate
+from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
 
 from gis.core import get_layer_info
+from gis.info import get_gdal_env
 
 log = logging.getLogger(__name__)
 Number = Union[int, float]
@@ -98,11 +98,7 @@ def cog(
         output_profile.update(profile_overrides)
 
     # Dataset Open option (see gdalwarp `-oo` option)
-    config = dict(
-        GDAL_NUM_THREADS="ALL_CPUS",
-        GDAL_TIFF_INTERNAL_MASK=True,
-        GDAL_TIFF_OVR_BLOCKSIZE="128",
-    )
+    config = get_gdal_env()
 
     cog_translate(
         input_file,
@@ -125,7 +121,7 @@ def warp(
     resampling_method: Resampling = Resampling.nearest,
 ) -> str:
     log.info(f"Warping raster {input_file}")
-    with rasterio.Env(GDAL_NUM_THREADS=num_threads):
+    with rasterio.Env(**get_gdal_env()):
         with rasterio.open(input_file) as source:
             left, bottom, right, top = source.bounds
             transform, width, height = calculate_default_transform(
