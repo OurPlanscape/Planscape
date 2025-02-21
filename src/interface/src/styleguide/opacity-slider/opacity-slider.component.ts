@@ -4,6 +4,7 @@ import { MatSliderModule, MatSliderDragEvent } from '@angular/material/slider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { NgIf } from '@angular/common';
 /**
  * Opacity Slider
  * A component containing a slider and a label
@@ -17,6 +18,7 @@ import { FormsModule } from '@angular/forms';
     MatFormFieldModule,
     MatInputModule,
     FormsModule,
+    NgIf,
   ],
   templateUrl: './opacity-slider.component.html',
   styleUrl: './opacity-slider.component.scss',
