@@ -55,48 +55,6 @@ fixture.detectChanges();
 
 ```
 
-## Flag Descriptions
-
-### show_future_control_panel
-
-This flag will enable future condition options in the map control panel for all regions. A region-specific flag, "future_data", can be found for each
-region in Planscape/src/planscape/config/conditions.json. When "show_future_control_panel" is set to true and "future_data" is set to true for a
-region, the future condition layers will appear in the map control panel. When "show_future_control_panel" is set to true and "future_data" is set to
-false for a region, "Future Climate Stability (coming soon)" will appear in the map control panel.
-
-### show_translated_control_panel
-
-This flag will enable translated condition options in the map control panel for all regions. A region-specific flag, "translated_data", can be found
-for each region in Planscape/src/planscape/config/conditions.json. When "show_translated_control_panel" is set to true and "translated_data" is set to
-true for a region, the translated condition layers will appear in the map control panel. When "show_translated_control_panel" is set to true and "
-translated_data" is set to false for a region, "Current Conditions (coming soon)" will appear in the map control panel.
-
-### top_percent_slider
-
-This flag shows the slider displayed in the scenario generator UI (plan phase).
-
-### unlaunched_layers
-
-This flag will hide map layers that are not currently launched or implemented
-when set to false. Once layers are launched in prod, they should be changed in
-map-control-panel.component.html so they are no longer affected by this flag.
-
-### upload_project_area
-
-This flag will enable the Project Area control panel in the Scenario Configuration page. That will allow users to choose between having their Project
-Areas determined for them, or uploading their own zipped shapefiles.
-
-### use_its
-
-This flag will enable use of ITS data for past resilience projects rather than
-Calmapper.
-
-### Other flags
-
-There are two other flags, testFalseFeature and testTrueFeature created just for
-automated testing. Their values should be kept to "false" and "true" for
-angular tests to pass.
-
 ## Sample features.json
 
 Here is a sample features.json file that minimally enables features to allow
@@ -104,14 +62,8 @@ for angular tests to pass. You can start with this, but later enable settings.
 
 ```
 {
-  "show_future_control_panel": false,
-  "show_translated_control_panel": false
-  "testFalseFeature": false,
-  "testTrueFeature": true,
-  "top_percent_slider": true,
-  "unlaunched_layers": false,
-  "upload_project_area": false,
-  "use_its": false
+  "disabled_feature": false,
+  "enabled_feature": true,
 }
 ```
 
