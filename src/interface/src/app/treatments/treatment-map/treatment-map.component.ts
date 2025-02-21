@@ -10,7 +10,7 @@ import {
   PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import {
+import maplibregl, {
   LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
@@ -36,6 +36,11 @@ import { SelectedStandsState } from './selected-stands.state';
 import { Geometry } from 'geojson';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
+import { DatalayerPocComponent } from '../datalayer-poc/datalayer-poc.component';
+import { cogProtocol } from '@geomatico/maplibre-cog-protocol';
+
+// This needs to happen only once - putting this here just for POC
+maplibregl.addProtocol('cog', cogProtocol);
 
 @UntilDestroy()
 @Component({
@@ -63,6 +68,7 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
     PlanningAreaLayerComponent,
     ControlComponent,
     MatLegacySlideToggleModule,
+    DatalayerPocComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
