@@ -58,12 +58,12 @@ app-map-controls {
   }
 }
 
-::ng-deep .maplibregl-ctrl-top-left {
+::ng-deep .statewide-datalayers .maplibregl-ctrl-top-left {
   position: relative;
   top: 70px;
 }
 
-::ng-deep .maplibregl-ctrl-top-right {
+::ng-deep .statewide-datalayers .maplibregl-ctrl-top-right {
   position: relative;
   top: 70px;
 }
