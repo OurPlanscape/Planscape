@@ -45,33 +45,20 @@ app-map-controls {
   height: 40px;
   background: #00000066;
   display: flex;
+  flex-direction: row;
   align-items: center;
-  justify-content: space-between;
+  gap: 10px;
   padding: 10px 16px;
   z-index: 1;
-}
-
-.navbar-control {
-  background-color: $color-white;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 4px;
-  border: 1px solid $color-soft-gray;
-  box-shadow:
-    0 4px 4px 0 rgba(0, 0, 0, 0.25),
-    0 2px 2px 0 rgba(0, 0, 0, 0.1);
-
-  font-family: 'Public Sans';
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 500;
-  line-height: 22px;
 }
 
 .navbar-slider {
   ::ng-deep.slider-card {
     height: 40px;
   }
+}
+
+::ng-deep .maplibregl-ctrl-top-left {
+  position: relative;
+  top: 70px !important;
 }

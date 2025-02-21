@@ -1,10 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  Input,
-  ViewChild,
-} from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
@@ -77,9 +71,8 @@ import { FeaturesModule } from 'src/app/features/features.module';
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
 })
-export class TreatmentMapComponent implements AfterViewInit {
+export class TreatmentMapComponent {
   @Input() showProjectAreaTooltips = true;
-  @ViewChild('mapNavbar') mapNavbar!: ElementRef;
   /**
    * Flag to determine if the user is currently dragging to select stands
    */
@@ -223,24 +216,6 @@ export class TreatmentMapComponent implements AfterViewInit {
 
   onMapLoad(map: any) {
     this.mapLibreMap = map;
-    this.waitForMapLibreControls();
-  }
-
-  ngAfterViewInit() {
-    this.waitForMapLibreControls();
-  }
-
-  waitForMapLibreControls() {
-    const checkControlsExist = setInterval(() => {
-      const controlContainer = document.querySelector(
-        '.maplibregl-control-container'
-      );
-
-      if (controlContainer && this.mapNavbar) {
-        controlContainer.prepend(this.mapNavbar.nativeElement);
-        clearInterval(checkControlsExist);
-      }
-    }, 500);
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
