@@ -1,5 +1,5 @@
 <mat-card class="slider-card">
-  <div class="slider-label">{{ title }}</div>
+  <div class="slider-label" *ngIf="title">{{ title }}</div>
   <mat-slider
     class="slider-control"
     [min]="minValue"
