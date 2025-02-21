@@ -21,7 +21,7 @@ def get_gdal_env(num_threads: Union[int, str] = 8) -> Dict[str, Any]:
         "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
         "GDAL_CACHE_MAX": settings.GDAL_CACHE_MAX,
         "VSI_CACHE": False,
-        "GDAL_NUM_THREADS": int(num_threads),
+        "GDAL_NUM_THREADS": str(num_threads),
         "GDAL_TIFF_INTERNAL_MASK": True,
         "GDAL_TIFF_OVR_BLOCK_SIZE": 128,
     }
