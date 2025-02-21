@@ -5,7 +5,7 @@ import {
   Input,
   ViewChild,
 } from '@angular/core';
-import { AsyncPipe, JsonPipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
   DraggableDirective,
@@ -43,6 +43,7 @@ import { Geometry } from 'geojson';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { OpacitySliderComponent } from '@styleguide';
+import { FeaturesModule } from 'src/app/features/features.module';
 
 @UntilDestroy()
 @Component({
@@ -71,7 +72,7 @@ import { OpacitySliderComponent } from '@styleguide';
     ControlComponent,
     MatLegacySlideToggleModule,
     OpacitySliderComponent,
-    NgClass,
+    FeaturesModule,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -229,23 +230,17 @@ export class TreatmentMapComponent implements AfterViewInit {
     this.waitForMapLibreControls();
   }
 
-  /**
-   * Espera hasta que MapLibre haya agregado los controles al DOM antes de insertar el navbar.
-   */
   waitForMapLibreControls() {
-    const checkExist = setInterval(() => {
+    const checkControlsExist = setInterval(() => {
       const controlContainer = document.querySelector(
         '.maplibregl-control-container'
       );
 
       if (controlContainer && this.mapNavbar) {
-        console.log('✔️ Contenedor encontrado. Insertando navbar...');
         controlContainer.prepend(this.mapNavbar.nativeElement);
-        clearInterval(checkExist); // Detiene la espera
-      } else {
-        console.log('⏳ Esperando a que se cree el contenedor de controles...');
+        clearInterval(checkControlsExist);
       }
-    }, 500); // Reintentar cada 500ms
+    }, 500);
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
