@@ -38,6 +38,7 @@
   height: 100%;
   transform: none;
   transition-duration: 0ms;
+  overflow: hidden;
 }
 
 .notes-container {
@@ -50,6 +51,8 @@
 .notes-heading {
   height: 60px;
   width: 100%;
+  border-bottom: 1px $color-soft-gray solid;
+  overflow: hidden;
 }
 
 .notes-heading-content {
@@ -58,7 +61,6 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
-  border-bottom: 1px $color-soft-gray solid;
   align-items: center;
   gap: 8px;
 }
@@ -69,4 +71,10 @@
 
 ::ng-deep .mat-drawer {
   transform: none;
+}
+
+::ng-deep .mat-drawer-inner-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }
