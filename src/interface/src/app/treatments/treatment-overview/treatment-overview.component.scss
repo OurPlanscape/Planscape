@@ -1,3 +1,4 @@
+@import 'mixins';
 @import 'colors';
 
 :host {
@@ -28,17 +29,44 @@
   bottom: 0;
   left: 0;
   right: 0;
+  height: 100%;
   }
 
 
 .notes-drawer {
   width: 400px;
+  height: 100%;
+  transform: none;
+  transition-duration: 0ms;
+}
+
+.notes-container {
+  height: 100%;
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .notes-heading {
-  height: 60;
+  height: 60px;
+  width: 100%;
 }
 
-.notes-content { flex-grow: 1;}
+.notes-heading-content {
+  padding: 16px;
+  @include h5();
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  border-bottom: 1px $color-soft-gray solid;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-content { 
+  height: calc(100% - 60px);
+}
+
+::ng-deep .mat-drawer {
+  transform: none;
+}

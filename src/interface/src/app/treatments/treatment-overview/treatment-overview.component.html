@@ -29,11 +29,17 @@
 <app-treatment-plan-tabs></app-treatment-plan-tabs>
 
   <mat-drawer class="notes-drawer" mode="over" #drawer >
-    <div class="notes-heading">Notes
-      <button sg-button variant="icon-only" (click)="drawer.close()">close</button>
+    <div class="notes-container">
+    <div class="notes-heading">
+      <div class="notes-heading-content">
+        <button sg-button variant="icon-only" icon="close"
+       (click)="drawer.close()"></button>
+      <div>Notes</div>
+      </div>
     </div>
     <div class="notes-content">
       <app-treatment-plan-notes></app-treatment-plan-notes>
+    </div>
 </div>
 
 
