@@ -1,23 +1,29 @@
 import json
 import logging
-from typing import Any, Dict, Optional
-import rasterio
+from typing import Any, Dict, Optional, Union
+
 import fiona
+import rasterio
+from attr import asdict
+from core.s3 import get_aws_session
+from django.conf import settings
 from fiona.errors import DriverError
 from rasterio.transform import from_gcps
-from django.conf import settings
-from attr import asdict
 
 logger = logging.getLogger(__name__)
 
 
-def get_gdal_env() -> Dict[str, Any]:
+def get_gdal_env(num_threads: Union[int, str] = 8) -> Dict[str, Any]:
     return {
+        "session": get_aws_session(),
         "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
         "CPL_VSIL_USE_TEMP_FILE_FOR_RANDOM_WRITE": "YES",
         "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
         "GDAL_CACHE_MAX": settings.GDAL_CACHE_MAX,
         "VSI_CACHE": False,
+        "GDAL_NUM_THREADS": str(num_threads),
+        "GDAL_TIFF_INTERNAL_MASK": True,
+        "GDAL_TIFF_OVR_BLOCK_SIZE": 128,
     }
 
 
