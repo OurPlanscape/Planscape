@@ -10,6 +10,10 @@ import { TreatmentsState } from '../treatments.state';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
+import { ButtonComponent } from '@styleguide';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatSidenavModule } from '@angular/material/sidenav';
+import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -17,8 +21,11 @@ import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/tre
   imports: [
     AsyncPipe,
     TreatmentMapComponent,
+    TreatmentPlanNotesComponent,
+    MatCheckboxModule,
+    MatSidenavModule,
     TreatmentPlanTabsComponent,
-
+    ButtonComponent,
     MapBaseLayerComponent,
     DebounceInputComponent,
     NgIf,
@@ -34,7 +41,7 @@ export class TreatmentOverviewComponent {
   constructor(private treatmentsState: TreatmentsState) {}
 
   nameFieldStatus$ = new BehaviorSubject<DebounceEditState>('INITIAL');
-
+  showNotes = false;
   errorSavingName: string | null = null;
   summary$ = this.treatmentsState.summary$;
   projectAreas$ = this.summary$?.pipe(
@@ -70,5 +77,13 @@ export class TreatmentOverviewComponent {
         this.nameFieldStatus$.next('EDIT');
       },
     });
+  }
+
+  closeNotesDrawer(): void {
+    this.showNotes = false;
+  }
+
+  openNotesDrawer(): void {
+    this.showNotes = true;
   }
 }
