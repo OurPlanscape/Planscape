@@ -1,13 +1,15 @@
-from functools import lru_cache
 import logging
+from functools import lru_cache
 from typing import Any, Dict, Optional
-import rasterio
-import fiona
-from rasterio.errors import RasterioIOError
-from fiona.errors import DriverError
-from datasets.models import DataLayerType, GeometryType
-from gis.errors import InvalidFileFormat, InvalidGeometryType
 
+import fiona
+import rasterio
+from datasets.models import DataLayerType, GeometryType
+from fiona.errors import DriverError
+from rasterio.errors import RasterioIOError
+
+from gis.errors import InvalidFileFormat, InvalidGeometryType
+from gis.info import get_gdal_env
 
 log = logging.getLogger(__name__)
 
@@ -24,8 +26,9 @@ def is_vector(input_file: str) -> bool:
 @lru_cache
 def is_raster(input_file: str) -> bool:
     try:
-        with rasterio.open(input_file):
-            return True
+        with rasterio.Env(**get_gdal_env()):
+            with rasterio.open(input_file):
+                return True
     except RasterioIOError:
         return False
 
@@ -59,7 +62,7 @@ def fetch_geometry_type(
         layer_info = info
     geometry_type = layer_info.get("schema", {}).get("geometry", "") or ""
     if not geometry_type:
-        raise InvalidGeometryType(f"Could not determine geometry type")
+        raise InvalidGeometryType("Could not determine geometry type")
     return GeometryType[geometry_type.upper()]
 
 
