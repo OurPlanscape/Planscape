@@ -1,4 +1,11 @@
 <div class="title">Change (%)</div>
+<div class="empty-data-overlay" *ngIf="emptyData">
+  <div class="empty-data-heading">No Data Available</div>
+  <div class="empty-data-detail">
+    There is no data available for the selected parameters. Please try a
+    different project area.
+  </div>
+</div>
 <div class="chart">
   <canvas
     baseChart

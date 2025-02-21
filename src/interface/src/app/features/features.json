@@ -5,6 +5,5 @@
   "unlaunched_layers": false,
   "upload_project_area": false,
   "use_its": false,
-  "new_planning_area": false,
-  "treatments": false
+  "statewide_datalayers": false
 }

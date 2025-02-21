@@ -64,7 +64,6 @@ export const TreatmentsPlansEnabled: Story = {
     created_at: '2024-01-01 12:34:00',
     budget: 1234567,
     treatmentPlansCount: 5,
-    treatmentPlansEnabled: true,
   },
 };
 
@@ -72,7 +71,6 @@ export const FailedWithTreatmentPlansEnabled: Story = {
   args: {
     ...Default.args,
     resultStatus: 'FAILURE',
-    treatmentPlansEnabled: true,
   },
 };
 
@@ -80,7 +78,6 @@ export const PanickedWithTreatmentPlansEnabled: Story = {
   args: {
     ...Default.args,
     resultStatus: 'PANIC',
-    treatmentPlansEnabled: true,
   },
 };
 
@@ -88,7 +85,6 @@ export const RunningWithTreatmentPlansEnabled: Story = {
   args: {
     ...Default.args,
     resultStatus: 'RUNNING',
-    treatmentPlansEnabled: true,
   },
 };
 
@@ -101,7 +97,6 @@ export const UserCannotArchiveScenario: Story = {
     created_at: '2024-01-01 12:34:00',
     budget: 1234567,
     treatmentPlansCount: 5,
-    treatmentPlansEnabled: true,
     userCanArchiveScenario: false,
   },
 };
