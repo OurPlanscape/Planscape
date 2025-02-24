@@ -38,10 +38,9 @@ import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-p
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(private treatmentsState: TreatmentsState) { }
 
   nameFieldStatus$ = new BehaviorSubject<DebounceEditState>('INITIAL');
-  showNotes = false;
   errorSavingName: string | null = null;
   summary$ = this.treatmentsState.summary$;
   projectAreas$ = this.summary$?.pipe(
@@ -77,13 +76,5 @@ export class TreatmentOverviewComponent {
         this.nameFieldStatus$.next('EDIT');
       },
     });
-  }
-
-  closeNotesDrawer(): void {
-    this.showNotes = false;
-  }
-
-  openNotesDrawer(): void {
-    this.showNotes = true;
   }
 }
