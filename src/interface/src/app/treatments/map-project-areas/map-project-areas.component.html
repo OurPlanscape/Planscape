@@ -3,7 +3,7 @@
   [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
 <mgl-layer
-  [id]="layers.projectAreasFill.name"
+  [id]="layers.projectAreasFill.id"
   type="fill"
   source="scenarioProjectAreas"
   (layerClick)="visible && showTooltips ? goToProjectArea($event) : null"
@@ -21,7 +21,7 @@
   }"></mgl-layer>
 
 <mgl-layer
-  [id]="layers.projectAreasOutline.name"
+  [id]="layers.projectAreasOutline.id"
   type="line"
   source="scenarioProjectAreas"
   [sourceLayer]="layers.projectAreasOutline.sourceLayer"
@@ -31,7 +31,7 @@
   }"></mgl-layer>
 
 <mgl-layer
-  [id]="layers.projectAreasHighlight.name"
+  [id]="layers.projectAreasHighlight.id"
   type="line"
   source="scenarioProjectAreas"
   [sourceLayer]="layers.projectAreasHighlight.sourceLayer"
@@ -43,7 +43,7 @@
 
 <mgl-layer
   *ngIf="textSize$ | async as textSize"
-  [id]="layers.projectAreaLabels.name"
+  [id]="layers.projectAreaLabels.id"
   type="symbol"
   source="scenarioProjectAreas"
   [sourceLayer]="layers.projectAreaLabels.sourceLayer"

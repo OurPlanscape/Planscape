@@ -12,7 +12,7 @@
 
 <ng-container *ngIf="allPatternsLoaded()">
   <mgl-layer
-    [id]="layers.stands.name"
+    [id]="layers.stands.id"
     type="fill"
     source="stands"
     [paint]="layers.stands.paint"
@@ -23,7 +23,7 @@
     [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
 
   <mgl-layer
-    [id]="layers.sequenceStands.name"
+    [id]="layers.sequenceStands.id"
     type="fill"
     source="stands"
     [paint]="layers.sequenceStands.paint"
@@ -31,21 +31,21 @@
     [sourceLayer]="layers.sequenceStands.sourceLayer"></mgl-layer>
 
   <mgl-layer
-    [id]="layers.standsOutline.name"
+    [id]="layers.standsOutline.id"
     type="line"
     source="stands"
     [paint]="layers.standsOutline.paint"
     [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
 
   <mgl-layer
-    [id]="layers.selectedStands.name"
+    [id]="layers.selectedStands.id"
     type="fill"
     source="stands"
     [paint]="layers.selectedStands.paint"
     [sourceLayer]="layers.selectedStands.sourceLayer"></mgl-layer>
 
   <mgl-layer
-    [id]="layers.projectAreaOutline.name"
+    [id]="layers.projectAreaOutline.id"
     type="line"
     source="stands"
     [paint]="layers.projectAreaOutline.paint"

@@ -4,7 +4,6 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
-  LayerSpecification,
   LngLat,
   Map as MapLibreMap,
   MapGeoJSONFeature,
@@ -17,7 +16,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
 
 import { TreatmentProjectArea } from '@types';
 import {
@@ -29,12 +27,7 @@ import {
 } from 'rxjs';
 import { MapConfigState } from '../treatment-map/map-config.state';
 
-type MapLayerData = {
-  readonly name: string;
-  readonly sourceLayer: string;
-  paint?: LayerSpecification['paint'];
-  color?: string;
-};
+import { projectAreaLayers } from '../mapLayerData';
 
 @Component({
   selector: 'app-map-project-areas',
@@ -78,33 +71,7 @@ export class MapProjectAreasComponent {
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
 
-  readonly layers: Record<
-    | 'projectAreasOutline'
-    | 'projectAreasHighlight'
-    | 'projectAreasFill'
-    | 'projectAreaLabels',
-    MapLayerData
-  > = {
-    projectAreasOutline: {
-      name: 'map-project-areas-line',
-      sourceLayer: 'project_areas_by_scenario',
-      color: BASE_COLORS.dark,
-    },
-    projectAreasHighlight: {
-      name: 'map-project-areas-highlight',
-      sourceLayer: 'project_areas_by_scenario',
-      color: BASE_COLORS.yellow,
-    },
-    projectAreasFill: {
-      name: 'map-project-areas-fill',
-      sourceLayer: 'project_areas_by_scenario',
-    },
-    projectAreaLabels: {
-      name: 'map-project-areas-labels',
-      sourceLayer: 'project_areas_by_scenario_label',
-      paint: LABEL_PAINT,
-    },
-  };
+  readonly layers = projectAreaLayers;
 
   textSize$ = this.mapConfigState.zoomLevel$.pipe(
     map((zoomLevel) => (zoomLevel > 9 ? 14 : 0))

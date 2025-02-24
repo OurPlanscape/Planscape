@@ -39,6 +39,7 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
 import { OpacitySliderComponent } from '@styleguide';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
+import { projectAreaLayers } from '../mapLayerData';
 
 @UntilDestroy()
 @Component({
@@ -221,10 +222,10 @@ export class TreatmentMapComponent {
     this.standsSourceLoaded$.pipe(untilDestroyed(this)).subscribe((s) => {
       this.selectedStandsState.restoreSelectedStands();
       // move the layer up
-      this.mapLibreMap.moveLayer('map-project-areas-line');
-      this.mapLibreMap.moveLayer('map-project-areas-highlight');
-      if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
-        this.mapLibreMap.moveLayer('map-project-areas-labels');
+      this.mapLibreMap.moveLayer(projectAreaLayers.projectAreasOutline.id);
+      this.mapLibreMap.moveLayer(projectAreaLayers.projectAreasHighlight.id);
+      if (this.mapLibreMap.getLayer(projectAreaLayers.projectAreaLabels.id)) {
+        this.mapLibreMap.moveLayer(projectAreaLayers.projectAreaLabels.id);
       }
     });
 

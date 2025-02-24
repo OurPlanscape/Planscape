@@ -9,32 +9,29 @@
   [promoteId]="'id'"></mgl-vector-source>
 
 <mgl-layer
-  id="standsFill"
+  [id]="layers.ResultsStandsFill.id"
   type="fill"
   [source]="resultsVectorSourceName"
-  [paint]="{
-    'fill-color': '#FFF',
-    'fill-opacity': 0
-  }"
+  [paint]="layers.ResultsStandsFill.paint"
   (layerClick)="setActiveStand($event)"
   (layerMouseMove)="hoverOnStand($event)"
   (layerMouseOut)="hoverOutStand()"
-  [sourceLayer]="resultsVectorSourceLayerName"></mgl-layer>
+  [sourceLayer]="layers.ResultsStandsFill.sourceLayer"></mgl-layer>
 
 <mgl-layer
-  id="standSelected"
+  [id]="layers.ResultsStandsSelected.id"
   type="fill"
   [source]="treatmentStandsSourceName"
-  [paint]="STAND_SELECTED_PAINT"
+  [paint]="layers.ResultsStandsSelected.paint"
   [filter]="['==', ['get', 'id'], (activeStandId$ | async) ?? -1]"
-  [sourceLayer]="treatmentStandsSourceLayer"></mgl-layer>
+  [sourceLayer]="layers.ResultsStandsSelected.sourceLayer"></mgl-layer>
 
 <mgl-layer
-  id="standHover"
+  [id]="layers.ResultsStandsHover.id"
   type="line"
   [source]="treatmentStandsSourceName"
-  [paint]="SINGLE_STAND_HOVER"
-  [sourceLayer]="treatmentStandsSourceLayer"></mgl-layer>
+  [paint]="layers.ResultsStandsHover.paint"
+  [sourceLayer]="layers.ResultsStandsHover.sourceLayer"></mgl-layer>
 
 <mgl-popup
   *ngIf="tooltipLongLat"

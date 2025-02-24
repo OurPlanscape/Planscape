@@ -11,12 +11,7 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import {
-  LayerSpecification,
-  Map as MapLibreMap,
-  MapMouseEvent,
-  Point,
-} from 'maplibre-gl';
+import { Map as MapLibreMap, MapMouseEvent, Point } from 'maplibre-gl';
 
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
@@ -28,20 +23,11 @@ import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { combineLatest, distinctUntilChanged, pairwise } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
-  BASE_STANDS_PAINT,
   generatePaintForSequencedStands,
   generatePaintForTreatedStands,
-  PROJECT_AREA_OUTLINE_PAINT,
-  SELECTED_STANDS_PAINT,
-  STANDS_CELL_PAINT,
 } from '../map.styles';
 import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
-
-type MapLayerData = {
-  readonly name: string;
-  readonly sourceLayer: string;
-  paint: LayerSpecification['paint'];
-};
+import { mapStandsLayers } from '../mapLayerData';
 
 @UntilDestroy()
 @Component({
@@ -117,43 +103,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     environment.martin_server +
     'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
 
-  readonly layers: Record<
-    | 'projectAreaOutline'
-    | 'standsOutline'
-    | 'stands'
-    | 'selectedStands'
-    | 'sequenceStands',
-    MapLayerData
-  > = {
-    projectAreaOutline: {
-      name: 'outline-layer',
-      sourceLayer: 'project_area_aggregate',
-      paint: PROJECT_AREA_OUTLINE_PAINT,
-    },
-    standsOutline: {
-      name: 'stands-outline-layer',
-      sourceLayer: 'stands_by_tx_plan',
-      paint: STANDS_CELL_PAINT,
-    },
-    stands: {
-      name: 'stands-layer',
-      sourceLayer: 'stands_by_tx_plan',
-      paint: BASE_STANDS_PAINT,
-    },
-    sequenceStands: {
-      name: 'stands-sequence-layer',
-      sourceLayer: 'stands_by_tx_plan',
-      paint: {
-        'fill-pattern': 'sequence1',
-        'fill-opacity': 1,
-      },
-    },
-    selectedStands: {
-      name: 'stands-layer-selected',
-      sourceLayer: 'stands_by_tx_plan',
-      paint: SELECTED_STANDS_PAINT as any,
-    },
-  };
+  readonly layers = mapStandsLayers;
 
   constructor(
     private selectedStandsState: SelectedStandsState,
@@ -277,10 +227,8 @@ export class MapStandsComponent implements OnChanges, OnInit {
     query: Parameters<typeof this.mapLibreMap.queryRenderedFeatures>[0]
   ): number[] {
     const features = this.mapLibreMap.queryRenderedFeatures(query, {
-      layers: [this.layers.stands.name],
+      layers: [this.layers.stands.id],
     });
-
-    console.log(features[0]);
 
     return features.map((feature) => feature.properties['id']);
   }

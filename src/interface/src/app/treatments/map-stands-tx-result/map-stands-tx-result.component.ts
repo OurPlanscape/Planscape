@@ -8,7 +8,6 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { LngLat, Map as MapLibreMap, MapMouseEvent, Point } from 'maplibre-gl';
-import { SINGLE_STAND_HOVER, SINGLE_STAND_SELECTED } from '../map.styles';
 import { environment } from '../../../environments/environment';
 import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
@@ -16,6 +15,8 @@ import { TreatmentsState } from '../treatments.state';
 import { descriptionsForAction } from '../prescriptions';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapConfigState } from '../treatment-map/map-config.state';
+
+import { directImpactLayers } from '../mapLayerData';
 
 @UntilDestroy()
 @Component({
@@ -42,18 +43,16 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() propertyName!: string;
 
   readonly resultsVectorSourceName = 'stands_by_tx_result';
-  readonly resultsVectorSourceLayerName = 'stands_by_tx_result';
   readonly treatmentStandsSourceName = 'treatment_stands';
   readonly treatmentStandsSourceLayer = 'stands_by_tx_plan';
+
+  readonly layers = directImpactLayers;
 
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService
   ) {}
-
-  readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
-  readonly SINGLE_STAND_HOVER = SINGLE_STAND_HOVER;
 
   tooltipLongLat: null | LngLat = null;
   appliedTreatment: string[] = [];
