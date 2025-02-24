@@ -1,5 +1,4 @@
 // colors
-
 import { TreatedStand } from '@types';
 import {
   PRESCRIPTION_COLORS,

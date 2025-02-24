@@ -79,13 +79,21 @@ export class MapProjectAreasComponent {
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
 
   readonly layers: Record<
-    'projectAreasOutline' | 'projectAreasFill' | 'projectAreaLabels',
+    | 'projectAreasOutline'
+    | 'projectAreasHighlight'
+    | 'projectAreasFill'
+    | 'projectAreaLabels',
     MapLayerData
   > = {
     projectAreasOutline: {
       name: 'map-project-areas-line',
       sourceLayer: 'project_areas_by_scenario',
-      color: BASE_COLORS['dark'],
+      color: BASE_COLORS.dark,
+    },
+    projectAreasHighlight: {
+      name: 'map-project-areas-highlight',
+      sourceLayer: 'project_areas_by_scenario',
+      color: BASE_COLORS.yellow,
     },
     projectAreasFill: {
       name: 'map-project-areas-fill',

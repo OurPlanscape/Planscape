@@ -31,13 +31,13 @@
   }"></mgl-layer>
 
 <mgl-layer
-  id="highlight"
+  [id]="layers.projectAreasHighlight.name"
   type="line"
   source="scenarioProjectAreas"
-  [sourceLayer]="layers.projectAreasOutline.sourceLayer"
+  [sourceLayer]="layers.projectAreasHighlight.sourceLayer"
   [filter]="['==', ['get', 'id'], ['literal', hoveredProjectAreaId$ | async]]"
   [paint]="{
-    'line-color': visible ? '#FFD54F' : 'transparent',
+    'line-color': visible ? layers.projectAreasHighlight.color : 'transparent',
     'line-width': 4
   }"></mgl-layer>
 
