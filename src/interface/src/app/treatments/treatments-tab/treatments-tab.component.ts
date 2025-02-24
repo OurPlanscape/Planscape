@@ -19,6 +19,7 @@ import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
+import { FeaturesModule } from 'src/app/features/features.module';
 
 @Component({
   selector: 'app-project-area-tx-tab',
@@ -34,6 +35,7 @@ import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loadin
     SearchBarComponent,
     TreatmentExpanderComponent,
     LeftLoadingOverlayComponent,
+    FeaturesModule,
   ],
   templateUrl: './treatments-tab.component.html',
   styleUrl: './treatments-tab.component.scss',

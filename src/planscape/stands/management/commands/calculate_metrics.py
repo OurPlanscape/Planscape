@@ -1,19 +1,21 @@
 import json
 import multiprocessing
-from pathlib import Path
 import time
 from itertools import repeat
+from pathlib import Path
 
 import rasterio
 from conditions.models import Condition
 from conditions.registry import get_raster_path
+from django.conf import settings
 from django.contrib.gis.db.models.functions import AsWKT, Transform
 from django.contrib.gis.geos import GEOSGeometry
 from django.core.management.base import BaseCommand
-from stands.stats import get_zonal_stats
-from stands.models import Stand
-from django.conf import settings
+from gis.info import get_gdal_env
 from shapely.geometry import box
+
+from stands.models import Stand
+from stands.stats import get_zonal_stats
 
 
 def calculate_metric(stand, condition_id, raster):
@@ -66,10 +68,11 @@ class Command(BaseCommand):
         parser.add_argument("--force-yes", action="store_true")
 
     def get_condition_extent(self, raster_path):
-        with rasterio.open(raster_path, "r") as rast:
-            bounds = rast.bounds
-            geom = box(*bounds)
-            return GEOSGeometry(geom.wkt, srid=rast.crs.to_epsg())
+        with rasterio.Env(**get_gdal_env()):
+            with rasterio.open(raster_path, "r") as rast:
+                bounds = rast.bounds
+                geom = box(*bounds)
+                return GEOSGeometry(geom.wkt, srid=rast.crs.to_epsg())
 
     def get_stands_queryset(self, raster_path=None, size=None):
         queryset = Stand.objects.all()
