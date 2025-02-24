@@ -222,6 +222,12 @@ export class TreatmentMapComponent {
 
     this.standsSourceLoaded$.pipe(untilDestroyed(this)).subscribe((s) => {
       this.selectedStandsState.restoreSelectedStands();
+      // move the layer up
+      this.mapLibreMap.moveLayer('map-project-areas-line');
+      this.mapLibreMap.moveLayer('highlight');
+      if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
+        this.mapLibreMap.moveLayer('map-project-areas-labels');
+      }
     });
 
     // If FF statewide_datalayers is On we want to add a clase to the body to apply some global styles

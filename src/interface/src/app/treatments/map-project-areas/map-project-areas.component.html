@@ -31,6 +31,17 @@
   }"></mgl-layer>
 
 <mgl-layer
+  id="highlight"
+  type="line"
+  source="scenarioProjectAreas"
+  [sourceLayer]="layers.projectAreasOutline.sourceLayer"
+  [filter]="['==', ['get', 'id'], ['literal', hoveredProjectAreaId$ | async]]"
+  [paint]="{
+    'line-color': visible ? '#FFD54F' : 'transparent',
+    'line-width': 4
+  }"></mgl-layer>
+
+<mgl-layer
   *ngIf="textSize$ | async as textSize"
   [id]="layers.projectAreaLabels.name"
   type="symbol"
