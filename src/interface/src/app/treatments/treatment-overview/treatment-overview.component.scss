@@ -1,3 +1,4 @@
+@import 'mixins';
 @import 'colors';
 
 :host {
@@ -14,4 +15,69 @@
 .treatment-summary {
   padding-left: 16px;
   display: block;
+}
+
+.button-actions-row {
+  display: flex;
+  flex-direction: row;
+  gap:16px;
+}
+
+.notes-drawer-container {
+  position: relative;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  }
+
+.drawer-content {
+  width: 100%;
+}
+
+.notes-drawer {
+  width: 400px;
+  height: 100%;
+  transform: none;
+  transition-duration: 0ms;
+  overflow: hidden;
+}
+
+.notes-container {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.notes-heading {
+  height: 60px;
+  width: 100%;
+  border-bottom: 1px $color-soft-gray solid;
+  overflow: hidden;
+}
+
+.notes-heading-content {
+  padding: 14px;
+  @include h5();
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-content { 
+  height: calc(100% - 60px);
+}
+
+::ng-deep .notes-drawer-container .mat-drawer {
+  transform: none;
+}
+
+::ng-deep .notes-drawer-container .mat-drawer-inner-container {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
 }

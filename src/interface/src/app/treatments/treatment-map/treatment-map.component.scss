@@ -41,7 +41,7 @@ app-map-controls {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
+  width: calc(100% - 32px);
   height: 40px;
   background: #00000066;
   display: flex;
