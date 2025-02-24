@@ -14,6 +14,7 @@ import { ButtonComponent } from '@styleguide';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatSidenavModule } from '@angular/material/sidenav';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
+import { FeaturesModule } from 'src/app/features/features.module';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -29,6 +30,7 @@ import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-p
     MapBaseLayerComponent,
     DebounceInputComponent,
     NgIf,
+    FeaturesModule,
     JsonPipe,
     DecimalPipe,
     AcresTreatedComponent,
@@ -38,7 +40,7 @@ import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-p
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(private treatmentsState: TreatmentsState) { }
 
   nameFieldStatus$ = new BehaviorSubject<DebounceEditState>('INITIAL');
   errorSavingName: string | null = null;

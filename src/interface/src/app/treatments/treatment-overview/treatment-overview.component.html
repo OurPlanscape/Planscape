@@ -1,5 +1,5 @@
 <mat-drawer-container class="notes-drawer-container" [hasBackdrop]="false">
-  <mat-drawer-content>
+  <mat-drawer-content class="drawer-content">
     <sg-debounce-input
       class="name-input-box"
       *ngIf="currentPlan$ | async; let plan"
@@ -17,7 +17,7 @@
       <app-treatment-summary-button
         class="treatment-summary"></app-treatment-summary-button>
 
-      <button
+      <button *appFeatureFlag="'statewide_datalayers'"
         sg-button
         variant="text"
         icon="note_stacks"
