@@ -222,7 +222,7 @@ export class TreatmentMapComponent {
       this.selectedStandsState.restoreSelectedStands();
       // move the layer up
       this.mapLibreMap.moveLayer('map-project-areas-line');
-      this.mapLibreMap.moveLayer('highlight');
+      this.mapLibreMap.moveLayer('map-project-areas-highlight');
       if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
         this.mapLibreMap.moveLayer('map-project-areas-labels');
       }
