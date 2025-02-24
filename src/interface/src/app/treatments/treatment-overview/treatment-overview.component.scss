@@ -69,11 +69,11 @@
   height: calc(100% - 60px);
 }
 
-::ng-deep .mat-drawer {
+::ng-deep .notes-drawer-container .mat-drawer {
   transform: none;
 }
 
-::ng-deep .mat-drawer-inner-container {
+::ng-deep .notes-drawer-container .mat-drawer-inner-container {
   width: 100%;
   height: 100%;
   overflow: hidden;
