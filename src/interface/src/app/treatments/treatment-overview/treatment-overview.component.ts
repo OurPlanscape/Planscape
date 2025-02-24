@@ -38,7 +38,7 @@ import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-p
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  constructor(private treatmentsState: TreatmentsState) { }
+  constructor(private treatmentsState: TreatmentsState) {}
 
   nameFieldStatus$ = new BehaviorSubject<DebounceEditState>('INITIAL');
   errorSavingName: string | null = null;
