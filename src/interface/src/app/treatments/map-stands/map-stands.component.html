@@ -34,7 +34,7 @@
     [id]="layers.standsOutline.name"
     type="line"
     source="stands"
-    [paint]="layers.standsOutline.paint$ | async"
+    [paint]="layers.standsOutline.paint"
     [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
 
   <mgl-layer
@@ -48,6 +48,6 @@
     [id]="layers.projectAreaOutline.name"
     type="line"
     source="stands"
-    [paint]="layers.projectAreaOutline.paint$ | async"
+    [paint]="layers.projectAreaOutline.paint"
     [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>
 </ng-container>

@@ -100,7 +100,7 @@ export class TreatmentMapComponent {
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
 
   /**
-   * Observable that provides the currently selected stands by the user
+   * Observable that provides if stand selection is enabled
    */
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
 
@@ -292,10 +292,6 @@ export class TreatmentMapComponent {
 
   openTreatmentLegend() {
     this.mapConfigState.setTreatmentLegendVisible(true);
-  }
-
-  toggleShowTreatmentLayers() {
-    this.mapConfigState.toggleShowTreatmentStands();
   }
 
   handleOpacityChange(opacity: number) {

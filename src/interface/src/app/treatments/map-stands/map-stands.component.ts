@@ -25,13 +25,7 @@ import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import {
-  combineLatest,
-  distinctUntilChanged,
-  map,
-  Observable,
-  pairwise,
-} from 'rxjs';
+import { combineLatest, distinctUntilChanged, map, pairwise } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   BASE_STANDS_PAINT,
@@ -46,8 +40,7 @@ import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
 type MapLayerData = {
   readonly name: string;
   readonly sourceLayer: string;
-  paint?: LayerSpecification['paint'];
-  paint$?: Observable<any>;
+  paint: LayerSpecification['paint'];
 };
 
 @UntilDestroy()
@@ -146,20 +139,12 @@ export class MapStandsComponent implements OnChanges, OnInit {
     projectAreaOutline: {
       name: 'outline-layer',
       sourceLayer: 'project_area_aggregate',
-      paint$: this.outlineOpacity$.pipe(
-        map((opacity) => {
-          return { ...PROJECT_AREA_OUTLINE_PAINT, 'line-opacity': opacity };
-        })
-      ),
+      paint: PROJECT_AREA_OUTLINE_PAINT,
     },
     standsOutline: {
       name: 'stands-outline-layer',
       sourceLayer: 'stands_by_tx_plan',
-      paint$: this.outlineOpacity$.pipe(
-        map((opacity) => {
-          return { ...STANDS_CELL_PAINT, 'line-opacity': opacity };
-        })
-      ),
+      paint: STANDS_CELL_PAINT,
     },
     stands: {
       name: 'stands-layer',
