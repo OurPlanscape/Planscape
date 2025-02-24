@@ -74,7 +74,6 @@ export class MapProjectAreasComponent {
         );
       })
     );
-  hoveredFillColor = BASE_COLORS['dark'];
 
   readonly tilesUrl =
     environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';

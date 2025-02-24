@@ -25,7 +25,7 @@ import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { combineLatest, distinctUntilChanged, map, pairwise } from 'rxjs';
+import { combineLatest, distinctUntilChanged, pairwise } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   BASE_STANDS_PAINT,
@@ -86,6 +86,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   treatedStands$ = this.treatedStandsState.treatedStands$;
   sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
+  projectAreaId$ = this.treatmentsState.projectAreaId$;
 
   readonly patternNames = PATTERN_NAMES;
 
@@ -109,18 +110,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
   private initialSelectedStands: number[] = [];
   opacity$ = this.mapConfigState.treatedStandsOpacity$.pipe(
     distinctUntilChanged()
-  );
-
-  outlineOpacity$ = combineLatest([
-    this.mapConfigState.showTreatmentStandsLayer$.pipe(distinctUntilChanged()),
-    this.opacity$,
-  ]).pipe(
-    map(([visible, opacity]) => {
-      const minOutput = visible ? 0.3 : 0;
-      const clampedValue = Math.max(0, Math.min(opacity, 1));
-      // Perform linear interpolation
-      return minOutput + clampedValue * (1 - minOutput);
-    })
   );
 
   // TODO project_area_aggregate only applies when looking at a specific project area
@@ -215,12 +204,11 @@ export class MapStandsComponent implements OnChanges, OnInit {
   }
 
   get vectorLayerUrl() {
-    const projectAreaId = this.treatmentsState.getProjectAreaId();
+    // TODO bring back  projectAreaId ? `&project_area_id=${projectAreaId}` : ''
+    //  const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
       this.tilesUrl +
-      `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}${
-        projectAreaId ? `&project_area_id=${projectAreaId}` : ''
-      }`
+      `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}`
     );
   }
 
@@ -291,6 +279,8 @@ export class MapStandsComponent implements OnChanges, OnInit {
     const features = this.mapLibreMap.queryRenderedFeatures(query, {
       layers: [this.layers.stands.name],
     });
+
+    console.log(features[0]);
 
     return features.map((feature) => feature.properties['id']);
   }
