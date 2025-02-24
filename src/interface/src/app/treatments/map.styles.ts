@@ -57,7 +57,7 @@ export const PROJECT_AREA_OUTLINE_PAINT = {
 
 export const STANDS_CELL_PAINT = {
   'line-color': BASE_COLORS.dark,
-  'line-width': 1,
+  'line-width': 0.5,
 };
 
 export const BASE_STANDS_PAINT = {

@@ -16,12 +16,7 @@
   "
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
-    'fill-color': [
-      'case',
-      ['==', ['get', 'id'], hoveredProjectAreaFromFeatures?.properties?.['id']],
-      hoveredFillColor,
-      fillColor
-    ],
+    'fill-color': '#F6F6F6',
     'fill-opacity': visible && withFill ? 0.5 : 0
   }"></mgl-layer>
 

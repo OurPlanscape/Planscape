@@ -199,19 +199,14 @@ export class TreatmentsState {
       data.showTreatmentStands || false
     );
     this.mapConfigState.setStandSelectionEnabled(
-      data.showTreatmentStands || false
+      data.standSelectionEnabled || false
     );
 
     this.mapConfigState.setShowFillProjectAreas(
       data.showMapProjectAreas || false
     );
-    this.mapConfigState.setShowTreatmentLayersToggle(
-      data.showTreatmentLayersToggle || false
-    );
-    this.mapConfigState.setTreatmentLegendVisible(
-      data.showTreatmentLegend || false
-    );
-    this.mapConfigState.setShowMapControls(data.showTreatmentStands || false);
+
+    this.mapConfigState.setShowMapControls(data.showMapControls || false);
   }
 
   private loadSummaryData() {

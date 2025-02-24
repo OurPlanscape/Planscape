@@ -42,7 +42,6 @@
   <app-action-button
     *ngIf="
       (standSelectionEnabled$ | async) === false &&
-      (showTreatmentStands$ | async) === true &&
       (showLegend$ | async) === false
     "
     (clickedActionButton)="openTreatmentLegend()">
@@ -77,16 +76,4 @@
     *ngIf="treatmentTooltipLngLat">
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
-
-  <mgl-control position="top-left" *ngIf="showTreatmentLayersToggle$ | async">
-    <div class="controls">
-      <mat-slide-toggle
-        color="primary"
-        [checked]="(showTreatmentStands$ | async) || false"
-        (change)="toggleShowTreatmentLayers()"
-        class="bottom-toggle"
-        >View Treatment Layers
-      </mat-slide-toggle>
-    </div>
-  </mgl-control>
 </mgl-map>
