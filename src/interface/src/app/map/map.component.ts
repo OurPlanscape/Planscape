@@ -142,7 +142,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
 
   showConfirmAreaButton$ = new BehaviorSubject(false);
   navState$ = new BehaviorSubject<NavState>({
-    currentRecordName: 'New Plan',
+    currentRecordName: '', // set to blank until we know there is no plan, to avoid showing inaccurate name
     currentView: 'Explore',
     backLink: '/',
   });
@@ -299,12 +299,18 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           this.navState$.next({
             currentRecordName: plan.name,
             backLink: getPlanPath(plan.id),
-            currentView: '',
+            currentView: 'Explore',
           });
         },
         error: (error) => {
           // this.planNotFound = true;
         },
+      });
+    } else {
+      this.navState$.next({
+        currentRecordName: 'New Plan',
+        currentView: 'Explore',
+        backLink: '/',
       });
     }
   }

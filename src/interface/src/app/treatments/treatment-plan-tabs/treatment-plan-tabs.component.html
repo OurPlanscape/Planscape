@@ -5,10 +5,13 @@
   <mat-tab label="Project Areas"
     ><app-project-areas-tab></app-project-areas-tab>
   </mat-tab>
+  <mat-tab
+    label="Data Layers"
+    *appFeatureFlag="'statewide_datalayers'"></mat-tab>
   <mat-tab label="Base Maps">
     <app-map-base-layer></app-map-base-layer>
   </mat-tab>
-  <mat-tab label="Notes">
+  <mat-tab label="Notes" *appFeatureFlag="'statewide_datalayers'; hide: true">
     <app-treatment-plan-notes></app-treatment-plan-notes>
   </mat-tab>
 </mat-tab-group>
