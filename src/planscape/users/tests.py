@@ -491,10 +491,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
             headers={"X_ORIGINAL_URI": martins_path},
         )
 
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.json(), {"error": "User does not have permission to view scenario"}
-        )
+        self.assertEqual(response.status_code, 400)
 
     def test_user_has_no_permission__project_area(self):
         another_user = UserFactory.create()
@@ -505,13 +502,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
             headers={"X_ORIGINAL_URI": martins_path},
         )
 
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.json(),
-            {
-                "error": "User does not have permission to view scenario of given project area"
-            },
-        )
+        self.assertEqual(response.status_code, 400)
 
     def test_user_has_no_permission__tx_plan(self):
         another_user = UserFactory.create()
@@ -522,13 +513,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
             headers={"X_ORIGINAL_URI": martins_path},
         )
 
-        self.assertEqual(response.status_code, 403)
-        self.assertEqual(
-            response.json(),
-            {
-                "error": "User does not have permission to view scenario of given treatment plan"
-            },
-        )
+        self.assertEqual(response.status_code, 400)
 
     def test_unauthenticated_user(self):
         response = self.client.get(self.url)

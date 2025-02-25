@@ -14,11 +14,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from planning.models import Scenario, ProjectArea
-from impacts.models import TreatmentPlan
-from collaboration.permissions import ScenarioPermission
 from planscape.permissions import PlanscapePermission
-from users.serializers import UserSerializer
+from users.serializers import UserSerializer, MartinResourceSerializer
 
 # Configure global logging.
 logger = logging.getLogger(__name__)
@@ -210,56 +207,10 @@ def validate_martin_request(request: Request) -> Response:
     original_query_params = dict(
         param.split("=") for param in original_query_params_str.split("&")
     )
+    serializer = MartinResourceSerializer(
+        data=original_query_params, context={"user": request.user}
+    )
 
-    scenario_id = original_query_params.get("scenario_id")
-    if scenario_id:
-        try:
-            scenario = Scenario.objects.get(pk=scenario_id)
-            if not ScenarioPermission.can_view(request.user, scenario):
-                return Response(
-                    {"error": "User does not have permission to view scenario"},
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-        except Scenario.DoesNotExist:
-            return Response(
-                {"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-    project_area_id = original_query_params.get("project_area_id")
-    if project_area_id:
-        try:
-            project_area = ProjectArea.objects.select_related("scenario").get(
-                pk=project_area_id
-            )
-            if not ScenarioPermission.can_view(request.user, project_area.scenario):
-                return Response(
-                    {
-                        "error": "User does not have permission to view scenario of given project area"
-                    },
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-        except ProjectArea.DoesNotExist:
-            return Response(
-                {"error": "Project area not found"}, status=status.HTTP_404_NOT_FOUND
-            )
-
-    treatment_plan_id = original_query_params.get("treatment_plan_id")
-    if treatment_plan_id:
-        try:
-            treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
-                pk=treatment_plan_id
-            )
-            if not ScenarioPermission.can_view(request.user, treatment_plan.scenario):
-                return Response(
-                    {
-                        "error": "User does not have permission to view scenario of given treatment plan"
-                    },
-                    status=status.HTTP_403_FORBIDDEN,
-                )
-        except TreatmentPlan.DoesNotExist:
-            return Response(
-                {"error": "Treatment plan not found"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
+    serializer.is_valid(raise_exception=True)
 
     return Response({"valid": True})
