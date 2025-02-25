@@ -2,11 +2,16 @@
 @import 'mixins';
 
 :host {
+
   .upload-scenario-form {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 16px;
     padding: 24px;
+  }
+
+  .upload-scenario-modal {
+    max-height: 800px;
   }
 
   ::ng-deep .input-wrapper {
@@ -68,7 +73,6 @@
     line-height: 22px;
   }
 
-
   .required-star {
     color: $color-error;
     padding-left: 2px;
@@ -84,16 +88,6 @@
     color: $color-standard-blue;
   }
 
-  ::ng-deep .sg-modal .footer {
-    border-top: 1px solid #E1E1E1;
-  padding-right: 16px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  flex-shrink: 0;
-  }
 }
 
 .tooltip {
@@ -102,6 +96,4 @@
   p:last-child {
     margin-bottom: 0;
   }
-
-
 }

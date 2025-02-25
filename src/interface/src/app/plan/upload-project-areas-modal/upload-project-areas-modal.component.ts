@@ -68,7 +68,7 @@ export interface DialogData {
   ],
 })
 export class UploadProjectAreasModalComponent {
-  uploadProjectsForm: FormGroup;
+  uploadProjectsForm!: FormGroup;
   planning_area_name = 'Planning Area';
   file: File | null = null;
   uploadElementStatus: 'default' | 'failed' | 'running' | 'uploaded' =
@@ -76,7 +76,6 @@ export class UploadProjectAreasModalComponent {
   uploadFormError?: string | null = null;
   alertMessage?: string | null = null;
   nameError = '';
-  hasNameError = false;
   geometries: GeoJSON.GeoJSON | null = null;
   readonly FormMessageType = FormMessageType;
   readonly dialogRef = inject(MatDialogRef<UploadProjectAreasModalComponent>);
@@ -146,6 +145,14 @@ export class UploadProjectAreasModalComponent {
     }
   }
 
+  hasNameError() {
+    const nameField = this.uploadProjectsForm.get('scenarioName');
+    if (nameField) {
+      return nameField?.errors !== null && nameField?.touched;
+    }
+    return false;
+  }
+
   handleCreateButton() {
     if (this.file) {
       const formData = new FormData();
@@ -188,15 +195,15 @@ export class UploadProjectAreasModalComponent {
               this.uploadFormError = err.error.global.join(' ');
             } else if (err.error?.name) {
               const nameControl = this.uploadProjectsForm.get('scenarioName');
-              nameControl?.setErrors({
-                customError: true,
-              });
-              this.hasNameError = true;
               if (err.error.name?.join(' ').includes('blank.')) {
-                this.nameError = 'Name must not be blank';
+                nameControl?.setErrors({
+                  manualError: 'Name must not be blank',
+                });
               }
               if (err.error.name?.join(' ').includes('name already exists.'))
-                this.nameError = 'A scenario with this name already exists.';
+                nameControl?.setErrors({
+                  customError: 'A scenario with this name already exists.',
+                });
             } else {
               this.uploadFormError =
                 'An unknown error occured when trying to create a scenario.';

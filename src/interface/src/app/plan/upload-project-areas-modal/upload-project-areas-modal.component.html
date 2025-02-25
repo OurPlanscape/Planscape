@@ -1,4 +1,5 @@
 <sg-modal
+  class="upload-scenario-modal"
   title="Upload Scenario to &ldquo;{{ data.planning_area_name }}&rdquo;"
   primaryButtonText="Create"
   [primaryButtonDisabled]="!canSubmit()"
@@ -29,9 +30,11 @@
         </div>
         <sg-input-field
           [disabled]="false"
-          [error]="hasNameError"
+          [error]="hasNameError()"
           class="scenario-input"
-          [supportMessage]="nameError"
+          [supportMessage]="
+            uploadProjectsForm.get('scenarioName')?.errors?.['customError']
+          "
           showSupportMessage="on-error">
           <input
             sgInput
