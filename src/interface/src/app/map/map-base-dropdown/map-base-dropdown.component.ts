@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
-import { ClickOutsideDirective } from 'src/app/treatments/click-outside.directive';
+import { ClickOutsideDirective } from 'src/app/standalone/click-outside-directive/click-outside.directive';
 import {
   baseLayerStyles,
   BaseLayerType,

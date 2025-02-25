@@ -6,6 +6,7 @@ import {
   HostListener,
 } from '@angular/core';
 
+/** Directive that fires an event when the user clicks outside the container where this directive is placed. */
 @Directive({
   selector: '[appClickOutside]',
   standalone: true,
