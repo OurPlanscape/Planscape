@@ -20,7 +20,6 @@ import {
 } from '@types';
 import * as L from 'leaflet';
 import { ConditionTreeComponent } from './condition-tree/condition-tree.component';
-import features from '../../features/features.json';
 
 /** Map Legend Display Strings */
 
@@ -65,10 +64,6 @@ export class MapControlPanelComponent implements OnInit {
   rawDataEnabled: boolean | null = null;
   translatedDataEnabled: boolean | null = null;
   futureDataEnabled: boolean | null = null;
-
-  // General data flags
-  future_control_panel_enabled = features.show_future_control_panel;
-  translated_control_panel_enabled = features.show_translated_control_panel;
 
   public dataTypeEnum = ConditionTreeType;
 
