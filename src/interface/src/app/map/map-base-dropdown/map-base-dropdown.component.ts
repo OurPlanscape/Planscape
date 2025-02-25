@@ -32,7 +32,7 @@ export class MapBaseDropdownComponent {
   selectedLayer$ = this.mapConfigState.baseLayer$;
   baseLayers = Object.keys(baseLayerStyles) as BaseLayerType[];
   overlayRef!: OverlayRef | null;
-  selectedLayerImage = 'assets/png/baseMaps/roadmap.png'; // Ejemplo
+  selectedLayerImage = 'assets/png/baseMaps/roadmap.png';
 
   constructor(private mapConfigState: MapConfigState) {}
 
