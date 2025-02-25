@@ -1,4 +1,3 @@
-import { OverlayRef } from '@angular/cdk/overlay';
 import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
@@ -28,11 +27,8 @@ import { MapConfigState } from 'src/app/treatments/treatment-map/map-config.stat
 })
 export class MapBaseDropdownComponent {
   displayed = false;
-
   selectedLayer$ = this.mapConfigState.baseLayer$;
   baseLayers = Object.keys(baseLayerStyles) as BaseLayerType[];
-  overlayRef!: OverlayRef | null;
-  selectedLayerImage = 'assets/png/baseMaps/roadmap.png';
 
   constructor(private mapConfigState: MapConfigState) {}
 
@@ -41,7 +37,7 @@ export class MapBaseDropdownComponent {
     this.closeOverlay();
   }
 
-  openOverlay(event: Event) {
+  openOverlay(event: Event): void {
     this.displayed = !this.displayed;
     // We need to stop propagation to prevent the clickOutside directive to fire while opening
     if (this.displayed) {
