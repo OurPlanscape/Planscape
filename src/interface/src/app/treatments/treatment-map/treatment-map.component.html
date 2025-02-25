@@ -1,4 +1,10 @@
 <div class="map-navbar" *appFeatureFlag="'statewide_datalayers'">
+  <app-map-base-dropdown
+    *ngIf="
+      (standSelectionEnabled$ | async) === true ||
+      (showTreatmentStands$ | async) === true ||
+      (showLegend$ | async) === true
+    "></app-map-base-dropdown>
   <sg-opacity-slider
     class="navbar-slider"
     *ngIf="
