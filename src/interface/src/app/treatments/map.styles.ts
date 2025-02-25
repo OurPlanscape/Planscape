@@ -7,17 +7,17 @@ import {
   SEQUENCE_PATTERNS,
 } from './prescriptions';
 
-export const BASE_COLORS: Record<
-  'white' | 'black' | 'blue' | 'dark' | 'light' | 'yellow',
-  string
-> = {
+export const BASE_COLORS = {
   white: '#FFF',
   black: '#000',
   dark: '#4A4A4A',
+  md_gray: '#767575',
   light: '#F6F6F650',
   blue: '#007dff',
   yellow: '#FFD54F',
-};
+  almost_white: '#F6F6F6',
+  white_light_blue: '#E9F1FF',
+} as const;
 
 export const SELECTED_STANDS_PAINT = {
   'fill-color': [

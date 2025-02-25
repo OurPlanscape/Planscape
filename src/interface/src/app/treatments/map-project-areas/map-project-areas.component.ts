@@ -98,6 +98,7 @@ export class MapProjectAreasComponent {
     projectAreasFill: {
       name: 'map-project-areas-fill',
       sourceLayer: 'project_areas_by_scenario',
+      color: BASE_COLORS.almost_white,
     },
     projectAreaLabels: {
       name: 'map-project-areas-labels',
