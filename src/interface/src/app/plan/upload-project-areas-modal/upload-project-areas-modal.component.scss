@@ -2,16 +2,11 @@
 @import 'mixins';
 
 :host {
-
   .upload-scenario-form {
     display: flex;
     flex-direction: column;
     gap: 16px;
     padding: 24px;
-  }
-
-  .upload-scenario-modal {
-    max-height: 800px;
   }
 
   ::ng-deep .input-wrapper {
@@ -87,7 +82,6 @@
   .stands-info-icon {
     color: $color-standard-blue;
   }
-
 }
 
 .tooltip {
