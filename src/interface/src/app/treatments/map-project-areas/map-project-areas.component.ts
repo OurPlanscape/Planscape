@@ -27,7 +27,6 @@ import {
   Observable,
   Subject,
 } from 'rxjs';
-import { MapConfigState } from '../treatment-map/map-config.state';
 
 type MapLayerData = {
   readonly name: string;
@@ -107,15 +106,10 @@ export class MapProjectAreasComponent {
     },
   };
 
-  textSize$ = this.mapConfigState.zoomLevel$.pipe(
-    map((zoomLevel) => (zoomLevel > 9 ? 14 : 0))
-  );
-
   constructor(
     private treatmentsState: TreatmentsState,
     private router: Router,
-    private route: ActivatedRoute,
-    private mapConfigState: MapConfigState
+    private route: ActivatedRoute
   ) {}
 
   get vectorLayerUrl() {

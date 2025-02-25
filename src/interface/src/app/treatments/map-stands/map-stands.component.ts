@@ -280,8 +280,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
       layers: [this.layers.stands.name],
     });
 
-    console.log(features[0]);
-
     return features.map((feature) => feature.properties['id']);
   }
 

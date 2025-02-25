@@ -42,7 +42,6 @@
   }"></mgl-layer>
 
 <mgl-layer
-  *ngIf="textSize$ | async as textSize"
   [id]="layers.projectAreaLabels.name"
   type="symbol"
   source="scenarioProjectAreas"
@@ -50,7 +49,7 @@
   [layout]="{
     visibility: visible ? 'visible' : 'none',
     'text-field': ['get', 'name'],
-    'text-size': textSize,
+    'text-size': ['interpolate', ['linear'], ['zoom'], 7, 14, 14, 32],
     'text-anchor': 'center',
     'text-justify': 'center'
   }"
