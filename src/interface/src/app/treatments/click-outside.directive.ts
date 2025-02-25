@@ -7,7 +7,7 @@ import {
 } from '@angular/core';
 
 @Directive({
-  selector: '[clickOutside]',
+  selector: '[appclickOutside]',
   standalone: true,
 })
 export class ClickOutsideDirective {

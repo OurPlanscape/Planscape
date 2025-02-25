@@ -8,10 +8,9 @@ describe('MapBaseDropdownComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapBaseDropdownComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapBaseDropdownComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapBaseDropdownComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
