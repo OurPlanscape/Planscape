@@ -8,12 +8,16 @@ from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from planning.models import Scenario, ProjectArea
+from impacts.models import TreatmentPlan
+from collaboration.permissions import ScenarioPermission
+from planscape.permissions import PlanscapePermission
 from users.serializers import UserSerializer
 
 # Configure global logging.
@@ -187,3 +191,75 @@ def verify_password_reset_token(
         return HttpResponseBadRequest("Invalid token.")
 
     return JsonResponse({"valid": True})
+
+
+@api_view(["GET"])
+@permission_classes([PlanscapePermission])
+def validate_martin_request(request: Request) -> Response:
+    original_uri = request.headers.get("X-Original-URI")
+    if not original_uri:
+        return Response(
+            {"error": "X-Original-URI header not found"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if original_uri.find("?") == -1:
+        return Response({"valid": True})
+
+    original_query_params_str = original_uri.split("?")[1]
+    original_query_params = dict(
+        param.split("=") for param in original_query_params_str.split("&")
+    )
+
+    scenario_id = original_query_params.get("scenario_id")
+    if scenario_id:
+        try:
+            scenario = Scenario.objects.get(pk=scenario_id)
+            if not ScenarioPermission.can_view(request.user, scenario):
+                return Response(
+                    {"error": "User does not have permission to view scenario"},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        except Scenario.DoesNotExist:
+            return Response(
+                {"error": "Scenario not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    project_area_id = original_query_params.get("project_area_id")
+    if project_area_id:
+        try:
+            project_area = ProjectArea.objects.select_related("scenario").get(
+                pk=project_area_id
+            )
+            if not ScenarioPermission.can_view(request.user, project_area.scenario):
+                return Response(
+                    {
+                        "error": "User does not have permission to view scenario of given project area"
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        except ProjectArea.DoesNotExist:
+            return Response(
+                {"error": "Project area not found"}, status=status.HTTP_404_NOT_FOUND
+            )
+
+    treatment_plan_id = original_query_params.get("treatment_plan_id")
+    if treatment_plan_id:
+        try:
+            treatment_plan = TreatmentPlan.objects.select_related("scenario").get(
+                pk=treatment_plan_id
+            )
+            if not ScenarioPermission.can_view(request.user, treatment_plan.scenario):
+                return Response(
+                    {
+                        "error": "User does not have permission to view scenario of given treatment plan"
+                    },
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+        except TreatmentPlan.DoesNotExist:
+            return Response(
+                {"error": "Treatment plan not found"},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+    return Response({"valid": True})
