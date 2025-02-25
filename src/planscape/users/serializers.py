@@ -11,6 +11,11 @@ from django.contrib.auth.models import User
 from django.core.mail import EmailMessage
 from django.template.loader import get_template
 from rest_framework import serializers
+from rest_framework.relations import PrimaryKeyRelatedField
+
+from planning.models import Scenario, ProjectArea
+from impacts.models import TreatmentPlan
+from collaboration.permissions import ScenarioPermission
 
 from users.forms import CustomAllAuthPasswordResetForm
 
@@ -96,3 +101,38 @@ class CustomPasswordChangeSerializer(PasswordChangeSerializer):
             to=[user.email],
         )
         email.send()
+
+
+class MartinResourceSerializer(serializers.Serializer):
+    scenario_id = PrimaryKeyRelatedField(
+        queryset=Scenario.objects.all(), help_text="Scenario ID.", required=False
+    )
+    project_area_id = PrimaryKeyRelatedField(
+        queryset=ProjectArea.objects.all(), help_text="Project Area ID.", required=False
+    )
+    treatment_plan_id = PrimaryKeyRelatedField(
+        queryset=TreatmentPlan.objects.all(),
+        help_text="Treatment Plan ID.",
+        required=False,
+    )
+
+    def validate_scenario_id(self, scenario):
+        user = self.context.get("user")
+        if not ScenarioPermission.can_view(user, scenario):
+            raise serializers.ValidationError(
+                "User does not have permission to view scenario"
+            )
+
+    def validate_project_area_id(self, project_area):
+        user = self.context.get("user")
+        if not ScenarioPermission.can_view(user, project_area.scenario):
+            raise serializers.ValidationError(
+                "User does not have permission to view scenario of given project area"
+            )
+
+    def validate_treatment_plan_id(self, treatment_plan):
+        user = self.context.get("user")
+        if not ScenarioPermission.can_view(user, treatment_plan.scenario):
+            raise serializers.ValidationError(
+                "User does not have permission to view scenario of given treatment plan"
+            )
