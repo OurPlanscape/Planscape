@@ -491,7 +491,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
             headers={"X_ORIGINAL_URI": martins_path},
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_user_has_no_permission__project_area(self):
         another_user = UserFactory.create()
@@ -502,7 +502,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
             headers={"X_ORIGINAL_URI": martins_path},
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_user_has_no_permission__tx_plan(self):
         another_user = UserFactory.create()
@@ -513,7 +513,7 @@ class ValidateMartinRequestTestCase(APITransactionTestCase):
             headers={"X_ORIGINAL_URI": martins_path},
         )
 
-        self.assertEqual(response.status_code, 400)
+        self.assertEqual(response.status_code, 403)
 
     def test_unauthenticated_user(self):
         response = self.client.get(self.url)
