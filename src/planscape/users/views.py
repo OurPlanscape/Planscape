@@ -211,6 +211,10 @@ def validate_martin_request(request: Request) -> Response:
         data=original_query_params, context={"user": request.user}
     )
 
-    serializer.is_valid(raise_exception=True)
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_403_FORBIDDEN,
+        )
 
     return Response({"valid": True})
