@@ -147,8 +147,6 @@ export class TreatmentMapComponent {
       return showAreas;
     })
   );
-
-  showFillProjectAreas$ = this.mapConfigState.showFillProjectAreas$;
   /**
    * Observable to determine if we show the treatment stands layer
    */
@@ -176,8 +174,6 @@ export class TreatmentMapComponent {
   planningAreaGeometry$ = this.treatmentsState.planningArea$.pipe(
     map((area) => area.geometry as Geometry)
   );
-
-  showTreatmentLayersToggle$ = this.mapConfigState.showTreatmentLayersToggle$;
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 

@@ -53,7 +53,6 @@ type MapLayerData = {
 export class MapProjectAreasComponent {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
-  @Input() withFill = true;
   @Input() showTooltips = true;
 
   private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
@@ -119,8 +118,6 @@ export class MapProjectAreasComponent {
     const projectAreaId = this.getProjectAreaFromFeatures(event.point)
       .properties['id'];
     this.mouseLngLat = null;
-
-    console.log(projectAreaId);
 
     this.router
       .navigate(['project-area', projectAreaId], {

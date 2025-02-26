@@ -12,7 +12,7 @@ export const BASE_COLORS = {
   black: '#000',
   dark: '#4A4A4A',
   md_gray: '#767575',
-  light: '#F6F6F650',
+  light: '#F6F6F680',
   blue: '#007dff',
   yellow: '#FFD54F',
   almost_white: '#F6F6F6',
@@ -60,8 +60,8 @@ export const STANDS_CELL_PAINT = {
 };
 
 export const BASE_STANDS_PAINT = {
-  'fill-color': BASE_COLORS.light,
-  'fill-opacity': 0.5,
+  'fill-color': 'red',
+  'fill-opacity': 0.75,
 };
 
 export const LABEL_PAINT = {

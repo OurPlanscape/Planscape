@@ -206,6 +206,7 @@ export class TreatmentsState {
       data.showMapProjectAreas || false
     );
 
+    this.mapConfigState.setTreatmentLegendVisible(false);
     this.mapConfigState.setShowMapControls(data.showMapControls || false);
   }
 

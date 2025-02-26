@@ -168,18 +168,10 @@ export class MapStandsComponent implements OnChanges, OnInit {
   ]).pipe(
     map(([ids, projectAreaId]) => {
       const subfilters: any[] = [];
-
-      // If we have IDs, add an expression-based "in"
-
       subfilters.push(['in', ['get', 'id'], ['literal', ids]]);
 
-      // If we have a projectAreaId, add an expression-based "=="
       if (projectAreaId) {
         subfilters.push(['==', ['get', 'project_area_id'], projectAreaId]);
-      }
-
-      if (!subfilters.length) {
-        return undefined;
       }
 
       return ['all', ...subfilters] as any;
@@ -320,7 +312,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
     const features = this.mapLibreMap.queryRenderedFeatures(query, {
       layers: [this.layers.stands.name],
     });
-    console.log(features[0]);
     return features.map((feature) => feature.properties['id']);
   }
 
