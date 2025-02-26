@@ -20,35 +20,17 @@
 .button-actions-row {
   display: flex;
   flex-direction: row;
-  gap:16px;
+  gap: 16px;
 }
 
-.notes-drawer-container {
-  position: relative;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 100%;
-  }
-
-.drawer-content {
-  width: 100%;
-}
-
-.notes-drawer {
+.notes-overlay {
+  position: fixed;
+  background-color: $color-white;
+  height: calc(100% - 100px);
   width: 400px;
-  height: 100%;
-  transform: none;
-  transition-duration: 0ms;
-  overflow: hidden;
-}
-
-.notes-container {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  top: 100px;
+  left: 0;
+  z-index: 100;
 }
 
 .notes-heading {
@@ -68,16 +50,6 @@
   gap: 8px;
 }
 
-.notes-content { 
+.notes-content {
   height: calc(100% - 60px);
-}
-
-::ng-deep .notes-drawer-container .mat-drawer {
-  transform: none;
-}
-
-::ng-deep .notes-drawer-container .mat-drawer-inner-container {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
 }

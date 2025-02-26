@@ -12,7 +12,6 @@ import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
 import { ButtonComponent } from '@styleguide';
 import { MatCheckboxModule } from '@angular/material/checkbox';
-import { MatSidenavModule } from '@angular/material/sidenav';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 
@@ -24,7 +23,6 @@ import { FeaturesModule } from 'src/app/features/features.module';
     TreatmentMapComponent,
     TreatmentPlanNotesComponent,
     MatCheckboxModule,
-    MatSidenavModule,
     TreatmentPlanTabsComponent,
     ButtonComponent,
     MapBaseLayerComponent,
@@ -48,14 +46,21 @@ export class TreatmentOverviewComponent {
   projectAreas$ = this.summary$?.pipe(
     map((summary: TreatmentSummary | null) => summary?.project_areas)
   );
-
+  showNotesOverlay = false;
   currentPlan$ = this.treatmentsState.treatmentPlan$;
-
   disableInput$ = this.treatmentsState.planningArea$.pipe(
     map((plan) => {
       return !canEditTreatmentPlan(plan);
     })
   );
+
+  closeNotesOverlay() {
+    this.showNotesOverlay = false;
+  }
+
+  openNotesOverlay() {
+    this.showNotesOverlay = true;
+  }
 
   handleNameChange(name: string) {
     if (name.length < 1) {
