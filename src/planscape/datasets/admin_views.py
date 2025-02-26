@@ -67,7 +67,7 @@ class AdminDataLayerViewSet(
         )
 
 
-class StyleAdminViewSet(
+class AdminStyleViewSet(
     ListModelMixin,
     RetrieveModelMixin,
     MultiSerializerMixin,
