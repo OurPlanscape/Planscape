@@ -1,0 +1,40 @@
+<!-- Selected layer icon -->
+<img
+  (click)="openOverlay($event)"
+  class="base-layer-icon"
+  *ngIf="selectedLayer$ | async as selectedLayer"
+  [src]="'assets/png/baseMaps/' + selectedLayer + '.png'" />
+
+<!-- Base Map Layers Overlay -->
+<mat-card
+  class="base-layer-overlay"
+  *ngIf="displayed"
+  appClickOutside
+  (clickOutside)="closeOverlay()">
+  <header>
+    <h4>Base Map</h4>
+    <button
+      sg-button
+      variant="icon-only"
+      aria-label="close"
+      (click)="closeOverlay()">
+      <mat-icon class="close-btn">close</mat-icon>
+    </button>
+  </header>
+  <section>
+    <p
+      *ngFor="let baseLayer of baseLayers"
+      class="base-layer-option"
+      (click)="updateBaseMapLayer(baseLayer)"
+      [class.selected]="(selectedLayer$ | async) === baseLayer">
+      <img
+        (click)="updateBaseMapLayer(baseLayer)"
+        class="base-layer-icon"
+        *ngIf="selectedLayer$ | async as selectedLayer"
+        [src]="'assets/png/baseMaps/' + baseLayer + '.png'" />
+      <span class="base-layer-label">
+        {{ baseLayer }}
+      </span>
+    </p>
+  </section>
+</mat-card>

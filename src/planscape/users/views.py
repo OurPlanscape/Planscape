@@ -8,13 +8,14 @@ from django.contrib.auth.models import User
 from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, JsonResponse
 from django.utils.encoding import force_str
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from users.serializers import UserSerializer
+from planscape.permissions import PlanscapePermission
+from users.serializers import UserSerializer, MartinResourceSerializer
 
 # Configure global logging.
 logger = logging.getLogger(__name__)
@@ -187,3 +188,33 @@ def verify_password_reset_token(
         return HttpResponseBadRequest("Invalid token.")
 
     return JsonResponse({"valid": True})
+
+
+@api_view(["GET"])
+@permission_classes([PlanscapePermission])
+def validate_martin_request(request: Request) -> Response:
+    original_uri = request.headers.get("X-Original-URI")
+    if not original_uri:
+        return Response(
+            {"error": "X-Original-URI header not found"},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if original_uri.find("?") == -1:
+        return Response({"valid": True})
+
+    original_query_params_str = original_uri.split("?")[1]
+    original_query_params = dict(
+        param.split("=") for param in original_query_params_str.split("&")
+    )
+    serializer = MartinResourceSerializer(
+        data=original_query_params, context={"user": request.user}
+    )
+
+    if not serializer.is_valid():
+        return Response(
+            serializer.errors,
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
+    return Response({"valid": True})

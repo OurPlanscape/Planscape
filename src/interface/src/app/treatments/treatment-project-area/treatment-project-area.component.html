@@ -7,7 +7,9 @@
   <mat-tab label="Treatments">
     <app-project-area-tx-tab></app-project-area-tx-tab>
   </mat-tab>
-  <mat-tab label="Base Maps">
+  <mat-tab
+    label="Base Maps"
+    *appFeatureFlag="'statewide_datalayers'; hide: true">
     <app-map-base-layer></app-map-base-layer>
   </mat-tab>
 </mat-tab-group>
