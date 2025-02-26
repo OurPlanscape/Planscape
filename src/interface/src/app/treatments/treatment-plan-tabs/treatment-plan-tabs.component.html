@@ -8,7 +8,9 @@
   <mat-tab
     label="Data Layers"
     *appFeatureFlag="'statewide_datalayers'"></mat-tab>
-  <mat-tab label="Base Maps">
+  <mat-tab
+    label="Base Maps"
+    *appFeatureFlag="'statewide_datalayers'; hide: true">
     <app-map-base-layer></app-map-base-layer>
   </mat-tab>
   <mat-tab label="Notes" *appFeatureFlag="'statewide_datalayers'; hide: true">

@@ -157,5 +157,10 @@
   .seq-year {
     color: $color-md-gray;
   }
+}
 
+// Updating the height if "statewide-datalayers" FF is ON
+::ng-deep .statewide-datalayers .treatment-legend {
+  top: 70px;
+  max-height: calc(100% - 154px);
 }

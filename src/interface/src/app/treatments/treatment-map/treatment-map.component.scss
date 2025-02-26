@@ -61,9 +61,10 @@ app-map-controls {
 ::ng-deep .statewide-datalayers .maplibregl-ctrl-top-left {
   position: relative;
   top: 70px;
+  z-index: 0;
 }
 
 ::ng-deep .statewide-datalayers .maplibregl-ctrl-top-right {
-  position: relative;
-  top: 70px;
+  margin-top: 70px;
+  z-index: 0;
 }
