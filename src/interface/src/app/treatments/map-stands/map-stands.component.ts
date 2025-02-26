@@ -21,11 +21,10 @@ import {
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../maplibre.helper';
-import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { MapConfigState } from '../treatment-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { combineLatest, distinctUntilChanged, pairwise } from 'rxjs';
+import { combineLatest, distinctUntilChanged, map, pairwise } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   BASE_STANDS_PAINT,
@@ -36,6 +35,7 @@ import {
   STANDS_CELL_PAINT,
 } from '../map.styles';
 import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
+import { MARTIN_SOURCES } from '../map.sources';
 
 type MapLayerData = {
   readonly name: string;
@@ -113,9 +113,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
   );
 
   // TODO project_area_aggregate only applies when looking at a specific project area
-  readonly tilesUrl =
-    environment.martin_server +
-    'project_area_aggregate,stands_by_tx_plan/{z}/{x}/{y}';
+  //  readonly tilesUrl = ;
 
   readonly layers: Record<
     | 'projectAreaOutline'
@@ -132,17 +130,17 @@ export class MapStandsComponent implements OnChanges, OnInit {
     },
     standsOutline: {
       name: 'stands-outline-layer',
-      sourceLayer: 'stands_by_tx_plan',
+      sourceLayer: MARTIN_SOURCES.standsByTxPlan.sources.standsByTxPlan,
       paint: STANDS_CELL_PAINT,
     },
     stands: {
       name: 'stands-layer',
-      sourceLayer: 'stands_by_tx_plan',
+      sourceLayer: MARTIN_SOURCES.standsByTxPlan.sources.standsByTxPlan,
       paint: BASE_STANDS_PAINT,
     },
     sequenceStands: {
       name: 'stands-sequence-layer',
-      sourceLayer: 'stands_by_tx_plan',
+      sourceLayer: MARTIN_SOURCES.standsByTxPlan.sources.standsByTxPlan,
       paint: {
         'fill-pattern': 'sequence1',
         'fill-opacity': 1,
@@ -150,10 +148,43 @@ export class MapStandsComponent implements OnChanges, OnInit {
     },
     selectedStands: {
       name: 'stands-layer-selected',
-      sourceLayer: 'stands_by_tx_plan',
+      sourceLayer: MARTIN_SOURCES.standsByTxPlan.sources.standsByTxPlan,
       paint: SELECTED_STANDS_PAINT as any,
     },
   };
+
+  projectAreaFilter$ = this.projectAreaId$.pipe(
+    map((id) => {
+      if (!id) {
+        return undefined;
+      }
+      return ['==', ['get', 'project_area_id'], id] as any;
+    })
+  );
+
+  combinedFilter$ = combineLatest([
+    this.sequenceStandsIds$,
+    this.projectAreaId$,
+  ]).pipe(
+    map(([ids, projectAreaId]) => {
+      const subfilters: any[] = [];
+
+      // If we have IDs, add an expression-based "in"
+
+      subfilters.push(['in', ['get', 'id'], ['literal', ids]]);
+
+      // If we have a projectAreaId, add an expression-based "=="
+      if (projectAreaId) {
+        subfilters.push(['==', ['get', 'project_area_id'], projectAreaId]);
+      }
+
+      if (!subfilters.length) {
+        return undefined;
+      }
+
+      return ['all', ...subfilters] as any;
+    })
+  );
 
   constructor(
     private selectedStandsState: SelectedStandsState,
@@ -207,8 +238,18 @@ export class MapStandsComponent implements OnChanges, OnInit {
     // TODO bring back  projectAreaId ? `&project_area_id=${projectAreaId}` : ''
     //  const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
-      this.tilesUrl +
+      MARTIN_SOURCES.standsByTxPlan.tilesUrl +
       `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}`
+    );
+  }
+
+  get aggregateLayerUrl() {
+    const projectAreaId = this.treatmentsState.getProjectAreaId();
+    return (
+      MARTIN_SOURCES.projectAreaAggregate.tilesUrl +
+      `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}${
+        projectAreaId ? `&project_area_id=${projectAreaId}` : ''
+      }`
     );
   }
 
@@ -279,7 +320,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     const features = this.mapLibreMap.queryRenderedFeatures(query, {
       layers: [this.layers.stands.name],
     });
-
+    console.log(features[0]);
     return features.map((feature) => feature.properties['id']);
   }
 

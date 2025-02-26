@@ -10,6 +10,12 @@
   [tiles]="[vectorLayerUrl]"
   [promoteId]="'id'"></mgl-vector-source>
 
+<mgl-vector-source
+  *ngIf="projectAreaId$ | async"
+  id="aggregate"
+  [tiles]="[aggregateLayerUrl]"
+  [promoteId]="'id'"></mgl-vector-source>
+
 <ng-container *ngIf="allPatternsLoaded()">
   <mgl-layer
     [id]="layers.stands.name"
@@ -20,6 +26,7 @@
     (layerClick)="layerClick()"
     (layerMouseEnter)="setCursor()"
     (layerMouseLeave)="resetCursor()"
+    [filter]="projectAreaFilter$ | async"
     [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
 
   <mgl-layer
@@ -27,13 +34,14 @@
     type="fill"
     source="stands"
     [paint]="layers.sequenceStands.paint"
-    [filter]="['in', ['get', 'id'], ['literal', sequenceStandsIds$ | async]]"
+    [filter]="combinedFilter$ | async"
     [sourceLayer]="layers.sequenceStands.sourceLayer"></mgl-layer>
 
   <mgl-layer
     [id]="layers.standsOutline.name"
     type="line"
     source="stands"
+    [filter]="projectAreaFilter$ | async"
     [paint]="layers.standsOutline.paint"
     [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
 
@@ -41,13 +49,15 @@
     [id]="layers.selectedStands.name"
     type="fill"
     source="stands"
+    [filter]="projectAreaFilter$ | async"
     [paint]="layers.selectedStands.paint"
     [sourceLayer]="layers.selectedStands.sourceLayer"></mgl-layer>
 
   <mgl-layer
+    *ngIf="projectAreaId$ | async"
     [id]="layers.projectAreaOutline.name"
     type="line"
-    source="stands"
+    source="aggregate"
     [paint]="layers.projectAreaOutline.paint"
     [sourceLayer]="layers.projectAreaOutline.sourceLayer"></mgl-layer>
 </ng-container>

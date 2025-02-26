@@ -11,7 +11,6 @@ import {
   MapMouseEvent,
   Point,
 } from 'maplibre-gl';
-import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -27,6 +26,7 @@ import {
   Observable,
   Subject,
 } from 'rxjs';
+import { MARTIN_SOURCES } from '../map.sources';
 
 type MapLayerData = {
   readonly name: string;
@@ -56,6 +56,8 @@ export class MapProjectAreasComponent {
   @Input() withFill = true;
   @Input() showTooltips = true;
 
+  private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
+
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
@@ -74,9 +76,6 @@ export class MapProjectAreasComponent {
       })
     );
 
-  readonly tilesUrl =
-    environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
-
   readonly layers: Record<
     | 'projectAreasOutline'
     | 'projectAreasHighlight'
@@ -86,22 +85,22 @@ export class MapProjectAreasComponent {
   > = {
     projectAreasOutline: {
       name: 'map-project-areas-line',
-      sourceLayer: 'project_areas_by_scenario',
+      sourceLayer: this.martinSource.sources.projectAreasByScenario,
       color: BASE_COLORS.dark,
     },
     projectAreasHighlight: {
       name: 'map-project-areas-highlight',
-      sourceLayer: 'project_areas_by_scenario',
+      sourceLayer: this.martinSource.sources.projectAreasByScenario,
       color: BASE_COLORS.yellow,
     },
     projectAreasFill: {
       name: 'map-project-areas-fill',
-      sourceLayer: 'project_areas_by_scenario',
+      sourceLayer: this.martinSource.sources.projectAreasByScenario,
       color: BASE_COLORS.almost_white,
     },
     projectAreaLabels: {
       name: 'map-project-areas-labels',
-      sourceLayer: 'project_areas_by_scenario_label',
+      sourceLayer: this.martinSource.sources.projectAreasByScenarioLabel,
       paint: LABEL_PAINT,
     },
   };
@@ -113,13 +112,15 @@ export class MapProjectAreasComponent {
   ) {}
 
   get vectorLayerUrl() {
-    return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
+    return this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
   }
 
   goToProjectArea(event: MapMouseEvent) {
     const projectAreaId = this.getProjectAreaFromFeatures(event.point)
       .properties['id'];
     this.mouseLngLat = null;
+
+    console.log(projectAreaId);
 
     this.router
       .navigate(['project-area', projectAreaId], {
