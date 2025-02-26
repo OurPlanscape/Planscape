@@ -1,4 +1,5 @@
 from typing import Optional
+from uuid import uuid4
 
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
 from core.s3 import create_download_url
@@ -142,6 +143,7 @@ class Style(
 
     uuid = models.UUIDField(
         null=True,
+        default=uuid4,
     )
 
     created_by_id: int
@@ -164,6 +166,11 @@ class Style(
     type = models.CharField(
         choices=DataLayerType.choices,
         default=DataLayerType.RASTER,
+    )
+
+    data_hash = models.CharField(
+        max_length=256,
+        null=True,
     )
 
     data = models.JSONField()
