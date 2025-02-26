@@ -73,3 +73,8 @@ app-apply-treatment {
 .back-btn {
   margin-left: auto;
 }
+
+::ng-deep .statewide-datalayers app-apply-treatment {
+  top: 70px;
+  height: calc(100% - 154px);
+}

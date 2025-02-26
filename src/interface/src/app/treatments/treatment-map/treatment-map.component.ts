@@ -39,6 +39,7 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
 import { OpacitySliderComponent } from '@styleguide';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MapBaseDropdownComponent } from 'src/app/map/map-base-dropdown/map-base-dropdown.component';
 
 @UntilDestroy()
 @Component({
@@ -68,6 +69,7 @@ import { FeatureService } from 'src/app/features/feature.service';
     MatLegacySlideToggleModule,
     OpacitySliderComponent,
     FeaturesModule,
+    MapBaseDropdownComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',

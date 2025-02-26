@@ -1,0 +1,69 @@
+@import 'colors';
+@import 'mixins';
+
+:host {
+  display: flex;
+}
+
+.base-layer {
+  &-icon {
+    height: 40px;
+    width: 40px;
+    border: 1px solid $color-soft-gray;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  &-overlay {
+    display: block;
+    width: 300px;
+    min-height: 252px;
+    position: absolute;
+    top: 60px;
+    left: 8px;
+    z-index: 101;
+    margin: 0 8px;
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px;
+      border-bottom: 1px solid $color-soft-gray;
+      h4 {
+        @include h5();
+        margin: 0;
+      }
+    }
+  }
+
+  section {
+    padding: 0px;
+  }
+
+  &-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    padding: 14px;
+    margin: 0;
+  }
+  &-label::first-letter {
+    text-transform: uppercase;
+  }
+
+  &-option:hover:not(.selected) {
+    background-color: $color-light-gray;
+    font-weight: 600;
+  }
+}
+
+mat-card {
+  padding: 0;
+}
+
+.selected {
+  background-color: $color-soft-purple;
+  font-weight: 600;
+}
