@@ -155,6 +155,11 @@ class StyleSerializer(serializers.ModelSerializer[Style]):
         )
 
 
+class StyleCreatedSerializer(serializers.Serializer):
+    style = StyleSerializer()  # type: ignore
+    possibly_exists = serializers.BooleanField()
+
+
 class CreateStyleSerializer(serializers.ModelSerializer[Style]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
 

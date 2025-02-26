@@ -15,9 +15,10 @@ from datasets.serializers import (
     DataLayerCreatedSerializer,
     DataLayerSerializer,
     DatasetSerializer,
+    StyleCreatedSerializer,
     StyleSerializer,
 )
-from datasets.services import create_datalayer
+from datasets.services import create_datalayer, create_style
 
 
 class AdminDatasetViewSet(

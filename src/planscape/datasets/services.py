@@ -1,17 +1,27 @@
+import json
 import logging
 import mimetypes
 from pathlib import Path
-from uuid import uuid4
-from django.db import transaction
-from django.contrib.gis.geos import Polygon, GEOSGeometry
-from django.contrib.auth.models import User
-from django.conf import settings
 from typing import Any, Dict, Optional
+from uuid import uuid4
+
+import mmh3
 from actstream import action
 from core.s3 import create_upload_url, is_s3_file, s3_filename
-from datasets.models import DataLayer, Category, DataLayerType, Dataset, GeometryType
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import transaction
 from organizations.models import Organization
 
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerType,
+    Dataset,
+    GeometryType,
+    Style,
+)
 
 log = logging.getLogger(__name__)
 
@@ -88,6 +98,31 @@ def geometry_from_info(
         case _:
             log.warning("Not yet implemented for vectors.")
             return None
+
+
+@transaction.atomic()
+def create_style(
+    name: str,
+    organization: Organization,
+    created_by: User,
+    type: DataLayerType,
+    data: Dict[str, Any],
+    **kwargs,
+) -> Dict[str, Any]:
+    data_hash = mmh3.hash_bytes(json.dumps(data)).hex()
+    hash_already_exists = Style.objects.filter(
+        organization=organization,
+        data_hash=data_hash,
+    ).exists()
+    style = Style.objects.create(
+        name=name,
+        organization=organization,
+        created_by=created_by,
+        type=type,
+        data=data,
+        data_hash=data_hash,
+    )
+    return {"style": style, "possibly_exists": hash_already_exists}
 
 
 @transaction.atomic()
