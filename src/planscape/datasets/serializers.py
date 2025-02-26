@@ -1,8 +1,10 @@
-from pathlib import Path
+import re
 from typing import Any, Dict
-from rest_framework import serializers
+
 from core.loaders import get_python_object
-from datasets.models import Category, Dataset, DataLayer
+from rest_framework import serializers
+
+from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
 
 
 class CategorySerializer(serializers.ModelSerializer[Category]):
@@ -137,6 +139,94 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "geometry",
             "geometry_type",
         )
+
+
+class StyleSerializer(serializers.ModelSerializer[Style]):
+    class Meta:
+        model = DataLayer
+        fields = (
+            "id",
+            "created_by",
+            "organization",
+            "name",
+            "type",
+            "data_hash",
+            "data",
+        )
+
+
+class CreateStyleSerializer(serializers.ModelSerializer[Style]):
+    created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        type = attrs.get("type") or None
+        if not type:
+            raise serializers.ValidationError("type field cannot be null")
+        style_data = attrs.get("data", {}) or {}
+        match type:
+            case DataLayerType.RASTER:
+                data_serializer = RasterStyleSerializer(data=style_data)
+            case _:
+                raise serializers.ValidationError("vector styles not implemented yet.")
+        data_serializer.is_valid(raise_exception=True)
+        return attrs
+
+    class Meta:
+        model = Style
+        fields = (
+            "id",
+            "created_by",
+            "organization",
+            "name",
+            "type",
+            "data",
+        )
+
+
+COLOR_REGEX = re.compile(r"^#(?:[0-9a-fA-F]{1,2}){3}$")
+
+
+class EntrySerializer(serializers.Serializer):
+    value = serializers.FloatField()
+    color = serializers.RegexField(regex=COLOR_REGEX)
+    opacity = serializers.FloatField(
+        min_value=0,
+        max_value=1,
+        default=1,
+    )
+    label = serializers.CharField(
+        required=False,
+        default="",
+    )
+
+
+class NoDataSerializer(serializers.Serializer):
+    values = serializers.ListField(child=serializers.FloatField())
+    color = serializers.RegexField(regex=COLOR_REGEX)
+    opacity = serializers.FloatField(
+        min_value=0,
+        max_value=1,
+        default=1,
+    )
+    label = serializers.CharField(
+        required=False,
+        default="",
+    )
+
+
+class RasterStyleSerializer(serializers.Serializer):
+    no_data = NoDataSerializer(
+        required=False,
+        default=dict,
+    )
+    type = serializers.ChoiceField(
+        choices=["RAMP", "INTERVALS", "VALUES"],
+        default="RAMP",
+    )
+    entries = serializers.ListField(
+        child=EntrySerializer(),
+        min_length=1,
+    )
 
 
 class DataLayerCreatedSerializer(serializers.Serializer):
