@@ -1,3 +1,4 @@
+@import 'mixins';
 @import 'colors';
 
 :host {
@@ -14,4 +15,41 @@
 .treatment-summary {
   padding-left: 16px;
   display: block;
+}
+
+.button-actions-row {
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.notes-overlay {
+  position: fixed;
+  background-color: $color-white;
+  height: calc(100% - 100px);
+  width: 400px;
+  top: 100px;
+  left: 0;
+  z-index: 100;
+}
+
+.notes-heading {
+  height: 60px;
+  width: 100%;
+  border-bottom: 1px $color-soft-gray solid;
+  overflow: hidden;
+}
+
+.notes-heading-content {
+  padding: 14px;
+  @include h5();
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+}
+
+.notes-content {
+  height: calc(100% - 60px);
 }

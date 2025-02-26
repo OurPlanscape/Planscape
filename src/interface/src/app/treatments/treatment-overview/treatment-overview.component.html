@@ -11,7 +11,35 @@
 
 <app-acres-treated></app-acres-treated>
 
-<app-treatment-summary-button
-  class="treatment-summary"></app-treatment-summary-button>
+<div class="button-actions-row">
+  <app-treatment-summary-button
+    class="treatment-summary"></app-treatment-summary-button>
+
+  <button
+    *appFeatureFlag="'statewide_datalayers'"
+    sg-button
+    variant="text"
+    icon="note_stacks"
+    [outlined]="true"
+    (click)="openNotesOverlay()">
+    Notes
+  </button>
+</div>
 
 <app-treatment-plan-tabs></app-treatment-plan-tabs>
+
+<div #notesOverlay class="notes-overlay" [hidden]="!showNotesOverlay">
+  <div class="notes-heading">
+    <div class="notes-heading-content">
+      <button
+        sg-button
+        variant="icon-only"
+        icon="close"
+        (click)="closeNotesOverlay()"></button>
+      <div>Notes</div>
+    </div>
+  </div>
+  <div class="notes-content">
+    <app-treatment-plan-notes></app-treatment-plan-notes>
+  </div>
+</div>
