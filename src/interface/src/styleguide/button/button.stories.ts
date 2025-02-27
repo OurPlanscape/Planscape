@@ -81,6 +81,15 @@ export const Outline: Story = {
   },
 };
 
+export const Link: Story = {
+  args: {
+    variant: 'link',
+    icon: 'help',
+    outlined: true,
+    content: 'A link with outline icon',
+  },
+};
+
 export const Icon: Story = {
   args: {
     variant: 'icon-only',
