@@ -1,4 +1,5 @@
 <sg-modal
+  class="upload-scenario-modal"
   title="Upload Scenario to &ldquo;{{ data.planning_area_name }}&rdquo;"
   primaryButtonText="Create"
   [primaryButtonDisabled]="!canSubmit()"
@@ -17,17 +18,26 @@
     <form [formGroup]="uploadProjectsForm!" class="upload-scenario-form">
       <app-form-message
         [messageType]="FormMessageType.ERROR"
-        *ngIf="uploadError"
+        *ngIf="uploadFormError"
         title="Upload was unsuccessful"
-        message="{{ uploadError }}">
+        message="{{ uploadFormError }}">
       </app-form-message>
 
       <div class="field-row">
-        <div class="field-label">Scenario name</div>
-        <sg-input-field [disabled]="false" class="scenario-input">
+        <div class="field-label-required">
+          Scenario name
+          <div class="required-star">*</div>
+        </div>
+        <sg-input-field
+          [disabled]="false"
+          [error]="hasNameError()"
+          class="scenario-input"
+          [supportMessage]="
+            uploadProjectsForm.get('scenarioName')?.errors?.['customError']
+          "
+          showSupportMessage="on-error">
           <input
             sgInput
-            #inputElement
             placeholder="Scenario name"
             name="scenarioName"
             formControlName="scenarioName"
@@ -35,8 +45,11 @@
         </sg-input-field>
       </div>
 
-      <div>
-        <div class="field-label">Upload a project area</div>
+      <div class="field-row">
+        <div class="field-label-required">
+          Upload a project area
+          <div class="required-star">*</div>
+        </div>
         <div class="file-upload-input">
           <sg-file-upload
             [uploadStatus]="uploadElementStatus"
@@ -45,10 +58,12 @@
         </div>
       </div>
 
-      <div>
-        <div class="field-label">
-          <div>Select a stand size</div>
-
+      <div class="field-row">
+        <div class="field-label-row">
+          <div class="field-label-required">
+            <div>Select a stand size</div>
+            <div class="required-star">*</div>
+          </div>
           <button
             sg-button
             variant="icon-only"
