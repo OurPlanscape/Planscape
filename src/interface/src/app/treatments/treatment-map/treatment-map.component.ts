@@ -102,7 +102,7 @@ export class TreatmentMapComponent {
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
 
   /**
-   * Observable that provides the currently selected stands by the user
+   * Observable that provides if stand selection is enabled
    */
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
 
@@ -147,8 +147,6 @@ export class TreatmentMapComponent {
       return showAreas;
     })
   );
-
-  showFillProjectAreas$ = this.mapConfigState.showFillProjectAreas$;
   /**
    * Observable to determine if we show the treatment stands layer
    */
@@ -176,8 +174,6 @@ export class TreatmentMapComponent {
   planningAreaGeometry$ = this.treatmentsState.planningArea$.pipe(
     map((area) => area.geometry as Geometry)
   );
-
-  showTreatmentLayersToggle$ = this.mapConfigState.showTreatmentLayersToggle$;
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
@@ -222,6 +218,12 @@ export class TreatmentMapComponent {
 
     this.standsSourceLoaded$.pipe(untilDestroyed(this)).subscribe((s) => {
       this.selectedStandsState.restoreSelectedStands();
+      // move the layer up
+      this.mapLibreMap.moveLayer('map-project-areas-line');
+      this.mapLibreMap.moveLayer('map-project-areas-highlight');
+      if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
+        this.mapLibreMap.moveLayer('map-project-areas-labels');
+      }
     });
 
     // If FF statewide_datalayers is On we want to add a clase to the body to apply some global styles
@@ -294,10 +296,6 @@ export class TreatmentMapComponent {
 
   openTreatmentLegend() {
     this.mapConfigState.setTreatmentLegendVisible(true);
-  }
-
-  toggleShowTreatmentLayers() {
-    this.mapConfigState.toggleShowTreatmentStands();
   }
 
   handleOpacityChange(opacity: number) {
