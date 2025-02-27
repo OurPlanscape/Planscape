@@ -143,21 +143,16 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
 
 class StyleSerializer(serializers.ModelSerializer[Style]):
     class Meta:
-        model = DataLayer
+        model = Style
         fields = (
             "id",
             "created_by",
             "organization",
             "name",
             "type",
-            "data_hash",
             "data",
+            "data_hash",
         )
-
-
-class StyleCreatedSerializer(serializers.Serializer):
-    style = StyleSerializer()  # type: ignore
-    possibly_exists = serializers.BooleanField()
 
 
 class CreateStyleSerializer(serializers.ModelSerializer[Style]):
@@ -317,3 +312,8 @@ class DataLayerMetadataSerializer(serializers.Serializer):
         for name, values in modules.items():
             self.validate_module(name, values)
         return super().validate(attrs)
+
+
+class StyleCreatedSerializer(serializers.Serializer):
+    style = StyleSerializer(required=False)
+    possibly_exists = serializers.BooleanField()

@@ -89,8 +89,8 @@ class AdminStyleViewSet(
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        datalayer_created = create_style(**serializer.validated_data)
-        out_serializer = StyleCreatedSerializer(instance=datalayer_created)
+        style_created = create_style(**serializer.validated_data)
+        out_serializer = StyleCreatedSerializer(instance=style_created)
         headers = self.get_success_headers(serializer.data)
         return Response(
             out_serializer.data, status=status.HTTP_201_CREATED, headers=headers
