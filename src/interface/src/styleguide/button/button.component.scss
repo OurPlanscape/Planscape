@@ -1,6 +1,5 @@
-@import "colors";
-@import "mixins";
-
+@import 'colors';
+@import 'mixins';
 
 :host {
   font-family: inherit;
@@ -25,7 +24,8 @@
     background-color: $color-standard-blue;
     border-color: $color-standard-blue;
 
-    &:active, &:hover {
+    &:active,
+    &:hover {
       background-color: $color-main-blue;
       border-color: $color-main-blue;
     }
@@ -42,13 +42,12 @@
     border-color: $color-standard-blue;
     background-color: $color-white;
 
-
-    &:active, &:hover {
+    &:active,
+    &:hover {
       color: $color-white;
       background-color: $color-main-blue;
       border-color: $color-main-blue;
     }
-
 
     &:disabled {
       color: $color-text-gray;
@@ -62,8 +61,9 @@
     background-color: $color-error;
     color: $color-white;
 
-    &:active, &:hover {
-      background: #B40000;
+    &:active,
+    &:hover {
+      background: #b40000;
     }
 
     &:disabled {
@@ -78,7 +78,8 @@
     border: none;
     color: $color-standard-blue;
 
-    &:active, &:hover {
+    &:active,
+    &:hover {
       background-color: $color-soft-gray;
     }
 
@@ -92,7 +93,8 @@
     background-color: $color-brand-teal;
     color: $color-white;
 
-    &:active, &:hover {
+    &:active,
+    &:hover {
       background: $color-brand-green;
     }
 
@@ -127,6 +129,23 @@
     }
   }
 
+  &.link-button {
+    background-color: transparent;
+    color: $color-standard-blue;
+
+    .mat-icon {
+      width: 20px;
+      height: 20px;
+    }
+
+    &:hover {
+      text-decoration: underline;
+    }
+
+    &:disabled {
+      color: $color-md-gray;
+    }
+  }
 
   &.has-error:not(:disabled) {
     background-color: white;
@@ -140,5 +159,3 @@
     font-size: 20px;
   }
 }
-
-
