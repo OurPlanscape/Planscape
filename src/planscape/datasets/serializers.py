@@ -162,16 +162,12 @@ class StyleCreatedSerializer(serializers.Serializer):
 
 class CreateStyleSerializer(serializers.ModelSerializer[Style]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    style_data = serializers.JSONField(
-        required=True,
-        source="data",
-    )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         type = attrs.get("type") or None
         if not type:
             raise serializers.ValidationError("type field cannot be null")
-        style_data = attrs.get("style_data", {}) or {}
+        style_data = attrs.get("data", {}) or {}
         match type:
             case DataLayerType.RASTER:
                 data_serializer = RasterStyleSerializer(data=style_data)
@@ -188,7 +184,7 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
             "organization",
             "name",
             "type",
-            "style_data",
+            "data",
         )
 
 

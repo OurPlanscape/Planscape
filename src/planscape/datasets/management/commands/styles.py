@@ -50,13 +50,13 @@ class Command(PlanscapeCommand):
         input_data = {
             "name": name,
             "type": type,
-            "style_data": data,
+            "data": data,
             "organization": org,
         }
         response = requests.post(
             url,
             headers=headers,
-            data=input_data,
+            json=input_data,
         )
         output_data = response.json()
         pprint(output_data)
