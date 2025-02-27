@@ -150,8 +150,8 @@ class StyleSerializer(serializers.ModelSerializer[Style]):
             "organization",
             "name",
             "type",
-            "data_hash",
             "data",
+            "data_hash",
         )
 
 
