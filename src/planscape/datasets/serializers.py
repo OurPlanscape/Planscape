@@ -171,7 +171,7 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
         type = attrs.get("type") or None
         if not type:
             raise serializers.ValidationError("type field cannot be null")
-        style_data = attrs.get("data", {}) or {}
+        style_data = attrs.get("style_data", {}) or {}
         match type:
             case DataLayerType.RASTER:
                 data_serializer = RasterStyleSerializer(data=style_data)
@@ -188,7 +188,7 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
             "organization",
             "name",
             "type",
-            "data",
+            "style_data",
         )
 
 
