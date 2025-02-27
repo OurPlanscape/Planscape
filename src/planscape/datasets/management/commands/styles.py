@@ -58,5 +58,6 @@ class Command(PlanscapeCommand):
             headers=headers,
             json=input_data,
         )
+        breakpoint()
         output_data = response.json()
         pprint(output_data)
