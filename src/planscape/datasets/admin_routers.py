@@ -1,6 +1,10 @@
 from rest_framework.routers import SimpleRouter
 
-from datasets.admin_views import AdminDataLayerViewSet, AdminDatasetViewSet
+from datasets.admin_views import (
+    AdminDataLayerViewSet,
+    AdminDatasetViewSet,
+    AdminStyleViewSet,
+)
 
 router = SimpleRouter()
 router.register(
@@ -12,4 +16,9 @@ router.register(
     "datalayers",
     AdminDataLayerViewSet,
     basename="datalayers",
+)
+router.register(
+    "styles",
+    AdminStyleViewSet,
+    basename="styles",
 )

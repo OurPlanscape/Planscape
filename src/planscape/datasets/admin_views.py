@@ -1,20 +1,24 @@
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
-from rest_framework.permissions import IsAdminUser
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.response import Response
-from rest_framework import status
 from core.serializers import MultiSerializerMixin
-from datasets.filters import DataLayerFilterSet
-from datasets.models import DataLayer, Dataset
+from rest_framework import status
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAdminUser
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
+from datasets.filters import DataLayerFilterSet, StyleFilterSet
+from datasets.models import DataLayer, Dataset, Style
 from datasets.serializers import (
     CreateDataLayerSerializer,
     CreateDatasetSerializer,
+    CreateStyleSerializer,
     DataLayerCreatedSerializer,
     DataLayerSerializer,
     DatasetSerializer,
+    StyleCreatedSerializer,
+    StyleSerializer,
 )
-from datasets.services import create_datalayer
+from datasets.services import create_datalayer, create_style
 
 
 class AdminDatasetViewSet(
@@ -58,6 +62,35 @@ class AdminDataLayerViewSet(
         serializer.is_valid(raise_exception=True)
         datalayer_created = create_datalayer(**serializer.validated_data)
         out_serializer = DataLayerCreatedSerializer(instance=datalayer_created)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            out_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+
+class AdminStyleViewSet(
+    ListModelMixin,
+    RetrieveModelMixin,
+    MultiSerializerMixin,
+    CreateModelMixin,
+    GenericViewSet,
+):
+    queryset = Style.objects.all()
+    permission_classes = [IsAdminUser]
+    serializer_class = StyleSerializer
+    serializer_classes = {
+        "list": StyleSerializer,
+        "create": CreateStyleSerializer,
+        "retrieve": StyleSerializer,
+    }
+    pagination_class = LimitOffsetPagination
+    filterset_class = StyleFilterSet
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        datalayer_created = create_style(**serializer.validated_data)
+        out_serializer = StyleCreatedSerializer(instance=datalayer_created)
         headers = self.get_success_headers(serializer.data)
         return Response(
             out_serializer.data, status=status.HTTP_201_CREATED, headers=headers
