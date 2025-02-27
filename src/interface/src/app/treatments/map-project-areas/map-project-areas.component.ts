@@ -119,6 +119,7 @@ export class MapProjectAreasComponent {
       .properties['id'];
     this.mouseLngLat = null;
 
+    this.resetCursorAndTooltip();
     this.router
       .navigate(['project-area', projectAreaId], {
         relativeTo: this.route,
@@ -150,7 +151,7 @@ export class MapProjectAreasComponent {
     this.mouseLngLat = e.lngLat;
   }
 
-  resetCursorAndTooltip(e: MapMouseEvent) {
+  resetCursorAndTooltip() {
     this.mapLibreMap.getCanvas().style.cursor = '';
     this.hoveredProjectAreaFromFeatures = null;
     this.hoveredProjectAreaId$.next(null);

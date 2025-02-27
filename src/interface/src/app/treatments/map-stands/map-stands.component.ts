@@ -112,9 +112,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
     distinctUntilChanged()
   );
 
-  // TODO project_area_aggregate only applies when looking at a specific project area
-  //  readonly tilesUrl = ;
-
   readonly layers: Record<
     | 'projectAreaOutline'
     | 'standsOutline'
