@@ -47,7 +47,6 @@ class Command(PlanscapeCommand):
         base_url = self.get_base_url(**kwargs)
         url = base_url + "/v2/admin/styles/"
         headers = self.get_headers(**kwargs)
-        breakpoint()
         input_data = {
             "name": name,
             "type": type,
