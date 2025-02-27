@@ -190,7 +190,6 @@ export class UploadProjectAreasModalComponent {
           },
           error: (err: any) => {
             this.uploadingData = false;
-            console.error('error: ', err);
             if (!!err.error?.global) {
               this.uploadFormError = err.error.global.join(' ');
             } else if (err.error?.name) {
