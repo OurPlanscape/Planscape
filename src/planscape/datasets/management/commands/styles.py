@@ -50,7 +50,7 @@ class Command(PlanscapeCommand):
         input_data = {
             "name": name,
             "type": type,
-            "data": data,
+            "style_data": data,
             "organization": org,
         }
         response = requests.post(
