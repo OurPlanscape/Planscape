@@ -50,7 +50,7 @@ class Command(PlanscapeCommand):
         input_data = {
             "name": name,
             "type": type,
-            "style_data": data,
+            "data": data,
             "organization": org,
         }
         breakpoint()
