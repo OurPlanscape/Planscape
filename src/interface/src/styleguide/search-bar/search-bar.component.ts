@@ -15,11 +15,12 @@ import {
   NgIf,
   NgSwitch,
 } from '@angular/common';
-import { ButtonComponent, InputFieldComponent } from '@styleguide';
+import { ButtonComponent } from '../button/button.component';
+import { InputFieldComponent } from '../input/input-field.component';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import {
-  MatAutocompleteModule,
+  MatAutocompleteModule, 
   MatAutocompleteSelectedEvent,
 } from '@angular/material/autocomplete';
 import { MatButtonModule } from '@angular/material/button';
