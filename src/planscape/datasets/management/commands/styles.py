@@ -53,10 +53,11 @@ class Command(PlanscapeCommand):
             "style_data": data,
             "organization": org,
         }
+        breakpoint()
         response = requests.post(
             url,
             headers=headers,
-            data=input_data,
+            json=input_data,
         )
         output_data = response.json()
         pprint(output_data)

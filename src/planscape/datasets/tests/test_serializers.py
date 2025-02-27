@@ -1,19 +1,23 @@
+from django.contrib.auth.models import User
 from django.test import TestCase
+from impacts.models import ImpactVariable, TreatmentPrescriptionAction
+from rest_framework.test import APIRequestFactory
+
+from datasets.models import Category, DataLayerType
 from datasets.serializers import (
-    CategorySerializer,
     CategoryEmbbedSerializer,
-    DataLayerMetadataSerializer,
-    DatasetSerializer,
-    DataLayerSerializer,
+    CategorySerializer,
     CreateDataLayerSerializer,
+    CreateStyleSerializer,
+    DataLayerMetadataSerializer,
+    DataLayerSerializer,
+    DatasetSerializer,
 )
-from datasets.models import Category
 from datasets.tests.factories import (
-    DatasetFactory,
     DataLayerFactory,
+    DatasetFactory,
     OrganizationFactory,
 )
-from impacts.models import ImpactVariable, TreatmentPrescriptionAction
 
 
 class CategorySerializerTest(TestCase):
@@ -134,3 +138,67 @@ class DataLayerMetadataSerializerTest(TestCase):
         }
         serializer = DataLayerMetadataSerializer(data=data)
         self.assertFalse(serializer.is_valid())
+
+
+class TestCreateStyleSerializer(TestCase):
+    def setUp(self):
+        self.organization = OrganizationFactory.create()
+        self.user = User.objects.create_user(username="testuser", password="testpass")
+        self.request = APIRequestFactory().request()
+        self.request.user = self.user
+        self.style = {
+            "no_data": {
+                "values": [],
+                "color": "#000000",
+                "opacity": 0,
+            },
+            "entries": [
+                {
+                    "value": 1,
+                    "color": "#ff0000",
+                    "opacity": 1,
+                }
+            ],
+            "type": "RAMP",
+        }
+        self.valid_payload = {
+            "organization": self.organization.pk,
+            "name": "Test Style",
+            "type": DataLayerType.RASTER,
+            "data": self.style,
+        }
+        self.invalid_payload_no_type = {
+            "organization": self.organization.pk,
+            "name": "Test Style",
+            "data": self.style,
+        }
+        self.invalid_payload_vector_type = {
+            "organization": self.organization.pk,
+            "name": "Test Style",
+            "type": "VECTOR",
+            "data": self.style,
+        }
+
+    def test_valid_data(self):
+        serializer = CreateStyleSerializer(
+            data=self.valid_payload,
+            context={"request": self.request},
+        )
+        breakpoint()
+        self.assertTrue(serializer.is_valid())
+
+    def test_invalid_data_no_type(self):
+        serializer = CreateStyleSerializer(
+            data=self.invalid_payload_no_type,
+            context={"request": self.request},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(set(serializer.errors.keys()), set(["non_field_errors"]))
+
+    def test_invalid_data_vector_type(self):
+        serializer = CreateStyleSerializer(
+            data=self.invalid_payload_vector_type,
+            context={"request": self.request},
+        )
+        self.assertFalse(serializer.is_valid())
+        self.assertEqual(set(serializer.errors.keys()), set(["non_field_errors"]))
