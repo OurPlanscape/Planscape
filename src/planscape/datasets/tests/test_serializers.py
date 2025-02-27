@@ -184,7 +184,6 @@ class TestCreateStyleSerializer(TestCase):
             data=self.valid_payload,
             context={"request": self.request},
         )
-        breakpoint()
         self.assertTrue(serializer.is_valid())
 
     def test_invalid_data_no_type(self):

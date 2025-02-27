@@ -53,7 +53,6 @@ class Command(PlanscapeCommand):
             "data": data,
             "organization": org,
         }
-        breakpoint()
         response = requests.post(
             url,
             headers=headers,
