@@ -162,6 +162,10 @@ class StyleCreatedSerializer(serializers.Serializer):
 
 class CreateStyleSerializer(serializers.ModelSerializer[Style]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    style_data = serializers.JSONField(
+        required=True,
+        source="data",
+    )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         type = attrs.get("type") or None
