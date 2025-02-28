@@ -133,11 +133,13 @@ def assign_style(
     style: Style,
     datalayer: DataLayer,
 ) -> DataLayerHasStyle:
-    previous_association = DataLayerHasStyle.objects.filter(
-        style=style, datalayer=datalayer
-    ).first()
-    if previous_association:
+    try:
+        previous_association = DataLayerHasStyle.objects.select_for_update().get(
+            style=style, datalayer=datalayer
+        )
         previous_association.delete()
+    except DataLayerHasStyle.DoesNotExist:
+        pass
 
     datalayer_has_style = DataLayerHasStyle.objects.create(
         style=style,
