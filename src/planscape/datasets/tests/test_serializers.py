@@ -191,8 +191,9 @@ class TestCreateStyleSerializer(TestCase):
             data=self.invalid_payload_no_type,
             context={"request": self.request},
         )
+
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(set(serializer.errors.keys()), set(["non_field_errors"]))
+        self.assertEqual(set(serializer.errors.keys()), set(["type"]))
 
     def test_invalid_data_vector_type(self):
         serializer = CreateStyleSerializer(
@@ -200,4 +201,4 @@ class TestCreateStyleSerializer(TestCase):
             context={"request": self.request},
         )
         self.assertFalse(serializer.is_valid())
-        self.assertEqual(set(serializer.errors.keys()), set(["non_field_errors"]))
+        self.assertEqual(set(serializer.errors.keys()), set(["global"]))
