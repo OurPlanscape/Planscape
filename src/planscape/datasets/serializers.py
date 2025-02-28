@@ -156,7 +156,14 @@ class StyleSerializer(serializers.ModelSerializer[Style]):
 
 
 class CreateStyleSerializer(serializers.ModelSerializer[Style]):
-    created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    created_by = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    type = serializers.ChoiceField(
+        choices=DataLayerType.choices,
+        required=True,
+        allow_null=False,
+    )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         type = attrs.get("type") or None
@@ -315,5 +322,10 @@ class DataLayerMetadataSerializer(serializers.Serializer):
 
 
 class StyleCreatedSerializer(serializers.Serializer):
-    style = StyleSerializer(required=False)
+    style = StyleSerializer()  # type: ignore
     possibly_exists = serializers.BooleanField()
+
+
+class AssociateStyleSerializer(serializers.Serializer):
+    style = serializers.IntegerField()
+    datalayer = serializers.IntegerField()
