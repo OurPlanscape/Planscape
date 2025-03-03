@@ -1,3 +1,4 @@
 {
-  "statewide_datalayers": false
+  "statewide_datalayers": false,
+  "maplibre_on_scenarios": false
 }
