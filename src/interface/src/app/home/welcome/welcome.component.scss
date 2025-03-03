@@ -63,11 +63,6 @@ h5 {
 .text-link {
   text-decoration: none;
   color: $color-white;
-
-  &:active,
-  &:hover {
-    text-decoration: underline;
-  }
 }
 
 .card {

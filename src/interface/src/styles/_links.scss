@@ -6,15 +6,16 @@ a {
   color: $color-standard-blue;
   text-decoration: none;
 
-  &:hover {
-    text-decoration-line: underline;
-  }
-
   &:visited {
     color: $color-purple;
   }
 
   &:disabled {
     color: $color-md-gray;
+  }
+
+  &:active,
+  &:hover {
+    text-decoration: underline;
   }
 }
