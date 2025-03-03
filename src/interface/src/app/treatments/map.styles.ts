@@ -1,5 +1,4 @@
 // colors
-
 import { TreatedStand } from '@types';
 import {
   PRESCRIPTION_COLORS,
@@ -8,17 +7,17 @@ import {
   SEQUENCE_PATTERNS,
 } from './prescriptions';
 
-export const BASE_COLORS: Record<
-  'white' | 'black' | 'blue' | 'dark' | 'light' | 'yellow',
-  string
-> = {
+export const BASE_COLORS = {
   white: '#FFF',
   black: '#000',
   dark: '#4A4A4A',
-  light: '#F6F6F650',
+  md_gray: '#767575',
+  light: '#F6F6F680',
   blue: '#007dff',
   yellow: '#FFD54F',
-};
+  almost_white: '#F6F6F6',
+  white_light_blue: '#E9F1FF',
+} as const;
 
 export const SELECTED_STANDS_PAINT = {
   'fill-color': [
@@ -57,12 +56,12 @@ export const PROJECT_AREA_OUTLINE_PAINT = {
 
 export const STANDS_CELL_PAINT = {
   'line-color': BASE_COLORS.dark,
-  'line-width': 1,
+  'line-width': 0.5,
 };
 
 export const BASE_STANDS_PAINT = {
-  'fill-color': BASE_COLORS.light,
-  'fill-opacity': 0.5,
+  'fill-color': 'red',
+  'fill-opacity': 0.75,
 };
 
 export const LABEL_PAINT = {

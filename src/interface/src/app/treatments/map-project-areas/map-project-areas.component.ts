@@ -1,9 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { getColorForProjectPosition } from '../../plan/plan-helpers';
 import {
   LayerSpecification,
   LngLat,
@@ -12,7 +11,6 @@ import {
   MapMouseEvent,
   Point,
 } from 'maplibre-gl';
-import { environment } from '../../../environments/environment';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,8 +26,7 @@ import {
   Observable,
   Subject,
 } from 'rxjs';
-import { MapConfigState } from '../treatment-map/map-config.state';
-import { ColorService } from 'src/app/color.service';
+import { MARTIN_SOURCES } from '../map.sources';
 
 type MapLayerData = {
   readonly name: string;
@@ -53,16 +50,16 @@ type MapLayerData = {
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
-export class MapProjectAreasComponent implements OnInit {
+export class MapProjectAreasComponent {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
-  @Input() withFill = true;
   @Input() showTooltips = true;
+
+  private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
 
   scenarioId = this.treatmentsState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
-  fillColor!: any;
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
@@ -77,62 +74,44 @@ export class MapProjectAreasComponent implements OnInit {
         );
       })
     );
-  hoveredFillColor = BASE_COLORS['dark'];
-
-  readonly tilesUrl =
-    environment.martin_server + 'project_areas_by_scenario/{z}/{x}/{y}';
 
   readonly layers: Record<
-    'projectAreasOutline' | 'projectAreasFill' | 'projectAreaLabels',
+    | 'projectAreasOutline'
+    | 'projectAreasHighlight'
+    | 'projectAreasFill'
+    | 'projectAreaLabels',
     MapLayerData
   > = {
     projectAreasOutline: {
       name: 'map-project-areas-line',
-      sourceLayer: 'project_areas_by_scenario',
-      color: BASE_COLORS['dark'],
+      sourceLayer: this.martinSource.sources.projectAreasByScenario,
+      color: BASE_COLORS.dark,
+    },
+    projectAreasHighlight: {
+      name: 'map-project-areas-highlight',
+      sourceLayer: this.martinSource.sources.projectAreasByScenario,
+      color: BASE_COLORS.yellow,
     },
     projectAreasFill: {
       name: 'map-project-areas-fill',
-      sourceLayer: 'project_areas_by_scenario',
+      sourceLayer: this.martinSource.sources.projectAreasByScenario,
+      color: BASE_COLORS.almost_white,
     },
     projectAreaLabels: {
       name: 'map-project-areas-labels',
-      sourceLayer: 'project_areas_by_scenario_label',
+      sourceLayer: this.martinSource.sources.projectAreasByScenarioLabel,
       paint: LABEL_PAINT,
     },
   };
 
-  textSize$ = this.mapConfigState.zoomLevel$.pipe(
-    map((zoomLevel) => (zoomLevel > 9 ? 14 : 0))
-  );
-
   constructor(
     private treatmentsState: TreatmentsState,
     private router: Router,
-    private route: ActivatedRoute,
-    private mapConfigState: MapConfigState,
-    private colorService: ColorService
+    private route: ActivatedRoute
   ) {}
 
   get vectorLayerUrl() {
-    return this.tilesUrl + `?scenario_id=${this.scenarioId}`;
-  }
-
-  ngOnInit() {
-    this.fillColor = this.getFillColors();
-  }
-
-  getFillColors() {
-    const defaultColor = BASE_COLORS['dark'];
-    const matchExpression: (number | string | string[])[] = [
-      'match',
-      ['get', 'rank'],
-    ];
-    for (let i = 1; i <= this.treatmentsState.projectAreaCount(); i++) {
-      matchExpression.push(i.toString(), getColorForProjectPosition(i));
-    }
-    matchExpression.push(defaultColor);
-    return matchExpression as any;
+    return this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
   }
 
   goToProjectArea(event: MapMouseEvent) {
@@ -140,6 +119,7 @@ export class MapProjectAreasComponent implements OnInit {
       .properties['id'];
     this.mouseLngLat = null;
 
+    this.resetCursorAndTooltip();
     this.router
       .navigate(['project-area', projectAreaId], {
         relativeTo: this.route,
@@ -167,17 +147,15 @@ export class MapProjectAreasComponent implements OnInit {
         this.hoveredProjectAreaFromFeatures.properties['id']
       );
     }
-    this.updateHoveredFillColor(
-      this.hoveredProjectAreaFromFeatures.properties['rank']
-    );
+
     this.mouseLngLat = e.lngLat;
   }
 
-  resetCursorAndTooltip(e: MapMouseEvent) {
+  resetCursorAndTooltip() {
     this.mapLibreMap.getCanvas().style.cursor = '';
     this.hoveredProjectAreaFromFeatures = null;
     this.hoveredProjectAreaId$.next(null);
-    this.updateHoveredFillColor(null);
+
     this.mouseLngLat = null;
   }
 
@@ -187,14 +165,5 @@ export class MapProjectAreasComponent implements OnInit {
     });
 
     return features[0];
-  }
-
-  updateHoveredFillColor(projectAreaRank: number | null) {
-    if (projectAreaRank) {
-      const baseColor = getColorForProjectPosition(projectAreaRank);
-      this.hoveredFillColor = this.colorService.darkenColor(baseColor, 20);
-    } else {
-      this.hoveredFillColor = BASE_COLORS['dark'];
-    }
   }
 }

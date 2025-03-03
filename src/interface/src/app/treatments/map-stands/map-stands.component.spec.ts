@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MapStandsComponent } from './map-stands.component';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
-import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
+import { MockDeclarations, MockProvider } from 'ng-mocks';
 import {
   ImageComponent,
   LayerComponent,
@@ -21,7 +21,9 @@ describe('MapStandsComponent', () => {
     await TestBed.configureTestingModule({
       imports: [MapStandsComponent],
       providers: [
-        MockProviders(TreatmentsState),
+        MockProvider(TreatmentsState, {
+          projectAreaId$: of(undefined),
+        }),
         MockProvider(SelectedStandsState, {
           selectedStands$: of([]),
         }),
