@@ -37,12 +37,21 @@
         <div class="plan-map-container">
           <app-goal-overlay></app-goal-overlay>
           <app-plan-map
+            *appFeatureFlag="'maplibre_on_scenarios'; hide: true"
             [plan]="currentPlan$ | async"
             [mapId]="'planning-map'"
             [mapPadding]="[0, 0]"
             [showLayerSwitcher]="true"
             [showAttributionAndZoom]="true"
             [showOpacityControl]="true"></app-plan-map>
+          <ng-container *appFeatureFlag="'maplibre_on_scenarios'">
+            <!-- Lazy loaded ScenarioMapComponent -->
+            <ng-container
+              *ngIf="scenarioMapComponent$ | async as scenarioMapComponent">
+              <ng-container
+                *ngComponentOutlet="scenarioMapComponent"></ng-container>
+            </ng-container>
+          </ng-container>
         </div>
       </ng-container>
     </div>
