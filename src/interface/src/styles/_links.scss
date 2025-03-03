@@ -1,0 +1,21 @@
+@import 'colors';
+@import 'mixins';
+
+a {
+  @include standard-link();
+  color: $color-standard-blue;
+  text-decoration: none;
+
+  &:visited {
+    color: $color-purple;
+  }
+
+  &:disabled {
+    color: $color-md-gray;
+  }
+
+  &:active,
+  &:hover {
+    text-decoration: underline;
+  }
+}
