@@ -17,6 +17,7 @@ from organizations.models import Organization
 from datasets.models import (
     Category,
     DataLayer,
+    DataLayerHasStyle,
     DataLayerType,
     Dataset,
     GeometryType,
@@ -122,7 +123,37 @@ def create_style(
         data=data,
         data_hash=data_hash,
     )
+    action.send(created_by, verb="created", action_object=style)
     return {"style": style, "possibly_exists": hash_already_exists}
+
+
+@transaction.atomic()
+def assign_style(
+    created_by: User,
+    style: Style,
+    datalayer: DataLayer,
+) -> DataLayerHasStyle:
+    try:
+        previous_association = DataLayerHasStyle.objects.select_for_update().get(
+            style=style, datalayer=datalayer
+        )
+        previous_association.delete()
+    except DataLayerHasStyle.DoesNotExist:
+        pass
+
+    datalayer_has_style = DataLayerHasStyle.objects.create(
+        style=style,
+        datalayer=datalayer,
+        default=True,
+    )
+    action.send(
+        created_by,
+        verb="assigned",
+        action_object=datalayer,
+        target=style,
+    )
+
+    return datalayer_has_style
 
 
 @transaction.atomic()

@@ -9,13 +9,13 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 import { LngLat, Map as MapLibreMap, MapMouseEvent, Point } from 'maplibre-gl';
 import { SINGLE_STAND_HOVER, SINGLE_STAND_SELECTED } from '../map.styles';
-import { environment } from '../../../environments/environment';
 import { map, switchMap, take } from 'rxjs';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { descriptionsForAction } from '../prescriptions';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapConfigState } from '../treatment-map/map-config.state';
+import { MARTIN_SOURCES } from '../map.sources';
 
 @UntilDestroy()
 @Component({
@@ -41,10 +41,11 @@ export class MapStandsTxResultComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() propertyName!: string;
 
+  readonly standsByTxResultSource = MARTIN_SOURCES.standsByTxResult;
+  readonly standsByTxPlanSource = MARTIN_SOURCES.standsByTxPlan;
+
   readonly resultsVectorSourceName = 'stands_by_tx_result';
-  readonly resultsVectorSourceLayerName = 'stands_by_tx_result';
   readonly treatmentStandsSourceName = 'treatment_stands';
-  readonly treatmentStandsSourceLayer = 'stands_by_tx_plan';
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -62,8 +63,8 @@ export class MapStandsTxResultComponent implements OnInit {
     map((mapMetric) => {
       const plan = this.treatmentsState.getTreatmentPlanId();
       return (
-        environment.martin_server +
-        `stands_by_tx_result/{z}/{x}/{y}?treatment_plan_id=${plan}&variable=${mapMetric.id}`
+        this.standsByTxResultSource.tilesUrl +
+        `?treatment_plan_id=${plan}&variable=${mapMetric.id}`
       );
     })
   );
@@ -72,10 +73,7 @@ export class MapStandsTxResultComponent implements OnInit {
   // the selected stand being hidden / not draw when `standsResultVectorLayer$` changes
   get standsVectorLayer() {
     const plan = this.treatmentsState.getTreatmentPlanId();
-    return (
-      environment.martin_server +
-      `stands_by_tx_plan/{z}/{x}/{y}?treatment_plan_id=${plan}`
-    );
+    return this.standsByTxPlanSource.tilesUrl + `?treatment_plan_id=${plan}`;
   }
 
   activeStand$ = this.directImpactsStateService.activeStand$;
@@ -160,7 +158,7 @@ export class MapStandsTxResultComponent implements OnInit {
     this.hoveredStands.forEach((id) => {
       this.mapLibreMap.removeFeatureState({
         source: this.treatmentStandsSourceName,
-        sourceLayer: this.treatmentStandsSourceLayer,
+        sourceLayer: this.standsByTxPlanSource.sources.standsByTxPlan,
         id: id,
       });
     });
@@ -172,7 +170,7 @@ export class MapStandsTxResultComponent implements OnInit {
     this.mapLibreMap.setFeatureState(
       {
         source: this.treatmentStandsSourceName,
-        sourceLayer: this.treatmentStandsSourceLayer,
+        sourceLayer: this.standsByTxPlanSource.sources.standsByTxPlan,
         id: id,
       },
       { hover: true }

@@ -1,12 +1,20 @@
 @import 'colors';
 
 :host {
+  display: flex;
   padding: 0px;
   font-size: 14px;
   color: $color-standard-blue;
 }
 
-button {
-  padding-left: 0;
-  padding-right: 0;
+.treatment-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  text-decoration: none;
+
+  &-label:hover {
+    text-decoration: underline;
+  }
 }

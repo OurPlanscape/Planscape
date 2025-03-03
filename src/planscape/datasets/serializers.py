@@ -143,25 +143,27 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
 
 class StyleSerializer(serializers.ModelSerializer[Style]):
     class Meta:
-        model = DataLayer
+        model = Style
         fields = (
             "id",
             "created_by",
             "organization",
             "name",
             "type",
-            "data_hash",
             "data",
+            "data_hash",
         )
 
 
-class StyleCreatedSerializer(serializers.Serializer):
-    style = StyleSerializer()  # type: ignore
-    possibly_exists = serializers.BooleanField()
-
-
 class CreateStyleSerializer(serializers.ModelSerializer[Style]):
-    created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    created_by = serializers.HiddenField(
+        default=serializers.CurrentUserDefault(),
+    )
+    type = serializers.ChoiceField(
+        choices=DataLayerType.choices,
+        required=True,
+        allow_null=False,
+    )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         type = attrs.get("type") or None
@@ -317,3 +319,13 @@ class DataLayerMetadataSerializer(serializers.Serializer):
         for name, values in modules.items():
             self.validate_module(name, values)
         return super().validate(attrs)
+
+
+class StyleCreatedSerializer(serializers.Serializer):
+    style = StyleSerializer()  # type: ignore
+    possibly_exists = serializers.BooleanField()
+
+
+class AssociateStyleSerializer(serializers.Serializer):
+    style = serializers.IntegerField()
+    datalayer = serializers.IntegerField()

@@ -11,18 +11,11 @@
   (layerMouseMove)="
     visible && showTooltips ? setProjectAreaTooltip($event) : null
   "
-  (layerMouseLeave)="
-    visible && showTooltips ? resetCursorAndTooltip($event) : null
-  "
+  (layerMouseLeave)="visible && showTooltips ? resetCursorAndTooltip() : null"
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
-    'fill-color': [
-      'case',
-      ['==', ['get', 'id'], hoveredProjectAreaFromFeatures?.properties?.['id']],
-      hoveredFillColor,
-      fillColor
-    ],
-    'fill-opacity': visible && withFill ? 0.5 : 0
+    'fill-color': layers.projectAreasFill.color,
+    'fill-opacity': 0
   }"></mgl-layer>
 
 <mgl-layer
@@ -36,7 +29,17 @@
   }"></mgl-layer>
 
 <mgl-layer
-  *ngIf="textSize$ | async as textSize"
+  [id]="layers.projectAreasHighlight.name"
+  type="line"
+  source="scenarioProjectAreas"
+  [sourceLayer]="layers.projectAreasHighlight.sourceLayer"
+  [filter]="['==', ['get', 'id'], ['literal', hoveredProjectAreaId$ | async]]"
+  [paint]="{
+    'line-color': visible ? layers.projectAreasHighlight.color : 'transparent',
+    'line-width': 4
+  }"></mgl-layer>
+
+<mgl-layer
   [id]="layers.projectAreaLabels.name"
   type="symbol"
   source="scenarioProjectAreas"
@@ -44,7 +47,7 @@
   [layout]="{
     visibility: visible ? 'visible' : 'none',
     'text-field': ['get', 'name'],
-    'text-size': textSize,
+    'text-size': ['interpolate', ['linear'], ['zoom'], 7, 14, 14, 32],
     'text-anchor': 'center',
     'text-justify': 'center'
   }"

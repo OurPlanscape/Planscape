@@ -45,12 +45,6 @@ class DataLayerFilterSet(filters.FilterSet):
 
 
 class StyleFilterSet(filters.FilterSet):
-    dataset = filters.ModelChoiceFilter(
-        queryset=get_datasets_for_filter,
-        field_name="dataset",
-        help_text="dataset id",
-    )
-
     class Meta:
         model = Style
         fields = {
