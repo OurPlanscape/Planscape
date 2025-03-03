@@ -1,3 +1,5 @@
+@import 'colors';
+
 :host {
   bottom: 0px;
   box-sizing: border-box;
@@ -5,16 +7,6 @@
   position: absolute;
   width: 100%;
   background-color: rgba(0, 0, 0, 0.5);
-
-  a {
-    color: #82d8fd;
-    text-decoration: none;
-  }
-
-  a:hover,
-  a:active {
-    text-decoration: underline;
-  }
 
   p {
     color: white;

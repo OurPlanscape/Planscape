@@ -168,22 +168,6 @@ $panel-height: 600px;
   color: $color-md-gray;
 }
 
-.attribution {
-  background-color: $color-white;
-  white-space: nowrap;
-  padding: 8px 16px;
-  text-align: right;
-
-  a {
-    color: black;
-    text-decoration: none;
-
-    &:hover {
-      text-decoration: underline;
-    }
-  }
-}
-
 .map-title {
   justify-items: center;
   display: flex;

@@ -1,5 +1,5 @@
-@import "colors";
-@import "media";
+@import 'colors';
+@import 'media';
 
 :host {
   flex: 1;
@@ -8,7 +8,6 @@
     display: flex;
   }
 }
-
 
 .welcome {
   color: $color-white;
@@ -30,7 +29,6 @@
   }
 }
 
-
 .info {
   background-color: $color-light-gray;
   padding: 24px;
@@ -41,15 +39,6 @@
     width: 45%;
     overflow-y: scroll;
     padding: 60px;
-  }
-
-  a {
-    color: $color-standard-blue;
-    text-decoration: none;
-
-    &:active, &:hover {
-      text-decoration: underline;
-    }
   }
 }
 
@@ -74,12 +63,7 @@ h5 {
 .text-link {
   text-decoration: none;
   color: $color-white;
-
-  &:active, &:hover {
-    text-decoration: underline;
-  }
 }
-
 
 .card {
   background-color: $color-white;

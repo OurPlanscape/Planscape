@@ -51,7 +51,6 @@
   margin-right: 8px;
 }
 
-
 .margin-top {
   margin-top: 30px;
 }
@@ -123,15 +122,7 @@
 }
 
 .view-map {
-  text-decoration: none;
-  color: $color-standard-blue;
   padding-left: 4px;
-  font-weight: 500;
-
-  &:active,
-  &:visited {
-    color: $color-standard-blue;
-  }
 }
 
 app-section-loader {
@@ -141,6 +132,10 @@ app-section-loader {
   flex: 1;
 }
 
-.custom-tab-group ::ng-deep .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
+.custom-tab-group
+  ::ng-deep
+  .mat-mdc-tab-header
+  .mat-mdc-tab-label-container
+  .mat-mdc-tab {
   flex-grow: 0;
 }
