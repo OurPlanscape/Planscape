@@ -2,18 +2,12 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Collection, Dict, Optional
 from uuid import uuid4
 
 import mmh3
 from actstream import action
 from core.s3 import create_upload_url, is_s3_file, s3_filename
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import transaction
-from organizations.models import Organization
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -23,6 +17,11 @@ from datasets.models import (
     GeometryType,
     Style,
 )
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import transaction
+from organizations.models import Organization
 
 log = logging.getLogger(__name__)
 
@@ -212,3 +211,7 @@ def create_datalayer(
         "datalayer": datalayer,
         "upload_to": upload_to,
     }
+
+
+def browse_dataset(dataset: Dataset) -> Collection[DataLayer]:
+    pass
