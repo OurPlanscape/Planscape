@@ -7,6 +7,7 @@ import { MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
+import { ExpanderSectionComponent } from '@styleguide';
 
 /**
  * Builds a nested TreeNode structure from an array of DataItems,
@@ -57,6 +58,7 @@ export function buildPathTree(items: DataItem[]): TreeNode[] {
     MatCommonModule,
     MatButtonModule,
     NgIf,
+    ExpanderSectionComponent,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -77,6 +79,10 @@ export class DataLayersComponent {
       this.dataSource.data = treeData;
       console.log(treeData);
     });
+  }
+
+  showNode(node: TreeNode) {
+    console.log(node);
   }
 
   hasChild = (_: number, node: TreeNode) =>

@@ -8,7 +8,12 @@
   class="data-layers">
   <!-- Definition for a leaf node (item node with no children) -->
   <mat-tree-node *matTreeNodeDef="let node" matTreeNodePadding>
-    {{ node.name }}
+    <input
+      name="data-layer"
+      type="radio"
+      (click)="showNode(node)"
+      [id]="node.item.id" />
+    <label [for]="node.item.id">{{ node.name }}</label>
   </mat-tree-node>
 
   <!-- Definition for a node that has children (category node) -->
