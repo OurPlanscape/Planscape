@@ -7,7 +7,7 @@ import { SequenceIconComponent } from '../../../styleguide/sequence-icon/sequenc
 import { ModalComponent } from '../../../styleguide/modal/modal.component';
 import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
 import { MatDividerModule } from '@angular/material/divider';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 
 /**
  * Treatment Legend

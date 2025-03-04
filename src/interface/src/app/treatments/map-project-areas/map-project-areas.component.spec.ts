@@ -8,7 +8,7 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { BehaviorSubject, of } from 'rxjs';
 
 describe('MapProjectAreasComponent', () => {

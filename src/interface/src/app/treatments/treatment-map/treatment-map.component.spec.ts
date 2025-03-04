@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TreatmentMapComponent } from './treatment-map.component';
 import { MockDeclarations, MockProvider, MockProviders } from 'ng-mocks';
-import { MapConfigState } from './map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { TreatedStandsState } from './treated-stands.state';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';

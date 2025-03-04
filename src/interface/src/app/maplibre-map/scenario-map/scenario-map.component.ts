@@ -3,8 +3,8 @@ import { Component } from '@angular/core';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
-import { addRequestHeaders } from 'src/app/treatments/maplibre.helper';
-import { MapConfigState } from 'src/app/treatments/treatment-map/map-config.state';
+import { addRequestHeaders } from 'src/app/maplibre-map/maplibre.helper';
+import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 
 @Component({
   selector: 'app-scenario-map',

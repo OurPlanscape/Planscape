@@ -14,7 +14,7 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
 import { descriptionsForAction } from '../prescriptions';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { MARTIN_SOURCES } from '../map.sources';
 
 @UntilDestroy()

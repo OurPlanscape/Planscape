@@ -8,7 +8,7 @@ import {
   baseLayerStyles,
   BaseLayerType,
 } from 'src/app/treatments/treatment-map/map-base-layers';
-import { MapConfigState } from 'src/app/treatments/treatment-map/map-config.state';
+import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 
 @Component({
   selector: 'app-map-base-dropdown',

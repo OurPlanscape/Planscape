@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { ScenarioMapComponent } from './scenario-map.component';
 import { MockProviders } from 'ng-mocks';
-import { MapConfigState } from 'src/app/treatments/treatment-map/map-config.state';
+import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { AuthService } from '@services';
 
 describe('ScenarioMapComponent', () => {

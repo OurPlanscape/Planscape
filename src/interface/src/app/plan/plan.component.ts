@@ -42,7 +42,7 @@ export class PlanComponent implements OnInit {
    * Lazy loading scenario Map Standalone Component
    */
   scenarioMapComponent$ = import(
-    '../map/scenario-map/scenario-map.component'
+    '../maplibre-map/scenario-map/scenario-map.component'
   ).then((m) => m.ScenarioMapComponent);
 
   constructor(
