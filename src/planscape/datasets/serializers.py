@@ -1,10 +1,10 @@
 import re
-from typing import Any, Dict
+from typing import Any, Collection, Dict
 
 from core.loaders import get_python_object
-from rest_framework import serializers
-
 from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
+from organizations.models import Organization
+from rest_framework import serializers
 
 
 class CategorySerializer(serializers.ModelSerializer[Category]):
@@ -329,3 +329,58 @@ class StyleCreatedSerializer(serializers.Serializer):
 class AssociateStyleSerializer(serializers.Serializer):
     style = serializers.IntegerField()
     datalayer = serializers.IntegerField()
+
+
+class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
+    class Meta:
+        model = Organization
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class StyleSimpleSerializer(serializers.ModelSerializer["Style"]):
+    class Meta:
+        model = Style
+        fields = (
+            "id",
+            "data",
+        )
+
+
+class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
+    organization = OrganizationSimpleSerializer()
+    dataset = DatasetSimpleSerializer()
+    path = serializers.SerializerMethodField()
+    styles = StyleSimpleSerializer(many=True)
+
+    def get_path(self, instance) -> Collection[str]:
+        ancestors = instance.category.get_ancestors() if instance.category else []
+        return list([c.name for c in ancestors])
+
+    class Meta:
+        model = DataLayer
+        fields = (
+            "id",
+            "organzation",
+            "dataset",
+            "path",
+            "name",
+            "type",
+            "geometry_type",
+            "status",
+            "info",
+            "metadata",
+            "styles",
+            "geometry",
+        )
