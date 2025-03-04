@@ -349,10 +349,20 @@ class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
         )
 
 
+class StyleSimpleSerializer(serializers.ModelSerializer["Style"]):
+    class Meta:
+        model = Style
+        fields = (
+            "id",
+            "data",
+        )
+
+
 class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     organization = OrganizationSimpleSerializer()
     dataset = DatasetSimpleSerializer()
     path = serializers.SerializerMethodField()
+    styles = StyleSimpleSerializer(many=True)
 
     def get_path(self, instance) -> Collection[str]:
         ancestors = instance.category.get_ancestors() if instance.category else []
