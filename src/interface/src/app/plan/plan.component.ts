@@ -38,13 +38,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   providers: [PlanningAreaNotesService],
 })
 export class PlanComponent implements OnInit {
-  /**
-   * Lazy loading scenario Map Standalone Component
-   */
-  scenarioMapComponent$ = import(
-    '../maplibre-map/scenario-map/scenario-map.component'
-  ).then((m) => m.ScenarioMapComponent);
-
   constructor(
     private authService: AuthService,
     private planStateService: PlanStateService,
