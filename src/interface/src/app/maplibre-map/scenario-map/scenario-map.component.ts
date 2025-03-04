@@ -5,11 +5,12 @@ import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addRequestHeaders } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+import { MapNavbarComponent } from '../map-navbar/map-navbar.component';
 
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
-  imports: [CommonModule, MapComponent],
+  imports: [CommonModule, MapComponent, MapNavbarComponent],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
 })
