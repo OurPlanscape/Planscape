@@ -339,8 +339,18 @@ class StyleCreatedSerializer(serializers.Serializer):
 
 
 class AssociateStyleSerializer(serializers.Serializer):
-    style = serializers.IntegerField()
-    datalayer = serializers.IntegerField()
+    # TODO: move queryset to be a callable and filter permissions
+    record = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
+
+
+class AssociateDataLayerSerializer(serializers.Serializer):
+    # TODO: move queryset to be a callable and filter permissions
+    record = serializers.PrimaryKeyRelatedField(queryset=Style.objects.all())
+
+
+class DataLayerHasStyleSerializer(serializers.Serializer):
+    datalayer = DataLayerSerializer()
+    style = StyleSerializer()  # type: ignore
 
 
 class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
