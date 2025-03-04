@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
-import { AsyncPipe, JsonPipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { DataItem, DataSet, TreeNode } from '../../types/data-sets';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
@@ -8,6 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { ExpanderSectionComponent } from '@styleguide';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { map, Observable, shareReplay, tap } from 'rxjs';
 
 /**
  * Builds a nested TreeNode structure from an array of DataItems,
@@ -52,7 +54,6 @@ export function buildPathTree(items: DataItem[]): TreeNode[] {
   imports: [
     NgForOf,
     AsyncPipe,
-    JsonPipe,
     MatTreeModule,
     MatIconModule,
     MatCommonModule,
@@ -60,6 +61,7 @@ export function buildPathTree(items: DataItem[]): TreeNode[] {
     NgIf,
     ExpanderSectionComponent,
     NgClass,
+    MatProgressSpinnerModule,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -67,23 +69,47 @@ export function buildPathTree(items: DataItem[]): TreeNode[] {
 export class DataLayersComponent {
   constructor(private service: DataLayersService) {}
 
-  dataSets$ = this.service.listDataSets();
+  noData = false;
+  loading = false;
 
+  dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
   dataSource = new MatTreeNestedDataSource<TreeNode>();
+  selectedDataSet: DataSet | null = null;
+  treeData$?: Observable<TreeNode[]>;
 
   viewDatasetCategories(dataSet: DataSet) {
-    this.service.listDataLayers(dataSet.id).subscribe((items) => {
-      const treeData = buildPathTree(items);
+    this.selectedDataSet = dataSet;
+    this.loading = true;
 
-      // Assign the built tree to the data source
-      this.dataSource.data = treeData;
-      console.log(treeData);
-    });
+    this.treeData$ = this.service.listDataLayers(dataSet.id).pipe(
+      tap((items) => {
+        this.loading = false;
+        this.noData = items.length < 1;
+      }),
+      map((items) => buildPathTree(items))
+    );
+
+    // this.service.listDataLayers(dataSet.id).subscribe((items) => {
+    //   const treeData = buildPathTree(items);
+    //   if (items.length < 1) {
+    //     this.noData = true;
+    //   }
+    //   this.loading = false;
+    //
+    //   // Assign the built tree to the data source
+    //   this.dataSource.data = treeData;
+    // });
   }
 
   showNode(node: TreeNode) {
     console.log(node);
+  }
+
+  goBack() {
+    this.selectedDataSet = null;
+    this.noData = false;
+    this.loading = false;
   }
 
   hasChild = (_: number, node: TreeNode) =>

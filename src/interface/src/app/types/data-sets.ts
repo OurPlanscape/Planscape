@@ -4,7 +4,7 @@ export interface DataSet {
   updated_at: string;
   deleted_at: string | null;
   created_by: number;
-  organization: number;
+  organization: { id: number; name: string };
   name: string;
   description: string | null;
   visibility: string;

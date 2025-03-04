@@ -1,12 +1,27 @@
-<div
-  *ngFor="let dataSet of dataSets$ | async"
-  (click)="viewDatasetCategories(dataSet)"
-  class="data-set">
-  <div>{{ dataSet.name }}</div>
+<ng-container *ngIf="!selectedDataSet">
+  <div
+    *ngFor="let dataSet of dataSets$ | async"
+    (click)="viewDatasetCategories(dataSet)"
+    class="data-set">
+    <div class="data-set-data">
+      <div class="data-set-name">{{ dataSet.name }}</div>
+      <div class="data-set-org">{{ dataSet.organization.name }}</div>
+    </div>
+    <mat-icon *ngIf="!selectedDataSet">chevron_right</mat-icon>
+  </div>
+</ng-container>
+
+<div *ngIf="selectedDataSet" (click)="goBack()" class="data-set">
+  <mat-icon *ngIf="selectedDataSet" class="icon-back">arrow_back</mat-icon>
+  <div class="data-set-data">
+    <div class="selected-name">{{ selectedDataSet.name }}</div>
+    <div class="selected-org">{{ selectedDataSet.organization.name }}</div>
+  </div>
 </div>
 
 <mat-tree
-  [dataSource]="dataSource"
+  *ngIf="selectedDataSet && treeData$ | async as treeData"
+  [dataSource]="treeData"
   [treeControl]="treeControl"
   class="data-layers">
   <!-- Definition for a leaf node (item node with no children) -->
@@ -36,3 +51,6 @@
     </div>
   </mat-nested-tree-node>
 </mat-tree>
+
+<mat-spinner *ngIf="loading" diameter="20" class="loader"></mat-spinner>
+<div *ngIf="noData" class="no-data">No data available.</div>

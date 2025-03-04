@@ -1,11 +1,52 @@
+@import "mixins";
+@import "colors";
+
 .data-set {
   padding: 14px;
   cursor: pointer;
-  border-bottom: 1px solid #E1E1E1;
+  border-bottom: 1px solid $color-soft-gray;
+  display: flex;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
 
   &:hover {
-    background-color: #F6F6F6;
+    background-color: $color-light-gray;
   }
+}
+
+.data-set-data {
+  flex: 1;
+}
+
+.data-set-name {
+  color: $color-black;
+  margin-bottom: 8px;
+}
+
+.data-set-org {
+  color: $color-md-gray;
+  font-weight: 500;
+  line-height: 22px
+}
+
+.selected-name {
+  font-size: 16px;
+  font-style: normal;
+  font-weight: 600;
+  line-height: 32px;
+}
+
+.selected-org {
+  color: $color-md-gray;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 22px;
+}
+
+.icon-back {
+  margin-right: 8px;
+  line-height: 32px;
 }
 
 
@@ -38,11 +79,11 @@
 }
 
 .data-layer-node {
-  border-bottom: 1px solid #E1E1E1;
+  border-bottom: 1px solid $color-soft-gray;
 }
 
 .expanded {
-  background-color: #E6E8F3;
+  background-color: $color-soft-purple;
 
   .icon {
     transform: rotate(90deg);
@@ -51,11 +92,21 @@
 
 
 .data-layer-cat {
-  background-color: #F7F8FC;
+  background-color: $color-soft-purple-light;
 
   .data-layer-node {
     border: none;
-    background-color: #F7F8FC;
+    background-color: $color-soft-purple-light;
   }
 
+}
+
+
+.no-data {
+  margin: 28px;
+  color: $color-md-gray;
+}
+
+.loader {
+  margin: 28px;
 }
