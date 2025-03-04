@@ -7,6 +7,7 @@ from datasets.serializers import (
     DatasetSerializer,
 )
 from django.contrib.postgres.search import SearchQuery, SearchVector
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
@@ -84,4 +85,5 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
                 search=SearchQuery(search_query)
             )
 
+        return queryset
         return queryset
