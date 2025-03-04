@@ -1,9 +1,9 @@
 import json
 import multiprocessing
 import re
+import subprocess
 from functools import partial
 from pathlib import Path
-import subprocess
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
@@ -11,7 +11,6 @@ import requests
 from core.base_commands import PlanscapeCommand
 from core.pprint import pprint
 from core.s3 import is_s3_file, list_files, upload_file
-from django.core.management import call_command
 from django.core.management.base import CommandParser
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
 from gis.io import detect_mimetype
