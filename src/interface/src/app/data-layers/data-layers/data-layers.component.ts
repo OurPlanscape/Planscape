@@ -75,6 +75,7 @@ export class DataLayersComponent {
 
       // Assign the built tree to the data source
       this.dataSource.data = treeData;
+      console.log(treeData);
     });
   }
 
