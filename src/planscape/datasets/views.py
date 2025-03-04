@@ -79,4 +79,3 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             )
 
         return queryset
-        return queryset
