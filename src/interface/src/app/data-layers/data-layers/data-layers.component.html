@@ -1,0 +1,26 @@
+<div *ngFor="let dataSet of dataSets$ | async">
+  <div (click)="viewDatasetCategories(dataSet)">{{ dataSet.name }}</div>
+</div>
+
+<mat-tree [dataSource]="dataSource" [treeControl]="treeControl">
+  <!-- Definition for a node that has children (category node) -->
+  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+    <div class="mat-tree-node">
+      <button mat-icon-button matTreeNodeToggle>
+        <mat-icon>{{
+          treeControl.isExpanded(node) ? 'expand_more' : 'chevron_right'
+        }}</mat-icon>
+      </button>
+      {{ node.name }}
+    </div>
+    <div *ngIf="treeControl.isExpanded(node)">
+      <ng-container matTreeNodeOutlet></ng-container>
+    </div>
+  </mat-nested-tree-node>
+
+  <!-- Definition for a leaf node (item node with no children) -->
+  <mat-tree-node *matTreeNodeDef="let node">
+    <button mat-icon-button disabled></button>
+    {{ node.name }}
+  </mat-tree-node>
+</mat-tree>
