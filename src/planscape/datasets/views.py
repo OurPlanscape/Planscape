@@ -7,6 +7,7 @@ from datasets.serializers import (
     DatasetSerializer,
 )
 from django.contrib.postgres.search import SearchQuery, SearchVector
+from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.mixins import ListModelMixin
@@ -31,6 +32,12 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # PLUS all the datasets accessible by the organization
         return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
 
+    @extend_schema(
+        description="Returns all datalayers inside this dataset",
+        responses={
+            200: BrowseDataLayerSerializer(many=True),
+        },
+    )
     @action(detail=True, methods=["get"])
     def browse(self, request, pk=None):
         dataset = self.get_object()
@@ -78,4 +85,5 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
                 search=SearchQuery(search_query)
             )
 
+        return queryset
         return queryset
