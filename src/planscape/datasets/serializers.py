@@ -372,7 +372,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         model = DataLayer
         fields = (
             "id",
-            "organzation",
+            "organization",
             "dataset",
             "path",
             "name",
