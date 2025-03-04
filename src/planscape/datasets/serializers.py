@@ -387,6 +387,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "organization",
             "dataset",
             "path",
+            "public_url",
             "name",
             "type",
             "geometry_type",
