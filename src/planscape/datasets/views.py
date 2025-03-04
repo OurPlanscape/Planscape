@@ -1,11 +1,4 @@
 from core.serializers import MultiSerializerMixin
-from datasets.filters import DataLayerFilterSet
-from datasets.models import DataLayer, Dataset, VisibilityOptions
-from datasets.serializers import (
-    BrowseDataLayerSerializer,
-    DataLayerSerializer,
-    DatasetSerializer,
-)
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -15,6 +8,14 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+
+from datasets.filters import DataLayerFilterSet
+from datasets.models import DataLayer, Dataset, VisibilityOptions
+from datasets.serializers import (
+    BrowseDataLayerSerializer,
+    DataLayerSerializer,
+    DatasetSerializer,
+)
 
 
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -30,7 +31,12 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: afterwards we need to implement the filtering
         # by organization visibility too, so we return the public ones
         # PLUS all the datasets accessible by the organization
-        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+        return Dataset.objects.filter(
+            visibility=VisibilityOptions.PUBLIC
+        ).select_related(
+            "organization",
+            "created_by",
+        )
 
     @extend_schema(
         description="Returns all datalayers inside this dataset",
