@@ -3,7 +3,7 @@ import { TreatmentsService } from '@services/treatments.service';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
 import { TreatmentsState } from './treatments.state';
 import { MockProvider, MockProviders } from 'ng-mocks';
-import { MapConfigState } from './treatment-map/map-config.state';
+import { MapConfigState } from '../maplibre-map/map-config.state';
 import { TreatedStand } from '@types';
 import { firstValueFrom, of, throwError } from 'rxjs';
 import { RemovingStandsError, UpdatingStandsError } from './treatment-errors';

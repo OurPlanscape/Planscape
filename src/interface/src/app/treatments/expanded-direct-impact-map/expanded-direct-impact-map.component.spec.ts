@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ExpandedDirectImpactMapComponent } from './expanded-direct-impact-map.component';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { MatDialogRef } from '@angular/material/dialog';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { of } from 'rxjs';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';

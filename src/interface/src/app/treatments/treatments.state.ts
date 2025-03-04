@@ -20,7 +20,7 @@ import {
   TreatmentProjectArea,
   TreatmentSummary,
 } from '@types';
-import { MapConfigState } from './treatment-map/map-config.state';
+import { MapConfigState } from '../maplibre-map/map-config.state';
 import { NavState } from '@shared';
 import { filter } from 'rxjs/operators';
 import {

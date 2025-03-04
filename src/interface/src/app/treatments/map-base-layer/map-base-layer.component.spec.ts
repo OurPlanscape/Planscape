@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MapBaseLayerComponent } from './map-base-layer.component';
 import { MockProviders } from 'ng-mocks';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 
 describe('MapBaseLayerComponent', () => {
