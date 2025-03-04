@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
-import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { DataItem, DataSet, TreeNode } from '../../types/data-sets';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
@@ -59,6 +59,7 @@ export function buildPathTree(items: DataItem[]): TreeNode[] {
     MatButtonModule,
     NgIf,
     ExpanderSectionComponent,
+    NgClass,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
