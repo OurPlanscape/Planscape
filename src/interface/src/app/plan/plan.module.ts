@@ -50,6 +50,8 @@ import { OpacityControlComponent } from './plan-map/opacity-control/opacity-cont
 import { UploadedScenarioViewComponent } from './uploaded-scenario-view/uploaded-scenario-view.component';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MapConfigState } from '../maplibre-map/map-config.state';
+import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -82,7 +84,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     TreatmentsTabComponent,
     UploadedScenarioViewComponent,
   ],
-  providers: [WINDOW_PROVIDERS],
+  providers: [WINDOW_PROVIDERS, MapConfigState],
   imports: [
     CommonModule,
     FormsModule,
@@ -111,6 +113,7 @@ import { MatTabsModule } from '@angular/material/tabs';
     OpacitySliderComponent,
     OpacityControlComponent,
     MatTabsModule,
+    ScenarioMapComponent,
   ],
 })
 export class PlanModule {}

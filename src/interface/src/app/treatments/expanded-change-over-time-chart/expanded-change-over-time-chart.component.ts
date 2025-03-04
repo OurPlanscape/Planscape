@@ -3,7 +3,7 @@ import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 
 import { ButtonComponent } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';

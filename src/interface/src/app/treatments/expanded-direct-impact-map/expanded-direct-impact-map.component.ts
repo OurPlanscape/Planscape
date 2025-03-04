@@ -7,7 +7,7 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { TreatmentLegendComponent } from '../treatment-legend/treatment-legend.component';
 import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expanded-panel.component';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 
