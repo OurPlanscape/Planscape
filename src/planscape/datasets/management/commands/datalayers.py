@@ -253,6 +253,7 @@ class Command(PlanscapeCommand):
         original_name = kwargs.get("original_name")
         category = kwargs.get("category")
         metadata = kwargs.get("metadata", {}) or {}
+        style = kwargs.get("style", None) or None
         input_data = {
             "organization": org,
             "name": name,
@@ -264,6 +265,7 @@ class Command(PlanscapeCommand):
             "original_name": original_name,
             "mimetype": mimetype,
             "geometry_type": geometry_type,
+            "style": style,
         }
         response = requests.post(
             url,
