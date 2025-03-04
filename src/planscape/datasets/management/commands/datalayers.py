@@ -125,6 +125,11 @@ class Command(PlanscapeCommand):
             required=False,
         )
         create_parser.add_argument(
+            "--style",
+            type=int,
+            required=False,
+        )
+        create_parser.add_argument(
             "--input-file",
             required=True,
             type=str,
