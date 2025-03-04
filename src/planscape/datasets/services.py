@@ -8,12 +8,6 @@ from uuid import uuid4
 import mmh3
 from actstream import action
 from core.s3 import create_upload_url, is_s3_file, s3_filename
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import transaction
-from organizations.models import Organization
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -23,6 +17,11 @@ from datasets.models import (
     GeometryType,
     Style,
 )
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import transaction
+from organizations.models import Organization
 
 log = logging.getLogger(__name__)
 
@@ -133,6 +132,9 @@ def assign_style(
     style: Style,
     datalayer: DataLayer,
 ) -> DataLayerHasStyle:
+    if style.type != datalayer.type:
+        raise ValueError("Cannot associate a style of different types.")
+
     try:
         previous_association = DataLayerHasStyle.objects.select_for_update().get(
             style=style, datalayer=datalayer
@@ -171,6 +173,7 @@ def create_datalayer(
     **kwargs,
 ) -> Dict[str, Any]:
     metadata = kwargs.pop("metadata", None) or None
+    style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
     storage_url = get_storage_url(
         organization_id=organization.pk,
@@ -207,6 +210,14 @@ def create_datalayer(
         original_name=original_name,
         mimetype=mimetype,
     )
+
+    if style:
+        assign_style(
+            created_by=created_by,
+            style=style,
+            datalayer=datalayer,
+        )
+
     action.send(created_by, verb="created", action_object=datalayer)
     return {
         "datalayer": datalayer,
