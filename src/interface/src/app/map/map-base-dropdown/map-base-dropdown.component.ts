@@ -7,7 +7,7 @@ import { ClickOutsideDirective } from 'src/app/standalone/click-outside-directiv
 import {
   baseLayerStyles,
   BaseLayerType,
-} from 'src/app/treatments/treatment-map/map-base-layers';
+} from 'src/app/maplibre-map/map-base-layers';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 
 @Component({

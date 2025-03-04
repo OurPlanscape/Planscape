@@ -4,7 +4,7 @@ import {
   baseLayerStyles,
   BaseLayerType,
   DEFAULT_BASE_MAP,
-} from '../treatments/treatment-map/map-base-layers';
+} from './map-base-layers';
 import { Extent } from '@types';
 import { filter } from 'rxjs/operators';
 

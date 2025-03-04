@@ -14,7 +14,7 @@ import { Geometry } from 'geojson';
 import { AuthService, PlanService } from '@services';
 
 import { TreatmentsState } from '../treatments.state';
-import { DEFAULT_BASE_MAP } from './map-base-layers';
+import { DEFAULT_BASE_MAP } from '../../maplibre-map/map-base-layers';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
