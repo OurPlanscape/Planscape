@@ -1,9 +1,9 @@
 import json
 import multiprocessing
 import re
+import subprocess
 from functools import partial
 from pathlib import Path
-import subprocess
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
 
@@ -11,7 +11,6 @@ import requests
 from core.base_commands import PlanscapeCommand
 from core.pprint import pprint
 from core.s3 import is_s3_file, list_files, upload_file
-from django.core.management import call_command
 from django.core.management.base import CommandParser
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
 from gis.io import detect_mimetype
@@ -96,6 +95,13 @@ class Command(PlanscapeCommand):
         list_parser = subp.add_parser("list")
         create_parser = subp.add_parser("create")
         import_parser = subp.add_parser("import")
+        apply_style_parser = subp.add_parser("assign-style")
+        apply_style_parser.add_argument(
+            "--datalayer", type=int, required=True, default=None
+        )
+        apply_style_parser.add_argument(
+            "--style", type=int, required=True, default=None
+        )
         list_parser.add_argument(
             "--name",
             type=str,
@@ -122,6 +128,11 @@ class Command(PlanscapeCommand):
         )
         create_parser.add_argument(
             "--category",
+            type=int,
+            required=False,
+        )
+        create_parser.add_argument(
+            "--style",
             type=int,
             required=False,
         )
@@ -180,6 +191,15 @@ class Command(PlanscapeCommand):
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
         import_parser.set_defaults(func=self.import_from_s3)
+        apply_style_parser.set_defaults(func=self.apply_style)
+
+    def apply_style(self, **kwargs):
+        response = self._apply_style_request(**kwargs)
+        data = response.json()
+        self.stdout.write(
+            f"Style {data['style']['name']} applied to {data['datalayer']['name']}"
+        )
+        pprint(data)
 
     def _list_filters(self, **kwargs):
         possible_filters = {
@@ -195,7 +215,7 @@ class Command(PlanscapeCommand):
 
         return urlencode(filters)
 
-    def _list(
+    def _list_request(
         self,
         token,
         **kwargs,
@@ -212,7 +232,7 @@ class Command(PlanscapeCommand):
         )
 
     def list(self, token, **kwargs):
-        response = self._list(token, **kwargs)
+        response = self._list_request(token, **kwargs)
         data = response.json()
         self.stdout.write(f"Found {data['count']} {self.entity}:")
         pprint(data)
@@ -232,6 +252,23 @@ class Command(PlanscapeCommand):
             upload_to=upload_to,
         )
 
+    def _apply_style_request(
+        self,
+        datalayer: int,
+        style: int,
+        **kwargs,
+    ):
+        base_url = self.get_base_url(**kwargs)
+        url = base_url + f"/v2/admin/datalayers/{datalayer}/apply_style/"
+        headers = self.get_headers(**kwargs)
+        input_data = {"record": style}
+        response = requests.post(
+            url,
+            headers=headers,
+            json=input_data,
+        )
+        return response.json()
+
     def _create_datalayer_request(
         self,
         name: str,
@@ -249,6 +286,7 @@ class Command(PlanscapeCommand):
         original_name = kwargs.get("original_name")
         category = kwargs.get("category")
         metadata = kwargs.get("metadata", {}) or {}
+        style = kwargs.get("style", None) or None
         input_data = {
             "organization": org,
             "name": name,
@@ -260,6 +298,7 @@ class Command(PlanscapeCommand):
             "original_name": original_name,
             "mimetype": mimetype,
             "geometry_type": geometry_type,
+            "style": style,
         }
         response = requests.post(
             url,
@@ -269,7 +308,7 @@ class Command(PlanscapeCommand):
         return response.json()
 
     def _datalayer_exists(self, token, **kwargs) -> bool:
-        response = self._list(token, **kwargs)
+        response = self._list_request(token, **kwargs)
         data = response.json()
         return data.get("count") > 0
 

@@ -132,6 +132,9 @@ def assign_style(
     style: Style,
     datalayer: DataLayer,
 ) -> DataLayerHasStyle:
+    if style.type != datalayer.type:
+        raise ValueError("Cannot associate a style of different types.")
+
     try:
         previous_association = DataLayerHasStyle.objects.select_for_update().get(
             style=style, datalayer=datalayer
@@ -170,6 +173,7 @@ def create_datalayer(
     **kwargs,
 ) -> Dict[str, Any]:
     metadata = kwargs.pop("metadata", None) or None
+    style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
     storage_url = get_storage_url(
         organization_id=organization.pk,
@@ -206,6 +210,14 @@ def create_datalayer(
         original_name=original_name,
         mimetype=mimetype,
     )
+
+    if style:
+        assign_style(
+            created_by=created_by,
+            style=style,
+            datalayer=datalayer,
+        )
+
     action.send(created_by, verb="created", action_object=datalayer)
     return {
         "datalayer": datalayer,
