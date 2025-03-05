@@ -13,8 +13,6 @@ export interface DataSet {
   version: string;
 }
 
-// generated
-// data-items.interfaces.ts
 export interface Organization {
   id: number;
   name: string;
@@ -60,12 +58,12 @@ export interface Info {
 }
 
 export interface Metadata {
-  // Add specific fields here if/when you learn them
+  // Add specific fields once we start using this
   [key: string]: any;
 }
 
 export interface Styles {
-  // Add specific fields here if/when you learn them
+  // Add specific fields once we start using this
   [key: string]: any;
 }
 

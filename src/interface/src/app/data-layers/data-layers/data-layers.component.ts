@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataLayer, DataSet } from '../../types/data-sets';
+import { DataSet } from '../../types/data-sets';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,53 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent, ExpanderSectionComponent } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { map, Observable, shareReplay, tap } from 'rxjs';
-
-/**
- * A tree node that can either be a "category" node (with children)
- * or a "leaf" node representing a single DataItem (via `item`).
- */
-export interface TreeNode {
-  name: string;
-  children?: TreeNode[];
-  item?: DataLayer;
-}
-
-/**
- * Builds a nested TreeNode structure from an array of DataItems,
- * using each item's `path` array to define the category nesting.
- */
-export function buildPathTree(items: DataLayer[]): TreeNode[] {
-  const root: TreeNode[] = [];
-
-  for (const item of items) {
-    let currentLevel = root;
-
-    // Walk through each name in the `path` array
-    for (const categoryName of item.path) {
-      // Try to find an existing node at this level
-      let existing = currentLevel.find(
-        (node) => node.name === categoryName && !node.item
-      );
-
-      // If not found, create a new category node
-      if (!existing) {
-        existing = { name: categoryName, children: [] };
-        currentLevel.push(existing);
-      }
-
-      // Descend into the children of this category
-      if (!existing.children) {
-        existing.children = [];
-      }
-      currentLevel = existing.children;
-    }
-
-    // After walking the path, add a leaf node for the DataItem
-    currentLevel.push({ name: item.name, item });
-  }
-
-  return root;
-}
+import { buildPathTree, TreeNode } from './tree-node';
 
 @Component({
   selector: 'app-data-layers',
