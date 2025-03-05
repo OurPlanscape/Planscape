@@ -95,7 +95,7 @@ class Command(PlanscapeCommand):
         list_parser = subp.add_parser("list")
         create_parser = subp.add_parser("create")
         import_parser = subp.add_parser("import")
-        apply_style_parser = subp.add_parser("assign-style")
+        apply_style_parser = subp.add_parser("apply-style")
         apply_style_parser.add_argument(
             "--datalayer", type=int, required=True, default=None
         )
@@ -267,7 +267,7 @@ class Command(PlanscapeCommand):
             headers=headers,
             json=input_data,
         )
-        return response.json()
+        return response
 
     def _create_datalayer_request(
         self,
