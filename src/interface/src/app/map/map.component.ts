@@ -79,7 +79,6 @@ import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-d
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
-import { PlanState } from '../maplibre-map/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -194,8 +193,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private route: ActivatedRoute,
     private shareMapService: ShareMapService,
     private location: Location,
-    private analyticsService: AnalyticsService,
-    private planState: PlanState
+    private analyticsService: AnalyticsService
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
