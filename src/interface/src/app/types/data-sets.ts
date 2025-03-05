@@ -1,3 +1,5 @@
+import { Geometry } from 'geojson';
+
 export interface DataSet {
   id: number;
   created_at: string;
@@ -57,12 +59,17 @@ export interface Info {
   descriptions: Array<string | null>;
 }
 
-export interface Geometry {
-  type: string;
-  coordinates: number[][][];
+export interface Metadata {
+  // Add specific fields here if/when you learn them
+  [key: string]: any;
 }
 
-export interface DataItem {
+export interface Styles {
+  // Add specific fields here if/when you learn them
+  [key: string]: any;
+}
+
+export interface DataLayer {
   id: number;
   organization: Organization;
   dataset: Dataset;
@@ -72,17 +79,7 @@ export interface DataItem {
   geometry_type: string;
   status: string;
   info: Info;
-  metadata: any;
-  styles: any[];
+  metadata: Metadata | null;
+  styles: Styles[];
   geometry: Geometry;
-}
-
-/**
- * A tree node that can either be a "category" node (with children)
- * or a "leaf" node representing a single DataItem (via `item`).
- */
-export interface TreeNode {
-  name: string;
-  children?: TreeNode[];
-  item?: DataItem; // if defined, this node represents a leaf for that DataItem
 }

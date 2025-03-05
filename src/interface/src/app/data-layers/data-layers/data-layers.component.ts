@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataItem, DataSet, TreeNode } from '../../types/data-sets';
+import { DataLayer, DataSet } from '../../types/data-sets';
 import { NestedTreeControl } from '@angular/cdk/tree';
-import { MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
+import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
@@ -12,10 +12,20 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { map, Observable, shareReplay, tap } from 'rxjs';
 
 /**
+ * A tree node that can either be a "category" node (with children)
+ * or a "leaf" node representing a single DataItem (via `item`).
+ */
+export interface TreeNode {
+  name: string;
+  children?: TreeNode[];
+  item?: DataLayer;
+}
+
+/**
  * Builds a nested TreeNode structure from an array of DataItems,
  * using each item's `path` array to define the category nesting.
  */
-export function buildPathTree(items: DataItem[]): TreeNode[] {
+export function buildPathTree(items: DataLayer[]): TreeNode[] {
   const root: TreeNode[] = [];
 
   for (const item of items) {
@@ -75,7 +85,7 @@ export class DataLayersComponent {
 
   dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
-  dataSource = new MatTreeNestedDataSource<TreeNode>();
+
   selectedDataSet: DataSet | null = null;
   treeData$?: Observable<TreeNode[]>;
 
@@ -90,21 +100,6 @@ export class DataLayersComponent {
       }),
       map((items) => buildPathTree(items))
     );
-
-    // this.service.listDataLayers(dataSet.id).subscribe((items) => {
-    //   const treeData = buildPathTree(items);
-    //   if (items.length < 1) {
-    //     this.noData = true;
-    //   }
-    //   this.loading = false;
-    //
-    //   // Assign the built tree to the data source
-    //   this.dataSource.data = treeData;
-    // });
-  }
-
-  showNode(node: TreeNode) {
-    console.log(node);
   }
 
   goBack() {

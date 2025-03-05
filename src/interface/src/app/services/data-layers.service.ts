@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs';
-import { DataItem, DataSet } from '../types/data-sets';
+import { DataLayer, DataSet } from '../types/data-sets';
 
 @Injectable({
   providedIn: 'root',
@@ -23,7 +23,7 @@ export class DataLayersService {
   }
 
   listDataLayers(dataSetId: number) {
-    return this.http.get<DataItem[]>(
+    return this.http.get<DataLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse',
       {
         withCredentials: true,
