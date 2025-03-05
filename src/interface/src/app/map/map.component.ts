@@ -37,7 +37,7 @@ import {
   AuthService,
   MapService,
   PlanService,
-  PlanStateService,
+  LegacyPlanStateService,
   PopupService,
   SessionService,
   ShareMapService,
@@ -79,6 +79,7 @@ import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-d
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
+import { PlanState } from '../maplibre-map/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -185,7 +186,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private planService: PlanService,
     private router: Router,
     private http: HttpClient,
@@ -193,7 +194,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private route: ActivatedRoute,
     private shareMapService: ShareMapService,
     private location: Location,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private planState: PlanState
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -286,7 +288,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private loadPlanAndDrawPlanningArea() {
     // if planID is provided load planning area
     if (this.planId) {
-      const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
+      const plan$ = this.LegacyPlanStateService.getPlan(this.planId).pipe(
+        take(1)
+      );
 
       plan$.subscribe({
         next: (plan) => {

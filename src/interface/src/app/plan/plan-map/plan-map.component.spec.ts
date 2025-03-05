@@ -13,13 +13,13 @@ import { Plan, Region } from '@types';
 
 import { PlanMapComponent } from './plan-map.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { PlanState, PlanStateService } from '@services';
+import { LegacyPlanState, LegacyPlanStateService } from '@services';
 import { MOCK_PLAN } from '@services/mocks';
 
 describe('PlanMapComponent', () => {
   let component: PlanMapComponent;
   let fixture: ComponentFixture<PlanMapComponent>;
-  let fakePlanService: PlanStateService;
+  let fakePlanService: LegacyPlanStateService;
   let fakePlanState$: BehaviorSubject<PlanState>;
   let fakePlan: Plan;
 
@@ -46,12 +46,12 @@ describe('PlanMapComponent', () => {
       ]).toGeoJSON(),
     };
 
-    fakePlanState$ = new BehaviorSubject<PlanState>({
+    fakePlanState$ = new BehaviorSubject<LegacyPlanState>({
       ...emptyPlanState,
     });
 
-    fakePlanService = jasmine.createSpyObj<PlanStateService>(
-      'PlanStateService',
+    fakePlanService = jasmine.createSpyObj<LegacyPlanStateService>(
+      'LegacyPlanStateService',
       [],
       {
         planState$: fakePlanState$,
@@ -66,7 +66,7 @@ describe('PlanMapComponent', () => {
       declarations: [PlanMapComponent],
       providers: [
         {
-          provide: PlanStateService,
+          provide: LegacyPlanStateService,
           useValue: fakePlanService,
         },
         { provide: Router, useFactory: routerStub },

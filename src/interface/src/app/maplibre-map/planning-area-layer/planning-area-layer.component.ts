@@ -5,7 +5,7 @@ import {
   LayerComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { Geometry } from 'geojson';
-import { BASE_COLORS } from '../map.styles';
+import { BASE_COLORS } from '../../treatments/map.styles';
 
 @Component({
   selector: 'app-planning-area-layer',

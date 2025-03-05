@@ -1,5 +1,5 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
-import { PlanStateService, WINDOW } from '@services';
+import { LegacyPlanStateService, WINDOW } from '@services';
 
 import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
@@ -44,16 +44,16 @@ export class NavBarComponent implements OnInit {
 
   canSharePlan$ =
     this.route.snapshot?.params && this.route.snapshot?.params['id']
-      ? this.planStateService
-          .getPlan(this.route.snapshot.params['id'])
-          .pipe(map((plan) => canViewCollaborators(plan)))
+      ? this.LegacyPlanStateService.getPlan(
+          this.route.snapshot.params['id']
+        ).pipe(map((plan) => canViewCollaborators(plan)))
       : of(false);
 
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
     private route: ActivatedRoute,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private homeParametersStorageService: HomeParametersStorageService
   ) {}
 

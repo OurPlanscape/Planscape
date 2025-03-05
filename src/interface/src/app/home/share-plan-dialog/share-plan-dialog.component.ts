@@ -3,7 +3,7 @@ import { Component, Inject } from '@angular/core';
 import { FormMessageType, Invite, INVITE_ROLE, User } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { AuthService, InvitesService, PlanStateService } from '@services';
+import { AuthService, InvitesService, LegacyPlanStateService } from '@services';
 import { filter, map, shareReplay, switchMap, tap } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
@@ -24,7 +24,7 @@ export class SharePlanDialogComponent {
     private dialogRef: MatDialogRef<SharePlanDialogComponent>,
     private inviteService: InvitesService,
     private authService: AuthService,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     @Inject(MAT_DIALOG_DATA)
     public data: {
       planningAreaName: string;
@@ -40,9 +40,9 @@ export class SharePlanDialogComponent {
   message = '';
   isLoading = true;
 
-  plan$ = this.planStateService
-    .getPlan(this.data.planningAreaId + '')
-    .pipe(shareReplay());
+  plan$ = this.LegacyPlanStateService.getPlan(
+    this.data.planningAreaId + ''
+  ).pipe(shareReplay());
 
   planCreator$ = this.plan$.pipe(map((plan) => plan.creator));
 

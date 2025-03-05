@@ -23,7 +23,11 @@ import { HarnessLoader } from '@angular/cdk/testing';
 import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import { PlanState, PlanStateService, ScenarioService } from '@services';
+import {
+  LegacyPlanState,
+  LegacyPlanStateService,
+  ScenarioService,
+} from '@services';
 import { CurrencyPipe } from '@angular/common';
 import * as L from 'leaflet';
 import { MOCK_PLAN } from '@services/mocks';
@@ -37,7 +41,7 @@ import { MOCK_PLAN } from '@services/mocks';
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
-  let fakePlanStateService: PlanStateService;
+  let fakeLegacyPlanStateService: LegacyPlanStateService;
 
   let loader: HarnessLoader;
   let defaultSelectedQuestion: TreatmentQuestionConfig = {
@@ -64,11 +68,11 @@ describe('CreateScenariosComponent', () => {
     },
   };
 
-  let fakePlanState$: BehaviorSubject<PlanState>;
+  let fakePlanState$: BehaviorSubject<LegacyPlanState>;
   let fakeGetScenario: BehaviorSubject<Scenario>;
 
   beforeEach(async () => {
-    fakePlanState$ = new BehaviorSubject<PlanState>({
+    fakePlanState$ = new BehaviorSubject<LegacyPlanState>({
       all: {
         '1': {
           ...MOCK_PLAN,
@@ -108,8 +112,8 @@ describe('CreateScenariosComponent', () => {
           getScenariosForPlan: of([demoScenario]),
         }
       );
-    fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
-      'PlanStateService',
+    fakeLegacyPlanStateService = jasmine.createSpyObj<LegacyPlanStateService>(
+      'LegacyPlanStateService',
       {
         getScenario: fakeGetScenario,
         updateStateWithShapes: undefined,
@@ -148,7 +152,10 @@ describe('CreateScenariosComponent', () => {
       declarations: [CreateScenariosComponent],
       providers: [
         CurrencyPipe,
-        { provide: PlanStateService, useValue: fakePlanStateService },
+        {
+          provide: LegacyPlanStateService,
+          useValue: fakeLegacyPlanStateService,
+        },
         { provide: ScenarioService, useValue: fakeScenarioService },
       ],
     }).compileComponents();
@@ -172,7 +179,7 @@ describe('CreateScenariosComponent', () => {
     });
     spyOn(component, 'pollForChanges');
     fixture.detectChanges();
-    expect(fakePlanStateService.getScenario).toHaveBeenCalledOnceWith(
+    expect(fakeLegacyPlanStateService.getScenario).toHaveBeenCalledOnceWith(
       scenarioId
     );
     component.constrainsForm?.valueChanges.subscribe((_) => {

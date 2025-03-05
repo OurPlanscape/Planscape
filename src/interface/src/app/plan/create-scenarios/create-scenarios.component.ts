@@ -13,7 +13,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { PlanStateService, ScenarioService } from '@services';
+import { LegacyPlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
@@ -69,7 +69,7 @@ export class CreateScenariosComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private scenarioService: ScenarioService,
     private router: Router,
     private route: ActivatedRoute,
@@ -99,14 +99,14 @@ export class CreateScenariosComponent implements OnInit {
   ngOnInit(): void {
     this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
-    this.planStateService.planState$
+    this.LegacyPlanStateService.planState$
       .pipe(untilDestroyed(this), take(1))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
         this.scenarioId = planState.currentScenarioId;
         this.planId = planState.currentPlanId;
         if (this.plan$.getValue()?.region_name) {
-          this.planStateService.setPlanRegion(
+          this.LegacyPlanStateService.setPlanRegion(
             this.plan$.getValue()?.region_name!
           );
         }
@@ -163,7 +163,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   loadConfig(): void {
-    this.planStateService.getScenario(this.scenarioId!).subscribe({
+    this.LegacyPlanStateService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
         // if we have the same state do nothing.
         if (this.scenarioState === scenario.scenario_result?.status) {
@@ -173,7 +173,7 @@ export class CreateScenariosComponent implements OnInit {
         // Updating breadcrumbs
         this.scenarioName = scenario.name;
         this.scenarioId = scenario.id;
-        this.planStateService.updateStateWithScenario(
+        this.LegacyPlanStateService.updateStateWithScenario(
           this.scenarioId,
           this.scenarioName
         );
@@ -235,8 +235,7 @@ export class CreateScenariosComponent implements OnInit {
     }
     this.generatingScenario = true;
     this.goalOverlayService.close();
-    this.planStateService
-      .createScenario(this.formValueToScenario())
+    this.LegacyPlanStateService.createScenario(this.formValueToScenario())
       .pipe(
         catchError((error) => {
           this.generatingScenario = false;
@@ -269,7 +268,7 @@ export class CreateScenariosComponent implements OnInit {
   processScenarioResults(scenario: Scenario) {
     let plan = this.plan$.getValue();
     if (scenario && this.scenarioResults && plan) {
-      this.planStateService.updateStateWithShapes(
+      this.LegacyPlanStateService.updateStateWithShapes(
         this.scenarioResults?.result.features
       );
     }
@@ -298,7 +297,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   private drawShapes(shapes: any | null): void {
-    this.planStateService.updateStateWithShapes(shapes);
+    this.LegacyPlanStateService.updateStateWithShapes(shapes);
   }
 
   goToConfig() {
@@ -380,7 +379,7 @@ export class CreateScenariosComponent implements OnInit {
 
   goToScenario() {
     // Updating breadcrums so when we navigate we can see it
-    this.planStateService.updateStateWithScenario(
+    this.LegacyPlanStateService.updateStateWithScenario(
       this.scenarioId,
       this.scenarioName
     );

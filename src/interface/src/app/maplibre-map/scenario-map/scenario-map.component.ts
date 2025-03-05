@@ -5,11 +5,12 @@ import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addRequestHeaders } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
-  imports: [CommonModule, MapComponent],
+  imports: [CommonModule, MapComponent, PlanningAreaLayerComponent],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
 })

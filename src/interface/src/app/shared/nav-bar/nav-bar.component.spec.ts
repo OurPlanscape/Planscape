@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { NavBarComponent } from './nav-bar.component';
-import { AuthService, PlanStateService, WINDOW } from '@services';
+import { AuthService, LegacyPlanStateService, WINDOW } from '@services';
 import { By } from '@angular/platform-browser';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
@@ -43,7 +43,7 @@ describe('NavBarComponent', () => {
         MockProvider(AuthService, {
           isLoggedIn$: of(true),
         }),
-        MockProvider(PlanStateService, {
+        MockProvider(LegacyPlanStateService, {
           getPlan: () => NEVER,
         }),
       ],

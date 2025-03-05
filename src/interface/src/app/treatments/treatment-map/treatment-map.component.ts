@@ -29,7 +29,7 @@ import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addRequestHeaders } from '../../maplibre-map/maplibre.helper';
-import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-layer/planning-area-layer.component';
 import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';

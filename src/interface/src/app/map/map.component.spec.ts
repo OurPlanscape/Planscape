@@ -25,8 +25,8 @@ import {
   AuthService,
   MapService,
   PlanService,
-  PlanState,
-  PlanStateService,
+  LegacyPlanState,
+  LegacyPlanStateService,
   SessionService,
   ShareMapService,
 } from '@services';
@@ -113,21 +113,22 @@ describe('MapComponent', () => {
         }),
       }
     );
-    const fakePlanStateService = jasmine.createSpyObj<PlanStateService>(
-      'PlanStateService',
-      { createPlan: of(fakePlan) },
-      {
-        planState$: new BehaviorSubject<PlanState>({
-          all: {}, // All plans indexed by id
-          currentPlanId: currentPlanId,
-          currentScenarioName: null,
-          currentScenarioId: null,
-          mapConditionLayer: null,
-          mapShapes: null,
-          legendUnits: null,
-        }),
-      }
-    );
+    const fakeLegacyPlanStateService =
+      jasmine.createSpyObj<LegacyPlanStateService>(
+        'LegacyPlanStateService',
+        { createPlan: of(fakePlan) },
+        {
+          planState$: new BehaviorSubject<LegacyPlanState>({
+            all: {}, // All plans indexed by id
+            currentPlanId: currentPlanId,
+            currentScenarioName: null,
+            currentScenarioId: null,
+            mapConditionLayer: null,
+            mapShapes: null,
+            legendUnits: null,
+          }),
+        }
+      );
     const fakeSessionService = jasmine.createSpyObj<SessionService>(
       'SessionService',
       ['setMapConfigs', 'setMapViewOptions'],
@@ -168,7 +169,10 @@ describe('MapComponent', () => {
         { provide: AuthService, useValue: fakeAuthService },
         { provide: MatDialog, useValue: fakeMatDialog },
         { provide: MapService, useValue: fakeMapService },
-        { provide: PlanStateService, useValue: fakePlanStateService },
+        {
+          provide: LegacyPlanStateService,
+          useValue: fakeLegacyPlanStateService,
+        },
         MockProvider(PlanService, {
           getTotalArea: () => of(1000),
         }),

@@ -3,7 +3,7 @@ export * from './map.service';
 export * from './plan.service';
 export * from './popup.service';
 export * from './session.service';
-export * from './plan-state.service';
+export * from './legacy-plan-state.service';
 export * from './scenario.service';
 export * from './invites.service';
 export * from './redirect.service';

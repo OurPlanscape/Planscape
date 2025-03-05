@@ -29,7 +29,7 @@ import {
   UpdatingStandsError,
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
-import { PlanStateService } from '@services';
+import { LegacyPlanStateService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
@@ -42,7 +42,7 @@ import { DirectImpactsStateService } from './direct-impacts.state.service';
 export class TreatmentsState {
   constructor(
     private treatmentsService: TreatmentsService,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
@@ -92,7 +92,7 @@ export class TreatmentsState {
   public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
     distinctUntilChanged(),
     filter((id): id is number => !!id),
-    switchMap((id) => this.planStateService.getPlan(id.toString())),
+    switchMap((id) => this.LegacyPlanStateService.getPlan(id.toString())),
     shareReplay(1)
   );
 
