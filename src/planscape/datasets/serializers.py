@@ -6,7 +6,6 @@ from organizations.models import Organization
 from rest_framework import serializers
 
 from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
-from datasets.services import get_assigned_style
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
