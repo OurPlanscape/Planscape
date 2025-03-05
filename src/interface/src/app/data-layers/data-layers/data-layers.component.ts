@@ -7,7 +7,7 @@ import { MatTreeModule, MatTreeNestedDataSource } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
-import { ExpanderSectionComponent } from '@styleguide';
+import { ButtonComponent, ExpanderSectionComponent } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { map, Observable, shareReplay, tap } from 'rxjs';
 
@@ -62,6 +62,7 @@ export function buildPathTree(items: DataItem[]): TreeNode[] {
     ExpanderSectionComponent,
     NgClass,
     MatProgressSpinnerModule,
+    ButtonComponent,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
