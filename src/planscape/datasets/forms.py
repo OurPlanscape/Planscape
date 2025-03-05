@@ -5,7 +5,7 @@ from django import forms
 from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
-from datasets.models import Category, DataLayer, Dataset
+from datasets.models import Category, DataLayer, Dataset, Style
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -86,7 +86,7 @@ class StyleAdminForm(forms.ModelForm):
         return super().save(commit)
 
     class Meta:
-        model = DataLayer
+        model = Style
         widgets = {
             "data": JSONEditorWidget,
         }
