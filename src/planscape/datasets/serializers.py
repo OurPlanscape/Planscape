@@ -133,6 +133,11 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         required=False,
         allow_null=True,
     )
+    style = serializers.PrimaryKeyRelatedField(
+        queryset=Style.objects.all(),
+        required=False,
+        allow_null=True,
+    )  # type: ignore
 
     class Meta:
         model = DataLayer
@@ -150,6 +155,7 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "mimetype",
             "geometry",
             "geometry_type",
+            "style",
         )
 
 
@@ -216,7 +222,7 @@ class EntrySerializer(serializers.Serializer):
     label = serializers.CharField(
         required=False,
         default="",
-    )
+    )  # type: ignore
 
 
 class NoDataSerializer(serializers.Serializer):
@@ -305,7 +311,7 @@ class DataLayerMetadataSerializer(serializers.Serializer):
     )
     source = SourceMetadataSerializer(
         required=False,
-    )
+    )  # type: ignore
 
     def __init__(self, *args, **kwargs):
         module_validators = kwargs.get("module_validators", {}) or {}
@@ -339,8 +345,18 @@ class StyleCreatedSerializer(serializers.Serializer):
 
 
 class AssociateStyleSerializer(serializers.Serializer):
-    style = serializers.IntegerField()
-    datalayer = serializers.IntegerField()
+    # TODO: move queryset to be a callable and filter permissions
+    record = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
+
+
+class AssociateDataLayerSerializer(serializers.Serializer):
+    # TODO: move queryset to be a callable and filter permissions
+    record = serializers.PrimaryKeyRelatedField(queryset=Style.objects.all())
+
+
+class DataLayerHasStyleSerializer(serializers.Serializer):
+    datalayer = DataLayerSerializer()
+    style = StyleSerializer()  # type: ignore
 
 
 class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
