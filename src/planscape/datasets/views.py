@@ -49,7 +49,11 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         dataset = self.get_object()
 
         # TODO: specify a filter here to return only datalayers that are ready
-        datalayers = dataset.datalayers.all()
+        datalayers = (
+            dataset.datalayers.all()
+            .select_related("organization", "dataset", "category")
+            .prefetch_related("styles")
+        )
         serializer = BrowseDataLayerSerializer(datalayers, many=True)
 
         return Response(
