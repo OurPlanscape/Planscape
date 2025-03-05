@@ -1,16 +1,18 @@
-from django.conf import settings
 from unittest import mock
 from uuid import uuid4
-from django.test import TransactionTestCase, TestCase
-from datasets.models import DataLayer
-from datasets.tests.factories import DatasetFactory
+
+from django.conf import settings
+from django.test import TestCase, TransactionTestCase
 from organizations.tests.factories import OrganizationFactory
 
+from datasets.models import Category, DataLayer
 from datasets.services import (
     create_datalayer,
     create_upload_url_for_org,
+    find_anything,
     get_object_name,
 )
+from datasets.tests.factories import DataLayerFactory, DatasetFactory
 
 
 class TestGetObjectName(TestCase):
@@ -93,3 +95,97 @@ class TestCreateDataLayer(TransactionTestCase):
                 original_name="foo.tif",
             )
             self.assertEqual(0, DataLayer.objects.all().count())
+
+
+class TestSearch(TransactionTestCase):
+    def test_end_to_end(self):
+        organization = OrganizationFactory.create(name="my cool fire org")
+        dataset = DatasetFactory(
+            organization=organization, name="my awesome fire dataset"
+        )
+        category1 = Category.add_root(
+            created_by=organization.created_by,
+            dataset=dataset,
+            organization=organization,
+            name="the fire art pieces",
+        )
+        subcategory1 = category1.add_child(
+            created_by=organization.created_by,
+            dataset=dataset,
+            organization=organization,
+            name="the fire music albums",
+        )
+        category2 = Category.add_root(
+            created_by=organization.created_by,
+            dataset=dataset,
+            organization=organization,
+            name="no matches",
+        )
+        subcategory2 = category2.add_child(
+            created_by=organization.created_by,
+            dataset=dataset,
+            organization=organization,
+            name="also no matches",
+        )
+        # should be returned
+        cat1_datalayer1 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="A lighthouse on fire at night",
+            category=category1,
+        )
+        # should be returned too
+        cat1_datalayer2 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="Cassandra",
+            category=category1,
+        )
+
+        # should be returned
+        subcat1_datalayer1 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="Play with Fire",
+            category=subcategory1,
+        )
+        # should be returned too, because it's inside category
+        subcat1_datalayer2 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="Ride the Lightning",
+            category=subcategory1,
+        )
+
+        # SHOULD NOT MATCH
+        cat2_datalayer1 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="foobarbaz",
+            category=category2,
+        )
+        cat2_datalayer2 = DataLayerFactory.create(
+            organization=organization,
+            dataset=dataset,
+            name="do not match layer",
+            category=subcategory2,
+        )
+
+        results = find_anything("fire")
+        breakpoint()
+        names = [r.name for r in results]
+        # in
+        self.assertIn(dataset.name, names)
+        self.assertIn(cat1_datalayer1.name, names)
+        self.assertIn(cat1_datalayer2.name, names)
+        self.assertIn(subcat1_datalayer1.name, names)
+        self.assertIn(subcat1_datalayer2.name, names)
+        # out
+        # categories will never be diretcly included
+        self.assertIn(category1.name, names)
+        self.assertIn(subcategory1.name, names)
+        # these just don't match
+        self.assertNotIn(category2.name, names)
+        self.assertNotIn(subcategory2.name, names)
+        self.assertNotIn(cat2_datalayer1.name, names)
+        self.assertNotIn(cat2_datalayer2.name, names)

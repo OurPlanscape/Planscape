@@ -1,8 +1,8 @@
+from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin, UUIDMixin
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.db import models
 from django_stubs_ext.db.models import TypedModelMeta
-from django.contrib.auth import get_user_model
-from django.conf import settings
-from core.models import CreatedAtMixin, DeletedAtMixin, UUIDMixin, UpdatedAtMixin
 
 User = get_user_model()
 
@@ -37,6 +37,10 @@ class Organization(
         on_delete=models.RESTRICT,
     )
     created_by_id: int
+
+    categories: models.QuerySet["Category"]
+    datasets: models.QuerySet["Dataset"]
+    datalayers: models.QuerySet["DataLayer"]
 
     name = models.CharField(max_length=256)
 

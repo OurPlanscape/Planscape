@@ -1,4 +1,5 @@
-from typing import Optional
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
@@ -37,6 +38,9 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         on_delete=models.RESTRICT,
         null=True,
     )
+
+    datalayers: models.QuerySet["DataLayer"]
+    categories: models.QuerySet["Category"]
 
     name = models.CharField(max_length=128)
     description = models.TextField(
@@ -82,6 +86,8 @@ class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
         related_name="categories",
         on_delete=models.RESTRICT,
     )
+
+    datalayers: models.QuerySet["DataLayer"]
 
     order = models.IntegerField(
         default=0,
@@ -346,3 +352,15 @@ class DataLayerHasStyle(
                 name="datalayerhasstyle_unique_constraint",
             )
         ]
+
+
+@dataclass
+class SearchResult:
+    id: int
+    name: str
+    type: str
+    url: str
+    data: Dict[str, Any]
+
+    def key(self):
+        return f"{self.type}:{self.id}"
