@@ -172,8 +172,7 @@ class TestSearch(TransactionTestCase):
         )
 
         results = find_anything("fire")
-        breakpoint()
-        names = [r.name for r in results]
+        names = [r.name for r in results.values()]
         # in
         self.assertIn(dataset.name, names)
         self.assertIn(cat1_datalayer1.name, names)
@@ -182,8 +181,8 @@ class TestSearch(TransactionTestCase):
         self.assertIn(subcat1_datalayer2.name, names)
         # out
         # categories will never be diretcly included
-        self.assertIn(category1.name, names)
-        self.assertIn(subcategory1.name, names)
+        self.assertNotIn(category1.name, names)
+        self.assertNotIn(subcategory1.name, names)
         # these just don't match
         self.assertNotIn(category2.name, names)
         self.assertNotIn(subcategory2.name, names)

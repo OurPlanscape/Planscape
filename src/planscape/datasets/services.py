@@ -3,7 +3,7 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 import mmh3
@@ -234,7 +234,7 @@ def create_datalayer(
     }
 
 
-def find_anything(term: str) -> Collection[SearchResult]:
+def find_anything(term: str) -> Dict[str, SearchResult]:
     raw_results = [
         [
             organization_to_search_result(x)
@@ -269,5 +269,4 @@ def find_anything(term: str) -> Collection[SearchResult]:
                     continue
                 results[key] = search_result
 
-    breakpoint()
-    return results.values()
+    return results
