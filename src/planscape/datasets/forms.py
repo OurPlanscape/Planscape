@@ -1,8 +1,11 @@
+import json
+
+import mmh3
 from django import forms
+from django_json_widget.widgets import JSONEditorWidget
+from treebeard.forms import movenodeform_factory
 
 from datasets.models import Category, DataLayer, Dataset
-from treebeard.forms import movenodeform_factory
-from django_json_widget.widgets import JSONEditorWidget
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -69,4 +72,28 @@ class DataLayerAdminForm(forms.ModelForm):
             "metadata",
             "mimetype",
             "geometry",
+        )
+
+
+class StyleAdminForm(forms.ModelForm):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["data_hash"].disabled = True
+
+    def save(self, commit=True):
+        form_data = self.cleaned_data
+        self.instance.data_hash = mmh3.hash_bytes(json.dumps(form_data["data"])).hex()
+        return super().save(commit)
+
+    class Meta:
+        model = DataLayer
+        widgets = {
+            "data": JSONEditorWidget,
+        }
+        fields = (
+            "organization",
+            "name",
+            "type",
+            "data",
+            "data_hash",
         )
