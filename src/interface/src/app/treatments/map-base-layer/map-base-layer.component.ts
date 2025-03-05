@@ -3,8 +3,8 @@ import { AsyncPipe, NgForOf } from '@angular/common';
 import {
   baseLayerStyles,
   BaseLayerType,
-} from '../treatment-map/map-base-layers';
-import { MapConfigState } from '../treatment-map/map-config.state';
+} from '../../maplibre-map/map-base-layers';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 
 @Component({
   selector: 'app-map-base-layer',

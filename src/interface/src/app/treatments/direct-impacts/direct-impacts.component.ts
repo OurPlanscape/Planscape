@@ -15,7 +15,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { catchError, map, Observable, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { getMergedRouteData } from '../treatments-routing-data';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 

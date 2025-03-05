@@ -22,13 +22,13 @@ import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component'
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
-import { MapConfigState } from './map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
-import { addRequestHeaders } from '../maplibre.helper';
+import { addRequestHeaders } from '../../maplibre-map/maplibre.helper';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -39,7 +39,7 @@ import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggl
 import { OpacitySliderComponent } from '@styleguide';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
-import { MapBaseDropdownComponent } from 'src/app/map/map-base-dropdown/map-base-dropdown.component';
+import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 
 @UntilDestroy()
 @Component({

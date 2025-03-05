@@ -1,12 +1,18 @@
-from rest_framework.viewsets import GenericViewSet
-from rest_framework.mixins import ListModelMixin
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.pagination import LimitOffsetPagination
-from django.contrib.postgres.search import SearchVector, SearchQuery
 from core.serializers import MultiSerializerMixin
+from django.contrib.postgres.search import SearchQuery, SearchVector
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
 from datasets.filters import DataLayerFilterSet
 from datasets.models import DataLayer, Dataset, VisibilityOptions
 from datasets.serializers import (
+    BrowseDataLayerSerializer,
     DataLayerSerializer,
     DatasetSerializer,
 )
@@ -25,7 +31,31 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: afterwards we need to implement the filtering
         # by organization visibility too, so we return the public ones
         # PLUS all the datasets accessible by the organization
-        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+        return Dataset.objects.filter(
+            visibility=VisibilityOptions.PUBLIC
+        ).select_related(
+            "organization",
+            "created_by",
+        )
+
+    @extend_schema(
+        description="Returns all datalayers inside this dataset",
+        responses={
+            200: BrowseDataLayerSerializer(many=True),
+        },
+    )
+    @action(detail=True, methods=["get"])
+    def browse(self, request, pk=None):
+        dataset = self.get_object()
+
+        # TODO: specify a filter here to return only datalayers that are ready
+        datalayers = dataset.datalayers.all()
+        serializer = BrowseDataLayerSerializer(datalayers, many=True)
+
+        return Response(
+            serializer.data,
+            status=status.HTTP_200_OK,
+        )
 
 
 class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -61,4 +91,5 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
                 search=SearchQuery(search_query)
             )
 
+        return queryset
         return queryset

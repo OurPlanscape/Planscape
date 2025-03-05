@@ -9,7 +9,7 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { TreatmentsState } from '../treatments.state';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 
 describe('MapStandsTxResultComponent', () => {
   let component: MapStandsTxResultComponent;

@@ -37,12 +37,15 @@
         <div class="plan-map-container">
           <app-goal-overlay></app-goal-overlay>
           <app-plan-map
+            *appFeatureFlag="'maplibre_on_scenarios'; hide: true"
             [plan]="currentPlan$ | async"
             [mapId]="'planning-map'"
             [mapPadding]="[0, 0]"
             [showLayerSwitcher]="true"
             [showAttributionAndZoom]="true"
             [showOpacityControl]="true"></app-plan-map>
+          <app-scenario-map
+            *appFeatureFlag="'maplibre_on_scenarios'"></app-scenario-map>
         </div>
       </ng-container>
     </div>

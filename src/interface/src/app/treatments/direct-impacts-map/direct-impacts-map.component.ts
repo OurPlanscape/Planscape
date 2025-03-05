@@ -6,14 +6,14 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { MapConfigState } from '../treatment-map/map-config.state';
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { AuthService } from '@services';
 import {
   Map as MapLibreMap,
   MapSourceDataEvent,
   RequestTransformFunction,
 } from 'maplibre-gl';
-import { addRequestHeaders } from '../maplibre.helper';
+import { addRequestHeaders } from '../../maplibre-map/maplibre.helper';
 import { MapStandsTxResultComponent } from '../map-stands-tx-result/map-stands-tx-result.component';
 import {
   YEAR_INTERVAL_LABELS,

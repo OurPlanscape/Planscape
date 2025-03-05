@@ -1,10 +1,20 @@
 import re
-from typing import Any, Dict
+from typing import Any, Collection, Dict
 
 from core.loaders import get_python_object
+from organizations.models import Organization
 from rest_framework import serializers
 
 from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
+
+
+class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
+    class Meta:
+        model = Organization
+        fields = (
+            "id",
+            "name",
+        )
 
 
 class CategorySerializer(serializers.ModelSerializer[Category]):
@@ -48,6 +58,8 @@ class CategoryEmbbedSerializer(serializers.ModelSerializer):
 
 
 class DatasetSerializer(serializers.ModelSerializer[Dataset]):
+    organization = OrganizationSimpleSerializer()
+
     class Meta:
         model = Dataset
         fields = (
@@ -329,3 +341,59 @@ class StyleCreatedSerializer(serializers.Serializer):
 class AssociateStyleSerializer(serializers.Serializer):
     style = serializers.IntegerField()
     datalayer = serializers.IntegerField()
+
+
+class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
+    class Meta:
+        model = Dataset
+        fields = (
+            "id",
+            "name",
+        )
+
+
+class StyleSimpleSerializer(serializers.ModelSerializer["Style"]):
+    class Meta:
+        model = Style
+        fields = (
+            "id",
+            "data",
+        )
+
+
+class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
+    organization = OrganizationSimpleSerializer()
+    dataset = DatasetSimpleSerializer()
+    path = serializers.SerializerMethodField()
+    public_url = serializers.CharField(
+        source="get_public_url",
+        read_only=True,
+    )
+    styles = StyleSimpleSerializer(many=True)
+
+    def get_path(self, instance) -> Collection[str]:
+        if instance.category:
+            ancestors_names = list([c.name for c in instance.category.get_ancestors()])
+            ancestors_names = [*ancestors_names, instance.category.name]
+        else:
+            ancestors_names = []
+
+        return ancestors_names
+
+    class Meta:
+        model = DataLayer
+        fields = (
+            "id",
+            "organization",
+            "dataset",
+            "path",
+            "public_url",
+            "name",
+            "type",
+            "geometry_type",
+            "status",
+            "info",
+            "metadata",
+            "styles",
+            "geometry",
+        )
