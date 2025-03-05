@@ -30,6 +30,7 @@ import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-not
 import { NavState, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PlanState } from '../maplibre-map/plan.state';
 
 @Component({
   selector: 'app-plan',
@@ -46,7 +47,8 @@ export class PlanComponent implements OnInit {
     private homeParametersStorageService: HomeParametersStorageService,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private planState: PlanState
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
@@ -58,7 +60,7 @@ export class PlanComponent implements OnInit {
 
     plan$.subscribe({
       next: (plan) => {
-        this.currentPlan$.next(plan);
+        this.planState.setCurrentPlan(plan);
       },
       error: (error) => {
         this.planNotFound = true;
@@ -72,7 +74,7 @@ export class PlanComponent implements OnInit {
     );
   }
 
-  currentPlan$ = new BehaviorSubject<Plan | null>(null);
+  currentPlan$ = this.planState.currentPlan$;
   planOwner$ = new Observable<User | null>();
 
   planId = this.route.snapshot.paramMap.get('id');
@@ -172,7 +174,7 @@ export class PlanComponent implements OnInit {
   }
 
   backToOverview() {
-    this.router.navigate(['plan', this.currentPlan$.value!.id]);
+    this.router.navigate(['plan', this.planState.getCurrentPlan()?.id]);
   }
 
   goBack() {

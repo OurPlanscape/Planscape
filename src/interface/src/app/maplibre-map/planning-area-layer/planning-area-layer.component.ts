@@ -1,21 +1,30 @@
-import { Component, Input } from '@angular/core';
+import { Component } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
   LayerComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { Geometry } from 'geojson';
 import { BASE_COLORS } from '../../treatments/map.styles';
+import { PlanState } from '../plan.state';
+import { AsyncPipe, NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-planning-area-layer',
   standalone: true,
-  imports: [FeatureComponent, GeoJSONSourceComponent, LayerComponent],
+  imports: [
+    NgIf,
+    AsyncPipe,
+    FeatureComponent,
+    GeoJSONSourceComponent,
+    LayerComponent,
+  ],
   templateUrl: './planning-area-layer.component.html',
 })
 export class PlanningAreaLayerComponent {
-  @Input() polygonGeometry!: Geometry;
-  readonly sourceName = 'treatment-planing-area';
+  constructor(private planState: PlanState) {}
 
+  polygonGeometry$ = this.planState.planningAreaGeometry$;
+
+  readonly sourceName = 'treatment-planing-area';
   readonly COLORS = BASE_COLORS;
 }

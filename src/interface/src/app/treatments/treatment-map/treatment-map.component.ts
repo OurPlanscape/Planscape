@@ -33,7 +33,6 @@ import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-lay
 import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
-import { Geometry } from 'geojson';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { OpacitySliderComponent } from '@styleguide';
@@ -166,14 +165,6 @@ export class TreatmentMapComponent {
    * permissions for current user
    */
   userCanEditStands: boolean = false;
-
-  /**
-   *
-   * The Planning Area geometry
-   */
-  planningAreaGeometry$ = this.treatmentsState.planningArea$.pipe(
-    map((area) => area.geometry as Geometry)
-  );
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
