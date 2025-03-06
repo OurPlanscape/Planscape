@@ -75,6 +75,10 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     }
     filterset_class = DataLayerFilterSet
 
+    @extend_schema(
+        parameters=[FindAnythingSerializer],
+        responses={200: SearchResultSerialzier(many=True)},
+    )
     @action(detail=False, methods=["get"])
     def find_anything(self, request):
         serializer = FindAnythingSerializer(data=request.query_params)
