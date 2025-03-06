@@ -5,12 +5,20 @@ import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { addRequestHeaders } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
-import { MapNavbarComponent } from '../map-navbar/map-navbar.component';
+import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
+import { OpacitySliderComponent } from '@styleguide';
+import { MapBaseDropdownComponent } from '../map-base-dropdown/map-base-dropdown.component';
 
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
-  imports: [CommonModule, MapComponent, MapNavbarComponent],
+  imports: [
+    CommonModule,
+    MapBaseDropdownComponent,
+    MapComponent,
+    MapNavbarComponent,
+    OpacitySliderComponent,
+  ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
 })
@@ -28,9 +36,14 @@ export class ScenarioMapComponent {
    * Observable that provides the url to load the selected map base layer
    */
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
+  projectLayerOpacity$ = this.mapConfigState.treatedStandsOpacity$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
+  }
+
+  handleOpacityChange(opacity: number) {
+    console.log('changed opacity', opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

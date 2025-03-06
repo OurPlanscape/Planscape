@@ -1,5 +1,5 @@
 
-.map-navbar {
+:host {
     position: absolute;
     top: 0;
     left: 0;
@@ -14,8 +14,3 @@
     z-index: 1;
   }
 
-  .navbar-slider {
-    ::ng-deep.slider-card {
-      height: 40px;
-    }
-  }

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { MapNavbarComponent } from './map-navbar.component';
+import { MapNavbarComponent } from './map-nav-bar.component';
 
 describe('MapNavbarComponent', () => {
   let component: MapNavbarComponent;
@@ -8,10 +8,9 @@ describe('MapNavbarComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapNavbarComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapNavbarComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapNavbarComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
