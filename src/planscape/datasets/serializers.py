@@ -413,3 +413,19 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "styles",
             "geometry",
         )
+
+
+class FindAnythingSerializer(serializers.Serializer):
+    term = serializers.CharField(required=True)
+
+    limit = serializers.IntegerField(required=False, min_value=1)
+
+    offset = serializers.IntegerField(required=False, min_value=1)
+
+
+class SearchResultSerialzier(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.CharField()
+    url = serializers.URLField()
+    data = serializers.JSONField()  # type: ignore

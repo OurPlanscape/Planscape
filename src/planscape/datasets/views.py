@@ -15,7 +15,10 @@ from datasets.serializers import (
     BrowseDataLayerSerializer,
     DataLayerSerializer,
     DatasetSerializer,
+    FindAnythingSerializer,
+    SearchResultSerialzier,
 )
+from datasets.services import find_anything
 
 
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -71,6 +74,15 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         "list": DataLayerSerializer,
     }
     filterset_class = DataLayerFilterSet
+
+    @action(detail=False, methods=["get"])
+    def find_anything(self, request):
+        serializer = FindAnythingSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        # TODO: cache results and paginate here.
+        results = find_anything(serializer.validated_data.get("term"))
+        out_serializer = SearchResultSerialzier(data=results, many=True)
+        return Response(out_serializer.data, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         # TODO: afterwards we need to implement the filtering

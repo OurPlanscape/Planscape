@@ -1,13 +1,20 @@
+import itertools
 import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 import mmh3
 from actstream import action
 from core.s3 import create_upload_url, is_s3_file, s3_filename
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import transaction
+from organizations.models import Organization
+
 from datasets.models import (
     Category,
     DataLayer,
@@ -15,13 +22,15 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     GeometryType,
+    SearchResult,
     Style,
 )
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import transaction
-from organizations.models import Organization
+from datasets.search import (
+    category_to_search_result,
+    datalayer_to_search_result,
+    dataset_to_search_result,
+    organization_to_search_result,
+)
 
 log = logging.getLogger(__name__)
 
@@ -225,5 +234,39 @@ def create_datalayer(
     }
 
 
-def browse_dataset(dataset: Dataset) -> Collection[DataLayer]:
-    pass
+def find_anything(term: str) -> Dict[str, SearchResult]:
+    raw_results = [
+        [
+            organization_to_search_result(x)
+            for x in Organization.objects.filter(name__icontains=term)
+        ],
+        [
+            dataset_to_search_result(x)
+            for x in Dataset.objects.filter(name__icontains=term)
+        ],
+        [
+            category_to_search_result(x)
+            for x in Category.objects.filter(name__icontains=term)
+        ],
+        [
+            datalayer_to_search_result(x)
+            for x in DataLayer.objects.filter(name__icontains=term)
+        ],
+    ]
+    search_results = itertools.chain.from_iterable(raw_results)
+    results = {}
+    for search_result in search_results:
+        match search_result:
+            case list() as search_result:
+                for match in search_result:
+                    key = match.key()
+                    if key in results:
+                        continue
+                    results[key] = match
+            case _:
+                key = search_result.key()
+                if key in results:
+                    continue
+                results[key] = search_result
+
+    return results
