@@ -5,7 +5,7 @@ from django.conf import settings
 from django.test import TestCase, TransactionTestCase
 from organizations.tests.factories import OrganizationFactory
 
-from datasets.models import Category, DataLayer
+from datasets.models import Category, DataLayer, DataLayerStatus
 from datasets.services import (
     create_datalayer,
     create_upload_url_for_org,
@@ -133,6 +133,7 @@ class TestSearch(TransactionTestCase):
             dataset=dataset,
             name="A lighthouse on fire at night",
             category=category1,
+            status=DataLayerStatus.READY,
         )
         # should be returned too
         cat1_datalayer2 = DataLayerFactory.create(
@@ -140,6 +141,7 @@ class TestSearch(TransactionTestCase):
             dataset=dataset,
             name="Cassandra",
             category=category1,
+            status=DataLayerStatus.READY,
         )
 
         # should be returned
@@ -148,6 +150,7 @@ class TestSearch(TransactionTestCase):
             dataset=dataset,
             name="Play with Fire",
             category=subcategory1,
+            status=DataLayerStatus.READY,
         )
         # should be returned too, because it's inside category
         subcat1_datalayer2 = DataLayerFactory.create(
@@ -155,6 +158,7 @@ class TestSearch(TransactionTestCase):
             dataset=dataset,
             name="Ride the Lightning",
             category=subcategory1,
+            status=DataLayerStatus.READY,
         )
 
         # SHOULD NOT MATCH
@@ -163,12 +167,14 @@ class TestSearch(TransactionTestCase):
             dataset=dataset,
             name="foobarbaz",
             category=category2,
+            status=DataLayerStatus.READY,
         )
         cat2_datalayer2 = DataLayerFactory.create(
             organization=organization,
             dataset=dataset,
             name="do not match layer",
             category=subcategory2,
+            status=DataLayerStatus.READY,
         )
 
         results = find_anything("fire")
