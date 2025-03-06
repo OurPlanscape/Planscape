@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
-import { DataLayersService } from '@services/data-layers.service';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataSet } from '../../types/data-sets';
+import { DataLayer, DataSet } from '../../types/data-sets';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
@@ -9,8 +8,9 @@ import { MatCommonModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { ButtonComponent, ExpanderSectionComponent } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { map, Observable, shareReplay, tap } from 'rxjs';
-import { buildPathTree, TreeNode } from './tree-node';
+import { TreeNode } from './tree-node';
+import { DataLayersStateService } from '../data-layers.state.service';
+import { shareReplay, tap } from 'rxjs';
 
 @Component({
   selector: 'app-data-layers',
@@ -32,34 +32,34 @@ import { buildPathTree, TreeNode } from './tree-node';
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
-  constructor(private service: DataLayersService) {}
+  constructor(private dataLayersStateService: DataLayersStateService) {}
 
-  noData = false;
   loading = false;
 
-  dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
+  dataSets$ = this.dataLayersStateService.dataSets$;
+  selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
+
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
 
-  selectedDataSet: DataSet | null = null;
-  treeData$?: Observable<TreeNode[]>;
+  treeData$ = this.dataLayersStateService.dataTree$.pipe(
+    tap((_) => (this.loading = false)),
+    shareReplay(1)
+  );
+
+  hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
 
   viewDatasetCategories(dataSet: DataSet) {
-    this.selectedDataSet = dataSet;
+    this.dataLayersStateService.selectDataSet(dataSet);
     this.loading = true;
-
-    this.treeData$ = this.service.listDataLayers(dataSet.id).pipe(
-      tap((items) => {
-        this.loading = false;
-        this.noData = items.length < 1;
-      }),
-      map((items) => buildPathTree(items))
-    );
   }
 
   goBack() {
-    this.selectedDataSet = null;
-    this.noData = false;
+    this.dataLayersStateService.clearDataSet();
     this.loading = false;
+  }
+
+  selectDataLayer(dataLayer: DataLayer) {
+    this.dataLayersStateService.selectDataLayer(dataLayer);
   }
 
   hasChild = (_: number, node: TreeNode) =>

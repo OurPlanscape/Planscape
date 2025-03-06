@@ -298,6 +298,9 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         object_name = self.url.replace(f"f3://{settings.S3_BUCKET}/", "")
         return create_download_url(settings.S3_BUCKET, object_name)
 
+    def get_assigned_style(self) -> Optional[Style]:
+        return self.styles.all().first()
+
     def __str__(self) -> str:
         return f"{self.name} [{self.type}]"
 

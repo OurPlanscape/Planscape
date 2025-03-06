@@ -2,8 +2,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DataLayersComponent } from './data-layers.component';
 import { MockProvider } from 'ng-mocks';
-import { DataLayersService } from '@services/data-layers.service';
 import { of } from 'rxjs';
+import { DataLayersStateService } from '../data-layers.state.service';
+import { DataSet, Pagination } from '@types';
 
 describe('DataLayersComponent', () => {
   let component: DataLayersComponent;
@@ -13,8 +14,10 @@ describe('DataLayersComponent', () => {
     await TestBed.configureTestingModule({
       imports: [DataLayersComponent],
       providers: [
-        MockProvider(DataLayersService, {
-          listDataSets: () => of([]),
+        MockProvider(DataLayersStateService, {
+          dataSets$: of({} as Pagination<DataSet>),
+          selectedDataSet$: of(null),
+          dataTree$: of(null),
         }),
       ],
     }).compileComponents();
