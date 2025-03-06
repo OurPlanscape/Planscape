@@ -1,5 +1,6 @@
 from core.serializers import MultiSerializerMixin
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.mixins import CreateModelMixin, ListModelMixin, RetrieveModelMixin
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAdminUser
@@ -9,16 +10,19 @@ from rest_framework.viewsets import GenericViewSet
 from datasets.filters import DataLayerFilterSet, StyleFilterSet
 from datasets.models import DataLayer, Dataset, Style
 from datasets.serializers import (
+    AssociateDataLayerSerializer,
+    AssociateStyleSerializer,
     CreateDataLayerSerializer,
     CreateDatasetSerializer,
     CreateStyleSerializer,
     DataLayerCreatedSerializer,
+    DataLayerHasStyleSerializer,
     DataLayerSerializer,
     DatasetSerializer,
     StyleCreatedSerializer,
     StyleSerializer,
 )
-from datasets.services import create_datalayer, create_style
+from datasets.services import assign_style, create_datalayer, create_style
 
 
 class AdminDatasetViewSet(
@@ -67,6 +71,25 @@ class AdminDataLayerViewSet(
             out_serializer.data, status=status.HTTP_201_CREATED, headers=headers
         )
 
+    @action(detail=True, methods=["post"])
+    def apply_style(self, request, pk=None):
+        datalayer = self.get_object()
+        serializer = AssociateDataLayerSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        my_style = serializer.validated_data.get("record")
+        dlhstyle = assign_style(
+            created_by=self.request.user,  # type: ignore
+            style=my_style,
+            datalayer=datalayer,
+        )
+        out_serializer = DataLayerHasStyleSerializer(
+            instance={"datalayer": dlhstyle.datalayer, "style": dlhstyle.style}
+        )
+        return Response(
+            data=out_serializer.data,
+            status=status.HTTP_202_ACCEPTED,
+        )
+
 
 class AdminStyleViewSet(
     ListModelMixin,
@@ -94,4 +117,23 @@ class AdminStyleViewSet(
         headers = self.get_success_headers(serializer.data)
         return Response(
             out_serializer.data, status=status.HTTP_201_CREATED, headers=headers
+        )
+
+    @action(detail=True, methods=["post"])
+    def apply_style(self, request, pk=None):
+        my_style = self.get_object()
+        serializer = AssociateStyleSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        datalayer = serializer.validated_data.get("record")
+        dlhstyle = assign_style(
+            created_by=self.request.user,  # type: ignore
+            style=my_style,
+            datalayer=datalayer,
+        )
+        out_serializer = DataLayerHasStyleSerializer(
+            instance={"datalayer": dlhstyle.datalayer, "style": dlhstyle.style}
+        )
+        return Response(
+            data=out_serializer.data,
+            status=status.HTTP_202_ACCEPTED,
         )

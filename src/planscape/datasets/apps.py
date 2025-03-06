@@ -8,6 +8,7 @@ class DatasetsConfig(AppConfig):
         "Dataset",
         "DataLayer",
         "Category",
+        "Style",
     )
 
     def register_actstream(self):
