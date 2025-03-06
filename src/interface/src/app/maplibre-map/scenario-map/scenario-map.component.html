@@ -17,11 +17,13 @@
   [dragRotate]="false"
   (mapLoad)="mapLibreMap = $event">
   <mgl-control position="bottom-right">
-    <button mat-icon-button type="button" (click)="zoomIn()">
-      <mat-icon class="material-symbols-outlined"></mat-icon>
+    <div class="vertical-control">
+    <button mat-icon-button type="button" (click)="zoomIn()" class="zoom-in-button">
+      <mat-icon class="material-symbols-outlined">add</mat-icon>
     </button>
-    <button mat-icon-button type="button" (click)="zoomOut()">
-      <mat-icon class="material-symbols-outlined"></mat-icon>
+    <button mat-icon-button type="button" (click)="zoomOut()" class="zoom-out-button">
+      <mat-icon class="material-symbols-outlined">remove</mat-icon>
     </button>
+    </div>
   </mgl-control>
 </mgl-map>
