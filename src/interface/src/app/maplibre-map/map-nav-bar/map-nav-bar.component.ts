@@ -1,11 +1,11 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
 import { BehaviorSubject } from 'rxjs';
+import { MapBaseDropdownComponent } from '../map-base-dropdown/map-base-dropdown.component';
 
 @Component({
   selector: 'app-map-nav-bar',
   standalone: true,
-  imports: [AsyncPipe, NgIf],
+  imports: [MapBaseDropdownComponent],
   templateUrl: './map-nav-bar.component.html',
   styleUrl: './map-nav-bar.component.scss',
 })

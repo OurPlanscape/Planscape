@@ -7,14 +7,12 @@ import { addRequestHeaders } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
-import { MapBaseDropdownComponent } from '../map-base-dropdown/map-base-dropdown.component';
 
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
   imports: [
     CommonModule,
-    MapBaseDropdownComponent,
     MapComponent,
     MapNavbarComponent,
     OpacitySliderComponent,
