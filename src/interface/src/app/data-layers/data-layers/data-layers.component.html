@@ -1,65 +1,75 @@
-<ng-container *ngIf="!selectedDataSet">
-  <div
-    *ngFor="let dataSet of dataSets$ | async"
-    (click)="viewDatasetCategories(dataSet)"
-    class="data-set">
+<!--When a dataset is selected-->
+<ng-container
+  *ngIf="selectedDataSet$ | async as selectedDataSet; else listDataSets">
+  <div (click)="goBack()" class="data-set">
+    <mat-icon *ngIf="selectedDataSet" class="icon-back">arrow_back</mat-icon>
     <div class="data-set-data">
-      <div class="data-set-name">{{ dataSet.name }}</div>
-      <div class="data-set-org">{{ dataSet.organization.name }}</div>
+      <div class="selected-name">{{ selectedDataSet.name }}</div>
+      <div class="selected-org">{{ selectedDataSet.organization.name }}</div>
     </div>
-    <mat-icon *ngIf="!selectedDataSet">chevron_right</mat-icon>
   </div>
+
+  <mat-tree
+    *ngIf="treeData$ | async as treeData"
+    [dataSource]="treeData"
+    [treeControl]="treeControl"
+    class="data-layers">
+    <!-- leaf node (item node with no children) -->
+    <mat-tree-node
+      *matTreeNodeDef="let node"
+      matTreeNodePadding
+      class="data-layer">
+      <input
+        class="data-layer-input"
+        name="data-layer"
+        type="radio"
+        (click)="selectDataLayer(node.item)"
+        [id]="node.item.id" />
+      <label [for]="node.item.id" class="data-layer-label">{{
+        node.name
+      }}</label>
+      <button
+        sg-button
+        variant="icon-only"
+        icon="info"
+        class="info-icon"
+        [outlined]="true"></button>
+    </mat-tree-node>
+
+    <!-- category node -->
+    <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+      <div
+        class="mat-tree-node data-layer-node"
+        matTreeNodeToggle
+        [ngClass]="{ expanded: treeControl.isExpanded(node) }">
+        <span class="icon"></span>
+        {{ node.name }}
+      </div>
+      <div
+        *ngIf="treeControl.isExpanded(node)"
+        role="group"
+        class="data-layer-cat">
+        <ng-container matTreeNodeOutlet></ng-container>
+      </div>
+    </mat-nested-tree-node>
+  </mat-tree>
+  <mat-spinner *ngIf="loading" diameter="20" class="loader"></mat-spinner>
+
+  <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
 </ng-container>
 
-<div *ngIf="selectedDataSet" (click)="goBack()" class="data-set">
-  <mat-icon *ngIf="selectedDataSet" class="icon-back">arrow_back</mat-icon>
-  <div class="data-set-data">
-    <div class="selected-name">{{ selectedDataSet.name }}</div>
-    <div class="selected-org">{{ selectedDataSet.organization.name }}</div>
-  </div>
-</div>
-
-<mat-tree
-  *ngIf="selectedDataSet && treeData$ | async as treeData"
-  [dataSource]="treeData"
-  [treeControl]="treeControl"
-  class="data-layers">
-  <!-- leaf node (item node with no children) -->
-  <mat-tree-node
-    *matTreeNodeDef="let node"
-    matTreeNodePadding
-    class="data-layer">
-    <input
-      class="data-layer-input"
-      name="data-layer"
-      type="radio"
-      [id]="node.item.id" />
-    <label [for]="node.item.id" class="data-layer-label">{{ node.name }}</label>
-    <button
-      sg-button
-      variant="icon-only"
-      icon="info"
-      class="info-icon"
-      [outlined]="true"></button>
-  </mat-tree-node>
-
-  <!-- category node -->
-  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+<!--Listing Datasets, no selection yet-->
+<ng-template #listDataSets>
+  <ng-container *ngIf="dataSets$ | async; let dataSets">
     <div
-      class="mat-tree-node data-layer-node"
-      matTreeNodeToggle
-      [ngClass]="{ expanded: treeControl.isExpanded(node) }">
-      <span class="icon"></span>
-      {{ node.name }}
+      *ngFor="let dataSet of dataSets.results"
+      (click)="viewDatasetCategories(dataSet)"
+      class="data-set">
+      <div class="data-set-data">
+        <div class="data-set-name">{{ dataSet.name }}</div>
+        <div class="data-set-org">{{ dataSet.organization.name }}</div>
+      </div>
+      <mat-icon>chevron_right</mat-icon>
     </div>
-    <div
-      *ngIf="treeControl.isExpanded(node)"
-      role="group"
-      class="data-layer-cat">
-      <ng-container matTreeNodeOutlet></ng-container>
-    </div>
-  </mat-nested-tree-node>
-</mat-tree>
-
-<mat-spinner *ngIf="loading" diameter="20" class="loader"></mat-spinner>
-<div *ngIf="noData" class="no-data">No data available.</div>
+  </ng-container>
+</ng-template>
