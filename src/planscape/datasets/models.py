@@ -1,4 +1,5 @@
-from typing import Optional
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
@@ -37,6 +38,9 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         on_delete=models.RESTRICT,
         null=True,
     )
+
+    datalayers: models.QuerySet["DataLayer"]
+    categories: models.QuerySet["Category"]
 
     name = models.CharField(max_length=128)
     description = models.TextField(
@@ -82,6 +86,8 @@ class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
         related_name="categories",
         on_delete=models.RESTRICT,
     )
+
+    datalayers: models.QuerySet["DataLayer"]
 
     order = models.IntegerField(
         default=0,
@@ -292,6 +298,9 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         object_name = self.url.replace(f"f3://{settings.S3_BUCKET}/", "")
         return create_download_url(settings.S3_BUCKET, object_name)
 
+    def get_assigned_style(self) -> Optional[Style]:
+        return self.styles.all().first()
+
     def __str__(self) -> str:
         return f"{self.name} [{self.type}]"
 
@@ -346,3 +355,15 @@ class DataLayerHasStyle(
                 name="datalayerhasstyle_unique_constraint",
             )
         ]
+
+
+@dataclass
+class SearchResult:
+    id: int
+    name: str
+    type: str
+    url: str
+    data: Dict[str, Any]
+
+    def key(self):
+        return f"{self.type}:{self.id}"

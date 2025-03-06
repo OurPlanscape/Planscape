@@ -76,12 +76,25 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
         )
 
 
+class StyleSimpleSerializer(serializers.ModelSerializer["Style"]):
+    class Meta:
+        model = Style
+        fields = (
+            "id",
+            "data",
+        )
+
+
 class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
     public_url = serializers.CharField(
         source="get_public_url",
         read_only=True,
     )
+    style = StyleSimpleSerializer(
+        source="get_assigned_style",
+        read_only=True,
+    )  # type: ignore
 
     class Meta:
         model = DataLayer
@@ -102,6 +115,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "public_url",
             "info",
             "metadata",
+            "style",
         )
 
 
@@ -368,15 +382,6 @@ class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
         )
 
 
-class StyleSimpleSerializer(serializers.ModelSerializer["Style"]):
-    class Meta:
-        model = Style
-        fields = (
-            "id",
-            "data",
-        )
-
-
 class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     organization = OrganizationSimpleSerializer()
     dataset = DatasetSimpleSerializer()
@@ -413,3 +418,19 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "styles",
             "geometry",
         )
+
+
+class FindAnythingSerializer(serializers.Serializer):
+    term = serializers.CharField(required=True)
+
+    limit = serializers.IntegerField(required=False, min_value=1)
+
+    offset = serializers.IntegerField(required=False, min_value=1)
+
+
+class SearchResultSerialzier(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.CharField()
+    url = serializers.URLField()
+    data = serializers.JSONField()  # type: ignore
