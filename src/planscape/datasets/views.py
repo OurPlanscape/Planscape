@@ -1,11 +1,4 @@
 from core.serializers import MultiSerializerMixin
-from datasets.filters import DataLayerFilterSet
-from datasets.models import DataLayer, Dataset, VisibilityOptions
-from datasets.serializers import (
-    BrowseDataLayerSerializer,
-    DataLayerSerializer,
-    DatasetSerializer,
-)
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -15,6 +8,17 @@ from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
+
+from datasets.filters import DataLayerFilterSet
+from datasets.models import DataLayer, Dataset, VisibilityOptions
+from datasets.serializers import (
+    BrowseDataLayerSerializer,
+    DataLayerSerializer,
+    DatasetSerializer,
+    FindAnythingSerializer,
+    SearchResultSerialzier,
+)
+from datasets.services import find_anything
 
 
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -30,7 +34,12 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: afterwards we need to implement the filtering
         # by organization visibility too, so we return the public ones
         # PLUS all the datasets accessible by the organization
-        return Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+        return Dataset.objects.filter(
+            visibility=VisibilityOptions.PUBLIC
+        ).select_related(
+            "organization",
+            "created_by",
+        )
 
     @extend_schema(
         description="Returns all datalayers inside this dataset",
@@ -43,7 +52,11 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         dataset = self.get_object()
 
         # TODO: specify a filter here to return only datalayers that are ready
-        datalayers = dataset.datalayers.all()
+        datalayers = (
+            dataset.datalayers.all()
+            .select_related("organization", "dataset", "category")
+            .prefetch_related("styles")
+        )
         serializer = BrowseDataLayerSerializer(datalayers, many=True)
 
         return Response(
@@ -61,6 +74,22 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         "list": DataLayerSerializer,
     }
     filterset_class = DataLayerFilterSet
+
+    @extend_schema(
+        parameters=[FindAnythingSerializer],
+        responses={200: SearchResultSerialzier(many=True)},
+    )
+    @action(detail=False, methods=["get"])
+    def find_anything(self, request):
+        serializer = FindAnythingSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        # TODO: cache results and paginate here.
+        results = find_anything(serializer.validated_data.get("term"))
+        out_serializer = SearchResultSerialzier(
+            list(results.values()),
+            many=True,
+        )
+        return Response(out_serializer.data, status=status.HTTP_200_OK)
 
     def get_queryset(self):
         # TODO: afterwards we need to implement the filtering
@@ -85,5 +114,4 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
                 search=SearchQuery(search_query)
             )
 
-        return queryset
         return queryset

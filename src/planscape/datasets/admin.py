@@ -1,8 +1,15 @@
 from typing import Any, Dict
+
 from django.contrib import admin
-from datasets.forms import DataLayerAdminForm, DatasetAdminForm, CategoryAdminForm
-from datasets.models import Category, DataLayer, Dataset
 from treebeard.admin import TreeAdmin
+
+from datasets.forms import (
+    CategoryAdminForm,
+    DataLayerAdminForm,
+    DatasetAdminForm,
+    StyleAdminForm,
+)
+from datasets.models import Category, DataLayer, Dataset, Style
 
 
 class CategoryAdmin(TreeAdmin):
@@ -65,6 +72,32 @@ class DataLayerAdmin(admin.ModelAdmin):
     ]
 
 
+class StyleAdmin(admin.ModelAdmin):
+    form = StyleAdminForm
+    search_fields = [
+        "organization__name__icontains",
+        "created_by__username__icontains",
+        "name",
+    ]
+    autocomplete_fields = [
+        "organization",
+        "created_by",
+    ]
+    list_display = (
+        "id",
+        "name",
+        "type",
+        "data_hash",
+    )
+    list_display_links = (
+        "id",
+        "name",
+        "type",
+        "data_hash",
+    )
+
+
 admin.site.register(Dataset, DatasetAdmin)
 admin.site.register(DataLayer, DataLayerAdmin)
 admin.site.register(Category, CategoryAdmin)
+admin.site.register(Style, StyleAdmin)

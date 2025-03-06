@@ -4,6 +4,7 @@ import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-p
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { FeaturesModule } from 'src/app/features/features.module';
+import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 
 @Component({
   selector: 'app-treatment-plan-tabs',
@@ -14,6 +15,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
     ProjectAreasTabComponent,
     MapBaseLayerComponent,
     FeaturesModule,
+    DataLayersComponent,
   ],
   templateUrl: './treatment-plan-tabs.component.html',
   styleUrl: './treatment-plan-tabs.component.scss',
