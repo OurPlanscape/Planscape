@@ -40,6 +40,7 @@ import { OpacitySliderComponent } from '@styleguide';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
+import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 
 @UntilDestroy()
 @Component({
@@ -70,6 +71,7 @@ import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown
     OpacitySliderComponent,
     FeaturesModule,
     MapBaseDropdownComponent,
+    MapNavbarComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',

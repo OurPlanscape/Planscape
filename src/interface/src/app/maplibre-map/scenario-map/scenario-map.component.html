@@ -1,3 +1,13 @@
+<app-map-nav-bar>
+  <sg-opacity-slider
+    class="navbar-slider"
+    [minValue]="0"
+    [maxValue]="1"
+    [step]="0.01"
+    [sliderValue]="(projectLayerOpacity$ | async) || 0"
+    (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
+</app-map-nav-bar>
+
 <mgl-map
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest"
