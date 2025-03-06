@@ -20,7 +20,7 @@ describe('PlanMapComponent', () => {
   let component: PlanMapComponent;
   let fixture: ComponentFixture<PlanMapComponent>;
   let fakePlanService: LegacyPlanStateService;
-  let fakePlanState$: BehaviorSubject<PlanState>;
+  let fakePlanState$: BehaviorSubject<LegacyPlanState>;
   let fakePlan: Plan;
 
   const emptyPlanState = {
