@@ -7,6 +7,7 @@ import { addRequestHeaders } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-scenario-map',
@@ -34,14 +35,15 @@ export class ScenarioMapComponent {
    * Observable that provides the url to load the selected map base layer
    */
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
-  projectLayerOpacity$ = this.mapConfigState.treatedStandsOpacity$;
+  //placeholder until we add the layers to update
+  projectLayerOpacity$ = new BehaviorSubject<number>(1);
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
   }
 
   handleOpacityChange(opacity: number) {
-    console.log('changed opacity', opacity);
+    // just a placeholder until we include the layer this changes
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
