@@ -2,9 +2,19 @@ import re
 from typing import Any, Collection, Dict
 
 from core.loaders import get_python_object
-from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
 from organizations.models import Organization
 from rest_framework import serializers
+
+from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
+
+
+class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
+    class Meta:
+        model = Organization
+        fields = (
+            "id",
+            "name",
+        )
 
 
 class CategorySerializer(serializers.ModelSerializer[Category]):
@@ -48,6 +58,8 @@ class CategoryEmbbedSerializer(serializers.ModelSerializer):
 
 
 class DatasetSerializer(serializers.ModelSerializer[Dataset]):
+    organization = OrganizationSimpleSerializer()
+
     class Meta:
         model = Dataset
         fields = (
@@ -121,6 +133,11 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         required=False,
         allow_null=True,
     )
+    style = serializers.PrimaryKeyRelatedField(
+        queryset=Style.objects.all(),
+        required=False,
+        allow_null=True,
+    )  # type: ignore
 
     class Meta:
         model = DataLayer
@@ -138,6 +155,7 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "mimetype",
             "geometry",
             "geometry_type",
+            "style",
         )
 
 
@@ -204,7 +222,7 @@ class EntrySerializer(serializers.Serializer):
     label = serializers.CharField(
         required=False,
         default="",
-    )
+    )  # type: ignore
 
 
 class NoDataSerializer(serializers.Serializer):
@@ -293,7 +311,7 @@ class DataLayerMetadataSerializer(serializers.Serializer):
     )
     source = SourceMetadataSerializer(
         required=False,
-    )
+    )  # type: ignore
 
     def __init__(self, *args, **kwargs):
         module_validators = kwargs.get("module_validators", {}) or {}
@@ -327,17 +345,18 @@ class StyleCreatedSerializer(serializers.Serializer):
 
 
 class AssociateStyleSerializer(serializers.Serializer):
-    style = serializers.IntegerField()
-    datalayer = serializers.IntegerField()
+    # TODO: move queryset to be a callable and filter permissions
+    record = serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all())
 
 
-class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
-    class Meta:
-        model = Organization
-        fields = (
-            "id",
-            "name",
-        )
+class AssociateDataLayerSerializer(serializers.Serializer):
+    # TODO: move queryset to be a callable and filter permissions
+    record = serializers.PrimaryKeyRelatedField(queryset=Style.objects.all())
+
+
+class DataLayerHasStyleSerializer(serializers.Serializer):
+    datalayer = DataLayerSerializer()
+    style = StyleSerializer()  # type: ignore
 
 
 class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
@@ -362,11 +381,20 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
     organization = OrganizationSimpleSerializer()
     dataset = DatasetSimpleSerializer()
     path = serializers.SerializerMethodField()
+    public_url = serializers.CharField(
+        source="get_public_url",
+        read_only=True,
+    )
     styles = StyleSimpleSerializer(many=True)
 
     def get_path(self, instance) -> Collection[str]:
-        ancestors = instance.category.get_ancestors() if instance.category else []
-        return list([c.name for c in ancestors])
+        if instance.category:
+            ancestors_names = list([c.name for c in instance.category.get_ancestors()])
+            ancestors_names = [*ancestors_names, instance.category.name]
+        else:
+            ancestors_names = []
+
+        return ancestors_names
 
     class Meta:
         model = DataLayer
@@ -375,6 +403,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "organization",
             "dataset",
             "path",
+            "public_url",
             "name",
             "type",
             "geometry_type",
@@ -384,3 +413,19 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "styles",
             "geometry",
         )
+
+
+class FindAnythingSerializer(serializers.Serializer):
+    term = serializers.CharField(required=True)
+
+    limit = serializers.IntegerField(required=False, min_value=1)
+
+    offset = serializers.IntegerField(required=False, min_value=1)
+
+
+class SearchResultSerialzier(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.CharField()
+    url = serializers.URLField()
+    data = serializers.JSONField()  # type: ignore
