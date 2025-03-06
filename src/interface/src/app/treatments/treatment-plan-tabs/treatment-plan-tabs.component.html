@@ -2,12 +2,12 @@
   class="summary-tab-group"
   mat-align-tabs="start"
   disablePagination="true">
-  <mat-tab label="Project Areas"
-    ><app-project-areas-tab></app-project-areas-tab>
+  <mat-tab label="Project Areas">
+    <app-project-areas-tab></app-project-areas-tab>
   </mat-tab>
-  <mat-tab
-    label="Data Layers"
-    *appFeatureFlag="'statewide_datalayers'"></mat-tab>
+  <mat-tab label="Data Layers" *appFeatureFlag="'statewide_datalayers'">
+    <app-data-layers></app-data-layers>
+  </mat-tab>
   <mat-tab
     label="Base Maps"
     *appFeatureFlag="'statewide_datalayers'; hide: true">

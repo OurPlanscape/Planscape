@@ -68,6 +68,7 @@ django-json-widget = "^2.0.1"
 pygments = "^2.18.0"
 setuptools = "^75.7.0"
 mmh3 = "^5.1.0"
+multipledispatch = "^1.0.0"
 
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"

@@ -63,7 +63,8 @@ class DatasetSerializerTest(TestCase):
         self.assertEqual(data["id"], dataset.id)
         self.assertEqual(data["name"], dataset.name)
         self.assertEqual(data["created_by"], dataset.created_by.id)
-        self.assertEqual(data["organization"], dataset.organization.id)
+        self.assertEqual(data["organization"]["id"], dataset.organization.id)
+        self.assertEqual(data["organization"]["name"], dataset.organization.name)
         self.assertEqual(data["visibility"], dataset.visibility)
 
 
