@@ -4,6 +4,8 @@ import {
   transformMapboxUrl,
 } from 'maplibregl-mapbox-request-transformer';
 import { environment } from '../../environments/environment';
+import { Feature, Geometry } from 'geojson';
+import { bbox } from '@turf/turf';
 
 export function getBoundingBox(
   startPoint: Point,
@@ -42,6 +44,15 @@ export function addRequestHeaders(
     return transformMapboxUrl(url, resourceType, environment.mapbox_key);
   }
   return addAuthHeaders(url, resourceType, cookie);
+}
+
+/**
+ *
+ * Return the bounds related to a particular geometry
+ */
+export function getBoundsFromGeometry(geometry: Geometry) {
+  const geoFeature: Feature = { type: 'Feature', geometry, properties: {} };
+  return bbox(geoFeature) as [number, number, number, number];
 }
 
 /**

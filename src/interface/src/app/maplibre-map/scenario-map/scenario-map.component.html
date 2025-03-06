@@ -1,10 +1,12 @@
 <mgl-map
+  *ngIf="bounds$ | async as bounds"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest"
   [maxZoom]="17"
   [minZoom]="7"
-  [center]="[-74.5, 40]"
   [dragRotate]="false"
-  (mapLoad)="mapLibreMap = $event">
+  [fitBoundsOptions]="{ padding: 20 }"
+  [fitBounds]="bounds"
+  (mapLoad)="mapLoaded($event)">
   <app-planning-area-layer> </app-planning-area-layer>
 </mgl-map>
