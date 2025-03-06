@@ -55,7 +55,7 @@
   </mat-tree>
   <mat-spinner *ngIf="loading" diameter="20" class="loader"></mat-spinner>
 
-  <div *ngIf="noData$ | async" class="no-data">No data available.</div>
+  <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
 </ng-container>
 
 <!--Listing Datasets, no selection yet-->

@@ -46,7 +46,7 @@ export class DataLayersComponent {
     shareReplay(1)
   );
 
-  noData$ = this.dataLayersStateService.noTreeData$;
+  hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
 
   viewDatasetCategories(dataSet: DataSet) {
     this.dataLayersStateService.selectDataSet(dataSet);

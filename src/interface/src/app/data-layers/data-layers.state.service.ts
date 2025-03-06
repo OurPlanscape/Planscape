@@ -27,7 +27,7 @@ export class DataLayersStateService {
     shareReplay(1)
   );
 
-  noTreeData$ = this.dataTree$.pipe(map((d) => !!d && d.length === 0));
+  hasNoTreeData$ = this.dataTree$.pipe(map((d) => !!d && d.length === 0));
 
   constructor(private service: DataLayersService) {}
 
