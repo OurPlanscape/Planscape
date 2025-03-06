@@ -1,9 +1,8 @@
 from unittest import mock
 from urllib.parse import urlencode
-from datasets.models import DataLayer, Dataset, VisibilityOptions
-from datasets.tests.factories import DataLayerFactory, DatasetFactory
+from datasets.models import VisibilityOptions
+from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from organizations.tests.factories import OrganizationFactory
-from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework.test import APITransactionTestCase
@@ -134,6 +133,21 @@ class TestDataLayerViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
+
+    def test_get_dataset_with_style(self):
+        self.client.force_authenticate(user=self.admin)
+        style = StyleFactory.create(
+            created_by=self.admin, organization=self.organization
+        )
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", style=style
+        )
+        url = reverse("api:datasets:datalayers-list")
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
+        self.assertEqual(style.pk, data.get("results")[0].get("style").get("id"))
 
 
 class TestDatasetViewSet(APITransactionTestCase):

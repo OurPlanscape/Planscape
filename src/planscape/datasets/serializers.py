@@ -76,13 +76,14 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
         )
 
 
-class SimplifiedStyleSerializer(serializers.ModelSerializer[Style]):
+class StyleSimpleSerializer(serializers.ModelSerializer["Style"]):
     class Meta:
         model = Style
         fields = (
             "id",
-            "data"
+            "data",
         )
+
 
 class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
@@ -90,10 +91,10 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         source="get_public_url",
         read_only=True,
     )
-    style = SimplifiedStyleSerializer(
-        source="get_style",
+    style = StyleSimpleSerializer(
+        source="get_assigned_style",
         read_only=True,
-    ) # type: ignore
+    )  # type: ignore
 
     class Meta:
         model = DataLayer
@@ -378,15 +379,6 @@ class DatasetSimpleSerializer(serializers.ModelSerializer["Dataset"]):
         fields = (
             "id",
             "name",
-        )
-
-
-class StyleSimpleSerializer(serializers.ModelSerializer["Style"]):
-    class Meta:
-        model = Style
-        fields = (
-            "id",
-            "data",
         )
 
 
