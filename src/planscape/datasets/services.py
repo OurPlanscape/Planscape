@@ -19,6 +19,7 @@ from datasets.models import (
     Category,
     DataLayer,
     DataLayerHasStyle,
+    DataLayerStatus,
     DataLayerType,
     Dataset,
     GeometryType,
@@ -250,7 +251,10 @@ def find_anything(term: str) -> Dict[str, SearchResult]:
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.filter(name__icontains=term)
+            for x in DataLayer.objects.filter(
+                name__icontains=term,
+                status=DataLayerStatus.READY,
+            )
         ],
     ]
     search_results = itertools.chain.from_iterable(raw_results)

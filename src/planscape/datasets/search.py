@@ -1,7 +1,7 @@
 import re
 from typing import Collection
 
-from datasets.models import Category, DataLayer, Dataset, SearchResult
+from datasets.models import Category, DataLayer, DataLayerStatus, Dataset, SearchResult
 from datasets.serializers import BrowseDataLayerSerializer, DatasetSerializer
 
 
@@ -33,13 +33,13 @@ def dataset_to_search_result(dataset: Dataset) -> SearchResult:
 
 def category_to_search_result(category: Category) -> Collection[SearchResult]:
     datalayers = DataLayer.objects.none()
-    datalayers |= category.datalayers.all()
+    datalayers |= category.datalayers.filter(status=DataLayerStatus.READY)
 
     # what is this madness for python?
     child_category: Category
 
     for child_category in category.get_children():
-        datalayers |= child_category.datalayers.all()
+        datalayers |= child_category.datalayers.filter(status=DataLayerStatus.READY)
 
     return [datalayer_to_search_result(x) for x in datalayers]
 
