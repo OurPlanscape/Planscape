@@ -8,14 +8,18 @@ import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
+import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
   imports: [
     CommonModule,
+    ControlComponent,
     MapComponent,
     MapNavbarComponent,
+    MatIconModule,
     OpacitySliderComponent,
   ],
   templateUrl: './scenario-map.component.html',
@@ -44,6 +48,14 @@ export class ScenarioMapComponent {
 
   handleOpacityChange(opacity: number) {
     // just a placeholder until we include the layer this changes
+  }
+
+  zoomIn() {
+    this.mapLibreMap.zoomIn();
+  }
+
+  zoomOut() {
+    this.mapLibreMap.zoomOut();
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
