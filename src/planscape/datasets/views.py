@@ -85,7 +85,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         serializer.is_valid(raise_exception=True)
         # TODO: cache results and paginate here.
         results = find_anything(serializer.validated_data.get("term"))
-        out_serializer = SearchResultSerialzier(data=results, many=True)
+        out_serializer = SearchResultSerialzier(results, many=True)
         return Response(out_serializer.data, status=status.HTTP_200_OK)
 
     def get_queryset(self):
