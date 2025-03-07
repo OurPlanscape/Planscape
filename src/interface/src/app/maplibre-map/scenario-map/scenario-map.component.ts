@@ -9,9 +9,8 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { Geometry } from 'geojson';
 import { PlanState } from '../plan.state';
-import { filter, map } from 'rxjs';
+import { map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
@@ -47,13 +46,9 @@ export class ScenarioMapComponent {
   //placeholder until we add the layers to update
   projectLayerOpacity$ = new BehaviorSubject<number>(1);
 
-  /**
-   * Observable that waits for the map to be centered
-   */
-  bounds$ = this.planState.currentPlan$.pipe(
-    filter((plan) => !!plan),
-    map((plan) => {
-      return getBoundsFromGeometry(plan?.geometry as Geometry);
+  bounds$ = this.planState.planningAreaGeometry$.pipe(
+    map((geometry) => {
+      return getBoundsFromGeometry(geometry);
     })
   );
 

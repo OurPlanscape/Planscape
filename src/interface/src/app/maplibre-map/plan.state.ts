@@ -29,4 +29,12 @@ export class PlanState {
   getCurrentPlan(): Plan | null {
     return this._currentPlan$.value;
   }
+
+  getCurrentPlanId(): number {
+    const plan = this.getCurrentPlan();
+    if (!plan) {
+      throw new Error('no plan!');
+    }
+    return plan.id;
+  }
 }
