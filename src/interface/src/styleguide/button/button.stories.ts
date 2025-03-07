@@ -31,6 +31,7 @@ export const Default: Story = {
 <button sg-button ${argsToTemplate(args)}>Button ${
       args.variant || 'Default'
     }</button>
+<a sg-button ${argsToTemplate(args)}>Link ${args.variant || 'Default'}</a>
 <button disabled sg-button ${argsToTemplate(args)}>Disabled ${
       args.variant || 'Default'
     }</button>
