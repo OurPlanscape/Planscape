@@ -5,7 +5,7 @@ import {
 } from 'maplibregl-mapbox-request-transformer';
 import { environment } from '../../environments/environment';
 import { Feature, Geometry } from 'geojson';
-import { bbox } from '@turf/turf';
+import bbox from '@turf/bbox';
 
 export function getBoundingBox(
   startPoint: Point,
