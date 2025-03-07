@@ -16,7 +16,11 @@ import {
 import { BehaviorSubject, map, switchMap, take, tap } from 'rxjs';
 import { Feature } from 'geojson';
 
-export interface PlanState {
+/**
+ * @deprecated This is going to be removed in the future.
+ * Use PlanState if you can or see if you can move what you need to that service.
+ */
+export interface LegacyPlanState {
   all: {
     [planId: number]: Plan;
   };
@@ -27,13 +31,16 @@ export interface PlanState {
   mapShapes: Feature[] | null;
   legendUnits: string | null;
 }
-
+/**
+ * @deprecated This is going to be removed in the future.
+ * Use PlanState if you can or see if you can move what you need to that service.
+ */
 @Injectable({
   providedIn: 'root',
 })
-export class PlanStateService {
+export class LegacyPlanStateService {
   // Warning: do not mutate state!
-  readonly planState$ = new BehaviorSubject<PlanState>({
+  readonly planState$ = new BehaviorSubject<LegacyPlanState>({
     all: {}, // All plans indexed by id
     currentPlanId: null,
     currentScenarioId: null,

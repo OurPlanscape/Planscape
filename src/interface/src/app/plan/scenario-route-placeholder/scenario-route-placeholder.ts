@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { CreateScenariosComponent } from '../create-scenarios/create-scenarios.component';
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { Scenario } from '@types';
-import { PlanStateService } from '@services';
+import { LegacyPlanStateService } from '@services';
 
 @Component({
   selector: 'app-scenario-route-placeholder',
@@ -16,7 +16,7 @@ export class ScenarioRoutePlaceholderComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private planStateService: PlanStateService
+    private LegacyPlanStateService: LegacyPlanStateService
   ) {}
 
   scenario?: Scenario;
@@ -25,7 +25,7 @@ export class ScenarioRoutePlaceholderComponent implements OnInit {
   ngOnInit() {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
-      this.planStateService.getScenario(id).subscribe({
+      this.LegacyPlanStateService.getScenario(id).subscribe({
         next: (scenario: Scenario) => {
           this.scenario = scenario;
           if (this.scenario?.origin === 'USER') {

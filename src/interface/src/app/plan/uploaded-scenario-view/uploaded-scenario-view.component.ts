@@ -1,7 +1,7 @@
 import { Component, OnInit, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Scenario, Plan } from '@types';
-import { PlanStateService } from '@services';
+import { LegacyPlanStateService } from '@services';
 import { TreatmentsService } from '@services/treatments.service';
 import { BehaviorSubject, take } from 'rxjs';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
@@ -21,7 +21,7 @@ export class UploadedScenarioViewComponent implements OnInit {
   constructor(
     private router: Router,
     private route: ActivatedRoute,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private treatmentsService: TreatmentsService,
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog,
@@ -34,15 +34,15 @@ export class UploadedScenarioViewComponent implements OnInit {
 
   ngOnInit() {
     if (this.scenario) {
-      this.planStateService.planState$
+      this.LegacyPlanStateService.planState$
         .pipe(untilDestroyed(this), take(1))
         .subscribe((planState) => {
           this.plan$.next(planState.all[planState.currentPlanId!]);
-          this.planStateService.updateStateWithScenario(
+          this.LegacyPlanStateService.updateStateWithScenario(
             this.scenario?.id ?? null,
             this.scenario?.name ?? null
           );
-          this.planStateService.updateStateWithShapes(
+          this.LegacyPlanStateService.updateStateWithShapes(
             this.scenario?.scenario_result?.result.features
           );
         });

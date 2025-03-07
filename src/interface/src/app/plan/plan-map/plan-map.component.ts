@@ -16,7 +16,7 @@ import {
   regionToString,
 } from '@types';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { PlanStateService } from '@services';
+import { LegacyPlanStateService } from '@services';
 import { regionMapCenters } from '../../map/map.helper';
 import { Feature } from 'geojson';
 import { getColorForProjectPosition } from '../plan-helpers';
@@ -69,15 +69,15 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   private currentBaseLayer: BaseLayerType = BaseLayerType.Road;
 
   constructor(
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private http: HttpClient,
     private dialog: MatDialog
   ) {
-    this.selectedRegion$ = this.planStateService.planRegion$;
+    this.selectedRegion$ = this.LegacyPlanStateService.planRegion$;
   }
 
   ngOnInit(): void {
-    this.planStateService.planState$
+    this.LegacyPlanStateService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
         if (state.mapConditionLayer !== this.layer) {
@@ -265,7 +265,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     if (filepath?.length === 0 || !filepath) return;
 
-    var region = regionToString(this.planStateService.planRegion$.getValue());
+    var region = regionToString(
+      this.LegacyPlanStateService.planRegion$.getValue()
+    );
     this.tileLayer = L.tileLayer.wms(
       environment.tile_endpoint + region + '/wms?',
       {
@@ -283,7 +285,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
 
     // Map legend request
     var dataUnit = '';
-    this.planStateService.planState$.pipe(take(1)).subscribe((state) => {
+    this.LegacyPlanStateService.planState$.pipe(take(1)).subscribe((state) => {
       if (state.legendUnits) {
         dataUnit = state.legendUnits;
       }

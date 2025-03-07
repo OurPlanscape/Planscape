@@ -14,7 +14,7 @@ import {
   TreatmentQuestionConfig,
 } from '@types';
 
-import { MapService, PlanStateService } from '@services';
+import { MapService, LegacyPlanStateService } from '@services';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
@@ -108,7 +108,7 @@ describe('SetPrioritiesComponent', () => {
           provide: MapService,
           useValue: fakeMapService,
         },
-        MockProvider(PlanStateService, {
+        MockProvider(LegacyPlanStateService, {
           treatmentGoalsConfig$: treatmentGoals$,
         }),
       ],

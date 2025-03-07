@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { Observable } from 'rxjs';
 import { Plan } from '@types';
 
 @Component({
@@ -9,7 +9,7 @@ import { Plan } from '@types';
   styleUrls: ['./plan-overview.component.scss'],
 })
 export class PlanOverviewComponent {
-  @Input() plan$ = new BehaviorSubject<Plan | null>(null);
+  @Input() plan$!: Observable<Plan | null>;
 
   constructor(
     private route: ActivatedRoute,

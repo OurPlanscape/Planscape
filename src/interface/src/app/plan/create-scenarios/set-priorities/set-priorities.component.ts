@@ -3,7 +3,7 @@ import { FormBuilder, Validators } from '@angular/forms';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
 import { distinctUntilChanged, take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { MapService, PlanStateService } from '@services';
+import { MapService, LegacyPlanStateService } from '@services';
 import {
   PriorityRow,
   ScenarioConfig,
@@ -23,7 +23,7 @@ import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
 })
 export class SetPrioritiesComponent implements OnInit {
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
-  treatmentGoals$ = this.planStateService.treatmentGoalsConfig$.pipe(
+  treatmentGoals$ = this.LegacyPlanStateService.treatmentGoalsConfig$.pipe(
     distinctUntilChanged(),
     tap((s) => {
       this._treatmentGoals = s;
@@ -44,7 +44,7 @@ export class SetPrioritiesComponent implements OnInit {
   constructor(
     private mapService: MapService,
     private fb: FormBuilder,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private goalOverlayService: GoalOverlayService
   ) {}
 
@@ -79,7 +79,7 @@ export class SetPrioritiesComponent implements OnInit {
 
   setFormData(question: TreatmentQuestionConfig) {
     if (this._treatmentGoals) {
-      // We are losing the object reference somewhere (probably on this.planStateService.treatmentGoalsConfig$)
+      // We are losing the object reference somewhere (probably on this.LegacyPlanStateService.treatmentGoalsConfig$)
       // so when we simply `setValue` with `this.selectedTreatmentQuestion`, the object is
       // not part of the provided treatmentGoalsConfig$.
       // The workaround is to look for it, however we should look into the underlying issue

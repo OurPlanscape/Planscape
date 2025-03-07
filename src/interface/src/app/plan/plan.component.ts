@@ -19,7 +19,7 @@ import {
 import { Plan, User } from '@types';
 import {
   AuthService,
-  PlanStateService,
+  LegacyPlanStateService,
   Note,
   PlanningAreaNotesService,
 } from '@services';
@@ -30,6 +30,7 @@ import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-not
 import { NavState, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { PlanState } from '../maplibre-map/plan.state';
 
 @Component({
   selector: 'app-plan',
@@ -40,23 +41,26 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 export class PlanComponent implements OnInit {
   constructor(
     private authService: AuthService,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private route: ActivatedRoute,
     private router: Router,
     private homeParametersStorageService: HomeParametersStorageService,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private planState: PlanState
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
       return;
     }
-    const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
+    const plan$ = this.LegacyPlanStateService.getPlan(this.planId).pipe(
+      take(1)
+    );
 
     plan$.subscribe({
       next: (plan) => {
-        this.currentPlan$.next(plan);
+        this.planState.setCurrentPlan(plan);
       },
       error: (error) => {
         this.planNotFound = true;
@@ -70,7 +74,7 @@ export class PlanComponent implements OnInit {
     );
   }
 
-  currentPlan$ = new BehaviorSubject<Plan | null>(null);
+  currentPlan$ = this.planState.currentPlan$;
   planOwner$ = new Observable<User | null>();
 
   planId = this.route.snapshot.paramMap.get('id');
@@ -85,7 +89,7 @@ export class PlanComponent implements OnInit {
   );
   private readonly destroy$ = new Subject<void>();
 
-  scenarioName$ = this.planStateService.planState$.pipe(
+  scenarioName$ = this.LegacyPlanStateService.planState$.pipe(
     map((state) => {
       return state.currentScenarioName;
     })
@@ -122,7 +126,7 @@ export class PlanComponent implements OnInit {
   );
 
   ngOnInit() {
-    this.planStateService.planState$
+    this.LegacyPlanStateService.planState$
       .pipe(takeUntil(this.destroy$))
       .subscribe((state) => {
         const path = this.getPathFromSnapshot();
@@ -149,7 +153,9 @@ export class PlanComponent implements OnInit {
 
   private updatePlanStateFromRoute() {
     if (this.planId) {
-      this.planStateService.updateStateWithPlan(parseInt(this.planId, 10));
+      this.LegacyPlanStateService.updateStateWithPlan(
+        parseInt(this.planId, 10)
+      );
     }
 
     const routeChild = this.route.snapshot.firstChild;
@@ -157,17 +163,18 @@ export class PlanComponent implements OnInit {
     const id = routeChild?.paramMap.get('id') ?? null;
 
     if (path === 'config') {
-      const name = this.planStateService.planState$.value.currentScenarioName;
-      this.planStateService.updateStateWithScenario(id, name);
-      this.planStateService.updateStateWithShapes(null);
+      const name =
+        this.LegacyPlanStateService.planState$.value.currentScenarioName;
+      this.LegacyPlanStateService.updateStateWithScenario(id, name);
+      this.LegacyPlanStateService.updateStateWithShapes(null);
     } else {
-      this.planStateService.updateStateWithScenario(null, null);
-      this.planStateService.updateStateWithShapes(null);
+      this.LegacyPlanStateService.updateStateWithScenario(null, null);
+      this.LegacyPlanStateService.updateStateWithShapes(null);
     }
   }
 
   backToOverview() {
-    this.router.navigate(['plan', this.currentPlan$.value!.id]);
+    this.router.navigate(['plan', this.planState.getCurrentPlan()?.id]);
   }
 
   goBack() {

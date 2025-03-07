@@ -9,7 +9,7 @@ import { LegacyMaterialModule } from '../material/legacy-material.module';
 import {
   AuthService,
   PlanningAreaNotesService,
-  PlanStateService,
+  LegacyPlanStateService,
 } from '@services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
@@ -79,7 +79,7 @@ describe('PlanComponent', () => {
     (mockNotesService.getNotes as jasmine.Spy).and.returnValue(of([]));
 
     const fakeService = jasmine.createSpyObj(
-      'PlanStateService',
+      'LegacyPlanStateService',
       {
         getPlan: of(fakePlan),
         getProjectsForPlan: of([]),
@@ -114,7 +114,7 @@ describe('PlanComponent', () => {
       providers: [
         { provide: ActivatedRoute, useValue: fakeRoute },
         { provide: AuthService, useValue: mockAuthService },
-        { provide: PlanStateService, useValue: fakeService },
+        { provide: LegacyPlanStateService, useValue: fakeService },
         { provide: PlanningAreaNotesService, useValue: mockNotesService },
       ],
     }).compileComponents();
@@ -129,10 +129,13 @@ describe('PlanComponent', () => {
   });
 
   it('calls service to update plan state based on route', () => {
-    const planStateService =
-      fixture.debugElement.injector.get(PlanStateService);
+    const legacyPlanStateService = fixture.debugElement.injector.get(
+      LegacyPlanStateService
+    );
 
-    expect(planStateService.updateStateWithPlan).toHaveBeenCalledOnceWith(24);
+    expect(legacyPlanStateService.updateStateWithPlan).toHaveBeenCalledOnceWith(
+      24
+    );
     expect(component.showOverview$.value).toBeTrue();
   });
 

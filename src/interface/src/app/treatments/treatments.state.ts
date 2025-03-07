@@ -9,7 +9,6 @@ import {
   map,
   Observable,
   of,
-  shareReplay,
   switchMap,
   tap,
 } from 'rxjs';
@@ -29,10 +28,10 @@ import {
   UpdatingStandsError,
 } from './treatment-errors';
 import { TreatmentRoutingData } from './treatments-routing-data';
-import { PlanStateService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
+import { PlanState } from '../maplibre-map/plan.state';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -42,11 +41,11 @@ import { DirectImpactsStateService } from './direct-impacts.state.service';
 export class TreatmentsState {
   constructor(
     private treatmentsService: TreatmentsService,
-    private planStateService: PlanStateService,
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
-    private directImpactsState: DirectImpactsStateService
+    private directImpactsState: DirectImpactsStateService,
+    private planState: PlanState
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
@@ -89,12 +88,8 @@ export class TreatmentsState {
     })
   );
 
-  public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
-    distinctUntilChanged(),
-    filter((id): id is number => !!id),
-    switchMap((id) => this.planStateService.getPlan(id.toString())),
-    shareReplay(1)
-  );
+  public planningArea$: Observable<Plan | null> =
+    this.planState.currentPlan$.pipe(filter((plan) => !!plan));
 
   // determine navstate values based on various state conditions
   navState$: Observable<NavState> = combineLatest([
