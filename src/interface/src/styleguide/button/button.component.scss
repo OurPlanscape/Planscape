@@ -158,4 +158,8 @@
     height: 20px;
     font-size: 20px;
   }
+
+  &a:hover, &a:active {
+    text-decoration: none;
+  }
 }
