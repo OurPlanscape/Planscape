@@ -50,7 +50,7 @@ export class TreatmentOverviewComponent {
   currentPlan$ = this.treatmentsState.treatmentPlan$;
   disableInput$ = this.treatmentsState.planningArea$.pipe(
     map((plan) => {
-      return !canEditTreatmentPlan(plan);
+      return plan ? !canEditTreatmentPlan(plan) : false;
     })
   );
 
