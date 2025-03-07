@@ -6,6 +6,7 @@ import {
 import { environment } from '../../environments/environment';
 import { Feature, Geometry } from 'geojson';
 import bbox from '@turf/bbox';
+import { Extent } from '@types';
 
 export function getBoundingBox(
   startPoint: Point,
@@ -52,7 +53,7 @@ export function addRequestHeaders(
  */
 export function getBoundsFromGeometry(geometry: Geometry) {
   const geoFeature: Feature = { type: 'Feature', geometry, properties: {} };
-  return bbox(geoFeature) as [number, number, number, number];
+  return bbox(geoFeature) as Extent;
 }
 
 /**
