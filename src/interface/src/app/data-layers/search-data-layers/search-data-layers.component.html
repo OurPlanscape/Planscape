@@ -1,0 +1,29 @@
+<div class="side-search-container">
+  <sg-search-bar
+    class="search-bar"
+    [debounceInterval]="160"
+    searchPlaceholder="Search by dataset, metric, category, org..."
+    [inputHeight]="'regular'"
+    (searchString)="search($event)"></sg-search-bar>
+</div>
+<div *ngIf="results$ | async as results">
+  <div *ngFor="let result of results?.dataSets" class="dataset">
+    <div>{{ result.name }}</div>
+  </div>
+  <div *ngIf="results">
+    <div *ngIf="results.groupedLayers">
+      <div *ngFor="let result of results.groupedLayers | keyvalue">
+        <div>{{ result.key }}</div>
+        <div class="data-layer-path">{{ result.value.path.join('-->') }}</div>
+        <div>{{ result.value.layers[0].data.organization.name }}</div>
+        <div *ngFor="let layer of result.value.layers">
+          <div class="data-layer-name">{{ layer.name }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<mat-spinner
+  *ngIf="loading$ | async"
+  diameter="20"
+  class="loader"></mat-spinner>
