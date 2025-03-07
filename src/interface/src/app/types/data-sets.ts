@@ -81,3 +81,11 @@ export interface DataLayer {
   styles: Styles[];
   geometry: Geometry;
 }
+
+export interface DataSetSearchResult {
+  id: number;
+  name: string;
+  type: 'DATASET' | 'DATALAYER';
+  url: string;
+  data: DataLayer | DataSet;
+}

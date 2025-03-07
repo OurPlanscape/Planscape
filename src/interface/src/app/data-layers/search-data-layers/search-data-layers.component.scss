@@ -1,0 +1,47 @@
+@import "colors";
+@import "mixins";
+
+.dataset {
+  padding: 30px;
+  border: 1px solid #d0d0d0;
+  font-size: 20px;
+}
+
+.data-layer-path {
+  font-weight: bold;
+}
+
+.data-layer-name {
+  margin-left: 40px;
+  color: #404040;
+}
+
+// TODO: component?
+.side-search-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  padding: 4px 16px;
+  border-bottom: 1px $color-soft-gray solid;
+  position: sticky;
+  top: 0;
+  background: $color-white;
+  z-index: 100;
+}
+
+:host {
+  ::ng-deep .search-bar .input-wrapper {
+    width: 100%;
+    background-color: $color-light-gray;
+    height: 42px;
+  }
+
+  ::ng-deep .search-bar input {
+    @include xs-label();
+    font-weight: 400;
+    font-family: 'Public Sans';
+    width: 100%;
+  }
+}
