@@ -1,32 +1,54 @@
-<!--When a dataset is selected-->
-<ng-container
-  *ngIf="selectedDataSet$ | async as selectedDataSet; else listDataSets">
-  <div (click)="goBack()" class="data-set">
-    <mat-icon *ngIf="selectedDataSet" class="icon-back">arrow_back</mat-icon>
-    <div class="data-set-data">
-      <div class="selected-name">{{ selectedDataSet.name }}</div>
-      <div class="selected-org">{{ selectedDataSet.organization.name }}</div>
-    </div>
+<div class="side-search-container">
+  <sg-search-bar
+    class="search-bar"
+    [debounceInterval]="160"
+    searchPlaceholder="Search by dataset, metric, category, org..."
+    [inputHeight]="'regular'"
+    (searchString)="search($event)"></sg-search-bar>
+</div>
+<!--When performing search-->
+<ng-container *ngIf="searchTerm$ | async as searchTerm; else browse">
+  <div *ngIf="resultCount" class="result-count">
+    {{ resultCount }} Results for "{{ searchTerm$ | async }}"
   </div>
-
-  <app-data-layer-tree></app-data-layer-tree>
-  <mat-spinner *ngIf="loading" diameter="20" class="loader"></mat-spinner>
-
-  <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
+  <div *ngIf="results$ | async as results">
+    <app-search-results [results]="results"></app-search-results>
+  </div>
 </ng-container>
 
-<!--Listing Datasets, no selection yet-->
-<ng-template #listDataSets>
-  <ng-container *ngIf="dataSets$ | async; let dataSets">
-    <div
-      *ngFor="let dataSet of dataSets.results"
-      (click)="viewDatasetCategories(dataSet)"
-      class="data-set">
+<!--When browsing-->
+<ng-template #browse>
+  <!--When a dataset is selected-->
+  <ng-container
+    *ngIf="selectedDataSet$ | async as selectedDataSet; else listDataSets">
+    <div (click)="goBack()" class="data-set">
+      <mat-icon *ngIf="selectedDataSet" class="icon-back">arrow_back</mat-icon>
       <div class="data-set-data">
-        <div class="data-set-name">{{ dataSet.name }}</div>
-        <div class="data-set-org">{{ dataSet.organization.name }}</div>
+        <div class="selected-name">{{ selectedDataSet.name }}</div>
+        <div class="selected-org">{{ selectedDataSet.organization.name }}</div>
       </div>
-      <mat-icon>chevron_right</mat-icon>
     </div>
+
+    <app-data-layer-tree></app-data-layer-tree>
+
+    <mat-spinner *ngIf="loading" diameter="20" class="loader"></mat-spinner>
+
+    <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
   </ng-container>
+
+  <!--Listing Datasets, no selection yet-->
+  <ng-template #listDataSets>
+    <ng-container *ngIf="dataSets$ | async; let dataSets">
+      <div
+        *ngFor="let dataSet of dataSets.results"
+        (click)="viewDatasetCategories(dataSet)"
+        class="data-set">
+        <div class="data-set-data">
+          <div class="data-set-name">{{ dataSet.name }}</div>
+          <div class="data-set-org">{{ dataSet.organization.name }}</div>
+        </div>
+        <mat-icon>chevron_right</mat-icon>
+      </div>
+    </ng-container>
+  </ng-template>
 </ng-template>

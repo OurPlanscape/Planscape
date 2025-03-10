@@ -5,7 +5,11 @@ import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
-import { ButtonComponent, ExpanderSectionComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  ExpanderSectionComponent,
+  SearchBarComponent,
+} from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersStateService } from '../data-layers.state.service';
 import {
@@ -22,6 +26,7 @@ import {
 import { DataLayersService } from '@services/data-layers.service';
 import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
+import { SearchResultsComponent } from '../search-results/search-results.component';
 
 @Component({
   selector: 'app-data-layers',
@@ -39,6 +44,8 @@ import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.compo
     MatProgressSpinnerModule,
     ButtonComponent,
     DataLayerTreeComponent,
+    SearchBarComponent,
+    SearchResultsComponent,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -88,6 +95,11 @@ export class DataLayersComponent {
   );
 
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
+
+  search(term: string) {
+    console.log('search!', term);
+    this.searchTerm$.next(term);
+  }
 
   viewDatasetCategories(dataSet: DataSet) {
     this.dataLayersStateService.selectDataSet(dataSet);
