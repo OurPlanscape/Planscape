@@ -37,7 +37,7 @@ export class MapControlsComponent {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() userCanEditStands: boolean = false;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
-  @Input() controlsPosition: "bottom-right" | "top-left" | "top-right" | "bottom-left" = 'top-left';
+  @Input() controlsPosition: 'bottom-right' | 'top-left' | 'top-right' | 'bottom-left' = 'top-left';
   constructor(private mapConfigState: MapConfigState) { }
   @Input() panEnabled: boolean = true;
 
