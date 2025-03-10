@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataSet } from '../../types/data-sets';
+import { DataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
@@ -12,18 +12,7 @@ import {
 } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersStateService } from '../data-layers.state.service';
-import {
-  BehaviorSubject,
-  catchError,
-  map,
-  Observable,
-  of,
-  startWith,
-  switchMap,
-  tap,
-  throwError,
-} from 'rxjs';
-import { DataLayersService } from '@services/data-layers.service';
+import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
 import { SearchResultsComponent } from '../search-results/search-results.component';
@@ -51,48 +40,32 @@ import { SearchResultsComponent } from '../search-results/search-results.compone
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
-  constructor(
-    private dataLayersStateService: DataLayersStateService,
-    private dataLayersService: DataLayersService
-  ) {}
+  constructor(private dataLayersStateService: DataLayersStateService) {}
 
-  loading = false;
-  // TODO USE THIS?
-  private loadingSubject = new BehaviorSubject(false);
-  loading$ = this.loadingSubject.asObservable();
+  loading$ = this.dataLayersStateService.loading$;
 
   dataSets$ = this.dataLayersStateService.dataSets$;
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
 
-  searchTerm$ = new BehaviorSubject<string>('');
+  searchTerm$ = this.dataLayersStateService.searchTerm$;
   resultCount: number | null = null;
 
-  results$: Observable<Results | null> = this.searchTerm$.pipe(
-    tap(() => this.loadingSubject.next(true)),
-    switchMap((term: string) => {
-      if (!term) {
-        this.loadingSubject.next(false);
-        return of(null);
-      }
-      return this.dataLayersService.search(term).pipe(
-        startWith(null),
-        map((results) => {
-          if (results) {
-            this.loadingSubject.next(false);
-            this.resultCount = results.length;
-            return groupSearchResults(results);
-          } else {
-            return results;
-          }
-        })
-      );
-    }),
-
-    catchError((err) => {
-      // You might handle the error here, show a toast, etc.
-      return throwError(() => err);
-    })
-  );
+  results$: Observable<Results | null> =
+    this.dataLayersStateService.searchResults$.pipe(
+      startWith(null),
+      map((results) => {
+        if (results) {
+          this.resultCount = results.length;
+          return groupSearchResults(results);
+        } else {
+          return results;
+        }
+      }),
+      catchError((err) => {
+        // TODO handle errors
+        return throwError(() => err);
+      })
+    );
 
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
 
@@ -103,11 +76,9 @@ export class DataLayersComponent {
 
   viewDatasetCategories(dataSet: DataSet) {
     this.dataLayersStateService.selectDataSet(dataSet);
-    this.loading = true;
   }
 
   goBack() {
     this.dataLayersStateService.clearDataSet();
-    this.loading = false;
   }
 }
