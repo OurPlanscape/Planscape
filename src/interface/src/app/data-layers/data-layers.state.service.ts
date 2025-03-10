@@ -1,7 +1,16 @@
 import { Injectable } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
-import { BehaviorSubject, map, of, shareReplay, switchMap } from 'rxjs';
-import { DataLayer, DataSet } from '@types';
+import {
+  BehaviorSubject,
+  map,
+  Observable,
+  of,
+  shareReplay,
+  startWith,
+  switchMap,
+  tap,
+} from 'rxjs';
+import { DataLayer, DataSet, DataSetSearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 
 @Injectable({
@@ -20,19 +29,46 @@ export class DataLayersStateService {
       if (!dataset) {
         return of(null);
       }
-      return this.service
-        .listDataLayers(dataset.id)
-        .pipe(map((items) => buildPathTree(items)));
+      return this.service.listDataLayers(dataset.id).pipe(
+        map((items) => buildPathTree(items)),
+        tap((s) => this.loadingSubject.next(false))
+      );
     }),
     shareReplay(1)
   );
 
   hasNoTreeData$ = this.dataTree$.pipe(map((d) => !!d && d.length === 0));
 
+  private loadingSubject = new BehaviorSubject(false);
+  loading$ = this.loadingSubject.asObservable();
+
+  searchTerm$ = new BehaviorSubject<string>('');
+
+  searchResults$: Observable<DataSetSearchResult[] | null> =
+    this.searchTerm$.pipe(
+      tap(() => this.loadingSubject.next(true)),
+      switchMap((term: string) => {
+        if (!term) {
+          this.loadingSubject.next(false);
+          return of(null);
+        }
+        return this.service.search(term).pipe(
+          startWith(null),
+          map((results) => {
+            if (results) {
+              this.loadingSubject.next(false);
+            }
+            return results;
+          })
+        );
+      })
+    );
+
   constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
     this._selectedDataSet$.next(dataset);
+    this.loadingSubject.next(true);
   }
 
   clearDataSet() {

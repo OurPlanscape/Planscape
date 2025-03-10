@@ -1,16 +1,21 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataLayer, DataSet } from '../../types/data-sets';
-import { NestedTreeControl } from '@angular/cdk/tree';
+import { DataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
-import { ButtonComponent, ExpanderSectionComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  ExpanderSectionComponent,
+  SearchBarComponent,
+} from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { TreeNode } from './tree-node';
 import { DataLayersStateService } from '../data-layers.state.service';
-import { shareReplay, tap } from 'rxjs';
+import { catchError, map, Observable, startWith, throwError } from 'rxjs';
+import { groupSearchResults, Results } from './search';
+import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
+import { SearchResultsComponent } from '../search-results/search-results.component';
 
 @Component({
   selector: 'app-data-layers',
@@ -27,6 +32,9 @@ import { shareReplay, tap } from 'rxjs';
     NgClass,
     MatProgressSpinnerModule,
     ButtonComponent,
+    DataLayerTreeComponent,
+    SearchBarComponent,
+    SearchResultsComponent,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -34,34 +42,43 @@ import { shareReplay, tap } from 'rxjs';
 export class DataLayersComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
-  loading = false;
+  loading$ = this.dataLayersStateService.loading$;
 
   dataSets$ = this.dataLayersStateService.dataSets$;
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
 
-  treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
+  searchTerm$ = this.dataLayersStateService.searchTerm$;
+  resultCount: number | null = null;
 
-  treeData$ = this.dataLayersStateService.dataTree$.pipe(
-    tap((_) => (this.loading = false)),
-    shareReplay(1)
-  );
+  results$: Observable<Results | null> =
+    this.dataLayersStateService.searchResults$.pipe(
+      startWith(null),
+      map((results) => {
+        if (results) {
+          this.resultCount = results.length;
+          return groupSearchResults(results);
+        } else {
+          return results;
+        }
+      }),
+      catchError((err) => {
+        // TODO handle errors
+        return throwError(() => err);
+      })
+    );
 
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
 
+  search(term: string) {
+    console.log('search!', term);
+    this.searchTerm$.next(term);
+  }
+
   viewDatasetCategories(dataSet: DataSet) {
     this.dataLayersStateService.selectDataSet(dataSet);
-    this.loading = true;
   }
 
   goBack() {
     this.dataLayersStateService.clearDataSet();
-    this.loading = false;
   }
-
-  selectDataLayer(dataLayer: DataLayer) {
-    this.dataLayersStateService.selectDataLayer(dataLayer);
-  }
-
-  hasChild = (_: number, node: TreeNode) =>
-    !!node.children && node.children.length > 0;
 }
