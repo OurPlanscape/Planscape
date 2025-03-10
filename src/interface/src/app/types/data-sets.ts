@@ -6,19 +6,14 @@ export interface DataSet {
   updated_at: string;
   deleted_at: string | null;
   created_by: number;
-  organization: { id: number; name: string };
+  organization: IdNamePair;
   name: string;
   description: string | null;
   visibility: string;
   version: string;
 }
 
-export interface Organization {
-  id: number;
-  name: string;
-}
-
-export interface Dataset {
+export interface IdNamePair {
   id: number;
   name: string;
 }
@@ -69,8 +64,8 @@ export interface Styles {
 
 export interface DataLayer {
   id: number;
-  organization: Organization;
-  dataset: Dataset;
+  organization: IdNamePair;
+  dataset: IdNamePair;
   path: string[]; // Array of category names describing the tree path
   name: string;
   type: string;
