@@ -7,7 +7,7 @@ import { DataLayer, DataSet, Pagination } from '@types';
   providedIn: 'root',
 })
 export class DataLayersService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   listDataSets() {
     return this.http.get<Pagination<DataSet>>(
@@ -22,6 +22,17 @@ export class DataLayersService {
   listDataLayers(dataSetId: number) {
     return this.http.get<DataLayer[]>(
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse',
+      {
+        withCredentials: true,
+        params: {},
+      }
+    );
+  }
+
+  //TODO: get the layer URL--does it come with a style?
+  loadDataLayer(layerUrl: string) {
+    return this.http.get<DataLayer[]>(
+      layerUrl,
       {
         withCredentials: true,
         params: {},
