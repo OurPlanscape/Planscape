@@ -1,0 +1,29 @@
+@import 'colors';
+
+.vertical-control {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #e1e1e1;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25), 0 2px 2px 0 rgba(0, 0, 0, 0.1);
+    width: 30px;
+    height: 62px;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px;
+  
+  .zoom-button {
+    border:none;
+    width: 30px;
+    height: 30px;
+    padding: 2px;
+    background-color: $color-white;
+    border-radius: 4px;
+    line-height: 28px;
+
+    &:hover {
+      background-color: $color-soft-gray;
+    }
+  }
+}

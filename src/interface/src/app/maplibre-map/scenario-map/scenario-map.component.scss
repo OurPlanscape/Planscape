@@ -1,4 +1,3 @@
-@import 'colors';
 
 :host {
   display: flex;
@@ -18,33 +17,6 @@ mgl-map {
   }
 }
 
-.vertical-control {
-  display: flex;
-  flex-direction: column;
-  background-color: #fff;
-  border-radius: 4px;
-  border: 1px solid #e1e1e1;
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25), 0 2px 2px 0 rgba(0, 0, 0, 0.1);
-  width: 30px;
-}
 
-.zoom-button {
-  border:none;
-  background-color: $color-light-gray;
-  width: 100%;
-  height: 30px;
-  padding: 0px;
-
-  :hover {
-    background-color: $color-md-gray;
-  }
-
-  .zoom-in-button {
-    border-bottom:1px $color-soft-gray solid;
-  }
-  .zoom-out-button {
-    border: none;
-  }
-}
 
 

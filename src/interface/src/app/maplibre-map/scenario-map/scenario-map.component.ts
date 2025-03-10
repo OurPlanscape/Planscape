@@ -8,18 +8,17 @@ import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
-import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
-import { MatIconModule } from '@angular/material/icon';
+import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.component';
+
 
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
   imports: [
     CommonModule,
-    ControlComponent,
     MapComponent,
     MapNavbarComponent,
-    MatIconModule,
+    MapZoomControlComponent,
     OpacitySliderComponent,
   ],
   templateUrl: './scenario-map.component.html',
@@ -29,7 +28,7 @@ export class ScenarioMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService
-  ) {}
+  ) { }
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
