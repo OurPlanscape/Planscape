@@ -1,10 +1,9 @@
 @import "colors";
 @import "mixins";
 
-.dataset {
+.group {
   padding: 30px;
   border: 1px solid #d0d0d0;
-  font-size: 20px;
 }
 
 .data-layer-path {
@@ -12,8 +11,10 @@
 }
 
 .data-layer-name {
-  margin-left: 40px;
+  margin-left: 20px;
   color: #404040;
+  display: flex;
+  align-items: center;
 }
 
 // TODO: component?
@@ -29,6 +30,10 @@
   top: 0;
   background: $color-white;
   z-index: 100;
+}
+
+.info-icon {
+  margin-left: auto;
 }
 
 :host {

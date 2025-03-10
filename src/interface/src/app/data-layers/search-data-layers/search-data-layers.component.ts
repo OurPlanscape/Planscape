@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import { FormsModule } from '@angular/forms';
-import { DataLayer, DataSetSearchResult } from '@types';
+import { DataLayer, DataSetSearchResult, IdNamePair } from '@types';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
-import { SearchBarComponent } from '@styleguide';
+import { ButtonComponent, SearchBarComponent } from '@styleguide';
 import {
   BehaviorSubject,
   catchError,
@@ -11,7 +11,6 @@ import {
   Observable,
   of,
   startWith,
-  Subject,
   switchMap,
   tap,
   throwError,
@@ -34,12 +33,14 @@ interface Results {
     SearchBarComponent,
     AsyncPipe,
     MatProgressSpinnerModule,
+    ButtonComponent,
   ],
   templateUrl: './search-data-layers.component.html',
   styleUrl: './search-data-layers.component.scss',
 })
 export class SearchDataLayersComponent {
-  private searchTerm$ = new Subject<string>();
+  searchTerm$ = new BehaviorSubject<string>('');
+  resultCount: number | null = null;
 
   private loadingSubject = new BehaviorSubject(false);
   loading$ = this.loadingSubject.asObservable();
@@ -56,7 +57,8 @@ export class SearchDataLayersComponent {
         map((results) => {
           if (results) {
             this.loadingSubject.next(false);
-            return groupDatalayersOneLevel(results);
+            this.resultCount = results.length;
+            return groupSearchResults(results);
           } else {
             return results;
           }
@@ -84,6 +86,15 @@ export class SearchDataLayersComponent {
   getPath(result: DataSetSearchResult) {
     return (result.data as DataLayer).path.join('-');
   }
+
+  goToDataSet(id: number) {
+    // navigate to the dataset somehow.
+  }
+}
+
+interface Category {
+  path: string[];
+  layers: DataSetSearchResult[];
 }
 
 /**
@@ -92,32 +103,47 @@ export class SearchDataLayersComponent {
  * also stores the actual path array for reference
  */
 interface GroupedDatalayers {
-  [pathKey: string]: {
-    path: string[];
-    layers: DataSetSearchResult[];
+  [groupName: string]: {
+    org: IdNamePair;
+    dataset: IdNamePair;
+    categories: {
+      [pathKey: string]: Category;
+    };
   };
 }
 
-function groupDatalayersOneLevel(results: DataSetSearchResult[]) {
-  // Separate Datasets & Datalayers
+function groupSearchResults(results: DataSetSearchResult[]) {
+  // Separate Datasets & DataLayers
   const dataSets = results.filter((r) => r.type === 'DATASET');
   const dataLayers = results.filter((r) => r.type === 'DATALAYER');
 
-  // Group DATALAYERs by their path array, joined with a delimiter
-  const grouped: GroupedDatalayers = {};
+  // Group results by org first, and then categories
+  const grouped = dataLayers.reduce((acc, value) => {
+    const org = value.data.organization;
+    const pathArr = (value.data as DataLayer).path || [];
+    const pathKey = pathArr.join(' - ');
+    const orgPath = org.id + '-' + org.name;
 
-  for (const layer of dataLayers) {
-    const pathArr = (layer.data as DataLayer).path || [];
-    const pathKey = pathArr.join(' - '); // e.g. "Fire - Smoke"
-
-    if (!grouped[pathKey]) {
-      grouped[pathKey] = {
+    // if no org create one
+    if (!acc[orgPath]) {
+      acc[orgPath] = {
+        org: org,
+        dataset: (value.data as DataLayer).dataset,
+        categories: {},
+      };
+    }
+    // if no category create one
+    if (!acc[orgPath].categories[pathKey]) {
+      acc[orgPath].categories[pathKey] = {
         path: pathArr,
         layers: [],
       };
     }
-    grouped[pathKey].layers.push(layer);
-  }
+    // finally, push the layer
+    acc[orgPath].categories[pathKey].layers.push(value);
+    return acc;
+  }, {} as GroupedDatalayers);
 
+  // return datasets and grouped results
   return { dataSets, groupedLayers: grouped };
 }
