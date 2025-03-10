@@ -34,7 +34,7 @@ import { Map as MapLibreMap, ControlPosition } from 'maplibre-gl';
   styleUrl: './map-controls.component.scss',
 })
 export class MapControlsComponent {
-  constructor(private mapConfigState: MapConfigState) { }
+  constructor(private mapConfigState: MapConfigState) {}
 
   @Input() mapLibreMap!: MapLibreMap;
   @Input() controlsPosition: ControlPosition = 'top-left';
