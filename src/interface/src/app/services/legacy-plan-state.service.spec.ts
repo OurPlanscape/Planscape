@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { PlanStateService } from './plan-state.service';
+import { LegacyPlanStateService } from './legacy-plan-state.service';
 import { PlanService } from './plan.service';
 import { ScenarioService } from './scenario.service';
 import { TreatmentGoalsService } from './treatment-goals.service';
 import { of } from 'rxjs';
 
-describe('PlanStateService', () => {
-  let service: PlanStateService;
+describe('LegacyPlanStateService', () => {
+  let service: LegacyPlanStateService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -20,7 +20,7 @@ describe('PlanStateService', () => {
         },
       ],
     });
-    service = TestBed.inject(PlanStateService);
+    service = TestBed.inject(LegacyPlanStateService);
   });
 
   it('should be created', () => {

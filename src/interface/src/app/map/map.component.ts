@@ -37,7 +37,7 @@ import {
   AuthService,
   MapService,
   PlanService,
-  PlanStateService,
+  LegacyPlanStateService,
   PopupService,
   SessionService,
   ShareMapService,
@@ -185,7 +185,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
-    private planStateService: PlanStateService,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private planService: PlanService,
     private router: Router,
     private http: HttpClient,
@@ -286,7 +286,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private loadPlanAndDrawPlanningArea() {
     // if planID is provided load planning area
     if (this.planId) {
-      const plan$ = this.planStateService.getPlan(this.planId).pipe(take(1));
+      const plan$ = this.LegacyPlanStateService.getPlan(this.planId).pipe(
+        take(1)
+      );
 
       plan$.subscribe({
         next: (plan) => {

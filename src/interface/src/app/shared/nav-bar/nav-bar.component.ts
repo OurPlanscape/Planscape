@@ -1,13 +1,14 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
-import { PlanStateService, WINDOW } from '@services';
+import { WINDOW } from '@services';
 
 import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
 import { ActivatedRoute, Params } from '@angular/router';
-import { map, of } from 'rxjs';
+import { filter, map } from 'rxjs';
 import { canViewCollaborators } from '../../plan/permissions';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 export type NavView =
   | 'Explore'
@@ -42,19 +43,17 @@ export class NavBarComponent implements OnInit {
 
   params: Params | null = null;
 
-  canSharePlan$ =
-    this.route.snapshot?.params && this.route.snapshot?.params['id']
-      ? this.planStateService
-          .getPlan(this.route.snapshot.params['id'])
-          .pipe(map((plan) => canViewCollaborators(plan)))
-      : of(false);
+  canSharePlan$ = this.planState.currentPlan$.pipe(
+    filter((plan) => !!plan),
+    map((plan) => (plan ? canViewCollaborators(plan) : false))
+  );
 
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
     private route: ActivatedRoute,
-    private planStateService: PlanStateService,
-    private homeParametersStorageService: HomeParametersStorageService
+    private homeParametersStorageService: HomeParametersStorageService,
+    private planState: PlanState
   ) {}
 
   ngOnInit(): void {

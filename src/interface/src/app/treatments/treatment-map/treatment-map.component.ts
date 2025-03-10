@@ -29,11 +29,10 @@ import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addRequestHeaders } from '../../maplibre-map/maplibre.helper';
-import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
+import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-layer/planning-area-layer.component';
 import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
-import { Geometry } from 'geojson';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { OpacitySliderComponent } from '@styleguide';
@@ -168,14 +167,6 @@ export class TreatmentMapComponent {
    * permissions for current user
    */
   userCanEditStands: boolean = false;
-
-  /**
-   *
-   * The Planning Area geometry
-   */
-  planningAreaGeometry$ = this.treatmentsState.planningArea$.pipe(
-    map((area) => area.geometry as Geometry)
-  );
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
