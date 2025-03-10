@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -22,6 +22,8 @@ import { AsyncPipe, NgIf } from '@angular/common';
 })
 export class PlanningAreaLayerComponent {
   constructor(private planState: PlanState) {}
+
+  @Input() opacity = 0.4;
 
   polygonGeometry$ = this.planState.planningAreaGeometry$;
 

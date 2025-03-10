@@ -48,6 +48,7 @@ export class ScenarioMapComponent {
   //placeholder until we add the layers to update
   projectLayerOpacity$ = new BehaviorSubject<number>(1);
 
+  opacity = 0;
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
       return getBoundsFromGeometry(geometry);
@@ -60,6 +61,7 @@ export class ScenarioMapComponent {
 
   handleOpacityChange(opacity: number) {
     // just a placeholder until we include the layer this changes
+    this.projectLayerOpacity$.next(opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
