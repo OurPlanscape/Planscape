@@ -8,7 +8,7 @@ import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
-import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.component';
+import { MapControlsComponent } from '../map-controls/map-controls.component';
 
 
 @Component({
@@ -18,7 +18,7 @@ import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.co
     CommonModule,
     MapComponent,
     MapNavbarComponent,
-    MapZoomControlComponent,
+    MapControlsComponent,
     OpacitySliderComponent,
   ],
   templateUrl: './scenario-map.component.html',

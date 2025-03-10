@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { MapControlsComponent } from '../map-controls/map-controls.component';
+import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
@@ -49,7 +49,7 @@ export class DirectImpactsMapComponent {
     private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService,
     private authService: AuthService
-  ) {}
+  ) { }
 
   readonly labels = YEAR_INTERVAL_LABELS;
 
