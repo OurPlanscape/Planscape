@@ -49,14 +49,6 @@ export class ScenarioMapComponent {
     // just a placeholder until we include the layer this changes
   }
 
-  zoomIn() {
-    this.mapLibreMap.zoomIn();
-  }
-
-  zoomOut() {
-    this.mapLibreMap.zoomOut();
-  }
-
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 }
