@@ -1,41 +1,47 @@
 {
-  "rasterChannels": "auto",
-  "rasterGamma": 1.0,
-  "rasterContrastEnhancement": "none",
-  "rasterColorMapType": "ramp",
-  "noData": {
-    "values": [
-      0,
-      128.0
-    ],
-    "useTransparent": true,
-    "color": "#ff00ff",
-    "opacity": 0.5
+  "map_type": "RAMP",
+  "no_data": {
+    "values": [0.003],
+    "color": "#CCCCCC",
+    "opacity": 0.0,
+    "label": "0"
   },
   "entries": [
     {
-      "value": 1.01,
-      "color": "#6a28c7",
+      "value": 0.008,
+      "color": "#F5CC00",
       "opacity": 1.0,
-      "label": "1"
+      "label": null
     },
     {
-      "value": 2.01,
-      "color": "#00b6f1",
+      "value": 0.013,
+      "color": "#F5A300",
       "opacity": 1.0,
-      "label": "2"
+      "label": null
     },
     {
-      "value": 3.01,
-      "color": "#d9bf0d",
+      "value": 0.019,
+      "color": "#F57A00",
       "opacity": 1.0,
-      "label": "3"
+      "label": null
     },
     {
-      "value": 11.01,
-      "color": "#c44245",
+      "value": 0.026,
+      "color": "#F55200",
       "opacity": 1.0,
-      "label": ">3"
+      "label": null
+    },
+    {
+      "value": 0.036,
+      "color": "#F52900",
+      "opacity": 1.0,
+      "label": null
+    },
+    {
+      "value": 0.057,
+      "color": "#F50000",
+      "opacity": 1.0,
+      "label": "0.06"
     }
   ]
 }

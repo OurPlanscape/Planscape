@@ -1,109 +1,115 @@
-/**
- * Interfaces describing the structure of the style JSON
- */
+import { scaleLinear } from 'd3-scale';
+import { color as d3Color } from 'd3-color';
+
 export interface NoData {
   values: number[];
-  useTransparent?: boolean;
   color?: string;
   opacity?: number;
+  label?: string;
 }
 
 export interface Entry {
   value: number;
   color: string;
   opacity?: number;
+  label?: string | null;
 }
 
 export interface StyleJson {
-  noData?: NoData;
+  map_type: 'RAMP' | 'INTERVALS' | 'VALUES';
+  no_data?: NoData;
   entries: Entry[];
-  rasterColorMapType?: string;
-  rasterGamma?: number;
 }
 
-/**
- * Creates a color function based on the provided style JSON.
- *
- * @param styleJson Configuration object for handling pixel color and transparency.
- * @returns A function that applies the style rules to each pixel in an RGBA image.
- */
 export function makeColorFunction(
   styleJson: StyleJson
-): (pixel: number[], rgba: Uint8ClampedArray, metadata: any) => void {
-  const { noData, entries, rasterGamma } = styleJson;
+): (pixel: number[], rgba: Uint8ClampedArray) => void {
+  const { map_type, no_data, entries } = styleJson;
+  const sorted = entries.slice().sort((a, b) => a.value - b.value);
 
-  // Convert hex color like "#6a28c7" to [r, g, b].
-  function parseHexColor(hex: string): [number, number, number] {
-    // remove "#" if present
-    const cleaned = hex.replace(/^#/, '');
-    const bigint = parseInt(cleaned, 16);
-    return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+  // For a RAMP, build a scale
+  let rampColorFn: ((val: number) => [number, number, number, number]) | null = null;
+  if (map_type === 'RAMP' && sorted.length >= 2) {
+    const domain = sorted.map(e => e.value);
+    const colorStrings = sorted.map(e => e.color);
+    const colorScale = scaleLinear<string>().domain(domain).range(colorStrings).clamp(true);
+    const alphaValues = sorted.map(e => e.opacity ?? 1.0);
+    const alphaScale = scaleLinear<number>().domain(domain).range(alphaValues).clamp(true);
+
+    rampColorFn = (val: number) => {
+      const c = d3Color(colorScale(val));
+      if (!c) return [0, 0, 0, 0];
+      const rgbObj = c.rgb();
+      const a = alphaScale(val);
+      return [rgbObj.r, rgbObj.g, rgbObj.b, a];
+    };
   }
 
-  // Gamma function to apply `rasterGamma`
-  function applyGamma(
-    color: [number, number, number],
-    gamma: number
-  ): [number, number, number] {
-    // color is [r, g, b], each 0-255.
-    return color.map((c) => {
-      const normalized = c / 255;
-      const corrected = Math.pow(normalized, 1 / gamma);
-      return Math.round(corrected * 255);
-    }) as [number, number, number];
+  function setPixelColor(rgbaData: Uint8ClampedArray, hex: string, opacity = 1.0) {
+    const c = d3Color(hex);
+    if (!c) {
+      rgbaData.set([0, 0, 0, 0]);
+      return;
+    }
+    const rgbObj = c.rgb();
+    const a = Math.round(opacity * 255);
+    rgbaData.set([rgbObj.r, rgbObj.g, rgbObj.b, a]);
   }
 
-  // This function is called for each pixel: (pixel, rgba, metadata).
-  return (pixel: number[], rgba: Uint8ClampedArray, metadata: any): void => {
+  return (pixel: number[], rgba: Uint8ClampedArray) => {
     const val = pixel[0];
 
-    // 1. Handle noData values if present in the JSON
-    if (noData && noData.values.includes(val)) {
-      if (noData.useTransparent) {
-        rgba.set([0, 0, 0, 0]);
-      } else if (noData.color) {
-        const [r, g, b] = parseHexColor(noData.color);
-        const alpha =
-          noData.opacity !== undefined ? Math.round(noData.opacity * 255) : 255;
-        rgba.set([r, g, b, alpha]);
+    if (no_data?.values?.includes(val)) {
+      if (no_data.color) {
+        setPixelColor(rgba, no_data.color, no_data.opacity ?? 0);
       } else {
-        // default fallback if noData but no color => transparent
         rgba.set([0, 0, 0, 0]);
       }
       return;
     }
 
-    // 2. If the entry is not noData, handle that data
-    let entryOpacity = 255; // default = fully opaque
+    switch (map_type) {
+      case 'VALUES': {
+        const entry = sorted.find(e => e.value === val);
+        if (entry) {
+          setPixelColor(rgba, entry.color, entry.opacity ?? 1.0);
+        } else {
+          rgba.set([0, 0, 0, 0]);
+        }
+        return;
+      }
 
-    // Sort entries by value
-    const sorted = entries.slice().sort((a, b) => a.value - b.value);
-    let usedEntry: Entry | null = null;
-    for (let i = 0; i < sorted.length; i++) {
-      if (val <= sorted[i].value) {
-        usedEntry = sorted[i];
-        break;
+      case 'INTERVALS': {
+        if (val <= sorted[0].value) {
+          const first = sorted[0];
+          setPixelColor(rgba, first.color, first.opacity ?? 1.0);
+          return;
+        }
+        let chosen = sorted[sorted.length - 1];
+        for (let i = 0; i < sorted.length; i++) {
+          if (val <= sorted[i].value) {
+            chosen = sorted[i];
+            break;
+          }
+        }
+        setPixelColor(rgba, chosen.color, chosen.opacity ?? 1.0);
+        return;
+      }
+
+      case 'RAMP':
+      default: {
+        if (rampColorFn && sorted.length >= 2) {
+          const [r, g, b, aFloat] = rampColorFn(val);
+          const a = Math.round(aFloat * 255);
+          rgba.set([r, g, b, a]);
+        } else if (sorted.length === 1) {
+          const only = sorted[0];
+          setPixelColor(rgba, only.color, only.opacity ?? 1.0);
+        } else {
+          rgba.set([0, 0, 0, 0]);
+        }
+        return;
       }
     }
-
-    // If val is above all breakpoints, use the last entry
-    if (!usedEntry) {
-      usedEntry = sorted[sorted.length - 1];
-    }
-
-    // Convert color to [r, g, b]
-    const parsedColor = parseHexColor(usedEntry.color);
-    if (usedEntry.opacity !== undefined) {
-      entryOpacity = Math.round(usedEntry.opacity * 255);
-    }
-
-    // 3. Apply gamma if needed
-    const finalColor =
-      rasterGamma && rasterGamma !== 1.0
-        ? applyGamma(parsedColor, rasterGamma)
-        : parsedColor;
-
-    // 4. Set RGBA
-    rgba.set([finalColor[0], finalColor[1], finalColor[2], entryOpacity]);
   };
 }

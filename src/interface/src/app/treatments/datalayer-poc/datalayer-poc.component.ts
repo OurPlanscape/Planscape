@@ -20,7 +20,7 @@ import { environment } from '../../../environments/environment';
 export class DatalayerPocComponent implements OnInit {
   finalUrl = '';
   imageUrl =
-    'https://planscape-control-dev.s3.us-west-2.amazonaws.com/datalayers/1/0396428b-ba40-4863-b045-b44989d07a37.tif?' +
+    'https://planscape-control-dev.s3.us-west-2.amazonaws.com/datalayers/1/0396428b-ba40-4863-b045-b44989d07a37.tif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA2ISRA6UAKFOLPL76%2F20250303%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250303T155951Z&X-Amz-Expires=86400&X-Amz-SignedHeaders=host&X-Amz-Signature=33e2d9b04f16b509323675eb65b70a940b563baf8d699f477f224e6fb2d18202' +
     environment.aws_params;
   stylesUrl = '/assets/geostyles.json';
 
