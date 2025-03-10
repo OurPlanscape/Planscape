@@ -11,7 +11,7 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { Map as MapLibreMap, ControlPosition } from 'maplibre-gl';
 
 @Component({
   selector: 'app-map-controls',
@@ -34,11 +34,13 @@ import { Map as MapLibreMap } from 'maplibre-gl';
   styleUrl: './map-controls.component.scss',
 })
 export class MapControlsComponent {
+  constructor(private mapConfigState: MapConfigState) {}
+
   @Input() mapLibreMap!: MapLibreMap;
+  @Input() controlsPosition: ControlPosition = 'top-left';
   @Input() userCanEditStands: boolean = false;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
-
-  constructor(private mapConfigState: MapConfigState) {}
+  @Input() panEnabled: boolean = true;
 
   zoomIn() {
     this.mapLibreMap.zoomIn();

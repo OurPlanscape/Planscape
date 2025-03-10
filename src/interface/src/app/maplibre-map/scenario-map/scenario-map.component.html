@@ -18,5 +18,10 @@
   [fitBoundsOptions]="{ padding: 20 }"
   [fitBounds]="bounds"
   (mapLoad)="mapLoaded($event)">
+  <app-map-controls
+    [mapLibreMap]="mapLibreMap"
+    controlsPosition="bottom-right"
+    [panEnabled]="false">
+  </app-map-controls>
   <app-planning-area-layer> </app-planning-area-layer>
 </mgl-map>

@@ -1,18 +1,18 @@
-<mgl-control position="top-left">
+<mgl-control [position]="controlsPosition">
   <div class="controls">
     <button
       type="button"
       (click)="zoomIn()"
       matTooltip="Zoom In"
       matTooltipPosition="right">
-      <mat-icon class="material-symbols-outlined">zoom_in</mat-icon>
+      <mat-icon class="material-symbols-outlined">add</mat-icon>
     </button>
     <button
       type="button"
       (click)="zoomOut()"
       matTooltip="Zoom Out"
       matTooltipPosition="right">
-      <mat-icon class="material-symbols-outlined">zoom_out</mat-icon>
+      <mat-icon class="material-symbols-outlined">remove</mat-icon>
     </button>
     <button
       type="button"
@@ -26,6 +26,7 @@
       <mat-icon class="material-symbols-outlined">arrow_selector_tool</mat-icon>
     </button>
     <button
+      *ngIf="panEnabled"
       type="button"
       (click)="togglePan()"
       [ngClass]="{ active: (standSelectionEnabled$ | async) === false }"

@@ -14,6 +14,7 @@ import { map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
+import { MapControlsComponent } from '../map-controls/map-controls.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -22,6 +23,7 @@ import { BehaviorSubject } from 'rxjs';
     CommonModule,
     MapComponent,
     MapNavbarComponent,
+    MapControlsComponent,
     OpacitySliderComponent,
     PlanningAreaLayerComponent,
   ],
