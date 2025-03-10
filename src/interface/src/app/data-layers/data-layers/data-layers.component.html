@@ -8,10 +8,10 @@
 </div>
 <!--When performing search-->
 <ng-container *ngIf="searchTerm$ | async as searchTerm; else browse">
-  <div *ngIf="resultCount" class="result-count">
-    {{ resultCount }} Results for "{{ searchTerm$ | async }}"
-  </div>
   <div *ngIf="results$ | async as results">
+    <div *ngIf="resultCount" class="result-count">
+      {{ resultCount }} Results for "{{ searchTerm$ | async }}"
+    </div>
     <app-search-results [results]="results"></app-search-results>
   </div>
 </ng-container>
@@ -30,8 +30,6 @@
     </div>
 
     <app-data-layer-tree></app-data-layer-tree>
-
-    <mat-spinner *ngIf="loading" diameter="20" class="loader"></mat-spinner>
 
     <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
   </ng-container>
@@ -52,3 +50,8 @@
     </ng-container>
   </ng-template>
 </ng-template>
+
+<mat-spinner
+  *ngIf="loading$ | async"
+  diameter="20"
+  class="loader"></mat-spinner>
