@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import { FormsModule } from '@angular/forms';
-import { DataLayer, DataSetSearchResult, IdNamePair } from '@types';
+import { DataLayer, DataSetSearchResult } from '@types';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent, SearchBarComponent } from '@styleguide';
 import {
@@ -16,11 +16,11 @@ import {
   throwError,
 } from 'rxjs';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-
-interface Results {
-  dataSets: DataSetSearchResult[];
-  groupedLayers: GroupedDatalayers;
-}
+import {
+  GroupedDatalayers,
+  groupSearchResults,
+  Results,
+} from '../data-layers/search';
 
 @Component({
   selector: 'app-search-data-layers',
@@ -90,60 +90,4 @@ export class SearchDataLayersComponent {
   goToDataSet(id: number) {
     // navigate to the dataset somehow.
   }
-}
-
-interface Category {
-  path: string[];
-  layers: DataSetSearchResult[];
-}
-
-/**
- * A single grouping structure for DATALAYERs,
- * keyed by a path-based string. Each group
- * also stores the actual path array for reference
- */
-interface GroupedDatalayers {
-  [groupName: string]: {
-    org: IdNamePair;
-    dataset: IdNamePair;
-    categories: {
-      [pathKey: string]: Category;
-    };
-  };
-}
-
-function groupSearchResults(results: DataSetSearchResult[]) {
-  // Separate Datasets & DataLayers
-  const dataSets = results.filter((r) => r.type === 'DATASET');
-  const dataLayers = results.filter((r) => r.type === 'DATALAYER');
-
-  // Group results by org first, and then categories
-  const grouped = dataLayers.reduce((acc, value) => {
-    const org = value.data.organization;
-    const pathArr = (value.data as DataLayer).path || [];
-    const pathKey = pathArr.join(' - ');
-    const orgPath = org.id + '-' + org.name;
-
-    // if no org create one
-    if (!acc[orgPath]) {
-      acc[orgPath] = {
-        org: org,
-        dataset: (value.data as DataLayer).dataset,
-        categories: {},
-      };
-    }
-    // if no category create one
-    if (!acc[orgPath].categories[pathKey]) {
-      acc[orgPath].categories[pathKey] = {
-        path: pathArr,
-        layers: [],
-      };
-    }
-    // finally, push the layer
-    acc[orgPath].categories[pathKey].layers.push(value);
-    return acc;
-  }, {} as GroupedDatalayers);
-
-  // return datasets and grouped results
-  return { dataSets, groupedLayers: grouped };
 }

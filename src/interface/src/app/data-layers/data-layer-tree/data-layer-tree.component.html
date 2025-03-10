@@ -1,0 +1,42 @@
+<mat-tree
+  *ngIf="treeData$ | async as treeData"
+  [dataSource]="treeData"
+  [treeControl]="treeControl"
+  class="data-layers">
+  <!-- leaf node (item node with no children) -->
+  <mat-tree-node
+    *matTreeNodeDef="let node"
+    matTreeNodePadding
+    class="data-layer">
+    <input
+      class="data-layer-input"
+      name="data-layer"
+      type="radio"
+      (click)="selectDataLayer(node.item)"
+      [id]="node.item.id" />
+    <label [for]="node.item.id" class="data-layer-label">{{ node.name }}</label>
+    <button
+      sg-button
+      variant="icon-only"
+      icon="info"
+      class="info-icon"
+      [outlined]="true"></button>
+  </mat-tree-node>
+
+  <!-- category node -->
+  <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
+    <div
+      class="mat-tree-node data-layer-node"
+      matTreeNodeToggle
+      [ngClass]="{ expanded: treeControl.isExpanded(node) }">
+      <span class="icon"></span>
+      {{ node.name }}
+    </div>
+    <div
+      *ngIf="treeControl.isExpanded(node)"
+      role="group"
+      class="data-layer-cat">
+      <ng-container matTreeNodeOutlet></ng-container>
+    </div>
+  </mat-nested-tree-node>
+</mat-tree>

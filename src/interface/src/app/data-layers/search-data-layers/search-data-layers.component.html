@@ -7,7 +7,7 @@
     (searchString)="search($event)"></sg-search-bar>
 </div>
 <div *ngIf="results$ | async as results">
-  <div *ngIf="resultCount">
+  <div *ngIf="resultCount" class="result-count">
     {{ resultCount }} Results for "{{ searchTerm$ | async }}"
   </div>
 
