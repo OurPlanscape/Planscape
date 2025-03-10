@@ -49,7 +49,7 @@ export class DirectImpactsMapComponent {
     private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService,
     private authService: AuthService
-  ) { }
+  ) {}
 
   readonly labels = YEAR_INTERVAL_LABELS;
 

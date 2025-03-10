@@ -10,7 +10,6 @@ import { OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 
-
 @Component({
   selector: 'app-scenario-map',
   standalone: true,
@@ -28,7 +27,7 @@ export class ScenarioMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService
-  ) { }
+  ) {}
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */

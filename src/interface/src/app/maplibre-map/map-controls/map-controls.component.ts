@@ -34,11 +34,16 @@ import { Map as MapLibreMap } from 'maplibre-gl';
   styleUrl: './map-controls.component.scss',
 })
 export class MapControlsComponent {
+  constructor(private mapConfigState: MapConfigState) {}
+
   @Input() mapLibreMap!: MapLibreMap;
+  @Input() controlsPosition:
+    | 'bottom-right'
+    | 'top-left'
+    | 'top-right'
+    | 'bottom-left' = 'top-left';
   @Input() userCanEditStands: boolean = false;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
-  @Input() controlsPosition: 'bottom-right' | 'top-left' | 'top-right' | 'bottom-left' = 'top-left';
-  constructor(private mapConfigState: MapConfigState) { }
   @Input() panEnabled: boolean = true;
 
   zoomIn() {
