@@ -1,18 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { SearchDataLayersComponent } from './search-data-layers.component';
+import { SearchResultsComponent } from './search-results.component';
 
 describe('SearchDataLayersComponent', () => {
-  let component: SearchDataLayersComponent;
-  let fixture: ComponentFixture<SearchDataLayersComponent>;
+  let component: SearchResultsComponent;
+  let fixture: ComponentFixture<SearchResultsComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [SearchDataLayersComponent]
-    })
-    .compileComponents();
-    
-    fixture = TestBed.createComponent(SearchDataLayersComponent);
+      imports: [SearchResultsComponent],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(SearchResultsComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

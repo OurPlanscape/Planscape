@@ -1,0 +1,41 @@
+<div
+  *ngFor="let result of results?.dataSets"
+  class="group"
+  (click)="goToDataSet(result.id)">
+  <div class="data-layer-dataset">{{ result.name }}</div>
+  <div class="data-layer-org">{{ result.data.organization.name }}</div>
+</div>
+<div *ngIf="results">
+  <div *ngIf="results.groupedLayers">
+    <div *ngFor="let result of results.groupedLayers | keyvalue">
+      <div
+        *ngFor="let category of result.value.categories | keyvalue"
+        class="group">
+        <div class="data-layer-dataset">{{ result.value.dataset.name }}</div>
+        <div class="data-layer-org">{{ result.value.org.name }}</div>
+
+        <div class="data-layer-path">
+          {{ category.value.path.join('->') }}
+        </div>
+        <div *ngFor="let layer of category.value.layers">
+          <div class="data-layer-name">
+            <input
+              class="data-layer-input"
+              name="data-layer"
+              type="radio"
+              [id]="layer.id" />
+            <label [for]="layer.id" class="data-layer-label">{{
+              layer.name
+            }}</label>
+            <button
+              sg-button
+              variant="icon-only"
+              icon="info"
+              class="info-icon"
+              [outlined]="true"></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
