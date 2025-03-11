@@ -1,26 +1,32 @@
-<div class="data-set-data">
-  <div class="data-set-name">{{ name }}</div>
+<div (click)="selectDataset.emit()" class="data-set">
+  <div class="data-set-data">
+    <div class="data-set-name">{{ name }}</div>
+    <mat-icon>chevron_right</mat-icon>
+  </div>
   <div class="data-set-org">{{ organizationName }}</div>
 </div>
-<mat-icon>chevron_right</mat-icon>
-<ng-container *ngIf="layers && path">
-  <div class="data-layer-path">
-    {{ path.join('->') }}
+
+<div *ngIf="path" class="data-layer-paths">
+  <div class="data-layer-path" *ngFor="let step of path">
+    <mat-icon class="material-symbols-outlined">
+      subdirectory_arrow_right
+    </mat-icon>
+    {{ step }}
   </div>
-  <div *ngFor="let layer of layers">
-    <div class="data-layer-name">
-      <input
-        class="data-layer-input"
-        name="data-layer"
-        type="radio"
-        [id]="layer.id" />
-      <label [for]="layer.id" class="data-layer-label">{{ layer.name }}</label>
-      <button
-        sg-button
-        variant="icon-only"
-        icon="info"
-        class="info-icon"
-        [outlined]="true"></button>
-    </div>
+</div>
+<div class="data-set-layers" *ngIf="layers">
+  <div class="data-layer" *ngFor="let layer of layers">
+    <input
+      class="data-layer-input"
+      name="data-layer"
+      type="radio"
+      [id]="layer.id" />
+    <label [for]="layer.id" class="data-layer-label">{{ layer.name }}</label>
+    <button
+      sg-button
+      variant="icon-only"
+      icon="info"
+      class="info-icon"
+      [outlined]="true"></button>
   </div>
-</ng-container>
+</div>

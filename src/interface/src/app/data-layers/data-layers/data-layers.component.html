@@ -50,7 +50,7 @@
     <ng-container *ngIf="dataSets$ | async; let dataSets">
       <app-data-set
         *ngFor="let dataSet of dataSets.results"
-        (click)="viewDatasetCategories(dataSet)"
+        (selectDataset)="viewDatasetCategories(dataSet)"
         [name]="dataSet.name"
         [organizationName]="dataSet.organization.name">
       </app-data-set>
