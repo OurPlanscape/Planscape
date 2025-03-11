@@ -1,10 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { DataLayer, DataSetSearchResult } from '@types';
+import { DataSet, DataSetSearchResult } from '@types';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent, SearchBarComponent } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { GroupedDatalayers } from '../data-layers/search';
+import { GroupedDataLayers, GroupedResults } from '../data-layers/search';
 
 @Component({
   selector: 'app-search-results',
@@ -27,14 +27,23 @@ export class SearchResultsComponent {
 
   @Input() results: {
     dataSets: DataSetSearchResult[];
-    groupedLayers: GroupedDatalayers;
+    groupedLayers: GroupedResults;
   } | null = null;
+  @Output() clickDataset = new EventEmitter<DataSet>();
 
-  getPath(result: DataSetSearchResult) {
-    return (result.data as DataLayer).path.join('-');
+  goToDataSet(result: DataSetSearchResult) {
+    this.clickDataset.emit(result.data as DataSet);
   }
 
-  goToDataSet(id: number) {
-    // navigate to the dataset somehow.
+  goToDataLayerDataSet(result: GroupedDataLayers) {
+    console.log(result);
+
+    // need do do a partial DataSet from pieces...
+    const dataSet: Partial<DataSet> = {
+      ...result.dataset,
+      organization: result.org,
+    };
+    console.log(dataSet);
+    this.clickDataset.emit(dataSet as DataSet);
   }
 }
