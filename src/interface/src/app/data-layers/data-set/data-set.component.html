@@ -1,0 +1,26 @@
+<div class="data-set-data">
+  <div class="data-set-name">{{ name }}</div>
+  <div class="data-set-org">{{ organizationName }}</div>
+</div>
+<mat-icon>chevron_right</mat-icon>
+<ng-container *ngIf="layers && path">
+  <div class="data-layer-path">
+    {{ path.join('->') }}
+  </div>
+  <div *ngFor="let layer of layers">
+    <div class="data-layer-name">
+      <input
+        class="data-layer-input"
+        name="data-layer"
+        type="radio"
+        [id]="layer.id" />
+      <label [for]="layer.id" class="data-layer-label">{{ layer.name }}</label>
+      <button
+        sg-button
+        variant="icon-only"
+        icon="info"
+        class="info-icon"
+        [outlined]="true"></button>
+    </div>
+  </div>
+</ng-container>

@@ -1,0 +1,32 @@
+@import "mixins";
+@import "colors";
+
+
+:host {
+  padding: 14px;
+  cursor: pointer;
+  border-bottom: 1px solid $color-soft-gray;
+  // display: flex;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 20px;
+
+  &:hover {
+    background-color: $color-lighter-gray;
+  }
+}
+
+.data-set-data {
+  flex: 1;
+}
+
+.data-set-name {
+  color: $color-black;
+  margin-bottom: 8px;
+}
+
+.data-set-org {
+  color: $color-md-gray;
+  font-weight: 500;
+  line-height: 22px
+}
