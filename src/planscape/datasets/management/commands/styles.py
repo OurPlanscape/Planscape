@@ -80,9 +80,7 @@ class Command(PlanscapeCommand):
         output_data = response.json()
         pprint(output_data)
 
-    def import_styles(
-        self, directory: str, org: int = None, dry_run: bool = False, **kwargs
-    ):
+    def import_styles(self, directory: str, dry_run: bool = False, **kwargs):
         """
         Placeholder function for the 'import' command.
         Implementation of reading the directory, validating JSON files,
@@ -90,6 +88,5 @@ class Command(PlanscapeCommand):
         """
         self.stdout.write("Import subcommand called with:")
         self.stdout.write(f" - directory={directory}")
-        self.stdout.write(f" - org={org}")
         self.stdout.write(f" - dry_run={dry_run}")
         self.stdout.write("Implementation is pending future PR.")
