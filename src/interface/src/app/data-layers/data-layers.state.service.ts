@@ -19,9 +19,7 @@ import { buildPathTree } from './data-layers/tree-node';
 export class DataLayersStateService {
   dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
   _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
-  selectedDataSet$ = this._selectedDataSet$
-    .asObservable()
-    .pipe(tap((s) => console.log('selected', s)));
+  selectedDataSet$ = this._selectedDataSet$.asObservable();
 
   _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
@@ -29,6 +27,7 @@ export class DataLayersStateService {
   dataTree$ = this.selectedDataSet$.pipe(
     switchMap((dataset) => {
       if (!dataset) {
+        this.loadingSubject.next(false);
         return of(null);
       }
       return this.service.listDataLayers(dataset.id).pipe(

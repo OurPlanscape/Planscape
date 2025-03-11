@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { DataSetSearchResult } from '@types';
@@ -16,4 +16,6 @@ export class DataSetComponent {
   @Input() organizationName = '';
   @Input() layers?: DataSetSearchResult[];
   @Input() path?: string[];
+
+  @Output() selectDataset = new EventEmitter();
 }

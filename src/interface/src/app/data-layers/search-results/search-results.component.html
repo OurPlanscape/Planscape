@@ -9,7 +9,7 @@
     <div *ngFor="let result of results.groupedLayers | keyvalue">
       <app-data-set
         *ngFor="let category of result.value.categories | keyvalue"
-        (click)="goToDataLayerDataSet(result.value)"
+        (selectDataset)="goToDataLayerDataSet(result.value)"
         [name]="result.value.dataset.name"
         [organizationName]="result.value.org.name"
         [layers]="category.value.layers"

@@ -4,29 +4,77 @@
 
 :host {
   padding: 14px;
-  cursor: pointer;
   border-bottom: 1px solid $color-soft-gray;
-  // display: flex;
+  display: block;
   font-size: 14px;
-  font-weight: 600;
-  line-height: 20px;
+  font-weight: 500;
+  line-height: 22px;
 
   &:hover {
     background-color: $color-lighter-gray;
   }
 }
 
+.data-set {
+  cursor: pointer;
+}
+
 .data-set-data {
-  flex: 1;
+  display: flex;
 }
 
 .data-set-name {
   color: $color-black;
   margin-bottom: 8px;
+  margin-right: auto;
+  font-weight: 600;
+  line-height: 20px;
 }
 
 .data-set-org {
   color: $color-md-gray;
-  font-weight: 500;
-  line-height: 22px
+
+}
+
+.data-layer-paths, .data-set-layers {
+  margin-top: 16px;
+}
+
+.data-layer-path {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+    color: $color-md-gray;
+  }
+}
+
+.data-layer-path + .data-layer-path {
+  padding-left: 20px;
+  margin-top: 8px;
+}
+
+
+.data-layer-label {
+  flex: 1;
+  padding: 8px;
+  cursor: pointer;
+  color: $color-dark-gray;
+}
+
+.data-layer-input {
+  margin: 0;
+  padding: 0;
+}
+
+.data-layer {
+  display: flex;
+}
+
+.info-icon {
+  color: $color-standard-blue;
 }
