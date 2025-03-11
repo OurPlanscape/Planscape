@@ -43,6 +43,7 @@ export class DataLayersComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
   loading$ = this.dataLayersStateService.loading$;
+  showDataLayersCategories = true;
 
   dataSets$ = this.dataLayersStateService.dataSets$;
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
@@ -75,6 +76,10 @@ export class DataLayersComponent {
   }
 
   viewDatasetCategories(dataSet: DataSet) {
+    this.dataLayersStateService.selectDataSet(dataSet);
+  }
+
+  viewResultDataSet(dataSet: DataSet) {
     this.dataLayersStateService.selectDataSet(dataSet);
   }
 

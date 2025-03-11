@@ -19,7 +19,9 @@ import { buildPathTree } from './data-layers/tree-node';
 export class DataLayersStateService {
   dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
   _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
-  selectedDataSet$ = this._selectedDataSet$.asObservable();
+  selectedDataSet$ = this._selectedDataSet$
+    .asObservable()
+    .pipe(tap((s) => console.log('selected', s)));
 
   _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
@@ -69,6 +71,11 @@ export class DataLayersStateService {
   selectDataSet(dataset: DataSet) {
     this._selectedDataSet$.next(dataset);
     this.loadingSubject.next(true);
+  }
+
+  selectDataSetById(id: number) {
+    //const dataSet = this;
+    this._selectedDataSet$.next({ id: id } as DataSet);
   }
 
   clearDataSet() {

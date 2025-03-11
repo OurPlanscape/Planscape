@@ -2,7 +2,7 @@ import { DataLayer, DataSetSearchResult, IdNamePair } from '@types';
 
 export interface Results {
   dataSets: DataSetSearchResult[];
-  groupedLayers: GroupedDatalayers;
+  groupedLayers: GroupedResults;
 }
 
 export interface Category {
@@ -15,13 +15,15 @@ export interface Category {
  * keyed by a path-based string. Each group
  * also stores the actual path array for reference
  */
-export interface GroupedDatalayers {
-  [groupName: string]: {
-    org: IdNamePair;
-    dataset: IdNamePair;
-    categories: {
-      [pathKey: string]: Category;
-    };
+export interface GroupedResults {
+  [groupName: string]: GroupedDataLayers;
+}
+
+export interface GroupedDataLayers {
+  org: IdNamePair;
+  dataset: IdNamePair;
+  categories: {
+    [pathKey: string]: Category;
   };
 }
 
@@ -55,7 +57,7 @@ export function groupSearchResults(results: DataSetSearchResult[]) {
     // finally, push the layer
     acc[orgPath].categories[pathKey].layers.push(value);
     return acc;
-  }, {} as GroupedDatalayers);
+  }, {} as GroupedResults);
 
   // return datasets and grouped results
   return { dataSets, groupedLayers: grouped };
