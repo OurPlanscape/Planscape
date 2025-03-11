@@ -73,11 +73,6 @@ export class DataLayersStateService {
     this.loadingSubject.next(true);
   }
 
-  selectDataSetById(id: number) {
-    //const dataSet = this;
-    this._selectedDataSet$.next({ id: id } as DataSet);
-  }
-
   clearDataSet() {
     this._selectedDataSet$.next(null);
   }

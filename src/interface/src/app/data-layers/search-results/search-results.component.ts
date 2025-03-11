@@ -5,6 +5,7 @@ import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent, SearchBarComponent } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GroupedDataLayers, GroupedResults } from '../data-layers/search';
+import { DataSetComponent } from '../data-set/data-set.component';
 
 @Component({
   selector: 'app-search-results',
@@ -18,6 +19,7 @@ import { GroupedDataLayers, GroupedResults } from '../data-layers/search';
     AsyncPipe,
     MatProgressSpinnerModule,
     ButtonComponent,
+    DataSetComponent,
   ],
   templateUrl: './search-results.component.html',
   styleUrl: './search-results.component.scss',
@@ -36,14 +38,11 @@ export class SearchResultsComponent {
   }
 
   goToDataLayerDataSet(result: GroupedDataLayers) {
-    console.log(result);
-
     // need do do a partial DataSet from pieces...
     const dataSet: Partial<DataSet> = {
       ...result.dataset,
       organization: result.org,
     };
-    console.log(dataSet);
     this.clickDataset.emit(dataSet as DataSet);
   }
 }

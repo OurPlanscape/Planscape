@@ -16,6 +16,7 @@ import { catchError, map, Observable, startWith, throwError } from 'rxjs';
 import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
 import { SearchResultsComponent } from '../search-results/search-results.component';
+import { DataSetComponent } from '../data-set/data-set.component';
 
 @Component({
   selector: 'app-data-layers',
@@ -35,6 +36,7 @@ import { SearchResultsComponent } from '../search-results/search-results.compone
     DataLayerTreeComponent,
     SearchBarComponent,
     SearchResultsComponent,
+    DataSetComponent,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -43,7 +45,7 @@ export class DataLayersComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
   loading$ = this.dataLayersStateService.loading$;
-  showDataLayersCategories = true;
+  browsingDataSet = true;
 
   dataSets$ = this.dataLayersStateService.dataSets$;
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
@@ -55,6 +57,7 @@ export class DataLayersComponent {
     this.dataLayersStateService.searchResults$.pipe(
       startWith(null),
       map((results) => {
+        this.browsingDataSet = false;
         if (results) {
           this.resultCount = results.length;
           return groupSearchResults(results);
@@ -71,7 +74,7 @@ export class DataLayersComponent {
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
 
   search(term: string) {
-    console.log('search!', term);
+    this.browsingDataSet = false;
     this.searchTerm$.next(term);
   }
 
@@ -80,10 +83,16 @@ export class DataLayersComponent {
   }
 
   viewResultDataSet(dataSet: DataSet) {
+    this.browsingDataSet = true;
     this.dataLayersStateService.selectDataSet(dataSet);
   }
 
   goBack() {
     this.dataLayersStateService.clearDataSet();
+  }
+
+  clearSearch() {
+    this.search('');
+    this.browsingDataSet = true;
   }
 }
