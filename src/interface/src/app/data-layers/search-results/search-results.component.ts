@@ -34,7 +34,7 @@ export class SearchResultsComponent {
   @Output() clickDataset = new EventEmitter<DataSet>();
 
   goToDataSet(result: DataSetSearchResult) {
-    this.clickDataset.emit(result.data as DataSet);
+    this.clickDataset.emit(result.data);
   }
 
   goToDataLayerDataSet(result: GroupedDataLayers) {

@@ -10,7 +10,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayer, DataSet, DataSetSearchResult } from '@types';
+import { DataLayer, DataSet, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 
 @Injectable({
@@ -45,26 +45,25 @@ export class DataLayersStateService {
 
   searchTerm$ = new BehaviorSubject<string>('');
 
-  searchResults$: Observable<DataSetSearchResult[] | null> =
-    this.searchTerm$.pipe(
-      tap(() => this.loadingSubject.next(true)),
-      switchMap((term: string) => {
-        if (!term) {
-          this.loadingSubject.next(false);
-          return of(null);
-        }
-        return this.service.search(term).pipe(
-          startWith(null),
-          map((results) => {
-            if (results) {
-              this.loadingSubject.next(false);
-            }
-            return results;
-          })
-        );
-      }),
-      shareReplay(1)
-    );
+  searchResults$: Observable<SearchResult[] | null> = this.searchTerm$.pipe(
+    tap(() => this.loadingSubject.next(true)),
+    switchMap((term: string) => {
+      if (!term) {
+        this.loadingSubject.next(false);
+        return of(null);
+      }
+      return this.service.search(term).pipe(
+        startWith(null),
+        map((results) => {
+          if (results) {
+            this.loadingSubject.next(false);
+          }
+          return results;
+        })
+      );
+    }),
+    shareReplay(1)
+  );
 
   constructor(private service: DataLayersService) {}
 

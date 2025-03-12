@@ -1,4 +1,9 @@
-import { DataLayer, DataSetSearchResult, IdNamePair } from '@types';
+import {
+  DataLayerSearchResult,
+  DataSetSearchResult,
+  IdNamePair,
+  SearchResult,
+} from '@types';
 
 export interface Results {
   dataSets: DataSetSearchResult[];
@@ -7,14 +12,9 @@ export interface Results {
 
 export interface Category {
   path: string[];
-  layers: DataSetSearchResult[];
+  layers: SearchResult[];
 }
 
-/**
- * A single grouping structure for DATALAYERs,
- * keyed by a path-based string. Each group
- * also stores the actual path array for reference
- */
 export interface GroupedResults {
   [groupName: string]: GroupedDataLayers;
 }
@@ -27,16 +27,16 @@ export interface GroupedDataLayers {
   };
 }
 
-export function groupSearchResults(results: DataSetSearchResult[]) {
+export function groupSearchResults(results: SearchResult[]): Results {
   // Separate Datasets & DataLayers
-  const dataSets = results.filter((r) => r.type === 'DATASET');
-  const dataLayers = results.filter((r) => r.type === 'DATALAYER');
+  const dataSets = results.filter(isDataSetSearchResult);
+  const dataLayers = results.filter(isDataLayerSearchResult);
 
   // Group results by dataset first, and then categories
   const grouped = dataLayers.reduce((acc, value) => {
     const org = value.data.organization;
-    const dataset = (value.data as DataLayer).dataset;
-    const pathArr = (value.data as DataLayer).path || [];
+    const dataset = value.data.dataset;
+    const pathArr = value.data.path || [];
     const pathKey = pathArr.join(' - ');
     const dataSetPath = dataset.id + '-' + dataset.name;
 
@@ -62,4 +62,12 @@ export function groupSearchResults(results: DataSetSearchResult[]) {
 
   // return datasets and grouped results
   return { dataSets, groupedLayers: grouped };
+}
+
+function isDataSetSearchResult(r: SearchResult): r is DataSetSearchResult {
+  return r.type === 'DATASET';
+}
+
+function isDataLayerSearchResult(r: SearchResult): r is DataLayerSearchResult {
+  return r.type === 'DATALAYER';
 }

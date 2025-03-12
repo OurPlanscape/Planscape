@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgForOf, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { DataSetSearchResult } from '@types';
+import { SearchResult } from '@types';
 import { ButtonComponent } from '@styleguide';
 import { MatRadioModule } from '@angular/material/radio';
 
@@ -15,7 +15,7 @@ import { MatRadioModule } from '@angular/material/radio';
 export class DataSetComponent {
   @Input() name = '';
   @Input() organizationName = '';
-  @Input() layers?: DataSetSearchResult[];
+  @Input() layers?: SearchResult[];
   @Input() path?: string[];
 
   @Output() selectDataset = new EventEmitter();

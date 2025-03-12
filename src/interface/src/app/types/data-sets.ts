@@ -77,10 +77,20 @@ export interface DataLayer {
   geometry: Geometry;
 }
 
-export interface DataSetSearchResult {
+export interface SearchResult {
   id: number;
   name: string;
   type: 'DATASET' | 'DATALAYER';
   url: string;
   data: DataLayer | DataSet;
+}
+
+export interface DataSetSearchResult extends SearchResult {
+  type: 'DATASET';
+  data: DataSet;
+}
+
+export interface DataLayerSearchResult extends SearchResult {
+  type: 'DATALAYER';
+  data: DataLayer;
 }

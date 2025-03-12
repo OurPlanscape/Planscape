@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { DataLayer, DataSet, DataSetSearchResult, Pagination } from '@types';
+import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -30,7 +30,7 @@ export class DataLayersService {
   }
 
   search(term: string) {
-    return this.http.get<DataSetSearchResult[]>(
+    return this.http.get<SearchResult[]>(
       environment.backend_endpoint + '/v2/datalayers/find_anything',
       {
         withCredentials: true,
