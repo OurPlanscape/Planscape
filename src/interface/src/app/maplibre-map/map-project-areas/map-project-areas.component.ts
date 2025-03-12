@@ -27,6 +27,7 @@ import {
   Subject,
 } from 'rxjs';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
+import { PlanState } from '../plan.state';
 
 type MapLayerData = {
   readonly name: string;
@@ -57,7 +58,7 @@ export class MapProjectAreasComponent {
 
   private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
 
-  scenarioId = this.treatmentsState.getScenarioId();
+  scenarioId = this.planState.getScenarioId();
   summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
 
@@ -106,6 +107,7 @@ export class MapProjectAreasComponent {
 
   constructor(
     private treatmentsState: TreatmentsState,
+    private planState: PlanState,
     private router: Router,
     private route: ActivatedRoute
   ) {}

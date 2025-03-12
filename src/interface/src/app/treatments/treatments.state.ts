@@ -48,9 +48,6 @@ export class TreatmentsState {
     private planState: PlanState
   ) {}
 
-  private _treatmentPlanId: number | undefined = undefined;
-  private _scenarioId: number | undefined = undefined;
-
   private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
   private _planningAreaId$ = new BehaviorSubject<number | undefined>(undefined);
   public projectAreaId$ = this._projectAreaId$.asObservable();
@@ -142,22 +139,8 @@ export class TreatmentsState {
   private _reloadingSummary$ = new BehaviorSubject(false);
   public reloadingSummary$ = this._reloadingSummary$.asObservable();
 
-  getTreatmentPlanId() {
-    if (this._treatmentPlanId === undefined) {
-      throw new Error('no treatment plan id!');
-    }
-    return this._treatmentPlanId;
-  }
-
   getProjectAreaId() {
     return this._projectAreaId$.value;
-  }
-
-  getScenarioId(): number {
-    if (this._scenarioId === undefined) {
-      throw new Error('no _scenario id!');
-    }
-    return this._scenarioId;
   }
 
   /**
@@ -181,8 +164,6 @@ export class TreatmentsState {
   }
 
   setInitialState(data: TreatmentRoutingData) {
-    this._scenarioId = data.scenarioId;
-    this._treatmentPlanId = data.treatmentId;
     this._projectAreaId$.next(data.projectAreaId);
     this._planningAreaId$.next(data.planId);
 
@@ -222,7 +203,7 @@ export class TreatmentsState {
     }
 
     return this.treatmentsService
-      .getTreatmentPlanSummary(this.getTreatmentPlanId())
+      .getTreatmentPlanSummary(this.planState.getCurrentPlanId())
       .pipe(
         map((summary) => {
           // set summary data
@@ -247,7 +228,7 @@ export class TreatmentsState {
   reloadSummary() {
     this._reloadingSummary$.next(true);
     return this.treatmentsService
-      .getTreatmentPlanSummary(this.getTreatmentPlanId())
+      .getTreatmentPlanSummary(this.planState.getCurrentPlanId())
       .pipe(
         map((summary) => {
           this._reloadingSummary$.next(false);
@@ -261,7 +242,7 @@ export class TreatmentsState {
 
   private loadTreatmentPlan() {
     return this.treatmentsService
-      .getTreatmentPlan(this.getTreatmentPlanId())
+      .getTreatmentPlan(this.planState.getCurrentPlanId())
       .pipe(
         map((treatmentPlan) => {
           this._treatmentPlan.next(treatmentPlan);
@@ -272,7 +253,7 @@ export class TreatmentsState {
 
   updateTreatmentPlan(treatmentPlan: Partial<TreatmentPlan>) {
     return this.treatmentsService
-      .updateTreatmentPlan(this.getTreatmentPlanId(), treatmentPlan)
+      .updateTreatmentPlan(this.planState.getCurrentPlanId(), treatmentPlan)
       .pipe(
         tap((updatedTreatmentPlan: TreatmentPlan) => {
           this._treatmentPlan.next(updatedTreatmentPlan);
@@ -302,7 +283,12 @@ export class TreatmentsState {
     );
     this._reloadingSummary$.next(true);
     return this.treatmentsService
-      .setTreatments(this.getTreatmentPlanId(), projectAreaId, action, standIds)
+      .setTreatments(
+        this.planState.getCurrentPlanId(),
+        projectAreaId,
+        action,
+        standIds
+      )
       .pipe(
         // if setting treatments failed, rollback and throw error
         catchError(() => {
@@ -322,7 +308,7 @@ export class TreatmentsState {
     this.treatedStandsState.removeTreatments(standIds);
     this._reloadingSummary$.next(true);
     return this.treatmentsService
-      .removeTreatments(this.getTreatmentPlanId(), standIds)
+      .removeTreatments(this.planState.getCurrentPlanId(), standIds)
       .pipe(
         catchError(() => {
           this._reloadingSummary$.next(false);
@@ -368,7 +354,9 @@ export class TreatmentsState {
   }
 
   runTreatmentPlan() {
-    return this.treatmentsService.runTreatmentPlan(this.getTreatmentPlanId());
+    return this.treatmentsService.runTreatmentPlan(
+      this.planState.getCurrentPlanId()
+    );
   }
 
   projectAreaCount() {

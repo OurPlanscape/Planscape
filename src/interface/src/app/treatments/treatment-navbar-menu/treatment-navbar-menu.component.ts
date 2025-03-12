@@ -6,13 +6,13 @@ import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { DeleteDialogComponent } from '../../standalone/delete-dialog/delete-dialog.component';
 import { take } from 'rxjs';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
-import { TreatmentsState } from '../treatments.state';
 import { TreatmentsService } from '@services/treatments.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AfterDuplicateTreatmentDialogComponent } from '../after-duplicate-treatment-dialog/after-duplicate-treatment-dialog.component';
 import { TreatmentPlan } from '@types';
 import { ErrorDialogComponent } from '../../../styleguide/dialogs/error-dialog/error-dialog.component';
 import { DialogData } from '../../../styleguide/dialogs/dialogs';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 @Component({
   selector: 'app-treatment-navbar-menu',
@@ -23,10 +23,10 @@ import { DialogData } from '../../../styleguide/dialogs/dialogs';
 })
 export class TreatmentNavbarMenuComponent {
   constructor(
-    private treatmentsState: TreatmentsState,
     private treatmentsService: TreatmentsService,
     private dialog: MatDialog,
-    private matSnackBar: MatSnackBar
+    private matSnackBar: MatSnackBar,
+    private planState: PlanState
   ) {}
 
   @Input() treatmentPlanName = '';
@@ -48,7 +48,7 @@ export class TreatmentNavbarMenuComponent {
       .subscribe((confirmed) => {
         if (confirmed) {
           this.treatmentsService
-            .deleteTreatmentPlan(this.treatmentsState.getTreatmentPlanId())
+            .deleteTreatmentPlan(this.planState.getCurrentPlanId())
             .subscribe({
               next: () => {
                 this.matSnackBar.open(
@@ -72,7 +72,7 @@ export class TreatmentNavbarMenuComponent {
 
   duplicateTreatmentPlan() {
     this.treatmentsService
-      .duplicateTreatmentPlan(this.treatmentsState.getTreatmentPlanId())
+      .duplicateTreatmentPlan(this.planState.getCurrentPlanId())
       .subscribe({
         next: (newPlan) => {
           this.openAfterDuplicateTreatmentDialog(newPlan);

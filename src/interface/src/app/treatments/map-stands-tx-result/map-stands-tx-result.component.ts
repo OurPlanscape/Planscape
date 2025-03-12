@@ -16,6 +16,7 @@ import { descriptionsForAction } from '../prescriptions';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { MARTIN_SOURCES } from '../map.sources';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -50,7 +51,8 @@ export class MapStandsTxResultComponent implements OnInit {
   constructor(
     private treatmentsState: TreatmentsState,
     private mapConfigState: MapConfigState,
-    private directImpactsStateService: DirectImpactsStateService
+    private directImpactsStateService: DirectImpactsStateService,
+    private planState: PlanState
   ) {}
 
   readonly STAND_SELECTED_PAINT = SINGLE_STAND_SELECTED;
@@ -61,10 +63,10 @@ export class MapStandsTxResultComponent implements OnInit {
 
   standsResultVectorLayer$ = this.directImpactsStateService.activeMetric$.pipe(
     map((mapMetric) => {
-      const plan = this.treatmentsState.getTreatmentPlanId();
+      const planId = this.planState.getCurrentPlanId();
       return (
         this.standsByTxResultSource.tilesUrl +
-        `?treatment_plan_id=${plan}&variable=${mapMetric.id}`
+        `?treatment_plan_id=${planId}&variable=${mapMetric.id}`
       );
     })
   );
@@ -72,8 +74,8 @@ export class MapStandsTxResultComponent implements OnInit {
   // Use the stands_by_tx_plan layer for drawing the selected stand, to avoid
   // the selected stand being hidden / not draw when `standsResultVectorLayer$` changes
   get standsVectorLayer() {
-    const plan = this.treatmentsState.getTreatmentPlanId();
-    return this.standsByTxPlanSource.tilesUrl + `?treatment_plan_id=${plan}`;
+    const planId = this.planState.getCurrentPlanId();
+    return this.standsByTxPlanSource.tilesUrl + `?treatment_plan_id=${planId}`;
   }
 
   activeStand$ = this.directImpactsStateService.activeStand$;
