@@ -17,6 +17,7 @@ import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
 import { SearchResultsComponent } from '../search-results/search-results.component';
 import { DataSetComponent } from '../data-set/data-set.component';
+import { NoResultsComponent } from '../../../styleguide/no-results/no-results.component';
 
 @Component({
   selector: 'app-data-layers',
@@ -37,6 +38,7 @@ import { DataSetComponent } from '../data-set/data-set.component';
     SearchBarComponent,
     SearchResultsComponent,
     DataSetComponent,
+    NoResultsComponent,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -94,5 +96,6 @@ export class DataLayersComponent {
   clearSearch() {
     this.search('');
     this.browsingDataSet = true;
+    this.dataLayersStateService.clearDataSet();
   }
 }

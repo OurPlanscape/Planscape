@@ -67,18 +67,7 @@
           searchString !== null &&
           filteredRxs.length === 0
         ">
-        <div class="no-results-box">
-          <mat-icon class="material-symbols-outlined no-results-icon"
-            >find_in_page
-          </mat-icon>
-          <div class="no-results-title">
-            No results for &quot;{{ searchString }}&quot;
-          </div>
-          <div class="no-results-detail">
-            No results match the search criteria provided. Check your search for
-            typos or try a different search term.
-          </div>
-        </div>
+        <sg-no-results [searchString]="searchString"></sg-no-results>
       </ng-container>
     </div>
   </div>
