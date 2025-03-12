@@ -4,7 +4,8 @@
     [debounceInterval]="160"
     searchPlaceholder="Search by dataset, metric, category, org..."
     [inputHeight]="'regular'"
-    (searchString)="search($event)"></sg-search-bar>
+    (searchString)="search($event)"
+    [searchValue]="(searchTerm$ | async) || ''"></sg-search-bar>
   <button
     sg-button
     variant="icon-only"
@@ -21,7 +22,9 @@
       <app-search-results
         [results]="results"
         (clickDataset)="viewResultDataSet($event)"></app-search-results>
-      <div *ngIf="resultCount === 0">No results</div>
+      <div *ngIf="resultCount === 0">
+        <sg-no-results></sg-no-results>
+      </div>
     </div>
   </ng-container>
 </ng-container>
