@@ -55,6 +55,7 @@ import { MapGeoJSONFeature } from 'maplibre-gl';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -119,7 +120,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private fileSaverService: FileSaverService,
     private dialog: MatDialog,
     private injector: Injector, // Angular's injector for passing shared services
-    private scenarioService: ScenarioService
+    private scenarioService: ScenarioService,
+    private planState: PlanState
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.loading = true;
@@ -143,7 +145,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(() => {
-        const scenarioId = this.treatmentsState.getScenarioId();
+        const scenarioId = this.planState.getScenarioId();
         if (scenarioId) {
           this.scenarioService.getScenario(scenarioId.toString()).subscribe({
             next: (scenario: Scenario) => {
@@ -257,11 +259,10 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
 
   download() {
     this.downloadingShapefile = true;
-    const filename =
-      'treatment_plan_' + this.treatmentsState.getTreatmentPlanId();
+    const filename = 'treatment_plan_' + this.planState.getCurrentPlanId();
 
     this.treatmentsService
-      .downloadTreatment(this.treatmentsState.getTreatmentPlanId())
+      .downloadTreatment(this.planState.getCurrentPlanId())
       .subscribe((data) => {
         const blob = new Blob([data], {
           type: 'application/zip',

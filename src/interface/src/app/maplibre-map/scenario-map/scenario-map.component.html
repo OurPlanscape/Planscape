@@ -24,4 +24,9 @@
     [panEnabled]="false">
   </app-map-controls>
   <app-planning-area-layer> </app-planning-area-layer>
+  <app-map-project-areas
+    *ngIf="mapLibreMap"
+    [visible]="true"
+    [showTooltips]="false"
+    [mapLibreMap]="mapLibreMap"></app-map-project-areas>
 </mgl-map>
