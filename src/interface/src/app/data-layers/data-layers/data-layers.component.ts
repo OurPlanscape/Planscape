@@ -90,6 +90,9 @@ export class DataLayersComponent {
   }
 
   goBack() {
+    if (this.searchTerm$.value) {
+      this.browsingDataSet = false;
+    }
     this.dataLayersStateService.clearDataSet();
   }
 

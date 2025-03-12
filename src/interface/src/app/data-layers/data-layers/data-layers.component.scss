@@ -1,6 +1,12 @@
 @import "mixins";
 @import "colors";
 
+:host {
+  display: block;
+  padding-bottom: 20px;
+
+}
+
 .data-set {
   padding: 14px;
   cursor: pointer;

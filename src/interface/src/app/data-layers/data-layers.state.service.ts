@@ -62,7 +62,8 @@ export class DataLayersStateService {
             return results;
           })
         );
-      })
+      }),
+      shareReplay(1)
     );
 
   constructor(private service: DataLayersService) {}
