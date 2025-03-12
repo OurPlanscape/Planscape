@@ -7,11 +7,19 @@ import { DataLayersStateService } from '../data-layers.state.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { TreeNode } from '../data-layers/tree-node';
 import { DataLayer } from '@types';
+import { MatRadioModule } from '@angular/material/radio';
 
 @Component({
   selector: 'app-data-layer-tree',
   standalone: true,
-  imports: [AsyncPipe, ButtonComponent, MatTreeModule, NgIf, NgClass],
+  imports: [
+    AsyncPipe,
+    ButtonComponent,
+    MatTreeModule,
+    NgIf,
+    NgClass,
+    MatRadioModule,
+  ],
   templateUrl: './data-layer-tree.component.html',
   styleUrl: './data-layer-tree.component.scss',
 })

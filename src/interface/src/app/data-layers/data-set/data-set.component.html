@@ -16,12 +16,10 @@
 </div>
 <div class="data-set-layers" *ngIf="layers">
   <div class="data-layer" *ngFor="let layer of layers">
-    <input
-      class="data-layer-input"
-      name="data-layer"
-      type="radio"
-      [id]="layer.id" />
-    <label [for]="layer.id" class="data-layer-label">{{ layer.name }}</label>
+    <mat-radio-button [value]="layer.id" class="data-layer-input">{{
+      layer.name
+    }}</mat-radio-button>
+
     <button
       sg-button
       variant="icon-only"
