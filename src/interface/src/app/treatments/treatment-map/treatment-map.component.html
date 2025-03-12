@@ -33,6 +33,18 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
+
+  <ng-container>
+    <mgl-raster-source
+      [url]="mockCOGUrl"
+      [tileSize]="256"
+      id="rasterImage"></mgl-raster-source>
+  
+    <mgl-layer id="image-layer" type="raster" source="rasterImage"></mgl-layer>
+  </ng-container>
+
+
+
   <app-map-controls
     [userCanEditStands]="userCanEditStands"
     *ngIf="showMapControls$ | async"

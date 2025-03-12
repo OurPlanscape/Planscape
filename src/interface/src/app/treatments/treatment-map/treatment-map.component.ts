@@ -9,6 +9,7 @@ import {
   MapComponent,
   PopupComponent,
   VectorSourceComponent,
+  RasterSourceComponent
 } from '@maplibre/ngx-maplibre-gl';
 import {
   LngLat,
@@ -40,6 +41,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 
 @UntilDestroy()
 @Component({
@@ -50,6 +52,7 @@ import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.c
     NgForOf,
     MapComponent,
     VectorSourceComponent,
+    RasterSourceComponent,
     LayerComponent,
     FeatureComponent,
     DraggableDirective,
@@ -176,7 +179,8 @@ export class TreatmentMapComponent {
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private dataLayersStateService: DataLayersStateService,
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -226,6 +230,11 @@ export class TreatmentMapComponent {
       this.renderer.removeClass(document.body, 'statewide-datalayers');
     }
   }
+
+
+  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+
+  mockCOGUrl = 'cog://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/36/Q/WD/2020/7/S2A_36QWD_20200701_0_L2A/TCI.tif';
 
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {
