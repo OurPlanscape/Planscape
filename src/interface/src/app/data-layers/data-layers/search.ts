@@ -32,30 +32,31 @@ export function groupSearchResults(results: DataSetSearchResult[]) {
   const dataSets = results.filter((r) => r.type === 'DATASET');
   const dataLayers = results.filter((r) => r.type === 'DATALAYER');
 
-  // Group results by org first, and then categories
+  // Group results by dataset first, and then categories
   const grouped = dataLayers.reduce((acc, value) => {
     const org = value.data.organization;
+    const dataset = (value.data as DataLayer).dataset;
     const pathArr = (value.data as DataLayer).path || [];
     const pathKey = pathArr.join(' - ');
-    const orgPath = org.id + '-' + org.name;
+    const dataSetPath = dataset.id + '-' + dataset.name;
 
     // if no org create one
-    if (!acc[orgPath]) {
-      acc[orgPath] = {
+    if (!acc[dataSetPath]) {
+      acc[dataSetPath] = {
         org: org,
-        dataset: (value.data as DataLayer).dataset,
+        dataset: dataset,
         categories: {},
       };
     }
     // if no category create one
-    if (!acc[orgPath].categories[pathKey]) {
-      acc[orgPath].categories[pathKey] = {
+    if (!acc[dataSetPath].categories[pathKey]) {
+      acc[dataSetPath].categories[pathKey] = {
         path: pathArr,
         layers: [],
       };
     }
     // finally, push the layer
-    acc[orgPath].categories[pathKey].layers.push(value);
+    acc[dataSetPath].categories[pathKey].layers.push(value);
     return acc;
   }, {} as GroupedResults);
 
