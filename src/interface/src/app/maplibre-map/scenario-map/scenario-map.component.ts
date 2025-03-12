@@ -17,8 +17,6 @@ import { BehaviorSubject } from 'rxjs';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { TreatmentsState } from 'src/app/treatments/treatments.state';
-import { getMergedRouteData } from 'src/app/treatments/treatments-routing-data';
-import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-scenario-map',
@@ -40,18 +38,19 @@ export class ScenarioMapComponent {
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private planState: PlanState,
-    private treatmentsState: TreatmentsState,
-    private route: ActivatedRoute
+    private treatmentsState: TreatmentsState
   ) {
-    const data = getMergedRouteData(this.route.snapshot);
-    console.log('Data: ', data);
-    const plan = this.planState.getCurrentPlan();
-    if (plan) {
+    const planId = this.planState.getCurrentPlanId();
+    const scenarioId = this.planState.getScenarioId();
+
+    console.log('Plan ID:', planId);
+    console.log('Scenario ID:', scenarioId);
+    if (planId) {
       this.treatmentsState.setInitialState({
-        scenarioId: 2206,
-        treatmentId: 628,
+        scenarioId: Number(scenarioId),
+        treatmentId: undefined,
         projectAreaId: undefined,
-        planId: plan.id,
+        planId: Number(planId),
         showMapProjectAreas: true,
         showTreatmentStands: false,
         showMapControls: false,

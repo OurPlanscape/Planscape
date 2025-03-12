@@ -4,6 +4,7 @@ import { CreateScenariosComponent } from '../create-scenarios/create-scenarios.c
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { Scenario } from '@types';
 import { LegacyPlanStateService } from '@services';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 @Component({
   selector: 'app-scenario-route-placeholder',
@@ -16,7 +17,8 @@ export class ScenarioRoutePlaceholderComponent implements OnInit {
 
   constructor(
     private route: ActivatedRoute,
-    private LegacyPlanStateService: LegacyPlanStateService
+    private LegacyPlanStateService: LegacyPlanStateService,
+    private planState: PlanState
   ) {}
 
   scenario?: Scenario;
@@ -28,6 +30,8 @@ export class ScenarioRoutePlaceholderComponent implements OnInit {
       this.LegacyPlanStateService.getScenario(id).subscribe({
         next: (scenario: Scenario) => {
           this.scenario = scenario;
+          debugger;
+          this.planState.setCurrentScenario(this.scenario);
           if (this.scenario?.origin === 'USER') {
             const factory = this.container.createComponent(
               UploadedScenarioViewComponent
