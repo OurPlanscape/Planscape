@@ -11,12 +11,12 @@ import {
   MapMouseEvent,
   Point,
 } from 'maplibre-gl';
-import { TreatmentsState } from '../treatments.state';
+import { TreatmentsState } from '../../treatments/treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
-import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
+import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
+import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 
 import { TreatmentProjectArea } from '@types';
 import {
@@ -26,7 +26,7 @@ import {
   Observable,
   Subject,
 } from 'rxjs';
-import { MARTIN_SOURCES } from '../map.sources';
+import { MARTIN_SOURCES } from '../../treatments/map.sources';
 
 type MapLayerData = {
   readonly name: string;

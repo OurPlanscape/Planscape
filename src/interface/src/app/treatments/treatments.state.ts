@@ -180,7 +180,7 @@ export class TreatmentsState {
     );
   }
 
-  private setInitialState(data: TreatmentRoutingData) {
+  setInitialState(data: TreatmentRoutingData) {
     this._scenarioId = data.scenarioId;
     this._treatmentPlanId = data.treatmentId;
     this._projectAreaId$.next(data.projectAreaId);
