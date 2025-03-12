@@ -117,6 +117,7 @@ def create_style(
     created_by: User,
     type: DataLayerType,
     data: Dict[str, Any],
+    datalayer_ids: list = None,
     **kwargs,
 ) -> Dict[str, Any]:
     data_hash = mmh3.hash_bytes(json.dumps(data)).hex()
@@ -133,6 +134,15 @@ def create_style(
         data_hash=data_hash,
     )
     action.send(created_by, verb="created", action_object=style)
+
+    if datalayer_ids:
+        for dl_id in datalayer_ids:
+            try:
+                datalayer = DataLayer.objects.get(id=dl_id)
+                assign_style(created_by=created_by, style=style, datalayer=datalayer)
+            except DataLayer.DoesNotExist:
+                pass
+
     return {"style": style, "possibly_exists": hash_already_exists}
 
 
