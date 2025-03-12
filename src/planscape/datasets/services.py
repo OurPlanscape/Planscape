@@ -25,6 +25,7 @@ from datasets.models import (
     GeometryType,
     SearchResult,
     Style,
+    VisibilityOptions,
 )
 from datasets.search import (
     category_to_search_result,
@@ -243,7 +244,10 @@ def find_anything(term: str) -> Dict[str, SearchResult]:
         ],
         [
             dataset_to_search_result(x)
-            for x in Dataset.objects.filter(name__icontains=term)
+            for x in Dataset.objects.filter(
+                name__icontains=term,
+                visibility=VisibilityOptions.PUBLIC,
+            )
         ],
         [
             category_to_search_result(x)
@@ -253,6 +257,7 @@ def find_anything(term: str) -> Dict[str, SearchResult]:
             datalayer_to_search_result(x)
             for x in DataLayer.objects.filter(
                 name__icontains=term,
+                dataset__visibility=VisibilityOptions.PUBLIC,
                 status=DataLayerStatus.READY,
             )
         ],
