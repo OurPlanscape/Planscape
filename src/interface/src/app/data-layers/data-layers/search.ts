@@ -28,11 +28,11 @@ export interface GroupedDataLayers {
 }
 
 export function groupSearchResults(results: SearchResult[]): Results {
-  // Separate Datasets & DataLayers
+  // Separate Datasets results and  DataLayer results
   const dataSets = results.filter(isDataSetSearchResult);
   const dataLayers = results.filter(isDataLayerSearchResult);
 
-  // Group results by dataset first, and then categories
+  // Group DataLayer results by dataset first, and then categories
   const grouped = dataLayers.reduce((acc, value) => {
     const org = value.data.organization;
     const dataset = value.data.dataset;

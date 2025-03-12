@@ -18,6 +18,7 @@ describe('DataLayersComponent', () => {
           dataSets$: of({} as Pagination<DataSet>),
           selectedDataSet$: of(null),
           dataTree$: of(null),
+          searchResults$: of(null),
         }),
       ],
     }).compileComponents();
