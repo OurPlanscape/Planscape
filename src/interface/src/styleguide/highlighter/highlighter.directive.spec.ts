@@ -1,6 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
-
 import { HighlighterDirective } from './highlighter.directive';
 import { Component } from '@angular/core';
 
@@ -52,7 +51,6 @@ describe('HighlighterDirective', () => {
     fixture.detectChanges();
 
     // Expect matched occurrences to be wrapped in <mark>
-    // We'll see <mark> for "Angular" in the text
     expect(directiveEl.nativeElement.innerHTML).toContain(
       '<mark>planning</mark>'
     );
@@ -68,7 +66,7 @@ describe('HighlighterDirective', () => {
     testHost.testSearchTerm = 'PLANNING';
     fixture.detectChanges();
 
-    // Should still highlight "Angular"
+    // Should still highlight "planning"
     expect(directiveEl.nativeElement.innerHTML).toContain(
       '<mark>planning</mark>'
     );
