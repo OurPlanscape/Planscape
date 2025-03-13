@@ -97,11 +97,10 @@ def get_item_text_or_none(
     element: Optional[ElementTree.Element], tag: str
 ) -> Optional[str]:
     find_element = element.find(tag) if element else None
-    return find_element.text if find_element is not None else None
+    return str(find_element.text).strip() if find_element is not None else None
 
 
 def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
-    logger.info(f"Parsing {metadata_file.name} with QMD schema.")
     with metadata_file.open() as f:
         try:
             root = ElementTree.fromstring(f.read())
@@ -126,7 +125,9 @@ def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
             keywords = []
             if keywords_tree:
                 for keyword in keywords_tree.iter():
-                    keywords.append(keyword.text)
+                    kw = str(keyword.text).strip()
+                    if kw:
+                        keywords.append(keyword.text)
 
             if keywords:
                 identification.update({"keywords": {"default": {"keywords": keywords}}})
@@ -190,7 +191,6 @@ def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
                 }
                 metadata.update({"crs": {"spatialrefsys": spatial_ref}})  # type: ignore
 
-            logger.info(f"Successfully parsed {metadata_file.name} with QMD schema.")
             return metadata
         except Exception:
             logger.warning(
