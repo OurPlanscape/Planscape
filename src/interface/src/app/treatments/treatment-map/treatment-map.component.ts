@@ -1,4 +1,4 @@
-import { Component, Input, Renderer2 } from '@angular/core';
+import { Component, Input, Renderer2, OnInit } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
@@ -9,9 +9,9 @@ import {
   MapComponent,
   PopupComponent,
   VectorSourceComponent,
-  RasterSourceComponent
+  RasterSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import {
+import maplibregl, {
   LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
@@ -42,6 +42,11 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { cogProtocol } from '@geomatico/maplibre-cog-protocol';
+import { makeColorFunction } from '../../data-layers/utilities';
+import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
+import { environment } from '../../../environments/environment';
+import { HttpClient } from '@angular/common/http';
 
 @UntilDestroy()
 @Component({
@@ -78,7 +83,7 @@ import { DataLayersStateService } from '../../data-layers/data-layers.state.serv
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
 })
-export class TreatmentMapComponent {
+export class TreatmentMapComponent implements OnInit {
   @Input() showProjectAreaTooltips = true;
   /**
    * Flag to determine if the user is currently dragging to select stands
@@ -170,8 +175,31 @@ export class TreatmentMapComponent {
    * permissions for current user
    */
   userCanEditStands: boolean = false;
-
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
+  stylesUrl = '/assets/cogstyles/example2.json';
+  protocolsRegistered = false;
+  aws_access_key = environment.aws_access_key;
+  mockCogUrl = `https://planscape-control-dev.s3.us-west-2.amazonaws.com/datalayers/1/0396428b-ba40-4863-b045-b44989d07a37.tif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=${this.aws_access_key}%2F20250312%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250312T153629Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f7b2d5facb81b0e971bf415d84141d8e585da6da86b5462720d06f28c4c8157c`;
+  fullCogUrl = '';
+
+  registerProtocols() {
+    if (!this.protocolsRegistered) {
+      maplibregl.addProtocol('cog', cogProtocol);
+      this.protocolsRegistered = true;
+    }
+  }
+
+  ngOnInit(): void {
+    //fetch styles
+    this.client.get(this.stylesUrl).subscribe((styleJson) => {
+      const colorFn = makeColorFunction(styleJson as any);
+
+      // 4. Register it with maplibre-cog-protocol
+      setColorFunction(this.mockCogUrl, colorFn);
+      this.fullCogUrl = `cog://${this.mockCogUrl}`;
+    });
+    this.registerProtocols();
+  }
 
   constructor(
     private mapConfigState: MapConfigState,
@@ -181,6 +209,7 @@ export class TreatmentMapComponent {
     private featureService: FeatureService,
     private renderer: Renderer2,
     private dataLayersStateService: DataLayersStateService,
+    private client: HttpClient
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -231,10 +260,12 @@ export class TreatmentMapComponent {
     }
   }
 
-
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
-
-  mockCOGUrl = 'cog://sentinel-cogs.s3.us-west-2.amazonaws.com/sentinel-s2-l2a-cogs/36/Q/WD/2020/7/S2A_36QWD_20200701_0_L2A/TCI.tif';
+  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$.pipe(
+    (layer) => {
+      console.log('layer details:', layer);
+      return layer;
+    }
+  );
 
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {

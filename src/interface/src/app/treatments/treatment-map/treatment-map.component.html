@@ -33,18 +33,6 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
-
-  <ng-container>
-    <mgl-raster-source
-      [url]="mockCOGUrl"
-      [tileSize]="256"
-      id="rasterImage"></mgl-raster-source>
-  
-    <mgl-layer id="image-layer" type="raster" source="rasterImage"></mgl-layer>
-  </ng-container>
-
-
-
   <app-map-controls
     [userCanEditStands]="userCanEditStands"
     *ngIf="showMapControls$ | async"
@@ -83,4 +71,12 @@
     *ngIf="treatmentTooltipLngLat">
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
+
+  <ng-container *ngIf="selectedDataLayer$ | async as selectedDataLayer">
+    <mgl-raster-source
+      [url]="fullCogUrl"
+      [tileSize]="256"
+      id="rasterImage"></mgl-raster-source>
+    <mgl-layer id="image-layer" type="raster" source="rasterImage"></mgl-layer>
+  </ng-container>
 </mgl-map>
