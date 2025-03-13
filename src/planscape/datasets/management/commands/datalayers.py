@@ -2,10 +2,12 @@ import json
 import multiprocessing
 import re
 import subprocess
+import logging
 from functools import partial
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
+from xml.etree import ElementTree
 
 import requests
 from core.base_commands import PlanscapeCommand
@@ -15,6 +17,10 @@ from django.core.management.base import CommandParser
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape
+from pygeometa.schemas import load_schema, SCHEMAS
+
+logger = logging.getLogger(__name__)
+
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -85,6 +91,145 @@ def create_for_import(input_file: str, dataset: int) -> None:
 def name_from_input_file(input_file: str):
     _base, name = input_file.rsplit("/", 1)
     return name.replace("_3857_COG.tif", "")
+
+
+def get_item_text_or_none(
+    element: Optional[ElementTree.Element], tag: str
+) -> Optional[str]:
+    return element.find(tag).text if element and element.find(tag) else None
+
+
+def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
+    with metadata_file.open() as f:
+        try:
+            root = ElementTree.fromstring(f.read())
+            metadata = {
+                "metadata": {
+                    "identifier": get_item_text_or_none(root, "identifier"),
+                    "parentidentifier": get_item_text_or_none(root, "parentidentifier"),
+                    "hierarchylevel": get_item_text_or_none(root, "type"),
+                    "language": get_item_text_or_none(root, "language"),
+                },
+            }
+
+            identification = {
+                "language": get_item_text_or_none(root, "language"),
+                "title": get_item_text_or_none(root, "title"),
+                "abstract": get_item_text_or_none(root, "abstract"),
+                "fees": get_item_text_or_none(root, "fees"),
+                "accessconstraints": get_item_text_or_none(root, "constraints"),
+                "license": {"name": get_item_text_or_none(root, "license")},
+            }
+            keywords_tree = root.find("keywords")
+            keywords = []
+            if keywords_tree:
+                for keyword in keywords_tree.iter():
+                    keywords.append(keyword.text)
+
+            if keywords:
+                identification.update({"keywords": {"default": {"keywords": keywords}}})
+
+            extents = {}
+            extent_tree = root.find("extent")
+            if extent_tree:
+                spatial = extent_tree.find("spatial")
+                temporal = extent_tree.find("temporal")
+                if spatial:
+                    extents.update({"spatial": [spatial.attrib]})
+                if temporal:
+                    extents.update(
+                        {
+                            "temporal": [
+                                {
+                                    "begin": temporal.get("start"),
+                                    "end": temporal.get("end"),
+                                }
+                            ]
+                        }
+                    )
+
+            if extents:
+                identification.update({"extents": extents})
+
+            metadata.update({"identification": identification})
+
+            contact_tree = root.find("contact")
+            if contact_tree:
+                address_tree = contact_tree.find("contactAddress")
+                contact = {
+                    "name": get_item_text_or_none(contact_tree, "name"),
+                    "organization": get_item_text_or_none(contact_tree, "organization"),
+                    "position": get_item_text_or_none(contact_tree, "position"),
+                    "voice": get_item_text_or_none(contact_tree, "voice"),
+                    "fax": get_item_text_or_none(contact_tree, "fax"),
+                    "email": get_item_text_or_none(contact_tree, "email"),
+                    "role": get_item_text_or_none(contact_tree, "role"),
+                    "city": get_item_text_or_none(address_tree, "city"),
+                    "address": get_item_text_or_none(address_tree, "address"),
+                    "postalcode": get_item_text_or_none(address_tree, "postalcode"),
+                    "country": get_item_text_or_none(address_tree, "country"),
+                }
+                metadata.update({"contact": contact})
+
+            links = root.find("links")
+            distribution = {}
+            if links:
+                for link in links.iter():
+                    distribution.update({link.get("name"): link.attrib})
+            if distribution:
+                metadata.update({"distribution": distribution})
+
+            crs_tree = root.find("crs")
+            spatialrefsys_tree = crs_tree.find("spatialrefsys") if crs_tree else None
+            if spatialrefsys_tree:
+                spatial_ref = {
+                    element.tag: element.text for element in spatialrefsys_tree.iter()
+                }
+                metadata.update({"crs": {"spatialrefsys": spatial_ref}})  # type: ignore
+
+        except Exception:
+            logger.warning(
+                f"Failed to parse {metadata_file.name} with QMD schema.",
+                exc_info=True,
+            )
+
+    return None
+
+
+def parse_xml_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
+    with metadata_file.open() as f:
+        for schema in SCHEMAS.keys():
+            try:
+                schema_object = load_schema(schema)
+                metadata = schema_object.import_(f.read())
+                metadata.pop("mfc")
+                return metadata
+            except Exception:
+                logger.warning(
+                    f"Failed to parse {metadata_file.name} with {schema}.", exc_info=True
+                )
+
+    return None
+
+
+def parse_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
+    match metadata_file.suffix:
+        case ".qmd":
+            metadata = parse_qmd_metadata(metadata_file)
+        case _:
+            metadata = parse_xml_metadata(metadata_file)
+
+    return metadata
+
+
+def get_datalayer_metadata(file_path: Path) -> Optional[Dict[str, Any]]:
+    # TODO: find any file with .xml, .aux.xml .qmd with same name as input_file
+    for ext in [".xml", ".aux.xml", ".qmd"]:
+        metadata_file = file_path.with_suffix(ext)
+        if metadata_file.exists():
+            return parse_metadata(metadata_file)
+
+    return None
 
 
 class Command(PlanscapeCommand):
@@ -277,6 +422,7 @@ class Command(PlanscapeCommand):
         layer_type: str,
         geometry_type: str,
         layer_info: Dict[str, Any],
+        metadata: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
         base_url = self.get_base_url(**kwargs)
@@ -285,7 +431,7 @@ class Command(PlanscapeCommand):
         mimetype = kwargs.get("mimetype")
         original_name = kwargs.get("original_name")
         category = kwargs.get("category")
-        metadata = kwargs.get("metadata", {}) or {}
+        metadata = metadata or {}
         style = kwargs.get("style", None) or None
         input_data = {
             "organization": org,
@@ -347,10 +493,15 @@ class Command(PlanscapeCommand):
         layer_info = get_layer_info(input_file=rasters[0])
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         mimetype = detect_mimetype(input_file=input_file)
+        metadata = kwargs.pop("metadata", None)
         if s3_file:
             original_name = input_file
         else:
             original_name = original_file_path.name
+            file_metadata = get_datalayer_metadata(file_path=original_file_path)
+            if file_metadata:
+                metadata.update(file_metadata)
+
         # updated info
         output_data = self._create_datalayer_request(
             name=name,
@@ -361,6 +512,7 @@ class Command(PlanscapeCommand):
             layer_info=layer_info,
             mimetype=mimetype,
             original_name=original_name,
+            metadata=metadata,
             **kwargs,
         )
         if not output_data:
