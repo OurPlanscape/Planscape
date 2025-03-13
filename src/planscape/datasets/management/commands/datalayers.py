@@ -96,10 +96,12 @@ def name_from_input_file(input_file: str):
 def get_item_text_or_none(
     element: Optional[ElementTree.Element], tag: str
 ) -> Optional[str]:
-    return element.find(tag).text if element and element.find(tag) else None
+    find_element = element.find(tag) if element else None
+    return find_element.text if find_element is not None else None
 
 
 def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
+    logger.info(f"Parsing {metadata_file.name} with QMD schema.")
     with metadata_file.open() as f:
         try:
             root = ElementTree.fromstring(f.read())
@@ -175,7 +177,8 @@ def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
             distribution = {}
             if links:
                 for link in links.iter():
-                    distribution.update({link.get("name"): link.attrib})
+                    if link.get("name"):
+                        distribution.update({link.get("name"): link.attrib})
             if distribution:
                 metadata.update({"distribution": distribution})
 
@@ -187,6 +190,8 @@ def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
                 }
                 metadata.update({"crs": {"spatialrefsys": spatial_ref}})  # type: ignore
 
+            logger.info(f"Successfully parsed {metadata_file.name} with QMD schema.")
+            return metadata
         except Exception:
             logger.warning(
                 f"Failed to parse {metadata_file.name} with QMD schema.",
@@ -227,8 +232,10 @@ def get_datalayer_metadata(file_path: Path) -> Optional[Dict[str, Any]]:
     for ext in [".xml", ".aux.xml", ".qmd"]:
         metadata_file = file_path.with_suffix(ext)
         if metadata_file.exists():
+            logger.info(f"Found metadata file {metadata_file.name}.")
             return parse_metadata(metadata_file)
 
+    logger.warning(f"No metadata file found for {file_path.name}.")
     return None
 
 
