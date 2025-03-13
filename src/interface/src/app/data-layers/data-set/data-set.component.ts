@@ -18,5 +18,5 @@ export class DataSetComponent {
   @Input() layers?: SearchResult[];
   @Input() path?: string[];
 
-  @Output() selectDataset = new EventEmitter();
+  @Output() selectDataset = new EventEmitter<void>();
 }

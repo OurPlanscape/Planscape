@@ -47,7 +47,8 @@ export class DataLayersComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
   loading$ = this.dataLayersStateService.loading$;
-  browsingDataSet = true;
+
+  pageMode: 'browse' | 'search' = 'browse';
 
   dataSets$ = this.dataLayersStateService.dataSets$;
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
@@ -59,7 +60,7 @@ export class DataLayersComponent {
     this.dataLayersStateService.searchResults$.pipe(
       startWith(null),
       map((results) => {
-        this.browsingDataSet = false;
+        this.pageMode = 'search';
         if (results) {
           this.resultCount = results.length;
           return groupSearchResults(results);
@@ -76,7 +77,7 @@ export class DataLayersComponent {
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
 
   search(term: string) {
-    this.browsingDataSet = false;
+    this.pageMode = 'search';
     this.searchTerm$.next(term);
   }
 
@@ -85,20 +86,28 @@ export class DataLayersComponent {
   }
 
   viewResultDataSet(dataSet: DataSet) {
-    this.browsingDataSet = true;
+    this.pageMode = 'browse';
     this.dataLayersStateService.selectDataSet(dataSet);
   }
 
   goBack() {
     if (this.searchTerm$.value) {
-      this.browsingDataSet = false;
+      this.pageMode = 'search';
     }
     this.dataLayersStateService.clearDataSet();
   }
 
   clearSearch() {
     this.search('');
-    this.browsingDataSet = true;
+    this.pageMode = 'browse';
     this.dataLayersStateService.clearDataSet();
+  }
+
+  get isOnSearchMode() {
+    return this.pageMode === 'search';
+  }
+
+  get isOnBrowseMode() {
+    return this.pageMode === 'browse';
   }
 }
