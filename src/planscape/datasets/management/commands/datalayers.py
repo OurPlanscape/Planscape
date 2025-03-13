@@ -206,7 +206,8 @@ def parse_xml_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
                 return metadata
             except Exception:
                 logger.warning(
-                    f"Failed to parse {metadata_file.name} with {schema}.", exc_info=True
+                    f"Failed to parse {metadata_file.name} with {schema}.",
+                    exc_info=True,
                 )
 
     return None
@@ -223,7 +224,6 @@ def parse_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
 
 
 def get_datalayer_metadata(file_path: Path) -> Optional[Dict[str, Any]]:
-    # TODO: find any file with .xml, .aux.xml .qmd with same name as input_file
     for ext in [".xml", ".aux.xml", ".qmd"]:
         metadata_file = file_path.with_suffix(ext)
         if metadata_file.exists():
@@ -500,7 +500,7 @@ class Command(PlanscapeCommand):
             original_name = original_file_path.name
             file_metadata = get_datalayer_metadata(file_path=original_file_path)
             if file_metadata:
-                metadata.update(file_metadata)
+                metadata.update({"metadata": file_metadata})
 
         # updated info
         output_data = self._create_datalayer_request(
