@@ -260,12 +260,12 @@ export class TreatmentMapComponent implements OnInit {
     }
   }
 
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$.pipe(
-    (layer) => {
-      console.log('layer details:', layer);
-      return layer;
-    }
-  );
+
+  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+
+  publicUrl(url: string) {
+    return `cog://${url}`
+  }
 
   onMapMouseDown(event: MapMouseEvent): void {
     if (event.originalEvent.button === 2) {

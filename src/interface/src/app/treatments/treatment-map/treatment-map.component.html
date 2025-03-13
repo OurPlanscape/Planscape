@@ -74,7 +74,7 @@
 
   <ng-container *ngIf="selectedDataLayer$ | async as selectedDataLayer">
     <mgl-raster-source
-      [url]="fullCogUrl"
+      [url]="publicUrl(selectedDataLayer.public_url ?? '')"
       [tileSize]="256"
       id="rasterImage"></mgl-raster-source>
     <mgl-layer
