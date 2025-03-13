@@ -1,0 +1,13 @@
+<mat-icon class="material-symbols-outlined no-results-icon"
+  >find_in_page
+</mat-icon>
+<div class="no-results-title">
+  <ng-container *ngIf="searchString; else generic">
+    No Results for &quot;{{ searchString }}&quot;
+  </ng-container>
+  <ng-template #generic> No Results Found </ng-template>
+</div>
+<div class="no-results-detail">
+  No results match the search criteria provided. Check your search for typos or
+  try a different search term.
+</div>

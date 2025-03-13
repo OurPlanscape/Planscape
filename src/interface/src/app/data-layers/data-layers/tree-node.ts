@@ -1,4 +1,4 @@
-import { DataLayer } from '../../types/data-sets';
+import { DataLayer } from '@types';
 
 /**
  * A tree node that can either be a "category" node (with children)

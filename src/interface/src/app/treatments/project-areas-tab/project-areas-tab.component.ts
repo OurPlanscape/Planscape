@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
-import { TreatmentSummary, Prescription } from '@types';
+import { Prescription, TreatmentSummary } from '@types';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
 import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
@@ -10,9 +10,11 @@ import { map } from 'rxjs';
 import { SearchResultCardComponent } from '../../../styleguide/search-result-card/search-result-card.component';
 import {
   PRESCRIPTIONS,
-  PrescriptionSingleAction,
   PrescriptionSequenceAction,
+  PrescriptionSingleAction,
 } from '../prescriptions';
+import { NoResultsComponent } from '../../../styleguide/no-results/no-results.component';
+
 @Component({
   selector: 'app-project-areas-tab',
   standalone: true,
@@ -26,6 +28,7 @@ import {
     SearchBarComponent,
     ProjectAreaExpanderComponent,
     SearchResultCardComponent,
+    NoResultsComponent,
   ],
   templateUrl: './project-areas-tab.component.html',
   styleUrl: './project-areas-tab.component.scss',
