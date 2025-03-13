@@ -196,8 +196,8 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
         required=True,
         allow_null=False,
     )
-    datalayer_ids = serializers.ListField(
-        child=serializers.IntegerField(),
+    datalayers = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
         required=False,
         help_text="Optional list of datalayer IDs to associate with this style upon creation.",
     )
@@ -224,7 +224,7 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
             "name",
             "type",
             "data",
-            "datalayer_ids",
+            "datalayers",
         )
 
 
