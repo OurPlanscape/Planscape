@@ -2,39 +2,30 @@ import { Meta, moduleMetadata, StoryObj } from '@storybook/angular';
 import { FormsModule } from '@angular/forms';
 import { HighlighterDirective } from './highlighter.directive';
 
-// We no longer need an interface for "content" because it's static now.
 interface StoryProps {
-  // We'll store the search term here
   searchTerm?: string;
 }
 
 const meta: Meta<StoryProps> = {
   title: 'Components/Highlighter',
-
   // For autodocs, we can still reference the directive as the "component",
   // but we must also properly import it below.
   component: HighlighterDirective,
-
   decorators: [
     moduleMetadata({
-      // For a standalone directive + ngModel usage, we need both:
       imports: [HighlighterDirective, FormsModule],
     }),
   ],
 };
 
-// This default export is required by Storybook
 export default meta;
 
 // Create a Story type
 type Story = StoryObj<StoryProps>;
 
 export const Default: Story = {
-  // Instead of a function that returns "args" => we can do a simpler approach
   render: () => ({
-    // We'll keep the searchTerm in local props. Start blank or with default text
     props: { searchTerm: '' },
-
     template: `
       <div style='display: flex; align-items: center; margin-bottom: 10px; gap: 8px;'>
         <label for='searchInput'>Search term:</label>

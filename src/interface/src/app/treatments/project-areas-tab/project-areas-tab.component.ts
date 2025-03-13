@@ -5,7 +5,7 @@ import { TreatmentsState } from '../treatments.state';
 import { Prescription, TreatmentSummary } from '@types';
 import { MatIconModule } from '@angular/material/icon';
 import { ProjectAreaExpanderComponent } from '../../../styleguide/project-area-expander/project-area-expander.component';
-import { SearchBarComponent } from '../../../styleguide/search-bar/search-bar.component';
+import { SearchBarComponent } from '@styleguide';
 import { map } from 'rxjs';
 import { SearchResultCardComponent } from '../../../styleguide/search-result-card/search-result-card.component';
 import {
@@ -13,6 +13,7 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
 } from '../prescriptions';
+
 import { NoResultsComponent } from '../../../styleguide/no-results/no-results.component';
 
 @Component({

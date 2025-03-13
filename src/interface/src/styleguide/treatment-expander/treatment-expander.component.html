@@ -14,33 +14,15 @@
         [action]="action"></sg-sequence-icon>
 
       <div class="treatment-type-text" *ngIf="treatmentType === 'SINGLE'">
-        <ng-container
-          *ngFor="
-            let titlePart of splitTextLine(singleRxTitleText());
-            let i = index
-          ">
-          <span class="highlighted" *ngIf="isMatch(titlePart)">{{
-            titlePart
-          }}</span>
-          <span *ngIf="!isMatch(titlePart)" class="regular">{{
-            titlePart
-          }}</span>
-        </ng-container>
+        <span [sgHighlighter]="searchString || ''">{{
+          singleRxTitleText()
+        }}</span>
       </div>
       <div class="treatment-type-text" *ngIf="treatmentType === 'SEQUENCE'">
         <div *ngFor="let seqTitle of sequenceTitles()">
-          <ng-container
-            *ngFor="
-              let titlePart of splitTextLine(seqTitle.description);
-              let i = index
-            ">
-            <span class="highlighted" *ngIf="isMatch(titlePart)">{{
-              titlePart
-            }}</span>
-            <span *ngIf="!isMatch(titlePart)" class="regular">{{
-              titlePart
-            }}</span>
-          </ng-container>
+          <span [sgHighlighter]="searchString || ''">{{
+            seqTitle.description
+          }}</span>
           <span class="rx-detail-year"> (Year {{ seqTitle.year }})</span>
         </div>
       </div>
