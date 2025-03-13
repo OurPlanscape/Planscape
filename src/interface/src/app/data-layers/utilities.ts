@@ -26,7 +26,6 @@ export function makeColorFunction(
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
   const { map_type, no_data, entries } = styleJson;
   const sorted = entries.slice().sort((a, b) => a.value - b.value);
-
   // For a RAMP, build a scale
   let rampColorFn: ((val: number) => [number, number, number, number]) | null =
     null;

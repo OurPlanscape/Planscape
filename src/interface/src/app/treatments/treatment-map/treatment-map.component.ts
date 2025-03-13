@@ -45,7 +45,6 @@ import { DataLayersStateService } from '../../data-layers/data-layers.state.serv
 import { cogProtocol } from '@geomatico/maplibre-cog-protocol';
 import { makeColorFunction } from '../../data-layers/utilities';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
-import { environment } from '../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 
 @UntilDestroy()
@@ -176,28 +175,20 @@ export class TreatmentMapComponent implements OnInit {
    */
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
-  stylesUrl = '/assets/cogstyles/example2.json';
-  protocolsRegistered = false;
-  aws_access_key = environment.aws_access_key;
-  mockCogUrl = `https://planscape-control-dev.s3.us-west-2.amazonaws.com/datalayers/1/0396428b-ba40-4863-b045-b44989d07a37.tif?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=${this.aws_access_key}%2F20250312%2Fus-west-2%2Fs3%2Faws4_request&X-Amz-Date=20250312T153629Z&X-Amz-Expires=604800&X-Amz-SignedHeaders=host&X-Amz-Signature=f7b2d5facb81b0e971bf415d84141d8e585da6da86b5462720d06f28c4c8157c`;
-  fullCogUrl = '';
+  stylesUrl = '/assets/cogstyles/example.json';
+  styles2Url = '/assets/cogstyles/example2.json';
+  cogUrl?: string;
 
+  // TODO: maybe set this at the component-level?
   registerProtocols() {
-    if (!this.protocolsRegistered) {
+    if (!maplibregl.getProtocol('cog')) {
       maplibregl.addProtocol('cog', cogProtocol);
-      this.protocolsRegistered = true;
+    } else {
+      console.log('it was not set');
     }
   }
 
   ngOnInit(): void {
-    //fetch styles
-    this.client.get(this.stylesUrl).subscribe((styleJson) => {
-      const colorFn = makeColorFunction(styleJson as any);
-
-      // 4. Register it with maplibre-cog-protocol
-      setColorFunction(this.mockCogUrl, colorFn);
-      this.fullCogUrl = `cog://${this.mockCogUrl}`;
-    });
     this.registerProtocols();
   }
 
@@ -258,13 +249,20 @@ export class TreatmentMapComponent implements OnInit {
     } else {
       this.renderer.removeClass(document.body, 'statewide-datalayers');
     }
-  }
 
+    this.dataLayersStateService.selectedDataLayer$
+      .pipe(untilDestroyed(this))
+      .subscribe((layer) => {
+        this.cogUrl = `cog://${layer?.public_url}`;
+        if (layer?.public_url) {
+          //TODO: fetch associated style for this image
 
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
-
-  publicUrl(url: string) {
-    return `cog://${url}`
+          this.client.get(this.styles2Url).subscribe((styleJson) => {
+            const colorFn = makeColorFunction(styleJson as any);
+            setColorFunction(layer.public_url ?? '', colorFn);
+          });
+        }
+      });
   }
 
   onMapMouseDown(event: MapMouseEvent): void {

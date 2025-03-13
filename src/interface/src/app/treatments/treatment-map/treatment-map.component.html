@@ -72,9 +72,9 @@
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
 
-  <ng-container *ngIf="selectedDataLayer$ | async as selectedDataLayer">
+  <ng-container *ngIf="cogUrl">
     <mgl-raster-source
-      [url]="publicUrl(selectedDataLayer.public_url ?? '')"
+      [url]="cogUrl"
       [tileSize]="256"
       id="rasterImage"></mgl-raster-source>
     <mgl-layer
