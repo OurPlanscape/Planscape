@@ -23,7 +23,9 @@ def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
             metadata = {
                 "metadata": {
                     "identifier": _get_item_text_or_none(root, "identifier"),
-                    "parentidentifier": _get_item_text_or_none(root, "parentidentifier"),
+                    "parentidentifier": _get_item_text_or_none(
+                        root, "parentidentifier"
+                    ),
                     "hierarchylevel": _get_item_text_or_none(root, "type"),
                     "language": _get_item_text_or_none(root, "language"),
                 },
@@ -77,7 +79,9 @@ def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
                 address_tree = contact_tree.find("contactAddress")
                 contact = {
                     "name": _get_item_text_or_none(contact_tree, "name"),
-                    "organization": _get_item_text_or_none(contact_tree, "organization"),
+                    "organization": _get_item_text_or_none(
+                        contact_tree, "organization"
+                    ),
                     "position": _get_item_text_or_none(contact_tree, "position"),
                     "voice": _get_item_text_or_none(contact_tree, "voice"),
                     "fax": _get_item_text_or_none(contact_tree, "fax"),
