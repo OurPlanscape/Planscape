@@ -355,7 +355,9 @@ class Command(PlanscapeCommand):
             original_name = input_file
         else:
             original_name = original_file_path.name
-            file_metadata = get_and_parse_datalayer_file_metadata(file_path=original_file_path)
+            file_metadata = get_and_parse_datalayer_file_metadata(
+                file_path=original_file_path
+            )
             if file_metadata:
                 metadata.update({"metadata": file_metadata})
 
