@@ -17,9 +17,10 @@
   <ng-container *ngIf="searchTerm$ | async as searchTerm">
     <div *ngIf="results$ | async as results">
       <div *ngIf="resultCount" class="result-count">
-        {{ resultCount }} Results for "{{ searchTerm$ | async }}"
+        {{ resultCount }} Results for "{{ searchTerm }}"
       </div>
       <app-search-results
+        [searchTerm]="searchTerm"
         [results]="results"
         (clickDataset)="viewResultDataSet($event)"></app-search-results>
       <div *ngIf="resultCount === 0">

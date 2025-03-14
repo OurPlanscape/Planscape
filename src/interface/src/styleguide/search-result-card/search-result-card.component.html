@@ -1,29 +1,15 @@
 <div (click)="handleClick($event)">
   <div class="title-line">
-    <ng-container
-      *ngFor="
-        let titlePart of splitTextLine(extractProjectTitle());
-        let i = index
-      ">
-      <div class="highlighted" *ngIf="partMatches(titlePart)">
-        <span>{{ titlePart }}</span>
-      </div>
-      <div class="regular" *ngIf="!partMatches(titlePart)">
-        <span>{{ titlePart }}</span>
-      </div>
-    </ng-container>
+    <div
+      [sgHighlighter]="searchString"
+      [sgHighlighterText]="extractProjectTitle()"></div>
   </div>
   <div *ngFor="let rx of projectArea.prescriptions">
     <div *ngIf="treatmentIsSingle(rx) && singleRxMatches(rx)" class="text-line">
       <mat-icon>subdirectory_arrow_right</mat-icon>
-      <div *ngFor="let part of splitTextLine(singleRxText(rx)); let i = index">
-        <div class="highlighted" *ngIf="partMatches(part)">
-          <span>{{ part }}</span>
-        </div>
-        <div class="regular" *ngIf="!partMatches(part)">
-          <span>{{ part }}</span>
-        </div>
-      </div>
+      <div
+        [sgHighlighter]="searchString"
+        [sgHighlighterText]="singleRxText(rx)"></div>
     </div>
 
     <div *ngIf="!treatmentIsSingle(rx)">
@@ -34,17 +20,8 @@
           class="text-line">
           <mat-icon>subdirectory_arrow_right</mat-icon>
           <div
-            *ngFor="
-              let part of splitTextLine(rxAttributes.description);
-              let i = index
-            ">
-            <div class="highlighted" *ngIf="partMatches(part)">
-              <span>{{ part }}</span>
-            </div>
-            <div class="regular" *ngIf="!partMatches(part)">
-              <span>{{ part }}</span>
-            </div>
-          </div>
+            [sgHighlighter]="searchString"
+            [sgHighlighterText]="rxAttributes.description"></div>
           <span class="year-details"> (Year {{ rxAttributes.year }})</span>
         </div>
       </div>

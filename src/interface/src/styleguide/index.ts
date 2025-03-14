@@ -16,3 +16,5 @@ export * from './notes-sidebar/notes-sidebar.component';
 export * from './panel/panel.component';
 export * from './treatment-type-icon/treatment-type-icon.component';
 export * from './sequence-icon/sequence-icon.component';
+export * from './no-results/no-results.component';
+export * from './highlighter/highlighter.directive';

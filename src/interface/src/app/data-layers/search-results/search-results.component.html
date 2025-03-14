@@ -2,12 +2,14 @@
   *ngFor="let result of results?.dataSets"
   (click)="goToDataSet(result)"
   [name]="result.name"
-  [organizationName]="result.data.organization.name">
+  [organizationName]="result.data.organization.name"
+  [searchTerm]="searchTerm">
 </app-data-set>
 <div *ngIf="results">
   <div *ngIf="results.groupedLayers">
     <div *ngFor="let result of results.groupedLayers | keyvalue">
       <app-data-set
+        [searchTerm]="searchTerm"
         *ngFor="let category of result.value.categories | keyvalue"
         (selectDataset)="goToDataLayerDataSet(result.value)"
         [name]="result.value.dataset.name"
