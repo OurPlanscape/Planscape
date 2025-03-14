@@ -1,6 +1,12 @@
 @import "mixins";
 @import "colors";
 
+:host {
+  display: block;
+  padding-bottom: 20px;
+
+}
+
 .data-set {
   padding: 14px;
   cursor: pointer;
@@ -19,16 +25,6 @@
   flex: 1;
 }
 
-.data-set-name {
-  color: $color-black;
-  margin-bottom: 8px;
-}
-
-.data-set-org {
-  color: $color-md-gray;
-  font-weight: 500;
-  line-height: 22px
-}
 
 .selected-name {
   font-size: 16px;
@@ -50,65 +46,6 @@
 }
 
 
-/*
- * This padding sets alignment of the nested nodes.
- */
-.data-layers .mat-nested-tree-node div[role=group] {
-  padding-left: 15px;
-  cursor: pointer;
-}
-
-
-/*
- * Padding for leaf nodes.
- * Leaf nodes need to have padding so as to align with other non-leaf nodes
- * under the same parent.
- */
-.data-layers div[role=group] > .mat-tree-node {
-  padding-left: 4px;
-  padding-right: 10px;
-}
-
-.icon {
-  width: 20px;
-  height: 20px;
-  background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>') no-repeat 50% 50%;
-  background-size: 6px;
-  transition: transform 100ms linear;
-  margin: 0 8px 0 16px;
-}
-
-
-.data-layer-node {
-  border-bottom: 1px solid $color-soft-gray;
-  cursor: pointer;
-  min-height: 54px;
-
-  &:not(.expanded):hover {
-    background-color: $color-lighter-gray;
-  }
-}
-
-.expanded {
-  background-color: $color-soft-purple;
-
-  .icon {
-    transform: rotate(90deg);
-  }
-}
-
-
-.data-layer-cat {
-  background-color: $color-soft-purple-light;
-
-  .data-layer-node {
-    border: none;
-    background-color: $color-soft-purple-light;
-  }
-
-}
-
-
 .no-data {
   margin: 28px;
   color: $color-md-gray;
@@ -118,22 +55,39 @@
   margin: 28px;
 }
 
-.data-layer-label {
-  flex: 1;
-  padding: 8px;
-  cursor: pointer;
-  color: $color-dark-gray;
+.result-count {
+  @include h5();
+  padding: 14px 16px;
 }
 
-.data-layer-input {
-  margin: 0;
-  padding: 0;
+// TODO: component?
+.side-search-container {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 70px;
+  padding: 4px 16px;
+  border-bottom: 1px $color-soft-gray solid;
+  position: sticky;
+  top: 0;
+  background: $color-white;
+  z-index: 100;
 }
 
-.data-layer {
-  min-height: 36px;
+:host {
+  ::ng-deep .search-bar .input-wrapper {
+    width: 100%;
+    background-color: $color-light-gray;
+    height: 42px;
+  }
+
+  ::ng-deep .search-bar input {
+    @include xs-label();
+    font-weight: 400;
+    font-family: 'Public Sans';
+    width: 100%;
+  }
 }
 
-.info-icon {
-  color: $color-standard-blue;
-}
+// end component

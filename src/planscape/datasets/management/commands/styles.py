@@ -12,8 +12,11 @@ class Command(PlanscapeCommand):
 
     def add_subcommands(self, parser: CommandParser) -> None:
         subp = parser.add_subparsers()
+
         list_parser = subp.add_parser("list")
         create_parser = subp.add_parser("create")
+        import_parser = subp.add_parser("import")
+
         create_parser.add_argument("name", type=str)
         create_parser.add_argument("type", type=str)
         create_parser.add_argument(
@@ -21,8 +24,24 @@ class Command(PlanscapeCommand):
             required=False,
             type=json.loads,
         )
+
+        import_parser.add_argument(
+            "--directory",
+            required=True,
+            type=str,
+            help="Path to the directory containing style JSON files to be imported",
+        )
+        import_parser.add_argument(
+            "--dry-run",
+            required=False,
+            action="store_true",
+            default=False,
+            help="If set, validate the JSON files without creating styles.",
+        )
+
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
+        import_parser.set_defaults(func=self.import_styles)
 
     def list(self, token, **kwargs):
         base_url = self.get_base_url(**kwargs)
@@ -60,3 +79,14 @@ class Command(PlanscapeCommand):
         )
         output_data = response.json()
         pprint(output_data)
+
+    def import_styles(self, directory: str, dry_run: bool = False, **kwargs):
+        """
+        Placeholder function for the 'import' command.
+        Implementation of reading the directory, validating JSON files,
+        and creating and associating styles will be a second PR.
+        """
+        self.stdout.write("Import subcommand called with:")
+        self.stdout.write(f" - directory={directory}")
+        self.stdout.write(f" - dry_run={dry_run}")
+        self.stdout.write("Implementation is pending future PR.")

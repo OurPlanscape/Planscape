@@ -15,6 +15,8 @@ from django.core.management.base import CommandParser
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape
+from datasets.parsers import get_and_parse_datalayer_file_metadata
+
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"
@@ -277,6 +279,7 @@ class Command(PlanscapeCommand):
         layer_type: str,
         geometry_type: str,
         layer_info: Dict[str, Any],
+        metadata: Optional[Dict[str, Any]] = None,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
         base_url = self.get_base_url(**kwargs)
@@ -285,7 +288,7 @@ class Command(PlanscapeCommand):
         mimetype = kwargs.get("mimetype")
         original_name = kwargs.get("original_name")
         category = kwargs.get("category")
-        metadata = kwargs.get("metadata", {}) or {}
+        metadata = metadata or {}
         style = kwargs.get("style", None) or None
         input_data = {
             "organization": org,
@@ -347,10 +350,17 @@ class Command(PlanscapeCommand):
         layer_info = get_layer_info(input_file=rasters[0])
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         mimetype = detect_mimetype(input_file=input_file)
+        metadata = kwargs.pop("metadata", None)
         if s3_file:
             original_name = input_file
         else:
             original_name = original_file_path.name
+            file_metadata = get_and_parse_datalayer_file_metadata(
+                file_path=original_file_path
+            )
+            if file_metadata:
+                metadata.update({"metadata": file_metadata})
+
         # updated info
         output_data = self._create_datalayer_request(
             name=name,
@@ -361,6 +371,7 @@ class Command(PlanscapeCommand):
             layer_info=layer_info,
             mimetype=mimetype,
             original_name=original_name,
+            metadata=metadata,
             **kwargs,
         )
         if not output_data:

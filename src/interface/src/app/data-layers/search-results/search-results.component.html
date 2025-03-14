@@ -1,0 +1,20 @@
+<app-data-set
+  *ngFor="let result of results?.dataSets"
+  (click)="goToDataSet(result)"
+  [name]="result.name"
+  [organizationName]="result.data.organization.name">
+</app-data-set>
+<div *ngIf="results">
+  <div *ngIf="results.groupedLayers">
+    <div *ngFor="let result of results.groupedLayers | keyvalue">
+      <app-data-set
+        *ngFor="let category of result.value.categories | keyvalue"
+        (selectDataset)="goToDataLayerDataSet(result.value)"
+        [name]="result.value.dataset.name"
+        [organizationName]="result.value.org.name"
+        [layers]="category.value.layers"
+        [path]="category.value.path">
+      </app-data-set>
+    </div>
+  </div>
+</div>
