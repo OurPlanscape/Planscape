@@ -10,7 +10,6 @@ export const environment = {
   download_endpoint: '', // Replace with actual URL
   martin_server: 'https://dev.planscape.org/tiles/',
   mapbox_key: '',
-  aws_access_key: '',
 };
 
 /*

@@ -29,7 +29,7 @@ export class DataLayersStateService {
 
   hasNoTreeData$ = this.dataTree$.pipe(map((d) => !!d && d.length === 0));
 
-  constructor(private service: DataLayersService) { }
+  constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
     this._selectedDataSet$.next(dataset);
@@ -41,11 +41,6 @@ export class DataLayersStateService {
 
   selectDataLayer(dataLayer: DataLayer) {
     this._selectedDataLayer$.next(dataLayer);
-    // trigger loading the url, etc...
-    console.log('we selected this thing: ', dataLayer);
-    const url = dataLayer.public_url;
-    console.log('and the url is this:', url);
-
   }
 
   clearDataLayer() {
