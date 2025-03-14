@@ -196,6 +196,11 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
         required=True,
         allow_null=False,
     )
+    datalayers = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
+        required=False,
+        help_text="Optional list of datalayer IDs to associate with this style upon creation.",
+    )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         type = attrs.get("type") or None
@@ -219,6 +224,7 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
             "name",
             "type",
             "data",
+            "datalayers",
         )
 
 
