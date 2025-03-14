@@ -8,10 +8,9 @@ describe('MapDataLayerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapDataLayerComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapDataLayerComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapDataLayerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
