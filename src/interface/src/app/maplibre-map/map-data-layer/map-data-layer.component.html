@@ -1,13 +1,11 @@
-<ng-container>
-  <mgl-raster-source
-    [url]="cogUrl"
-    [tileSize]="256"
-    id="rasterImage"></mgl-raster-source>
-  <mgl-layer
-    id="image-layer"
-    type="raster"
-    source="rasterImage"
-    [paint]="{
-      'raster-opacity': OPACITY
-    }"></mgl-layer>
-</ng-container>
+<mgl-raster-source
+  [url]="cogUrl"
+  [tileSize]="256"
+  id="rasterImage"></mgl-raster-source>
+<mgl-layer
+  id="image-layer"
+  type="raster"
+  source="rasterImage"
+  [paint]="{
+    'raster-opacity': OPACITY
+  }"></mgl-layer>
