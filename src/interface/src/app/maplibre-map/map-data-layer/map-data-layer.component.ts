@@ -1,0 +1,38 @@
+import { Component, Input, OnChanges } from '@angular/core';
+import { makeColorFunction } from '../../data-layers/utilities';
+import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
+import { HttpClient } from '@angular/common/http';
+import {
+  LayerComponent,
+  RasterSourceComponent,
+} from '@maplibre/ngx-maplibre-gl';
+import { DataLayer } from '@types';
+
+@Component({
+  selector: 'app-map-data-layer',
+  standalone: true,
+  imports: [LayerComponent, RasterSourceComponent],
+  templateUrl: './map-data-layer.component.html',
+  styleUrl: './map-data-layer.component.scss',
+})
+export class MapDataLayerComponent implements OnChanges {
+  OPACITY = 0.75;
+  @Input() dataLayer!: DataLayer | null;
+  cogUrl = '';
+  //TODO: remove--examples only
+  stylesUrl = '/assets/cogstyles/example.json';
+  styles2Url = '/assets/cogstyles/example2.json';
+
+  constructor(private client: HttpClient) {}
+
+  ngOnChanges() {
+    this.cogUrl = `cog://${this.dataLayer?.public_url}`;
+    if (this.dataLayer?.public_url) {
+      //TODO: fetch associated style for this image
+      this.client.get(this.stylesUrl).subscribe((styleJson) => {
+        const colorFn = makeColorFunction(styleJson as any);
+        setColorFunction(this.dataLayer?.public_url ?? '', colorFn);
+      });
+    }
+  }
+}

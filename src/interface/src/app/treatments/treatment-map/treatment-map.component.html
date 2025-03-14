@@ -72,17 +72,6 @@
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
 
-  <ng-container *ngIf="cogUrl">
-    <mgl-raster-source
-      [url]="cogUrl"
-      [tileSize]="256"
-      id="rasterImage"></mgl-raster-source>
-    <mgl-layer
-      id="image-layer"
-      type="raster"
-      source="rasterImage"
-      [paint]="{
-        'raster-opacity': 0.2
-      }"></mgl-layer>
-  </ng-container>
+  <app-map-data-layer
+    [dataLayer]="selectedDataLayer$ | async"></app-map-data-layer>
 </mgl-map>

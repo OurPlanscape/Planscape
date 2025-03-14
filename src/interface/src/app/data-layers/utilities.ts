@@ -21,6 +21,7 @@ export interface StyleJson {
   entries: Entry[];
 }
 
+// TODO: refactor with library options
 export function makeColorFunction(
   styleJson: StyleJson
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {

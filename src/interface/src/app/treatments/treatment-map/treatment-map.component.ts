@@ -43,9 +43,7 @@ import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { cogProtocol } from '@geomatico/maplibre-cog-protocol';
-import { makeColorFunction } from '../../data-layers/utilities';
-import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
-import { HttpClient } from '@angular/common/http';
+import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 
 @UntilDestroy()
 @Component({
@@ -78,6 +76,7 @@ import { HttpClient } from '@angular/common/http';
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
+    MapDataLayerComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -124,6 +123,8 @@ export class TreatmentMapComponent implements OnInit {
    *  If not, and if we are showing treatments, we show the action button, instead.
    */
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
+
+  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
   /**
    * The name of the source layer used to load stands, and later check if loaded
@@ -175,21 +176,10 @@ export class TreatmentMapComponent implements OnInit {
    */
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
-  stylesUrl = '/assets/cogstyles/example.json';
-  styles2Url = '/assets/cogstyles/example2.json';
-  cogUrl?: string;
 
-  // TODO: maybe set this at the component-level?
-  registerProtocols() {
-    if (!maplibregl.getProtocol('cog')) {
-      maplibregl.addProtocol('cog', cogProtocol);
-    } else {
-      console.log('it was not set');
-    }
-  }
-
+  // TODO: move this to a central place
   ngOnInit(): void {
-    this.registerProtocols();
+    maplibregl.addProtocol('cog', cogProtocol);
   }
 
   constructor(
@@ -199,8 +189,7 @@ export class TreatmentMapComponent implements OnInit {
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
     private renderer: Renderer2,
-    private dataLayersStateService: DataLayersStateService,
-    private client: HttpClient
+    private dataLayersStateService: DataLayersStateService
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -249,20 +238,6 @@ export class TreatmentMapComponent implements OnInit {
     } else {
       this.renderer.removeClass(document.body, 'statewide-datalayers');
     }
-
-    this.dataLayersStateService.selectedDataLayer$
-      .pipe(untilDestroyed(this))
-      .subscribe((layer) => {
-        this.cogUrl = `cog://${layer?.public_url}`;
-        if (layer?.public_url) {
-          //TODO: fetch associated style for this image
-
-          this.client.get(this.styles2Url).subscribe((styleJson) => {
-            const colorFn = makeColorFunction(styleJson as any);
-            setColorFunction(layer.public_url ?? '', colorFn);
-          });
-        }
-      });
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
