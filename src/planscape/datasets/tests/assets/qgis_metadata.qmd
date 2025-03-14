@@ -1,11 +1,11 @@
 <!DOCTYPE qgis PUBLIC 'http://mrcc.com/qgis.dtd' 'SYSTEM'>
 <qgis version="3.22.4-Białowieża">
-  <identifier>Baseline_2024_fl_3857_COG</identifier>
-  <parentidentifier>Parent id here</parentidentifier>
+  <identifier>My favorite raster number 42</identifier>
+  <parentidentifier>Parent of my favorite raster</parentidentifier>
   <language>USA</language>
   <type>dataset</type>
-  <title>Baseline 2024 FL 3857</title>
-  <abstract>Baseline 2024 Flame Lenght 3857</abstract>
+  <title>My favorite raster</title>
+  <abstract>My favorite raster test raster file</abstract>
   <keywords vocabulary="gmd:topicCategory">
     <keyword>Environment</keyword>
     <keyword>Geoscientific Information</keyword>
@@ -13,7 +13,7 @@
   <contact>
     <contactAddress>
       <type>postal</type>
-      <address>Fools st</address>
+      <address>Main St</address>
       <city>New York</city>
       <administrativearea></administrativearea>
       <postalcode>11111</postalcode>
@@ -32,7 +32,7 @@
   </links>
   <history>Creation</history>
   <fees>It is free</fees>
-  <constraints type="Planscape">Constraint</constraints>
+  <constraints type="constraint">Constraint test</constraints>
   <rights>Planscape</rights>
   <license>Open Data Commons Open Database License</license>
   <encoding></encoding>

@@ -207,7 +207,8 @@ def parse_xml_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
             try:
                 schema_object = load_schema(schema)
                 metadata = schema_object.import_(f.read())
-                metadata.pop("mfc")
+                if metadata:
+                    metadata.pop("mcf")
                 return metadata
             except Exception:
                 logger.warning(
