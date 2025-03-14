@@ -5,15 +5,18 @@ import { Component } from '@angular/core';
 
 @Component({
   template: `
-    <div sgHighlighter [sgHighlighter]="testSearchTerm">
-      Planscape is a free, open source decision support tool designed to help
-      teams doing wildland planning identify the optimal areas on their
-      landscape to treat for wildfire resilience.
-    </div>
+    <div
+      sgHighlighter
+      [sgHighlighter]="testSearchTerm"
+      [sgHighlighterText]="testText"></div>
   `,
 })
 export class TestHostComponent {
   testSearchTerm = '';
+  testText =
+    'Planscape is a free, open source decision support tool designed to help ' +
+    'teams doing wildland planning identify the optimal areas on their ' +
+    'landscape to treat for wildfire resilience.';
 }
 
 describe('HighlighterDirective', () => {
@@ -21,7 +24,9 @@ describe('HighlighterDirective', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      // For a standalone directive, include it in "imports" rather than "declarations".
       imports: [HighlighterDirective],
+      // The test host component is a normal component, so we declare it here.
       declarations: [TestHostComponent],
     }).compileComponents();
 
@@ -29,25 +34,30 @@ describe('HighlighterDirective', () => {
     fixture.detectChanges();
   });
 
-  it('should create an instance of the directive via the test host', () => {
-    // Grab the element with the directive
+  it('should create an instance via the test host', () => {
+    // Grab the debug element that has the directive
     const directiveEl = fixture.debugElement.query(
       By.directive(HighlighterDirective)
     );
     expect(directiveEl).toBeTruthy();
   });
 
+  it('should NOT highlight anything when no search term is provided', () => {
+    const directiveEl = fixture.debugElement.query(
+      By.directive(HighlighterDirective)
+    );
+    // With an empty search term, we expect no <mark> in the rendered output.
+    expect(directiveEl.nativeElement.innerHTML).not.toContain('<mark>');
+  });
+
   it('should highlight matches when search term is set', () => {
-    const testHost = fixture.componentInstance;
+    const host = fixture.componentInstance;
     const directiveEl = fixture.debugElement.query(
       By.directive(HighlighterDirective)
     );
 
-    // Initially, there's no highlightTerm
-    expect(directiveEl.nativeElement.innerHTML).not.toContain('<mark>');
-
-    // Update the search term
-    testHost.testSearchTerm = 'Planning'; // case-insensitive check
+    // Provide a search term that appears in the text
+    host.testSearchTerm = 'planning'; // part of "...wildland planning identify..."
     fixture.detectChanges();
 
     // Expect matched occurrences to be wrapped in <mark>
@@ -57,41 +67,44 @@ describe('HighlighterDirective', () => {
   });
 
   it('should handle case-insensitive matching', () => {
-    const testHost = fixture.componentInstance;
+    const host = fixture.componentInstance;
     const directiveEl = fixture.debugElement.query(
       By.directive(HighlighterDirective)
     );
 
-    // Provide a term that doesn't match exact case
-    testHost.testSearchTerm = 'PLANNING';
+    // "PLANNING" is uppercase, but should still highlight "planning"
+    host.testSearchTerm = 'PLANNING';
     fixture.detectChanges();
 
-    // Should still highlight "planning"
     expect(directiveEl.nativeElement.innerHTML).toContain(
       '<mark>planning</mark>'
     );
   });
 
   it('should reset to original content when the search term is empty', () => {
-    const testHost = fixture.componentInstance;
+    const host = fixture.componentInstance;
     const directiveEl = fixture.debugElement.query(
       By.directive(HighlighterDirective)
     );
 
-    // Set a search term to highlight
-    testHost.testSearchTerm = 'planning';
+    // Set a term first
+    host.testSearchTerm = 'planning';
     fixture.detectChanges();
 
-    // Expect <mark> tags to exist
+    // Expect <mark> to exist
     expect(directiveEl.nativeElement.innerHTML).toContain(
       '<mark>planning</mark>'
     );
 
-    // Now clear out the search term
-    testHost.testSearchTerm = '';
+    // Clear the search term
+    host.testSearchTerm = '';
     fixture.detectChanges();
 
-    // The directive should revert the innerHTML to the original (no <mark>)
+    // The directive should revert the element's innerHTML to the original text (no <mark>)
     expect(directiveEl.nativeElement.innerHTML).not.toContain('<mark>');
+    // Optionally, we can test that the original text is still there
+    expect(directiveEl.nativeElement.innerHTML).toContain(
+      'wildland planning identify'
+    );
   });
 });

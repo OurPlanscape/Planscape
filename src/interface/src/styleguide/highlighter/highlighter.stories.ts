@@ -36,16 +36,14 @@ export const Default: Story = {
           style='padding: 5px; width: 400px;'
         />
       </div>
-
-      <p [sgHighlighter]='searchTerm'>
-        Planscape is a free, open source decision support tool designed to help
+      <div style='padding: 20px 10px; max-width: 500px;' [sgHighlighter]='searchTerm' sgHighlighterText='Planscape is a free, open source decision support tool designed to help
         teams doing wildland planning identify the optimal areas on their landscape
-        to treat for wildfire resilience.
-      </p>
-      <div style='display: grid; grid-template-columns: 32px 1fr; gap: 8px;'>
-      <input type='radio'><label [sgHighlighter]='searchTerm'>Annual Burn Probability</label>
-      <input type='radio'><label [sgHighlighter]='searchTerm'>Probability of Fire Severity (High)</label>
-      <input type='radio'><label [sgHighlighter]='searchTerm'>Wildfire Hazard Potential</label>
+        to treat for wildfire resilience.'>
+      </div>
+      <div style='display: grid; grid-template-columns: 32px 1fr; gap: 8px; padding: 0px 0'>
+        <input type='radio'><label [sgHighlighter]='searchTerm' sgHighlighterText='Annual Burn Probability'></label>
+        <input type='radio'><label [sgHighlighter]='searchTerm' sgHighlighterText='Probability of Fire Severity (High)'></label>
+        <input type='radio'><label [sgHighlighter]='searchTerm' sgHighlighterText='Wildfire Hazard Potential'></label>
       </div>
     `,
   }),

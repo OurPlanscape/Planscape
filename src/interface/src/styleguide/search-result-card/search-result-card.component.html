@@ -1,11 +1,15 @@
 <div (click)="handleClick($event)">
   <div class="title-line">
-    <div [sgHighlighter]="searchString">{{ extractProjectTitle() }}</div>
+    <div
+      [sgHighlighter]="searchString"
+      [sgHighlighterText]="extractProjectTitle()"></div>
   </div>
   <div *ngFor="let rx of projectArea.prescriptions">
     <div *ngIf="treatmentIsSingle(rx) && singleRxMatches(rx)" class="text-line">
       <mat-icon>subdirectory_arrow_right</mat-icon>
-      <div [sgHighlighter]="searchString">{{ singleRxText(rx) }}</div>
+      <div
+        [sgHighlighter]="searchString"
+        [sgHighlighterText]="singleRxText(rx)"></div>
     </div>
 
     <div *ngIf="!treatmentIsSingle(rx)">
@@ -15,9 +19,9 @@
           *ngIf="sequenceDescriptionMatches(rxAttributes.description)"
           class="text-line">
           <mat-icon>subdirectory_arrow_right</mat-icon>
-          <div [sgHighlighter]="searchString">
-            {{ rxAttributes.description }}
-          </div>
+          <div
+            [sgHighlighter]="searchString"
+            [sgHighlighterText]="rxAttributes.description"></div>
           <span class="year-details"> (Year {{ rxAttributes.year }})</span>
         </div>
       </div>

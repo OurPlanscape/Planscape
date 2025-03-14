@@ -14,15 +14,15 @@
         [action]="action"></sg-sequence-icon>
 
       <div class="treatment-type-text" *ngIf="treatmentType === 'SINGLE'">
-        <span [sgHighlighter]="searchString || ''">{{
-          singleRxTitleText()
-        }}</span>
+        <span
+          [sgHighlighter]="searchString || ''"
+          [sgHighlighterText]="singleRxTitleText()"></span>
       </div>
       <div class="treatment-type-text" *ngIf="treatmentType === 'SEQUENCE'">
         <div *ngFor="let seqTitle of sequenceTitles()">
-          <span [sgHighlighter]="searchString || ''">{{
-            seqTitle.description
-          }}</span>
+          <span
+            [sgHighlighter]="searchString || ''"
+            [sgHighlighterText]="seqTitle.description"></span>
           <span class="rx-detail-year"> (Year {{ seqTitle.year }})</span>
         </div>
       </div>
