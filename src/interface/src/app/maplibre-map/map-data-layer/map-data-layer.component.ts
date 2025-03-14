@@ -23,12 +23,12 @@ export class MapDataLayerComponent implements OnChanges {
   stylesUrl = '/assets/cogstyles/example.json';
   styles2Url = '/assets/cogstyles/example2.json';
 
-  constructor(private client: HttpClient) {}
+  constructor(private readonly client: HttpClient) {}
 
   ngOnChanges() {
-    this.cogUrl = `cog://${this.dataLayer?.public_url}`;
     if (this.dataLayer?.public_url) {
-      //TODO: fetch associated style for this image
+      this.cogUrl = `cog://${this.dataLayer?.public_url}`;
+      //TODO: fetch associated styles for this image when available
       this.client.get(this.stylesUrl).subscribe((styleJson) => {
         const colorFn = makeColorFunction(styleJson as any);
         setColorFunction(this.dataLayer?.public_url ?? '', colorFn);
