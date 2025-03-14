@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as maplibregl from 'maplibre-gl';
+import maplibregl from 'maplibre-gl';
 import { cogProtocol } from '@geomatico/maplibre-cog-protocol';
 
 @Injectable()

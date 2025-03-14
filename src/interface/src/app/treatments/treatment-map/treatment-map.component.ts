@@ -1,4 +1,4 @@
-import { Component, Input, Renderer2, OnInit } from '@angular/core';
+import { Component, Input, Renderer2 } from '@angular/core';
 import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
@@ -11,7 +11,7 @@ import {
   VectorSourceComponent,
   RasterSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import maplibregl, {
+import {
   LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
@@ -42,7 +42,6 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { cogProtocol } from '@geomatico/maplibre-cog-protocol';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 
 @UntilDestroy()
@@ -81,7 +80,7 @@ import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-dat
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
 })
-export class TreatmentMapComponent implements OnInit {
+export class TreatmentMapComponent {
   @Input() showProjectAreaTooltips = true;
   /**
    * Flag to determine if the user is currently dragging to select stands
@@ -176,11 +175,6 @@ export class TreatmentMapComponent implements OnInit {
    */
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
-
-  // TODO: move this to a central place
-  ngOnInit(): void {
-    maplibregl.addProtocol('cog', cogProtocol);
-  }
 
   constructor(
     private mapConfigState: MapConfigState,

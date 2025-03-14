@@ -1,48 +1,47 @@
 {
-    "map_type": "RAMP",
-    "no_data": {
-      "values": [0.003],
-      "color": "#CCCCCC",
-      "opacity": 0.0,
-      "label": "0"
+  "map_type": "RAMP",
+  "no_data": {
+    "values": [0.003],
+    "color": "#CCCCCC",
+    "opacity": 0.0,
+    "label": "0"
+  },
+  "entries": [
+    {
+      "value": 0.008,
+      "color": "#F5CC00",
+      "opacity": 1.0,
+      "label": null
     },
-    "entries": [
-      {
-        "value": 0.008,
-        "color": "#F5CC00",
-        "opacity": 1.0,
-        "label": null
-      },
-      {
-        "value": 0.013,
-        "color": "#F5A300",
-        "opacity": 1.0,
-        "label": null
-      },
-      {
-        "value": 0.019,
-        "color": "#F57A00",
-        "opacity": 1.0,
-        "label": null
-      },
-      {
-        "value": 0.026,
-        "color": "#F55200",
-        "opacity": 1.0,
-        "label": null
-      },
-      {
-        "value": 0.036,
-        "color": "#F52900",
-        "opacity": 1.0,
-        "label": null
-      },
-      {
-        "value": 0.057,
-        "color": "#F50000",
-        "opacity": 1.0,
-        "label": "0.06"
-      }
-    ]
-  }
-  
+    {
+      "value": 0.013,
+      "color": "#F5A300",
+      "opacity": 1.0,
+      "label": null
+    },
+    {
+      "value": 0.019,
+      "color": "#F57A00",
+      "opacity": 1.0,
+      "label": null
+    },
+    {
+      "value": 0.026,
+      "color": "#F55200",
+      "opacity": 1.0,
+      "label": null
+    },
+    {
+      "value": 0.036,
+      "color": "#F52900",
+      "opacity": 1.0,
+      "label": null
+    },
+    {
+      "value": 0.057,
+      "color": "#F50000",
+      "opacity": 1.0,
+      "label": "0.06"
+    }
+  ]
+}
