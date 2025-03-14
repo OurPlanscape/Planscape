@@ -71,4 +71,7 @@
     *ngIf="treatmentTooltipLngLat">
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
+
+  <app-map-data-layer
+    [dataLayer]="selectedDataLayer$ | async"></app-map-data-layer>
 </mgl-map>
