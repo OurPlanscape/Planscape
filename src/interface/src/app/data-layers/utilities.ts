@@ -16,7 +16,7 @@ export interface Entry {
 }
 
 export interface StyleJson {
-  map_type: 'RAMP' | 'INTERVALS' | 'VALUES';
+  map_type: string;
   no_data?: NoData;
   entries: Entry[];
 }
