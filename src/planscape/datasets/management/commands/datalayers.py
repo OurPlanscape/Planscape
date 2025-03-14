@@ -2,12 +2,10 @@ import json
 import multiprocessing
 import re
 import subprocess
-import logging
 from functools import partial
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlencode
-from xml.etree import ElementTree
 
 import requests
 from core.base_commands import PlanscapeCommand
@@ -17,9 +15,7 @@ from django.core.management.base import CommandParser
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape
-from pygeometa.schemas import load_schema, SCHEMAS
-
-logger = logging.getLogger(__name__)
+from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 
 TREATMENT_METADATA_REGEX = re.compile(
@@ -91,153 +87,6 @@ def create_for_import(input_file: str, dataset: int) -> None:
 def name_from_input_file(input_file: str):
     _base, name = input_file.rsplit("/", 1)
     return name.replace("_3857_COG.tif", "")
-
-
-def get_item_text_or_none(
-    element: Optional[ElementTree.Element], tag: str
-) -> Optional[str]:
-    find_element = element.find(tag) if element else None
-    return str(find_element.text).strip() if find_element is not None else None
-
-
-def parse_qmd_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
-    with metadata_file.open() as f:
-        try:
-            root = ElementTree.fromstring(f.read())
-            metadata = {
-                "metadata": {
-                    "identifier": get_item_text_or_none(root, "identifier"),
-                    "parentidentifier": get_item_text_or_none(root, "parentidentifier"),
-                    "hierarchylevel": get_item_text_or_none(root, "type"),
-                    "language": get_item_text_or_none(root, "language"),
-                },
-            }
-
-            identification = {
-                "language": get_item_text_or_none(root, "language"),
-                "title": get_item_text_or_none(root, "title"),
-                "abstract": get_item_text_or_none(root, "abstract"),
-                "fees": get_item_text_or_none(root, "fees"),
-                "accessconstraints": get_item_text_or_none(root, "constraints"),
-                "license": {"name": get_item_text_or_none(root, "license")},
-            }
-            keywords_tree = root.find("keywords")
-            keywords = []
-            if keywords_tree:
-                for keyword in keywords_tree.iter():
-                    kw = str(keyword.text).strip()
-                    if kw:
-                        keywords.append(keyword.text)
-
-            if keywords:
-                identification.update({"keywords": {"default": {"keywords": keywords}}})
-
-            extents = {}
-            extent_tree = root.find("extent")
-            if extent_tree:
-                spatial = extent_tree.find("spatial")
-                temporal = extent_tree.find("temporal")
-                if spatial:
-                    extents.update({"spatial": [spatial.attrib]})
-                if temporal:
-                    extents.update(
-                        {
-                            "temporal": [
-                                {
-                                    "begin": temporal.get("start"),
-                                    "end": temporal.get("end"),
-                                }
-                            ]
-                        }
-                    )
-
-            if extents:
-                identification.update({"extents": extents})
-
-            metadata.update({"identification": identification})
-
-            contact_tree = root.find("contact")
-            if contact_tree:
-                address_tree = contact_tree.find("contactAddress")
-                contact = {
-                    "name": get_item_text_or_none(contact_tree, "name"),
-                    "organization": get_item_text_or_none(contact_tree, "organization"),
-                    "position": get_item_text_or_none(contact_tree, "position"),
-                    "voice": get_item_text_or_none(contact_tree, "voice"),
-                    "fax": get_item_text_or_none(contact_tree, "fax"),
-                    "email": get_item_text_or_none(contact_tree, "email"),
-                    "role": get_item_text_or_none(contact_tree, "role"),
-                    "city": get_item_text_or_none(address_tree, "city"),
-                    "address": get_item_text_or_none(address_tree, "address"),
-                    "postalcode": get_item_text_or_none(address_tree, "postalcode"),
-                    "country": get_item_text_or_none(address_tree, "country"),
-                }
-                metadata.update({"contact": contact})
-
-            links = root.find("links")
-            distribution = {}
-            if links:
-                for link in links.iter():
-                    if link.get("name"):
-                        distribution.update({link.get("name"): link.attrib})
-            if distribution:
-                metadata.update({"distribution": distribution})
-
-            crs_tree = root.find("crs")
-            spatialrefsys_tree = crs_tree.find("spatialrefsys") if crs_tree else None
-            if spatialrefsys_tree:
-                spatial_ref = {
-                    element.tag: element.text for element in spatialrefsys_tree.iter()
-                }
-                metadata.update({"crs": {"spatialrefsys": spatial_ref}})  # type: ignore
-
-            return metadata
-        except Exception:
-            logger.warning(
-                f"Failed to parse {metadata_file.name} with QMD schema.",
-                exc_info=True,
-            )
-
-    return None
-
-
-def parse_xml_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
-    with metadata_file.open() as f:
-        for schema in SCHEMAS.keys():
-            try:
-                schema_object = load_schema(schema)
-                metadata = schema_object.import_(f.read())
-                if metadata:
-                    metadata.pop("mcf")
-                return metadata
-            except Exception:
-                logger.warning(
-                    f"Failed to parse {metadata_file.name} with {schema}.",
-                    exc_info=True,
-                )
-
-    return None
-
-
-def parse_metadata(metadata_file: Path) -> Optional[Dict[str, Any]]:
-    match metadata_file.suffix:
-        case ".qmd":
-            metadata = parse_qmd_metadata(metadata_file)
-        case _:
-            metadata = parse_xml_metadata(metadata_file)
-
-    return metadata
-
-
-def get_datalayer_metadata(file_path: Path) -> Optional[Dict[str, Any]]:
-    for ext in [".xml", ".aux.xml", ".qmd"]:
-        metadata_file = file_path.with_suffix(ext)
-        if metadata_file.exists():
-            logger.info(f"Found metadata file {metadata_file.name}.")
-            return parse_metadata(metadata_file)
-
-    logger.warning(f"No metadata file found for {file_path.name}.")
-    return None
 
 
 class Command(PlanscapeCommand):
@@ -506,7 +355,7 @@ class Command(PlanscapeCommand):
             original_name = input_file
         else:
             original_name = original_file_path.name
-            file_metadata = get_datalayer_metadata(file_path=original_file_path)
+            file_metadata = get_and_parse_datalayer_file_metadata(file_path=original_file_path)
             if file_metadata:
                 metadata.update({"metadata": file_metadata})
 

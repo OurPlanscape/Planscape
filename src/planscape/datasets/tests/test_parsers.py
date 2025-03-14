@@ -1,13 +1,13 @@
 from django.test import TestCase
 from pathlib import Path
 
-from datasets.management.commands.datalayers import get_datalayer_metadata
+from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 
 class DataLayerCreateTest(TestCase):
     def test_file_metadata_qgis(self):
         path = Path("datasets/tests/assets/qgis_metadata.tif")
-        metadata = get_datalayer_metadata(path)
+        metadata = get_and_parse_datalayer_file_metadata(path)
         self.assertIsNotNone(metadata)
 
         metadata_obj = metadata.get("metadata")
@@ -60,5 +60,5 @@ class DataLayerCreateTest(TestCase):
 
     def test_file_metadata_iso_19139_xml(self):
         path = Path("datasets/tests/assets/iso19139_metadata.tif")
-        metadata = get_datalayer_metadata(path)
+        metadata = get_and_parse_datalayer_file_metadata(path)
         self.assertIsNotNone(metadata)
