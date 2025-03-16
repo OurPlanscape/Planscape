@@ -4,13 +4,12 @@ import { MapDataLayerComponent } from './map-data-layer.component';
 import {
   LayerComponent,
   RasterSourceComponent,
-  MapService
+  MapService,
 } from '@maplibre/ngx-maplibre-gl';
 
 describe('MapDataLayerComponent', () => {
   let component: MapDataLayerComponent;
   let fixture: ComponentFixture<MapDataLayerComponent>;
-
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
@@ -18,9 +17,9 @@ describe('MapDataLayerComponent', () => {
         LayerComponent,
         RasterSourceComponent,
         HttpClientTestingModule,
-        MapDataLayerComponent
+        MapDataLayerComponent,
       ],
-      providers: [MapService]
+      providers: [MapService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapDataLayerComponent);
