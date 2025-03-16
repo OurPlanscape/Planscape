@@ -10,6 +10,7 @@ import { SelectedStandsState } from './selected-stands.state';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
 import { Geometry } from 'geojson';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { AuthService, PlanService } from '@services';
 
@@ -35,7 +36,7 @@ describe('TreatmentMapComponent', () => {
     };
 
     await TestBed.configureTestingModule({
-      imports: [TreatmentMapComponent, CommonModule],
+      imports: [HttpClientTestingModule, TreatmentMapComponent, CommonModule],
       providers: [
         MockProviders(
           TreatedStandsState,
