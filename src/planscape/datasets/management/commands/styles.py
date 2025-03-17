@@ -89,11 +89,12 @@ class Command(PlanscapeCommand):
 
     def import_styles(self, directory: str, dry_run: bool = False, **kwargs):
         """
-        Reads all JSON files from the given directory, normalizes them,
-        searches for matching datalayers using the base filename and a fixed dataset ID,
-        builds a payload (including a 'datalayers' field if a match is found), and then:
+        Reads all JSON files from the given directory, uses the base filename and a
+        fixed dataset ID to search for matching datalayers, constructs a payload
+        (including a 'datalayers' field if a match is found), and then:
          - In dry-run mode, prints the payload.
          - Otherwise, sends the payload to the style creation API endpoint.
+         - Finally, reports the nubmer of file import successes and failures
         """
         base_url = self.get_base_url(**kwargs)
         headers = self.get_headers(**kwargs)
@@ -103,45 +104,46 @@ class Command(PlanscapeCommand):
             self.stderr.write("Error: No fixed dataset id provided in configuration.")
             return
 
-        org = kwargs.get("org")
-        if not org:
-            self.stderr.write("Error: No organization provided in configuration.")
-            return
+        successes = []
+        failures = []
 
         dir_path = Path(directory)
         for file_path in dir_path.glob("*.json"):
             try:
                 with file_path.open("r", encoding="utf-8") as f:
                     style_data = json.load(f)
-                style_data = self.normalize_style_data(style_data)
             except Exception as e:
                 self.stderr.write(f"Failed to read {file_path}: {e}")
                 continue
 
             base_name = file_path.stem
 
-            datalayers_url = f"{base_url}/v2/admin/datalayers?original_name={base_name}&dataset={fixed_dataset_id}"
-            dl_response = requests.get(datalayers_url, headers=headers)
+            datalayers_url = f"{base_url}/v2/admin/datalayers"
+            query_params = {
+                "original_name": base_name,
+                "dataset": fixed_dataset_id,
+            }
+            dl_response = requests.get(
+                datalayers_url, headers=headers, params=query_params
+            )
             dl_data = dl_response.json()
             datalayer_ids = []
             if dl_data.get("count", 0) > 0:
                 datalayer_ids.append(dl_data["results"][0]["id"])
             else:
                 self.stderr.write(
-                    f"No matching datalayer found for style '{base_name}'"
+                    f"WARNING: No matching datalayer found for style '{base_name}'. Continuing..."
                 )
 
-            raw_type = style_data.get("type") or style_data.get("map_type")
-            if not raw_type or raw_type.upper() == "RAMP":
-                style_type = "RASTER"
-            else:
-                style_type = raw_type
+            map_type = style_data.get("map_type", None)
+            RASTER_TYPES = ("RAMP", "INTERVALS", "VALUES")
+            style_type = "RASTER" if map_type in RASTER_TYPES else "VECTOR"
 
             payload = {
                 "name": base_name,
                 "type": style_type,
                 "data": style_data,
-                "organization": org,
+                "organization": kwargs.get("org"),
             }
             if datalayer_ids:
                 payload["datalayers"] = datalayer_ids
@@ -150,37 +152,24 @@ class Command(PlanscapeCommand):
                 self.stdout.write(
                     f"Dry-run: would create style with payload: {json.dumps(payload, indent=2)}"
                 )
+                continue
             else:
                 style_url = f"{base_url}/v2/admin/styles/"
                 response = requests.post(style_url, headers=headers, json=payload)
                 result = response.json()
-                self.stdout.write(
-                    f"Created style from {file_path}: {json.dumps(result, indent=2)}"
-                )
+                if response.status_code == 201 or "style" in result:
+                    self.stdout.write(
+                        f"Created style from {file_path}: {json.dumps(result, indent=2)}"
+                    )
+                    successes.append(str(file_path))
+                else:
+                    self.stderr.write(
+                        f"ERROR creating style from {file_path}: {json.dumps(result, indent=2)}"
+                    )
+                    failures.append(str(file_path))
 
-    @staticmethod
-    def normalize_style_data(style_data: dict) -> dict:
-        """
-        Normalize the style JSON data:
-         - Ensure the 'no_data' field exists and has required defaults.
-         - Ensure each entry's 'label' is set (defaulting to "N/A").
-         - Copy 'map_type' to 'type', then use that to write "RASTER"
-        """
-        no_data = style_data.get("no_data") or {}
-        style_data["no_data"] = {
-            "values": no_data.get("values") or [],
-            "color": no_data.get("color") or "#000000",
-            "opacity": (
-                no_data.get("opacity") if no_data.get("opacity") is not None else 1
-            ),
-            "label": no_data.get("label") if no_data.get("label") else "NODATA",
-        }
-
-        if "entries" in style_data and isinstance(style_data["entries"], list):
-            for entry in style_data["entries"]:
-                entry["label"] = entry.get("label") or "N/A"
-
-        if "map_type" in style_data and "type" not in style_data:
-            style_data["type"] = style_data["map_type"]
-
-        return style_data
+        self.stdout.write(
+            f"Import complete: {len(successes)} successes, {len(failures)} failures."
+        )
+        if failures:
+            self.stderr.write(f"Failed files: {', '.join(failures)}")
