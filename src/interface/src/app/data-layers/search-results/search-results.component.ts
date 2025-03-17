@@ -31,6 +31,7 @@ export class SearchResultsComponent {
     dataSets: DataSetSearchResult[];
     groupedLayers: GroupedResults;
   } | null = null;
+  @Input() searchTerm = '';
   @Output() clickDataset = new EventEmitter<DataSet>();
 
   goToDataSet(result: DataSetSearchResult) {
