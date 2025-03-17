@@ -1,4 +1,3 @@
-from decouple import config
 from django.contrib import admin
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.urls import path, include, register_converter
@@ -10,7 +9,7 @@ from users import views as user_views
 register_converter(ContentTypeURLConverter, "ctype")
 
 urlpatterns = [
-    path(f"planscape-backend/{config('ADMIN_URL_PREFIX', 'admin')}/", admin.site.urls),
+    path(f"planscape-backend/{settings.ADMIN_URL_PREFIX}/", admin.site.urls),
     path("planscape-backend/boundary/", include("boundary.urls")),
     path("planscape-backend/conditions/", include("conditions.urls")),
     path("planscape-backend/planning/", include("planning.urls")),
