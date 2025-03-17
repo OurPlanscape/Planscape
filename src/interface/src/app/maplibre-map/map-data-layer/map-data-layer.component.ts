@@ -19,9 +19,9 @@ export class MapDataLayerComponent implements OnChanges {
   OPACITY = 0.75;
   @Input() dataLayer!: DataLayer | null;
   cogUrl = '';
-  //TODO: remove--examples only
+
+  //TODO: remove--example only
   stylesUrl = '/assets/cogstyles/example.json';
-  styles2Url = '/assets/cogstyles/example2.json';
 
   constructor(private readonly client: HttpClient) {}
 
