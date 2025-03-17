@@ -8,6 +8,7 @@ from impacts.models import (
 )
 from planning.models import ProjectArea
 from planning.services import get_acreage
+from collaboration.permissions import PlanningAreaPermission
 from rest_framework import serializers
 from rest_framework.relations import PrimaryKeyRelatedField
 from stands.models import Stand, area_from_size
