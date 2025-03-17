@@ -35,7 +35,7 @@
   [transformRequest]="transformRequest">
   <app-map-controls
     [userCanEditStands]="userCanEditStands"
-    *ngIf="showMapControls$ | async"
+    [extendedControlsEnabled]="(showMapControls$ | async) ?? false"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
   <app-action-button
