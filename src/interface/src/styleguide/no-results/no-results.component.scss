@@ -1,0 +1,23 @@
+@import "mixins";
+@import "colors";
+
+:host {
+  color: $color-md-gray;
+  flex-direction: column;
+  display: flex;
+  height: 180px;
+  width: 100%;
+  align-items: center;
+  gap: 8px;
+  padding: 24px 0;
+
+  .no-results-title {
+    @include h5();
+    color: $color-black;
+  }
+
+  .no-results-detail {
+    @include small-paragraph;
+    text-align: center;
+  }
+}

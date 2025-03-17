@@ -1,7 +1,14 @@
 import re
 from typing import Collection
 
-from datasets.models import Category, DataLayer, DataLayerStatus, Dataset, SearchResult
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerStatus,
+    Dataset,
+    SearchResult,
+    VisibilityOptions,
+)
 from datasets.serializers import BrowseDataLayerSerializer, DatasetSerializer
 
 
@@ -17,7 +24,12 @@ def get_highlight(
 
 
 def organization_to_search_result(organization) -> Collection[SearchResult]:  # type: ignore
-    return list([dataset_to_search_result(x) for x in organization.datasets.all()])
+    return list(
+        [
+            dataset_to_search_result(x)
+            for x in organization.datasets.filter(visibility=VisibilityOptions.PUBLIC)
+        ]
+    )
 
 
 def dataset_to_search_result(dataset: Dataset) -> SearchResult:
@@ -33,13 +45,19 @@ def dataset_to_search_result(dataset: Dataset) -> SearchResult:
 
 def category_to_search_result(category: Category) -> Collection[SearchResult]:
     datalayers = DataLayer.objects.none()
-    datalayers |= category.datalayers.filter(status=DataLayerStatus.READY)
+    datalayers |= category.datalayers.filter(
+        status=DataLayerStatus.READY,
+        dataset__visibility=VisibilityOptions.PUBLIC,
+    )
 
     # what is this madness for python?
     child_category: Category
 
-    for child_category in category.get_children():
-        datalayers |= child_category.datalayers.filter(status=DataLayerStatus.READY)
+    for child_category in category.get_children():  # type: ignore
+        datalayers |= child_category.datalayers.filter(
+            status=DataLayerStatus.READY,
+            dataset__visibility=VisibilityOptions.PUBLIC,
+        )
 
     return [datalayer_to_search_result(x) for x in datalayers]
 

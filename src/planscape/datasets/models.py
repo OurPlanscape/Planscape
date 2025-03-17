@@ -295,7 +295,7 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_public_url(self) -> Optional[str]:
         if not self.url:
             return None
-        object_name = self.url.replace(f"f3://{settings.S3_BUCKET}/", "")
+        object_name = self.url.replace(f"s3://{settings.S3_BUCKET}/", "")
         return create_download_url(settings.S3_BUCKET, object_name)
 
     def get_assigned_style(self) -> Optional[Style]:
