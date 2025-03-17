@@ -35,7 +35,7 @@
   [transformRequest]="transformRequest">
   <app-map-controls
     [userCanEditStands]="userCanEditStands"
-    *ngIf="showMapControls$ | async"
+    [extendedControlsEnabled]="(showMapControls$ | async) ?? false"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
   <app-action-button
@@ -65,12 +65,6 @@
     [mapLibreMap]="mapLibreMap"
     [start]="mouseStart ? mouseStart.lngLat : null"
     [end]="mouseEnd ? mouseEnd.lngLat : null"></app-map-rectangle>
-
-  <app-map-controls
-    [mapLibreMap]="mapLibreMap"
-    controlsPosition="bottom-right"
-    [panEnabled]="false">
-  </app-map-controls>
 
   <app-map-tooltip
     [lngLat]="treatmentTooltipLngLat"
