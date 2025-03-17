@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { AuthService } from '@services';
+import { AuthService, ScenarioService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import {
   addRequestHeaders,
@@ -16,7 +16,7 @@ import { OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
-import { TreatmentsState } from 'src/app/treatments/treatments.state';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-scenario-map',
@@ -38,23 +38,28 @@ export class ScenarioMapComponent {
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private planState: PlanState,
-    private treatmentsState: TreatmentsState
+    private route: ActivatedRoute,
+    private scenarioService: ScenarioService
   ) {
-    const planId = this.planState.getCurrentPlanId();
-    const scenarioId = this.planState.getScenarioId();
+    const routeChild = this.route.snapshot.firstChild;
+    const path = routeChild?.url[0].path;
+    const scenarioId = routeChild?.params['id'];
+    if (path === 'config' && scenarioId) {
+      console.log('Path: ', path);
+      console.log('routeChild: ', routeChild);
+      console.log('scenarioId: ', scenarioId);
+      this.scenarioService.getScenario(scenarioId).subscribe((scenario) => {
+        this.planState.setCurrentScenario(scenario);
 
-    console.log('Plan ID:', planId);
-    console.log('Scenario ID:', scenarioId);
-    if (planId) {
-      this.treatmentsState.setInitialState({
-        scenarioId: Number(scenarioId),
-        treatmentId: undefined,
-        projectAreaId: undefined,
-        planId: Number(planId),
-        showMapProjectAreas: true,
-        showTreatmentStands: false,
-        showMapControls: false,
-        standSelectionEnabled: false,
+        // update config on map, based on route data
+        this.mapConfigState.updateShowProjectAreas(true);
+        this.mapConfigState.updateShowTreatmentStands(true);
+        this.mapConfigState.setStandSelectionEnabled(false);
+
+        this.mapConfigState.setShowFillProjectAreas(true);
+
+        this.mapConfigState.setTreatmentLegendVisible(false);
+        this.mapConfigState.setShowMapControls(false);
       });
     }
   }
@@ -75,6 +80,8 @@ export class ScenarioMapComponent {
       return getBoundsFromGeometry(geometry);
     })
   );
+
+  scenario$ = this.planState.currentScenario$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

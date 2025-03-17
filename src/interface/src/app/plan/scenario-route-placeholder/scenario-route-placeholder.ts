@@ -29,14 +29,10 @@ export class ScenarioRoutePlaceholderComponent implements OnInit {
     if (id) {
       this.LegacyPlanStateService.getScenario(id).subscribe({
         next: (scenario: Scenario) => {
+          this.planState.setCurrentScenario(scenario);
           this.scenario = scenario;
-          debugger;
-          this.planState.setCurrentScenario(this.scenario);
           if (this.scenario?.origin === 'USER') {
-            const factory = this.container.createComponent(
-              UploadedScenarioViewComponent
-            );
-            factory.instance.scenario = this.scenario;
+            this.container.createComponent(UploadedScenarioViewComponent);
           } else {
             this.container.createComponent(CreateScenariosComponent);
           }

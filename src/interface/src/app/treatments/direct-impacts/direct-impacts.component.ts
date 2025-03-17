@@ -48,7 +48,7 @@ import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/
 import { Scenario, TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 import { TreatmentsService } from '@services/treatments.service';
-import { FileSaverService, ScenarioService } from '@services';
+import { FileSaverService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
@@ -120,7 +120,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private fileSaverService: FileSaverService,
     private dialog: MatDialog,
     private injector: Injector, // Angular's injector for passing shared services
-    private scenarioService: ScenarioService,
     private planState: PlanState
   ) {
     const data = getMergedRouteData(this.route.snapshot);
@@ -145,20 +144,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
         })
       )
       .subscribe(() => {
-        const scenarioId = this.planState.getScenarioId();
-        if (scenarioId) {
-          this.scenarioService.getScenario(scenarioId.toString()).subscribe({
-            next: (scenario: Scenario) => {
-              this.scenario = scenario;
-              this.loading = false;
-            },
-            error: () => {
-              this.loading = false;
-            },
-          });
-        } else {
-          this.loading = false;
-        }
+        this.scenario = this.planState.getCurrentScenario();
+        this.loading = false;
       });
   }
 
