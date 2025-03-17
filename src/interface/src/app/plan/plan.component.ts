@@ -61,6 +61,7 @@ export class PlanComponent implements OnInit {
     plan$.subscribe({
       next: (plan) => {
         this.planState.setCurrentPlan(plan);
+        this.currentPlan$.next(plan);
       },
       error: (error) => {
         this.planNotFound = true;
@@ -74,7 +75,7 @@ export class PlanComponent implements OnInit {
     );
   }
 
-  currentPlan$ = this.planState.currentPlan$;
+  currentPlan$ = new BehaviorSubject<Plan | null>(null);
   planOwner$ = new Observable<User | null>();
 
   planId = this.route.snapshot.paramMap.get('id');
@@ -174,7 +175,7 @@ export class PlanComponent implements OnInit {
   }
 
   backToOverview() {
-    this.router.navigate(['plan', this.planState.getCurrentPlan()?.id]);
+    this.router.navigate(['plan', this.currentPlan$.value!.id]);
   }
 
   goBack() {
