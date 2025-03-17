@@ -9,6 +9,7 @@ import {
   MapComponent,
   PopupComponent,
   VectorSourceComponent,
+  RasterSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   LngLat,
@@ -40,6 +41,8 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 
 @UntilDestroy()
 @Component({
@@ -50,6 +53,7 @@ import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.c
     NgForOf,
     MapComponent,
     VectorSourceComponent,
+    RasterSourceComponent,
     LayerComponent,
     FeatureComponent,
     DraggableDirective,
@@ -71,6 +75,7 @@ import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.c
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
+    MapDataLayerComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -117,6 +122,8 @@ export class TreatmentMapComponent {
    *  If not, and if we are showing treatments, we show the action button, instead.
    */
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
+
+  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
   /**
    * The name of the source layer used to load stands, and later check if loaded
@@ -167,7 +174,6 @@ export class TreatmentMapComponent {
    * permissions for current user
    */
   userCanEditStands: boolean = false;
-
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
   constructor(
@@ -176,7 +182,8 @@ export class TreatmentMapComponent {
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private dataLayersStateService: DataLayersStateService
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
