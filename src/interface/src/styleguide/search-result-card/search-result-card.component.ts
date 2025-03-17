@@ -1,4 +1,4 @@
-import { Component, Input, EventEmitter, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
@@ -7,10 +7,11 @@ import { SequenceIconComponent } from '../sequence-icon/sequence-icon.component'
 import { Prescription, TreatmentProjectArea } from 'src/app/types';
 import {
   PRESCRIPTIONS,
-  PrescriptionSingleAction,
   PrescriptionSequenceAction,
+  PrescriptionSingleAction,
   SequenceAttributes,
 } from '../../app/treatments/prescriptions';
+import { HighlighterDirective } from '../highlighter/highlighter.directive';
 
 /**
  * Search Result Card Component
@@ -27,6 +28,7 @@ import {
     NgFor,
     SequenceIconComponent,
     TreatmentTypeIconComponent,
+    HighlighterDirective,
   ],
   templateUrl: './search-result-card.component.html',
   styleUrl: './search-result-card.component.scss',
@@ -57,33 +59,12 @@ export class SearchResultCardComponent {
     const action = PRESCRIPTIONS.SINGLE[rx.action as PrescriptionSingleAction];
     return action.toLowerCase().includes(this.searchString.toLowerCase());
   }
+
   sequenceRxAttributes(rx: Prescription): SequenceAttributes[] {
     return PRESCRIPTIONS.SEQUENCE[rx.action as PrescriptionSequenceAction];
   }
 
   sequenceDescriptionMatches(d: string): boolean {
     return d.toLowerCase().includes(this.searchString.toLowerCase());
-  }
-
-  /*
-  / functions related to isolating the highlighted substrings: */
-
-  // split on string, but retain search string
-  _splitRetain(haystack: string, needle: string) {
-    const regex = new RegExp(`(${needle})`, 'ig');
-    return haystack.split(regex).filter(Boolean);
-  }
-
-  // we split the text into segments using the searchTerm
-  // And then in the template, we highlight any matching segments
-  splitTextLine(textLine: string): string[] | null {
-    if (!this.searchString) return [textLine];
-    return this._splitRetain(textLine, this.searchString);
-  }
-
-  // this confirms that the substring matches the search "needle", so it can be highlighted
-  partMatches(part: string): boolean {
-    if (!this.searchString) return false;
-    return part.toLowerCase() === this.searchString.toLowerCase();
   }
 }
