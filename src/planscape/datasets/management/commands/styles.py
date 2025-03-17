@@ -153,20 +153,20 @@ class Command(PlanscapeCommand):
                     f"Dry-run: would create style with payload: {json.dumps(payload, indent=2)}"
                 )
                 continue
+
+            style_url = f"{base_url}/v2/admin/styles/"
+            response = requests.post(style_url, headers=headers, json=payload)
+            result = response.json()
+            if response.status_code == 201:
+                self.stdout.write(
+                    f"Created style from {file_path}: {json.dumps(result, indent=2)}"
+                )
+                successes.append(str(file_path))
             else:
-                style_url = f"{base_url}/v2/admin/styles/"
-                response = requests.post(style_url, headers=headers, json=payload)
-                result = response.json()
-                if response.status_code == 201 or "style" in result:
-                    self.stdout.write(
-                        f"Created style from {file_path}: {json.dumps(result, indent=2)}"
-                    )
-                    successes.append(str(file_path))
-                else:
-                    self.stderr.write(
-                        f"ERROR creating style from {file_path}: {json.dumps(result, indent=2)}"
-                    )
-                    failures.append(str(file_path))
+                self.stderr.write(
+                    f"ERROR creating style from {file_path}: {json.dumps(result, indent=2)}"
+                )
+                failures.append(str(file_path))
 
         self.stdout.write(
             f"Import complete: {len(successes)} successes, {len(failures)} failures."
