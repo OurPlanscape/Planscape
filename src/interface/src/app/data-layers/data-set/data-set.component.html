@@ -1,0 +1,30 @@
+<div (click)="selectDataset.emit()" class="data-set">
+  <div class="data-set-data">
+    <div class="data-set-name">{{ name }}</div>
+    <mat-icon>chevron_right</mat-icon>
+  </div>
+  <div class="data-set-org">{{ organizationName }}</div>
+</div>
+
+<div *ngIf="path" class="data-layer-paths">
+  <div class="data-layer-path" *ngFor="let step of path">
+    <mat-icon class="material-symbols-outlined">
+      subdirectory_arrow_right
+    </mat-icon>
+    {{ step }}
+  </div>
+</div>
+<div class="data-set-layers" *ngIf="layers">
+  <div class="data-layer" *ngFor="let layer of layers">
+    <mat-radio-button [value]="layer.id" class="data-layer-input">{{
+      layer.name
+    }}</mat-radio-button>
+
+    <button
+      sg-button
+      variant="icon-only"
+      icon="info"
+      class="info-icon"
+      [outlined]="true"></button>
+  </div>
+</div>

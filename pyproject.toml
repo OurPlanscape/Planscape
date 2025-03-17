@@ -69,6 +69,8 @@ pygments = "^2.18.0"
 setuptools = "^75.7.0"
 mmh3 = "^5.1.0"
 multipledispatch = "^1.0.0"
+pygeometa = "^0.16.1"
+python-magic = "^0.4.27"
 
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"

@@ -1,29 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DataLayersComponent } from './data-layers.component';
+import { DataLayerTreeComponent } from './data-layer-tree.component';
 import { MockProvider } from 'ng-mocks';
-import { of } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
-import { DataSet, Pagination } from '@types';
+import { of } from 'rxjs';
 
-describe('DataLayersComponent', () => {
-  let component: DataLayersComponent;
-  let fixture: ComponentFixture<DataLayersComponent>;
+describe('DataLayerTreeComponent', () => {
+  let component: DataLayerTreeComponent;
+  let fixture: ComponentFixture<DataLayerTreeComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DataLayersComponent],
+      imports: [DataLayerTreeComponent],
       providers: [
         MockProvider(DataLayersStateService, {
-          dataSets$: of({} as Pagination<DataSet>),
-          selectedDataSet$: of(null),
           dataTree$: of(null),
-          searchResults$: of(null),
         }),
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DataLayersComponent);
+    fixture = TestBed.createComponent(DataLayerTreeComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

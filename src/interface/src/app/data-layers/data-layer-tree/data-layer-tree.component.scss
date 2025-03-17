@@ -1,0 +1,74 @@
+@import "mixins";
+@import "colors";
+
+/*
+ * This padding sets alignment of the nested nodes.
+ */
+.data-layers .mat-nested-tree-node div[role=group] {
+  padding-left: 15px;
+  cursor: pointer;
+}
+
+/*
+ * Padding for leaf nodes.
+ * Leaf nodes need to have padding so as to align with other non-leaf nodes
+ * under the same parent.
+ */
+.data-layers div[role=group] > .mat-tree-node {
+  margin-left: -8px;
+  padding-right: 10px;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+  background: url('data:image/svg+xml,<svg width="5" height="10" viewBox="0 0 5 10" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0.333313 9.16683V0.833496L4.49998 5.00016L0.333313 9.16683Z" fill="black" /></svg>') no-repeat 50% 50%;
+  background-size: 6px;
+  transition: transform 100ms linear;
+  margin: 0 8px 0 16px;
+}
+
+
+.data-layer-node {
+  border-bottom: 1px solid $color-soft-gray;
+  cursor: pointer;
+  min-height: 54px;
+
+  &:not(.expanded):hover {
+    background-color: $color-lighter-gray;
+  }
+}
+
+.expanded {
+  background-color: $color-soft-purple;
+
+  .icon {
+    transform: rotate(90deg);
+  }
+}
+
+
+.data-layer-cat {
+  background-color: $color-soft-purple-light;
+
+  .data-layer-node {
+    border: none;
+    background-color: $color-soft-purple-light;
+  }
+
+}
+
+
+.data-layer-input {
+  margin: 0;
+  padding: 0;
+  flex: 1;
+}
+
+.data-layer {
+  min-height: 36px;
+}
+
+.info-icon {
+  color: $color-standard-blue;
+}
