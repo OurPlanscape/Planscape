@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { MatTreeModule } from '@angular/material/tree';
@@ -32,18 +32,34 @@ export class DataLayerTreeComponent {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this))
       .subscribe((path) => {
-        this.expandNodePath(path);
+        if (path.length > 0) {
+          this.expandNodePath(path);
+          this.scrollToSelectedNode();
+        }
       });
   }
 
   treeData$ = this.dataLayersStateService.dataTree$.pipe(shareReplay(1));
-
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
-
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
+  selectedNodeRef: ElementRef | null = null;
 
-  selectDataLayer(dataLayer: DataLayer) {
+  @ViewChildren('treeNodeRef', { read: ElementRef })
+  treeNodes!: QueryList<ElementRef>;
+
+  selectDataLayer(dataLayer: DataLayer, nodeElement: HTMLElement) {
     this.dataLayersStateService.selectDataLayer(dataLayer);
+    this.selectedNodeRef = new ElementRef(nodeElement);
+    // setTimeout(() => this.scrollToSelectedNode(), 0);
+  }
+
+  private scrollToSelectedNode() {
+    if (this.selectedNodeRef) {
+      this.selectedNodeRef.nativeElement.scrollIntoView({
+        behavior: 'smooth',
+        block: 'center',
+      });
+    }
   }
 
   expandNodePath(path: string[]) {

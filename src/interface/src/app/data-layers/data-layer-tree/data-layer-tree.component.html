@@ -4,15 +4,16 @@
     [dataSource]="treeData"
     [treeControl]="treeControl"
     class="data-layers">
-    <!-- leaf node (item node with no children) -->
+    <!-- Leaf node -->
     <mat-tree-node
       *matTreeNodeDef="let node"
       matTreeNodePadding
-      class="data-layer">
+      class="data-layer"
+      #treeNodeRef>
       <mat-radio-button
         [value]="node.item.id"
         class="data-layer-input"
-        (click)="selectDataLayer(node.item)">
+        (click)="selectDataLayer(node.item, treeNodeRef)">
         {{ node.name }}
       </mat-radio-button>
 
@@ -24,7 +25,7 @@
         [outlined]="true"></button>
     </mat-tree-node>
 
-    <!-- category node -->
+    <!-- Category node -->
     <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
       <div
         class="mat-tree-node data-layer-node"
