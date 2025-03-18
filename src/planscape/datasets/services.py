@@ -247,7 +247,7 @@ def create_datalayer(
 
 
 @cached(timeout=settings.FIND_ANYTHING_TTL)
-def find_anything(term: str, type: str) -> Dict[str, SearchResult]:
+def find_anything(term: str, type: Optional[str] = None) -> Dict[str, SearchResult]:
     datalayer_filter = {
         "name__icontains": term,
         "dataset__visibility": VisibilityOptions.PUBLIC,
