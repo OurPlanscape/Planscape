@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { AuthService } from '@services';
+import { AuthService, ScenarioService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import {
   addRequestHeaders,
@@ -15,6 +15,11 @@ import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
+import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+import { ActivatedRoute } from '@angular/router';
+import { Scenario } from '@types';
+import { TreatmentsState } from 'src/app/treatments/treatments.state';
+import { getMergedRouteDataScenarios } from 'src/app/treatments/treatments-routing-data';
 
 @Component({
   selector: 'app-scenario-map',
@@ -26,6 +31,7 @@ import { MapControlsComponent } from '../map-controls/map-controls.component';
     MapControlsComponent,
     OpacitySliderComponent,
     PlanningAreaLayerComponent,
+    MapProjectAreasComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -34,8 +40,26 @@ export class ScenarioMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
-    private planState: PlanState
-  ) {}
+    private planState: PlanState,
+    private scenarioService: ScenarioService,
+    private route: ActivatedRoute,
+    private treatmentsState: TreatmentsState
+  ) {
+    const data = getMergedRouteDataScenarios(this.route.snapshot);
+    if (data.scenarioId) {
+      this.scenarioService
+        .getScenario(data.scenarioId.toString())
+        .pipe(
+          map((scenario) => {
+            this.treatmentsState.loadTreatmentByRouteData(data);
+            return scenario;
+          })
+        )
+        .subscribe((scenario) => {
+          this.scenario = scenario;
+        });
+    }
+  }
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
@@ -53,6 +77,8 @@ export class ScenarioMapComponent {
       return getBoundsFromGeometry(geometry);
     })
   );
+
+  scenario!: Scenario;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

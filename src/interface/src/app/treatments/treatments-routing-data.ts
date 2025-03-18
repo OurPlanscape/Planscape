@@ -3,7 +3,7 @@ import { ActivatedRouteSnapshot, Data } from '@angular/router';
 // Possible routing params
 export interface TreatmentRoutingData extends Data {
   scenarioId: number;
-  treatmentId: number;
+  treatmentId?: number;
   projectAreaId?: number;
   planId: number;
   showMapProjectAreas?: boolean;
@@ -25,5 +25,20 @@ export function getMergedRouteData(
     ...childData,
     ...currentData,
     planId,
+  } as TreatmentRoutingData;
+}
+
+export function getMergedRouteDataScenarios(
+  route: ActivatedRouteSnapshot
+): TreatmentRoutingData {
+  return {
+    planId: route.params['id'],
+
+    scenarioId: route.firstChild?.params['id'],
+    treatmentId: 1,
+    showMapProjectAreas: true,
+    showTreatmentStands: false,
+    showMapControls: false,
+    standSelectionEnabled: false,
   } as TreatmentRoutingData;
 }
