@@ -1,5 +1,4 @@
 from core.serializers import MultiSerializerMixin
-from django.contrib.postgres.search import SearchQuery, SearchVector
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
@@ -84,34 +83,14 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         serializer = FindAnythingSerializer(data=request.query_params)
         serializer.is_valid(raise_exception=True)
         # TODO: cache results and paginate here.
-        results = find_anything(serializer.validated_data.get("term"))
+        term = serializer.validated_data.get("term")
+        type = serializer.validated_data.get("type")
+        results = find_anything(
+            term=term,
+            type=type,
+        )
         out_serializer = SearchResultSerialzier(
             list(results.values()),
             many=True,
         )
         return Response(out_serializer.data, status=status.HTTP_200_OK)
-
-    def get_queryset(self):
-        # TODO: afterwards we need to implement the filtering
-        # by organization visibility too, so we return the public ones
-        # PLUS all the datalayers accessible by the organization
-
-        queryset = DataLayer.objects.filter(
-            dataset__visibility=VisibilityOptions.PUBLIC,
-        )
-
-        if self.action == "list" and (
-            search_query := self.request.query_params.get("search")
-        ):
-            vector = SearchVector(
-                "name",
-                "category__name",
-                "dataset__name",
-                "dataset__description",
-                "organization__name",
-            )
-            return queryset.annotate(search=vector).filter(
-                search=SearchQuery(search_query)
-            )
-
-        return queryset

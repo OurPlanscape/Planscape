@@ -3,11 +3,12 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Dict, Optional, Collection
+from typing import Any, Collection, Dict, Optional
 from uuid import uuid4
 
 import mmh3
 from actstream import action
+from cacheops import cached
 from core.s3 import create_upload_url, is_s3_file, s3_filename
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -105,7 +106,7 @@ def geometry_from_info(
             ).transform(
                 settings.CRS_INTERNAL_REPRESENTATION,
                 clone=True,
-            )
+            )  # type: ignore
         case _:
             log.warning("Not yet implemented for vectors.")
             return None
@@ -245,7 +246,8 @@ def create_datalayer(
     }
 
 
-def find_anything(term: str) -> Dict[str, SearchResult]:
+@cached(timeout=settings.FIND_ANYTHING_TTL)
+def find_anything(term: str, type: str) -> Dict[str, SearchResult]:
     raw_results = [
         [
             organization_to_search_result(x)
@@ -268,6 +270,7 @@ def find_anything(term: str) -> Dict[str, SearchResult]:
                 name__icontains=term,
                 dataset__visibility=VisibilityOptions.PUBLIC,
                 status=DataLayerStatus.READY,
+                type=type,
             )
         ],
     ]
