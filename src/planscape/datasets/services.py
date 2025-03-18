@@ -248,6 +248,13 @@ def create_datalayer(
 
 @cached(timeout=settings.FIND_ANYTHING_TTL)
 def find_anything(term: str, type: str) -> Dict[str, SearchResult]:
+    datalayer_filter = {
+        "name__icontains": term,
+        "dataset__visibility": VisibilityOptions.PUBLIC,
+        "status": DataLayerStatus.READY,
+    }
+    if type:
+        datalayer_filter["type"] = type
     raw_results = [
         [
             organization_to_search_result(x)
@@ -266,12 +273,7 @@ def find_anything(term: str, type: str) -> Dict[str, SearchResult]:
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.filter(
-                name__icontains=term,
-                dataset__visibility=VisibilityOptions.PUBLIC,
-                status=DataLayerStatus.READY,
-                type=type,
-            )
+            for x in DataLayer.objects.filter(**datalayer_filter)
         ],
     ]
     search_results = itertools.chain.from_iterable(raw_results)

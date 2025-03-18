@@ -432,7 +432,7 @@ class FindAnythingSerializer(serializers.Serializer):
     type = serializers.ChoiceField(
         required=False,
         choices=DataLayerType.choices,
-        default=DataLayerType.VECTOR,
+        default=None,
     )
 
     limit = serializers.IntegerField(required=False, min_value=1)
