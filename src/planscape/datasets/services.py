@@ -3,7 +3,7 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Collection
 from uuid import uuid4
 
 import mmh3
@@ -118,6 +118,7 @@ def create_style(
     created_by: User,
     type: DataLayerType,
     data: Dict[str, Any],
+    datalayers: Optional[Collection[int]] = None,
     **kwargs,
 ) -> Dict[str, Any]:
     data_hash = mmh3.hash_bytes(json.dumps(data)).hex()
@@ -134,6 +135,14 @@ def create_style(
         data_hash=data_hash,
     )
     action.send(created_by, verb="created", action_object=style)
+
+    if datalayers:
+        datalayer_qs = DataLayer.objects.filter(id__in=datalayers)
+        if datalayer_qs.count() != len(datalayers):
+            raise ValueError("One or more provided datalayer IDs do not exist.")
+        for datalayer in datalayer_qs:
+            assign_style(created_by=created_by, style=style, datalayer=datalayer)
+
     return {"style": style, "possibly_exists": hash_already_exists}
 
 
