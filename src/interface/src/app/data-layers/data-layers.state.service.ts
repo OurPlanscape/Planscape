@@ -65,6 +65,8 @@ export class DataLayersStateService {
     shareReplay(1)
   );
 
+  paths$ = new BehaviorSubject<string[]>([]);
+
   constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
@@ -82,5 +84,22 @@ export class DataLayersStateService {
 
   clearDataLayer() {
     this._selectedDataLayer$.next(null);
+  }
+
+  goToSelectedLayer(layer: DataLayer) {
+    // needs to fetch the dataset if its not the same as the one selected already
+    if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
+      const dataSet: Partial<DataSet> = {
+        ...layer.dataset,
+        organization: layer.organization,
+      };
+      this.selectDataSet(dataSet as DataSet);
+    }
+
+    // also need to set this to browsing
+
+    // after that's done (somehow?) then update the path?
+
+    this.paths$.next(layer.path);
   }
 }

@@ -1,4 +1,4 @@
-<mat-radio-group>
+<mat-radio-group [ngModel]="(selectedDataLayer$ | async)?.id">
   <mat-tree
     *ngIf="treeData$ | async as treeData"
     [dataSource]="treeData"
@@ -9,9 +9,12 @@
       *matTreeNodeDef="let node"
       matTreeNodePadding
       class="data-layer">
-      <mat-radio-button [value]="node.item.id" class="data-layer-input">{{
-        node.name
-      }}</mat-radio-button>
+      <mat-radio-button
+        [value]="node.item.id"
+        class="data-layer-input"
+        (click)="selectDataLayer(node.item)">
+        {{ node.name }}
+      </mat-radio-button>
 
       <button
         sg-button

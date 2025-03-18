@@ -1,0 +1,10 @@
+<mgl-control
+  position="bottom-left"
+  *ngIf="selectedDataLayer$ | async as selectedDataLayer">
+  <button
+    class="data-layer-name"
+    (click)="goToSelectedLayer(selectedDataLayer)">
+    <mat-icon class="icon-back">arrow_back</mat-icon>
+    {{ selectedDataLayer.name }}
+  </button>
+</mgl-control>

@@ -10,11 +10,11 @@ import {
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../plan.state';
-import { map } from 'rxjs';
+import { BehaviorSubject, map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
-import { BehaviorSubject } from 'rxjs';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
+import { DataLayerNameComponent } from '../data-layer-name/data-layer-name.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -26,6 +26,7 @@ import { MapControlsComponent } from '../map-controls/map-controls.component';
     MapControlsComponent,
     OpacitySliderComponent,
     PlanningAreaLayerComponent,
+    DataLayerNameComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -36,6 +37,7 @@ export class ScenarioMapComponent {
     private authService: AuthService,
     private planState: PlanState
   ) {}
+
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
