@@ -1,12 +1,13 @@
-from unittest import mock
 from urllib.parse import urlencode
-from datasets.models import VisibilityOptions
-from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
-from organizations.tests.factories import OrganizationFactory
+
+from cacheops import invalidate_all
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from organizations.tests.factories import OrganizationFactory
 from rest_framework.test import APITransactionTestCase
 
+from datasets.models import VisibilityOptions
+from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -30,6 +31,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         url = reverse("api:datasets:datalayers-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        invalidate_all()
 
     def test_list_by_admin_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
@@ -49,6 +51,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, data.get("count"))
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
+        invalidate_all()
 
     def test_filter_by_name_icontains_returns_record(self):
         self.client.force_authenticate(user=self.admin)
@@ -62,6 +65,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, data.get("count"))
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
+        invalidate_all()
 
     def test_filter_by_full_text_search_datalayer_name(self):
         self.client.force_authenticate(user=self.admin)
@@ -78,6 +82,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(1, data.get("count"))
         self.assertEqual(datalayer.name, data.get("results")[0].get("name"))
+        invalidate_all()
 
     def test_filter_by_full_text_search_datalayer_name_multiple_return(self):
         self.client.force_authenticate(user=self.admin)
@@ -93,6 +98,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(10, data.get("count"))
+        invalidate_all()
 
     def test_filter_by_full_text_search_dataset_name(self):
         self.client.force_authenticate(user=self.admin)
@@ -108,6 +114,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(21, data.get("count"))
+        invalidate_all()
 
     def test_filter_by_full_text_search_organization_name(self):
         self.client.force_authenticate(user=self.admin)
@@ -123,6 +130,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(21, data.get("count"))
+        invalidate_all()
 
     def test_get_by_normal_user_fails(self):
         self.client.force_authenticate(user=self.normal)
@@ -133,6 +141,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
+        invalidate_all()
 
     def test_get_dataset_with_style(self):
         self.client.force_authenticate(user=self.admin)
@@ -148,6 +157,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
         self.assertEqual(style.pk, data.get("results")[0].get("style").get("id"))
+        invalidate_all()
 
 
 class TestDatasetViewSet(APITransactionTestCase):
@@ -161,12 +171,14 @@ class TestDatasetViewSet(APITransactionTestCase):
         url = reverse("api:datasets:datasets-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        invalidate_all()
 
     def test_list_by_admin_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
         url = reverse("api:datasets:datasets-list")
         response = self.client.get(url)
         self.assertEqual(response.status_code, 200)
+        invalidate_all()
 
     def test_get_by_normal_user_succeeds(self):
         self.client.force_authenticate(user=self.normal)
@@ -176,6 +188,7 @@ class TestDatasetViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(dataset.pk, data.get("results")[0].get("id"))
+        invalidate_all()
 
     def test_get_by_user_succeeds(self):
         self.client.force_authenticate(user=self.admin)
@@ -185,3 +198,4 @@ class TestDatasetViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(dataset.pk, data.get("results")[0].get("id"))
+        invalidate_all()
