@@ -21,7 +21,7 @@ import {
 } from '@types';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { NavState } from '@shared';
-import { filter } from 'rxjs/operators';
+import { filter, shareReplay } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
   RemovingStandsError,
@@ -31,7 +31,7 @@ import { TreatmentRoutingData } from './treatments-routing-data';
 import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
-import { PlanState } from '../maplibre-map/plan.state';
+import { LegacyPlanStateService } from '@services';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -45,7 +45,7 @@ export class TreatmentsState {
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private directImpactsState: DirectImpactsStateService,
-    private planState: PlanState
+    private legacyPlanStateService: LegacyPlanStateService
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
@@ -88,8 +88,12 @@ export class TreatmentsState {
     })
   );
 
-  public planningArea$: Observable<Plan | null> =
-    this.planState.currentPlan$.pipe(filter((plan) => !!plan));
+  public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
+    distinctUntilChanged(),
+    filter((id): id is number => !!id),
+    switchMap((id) => this.legacyPlanStateService.getPlan(id.toString())),
+    shareReplay(1)
+  );
 
   // determine navstate values based on various state conditions
   navState$: Observable<NavState> = combineLatest([
