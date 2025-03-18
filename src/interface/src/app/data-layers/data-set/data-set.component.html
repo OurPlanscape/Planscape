@@ -1,9 +1,15 @@
 <div (click)="selectDataset.emit()" class="data-set">
   <div class="data-set-data">
-    <div class="data-set-name">{{ name }}</div>
+    <div
+      class="data-set-name"
+      [sgHighlighter]="searchTerm"
+      [sgHighlighterText]="name"></div>
     <mat-icon>chevron_right</mat-icon>
   </div>
-  <div class="data-set-org">{{ organizationName }}</div>
+  <div
+    class="data-set-org"
+    [sgHighlighter]="searchTerm"
+    [sgHighlighterText]="organizationName"></div>
 </div>
 
 <div *ngIf="path" class="data-layer-paths">
@@ -11,14 +17,14 @@
     <mat-icon class="material-symbols-outlined">
       subdirectory_arrow_right
     </mat-icon>
-    {{ step }}
+    <span [sgHighlighter]="searchTerm" [sgHighlighterText]="step"></span>
   </div>
 </div>
 <div class="data-set-layers" *ngIf="layers">
   <div class="data-layer" *ngFor="let layer of layers">
-    <mat-radio-button [value]="layer.id" class="data-layer-input">{{
-      layer.name
-    }}</mat-radio-button>
+    <mat-radio-button [value]="layer.id" class="data-layer-input">
+      <span [sgHighlighter]="searchTerm" [sgHighlighterText]="layer.name"></span
+    ></mat-radio-button>
 
     <button
       sg-button
