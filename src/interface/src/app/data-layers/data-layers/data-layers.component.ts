@@ -18,7 +18,9 @@ import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
 import { SearchResultsComponent } from '../search-results/search-results.component';
 import { DataSetComponent } from '../data-set/data-set.component';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-data-layers',
   standalone: true,
@@ -44,7 +46,13 @@ import { DataSetComponent } from '../data-set/data-set.component';
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(private dataLayersStateService: DataLayersStateService) {
+    this.dataLayersStateService.selectedDataSet$
+      .pipe(untilDestroyed(this))
+      .subscribe(() => {
+        this.pageMode = 'browse';
+      });
+  }
 
   loading$ = this.dataLayersStateService.loading$;
 
@@ -86,7 +94,6 @@ export class DataLayersComponent {
   }
 
   viewResultDataSet(dataSet: DataSet) {
-    this.pageMode = 'browse';
     this.dataLayersStateService.selectDataSet(dataSet);
   }
 

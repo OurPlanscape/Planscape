@@ -19,7 +19,7 @@ import { buildPathTree } from './data-layers/tree-node';
 export class DataLayersStateService {
   dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
   _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
-  selectedDataSet$ = this._selectedDataSet$.asObservable();
+  selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
@@ -87,11 +87,9 @@ export class DataLayersStateService {
   }
 
   goToSelectedLayer(layer: DataLayer) {
-    // Almost - need to reset search
+    // Reset search
     this.searchTerm$.next('');
-    // and also go back to browse
-
-    // needs to fetch the dataset if its not the same as the one selected already
+    // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
       const dataSet: Partial<DataSet> = {
         ...layer.dataset,
