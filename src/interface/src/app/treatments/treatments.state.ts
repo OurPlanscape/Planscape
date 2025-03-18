@@ -31,7 +31,7 @@ import { TreatmentRoutingData } from './treatments-routing-data';
 import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
-import { LegacyPlanStateService } from '@services';
+import { PlanService } from '@services';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -45,7 +45,7 @@ export class TreatmentsState {
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
     private directImpactsState: DirectImpactsStateService,
-    private legacyPlanStateService: LegacyPlanStateService
+    private planService: PlanService
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
@@ -91,7 +91,7 @@ export class TreatmentsState {
   public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
     distinctUntilChanged(),
     filter((id): id is number => !!id),
-    switchMap((id) => this.legacyPlanStateService.getPlan(id.toString())),
+    switchMap((id) => this.planService.getPlan(id.toString())),
     shareReplay(1)
   );
 
