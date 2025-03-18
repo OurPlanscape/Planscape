@@ -1,4 +1,4 @@
-import { Component, ElementRef, QueryList, ViewChildren } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { MatTreeModule } from '@angular/material/tree';
@@ -34,7 +34,6 @@ export class DataLayerTreeComponent {
       .subscribe((path) => {
         if (path.length > 0) {
           this.expandNodePath(path);
-          this.scrollToSelectedNode();
         }
       });
   }
@@ -42,20 +41,22 @@ export class DataLayerTreeComponent {
   treeData$ = this.dataLayersStateService.dataTree$.pipe(shareReplay(1));
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
-  selectedNodeRef: ElementRef | null = null;
 
-  @ViewChildren('treeNodeRef', { read: ElementRef })
-  treeNodes!: QueryList<ElementRef>;
+  @ViewChild('treeContainer', { static: false }) treeContainer!: ElementRef;
 
-  selectDataLayer(dataLayer: DataLayer, nodeElement: HTMLElement) {
+  selectDataLayer(dataLayer: DataLayer) {
     this.dataLayersStateService.selectDataLayer(dataLayer);
-    this.selectedNodeRef = new ElementRef(nodeElement);
-    // setTimeout(() => this.scrollToSelectedNode(), 0);
   }
 
   private scrollToSelectedNode() {
-    if (this.selectedNodeRef) {
-      this.selectedNodeRef.nativeElement.scrollIntoView({
+    if (!this.treeContainer) return;
+
+    const selectedButton = this.treeContainer.nativeElement.querySelector(
+      '.mat-mdc-radio-checked'
+    );
+
+    if (selectedButton) {
+      selectedButton.scrollIntoView({
         behavior: 'smooth',
         block: 'center',
       });
@@ -76,7 +77,12 @@ export class DataLayerTreeComponent {
           break;
         }
       }
+      // this.scrollToSelectedNode();
+      setTimeout(() => this.scrollToSelectedNode(), 0);
     });
+
+    //
+    //
   }
 
   hasChild = (_: number, node: TreeNode) =>

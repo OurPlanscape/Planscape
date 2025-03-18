@@ -87,6 +87,10 @@ export class DataLayersStateService {
   }
 
   goToSelectedLayer(layer: DataLayer) {
+    // Almost - need to reset search
+    this.searchTerm$.next('');
+    // and also go back to browse
+
     // needs to fetch the dataset if its not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
       const dataSet: Partial<DataSet> = {
@@ -95,11 +99,6 @@ export class DataLayersStateService {
       };
       this.selectDataSet(dataSet as DataSet);
     }
-
-    // also need to set this to browsing
-
-    // after that's done (somehow?) then update the path?
-
     this.paths$.next(layer.path);
   }
 }
