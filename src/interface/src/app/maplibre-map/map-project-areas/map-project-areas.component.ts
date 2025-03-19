@@ -9,6 +9,7 @@ import {
   MapGeoJSONFeature,
   MapMouseEvent,
   Point,
+  LngLat,
 } from 'maplibre-gl';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -44,10 +45,10 @@ export class MapProjectAreasComponent {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
 
-  @Input() scenarioId = 0;
+  @Input() scenarioId!: number;
 
-  @Output() changeHoveredProjectAreaId = new EventEmitter();
-  @Output() changeMouseLngLat = new EventEmitter();
+  @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
+  @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
 
   private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
 
@@ -112,11 +113,6 @@ export class MapProjectAreasComponent {
   }
 
   setProjectAreaTooltip(e: MapMouseEvent) {
-    // if I have a project area ID im transitioning to the project area view,
-    // so we won't set a tooltip here
-    // if (this.treatmentsState.getProjectAreaId()) {
-    //   return;
-    // }
     this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
       e.point
     );

@@ -24,6 +24,7 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
+import { TreatmentsState } from '../treatments.state';
 
 @UntilDestroy()
 @Component({
@@ -49,7 +50,8 @@ export class DirectImpactsMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService,
-    private authService: AuthService
+    private authService: AuthService,
+    private treatmentsState: TreatmentsState
   ) {}
 
   readonly labels = YEAR_INTERVAL_LABELS;
@@ -76,6 +78,10 @@ export class DirectImpactsMapComponent {
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
+
+  get scenarioId() {
+    return this.treatmentsState.getScenarioId();
+  }
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
