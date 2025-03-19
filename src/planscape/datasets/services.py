@@ -8,7 +8,7 @@ from uuid import uuid4
 
 import mmh3
 from actstream import action
-from cacheops import cached
+from cacheops import cached, invalidate_model
 from core.s3 import create_upload_url, is_s3_file, s3_filename
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -113,6 +113,28 @@ def geometry_from_info(
 
 
 @transaction.atomic()
+def create_dataset(
+    name: str,
+    organization: Organization,
+    created_by: User,
+    description: Optional[str] = None,
+    visibility: VisibilityOptions = VisibilityOptions.PUBLIC,
+    version: Optional[str] = None,
+    **kwargs,
+) -> Dataset:
+    dataset = Dataset.objects.create(
+        name=name,
+        organization=organization,
+        created_by=created_by,
+        description=description,
+        visibility=visibility,
+        version=version,
+    )
+    invalidate_model(Dataset)
+    return dataset
+
+
+@transaction.atomic()
 def create_style(
     name: str,
     organization: Organization,
@@ -143,7 +165,7 @@ def create_style(
             raise ValueError("One or more provided datalayer IDs do not exist.")
         for datalayer in datalayer_qs:
             assign_style(created_by=created_by, style=style, datalayer=datalayer)
-
+    invalidate_model(Style)
     return {"style": style, "possibly_exists": hash_already_exists}
 
 
@@ -175,7 +197,7 @@ def assign_style(
         action_object=datalayer,
         target=style,
     )
-
+    invalidate_model(DataLayer)
     return datalayer_has_style
 
 
@@ -240,6 +262,7 @@ def create_datalayer(
         )
 
     action.send(created_by, verb="created", action_object=datalayer)
+    invalidate_model(DataLayer)
     return {
         "datalayer": datalayer,
         "upload_to": upload_to,

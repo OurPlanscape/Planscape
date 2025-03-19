@@ -22,7 +22,12 @@ from datasets.serializers import (
     StyleCreatedSerializer,
     StyleSerializer,
 )
-from datasets.services import assign_style, create_datalayer, create_style
+from datasets.services import (
+    assign_style,
+    create_datalayer,
+    create_dataset,
+    create_style,
+)
 
 
 class AdminDatasetViewSet(
@@ -41,6 +46,18 @@ class AdminDatasetViewSet(
         "retrieve": DatasetSerializer,
     }
     pagination_class = LimitOffsetPagination
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        datalayer_created = create_dataset(**serializer.validated_data)
+        out_serializer = DatasetSerializer(instance=datalayer_created)
+        headers = self.get_success_headers(serializer.data)
+        return Response(
+            out_serializer.data,
+            status=status.HTTP_201_CREATED,
+            headers=headers,
+        )
 
 
 class AdminDataLayerViewSet(
