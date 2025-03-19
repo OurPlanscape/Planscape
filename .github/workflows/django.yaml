@@ -96,8 +96,8 @@ jobs:
           AWS_ACCESS_KEY_ID: fakekey
           AWS_SECRET_ACCESS_KEY: fakekey
           AWS_DEFAULT_REGION: us-west-2
-          CELERY_BROKER_URL: redis://redis:6379/0
-          CACHEOPS_REDIS: redis://redis:6379/0
+          CELERY_BROKER_URL: redis://localhost:6379/0
+          CACHEOPS_REDIS: redis://localhost:6379/0
         run: |
           touch .env
           echo SECRET_KEY="$SECRET_KEY" >> .env
