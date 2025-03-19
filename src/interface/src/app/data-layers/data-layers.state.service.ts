@@ -66,7 +66,8 @@ export class DataLayersStateService {
     shareReplay(1)
   );
 
-  paths$ = new BehaviorSubject<string[]>([]);
+  _paths$ = new BehaviorSubject<string[]>([]);
+  paths$ = this._paths$.asObservable();
 
   _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
@@ -117,6 +118,6 @@ export class DataLayersStateService {
       };
       this.selectDataSet(dataSet as DataSet);
     }
-    this.paths$.next(layer.path);
+    this._paths$.next(layer.path);
   }
 }
