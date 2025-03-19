@@ -228,33 +228,58 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
         )
 
 
-COLOR_REGEX = re.compile(r"^#(?:[0-9a-fA-F]{1,2}){3}$")
+COLOR_REGEX = re.compile(r"^(?:|#(?:[0-9A-Fa-f]{1,2}){3})$")
 
 
 class EntrySerializer(serializers.Serializer):
     value = serializers.FloatField()
-    color = serializers.RegexField(regex=COLOR_REGEX)
+    color = serializers.RegexField(
+        regex=COLOR_REGEX,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        default="",
+    )
     opacity = serializers.FloatField(
         min_value=0,
         max_value=1,
+        required=False,
+        allow_null=True,
         default=1,
     )
     label = serializers.CharField(
         required=False,
+        allow_blank=True,
+        allow_null=True,
         default="",
-    )  # type: ignore
+    )
 
 
 class NoDataSerializer(serializers.Serializer):
-    values = serializers.ListField(child=serializers.FloatField())
-    color = serializers.RegexField(regex=COLOR_REGEX)
+    values = serializers.ListField(
+        child=serializers.FloatField(),
+        required=False,
+        allow_null=True,
+        default=list,
+    )
+    color = serializers.RegexField(
+        regex=COLOR_REGEX,
+        required=False,
+        allow_blank=True,
+        allow_null=True,
+        default="",
+    )
     opacity = serializers.FloatField(
         min_value=0,
         max_value=1,
+        required=False,
+        allow_null=True,
         default=1,
     )
     label = serializers.CharField(
         required=False,
+        allow_blank=True,
+        allow_null=True,
         default="",
     )
 
