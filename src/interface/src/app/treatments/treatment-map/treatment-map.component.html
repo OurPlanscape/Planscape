@@ -51,7 +51,6 @@
   <app-map-project-areas
     [scenarioId]="scenarioId"
     [mapLibreMap]="mapLibreMap"
-    [showTooltips]="showProjectAreaTooltips"
     [visible]="(showMapProjectAreas$ | async) || false"
     (changeMouseLngLat)="setMouseLngLat($event)"
     (changeHoveredProjectAreaId)="

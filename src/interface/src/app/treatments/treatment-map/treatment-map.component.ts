@@ -1,4 +1,4 @@
-import { Component, Input, Renderer2 } from '@angular/core';
+import { Component, Renderer2 } from '@angular/core';
 import {
   AsyncPipe,
   JsonPipe,
@@ -92,7 +92,6 @@ import { TreatmentProjectArea } from '@types';
   styleUrl: './treatment-map.component.scss',
 })
 export class TreatmentMapComponent {
-  @Input() showProjectAreaTooltips = true;
   /**
    * Flag to determine if the user is currently dragging to select stands
    */
