@@ -97,12 +97,14 @@ jobs:
           AWS_SECRET_ACCESS_KEY: fakekey
           AWS_DEFAULT_REGION: us-west-2
           CELERY_BROKER_URL: redis://redis:6379/0
-          CACHEOPS_REDIS: redis://redis:6379/1
+          CACHEOPS_REDIS: redis://redis:6379/0
         run: |
           touch .env
           echo SECRET_KEY="$SECRET_KEY" >> .env
           echo AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" >> .env
           echo AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" >> .env
           echo AWS_DEFAULT_REGION="$AWS_DEFAULT_REGION" >> .env
+          echo CELERY_BROKER_URL="$CELERY_BROKER_URL" >> .env
+          echo CACHEOPS_REDIS="$CACHEOPS_REDIS" >> .env
           cd src/planscape
           poetry run python manage.py test .
