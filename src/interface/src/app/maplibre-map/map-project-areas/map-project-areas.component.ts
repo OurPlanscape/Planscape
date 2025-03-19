@@ -11,22 +11,13 @@ import {
   MapMouseEvent,
   Point,
 } from 'maplibre-gl';
-import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
-import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
-import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
 
-import { TreatmentProjectArea } from '@types';
-import {
-  combineLatest,
-  distinctUntilChanged,
-  map,
-  Observable,
-  Subject,
-} from 'rxjs';
-import { MARTIN_SOURCES } from '../map.sources';
+import { Subject } from 'rxjs';
+import { MARTIN_SOURCES } from '../../treatments/map.sources';
+import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 
 type MapLayerData = {
   readonly name: string;
@@ -44,7 +35,7 @@ type MapLayerData = {
     MatIconModule,
     NgIf,
     AsyncPipe,
-    MapTooltipComponent,
+
     PercentPipe,
   ],
   templateUrl: './map-project-areas.component.html',
@@ -55,25 +46,25 @@ export class MapProjectAreasComponent {
   @Input() visible = true;
   @Input() showTooltips = true;
 
+  @Input() scenarioId = 0;
+
   private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
 
-  scenarioId = this.treatmentsState.getScenarioId();
-  summary$ = this.treatmentsState.summary$;
   mouseLngLat: LngLat | null = null;
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
-  hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
-    combineLatest([
-      this.summary$,
-      this.hoveredProjectAreaId$.pipe(distinctUntilChanged()),
-    ]).pipe(
-      map(([summary, projectAreaId]) => {
-        return summary?.project_areas.find(
-          (p: TreatmentProjectArea) => p.project_area_id === projectAreaId
-        );
-      })
-    );
+  // hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
+  //   combineLatest([
+  //     //this.summary$,
+  //     this.hoveredProjectAreaId$.pipe(distinctUntilChanged()),
+  //   ]).pipe(
+  //     map(([summary, projectAreaId]) => {
+  //       return summary?.project_areas.find(
+  //         (p: TreatmentProjectArea) => p.project_area_id === projectAreaId
+  //       );
+  //     })
+  //   );
 
   readonly layers: Record<
     | 'projectAreasOutline'
@@ -105,7 +96,6 @@ export class MapProjectAreasComponent {
   };
 
   constructor(
-    private treatmentsState: TreatmentsState,
     private router: Router,
     private route: ActivatedRoute
   ) {}
@@ -136,9 +126,9 @@ export class MapProjectAreasComponent {
   setProjectAreaTooltip(e: MapMouseEvent) {
     // if I have a project area ID im transitioning to the project area view,
     // so we won't set a tooltip here
-    if (this.treatmentsState.getProjectAreaId()) {
-      return;
-    }
+    // if (this.treatmentsState.getProjectAreaId()) {
+    //   return;
+    // }
     this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
       e.point
     );

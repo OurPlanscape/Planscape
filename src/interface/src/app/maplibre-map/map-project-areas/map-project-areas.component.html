@@ -52,15 +52,3 @@
     'text-justify': 'center'
   }"
   [paint]="layers.projectAreaLabels.paint"></mgl-layer>
-
-<ng-container *ngIf="mouseLngLat">
-  <app-map-tooltip
-    [lngLat]="mouseLngLat"
-    *ngIf="hoveredProjectArea$ | async; let curProjectArea">
-    {{
-      curProjectArea.total_treated_area_acres / curProjectArea.total_area_acres
-        | percent: '1.0-1'
-    }}
-    Treated
-  </app-map-tooltip>
-</ng-container>

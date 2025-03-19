@@ -1,5 +1,11 @@
 import { Component, Input, Renderer2 } from '@angular/core';
-import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import {
+  AsyncPipe,
+  JsonPipe,
+  NgForOf,
+  NgIf,
+  PercentPipe,
+} from '@angular/common';
 import {
   ControlComponent,
   DraggableDirective,
@@ -21,7 +27,7 @@ import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
-import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,6 +46,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
+import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 
 @UntilDestroy()
 @Component({
@@ -71,6 +78,7 @@ import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.c
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
+    PercentPipe,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -169,6 +177,10 @@ export class TreatmentMapComponent {
   userCanEditStands: boolean = false;
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
+
+  get scenarioId() {
+    return this.treatmentsState.getScenarioId();
+  }
 
   constructor(
     private mapConfigState: MapConfigState,

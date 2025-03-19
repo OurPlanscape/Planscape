@@ -23,5 +23,8 @@
     controlsPosition="bottom-right"
     [extendedControlsEnabled]="false">
   </app-map-controls>
-  <app-planning-area-layer> </app-planning-area-layer>
+  <app-planning-area-layer></app-planning-area-layer>
+  <app-map-project-areas
+    [scenarioId]="scenarioId"
+    [mapLibreMap]="mapLibreMap"></app-map-project-areas>
 </mgl-map>
