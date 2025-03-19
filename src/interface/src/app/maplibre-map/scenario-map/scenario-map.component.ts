@@ -14,7 +14,6 @@ import { BehaviorSubject, map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
-import { DataLayerNameComponent } from '../data-layer-name/data-layer-name.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -26,7 +25,6 @@ import { DataLayerNameComponent } from '../data-layer-name/data-layer-name.compo
     MapControlsComponent,
     OpacitySliderComponent,
     PlanningAreaLayerComponent,
-    DataLayerNameComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',

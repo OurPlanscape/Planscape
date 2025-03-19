@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { MatTreeModule } from '@angular/material/tree';
-import { shareReplay, take } from 'rxjs';
+import { map, shareReplay, switchMap } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { TreeNode } from '../data-layers/tree-node';
@@ -30,10 +30,20 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 export class DataLayerTreeComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$
-      .pipe(untilDestroyed(this))
-      .subscribe((path) => {
+      .pipe(
+        untilDestroyed(this),
+        switchMap((path) =>
+          this.treeData$.pipe(
+            map((data) => ({
+              path,
+              data,
+            }))
+          )
+        )
+      )
+      .subscribe(({ path, data }) => {
         if (path.length > 0) {
-          this.expandNodePath(path);
+          this.expandNodePath(data, path);
         }
       });
   }
@@ -63,23 +73,21 @@ export class DataLayerTreeComponent {
     }
   }
 
-  expandNodePath(path: string[]) {
-    this.treeData$.pipe(take(1)).subscribe((data) => {
-      let currentNodes = data;
-      let nodeToExpand: TreeNode | undefined;
+  expandNodePath(data: TreeNode[] | null, path: string[]) {
+    let currentNodes = data;
+    let nodeToExpand: TreeNode | undefined;
 
-      for (const name of path) {
-        nodeToExpand = currentNodes?.find((node) => node.name === name);
-        if (nodeToExpand && nodeToExpand.children) {
-          this.treeControl.expand(nodeToExpand);
-          currentNodes = nodeToExpand.children;
-        } else {
-          break;
-        }
+    for (const name of path) {
+      nodeToExpand = currentNodes?.find((node) => node.name === name);
+      if (nodeToExpand && nodeToExpand.children) {
+        this.treeControl.expand(nodeToExpand);
+        currentNodes = nodeToExpand.children;
+      } else {
+        break;
       }
-      // wait until this is rendered (next tick)
-      setTimeout(() => this.scrollToSelectedNode(), 0);
-    });
+    }
+    // wait until this is rendered (next tick)
+    setTimeout(() => this.scrollToSelectedNode(), 0);
   }
 
   hasChild = (_: number, node: TreeNode) =>

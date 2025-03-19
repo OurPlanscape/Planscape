@@ -40,7 +40,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
-import { DataLayerNameComponent } from '../../maplibre-map/data-layer-name/data-layer-name.component';
+import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 
 @UntilDestroy()
 @Component({
