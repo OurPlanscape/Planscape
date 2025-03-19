@@ -3,7 +3,6 @@
   [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
 <mgl-layer
-  *ngIf="showHoveredProjectAreas"
   [id]="layers.projectAreasFill.name"
   type="fill"
   source="scenarioProjectAreas"
@@ -28,6 +27,7 @@
   }"></mgl-layer>
 
 <mgl-layer
+  *ngIf="showHoveredProjectAreas"
   [id]="layers.projectAreasHighlight.name"
   type="line"
   source="scenarioProjectAreas"
