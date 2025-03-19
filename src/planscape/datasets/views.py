@@ -9,9 +9,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from datasets.filters import DataLayerFilterSet
-from datasets.models import DataLayer, Dataset, VisibilityOptions
+from datasets.filters import DataLayerFilterSet, BrowseDataLayerFilterSet
+from datasets.models import DataLayer, Dataset, VisibilityOptions, DataLayerStatus
 from datasets.serializers import (
+    BrowseDataLayerFilterSerializer,
     BrowseDataLayerSerializer,
     DataLayerSerializer,
     DatasetSerializer,
@@ -43,6 +44,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
 
     @extend_schema(
         description="Returns all datalayers inside this dataset",
+        parameters=[BrowseDataLayerFilterSerializer],
         responses={
             200: BrowseDataLayerSerializer(many=True),
         },
@@ -51,13 +53,17 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     def browse(self, request, pk=None):
         dataset = self.get_object()
 
-        # TODO: specify a filter here to return only datalayers that are ready
         datalayers = (
             dataset.datalayers.all()
             .select_related("organization", "dataset", "category")
             .prefetch_related("styles")
-        )
-        serializer = BrowseDataLayerSerializer(datalayers, many=True)
+            .filter(status=DataLayerStatus.READY)
+        ).cache()
+
+        filterset = BrowseDataLayerFilterSet(queryset=datalayers, request=request)
+        queryset = filterset.qs.cache()
+
+        serializer = BrowseDataLayerSerializer(queryset, many=True)
 
         return Response(
             serializer.data,

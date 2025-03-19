@@ -209,3 +209,35 @@ class TestDatasetViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(dataset.pk, data.get("results")[0].get("id"))
+
+    def test_browses_datalayers(self):
+        self.client.force_authenticate(user=self.admin)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset)
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data[0].get("id"))
+
+    def test_browses_datalayers__filter_by_name_exact(self):
+        self.client.force_authenticate(user=self.admin)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
+        query_params = {"name": datalayer.name}
+        url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data[0].get("id"))
+
+    def test_browses_datalayers__filter_by_name_icontains(self):
+        self.client.force_authenticate(user=self.admin)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
+        query_params = {"name": "owl"}
+        url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data[0].get("id"))

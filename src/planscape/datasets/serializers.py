@@ -436,6 +436,25 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         )
 
 
+class BrowseDataLayerFilterSerializer(serializers.Serializer):
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    name = serializers.CharField(
+        required=False,
+    )
+    limit = serializers.IntegerField(
+        required=False,
+        min_value=1,
+    )
+    offset = serializers.IntegerField(
+        required=False,
+        min_value=1,
+    )
+
+
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
 
