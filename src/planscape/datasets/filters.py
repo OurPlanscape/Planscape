@@ -67,5 +67,4 @@ class BrowseDataLayerFilterSet(filters.FilterSet):
             "name": ["exact", "icontains"],
             "category": ["exact"],
             "type": ["exact"],
-            "status": ["exact"],
         }
