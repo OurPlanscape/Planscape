@@ -429,6 +429,12 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
 
+    type = serializers.ChoiceField(
+        required=False,
+        choices=DataLayerType.choices,
+        default=None,
+    )
+
     limit = serializers.IntegerField(required=False, min_value=1)
 
     offset = serializers.IntegerField(required=False, min_value=1)

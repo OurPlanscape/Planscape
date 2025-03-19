@@ -1,13 +1,13 @@
+import logging
 import multiprocessing
 import os
 import sys
-import logging
 from datetime import timedelta
 from pathlib import Path
 
 import boto3
-import sentry_sdk
 import django_stubs_ext
+import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEnv
 from sentry_sdk.integrations.celery import CeleryIntegration
@@ -384,7 +384,9 @@ FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 OUTPUT_DIR = BASE_DIR / "output"
 
 DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
-
+# CACHEOPS
+CACHEOPS_REDIS = config("CACHEOPS_REDIS", "redis://localhost:6379/1")
+FIND_ANYTHING_TTL = config("FIND_ANYTHING_TTL", 5 * 60)  # 5 minutes default
 
 # CELERY
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
