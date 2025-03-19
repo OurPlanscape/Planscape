@@ -445,6 +445,11 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
     name = serializers.CharField(
         required=False,
     )
+    type = serializers.ChoiceField(
+        choices=DataLayerType.choices,
+        required=False,
+        allow_null=True,
+    )
 
 
 class FindAnythingSerializer(serializers.Serializer):
