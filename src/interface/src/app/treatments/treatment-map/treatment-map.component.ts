@@ -50,6 +50,7 @@ import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.c
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @UntilDestroy()
 @Component({
@@ -205,7 +206,9 @@ export class TreatmentMapComponent {
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -333,5 +336,15 @@ export class TreatmentMapComponent {
 
   setMouseLngLat(value: any) {
     this.mouseLngLat = value;
+  }
+
+  selectProjectArea(projectAreaId: string) {
+    this.router
+      .navigate(['project-area', projectAreaId], {
+        relativeTo: this.route,
+      })
+      .then(() => {
+        this.mapLibreMap.getCanvas().style.cursor = '';
+      });
   }
 }

@@ -52,6 +52,7 @@
     [scenarioId]="scenarioId"
     [mapLibreMap]="mapLibreMap"
     [visible]="(showMapProjectAreas$ | async) || false"
+    (selectProjectArea)="selectProjectArea($event)"
     (changeMouseLngLat)="setMouseLngLat($event)"
     (changeHoveredProjectAreaId)="
       setHoveredProjectAreaId($event)

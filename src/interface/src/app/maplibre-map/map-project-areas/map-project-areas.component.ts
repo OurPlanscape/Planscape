@@ -8,10 +8,9 @@ import {
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapMouseEvent,
-  Point,
   LngLat,
+  Point,
 } from 'maplibre-gl';
-import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 
@@ -50,6 +49,7 @@ export class MapProjectAreasComponent {
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
+  @Output() selectProjectArea = new EventEmitter<string>();
 
   private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
 
@@ -85,10 +85,7 @@ export class MapProjectAreasComponent {
     },
   };
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute
-  ) {}
+  constructor() {}
 
   get vectorLayerUrl() {
     return this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
@@ -97,16 +94,8 @@ export class MapProjectAreasComponent {
   goToProjectArea(event: MapMouseEvent) {
     const projectAreaId = this.getProjectAreaFromFeatures(event.point)
       .properties['id'];
-    this.changeMouseLngLat.emit(null);
-
     this.resetCursorAndTooltip();
-    this.router
-      .navigate(['project-area', projectAreaId], {
-        relativeTo: this.route,
-      })
-      .then(() => {
-        this.mapLibreMap.getCanvas().style.cursor = '';
-      });
+    this.selectProjectArea.emit(projectAreaId);
   }
 
   setCursor() {
