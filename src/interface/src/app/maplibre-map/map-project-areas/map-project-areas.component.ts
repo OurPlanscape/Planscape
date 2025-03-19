@@ -44,6 +44,7 @@ type MapLayerData = {
 export class MapProjectAreasComponent {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
+  @Input() showHoveredProjectAreas: boolean = true;
 
   @Input() scenarioId!: number;
 
