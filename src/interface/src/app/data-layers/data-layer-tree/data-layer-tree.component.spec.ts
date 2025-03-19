@@ -15,6 +15,7 @@ describe('DataLayerTreeComponent', () => {
       providers: [
         MockProvider(DataLayersStateService, {
           dataTree$: of(null),
+          paths$: of([]),
         }),
       ],
     }).compileComponents();

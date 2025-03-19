@@ -13,7 +13,7 @@
     (click)="clearSearch()"></button>
 </div>
 <!--When performing search, show results.-->
-<ng-container *ngIf="isOnSearchMode">
+<ng-container *ngIf="(isBrowsing$ | async) === false">
   <ng-container *ngIf="searchTerm$ | async as searchTerm">
     <div *ngIf="results$ | async as results">
       <div *ngIf="resultCount" class="result-count">
@@ -32,7 +32,7 @@
 
 <!--When browsing-->
 <!--When a dataset is selected-->
-<ng-container *ngIf="isOnBrowseMode">
+<ng-container *ngIf="isBrowsing$ | async">
   <!--show link back to list datasets-->
   <ng-container
     *ngIf="selectedDataSet$ | async as selectedDataSet; else listDataSets">

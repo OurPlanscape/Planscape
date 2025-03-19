@@ -1,11 +1,5 @@
 import { Component, Renderer2 } from '@angular/core';
-import {
-  AsyncPipe,
-  JsonPipe,
-  NgForOf,
-  NgIf,
-  PercentPipe,
-} from '@angular/common';
+import { AsyncPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
 import {
   ControlComponent,
   DraggableDirective,
@@ -55,13 +49,13 @@ import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 import { TreatmentProjectArea } from '@types';
+import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
   standalone: true,
   imports: [
-    JsonPipe,
     NgForOf,
     MapComponent,
     VectorSourceComponent,
@@ -87,6 +81,7 @@ import { TreatmentProjectArea } from '@types';
     MapBaseDropdownComponent,
     MapNavbarComponent,
     PercentPipe,
+    DataLayerNameComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',

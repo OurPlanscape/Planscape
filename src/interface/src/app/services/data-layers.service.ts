@@ -24,7 +24,7 @@ export class DataLayersService {
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse',
       {
         withCredentials: true,
-        params: {},
+        params: { type: 'RASTER' },
       }
     );
   }
@@ -34,7 +34,7 @@ export class DataLayersService {
       environment.backend_endpoint + '/v2/datalayers/find_anything',
       {
         withCredentials: true,
-        params: { term },
+        params: { term, type: 'RASTER' },
       }
     );
   }

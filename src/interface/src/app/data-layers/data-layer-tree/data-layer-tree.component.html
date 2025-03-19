@@ -1,17 +1,20 @@
-<mat-radio-group>
+<mat-radio-group [ngModel]="(selectedDataLayer$ | async)?.id" #treeContainer>
   <mat-tree
     *ngIf="treeData$ | async as treeData"
     [dataSource]="treeData"
     [treeControl]="treeControl"
     class="data-layers">
-    <!-- leaf node (item node with no children) -->
+    <!-- Leaf node -->
     <mat-tree-node
       *matTreeNodeDef="let node"
       matTreeNodePadding
       class="data-layer">
-      <mat-radio-button [value]="node.item.id" class="data-layer-input">{{
-        node.name
-      }}</mat-radio-button>
+      <mat-radio-button
+        [value]="node.item.id"
+        class="data-layer-input"
+        (click)="selectDataLayer(node.item)">
+        {{ node.name }}
+      </mat-radio-button>
 
       <button
         sg-button
@@ -21,7 +24,7 @@
         [outlined]="true"></button>
     </mat-tree-node>
 
-    <!-- category node -->
+    <!-- Category node -->
     <mat-nested-tree-node *matTreeNodeDef="let node; when: hasChild">
       <div
         class="mat-tree-node data-layer-node"
