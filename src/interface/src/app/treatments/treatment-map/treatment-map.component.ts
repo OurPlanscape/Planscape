@@ -334,7 +334,7 @@ export class TreatmentMapComponent {
     this.hoveredProjectAreaId$.next(value);
   }
 
-  setMouseLngLat(value: any) {
+  setMouseLngLat(value: LngLat | null) {
     this.mouseLngLat = value;
   }
 
