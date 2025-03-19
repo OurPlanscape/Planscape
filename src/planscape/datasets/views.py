@@ -61,9 +61,8 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         )
 
         filterset = BrowseDataLayerFilterSet(queryset=datalayers, request=request)
-        queryset = filterset.qs
-        
-        serializer = BrowseDataLayerSerializer(queryset, many=True)
+
+        serializer = BrowseDataLayerSerializer(filterset.qs, many=True)
 
         return Response(
             serializer.data,
