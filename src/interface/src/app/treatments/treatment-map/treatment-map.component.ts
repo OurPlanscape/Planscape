@@ -36,8 +36,15 @@ import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addRequestHeaders } from '../../maplibre-map/maplibre.helper';
 import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-layer/planning-area-layer.component';
-import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import {
+  combineLatest,
+  map,
+  Observable,
+  startWith,
+  Subject,
+  withLatestFrom,
+} from 'rxjs';
+import { distinctUntilChanged, filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
@@ -47,6 +54,7 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
+import { TreatmentProjectArea } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -182,6 +190,21 @@ export class TreatmentMapComponent {
     return this.treatmentsState.getScenarioId();
   }
 
+  mouseLngLat: LngLat | null = null;
+  hoveredProjectAreaId$ = new Subject<number | null>();
+
+  hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
+    combineLatest([
+      this.treatmentsState.summary$,
+      this.hoveredProjectAreaId$.pipe(distinctUntilChanged()),
+    ]).pipe(
+      map(([summary, projectAreaId]) => {
+        return summary?.project_areas.find(
+          (p: TreatmentProjectArea) => p.project_area_id === projectAreaId
+        );
+      })
+    );
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
@@ -309,4 +332,12 @@ export class TreatmentMapComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  setHoveredProjectAreaId(value: number | null) {
+    this.hoveredProjectAreaId$.next(value);
+  }
+
+  setMouseLngLat(value: any) {
+    this.mouseLngLat = value;
+  }
 }

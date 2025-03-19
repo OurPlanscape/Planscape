@@ -1,11 +1,10 @@
-import { Component, Input } from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   LayerSpecification,
-  LngLat,
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapMouseEvent,
@@ -15,9 +14,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 
-import { Subject } from 'rxjs';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
+import { Subject } from 'rxjs';
 
 type MapLayerData = {
   readonly name: string;
@@ -48,23 +47,13 @@ export class MapProjectAreasComponent {
 
   @Input() scenarioId = 0;
 
-  private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
+  @Output() changeHoveredProjectAreaId = new EventEmitter();
+  @Output() changeMouseLngLat = new EventEmitter();
 
-  mouseLngLat: LngLat | null = null;
+  private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
-  // hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
-  //   combineLatest([
-  //     //this.summary$,
-  //     this.hoveredProjectAreaId$.pipe(distinctUntilChanged()),
-  //   ]).pipe(
-  //     map(([summary, projectAreaId]) => {
-  //       return summary?.project_areas.find(
-  //         (p: TreatmentProjectArea) => p.project_area_id === projectAreaId
-  //       );
-  //     })
-  //   );
 
   readonly layers: Record<
     | 'projectAreasOutline'
@@ -107,7 +96,7 @@ export class MapProjectAreasComponent {
   goToProjectArea(event: MapMouseEvent) {
     const projectAreaId = this.getProjectAreaFromFeatures(event.point)
       .properties['id'];
-    this.mouseLngLat = null;
+    this.changeMouseLngLat.emit(null);
 
     this.resetCursorAndTooltip();
     this.router
@@ -133,20 +122,21 @@ export class MapProjectAreasComponent {
       e.point
     );
     if (this.hoveredProjectAreaFromFeatures?.properties?.['id']) {
-      this.hoveredProjectAreaId$.next(
-        this.hoveredProjectAreaFromFeatures.properties['id']
-      );
+      const id = this.hoveredProjectAreaFromFeatures.properties['id'];
+      this.hoveredProjectAreaId$.next(id);
+      this.changeHoveredProjectAreaId.emit(id);
     }
 
-    this.mouseLngLat = e.lngLat;
+    this.changeMouseLngLat.emit(e.lngLat);
   }
 
   resetCursorAndTooltip() {
     this.mapLibreMap.getCanvas().style.cursor = '';
     this.hoveredProjectAreaFromFeatures = null;
     this.hoveredProjectAreaId$.next(null);
+    this.changeHoveredProjectAreaId.emit(null);
 
-    this.mouseLngLat = null;
+    this.changeMouseLngLat.emit(null);
   }
 
   private getProjectAreaFromFeatures(point: Point): MapGeoJSONFeature {

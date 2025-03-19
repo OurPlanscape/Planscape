@@ -52,20 +52,23 @@
     [scenarioId]="scenarioId"
     [mapLibreMap]="mapLibreMap"
     [showTooltips]="showProjectAreaTooltips"
-    [visible]="(showMapProjectAreas$ | async) || false"></app-map-project-areas>
+    [visible]="(showMapProjectAreas$ | async) || false"
+    (changeMouseLngLat)="setMouseLngLat($event)"
+    (changeHoveredProjectAreaId)="
+      setHoveredProjectAreaId($event)
+    "></app-map-project-areas>
 
-  <!--  TODO: tooltip-->
-  <!--  <ng-container *ngIf="mouseLngLat">-->
-  <!--    <app-map-tooltip-->
-  <!--      [lngLat]="mouseLngLat"-->
-  <!--      *ngIf="hoveredProjectArea$ | async; let curProjectArea">-->
-  <!--      {{-->
-  <!--      curProjectArea.total_treated_area_acres / curProjectArea.total_area_acres-->
-  <!--        | percent: '1.0-1'-->
-  <!--      }}-->
-  <!--      Treated-->
-  <!--    </app-map-tooltip>-->
-  <!--  </ng-container>-->
+  <ng-container *ngIf="mouseLngLat">
+    <app-map-tooltip
+      [lngLat]="mouseLngLat"
+      *ngIf="hoveredProjectArea$ | async; let curProjectArea">
+      {{
+        curProjectArea.total_treated_area_acres /
+          curProjectArea.total_area_acres | percent: '1.0-1'
+      }}
+      Treated
+    </app-map-tooltip>
+  </ng-container>
 
   <app-map-stands
     *ngIf="showTreatmentStands$ | async"
