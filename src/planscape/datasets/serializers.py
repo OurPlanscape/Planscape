@@ -228,30 +228,20 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
         )
 
 
-COLOR_REGEX = re.compile(r"^(?:|#(?:[0-9A-Fa-f]{1,2}){3})$")
+COLOR_REGEX = re.compile(r"^#(?:[0-9a-fA-F]{1,2}){3}$")
 
 
 class EntrySerializer(serializers.Serializer):
     value = serializers.FloatField()
-    color = serializers.RegexField(
-        regex=COLOR_REGEX,
-        required=False,
-        allow_blank=True,
-        allow_null=True,
-        default="",
-    )
+    color = serializers.RegexField(regex=COLOR_REGEX)
     opacity = serializers.FloatField(
         min_value=0,
         max_value=1,
-        required=False,
-        allow_null=True,
         default=1,
     )
     label = serializers.CharField(
         required=False,
-        allow_blank=True,
         allow_null=True,
-        default="",
     )
 
 
@@ -265,22 +255,17 @@ class NoDataSerializer(serializers.Serializer):
     color = serializers.RegexField(
         regex=COLOR_REGEX,
         required=False,
-        allow_blank=True,
         allow_null=True,
-        default="",
     )
     opacity = serializers.FloatField(
         min_value=0,
         max_value=1,
-        required=False,
+        default=0,
         allow_null=True,
-        default=1,
     )
     label = serializers.CharField(
         required=False,
-        allow_blank=True,
         allow_null=True,
-        default="",
     )
 
 
@@ -453,12 +438,6 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
-
-    type = serializers.ChoiceField(
-        required=False,
-        choices=DataLayerType.choices,
-        default=None,
-    )
 
     limit = serializers.IntegerField(required=False, min_value=1)
 
