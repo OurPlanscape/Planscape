@@ -4,11 +4,11 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { distinctUntilChanged, map, switchMap, tap } from 'rxjs';
 
-import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { TreatmentsService } from '@services/treatments.service';
 import { standIsNonBurnable } from '../stands';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -27,8 +27,8 @@ export class NonForestedDataComponent {
 
   constructor(
     private directImpactsStateService: DirectImpactsStateService,
-    private treatmentsState: TreatmentsState,
-    private treatmentsService: TreatmentsService
+    private treatmentsService: TreatmentsService,
+    private planState: PlanState
   ) {
     this.directImpactsStateService.activeStand$
       .pipe(
@@ -37,7 +37,7 @@ export class NonForestedDataComponent {
         tap((_) => (this.loading = true)),
         switchMap((s) =>
           this.treatmentsService.getStandResult(
-            this.treatmentsState.getTreatmentPlanId(),
+            this.planState.getCurrentPlanId(),
             (s?.id as number) || 0
           )
         )

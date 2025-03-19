@@ -3,7 +3,7 @@ import { ActivatedRouteSnapshot, Data } from '@angular/router';
 // Possible routing params
 export interface TreatmentRoutingData extends Data {
   scenarioId: number;
-  treatmentId: number;
+  treatmentId?: number;
   projectAreaId?: number;
   planId: number;
   showMapProjectAreas?: boolean;

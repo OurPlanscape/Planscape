@@ -10,6 +10,7 @@ import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-
 import { BehaviorSubject, take, distinctUntilChanged } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -25,7 +26,8 @@ export class TreatmentPlanNotesComponent implements OnInit {
     private notesService: TreatmentPlanNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
-    private treatmentsState: TreatmentsState
+    private treatmentsState: TreatmentsState,
+    private planState: PlanState
   ) {}
 
   // notes data
@@ -45,7 +47,7 @@ export class TreatmentPlanNotesComponent implements OnInit {
   addNote(comment: string) {
     this.notesSidebarState = 'SAVING';
     this.notesService
-      .addNote(this.treatmentsState.getTreatmentPlanId(), comment)
+      .addNote(this.planState.getCurrentPlanId(), comment)
       .subscribe({
         next: () => {
           this.loadNotes();
@@ -71,7 +73,7 @@ export class TreatmentPlanNotesComponent implements OnInit {
       .subscribe((confirmed) => {
         if (confirmed) {
           this.notesService
-            .deleteNote(this.treatmentsState.getTreatmentPlanId(), note.id)
+            .deleteNote(this.planState.getCurrentPlanId(), note.id)
             .subscribe({
               next: () => {
                 this.snackbar.open(
@@ -97,7 +99,7 @@ export class TreatmentPlanNotesComponent implements OnInit {
 
   loadNotes() {
     this.notesService
-      .getNotes(this.treatmentsState.getTreatmentPlanId())
+      .getNotes(this.planState.getCurrentPlanId())
       .subscribe((notes: Note[]) => {
         this.notes$.next(notes);
       });

@@ -1,4 +1,4 @@
-import { Component, OnInit, Input } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Scenario, Plan } from '@types';
 import { LegacyPlanStateService } from '@services';
@@ -10,6 +10,7 @@ import { SNACK_ERROR_CONFIG } from '@shared';
 import { CreateTreatmentDialogComponent } from '../create-scenarios/create-treatment-dialog/create-treatment-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -25,10 +26,11 @@ export class UploadedScenarioViewComponent implements OnInit {
     private treatmentsService: TreatmentsService,
     private matSnackBar: MatSnackBar,
     private dialog: MatDialog,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private planState: PlanState
   ) {}
 
-  @Input() scenario?: Scenario;
+  scenario: Scenario | null = this.planState.getCurrentScenario();
   plan$ = new BehaviorSubject<Plan | null>(null);
   creatingTreatment = false;
 

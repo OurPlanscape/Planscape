@@ -23,6 +23,7 @@ import { canAddTreatmentPlan } from '../permissions';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTreatmentDialogComponent } from './create-treatment-dialog/create-treatment-dialog.component';
 import { AnalyticsService } from '@services/analytics.service';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -77,7 +78,8 @@ export class CreateScenariosComponent implements OnInit {
     private goalOverlayService: GoalOverlayService,
     private treatmentsService: TreatmentsService,
     private dialog: MatDialog,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private planState: PlanState
   ) {}
 
   createForms() {
@@ -165,6 +167,8 @@ export class CreateScenariosComponent implements OnInit {
   loadConfig(): void {
     this.LegacyPlanStateService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
+        this.planState.setCurrentScenario(scenario);
+
         // if we have the same state do nothing.
         if (this.scenarioState === scenario.scenario_result?.status) {
           return;

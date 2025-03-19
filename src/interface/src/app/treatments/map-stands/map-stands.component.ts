@@ -36,6 +36,7 @@ import {
 } from '../map.styles';
 import { PATTERN_NAMES, PatternName, SEQUENCE_ACTIONS } from '../prescriptions';
 import { MARTIN_SOURCES } from '../map.sources';
+import { PlanState } from 'src/app/maplibre-map/plan.state';
 
 type MapLayerData = {
   readonly name: string;
@@ -179,7 +180,8 @@ export class MapStandsComponent implements OnChanges, OnInit {
     private selectedStandsState: SelectedStandsState,
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState,
-    private mapConfigState: MapConfigState
+    private mapConfigState: MapConfigState,
+    private planState: PlanState
   ) {
     combineLatest([
       this.treatedStands$.pipe(distinctUntilChanged()),
@@ -228,7 +230,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     //  const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
       MARTIN_SOURCES.standsByTxPlan.tilesUrl +
-      `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}`
+      `?treatment_plan_id=${this.planState.getCurrentPlanId()}`
     );
   }
 
@@ -236,7 +238,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
       MARTIN_SOURCES.projectAreaAggregate.tilesUrl +
-      `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}${
+      `?treatment_plan_id=${this.planState.getCurrentPlanId()}${
         projectAreaId ? `&project_area_id=${projectAreaId}` : ''
       }`
     );
