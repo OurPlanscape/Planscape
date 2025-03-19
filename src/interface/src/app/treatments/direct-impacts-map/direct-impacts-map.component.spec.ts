@@ -6,7 +6,18 @@ import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { AuthService } from '@services';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { TreatmentsState } from '../treatments.state';
 
+const fakeRoute = jasmine.createSpyObj(
+  'ActivatedRoute',
+  {},
+  {
+    snapshot: {
+      paramMap: convertToParamMap({ id: '24' }),
+    },
+  }
+);
 describe('DirectImpactsMapComponent', () => {
   let component: DirectImpactsMapComponent;
   let fixture: ComponentFixture<DirectImpactsMapComponent>;
@@ -19,8 +30,10 @@ describe('DirectImpactsMapComponent', () => {
           MapConfigState,
           AuthService,
           DirectImpactsStateService,
-          MapConfigState
+          MapConfigState,
+          TreatmentsState
         ),
+        { provide: ActivatedRoute, useValue: fakeRoute },
       ],
       declarations: [MockDeclarations(MapComponent)],
     }).compileComponents();
