@@ -445,14 +445,6 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
     name = serializers.CharField(
         required=False,
     )
-    limit = serializers.IntegerField(
-        required=False,
-        min_value=1,
-    )
-    offset = serializers.IntegerField(
-        required=False,
-        min_value=1,
-    )
 
 
 class FindAnythingSerializer(serializers.Serializer):
