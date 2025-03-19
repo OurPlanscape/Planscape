@@ -5,7 +5,6 @@ import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { TreatedStandsState } from './treated-stands.state';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
-import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { SelectedStandsState } from './selected-stands.state';
 import { CommonModule } from '@angular/common';
 import { of } from 'rxjs';
@@ -15,6 +14,7 @@ import { AuthService, PlanService } from '@services';
 
 import { TreatmentsState } from '../treatments.state';
 import { DEFAULT_BASE_MAP } from '../../maplibre-map/map-base-layers';
+import { MapProjectAreasComponent } from 'src/app/maplibre-map/map-project-areas/map-project-areas.component';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
