@@ -43,7 +43,8 @@ export class DataLayersStateService {
   private loadingSubject = new BehaviorSubject(false);
   loading$ = this.loadingSubject.asObservable();
 
-  searchTerm$ = new BehaviorSubject<string>('');
+  _searchTerm$ = new BehaviorSubject<string>('');
+  searchTerm$ = this._searchTerm$.asObservable();
 
   searchResults$: Observable<SearchResult[] | null> = this.searchTerm$.pipe(
     tap(() => this.loadingSubject.next(true)),
@@ -67,15 +68,23 @@ export class DataLayersStateService {
 
   paths$ = new BehaviorSubject<string[]>([]);
 
+  _isBrowsing$ = new BehaviorSubject(true);
+  isBrowsing$ = this._isBrowsing$.asObservable();
+
   constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
+    this._isBrowsing$.next(true);
     this._selectedDataSet$.next(dataset);
     this.loadingSubject.next(true);
   }
 
-  clearDataSet() {
+  goBackToSearchResults() {
     this._selectedDataSet$.next(null);
+    // if I go back but im not searching
+    if (this._searchTerm$.value) {
+      this._isBrowsing$.next(false);
+    }
   }
 
   selectDataLayer(dataLayer: DataLayer) {
@@ -86,9 +95,20 @@ export class DataLayersStateService {
     this._selectedDataLayer$.next(null);
   }
 
+  search(term: string) {
+    this._searchTerm$.next(term);
+    this._isBrowsing$.next(!term);
+  }
+
+  clearSearch() {
+    this.search('');
+    this._selectedDataSet$.next(null);
+  }
+
   goToSelectedLayer(layer: DataLayer) {
     // Reset search
-    this.searchTerm$.next('');
+    this._searchTerm$.next('');
+    this._isBrowsing$.next(true);
     // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
       const dataSet: Partial<DataSet> = {

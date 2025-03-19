@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, JsonPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { DataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
@@ -18,7 +18,7 @@ import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
 import { SearchResultsComponent } from '../search-results/search-results.component';
 import { DataSetComponent } from '../data-set/data-set.component';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { UntilDestroy } from '@ngneat/until-destroy';
 
 @UntilDestroy()
 @Component({
@@ -41,22 +41,15 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     SearchResultsComponent,
     DataSetComponent,
     NoResultsComponent,
+    JsonPipe,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
 })
 export class DataLayersComponent {
-  constructor(private dataLayersStateService: DataLayersStateService) {
-    this.dataLayersStateService.selectedDataSet$
-      .pipe(untilDestroyed(this))
-      .subscribe(() => {
-        this.pageMode = 'browse';
-      });
-  }
+  constructor(private dataLayersStateService: DataLayersStateService) {}
 
   loading$ = this.dataLayersStateService.loading$;
-
-  pageMode: 'browse' | 'search' = 'browse';
 
   dataSets$ = this.dataLayersStateService.dataSets$;
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
@@ -68,7 +61,6 @@ export class DataLayersComponent {
     this.dataLayersStateService.searchResults$.pipe(
       startWith(null),
       map((results) => {
-        this.pageMode = 'search';
         if (results) {
           this.resultCount = results.length;
           return groupSearchResults(results);
@@ -85,8 +77,7 @@ export class DataLayersComponent {
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
 
   search(term: string) {
-    this.pageMode = 'search';
-    this.searchTerm$.next(term);
+    this.dataLayersStateService.search(term);
   }
 
   viewDatasetCategories(dataSet: DataSet) {
@@ -98,23 +89,12 @@ export class DataLayersComponent {
   }
 
   goBack() {
-    if (this.searchTerm$.value) {
-      this.pageMode = 'search';
-    }
-    this.dataLayersStateService.clearDataSet();
+    this.dataLayersStateService.goBackToSearchResults();
   }
 
   clearSearch() {
-    this.search('');
-    this.pageMode = 'browse';
-    this.dataLayersStateService.clearDataSet();
+    this.dataLayersStateService.clearSearch();
   }
 
-  get isOnSearchMode() {
-    return this.pageMode === 'search';
-  }
-
-  get isOnBrowseMode() {
-    return this.pageMode === 'browse';
-  }
+  isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 }
