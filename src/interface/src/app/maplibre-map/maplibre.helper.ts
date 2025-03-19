@@ -1,4 +1,9 @@
-import { Map as MapLibreMap, Point, ResourceType } from 'maplibre-gl';
+import {
+  MapGeoJSONFeature,
+  Map as MapLibreMap,
+  Point,
+  ResourceType,
+} from 'maplibre-gl';
 import {
   isMapboxURL,
   transformMapboxUrl,
@@ -119,4 +124,15 @@ export function syncMaps(...maps: MapLibreMap[]) {
     fns = [];
     maps = [];
   };
+}
+
+export function getProjectAreaFromFeatures(
+  map: MapLibreMap,
+  point: Point
+): MapGeoJSONFeature {
+  const features = map.queryRenderedFeatures(point, {
+    layers: ['map-project-areas-fill'],
+  });
+
+  return features[0];
 }
