@@ -26,6 +26,16 @@ jobs:
         python-version: [3.10.8]
 
     services:
+      redis:
+        image: redis
+        # Set health checks to wait until redis has started
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
       postgres:
         image: postgis/postgis:14-3.3
         env:
@@ -86,11 +96,15 @@ jobs:
           AWS_ACCESS_KEY_ID: fakekey
           AWS_SECRET_ACCESS_KEY: fakekey
           AWS_DEFAULT_REGION: us-west-2
+          CELERY_BROKER_URL: redis://localhost:6379/0
+          CACHEOPS_REDIS: redis://localhost:6379/0
         run: |
           touch .env
           echo SECRET_KEY="$SECRET_KEY" >> .env
           echo AWS_ACCESS_KEY_ID="$AWS_ACCESS_KEY_ID" >> .env
           echo AWS_SECRET_ACCESS_KEY="$AWS_SECRET_ACCESS_KEY" >> .env
           echo AWS_DEFAULT_REGION="$AWS_DEFAULT_REGION" >> .env
+          echo CELERY_BROKER_URL="$CELERY_BROKER_URL" >> .env
+          echo CACHEOPS_REDIS="$CACHEOPS_REDIS" >> .env
           cd src/planscape
           poetry run python manage.py test .
