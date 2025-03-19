@@ -1,4 +1,8 @@
+from typing import Any, Dict
+
+from cacheops import cached
 from core.serializers import MultiSerializerMixin
+from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -51,8 +55,16 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     )
     @action(detail=True, methods=["get"])
     def browse(self, request, pk=None):
-        dataset = self.get_object()
+        data = self._get_browse_result_from_cache_or_db(request.query_params)
 
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
+
+    @cached(timeout=settings.BROWSE_DATASETS_TTL)
+    def _get_browse_result_from_cache_or_db(self, query_params: Dict[str, Any]):
+        dataset = self.get_object()
         datalayers = (
             dataset.datalayers.all()
             .select_related("organization", "dataset", "category")
@@ -60,14 +72,10 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             .filter(status=DataLayerStatus.READY)
         )
 
-        filterset = BrowseDataLayerFilterSet(queryset=datalayers, request=request)
-
+        filterset = BrowseDataLayerFilterSet(queryset=datalayers, request=query_params)
         serializer = BrowseDataLayerSerializer(filterset.qs, many=True)
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK,
-        )
+        return serializer.data
 
 
 class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
