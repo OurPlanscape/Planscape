@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
-import { AsyncPipe, JsonPipe, NgIf, PercentPipe } from '@angular/common';
+import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
   distinctUntilChanged,
@@ -41,7 +41,7 @@ import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
     NonForestedDataComponent,
     MatProgressSpinnerModule,
     MetricSelectorComponent,
-    JsonPipe,
+
     PercentPipe,
   ],
   templateUrl: './stand-data-chart.component.html',

@@ -22,7 +22,10 @@
 </div>
 <div class="data-set-layers" *ngIf="layers">
   <div class="data-layer" *ngFor="let layer of layers">
-    <mat-radio-button [value]="layer.id" class="data-layer-input">
+    <mat-radio-button
+      [value]="layer.id"
+      class="data-layer-input"
+      (click)="selectDataLayer(layer.data)">
       <span [sgHighlighter]="searchTerm" [sgHighlighterText]="layer.name"></span
     ></mat-radio-button>
 

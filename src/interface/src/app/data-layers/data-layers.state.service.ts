@@ -19,7 +19,7 @@ import { buildPathTree } from './data-layers/tree-node';
 export class DataLayersStateService {
   dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
   _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
-  selectedDataSet$ = this._selectedDataSet$.asObservable();
+  selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
@@ -43,7 +43,8 @@ export class DataLayersStateService {
   private loadingSubject = new BehaviorSubject(false);
   loading$ = this.loadingSubject.asObservable();
 
-  searchTerm$ = new BehaviorSubject<string>('');
+  _searchTerm$ = new BehaviorSubject<string>('');
+  searchTerm$ = this._searchTerm$.asObservable();
 
   searchResults$: Observable<SearchResult[] | null> = this.searchTerm$.pipe(
     tap(() => this.loadingSubject.next(true)),
@@ -65,15 +66,26 @@ export class DataLayersStateService {
     shareReplay(1)
   );
 
+  _paths$ = new BehaviorSubject<string[]>([]);
+  paths$ = this._paths$.asObservable();
+
+  _isBrowsing$ = new BehaviorSubject(true);
+  isBrowsing$ = this._isBrowsing$.asObservable();
+
   constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
+    this._isBrowsing$.next(true);
     this._selectedDataSet$.next(dataset);
     this.loadingSubject.next(true);
   }
 
-  clearDataSet() {
+  goBackToSearchResults() {
     this._selectedDataSet$.next(null);
+    // if I go back but im not searching
+    if (this._searchTerm$.value) {
+      this._isBrowsing$.next(false);
+    }
   }
 
   selectDataLayer(dataLayer: DataLayer) {
@@ -82,5 +94,30 @@ export class DataLayersStateService {
 
   clearDataLayer() {
     this._selectedDataLayer$.next(null);
+  }
+
+  search(term: string) {
+    this._searchTerm$.next(term);
+    this._isBrowsing$.next(!term);
+  }
+
+  clearSearch() {
+    this.search('');
+    this._selectedDataSet$.next(null);
+  }
+
+  goToSelectedLayer(layer: DataLayer) {
+    // Reset search
+    this._searchTerm$.next('');
+    this._isBrowsing$.next(true);
+    // needs to select the dataset if it's not the same as the one selected already
+    if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
+      const dataSet: Partial<DataSet> = {
+        ...layer.dataset,
+        organization: layer.organization,
+      };
+      this.selectDataSet(dataSet as DataSet);
+    }
+    this._paths$.next(layer.path);
   }
 }
