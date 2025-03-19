@@ -50,8 +50,8 @@ class AdminDatasetViewSet(
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        datalayer_created = create_dataset(**serializer.validated_data)
-        out_serializer = DatasetSerializer(instance=datalayer_created)
+        dataset_created = create_dataset(**serializer.validated_data)
+        out_serializer = DatasetSerializer(instance=dataset_created)
         headers = self.get_success_headers(serializer.data)
         return Response(
             out_serializer.data,
