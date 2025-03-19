@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, JsonPipe, NgClass, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
 import { DataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
@@ -41,7 +41,6 @@ import { UntilDestroy } from '@ngneat/until-destroy';
     SearchResultsComponent,
     DataSetComponent,
     NoResultsComponent,
-    JsonPipe,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],

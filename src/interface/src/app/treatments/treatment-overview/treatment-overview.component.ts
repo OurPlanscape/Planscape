@@ -1,16 +1,19 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, DecimalPipe, JsonPipe, NgIf } from '@angular/common';
+import { AsyncPipe, DecimalPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
-import { DebounceEditState, DebounceInputComponent } from '@styleguide';
+import {
+  ButtonComponent,
+  DebounceEditState,
+  DebounceInputComponent,
+} from '@styleguide';
 import { TreatmentPlan, TreatmentSummary } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
-import { ButtonComponent } from '@styleguide';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { FeaturesModule } from 'src/app/features/features.module';
@@ -29,7 +32,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
     DebounceInputComponent,
     NgIf,
     FeaturesModule,
-    JsonPipe,
+
     DecimalPipe,
     AcresTreatedComponent,
     TreatmentSummaryButtonComponent,

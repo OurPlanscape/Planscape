@@ -1,5 +1,5 @@
 import { Component, Input, Renderer2 } from '@angular/core';
-import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
   DraggableDirective,
@@ -47,7 +47,6 @@ import { DataLayerNameComponent } from '../../maplibre-map/data-layer-name/data-
   selector: 'app-treatment-map',
   standalone: true,
   imports: [
-    JsonPipe,
     NgForOf,
     MapComponent,
     VectorSourceComponent,

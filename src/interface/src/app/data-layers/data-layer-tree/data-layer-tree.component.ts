@@ -77,12 +77,9 @@ export class DataLayerTreeComponent {
           break;
         }
       }
-      // this.scrollToSelectedNode();
+      // wait until this is rendered (next tick)
       setTimeout(() => this.scrollToSelectedNode(), 0);
     });
-
-    //
-    //
   }
 
   hasChild = (_: number, node: TreeNode) =>
