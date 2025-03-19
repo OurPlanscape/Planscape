@@ -74,6 +74,7 @@ export class DataLayersComponent {
     );
 
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
+  isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
   search(term: string) {
     this.dataLayersStateService.search(term);
@@ -94,6 +95,4 @@ export class DataLayersComponent {
   clearSearch() {
     this.dataLayersStateService.clearSearch();
   }
-
-  isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 }

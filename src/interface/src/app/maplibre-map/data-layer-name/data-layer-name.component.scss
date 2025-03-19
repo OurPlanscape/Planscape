@@ -18,8 +18,10 @@
   cursor: pointer;
   color: $color-standard-blue;
 
-  :hover {
+  // very specific to override maplibre-gl defaults
+  &:not(:disabled):hover {
     background: $color-white;
+    text-decoration: underline;
   }
 
   mat-icon {

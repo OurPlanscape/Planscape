@@ -2,7 +2,7 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { MatTreeModule } from '@angular/material/tree';
-import { shareReplay } from 'rxjs';
+import { shareReplay, take } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { NestedTreeControl } from '@angular/cdk/tree';
 import { TreeNode } from '../data-layers/tree-node';
@@ -64,7 +64,7 @@ export class DataLayerTreeComponent {
   }
 
   expandNodePath(path: string[]) {
-    this.treeData$.subscribe((data) => {
+    this.treeData$.pipe(take(1)).subscribe((data) => {
       let currentNodes = data;
       let nodeToExpand: TreeNode | undefined;
 
