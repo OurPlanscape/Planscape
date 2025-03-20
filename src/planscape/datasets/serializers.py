@@ -241,21 +241,31 @@ class EntrySerializer(serializers.Serializer):
     )
     label = serializers.CharField(
         required=False,
-        default="",
-    )  # type: ignore
+        allow_null=True,
+    )
 
 
 class NoDataSerializer(serializers.Serializer):
-    values = serializers.ListField(child=serializers.FloatField())
-    color = serializers.RegexField(regex=COLOR_REGEX)
+    values = serializers.ListField(
+        child=serializers.FloatField(),
+        required=False,
+        allow_null=True,
+        default=list,
+    )
+    color = serializers.RegexField(
+        regex=COLOR_REGEX,
+        required=False,
+        allow_null=True,
+    )
     opacity = serializers.FloatField(
         min_value=0,
         max_value=1,
-        default=1,
+        default=0,
+        allow_null=True,
     )
     label = serializers.CharField(
         required=False,
-        default="",
+        allow_null=True,
     )
 
 
@@ -428,12 +438,6 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
-
-    type = serializers.ChoiceField(
-        required=False,
-        choices=DataLayerType.choices,
-        default=None,
-    )
 
     limit = serializers.IntegerField(required=False, min_value=1)
 
