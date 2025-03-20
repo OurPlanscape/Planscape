@@ -55,7 +55,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     )
     @action(detail=True, methods=["get"])
     def browse(self, request, pk=None):
-        data = self._get_browse_result_from_cache_or_db(request.query_params)
+        data = self._get_browse_result(request.query_params)
 
         return Response(
             data,
@@ -63,7 +63,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         )
 
     @cached(timeout=settings.BROWSE_DATASETS_TTL)
-    def _get_browse_result_from_cache_or_db(self, query_params: Dict[str, Any]):
+    def _get_browse_result(self, query_params: Dict[str, Any]):
         dataset = self.get_object()
         datalayers = (
             dataset.datalayers.all()
