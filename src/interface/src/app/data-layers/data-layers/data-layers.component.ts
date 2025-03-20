@@ -19,6 +19,8 @@ import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.compo
 import { SearchResultsComponent } from '../search-results/search-results.component';
 import { DataSetComponent } from '../data-set/data-set.component';
 import { UntilDestroy } from '@ngneat/until-destroy';
+import { MatRadioModule } from '@angular/material/radio';
+import { FormsModule } from '@angular/forms';
 
 @UntilDestroy()
 @Component({
@@ -41,6 +43,8 @@ import { UntilDestroy } from '@ngneat/until-destroy';
     SearchResultsComponent,
     DataSetComponent,
     NoResultsComponent,
+    MatRadioModule,
+    FormsModule,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
