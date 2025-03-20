@@ -155,6 +155,7 @@ class Command(PlanscapeCommand):
                 continue
 
             style_url = f"{base_url}/v2/admin/styles/"
+            self.stdout.write(f"Sending payload:\n{json.dumps(payload, indent=2)}")
             response = requests.post(style_url, headers=headers, json=payload)
             result = response.json()
             if response.status_code == 201:
