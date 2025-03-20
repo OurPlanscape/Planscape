@@ -18,10 +18,10 @@ import { buildPathTree } from './data-layers/tree-node';
 })
 export class DataLayersStateService {
   dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
-  _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
+  private _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
-  _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
+  private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
 
   dataTree$ = this.selectedDataSet$.pipe(
@@ -43,7 +43,7 @@ export class DataLayersStateService {
   private loadingSubject = new BehaviorSubject(false);
   loading$ = this.loadingSubject.asObservable();
 
-  _searchTerm$ = new BehaviorSubject<string>('');
+  private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
   searchResults$: Observable<SearchResult[] | null> = this.searchTerm$.pipe(
@@ -66,10 +66,10 @@ export class DataLayersStateService {
     shareReplay(1)
   );
 
-  _paths$ = new BehaviorSubject<string[]>([]);
+  private _paths$ = new BehaviorSubject<string[]>([]);
   paths$ = this._paths$.asObservable();
 
-  _isBrowsing$ = new BehaviorSubject(true);
+  private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
   constructor(private service: DataLayersService) {}
@@ -116,6 +116,9 @@ export class DataLayersStateService {
         ...layer.dataset,
         organization: layer.organization,
       };
+      // reset previous results
+      this._selectedDataSet$.next(null);
+      // select the new data set
       this.selectDataSet(dataSet as DataSet);
     }
     this._paths$.next(layer.path);

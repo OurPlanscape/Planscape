@@ -25,6 +25,7 @@
     <mat-radio-button
       [value]="layer.id"
       class="data-layer-input"
+      [checked]="(selectedDataLayerId$ | async) === layer.id"
       (click)="selectDataLayer(layer.data)">
       <span [sgHighlighter]="searchTerm" [sgHighlighterText]="layer.name"></span
     ></mat-radio-button>
