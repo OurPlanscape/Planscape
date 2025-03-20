@@ -1,5 +1,5 @@
 import { Component, Input, Renderer2 } from '@angular/core';
-import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
   DraggableDirective,
@@ -40,13 +40,13 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
+import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
   standalone: true,
   imports: [
-    JsonPipe,
     NgForOf,
     MapComponent,
     VectorSourceComponent,
@@ -71,6 +71,7 @@ import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.c
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
+    DataLayerNameComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',

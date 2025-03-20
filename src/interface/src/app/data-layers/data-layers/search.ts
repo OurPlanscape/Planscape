@@ -12,7 +12,7 @@ export interface Results {
 
 export interface Category {
   path: string[];
-  layers: SearchResult[];
+  layers: DataLayerSearchResult[];
 }
 
 export interface GroupedResults {

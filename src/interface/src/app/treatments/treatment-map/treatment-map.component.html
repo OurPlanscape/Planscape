@@ -46,7 +46,7 @@
     (clickedActionButton)="openTreatmentLegend()">
   </app-action-button>
 
-  <app-planning-area-layer> </app-planning-area-layer>
+  <app-planning-area-layer></app-planning-area-layer>
 
   <app-map-project-areas
     [mapLibreMap]="mapLibreMap"
@@ -71,4 +71,8 @@
     *ngIf="treatmentTooltipLngLat">
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
+
+  <mgl-control position="bottom-left">
+    <app-data-layer-name></app-data-layer-name>
+  </mgl-control>
 </mgl-map>
