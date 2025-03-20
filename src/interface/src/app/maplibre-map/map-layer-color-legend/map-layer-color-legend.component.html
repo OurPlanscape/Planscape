@@ -1,0 +1,15 @@
+<mgl-control [position]="controlsPosition">
+    <div class="layer-color-legend">
+        <div class="legend-title">
+            {{ title}}
+        </div>
+        <div *ngFor="let c of colorDetails" class="legend-line">
+            <div class="swatch-box" [ngStyle]="{ 'background-color': c.hexCode }">
+            </div>
+            <div class="swatch-label">
+                {{ c.label }}
+            </div>
+        </div>
+
+    </div>
+</mgl-control>
