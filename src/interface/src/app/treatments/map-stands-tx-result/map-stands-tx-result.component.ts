@@ -1,7 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
 
-import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
-
 import {
   LayerComponent,
   PopupComponent,
@@ -16,19 +14,17 @@ import { descriptionsForAction } from '../prescriptions';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { MARTIN_SOURCES } from '../map.sources';
+import { CommonModule } from '@angular/common';
 
 @UntilDestroy()
 @Component({
   selector: 'app-map-stands-tx-result',
   standalone: true,
   imports: [
-    AsyncPipe,
+    CommonModule,
     LayerComponent,
     VectorSourceComponent,
     PopupComponent,
-    NgFor,
-    NgIf,
-    DecimalPipe,
   ],
   templateUrl: './map-stands-tx-result.component.html',
   styleUrl: './map-stands-tx-result.component.scss',

@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, DecimalPipe, NgFor, NgIf } from '@angular/common';
+
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { map } from 'rxjs';
@@ -19,24 +19,22 @@ import { MatDialogRef } from '@angular/material/dialog';
 import { Scenario, TreatmentProjectArea } from '@types';
 import { ExpandedPanelComponent } from 'src/styleguide/expanded-panel/expanded-panel.component';
 import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-expanded-change-over-time-chart',
   standalone: true,
   imports: [
-    AsyncPipe,
+    CommonModule,
     SharedModule,
     MatIconModule,
     MatSelectModule,
-    NgIf,
-    NgFor,
     MatSlideToggleModule,
     ButtonComponent,
     FormsModule,
     MetricFiltersComponent,
     MetricFiltersComponent,
     ChangeOverTimeChartComponent,
-    DecimalPipe,
     ExpandedPanelComponent,
     TreatmentFilterComponent,
   ],

@@ -1,5 +1,4 @@
 import { Component, OnDestroy } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
 import { SharedModule } from '@shared';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -13,17 +12,17 @@ import { AcresTreatedComponent } from '../acres-treated/acres-treated.component'
 import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-project-area',
   standalone: true,
   imports: [
-    AsyncPipe,
     MapBaseLayerComponent,
     MatDialogModule,
     MatDividerModule,
     MatTabsModule,
-    NgIf,
+    CommonModule,
     ProjectAreaTreatmentsTabComponent,
     SharedModule,
     AcresTreatedComponent,

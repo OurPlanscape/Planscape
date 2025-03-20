@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
 import { Prescription, TreatmentSummary } from '@types';
@@ -13,16 +12,15 @@ import {
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
 } from '../prescriptions';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-project-areas-tab',
   standalone: true,
   imports: [
-    NgForOf,
-    NgIf,
+    CommonModule,
     MatIconModule,
     RouterLink,
-    AsyncPipe,
     SearchBarComponent,
     ProjectAreaExpanderComponent,
     SearchResultCardComponent,

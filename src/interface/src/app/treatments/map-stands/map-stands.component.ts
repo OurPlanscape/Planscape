@@ -18,7 +18,7 @@ import {
   Point,
 } from 'maplibre-gl';
 
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { getBoundingBox } from '../../maplibre-map/maplibre.helper';
 import { TreatmentsState } from '../treatments.state';
@@ -50,10 +50,8 @@ type MapLayerData = {
   imports: [
     LayerComponent,
     VectorSourceComponent,
-    AsyncPipe,
+    CommonModule,
     ImageComponent,
-    NgForOf,
-    NgIf,
   ],
   templateUrl: './map-stands.component.html',
 })

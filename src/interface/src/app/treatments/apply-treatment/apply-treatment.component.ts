@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { BannerComponent, ModalComponent } from '@styleguide';
 import { PrescriptionAction, PRESCRIPTIONS } from '../prescriptions';
-import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
+
 import { KeyPipe } from '../../standalone/key.pipe';
 import { MatRadioModule } from '@angular/material/radio';
 import { MatLegacyOptionModule } from '@angular/material/legacy-core';
@@ -21,22 +21,20 @@ import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { combineLatest, map, take } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-apply-treatment',
   standalone: true,
   imports: [
     ModalComponent,
-    KeyValuePipe,
-    NgForOf,
+    CommonModule,
     KeyPipe,
     MatRadioModule,
     MatLegacyOptionModule,
     MatLegacySelectModule,
     ReactiveFormsModule,
     MatLegacyFormFieldModule,
-    AsyncPipe,
-    NgIf,
     BannerComponent,
   ],
   templateUrl: './apply-treatment.component.html',

@@ -21,7 +21,6 @@ import { catchError, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { FeaturesModule } from '../../features/features.module';
 import { SharedModule } from '@shared';
 import { ButtonComponent } from '@styleguide';
@@ -43,6 +42,7 @@ import { Plan } from '@types';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnalyticsService } from '@services/analytics.service';
+import { CommonModule } from '@angular/common';
 
 @UntilDestroy()
 @Component({
@@ -51,9 +51,7 @@ import { AnalyticsService } from '@services/analytics.service';
   imports: [
     RouterOutlet,
     TreatmentMapComponent,
-    AsyncPipe,
-    NgIf,
-    NgFor,
+    CommonModule,
     FeaturesModule,
     SharedModule,
     ButtonComponent,

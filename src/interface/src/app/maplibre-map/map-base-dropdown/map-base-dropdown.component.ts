@@ -1,4 +1,4 @@
-import { AsyncPipe, NgFor, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -14,10 +14,8 @@ import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
   selector: 'app-map-base-dropdown',
   standalone: true,
   imports: [
-    NgFor,
-    NgIf,
     MatCardModule,
-    AsyncPipe,
+    CommonModule,
     MatIconModule,
     ButtonComponent,
     ClickOutsideDirective,

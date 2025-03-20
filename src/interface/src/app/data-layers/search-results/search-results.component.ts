@@ -1,22 +1,20 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { DataSet, DataSetSearchResult } from '@types';
-import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
+
 import { ButtonComponent, SearchBarComponent } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GroupedDataLayers, GroupedResults } from '../data-layers/search';
 import { DataSetComponent } from '../data-set/data-set.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-search-results',
   standalone: true,
   imports: [
     FormsModule,
-    NgForOf,
-    NgIf,
-    KeyValuePipe,
     SearchBarComponent,
-    AsyncPipe,
+    CommonModule,
     MatProgressSpinnerModule,
     ButtonComponent,
     DataSetComponent,

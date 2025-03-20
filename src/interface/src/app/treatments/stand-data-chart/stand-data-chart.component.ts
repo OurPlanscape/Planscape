@@ -1,7 +1,6 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ChartConfiguration } from 'chart.js';
 import { NgChartsModule } from 'ng2-charts';
-import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import {
   distinctUntilChanged,
@@ -27,6 +26,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
+import { CommonModule } from '@angular/common';
 
 @UntilDestroy()
 @Component({
@@ -34,15 +34,12 @@ import { getBasicChartOptions, updateYAxisRange } from '../chart-helper';
   standalone: true,
   imports: [
     NgChartsModule,
-    NgIf,
-    AsyncPipe,
+    CommonModule,
     TreatmentTypeIconComponent,
     MatTableModule,
     NonForestedDataComponent,
     MatProgressSpinnerModule,
     MetricSelectorComponent,
-
-    PercentPipe,
   ],
   templateUrl: './stand-data-chart.component.html',
   styleUrl: './stand-data-chart.component.scss',

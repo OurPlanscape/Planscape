@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 
-import { AsyncPipe, DecimalPipe, NgClass, NgIf } from '@angular/common';
 import { TreatmentsState } from '../treatments.state';
 import { distinctUntilChanged, filter, of, switchMap } from 'rxjs';
 import { TreatmentSummary } from '@types';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-acres-treated',
   standalone: true,
-  imports: [DecimalPipe, AsyncPipe, NgIf, MatProgressSpinnerModule, NgClass],
+  imports: [CommonModule, MatProgressSpinnerModule],
   templateUrl: './acres-treated.component.html',
   styleUrl: './acres-treated.component.scss',
 })

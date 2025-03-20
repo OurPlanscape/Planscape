@@ -1,6 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapConfigState } from '../map-config.state';
 import {
   ControlComponent,
   GeolocateControlDirective,
@@ -11,15 +10,14 @@ import {
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Map as MapLibreMap, ControlPosition } from 'maplibre-gl';
+import { ControlPosition, Map as MapLibreMap } from 'maplibre-gl';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-map-controls',
   standalone: true,
   imports: [
-    NgForOf,
-    NgIf,
-    AsyncPipe,
+    CommonModule,
     ControlComponent,
     GeolocateControlDirective,
     ScaleControlDirective,
@@ -28,7 +26,6 @@ import { Map as MapLibreMap, ControlPosition } from 'maplibre-gl';
     MatIconModule,
     ButtonComponent,
     MatTooltipModule,
-    NgClass,
   ],
   templateUrl: './map-controls.component.html',
   styleUrl: './map-controls.component.scss',

@@ -1,14 +1,14 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { DataLayer } from '@types';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-data-layer-name',
   standalone: true,
-  imports: [AsyncPipe, MatIconModule, NgIf, ButtonComponent],
+  imports: [CommonModule, MatIconModule, ButtonComponent],
   templateUrl: './data-layer-name.component.html',
   styleUrl: './data-layer-name.component.scss',
 })

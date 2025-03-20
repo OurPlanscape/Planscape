@@ -6,7 +6,7 @@ import { distinctUntilChanged, map, switchMap, tap } from 'rxjs';
 
 import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { TreatmentsService } from '@services/treatments.service';
 import { standIsNonBurnable } from '../stands';
 
@@ -14,7 +14,7 @@ import { standIsNonBurnable } from '../stands';
 @Component({
   selector: 'app-non-forested-data',
   standalone: true,
-  imports: [MatTableModule, MatProgressSpinnerModule, NgIf, AsyncPipe],
+  imports: [MatTableModule, MatProgressSpinnerModule, CommonModule],
   templateUrl: './non-forested-data.component.html',
   styleUrl: './non-forested-data.component.scss',
 })

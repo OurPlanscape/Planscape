@@ -1,7 +1,5 @@
 import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
-import { AsyncPipe, NgFor } from '@angular/common';
-
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import {
   ImpactsMetric,
@@ -11,13 +9,13 @@ import {
   SLOT_COLORS,
 } from '../metrics';
 import { FilterDropdownComponent } from 'src/styleguide';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-metric-filters',
   standalone: true,
   imports: [
-    AsyncPipe,
-    NgFor,
+    CommonModule,
     MetricSelectorComponent,
     MetricSelectorComponent,
     FilterDropdownComponent,

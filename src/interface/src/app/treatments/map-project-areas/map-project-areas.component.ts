@@ -14,7 +14,7 @@ import {
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
+
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
 import { BASE_COLORS, LABEL_PAINT } from '../map.styles';
 
@@ -27,6 +27,7 @@ import {
   Subject,
 } from 'rxjs';
 import { MARTIN_SOURCES } from '../map.sources';
+import { CommonModule } from '@angular/common';
 
 type MapLayerData = {
   readonly name: string;
@@ -42,10 +43,8 @@ type MapLayerData = {
     LayerComponent,
     VectorSourceComponent,
     MatIconModule,
-    NgIf,
-    AsyncPipe,
+    CommonModule,
     MapTooltipComponent,
-    PercentPipe,
   ],
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',

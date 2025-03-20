@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, DecimalPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
@@ -17,12 +16,13 @@ import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/tre
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { FeaturesModule } from 'src/app/features/features.module';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-treatment-overview',
   standalone: true,
   imports: [
-    AsyncPipe,
+    CommonModule,
     TreatmentMapComponent,
     TreatmentPlanNotesComponent,
     MatCheckboxModule,
@@ -30,10 +30,7 @@ import { FeaturesModule } from 'src/app/features/features.module';
     ButtonComponent,
     MapBaseLayerComponent,
     DebounceInputComponent,
-    NgIf,
     FeaturesModule,
-
-    DecimalPipe,
     AcresTreatedComponent,
     TreatmentSummaryButtonComponent,
   ],

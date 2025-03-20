@@ -10,17 +10,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatButtonModule } from '@angular/material/button';
 import { MatTableModule } from '@angular/material/table';
 import { MatSortModule, SortDirection } from '@angular/material/sort';
-import {
-  AsyncPipe,
-  DatePipe,
-  DecimalPipe,
-  KeyValuePipe,
-  NgForOf,
-  NgIf,
-  NgSwitch,
-  NgSwitchCase,
-  NgSwitchDefault,
-} from '@angular/common';
 
 import { PlanService } from '@services';
 import { Creator, PreviewPlan, RegionsWithString } from '@types';
@@ -37,11 +26,13 @@ import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-
 import { FormsModule } from '@angular/forms';
 import { combineLatest, map } from 'rxjs';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-planning-areas',
   standalone: true,
   imports: [
+    CommonModule,
     MatIconModule,
     RouterLink,
     ButtonComponent,
@@ -49,17 +40,8 @@ import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overl
     MatButtonModule,
     MatTableModule,
     MatSortModule,
-    NgForOf,
-    NgSwitch,
-    NgSwitchCase,
-    NgSwitchDefault,
     MatSnackBarModule,
-    DatePipe,
-    DecimalPipe,
-    AsyncPipe,
-    NgIf,
     MatProgressSpinnerModule,
-    KeyValuePipe,
     KeyPipe,
     PlanningAreaMenuComponent,
     PlanningAreasSearchComponent,

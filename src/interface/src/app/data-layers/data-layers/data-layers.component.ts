@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
+
 import { DataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
@@ -19,21 +19,19 @@ import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.compo
 import { SearchResultsComponent } from '../search-results/search-results.component';
 import { DataSetComponent } from '../data-set/data-set.component';
 import { UntilDestroy } from '@ngneat/until-destroy';
+import { CommonModule } from '@angular/common';
 
 @UntilDestroy()
 @Component({
   selector: 'app-data-layers',
   standalone: true,
   imports: [
-    NgForOf,
-    AsyncPipe,
+    CommonModule,
     MatTreeModule,
     MatIconModule,
     MatCommonModule,
     MatButtonModule,
-    NgIf,
     ExpanderSectionComponent,
-    NgClass,
     MatProgressSpinnerModule,
     ButtonComponent,
     DataLayerTreeComponent,

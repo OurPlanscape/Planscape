@@ -1,13 +1,5 @@
 import { Component, Injector, OnDestroy, OnInit } from '@angular/core';
-import {
-  AsyncPipe,
-  DatePipe,
-  DecimalPipe,
-  NgClass,
-  NgFor,
-  NgIf,
-  NgStyle,
-} from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -59,24 +51,19 @@ import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/tre
   selector: 'app-direct-impacts',
   standalone: true,
   imports: [
-    AsyncPipe,
+    CommonModule,
     SharedModule,
     DirectImpactsMapComponent,
     PanelComponent,
     MatIconModule,
     MatSelectModule,
-    NgIf,
-    NgFor,
     MatSlideToggleModule,
     ButtonComponent,
-    DatePipe,
-    NgClass,
     FormsModule,
     TreatmentMapComponent,
     TreatmentLegendComponent,
     MetricFiltersComponent,
     MetricFiltersComponent,
-    NgStyle,
     StandDataChartComponent,
     TreatmentTypeIconComponent,
     ChangeOverTimeChartComponent,
@@ -85,7 +72,6 @@ import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/tre
     ModalComponent,
     OverlayLoaderComponent,
     StatusChipComponent,
-    DecimalPipe,
     MetricSelectorComponent,
     FilterDropdownComponent,
     TreatmentFilterComponent,

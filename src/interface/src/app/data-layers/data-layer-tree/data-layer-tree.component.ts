@@ -1,5 +1,4 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
-import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ButtonComponent } from '@styleguide';
 import { MatTreeModule } from '@angular/material/tree';
 import { map, shareReplay, switchMap } from 'rxjs';
@@ -10,17 +9,16 @@ import { DataLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { CommonModule } from '@angular/common';
 
 @UntilDestroy()
 @Component({
   selector: 'app-data-layer-tree',
   standalone: true,
   imports: [
-    AsyncPipe,
     ButtonComponent,
     MatTreeModule,
-    NgIf,
-    NgClass,
+    CommonModule,
     MatRadioModule,
     FormsModule,
   ],

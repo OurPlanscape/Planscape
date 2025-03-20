@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgForOf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import {
   baseLayerStyles,
   BaseLayerType,
@@ -9,7 +9,7 @@ import { MapConfigState } from '../../maplibre-map/map-config.state';
 @Component({
   selector: 'app-map-base-layer',
   standalone: true,
-  imports: [AsyncPipe, NgForOf],
+  imports: [CommonModule],
   templateUrl: './map-base-layer.component.html',
   styleUrl: './map-base-layer.component.scss',
 })

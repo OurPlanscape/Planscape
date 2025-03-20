@@ -1,5 +1,4 @@
 import { Component, OnInit } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NotesSidebarComponent, NotesSidebarState } from '@styleguide';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
@@ -7,15 +6,16 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { Note, TreatmentPlanNotesService } from '../../services/notes.service';
 import { MatDialog } from '@angular/material/dialog';
 import { DeleteNoteDialogComponent } from '../../plan/delete-note-dialog/delete-note-dialog.component';
-import { BehaviorSubject, take, distinctUntilChanged } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, take } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { CommonModule } from '@angular/common';
 
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-plan-notes',
   standalone: true,
-  imports: [AsyncPipe, MatTabsModule, NotesSidebarComponent],
+  imports: [CommonModule, MatTabsModule, NotesSidebarComponent],
   providers: [TreatmentPlanNotesService],
   templateUrl: './treatment-plan-notes.component.html',
   styleUrl: './treatment-plan-notes.component.scss',

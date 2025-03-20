@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
@@ -29,14 +29,14 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   selector: 'app-direct-impacts-map',
   standalone: true,
   imports: [
-    AsyncPipe,
+    CommonModule,
+
     MapComponent,
     MapControlsComponent,
     MapProjectAreasComponent,
     MapRectangleComponent,
     MapStandsComponent,
     MapTooltipComponent,
-    NgIf,
     ControlComponent,
     MapStandsTxResultComponent,
     MapActionButtonComponent,

@@ -6,14 +6,13 @@ import {
 } from '@maplibre/ngx-maplibre-gl';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import { PlanState } from '../plan.state';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-planning-area-layer',
   standalone: true,
   imports: [
-    NgIf,
-    AsyncPipe,
+    CommonModule,
     FeatureComponent,
     GeoJSONSourceComponent,
     LayerComponent,

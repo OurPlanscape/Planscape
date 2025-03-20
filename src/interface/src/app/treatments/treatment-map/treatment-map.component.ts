@@ -1,5 +1,4 @@
 import { Component, Input, Renderer2 } from '@angular/core';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
   DraggableDirective,
@@ -41,13 +40,14 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
+import { CommonModule } from '@angular/common';
 
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
   standalone: true,
   imports: [
-    NgForOf,
+    CommonModule,
     MapComponent,
     VectorSourceComponent,
     LayerComponent,
@@ -59,8 +59,6 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
     MapRectangleComponent,
     MapControlsComponent,
     MapProjectAreasComponent,
-    NgIf,
-    AsyncPipe,
     MatIconModule,
     PopupComponent,
     MapTooltipComponent,

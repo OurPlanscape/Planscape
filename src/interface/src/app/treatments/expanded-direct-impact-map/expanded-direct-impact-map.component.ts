@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+
 import { ModalComponent } from '@styleguide';
 import { StandDataChartComponent } from '../stand-data-chart/stand-data-chart.component';
 import { MatDialogRef } from '@angular/material/dialog';
@@ -10,17 +10,17 @@ import { ExpandedPanelComponent } from '../../../styleguide/expanded-panel/expan
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { DirectImpactsMapComponent } from '../direct-impacts-map/direct-impacts-map.component';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
+import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-expanded-direct-impact-map',
   standalone: true,
   imports: [
-    AsyncPipe,
+    CommonModule,
     ModalComponent,
     StandDataChartComponent,
     TreatmentMapComponent,
     TreatmentLegendComponent,
-    NgIf,
     ExpandedPanelComponent,
     DirectImpactsMapComponent,
   ],

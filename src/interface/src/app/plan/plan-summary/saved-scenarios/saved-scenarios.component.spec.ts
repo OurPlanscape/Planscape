@@ -9,7 +9,12 @@ import {
   tick,
 } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  convertToParamMap,
+  Router,
+  RouterModule,
+} from '@angular/router';
 import { of } from 'rxjs';
 import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { SavedScenariosComponent } from './saved-scenarios.component';
@@ -31,6 +36,7 @@ import { MOCK_PLAN } from '@services/mocks';
 import { ScenariosTableListComponent } from '../scenarios-table-list/scenarios-table-list.component';
 import { ButtonComponent } from '@styleguide';
 import { MatTabsModule } from '@angular/material/tabs';
+import { ScenariosCardListComponent } from '../scenarios-card-list/scenarios-card-list.component';
 
 describe('SavedScenariosComponent', () => {
   let component: SavedScenariosComponent;
@@ -79,6 +85,7 @@ describe('SavedScenariosComponent', () => {
         FeaturesModule,
         ButtonComponent,
         MatTabsModule,
+        RouterModule,
       ],
       declarations: [
         SavedScenariosComponent,
@@ -86,6 +93,7 @@ describe('SavedScenariosComponent', () => {
         TypeSafeMatCellDef,
         MockComponent(SectionLoaderComponent),
         MockComponent(ScenariosTableListComponent),
+        MockComponent(ScenariosCardListComponent),
       ],
       providers: [
         CurrencyPipe,
