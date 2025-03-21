@@ -3,10 +3,11 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ScenarioMapComponent } from './scenario-map.component';
 import { MockProvider, MockProviders } from 'ng-mocks';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
-import { AuthService } from '@services';
+import { AuthService, ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
 import { PlanState } from '../plan.state';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { Scenario } from '@types';
 
 describe('ScenarioMapComponent', () => {
   let component: ScenarioMapComponent;
@@ -21,6 +22,16 @@ describe('ScenarioMapComponent', () => {
         }),
         MockProvider(ActivatedRoute, {
           children: [],
+        }),
+        MockProvider(ScenarioService, {
+          getScenario: (): Observable<Scenario> =>
+            of({
+              scenario_result: {
+                result: {
+                  features: [] as any,
+                },
+              },
+            } as Scenario),
         }),
         MockProviders(MapConfigState, AuthService),
       ],
