@@ -6,12 +6,10 @@
   [id]="layers.projectAreasFill.name"
   type="fill"
   source="scenarioProjectAreas"
-  (layerClick)="visible && showTooltips ? goToProjectArea($event) : null"
-  (layerMouseEnter)="visible && showTooltips ? setCursor() : null"
-  (layerMouseMove)="
-    visible && showTooltips ? setProjectAreaTooltip($event) : null
-  "
-  (layerMouseLeave)="visible && showTooltips ? resetCursorAndTooltip() : null"
+  (layerClick)="goToProjectArea($event)"
+  (layerMouseEnter)="setCursor()"
+  (layerMouseMove)="setProjectAreaTooltip($event)"
+  (layerMouseLeave)="resetCursorAndTooltip()"
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
     'fill-color': layers.projectAreasFill.color,
@@ -29,6 +27,7 @@
   }"></mgl-layer>
 
 <mgl-layer
+  *ngIf="showHoveredProjectAreas"
   [id]="layers.projectAreasHighlight.name"
   type="line"
   source="scenarioProjectAreas"
@@ -52,15 +51,3 @@
     'text-justify': 'center'
   }"
   [paint]="layers.projectAreaLabels.paint"></mgl-layer>
-
-<ng-container *ngIf="mouseLngLat">
-  <app-map-tooltip
-    [lngLat]="mouseLngLat"
-    *ngIf="hoveredProjectArea$ | async; let curProjectArea">
-    {{
-      curProjectArea.total_treated_area_acres / curProjectArea.total_area_acres
-        | percent: '1.0-1'
-    }}
-    Treated
-  </app-map-tooltip>
-</ng-container>
