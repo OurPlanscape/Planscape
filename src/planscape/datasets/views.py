@@ -1,4 +1,8 @@
+from typing import Any, Dict
+
+from cacheops import cached
 from core.serializers import MultiSerializerMixin
+from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchVector
 from drf_spectacular.utils import extend_schema
 from rest_framework import status
@@ -9,9 +13,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from datasets.filters import DataLayerFilterSet
-from datasets.models import DataLayer, Dataset, VisibilityOptions
+from datasets.filters import DataLayerFilterSet, BrowseDataLayerFilterSet
+from datasets.models import DataLayer, Dataset, VisibilityOptions, DataLayerStatus
 from datasets.serializers import (
+    BrowseDataLayerFilterSerializer,
     BrowseDataLayerSerializer,
     DataLayerSerializer,
     DatasetSerializer,
@@ -43,26 +48,34 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
 
     @extend_schema(
         description="Returns all datalayers inside this dataset",
+        parameters=[BrowseDataLayerFilterSerializer],
         responses={
             200: BrowseDataLayerSerializer(many=True),
         },
     )
     @action(detail=True, methods=["get"])
     def browse(self, request, pk=None):
-        dataset = self.get_object()
+        data = self._get_browse_result(request.query_params)
 
-        # TODO: specify a filter here to return only datalayers that are ready
+        return Response(
+            data,
+            status=status.HTTP_200_OK,
+        )
+
+    @cached(timeout=settings.BROWSE_DATASETS_TTL)
+    def _get_browse_result(self, query_params: Dict[str, Any]):
+        dataset = self.get_object()
         datalayers = (
             dataset.datalayers.all()
             .select_related("organization", "dataset", "category")
             .prefetch_related("styles")
+            .filter(status=DataLayerStatus.READY)
         )
-        serializer = BrowseDataLayerSerializer(datalayers, many=True)
 
-        return Response(
-            serializer.data,
-            status=status.HTTP_200_OK,
-        )
+        filterset = BrowseDataLayerFilterSet(queryset=datalayers, request=query_params)
+        serializer = BrowseDataLayerSerializer(filterset.qs, many=True)
+
+        return serializer.data
 
 
 class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
