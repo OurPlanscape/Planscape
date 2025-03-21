@@ -6,10 +6,10 @@
   [id]="layers.projectAreasFill.name"
   type="fill"
   source="scenarioProjectAreas"
-  (layerClick)="visible ? goToProjectArea($event) : null"
-  (layerMouseEnter)="visible ? setCursor() : null"
-  (layerMouseMove)="visible ? setProjectAreaTooltip($event) : null"
-  (layerMouseLeave)="visible ? resetCursorAndTooltip() : null"
+  (layerClick)="goToProjectArea($event)"
+  (layerMouseEnter)="setCursor()"
+  (layerMouseMove)="setProjectAreaTooltip($event)"
+  (layerMouseLeave)="resetCursorAndTooltip()"
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
   [paint]="{
     'fill-color': layers.projectAreasFill.color,

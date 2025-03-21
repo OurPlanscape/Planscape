@@ -92,6 +92,9 @@ export class MapProjectAreasComponent {
   }
 
   goToProjectArea(event: MapMouseEvent) {
+    if (!this.visible) {
+      return;
+    }
     const projectAreaId = this.getProjectAreaFromFeatures(event.point)
       .properties['id'];
     this.resetCursorAndTooltip();
@@ -99,10 +102,16 @@ export class MapProjectAreasComponent {
   }
 
   setCursor() {
+    if (!this.visible) {
+      return;
+    }
     this.mapLibreMap.getCanvas().style.cursor = 'pointer';
   }
 
   setProjectAreaTooltip(e: MapMouseEvent) {
+    if (!this.visible) {
+      return;
+    }
     this.hoveredProjectAreaFromFeatures = this.getProjectAreaFromFeatures(
       e.point
     );
@@ -116,6 +125,9 @@ export class MapProjectAreasComponent {
   }
 
   resetCursorAndTooltip() {
+    if (!this.visible) {
+      return;
+    }
     this.mapLibreMap.getCanvas().style.cursor = '';
     this.hoveredProjectAreaFromFeatures = null;
     this.hoveredProjectAreaId$.next(null);
