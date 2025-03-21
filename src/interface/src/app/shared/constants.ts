@@ -25,8 +25,7 @@ export const SNACK_ERROR_CONFIG: MatSnackBarConfig<any> = {
   verticalPosition: 'top',
 };
 
-export const PROJECT_AREA_COLORS = [
-  // Blue
+const blue = [
   '#D1E0EF',
   '#ADCCE6',
   '#88B9DB',
@@ -37,7 +36,8 @@ export const PROJECT_AREA_COLORS = [
   '#285577',
   '#234560',
   '#1F3449',
-  // Red
+];
+const red = [
   '#FDE2E2',
   '#F9C7C7',
   '#F5ADAD',
@@ -48,7 +48,8 @@ export const PROJECT_AREA_COLORS = [
   '#C73232',
   '#A02020',
   '#7B1414',
-  // Green
+];
+const green = [
   '#E6F4E6',
   '#CDEBCF',
   '#B4E1B8',
@@ -59,7 +60,8 @@ export const PROJECT_AREA_COLORS = [
   '#3AB346',
   '#249A32',
   '#0E801E',
-  // Orange
+];
+const orange = [
   '#FFF1E6',
   '#FFE0C4',
   '#FFD0A3',
@@ -70,7 +72,8 @@ export const PROJECT_AREA_COLORS = [
   '#E07812',
   '#BF640F',
   '#8C480B',
-  // Purple
+];
+const purple = [
   '#F0E6F9',
   '#E3CFEF',
   '#D6B8E5',
@@ -81,6 +84,14 @@ export const PROJECT_AREA_COLORS = [
   '#78349C',
   '#5F2185',
   '#46106E',
+];
+
+export const PROJECT_AREA_COLORS = [
+  ...blue,
+  ...red,
+  ...green,
+  ...orange,
+  ...purple,
 ];
 
 export const DEFAULT_AREA_COLOR = '#4965c7';
