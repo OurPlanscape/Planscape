@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   LayerComponent,
   VectorSourceComponent,
@@ -10,6 +10,7 @@ import {
   MapMouseEvent,
   LngLat,
   Point,
+  ExpressionSpecification,
 } from 'maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
@@ -17,6 +18,7 @@ import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 import { Subject } from 'rxjs';
+import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
 
 type MapLayerData = {
   readonly name: string;
@@ -40,12 +42,14 @@ type MapLayerData = {
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
-export class MapProjectAreasComponent {
+export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
 
   @Input() scenarioId!: number;
+  @Input() projectAreasCount: number = 0;
+  @Input() fillProjectAreas: boolean = true;
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
@@ -55,6 +59,8 @@ export class MapProjectAreasComponent {
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
+
+  fillColor!: ExpressionSpecification;
 
   readonly layers: Record<
     | 'projectAreasOutline'
@@ -86,6 +92,10 @@ export class MapProjectAreasComponent {
   };
 
   constructor() {}
+
+  ngOnInit(): void {
+    this.fillColor = this.getFillColors();
+  }
 
   get vectorLayerUrl() {
     return this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
@@ -142,5 +152,24 @@ export class MapProjectAreasComponent {
     });
 
     return features[0];
+  }
+
+  getFillColors(): ExpressionSpecification {
+    const defaultColor = BASE_COLORS['white'];
+    const matchExpression: (number | string | string[])[] = [
+      'match',
+      ['get', 'rank'],
+    ];
+    // If there is no project area count we should not fill
+    if (this.projectAreasCount) {
+      for (let i = 1; i <= this.projectAreasCount; i++) {
+        matchExpression.push(
+          i.toString(),
+          this.fillProjectAreas ? getColorForProjectPosition(i) : 'transparent'
+        );
+      }
+    }
+    matchExpression.push(defaultColor);
+    return matchExpression as ExpressionSpecification;
   }
 }
