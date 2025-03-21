@@ -3,11 +3,13 @@ import { Plan } from '@types';
 import { Geometry } from 'geojson';
 import {
   BehaviorSubject,
+  catchError,
   concat,
   distinctUntilChanged,
   filter,
   finalize,
   map,
+  Observable,
   of,
   switchMap,
 } from 'rxjs';
@@ -56,6 +58,28 @@ export class PlanState {
     })
   );
 
+  // Another approach, have something like this instead
+  private _resource$: Observable<Resource<Plan>> = this._currentPlanId$.pipe(
+    // we might need to tweak this for reloading plans / etc.
+    distinctUntilChanged(),
+    filter((id): id is number => !!id),
+    switchMap((id) => {
+      return concat(
+        // when loading emit object with loading
+        of({ loading: true }),
+        this.planService.getPlan(id.toString()).pipe(
+          // when done, emit object with loading false and data
+          map((data) => ({ loading: false, data: data })),
+          // when we have errors, emit object with loading false and error
+          catchError((error) => of({ loading: false, error: error }))
+        )
+      );
+    })
+  );
+
+  // when using this filter/or whatever to get the plan.
+  public planFromResource$ = this._resource$.pipe(map((r) => r.data));
+
   /**
    *
    * The Planning Area geometry
@@ -87,4 +111,10 @@ export class PlanState {
     console.log('updating plan id!');
     this._currentPlanId$.next(id);
   }
+}
+
+interface Resource<T> {
+  loading: boolean;
+  error?: Error;
+  data?: T;
 }
