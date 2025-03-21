@@ -4,12 +4,11 @@
             {{ title}}
         </div>
         <div *ngFor="let c of colorDetails" class="legend-line">
-            <div class="swatch-box" [ngStyle]="{ 'background-color': c.hexCode }">
+            <div class="swatch-box" [ngStyle]="{ 'background-color': c.colorHex }">
             </div>
             <div class="swatch-label">
-                {{ c.label }}
+                {{ c.entryLabel }}
             </div>
         </div>
-
     </div>
 </mgl-control>

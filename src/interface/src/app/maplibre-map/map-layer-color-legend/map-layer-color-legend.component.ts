@@ -11,8 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Map as MapLibreMap, ControlPosition } from 'maplibre-gl';
-
-type ColorWithLabel = {hexCode: string, label: string};
+import { LayerStyleEntry } from '@types';
 
 @Component({
   selector: 'app-map-layer-color-legend',
@@ -37,5 +36,5 @@ export class MapLayerColorLegendComponent {
   @Input() controlsPosition: ControlPosition = 'top-left';
   @Input() mapLibreMap!: MapLibreMap;
   @Input() title: string = '';
-  @Input() colorDetails: ColorWithLabel[] = [];
+  @Input() styles: LayerStyleEntry[] = [];
 }
