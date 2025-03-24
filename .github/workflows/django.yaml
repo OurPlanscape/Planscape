@@ -83,7 +83,7 @@ jobs:
         run: timeout 10s poetry run pip --version || rm -rf .venv
 
       - name: Install Python Dependencies
-        run: poetry install --with dev
+        run: pip wheel --no-cache-dir --use-pep517 "pytest-watch (==4.2.0)" && poetry install --with dev
 
       - name: Set up PostGIS
         env:
