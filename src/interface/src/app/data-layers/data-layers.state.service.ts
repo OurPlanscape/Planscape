@@ -40,6 +40,9 @@ export class DataLayersStateService {
 
   hasNoTreeData$ = this.dataTree$.pipe(map((d) => !!d && d.length === 0));
 
+  private loadingLayer = new BehaviorSubject(false);
+  loadingLayer$ = this.loadingLayer.asObservable();
+
   private loadingSubject = new BehaviorSubject(false);
   loading$ = this.loadingSubject.asObservable();
 
@@ -89,6 +92,7 @@ export class DataLayersStateService {
   }
 
   selectDataLayer(dataLayer: DataLayer) {
+    this.loadingLayer.next(true);
     this._selectedDataLayer$.next(dataLayer);
   }
 
