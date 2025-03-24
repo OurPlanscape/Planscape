@@ -1,7 +1,11 @@
 @import "colors";
+@import "mixins";
+
+:host {
+    box-sizing: border-box;
+  }  
 
 .layer-color-legend {
-    margin-top: 60px; // TODO: we shouldnt have to do this...
     border-radius: 4px;
     border: 1px solid #000;
     background: rgba(0, 0, 0, 0.55);
@@ -15,14 +19,11 @@
 }
 
 .legend-title {
-    // TODO: replace with matching text style
-    color: #FFF;
-    font-family: "Public Sans";
+    @include standard-label();
+    /* specifying font family here, since the control defaults to helvetica */
+    font-family: 'Public Sans'; 
     font-size: 14px;
-    font-style: normal;
-    font-weight: 700;
-    line-height: 22px;
-    /* 157.143% */
+    color: $color-white;
 }
 
 .legend-line {
@@ -37,10 +38,10 @@
 }
 
 .swatch-label {
-    color: #FFF;
-    font-family: "Public Sans";
+    @include xs-label();
+    /* specifying font family here, since the control defaults to helvetica */
+    font-family: 'Public Sans';
     font-size: 12px;
-    font-style: normal;
-    font-weight: 600;
-    line-height: normal;
+    line-height: 100%;
+    color: $color-white;
 }

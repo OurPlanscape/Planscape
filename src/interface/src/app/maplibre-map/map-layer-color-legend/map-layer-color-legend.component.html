@@ -1,14 +1,15 @@
 <mgl-control [position]="controlsPosition">
-    <div class="layer-color-legend">
-        <div class="legend-title">
-            {{ title}}
-        </div>
-        <div *ngFor="let c of colorDetails" class="legend-line">
-            <div class="swatch-box" [ngStyle]="{ 'background-color': c.colorHex }">
-            </div>
-            <div class="swatch-label">
-                {{ c.entryLabel }}
-            </div>
-        </div>
+  <div class="layer-color-legend">
+    <div class="legend-title">
+      {{ title }}
     </div>
+    <div *ngFor="let c of colorDetails" class="legend-line">
+      <div
+        class="swatch-box"
+        [ngStyle]="{ 'background-color': c.colorHex }"></div>
+      <div class="swatch-label">
+        {{ c.entryLabel }}
+      </div>
+    </div>
+  </div>
 </mgl-control>
