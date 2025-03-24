@@ -92,7 +92,8 @@ export class DataLayersStateService {
   }
 
   selectDataLayer(dataLayer: DataLayer) {
-    this.loadingLayer.next(true);
+    // TODO: enable this when the datalayer loading function is merged
+    // this.loadingLayer.next(true);
     this._selectedDataLayer$.next(dataLayer);
   }
 
