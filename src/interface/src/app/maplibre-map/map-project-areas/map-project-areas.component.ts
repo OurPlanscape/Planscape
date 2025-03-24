@@ -10,7 +10,6 @@ import {
   MapMouseEvent,
   LngLat,
   Point,
-  ExpressionSpecification,
 } from 'maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
@@ -19,6 +18,7 @@ import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 import { Subject } from 'rxjs';
 import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
+import type { ExpressionSpecification } from 'maplibre-gl';
 
 type MapLayerData = {
   readonly name: string;
@@ -48,7 +48,7 @@ export class MapProjectAreasComponent implements OnInit {
   @Input() showHoveredProjectAreas: boolean = true;
 
   @Input() scenarioId!: number;
-  @Input() projectAreasCount: number = 0;
+  @Input() projectAreasCount: number | null = null;
   @Input() fillProjectAreas: boolean = true;
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
@@ -60,7 +60,9 @@ export class MapProjectAreasComponent implements OnInit {
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
 
-  fillColor!: ExpressionSpecification;
+  paint: LayerSpecification['paint'] = {
+    'fill-color': 'transparent',
+  };
 
   readonly layers: Record<
     | 'projectAreasOutline'
@@ -94,7 +96,9 @@ export class MapProjectAreasComponent implements OnInit {
   constructor() {}
 
   ngOnInit(): void {
-    this.fillColor = this.getFillColors();
+    if (this.projectAreasCount) {
+      this.paint = this.getFillColors();
+    }
   }
 
   get vectorLayerUrl() {
@@ -154,7 +158,7 @@ export class MapProjectAreasComponent implements OnInit {
     return features[0];
   }
 
-  getFillColors(): ExpressionSpecification {
+  getFillColors(): LayerSpecification['paint'] {
     const defaultColor = BASE_COLORS['white'];
     const matchExpression: (number | string | string[])[] = [
       'match',
@@ -170,6 +174,10 @@ export class MapProjectAreasComponent implements OnInit {
       }
     }
     matchExpression.push(defaultColor);
-    return matchExpression as ExpressionSpecification;
+
+    return {
+      'fill-color': matchExpression as ExpressionSpecification,
+      'fill-opacity': 0.5,
+    };
   }
 }

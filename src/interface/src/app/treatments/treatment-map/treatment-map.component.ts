@@ -347,8 +347,4 @@ export class TreatmentMapComponent {
         this.mapLibreMap.getCanvas().style.cursor = '';
       });
   }
-
-  getProjectAreaCount(): number {
-    return this.treatmentsState.projectAreaCount();
-  }
 }

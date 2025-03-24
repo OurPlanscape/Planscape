@@ -11,15 +11,7 @@
   (layerMouseMove)="setProjectAreaTooltip($event)"
   (layerMouseLeave)="resetCursorAndTooltip()"
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
-  [paint]="{
-    'fill-color': [
-      'case',
-      ['==', ['get', 'id'], hoveredProjectAreaFromFeatures?.properties?.['id']],
-      fillColor,
-      fillColor
-    ],
-    'fill-opacity': visible ? 0.5 : 0
-  }"></mgl-layer>
+  [paint]="paint"></mgl-layer>
 
 <mgl-layer
   [id]="layers.projectAreasOutline.name"
