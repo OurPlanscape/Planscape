@@ -8,10 +8,9 @@ describe('MapLayerColorLegendComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapLayerColorLegendComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapLayerColorLegendComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapLayerColorLegendComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
