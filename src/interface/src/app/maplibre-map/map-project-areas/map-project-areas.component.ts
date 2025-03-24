@@ -19,6 +19,7 @@ import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 import { Subject } from 'rxjs';
 import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
 import type { ExpressionSpecification } from 'maplibre-gl';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 type MapLayerData = {
   readonly name: string;
@@ -27,6 +28,7 @@ type MapLayerData = {
   color?: string;
 };
 
+@UntilDestroy()
 @Component({
   selector: 'app-map-project-areas',
   standalone: true,
@@ -103,10 +105,12 @@ export class MapProjectAreasComponent implements OnInit {
       this.paint = this.getFillColors();
     }
 
-    this.mapConfigState.projectAreaOpacity$.subscribe((opacity) => {
-      this.opacity = opacity;
-      this.paint = this.getFillColors();
-    });
+    this.mapConfigState.projectAreaOpacity$
+      .pipe(untilDestroyed(this))
+      .subscribe((opacity) => {
+        this.opacity = opacity;
+        this.paint = this.getFillColors();
+      });
   }
 
   get vectorLayerUrl() {
