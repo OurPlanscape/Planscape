@@ -1,10 +1,11 @@
 import django.core.serializers.json
 from django.db import migrations, models
 import django.db.models.deletion
-from planning.models import Scenario, TreatmentGoal
 
 
 def copy_treatment_goals_from_configuration(apps, schema_editor):
+    Scenario = apps.get_model("planning", "Scenario")
+    TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
     for scenario in Scenario.objects.all(treatment_goal__isnull=True):
         if scenario.configuration:
             configuration = scenario.configuration
