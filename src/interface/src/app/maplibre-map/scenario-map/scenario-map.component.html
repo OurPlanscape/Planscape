@@ -26,7 +26,6 @@
   <app-planning-area-layer></app-planning-area-layer>
   <app-map-project-areas
     *ngIf="projectAreaCount$ | async as projectAreaCount"
-    [fillProjectAreas]="true"
     [projectAreasCount]="projectAreaCount"
     [scenarioId]="scenarioId"
     [showHoveredProjectAreas]="false"

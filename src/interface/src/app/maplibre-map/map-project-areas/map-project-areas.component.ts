@@ -48,8 +48,10 @@ export class MapProjectAreasComponent implements OnInit {
   @Input() showHoveredProjectAreas: boolean = true;
 
   @Input() scenarioId!: number;
+  /**
+   * If provided we should fill the project areas
+   */
   @Input() projectAreasCount: number | null = null;
-  @Input() fillProjectAreas: boolean = true;
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
@@ -159,7 +161,7 @@ export class MapProjectAreasComponent implements OnInit {
   }
 
   getFillColors(): LayerSpecification['paint'] {
-    const defaultColor = BASE_COLORS['white'];
+    const defaultColor = 'transparent';
     const matchExpression: (number | string | string[])[] = [
       'match',
       ['get', 'rank'],
@@ -167,10 +169,7 @@ export class MapProjectAreasComponent implements OnInit {
     // If there is no project area count we should not fill
     if (this.projectAreasCount) {
       for (let i = 1; i <= this.projectAreasCount; i++) {
-        matchExpression.push(
-          i.toString(),
-          this.fillProjectAreas ? getColorForProjectPosition(i) : 'transparent'
-        );
+        matchExpression.push(i.toString(), getColorForProjectPosition(i));
       }
     }
     matchExpression.push(defaultColor);
