@@ -110,7 +110,7 @@ class Command(PlanscapeCommand):
         skipped = []
 
         dir_path = Path(directory)
-        for file_path in dir_path.glob("*.json"):
+        for file_path in dir_path.rglob("*.json"):
             try:
                 with file_path.open("r", encoding="utf-8") as f:
                     style_data = json.load(f)
@@ -134,8 +134,10 @@ class Command(PlanscapeCommand):
                 datalayer_ids.append(dl_data["results"][0]["id"])
             else:
                 self.stderr.write(
-                    f"WARNING: No matching datalayer found for style '{base_name}'. Continuing..."
+                    f"ERROR: No matching datalayer found for style '{base_name}'. Placing this file in failures and continuing..."
                 )
+                failures.append(str(file_path))
+                continue
 
             map_type = style_data.get("map_type", None)
             RASTER_TYPES = ("RAMP", "INTERVALS", "VALUES")
