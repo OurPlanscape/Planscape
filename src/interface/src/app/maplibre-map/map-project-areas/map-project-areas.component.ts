@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   LayerComponent,
   VectorSourceComponent,
@@ -17,6 +17,8 @@ import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 import { Subject } from 'rxjs';
+import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
+import type { ExpressionSpecification } from 'maplibre-gl';
 
 type MapLayerData = {
   readonly name: string;
@@ -40,12 +42,16 @@ type MapLayerData = {
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
-export class MapProjectAreasComponent {
+export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
 
   @Input() scenarioId!: number;
+  /**
+   * If provided we should fill the project areas
+   */
+  @Input() projectAreasCount: number | null = null;
 
   @Output() changeHoveredProjectAreaId = new EventEmitter<number | null>();
   @Output() changeMouseLngLat = new EventEmitter<LngLat | null>();
@@ -55,6 +61,10 @@ export class MapProjectAreasComponent {
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
+
+  paint: LayerSpecification['paint'] = {
+    'fill-color': 'transparent',
+  };
 
   readonly layers: Record<
     | 'projectAreasOutline'
@@ -86,6 +96,12 @@ export class MapProjectAreasComponent {
   };
 
   constructor() {}
+
+  ngOnInit(): void {
+    if (this.projectAreasCount) {
+      this.paint = this.getFillColors();
+    }
+  }
 
   get vectorLayerUrl() {
     return this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
@@ -142,5 +158,25 @@ export class MapProjectAreasComponent {
     });
 
     return features[0];
+  }
+
+  getFillColors(): LayerSpecification['paint'] {
+    const defaultColor = 'transparent';
+    const matchExpression: (number | string | string[])[] = [
+      'match',
+      ['get', 'rank'],
+    ];
+    // If there is no project area count we should not fill
+    if (this.projectAreasCount) {
+      for (let i = 1; i <= this.projectAreasCount; i++) {
+        matchExpression.push(i.toString(), getColorForProjectPosition(i));
+      }
+    }
+    matchExpression.push(defaultColor);
+
+    return {
+      'fill-color': matchExpression as ExpressionSpecification,
+      'fill-opacity': 0.5,
+    };
   }
 }
