@@ -127,4 +127,8 @@ export class DirectImpactsMapComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  getProjectAreaCount(): number {
+    return this.treatmentsState.projectAreaCount();
+  }
 }

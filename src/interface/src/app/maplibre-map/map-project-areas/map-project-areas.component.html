@@ -11,10 +11,7 @@
   (layerMouseMove)="setProjectAreaTooltip($event)"
   (layerMouseLeave)="resetCursorAndTooltip()"
   [sourceLayer]="layers.projectAreasFill.sourceLayer"
-  [paint]="{
-    'fill-color': layers.projectAreasFill.color,
-    'fill-opacity': 0
-  }"></mgl-layer>
+  [paint]="paint"></mgl-layer>
 
 <mgl-layer
   [id]="layers.projectAreasOutline.name"
