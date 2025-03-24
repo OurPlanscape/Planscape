@@ -6,10 +6,10 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { TreatmentsState } from '../treatments.state';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { BehaviorSubject, of } from 'rxjs';
+import { TreatmentsState } from 'src/app/treatments/treatments.state';
 
 describe('MapProjectAreasComponent', () => {
   let component: MapProjectAreasComponent;

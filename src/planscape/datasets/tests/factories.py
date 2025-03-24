@@ -54,7 +54,7 @@ class DataLayerFactory(factory.django.DjangoModelFactory):
     name = factory.Faker("name")
     type = factory.Iterator(DataLayerType.values)
     geometry_type = factory.Iterator(GeometryType.values)
-    status = factory.Iterator(DataLayerStatus.values)
+    status = DataLayerStatus.READY
     metadata = {}
     url = None
 

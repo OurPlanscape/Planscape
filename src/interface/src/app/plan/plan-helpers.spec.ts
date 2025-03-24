@@ -40,7 +40,7 @@ describe('Plan Helpers', () => {
     });
 
     it('should cycle thru the colors if more than defined', () => {
-      expect(getColorForProjectPosition(12)).toBe(PROJECT_AREA_COLORS[1]);
+      expect(getColorForProjectPosition(52)).toBe(PROJECT_AREA_COLORS[1]);
     });
 
     it('should return default color if position is invalid', () => {
