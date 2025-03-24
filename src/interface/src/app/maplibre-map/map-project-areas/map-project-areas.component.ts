@@ -38,8 +38,6 @@ type MapLayerData = {
     MatIconModule,
     NgIf,
     AsyncPipe,
-
-    PercentPipe,
   ],
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
