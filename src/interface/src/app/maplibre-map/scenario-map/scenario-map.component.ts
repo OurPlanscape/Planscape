@@ -39,7 +39,7 @@ export class ScenarioMapComponent {
     private planState: PlanState,
     private route: ActivatedRoute,
     private scenarioService: ScenarioService
-  ) { }
+  ) {}
 
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
