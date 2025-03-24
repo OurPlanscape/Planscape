@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { MapService } from '@maplibre/ngx-maplibre-gl';
 import { MapLayerColorLegendComponent } from './map-layer-color-legend.component';
 
 describe('MapLayerColorLegendComponent', () => {
@@ -9,6 +9,7 @@ describe('MapLayerColorLegendComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [MapLayerColorLegendComponent],
+      providers: [MapService],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapLayerColorLegendComponent);
