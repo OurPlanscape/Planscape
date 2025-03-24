@@ -13,7 +13,7 @@ import {
 } from 'maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
-
+import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 import { Subject } from 'rxjs';
@@ -46,7 +46,6 @@ export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
-
   @Input() scenarioId!: number;
   /**
    * If provided we should fill the project areas
@@ -62,8 +61,10 @@ export class MapProjectAreasComponent implements OnInit {
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
 
+  opacity = 0.5;
   paint: LayerSpecification['paint'] = {
     'fill-color': 'transparent',
+    'fill-opacity': this.opacity,
   };
 
   readonly layers: Record<
@@ -95,12 +96,17 @@ export class MapProjectAreasComponent implements OnInit {
     },
   };
 
-  constructor() {}
+  constructor(private mapConfigState: MapConfigState) {}
 
   ngOnInit(): void {
     if (this.projectAreasCount) {
       this.paint = this.getFillColors();
     }
+
+    this.mapConfigState.projectAreaOpacity$.subscribe((opacity) => {
+      this.opacity = opacity;
+      this.paint = this.getFillColors();
+    });
   }
 
   get vectorLayerUrl() {
@@ -176,7 +182,7 @@ export class MapProjectAreasComponent implements OnInit {
 
     return {
       'fill-color': matchExpression as ExpressionSpecification,
-      'fill-opacity': 0.5,
+      'fill-opacity': this.opacity,
     };
   }
 }

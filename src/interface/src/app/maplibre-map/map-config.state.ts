@@ -49,6 +49,9 @@ export class MapConfigState {
   private _treatedStandsOpacity = new BehaviorSubject(this.defaultOpacity);
   public treatedStandsOpacity$ = this._treatedStandsOpacity.asObservable();
 
+  private _projectAreaOpacity = new BehaviorSubject(this.defaultOpacity);
+  public projectAreaOpacity$ = this._projectAreaOpacity.asObservable();
+
   private defaultZoomLevel = 7;
   public zoomLevel$ = new BehaviorSubject<number>(this.defaultZoomLevel);
 
@@ -113,6 +116,10 @@ export class MapConfigState {
 
   setTreatedStandsOpacity(value: number) {
     this._treatedStandsOpacity.next(value);
+  }
+
+  setProjectAreaOpacity(value: number) {
+    this._projectAreaOpacity.next(value);
   }
 
   setShowTreatmentLayersToggle(value: boolean) {
