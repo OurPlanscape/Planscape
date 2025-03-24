@@ -1,10 +1,11 @@
-<div class="pages-container">
+<div class="pages-container" [ngClass]="{ compact: compact }">
   <div class="nav-control-container" *ngIf="pageCount > 1">
     <button
       class="page-button"
       class="first-page-button page-button"
       (click)="handlePrevious()"
       aria-label="Go to previous page"
+      *ngIf="!compact || !isCurrentPage(1)"
       [disabled]="isCurrentPage(1)">
       <mat-icon class="arrow-icon">arrow_back_ios</mat-icon>
     </button>
@@ -41,7 +42,6 @@
       {{ pageCount }}
     </button>
     <button
-      class="page-button"
       class="page-button last-page-button"
       (click)="handleNext()"
       aria-label="Go to next page"
@@ -65,7 +65,7 @@
   </mat-form-field>
 </div>
 
-<div class="per-page-picker">
+<div class="per-page-picker" *ngIf="!compact">
   <div class="picker-label">Records per page</div>
   <mat-form-field class="picker-field" appearance="outline">
     <mat-select

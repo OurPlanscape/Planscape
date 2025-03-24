@@ -72,8 +72,16 @@
     diameter="20"
     class="loader"></mat-spinner>
 </div>
-<div class="footer" *ngIf="selectedDataLayer$ | async">
-  <button sg-button (click)="clearDataLayer()" variant="text" class="clear-btn">
+<div class="footer" *ngIf="showFooter$ | async">
+  <ng-container *ngIf="pages$ | async as pages">
+    <sg-paginator [compact]="true" [pageCount]="pages"></sg-paginator>
+  </ng-container>
+  <button
+    sg-button
+    (click)="clearDataLayer()"
+    variant="text"
+    class="clear-btn"
+    *ngIf="selectedDataLayer$ | async">
     Clear
   </button>
 </div>

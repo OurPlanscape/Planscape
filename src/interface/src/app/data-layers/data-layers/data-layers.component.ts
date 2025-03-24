@@ -9,11 +9,20 @@ import {
   ButtonComponent,
   ExpanderSectionComponent,
   NoResultsComponent,
+  PaginatorComponent,
   SearchBarComponent,
 } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersStateService } from '../data-layers.state.service';
-import { catchError, map, Observable, startWith, throwError } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  of,
+  startWith,
+  throwError,
+} from 'rxjs';
 import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
 import { SearchResultsComponent } from '../search-results/search-results.component';
@@ -45,6 +54,7 @@ import { FormsModule } from '@angular/forms';
     NoResultsComponent,
     MatRadioModule,
     FormsModule,
+    PaginatorComponent,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -80,6 +90,12 @@ export class DataLayersComponent {
 
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
   isBrowsing$ = this.dataLayersStateService.isBrowsing$;
+
+  showFooter$ = combineLatest([this.results$, this.selectedDataLayer$]).pipe(
+    map(([results, selectedLayer]) => results || selectedLayer)
+  );
+
+  pages$ = of(15);
 
   search(term: string) {
     this.dataLayersStateService.search(term);

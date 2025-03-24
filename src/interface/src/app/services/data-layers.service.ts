@@ -30,11 +30,11 @@ export class DataLayersService {
   }
 
   search(term: string) {
-    return this.http.get<SearchResult[]>(
+    return this.http.get<Pagination<SearchResult>>(
       environment.backend_endpoint + '/v2/datalayers/find_anything',
       {
         withCredentials: true,
-        params: { term, type: 'RASTER' },
+        params: { term, type: 'RASTER', limit: 20 },
       }
     );
   }

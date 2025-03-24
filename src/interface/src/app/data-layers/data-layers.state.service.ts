@@ -61,8 +61,9 @@ export class DataLayersStateService {
         map((results) => {
           if (results) {
             this.loadingSubject.next(false);
+            return results.results;
           }
-          return results;
+          return null;
         })
       );
     }),

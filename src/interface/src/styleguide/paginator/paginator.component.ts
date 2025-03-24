@@ -7,8 +7,7 @@ import {
   Output,
   SimpleChanges,
 } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { NgFor, NgIf, NgClass } from '@angular/common';
+import { CommonModule, NgClass, NgFor, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -52,6 +51,13 @@ export class PaginatorComponent implements OnInit, OnChanges {
    * The options presented for records per page.
    */
   @Input() perPageOptions = [10, 20, 50];
+
+  /**
+   * Determines if this we should render a compact version, which does not include records per page
+   * or disabled back button if on page 1
+   */
+  @Input() compact = false;
+
   /**
    * Emits an event with the latest selected page.
    */
@@ -67,6 +73,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
   buttonRange$ = new BehaviorSubject<number[]>([]);
   navSelectRange: number[] = [];
   defaultButtonsToShow = 6;
+  compactButtonsToShow = 3;
 
   ngOnInit(): void {
     this.navSelectRange = [1, ...Array(this.pageCount + 1).keys()].slice(2);
@@ -85,7 +92,10 @@ export class PaginatorComponent implements OnInit, OnChanges {
 
   calcButtonLabels(): void {
     const curPages = this.pageCount;
-    const buttonsToShow = Math.min(curPages, this.defaultButtonsToShow);
+    const buttonsToShow = Math.min(
+      curPages,
+      this.compact ? this.compactButtonsToShow : this.defaultButtonsToShow
+    );
 
     const midCount = Math.ceil(buttonsToShow / 2);
     const rightRemainder = Math.max(
@@ -134,6 +144,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
     const pageNum = Math.max(this.currentPage - 1, 1);
     this.setPage(pageNum);
   }
+
   handleNext() {
     const pageNum = Math.min(this.currentPage + 1, this.pageCount);
     this.setPage(pageNum);
