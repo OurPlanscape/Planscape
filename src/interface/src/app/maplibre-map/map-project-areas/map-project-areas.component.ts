@@ -12,7 +12,7 @@ import {
   Point,
 } from 'maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
-import { AsyncPipe, NgIf, PercentPipe } from '@angular/common';
+import { AsyncPipe, NgIf } from '@angular/common';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
