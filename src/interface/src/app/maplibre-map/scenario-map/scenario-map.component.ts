@@ -10,7 +10,7 @@ import {
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../plan.state';
-import { filter, map } from 'rxjs';
+import { BehaviorSubject, filter, map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
@@ -39,7 +39,7 @@ export class ScenarioMapComponent {
     private planState: PlanState,
     private route: ActivatedRoute,
     private scenarioService: ScenarioService
-  ) {}
+  ) { }
 
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
@@ -60,7 +60,7 @@ export class ScenarioMapComponent {
     })
   );
 
-  projectLayerOpacity$ = this.mapConfigState.projectAreaOpacity$;
+  projectAreaOpacity$ = new BehaviorSubject<number>(0.5);
 
   // TODO: Get the count from the currentScenario in scenarioState once we create it.
   projectAreaCount$ = this.scenarioService.getScenario(this.scenarioId).pipe(
@@ -75,7 +75,7 @@ export class ScenarioMapComponent {
   }
 
   handleOpacityChange(opacity: number) {
-    this.mapConfigState.setProjectAreaOpacity(opacity);
+    this.projectAreaOpacity$.next(opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

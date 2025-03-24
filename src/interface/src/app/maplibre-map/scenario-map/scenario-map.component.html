@@ -4,7 +4,7 @@
     [minValue]="0"
     [maxValue]="1"
     [step]="0.01"
-    [sliderValue]="(projectLayerOpacity$ | async) || 0"
+    [sliderValue]="(projectAreaOpacity$ | async) || 0"
     (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
 </app-map-nav-bar>
 
@@ -26,6 +26,7 @@
   <app-planning-area-layer></app-planning-area-layer>
   <app-map-project-areas
     *ngIf="projectAreaCount$ | async as projectAreaCount"
+    [opacity]="(projectAreaOpacity$ | async) ?? 0.5"
     [projectAreasCount]="projectAreaCount"
     [scenarioId]="scenarioId"
     [showHoveredProjectAreas]="false"
