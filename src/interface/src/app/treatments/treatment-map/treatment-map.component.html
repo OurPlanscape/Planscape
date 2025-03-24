@@ -33,6 +33,16 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
+  <app-map-layer-color-legend
+    [isRamp]="true"
+    [rangeDetails]="[
+      { colorHex: '#ff0aa0', label: '0' },
+      { colorHex: '#cc0be6', label: '1' },
+      { colorHex: '#880caa', label: '2' },
+      { colorHex: '#220daf', label: '3' }
+    ]">
+  </app-map-layer-color-legend>
+
   <app-map-controls
     [userCanEditStands]="userCanEditStands"
     [extendedControlsEnabled]="(showMapControls$ | async) ?? false"

@@ -3,13 +3,22 @@
     <div class="legend-title">
       {{ title }}
     </div>
-    <div *ngFor="let c of colorDetails" class="legend-line">
+
+    <div *ngIf="isRamp">
       <div
-        class="swatch-box"
-        [ngStyle]="{ 'background-color': c.colorHex }"></div>
-      <div class="swatch-label">
-        {{ c.entryLabel }}
-      </div>
+        class="swatch-gradient"
+        [ngStyle]="{ background: gradientStyle }"></div>
     </div>
+
+    <ng-container *ngIf="!isRamp">
+      <div *ngFor="let c of colorDetails" class="legend-line">
+        <div
+          class="swatch-box"
+          [ngStyle]="{ 'background-color': c.colorHex }"></div>
+        <div class="swatch-label">
+          {{ c.entryLabel }}
+        </div>
+      </div>
+    </ng-container>
   </div>
 </mgl-control>

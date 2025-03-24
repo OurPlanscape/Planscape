@@ -37,6 +37,13 @@
     width: 14px;
 }
 
+.swatch-gradient {
+    height: 100%;
+    width: 14px;
+    min-height: 200px;
+    border: 1px black solid;
+}
+
 .swatch-label {
     @include xs-label();
     /* specifying font family here, since the control defaults to helvetica */

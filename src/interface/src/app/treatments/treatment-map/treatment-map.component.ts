@@ -51,6 +51,7 @@ import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/m
 import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { MapLayerColorLegendComponent } from '../../maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 
 @UntilDestroy()
 @Component({
@@ -83,6 +84,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     MapNavbarComponent,
     PercentPipe,
     DataLayerNameComponent,
+    MapLayerColorLegendComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
