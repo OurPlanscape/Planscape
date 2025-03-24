@@ -160,11 +160,9 @@ def create_style(
     action.send(created_by, verb="created", action_object=style)
 
     if datalayers:
-        datalayer_qs = DataLayer.objects.filter(id__in=datalayers)
-        if datalayer_qs.count() != len(datalayers):
-            raise ValueError("One or more provided datalayer IDs do not exist.")
-        for datalayer in datalayer_qs:
+        for datalayer in datalayers:
             assign_style(created_by=created_by, style=style, datalayer=datalayer)
+
     invalidate_model(Style)
     return {"style": style, "possibly_exists": hash_already_exists}
 

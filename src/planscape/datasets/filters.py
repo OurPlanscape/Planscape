@@ -52,3 +52,19 @@ class StyleFilterSet(filters.FilterSet):
             "name": ["exact", "icontains"],
             "type": ["exact"],
         }
+
+
+class BrowseDataLayerFilterSet(filters.FilterSet):
+    dataset = filters.ModelChoiceFilter(
+        queryset=get_datasets_for_filter,
+        field_name="dataset",
+        help_text="dataset id",
+    )
+
+    class Meta:
+        model = DataLayer
+        fields = {
+            "name": ["exact", "icontains"],
+            "category": ["exact"],
+            "type": ["exact"],
+        }

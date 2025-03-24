@@ -1,5 +1,5 @@
-import { Component, Input, Renderer2 } from '@angular/core';
-import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
+import { Component, Renderer2 } from '@angular/core';
+import { AsyncPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
 import {
   ControlComponent,
   DraggableDirective,
@@ -21,7 +21,7 @@ import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
-import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
@@ -30,8 +30,15 @@ import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addRequestHeaders } from '../../maplibre-map/maplibre.helper';
 import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-layer/planning-area-layer.component';
-import { combineLatest, map, startWith, Subject, withLatestFrom } from 'rxjs';
-import { filter } from 'rxjs/operators';
+import {
+  combineLatest,
+  map,
+  Observable,
+  startWith,
+  Subject,
+  withLatestFrom,
+} from 'rxjs';
+import { distinctUntilChanged, filter } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
@@ -40,7 +47,10 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
+import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
+import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
+import { ActivatedRoute, Router } from '@angular/router';
 
 @UntilDestroy()
 @Component({
@@ -71,13 +81,13 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
+    PercentPipe,
     DataLayerNameComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
 })
 export class TreatmentMapComponent {
-  @Input() showProjectAreaTooltips = true;
   /**
    * Flag to determine if the user is currently dragging to select stands
    */
@@ -171,13 +181,34 @@ export class TreatmentMapComponent {
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
+  get scenarioId() {
+    return this.treatmentsState.getScenarioId();
+  }
+
+  mouseLngLat: LngLat | null = null;
+  hoveredProjectAreaId$ = new Subject<number | null>();
+
+  hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
+    combineLatest([
+      this.treatmentsState.summary$,
+      this.hoveredProjectAreaId$.pipe(distinctUntilChanged()),
+    ]).pipe(
+      map(([summary, projectAreaId]) => {
+        return summary?.project_areas.find(
+          (p: TreatmentProjectArea) => p.project_area_id === projectAreaId
+        );
+      })
+    );
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
-    private renderer: Renderer2
+    private renderer: Renderer2,
+    private route: ActivatedRoute,
+    private router: Router
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -298,4 +329,22 @@ export class TreatmentMapComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  setHoveredProjectAreaId(value: number | null) {
+    this.hoveredProjectAreaId$.next(value);
+  }
+
+  setMouseLngLat(value: LngLat | null) {
+    this.mouseLngLat = value;
+  }
+
+  selectProjectArea(projectAreaId: string) {
+    this.router
+      .navigate(['project-area', projectAreaId], {
+        relativeTo: this.route,
+      })
+      .then(() => {
+        this.mapLibreMap.getCanvas().style.cursor = '';
+      });
+  }
 }
