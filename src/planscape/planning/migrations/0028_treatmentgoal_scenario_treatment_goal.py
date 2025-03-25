@@ -6,7 +6,7 @@ import django.db.models.deletion
 def copy_treatment_goals_from_configuration(apps, schema_editor):
     Scenario = apps.get_model("planning", "Scenario")
     TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
-    for scenario in Scenario.objects.all(treatment_goal__isnull=True):
+    for scenario in Scenario.objects.filter(treatment_goal__isnull=True):
         if scenario.configuration:
             configuration = scenario.configuration
             treatment_goal = TreatmentGoal.objects.get_or_create(
