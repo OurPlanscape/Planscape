@@ -96,3 +96,14 @@ export interface Pagination<T> {
   previous?: string;
   results: T[];
 }
+
+export interface Resource<T> {
+  isLoading: boolean;
+  error?: Error;
+  data?: T;
+}
+
+export interface LoadedResult<T> extends Omit<Resource<T>, 'error'> {
+  data: T;
+  isLoading: false;
+}

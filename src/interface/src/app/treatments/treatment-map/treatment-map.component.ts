@@ -53,6 +53,7 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
+import { PlanState } from '../../maplibre-map/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -214,7 +215,8 @@ export class TreatmentMapComponent {
     private dataLayersState: DataLayersStateService,
     private renderer: Renderer2,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private planState: PlanState
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -226,7 +228,7 @@ export class TreatmentMapComponent {
       });
 
     combineLatest([
-      this.treatmentsState.planningArea$,
+      this.planState.currentPlan$,
       this.treatmentsState.projectAreaId$,
     ])
       .pipe(untilDestroyed(this))

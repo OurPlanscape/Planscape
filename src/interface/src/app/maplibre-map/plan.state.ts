@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Plan } from '@types';
+import { LoadedResult, Plan, Resource } from '@types';
 import { Geometry } from 'geojson';
 import {
   BehaviorSubject,
@@ -70,28 +70,7 @@ export class PlanState {
     map((plan) => plan.geometry as Geometry)
   );
 
-  getCurrentPlanId(): number {
-    const id = this._currentPlanId$.value;
-    if (!id) {
-      throw new Error('no id!');
-    }
-    return id;
-  }
-
-  ///
-
   setPlanId(id: number) {
     this._currentPlanId$.next(id);
   }
-}
-
-interface Resource<T> {
-  isLoading: boolean;
-  error?: Error;
-  data?: T;
-}
-
-interface LoadedResult<T> extends Omit<Resource<T>, 'error'> {
-  data: T;
-  isLoading: false;
 }
