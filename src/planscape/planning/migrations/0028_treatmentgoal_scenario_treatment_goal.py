@@ -1,20 +1,44 @@
+import json
 import django.core.serializers.json
 from django.db import migrations, models
 import django.db.models.deletion
 
 
 def copy_treatment_goals_from_configuration(apps, schema_editor):
+    with open(
+        "config/treatment_goals.json", "r"
+    ) as treatment_goals_file:
+        regions = json.loads(treatment_goals_file.read())
+        regions = regions.get("regions")
+        treatment_goals = {}
+        for region in regions:
+            tg = region.get("treatment_goals")
+            for goal in tg:
+                questions = goal.get("questions")
+                for question in questions:
+                    treatment_goals.update(
+                        {   
+                            question.get("id"): {
+                            "name": question.get("short_question_text"),
+                            "priorities": question.get("scenario_priorities"),
+                            "stand_thresholds": question.get("stand_thresholds"),
+                            }
+                        }
+                    )
+            
+
     Scenario = apps.get_model("planning", "Scenario")
     TreatmentGoal = apps.get_model("planning", "TreatmentGoal")
     for scenario in Scenario.objects.filter(treatment_goal__isnull=True):
         if scenario.configuration:
             configuration = scenario.configuration
+            question_id = configuration.get("question_id")
+            tg_question = treatment_goals.get(question_id)
+
             treatment_goal = TreatmentGoal.objects.get_or_create(
-                name=configuration.get("treatment_goal", {}).get("name"),
-                priorities=configuration.get("treatment_goal", {}).get("priorities"),
-                stand_thresholds=configuration.get("treatment_goal", {}).get(
-                    "stand_thresholds"
-                ),
+                name=tg_question.get("name"),
+                priorities=configuration.get("scenario_priorities"),
+                stand_thresholds=configuration.get("stand_thresholds"),
             )
             scenario.treatment_goal = treatment_goal
             scenario.save()
@@ -68,6 +92,13 @@ class Migration(migrations.Migration):
                         encoder=django.core.serializers.json.DjangoJSONEncoder,
                         help_text="Treatment Goal stand thresholds.",
                         null=True,
+                    ),
+                ),
+                (
+                    "active",
+                    models.BooleanField(
+                        help_text="Treatment Goal active status.",
+                        default=True,
                     ),
                 ),
             ],
