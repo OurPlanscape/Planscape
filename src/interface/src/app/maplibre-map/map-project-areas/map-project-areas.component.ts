@@ -47,7 +47,6 @@ export class MapProjectAreasComponent implements OnInit {
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
   @Input() scenarioId!: number;
-  @Input() opacity: number = 0.5;
   /**
    * If provided we should fill the project areas
    */
@@ -61,6 +60,7 @@ export class MapProjectAreasComponent implements OnInit {
 
   hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
+  opacity: number = 0.5;
 
   paint: LayerSpecification['paint'] = {
     'fill-color': 'transparent',
