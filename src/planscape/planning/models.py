@@ -188,6 +188,7 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         help_text="Treatment Goal stand thresholds.",
         encoder=DjangoJSONEncoder,
     )
+    active = models.BooleanField(default=True, help_text="Treatment Goal active status.")
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
