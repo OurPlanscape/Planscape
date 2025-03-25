@@ -6,6 +6,7 @@ from organizations.models import Organization
 from rest_framework import serializers
 
 from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
+from datasets.styles import get_default_raster_style, get_default_vector_style
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -407,6 +408,20 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         read_only=True,
     )
     styles = StyleSimpleSerializer(many=True)
+
+    def _default_raster_style(self, instance):
+        stats = instance.info.get("stats")[0]
+        return get_default_raster_style(**stats)
+
+    def get_styles(self, instance):
+        if instance.styles.all().exists():
+            return StyleSimpleSerializer(instance=instance.styles.all().first()).data
+        match instance.type:
+            case DataLayerType.RASTER:
+                stats = instance.info.get("stats", [])[0]
+                return get_default_raster_style(**stats)
+            case _:
+                return get_default_vector_style()
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
