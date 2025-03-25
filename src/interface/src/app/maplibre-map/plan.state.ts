@@ -7,10 +7,10 @@ import {
   concat,
   distinctUntilChanged,
   filter,
-  finalize,
   map,
   Observable,
   of,
+  shareReplay,
   switchMap,
 } from 'rxjs';
 import { PlanService } from '@services';
@@ -19,102 +19,79 @@ import { PlanService } from '@services';
   providedIn: 'root',
 })
 export class PlanState {
-  constructor(private planService: PlanService) {
-    // for demo only!
-    this.plan$.subscribe((plan) => console.log('my new plan is', plan));
-    this.isPlanLoading$.subscribe((loading) =>
-      console.log('is plan loading?', loading)
-    );
-  }
+  constructor(private planService: PlanService) {}
 
-  // we wouldn't use this, see plan$ instead
-  private _currentPlan$ = new BehaviorSubject<Plan | null>(null);
-  currentPlan$ = this._currentPlan$.asObservable();
-
-  // we'll keep record of the ID
+  // The ID of the current plan
   private _currentPlanId$ = new BehaviorSubject<number | null>(null);
 
-  // maybe we want to keep record of this here to show loaders/interact.
-  public isPlanLoading$ = new BehaviorSubject(false);
+  // Listen to ID changes and trigger network calls, returning typed results.
+  private currentPlanResource$: Observable<Resource<Plan>> =
+    this._currentPlanId$.pipe(
+      // we might need to tweak this for reloading plans / etc.
+      distinctUntilChanged(),
+      filter((id): id is number => !!id),
+      switchMap((id) => {
+        return concat(
+          // when loading emit object with loading
+          of({ isLoading: true }),
+          this.planService.getPlan(id.toString()).pipe(
+            // when done, emit object with loading false and data
+            map((data) => ({ data, isLoading: false }) as LoadedResult<Plan>),
+            // when we have errors, emit object with loading false and error
+            catchError((error) => of({ isLoading: false, error: error }))
+          )
+        );
+      }),
+      // ensure each new subscriber gets the cached result immediately without re-fetching
+      shareReplay(1)
+    );
 
-  // the current plan gets updated when we change the ID and do the network request
-  public plan$ = this._currentPlanId$.pipe(
-    // we might need to tweak this for reloading plans / etc.
-    distinctUntilChanged(),
-    filter((id): id is number => !!id),
-    switchMap((id) => {
-      console.log('about to load plan id', id);
-      // Tell the UI we're loading
-      this.isPlanLoading$.next(true);
-
-      // emit `null` first so the old plan data is "cleared"
-      // then actually fetch the new plan. Once done, turn the loading flag off.
-      return concat(
-        of(null),
-        this.planService
-          .getPlan(id.toString())
-          .pipe(finalize(() => this.isPlanLoading$.next(false)))
-      );
-    })
+  /**
+   * This observable filter currentPlanResource$ to only emit when we have a plan,
+   * and we are not loading.
+   */
+  public currentPlan$ = this.currentPlanResource$.pipe(
+    filter((d): d is LoadedResult<Plan> => !d.isLoading && !!d.data),
+    map((d) => d.data)
   );
 
-  // Another approach, have something like this instead
-  private _resource$: Observable<Resource<Plan>> = this._currentPlanId$.pipe(
-    // we might need to tweak this for reloading plans / etc.
-    distinctUntilChanged(),
-    filter((id): id is number => !!id),
-    switchMap((id) => {
-      return concat(
-        // when loading emit object with loading
-        of({ loading: true }),
-        this.planService.getPlan(id.toString()).pipe(
-          // when done, emit object with loading false and data
-          map((data) => ({ loading: false, data: data })),
-          // when we have errors, emit object with loading false and error
-          catchError((error) => of({ loading: false, error: error }))
-        )
-      );
-    })
+  /**
+   * Observable that maps only to loading status.
+   */
+  public isPlanLoading$ = this.currentPlanResource$.pipe(
+    map((d) => d.isLoading)
   );
-
-  // when using this filter/or whatever to get the plan.
-  public planFromResource$ = this._resource$.pipe(map((r) => r.data));
 
   /**
    *
-   * The Planning Area geometry
+   * The Planning Area geometry for the current active plan
    */
   planningAreaGeometry$ = this.currentPlan$.pipe(
-    filter((plan) => !!plan),
-    map((plan) => plan?.geometry as Geometry)
+    map((plan) => plan.geometry as Geometry)
   );
 
-  setCurrentPlan(plan: Plan) {
-    this._currentPlan$.next(plan);
-  }
-
-  getCurrentPlan(): Plan | null {
-    return this._currentPlan$.value;
-  }
-
   getCurrentPlanId(): number {
-    const plan = this.getCurrentPlan();
-    if (!plan) {
-      throw new Error('no plan!');
+    const id = this._currentPlanId$.value;
+    if (!id) {
+      throw new Error('no id!');
     }
-    return plan.id;
+    return id;
   }
 
   ///
 
   setPlanId(id: number) {
-    console.log('updating plan id!');
     this._currentPlanId$.next(id);
   }
 }
 
 interface Resource<T> {
-  loading: boolean;
+  isLoading: boolean;
   error?: Error;
   data?: T;
+}
+
+interface LoadedResult<T> extends Omit<Resource<T>, 'error'> {
+  data: T;
+  isLoading: false;
 }
