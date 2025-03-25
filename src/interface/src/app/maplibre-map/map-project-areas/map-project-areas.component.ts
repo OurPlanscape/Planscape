@@ -1,12 +1,4 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  OnInit,
-  Output,
-  OnChanges,
-  SimpleChanges,
-} from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import {
   LayerComponent,
   VectorSourceComponent,
@@ -26,6 +18,7 @@ import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 import { Subject } from 'rxjs';
 import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
 import type { ExpressionSpecification } from 'maplibre-gl';
+import { MapConfigState } from '../map-config.state';
 
 type MapLayerData = {
   readonly name: string;
@@ -47,7 +40,7 @@ type MapLayerData = {
   templateUrl: './map-project-areas.component.html',
   styleUrl: './map-project-areas.component.scss',
 })
-export class MapProjectAreasComponent implements OnInit, OnChanges {
+export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
@@ -101,19 +94,17 @@ export class MapProjectAreasComponent implements OnInit, OnChanges {
     },
   };
 
-  constructor() {}
+  constructor(private mapConfigState: MapConfigState) {}
 
   ngOnInit(): void {
     if (this.projectAreasCount) {
       this.paint = this.getFillColors();
     }
-  }
 
-  ngOnChanges(changes: SimpleChanges) {
-    if (changes['opacity']) {
-      this.opacity = changes['opacity'].currentValue;
-      this.paint = { ...this.paint, 'fill-opacity': this.opacity };
-    }
+    this.mapConfigState.projectAreaOpacity$.subscribe((opacity) => {
+      this.opacity = opacity;
+      this.paint = this.getFillColors();
+    });
   }
 
   get vectorLayerUrl() {
