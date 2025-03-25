@@ -148,8 +148,18 @@ export class TreatmentConfigComponent {
     this.pdfService.createPDF(this.mapElement.mapLibreMap, mapAttributions);
   }
 
-  canRunTreatment$ = this.planState.currentPlan$.pipe(
-    map((plan) => (plan ? canRunTreatmentAnalysis(plan) : false))
+  canRunTreatment$ = this.planState.currentPlanResource$.pipe(
+    // Skip over loading states
+    filter((resource) => !resource.isLoading),
+
+    // if errors, redirect
+    map((resource) => {
+      if (resource.error) {
+        this.router.navigate(['/']);
+        return false;
+      }
+      return resource.data ? canRunTreatmentAnalysis(resource.data) : false;
+    })
   );
 
   redirectToScenario() {

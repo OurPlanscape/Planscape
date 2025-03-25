@@ -16,7 +16,6 @@ import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { ActivatedRoute } from '@angular/router';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
-import { Geometry } from 'geojson';
 
 @Component({
   selector: 'app-scenario-map',
@@ -57,7 +56,7 @@ export class ScenarioMapComponent {
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
-      return getBoundsFromGeometry(geometry as Geometry);
+      return getBoundsFromGeometry(geometry);
     })
   );
 

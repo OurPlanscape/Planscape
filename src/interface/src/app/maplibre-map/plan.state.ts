@@ -25,26 +25,25 @@ export class PlanState {
   private _currentPlanId$ = new BehaviorSubject<number | null>(null);
 
   // Listen to ID changes and trigger network calls, returning typed results.
-  private currentPlanResource$: Observable<Resource<Plan>> =
-    this._currentPlanId$.pipe(
-      // we might need to tweak this for reloading plans / etc.
-      distinctUntilChanged(),
-      filter((id): id is number => !!id),
-      switchMap((id) => {
-        return concat(
-          // when loading emit object with loading
-          of({ isLoading: true }),
-          this.planService.getPlan(id.toString()).pipe(
-            // when done, emit object with loading false and data
-            map((data) => ({ data, isLoading: false }) as LoadedResult<Plan>),
-            // when we have errors, emit object with loading false and error
-            catchError((error) => of({ isLoading: false, error: error }))
-          )
-        );
-      }),
-      // ensure each new subscriber gets the cached result immediately without re-fetching
-      shareReplay(1)
-    );
+  currentPlanResource$: Observable<Resource<Plan>> = this._currentPlanId$.pipe(
+    // we might need to tweak this for reloading plans / etc.
+    distinctUntilChanged(),
+    filter((id): id is number => !!id),
+    switchMap((id) => {
+      return concat(
+        // when loading emit object with loading
+        of({ isLoading: true }),
+        this.planService.getPlan(id.toString()).pipe(
+          // when done, emit object with loading false and data
+          map((data) => ({ data, isLoading: false }) as LoadedResult<Plan>),
+          // when we have errors, emit object with loading false and error
+          catchError((error) => of({ isLoading: false, error: error }))
+        )
+      );
+    }),
+    // ensure each new subscriber gets the cached result immediately without re-fetching
+    shareReplay(1)
+  );
 
   /**
    * This observable filter currentPlanResource$ to only emit when we have a plan,
