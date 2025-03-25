@@ -10,7 +10,7 @@ import { FeaturesModule } from '../../features/features.module';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { ButtonComponent } from '@styleguide';
-import { PlanState } from '../../maplibre-map/plan.state';
+import { PlanState } from '../../plan/plan.state';
 import { Plan } from '@types';
 
 describe('NavBarComponent', () => {

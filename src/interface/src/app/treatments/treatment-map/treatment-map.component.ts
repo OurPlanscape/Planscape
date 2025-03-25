@@ -53,7 +53,7 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { ActivatedRoute, Router } from '@angular/router';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
-import { PlanState } from '../../maplibre-map/plan.state';
+import { PlanState } from '../../plan/plan.state';
 
 @UntilDestroy()
 @Component({

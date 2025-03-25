@@ -4,7 +4,7 @@ import {
   ResolveFn,
   RouterStateSnapshot,
 } from '@angular/router';
-import { PlanState } from '../maplibre-map/plan.state';
+import { PlanState } from '../plan/plan.state';
 
 export const planResolver: ResolveFn<boolean> = (
   route: ActivatedRouteSnapshot,

@@ -17,7 +17,7 @@ import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/tre
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { FeaturesModule } from 'src/app/features/features.module';
-import { PlanState } from '../../maplibre-map/plan.state';
+import { PlanState } from '../../plan/plan.state';
 
 @Component({
   selector: 'app-treatment-overview',

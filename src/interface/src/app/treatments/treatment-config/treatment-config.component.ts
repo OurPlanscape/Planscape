@@ -42,7 +42,7 @@ import { canRunTreatmentAnalysis } from '../../plan/permissions';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnalyticsService } from '@services/analytics.service';
-import { PlanState } from '../../maplibre-map/plan.state';
+import { PlanState } from '../../plan/plan.state';
 
 @UntilDestroy()
 @Component({
