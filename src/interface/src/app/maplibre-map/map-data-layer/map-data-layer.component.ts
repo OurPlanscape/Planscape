@@ -1,7 +1,6 @@
 import { Component, Input, OnChanges } from '@angular/core';
 import { makeColorFunction } from '../../data-layers/utilities';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
-import { HttpClient } from '@angular/common/http';
 import {
   LayerComponent,
   RasterSourceComponent,
@@ -20,19 +19,13 @@ export class MapDataLayerComponent implements OnChanges {
   @Input() dataLayer!: DataLayer | null;
   cogUrl = '';
 
-  //TODO: remove--example only
-  stylesUrl = '/assets/cogstyles/example.json';
-
-  constructor(private readonly client: HttpClient) {}
+  constructor() {}
 
   ngOnChanges() {
     if (this.dataLayer?.public_url) {
       this.cogUrl = `cog://${this.dataLayer?.public_url}`;
-      //TODO: fetch associated styles for this image when available
-      this.client.get(this.stylesUrl).subscribe((styleJson) => {
-        const colorFn = makeColorFunction(styleJson as any);
-        setColorFunction(this.dataLayer?.public_url ?? '', colorFn);
-      });
+      const colorFn = makeColorFunction(this.dataLayer?.styles as any);
+      setColorFunction(this.dataLayer?.public_url ?? '', colorFn);
     }
   }
 }

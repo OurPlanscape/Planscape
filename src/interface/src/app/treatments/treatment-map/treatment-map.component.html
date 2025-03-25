@@ -73,5 +73,6 @@
   </app-map-tooltip>
 
   <app-map-data-layer
-    [dataLayer]="selectedDataLayer$ | async"></app-map-data-layer>
+    *ngIf="selectedDataLayer$ | async as selectedDataLayer"
+    [dataLayer]="selectedDataLayer"></app-map-data-layer>
 </mgl-map>
