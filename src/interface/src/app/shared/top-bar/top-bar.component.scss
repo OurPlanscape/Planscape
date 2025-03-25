@@ -1,7 +1,7 @@
 @import 'variables';
-@import "colors";
-@import "mixins";
-@import "media";
+@import 'colors';
+@import 'mixins';
+@import 'media';
 
 // Top-bar styling
 .mat-toolbar {
@@ -16,7 +16,6 @@
   @include on-small() {
     padding: 0 12px;
   }
-
 
   .site-link {
     color: $color-white;
@@ -49,10 +48,11 @@
   .help.mat-icon-button {
     line-height: 36px;
   }
-
 }
 
-.user-menu, .help, .navbar-item {
+.user-menu,
+.help,
+.navbar-item {
   @include on-small() {
     display: none;
   }
@@ -75,29 +75,32 @@
   padding: 0;
 }
 
-button.navbar-item, a.navbar-item {
+button.navbar-item,
+a.navbar-item {
   cursor: pointer;
 
-  &:active, &:hover {
+  &:active,
+  &:hover {
     color: $color-light-blue;
     text-decoration: underline;
     text-underline-position: under;
   }
 }
 
-.navbar-item[aria-expanded="true"] {
+.navbar-item[aria-expanded='true'] {
   color: $color-light-blue;
   text-decoration: underline;
   text-underline-position: under;
 }
 
 .help {
-  margin-left: 20px;
+  margin-left: 16px;
+  margin-right: 8px;
 
-  &:active, &:hover {
+  &:active,
+  &:hover {
     color: $color-light-blue;
   }
-
 
   .mat-icon {
     line-height: 22px;
@@ -140,14 +143,13 @@ button.navbar-item, a.navbar-item {
     border: none;
     padding: 0;
 
-
-    &:active, &:hover {
+    &:active,
+    &:hover {
       color: $color-light-blue;
       text-decoration: underline;
       text-underline-position: under;
     }
   }
-
 }
 
 @media print {
@@ -168,4 +170,8 @@ button.navbar-item, a.navbar-item {
   .site-link img {
     filter: invert(1);
   }
+}
+
+.feedback {
+  margin-right: 16px;
 }
