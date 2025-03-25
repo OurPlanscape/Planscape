@@ -10,6 +10,8 @@ import { DataLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MatMenuModule } from '@angular/material/menu';
+import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
 
 @UntilDestroy()
 @Component({
@@ -23,6 +25,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     NgClass,
     MatRadioModule,
     FormsModule,
+    MatMenuModule,
+    DataLayerTooltipComponent,
   ],
   templateUrl: './data-layer-tree.component.html',
   styleUrl: './data-layer-tree.component.scss',
