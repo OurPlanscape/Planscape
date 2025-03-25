@@ -407,7 +407,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         source="get_public_url",
         read_only=True,
     )
-    styles = StyleSimpleSerializer(many=True)
+    styles = serializers.SerializerMethodField()
 
     def _default_raster_style(self, instance):
         stats = instance.info.get("stats")[0]
@@ -418,7 +418,11 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             return StyleSimpleSerializer(instance=instance.styles.all().first()).data
         match instance.type:
             case DataLayerType.RASTER:
-                stats = instance.info.get("stats", [])[0]
+                stats = (
+                    instance.info.get("stats", [])[0]
+                    if instance.info
+                    else {"min": 0, "max": 1}
+                )
                 return get_default_raster_style(**stats)
             case _:
                 return get_default_vector_style()
