@@ -1,5 +1,6 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
+import memoizerific from 'memoizerific';
 
 export interface NoData {
   values: number[];
@@ -19,6 +20,23 @@ export interface StyleJson {
   map_type: 'RAMP' | 'INTERVALS' | 'VALUES';
   no_data?: NoData;
   entries: Entry[];
+}
+
+const CACHE_EVICTION = 10000;
+
+function setPixelColor(
+  rgbaData: Uint8ClampedArray,
+  hex: string,
+  opacity = 1.0
+) {
+  const c = d3Color(hex);
+  if (!c) {
+    rgbaData.set([0, 0, 0, 0]);
+    return;
+  }
+  const rgbObj = c.rgb();
+  const a = Math.round(opacity * 255);
+  rgbaData.set([rgbObj.r, rgbObj.g, rgbObj.b, a]);
 }
 
 export function makeColorFunction(
@@ -51,22 +69,7 @@ export function makeColorFunction(
     };
   }
 
-  function setPixelColor(
-    rgbaData: Uint8ClampedArray,
-    hex: string,
-    opacity = 1.0
-  ) {
-    const c = d3Color(hex);
-    if (!c) {
-      rgbaData.set([0, 0, 0, 0]);
-      return;
-    }
-    const rgbObj = c.rgb();
-    const a = Math.round(opacity * 255);
-    rgbaData.set([rgbObj.r, rgbObj.g, rgbObj.b, a]);
-  }
-
-  return (pixel: number[], rgba: Uint8ClampedArray) => {
+  const colorFunction = (pixel: number[], rgba: Uint8ClampedArray) => {
     const val = pixel[0];
 
     if (no_data?.values?.includes(val)) {
@@ -118,4 +121,6 @@ export function makeColorFunction(
       }
     }
   };
+
+  return memoizerific(CACHE_EVICTION)(colorFunction);
 }

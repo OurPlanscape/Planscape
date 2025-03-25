@@ -46,6 +46,10 @@
     (clickedActionButton)="openTreatmentLegend()">
   </app-action-button>
 
+  <app-map-data-layer
+    *ngIf="selectedDataLayer$ | async as selectedDataLayer"
+    [dataLayer]="selectedDataLayer"></app-map-data-layer>
+
   <app-planning-area-layer> </app-planning-area-layer>
 
   <app-map-project-areas
@@ -71,8 +75,4 @@
     *ngIf="treatmentTooltipLngLat">
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
-
-  <app-map-data-layer
-    *ngIf="selectedDataLayer$ | async as selectedDataLayer"
-    [dataLayer]="selectedDataLayer"></app-map-data-layer>
 </mgl-map>
