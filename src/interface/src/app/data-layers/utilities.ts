@@ -21,7 +21,6 @@ export interface StyleJson {
   entries: Entry[];
 }
 
-// TODO: refactor with library options
 export function makeColorFunction(
   styleJson: StyleJson
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
@@ -71,11 +70,7 @@ export function makeColorFunction(
     const val = pixel[0];
 
     if (no_data?.values?.includes(val)) {
-      if (no_data.color) {
-        setPixelColor(rgba, no_data.color, no_data.opacity ?? 0);
-      } else {
-        rgba.set([0, 0, 0, 0]);
-      }
+      rgba.set([0, 0, 0, 0]);
       return;
     }
 
