@@ -6,7 +6,7 @@ import {
 } from '@angular/router';
 import { PlanState } from '../plan/plan.state';
 
-export const planResolver: ResolveFn<boolean> = (
+export const planLoaderResolver: ResolveFn<boolean> = (
   route: ActivatedRouteSnapshot,
   state: RouterStateSnapshot
 ) => {

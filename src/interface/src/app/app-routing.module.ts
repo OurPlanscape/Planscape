@@ -16,7 +16,7 @@ import {
 } from '@services';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
 import { numberResolver } from './resolvers/number.resolver';
-import { planResolver } from './resolvers/plan.resolver';
+import { planLoaderResolver } from './resolvers/plan-loader.resolver';
 
 const routes: Routes = [
   {
@@ -118,7 +118,7 @@ const routes: Routes = [
         path: 'plan/:planId/config/:scenarioId/treatment/:treatmentId',
         canActivate: [AuthGuard],
         resolve: {
-          planInit: planResolver,
+          planInit: planLoaderResolver,
           treatmentId: numberResolver('treatmentId', ''),
           scenarioId: numberResolver('scenarioId', ''),
         },

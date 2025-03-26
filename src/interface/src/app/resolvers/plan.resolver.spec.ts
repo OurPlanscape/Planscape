@@ -5,7 +5,7 @@ import {
   RouterStateSnapshot,
 } from '@angular/router';
 import { PlanState } from '../plan/plan.state';
-import { planResolver } from './plan.resolver';
+import { planLoaderResolver } from './plan-loader.resolver';
 import { PlanService } from '@services';
 import { MockProvider } from 'ng-mocks';
 
@@ -38,7 +38,7 @@ describe('planResolver', () => {
     } as unknown as ActivatedRouteSnapshot;
 
     const result = TestBed.runInInjectionContext(() =>
-      planResolver(route, {} as RouterStateSnapshot)
+      planLoaderResolver(route, {} as RouterStateSnapshot)
     );
 
     expect(result).toBeTrue(); // confirms the resolver always returns true
@@ -53,7 +53,7 @@ describe('planResolver', () => {
     } as unknown as ActivatedRouteSnapshot;
 
     const result = TestBed.runInInjectionContext(() =>
-      planResolver(route, {} as RouterStateSnapshot)
+      planLoaderResolver(route, {} as RouterStateSnapshot)
     );
 
     expect(result).toBeTrue();
@@ -69,7 +69,7 @@ describe('planResolver', () => {
     } as unknown as ActivatedRouteSnapshot;
 
     const result = TestBed.runInInjectionContext(() =>
-      planResolver(route, {} as RouterStateSnapshot)
+      planLoaderResolver(route, {} as RouterStateSnapshot)
     );
 
     expect(result).toBeTrue();
@@ -86,7 +86,7 @@ describe('planResolver', () => {
     } as unknown as ActivatedRouteSnapshot;
 
     const result = TestBed.runInInjectionContext(() =>
-      planResolver(route, {} as RouterStateSnapshot)
+      planLoaderResolver(route, {} as RouterStateSnapshot)
     );
 
     expect(result).toBeTrue();
