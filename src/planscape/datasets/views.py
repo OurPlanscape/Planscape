@@ -110,7 +110,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
                 page,
                 many=True,
             )
-            return self.get_paginated_response(serializer.data)
+            return self.get_paginated_response(out_serializer.data)
         out_serializer = SearchResultsSerializer(
             list(search_results),
             many=True,
