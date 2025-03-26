@@ -180,6 +180,7 @@ class ScenarioOrigin(models.TextChoices):
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     name = models.CharField(max_length=120, help_text="Name of the Treatment Goal.")
+    description = models.TextField(null=True, help_text="Treatment Goal description.")
     priorities = models.JSONField(
         null=True, help_text="Treatment Goal priorities.", encoder=DjangoJSONEncoder
     )
@@ -244,7 +245,7 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     treatment_goal = models.ForeignKey(
         TreatmentGoal,
         related_name="treatment_goals",
-        on_delete=models.SET_NULL,
+        on_delete=models.RESTRICT,
         null=True,
         help_text="Treatment Goal of the Scenario.",
     )
