@@ -35,6 +35,8 @@ def copy_treatment_goals_from_configuration(apps, schema_editor):
             configuration = scenario.configuration
             question_id = configuration.get("question_id")
             tg_question = treatment_goals.get(question_id)
+            if not tg_question:
+                continue
 
             name = tg_question.get("short_question_text")
             long_question_text = tg_question.get("long_question_text")
