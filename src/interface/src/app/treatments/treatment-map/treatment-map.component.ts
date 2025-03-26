@@ -136,7 +136,7 @@ export class TreatmentMapComponent {
    */
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
-  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
+  selectedDataLayer$ = this.dataLayersState.selectedDataLayer$;
 
   /**
    * The name of the source layer used to load stands, and later check if loaded
@@ -178,6 +178,11 @@ export class TreatmentMapComponent {
   showMapControls$ = this.mapConfigState.showMapControls$;
 
   /**
+   * Observable to determine if the data layer is in a loading state.
+   */
+  loadingDataLayer$ = this.dataLayersState.loadingLayer$;
+
+  /**
    * The LongLat position of the helper tooltip attached to the mouse cursor when selecting stands.
    * If null, the tooltip is hidden.
    */
@@ -188,8 +193,6 @@ export class TreatmentMapComponent {
    */
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
-
-  loadingLayer$ = this.dataLayersState.loadingLayer$;
 
   get scenarioId() {
     return this.treatmentsState.getScenarioId();
@@ -218,7 +221,6 @@ export class TreatmentMapComponent {
     private featureService: FeatureService,
     private dataLayersState: DataLayersStateService,
     private renderer: Renderer2,
-    private dataLayersStateService: DataLayersStateService,
     private route: ActivatedRoute,
     private router: Router
   ) {
@@ -290,11 +292,20 @@ export class TreatmentMapComponent {
     this.mapLibreMap = event;
     this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
     this.listenForZoom();
+    this.listenForLoadedRaster();
   }
 
   listenForZoom() {
     this.mapLibreMap.on('zoom', () => {
       this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
+    });
+  }
+
+  listenForLoadedRaster() {
+    this.mapLibreMap.on('data', (event: any) => {
+      if (event.sourceId === 'rasterImage' && event.isSourceLoaded) {
+        this.dataLayersState.setDataLayerLoading(false);
+      }
     });
   }
 
