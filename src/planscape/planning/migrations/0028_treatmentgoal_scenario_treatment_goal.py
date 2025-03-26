@@ -16,15 +16,16 @@ def copy_treatment_goals_from_configuration(apps, schema_editor):
             for goal in tg:
                 questions = goal.get("questions")
                 for question in questions:
-                    treatment_goals.update(
-                        {   
-                            question.get("id"): {
-                            "name": question.get("short_question_text"),
-                            "priorities": question.get("scenario_priorities"),
+                    treatment_goals = {
+                        **treatment_goals,
+                        question.get("id"): {
+                            "short_question_text": question.get("short_question_text"),
+                            "scenario_priorities": question.get("scenario_priorities"),
                             "stand_thresholds": question.get("stand_thresholds"),
-                            }
+                            "long_question_text": question.get("long_question_text"),
+                            "description": question.get("description"),
                         }
-                    )
+                    }
             
 
     Scenario = apps.get_model("planning", "Scenario")
@@ -35,10 +36,22 @@ def copy_treatment_goals_from_configuration(apps, schema_editor):
             question_id = configuration.get("question_id")
             tg_question = treatment_goals.get(question_id)
 
+            name = tg_question.get("short_question_text")
+            long_question_text = tg_question.get("long_question_text")
+            description = f"{long_question_text}"
+            descriptions = tg_question.get("description")
+            for text in descriptions:
+                description += f"\n{text}"
+
+            priorities = tg_question.get("scenario_priorities")
+            stand_thresholds = tg_question.get("stand_thresholds")
+
             treatment_goal = TreatmentGoal.objects.get_or_create(
-                name=tg_question.get("name"),
-                priorities=configuration.get("scenario_priorities"),
-                stand_thresholds=configuration.get("stand_thresholds"),
+                id=question_id,
+                name=name,
+                description=description,
+                priorities=priorities,
+                stand_thresholds=stand_thresholds,
             )
             scenario.treatment_goal = treatment_goal
             scenario.save()
@@ -79,6 +92,13 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
+                    "description",
+                    models.TextField(
+                        help_text="Treatment Goal description.",
+                        null=True,
+                    ),
+                ),
+                (
                     "priorities",
                     models.JSONField(
                         encoder=django.core.serializers.json.DjangoJSONEncoder,
@@ -112,7 +132,7 @@ class Migration(migrations.Migration):
             field=models.ForeignKey(
                 help_text="Treatment Goal of the Scenario.",
                 null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
+                on_delete=django.db.models.deletion.RESTRICT,
                 related_name="treatment_goals",
                 to="planning.treatmentgoal",
             ),
