@@ -479,7 +479,7 @@ class FindAnythingSerializer(serializers.Serializer):
     offset = serializers.IntegerField(required=False, min_value=1)
 
 
-class SearchResultSerialzier(serializers.Serializer):
+class SearchResultsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.CharField()
