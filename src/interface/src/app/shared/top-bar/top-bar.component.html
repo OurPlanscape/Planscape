@@ -12,9 +12,12 @@
   <ng-container *ngIf="(displayName$ | async) !== undefined">
     <!-- Sign in with menu if loged in is false -->
     <button
+      sg-button
       *ngIf="(loggedIn$ | async) === false"
       [matMenuTriggerFor]="dotMenu"
       class="navbar-item mat-body-2 user-menu"
+      [outlined]="true"
+      variant="link"
       data-id="menu-trigger">
       {{ displayName$ | async }}
     </button>
@@ -42,6 +45,9 @@
 
     <!-- User with menu if loged in is true -->
     <button
+      sg-button
+      [outlined]="true"
+      variant="link"
       *ngIf="(loggedIn$ | async) === true"
       [matMenuTriggerFor]="dotMenu"
       class="navbar-item mat-body-2 user-menu"

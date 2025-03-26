@@ -175,3 +175,14 @@ a.navbar-item {
 .feedback {
   margin-right: 16px;
 }
+
+button.user-menu.link-button {
+  color: $color-white;
+
+  &:active,
+  &:hover {
+    color: $color-light-blue;
+    text-decoration: underline;
+    text-underline-position: under;
+  }
+}
