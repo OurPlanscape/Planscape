@@ -55,7 +55,7 @@ import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
-
+import { ChangeDetectorRef } from '@angular/core';
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
@@ -136,7 +136,7 @@ export class TreatmentMapComponent {
    */
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
-  selectedDataLayer$ = this.dataLayersState.selectedDataLayer$;
+  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
   /**
    * The name of the source layer used to load stands, and later check if loaded
@@ -180,7 +180,7 @@ export class TreatmentMapComponent {
   /**
    * Observable to determine if the data layer is in a loading state.
    */
-  loadingDataLayer$ = this.dataLayersState.loadingLayer$;
+  loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
 
   /**
    * The LongLat position of the helper tooltip attached to the mouse cursor when selecting stands.
@@ -219,10 +219,11 @@ export class TreatmentMapComponent {
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
-    private dataLayersState: DataLayersStateService,
+    private dataLayersStateService: DataLayersStateService,
     private renderer: Renderer2,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -304,7 +305,8 @@ export class TreatmentMapComponent {
   listenForLoadedRaster() {
     this.mapLibreMap.on('data', (event: any) => {
       if (event.sourceId === 'rasterImage' && event.isSourceLoaded) {
-        this.dataLayersState.setDataLayerLoading(false);
+        this.dataLayersStateService.setDataLayerLoading(false);
+        this.cdr.detectChanges();
       }
     });
   }
