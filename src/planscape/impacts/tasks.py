@@ -1,4 +1,5 @@
 import logging
+from sentry_sdk import metrics
 from typing import Tuple
 from urllib.parse import urljoin
 from celery import chord, chain
@@ -131,6 +132,27 @@ def async_set_status(
         setattr(treatment_plan, attr, timezone.now())
         treatment_plan.save()
         log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+
+    if not start and treatment_plan.started_at and treatment_plan.finished_at:
+        try:
+            elapsed_time_seconds = (
+                treatment_plan.finished_at - treatment_plan.started_at
+            ).total_seconds()
+            log.info(
+                f"Elapsed time for treatment plan {treatment_plan_pk}: {elapsed_time_seconds} seconds."
+            )
+            metrics.gauge(
+                key="tx_plan_elapsed_time",
+                value=elapsed_time_seconds,
+                unit="seconds",
+                tags={
+                    "stand_size": treatment_plan.scenario.get_stand_size(),
+                },
+            )
+        except Exception as e:
+            log.exception(
+                "Failed to send elapsed time metric to Sentry.", extra={"exception": e}
+            )
 
     return (True, treatment_plan_pk)
 
