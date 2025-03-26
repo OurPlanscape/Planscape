@@ -9,6 +9,7 @@ import {
   MapComponent,
   PopupComponent,
   VectorSourceComponent,
+  RasterSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   LngLat,
@@ -47,11 +48,12 @@ import { FeaturesModule } from 'src/app/features/features.module';
 import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 
 @UntilDestroy()
@@ -62,6 +64,7 @@ import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-o
     NgForOf,
     MapComponent,
     VectorSourceComponent,
+    RasterSourceComponent,
     LayerComponent,
     FeatureComponent,
     DraggableDirective,
@@ -84,6 +87,7 @@ import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-o
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
+    MapDataLayerComponent,
     PercentPipe,
     DataLayerNameComponent,
   ],
@@ -131,6 +135,8 @@ export class TreatmentMapComponent {
    *  If not, and if we are showing treatments, we show the action button, instead.
    */
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
+
+  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
   /**
    * The name of the source layer used to load stands, and later check if loaded
@@ -181,7 +187,6 @@ export class TreatmentMapComponent {
    * permissions for current user
    */
   userCanEditStands: boolean = false;
-
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
   loadingLayer$ = this.dataLayersState.loadingLayer$;
@@ -213,6 +218,7 @@ export class TreatmentMapComponent {
     private featureService: FeatureService,
     private dataLayersState: DataLayersStateService,
     private renderer: Renderer2,
+    private dataLayersStateService: DataLayersStateService,
     private route: ActivatedRoute,
     private router: Router
   ) {
