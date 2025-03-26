@@ -13,6 +13,9 @@
     (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
 </app-map-nav-bar>
 
+<app-loading-layer-overlay *ngIf="loadingLayer$ | async">
+</app-loading-layer-overlay>
+
 <mgl-map
   *ngIf="mapExtent$ | async; let bounds"
   (mapLoad)="mapLoaded($event)"
