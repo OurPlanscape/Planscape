@@ -15,7 +15,11 @@
         (click)="selectDataLayer(node.item)">
         {{ node.name }}
       </mat-radio-button>
-
+      <mat-spinner
+        diameter="20"
+        *ngIf="
+          currentLayerId === node.item.id && (loadingDataLayer$ | async)
+        "></mat-spinner>
       <button
         sg-button
         variant="icon-only"

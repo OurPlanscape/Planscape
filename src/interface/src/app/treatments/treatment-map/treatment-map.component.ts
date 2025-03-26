@@ -55,7 +55,7 @@ import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
-import { ChangeDetectorRef } from '@angular/core';
+
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
@@ -222,8 +222,7 @@ export class TreatmentMapComponent {
     private dataLayersStateService: DataLayersStateService,
     private renderer: Renderer2,
     private route: ActivatedRoute,
-    private router: Router,
-    private cdr: ChangeDetectorRef
+    private router: Router
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -303,12 +302,13 @@ export class TreatmentMapComponent {
   }
 
   listenForLoadedRaster() {
-    this.mapLibreMap.on('data', (event: any) => {
-      if (event.sourceId === 'rasterImage' && event.isSourceLoaded) {
-        this.dataLayersStateService.setDataLayerLoading(false);
-        this.cdr.detectChanges();
-      }
-    });
+    if (this.mapLibreMap.getSource('rasterImage')) {
+      this.mapLibreMap.on('data', (event: any) => {
+        if (event.sourceId === 'rasterImage' && event.isSourceLoaded) {
+          this.dataLayersStateService.setDataLayerLoading(false);
+        }
+      });
+    }
   }
 
   onMapMouseMove(event: MapMouseEvent): void {
