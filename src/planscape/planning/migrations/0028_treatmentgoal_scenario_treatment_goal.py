@@ -46,7 +46,7 @@ def copy_treatment_goals_from_configuration(apps, schema_editor):
             priorities = tg_question.get("scenario_priorities")
             stand_thresholds = tg_question.get("stand_thresholds")
 
-            treatment_goal = TreatmentGoal.objects.get_or_create(
+            treatment_goal, _ = TreatmentGoal.objects.get_or_create(
                 id=question_id,
                 name=name,
                 description=description,
