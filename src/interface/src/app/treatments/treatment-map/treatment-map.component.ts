@@ -54,6 +54,7 @@ import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/m
 import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
+import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 
 @UntilDestroy()
 @Component({
@@ -68,6 +69,7 @@ import { ActivatedRoute, Router } from '@angular/router';
     FeatureComponent,
     DraggableDirective,
     GeoJSONSourceComponent,
+    LoadingLayerOverlayComponent,
     MapActionButtonComponent,
     MapStandsComponent,
     MapRectangleComponent,
@@ -187,6 +189,8 @@ export class TreatmentMapComponent {
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
+  loadingLayer$ = this.dataLayersState.loadingLayer$;
+
   get scenarioId() {
     return this.treatmentsState.getScenarioId();
   }
@@ -212,6 +216,7 @@ export class TreatmentMapComponent {
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
+    private dataLayersState: DataLayersStateService,
     private renderer: Renderer2,
     private dataLayersStateService: DataLayersStateService,
     private route: ActivatedRoute,
