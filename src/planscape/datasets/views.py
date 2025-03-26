@@ -103,7 +103,8 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             term=term,
             type=type,
         )
-        page = self.paginate_queryset(results.values())  # type: ignore
+        search_results = list(results.values())
+        page = self.paginate_queryset(search_results)  # type: ignore
         if page is not None:
             out_serializer = SearchResultsSerializer(
                 page,
@@ -111,7 +112,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             )
             return self.get_paginated_response(serializer.data)
         out_serializer = SearchResultsSerializer(
-            list(results.values()),
+            list(search_results),
             many=True,
         )
         return Response(out_serializer.data, status=status.HTTP_200_OK)
