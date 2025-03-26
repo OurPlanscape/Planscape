@@ -3,11 +3,12 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Dict, Optional, Collection
+from typing import Any, Collection, Dict, Optional
 from uuid import uuid4
 
 import mmh3
 from actstream import action
+from cacheops import cached, invalidate_model
 from core.s3 import create_upload_url, is_s3_file, s3_filename
 from django.conf import settings
 from django.contrib.auth.models import User
@@ -105,10 +106,32 @@ def geometry_from_info(
             ).transform(
                 settings.CRS_INTERNAL_REPRESENTATION,
                 clone=True,
-            )
+            )  # type: ignore
         case _:
             log.warning("Not yet implemented for vectors.")
             return None
+
+
+@transaction.atomic()
+def create_dataset(
+    name: str,
+    organization: Organization,
+    created_by: User,
+    description: Optional[str] = None,
+    visibility: VisibilityOptions = VisibilityOptions.PUBLIC,
+    version: Optional[str] = None,
+    **kwargs,
+) -> Dataset:
+    dataset = Dataset.objects.create(
+        name=name,
+        organization=organization,
+        created_by=created_by,
+        description=description,
+        visibility=visibility,
+        version=version,
+    )
+    invalidate_model(Dataset)
+    return dataset
 
 
 @transaction.atomic()
@@ -137,12 +160,10 @@ def create_style(
     action.send(created_by, verb="created", action_object=style)
 
     if datalayers:
-        datalayer_qs = DataLayer.objects.filter(id__in=datalayers)
-        if datalayer_qs.count() != len(datalayers):
-            raise ValueError("One or more provided datalayer IDs do not exist.")
-        for datalayer in datalayer_qs:
+        for datalayer in datalayers:
             assign_style(created_by=created_by, style=style, datalayer=datalayer)
 
+    invalidate_model(Style)
     return {"style": style, "possibly_exists": hash_already_exists}
 
 
@@ -174,7 +195,7 @@ def assign_style(
         action_object=datalayer,
         target=style,
     )
-
+    invalidate_model(DataLayer)
     return datalayer_has_style
 
 
@@ -239,13 +260,22 @@ def create_datalayer(
         )
 
     action.send(created_by, verb="created", action_object=datalayer)
+    invalidate_model(DataLayer)
     return {
         "datalayer": datalayer,
         "upload_to": upload_to,
     }
 
 
-def find_anything(term: str) -> Dict[str, SearchResult]:
+@cached(timeout=settings.FIND_ANYTHING_TTL)
+def find_anything(term: str, type: Optional[str] = None) -> Dict[str, SearchResult]:
+    datalayer_filter = {
+        "name__icontains": term,
+        "dataset__visibility": VisibilityOptions.PUBLIC,
+        "status": DataLayerStatus.READY,
+    }
+    if type:
+        datalayer_filter["type"] = type
     raw_results = [
         [
             organization_to_search_result(x)
@@ -264,11 +294,7 @@ def find_anything(term: str) -> Dict[str, SearchResult]:
         ],
         [
             datalayer_to_search_result(x)
-            for x in DataLayer.objects.filter(
-                name__icontains=term,
-                dataset__visibility=VisibilityOptions.PUBLIC,
-                status=DataLayerStatus.READY,
-            )
+            for x in DataLayer.objects.filter(**datalayer_filter)
         ],
     ]
     search_results = itertools.chain.from_iterable(raw_results)

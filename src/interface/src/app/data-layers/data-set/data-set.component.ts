@@ -1,9 +1,11 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { SearchResult } from '@types';
+import { DataLayer, DataLayerSearchResult } from '@types';
 import { ButtonComponent, HighlighterDirective } from '@styleguide';
 import { MatRadioModule } from '@angular/material/radio';
+import { DataLayersStateService } from '../data-layers.state.service';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-data-set',
@@ -15,6 +17,7 @@ import { MatRadioModule } from '@angular/material/radio';
     NgIf,
     MatRadioModule,
     HighlighterDirective,
+    AsyncPipe,
   ],
   templateUrl: './data-set.component.html',
   styleUrl: './data-set.component.scss',
@@ -22,9 +25,19 @@ import { MatRadioModule } from '@angular/material/radio';
 export class DataSetComponent {
   @Input() name = '';
   @Input() organizationName = '';
-  @Input() layers?: SearchResult[];
+  @Input() layers?: DataLayerSearchResult[];
   @Input() path?: string[];
   @Input() searchTerm = '';
 
   @Output() selectDataset = new EventEmitter<void>();
+
+  selectedDataLayerId$ = this.dataLayersStateService.selectedDataLayer$.pipe(
+    map((dl) => dl?.id)
+  );
+
+  constructor(private dataLayersStateService: DataLayersStateService) {}
+
+  selectDataLayer(dataLayer: DataLayer) {
+    this.dataLayersStateService.selectDataLayer(dataLayer);
+  }
 }

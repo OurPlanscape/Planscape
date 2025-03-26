@@ -18,7 +18,11 @@ import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
 import { SearchResultsComponent } from '../search-results/search-results.component';
 import { DataSetComponent } from '../data-set/data-set.component';
+import { UntilDestroy } from '@ngneat/until-destroy';
+import { MatRadioModule } from '@angular/material/radio';
+import { FormsModule } from '@angular/forms';
 
+@UntilDestroy()
 @Component({
   selector: 'app-data-layers',
   standalone: true,
@@ -39,6 +43,8 @@ import { DataSetComponent } from '../data-set/data-set.component';
     SearchResultsComponent,
     DataSetComponent,
     NoResultsComponent,
+    MatRadioModule,
+    FormsModule,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -48,10 +54,9 @@ export class DataLayersComponent {
 
   loading$ = this.dataLayersStateService.loading$;
 
-  pageMode: 'browse' | 'search' = 'browse';
-
   dataSets$ = this.dataLayersStateService.dataSets$;
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
+  selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
   searchTerm$ = this.dataLayersStateService.searchTerm$;
   resultCount: number | null = null;
@@ -60,7 +65,6 @@ export class DataLayersComponent {
     this.dataLayersStateService.searchResults$.pipe(
       startWith(null),
       map((results) => {
-        this.pageMode = 'search';
         if (results) {
           this.resultCount = results.length;
           return groupSearchResults(results);
@@ -75,10 +79,10 @@ export class DataLayersComponent {
     );
 
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
+  isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
   search(term: string) {
-    this.pageMode = 'search';
-    this.searchTerm$.next(term);
+    this.dataLayersStateService.search(term);
   }
 
   viewDatasetCategories(dataSet: DataSet) {
@@ -86,28 +90,18 @@ export class DataLayersComponent {
   }
 
   viewResultDataSet(dataSet: DataSet) {
-    this.pageMode = 'browse';
     this.dataLayersStateService.selectDataSet(dataSet);
   }
 
   goBack() {
-    if (this.searchTerm$.value) {
-      this.pageMode = 'search';
-    }
-    this.dataLayersStateService.clearDataSet();
+    this.dataLayersStateService.goBackToSearchResults();
   }
 
   clearSearch() {
-    this.search('');
-    this.pageMode = 'browse';
-    this.dataLayersStateService.clearDataSet();
+    this.dataLayersStateService.clearSearch();
   }
 
-  get isOnSearchMode() {
-    return this.pageMode === 'search';
-  }
-
-  get isOnBrowseMode() {
-    return this.pageMode === 'browse';
+  clearDataLayer() {
+    this.dataLayersStateService.clearDataLayer();
   }
 }

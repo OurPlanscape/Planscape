@@ -5,6 +5,7 @@ import requests
 from core.base_commands import PlanscapeCommand
 from core.pprint import pprint
 from django.core.management.base import CommandParser
+from django.db import IntegrityError
 from pathlib import Path
 
 
@@ -106,9 +107,10 @@ class Command(PlanscapeCommand):
 
         successes = []
         failures = []
+        skipped = []
 
         dir_path = Path(directory)
-        for file_path in dir_path.glob("*.json"):
+        for file_path in dir_path.rglob("*.json"):
             try:
                 with file_path.open("r", encoding="utf-8") as f:
                     style_data = json.load(f)
@@ -132,8 +134,10 @@ class Command(PlanscapeCommand):
                 datalayer_ids.append(dl_data["results"][0]["id"])
             else:
                 self.stderr.write(
-                    f"WARNING: No matching datalayer found for style '{base_name}'. Continuing..."
+                    f"ERROR: No matching datalayer found for style '{base_name}'. Placing this file in failures and continuing..."
                 )
+                failures.append(str(file_path))
+                continue
 
             map_type = style_data.get("map_type", None)
             RASTER_TYPES = ("RAMP", "INTERVALS", "VALUES")
@@ -155,21 +159,49 @@ class Command(PlanscapeCommand):
                 continue
 
             style_url = f"{base_url}/v2/admin/styles/"
+            self.stdout.write(f"Sending payload:\n{json.dumps(payload, indent=2)}")
             response = requests.post(style_url, headers=headers, json=payload)
-            result = response.json()
+
             if response.status_code == 201:
+                result = response.json()
                 self.stdout.write(
                     f"Created style from {file_path}: {json.dumps(result, indent=2)}"
                 )
                 successes.append(str(file_path))
+            elif response.status_code == 400:
+                try:
+                    result = response.json()
+                    error_detail = str(result)
+                    if (
+                        "style_unique_constraint" in error_detail
+                        or "already exists" in error_detail
+                    ):
+                        self.stderr.write(
+                            f"SKIPPED (duplicate name): '{base_name}' from {file_path}"
+                        )
+                        skipped.append(str(file_path))
+                    else:
+                        self.stderr.write(
+                            f"ERROR creating style from {file_path}: {json.dumps(result, indent=2)}"
+                        )
+                        failures.append(str(file_path))
+                except Exception as e:
+                    self.stderr.write(
+                        f"ERROR (non-JSON response) from {file_path}: {e}"
+                    )
+                    failures.append(str(file_path))
             else:
-                self.stderr.write(
-                    f"ERROR creating style from {file_path}: {json.dumps(result, indent=2)}"
-                )
+                try:
+                    result = response.json()
+                except Exception:
+                    result = response.text
+                self.stderr.write(f"ERROR creating style from {file_path}: {result}")
                 failures.append(str(file_path))
 
         self.stdout.write(
-            f"Import complete: {len(successes)} successes, {len(failures)} failures."
+            f"Import complete: {len(successes)} successes, {len(skipped)} skipped (duplicates), {len(failures)} failures."
         )
+        if skipped:
+            self.stdout.write(f"Skipped files (duplicates): {', '.join(skipped)}")
         if failures:
             self.stderr.write(f"Failed files: {', '.join(failures)}")

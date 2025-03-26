@@ -6,6 +6,7 @@ from organizations.models import Organization
 from rest_framework import serializers
 
 from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
+from datasets.styles import get_default_raster_style, get_default_vector_style
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -241,21 +242,31 @@ class EntrySerializer(serializers.Serializer):
     )
     label = serializers.CharField(
         required=False,
-        default="",
-    )  # type: ignore
+        allow_null=True,
+    )
 
 
 class NoDataSerializer(serializers.Serializer):
-    values = serializers.ListField(child=serializers.FloatField())
-    color = serializers.RegexField(regex=COLOR_REGEX)
+    values = serializers.ListField(
+        child=serializers.FloatField(),
+        required=False,
+        allow_null=True,
+        default=list,
+    )
+    color = serializers.RegexField(
+        regex=COLOR_REGEX,
+        required=False,
+        allow_null=True,
+    )
     opacity = serializers.FloatField(
         min_value=0,
         max_value=1,
-        default=1,
+        default=0,
+        allow_null=True,
     )
     label = serializers.CharField(
         required=False,
-        default="",
+        allow_null=True,
     )
 
 
@@ -396,7 +407,25 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         source="get_public_url",
         read_only=True,
     )
-    styles = StyleSimpleSerializer(many=True)
+    styles = serializers.SerializerMethodField()
+
+    def _default_raster_style(self, instance):
+        stats = instance.info.get("stats")[0]
+        return get_default_raster_style(**stats)
+
+    def get_styles(self, instance):
+        if instance.styles.all().exists():
+            return StyleSimpleSerializer(instance=instance.styles.all().first()).data
+        match instance.type:
+            case DataLayerType.RASTER:
+                stats = (
+                    instance.info.get("stats", [])[0]
+                    if instance.info
+                    else {"min": 0, "max": 1}
+                )
+                return get_default_raster_style(**stats)
+            case _:
+                return get_default_vector_style()
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
@@ -426,6 +455,22 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         )
 
 
+class BrowseDataLayerFilterSerializer(serializers.Serializer):
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    name = serializers.CharField(
+        required=False,
+    )
+    type = serializers.ChoiceField(
+        choices=DataLayerType.choices,
+        required=False,
+        allow_null=True,
+    )
+
+
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
 
@@ -434,7 +479,7 @@ class FindAnythingSerializer(serializers.Serializer):
     offset = serializers.IntegerField(required=False, min_value=1)
 
 
-class SearchResultSerialzier(serializers.Serializer):
+class SearchResultsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.CharField()

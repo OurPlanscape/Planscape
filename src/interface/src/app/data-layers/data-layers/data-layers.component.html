@@ -12,57 +12,68 @@
     icon="close"
     (click)="clearSearch()"></button>
 </div>
-<!--When performing search, show results.-->
-<ng-container *ngIf="isOnSearchMode">
-  <ng-container *ngIf="searchTerm$ | async as searchTerm">
-    <div *ngIf="results$ | async as results">
-      <div *ngIf="resultCount" class="result-count">
-        {{ resultCount }} Results for "{{ searchTerm }}"
+<div class="scrollable">
+  <!--When performing search, show results.-->
+  <ng-container *ngIf="(isBrowsing$ | async) === false">
+    <ng-container *ngIf="searchTerm$ | async as searchTerm">
+      <div *ngIf="results$ | async as results">
+        <div *ngIf="resultCount" class="result-count">
+          {{ resultCount }} Results for "{{ searchTerm }}"
+        </div>
+        <app-search-results
+          [searchTerm]="searchTerm"
+          [results]="results"
+          (clickDataset)="viewResultDataSet($event)"></app-search-results>
+        <div *ngIf="resultCount === 0">
+          <sg-no-results></sg-no-results>
+        </div>
       </div>
-      <app-search-results
-        [searchTerm]="searchTerm"
-        [results]="results"
-        (clickDataset)="viewResultDataSet($event)"></app-search-results>
-      <div *ngIf="resultCount === 0">
-        <sg-no-results></sg-no-results>
-      </div>
-    </div>
-  </ng-container>
-</ng-container>
-
-<!--When browsing-->
-<!--When a dataset is selected-->
-<ng-container *ngIf="isOnBrowseMode">
-  <!--show link back to list datasets-->
-  <ng-container
-    *ngIf="selectedDataSet$ | async as selectedDataSet; else listDataSets">
-    <div (click)="goBack()" class="data-set">
-      <mat-icon *ngIf="selectedDataSet" class="icon-back">arrow_back</mat-icon>
-      <div class="data-set-data">
-        <div class="selected-name">{{ selectedDataSet.name }}</div>
-        <div class="selected-org">{{ selectedDataSet.organization.name }}</div>
-      </div>
-    </div>
-
-    <app-data-layer-tree></app-data-layer-tree>
-
-    <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
-  </ng-container>
-
-  <!--Listing Datasets, no selection yet-->
-  <ng-template #listDataSets>
-    <ng-container *ngIf="dataSets$ | async; let dataSets">
-      <app-data-set
-        *ngFor="let dataSet of dataSets.results"
-        (selectDataset)="viewDatasetCategories(dataSet)"
-        [name]="dataSet.name"
-        [organizationName]="dataSet.organization.name">
-      </app-data-set>
     </ng-container>
-  </ng-template>
-</ng-container>
+  </ng-container>
 
-<mat-spinner
-  *ngIf="loading$ | async"
-  diameter="20"
-  class="loader"></mat-spinner>
+  <!--When browsing-->
+  <!--When a dataset is selected-->
+  <ng-container *ngIf="isBrowsing$ | async">
+    <!--show link back to list datasets-->
+    <ng-container
+      *ngIf="selectedDataSet$ | async as selectedDataSet; else listDataSets">
+      <div (click)="goBack()" class="data-set">
+        <mat-icon *ngIf="selectedDataSet" class="icon-back"
+          >arrow_back
+        </mat-icon>
+        <div class="data-set-data">
+          <div class="selected-name">{{ selectedDataSet.name }}</div>
+          <div class="selected-org">
+            {{ selectedDataSet.organization.name }}
+          </div>
+        </div>
+      </div>
+
+      <app-data-layer-tree></app-data-layer-tree>
+
+      <div *ngIf="hasNoData$ | async" class="no-data">No data available.</div>
+    </ng-container>
+
+    <!--Listing Datasets, no selection yet-->
+    <ng-template #listDataSets>
+      <ng-container *ngIf="dataSets$ | async; let dataSets">
+        <app-data-set
+          *ngFor="let dataSet of dataSets.results"
+          (selectDataset)="viewDatasetCategories(dataSet)"
+          [name]="dataSet.name"
+          [organizationName]="dataSet.organization.name">
+        </app-data-set>
+      </ng-container>
+    </ng-template>
+  </ng-container>
+
+  <mat-spinner
+    *ngIf="loading$ | async"
+    diameter="20"
+    class="loader"></mat-spinner>
+</div>
+<div class="footer" *ngIf="selectedDataLayer$ | async">
+  <button sg-button (click)="clearDataLayer()" variant="text" class="clear-btn">
+    Clear
+  </button>
+</div>

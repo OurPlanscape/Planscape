@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe, JsonPipe, NgForOf, NgIf } from '@angular/common';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { TreatmentsState } from '../treatments.state';
 import { Prescription, TreatmentSummary } from '@types';
@@ -18,7 +18,6 @@ import {
   selector: 'app-project-areas-tab',
   standalone: true,
   imports: [
-    JsonPipe,
     NgForOf,
     NgIf,
     MatIconModule,
