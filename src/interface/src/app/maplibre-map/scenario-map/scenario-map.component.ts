@@ -9,13 +9,13 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { PlanState } from '../plan.state';
-import { BehaviorSubject, filter, map } from 'rxjs';
+import { filter, map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { ActivatedRoute } from '@angular/router';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+import { PlanState } from '../../plan/plan.state';
 
 @Component({
   selector: 'app-scenario-map',
@@ -53,14 +53,14 @@ export class ScenarioMapComponent {
    * Observable that provides the url to load the selected map base layer
    */
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
-  //placeholder until we add the layers to update
-  projectLayerOpacity$ = new BehaviorSubject<number>(1);
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {
       return getBoundsFromGeometry(geometry);
     })
   );
+
+  projectAreasOpacity$ = this.mapConfigState.projectAreasOpacity$;
 
   // TODO: Get the count from the currentScenario in scenarioState once we create it.
   projectAreaCount$ = this.scenarioService.getScenario(this.scenarioId).pipe(
@@ -75,7 +75,7 @@ export class ScenarioMapComponent {
   }
 
   handleOpacityChange(opacity: number) {
-    // just a placeholder until we include the layer this changes
+    this.mapConfigState.setProjectAreasOpacity(opacity);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

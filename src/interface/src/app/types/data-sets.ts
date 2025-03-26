@@ -78,6 +78,7 @@ export interface DataLayer {
   metadata: Metadata | null;
   styles: Styles[];
   geometry: Geometry;
+  public_url: string;
 }
 
 export interface SearchResult {

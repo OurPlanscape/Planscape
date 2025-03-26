@@ -4,7 +4,7 @@
     [minValue]="0"
     [maxValue]="1"
     [step]="0.01"
-    [sliderValue]="(projectLayerOpacity$ | async) || 0"
+    [sliderValue]="(projectAreasOpacity$ | async) ?? 0.5"
     (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
 </app-map-nav-bar>
 
