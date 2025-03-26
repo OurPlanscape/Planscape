@@ -46,6 +46,12 @@
     (clickedActionButton)="openTreatmentLegend()">
   </app-action-button>
 
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
   <app-map-data-layer></app-map-data-layer>
 
   <app-planning-area-layer> </app-planning-area-layer>
