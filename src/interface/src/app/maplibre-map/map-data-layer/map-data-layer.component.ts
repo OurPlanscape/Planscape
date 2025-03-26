@@ -32,6 +32,8 @@ export class MapDataLayerComponent {
           this.cogUrl = `cog://${dataLayer?.public_url}`;
           const colorFn = makeColorFunction(dataLayer?.styles as any);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
+        } else {
+          this.dataLayer = null;
         }
       });
   }

@@ -1,6 +1,5 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
-import memoizerific from 'memoizerific';
 
 export interface NoData {
   values: number[];
@@ -22,28 +21,12 @@ export interface StyleJson {
   entries: Entry[];
 }
 
-const CACHE_EVICTION = 10000;
-
-function setPixelColor(
-  rgbaData: Uint8ClampedArray,
-  hex: string,
-  opacity = 1.0
-) {
-  const c = d3Color(hex);
-  if (!c) {
-    rgbaData.set([0, 0, 0, 0]);
-    return;
-  }
-  const rgbObj = c.rgb();
-  const a = Math.round(opacity * 255);
-  rgbaData.set([rgbObj.r, rgbObj.g, rgbObj.b, a]);
-}
-
 export function makeColorFunction(
   styleJson: StyleJson
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
   const { map_type, no_data, entries } = styleJson;
-  const sorted = entries.slice().sort((a, b) => a.value - b.value);
+  const sorted = [...entries].sort((a, b) => a.value - b.value);
+
   // For a RAMP, build a scale
   let rampColorFn: ((val: number) => [number, number, number, number]) | null =
     null;
@@ -67,6 +50,21 @@ export function makeColorFunction(
       const a = alphaScale(val);
       return [rgbObj.r, rgbObj.g, rgbObj.b, a];
     };
+  }
+
+  function setPixelColor(
+    rgbaData: Uint8ClampedArray,
+    hex: string,
+    opacity = 1.0
+  ) {
+    const c = d3Color(hex);
+    if (!c) {
+      rgbaData.set([0, 0, 0, 0]);
+      return;
+    }
+    const rgbObj = c.rgb();
+    const a = Math.round(opacity * 255);
+    rgbaData.set([rgbObj.r, rgbObj.g, rgbObj.b, a]);
   }
 
   const colorFunction = (pixel: number[], rgba: Uint8ClampedArray) => {
@@ -121,6 +119,5 @@ export function makeColorFunction(
       }
     }
   };
-
-  return memoizerific(CACHE_EVICTION)(colorFunction);
+  return colorFunction;
 }
