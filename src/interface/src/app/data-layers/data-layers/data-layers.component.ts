@@ -57,7 +57,6 @@ export class DataLayersComponent {
   dataSets$ = this.dataLayersStateService.dataSets$;
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
-
   searchTerm$ = this.dataLayersStateService.searchTerm$;
   resultCount: number | null = null;
 

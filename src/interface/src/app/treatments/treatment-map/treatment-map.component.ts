@@ -55,7 +55,7 @@ import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
-
+import { ChangeDetectorRef } from '@angular/core';
 @UntilDestroy()
 @Component({
   selector: 'app-treatment-map',
@@ -178,6 +178,11 @@ export class TreatmentMapComponent {
   showMapControls$ = this.mapConfigState.showMapControls$;
 
   /**
+   * Observable to determine if the data layer is in a loading state.
+   */
+  loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
+
+  /**
    * The LongLat position of the helper tooltip attached to the mouse cursor when selecting stands.
    * If null, the tooltip is hidden.
    */
@@ -188,8 +193,6 @@ export class TreatmentMapComponent {
    */
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
-
-  loadingLayer$ = this.dataLayersState.loadingLayer$;
 
   get scenarioId() {
     return this.treatmentsState.getScenarioId();
@@ -216,11 +219,11 @@ export class TreatmentMapComponent {
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
-    private dataLayersState: DataLayersStateService,
-    private renderer: Renderer2,
     private dataLayersStateService: DataLayersStateService,
+    private renderer: Renderer2,
     private route: ActivatedRoute,
-    private router: Router
+    private router: Router,
+    private cdr: ChangeDetectorRef
   ) {
     // update cursor on map
     this.mapConfigState.cursor$
@@ -290,11 +293,21 @@ export class TreatmentMapComponent {
     this.mapLibreMap = event;
     this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
     this.listenForZoom();
+    this.listenForLoadedRaster();
   }
 
   listenForZoom() {
     this.mapLibreMap.on('zoom', () => {
       this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
+    });
+  }
+
+  listenForLoadedRaster() {
+    this.mapLibreMap.on('data', (event: any) => {
+      if (event.sourceId === 'rasterImage' && event.isSourceLoaded) {
+        this.dataLayersStateService.setDataLayerLoading(false);
+        this.cdr.detectChanges();
+      }
     });
   }
 
