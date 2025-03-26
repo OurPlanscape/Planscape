@@ -5,7 +5,7 @@ import { MockProvider, MockProviders } from 'ng-mocks';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { AuthService, ScenarioService } from '@services';
 import { ActivatedRoute } from '@angular/router';
-import { PlanState } from '../plan.state';
+import { PlanState } from '../../plan/plan.state';
 import { Observable, of } from 'rxjs';
 import { Scenario } from '@types';
 

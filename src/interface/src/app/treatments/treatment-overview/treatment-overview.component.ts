@@ -8,7 +8,7 @@ import {
   DebounceEditState,
   DebounceInputComponent,
 } from '@styleguide';
-import { TreatmentPlan, TreatmentSummary } from '@types';
+import { TreatmentPlan } from '@types';
 import { BehaviorSubject, map } from 'rxjs';
 import { TreatmentsState } from '../treatments.state';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
@@ -17,6 +17,7 @@ import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/tre
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { FeaturesModule } from 'src/app/features/features.module';
+import { PlanState } from '../../plan/plan.state';
 
 @Component({
   selector: 'app-treatment-overview',
@@ -41,17 +42,17 @@ import { FeaturesModule } from 'src/app/features/features.module';
   styleUrl: './treatment-overview.component.scss',
 })
 export class TreatmentOverviewComponent {
-  constructor(private treatmentsState: TreatmentsState) {}
+  constructor(
+    private treatmentsState: TreatmentsState,
+    private planState: PlanState
+  ) {}
 
   nameFieldStatus$ = new BehaviorSubject<DebounceEditState>('INITIAL');
   errorSavingName: string | null = null;
   summary$ = this.treatmentsState.summary$;
-  projectAreas$ = this.summary$?.pipe(
-    map((summary: TreatmentSummary | null) => summary?.project_areas)
-  );
   showNotesOverlay = false;
   currentPlan$ = this.treatmentsState.treatmentPlan$;
-  disableInput$ = this.treatmentsState.planningArea$.pipe(
+  disableInput$ = this.planState.currentPlan$.pipe(
     map((plan) => {
       return plan ? !canEditTreatmentPlan(plan) : false;
     })
