@@ -173,6 +173,27 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
         self.assertEqual(style.pk, data.get("results")[0].get("style").get("id"))
 
+    def test_find_anything(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
+        for i in range(10):
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Foo {i}", type=DataLayerType.RASTER
+            )
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Bar {i}", type=DataLayerType.RASTER
+            )
+        filter = {
+            "term": "foo",
+        }
+        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(10, data.get("count"))
+
 
 class TestDatasetViewSet(APITransactionTestCase):
     def setUp(self) -> None:
