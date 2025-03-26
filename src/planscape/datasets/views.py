@@ -13,15 +13,15 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from datasets.filters import DataLayerFilterSet, BrowseDataLayerFilterSet
-from datasets.models import DataLayer, Dataset, VisibilityOptions, DataLayerStatus
+from datasets.filters import BrowseDataLayerFilterSet, DataLayerFilterSet
+from datasets.models import DataLayer, DataLayerStatus, Dataset, VisibilityOptions
 from datasets.serializers import (
     BrowseDataLayerFilterSerializer,
     BrowseDataLayerSerializer,
     DataLayerSerializer,
     DatasetSerializer,
     FindAnythingSerializer,
-    SearchResultSerialzier,
+    SearchResultsSerializer,
 )
 from datasets.services import find_anything
 
@@ -90,7 +90,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
 
     @extend_schema(
         parameters=[FindAnythingSerializer],
-        responses={200: SearchResultSerialzier(many=True)},
+        responses={200: SearchResultsSerializer(many=True)},
     )
     @action(detail=False, methods=["get"])
     def find_anything(self, request):
@@ -103,8 +103,16 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             term=term,
             type=type,
         )
-        out_serializer = SearchResultSerialzier(
-            list(results.values()),
+        search_results = list(results.values())
+        page = self.paginate_queryset(search_results)  # type: ignore
+        if page is not None:
+            out_serializer = SearchResultsSerializer(
+                page,
+                many=True,
+            )
+            return self.get_paginated_response(out_serializer.data)
+        out_serializer = SearchResultsSerializer(
+            list(search_results),
             many=True,
         )
         return Response(out_serializer.data, status=status.HTTP_200_OK)
