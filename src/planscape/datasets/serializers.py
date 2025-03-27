@@ -429,12 +429,9 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
-            ancestors_names = list([c.name for c in instance.category.get_ancestors()])
-            ancestors_names = [*ancestors_names, instance.category.name]
-        else:
-            ancestors_names = []
+            return instance.category._get_full_path(instance.category.pk)
 
-        return ancestors_names
+        return []
 
     class Meta:
         model = DataLayer
@@ -451,7 +448,6 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "info",
             "metadata",
             "styles",
-            "geometry",
         )
 
 
@@ -471,6 +467,10 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
     )
 
 
+class BrowseDataSetSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=DataLayerType.choices, required=False)
+
+
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
 
@@ -483,5 +483,4 @@ class SearchResultsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.CharField()
-    url = serializers.URLField()
     data = serializers.JSONField()  # type: ignore

@@ -49,7 +49,16 @@
     (clickedActionButton)="openTreatmentLegend()">
   </app-action-button>
 
-  <app-planning-area-layer></app-planning-area-layer>
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
+  <app-map-data-layer
+    *appFeatureFlag="'statewide_datalayers'"></app-map-data-layer>
+
+  <app-planning-area-layer> </app-planning-area-layer>
 
   <app-map-project-areas
     [scenarioId]="scenarioId"

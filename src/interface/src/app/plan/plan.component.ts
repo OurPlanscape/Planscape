@@ -30,7 +30,6 @@ import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-not
 import { NavState, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { PlanState } from '../maplibre-map/plan.state';
 
 @Component({
   selector: 'app-plan',
@@ -47,8 +46,7 @@ export class PlanComponent implements OnInit {
     private homeParametersStorageService: HomeParametersStorageService,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
-    private snackbar: MatSnackBar,
-    private planState: PlanState
+    private snackbar: MatSnackBar
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
@@ -60,7 +58,6 @@ export class PlanComponent implements OnInit {
 
     plan$.subscribe({
       next: (plan) => {
-        this.planState.setCurrentPlan(plan);
         this.currentPlan$.next(plan);
       },
       error: (error) => {
