@@ -467,6 +467,10 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
     )
 
 
+class BrowseDataSetSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=DataLayerType.choices, required=False)
+
+
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
 

@@ -1,11 +1,13 @@
 import logging
 from typing import Any, Dict, List, Optional
-from django.conf import settings
+
 import boto3
 import boto3.s3
-from boto3.session import Session
 import requests
+from boto3.session import Session
 from botocore.exceptions import ClientError
+from cacheops import cached
+from django.conf import settings
 
 
 def get_aws_session() -> Session:
@@ -16,10 +18,11 @@ def get_aws_session() -> Session:
     )
 
 
+@cached(timeout=settings.S3_PUBLIC_URL_TTL)
 def create_download_url(
     bucket_name: str,
     object_name: str,
-    expiration: int = 3600,
+    expiration: int = settings.S3_PUBLIC_URL_TTL,
 ) -> Optional[str]:
     s3_client = boto3.client("s3")
     try:
