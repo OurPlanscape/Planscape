@@ -22,17 +22,16 @@ export interface StyleJson {
   entries: Entry[];
 }
 
-
-export function extractLegendInfo(dataLayer :any): any {
-  // accept a style json, 
+export function extractLegendInfo(dataLayer: any): any {
+  // accept a style json,
   const { map_type, entries } = dataLayer.styles;
   const sorted = [...entries].sort((a, b) => a.value - b.value);
-  const colorDetails: LayerStyleEntry[] = sorted.map((e : Entry) => {
+  const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => {
     return {
       colorHex: e.color ?? '',
-      entryLabel: e.label ?? '' 
-    } 
-  })
+      entryLabel: e.label ?? '',
+    };
+  });
 
   return { title: dataLayer.name, type: map_type, entries: colorDetails };
 }

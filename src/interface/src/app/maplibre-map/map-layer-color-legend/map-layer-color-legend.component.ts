@@ -7,7 +7,6 @@ import { Map as MapLibreMap, ControlPosition } from 'maplibre-gl';
 import { LayerStyleEntry } from '@types';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 
-
 @Component({
   selector: 'app-map-layer-color-legend',
   standalone: true,
@@ -23,9 +22,9 @@ export class MapLayerColorLegendComponent {
   colorDetails: LayerStyleEntry[] = [];
 
   constructor(private dataLayerState: DataLayersStateService) {
-    this.dataLayerState.colorLegendInfo$.subscribe((legendInfo:any) => {
+    this.dataLayerState.colorLegendInfo$.subscribe((legendInfo: any) => {
       this.colorDetails = legendInfo.entries;
       this.title = legendInfo.title;
-    })    
+    });
   }
 }

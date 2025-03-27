@@ -1,6 +1,9 @@
 import { Component } from '@angular/core';
 import { NgIf } from '@angular/common';
-import { makeColorFunction , extractLegendInfo } from '../../data-layers/utilities';
+import {
+  makeColorFunction,
+  extractLegendInfo,
+} from '../../data-layers/utilities';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
   LayerComponent,
@@ -33,7 +36,7 @@ export class MapDataLayerComponent {
           const colorFn = makeColorFunction(dataLayer?.styles as any);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
           const legendInfo = extractLegendInfo(dataLayer);
-          dataLayersStateService.setLegendInfo( legendInfo);
+          dataLayersStateService.setLegendInfo(legendInfo);
         } else {
           this.dataLayer = null;
         }
