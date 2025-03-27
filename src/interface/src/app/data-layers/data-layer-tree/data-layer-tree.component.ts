@@ -10,7 +10,7 @@ import { DataLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 @UntilDestroy()
 @Component({
   selector: 'app-data-layer-tree',
@@ -18,6 +18,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   imports: [
     AsyncPipe,
     ButtonComponent,
+    MatProgressSpinnerModule,
     MatTreeModule,
     NgIf,
     NgClass,
@@ -29,6 +30,10 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 })
 export class DataLayerTreeComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {
+    this.dataLayersStateService.selectedDataLayer$.subscribe((layer) => {
+      this.currentLayerId = layer?.id;
+    });
+
     this.dataLayersStateService.paths$
       .pipe(
         untilDestroyed(this),
@@ -50,8 +55,10 @@ export class DataLayerTreeComponent {
 
   treeData$ = this.dataLayersStateService.dataTree$.pipe(shareReplay(1));
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
-  treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
 
+  loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
+  treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
+  currentLayerId? = 0;
   @ViewChild('treeContainer', { static: false }) treeContainer!: ElementRef;
 
   selectDataLayer(dataLayer: DataLayer) {
