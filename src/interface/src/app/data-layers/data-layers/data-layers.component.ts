@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataSet } from '@types';
+import { DataLayer, DataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
@@ -132,5 +132,9 @@ export class DataLayersComponent {
 
   clearDataLayer() {
     this.dataLayersStateService.clearDataLayer();
+  }
+
+  goToCategory(cat: DataLayer) {
+    this.dataLayersStateService.goToDataLayerCategory(cat);
   }
 }

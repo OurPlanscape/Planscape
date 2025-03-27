@@ -23,6 +23,7 @@
         <app-search-results
           [searchTerm]="searchTerm"
           [results]="results"
+          (clickDataLayer)="goToCategory($event)"
           (clickDataset)="viewResultDataSet($event)"></app-search-results>
         <div *ngIf="resultCount === 0">
           <sg-no-results></sg-no-results>

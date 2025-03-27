@@ -70,6 +70,18 @@ export class DataLayerTreeComponent {
         behavior: 'smooth',
         block: 'center',
       });
+    } else {
+      const allExpanded = this.treeContainer.nativeElement.querySelectorAll(
+        '.data-layer-node.expanded'
+      );
+      const expanded = allExpanded[allExpanded.length - 1];
+      if (expanded) {
+        expanded.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+          top: '10',
+        });
+      }
     }
   }
 
