@@ -37,6 +37,7 @@ import {
   Observable,
   startWith,
   Subject,
+  take,
   withLatestFrom,
 } from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
@@ -292,11 +293,32 @@ export class TreatmentMapComponent {
     this.mapLibreMap = event;
     this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
     this.listenForZoom();
+    this.listenForBaseLayerChange();
   }
 
   listenForZoom() {
     this.mapLibreMap.on('zoom', () => {
       this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
+    });
+  }
+
+  listenForBaseLayerChange() {
+    this.mapLibreMap.on('styledata', () => {
+      let rasterUrl = '';
+      this.dataLayersStateService.selectedDataLayer$
+        .pipe(take(1))
+        .subscribe((layer) => {
+          rasterUrl = layer?.public_url ?? '';
+          return layer;
+        });
+      const rasterSource = this.mapLibreMap?.getSource('rasterImage');
+      if (!rasterSource) {
+        this.mapLibreMap?.addSource('rasterImage', {
+          type: 'raster',
+          url: `cog://${rasterUrl}`,
+          tileSize: 512,
+        });
+      }
     });
   }
 
