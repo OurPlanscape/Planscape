@@ -56,6 +56,7 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
+import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 
 @UntilDestroy()
 @Component({
@@ -76,6 +77,7 @@ import { PlanState } from '../../plan/plan.state';
     MapRectangleComponent,
     MapControlsComponent,
     MapProjectAreasComponent,
+    MapLayerColorLegendComponent,
     NgIf,
     AsyncPipe,
     MatIconModule,
@@ -191,6 +193,7 @@ export class TreatmentMapComponent {
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
   loadingLayer$ = this.dataLayersState.loadingLayer$;
+  legendInfo$ = this.dataLayersState.colorLegendInfo$;
 
   get scenarioId() {
     return this.treatmentsState.getScenarioId();

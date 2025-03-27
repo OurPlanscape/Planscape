@@ -49,6 +49,10 @@ export class DataLayersStateService {
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
+  private _colorLegendInfo = new BehaviorSubject<any>({});
+  colorLegendInfo$ = this._colorLegendInfo.asObservable();
+
+
   searchResults$: Observable<SearchResult[] | null> = this.searchTerm$.pipe(
     tap(() => this.loadingSubject.next(true)),
     switchMap((term: string) => {
@@ -104,6 +108,11 @@ export class DataLayersStateService {
   search(term: string) {
     this._searchTerm$.next(term);
     this._isBrowsing$.next(!term);
+  }
+
+  setLegendInfo(legendInfo : any) {
+    //todo: type for this
+    this._colorLegendInfo.next(legendInfo);
   }
 
   clearSearch() {
