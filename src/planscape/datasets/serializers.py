@@ -451,7 +451,6 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "info",
             "metadata",
             "styles",
-            "geometry",
         )
 
 
