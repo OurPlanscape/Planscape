@@ -370,7 +370,6 @@ class SearchResult:
     id: int
     name: str
     type: str
-    url: str
     data: Dict[str, Any]
 
     def key(self):
