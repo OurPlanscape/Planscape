@@ -55,10 +55,10 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     )
     @action(detail=True, methods=["get"])
     def browse(self, request, pk=None):
-        data = self._get_browse_result(request.query_params)
-
+        results = self._get_browse_result(request.query_params)
+        serializer = BrowseDataLayerSerializer(results, many=True)
         return Response(
-            data,
+            serializer.data,
             status=status.HTTP_200_OK,
         )
 
@@ -72,10 +72,7 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             .filter(status=DataLayerStatus.READY)
         )
         filterset = BrowseDataLayerFilterSet(queryset=datalayers, request=query_params)
-        results = list(filterset.qs)
-        serializer = BrowseDataLayerSerializer(results, many=True)
-
-        return serializer.data
+        return list(filterset.qs)
 
 
 class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
