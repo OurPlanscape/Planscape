@@ -25,7 +25,7 @@
         [matMenuTriggerFor]="popoverMenu"
         (menuOpened)="node.infoMenuOpen = true"
         (menuClosed)="node.infoMenuOpen = false"></button>
-      <mat-menu #popoverMenu="matMenu">
+      <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
         <app-data-layer-tooltip
           [layer]="node"
           *ngIf="node.infoMenuOpen"></app-data-layer-tooltip>

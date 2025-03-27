@@ -1,41 +1,27 @@
 import { Component, Input, OnInit } from '@angular/core';
-import { DataLayersStateService } from '../data-layers.state.service';
 import { MetricConfig } from '@types';
 import { NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-data-layer-tooltip',
   standalone: true,
-  imports: [NgIf, MatButtonModule],
+  imports: [NgIf, MatButtonModule, ButtonComponent],
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
 export class DataLayerTooltipComponent implements OnInit {
   @Input() layer!: any;
 
-  constructor(private dataLayerState: DataLayersStateService) {}
-
   ngOnInit(): void {
-    this.dataLayerState.selectedDataLayer$.subscribe((dataLayer) => {
-      console.log('Data layer selected: ', dataLayer);
-    });
-
-    this.dataLayerState.selectedDataSet$.subscribe((dataset) => {
-      // console.log('Data Set: ', dataset);
-    });
-
-    this.dataLayerState.dataSets$.subscribe((datasets) => {
-      //console.log('DataSerts: ', datasets);
-    });
-
     console.log('############### Layer: ', this.layer);
   }
 
   computeMinMax(): number[] {
     return [
-      this.layer?.item?.info?.stats?.[0]?.min!,
-      this.layer?.item?.info?.stats?.[0]?.max!,
+      this.layer.item?.info?.stats?.[0]?.min!,
+      this.layer.item?.info?.stats?.[0]?.max!,
     ];
   }
 
@@ -57,7 +43,8 @@ export class DataLayerTooltipComponent implements OnInit {
 
   hasMinMax(): boolean {
     return (
-      this.layer?.min_value != undefined && this.layer?.max_value != undefined
+      this.layer.item?.info?.stats?.[0]?.min != undefined &&
+      this.layer.item?.info?.stats?.[0]?.max != undefined
     );
   }
 
