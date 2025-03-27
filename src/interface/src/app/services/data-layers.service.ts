@@ -7,6 +7,8 @@ import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
   providedIn: 'root',
 })
 export class DataLayersService {
+  readonly limit = 20;
+
   constructor(private http: HttpClient) {}
 
   listDataSets() {
@@ -37,7 +39,7 @@ export class DataLayersService {
         params: {
           term,
           type: 'RASTER',
-          limit: 20,
+          limit: this.limit,
           ...(offset ? { offset } : {}),
         },
       }

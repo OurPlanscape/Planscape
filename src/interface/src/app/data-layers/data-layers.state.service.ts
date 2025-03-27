@@ -47,22 +47,22 @@ export class DataLayersStateService {
   private loadingSubject = new BehaviorSubject(false);
   loading$ = this.loadingSubject.asObservable();
 
-  private _page = new BehaviorSubject(1);
+  private _offset = new BehaviorSubject(0);
 
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
   searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
     this.searchTerm$,
-    this._page,
+    this._offset,
   ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap(([term, page]) => {
+    switchMap(([term, offset]) => {
       if (!term) {
         this.loadingSubject.next(false);
         return of(null);
       }
-      return this.service.search(term, (page - 1) * 20).pipe(
+      return this.service.search(term, offset).pipe(
         startWith(null),
         map((results) => {
           if (results) {
@@ -109,15 +109,15 @@ export class DataLayersStateService {
   }
 
   search(term: string) {
-    if (this._page.value != 1) {
-      this._page.next(1);
+    if (this._offset.value > 0) {
+      this._offset.next(0);
     }
     this._searchTerm$.next(term);
     this._isBrowsing$.next(!term);
   }
 
   changePage(page: number) {
-    this._page.next(page);
+    this._offset.next((page - 1) * this.service.limit);
   }
 
   clearSearch() {
@@ -128,6 +128,7 @@ export class DataLayersStateService {
   goToSelectedLayer(layer: DataLayer) {
     // Reset search
     this._searchTerm$.next('');
+    this._offset.next(0);
     this._isBrowsing$.next(true);
     // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {

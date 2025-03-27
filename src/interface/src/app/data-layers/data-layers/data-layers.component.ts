@@ -20,6 +20,7 @@ import {
   map,
   Observable,
   startWith,
+  tap,
   throwError,
 } from 'rxjs';
 import { groupSearchResults, Results } from './search';
@@ -67,7 +68,12 @@ export class DataLayersComponent {
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
-  searchTerm$ = this.dataLayersStateService.searchTerm$;
+  searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
+    tap(() => {
+      // reset count when the search term changes
+      this.resultCount = 0;
+    })
+  );
   resultCount: number | null = null;
 
   results$: Observable<Results | null> =
@@ -78,7 +84,6 @@ export class DataLayersComponent {
           this.resultCount = results.count;
           return groupSearchResults(results.results);
         } else {
-          //this.resultCount = 0;
           return results;
         }
       }),
