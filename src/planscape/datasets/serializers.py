@@ -429,12 +429,9 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
-            ancestors_names = list([c.name for c in instance.category.get_ancestors()])
-            ancestors_names = [*ancestors_names, instance.category.name]
-        else:
-            ancestors_names = []
+            return instance.category._get_full_path(instance.category.pk)
 
-        return ancestors_names
+        return []
 
     class Meta:
         model = DataLayer
