@@ -1,0 +1,47 @@
+@import "colors";
+@import "mixins";
+
+:host {
+    box-sizing: border-box;
+  }  
+
+.layer-color-legend {
+    border-radius: 4px;
+    border: 1px solid #000;
+    background: rgba(0, 0, 0, 0.55);
+    box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(2px);
+    display: inline-flex;
+    padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.legend-title {
+    @include standard-label();
+    /* specifying font family here, since the control defaults to helvetica */
+    font-family: 'Public Sans'; 
+    font-size: 14px;
+    color: $color-white;
+}
+
+.legend-line {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+}
+
+.swatch-box {
+    height: 14px;
+    width: 14px;
+}
+
+.swatch-label {
+    @include xs-label();
+    /* specifying font family here, since the control defaults to helvetica */
+    font-family: 'Public Sans';
+    font-size: 12px;
+    line-height: 100%;
+    color: $color-white;
+}
