@@ -479,5 +479,4 @@ class SearchResultsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.CharField()
-    url = serializers.URLField()
     data = serializers.JSONField()  # type: ignore
