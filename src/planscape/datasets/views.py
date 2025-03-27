@@ -71,9 +71,9 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             .prefetch_related("styles")
             .filter(status=DataLayerStatus.READY)
         )
-
         filterset = BrowseDataLayerFilterSet(queryset=datalayers, request=query_params)
-        serializer = BrowseDataLayerSerializer(filterset.qs, many=True)
+        results = list(filterset.qs)
+        serializer = BrowseDataLayerSerializer(results, many=True)
 
         return serializer.data
 
