@@ -18,6 +18,8 @@ import { buildPathTree } from './data-layers/tree-node';
   providedIn: 'root',
 })
 export class DataLayersStateService {
+  readonly limit = 20;
+
   dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
   private _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
@@ -62,7 +64,7 @@ export class DataLayersStateService {
         this.loadingSubject.next(false);
         return of(null);
       }
-      return this.service.search(term, offset).pipe(
+      return this.service.search(term, this.limit, offset).pipe(
         startWith(null),
         map((results) => {
           if (results) {
@@ -117,7 +119,7 @@ export class DataLayersStateService {
   }
 
   changePage(page: number) {
-    this._offset.next((page - 1) * this.service.limit);
+    this._offset.next((page - 1) * this.limit);
   }
 
   clearSearch() {

@@ -101,7 +101,9 @@ export class DataLayersComponent {
   );
 
   get pages() {
-    return this.resultCount ? Math.ceil(this.resultCount / 20) : 0;
+    return this.resultCount
+      ? Math.ceil(this.resultCount / this.dataLayersStateService.limit)
+      : 0;
   }
 
   search(term: string) {
