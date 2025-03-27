@@ -73,8 +73,11 @@
     class="loader"></mat-spinner>
 </div>
 <div class="footer" *ngIf="showFooter$ | async">
-  <ng-container *ngIf="pages$ | async as pages">
-    <sg-paginator [compact]="true" [pageCount]="pages"></sg-paginator>
+  <ng-container *ngIf="pages">
+    <sg-paginator
+      [compact]="true"
+      [pageCount]="pages"
+      (pageChanged)="showPage($event)"></sg-paginator>
   </ng-container>
   <button
     sg-button

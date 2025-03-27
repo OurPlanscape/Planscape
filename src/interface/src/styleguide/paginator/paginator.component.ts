@@ -73,7 +73,7 @@ export class PaginatorComponent implements OnInit, OnChanges {
   buttonRange$ = new BehaviorSubject<number[]>([]);
   navSelectRange: number[] = [];
   defaultButtonsToShow = 6;
-  compactButtonsToShow = 3;
+  compactButtonsToShow = 2;
 
   ngOnInit(): void {
     this.navSelectRange = [1, ...Array(this.pageCount + 1).keys()].slice(2);

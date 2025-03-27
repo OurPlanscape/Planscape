@@ -29,12 +29,17 @@ export class DataLayersService {
     );
   }
 
-  search(term: string) {
+  search(term: string, offset?: number) {
     return this.http.get<Pagination<SearchResult>>(
       environment.backend_endpoint + '/v2/datalayers/find_anything',
       {
         withCredentials: true,
-        params: { term, type: 'RASTER', limit: 20 },
+        params: {
+          term,
+          type: 'RASTER',
+          limit: 20,
+          ...(offset ? { offset } : {}),
+        },
       }
     );
   }

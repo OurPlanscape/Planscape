@@ -19,7 +19,6 @@ import {
   combineLatest,
   map,
   Observable,
-  of,
   startWith,
   throwError,
 } from 'rxjs';
@@ -76,9 +75,10 @@ export class DataLayersComponent {
       startWith(null),
       map((results) => {
         if (results) {
-          this.resultCount = results.length;
-          return groupSearchResults(results);
+          this.resultCount = results.count;
+          return groupSearchResults(results.results);
         } else {
+          //this.resultCount = 0;
           return results;
         }
       }),
@@ -92,13 +92,19 @@ export class DataLayersComponent {
   isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
   showFooter$ = combineLatest([this.results$, this.selectedDataLayer$]).pipe(
-    map(([results, selectedLayer]) => results || selectedLayer)
+    map(([results, selectedLayer]) => this.pages > 1 || selectedLayer)
   );
 
-  pages$ = of(15);
+  get pages() {
+    return this.resultCount ? Math.ceil(this.resultCount / 20) : 0;
+  }
 
   search(term: string) {
     this.dataLayersStateService.search(term);
+  }
+
+  showPage(page: number) {
+    this.dataLayersStateService.changePage(page);
   }
 
   viewDatasetCategories(dataSet: DataSet) {

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
+  combineLatest,
   map,
   Observable,
   of,
@@ -10,7 +11,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayer, DataSet, SearchResult } from '@types';
+import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 
 @Injectable({
@@ -46,22 +47,27 @@ export class DataLayersStateService {
   private loadingSubject = new BehaviorSubject(false);
   loading$ = this.loadingSubject.asObservable();
 
+  private _page = new BehaviorSubject(1);
+
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
-  searchResults$: Observable<SearchResult[] | null> = this.searchTerm$.pipe(
+  searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
+    this.searchTerm$,
+    this._page,
+  ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap((term: string) => {
+    switchMap(([term, page]) => {
       if (!term) {
         this.loadingSubject.next(false);
         return of(null);
       }
-      return this.service.search(term).pipe(
+      return this.service.search(term, (page - 1) * 20).pipe(
         startWith(null),
         map((results) => {
           if (results) {
             this.loadingSubject.next(false);
-            return results.results;
+            return results;
           }
           return null;
         })
@@ -103,8 +109,15 @@ export class DataLayersStateService {
   }
 
   search(term: string) {
+    if (this._page.value != 1) {
+      this._page.next(1);
+    }
     this._searchTerm$.next(term);
     this._isBrowsing$.next(!term);
+  }
+
+  changePage(page: number) {
+    this._page.next(page);
   }
 
   clearSearch() {

@@ -5,7 +5,7 @@
       class="first-page-button page-button"
       (click)="handlePrevious()"
       aria-label="Go to previous page"
-      *ngIf="!compact || !isCurrentPage(1)"
+      *ngIf="!compact"
       [disabled]="isCurrentPage(1)">
       <mat-icon class="arrow-icon">arrow_back_ios</mat-icon>
     </button>
