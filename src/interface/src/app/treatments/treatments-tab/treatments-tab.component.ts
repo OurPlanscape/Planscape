@@ -3,9 +3,10 @@ import { CommonModule, NgFor, NgIf } from '@angular/common';
 import {
   InputDirective,
   InputFieldComponent,
+  NoResultsComponent,
   OpacitySliderComponent,
   SearchBarComponent,
-  TreatmentExpanderComponent,
+  TreatmentPrescriptionComponent,
 } from '@styleguide';
 import { MatIconModule } from '@angular/material/icon';
 import { Prescription } from '@types';
@@ -20,7 +21,6 @@ import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 import { FeaturesModule } from 'src/app/features/features.module';
-import { NoResultsComponent } from '../../../styleguide/no-results/no-results.component';
 
 @Component({
   selector: 'app-project-area-tx-tab',
@@ -34,10 +34,10 @@ import { NoResultsComponent } from '../../../styleguide/no-results/no-results.co
     NgFor,
     OpacitySliderComponent,
     SearchBarComponent,
-    TreatmentExpanderComponent,
     LeftLoadingOverlayComponent,
     FeaturesModule,
     NoResultsComponent,
+    TreatmentPrescriptionComponent,
   ],
   templateUrl: './treatments-tab.component.html',
   styleUrl: './treatments-tab.component.scss',
