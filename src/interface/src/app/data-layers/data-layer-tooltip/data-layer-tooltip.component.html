@@ -1,0 +1,28 @@
+<h3 class="header">Layer info</h3>
+
+<div class="content">
+  <dl>
+    <dt>Layer Name</dt>
+    <dd>{{ layer.name }}</dd>
+
+    <ng-container *ngIf="hasMinMax()">
+      <dt>Value Range</dt>
+      <dd>{{ computeMinMax() }}</dd>
+    </ng-container>
+
+    <dt>Source</dt>
+    <dd>
+      <a [href]="layer.item?.public_url">{{ layer.item?.dataset?.name }}</a>
+    </dd>
+
+    <dt>Vintage Date</dt>
+    <dd>August 10, 2018</dd>
+  </dl>
+</div>
+
+<div class="footer">
+  <a [href]="layer.item?.public_url">
+    <i class="material-symbols-outlined">download</i> Download Dataset
+  </a>
+  <a sg-button variant="primary" href="#" target="_blank"> Learn more </a>
+</div>
