@@ -4,20 +4,18 @@
 :host {
   padding: 0px;
 
-  .header {
+  h3.header {
     margin: 0;
     padding: 16px 24px;
     display: flex;
     align-items: center;
-    h3 {
-      margin: 0;
-    }
-    border-bottom: 1px solid var(--Neutral-Soft-gray, #e1e1e1);
+    margin: 0;
+    border-bottom: 1px solid $color-soft-gray;
   }
 
   .content {
     padding: 24px;
-    border-bottom: 1px solid var(--Neutral-Soft-gray, #e1e1e1);
+    border-bottom: 1px solid $color-soft-gray;
 
     dl {
       display: grid;
