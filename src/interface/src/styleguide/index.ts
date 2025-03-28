@@ -10,7 +10,7 @@ export * from './opacity-slider/opacity-slider.component';
 export * from './paginator/paginator.component';
 export * from './search-bar/search-bar.component';
 export * from './status-chip/status-chip.component';
-export * from './treatment-expander/treatment-expander.component';
+export * from './treatment-prescription/treatment-prescription.component';
 export * from './debounce-input/debounce-input.component';
 export * from './notes-sidebar/notes-sidebar.component';
 export * from './panel/panel.component';
