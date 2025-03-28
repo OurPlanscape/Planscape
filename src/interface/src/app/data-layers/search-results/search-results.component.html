@@ -11,7 +11,7 @@
       <app-data-set
         [searchTerm]="searchTerm"
         *ngFor="let category of result.value.categories | keyvalue"
-        (selectDataset)="goToDataLayerDataSet(result.value)"
+        (selectDataset)="goToDataLayerDataSet(category.value.layers)"
         [name]="result.value.dataset.name"
         [organizationName]="result.value.org.name"
         [layers]="category.value.layers"

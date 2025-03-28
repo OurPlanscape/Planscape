@@ -115,10 +115,7 @@ export class DataLayersComponent {
   }
 
   viewDatasetCategories(dataSet: DataSet) {
-    this.dataLayersStateService.selectDataSet(dataSet);
-  }
-
-  viewResultDataSet(dataSet: DataSet) {
+    this.dataLayersStateService.resetPath();
     this.dataLayersStateService.selectDataSet(dataSet);
   }
 

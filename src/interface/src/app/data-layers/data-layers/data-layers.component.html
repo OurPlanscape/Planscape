@@ -17,13 +17,12 @@
   <ng-container *ngIf="(isBrowsing$ | async) === false">
     <ng-container *ngIf="searchTerm$ | async as searchTerm">
       <div *ngIf="results$ | async as results">
-        <div *ngIf="resultCount" class="result-count">
+        <div *ngIf="resultCount" class="result-count sticky">
           {{ resultCount }} Results for "{{ searchTerm }}"
         </div>
         <app-search-results
           [searchTerm]="searchTerm"
-          [results]="results"
-          (clickDataset)="viewResultDataSet($event)"></app-search-results>
+          [results]="results"></app-search-results>
         <div *ngIf="resultCount === 0">
           <sg-no-results></sg-no-results>
         </div>
@@ -37,7 +36,7 @@
     <!--show link back to list datasets-->
     <ng-container
       *ngIf="selectedDataSet$ | async as selectedDataSet; else listDataSets">
-      <div (click)="goBack()" class="data-set">
+      <div (click)="goBack()" class="data-set sticky">
         <mat-icon *ngIf="selectedDataSet" class="icon-back"
           >arrow_back
         </mat-icon>
@@ -73,7 +72,7 @@
     class="loader"></mat-spinner>
 </div>
 <div class="footer" *ngIf="showFooter$ | async">
-  <ng-container *ngIf="pages">
+  <ng-container *ngIf="pages && (isBrowsing$ | async) === false">
     <sg-paginator
       [compact]="true"
       [pageCount]="pages"

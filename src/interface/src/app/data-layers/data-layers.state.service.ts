@@ -131,6 +131,10 @@ export class DataLayersStateService {
     // Reset search
     this._searchTerm$.next('');
     this._offset.next(0);
+    this.goToDataLayerCategory(layer);
+  }
+
+  goToDataLayerCategory(layer: DataLayer) {
     this._isBrowsing$.next(true);
     // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
@@ -144,5 +148,9 @@ export class DataLayersStateService {
       this.selectDataSet(dataSet as DataSet);
     }
     this._paths$.next(layer.path);
+  }
+
+  resetPath() {
+    this._paths$.next([]);
   }
 }
