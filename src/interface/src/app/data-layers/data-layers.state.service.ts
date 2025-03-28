@@ -149,4 +149,8 @@ export class DataLayersStateService {
     }
     this._paths$.next(layer.path);
   }
+
+  resetPath() {
+    this._paths$.next([]);
+  }
 }
