@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgForOf, NgIf } from '@angular/common';
-import { DataLayer, DataSet } from '@types';
+import { DataSet } from '@types';
 import { MatTreeModule } from '@angular/material/tree';
 import { MatIconModule } from '@angular/material/icon';
 import { MatCommonModule } from '@angular/material/core';
@@ -119,10 +119,6 @@ export class DataLayersComponent {
     this.dataLayersStateService.selectDataSet(dataSet);
   }
 
-  viewResultDataSet(dataSet: DataSet) {
-    this.dataLayersStateService.selectDataSet(dataSet);
-  }
-
   goBack() {
     this.dataLayersStateService.goBackToSearchResults();
   }
@@ -133,9 +129,5 @@ export class DataLayersComponent {
 
   clearDataLayer() {
     this.dataLayersStateService.clearDataLayer();
-  }
-
-  goToCategory(cat: DataLayer) {
-    this.dataLayersStateService.goToDataLayerCategory(cat);
   }
 }

@@ -1,16 +1,12 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import {
-  DataLayer,
-  DataLayerSearchResult,
-  DataSet,
-  DataSetSearchResult,
-} from '@types';
+import { DataLayerSearchResult, DataSetSearchResult } from '@types';
 import { AsyncPipe, KeyValuePipe, NgForOf, NgIf } from '@angular/common';
 import { ButtonComponent, SearchBarComponent } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { GroupedResults } from '../data-layers/search';
 import { DataSetComponent } from '../data-set/data-set.component';
+import { DataLayersStateService } from '../data-layers.state.service';
 
 @Component({
   selector: 'app-search-results',
@@ -30,21 +26,20 @@ import { DataSetComponent } from '../data-set/data-set.component';
   styleUrl: './search-results.component.scss',
 })
 export class SearchResultsComponent {
-  constructor() {}
+  constructor(private dataLayersStateService: DataLayersStateService) {}
 
   @Input() results: {
     dataSets: DataSetSearchResult[];
     groupedLayers: GroupedResults;
   } | null = null;
   @Input() searchTerm = '';
-  @Output() clickDataset = new EventEmitter<DataSet>();
-  @Output() clickDataLayer = new EventEmitter<DataLayer>();
 
   goToDataSet(result: DataSetSearchResult) {
-    this.clickDataset.emit(result.data);
+    this.dataLayersStateService.selectDataSet(result.data);
   }
 
   goToDataLayerDataSet(result: DataLayerSearchResult[]) {
-    this.clickDataLayer.emit(result[0].data);
+    this.dataLayersStateService.resetPath();
+    this.dataLayersStateService.goToDataLayerCategory(result[0].data);
   }
 }
