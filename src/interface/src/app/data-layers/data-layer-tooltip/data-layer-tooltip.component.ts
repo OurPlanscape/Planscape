@@ -26,7 +26,7 @@ export class DataLayerTooltipComponent implements OnInit {
   }
 
   dataUnits(): string | undefined {
-    if (this.layer?.normalized) {
+    if (this.layer.normalized) {
       return 'Normalized';
     } else {
       return (this.layer as MetricConfig)?.data_units;
@@ -34,11 +34,11 @@ export class DataLayerTooltipComponent implements OnInit {
   }
 
   hasDataProvider(): boolean {
-    return !!this.layer?.data_provider;
+    return !!this.layer.data_provider;
   }
 
   hasDownloadLink(): boolean {
-    return !!this.layer?.data_download_link;
+    return !!this.layer.data_download_link;
   }
 
   hasMinMax(): boolean {
@@ -49,10 +49,10 @@ export class DataLayerTooltipComponent implements OnInit {
   }
 
   hasReferenceLink(): boolean {
-    return !!this.layer?.reference_link;
+    return !!this.layer.reference_link;
   }
 
   hasSource(): boolean {
-    return !!this.layer?.source && !!this.layer.source_link;
+    return !!this.layer.source && !!this.layer.source_link;
   }
 }
