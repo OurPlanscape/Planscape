@@ -31,10 +31,10 @@ export function makeColorFunction(
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
   const { map_type, no_data, entries } = styleJson;
 
-  // Pre-compute no_data values as a Set for O(1) lookups
+  // Pre-compute no_data values as a Set
   const noDataSet = no_data?.values ? new Set(no_data.values) : new Set();
 
-  // Pre-compute RGB values for all entries to avoid repeated color parsing
+  // Pre-compute RGB values for all entries
   const rgbEntries: RGBEntry[] = entries.map((entry) => {
     const color = rgb(entry.color);
     return {
