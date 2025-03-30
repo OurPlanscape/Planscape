@@ -12,6 +12,7 @@ import {
 } from 'rxjs';
 import { DataLayer, DataSet, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
+import { extractLegendInfo } from './utilities';
 
 @Injectable({
   providedIn: 'root',
@@ -78,7 +79,17 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {}
+  constructor(private service: DataLayersService) {
+
+    this._selectedDataLayer$.pipe(
+      map((currentLayer: DataLayer | null) => {
+        if (currentLayer) {
+          const newLegendInfo = extractLegendInfo(currentLayer);
+          this._colorLegendInfo.next(newLegendInfo);
+        }
+      })
+    ).subscribe();
+  }
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
