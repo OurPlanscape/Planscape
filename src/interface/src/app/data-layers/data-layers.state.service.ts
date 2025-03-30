@@ -80,15 +80,18 @@ export class DataLayersStateService {
   isBrowsing$ = this._isBrowsing$.asObservable();
 
   constructor(private service: DataLayersService) {
-
-    this._selectedDataLayer$.pipe(
-      map((currentLayer: DataLayer | null) => {
-        if (currentLayer) {
-          const newLegendInfo = extractLegendInfo(currentLayer);
-          this._colorLegendInfo.next(newLegendInfo);
-        }
-      })
-    ).subscribe();
+    this._selectedDataLayer$
+      .pipe(
+        map((currentLayer: DataLayer | null) => {
+          if (currentLayer) {
+            const newLegendInfo = extractLegendInfo(currentLayer);
+            this._colorLegendInfo.next(newLegendInfo);
+          } else {
+            this._colorLegendInfo.next(null);
+          }
+        })
+      )
+      .subscribe();
   }
 
   selectDataSet(dataset: DataSet) {

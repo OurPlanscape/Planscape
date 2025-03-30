@@ -20,8 +20,10 @@ export class MapLayerColorLegendComponent {
 
   constructor(private dataLayerState: DataLayersStateService) {
     this.dataLayerState.colorLegendInfo$.subscribe((legendInfo: any) => {
-      this.colorDetails = legendInfo.entries;
-      this.title = legendInfo.title;
+      if (legendInfo) {
+        this.colorDetails = legendInfo.entries;
+        this.title = legendInfo.title;
+      }
     });
   }
 }
