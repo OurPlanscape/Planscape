@@ -335,7 +335,10 @@ export class TreatmentMapComponent {
 
       if (event.source.type === 'raster' && event.source.url !== '') {
         const loadCompletedAt = performance.now();
-        this.dataLayersStateService.evaluateLoadTime(loadCompletedAt)
+        this.dataLayersStateService.evaluateLoadTime(
+          loadCompletedAt,
+          event.source.url ?? ''
+        );
       }
     }
   }

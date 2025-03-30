@@ -9,7 +9,7 @@ import {
 import { DataLayer } from '@types';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
-import { debounceTime } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -26,10 +26,10 @@ export class MapDataLayerComponent {
 
   constructor(dataLayersStateService: DataLayersStateService) {
     dataLayersStateService.selectedDataLayer$
-      .pipe(debounceTime(300), untilDestroyed(this))
+      .pipe(debounceTime(300), untilDestroyed(this), distinctUntilChanged())
       .subscribe((dataLayer: DataLayer | null) => {
-        console.log('loading a DataLayer...');
         if (dataLayer?.public_url) {
+          console.log('loading a DataLayer...', dataLayer.name);
           this.dataLayer = dataLayer;
           this.cogUrl = `cog://${dataLayer?.public_url}`;
           const colorFn = makeColorFunction(dataLayer?.styles as any);
