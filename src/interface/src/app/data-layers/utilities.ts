@@ -92,9 +92,9 @@ export function makeColorFunction(
           return;
         }
         let chosen = sorted[sorted.length - 1];
-        for (let i = 0; i < sorted.length; i++) {
-          if (val <= sorted[i].value) {
-            chosen = sorted[i];
+        for (const element of sorted) {
+          if (val <= element.value) {
+            chosen = element;
             break;
           }
         }

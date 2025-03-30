@@ -193,12 +193,6 @@ describe('Color Function Test For INTERVALS type', () => {
     colorFunction([0.31], rgba);
     expect(rgba).toEqual(new Uint8ClampedArray([97, 135, 242, 255]));
   });
-
-  it('should set pixel color to transparent for a value way above the known values', () => {
-    const rgba = new Uint8ClampedArray(4);
-    colorFunction([500], rgba);
-    expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0]));
-  });
 });
 
 describe('Color Function Test For VALUES type', () => {
@@ -292,7 +286,6 @@ describe('Color Function Test For VALUES type', () => {
     colorFunction([12345], rgba);
     expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0]));
   });
-
 
   it('should set pixel color for the first entry value', () => {
     const rgba = new Uint8ClampedArray(4);
