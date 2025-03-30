@@ -13,6 +13,9 @@
     (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
 </app-map-nav-bar>
 
+<app-loading-layer-overlay *ngIf="loadingLayer$ | async">
+</app-loading-layer-overlay>
+
 <mgl-map
   *ngIf="mapExtent$ | async; let bounds"
   (mapLoad)="mapLoaded($event)"
@@ -35,7 +38,7 @@
   [transformRequest]="transformRequest">
   <app-map-controls
     [userCanEditStands]="userCanEditStands"
-    *ngIf="showMapControls$ | async"
+    [extendedControlsEnabled]="(showMapControls$ | async) ?? false"
     [mapLibreMap]="mapLibreMap"></app-map-controls>
 
   <app-action-button
@@ -46,12 +49,38 @@
     (clickedActionButton)="openTreatmentLegend()">
   </app-action-button>
 
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
+  <app-map-data-layer
+    *appFeatureFlag="'statewide_datalayers'"></app-map-data-layer>
+
   <app-planning-area-layer> </app-planning-area-layer>
 
   <app-map-project-areas
+    [scenarioId]="scenarioId"
     [mapLibreMap]="mapLibreMap"
-    [showTooltips]="showProjectAreaTooltips"
-    [visible]="(showMapProjectAreas$ | async) || false"></app-map-project-areas>
+    [visible]="(showMapProjectAreas$ | async) || false"
+    (selectProjectArea)="selectProjectArea($event)"
+    (changeMouseLngLat)="setMouseLngLat($event)"
+    (changeHoveredProjectAreaId)="
+      setHoveredProjectAreaId($event)
+    "></app-map-project-areas>
+
+  <ng-container *ngIf="mouseLngLat">
+    <app-map-tooltip
+      [lngLat]="mouseLngLat"
+      *ngIf="hoveredProjectArea$ | async; let curProjectArea">
+      {{
+        curProjectArea.total_treated_area_acres /
+          curProjectArea.total_area_acres | percent: '1.0-1'
+      }}
+      Treated
+    </app-map-tooltip>
+  </ng-container>
 
   <app-map-stands
     *ngIf="showTreatmentStands$ | async"
@@ -72,6 +101,7 @@
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
 
-  <app-map-data-layer
-    [dataLayer]="selectedDataLayer$ | async"></app-map-data-layer>
+  <mgl-control position="bottom-left">
+    <app-data-layer-name></app-data-layer-name>
+  </mgl-control>
 </mgl-map>

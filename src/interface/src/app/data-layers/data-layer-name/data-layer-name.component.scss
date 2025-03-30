@@ -1,0 +1,33 @@
+@import "colors";
+@import "mixins";
+
+.data-layer-name {
+  @include public-sans();
+  @include small-input-label();
+  padding: 10px 14px;
+  margin: -10px;
+  border-radius: 0 8px 0 0;
+  background: $color-white;
+  box-shadow: 2px -2px 4px 0px rgba(0, 0, 0, 0.20);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 36px;
+  border: none;
+  cursor: pointer;
+  color: $color-standard-blue;
+
+  // very specific to override maplibre-gl defaults
+  &:not(:disabled):hover {
+    background: $color-white;
+    text-decoration: underline;
+  }
+
+  mat-icon {
+    width: 20px;
+    height: 20px;
+    font-size: 20px;
+  }
+}
+

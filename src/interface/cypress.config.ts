@@ -1,7 +1,7 @@
 import { defineConfig } from 'cypress';
 import * as dotenv from 'dotenv';
 
-const envPath = '../../src/planscape/planscape/.env';
+const envPath = '../../.env';
 dotenv.config({ path: envPath });
 
 export default defineConfig({

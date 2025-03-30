@@ -16,7 +16,7 @@
     </button>
     <button
       type="button"
-      *ngIf="userCanEditStands"
+      *ngIf="userCanEditStands && extendedControlsEnabled"
       [ngClass]="{
         active: (standSelectionEnabled$ | async)
       }"
@@ -26,7 +26,7 @@
       <mat-icon class="material-symbols-outlined">arrow_selector_tool</mat-icon>
     </button>
     <button
-      *ngIf="panEnabled"
+      *ngIf="extendedControlsEnabled"
       type="button"
       (click)="togglePan()"
       [ngClass]="{ active: (standSelectionEnabled$ | async) === false }"

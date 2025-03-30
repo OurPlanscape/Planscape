@@ -8,6 +8,7 @@ from planning.models import (
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
+    TreatmentGoal,
 )
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
@@ -73,6 +74,13 @@ class PlanningAreaFactory(factory.django.DjangoModelFactory):
             )
 
 
+class TreatmentGoalFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = TreatmentGoal
+
+    name = factory.Sequence(lambda x: "treatment goal %s" % x)
+
+
 class ScenarioFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = Scenario
@@ -92,6 +100,8 @@ class ScenarioFactory(factory.django.DjangoModelFactory):
     configuration = factory.LazyAttribute(lambda x: dict())
 
     result_status = ScenarioResultStatus.PENDING
+
+    treatment_goal = factory.SubFactory(TreatmentGoalFactory)
 
     @factory.post_generation
     def with_scenario_result(self, create, extracted, **kwargs):

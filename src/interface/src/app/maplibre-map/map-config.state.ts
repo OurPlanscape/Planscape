@@ -45,9 +45,17 @@ export class MapConfigState {
   private _showTreatmentLegend$ = new BehaviorSubject(false);
   public showTreatmentLegend$ = this._showTreatmentLegend$.asObservable();
 
-  private readonly defaultOpacity = 0.8;
-  private _treatedStandsOpacity = new BehaviorSubject(this.defaultOpacity);
+  private readonly defaultStandsOpacity = 0.8;
+  private _treatedStandsOpacity = new BehaviorSubject(
+    this.defaultStandsOpacity
+  );
   public treatedStandsOpacity$ = this._treatedStandsOpacity.asObservable();
+
+  private readonly defaultProjectAreasOpacity = 0.5;
+  private _projectAreasOpacity = new BehaviorSubject(
+    this.defaultProjectAreasOpacity
+  );
+  public projectAreasOpacity$ = this._projectAreasOpacity.asObservable();
 
   private defaultZoomLevel = 7;
   public zoomLevel$ = new BehaviorSubject<number>(this.defaultZoomLevel);
@@ -65,7 +73,7 @@ export class MapConfigState {
   }
 
   updateShowTreatmentStands(value: boolean) {
-    this.setTreatedStandsOpacity(this.defaultOpacity);
+    this.setTreatedStandsOpacity(this.defaultStandsOpacity);
     this._showTreatmentStandsLayer$.next(value);
   }
 
@@ -113,6 +121,10 @@ export class MapConfigState {
 
   setTreatedStandsOpacity(value: number) {
     this._treatedStandsOpacity.next(value);
+  }
+
+  setProjectAreasOpacity(value: number) {
+    this._projectAreasOpacity.next(value);
   }
 
   setShowTreatmentLayersToggle(value: boolean) {

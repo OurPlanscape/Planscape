@@ -1,0 +1,7 @@
+<button
+  class="data-layer-name"
+  (click)="goToSelectedLayer(selectedDataLayer)"
+  *ngIf="selectedDataLayer$ | async as selectedDataLayer">
+  <mat-icon class="icon-back">arrow_back</mat-icon>
+  {{ selectedDataLayer.name }}
+</button>

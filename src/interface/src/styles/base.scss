@@ -1,0 +1,8 @@
+@import "mixins";
+@import "colors";
+
+mark {
+  background-color: $color-soft-purple;
+  border-radius: 4px;
+  color: $color-original-purple;
+}

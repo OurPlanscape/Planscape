@@ -10,13 +10,51 @@
   <!-- Show this section once we know if the user is logged in or not to avoid -->
   <!-- flashing guest / default icon and content shifting -->
   <ng-container *ngIf="(displayName$ | async) !== undefined">
-    <!-- User or sign in with menu if login enabled -->
+    <!-- Sign in with menu if loged in is false -->
     <button
+      sg-button
+      *ngIf="(loggedIn$ | async) === false"
+      [matMenuTriggerFor]="dotMenu"
+      class="navbar-item mat-body-2 user-menu"
+      [outlined]="true"
+      variant="link"
+      data-id="menu-trigger">
+      {{ displayName$ | async }}
+    </button>
+
+    <a
+      class="help"
+      mat-icon-button
+      routerLink="/help"
+      target="_blank"
+      aria-label="help button"
+      rel="noopener noreferrer"
+      data-id="help">
+      <mat-icon class="material-symbols-outlined">help_outline</mat-icon>
+    </a>
+
+    <!--  Feedback-->
+    <a
+      routerLink="/feedback"
+      class="navbar-item feedback"
+      data-id="feedback"
+      target="_blank"
+      rel="noopener noreferrer">
+      Feedback
+    </a>
+
+    <!-- User with menu if loged in is true -->
+    <button
+      sg-button
+      [outlined]="true"
+      variant="link"
+      *ngIf="(loggedIn$ | async) === true"
       [matMenuTriggerFor]="dotMenu"
       class="navbar-item mat-body-2 user-menu"
       data-id="menu-trigger">
       {{ displayName$ | async }}
     </button>
+
     <mat-menu #dotMenu="matMenu" class="dropdown-menu">
       <!-- logged out-->
       <ng-container *ngIf="(loggedIn$ | async) === false">
@@ -38,27 +76,6 @@
         </button>
       </ng-container>
     </mat-menu>
-
-    <a
-      class="help"
-      mat-icon-button
-      routerLink="/help"
-      target="_blank"
-      aria-label="help button"
-      rel="noopener noreferrer"
-      data-id="help">
-      <mat-icon class="material-symbols-outlined">help_outline</mat-icon>
-    </a>
-
-    <!--  Feedback-->
-    <a
-      routerLink="/feedback"
-      class="navbar-item"
-      data-id="feedback"
-      target="_blank"
-      rel="noopener noreferrer">
-      Feedback
-    </a>
   </ng-container>
 
   <!--  Mobile menu-->

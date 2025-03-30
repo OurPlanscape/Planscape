@@ -220,10 +220,12 @@
   :host {
     justify-content: space-evenly;
   }
-  .pages-container {
+  .pages-container:not(.compact) {
     display: none;
+    
+    .page-select-container {
+      display: flex;
+    }
   }
-  .page-select-container {
-    display: flex;
-  }
+
 }

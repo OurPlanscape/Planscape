@@ -71,6 +71,7 @@ mmh3 = "^5.1.0"
 multipledispatch = "^1.0.0"
 pygeometa = "^0.16.1"
 python-magic = "^0.4.27"
+django-cacheops = "^7.1"
 
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"

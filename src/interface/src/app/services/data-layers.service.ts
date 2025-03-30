@@ -24,17 +24,22 @@ export class DataLayersService {
       environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse',
       {
         withCredentials: true,
-        params: {},
+        params: { type: 'RASTER' },
       }
     );
   }
 
-  search(term: string) {
-    return this.http.get<SearchResult[]>(
+  search(term: string, limit: number, offset?: number) {
+    return this.http.get<Pagination<SearchResult>>(
       environment.backend_endpoint + '/v2/datalayers/find_anything',
       {
         withCredentials: true,
-        params: { term },
+        params: {
+          term,
+          type: 'RASTER',
+          limit: limit,
+          ...(offset ? { offset } : {}),
+        },
       }
     );
   }

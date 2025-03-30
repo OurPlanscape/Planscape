@@ -39,10 +39,10 @@ import { TreatmentToPDFService } from '../treatment-to-pdf.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 import { canRunTreatmentAnalysis } from '../../plan/permissions';
-import { Plan } from '@types';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnalyticsService } from '@services/analytics.service';
+import { PlanState } from '../../plan/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -106,7 +106,8 @@ export class TreatmentConfigComponent {
     private dialog: MatDialog,
     private pdfService: TreatmentToPDFService,
     private injector: Injector, // Angular's injector for passing shared services
-    private analiticsService: AnalyticsService
+    private analiticsService: AnalyticsService,
+    private planState: PlanState
   ) {
     this.router.events
       .pipe(
@@ -147,8 +148,18 @@ export class TreatmentConfigComponent {
     this.pdfService.createPDF(this.mapElement.mapLibreMap, mapAttributions);
   }
 
-  canRunTreatment$ = this.treatmentsState.planningArea$.pipe(
-    map((plan: Plan | null) => (plan ? canRunTreatmentAnalysis(plan) : false))
+  canRunTreatment$ = this.planState.currentPlanResource$.pipe(
+    // Skip over loading states
+    filter((resource) => !resource.isLoading),
+
+    // if errors, redirect
+    map((resource) => {
+      if (resource.error) {
+        this.router.navigate(['/']);
+        return false;
+      }
+      return resource.data ? canRunTreatmentAnalysis(resource.data) : false;
+    })
   );
 
   redirectToScenario() {

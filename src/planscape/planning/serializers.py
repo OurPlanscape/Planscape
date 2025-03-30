@@ -13,6 +13,7 @@ from planning.models import (
     Scenario,
     ScenarioResult,
     SharedLink,
+    TreatmentGoal,
     PlanningAreaNote,
     User,
     UserPrefs,
@@ -322,6 +323,12 @@ class ConfigurationSerializer(serializers.Serializer):
         return attrs
 
 
+class TreatmentGoalSerialiser(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentGoal
+        fields = ("id", "name")
+
+
 class ListScenarioSerializer(serializers.ModelSerializer):
     notes = serializers.CharField(required=False, help_text="Notes of the Scenario.")
     updated_at = serializers.DateTimeField(
@@ -336,6 +343,10 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         help_text="Name of the creator of the Scenario.",
     )
     tx_plan_count = serializers.SerializerMethodField(help_text="Number of treatments.")
+    treatment_goal = TreatmentGoalSerialiser(
+        read_only=True,
+        help_text="Treatment goal of the scenario.",
+    )
     scenario_result = ScenarioResultSerializer(
         required=False,
         read_only=True,
@@ -390,6 +401,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
             "user",
             "creator",
             "status",
+            "treatment_goal",
             "scenario_result",
             "tx_plan_count",
             "bbox",
@@ -456,6 +468,7 @@ class ScenarioSerializer(
             "origin",
             "notes",
             "configuration",
+            "treatment_goal",
             "scenario_result",
             "user",
             "creator",

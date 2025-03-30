@@ -38,7 +38,6 @@ def dataset_to_search_result(dataset: Dataset) -> SearchResult:
         id=dataset.id,
         name=dataset.name,
         type="DATASET",
-        url="url-to-go-to-dataset",
         data=dataset_serializer.data,
     )
 
@@ -68,6 +67,5 @@ def datalayer_to_search_result(datalayer) -> SearchResult:  # noqa: F811
         id=datalayer.id,
         name=datalayer.name,
         type="DATALAYER",
-        url="public-url-for-the-dataset?",
         data=datalayer_serializer.data,
     )

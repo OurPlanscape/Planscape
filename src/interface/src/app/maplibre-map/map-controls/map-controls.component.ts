@@ -40,7 +40,7 @@ export class MapControlsComponent {
   @Input() controlsPosition: ControlPosition = 'top-left';
   @Input() userCanEditStands: boolean = false;
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
-  @Input() panEnabled: boolean = true;
+  @Input() extendedControlsEnabled: boolean = true;
 
   zoomIn() {
     this.mapLibreMap.zoomIn();

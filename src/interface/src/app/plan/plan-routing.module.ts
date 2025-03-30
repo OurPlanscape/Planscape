@@ -5,6 +5,7 @@ import { AuthGuard } from '@services';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
 import { ExploreComponent } from './explore/explore/explore.component';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
+import { planLoaderResolver } from '../resolvers/plan-loader.resolver';
 
 const routes: Routes = [
   {
@@ -12,6 +13,9 @@ const routes: Routes = [
     title: 'Plan Details',
     component: PlanComponent,
     canActivate: [AuthGuard],
+    resolve: {
+      planInit: planLoaderResolver,
+    },
     children: [
       {
         path: 'config/',

@@ -6,6 +6,7 @@ from organizations.models import Organization
 from rest_framework import serializers
 
 from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
+from datasets.styles import get_default_raster_style, get_default_vector_style
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -196,6 +197,11 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
         required=True,
         allow_null=False,
     )
+    datalayers = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(queryset=DataLayer.objects.all()),
+        required=False,
+        help_text="Optional list of datalayer IDs to associate with this style upon creation.",
+    )
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
         type = attrs.get("type") or None
@@ -219,6 +225,7 @@ class CreateStyleSerializer(serializers.ModelSerializer[Style]):
             "name",
             "type",
             "data",
+            "datalayers",
         )
 
 
@@ -235,21 +242,31 @@ class EntrySerializer(serializers.Serializer):
     )
     label = serializers.CharField(
         required=False,
-        default="",
-    )  # type: ignore
+        allow_null=True,
+    )
 
 
 class NoDataSerializer(serializers.Serializer):
-    values = serializers.ListField(child=serializers.FloatField())
-    color = serializers.RegexField(regex=COLOR_REGEX)
+    values = serializers.ListField(
+        child=serializers.FloatField(),
+        required=False,
+        allow_null=True,
+        default=list,
+    )
+    color = serializers.RegexField(
+        regex=COLOR_REGEX,
+        required=False,
+        allow_null=True,
+    )
     opacity = serializers.FloatField(
         min_value=0,
         max_value=1,
-        default=1,
+        default=0,
+        allow_null=True,
     )
     label = serializers.CharField(
         required=False,
-        default="",
+        allow_null=True,
     )
 
 
@@ -390,16 +407,31 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         source="get_public_url",
         read_only=True,
     )
-    styles = StyleSimpleSerializer(many=True)
+    styles = serializers.SerializerMethodField()
+
+    def _default_raster_style(self, instance):
+        stats = instance.info.get("stats")[0]
+        return get_default_raster_style(**stats)
+
+    def get_styles(self, instance):
+        if instance.styles.all().exists():
+            return StyleSimpleSerializer(instance=instance.styles.all().first()).data
+        match instance.type:
+            case DataLayerType.RASTER:
+                stats = (
+                    instance.info.get("stats", [])[0]
+                    if instance.info
+                    else {"min": 0, "max": 1}
+                )
+                return get_default_raster_style(**stats)
+            case _:
+                return get_default_vector_style()
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
-            ancestors_names = list([c.name for c in instance.category.get_ancestors()])
-            ancestors_names = [*ancestors_names, instance.category.name]
-        else:
-            ancestors_names = []
+            return instance.category._get_full_path(instance.category.pk)
 
-        return ancestors_names
+        return []
 
     class Meta:
         model = DataLayer
@@ -416,8 +448,27 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "info",
             "metadata",
             "styles",
-            "geometry",
         )
+
+
+class BrowseDataLayerFilterSerializer(serializers.Serializer):
+    category = serializers.PrimaryKeyRelatedField(
+        queryset=Category.objects.all(),
+        required=False,
+        allow_null=True,
+    )
+    name = serializers.CharField(
+        required=False,
+    )
+    type = serializers.ChoiceField(
+        choices=DataLayerType.choices,
+        required=False,
+        allow_null=True,
+    )
+
+
+class BrowseDataSetSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=DataLayerType.choices, required=False)
 
 
 class FindAnythingSerializer(serializers.Serializer):
@@ -428,9 +479,8 @@ class FindAnythingSerializer(serializers.Serializer):
     offset = serializers.IntegerField(required=False, min_value=1)
 
 
-class SearchResultSerialzier(serializers.Serializer):
+class SearchResultsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.CharField()
-    url = serializers.URLField()
     data = serializers.JSONField()  # type: ignore

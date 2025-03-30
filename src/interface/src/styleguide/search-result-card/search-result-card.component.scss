@@ -11,8 +11,9 @@
 
   &:hover {
     background-color: $color-light-gray;
-    border:1px $color-original-purple solid;
+    border: 1px $color-original-purple solid;
   }
+
   &:active {
     background-color: $color-soft-purple;
   }
@@ -32,6 +33,7 @@
     word-wrap: break-word;
     padding: 8px 0;
   }
+
   .text-line {
     @include xs-label();
     display: flex;
@@ -40,16 +42,6 @@
     white-space: pre-wrap;
     word-wrap: break-word;
     height: 22px;
-  }
-
-  .highlighted {
-    background-color: $color-soft-purple;
-    border-radius: 4px;
-    color: $color-original-purple;
-  }
-
-  .regular {
-    background-color:inherit;
   }
 
   .year-details {

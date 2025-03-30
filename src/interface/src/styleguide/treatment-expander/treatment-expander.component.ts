@@ -16,6 +16,7 @@ import {
   PrescriptionSingleAction,
   SequenceAttributes,
 } from '../../app/treatments/prescriptions';
+import { HighlighterDirective } from '../highlighter/highlighter.directive';
 
 /**
  * Expander component
@@ -34,6 +35,7 @@ import {
     TreatmentTypeIconComponent,
     DecimalPipe,
     PercentPipe,
+    HighlighterDirective,
   ],
   templateUrl: './treatment-expander.component.html',
   styleUrl: './treatment-expander.component.scss',
@@ -108,44 +110,11 @@ export class TreatmentExpanderComponent {
     return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction];
   }
 
-  sequenceRxTitleText(): string {
-    if (this.title !== null) {
-      return this.title;
-    } else if (this.treatmentType === 'SINGLE') {
-      return PRESCRIPTIONS.SINGLE[this.action as PrescriptionSingleAction];
-    } else if (this.treatmentType === 'SEQUENCE') {
-      return PRESCRIPTIONS.SEQUENCE[this.action as PrescriptionSequenceAction]
-        .map((d) => d.description)
-        .join(' ');
-    }
-    return 'No Treatment';
-  }
-
-  // split on string, but retain search string
-  _splitRetain(haystack: string, needle: string) {
-    const regex = new RegExp(`(${needle})`, 'ig');
-    return haystack.split(regex).filter(Boolean);
-  }
-
-  splitTextLine(textLine: string): string[] | null {
-    if (!this.searchString) return [textLine];
-    return this._splitRetain(textLine, this.searchString);
-  }
-
-  isMatch(part: string): boolean {
-    if (!this.searchString) return false;
-    return part.toLowerCase() === this.searchString.toLowerCase();
-  }
-
   treatmentIconType(): PrescriptionSingleAction | null {
     if (this.action !== null) {
       return this.action as PrescriptionSingleAction;
     }
     return null;
-  }
-
-  totalStands(): number {
-    return this.standIds.length;
   }
 
   get isSelected() {

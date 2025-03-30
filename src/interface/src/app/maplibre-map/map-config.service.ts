@@ -8,8 +8,12 @@ export class MapConfigService {
 
   initialize() {
     if (!this.initialized) {
-      maplibregl.addProtocol('cog', cogProtocol);
+      this.addProtocols();
       this.initialized = true;
     }
+  }
+
+  private addProtocols() {
+    maplibregl.addProtocol('cog', cogProtocol);
   }
 }

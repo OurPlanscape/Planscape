@@ -16,17 +16,17 @@ export interface Entry {
 }
 
 export interface StyleJson {
-  map_type: string;
+  map_type: 'RAMP' | 'INTERVALS' | 'VALUES';
   no_data?: NoData;
   entries: Entry[];
 }
 
-// TODO: refactor with library options
 export function makeColorFunction(
   styleJson: StyleJson
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
   const { map_type, no_data, entries } = styleJson;
-  const sorted = entries.slice().sort((a, b) => a.value - b.value);
+  const sorted = [...entries].sort((a, b) => a.value - b.value);
+
   // For a RAMP, build a scale
   let rampColorFn: ((val: number) => [number, number, number, number]) | null =
     null;
@@ -67,15 +67,11 @@ export function makeColorFunction(
     rgbaData.set([rgbObj.r, rgbObj.g, rgbObj.b, a]);
   }
 
-  return (pixel: number[], rgba: Uint8ClampedArray) => {
+  const colorFunction = (pixel: number[], rgba: Uint8ClampedArray) => {
     const val = pixel[0];
 
     if (no_data?.values?.includes(val)) {
-      if (no_data.color) {
-        setPixelColor(rgba, no_data.color, no_data.opacity ?? 0);
-      } else {
-        rgba.set([0, 0, 0, 0]);
-      }
+      rgba.set([0, 0, 0, 0]);
       return;
     }
 
@@ -123,4 +119,5 @@ export function makeColorFunction(
       }
     }
   };
+  return colorFunction;
 }

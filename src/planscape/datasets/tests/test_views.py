@@ -1,12 +1,12 @@
-from unittest import mock
 from urllib.parse import urlencode
-from datasets.models import VisibilityOptions
-from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
-from organizations.tests.factories import OrganizationFactory
+
 from django.contrib.auth import get_user_model
 from django.urls import reverse
+from organizations.tests.factories import OrganizationFactory
 from rest_framework.test import APITransactionTestCase
 
+from datasets.models import DataLayerType, VisibilityOptions
+from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
@@ -39,7 +39,9 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_name_exact_returns_record(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(dataset=self.dataset)
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, type=DataLayerType.RASTER
+        )
         filter = {
             "name": datalayer.name,
         }
@@ -52,7 +54,9 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_name_icontains_returns_record(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(dataset=self.dataset)
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, type=DataLayerType.RASTER
+        )
         filter = {
             "name__icontains": datalayer.name[:3],
         }
@@ -65,10 +69,16 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_full_text_search_datalayer_name(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(dataset=self.dataset, name="Forest")
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
         for i in range(10):
-            DataLayerFactory.create(dataset=self.dataset, name=f"Foo {i}")
-            DataLayerFactory.create(dataset=self.dataset, name=f"Bar {i}")
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Foo {i}", type=DataLayerType.RASTER
+            )
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Bar {i}", type=DataLayerType.RASTER
+            )
         filter = {
             "search": "Forest",
         }
@@ -81,7 +91,9 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_full_text_search_datalayer_name_multiple_return(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(dataset=self.dataset, name="Forest")
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
         for i in range(10):
             DataLayerFactory.create(dataset=self.dataset, name=f"Foo {i}")
             DataLayerFactory.create(dataset=self.dataset, name=f"Bar {i}")
@@ -96,10 +108,16 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_full_text_search_dataset_name(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(dataset=self.dataset, name="Forest")
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
         for i in range(10):
-            DataLayerFactory.create(dataset=self.dataset, name=f"Foo {i}")
-            DataLayerFactory.create(dataset=self.dataset, name=f"Bar {i}")
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Foo {i}", type=DataLayerType.RASTER
+            )
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Bar {i}", type=DataLayerType.RASTER
+            )
         filter = {
             "search": "West coast",
         }
@@ -111,10 +129,16 @@ class TestDataLayerViewSet(APITransactionTestCase):
 
     def test_filter_by_full_text_search_organization_name(self):
         self.client.force_authenticate(user=self.admin)
-        datalayer = DataLayerFactory.create(dataset=self.dataset, name="Forest")
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
         for i in range(10):
-            DataLayerFactory.create(dataset=self.dataset, name=f"Foo {i}")
-            DataLayerFactory.create(dataset=self.dataset, name=f"Bar {i}")
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Foo {i}", type=DataLayerType.RASTER
+            )
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Bar {i}", type=DataLayerType.RASTER
+            )
         filter = {
             "search": "organization",
         }
@@ -128,7 +152,7 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.client.force_authenticate(user=self.normal)
         url = reverse("api:datasets:datalayers-list")
         dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
-        datalayer = DataLayerFactory(dataset=dataset)
+        datalayer = DataLayerFactory(dataset=dataset, type=DataLayerType.RASTER)
         response = self.client.get(url, format="json")
         data = response.json()
         self.assertEqual(response.status_code, 200)
@@ -148,6 +172,27 @@ class TestDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
         self.assertEqual(style.pk, data.get("results")[0].get("style").get("id"))
+
+    def test_find_anything(self):
+        self.client.force_authenticate(user=self.admin)
+        datalayer = DataLayerFactory.create(
+            dataset=self.dataset, name="Forest", type=DataLayerType.RASTER
+        )
+        for i in range(10):
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Foo {i}", type=DataLayerType.RASTER
+            )
+            DataLayerFactory.create(
+                dataset=self.dataset, name=f"Bar {i}", type=DataLayerType.RASTER
+            )
+        filter = {
+            "term": "foo",
+        }
+        url = f"{reverse('api:datasets:datalayers-find-anything')}?{urlencode(filter)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(10, data.get("count"))
 
 
 class TestDatasetViewSet(APITransactionTestCase):
@@ -185,3 +230,35 @@ class TestDatasetViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(dataset.pk, data.get("results")[0].get("id"))
+
+    def test_browses_datalayers(self):
+        self.client.force_authenticate(user=self.admin)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset)
+        url = reverse("api:datasets:datasets-browse", kwargs={"pk": dataset.pk})
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data[0].get("id"))
+
+    def test_browses_datalayers__filter_by_name_exact(self):
+        self.client.force_authenticate(user=self.admin)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
+        query_params = {"name": datalayer.name}
+        url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data[0].get("id"))
+
+    def test_browses_datalayers__filter_by_name_icontains(self):
+        self.client.force_authenticate(user=self.admin)
+        dataset = DatasetFactory(visibility=VisibilityOptions.PUBLIC)
+        datalayer = DataLayerFactory.create(dataset=dataset, name="Owl Habitat")
+        query_params = {"name": "owl"}
+        url = f"{reverse('api:datasets:datasets-browse', kwargs={'pk': dataset.pk})}?{urlencode(query_params)}"
+        response = self.client.get(url)
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(datalayer.pk, data[0].get("id"))

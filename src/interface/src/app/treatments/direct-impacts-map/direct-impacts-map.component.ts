@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
-import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
@@ -23,6 +23,8 @@ import {
 import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
+import { TreatmentsState } from '../treatments.state';
 
 @UntilDestroy()
 @Component({
@@ -48,7 +50,8 @@ export class DirectImpactsMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService,
-    private authService: AuthService
+    private authService: AuthService,
+    private treatmentsState: TreatmentsState
   ) {}
 
   readonly labels = YEAR_INTERVAL_LABELS;
@@ -75,6 +78,10 @@ export class DirectImpactsMapComponent {
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
+
+  get scenarioId() {
+    return this.treatmentsState.getScenarioId();
+  }
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
@@ -120,4 +127,8 @@ export class DirectImpactsMapComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  getProjectAreaCount(): number {
+    return this.treatmentsState.projectAreaCount();
+  }
 }

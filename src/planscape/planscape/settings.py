@@ -1,19 +1,20 @@
+import logging
 import multiprocessing
 import os
 import sys
-import logging
 from datetime import timedelta
 from pathlib import Path
 
 import boto3
-import sentry_sdk
 import django_stubs_ext
+import sentry_sdk
 from corsheaders.defaults import default_headers
-from decouple import config
+from decouple import Config, RepositoryEnv
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
 
+config = Config(RepositoryEnv("../../.env"))
 django_stubs_ext.monkeypatch()
 
 TESTING_MODE = "test" in sys.argv
@@ -383,8 +384,13 @@ FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 OUTPUT_DIR = BASE_DIR / "output"
 
 DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
-
-
+# CACHEOPS
+CACHEOPS_REDIS = config("CACHEOPS_REDIS", "redis://localhost:6379/1")
+DEFAULT_CACHE_TTL = config("DEFAULT_CACHE_TTL", 5 * 60, cast=int)  # 5 minutes default
+FIND_ANYTHING_TTL = config("FIND_ANYTHING_TTL", DEFAULT_CACHE_TTL)
+BROWSE_DATASETS_TTL = config("BROWSE_DATASETS_TTL", DEFAULT_CACHE_TTL)
+CATEGORY_PATH_TTL = config("CATEGORY_PATH_TTL", 3600)  # 1 hour
+S3_PUBLIC_URL_TTL = config("S3_PUBLIC_URL_TTL", 3600)  # 1 hour
 # CELERY
 CELERY_BROKER_URL = config("CELERY_BROKER_URL", "redis://localhost:6379/0")
 
@@ -450,3 +456,5 @@ boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
+
+ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
