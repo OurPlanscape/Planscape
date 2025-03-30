@@ -69,7 +69,6 @@ export function makeColorFunction(
 
   const colorFunction = (pixel: number[], rgba: Uint8ClampedArray) => {
     const val = pixel[0];
-
     if (no_data?.values?.includes(val)) {
       rgba.set([0, 0, 0, 0]);
       return;

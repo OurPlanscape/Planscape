@@ -84,7 +84,7 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {}
+  constructor(private service: DataLayersService) { }
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
@@ -125,6 +125,23 @@ export class DataLayersStateService {
   clearSearch() {
     this.search('');
     this._selectedDataSet$.next(null);
+  }
+
+
+  loadStartTime = 0;
+  loadedCount = 0;
+  setLoadStartTime(perfStart: number) {
+    this.loadStartTime = perfStart;
+    this.loadedCount += 1;
+  }
+
+  evaluateLoadTime(perfEnd: number) {
+    console.log('COG started at: ', this.loadStartTime);
+    console.log('COG was loaded at: ', perfEnd);
+    console.log('Total load time was: ', perfEnd - this.loadStartTime);
+    console.log('initiated ', this.loadedCount, ' loads.');
+    this.loadStartTime = 0;
+    this.loadedCount = 0;
   }
 
   goToSelectedLayer(layer: DataLayer) {

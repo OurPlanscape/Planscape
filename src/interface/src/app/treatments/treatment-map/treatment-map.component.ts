@@ -289,6 +289,8 @@ export class TreatmentMapComponent {
   }
 
   mapLoaded(event: MapLibreMap) {
+    console.log('map is loaded', performance.now());
+
     this.mapLibreMap = event;
     this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
     this.listenForZoom();
@@ -330,6 +332,11 @@ export class TreatmentMapComponent {
   onSourceData(event: MapSourceDataEvent) {
     if (event.isSourceLoaded) {
       this.sourceLoaded$.next(event);
+
+      if (event.source.type === 'raster' && event.source.url !== '') {
+        const loadCompletedAt = performance.now();
+        this.dataLayersStateService.evaluateLoadTime(loadCompletedAt)
+      }
     }
   }
 
