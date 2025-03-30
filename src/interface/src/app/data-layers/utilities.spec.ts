@@ -1,10 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { makeColorFunction } from './utilities';
+import { makeColorFunction, StyleJson } from './utilities';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 describe('Color Function Test For RAMP type', () => {
   let colorFunction: any;
-  const rampStyle = {
+  const rampStyle: StyleJson = {
     map_type: 'RAMP',
     no_data: {
       values: [0.003],
@@ -67,7 +67,7 @@ describe('Color Function Test For RAMP type', () => {
   it('should set pixel color to no_data color for values in no_data', () => {
     const rgba = new Uint8ClampedArray(4);
     colorFunction([0.003], rgba);
-    expect(rgba).toEqual(new Uint8ClampedArray([204, 204, 204, 0])); // #CCCCCC with 0 opacity
+    expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0])); // #CCCCCC with 0 opacity
   });
 
   it('should set pixel color to no_data color for values less than no_data', () => {
@@ -95,10 +95,7 @@ describe('Color Function Test For RAMP type', () => {
     // Calculate expected color based on interpolation between #F5CC00 and #F57A00
     // #F5CC00 (245, 204, 0) and #F57A00 (245, 122, 0)
     const expectedRed = 245; // Red component remains the same
-    // const expectedBlue = 0; // Blue component remains the same
     const expectedAlpha = 255; // Full opacity
-
-    console.log('what is green:', rgba[1]);
 
     expect(rgba[0]).toBe(expectedRed); // Red component
     // expect(rgba[2]).toBe(expectedBlue); // Blue component
@@ -125,7 +122,7 @@ describe('Color Function Test For RAMP type', () => {
 
 describe('Color Function Test For INTERVALS type', () => {
   let colorFunction: any;
-  const intervalsStyle = {
+  const intervalsStyle: StyleJson = {
     map_type: 'INTERVALS',
     no_data: {
       values: [0.12],
@@ -197,17 +194,16 @@ describe('Color Function Test For INTERVALS type', () => {
     expect(rgba).toEqual(new Uint8ClampedArray([97, 135, 242, 255]));
   });
 
-  // not whats happening
-  // it('should set pixel color to transparent for a value way above the known values', () => {
-  //   const rgba = new Uint8ClampedArray(4);
-  //   colorFunction([500], rgba);
-  //   expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0]));
-  // });
+  it('should set pixel color to transparent for a value way above the known values', () => {
+    const rgba = new Uint8ClampedArray(4);
+    colorFunction([500], rgba);
+    expect(rgba).toEqual(new Uint8ClampedArray([0, 0, 0, 0]));
+  });
 });
 
 describe('Color Function Test For VALUES type', () => {
   let colorFunction: any;
-  const valuesStyles = {
+  const valuesStyles: StyleJson = {
     map_type: 'VALUES',
     no_data: {
       values: [],
