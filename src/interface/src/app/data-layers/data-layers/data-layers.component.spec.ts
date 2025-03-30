@@ -15,6 +15,7 @@ describe('DataLayersComponent', () => {
       imports: [DataLayersComponent],
       providers: [
         MockProvider(DataLayersStateService, {
+          searchTerm$: of(''),
           dataSets$: of({} as Pagination<DataSet>),
           selectedDataSet$: of(null),
           dataTree$: of(null),

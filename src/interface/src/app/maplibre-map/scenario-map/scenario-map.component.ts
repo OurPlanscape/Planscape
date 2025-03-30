@@ -9,13 +9,13 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { PlanState } from '../plan.state';
 import { filter, map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { ActivatedRoute } from '@angular/router';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
+import { PlanState } from '../../plan/plan.state';
 
 @Component({
   selector: 'app-scenario-map',

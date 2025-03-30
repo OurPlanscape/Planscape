@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/angular';
-import { argsToTemplate, applicationConfig } from '@storybook/angular';
+import { applicationConfig, argsToTemplate } from '@storybook/angular';
 import { PaginatorComponent } from './paginator.component';
 import { provideAnimations } from '@angular/platform-browser/animations';
 
@@ -58,5 +58,13 @@ export const ManyPages: Story = {
   args: {
     pageCount: 105,
     recordsPerPage: 10,
+  },
+};
+
+export const Compact: Story = {
+  args: {
+    pageCount: 40,
+    recordsPerPage: 10,
+    compact: true,
   },
 };
