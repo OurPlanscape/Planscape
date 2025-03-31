@@ -1,22 +1,17 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MetricConfig } from '@types';
-import { NgIf } from '@angular/common';
+import { DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
-import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-data-layer-tooltip',
   standalone: true,
-  imports: [NgIf, MatButtonModule, ButtonComponent],
+  imports: [NgIf, MatButtonModule, DecimalPipe],
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
-export class DataLayerTooltipComponent implements OnInit {
+export class DataLayerTooltipComponent {
   @Input() layer!: any;
-
-  ngOnInit(): void {
-    console.log('############### Layer: ', this.layer);
-  }
 
   computeMinMax(): number[] {
     return [
@@ -38,7 +33,7 @@ export class DataLayerTooltipComponent implements OnInit {
   }
 
   hasDownloadLink(): boolean {
-    return !!this.layer.data_download_link;
+    return !!this.layer.item?.public_url;
   }
 
   hasMinMax(): boolean {
@@ -49,10 +44,14 @@ export class DataLayerTooltipComponent implements OnInit {
   }
 
   hasReferenceLink(): boolean {
-    return !!this.layer.reference_link;
+    return !!this.layer.item?.metadata?.reference_link;
   }
 
   hasSource(): boolean {
-    return !!this.layer.source && !!this.layer.source_link;
+    return !!this.layer.item?.metadata?.['download'];
+  }
+
+  hasVintageDate(): boolean {
+    return !!this.layer.item?.metadata?.datestamp;
   }
 }

@@ -3,26 +3,42 @@
 <div class="content">
   <dl>
     <dt>Layer Name</dt>
-    <dd>{{ layer.name }}</dd>
+    <dd>{{ layer.name || '--' }}</dd>
 
-    <ng-container *ngIf="hasMinMax()">
-      <dt>Value Range</dt>
-      <dd>{{ computeMinMax() }}</dd>
-    </ng-container>
+    <dt>Value Range</dt>
+    <dd>
+      @if (hasMinMax()) {
+        {{ this.layer.item?.info?.stats?.[0]?.min | number: '1.0-0' }},
+        {{ this.layer.item?.info?.stats?.[0]?.max | number: '1.0-0' }}
+      } @else {
+        --
+      }
+    </dd>
 
     <dt>Source</dt>
     <dd>
-      <a [href]="layer.item?.public_url">{{ layer.item?.dataset?.name }}</a>
+      @if (hasSource()) {
+        <a [href]="this.layer.item?.metadata?.['download']?.url">
+          {{ this.layer.item?.metadata?.['download']?.name }}
+        </a>
+      } @else {
+        --
+      }
     </dd>
 
     <dt>Vintage Date</dt>
-    <dd>August 10, 2018</dd>
+    <dd>
+      @if (hasVintageDate()) {
+        {{ this.layer.item?.metadata?.datestamp }}
+      } @else {
+        --
+      }
+    </dd>
   </dl>
 </div>
 
 <div class="footer">
-  <a [href]="layer.item?.public_url">
+  <a *ngIf="hasDownloadLink()" [href]="layer.item?.public_url">
     <i class="material-symbols-outlined">download</i> Download Dataset
   </a>
-  <a sg-button variant="primary" href="#" target="_blank"> Learn more </a>
 </div>
