@@ -16,6 +16,7 @@ import {
 } from '@services';
 import { ExploreComponent } from './plan/explore/explore/explore.component';
 import { numberResolver } from './resolvers/number.resolver';
+import { planLoaderResolver } from './resolvers/plan-loader.resolver';
 
 const routes: Routes = [
   {
@@ -108,6 +109,7 @@ const routes: Routes = [
       },
       {
         path: 'plan',
+
         loadChildren: () =>
           import('./plan/plan.module').then((m) => m.PlanModule),
       },
@@ -116,6 +118,7 @@ const routes: Routes = [
         path: 'plan/:planId/config/:scenarioId/treatment/:treatmentId',
         canActivate: [AuthGuard],
         resolve: {
+          planInit: planLoaderResolver,
           treatmentId: numberResolver('treatmentId', ''),
           scenarioId: numberResolver('scenarioId', ''),
         },

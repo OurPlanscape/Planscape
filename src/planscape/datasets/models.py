@@ -1,7 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from cacheops import cached
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
 from core.s3 import create_download_url
 from core.schemes import SUPPORTED_SCHEMES
@@ -103,6 +104,13 @@ class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
     name = models.CharField(
         max_length=128,
     )
+
+    @cached(timeout=settings.CATEGORY_PATH_TTL)
+    def _get_full_path(self, id: int) -> List[str]:
+        category = self._meta.model.objects.get(pk=id)
+        ancestors = list([c.name for c in category.get_ancestors()])
+        names = [*ancestors, category.name]
+        return names
 
     def __str__(self) -> str:
         return self.name
@@ -362,7 +370,6 @@ class SearchResult:
     id: int
     name: str
     type: str
-    url: str
     data: Dict[str, Any]
 
     def key(self):

@@ -8,7 +8,7 @@ import { filter, map } from 'rxjs';
 import { canViewCollaborators } from '../../plan/permissions';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
-import { PlanState } from 'src/app/maplibre-map/plan.state';
+import { PlanState } from 'src/app/plan/plan.state';
 
 export type NavView =
   | 'Explore'
