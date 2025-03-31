@@ -2,12 +2,24 @@
   <div class="legend-title">
     {{ title }}
   </div>
-  <div *ngFor="let c of colorDetails" class="legend-line">
+  <ng-container *ngIf="mapType !== 'RAMP'">
+    <div *ngFor="let c of colorDetails" class="legend-line">
+      <div
+        class="swatch-box"
+        [ngStyle]="{ 'background-color': c.colorHex }"></div>
+      <div class="swatch-label">
+        {{ c.entryLabel }}
+      </div>
+    </div>
+  </ng-container>
+  <div *ngIf="mapType === 'RAMP'" class="ramp-legend">
     <div
-      class="swatch-box"
-      [ngStyle]="{ 'background-color': c.colorHex }"></div>
-    <div class="swatch-label">
-      {{ c.entryLabel }}
+      class="swatch-gradient"
+      [ngStyle]="{ background: gradientStyle }"></div>
+    <div class="ramp-label-box">
+      <div *ngFor="let label of gradientLabels" class="ramp-label">
+        {{ label }}
+      </div>
     </div>
   </div>
 </div>
