@@ -70,7 +70,7 @@ describe('TreatmentsService', () => {
       expect(response).toEqual(dummyResponse as TreatmentPlan);
     });
 
-    const req = httpMock.expectOne(service.baseUrl + id);
+    const req = httpMock.expectOne(service.baseUrl + id + '/');
     expect(req.request.method).toBe('DELETE');
     expect(req.request.withCredentials).toBeTrue();
     req.flush(dummyResponse);
@@ -84,7 +84,7 @@ describe('TreatmentsService', () => {
       expect(response).toEqual(dummyResponse as TreatmentPlan);
     });
 
-    const req = httpMock.expectOne(service.baseUrl + id);
+    const req = httpMock.expectOne(service.baseUrl + id + '/');
     expect(req.request.method).toBe('GET');
     expect(req.request.withCredentials).toBeTrue();
     req.flush(dummyResponse);
