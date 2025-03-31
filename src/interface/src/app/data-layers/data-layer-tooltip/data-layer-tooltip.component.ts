@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { MetricConfig } from '@types';
 import { DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,12 +10,8 @@ import { MatButtonModule } from '@angular/material/button';
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
-export class DataLayerTooltipComponent implements OnInit {
+export class DataLayerTooltipComponent {
   @Input() layer!: any;
-
-  ngOnInit(): void {
-    console.log('Selected_: ', this.layer);
-  }
 
   computeMinMax(): number[] {
     return [
@@ -45,10 +41,6 @@ export class DataLayerTooltipComponent implements OnInit {
       this.layer.item?.info?.stats?.[0]?.min != undefined &&
       this.layer.item?.info?.stats?.[0]?.max != undefined
     );
-  }
-
-  hasReferenceLink(): boolean {
-    return !!this.layer.item?.metadata?.reference_link;
   }
 
   hasSource(): boolean {
