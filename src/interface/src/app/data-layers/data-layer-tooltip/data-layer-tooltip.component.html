@@ -15,6 +15,15 @@
       }
     </dd>
 
+    <dt>Units</dt>
+    <dd>
+      @if (hasUnits()) {
+        {{ getUnits() }}
+      } @else {
+        --
+      }
+    </dd>
+
     <dt>Source</dt>
     <dd>
       @if (hasSource()) {
