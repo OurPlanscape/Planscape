@@ -93,7 +93,7 @@ def cog(
 ) -> str:
     log.info("enabling cog")
     output_profile = cog_profiles.get(cog_profile)
-    output_profile.update(dict(BIGTIFF="IF_SAFER"))
+    output_profile.update(dict(BIGTIFF="IF_SAFER", blockxsize=256, blockysize=256))
     if profile_overrides:
         output_profile.update(profile_overrides)
 
@@ -107,6 +107,8 @@ def cog(
         config=config,
         in_memory=False,
         quiet=True,
+        web_optimized=True,
+        zoom_level_strategy="upper",
         **options,
     )
 
