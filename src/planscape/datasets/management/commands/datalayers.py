@@ -310,6 +310,20 @@ class Command(PlanscapeCommand):
         )
         return response.json()
 
+    def _set_datalayer_status(self, datalayer_id: int, status: str, **kwargs) -> None:
+        base_url = self.get_base_url(**kwargs)
+        url = f"{base_url}/v2/admin/datalayers/{datalayer_id}/"
+        headers = self.get_headers(**kwargs)
+        payload = {"status": status}
+        response = requests.patch(url, headers=headers, json=payload)
+        if response.status_code not in (200, 201):
+            self.stderr.write(
+                f"Failed to set datalayer {datalayer_id} to '{status}': "
+                f"{response.status_code} – {response.text}"
+            )
+        else:
+            self.stdout.write(f"Datalayer {datalayer_id} status set to '{status}'.")
+
     def _datalayer_exists(self, token, **kwargs) -> bool:
         response = self._list_request(token, **kwargs)
         data = response.json()
@@ -378,12 +392,15 @@ class Command(PlanscapeCommand):
             raise ValueError("request failed.")
         datalayer = output_data.get("datalayer")
         upload_to = output_data.get("upload_to", {}) or {}
-        if len(upload_to.keys()) > 0:
-            self._upload_file(
+        if datalayer and len(upload_to.keys()) > 0:
+            upload_response = self._upload_file(
                 rasters,
                 datalayer=datalayer,
                 upload_to=upload_to,
             )
+            if "id" in datalayer:
+                self._set_datalayer_status(datalayer["id"], "READY", **kwargs)
+
         return output_data
 
     def _name_from_input_file(self, input_file: str):
