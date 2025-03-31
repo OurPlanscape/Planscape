@@ -1,8 +1,6 @@
 import { Component } from '@angular/core';
 import { NgIf } from '@angular/common';
-import {
-  makeColorFunction,
-} from '../../data-layers/utilities';
+import { makeColorFunction } from '../../data-layers/utilities';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
   LayerComponent,
