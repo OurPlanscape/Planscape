@@ -1,7 +1,7 @@
 import { Component, Input } from '@angular/core';
-import { MetricConfig } from '@types';
 import { DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
+import { DataLayer } from '@types';
 
 @Component({
   selector: 'app-data-layer-tooltip',
@@ -11,53 +11,33 @@ import { MatButtonModule } from '@angular/material/button';
   styleUrl: './data-layer-tooltip.component.scss',
 })
 export class DataLayerTooltipComponent {
-  @Input() layer!: any;
-
-  computeMinMax(): number[] {
-    return [
-      this.layer.item?.info?.stats?.[0]?.min!,
-      this.layer.item?.info?.stats?.[0]?.max!,
-    ];
-  }
-
-  dataUnits(): string | undefined {
-    if (this.layer.normalized) {
-      return 'Normalized';
-    } else {
-      return (this.layer as MetricConfig)?.data_units;
-    }
-  }
-
-  hasDataProvider(): boolean {
-    return !!this.layer.data_provider;
-  }
+  @Input() layer!: DataLayer;
 
   hasDownloadLink(): boolean {
-    return !!this.layer.item?.public_url;
+    return !!this.layer.public_url;
   }
 
   hasMinMax(): boolean {
     return (
-      this.layer.item?.info?.stats?.[0]?.min != undefined &&
-      this.layer.item?.info?.stats?.[0]?.max != undefined
+      this.layer.info?.stats?.[0]?.min != undefined &&
+      this.layer.info?.stats?.[0]?.max != undefined
     );
   }
 
-  hasSource(): boolean {
-    return !!this.layer.item?.metadata?.['download'];
+  getSource() {
+    return this.layer.metadata?.['download'];
   }
 
-  hasVintageDate(): boolean {
-    return !!this.layer.item?.metadata?.datestamp;
-  }
-
-  hasUnits(): boolean {
-    return (
-      this.layer.item?.info?.units?.filter((unit: string) => !!unit).length > 0
-    );
+  getVintageDate(): string {
+    return this.layer.metadata?.['datestamp'] || '--';
   }
 
   getUnits() {
-    return this.layer.item.info.units.join(', ');
+    const units = this.layer.info?.units?.filter((unit) => !!unit);
+
+    if (!units || units.length === 0) {
+      return '--';
+    }
+    return this.layer.info.units.join(', ');
   }
 }

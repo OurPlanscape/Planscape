@@ -8,8 +8,8 @@
     <dt>Value Range</dt>
     <dd>
       @if (hasMinMax()) {
-        {{ this.layer.item?.info?.stats?.[0]?.min | number: '1.0-0' }},
-        {{ this.layer.item?.info?.stats?.[0]?.max | number: '1.0-0' }}
+        {{ this.layer.info.stats[0].min | number: '1.0-0' }},
+        {{ this.layer.info.stats[0].max | number: '1.0-0' }}
       } @else {
         --
       }
@@ -17,37 +17,29 @@
 
     <dt>Units</dt>
     <dd>
-      @if (hasUnits()) {
-        {{ getUnits() }}
-      } @else {
-        --
-      }
+      {{ getUnits() }}
     </dd>
 
     <dt>Source</dt>
     <dd>
-      @if (hasSource()) {
-        <a [href]="this.layer.item?.metadata?.['download']?.url">
-          {{ this.layer.item?.metadata?.['download']?.name }}
-        </a>
-      } @else {
-        --
-      }
+      <a
+        *ngIf="getSource() as source; else noSource"
+        [href]="source.url"
+        target="_blank">
+        {{ source.name }}
+      </a>
+      <ng-template #noSource>--</ng-template>
     </dd>
 
     <dt>Vintage Date</dt>
     <dd>
-      @if (hasVintageDate()) {
-        {{ this.layer.item?.metadata?.datestamp }}
-      } @else {
-        --
-      }
+      {{ getVintageDate() }}
     </dd>
   </dl>
 </div>
 
 <div class="footer" *ngIf="hasDownloadLink()">
-  <a [href]="layer.item?.public_url">
+  <a [href]="layer.public_url">
     <i class="material-symbols-outlined">download</i> Download Dataset
   </a>
 </div>
