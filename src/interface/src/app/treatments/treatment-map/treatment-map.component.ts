@@ -314,10 +314,9 @@ export class TreatmentMapComponent {
           return layer;
         });
 
+      // if the style change caused the other layers to be removed, then we need to re-add them.
       if (rasterUrl && !this.mapLibreMap.getSource('rasterImage')) {
-        if (this.mapLibreMap.getLayer('image-layer')) {
-          this.mapLibreMap.removeLayer('image-layer');
-        }
+        // TODO: put this in a service, or somewhere central...
 
         const rasterSource: RasterSourceSpecification = {
           type: 'raster',
@@ -334,7 +333,9 @@ export class TreatmentMapComponent {
             'raster-resampling': 'nearest',
           },
         };
-
+        if (this.mapLibreMap.getLayer('image-layer')) {
+          this.mapLibreMap.removeLayer('image-layer');
+        }
         this.mapLibreMap.addSource('rasterImage', rasterSource);
         this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
       }
