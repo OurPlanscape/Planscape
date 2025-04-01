@@ -24,7 +24,7 @@ describe('DataLayerTooltipComponent', () => {
     component = fixture.componentInstance;
     component.layer = {
       name: 'Testing Name',
-    };
+    } as any;
     fixture.detectChanges();
   });
 
