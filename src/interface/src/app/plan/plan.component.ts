@@ -26,10 +26,13 @@ import {
 import { getPlanPath } from './plan-helpers';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
-import { NavState, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
+import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { BreadcrumbService } from '@services/breadcrumb.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-plan',
   templateUrl: './plan.component.html',
@@ -44,7 +47,8 @@ export class PlanComponent implements OnInit {
     private router: Router,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
-    private snackbar: MatSnackBar
+    private snackbar: MatSnackBar,
+    private breadcrumbService: BreadcrumbService
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
@@ -68,6 +72,48 @@ export class PlanComponent implements OnInit {
         return this.authService.getUser(plan.user);
       })
     );
+
+    combineLatest([
+      this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
+      this.scenarioName$,
+    ])
+      .pipe(untilDestroyed(this))
+      .subscribe(([plan, scenarioName]) => {
+        const path = this.getPathFromSnapshot();
+        const scenarioId = this.route.children[0]?.snapshot.params['id'];
+
+        const navStateObject = {
+          currentView: '',
+          currentRecordName: '',
+          backLink: '/home',
+        };
+
+        if (scenarioId) {
+          navStateObject.currentView = 'Scenario';
+          navStateObject.backLink = getPlanPath(plan.id);
+        }
+
+        if (path === 'config' && !scenarioId && !scenarioName) {
+          navStateObject.currentRecordName = 'New Scenario';
+          navStateObject.backLink = getPlanPath(plan.id);
+        } else if (scenarioName) {
+          navStateObject.currentRecordName = scenarioName;
+          navStateObject.backLink = getPlanPath(plan.id);
+        } else if (path !== 'config' && plan.name && !scenarioName) {
+          navStateObject.currentView = 'Planning Area';
+          navStateObject.currentRecordName = plan.name;
+        }
+
+        this.breadcrumbService.updateBreadCrumb({
+          label:
+            navStateObject.currentView +
+            ': ' +
+            navStateObject.currentRecordName,
+          backUrl: navStateObject.backLink!,
+        });
+
+        return navStateObject;
+      });
   }
 
   currentPlan$ = new BehaviorSubject<Plan | null>(null);
@@ -94,36 +140,6 @@ export class PlanComponent implements OnInit {
   scenarioName$ = this.LegacyPlanStateService.planState$.pipe(
     map((state) => {
       return state.currentScenarioName;
-    })
-  );
-
-  navState$: Observable<NavState> = combineLatest([
-    this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
-    this.scenarioName$,
-  ]).pipe(
-    map(([plan, scenarioName]) => {
-      const path = this.getPathFromSnapshot();
-      const scenarioId = this.route.children[0]?.snapshot.params['id'];
-
-      const navStateObject: NavState = {
-        currentView: '',
-        currentRecordName: '',
-        backLink: '/home',
-      };
-      if (path === 'config' && !scenarioId && !scenarioName) {
-        navStateObject.currentView = 'Scenario';
-        navStateObject.currentRecordName = 'New Scenario';
-        navStateObject.backLink = getPlanPath(plan.id);
-      } else if (scenarioName) {
-        navStateObject.currentView = 'Scenario';
-        navStateObject.currentRecordName = scenarioName;
-        navStateObject.backLink = getPlanPath(plan.id);
-      } else if (path !== 'config' && plan.name && !scenarioName) {
-        navStateObject.currentView = 'Planning Area';
-        navStateObject.currentRecordName = plan.name;
-      }
-
-      return navStateObject;
     })
   );
 

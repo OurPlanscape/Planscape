@@ -1,18 +1,16 @@
 <div class="nav-bar mat-elevation-z2">
-  <section class="nav-heading" *ngIf="navState">
+  <section class="nav-heading" *ngIf="breadcrumb$ | async as breadCrumb">
     <button
       sg-button
       class="help"
       variant="icon-only"
       icon="arrow_back"
       [outlined]="true"
-      [routerLink]="navState.backLink"
+      [routerLink]="breadCrumb.backUrl"
       [queryParams]="params"
       queryParamsHandling="merge"></button>
-    <div
-      class="current-page"
-      *ngIf="navState.currentView && navState.currentRecordName">
-      {{ navState.currentView + ': ' + navState.currentRecordName }}
+    <div class="current-page">
+      {{ breadCrumb.label }}
     </div>
   </section>
 
@@ -133,17 +131,18 @@
       Share
     </button>
 
+    <!--    -->
+    <!--    // TODO on ngif -->
+    <!--    &&-->
+    <!--    navState?.currentRecordName-->
+
     <button
       sg-button
       icon="share"
       variant="text"
       (click)="sharePlan()"
       data-id="share"
-      *ngIf="
-        area === 'SCENARIOS' &&
-        (canSharePlan$ | async) &&
-        navState?.currentRecordName
-      ">
+      *ngIf="area === 'SCENARIOS' && (canSharePlan$ | async)">
       Share
     </button>
 

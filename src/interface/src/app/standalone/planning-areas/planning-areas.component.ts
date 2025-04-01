@@ -37,6 +37,7 @@ import { PlanningAreasSearchComponent } from '../planning-areas-search/planning-
 import { FormsModule } from '@angular/forms';
 import { combineLatest, map } from 'rxjs';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @Component({
   selector: 'app-planning-areas',
@@ -101,7 +102,8 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   constructor(
     private router: Router,
-    public dataSource: PlanningAreasDataSource
+    public dataSource: PlanningAreasDataSource,
+    private breadcrumbService: BreadcrumbService
   ) {}
 
   sortOptions = this.dataSource.sortOptions;
@@ -145,6 +147,10 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   }
 
   viewPlan(plan: PreviewPlan) {
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Planning Area: ' + plan.name,
+      backUrl: '/',
+    });
     this.router.navigate(['plan', plan.id]);
     return;
   }

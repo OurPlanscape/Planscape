@@ -7,7 +7,6 @@ import {
   combineLatest,
   distinctUntilChanged,
   map,
-  Observable,
   of,
   switchMap,
   tap,
@@ -19,7 +18,6 @@ import {
   TreatmentSummary,
 } from '@types';
 import { MapConfigState } from '../maplibre-map/map-config.state';
-import { NavState } from '@shared';
 import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
@@ -84,14 +82,14 @@ export class TreatmentsState {
   );
 
   // determine navstate values based on various state conditions
-  navState$: Observable<NavState> = combineLatest([
+  breadcrumb$ = combineLatest([
     this.activeProjectArea$,
     this.summary$,
     this.treatmentPlan$,
   ]).pipe(
     map(([projectArea, summary, treatmentPlan]) => {
       const path = this.route.snapshot.routeConfig?.path;
-      const navStateObject: NavState = {
+      const navStateObject = {
         currentView: '',
         currentRecordName: '',
         backLink: '',
