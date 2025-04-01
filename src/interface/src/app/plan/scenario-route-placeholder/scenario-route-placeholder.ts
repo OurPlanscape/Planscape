@@ -1,9 +1,9 @@
 import { Component, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
 import { CreateScenariosComponent } from '../create-scenarios/create-scenarios.component';
 import { UploadedScenarioViewComponent } from '../uploaded-scenario-view/uploaded-scenario-view.component';
 import { Scenario } from '@types';
-import { LegacyPlanStateService } from '@services';
+import { filter, map } from 'rxjs';
+import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 
 @Component({
   selector: 'app-scenario-route-placeholder',
@@ -14,33 +14,39 @@ export class ScenarioRoutePlaceholderComponent implements OnInit {
   @ViewChild('container', { read: ViewContainerRef })
   container!: ViewContainerRef;
 
-  constructor(
-    private route: ActivatedRoute,
-    private LegacyPlanStateService: LegacyPlanStateService
-  ) {}
+  constructor(private scenarioState: ScenarioState) {}
 
   scenario?: Scenario;
   scenarioNotFound = false;
 
   ngOnInit() {
-    const id = this.route.snapshot.paramMap.get('id');
-    if (id) {
-      this.LegacyPlanStateService.getScenario(id).subscribe({
-        next: (scenario: Scenario) => {
-          this.scenario = scenario;
-          if (this.scenario?.origin === 'USER') {
-            const factory = this.container.createComponent(
-              UploadedScenarioViewComponent
-            );
-            factory.instance.scenario = this.scenario;
+    this.scenarioState.currentScenarioResource$
+      .pipe(
+        filter((resource) => !resource.isLoading),
+        map((resource) => {
+          if (resource.error) {
+            this.scenarioNotFound = true;
           } else {
-            this.container.createComponent(CreateScenariosComponent);
+            this.scenario = resource.data;
+            if (this.scenario?.origin === 'USER') {
+              const factory = this.container.createComponent(
+                UploadedScenarioViewComponent
+              );
+              factory.instance.scenario = this.scenario;
+            } else {
+              this.container.createComponent(CreateScenariosComponent);
+            }
+            if (this.scenario?.origin === 'USER') {
+              const factory = this.container.createComponent(
+                UploadedScenarioViewComponent
+              );
+              factory.instance.scenario = this.scenario;
+            } else {
+              this.container.createComponent(CreateScenariosComponent);
+            }
           }
-        },
-        error: () => {
-          this.scenarioNotFound = true;
-        },
-      });
-    }
+        })
+      )
+      .subscribe();
   }
 }
