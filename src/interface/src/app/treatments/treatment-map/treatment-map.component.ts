@@ -52,13 +52,15 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
+import { DataLayer } from '@types';
+import { makeColorFunction } from '../../data-layers/utilities';
+import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 
 @UntilDestroy()
 @Component({
@@ -91,7 +93,6 @@ import { PlanState } from '../../plan/plan.state';
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
-    MapDataLayerComponent,
     PercentPipe,
     DataLayerNameComponent,
   ],
@@ -193,6 +194,10 @@ export class TreatmentMapComponent {
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
+  DATA_RASTER_OPACITY = 0.75;
+  tileSize = 512;
+  cogUrl = '';
+
   loadingLayer$ = this.dataLayersState.loadingLayer$;
 
   get scenarioId() {
@@ -233,6 +238,20 @@ export class TreatmentMapComponent {
       .subscribe((cursor) => {
         if (this.mapLibreMap) {
           this.mapLibreMap.getCanvas().style.cursor = cursor;
+        }
+      });
+
+    dataLayersStateService.selectedDataLayer$
+      .pipe(untilDestroyed(this))
+      .subscribe((dataLayer: DataLayer | null) => {
+        if (dataLayer?.public_url) {
+          this.cogUrl = `cog://${dataLayer?.public_url}`;
+          this.tileSize = dataLayer.info.blockxsize ?? 512;
+          const colorFn = makeColorFunction(dataLayer?.styles as any);
+          setColorFunction(dataLayer?.public_url ?? '', colorFn);
+          this.addRasterLayer();
+        } else {
+          this.removeRasterLayer();
         }
       });
 
@@ -316,28 +335,7 @@ export class TreatmentMapComponent {
 
       // if the style change caused the other layers to be removed, then we need to re-add them.
       if (rasterUrl && !this.mapLibreMap.getSource('rasterImage')) {
-        // TODO: put this in a service, or somewhere central...
-
-        const rasterSource: RasterSourceSpecification = {
-          type: 'raster',
-          url: `cog://${rasterUrl}`,
-          tileSize: 512,
-        };
-
-        const rasterLayer: RasterLayerSpecification = {
-          id: 'image-layer',
-          type: 'raster',
-          source: 'rasterImage',
-          paint: {
-            'raster-opacity': 0.75,
-            'raster-resampling': 'nearest',
-          },
-        };
-        if (this.mapLibreMap.getLayer('image-layer')) {
-          this.mapLibreMap.removeLayer('image-layer');
-        }
-        this.mapLibreMap.addSource('rasterImage', rasterSource);
-        this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
+        this.addRasterLayer();
       }
     });
   }
@@ -402,5 +400,45 @@ export class TreatmentMapComponent {
       .then(() => {
         this.mapLibreMap.getCanvas().style.cursor = '';
       });
+  }
+
+  addRasterLayer(): void {
+    if (this.mapLibreMap && this.cogUrl) {
+      const rasterSource: RasterSourceSpecification = {
+        type: 'raster',
+        url: this.cogUrl,
+        tileSize: this.tileSize,
+      };
+
+      const rasterLayer: RasterLayerSpecification = {
+        id: 'image-layer',
+        type: 'raster',
+        source: 'rasterImage',
+        paint: {
+          'raster-opacity': this.DATA_RASTER_OPACITY,
+          'raster-resampling': 'nearest',
+        },
+      };
+
+      if (this.mapLibreMap.getLayer('image-layer')) {
+        this.mapLibreMap.removeLayer('image-layer');
+      }
+      if (this.mapLibreMap.getSource('rasterImage')) {
+        this.mapLibreMap.removeSource('rasterImage');
+      }
+      this.mapLibreMap.addSource('rasterImage', rasterSource);
+      this.mapLibreMap.addLayer(rasterLayer, this.before);
+    }
+  }
+
+  removeRasterLayer(): void {
+    if (this.mapLibreMap) {
+      if (this.mapLibreMap.getLayer('image-layer')) {
+        this.mapLibreMap.removeLayer('image-layer');
+      }
+      if (this.mapLibreMap.getSource('rasterImage')) {
+        this.mapLibreMap.removeSource('rasterImage');
+      }
+    }
   }
 }
