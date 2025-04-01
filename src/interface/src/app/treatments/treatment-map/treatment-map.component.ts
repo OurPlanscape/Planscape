@@ -427,7 +427,7 @@ export class TreatmentMapComponent {
         this.mapLibreMap.removeSource('rasterImage');
       }
       this.mapLibreMap.addSource('rasterImage', rasterSource);
-      this.mapLibreMap.addLayer(rasterLayer, this.before);
+      this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
     }
   }
 
