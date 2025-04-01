@@ -149,7 +149,9 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           throw error;
         })
       )
-      .subscribe();
+      .subscribe(() => {
+        this.loading = false;
+      });
   }
 
   navState$ = this.treatmentsState.navState$;
