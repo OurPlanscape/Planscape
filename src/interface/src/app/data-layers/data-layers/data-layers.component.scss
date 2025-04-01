@@ -98,10 +98,20 @@
 .footer {
   border-top: 1px solid #e1e1e1;
   padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .clear-btn {
   margin-left: auto;
+}
+
+.sticky {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 100;
 }
 
 // end component

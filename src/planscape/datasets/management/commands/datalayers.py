@@ -15,8 +15,8 @@ from django.core.management.base import CommandParser
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape
-from datasets.parsers import get_and_parse_datalayer_file_metadata
 
+from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
     r"^(?P<action>\w+_\d{1,2})_(?P<year>\d{4})_(?P<variable>\w+)"

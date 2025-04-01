@@ -67,7 +67,7 @@ describe('ScenarioService', () => {
         expect(res).toEqual(scenario);
       });
       tick();
-      const req = httpTestingController.expectOne(service.v2Path + '1');
+      const req = httpTestingController.expectOne(service.v2Path + '1/');
       expect(req.request.method).toEqual('GET');
       req.flush(scenario);
     }));

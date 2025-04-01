@@ -1,0 +1,14 @@
+<mgl-raster-source
+  [url]="cogUrl"
+  [tileSize]="tileSize"
+  id="rasterImage"></mgl-raster-source>
+<mgl-layer
+  *ngIf="dataLayer"
+  id="image-layer"
+  type="raster"
+  source="rasterImage"
+  before="bottom-layer"
+  [paint]="{
+    'raster-opacity': OPACITY,
+    'raster-resampling': 'nearest'
+  }"></mgl-layer>

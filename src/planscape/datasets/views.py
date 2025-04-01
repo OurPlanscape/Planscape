@@ -1,4 +1,4 @@
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from cacheops import cached
 from core.serializers import MultiSerializerMixin
@@ -13,15 +13,22 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from datasets.filters import DataLayerFilterSet, BrowseDataLayerFilterSet
-from datasets.models import DataLayer, Dataset, VisibilityOptions, DataLayerStatus
+from datasets.filters import DataLayerFilterSet
+from datasets.models import (
+    DataLayer,
+    DataLayerStatus,
+    DataLayerType,
+    Dataset,
+    VisibilityOptions,
+)
 from datasets.serializers import (
     BrowseDataLayerFilterSerializer,
     BrowseDataLayerSerializer,
+    BrowseDataSetSerializer,
     DataLayerSerializer,
     DatasetSerializer,
     FindAnythingSerializer,
-    SearchResultSerialzier,
+    SearchResultsSerializer,
 )
 from datasets.services import find_anything
 
@@ -55,27 +62,33 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     )
     @action(detail=True, methods=["get"])
     def browse(self, request, pk=None):
-        data = self._get_browse_result(request.query_params)
-
+        dataset = self.get_object()
+        serializer = BrowseDataSetSerializer(data=request.query_params)
+        serializer.is_valid(raise_exception=True)
+        results = self._get_browse_result(
+            dataset,
+            type=serializer.validated_data.get("type"),
+        )
+        serializer = BrowseDataLayerSerializer(results, many=True)
         return Response(
-            data,
+            serializer.data,
             status=status.HTTP_200_OK,
         )
 
     @cached(timeout=settings.BROWSE_DATASETS_TTL)
-    def _get_browse_result(self, query_params: Dict[str, Any]):
+    def _get_browse_result(self, dataset, type: Optional[DataLayerType] = None):
         dataset = self.get_object()
-        datalayers = (
+        queryset = (
             dataset.datalayers.all()
             .select_related("organization", "dataset", "category")
             .prefetch_related("styles")
-            .filter(status=DataLayerStatus.READY)
         )
-
-        filterset = BrowseDataLayerFilterSet(queryset=datalayers, request=query_params)
-        serializer = BrowseDataLayerSerializer(filterset.qs, many=True)
-
-        return serializer.data
+        filter_dict: Dict[str, Any] = {
+            "status": DataLayerStatus.READY,
+        }
+        if type is not None:
+            filter_dict["type"] = type
+        return list(queryset.all().filter(**filter_dict))
 
 
 class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -90,7 +103,7 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
 
     @extend_schema(
         parameters=[FindAnythingSerializer],
-        responses={200: SearchResultSerialzier(many=True)},
+        responses={200: SearchResultsSerializer(many=True)},
     )
     @action(detail=False, methods=["get"])
     def find_anything(self, request):
@@ -103,8 +116,16 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             term=term,
             type=type,
         )
-        out_serializer = SearchResultSerialzier(
-            list(results.values()),
+        search_results = list(results.values())
+        page = self.paginate_queryset(search_results)  # type: ignore
+        if page is not None:
+            out_serializer = SearchResultsSerializer(
+                page,
+                many=True,
+            )
+            return self.get_paginated_response(out_serializer.data)
+        out_serializer = SearchResultsSerializer(
+            list(search_results),
             many=True,
         )
         return Response(out_serializer.data, status=status.HTTP_200_OK)

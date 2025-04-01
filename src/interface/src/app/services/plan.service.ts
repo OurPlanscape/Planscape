@@ -35,14 +35,14 @@ export class PlanService {
 
   /** Makes a request to the backend to delete a plan with the given ID. */
   deletePlan(planId: number): Observable<void> {
-    return this.http.delete<void>(this.v2basePath + planId, {
+    return this.http.delete<void>(this.v2basePath + planId + '/', {
       withCredentials: true,
     });
   }
 
   /** Makes a request to the backend to fetch a plan with the given ID. */
   getPlan(planId: string): Observable<Plan> {
-    return this.http.get<Plan>(this.v2basePath + planId, {
+    return this.http.get<Plan>(this.v2basePath + planId + '/', {
       withCredentials: true,
     });
   }

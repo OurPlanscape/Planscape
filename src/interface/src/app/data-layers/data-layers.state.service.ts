@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
+  combineLatest,
   map,
   Observable,
   of,
@@ -10,13 +11,15 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayer, DataSet, SearchResult } from '@types';
+import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DataLayersStateService {
+  readonly limit = 20;
+
   dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
   private _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
@@ -40,26 +43,35 @@ export class DataLayersStateService {
 
   hasNoTreeData$ = this.dataTree$.pipe(map((d) => !!d && d.length === 0));
 
+  private loadingLayer = new BehaviorSubject(false);
+  loadingLayer$ = this.loadingLayer.asObservable();
+
   private loadingSubject = new BehaviorSubject(false);
   loading$ = this.loadingSubject.asObservable();
+
+  private _offset = new BehaviorSubject(0);
 
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
-  searchResults$: Observable<SearchResult[] | null> = this.searchTerm$.pipe(
+  searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
+    this.searchTerm$,
+    this._offset,
+  ]).pipe(
     tap(() => this.loadingSubject.next(true)),
-    switchMap((term: string) => {
+    switchMap(([term, offset]) => {
       if (!term) {
         this.loadingSubject.next(false);
         return of(null);
       }
-      return this.service.search(term).pipe(
+      return this.service.search(term, this.limit, offset).pipe(
         startWith(null),
         map((results) => {
           if (results) {
             this.loadingSubject.next(false);
+            return results;
           }
-          return results;
+          return null;
         })
       );
     }),
@@ -89,6 +101,8 @@ export class DataLayersStateService {
   }
 
   selectDataLayer(dataLayer: DataLayer) {
+    // TODO: enable this when the datalayer loading function is merged
+    // this.loadingLayer.next(true);
     this._selectedDataLayer$.next(dataLayer);
   }
 
@@ -97,8 +111,15 @@ export class DataLayersStateService {
   }
 
   search(term: string) {
+    if (this._offset.value > 0) {
+      this._offset.next(0);
+    }
     this._searchTerm$.next(term);
     this._isBrowsing$.next(!term);
+  }
+
+  changePage(page: number) {
+    this._offset.next((page - 1) * this.limit);
   }
 
   clearSearch() {
@@ -109,6 +130,11 @@ export class DataLayersStateService {
   goToSelectedLayer(layer: DataLayer) {
     // Reset search
     this._searchTerm$.next('');
+    this._offset.next(0);
+    this.goToDataLayerCategory(layer);
+  }
+
+  goToDataLayerCategory(layer: DataLayer) {
     this._isBrowsing$.next(true);
     // needs to select the dataset if it's not the same as the one selected already
     if (this._selectedDataSet$.value?.id !== layer.dataset.id) {
@@ -122,5 +148,9 @@ export class DataLayersStateService {
       this.selectDataSet(dataSet as DataSet);
     }
     this._paths$.next(layer.path);
+  }
+
+  resetPath() {
+    this._paths$.next([]);
   }
 }

@@ -13,7 +13,6 @@ import {
   tap,
 } from 'rxjs';
 import {
-  Plan,
   TreatedStand,
   TreatmentPlan,
   TreatmentProjectArea,
@@ -21,7 +20,7 @@ import {
 } from '@types';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { NavState } from '@shared';
-import { filter, shareReplay } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import {
   ReloadTreatmentError,
   RemovingStandsError,
@@ -31,7 +30,6 @@ import { TreatmentRoutingData } from './treatments-routing-data';
 import { ActivatedRoute } from '@angular/router';
 import { getPrescriptionsFromSummary } from './prescriptions';
 import { DirectImpactsStateService } from './direct-impacts.state.service';
-import { PlanService } from '@services';
 
 /**
  * Class that holds data of the current state, and makes it available
@@ -44,15 +42,13 @@ export class TreatmentsState {
     private treatedStandsState: TreatedStandsState,
     private mapConfigState: MapConfigState,
     private route: ActivatedRoute,
-    private directImpactsState: DirectImpactsStateService,
-    private planService: PlanService
+    private directImpactsState: DirectImpactsStateService
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
   private _scenarioId: number | undefined = undefined;
 
   private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
-  private _planningAreaId$ = new BehaviorSubject<number | undefined>(undefined);
   public projectAreaId$ = this._projectAreaId$.asObservable();
 
   private _summary$ = new BehaviorSubject<TreatmentSummary | null>(null);
@@ -86,13 +82,6 @@ export class TreatmentsState {
         (p) => p.project_area_id === projectAreaId
       );
     })
-  );
-
-  public planningArea$: Observable<Plan> = this._planningAreaId$.pipe(
-    distinctUntilChanged(),
-    filter((id): id is number => !!id),
-    switchMap((id) => this.planService.getPlan(id.toString())),
-    shareReplay(1)
   );
 
   // determine navstate values based on various state conditions
@@ -188,7 +177,6 @@ export class TreatmentsState {
     this._scenarioId = data.scenarioId;
     this._treatmentPlanId = data.treatmentId;
     this._projectAreaId$.next(data.projectAreaId);
-    this._planningAreaId$.next(data.planId);
 
     // update config on map, based on route data
     this.mapConfigState.updateShowProjectAreas(
