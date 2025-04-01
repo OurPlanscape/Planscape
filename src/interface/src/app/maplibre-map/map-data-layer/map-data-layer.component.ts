@@ -28,26 +28,15 @@ export class MapDataLayerComponent {
   dataLayer: DataLayer | null = null;
   before: string = 'bottom-layer';
 
-  private rasterSource : RasterSourceSpecification | null = null;
-  private rasterLayer : RasterLayerSpecification | null = null;
-
   addRasterLayer(): void {
     if (this.mapLibreMap && this.cogUrl) {
-      this.rasterSource = {
+      const rasterSource : RasterSourceSpecification= {
         type: 'raster',
         url: this.cogUrl,
         tileSize: this.tileSize
       };
 
-      if (this.mapLibreMap.getLayer('image-layer')) {
-        this.mapLibreMap.removeLayer('image-layer');
-      }
-      if (this.mapLibreMap.getSource('rasterImage')) {
-        this.mapLibreMap.removeSource('rasterImage');
-      }
-      this.mapLibreMap.addSource('rasterImage', this.rasterSource);
-
-      this.rasterLayer = {
+      const rasterLayer : RasterLayerSpecification = {
         id: 'image-layer',
         type: 'raster',
         source: 'rasterImage',
@@ -57,7 +46,14 @@ export class MapDataLayerComponent {
         }
       };
 
-      this.mapLibreMap.addLayer(this.rasterLayer, this.before);
+      if (this.mapLibreMap.getLayer('image-layer')) {
+        this.mapLibreMap.removeLayer('image-layer');
+      }
+      if (this.mapLibreMap.getSource('rasterImage')) {
+        this.mapLibreMap.removeSource('rasterImage');
+      }
+      this.mapLibreMap.addSource('rasterImage', rasterSource);
+      this.mapLibreMap.addLayer(rasterLayer, this.before);
     }
   }
 
@@ -77,14 +73,13 @@ export class MapDataLayerComponent {
       .pipe(untilDestroyed(this))
       .subscribe((dataLayer: DataLayer | null) => {
         if (dataLayer?.public_url) {
-          this.dataLayer = dataLayer;
           this.cogUrl = `cog://${dataLayer?.public_url}`;
+          this.tileSize = dataLayer.info.blockxsize ?? 512;
           const colorFn = makeColorFunction(dataLayer?.styles as any);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
-          this.tileSize = dataLayer.info.blockxsize ?? 512;
           this.addRasterLayer();
         } else {
-          this.dataLayer = null;
+          this.removeRasterLayer();
         }
       });
   }
