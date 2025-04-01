@@ -30,7 +30,7 @@ export class MapDataLayerComponent {
 
   addRasterLayer(): void {
     if (this.mapLibreMap && this.cogUrl) {
-      const rasterSource : RasterSourceSpecification= {
+      const rasterSource : RasterSourceSpecification = {
         type: 'raster',
         url: this.cogUrl,
         tileSize: this.tileSize
