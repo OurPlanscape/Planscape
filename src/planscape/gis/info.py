@@ -13,10 +13,11 @@ from rasterio.transform import from_gcps
 logger = logging.getLogger(__name__)
 
 
-def get_gdal_env(num_threads: Union[int, str] = 8) -> Dict[str, Any]:
+def get_gdal_env(num_threads: Union[int, str] = "ALL_CPUS") -> Dict[str, Any]:
     return {
         "session": get_aws_session(),
         "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
+        "CHECK_DISK_FREE_SPACE": False,
         "CPL_VSIL_USE_TEMP_FILE_FOR_RANDOM_WRITE": "YES",
         "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
         "GDAL_CACHE_MAX": settings.GDAL_CACHE_MAX,

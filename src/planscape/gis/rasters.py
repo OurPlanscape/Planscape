@@ -93,12 +93,13 @@ def cog(
 ) -> str:
     log.info("enabling cog")
     output_profile = cog_profiles.get(cog_profile)
-    output_profile.update(dict(BIGTIFF="IF_SAFER", blockxsize=256, blockysize=256))
+    output_profile.update(dict(BIGTIFF="IF_SAFER"))
     if profile_overrides:
         output_profile.update(profile_overrides)
 
     # Dataset Open option (see gdalwarp `-oo` option)
     config = get_gdal_env()
+    overview_level = options.pop("overview_level", 4) or 4
 
     cog_translate(
         input_file,
@@ -108,7 +109,7 @@ def cog(
         in_memory=False,
         quiet=True,
         web_optimized=True,
-        zoom_level_strategy="upper",
+        overview_level=overview_level,
         **options,
     )
 
