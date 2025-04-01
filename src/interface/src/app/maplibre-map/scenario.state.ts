@@ -57,6 +57,13 @@ export class ScenarioState {
   );
 
   /**
+   * This observable returns the current scenario id
+   */
+  public currentScenarioId$ = this.currentScenario$.pipe(
+    map((scenario) => Number(scenario.id))
+  );
+
+  /**
    * Observable that maps only to loading status.
    */
   public isScenarioLoading$ = this.currentScenarioResource$.pipe(

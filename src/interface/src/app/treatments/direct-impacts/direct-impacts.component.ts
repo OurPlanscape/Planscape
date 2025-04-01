@@ -44,16 +44,17 @@ import { ExpandedStandDataChartComponent } from '../expanded-stand-data-chart/ex
 import { ExpandedChangeOverTimeChartComponent } from '../expanded-change-over-time-chart/expanded-change-over-time-chart.component';
 import { MatDialog } from '@angular/material/dialog';
 import { ExpandedDirectImpactMapComponent } from '../expanded-direct-impact-map/expanded-direct-impact-map.component';
-import { Scenario, TreatmentProjectArea } from '@types';
+import { TreatmentProjectArea } from '@types';
 import { OverlayLoaderComponent } from 'src/styleguide/overlay-loader/overlay-loader.component';
 import { TreatmentsService } from '@services/treatments.service';
-import { FileSaverService, ScenarioService } from '@services';
+import { FileSaverService } from '@services';
 import { STAND_SIZES, STAND_SIZES_LABELS } from 'src/app/plan/plan-helpers';
 import { standIsForested } from '../stands';
 import { MapGeoJSONFeature } from 'maplibre-gl';
 import { MetricSelectorComponent } from '../metric-selector/metric-selector.component';
 import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
+import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 
 @Component({
   selector: 'app-direct-impacts',
@@ -104,7 +105,15 @@ import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/tre
 export class DirectImpactsComponent implements OnInit, OnDestroy {
   loading = false;
   downloadingShapefile = false;
-  scenario: Scenario | null = null;
+  standSizeScenarioValue$ = this.scenarioState.currentScenario$.pipe(
+    map((scenario) => {
+      const stand_size = scenario?.configuration?.stand_size;
+      if (!stand_size) {
+        return '';
+      }
+      return `${STAND_SIZES_LABELS[stand_size]} (${STAND_SIZES[stand_size]} acres)`;
+    })
+  );
 
   constructor(
     private treatmentsState: TreatmentsState,
@@ -117,7 +126,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private fileSaverService: FileSaverService,
     private dialog: MatDialog,
     private injector: Injector, // Angular's injector for passing shared services
-    private scenarioService: ScenarioService
+    private scenarioState: ScenarioState
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.loading = true;
@@ -140,22 +149,7 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
           throw error;
         })
       )
-      .subscribe(() => {
-        const scenarioId = this.treatmentsState.getScenarioId();
-        if (scenarioId) {
-          this.scenarioService.getScenario(scenarioId.toString()).subscribe({
-            next: (scenario: Scenario) => {
-              this.scenario = scenario;
-              this.loading = false;
-            },
-            error: () => {
-              this.loading = false;
-            },
-          });
-        } else {
-          this.loading = false;
-        }
-      });
+      .subscribe();
   }
 
   navState$ = this.treatmentsState.navState$;
@@ -267,14 +261,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
         this.fileSaverService.saveAs(blob, filename);
         this.downloadingShapefile = false;
       });
-  }
-
-  getStandSizeValue(): string {
-    const stand_size = this.scenario?.configuration?.stand_size;
-    if (!stand_size) {
-      return '';
-    }
-    return `${STAND_SIZES_LABELS[stand_size]} (${STAND_SIZES[stand_size]} acres)`;
   }
 
   getProjectAreaAcres(
