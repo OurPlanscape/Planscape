@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { AuthService, ScenarioService } from '@services';
+import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import {
   addRequestHeaders,
@@ -9,13 +9,14 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { filter, map } from 'rxjs';
+import { map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { ActivatedRoute } from '@angular/router';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { PlanState } from '../../plan/plan.state';
+import { ScenarioState } from '../scenario.state';
 
 @Component({
   selector: 'app-scenario-map',
@@ -38,7 +39,7 @@ export class ScenarioMapComponent {
     private authService: AuthService,
     private planState: PlanState,
     private route: ActivatedRoute,
-    private scenarioService: ScenarioService
+    private scenarioState: ScenarioState
   ) {}
 
   /**
@@ -62,9 +63,7 @@ export class ScenarioMapComponent {
 
   projectAreasOpacity$ = this.mapConfigState.projectAreasOpacity$;
 
-  // TODO: Get the count from the currentScenario in scenarioState once we create it.
-  projectAreaCount$ = this.scenarioService.getScenario(this.scenarioId).pipe(
-    filter((scenario) => !!scenario),
+  projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
       return scenario.scenario_result?.result?.features.length;
     })

@@ -6,6 +6,7 @@ import { CreateScenariosComponent } from './create-scenarios/create-scenarios.co
 import { ExploreComponent } from './explore/explore/explore.component';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { planLoaderResolver } from '../resolvers/plan-loader.resolver';
+import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
 
 const routes: Routes = [
   {
@@ -26,6 +27,9 @@ const routes: Routes = [
         path: 'config/:id',
         title: 'Scenario Configuration',
         component: ScenarioRoutePlaceholderComponent,
+        resolve: {
+          scenarioInit: scenarioLoaderResolver,
+        },
       },
       {
         path: 'explore',

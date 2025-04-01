@@ -17,6 +17,7 @@ import {
 import { ExploreComponent } from './plan/explore/explore/explore.component';
 import { numberResolver } from './resolvers/number.resolver';
 import { planLoaderResolver } from './resolvers/plan-loader.resolver';
+import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
 
 const routes: Routes = [
   {
@@ -120,7 +121,7 @@ const routes: Routes = [
         resolve: {
           planInit: planLoaderResolver,
           treatmentId: numberResolver('treatmentId', ''),
-          scenarioId: numberResolver('scenarioId', ''),
+          scenarioInit: scenarioLoaderResolver,
         },
         loadChildren: () =>
           import('./treatments/treatments.module').then(
