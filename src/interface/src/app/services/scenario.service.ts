@@ -32,7 +32,7 @@ export class ScenarioService {
 
   /** Fetches a scenario by its id from the backend. */
   getScenario(scenarioId: string): Observable<Scenario> {
-    return this.http.get<Scenario>(this.v2Path + scenarioId, {
+    return this.http.get<Scenario>(this.v2Path + scenarioId + '/', {
       withCredentials: true,
     });
   }

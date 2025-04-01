@@ -20,6 +20,7 @@ import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 })
 export class MapDataLayerComponent {
   OPACITY = 0.75;
+  tileSize = 512;
   cogUrl = '';
   dataLayer: DataLayer | null = null;
 
@@ -32,6 +33,7 @@ export class MapDataLayerComponent {
           this.cogUrl = `cog://${dataLayer?.public_url}`;
           const colorFn = makeColorFunction(dataLayer?.styles as any);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
+          this.tileSize = dataLayer.info.blockxsize ?? 512;
         } else {
           this.dataLayer = null;
         }
