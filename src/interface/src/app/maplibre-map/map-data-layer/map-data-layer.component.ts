@@ -9,8 +9,11 @@ import {
 import { DataLayer } from '@types';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
-import { Map as MapLibreMap, RasterSourceSpecification, 
-  RasterLayerSpecification} from 'maplibre-gl';
+import {
+  Map as MapLibreMap,
+  RasterSourceSpecification,
+  RasterLayerSpecification,
+} from 'maplibre-gl';
 
 @UntilDestroy()
 @Component({
@@ -30,20 +33,20 @@ export class MapDataLayerComponent {
 
   addRasterLayer(): void {
     if (this.mapLibreMap && this.cogUrl) {
-      const rasterSource : RasterSourceSpecification = {
+      const rasterSource: RasterSourceSpecification = {
         type: 'raster',
         url: this.cogUrl,
-        tileSize: this.tileSize
+        tileSize: this.tileSize,
       };
 
-      const rasterLayer : RasterLayerSpecification = {
+      const rasterLayer: RasterLayerSpecification = {
         id: 'image-layer',
         type: 'raster',
         source: 'rasterImage',
         paint: {
           'raster-opacity': this.OPACITY,
-          'raster-resampling': 'nearest'
-        }
+          'raster-resampling': 'nearest',
+        },
       };
 
       if (this.mapLibreMap.getLayer('image-layer')) {
@@ -59,8 +62,14 @@ export class MapDataLayerComponent {
 
   removeRasterLayer(): void {
     if (this.mapLibreMap) {
-      this.mapLibreMap.removeLayer('image-layer');
-      this.mapLibreMap.removeSource('rasterImage');
+      //this.mapLibreMap.once('idle', () => {
+      if (this.mapLibreMap.getLayer('image-layer')) {
+        this.mapLibreMap.removeLayer('image-layer');
+      }
+      if (this.mapLibreMap.getSource('rasterImage')) {
+        this.mapLibreMap.removeSource('rasterImage');
+      }
+      //  }
     }
   }
 

@@ -17,9 +17,8 @@ import {
   MapMouseEvent,
   MapSourceDataEvent,
   RequestTransformFunction,
-  RasterSourceSpecification, 
+  RasterSourceSpecification,
   RasterLayerSpecification,
-  
 } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
@@ -60,7 +59,6 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
-
 
 @UntilDestroy()
 @Component({
@@ -306,8 +304,6 @@ export class TreatmentMapComponent {
     });
   }
 
- 
-
   listenForBaseLayerChange() {
     this.mapLibreMap.on('styledata', () => {
       let rasterUrl = '';
@@ -317,34 +313,31 @@ export class TreatmentMapComponent {
           rasterUrl = layer?.public_url ?? '';
           return layer;
         });
-     // TODO: call a service here instead...
-      let rasterSource : RasterSourceSpecification | null = this.mapLibreMap?.getSource('rasterImage') as RasterSourceSpecification ?? null;
-      if (!rasterSource) {
-            rasterSource = {
-                type: 'raster',
-                url: `cog://${rasterUrl}`,
-                tileSize: 512,
-              };
-        
-              const rasterLayer :RasterLayerSpecification = {
-                id: 'image-layer',
-                type: 'raster',
-                source: 'rasterImage',
-                paint: {
-                  'raster-opacity': 0.75,
-                  'raster-resampling': 'nearest'
-                }
-              };
-        
-              if (this.mapLibreMap.getLayer('image-layer')) {
-                this.mapLibreMap.removeLayer('image-layer');
-              }
-              if (this.mapLibreMap.getSource('rasterImage')) {
-                this.mapLibreMap.removeSource('rasterImage');
-              }
-              this.mapLibreMap.addSource('rasterImage', rasterSource);
-              this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
-            }
+
+      if (rasterUrl && !this.mapLibreMap.getSource('rasterImage')) {
+        if (this.mapLibreMap.getLayer('image-layer')) {
+          this.mapLibreMap.removeLayer('image-layer');
+        }
+
+        const rasterSource: RasterSourceSpecification = {
+          type: 'raster',
+          url: `cog://${rasterUrl}`,
+          tileSize: 512,
+        };
+
+        const rasterLayer: RasterLayerSpecification = {
+          id: 'image-layer',
+          type: 'raster',
+          source: 'rasterImage',
+          paint: {
+            'raster-opacity': 0.75,
+            'raster-resampling': 'nearest',
+          },
+        };
+
+        this.mapLibreMap.addSource('rasterImage', rasterSource);
+        this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
+      }
     });
   }
 
