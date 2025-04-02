@@ -40,7 +40,7 @@ export class TreatmentsService {
   }
 
   deleteTreatmentPlan(id: number) {
-    return this.http.delete<TreatmentPlan>(this.baseUrl + id, {
+    return this.http.delete<TreatmentPlan>(this.baseUrl + id + '/', {
       withCredentials: true,
     });
   }
@@ -52,13 +52,13 @@ export class TreatmentsService {
   }
 
   getTreatmentPlan(id: number) {
-    return this.http.get<TreatmentPlan>(this.baseUrl + id, {
+    return this.http.get<TreatmentPlan>(this.baseUrl + id + '/', {
       withCredentials: true,
     });
   }
 
   getTreatmentPlanSummary(id: number, projectArea?: number) {
-    return this.http.get<TreatmentSummary>(this.baseUrl + id + '/summary', {
+    return this.http.get<TreatmentSummary>(this.baseUrl + id + '/summary/', {
       withCredentials: true,
       params:
         projectArea !== undefined ? { project_area: projectArea } : undefined,
