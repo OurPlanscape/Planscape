@@ -26,7 +26,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 import { TreatmentsState } from '../treatments.state';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
-import { map } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -82,9 +81,7 @@ export class DirectImpactsMapComponent {
 
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
 
-  scenarioId$ = this.scenarioState.currentScenario$.pipe(
-    map((scenario) => Number(scenario.id))
-  );
+  scenarioId$ = this.scenarioState.currentScenarioId$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
