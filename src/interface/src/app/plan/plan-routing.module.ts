@@ -16,21 +16,25 @@ const routes: Routes = [
     resolve: {
       planInit: planLoaderResolver,
     },
+    data: { showOverview: true },
     children: [
       {
         path: 'config/',
         title: 'Scenario Configuration',
         component: CreateScenariosComponent,
+        data: { showOverview: false },
       },
       {
         path: 'config/:id',
         title: 'Scenario Configuration',
         component: ScenarioRoutePlaceholderComponent,
+        data: { showOverview: false },
       },
       {
         path: 'explore',
         title: 'Explore',
         component: ExploreComponent,
+        data: { showOverview: false },
       },
     ],
   },
