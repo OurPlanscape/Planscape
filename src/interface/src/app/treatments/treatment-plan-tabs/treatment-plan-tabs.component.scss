@@ -2,11 +2,13 @@
 @import "colors";
 
 :host {
+  height: 100%;
+  overflow: hidden;
+
   .summary-tab-group {
     display: flex;
     flex-direction: column;
     max-width: 100%;
-    height: calc(100% - 180px);
   }
 
   ::ng-deep .mat-mdc-tab-group {
