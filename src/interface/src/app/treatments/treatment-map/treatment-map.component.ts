@@ -37,7 +37,6 @@ import {
   Observable,
   startWith,
   Subject,
-  take,
   withLatestFrom,
 } from 'rxjs';
 import { distinctUntilChanged, filter } from 'rxjs/operators';
@@ -332,7 +331,7 @@ export class TreatmentMapComponent {
     this.mapLibreMap.on('styledata', () => {
       let rasterUrl = '';
       this.dataLayersStateService.selectedDataLayer$
-        .pipe(take(1))
+        .pipe(untilDestroyed(this))
         .subscribe((layer) => {
           rasterUrl = layer?.public_url ?? '';
           return layer;
