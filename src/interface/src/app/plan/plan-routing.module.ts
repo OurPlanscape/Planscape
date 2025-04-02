@@ -17,11 +17,13 @@ const routes: Routes = [
     resolve: {
       planInit: planLoaderResolver,
     },
+    data: { showOverview: true },
     children: [
       {
         path: 'config/',
         title: 'Scenario Configuration',
         component: CreateScenariosComponent,
+        data: { showOverview: false },
       },
       {
         path: 'config/:id',
@@ -30,11 +32,13 @@ const routes: Routes = [
         resolve: {
           scenarioInit: scenarioLoaderResolver,
         },
+        data: { showOverview: false },
       },
       {
         path: 'explore',
         title: 'Explore',
         component: ExploreComponent,
+        data: { showOverview: false },
       },
     ],
   },
