@@ -131,6 +131,7 @@ export class CreateScenariosComponent implements OnInit {
     });
 
     if (typeof this.planId === 'number') {
+      console.log('the plan id', this.planId);
       this.scenarioService
         .getScenariosForPlan(this.planId)
         .pipe(take(1))
@@ -155,6 +156,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   loadConfig(): void {
+    console.log('the scenario id on load config', this.scenarioId);
     this.LegacyPlanStateService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
         // if we have the same state do nothing.
