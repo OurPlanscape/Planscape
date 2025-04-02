@@ -69,6 +69,7 @@ services:
       POSTGRES_MULTIPLE_EXTENSIONS: postgis,hstore,postgis_topology,postgis_raster,pgrouting
     volumes:
       - postgres:/data/postgres
+      - /opt/planscape:/opt/planscape
     ports:
       - 5433:5432
     restart: unless-stopped
