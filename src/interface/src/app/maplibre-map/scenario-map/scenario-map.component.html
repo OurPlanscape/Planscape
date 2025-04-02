@@ -23,7 +23,8 @@
     controlsPosition="bottom-right"
     [extendedControlsEnabled]="false">
   </app-map-controls>
-  <app-planning-area-layer></app-planning-area-layer>
+  <app-planning-area-layer
+    *ngIf="projectAreaCount$ | async"></app-planning-area-layer>
   <app-map-project-areas
     *ngIf="projectAreaCount$ | async as projectAreaCount"
     [projectAreasCount]="projectAreaCount"
