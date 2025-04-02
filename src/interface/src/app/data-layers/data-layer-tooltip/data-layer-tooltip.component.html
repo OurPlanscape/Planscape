@@ -1,0 +1,45 @@
+<h3 class="header">Layer info</h3>
+
+<div class="content">
+  <dl>
+    <dt>Layer Name</dt>
+    <dd>{{ layer.name || '--' }}</dd>
+
+    <dt>Value Range</dt>
+    <dd>
+      @if (hasMinMax()) {
+        {{ this.layer.info.stats[0].min | number: '1.0-0' }},
+        {{ this.layer.info.stats[0].max | number: '1.0-0' }}
+      } @else {
+        --
+      }
+    </dd>
+
+    <dt>Units</dt>
+    <dd>
+      {{ getUnits() }}
+    </dd>
+
+    <dt>Source</dt>
+    <dd>
+      <a
+        *ngIf="getSource() as source; else noSource"
+        [href]="source.url"
+        target="_blank">
+        {{ source.name }}
+      </a>
+      <ng-template #noSource>--</ng-template>
+    </dd>
+
+    <dt>Vintage Date</dt>
+    <dd>
+      {{ getVintageDate() }}
+    </dd>
+  </dl>
+</div>
+
+<div class="footer" *ngIf="hasDownloadLink()">
+  <a [href]="layer.public_url">
+    <i class="material-symbols-outlined">download</i> Download Dataset
+  </a>
+</div>
