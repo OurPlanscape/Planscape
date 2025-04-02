@@ -388,6 +388,36 @@ class TxPlanViewSetTest(APITransactionTestCase):
         )
         self.assertEqual(response_data[0].get("elapsed_time_seconds"), 10)
 
+    def test_delete_tx_plan(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, status=TreatmentPlanStatus.PENDING
+        )
+
+        response = self.client.delete(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        tx_plan.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(TreatmentPlan.objects.filter(pk=tx_plan.pk).count(), 0)
+        self.assertIsNotNone(tx_plan.deleted_at)
+
+    def test_delete_tx_plan_while_running(self):
+        self.client.force_authenticate(user=self.scenario.user)
+        tx_plan = TreatmentPlanFactory.create(
+            scenario=self.scenario, status=TreatmentPlanStatus.RUNNING
+        )
+
+        response = self.client.delete(
+            reverse("api:impacts:tx-plans-detail", kwargs={"pk": tx_plan.pk}),
+            content_type="application/json",
+        )
+        tx_plan.refresh_from_db()
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertEqual(TreatmentPlan.objects.filter(pk=tx_plan.pk).count(), 1)
+        self.assertIsNone(tx_plan.deleted_at)
+
 
 class TxPlanViewSetPlotTest(APITransactionTestCase):
     def setUp(self):

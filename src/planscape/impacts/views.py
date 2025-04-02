@@ -1,6 +1,7 @@
 import logging
 
 from django.http import FileResponse
+from django.core.exceptions import ValidationError
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import OpenApiTypes, extend_schema, extend_schema_view
 from impacts.filters import TreatmentPlanFilterSet, TreatmentPlanNoteFilterSet
@@ -142,6 +143,18 @@ class TreatmentPlanViewSet(
         serializer.instance = create_treatment_plan(
             **serializer.validated_data,
         )
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.status == TreatmentPlanStatus.RUNNING:
+            log.warning(
+                f"User requested to delete treatment plan {instance.pk} while it's {instance.status}."
+            )
+            return response.Response(
+                {"detail": "You can't delete a treatment plan while it's running."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        return super().destroy(request, *args, **kwargs)
 
     @extend_schema(
         description="Clones a Treatment Plan.",
