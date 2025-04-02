@@ -6,7 +6,7 @@ export interface Scenario {
   name: string;
   notes?: string;
   creator?: string;
-  planning_area: string;
+  planning_area: number;
   configuration: ScenarioConfig;
   scenario_result?: ScenarioResult;
   status: SCENARIO_STATUS;

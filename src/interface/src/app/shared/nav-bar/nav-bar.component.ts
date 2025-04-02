@@ -9,21 +9,7 @@ import { canViewCollaborators } from '../../plan/permissions';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PlanState } from 'src/app/plan/plan.state';
-
-export type NavView =
-  | 'Explore'
-  | 'Planning Area'
-  | 'Scenario'
-  | 'Treatment Plan'
-  | 'Project Area'
-  | 'Direct Treatment Impacts'
-  | '';
-
-export interface NavState {
-  currentView: NavView;
-  currentRecordName: string;
-  backLink?: string;
-}
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -39,8 +25,6 @@ export class NavBarComponent implements OnInit {
     | 'TREATMENTS_PROJECT_AREA'
     | 'DIRECT_IMPACTS' = 'EXPLORE';
 
-  @Input() navState?: NavState | null = null;
-
   params: Params | null = null;
 
   canSharePlan$ = this.planState.currentPlan$.pipe(
@@ -48,12 +32,15 @@ export class NavBarComponent implements OnInit {
     map((plan) => (plan ? canViewCollaborators(plan) : false))
   );
 
+  breadcrumb$ = this.breadcrumbService.breadcrumb$;
+
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
     private route: ActivatedRoute,
     private homeParametersStorageService: HomeParametersStorageService,
-    private planState: PlanState
+    private planState: PlanState,
+    private breadcrumbService: BreadcrumbService
   ) {}
 
   ngOnInit(): void {
@@ -71,7 +58,8 @@ export class NavBarComponent implements OnInit {
   sharePlan() {
     this.dialog.open(SharePlanDialogComponent, {
       data: {
-        planningAreaName: this.navState?.currentRecordName,
+        //TODO
+        planningAreaName: '', //this.navState?.currentRecordName,
         planningAreaId: this.route.snapshot.params['id'],
       },
       restoreFocus: false,

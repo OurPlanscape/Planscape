@@ -139,6 +139,7 @@ export class CreateScenariosComponent implements OnInit {
     });
 
     if (typeof this.planId === 'number') {
+      console.log('the plan id', this.planId);
       this.scenarioService
         .getScenariosForPlan(this.planId)
         .pipe(take(1))
@@ -163,6 +164,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   loadConfig(): void {
+    console.log('the scenario id on load config', this.scenarioId);
     this.LegacyPlanStateService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
         // if we have the same state do nothing.
@@ -217,7 +219,7 @@ export class CreateScenariosComponent implements OnInit {
     return {
       id: '',
       name: this.scenarioNameFormField?.value,
-      planning_area: this.planId ? this.planId.toString() : '', // nope I should have planID
+      planning_area: this.planId || -1,
       status: 'ACTIVE',
       configuration: {
         ...this.constraintsPanelComponent.getFormData(),
