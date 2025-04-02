@@ -25,11 +25,13 @@ export class DataLayerTooltipComponent {
   }
 
   getSource() {
-    return this.layer.metadata?.['download'];
+    return this.layer.metadata?.['metadata']?.['distribution']?.['download'];
   }
 
   getVintageDate(): string {
-    return this.layer.metadata?.['datestamp'] || '--';
+    return (
+      this.layer.metadata?.['metadata']?.['metadata']?.['datestamp'] || '--'
+    );
   }
 
   getUnits() {
