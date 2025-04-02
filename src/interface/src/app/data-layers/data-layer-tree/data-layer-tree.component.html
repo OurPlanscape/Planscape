@@ -1,4 +1,6 @@
-<mat-radio-group [ngModel]="(selectedDataLayer$ | async)?.id" #treeContainer>
+<mat-radio-group
+  [ngModel]="(selectedDataLayer$ | async)?.id"
+  #treeContainer="ngModel">
   <mat-tree
     *ngIf="treeData$ | async as treeData"
     [dataSource]="treeData"
@@ -18,7 +20,7 @@
       <mat-spinner
         diameter="20"
         *ngIf="
-          currentLayerId === node.item.id && (loadingDataLayer$ | async)
+          treeContainer.value === node.item.id && (loadingDataLayer$ | async)
         "></mat-spinner>
       <button
         sg-button

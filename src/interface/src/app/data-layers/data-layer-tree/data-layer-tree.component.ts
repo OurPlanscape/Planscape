@@ -30,10 +30,6 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 })
 export class DataLayerTreeComponent {
   constructor(private dataLayersStateService: DataLayersStateService) {
-    this.dataLayersStateService.selectedDataLayer$.subscribe((layer) => {
-      this.currentLayerId = layer?.id;
-    });
-
     this.dataLayersStateService.paths$
       .pipe(
         untilDestroyed(this),
