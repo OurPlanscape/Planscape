@@ -25,7 +25,7 @@ import {
 } from '@services';
 import { getPlanPath } from './plan-helpers';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
-import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
+import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -87,16 +87,12 @@ export class PlanComponent implements OnInit {
           currentRecordName: '',
           backLink: '/home',
         };
-
-        if (scenarioId) {
-          navStateObject.currentView = 'Scenario';
-          navStateObject.backLink = getPlanPath(plan.id);
-        }
-
         if (path === 'config' && !scenarioId && !scenarioName) {
+          navStateObject.currentView = 'Scenario';
           navStateObject.currentRecordName = 'New Scenario';
           navStateObject.backLink = getPlanPath(plan.id);
         } else if (scenarioName) {
+          navStateObject.currentView = 'Scenario';
           navStateObject.currentRecordName = scenarioName;
           navStateObject.backLink = getPlanPath(plan.id);
         } else if (path !== 'config' && plan.name && !scenarioName) {
@@ -104,13 +100,15 @@ export class PlanComponent implements OnInit {
           navStateObject.currentRecordName = plan.name;
         }
 
-        this.breadcrumbService.updateBreadCrumb({
-          label:
-            navStateObject.currentView +
-            ': ' +
-            navStateObject.currentRecordName,
-          backUrl: navStateObject.backLink!,
-        });
+        if (navStateObject.currentView) {
+          this.breadcrumbService.updateBreadCrumb({
+            label:
+              navStateObject.currentView +
+              ': ' +
+              navStateObject.currentRecordName,
+            backUrl: navStateObject.backLink!,
+          });
+        }
 
         return navStateObject;
       });
