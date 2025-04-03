@@ -23,12 +23,16 @@
     controlsPosition="bottom-right"
     [extendedControlsEnabled]="false">
   </app-map-controls>
-  <app-planning-area-layer
-    *ngIf="projectAreaCount$ | async"></app-planning-area-layer>
-  <app-map-project-areas
-    *ngIf="projectAreaCount$ | async as projectAreaCount"
-    [projectAreasCount]="projectAreaCount"
-    [scenarioId]="scenarioId"
-    [showHoveredProjectAreas]="false"
-    [mapLibreMap]="mapLibreMap"></app-map-project-areas>
+  <app-planning-area-layer></app-planning-area-layer>
+
+  <ng-container *ngIf="scenarioId | async as scenarioId">
+    <ng-container *ngIf="projectAreaCount$ | async as projectAreaCount">
+      <app-map-project-areas
+        [projectAreasCount]="projectAreaCount"
+        [scenarioId]="scenarioId"
+        [showHoveredProjectAreas]="false"
+        [mapLibreMap]="mapLibreMap">
+      </app-map-project-areas>
+    </ng-container>
+  </ng-container>
 </mgl-map>
