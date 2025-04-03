@@ -1,3 +1,6 @@
+from typing import Any, Collection, Dict
+
+
 def get_default_vector_style(**kwargs):
     # for now uses maplibre default stuff
     return {
@@ -9,7 +12,9 @@ def get_default_vector_style(**kwargs):
     }
 
 
-def get_default_raster_style(min: float, max: float, **kwargs):
+def get_default_raster_style(
+    min: float, max: float, **kwargs
+) -> Collection[Dict[str, Any]]:
     steps = 7
     delta = max - min
     interval = delta / (steps - 1)
@@ -35,8 +40,13 @@ def get_default_raster_style(min: float, max: float, **kwargs):
             ]
         )
 
-    return {
-        "map_type": "RAMP",
-        "no_data": {"values": [], "color": None, "opacity": 0, "label": ""},
-        "entries": entries,
-    }
+    return [
+        {
+            "id": 0,
+            "data": {
+                "map_type": "RAMP",
+                "no_data": {"values": [], "color": None, "opacity": 0, "label": ""},
+                "entries": entries,
+            },
+        }
+    ]
