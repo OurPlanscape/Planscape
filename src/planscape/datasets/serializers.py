@@ -2,11 +2,10 @@ import re
 from typing import Any, Collection, Dict
 
 from core.loaders import get_python_object
-from organizations.models import Organization
-from rest_framework import serializers
-
 from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
 from datasets.styles import get_default_raster_style, get_default_vector_style
+from organizations.models import Organization
+from rest_framework import serializers
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -417,7 +416,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
     def get_styles(self, instance):
         if instance.styles.all().exists():
-            return StyleSimpleSerializer(instance=instance.styles.all().first()).data
+            return [StyleSimpleSerializer(instance=instance.styles.all().first()).data]
         match instance.type:
             case DataLayerType.RASTER:
                 stats = (
