@@ -36,7 +36,10 @@ def get_default_raster_style(min: float, max: float, **kwargs):
         )
 
     return {
-        "map_type": "RAMP",
-        "no_data": {"values": [], "color": None, "opacity": 0, "label": ""},
-        "entries": entries,
+        "id": 0,
+        "data": {
+            "map_type": "RAMP",
+            "no_data": {"values": [], "color": None, "opacity": 0, "label": ""},
+            "entries": entries,
+        },
     }
