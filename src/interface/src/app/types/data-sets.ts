@@ -1,4 +1,5 @@
 import { Geometry } from 'geojson';
+import { StyleJson } from '../data-layers/utilities';
 
 export interface DataSet {
   id: number;
@@ -73,7 +74,9 @@ export interface DataLayer {
   status: string;
   info: Info;
   metadata: Metadata | null;
-  styles: Styles[];
+  styles: {
+    data: StyleJson;
+  };
   geometry: Geometry;
   public_url: string;
 }
