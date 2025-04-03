@@ -1,4 +1,4 @@
-import { Component, Renderer2 } from '@angular/core';
+import { Component, Renderer2, ViewChild } from '@angular/core';
 import { AsyncPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
 import {
   ControlComponent,
@@ -55,10 +55,7 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
-import { DataLayer } from '@types';
-import { makeColorFunction } from '../../data-layers/utilities';
-import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
-import { RasterLayerService } from '../../maplibre-map/raster-layer.service';
+import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 
 @UntilDestroy()
 @Component({
@@ -83,6 +80,7 @@ import { RasterLayerService } from '../../maplibre-map/raster-layer.service';
     AsyncPipe,
     MatIconModule,
     PopupComponent,
+    MapDataLayerComponent,
     MapTooltipComponent,
     PlanningAreaLayerComponent,
     ControlComponent,
@@ -98,6 +96,7 @@ import { RasterLayerService } from '../../maplibre-map/raster-layer.service';
   styleUrl: './treatment-map.component.scss',
 })
 export class TreatmentMapComponent {
+  @ViewChild(MapDataLayerComponent) dataLayerComponent!: MapDataLayerComponent;
   /**
    * Flag to determine if the user is currently dragging to select stands
    */
@@ -226,7 +225,6 @@ export class TreatmentMapComponent {
     private dataLayersState: DataLayersStateService,
     private renderer: Renderer2,
     private dataLayersStateService: DataLayersStateService,
-    private rasterLayerService: RasterLayerService,
     private route: ActivatedRoute,
     private router: Router,
     private planState: PlanState
@@ -237,24 +235,6 @@ export class TreatmentMapComponent {
       .subscribe((cursor) => {
         if (this.mapLibreMap) {
           this.mapLibreMap.getCanvas().style.cursor = cursor;
-        }
-      });
-
-    dataLayersStateService.selectedDataLayer$
-      .pipe(untilDestroyed(this))
-      .subscribe((dataLayer: DataLayer | null) => {
-        if (dataLayer?.public_url) {
-          this.cogUrl = `cog://${dataLayer?.public_url}`;
-          this.tileSize = dataLayer.info.blockxsize ?? 512;
-          const colorFn = makeColorFunction(dataLayer?.styles as any);
-          setColorFunction(dataLayer?.public_url ?? '', colorFn);
-          this.rasterLayerService.addRasterLayer(
-            this.cogUrl,
-            this.tileSize,
-            this.DATA_RASTER_OPACITY
-          );
-        } else {
-          this.rasterLayerService.removeRasterLayer();
         }
       });
 
@@ -316,7 +296,6 @@ export class TreatmentMapComponent {
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
     this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
-    this.rasterLayerService.setMap(this.mapLibreMap);
     this.listenForZoom();
     this.listenForBaseLayerChange();
   }
@@ -329,21 +308,9 @@ export class TreatmentMapComponent {
 
   listenForBaseLayerChange() {
     this.mapLibreMap.on('styledata', () => {
-      let rasterUrl = '';
-      this.dataLayersStateService.selectedDataLayer$
-        .pipe(untilDestroyed(this))
-        .subscribe((layer) => {
-          rasterUrl = layer?.public_url ?? '';
-          return layer;
-        });
-
       // if the style change caused the other layers to be removed, then we need to re-add them.
-      if (rasterUrl && !this.mapLibreMap.getSource('rasterImage')) {
-        this.rasterLayerService.addRasterLayer(
-          this.cogUrl,
-          this.tileSize,
-          this.DATA_RASTER_OPACITY
-        );
+      if (!this.mapLibreMap.getSource('rasterImage')) {
+        this.dataLayerComponent.addRasterLayer();
       }
     });
   }
