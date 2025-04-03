@@ -9,13 +9,19 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { map } from 'rxjs';
+import { combineLatest, map, Observable } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { PlanState } from '../../plan/plan.state';
 import { ScenarioState } from '../scenario.state';
+import { ActivatedRoute } from '@angular/router';
+
+interface ProjectAreasInputData {
+  projectAreaCount: number | undefined;
+  scenarioId: number | null;
+}
 
 @Component({
   selector: 'app-scenario-map',
@@ -37,7 +43,8 @@ export class ScenarioMapComponent {
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private planState: PlanState,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private route: ActivatedRoute
   ) {}
 
   /**
@@ -45,7 +52,7 @@ export class ScenarioMapComponent {
    */
   mapLibreMap!: MapLibreMap;
 
-  scenarioId = this.scenarioState.currentScenarioId$;
+  scenarioId$ = this.scenarioState.currentScenarioId$;
 
   /**
    * Observable that provides the url to load the selected map base layer
@@ -65,6 +72,13 @@ export class ScenarioMapComponent {
       return scenario.scenario_result?.result?.features.length;
     })
   );
+
+  showProjectAreas = this.route.firstChild?.snapshot?.data['showProjectAreas'];
+
+  projectAreaData$: Observable<ProjectAreasInputData> = combineLatest({
+    scenarioId: this.scenarioId$,
+    projectAreaCount: this.projectAreaCount$,
+  }) as Observable<ProjectAreasInputData>;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

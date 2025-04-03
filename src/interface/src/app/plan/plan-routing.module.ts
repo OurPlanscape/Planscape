@@ -23,7 +23,10 @@ const routes: Routes = [
         path: 'config/',
         title: 'Scenario Configuration',
         component: CreateScenariosComponent,
-        data: { showOverview: false },
+        data: {
+          showOverview: false,
+          showProjectAreas: false,
+        },
       },
       {
         path: 'config/:id',
@@ -32,7 +35,10 @@ const routes: Routes = [
         resolve: {
           scenarioInit: scenarioLoaderResolver,
         },
-        data: { showOverview: false },
+        data: {
+          showOverview: false,
+          showProjectAreas: true,
+        },
       },
       {
         path: 'explore',
