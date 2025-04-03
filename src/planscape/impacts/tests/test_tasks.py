@@ -53,6 +53,14 @@ class AsyncSendEmailProcessFinishedTest(TransactionTestCase):
             html_message=mock.ANY,
         )
 
+    @mock.patch("impacts.tasks.send_mail", return_value=True)
+    def test_dont_send_email_if_treatment_plan_deleted(self, send_email_mock):
+        self.treatment_plan.delete()
+        async_send_email_process_finished(
+            treatment_plan_pk=self.treatment_plan.pk,
+        )
+        self.assertFalse(send_email_mock.called)
+
 
 class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
     def load_stands(self):
@@ -156,6 +164,60 @@ class AsyncGetOrCalculatePersistImpactsTestCase(TransactionTestCase):
             self.assertEquals(
                 stands_within_project_area.count(), TreatmentResult.objects.count()
             )
+
+    def test_trigger_task_with_delted_tx_plan(self):
+        with self.settings(
+            CELERY_ALWAYS_EAGER=True,
+            CELERY_TASK_STORE_EAGER_RESULT=True,
+            CELERY_TASK_IGNORE_RESULT=False,
+        ):
+            matrix = get_calculation_matrix(self.plan)
+            variable, action, year = matrix[0]
+            baseline_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": variable,
+                        "action": None,
+                        "baseline": True,
+                    }
+                }
+            }
+            action_metadata = {
+                "modules": {
+                    "impacts": {
+                        "year": year,
+                        "variable": variable,
+                        "action": TreatmentPrescriptionAction.get_file_mapping(action),
+                        "baseline": False,
+                    }
+                }
+            }
+
+            DataLayerFactory.create(
+                name="baseline",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=baseline_metadata,
+                type=DataLayerType.RASTER,
+            )
+            DataLayerFactory.create(
+                name="action",
+                url="impacts/tests/test_data/test_raster.tif",
+                metadata=action_metadata,
+                type=DataLayerType.RASTER,
+            )
+            self.assertEquals(TreatmentResult.objects.count(), 0)
+
+            self.plan.delete()
+            async_calculate_impacts_for_variable_action_year(
+                self.plan.id,
+                variable=variable,
+                action=action,
+                year=year,
+            )
+
+            self.assertEquals(TreatmentResult.objects.count(), 0)
+            self.assertEquals(ProjectAreaTreatmentResult.objects.count(), 0)
 
 
 class AsyncCalculateBaselineMetricsForVariableYearTest(TransactionTestCase):
