@@ -56,7 +56,6 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 
 @UntilDestroy()
 @Component({
@@ -193,8 +192,6 @@ export class TreatmentMapComponent {
 
   loadingLayer$ = this.dataLayersState.loadingLayer$;
 
-  scenarioId$ = this.scenarioState.currentScenarioId$;
-
   mouseLngLat: LngLat | null = null;
   hoveredProjectAreaId$ = new Subject<number | null>();
 
@@ -221,8 +218,7 @@ export class TreatmentMapComponent {
     private dataLayersStateService: DataLayersStateService,
     private route: ActivatedRoute,
     private router: Router,
-    private planState: PlanState,
-    private scenarioState: ScenarioState
+    private planState: PlanState
   ) {
     // update cursor on map
     this.mapConfigState.cursor$

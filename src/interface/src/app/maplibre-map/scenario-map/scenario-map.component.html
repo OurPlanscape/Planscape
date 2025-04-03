@@ -27,12 +27,9 @@
   <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
 
   <ng-container
-    *ngIf="
-      showProjectAreas && (projectAreaData$ | async) as projectAreaInputData
-    ">
+    *ngIf="showProjectAreas && (projectAreaCount$ | async) as projectAreaCount">
     <app-map-project-areas
-      [projectAreasCount]="projectAreaInputData.projectAreaCount"
-      [scenarioId]="projectAreaInputData.scenarioId"
+      [projectAreasCount]="projectAreaCount"
       [showHoveredProjectAreas]="false"
       [mapLibreMap]="mapLibreMap">
     </app-map-project-areas>

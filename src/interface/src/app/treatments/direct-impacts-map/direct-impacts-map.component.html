@@ -26,10 +26,7 @@
     [selectStart]="null"
     [selectEnd]="null"></app-map-stands>
 
-  <app-map-project-areas
-    *ngIf="scenarioId$ | async as scenarioId"
-    [scenarioId]="scenarioId"
-    [mapLibreMap]="mapLibreMap"></app-map-project-areas>
+  <app-map-project-areas [mapLibreMap]="mapLibreMap"></app-map-project-areas>
 
   <app-map-stands-tx-result
     [mapLibreMap]="mapLibreMap"

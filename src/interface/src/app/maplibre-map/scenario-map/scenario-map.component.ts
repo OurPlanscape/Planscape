@@ -9,7 +9,7 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { combineLatest, map, Observable } from 'rxjs';
+import { map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
@@ -17,11 +17,6 @@ import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas
 import { PlanState } from '../../plan/plan.state';
 import { ScenarioState } from '../scenario.state';
 import { ActivatedRoute } from '@angular/router';
-
-interface ProjectAreasInputData {
-  projectAreaCount: number | undefined;
-  scenarioId: number | null;
-}
 
 @Component({
   selector: 'app-scenario-map',
@@ -74,11 +69,6 @@ export class ScenarioMapComponent {
   );
 
   showProjectAreas = this.route.firstChild?.snapshot?.data['showProjectAreas'];
-
-  projectAreaData$: Observable<ProjectAreasInputData> = combineLatest({
-    scenarioId: this.scenarioId$,
-    projectAreaCount: this.projectAreaCount$,
-  }) as Observable<ProjectAreasInputData>;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

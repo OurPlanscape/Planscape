@@ -15,11 +15,12 @@ import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
-import { Subject } from 'rxjs';
+import { filter, map, Subject } from 'rxjs';
 import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
 import type { ExpressionSpecification } from 'maplibre-gl';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { ScenarioState } from '../scenario.state';
 
 type MapLayerData = {
   readonly name: string;
@@ -46,7 +47,6 @@ export class MapProjectAreasComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() visible = true;
   @Input() showHoveredProjectAreas: boolean = true;
-  @Input() scenarioId!: number;
   /**
    * If provided we should fill the project areas
    */
@@ -96,7 +96,21 @@ export class MapProjectAreasComponent implements OnInit {
     },
   };
 
-  constructor(private mapConfigState: MapConfigState) {}
+  scenarioId$ = this.scenarioState.currentScenarioId$.pipe(
+    filter((scenarioId) => !!scenarioId),
+    map((scenario) => scenario as number)
+  );
+
+  vectorLayerUrl$ = this.scenarioId$.pipe(
+    map((scenarioId) => {
+      return this.martinSource.tilesUrl + `?scenario_id=${scenarioId}`;
+    })
+  );
+
+  constructor(
+    private mapConfigState: MapConfigState,
+    private scenarioState: ScenarioState
+  ) {}
 
   ngOnInit(): void {
     if (this.projectAreasCount) {
@@ -109,10 +123,6 @@ export class MapProjectAreasComponent implements OnInit {
         this.opacity = opacity;
         this.paint = { ...this.paint, 'fill-opacity': this.opacity };
       });
-  }
-
-  get vectorLayerUrl() {
-    return this.martinSource.tilesUrl + `?scenario_id=${this.scenarioId}`;
   }
 
   goToProjectArea(event: MapMouseEvent) {
