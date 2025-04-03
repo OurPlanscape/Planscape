@@ -1,0 +1,66 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  padding: 0;
+
+  h3.header {
+    margin: 0;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid $color-soft-gray;
+  }
+
+  .content {
+    padding: 24px;
+    border-bottom: 1px solid $color-soft-gray;
+
+    dl {
+      display: grid;
+      grid-template-columns: max-content 1fr;
+      gap: 0.5rem 1rem;
+      align-items: center;
+    }
+
+    dt {
+      font-weight: bold;
+    }
+
+    dd {
+      margin: 0;
+    }
+
+    dt {
+      @include small-input-label();
+      color: $color-dark-gray;
+    }
+
+    dd {
+      @include small-input-label();
+      color: $color-black;
+    }
+  }
+
+  .footer {
+    padding: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    a {
+      display: flex;
+      align-items: center;
+      text-decoration: none;
+    }
+  }
+}
+
+// This is safe because .datalayer-tooltip-panel is a class we added to the menu panel
+::ng-deep .datalayer-tooltip-panel {
+  min-width: 400px;
+
+  .mat-mdc-menu-content {
+    padding: 0;
+  }
+}

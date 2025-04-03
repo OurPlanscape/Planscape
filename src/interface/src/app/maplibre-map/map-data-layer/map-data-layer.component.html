@@ -1,6 +1,6 @@
 <mgl-raster-source
   [url]="cogUrl"
-  [tileSize]="512"
+  [tileSize]="tileSize"
   id="rasterImage"></mgl-raster-source>
 <mgl-layer
   *ngIf="dataLayer"
@@ -9,5 +9,6 @@
   source="rasterImage"
   before="bottom-layer"
   [paint]="{
-    'raster-opacity': OPACITY
+    'raster-opacity': OPACITY,
+    'raster-resampling': 'nearest'
   }"></mgl-layer>

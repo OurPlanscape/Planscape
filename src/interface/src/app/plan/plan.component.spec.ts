@@ -1,15 +1,20 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, convertToParamMap, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  convertToParamMap,
+  NavigationEnd,
+  Router,
+} from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
-import { BehaviorSubject, of } from 'rxjs';
+import { BehaviorSubject, of, Subject } from 'rxjs';
 import { Plan, Region } from '@types';
 import { MatDialogModule } from '@angular/material/dialog';
 import { LegacyMaterialModule } from '../material/legacy-material.module';
 import {
   AuthService,
-  PlanningAreaNotesService,
   LegacyPlanStateService,
+  PlanningAreaNotesService,
 } from '@services';
 import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
@@ -27,6 +32,7 @@ describe('PlanComponent', () => {
   let fixture: ComponentFixture<PlanComponent>;
   let mockAuthService: Partial<AuthService>;
   let mockNotesService: PlanningAreaNotesService;
+  let mockRouterEvents$: Subject<any>;
   const fakeGeoJson: GeoJSON.GeoJSON = {
     type: 'FeatureCollection',
     features: [
@@ -54,15 +60,26 @@ describe('PlanComponent', () => {
   const fakePlan: Plan = { ...MOCK_PLAN, id: 24, geometry: fakeGeoJson };
 
   beforeEach(async () => {
-    const fakeRoute = jasmine.createSpyObj(
-      'ActivatedRoute',
-      {},
-      {
-        snapshot: {
-          paramMap: convertToParamMap({ id: '24' }),
-        },
-      }
-    );
+    mockRouterEvents$ = new Subject();
+    const mockChildRoute = {
+      snapshot: {
+        params: { id: 'scenario-99' },
+        data: { showOverview: true },
+        url: [{ path: 'config' }],
+        paramMap: convertToParamMap({ id: 'scenario-99' }),
+      },
+      data: of({ showOverview: true }),
+      firstChild: null,
+    };
+
+    const fakeRoute = {
+      snapshot: {
+        paramMap: convertToParamMap({ id: '24' }),
+        url: [],
+      },
+      firstChild: mockChildRoute,
+      children: [mockChildRoute],
+    };
 
     mockAuthService = {};
 
@@ -136,7 +153,6 @@ describe('PlanComponent', () => {
     expect(legacyPlanStateService.updateStateWithPlan).toHaveBeenCalledOnceWith(
       24
     );
-    expect(component.showOverview$.value).toBeTrue();
   });
 
   it('backToOverview navigates back to overview', () => {
@@ -146,5 +162,14 @@ describe('PlanComponent', () => {
     component.backToOverview();
 
     expect(router.navigate).toHaveBeenCalledOnceWith(['plan', fakePlan.id]);
+  });
+
+  it('should emit true from showOverview$ when showOverview is true in route data', (done) => {
+    component.showOverview$.subscribe((value) => {
+      expect(value).toBe(true);
+      done();
+    });
+
+    mockRouterEvents$.next(new NavigationEnd(1, '/dummy', '/dummy'));
   });
 });

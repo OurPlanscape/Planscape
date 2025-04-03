@@ -10,6 +10,8 @@ import { DataLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MatMenuModule } from '@angular/material/menu';
+import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
 
 @UntilDestroy()
 @Component({
@@ -23,6 +25,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     NgClass,
     MatRadioModule,
     FormsModule,
+    MatMenuModule,
+    DataLayerTooltipComponent,
   ],
   templateUrl: './data-layer-tree.component.html',
   styleUrl: './data-layer-tree.component.scss',
@@ -60,16 +64,25 @@ export class DataLayerTreeComponent {
 
   private scrollToSelectedNode() {
     if (!this.treeContainer) return;
+    const scrollOpts: ScrollIntoViewOptions = {
+      behavior: 'smooth',
+      block: 'center',
+    };
 
     const selectedButton = this.treeContainer.nativeElement.querySelector(
       '.mat-mdc-radio-checked'
     );
 
     if (selectedButton) {
-      selectedButton.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
+      selectedButton.scrollIntoView(scrollOpts);
+    } else {
+      const allExpanded = this.treeContainer.nativeElement.querySelectorAll(
+        '.data-layer-node.expanded'
+      );
+      const expanded = allExpanded[allExpanded.length - 1];
+      if (expanded) {
+        expanded.scrollIntoView(scrollOpts);
+      }
     }
   }
 

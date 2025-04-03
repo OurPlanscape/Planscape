@@ -9,11 +9,20 @@ import {
   ButtonComponent,
   ExpanderSectionComponent,
   NoResultsComponent,
+  PaginatorComponent,
   SearchBarComponent,
 } from '@styleguide';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { DataLayersStateService } from '../data-layers.state.service';
-import { catchError, map, Observable, startWith, throwError } from 'rxjs';
+import {
+  catchError,
+  combineLatest,
+  map,
+  Observable,
+  startWith,
+  tap,
+  throwError,
+} from 'rxjs';
 import { groupSearchResults, Results } from './search';
 import { DataLayerTreeComponent } from '../data-layer-tree/data-layer-tree.component';
 import { SearchResultsComponent } from '../search-results/search-results.component';
@@ -45,6 +54,7 @@ import { FormsModule } from '@angular/forms';
     NoResultsComponent,
     MatRadioModule,
     FormsModule,
+    PaginatorComponent,
   ],
   templateUrl: './data-layers.component.html',
   styleUrls: ['./data-layers.component.scss'],
@@ -58,7 +68,12 @@ export class DataLayersComponent {
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
-  searchTerm$ = this.dataLayersStateService.searchTerm$;
+  searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
+    tap(() => {
+      // reset count when the search term changes
+      this.resultCount = 0;
+    })
+  );
   resultCount: number | null = null;
 
   results$: Observable<Results | null> =
@@ -66,8 +81,8 @@ export class DataLayersComponent {
       startWith(null),
       map((results) => {
         if (results) {
-          this.resultCount = results.length;
-          return groupSearchResults(results);
+          this.resultCount = results.count;
+          return groupSearchResults(results.results);
         } else {
           return results;
         }
@@ -81,15 +96,26 @@ export class DataLayersComponent {
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
   isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
+  showFooter$ = combineLatest([this.results$, this.selectedDataLayer$]).pipe(
+    map(([results, selectedLayer]) => this.pages > 1 || selectedLayer)
+  );
+
+  get pages() {
+    return this.resultCount
+      ? Math.ceil(this.resultCount / this.dataLayersStateService.limit)
+      : 0;
+  }
+
   search(term: string) {
     this.dataLayersStateService.search(term);
   }
 
-  viewDatasetCategories(dataSet: DataSet) {
-    this.dataLayersStateService.selectDataSet(dataSet);
+  showPage(page: number) {
+    this.dataLayersStateService.changePage(page);
   }
 
-  viewResultDataSet(dataSet: DataSet) {
+  viewDatasetCategories(dataSet: DataSet) {
+    this.dataLayersStateService.resetPath();
     this.dataLayersStateService.selectDataSet(dataSet);
   }
 

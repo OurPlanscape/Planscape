@@ -12,9 +12,9 @@ import {
   filter,
   map,
   Observable,
-  Subject,
+  startWith,
+  switchMap,
   take,
-  takeUntil,
 } from 'rxjs';
 import { Plan, User } from '@types';
 import {
@@ -24,7 +24,6 @@ import {
   PlanningAreaNotesService,
 } from '@services';
 import { getPlanPath } from './plan-helpers';
-import { HomeParametersStorageService } from '@services/local-storage.service';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { DeleteNoteDialogComponent } from '../plan/delete-note-dialog/delete-note-dialog.component';
 import { NavState, SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
@@ -43,7 +42,6 @@ export class PlanComponent implements OnInit {
     private LegacyPlanStateService: LegacyPlanStateService,
     private route: ActivatedRoute,
     private router: Router,
-    private homeParametersStorageService: HomeParametersStorageService,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar
@@ -81,11 +79,17 @@ export class PlanComponent implements OnInit {
   sidebarNotes: Note[] = [];
   notesSidebarState: NotesSidebarState = 'READY';
 
-  showOverview$ = new BehaviorSubject<boolean>(false);
+  showOverview$ = this.router.events.pipe(
+    filter((event) => event instanceof NavigationEnd),
+    startWith(null), // trigger on initial load
+    map(() => this.getDeepestChild(this.route)),
+    switchMap((route) => route.data),
+    map((data) => data['showOverview'] === true)
+  );
+
   area$ = this.showOverview$.pipe(
     map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
   );
-  private readonly destroy$ = new Subject<void>();
 
   scenarioName$ = this.LegacyPlanStateService.planState$.pipe(
     map((state) => {
@@ -124,16 +128,6 @@ export class PlanComponent implements OnInit {
   );
 
   ngOnInit() {
-    this.LegacyPlanStateService.planState$
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((state) => {
-        const path = this.getPathFromSnapshot();
-        if (state.currentScenarioId || path === 'config') {
-          this.showOverview$.next(false);
-        } else {
-          this.showOverview$.next(true);
-        }
-      });
     this.updatePlanStateFromRoute();
 
     this.router.events
@@ -173,16 +167,6 @@ export class PlanComponent implements OnInit {
 
   backToOverview() {
     this.router.navigate(['plan', this.currentPlan$.value!.id]);
-  }
-
-  goBack() {
-    if (this.showOverview$.value) {
-      this.router.navigate(['home'], {
-        queryParams: this.homeParametersStorageService.getItem(),
-      });
-    } else {
-      this.backToOverview();
-    }
   }
 
   //notes handling functions
@@ -241,5 +225,12 @@ export class PlanComponent implements OnInit {
         this.sidebarNotes = notes;
       });
     }
+  }
+
+  private getDeepestChild(route: ActivatedRoute): ActivatedRoute {
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    return route;
   }
 }
