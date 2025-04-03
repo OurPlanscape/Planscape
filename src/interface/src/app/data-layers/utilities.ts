@@ -24,7 +24,7 @@ export interface StyleJson {
 
 export function extractLegendInfo(dataLayer: any): any {
   // accept a style json,
-  const { map_type, entries } = dataLayer.styles;
+  const { map_type, entries } = dataLayer.styles[0].data;
   const sorted = [...entries].sort((a, b) => a.value - b.value);
   const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => {
     return {

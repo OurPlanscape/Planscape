@@ -93,6 +93,7 @@ export class DataLayersStateService {
       .pipe(
         map((currentLayer: DataLayer | null) => {
           if (currentLayer) {
+            console.log('huh?');
             const newLegendInfo = extractLegendInfo(currentLayer);
             this._colorLegendInfo.next(newLegendInfo);
           } else {
