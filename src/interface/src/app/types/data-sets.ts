@@ -1,4 +1,5 @@
 import { Geometry } from 'geojson';
+import { StyleJson } from '../data-layers/utilities';
 
 export interface DataSet {
   id: number;
@@ -57,12 +58,17 @@ export interface Metadata {
   [key: string]: any;
 }
 
-export interface Styles {}
+export interface Styles { }
 
 // TODO: not sure if the above type is meant to serve this purpose, but...
 export interface LayerStyleEntry {
   colorHex: string;
   entryLabel: string;
+}
+
+export interface Styles {
+  id: number;
+  data: StyleJson;
 }
 
 export interface DataLayer {

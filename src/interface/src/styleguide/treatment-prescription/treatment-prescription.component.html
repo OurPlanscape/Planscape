@@ -1,0 +1,32 @@
+<div class="icon">
+  <sg-treatment-type-icon
+    *ngIf="treatmentType === 'SINGLE'"
+    [treatment]="treatmentIconType()"></sg-treatment-type-icon>
+  <sg-sequence-icon
+    *ngIf="treatmentType === 'SEQUENCE'"
+    [action]="action"></sg-sequence-icon>
+</div>
+<div class="main">
+  <div *ngIf="treatmentType === 'SINGLE'">
+    <span
+      [sgHighlighter]="searchString || ''"
+      [sgHighlighterText]="singleRxTitleText()"></span>
+  </div>
+  <div *ngIf="treatmentType === 'SEQUENCE'">
+    <div *ngFor="let seqTitle of sequenceTitles()">
+      <span
+        [sgHighlighter]="searchString || ''"
+        [sgHighlighterText]="seqTitle.description"></span>
+      <span class="rx-detail-year"> (Year {{ seqTitle.year }})</span>
+    </div>
+  </div>
+
+  <div class="treatment-detail">
+    <span class="treatment-detail-value">{{ areaAcres | number }} acres</span>
+  </div>
+</div>
+<div class="percent">
+  <span *ngIf="areaAcres">{{
+    areaAcres / projectAreaTotalAcres | percent: '1.0-1'
+  }}</span>
+</div>
