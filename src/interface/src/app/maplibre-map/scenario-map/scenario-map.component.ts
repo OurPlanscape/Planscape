@@ -13,7 +13,6 @@ import { map } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
-import { ActivatedRoute } from '@angular/router';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { PlanState } from '../../plan/plan.state';
 import { ScenarioState } from '../scenario.state';
@@ -38,7 +37,6 @@ export class ScenarioMapComponent {
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private planState: PlanState,
-    private route: ActivatedRoute,
     private scenarioState: ScenarioState
   ) {}
 
@@ -47,8 +45,7 @@ export class ScenarioMapComponent {
    */
   mapLibreMap!: MapLibreMap;
 
-  // TODO update this with state
-  scenarioId = this.route.children[0]?.snapshot.params['id'];
+  scenarioId = this.scenarioState.currentScenarioId$;
 
   /**
    * Observable that provides the url to load the selected map base layer
