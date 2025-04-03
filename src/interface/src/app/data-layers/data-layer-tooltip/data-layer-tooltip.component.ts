@@ -28,12 +28,6 @@ export class DataLayerTooltipComponent {
     return this.layer.metadata?.['metadata']?.['distribution']?.['download'];
   }
 
-  getVintageDate(): string {
-    return (
-      this.layer.metadata?.['metadata']?.['metadata']?.['datestamp'] || '--'
-    );
-  }
-
   getUnits() {
     const units = this.layer.info?.units?.filter((unit) => !!unit);
 

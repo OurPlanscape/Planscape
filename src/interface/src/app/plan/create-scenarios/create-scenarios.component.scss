@@ -150,12 +150,21 @@
   margin: 0 16px;
 }
 
+.create-scenarios-tab-group {
+  height: 100%;
+}
+
 .create-scenarios-tab-group ::ng-deep {
+
+  .mat-mdc-tab-body-wrapper {
+    height: 100%;
+  }
+
   .mat-mdc-tab-header .mat-mdc-tab-label-container .mat-mdc-tab {
     flex-grow: 0;
   }
 
-  .mat-mdc-tab-header{
+  .mat-mdc-tab-header {
     background-color: $color-white;
   }
 
