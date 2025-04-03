@@ -96,6 +96,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         source="get_assigned_style",
         read_only=True,
     )  # type: ignore
+    original_name = serializers.CharField(read_only=True)
 
     class Meta:
         model = DataLayer
@@ -117,6 +118,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "info",
             "metadata",
             "style",
+            "original_name",
         )
 
 

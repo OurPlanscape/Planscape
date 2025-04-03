@@ -122,7 +122,7 @@ class Command(PlanscapeCommand):
 
             datalayers_url = f"{base_url}/v2/admin/datalayers"
             query_params = {
-                "original_name": base_name,
+                "original_name__icontains": base_name,
                 "dataset": fixed_dataset_id,
             }
             dl_response = requests.get(
