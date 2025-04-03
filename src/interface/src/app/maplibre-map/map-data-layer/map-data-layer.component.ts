@@ -31,7 +31,7 @@ export class MapDataLayerComponent {
         if (dataLayer?.public_url) {
           this.dataLayer = dataLayer;
           this.cogUrl = `cog://${dataLayer?.public_url}`;
-          const colorFn = makeColorFunction(dataLayer?.styles.data as any);
+          const colorFn = makeColorFunction(dataLayer?.styles[0].data);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
           this.tileSize = dataLayer.info.blockxsize ?? 512;
         } else {

@@ -59,8 +59,8 @@ export interface Metadata {
 }
 
 export interface Styles {
-  // Add specific fields once we start using this
-  [key: string]: any;
+  id: number;
+  data: StyleJson;
 }
 
 export interface DataLayer {
@@ -74,9 +74,7 @@ export interface DataLayer {
   status: string;
   info: Info;
   metadata: Metadata | null;
-  styles: {
-    data: StyleJson;
-  };
+  styles: Styles[];
   geometry: Geometry;
   public_url: string;
 }
