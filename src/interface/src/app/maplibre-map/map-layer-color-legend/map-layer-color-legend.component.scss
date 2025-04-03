@@ -3,7 +3,7 @@
 
 :host {
     box-sizing: border-box;
-  }  
+}
 
 .layer-color-legend {
     border-radius: 4px;
@@ -16,33 +16,47 @@
     flex-direction: column;
     align-items: flex-start;
     gap: 8px;
-    width: 80px;
-    height: 100px;
-    overflow-y: hidden;
-    transition: width 1s ease, height 1s ease;
+    width: 40px;
+    height: auto;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    transition: width 0.8s ease, height 0.8s ease;
+    white-space: nowrap;
+
     &:hover {
-        height: 200px;
-        width: 240px;
+        width: 100%;
+        overflow-y: scroll;
+        text-overflow: ellipsis;
+        height: auto;
+        max-width: auto;
+        max-height: 80%;
+        opacity: 1;
     }
 }
 
 .legend-title {
     @include standard-label();
     /* specifying font family here, since the control defaults to helvetica */
-    font-family: 'Public Sans'; 
+    font-family: 'Public Sans';
     font-size: 14px;
     color: $color-white;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
+    width: 100%;
 }
 
 .legend-line {
     display: flex;
     align-items: flex-start;
     gap: 8px;
+    width: 100%;
 }
 
 .swatch-box {
     height: 14px;
     width: 14px;
+    flex-shrink: 0;
 }
 
 .swatch-label {
@@ -52,4 +66,7 @@
     font-size: 12px;
     line-height: 100%;
     color: $color-white;
+    text-overflow: ellipsis;
+    overflow-x: hidden;
+    white-space: nowrap;
 }
