@@ -191,10 +191,6 @@ export class TreatmentMapComponent {
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
-  DATA_RASTER_OPACITY = 0.75;
-  tileSize = 512;
-  cogUrl = '';
-
   loadingLayer$ = this.dataLayersState.loadingLayer$;
 
   get scenarioId() {
@@ -297,21 +293,11 @@ export class TreatmentMapComponent {
     this.mapLibreMap = event;
     this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
     this.listenForZoom();
-    this.listenForBaseLayerChange();
   }
 
   listenForZoom() {
     this.mapLibreMap.on('zoom', () => {
       this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
-    });
-  }
-
-  listenForBaseLayerChange() {
-    this.mapLibreMap.on('styledata', () => {
-      // if the style change caused the other layers to be removed, then we need to re-add them.
-      if (!this.mapLibreMap.getSource('rasterImage')) {
-        this.dataLayerComponent.addRasterLayer();
-      }
     });
   }
 

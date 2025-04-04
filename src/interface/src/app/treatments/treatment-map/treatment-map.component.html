@@ -16,8 +16,6 @@
 <app-loading-layer-overlay *ngIf="loadingLayer$ | async">
 </app-loading-layer-overlay>
 
-<app-map-data-layer [mapLibreMap]="mapLibreMap"></app-map-data-layer>
-
 <mgl-map
   *ngIf="mapExtent$ | async; let bounds"
   (mapLoad)="mapLoaded($event)"
@@ -38,6 +36,9 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
+
+  <app-map-data-layer [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
   <app-map-controls
     [userCanEditStands]="userCanEditStands"
     [extendedControlsEnabled]="(showMapControls$ | async) ?? false"
