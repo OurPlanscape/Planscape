@@ -59,7 +59,6 @@ export class DataLayerTreeComponent {
 
   loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
   treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
-  currentLayerId? = 0;
   @ViewChild('treeContainer', { static: false }) treeContainer!: ElementRef;
 
   selectDataLayer(dataLayer: DataLayer) {
