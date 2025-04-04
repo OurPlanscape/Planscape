@@ -1,17 +1,20 @@
-import { Component, Input } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
+import { HttpClient } from '@angular/common/http';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-data-layer-tooltip',
   standalone: true,
-  imports: [NgIf, MatButtonModule, DecimalPipe],
+  imports: [NgIf, MatButtonModule, DecimalPipe, ButtonComponent],
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
 export class DataLayerTooltipComponent {
   @Input() layer!: DataLayer;
+  private http: HttpClient = inject(HttpClient);
 
   hasDownloadLink(): boolean {
     return !!this.layer.public_url;
@@ -35,5 +38,21 @@ export class DataLayerTooltipComponent {
       return '--';
     }
     return this.layer.info.units.join(', ');
+  }
+
+  downloadDataset() {
+    console.log('URL: ', this.layer.public_url);
+    this.http
+      .get(this.layer.public_url, { responseType: 'blob' })
+      .subscribe((blob) => {
+        const filename = `${this.layer.name}.tif`;
+        const blobUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        a.download = filename;
+        a.click();
+
+        window.URL.revokeObjectURL(blobUrl);
+      });
   }
 }

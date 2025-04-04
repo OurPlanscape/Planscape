@@ -8,7 +8,7 @@
     <dt>Value Range</dt>
     <dd>
       @if (hasMinMax()) {
-        {{ this.layer.info.stats[0].min | number: '1.0-0' }},
+        {{ this.layer.info.stats[0].min | number: '1.0-0' }} -
         {{ this.layer.info.stats[0].max | number: '1.0-0' }}
       } @else {
         --
@@ -34,7 +34,7 @@
 </div>
 
 <div class="footer" *ngIf="hasDownloadLink()">
-  <a [href]="layer.public_url">
+  <a (click)="downloadDataset()">
     <i class="material-symbols-outlined">download</i> Download Dataset
   </a>
 </div>
