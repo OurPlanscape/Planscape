@@ -58,7 +58,7 @@ export interface Metadata {
   [key: string]: any;
 }
 
-export interface Styles { }
+export interface Styles {}
 
 // TODO: not sure if the above type is meant to serve this purpose, but...
 export interface LayerStyleEntry {
