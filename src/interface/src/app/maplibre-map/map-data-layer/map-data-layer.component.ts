@@ -43,7 +43,7 @@ export class MapDataLayerComponent {
   }
 
   listenForBaseLayerChange() {
-    this.mapLibreMap?.on('styledata', () => {
+    this.mapLibreMap.on('styledata', () => {
       // if the style change caused the other layers to be removed, then we need to re-add them.
       if (!this.mapLibreMap.getSource('rasterImage')) {
         this.addRasterLayer();
