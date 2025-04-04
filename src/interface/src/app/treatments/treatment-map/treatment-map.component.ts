@@ -53,7 +53,6 @@ import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/m
 import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 
@@ -70,7 +69,6 @@ import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-dat
     FeatureComponent,
     DraggableDirective,
     GeoJSONSourceComponent,
-    LoadingLayerOverlayComponent,
     MapActionButtonComponent,
     MapStandsComponent,
     MapRectangleComponent,
