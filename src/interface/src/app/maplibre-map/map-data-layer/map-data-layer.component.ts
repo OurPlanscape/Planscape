@@ -44,7 +44,6 @@ export class MapDataLayerComponent implements OnInit {
     this.listenForBaseLayerChange();
   }
 
-
   listenForBaseLayerChange() {
     this.mapLibreMap.on('styledata', () => {
       // if the style change caused the other layers to be removed, then we need to re-add them.
@@ -53,7 +52,6 @@ export class MapDataLayerComponent implements OnInit {
       }
     });
   }
-
 
   addRasterLayer(): void {
     if (this.mapLibreMap && this.cogUrl) {
