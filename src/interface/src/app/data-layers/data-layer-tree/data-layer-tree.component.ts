@@ -11,6 +11,9 @@ import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatMenuModule } from '@angular/material/menu';
+import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
+
 @UntilDestroy()
 @Component({
   selector: 'app-data-layer-tree',
@@ -24,6 +27,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
     NgClass,
     MatRadioModule,
     FormsModule,
+    MatMenuModule,
+    DataLayerTooltipComponent,
   ],
   templateUrl: './data-layer-tree.component.html',
   styleUrl: './data-layer-tree.component.scss',

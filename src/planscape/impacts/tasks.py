@@ -58,6 +58,12 @@ def async_calculate_impacts_for_variable_action_year(
         calculate_impacts(
             treatment_plan=treatment_plan, variable=variable, action=action, year=year
         )
+    except TreatmentPlan.DoesNotExist:
+        log.warning(
+            "TreatmentPlan with pk %s does not exist or was deleted. Cannot calculate impacts.",
+            treatment_plan_pk,
+        )
+        return
     except (OSError, RasterioIOError) as exc:
         if self.request.retries >= self.max_retries:
             log.exception("Task failed on all retries.")
@@ -100,6 +106,12 @@ def async_calculate_impacts_for_non_treated_stands_action_year(
             variable=variable,
             year=year,
         )
+    except TreatmentPlan.DoesNotExist:
+        log.warning(
+            "TreatmentPlan with pk %s does not exist or was deleted. Cannot calculate impacts.",
+            treatment_plan_pk,
+        )
+        return
     except (OSError, RasterioIOError) as exc:
         if self.request.retries >= self.max_retries:
             log.exception("Task failed on all retries.")
@@ -123,14 +135,21 @@ def async_set_status(
     this is used as a callback in celery canvas.
     """
     with transaction.atomic():
-        treatment_plan = TreatmentPlan.objects.select_for_update().get(
-            pk=treatment_plan_pk
-        )
-        treatment_plan.status = status
-        attr = "started_at" if start else "finished_at"
-        setattr(treatment_plan, attr, timezone.now())
-        treatment_plan.save()
-        log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+        try:
+            treatment_plan = TreatmentPlan.objects.select_for_update().get(
+                pk=treatment_plan_pk
+            )
+            treatment_plan.status = status
+            attr = "started_at" if start else "finished_at"
+            setattr(treatment_plan, attr, timezone.now())
+            treatment_plan.save()
+            log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+        except TreatmentPlan.DoesNotExist:
+            log.warning(
+                "TreatmentPlan with pk %s does not exist or was deleted. Cannot set status.",
+                treatment_plan_pk,
+            )
+            return (False, treatment_plan_pk)
 
     return (True, treatment_plan_pk)
 
@@ -230,6 +249,12 @@ def async_send_email_process_finished(treatment_plan_pk, *args, **kwargs):
             "Email sent informing user that Treatment Plan %s process is finished.",
             treatment_plan.pk,
         )
+    except TreatmentPlan.DoesNotExist:
+        log.warning(
+            "TreatmentPlan with pk %s does not exist or was deleted. Cannot send email.",
+            treatment_plan_pk,
+        )
+        return
     except Exception as e:
         log.exception(
             "Something unexpected happened while sending the email to inform that a Treatment Plan process was finished.",

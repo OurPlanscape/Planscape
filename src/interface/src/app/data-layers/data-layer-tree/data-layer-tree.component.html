@@ -27,7 +27,15 @@
         variant="icon-only"
         icon="info"
         class="info-icon"
-        [outlined]="true"></button>
+        [outlined]="true"
+        [matMenuTriggerFor]="popoverMenu"
+        (menuOpened)="node.infoMenuOpen = true"
+        (menuClosed)="node.infoMenuOpen = false"></button>
+      <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
+        <app-data-layer-tooltip
+          [layer]="node.item"
+          *ngIf="node.infoMenuOpen"></app-data-layer-tooltip>
+      </mat-menu>
     </mat-tree-node>
 
     <!-- Category node -->
