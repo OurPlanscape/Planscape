@@ -52,7 +52,6 @@ import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/
 import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
-import { TreatmentsState } from '../treatments/treatments.state';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -85,7 +84,7 @@ import { TreatmentsState } from '../treatments/treatments.state';
     TreatmentsTabComponent,
     UploadedScenarioViewComponent,
   ],
-  providers: [WINDOW_PROVIDERS, MapConfigState, TreatmentsState],
+  providers: [WINDOW_PROVIDERS, MapConfigState],
   imports: [
     CommonModule,
     FormsModule,

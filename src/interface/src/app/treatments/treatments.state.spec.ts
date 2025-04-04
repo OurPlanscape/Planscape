@@ -76,7 +76,6 @@ describe('TreatmentsState', () => {
           planId: 1,
         });
         expect(service.getTreatmentPlanId()).toBe(123);
-        expect(service.getScenarioId()).toBe(1);
         expect(service.getProjectAreaId()).toBe(undefined);
       });
 

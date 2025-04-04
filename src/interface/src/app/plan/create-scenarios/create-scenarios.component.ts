@@ -23,6 +23,7 @@ import { canAddTreatmentPlan } from '../permissions';
 import { MatDialog } from '@angular/material/dialog';
 import { CreateTreatmentDialogComponent } from './create-treatment-dialog/create-treatment-dialog.component';
 import { AnalyticsService } from '@services/analytics.service';
+import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -77,7 +78,8 @@ export class CreateScenariosComponent implements OnInit {
     private goalOverlayService: GoalOverlayService,
     private treatmentsService: TreatmentsService,
     private dialog: MatDialog,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private scenarioStateService: ScenarioState
   ) {}
 
   createForms() {
@@ -189,6 +191,8 @@ export class CreateScenariosComponent implements OnInit {
           this.selectedTab = ScenarioTabs.RESULTS;
           if (this.scenarioState == 'SUCCESS') {
             this.processScenarioResults(scenario);
+            // Reloading the store
+            this.scenarioStateService.reloadScenario();
           }
           // enable animation
           this.tabAnimation = this.tabAnimationOptions.on;

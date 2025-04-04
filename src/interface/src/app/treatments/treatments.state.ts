@@ -46,7 +46,6 @@ export class TreatmentsState {
   ) {}
 
   private _treatmentPlanId: number | undefined = undefined;
-  private _scenarioId: number | undefined = undefined;
 
   private _projectAreaId$ = new BehaviorSubject<number | undefined>(undefined);
   public projectAreaId$ = this._projectAreaId$.asObservable();
@@ -146,13 +145,6 @@ export class TreatmentsState {
     return this._projectAreaId$.value;
   }
 
-  getScenarioId(): number {
-    if (this._scenarioId === undefined) {
-      throw new Error('no _scenario id!');
-    }
-    return this._scenarioId;
-  }
-
   /**
    * Uses route data to load summary and treatment plan
    * returns true when both are loaded.
@@ -174,7 +166,6 @@ export class TreatmentsState {
   }
 
   private setInitialState(data: TreatmentRoutingData) {
-    this._scenarioId = data.scenarioId;
     this._treatmentPlanId = data.treatmentId;
     this._projectAreaId$.next(data.projectAreaId);
 

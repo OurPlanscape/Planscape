@@ -192,10 +192,6 @@ export class TreatmentMapComponent {
 
   loadingLayer$ = this.dataLayersState.loadingLayer$;
 
-  get scenarioId() {
-    return this.treatmentsState.getScenarioId();
-  }
-
   mouseLngLat: LngLat | null = null;
   hoveredProjectAreaId$ = new Subject<number | null>();
 

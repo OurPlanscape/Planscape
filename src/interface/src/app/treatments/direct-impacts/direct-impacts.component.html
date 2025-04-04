@@ -43,7 +43,8 @@
 
       <div class="item">
         <mat-icon class="material-symbols-outlined">hexagon</mat-icon>
-        <span class="item-label">Stand Size:</span> {{ getStandSizeValue() }}
+        <span class="item-label">Stand Size:</span>
+        {{ standSizeScenarioValue$ | async }}
       </div>
 
       <app-treatment-summary-button class="item"></app-treatment-summary-button>
