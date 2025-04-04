@@ -164,14 +164,16 @@ class TestDataLayerViewSet(APITransactionTestCase):
             created_by=self.admin, organization=self.organization
         )
         datalayer = DataLayerFactory.create(
-            dataset=self.dataset, name="Forest", style=style
+            dataset=self.dataset,
+            name="Forest",
+            style=style,
         )
         url = reverse("api:datasets:datalayers-list")
         response = self.client.get(url)
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(datalayer.pk, data.get("results")[0].get("id"))
-        self.assertEqual(style.pk, data.get("results")[0].get("style").get("id"))
+        self.assertEqual(style.pk, data.get("results")[0].get("styles")[0].get("id"))
 
     def test_find_anything(self):
         self.client.force_authenticate(user=self.admin)
