@@ -54,6 +54,7 @@ import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../../plan/plan.state';
+import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 
 @UntilDestroy()
@@ -74,6 +75,7 @@ import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-dat
     MapRectangleComponent,
     MapControlsComponent,
     MapProjectAreasComponent,
+    MapLayerColorLegendComponent,
     NgIf,
     AsyncPipe,
     MatIconModule,
