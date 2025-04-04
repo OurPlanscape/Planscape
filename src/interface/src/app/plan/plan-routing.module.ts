@@ -3,7 +3,6 @@ import { RouterModule, Routes } from '@angular/router';
 import { PlanComponent } from './plan.component';
 import { AuthGuard } from '@services';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
-import { ExploreComponent } from './explore/explore/explore.component';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { planLoaderResolver } from '../resolvers/plan-loader.resolver';
 
@@ -28,12 +27,6 @@ const routes: Routes = [
         path: 'config/:id',
         title: 'Scenario Configuration',
         component: ScenarioRoutePlaceholderComponent,
-        data: { showOverview: false },
-      },
-      {
-        path: 'explore',
-        title: 'Explore',
-        component: ExploreComponent,
         data: { showOverview: false },
       },
     ],

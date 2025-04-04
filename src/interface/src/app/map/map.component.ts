@@ -37,7 +37,6 @@ import {
   AuthService,
   MapService,
   PlanService,
-  LegacyPlanStateService,
   PopupService,
   SessionService,
   ShareMapService,
@@ -79,6 +78,7 @@ import { InvalidLinkDialogComponent } from './invalid-link-dialog/invalid-link-d
 import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
+import { PlanState } from '../plan/plan.state';
 
 @UntilDestroy()
 @Component({
@@ -185,7 +185,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private environmentInjector: EnvironmentInjector,
     private popupService: PopupService,
     private sessionService: SessionService,
-    private LegacyPlanStateService: LegacyPlanStateService,
     private planService: PlanService,
     private router: Router,
     private http: HttpClient,
@@ -193,7 +192,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private route: ActivatedRoute,
     private shareMapService: ShareMapService,
     private location: Location,
-    private analyticsService: AnalyticsService
+    private analyticsService: AnalyticsService,
+    private planState: PlanState
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -286,11 +286,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   private loadPlanAndDrawPlanningArea() {
     // if planID is provided load planning area
     if (this.planId) {
-      const plan$ = this.LegacyPlanStateService.getPlan(this.planId).pipe(
-        take(1)
-      );
-
-      plan$.subscribe({
+      this.planState.currentPlan$.pipe(take(1)).subscribe({
         next: (plan) => {
           if (this.regionRecord != plan.region_name) {
             this.sessionService.setRegion(plan.region_name);
@@ -304,8 +300,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
             currentView: 'Explore',
           });
         },
-        error: (error) => {
-          // this.planNotFound = true;
+        error: () => {
+          this.router.navigate(['plan', this.planId]);
         },
       });
     } else {

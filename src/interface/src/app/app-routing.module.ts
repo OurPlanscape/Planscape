@@ -89,6 +89,9 @@ const routes: Routes = [
         title: 'Explore Plan',
         component: ExploreComponent,
         canActivate: [AuthGuard],
+        resolve: {
+          planInit: planLoaderResolver,
+        },
       },
       {
         path: 'feedback',
