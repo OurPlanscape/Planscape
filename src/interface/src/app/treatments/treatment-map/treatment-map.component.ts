@@ -8,8 +8,8 @@ import {
   LayerComponent,
   MapComponent,
   PopupComponent,
-  VectorSourceComponent,
   RasterSourceComponent,
+  VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   LngLat,
@@ -56,6 +56,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
+import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 
 @UntilDestroy()
 @Component({
@@ -91,6 +92,7 @@ import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-dat
     MapNavbarComponent,
     PercentPipe,
     DataLayerNameComponent,
+    RxSelectionToggleComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
