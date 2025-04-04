@@ -49,7 +49,6 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
@@ -57,6 +56,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
 import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
+import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 
 @UntilDestroy()
 @Component({
@@ -82,6 +82,7 @@ import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-col
     AsyncPipe,
     MatIconModule,
     PopupComponent,
+    MapDataLayerComponent,
     MapTooltipComponent,
     PlanningAreaLayerComponent,
     ControlComponent,
@@ -90,7 +91,6 @@ import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-col
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
-    MapDataLayerComponent,
     PercentPipe,
     DataLayerNameComponent,
   ],
