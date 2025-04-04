@@ -300,10 +300,12 @@ export class TreatmentMapComponent {
 
   listenForLoadedRaster() {
     this.mapLibreMap.on('data', (event: any) => {
-      if (this.mapLibreMap.getSource('rasterImage')) {
-        if (event.sourceId === 'rasterImage' && event.isSourceLoaded) {
-          this.dataLayersStateService.setDataLayerLoading(false);
-        }
+      if (
+        this.mapLibreMap.getSource('rasterImage') &&
+        event.sourceId === 'rasterImage' &&
+        event.isSourceLoaded
+      ) {
+        this.dataLayersStateService.setDataLayerLoading(false);
       }
     });
   }
