@@ -23,13 +23,14 @@
     controlsPosition="bottom-right"
     [extendedControlsEnabled]="false">
   </app-map-controls>
+
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
   <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
 
-  <ng-container
-    *ngIf="showProjectAreas && (projectAreaCount$ | async) as projectAreaCount">
+  <ng-container *ngIf="inputData$ | async as inputData">
     <app-map-project-areas
-      [projectAreasCount]="projectAreaCount"
+      *ngIf="inputData.showProjectAreas"
+      [projectAreasCount]="inputData.projectAreaCount"
       [showHoveredProjectAreas]="false"
       [mapLibreMap]="mapLibreMap">
     </app-map-project-areas>

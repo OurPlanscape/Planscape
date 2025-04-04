@@ -388,6 +388,7 @@ export class CreateScenariosComponent implements OnInit {
       this.scenarioName
     );
     this.router.navigate(['/plan', this.planId, 'config', this.scenarioId]);
+    this.scenarioStateService.reloadScenario();
   }
 
   goToPlan() {

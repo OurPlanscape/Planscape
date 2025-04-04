@@ -9,14 +9,21 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { map } from 'rxjs';
+import {
+  combineLatest,
+  filter,
+  map,
+  Observable,
+  startWith,
+  switchMap,
+} from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { PlanState } from '../../plan/plan.state';
 import { ScenarioState } from '../scenario.state';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 
 @Component({
   selector: 'app-scenario-map',
@@ -39,7 +46,8 @@ export class ScenarioMapComponent {
     private authService: AuthService,
     private planState: PlanState,
     private scenarioState: ScenarioState,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private router: Router
   ) {}
 
   /**
@@ -68,7 +76,26 @@ export class ScenarioMapComponent {
     })
   );
 
-  showProjectAreas = this.route.firstChild?.snapshot?.data['showProjectAreas'];
+  showProjectAreas$ = this.router.events.pipe(
+    filter((event) => event instanceof NavigationEnd),
+    startWith(null), // trigger on initial load
+    map(() => this.getDeepestChild(this.route)),
+    switchMap((route) => route.data),
+    map((data) => {
+      return data['showProjectAreas'];
+    })
+  );
+
+  readonly inputData$: Observable<{
+    showProjectAreas: boolean;
+    projectAreaCount: number;
+  }> = combineLatest({
+    showProjectAreas: this.showProjectAreas$,
+    projectAreaCount: this.projectAreaCount$,
+  }) as Observable<{
+    showProjectAreas: boolean;
+    projectAreaCount: number;
+  }>;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
@@ -80,4 +107,11 @@ export class ScenarioMapComponent {
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
+  private getDeepestChild(route: ActivatedRoute): ActivatedRoute {
+    while (route.firstChild) {
+      route = route.firstChild;
+    }
+    return route;
+  }
 }
