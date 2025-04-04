@@ -118,8 +118,6 @@ export class DataLayersStateService {
   }
 
   selectDataLayer(dataLayer: DataLayer) {
-    // TODO: enable this when the datalayer loading function is merged
-    // this.loadingLayer.next(true);
     this._selectedDataLayer$.next(dataLayer);
   }
 
@@ -133,11 +131,6 @@ export class DataLayersStateService {
     }
     this._searchTerm$.next(term);
     this._isBrowsing$.next(!term);
-  }
-
-  setLegendInfo(legendInfo: any) {
-    //todo: type for this
-    this._colorLegendInfo.next(legendInfo);
   }
 
   changePage(page: number) {

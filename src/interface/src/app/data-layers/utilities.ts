@@ -1,6 +1,6 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
-import { LayerStyleEntry } from '@types';
+import { DataLayer, LayerStyleEntry } from '@types';
 
 export interface NoData {
   values: number[];
@@ -22,8 +22,7 @@ export interface StyleJson {
   entries: Entry[];
 }
 
-export function extractLegendInfo(dataLayer: any): any {
-  // accept a style json,
+export function extractLegendInfo(dataLayer: DataLayer): any {
   const { map_type, entries } = dataLayer.styles[0].data;
   const sorted = [...entries].sort((a, b) => a.value - b.value);
   const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => {
