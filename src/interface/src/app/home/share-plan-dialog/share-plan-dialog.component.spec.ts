@@ -5,13 +5,14 @@ import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MockComponents, MockProvider } from 'ng-mocks';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { AuthService, InvitesService, LegacyPlanStateService } from '@services';
-import { BehaviorSubject, NEVER, of } from 'rxjs';
-import { User } from '@types';
+import { AuthService, InvitesService } from '@services';
+import { BehaviorSubject, of } from 'rxjs';
+import { Plan, User } from '@types';
 import { ChipInputComponent } from '../chip-input/chip-input.component';
 import { SectionLoaderComponent } from '@shared';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
+import { PlanState } from '../../plan/plan.state';
 
 describe('SharePlanDialogComponent', () => {
   let component: SharePlanDialogComponent;
@@ -38,8 +39,8 @@ describe('SharePlanDialogComponent', () => {
         FormsModule,
       ],
       providers: [
-        MockProvider(LegacyPlanStateService, {
-          getPlan: () => NEVER,
+        MockProvider(PlanState, {
+          currentPlan$: of({} as Plan),
         }),
         MockProvider(MatDialogRef),
         MockProvider(AuthService, {
