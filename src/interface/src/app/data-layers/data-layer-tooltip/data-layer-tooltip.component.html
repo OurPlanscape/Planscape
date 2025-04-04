@@ -8,7 +8,7 @@
     <dt>Value Range</dt>
     <dd>
       @if (hasMinMax()) {
-        {{ this.layer.info.stats[0].min | number: '1.0-0' }},
+        {{ this.layer.info.stats[0].min | number: '1.0-0' }} -
         {{ this.layer.info.stats[0].max | number: '1.0-0' }}
       } @else {
         --
