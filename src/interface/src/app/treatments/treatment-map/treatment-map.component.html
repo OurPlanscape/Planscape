@@ -37,7 +37,7 @@
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
 
-  <app-map-data-layer [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+  <app-map-data-layer *ngIf="mapLibreMap" [mapLibreMap]="mapLibreMap"></app-map-data-layer>
 
   <app-map-controls
     [userCanEditStands]="userCanEditStands"

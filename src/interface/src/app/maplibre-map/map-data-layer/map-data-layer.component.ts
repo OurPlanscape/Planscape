@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { DataLayer } from '@types';
@@ -17,7 +17,7 @@ import {
   imports: [],
   template: '',
 })
-export class MapDataLayerComponent implements OnInit {
+export class MapDataLayerComponent {
   @Input() mapLibreMap!: MapLibreMap;
   opacity = 0.75;
   tileSize = 512;
@@ -38,15 +38,12 @@ export class MapDataLayerComponent implements OnInit {
           this.removeRasterLayer();
         }
       });
-  }
-
-  ngOnInit(): void {
     this.listenForBaseLayerChange();
-  }
 
+  }
 
   listenForBaseLayerChange() {
-    this.mapLibreMap.on('styledata', () => {
+    this.mapLibreMap?.on('styledata', () => {
       // if the style change caused the other layers to be removed, then we need to re-add them.
       if (!this.mapLibreMap.getSource('rasterImage')) {
         this.addRasterLayer();
