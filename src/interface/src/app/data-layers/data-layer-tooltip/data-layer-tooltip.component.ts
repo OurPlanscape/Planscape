@@ -2,12 +2,11 @@ import { Component, Input } from '@angular/core';
 import { DecimalPipe, NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { DataLayer } from '@types';
-import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-data-layer-tooltip',
   standalone: true,
-  imports: [NgIf, MatButtonModule, DecimalPipe, ButtonComponent],
+  imports: [NgIf, MatButtonModule, DecimalPipe],
   templateUrl: './data-layer-tooltip.component.html',
   styleUrl: './data-layer-tooltip.component.scss',
 })
