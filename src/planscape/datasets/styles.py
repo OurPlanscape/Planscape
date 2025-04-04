@@ -1,19 +1,35 @@
-from typing import Any, Collection, Dict
+from typing import Any, Collection, Dict, Optional
+
+from datasets.models import DataLayer, Style
 
 
 def get_default_vector_style(**kwargs):
     # for now uses maplibre default stuff
     return {
-        "paint": {
-            "fill-color": "#0096FF",
-            "fill-outline-color": "#0000FF",
-            "fill-opacity": 0.4,
-        }
+        "id": 0,
+        "data": {
+            "paint": {
+                "fill-color": "#0096FF",
+                "fill-outline-color": "#0000FF",
+                "fill-opacity": 0.4,
+            }
+        },
     }
 
 
+def get_raster_style(datalayer: DataLayer, style: Style) -> Dict[str, Any]:
+    nodata = datalayer.info.get("nodata") if datalayer.info else None
+    style_data = style.data
+    if nodata:
+        style_data["values"].append(nodata)
+    return {"id": style.id, "data": style_data}
+
+
 def get_default_raster_style(
-    min: float, max: float, **kwargs
+    min: float,
+    max: float,
+    nodata: Optional[float] = None,
+    **kwargs,
 ) -> Collection[Dict[str, Any]]:
     steps = 7
     delta = max - min
@@ -40,12 +56,17 @@ def get_default_raster_style(
             ]
         )
 
+    # merge no data from the layer
+    nodata_dict = {"values": [], "color": None, "opacity": 0, "label": ""}
+    if nodata:
+        nodata_dict["values"].append(nodata)
+
     return [
         {
             "id": 0,
             "data": {
                 "map_type": "RAMP",
-                "no_data": {"values": [], "color": None, "opacity": 0, "label": ""},
+                "no_data": nodata_dict,
                 "entries": entries,
             },
         }
