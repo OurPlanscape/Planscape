@@ -289,24 +289,11 @@ export class TreatmentMapComponent {
     this.mapLibreMap = event;
     this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
     this.listenForZoom();
-    this.listenForLoadedRaster();
   }
 
   listenForZoom() {
     this.mapLibreMap.on('zoom', () => {
       this.mapConfigState.zoomLevel$.next(this.mapLibreMap.getZoom());
-    });
-  }
-
-  listenForLoadedRaster() {
-    this.mapLibreMap.on('data', (event: any) => {
-      if (
-        this.mapLibreMap.getSource('rasterImage') &&
-        event.sourceId === 'rasterImage' &&
-        event.isSourceLoaded
-      ) {
-        this.dataLayersStateService.setDataLayerLoading(false);
-      }
     });
   }
 
