@@ -12,7 +12,7 @@
       <mat-radio-button
         [value]="node.item.id"
         class="data-layer-input"
-        (click)="selectDataLayer(node.item)">
+        (change)="selectDataLayer(node.item)">
         {{ node.name }}
       </mat-radio-button>
 
