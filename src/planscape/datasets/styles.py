@@ -20,6 +20,7 @@ def get_default_vector_style(**kwargs):
 def get_raster_style(datalayer: DataLayer, style: Style) -> Dict[str, Any]:
     nodata = datalayer.info.get("nodata") if datalayer.info else None
     style_data = style.data
+    style_data.setdefault("values", [])
     if nodata:
         style_data["values"].append(nodata)
     return {"id": style.id, "data": style_data}
