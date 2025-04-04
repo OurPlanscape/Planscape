@@ -9,7 +9,7 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { map } from 'rxjs';
+import { map, of, switchMap } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { MapControlsComponent } from '../map-controls/map-controls.component';
@@ -66,9 +66,16 @@ export class ScenarioMapComponent {
     })
   );
 
-  showProjectAreas$ = this.scenarioState.currentScenario$.pipe(
-    map((scenario) => {
-      return scenario.scenario_result?.status === 'SUCCESS';
+  showProjectAreas$ = this.scenarioState.currentScenarioId$.pipe(
+    switchMap((scenarioId) => {
+      if (!scenarioId) {
+        return of(false);
+      }
+      return this.scenarioState.currentScenario$.pipe(
+        map((scenario) => {
+          return scenario.scenario_result?.status === 'SUCCESS';
+        })
+      );
     })
   );
 

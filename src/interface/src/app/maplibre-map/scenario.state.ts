@@ -72,6 +72,10 @@ export class ScenarioState {
     this._currentScenarioId$.next(id);
   }
 
+  resetScenarioId(): void {
+    this._currentScenarioId$.next(null);
+  }
+
   // Reload the current scenario manually
   reloadScenario() {
     this._reloadScenario$.next();

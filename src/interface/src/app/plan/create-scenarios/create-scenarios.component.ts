@@ -191,7 +191,6 @@ export class CreateScenariosComponent implements OnInit {
           this.selectedTab = ScenarioTabs.RESULTS;
           if (this.scenarioState == 'SUCCESS') {
             this.processScenarioResults(scenario);
-            // Reloading the store
             this.scenarioStateService.reloadScenario();
           }
           // enable animation
