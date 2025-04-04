@@ -1,0 +1,42 @@
+@import "colors";
+
+:host {
+  box-sizing: border-box;
+  padding: 1px;
+  margin-left: auto;
+  background-color: $color-white;
+  border-radius: 4px;
+  border: 1px solid $color-soft-gray;
+
+}
+
+
+button {
+  border: none;
+  background: $color-white;
+  border-radius: 4px;
+  padding: 3px;
+  height: 36px;
+  width: 56px;
+  cursor: pointer;
+
+  &:hover {
+    background: $color-soft-gray;
+  }
+
+  &.active, &:active {
+    background: $color-main-blue;
+    color: $color-white;
+
+    &:hover {
+      background: $color-main-blue;
+      color: $color-white;
+    }
+  }
+}
+
+mat-icon {
+  &:hover {
+    background: none;
+  }
+}

@@ -15,9 +15,7 @@
   [transformRequest]="transformRequest"
   (zoomEvt)="saveZoom()"
   (sourceData)="sourceData($event)">
-  <app-map-controls
-    [userCanEditStands]="true"
-    [mapLibreMap]="mapLibreMap"></app-map-controls>
+  <app-map-controls [mapLibreMap]="mapLibreMap"></app-map-controls>
 
   <app-map-stands
     [userCanEditStands]="false"
