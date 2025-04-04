@@ -29,7 +29,7 @@ export class MapDataLayerComponent implements OnInit {
       .subscribe((dataLayer: DataLayer | null) => {
         if (dataLayer?.public_url) {
           this.cogUrl = `cog://${dataLayer?.public_url}`;
-          const colorFn = makeColorFunction(dataLayer?.styles as any);
+          const colorFn = makeColorFunction(dataLayer?.styles[0].data);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
           this.tileSize = dataLayer.info.blockxsize ?? 512;
           this.addRasterLayer();
