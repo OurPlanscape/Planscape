@@ -34,7 +34,7 @@
 </div>
 
 <div class="footer" *ngIf="hasDownloadLink()">
-  <a (click)="downloadDataset()">
+  <a [href]="layer.public_url">
     <i class="material-symbols-outlined">download</i> Download Dataset
   </a>
 </div>
