@@ -9,7 +9,7 @@
         >arrow_back
       </mat-icon>
     </button>
-    <h2>Share {{ data.planningAreaName }}</h2>
+    <h2>Share {{ data.plan.name }}</h2>
     <button mat-icon-button (click)="showHelp = true" aria-label="help">
       <mat-icon class="help-btn">help_outlined</mat-icon>
     </button>
@@ -71,12 +71,12 @@
     <section class="invited-users-list" *ngIf="!showMessageBox">
       <h3>People with access</h3>
       <div class="invited-user" *ngIf="showCreator$ | async">
-        <div class="name">{{ planCreator$ | async }}</div>
+        <div class="name">{{ data.plan.creator }}</div>
         <div class="non-editable">Creator</div>
       </div>
       <div class="invited-user">
         <div class="name">{{ fullname$ | async }} <span>(You)</span></div>
-        <div class="non-editable">{{ userRole$ | async }}</div>
+        <div class="non-editable">{{ data.plan.role }}</div>
       </div>
       <div *ngFor="let invite of invites$ | async" class="invited-user">
         <div class="name">{{ invite.collaborator_name || invite.email }}</div>
