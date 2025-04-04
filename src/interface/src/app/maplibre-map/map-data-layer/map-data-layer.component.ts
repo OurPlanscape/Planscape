@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { DataLayer } from '@types';
@@ -17,7 +17,7 @@ import {
   imports: [],
   template: '',
 })
-export class MapDataLayerComponent {
+export class MapDataLayerComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   opacity = 0.75;
   tileSize = 512;
@@ -38,9 +38,12 @@ export class MapDataLayerComponent {
           this.removeRasterLayer();
         }
       });
-    this.listenForBaseLayerChange();
-
   }
+
+  ngOnInit(): void {
+    this.listenForBaseLayerChange();
+  }
+
 
   listenForBaseLayerChange() {
     this.mapLibreMap.on('styledata', () => {
