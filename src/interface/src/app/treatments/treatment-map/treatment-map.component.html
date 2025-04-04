@@ -13,9 +13,6 @@
     (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
 </app-map-nav-bar>
 
-<app-loading-layer-overlay *ngIf="loadingLayer$ | async">
-</app-loading-layer-overlay>
-
 <mgl-map
   *ngIf="mapExtent$ | async; let bounds"
   (mapLoad)="mapLoaded($event)"
@@ -36,6 +33,10 @@
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
+  <app-map-data-layer
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
   <app-map-controls
     [userCanEditStands]="userCanEditStands"
     [extendedControlsEnabled]="(showMapControls$ | async) ?? false"
@@ -54,9 +55,6 @@
     id="bottom-layer"
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
-
-  <app-map-data-layer
-    *appFeatureFlag="'statewide_datalayers'"></app-map-data-layer>
 
   <app-planning-area-layer> </app-planning-area-layer>
 
@@ -106,6 +104,6 @@
   </mgl-control>
 
   <mgl-control position="top-left">
-  <app-map-layer-color-legend></app-map-layer-color-legend>
+    <app-map-layer-color-legend></app-map-layer-color-legend>
   </mgl-control>
 </mgl-map>

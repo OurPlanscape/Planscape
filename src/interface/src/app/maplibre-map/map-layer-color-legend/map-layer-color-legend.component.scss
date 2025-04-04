@@ -11,11 +11,27 @@
   background: rgba(0, 0, 0, 0.55);
   box-shadow: 0px 4px 4px 0px rgba(0, 0, 0, 0.25);
   backdrop-filter: blur(2px);
-  display: inline-flex;
+  display: flex;
   padding: 16px;
   flex-direction: column;
   align-items: flex-start;
   gap: 8px;
+  width: 80px;
+  height: auto;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  transition: width 0.8s ease, height 0.8s ease;
+  white-space: nowrap;
+
+  &:hover {
+    width: 100%;
+    overflow-y: scroll;
+    text-overflow: ellipsis;
+    height: auto;
+    max-width: auto;
+    max-height: 80%;
+    opacity: 1;
+  }
 }
 
 .legend-title {
@@ -24,18 +40,37 @@
   font-family: 'Public Sans';
   font-size: 14px;
   color: $color-white;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+  width: 100%;
 }
 
 .legend-line {
   display: flex;
   align-items: flex-start;
   gap: 8px;
+  width: 100%;
 }
 
 .swatch-box {
   height: 14px;
   width: 14px;
+  flex-shrink: 0;
 }
+
+.swatch-label {
+  @include xs-label();
+  /* specifying font family here, since the control defaults to helvetica */
+  font-family: 'Public Sans';
+  font-size: 12px;
+  line-height: 100%;
+  color: $color-white;
+  text-overflow: ellipsis;
+  overflow-x: hidden;
+  white-space: nowrap;
+}
+
 
 .ramp-legend {
   display: flex;
@@ -54,17 +89,7 @@
 }
 
 .swatch-gradient {
-  height: 100%;
   width: 14px;
   min-height: 200px;
-  border: 1px black solid;
-}
-
-.swatch-label {
-  @include xs-label();
-  /* specifying font family here, since the control defaults to helvetica */
-  font-family: 'Public Sans';
-  font-size: 12px;
-  line-height: 100%;
-  color: $color-white;
+  flex-shrink: 0;
 }

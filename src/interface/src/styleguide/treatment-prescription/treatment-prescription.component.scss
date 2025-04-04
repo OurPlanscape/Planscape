@@ -1,0 +1,30 @@
+@import 'mixins';
+@import 'colors';
+
+:host {
+  @include xs-label();
+  display: flex;
+  background-color: $color-white;
+  padding: 14px 16px;
+  gap: 8px;
+  line-height: 24px;
+  border-bottom: 1px $color-soft-gray solid;
+}
+
+.main {
+  flex: 1;
+}
+
+.treatment-detail {
+  margin-top: 8px;
+  color: $color-text-gray;
+}
+
+.treatment-detail-value {
+  @include small-paragraph();
+}
+
+.rx-detail-year {
+  color: $color-md-gray;
+  white-space: nowrap;
+}

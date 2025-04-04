@@ -27,7 +27,7 @@ describe('PlanService', () => {
   describe('deletePlan', () => {
     it('should make HTTP post request to DB for a single ID', () => {
       service.deletePlan(1).subscribe(() => {});
-      const req = httpTestingController.expectOne(service.v2basePath + '1');
+      const req = httpTestingController.expectOne(service.v2basePath + '1/');
 
       expect(req.request.method).toEqual('DELETE');
 
@@ -42,7 +42,7 @@ describe('PlanService', () => {
         expect(res).toEqual(mockPlan);
       });
 
-      const req = httpTestingController.expectOne(service.v2basePath + '1');
+      const req = httpTestingController.expectOne(service.v2basePath + '1/');
       req.flush(mockPlan);
       httpTestingController.verify();
     });

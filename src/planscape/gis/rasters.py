@@ -99,6 +99,7 @@ def cog(
 
     # Dataset Open option (see gdalwarp `-oo` option)
     config = get_gdal_env()
+    overview_level = options.pop("overview_level", 4) or 4
 
     cog_translate(
         input_file,
@@ -107,6 +108,8 @@ def cog(
         config=config,
         in_memory=False,
         quiet=True,
+        web_optimized=True,
+        overview_level=overview_level,
         **options,
     )
 

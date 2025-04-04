@@ -6,7 +6,11 @@ from organizations.models import Organization
 from rest_framework import serializers
 
 from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
-from datasets.styles import get_default_raster_style, get_default_vector_style
+from datasets.styles import (
+    get_default_raster_style,
+    get_default_vector_style,
+    get_raster_style,
+)
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -77,25 +81,36 @@ class DatasetSerializer(serializers.ModelSerializer[Dataset]):
         )
 
 
-class StyleSimpleSerializer(serializers.ModelSerializer["Style"]):
-    class Meta:
-        model = Style
-        fields = (
-            "id",
-            "data",
-        )
-
-
 class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     category = CategoryEmbbedSerializer()
     public_url = serializers.CharField(
         source="get_public_url",
         read_only=True,
     )
-    style = StyleSimpleSerializer(
-        source="get_assigned_style",
-        read_only=True,
-    )  # type: ignore
+    styles = serializers.SerializerMethodField()
+    original_name = serializers.CharField(read_only=True)
+
+    def _default_raster_style(self, instance):
+        stats = instance.info.get("stats")[0]
+        return get_default_raster_style(**stats)
+
+    def get_styles(self, instance):
+        if instance.styles.all().exists():
+            style = instance.styles.all().first()
+            return [get_raster_style(datalayer=instance, style=style)]
+        match instance.type:
+            case DataLayerType.RASTER:
+                stats = (
+                    instance.info.get("stats", [])[0]
+                    if instance.info
+                    else {"min": 0, "max": 1}
+                )
+                nodata = instance.info.get("nodata") if instance.info else None
+                if nodata:
+                    stats["nodata"] = nodata
+                return get_default_raster_style(**stats)
+            case _:
+                return get_default_vector_style()
 
     class Meta:
         model = DataLayer
@@ -112,11 +127,12 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "type",
             "geometry_type",
             "status",
+            "styles",
             "url",
             "public_url",
             "info",
             "metadata",
-            "style",
+            "original_name",
         )
 
 
@@ -243,7 +259,7 @@ class EntrySerializer(serializers.Serializer):
     label = serializers.CharField(
         required=False,
         allow_null=True,
-    )
+    )  # type: ignore
 
 
 class NoDataSerializer(serializers.Serializer):
@@ -267,7 +283,7 @@ class NoDataSerializer(serializers.Serializer):
     label = serializers.CharField(
         required=False,
         allow_null=True,
-    )
+    )  # type: ignore
 
 
 class RasterStyleSerializer(serializers.Serializer):
@@ -415,7 +431,8 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
     def get_styles(self, instance):
         if instance.styles.all().exists():
-            return StyleSimpleSerializer(instance=instance.styles.all().first()).data
+            style = instance.styles.all().first()
+            return [get_raster_style(datalayer=instance, style=style)]
         match instance.type:
             case DataLayerType.RASTER:
                 stats = (
@@ -423,18 +440,18 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
                     if instance.info
                     else {"min": 0, "max": 1}
                 )
+                nodata = instance.info.get("nodata") if instance.info else None
+                if nodata:
+                    stats["nodata"] = nodata
                 return get_default_raster_style(**stats)
             case _:
                 return get_default_vector_style()
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
-            ancestors_names = list([c.name for c in instance.category.get_ancestors()])
-            ancestors_names = [*ancestors_names, instance.category.name]
-        else:
-            ancestors_names = []
+            return instance.category._get_full_path(instance.category.pk)
 
-        return ancestors_names
+        return []
 
     class Meta:
         model = DataLayer
@@ -451,7 +468,6 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "info",
             "metadata",
             "styles",
-            "geometry",
         )
 
 
@@ -471,6 +487,10 @@ class BrowseDataLayerFilterSerializer(serializers.Serializer):
     )
 
 
+class BrowseDataSetSerializer(serializers.Serializer):
+    type = serializers.ChoiceField(choices=DataLayerType.choices, required=False)
+
+
 class FindAnythingSerializer(serializers.Serializer):
     term = serializers.CharField(required=True)
 
@@ -483,5 +503,11 @@ class SearchResultsSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
     type = serializers.CharField()
-    url = serializers.URLField()
+    data = serializers.JSONField()  # type: ignore
+
+
+class SearchResultsSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    type = serializers.CharField()
     data = serializers.JSONField()  # type: ignore

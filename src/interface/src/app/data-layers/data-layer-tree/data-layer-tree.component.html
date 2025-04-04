@@ -1,4 +1,6 @@
-<mat-radio-group [ngModel]="(selectedDataLayer$ | async)?.id" #treeContainer>
+<mat-radio-group
+  [ngModel]="(selectedDataLayer$ | async)?.id"
+  #treeContainer="ngModel">
   <mat-tree
     *ngIf="treeData$ | async as treeData"
     [dataSource]="treeData"
@@ -12,16 +14,28 @@
       <mat-radio-button
         [value]="node.item.id"
         class="data-layer-input"
-        (click)="selectDataLayer(node.item)">
+        (change)="selectDataLayer(node.item)">
         {{ node.name }}
       </mat-radio-button>
-
+      <mat-spinner
+        diameter="20"
+        *ngIf="
+          treeContainer.value === node.item.id && (loadingDataLayer$ | async)
+        "></mat-spinner>
       <button
         sg-button
         variant="icon-only"
         icon="info"
         class="info-icon"
-        [outlined]="true"></button>
+        [outlined]="true"
+        [matMenuTriggerFor]="popoverMenu"
+        (menuOpened)="node.infoMenuOpen = true"
+        (menuClosed)="node.infoMenuOpen = false"></button>
+      <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
+        <app-data-layer-tooltip
+          [layer]="node.item"
+          *ngIf="node.infoMenuOpen"></app-data-layer-tooltip>
+      </mat-menu>
     </mat-tree-node>
 
     <!-- Category node -->

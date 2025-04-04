@@ -49,14 +49,13 @@ import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 import { TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
-import { LoadingLayerOverlayComponent } from '../../maplibre-map/loading-layer-overlay/loading-layer-overlay.component';
 import { PlanState } from '../../plan/plan.state';
 import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
+import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 
 @UntilDestroy()
 @Component({
@@ -71,7 +70,6 @@ import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-col
     FeatureComponent,
     DraggableDirective,
     GeoJSONSourceComponent,
-    LoadingLayerOverlayComponent,
     MapActionButtonComponent,
     MapStandsComponent,
     MapRectangleComponent,
@@ -82,6 +80,7 @@ import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-col
     AsyncPipe,
     MatIconModule,
     PopupComponent,
+    MapDataLayerComponent,
     MapTooltipComponent,
     PlanningAreaLayerComponent,
     ControlComponent,
@@ -90,7 +89,6 @@ import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-col
     FeaturesModule,
     MapBaseDropdownComponent,
     MapNavbarComponent,
-    MapDataLayerComponent,
     PercentPipe,
     DataLayerNameComponent,
   ],
@@ -192,9 +190,6 @@ export class TreatmentMapComponent {
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
-  loadingLayer$ = this.dataLayersState.loadingLayer$;
-  legendInfo$ = this.dataLayersState.colorLegendInfo$;
-
   get scenarioId() {
     return this.treatmentsState.getScenarioId();
   }
@@ -220,9 +215,8 @@ export class TreatmentMapComponent {
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private featureService: FeatureService,
-    private dataLayersState: DataLayersStateService,
-    private renderer: Renderer2,
     private dataLayersStateService: DataLayersStateService,
+    private renderer: Renderer2,
     private route: ActivatedRoute,
     private router: Router,
     private planState: PlanState

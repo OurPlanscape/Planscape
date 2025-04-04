@@ -1,10 +1,10 @@
 import { Component, Inject } from '@angular/core';
 
-import { FormMessageType, Invite, INVITE_ROLE, User } from '@types';
+import { FormMessageType, Invite, INVITE_ROLE, Plan, User } from '@types';
 import { SNACK_BOTTOM_NOTICE_CONFIG } from '@shared';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
-import { AuthService, InvitesService, LegacyPlanStateService } from '@services';
-import { filter, map, shareReplay, switchMap, tap } from 'rxjs';
+import { AuthService, InvitesService } from '@services';
+import { filter, map, tap } from 'rxjs';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 
 const Roles: Record<INVITE_ROLE, INVITE_ROLE> = {
@@ -24,11 +24,9 @@ export class SharePlanDialogComponent {
     private dialogRef: MatDialogRef<SharePlanDialogComponent>,
     private inviteService: InvitesService,
     private authService: AuthService,
-    private LegacyPlanStateService: LegacyPlanStateService,
     @Inject(MAT_DIALOG_DATA)
     public data: {
-      planningAreaName: string;
-      planningAreaId: number;
+      plan: Plan;
     }
   ) {}
 
@@ -40,14 +38,8 @@ export class SharePlanDialogComponent {
   message = '';
   isLoading = true;
 
-  plan$ = this.LegacyPlanStateService.getPlan(
-    this.data.planningAreaId + ''
-  ).pipe(shareReplay());
-
-  planCreator$ = this.plan$.pipe(map((plan) => plan.creator));
-
   invites$ = this.inviteService
-    .getInvites(this.data.planningAreaId)
+    .getInvites(this.data.plan.id)
     .pipe(tap((_) => (this.isLoading = false)));
 
   fullname$ = this.authService.loggedInUser$.pipe(
@@ -55,17 +47,9 @@ export class SharePlanDialogComponent {
     map((user) => [user.firstName, user.lastName].join(' '))
   );
 
-  userRole$ = this.plan$.pipe(map((plan) => plan.role));
-
   showCreator$ = this.authService.loggedInUser$.pipe(
     filter((user): user is User => !!user),
-    switchMap((user) =>
-      this.plan$.pipe(
-        map((plan) => {
-          return user.id != plan.user;
-        })
-      )
-    )
+    map((user) => user.id != this.data.plan.id)
   );
 
   roles: INVITE_ROLE[] = Object.keys(Roles) as INVITE_ROLE[];
@@ -94,7 +78,7 @@ export class SharePlanDialogComponent {
       .inviteUsers(
         this.emails,
         this.selectedRole,
-        this.data.planningAreaId,
+        this.data.plan.id,
         this.message
       )
       .subscribe({
@@ -141,7 +125,7 @@ export class SharePlanDialogComponent {
 
   resendCode(invite: Invite) {
     this.inviteService
-      .inviteUsers([invite.email], this.selectedRole, this.data.planningAreaId)
+      .inviteUsers([invite.email], this.selectedRole, this.data.plan.id)
       .subscribe({
         next: (result) => {
           this.showSnackbar(`Email sent to ${invite.email}`);
@@ -156,7 +140,7 @@ export class SharePlanDialogComponent {
 
   reloadInvites() {
     this.invites$ = this.inviteService
-      .getInvites(this.data.planningAreaId)
+      .getInvites(this.data.plan.id)
       .pipe(tap((_) => (this.isLoading = false)));
   }
 

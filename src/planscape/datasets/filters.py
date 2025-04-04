@@ -41,6 +41,7 @@ class DataLayerFilterSet(filters.FilterSet):
             "category": ["exact"],
             "type": ["exact"],
             "status": ["exact"],
+            "original_name": ["exact", "icontains"],
         }
 
 

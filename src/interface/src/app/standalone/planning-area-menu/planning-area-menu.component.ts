@@ -56,8 +56,7 @@ export class PlanningAreaMenuComponent {
   sharePlan() {
     this.dialog.open(SharePlanDialogComponent, {
       data: {
-        planningAreaName: '"' + this.plan.name + '"',
-        planningAreaId: this.plan.id,
+        plan: this.plan,
       },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
