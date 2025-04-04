@@ -27,10 +27,10 @@
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
   <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
 
-  <ng-container *ngIf="inputData$ | async as inputData">
+  <ng-container *ngIf="showProjectAreas$ | async">
     <app-map-project-areas
-      *ngIf="inputData.showProjectAreas"
-      [projectAreasCount]="inputData.projectAreaCount"
+      *ngIf="projectAreaCount$ | async as projectAreasCount"
+      [projectAreasCount]="projectAreasCount"
       [showHoveredProjectAreas]="false"
       [mapLibreMap]="mapLibreMap">
     </app-map-project-areas>
