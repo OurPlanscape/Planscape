@@ -13,6 +13,7 @@ import {
 } from 'rxjs';
 import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
+import { extractLegendInfo } from './utilities';
 
 @Injectable({
   providedIn: 'root',
@@ -54,6 +55,9 @@ export class DataLayersStateService {
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
+  private _colorLegendInfo = new BehaviorSubject<any>({});
+  colorLegendInfo$ = this._colorLegendInfo.asObservable();
+
   searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
     this.searchTerm$,
     this._offset,
@@ -84,7 +88,20 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {}
+  constructor(private service: DataLayersService) {
+    this._selectedDataLayer$
+      .pipe(
+        map((currentLayer: DataLayer | null) => {
+          if (currentLayer) {
+            const newLegendInfo = extractLegendInfo(currentLayer);
+            this._colorLegendInfo.next(newLegendInfo);
+          } else {
+            this._colorLegendInfo.next(null);
+          }
+        })
+      )
+      .subscribe();
+  }
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
@@ -101,8 +118,6 @@ export class DataLayersStateService {
   }
 
   selectDataLayer(dataLayer: DataLayer) {
-    // TODO: enable this when the datalayer loading function is merged
-    // this.loadingLayer.next(true);
     this._selectedDataLayer$.next(dataLayer);
   }
 
