@@ -70,13 +70,7 @@ export class MapDataLayerComponent implements OnInit {
           'raster-resampling': 'nearest',
         },
       };
-
-      if (this.mapLibreMap.getLayer('image-layer')) {
-        this.mapLibreMap.removeLayer('image-layer');
-      }
-      if (this.mapLibreMap.getSource('rasterImage')) {
-        this.mapLibreMap.removeSource('rasterImage');
-      }
+      this.removeRasterLayer();
       this.mapLibreMap.addSource('rasterImage', rasterSource);
       this.mapLibreMap.addLayer(rasterLayer, 'bottom-layer');
     }

@@ -1,4 +1,4 @@
-import { Component, Renderer2, ViewChild } from '@angular/core';
+import { Component, Renderer2 } from '@angular/core';
 import { AsyncPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
 import {
   ControlComponent,
@@ -96,7 +96,6 @@ import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-dat
   styleUrl: './treatment-map.component.scss',
 })
 export class TreatmentMapComponent {
-  @ViewChild(MapDataLayerComponent) dataLayerComponent!: MapDataLayerComponent;
   /**
    * Flag to determine if the user is currently dragging to select stands
    */
