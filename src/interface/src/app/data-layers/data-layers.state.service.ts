@@ -14,7 +14,9 @@ import {
 import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Injectable({
   providedIn: 'root',
 })
@@ -98,7 +100,8 @@ export class DataLayersStateService {
           } else {
             this._colorLegendInfo.next(null);
           }
-        })
+        }),
+        untilDestroyed(this)
       )
       .subscribe();
   }
