@@ -3,8 +3,8 @@ import { WINDOW } from '@services';
 
 import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
-import { ActivatedRoute, Params } from '@angular/router';
-import { filter, map } from 'rxjs';
+import { Params } from '@angular/router';
+import { filter, lastValueFrom, map, take } from 'rxjs';
 import { canViewCollaborators } from '../../plan/permissions';
 import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
@@ -43,7 +43,9 @@ export class NavBarComponent implements OnInit {
 
   params: Params | null = null;
 
-  canSharePlan$ = this.planState.currentPlan$.pipe(
+  currentPlan$ = this.planState.currentPlan$;
+
+  canSharePlan$ = this.currentPlan$.pipe(
     filter((plan) => !!plan),
     map((plan) => (plan ? canViewCollaborators(plan) : false))
   );
@@ -51,7 +53,6 @@ export class NavBarComponent implements OnInit {
   constructor(
     @Inject(WINDOW) private window: Window,
     private dialog: MatDialog,
-    private route: ActivatedRoute,
     private homeParametersStorageService: HomeParametersStorageService,
     private planState: PlanState
   ) {}
@@ -68,12 +69,11 @@ export class NavBarComponent implements OnInit {
     this.dialog.open(ShareExploreDialogComponent, { restoreFocus: false });
   }
 
-  sharePlan() {
+  async sharePlan() {
+    const plan = await lastValueFrom(this.currentPlan$.pipe(take(1)));
+
     this.dialog.open(SharePlanDialogComponent, {
-      data: {
-        planningAreaName: this.navState?.currentRecordName,
-        planningAreaId: this.route.snapshot.params['id'],
-      },
+      data: { plan },
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
     });
