@@ -100,7 +100,7 @@ export class MapManager {
 
     map.instance = L.map(mapId, {
       center: [...regionMapCenters(this.selectedRegion$.getValue()!)],
-      zoom: FrontendConstants.MAP_INITIAL_ZOOM,
+      zoom: FrontendConstants.LEAFLET_MAP_INITIAL_ZOOM,
       minZoom: FrontendConstants.LEAFLET_MAP_MIN_ZOOM,
       maxZoom: FrontendConstants.LEAFLET_MAP_MAX_ZOOM,
       layers: [map.baseLayerRef],

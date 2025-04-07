@@ -145,7 +145,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.map != undefined) this.map.remove();
     this.map = L.map(this.mapId ? this.mapId : 'map', {
       center: [...regionMapCenters(this.selectedRegion$.getValue()!)],
-      zoom: FrontendConstants.MAP_INITIAL_ZOOM,
+      zoom: FrontendConstants.LEAFLET_MAP_INITIAL_ZOOM,
       minZoom: FrontendConstants.LEAFLET_MAP_MIN_ZOOM,
       maxZoom: FrontendConstants.LEAFLET_MAP_MAX_ZOOM,
       layers: [this.stadiaAlidadeTiles()],
