@@ -25,6 +25,7 @@ import { MapActionButtonComponent } from '../map-action-button/map-action-button
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
 import { TreatmentsState } from '../treatments.state';
+import { FrontendConstants } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -74,6 +75,12 @@ export class DirectImpactsMapComponent {
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
+
+  /**
+   * Maplibre defaults
+   */
+  minZoom = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 

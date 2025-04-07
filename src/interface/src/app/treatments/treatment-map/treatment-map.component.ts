@@ -56,6 +56,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../../plan/plan.state';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
+import { FrontendConstants } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -115,6 +116,12 @@ export class TreatmentMapComponent {
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
+
+  /**
+   * Maplibre defaults
+   */
+  minZoom = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   /**
    * Observable that provides the url to load the selected map base layer

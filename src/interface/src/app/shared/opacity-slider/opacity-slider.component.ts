@@ -14,11 +14,12 @@ import {
 })
 export class OpacitySliderComponent implements OnChanges {
   @Input() opacity: number | null | undefined =
-    FrontendConstants.MAP_DATA_LAYER_OPACITY;
+    FrontendConstants.LEAFLET_MAP_DATA_LAYER_OPACITY;
   @Input() label: string | null = '';
   @Output() changeOpacity = new EventEmitter<number>();
 
-  opacityPercentage: number = FrontendConstants.MAP_DATA_LAYER_OPACITY * 100;
+  opacityPercentage: number =
+    FrontendConstants.LEAFLET_MAP_DATA_LAYER_OPACITY * 100;
 
   ngOnChanges(): void {
     if (this.opacity !== undefined && this.opacity !== null) {
