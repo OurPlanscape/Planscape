@@ -55,8 +55,15 @@ export class DataLayersStateService {
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
 
-  private _colorLegendInfo = new BehaviorSubject<any>({});
-  colorLegendInfo$ = this._colorLegendInfo.asObservable();
+  colorLegendInfo$ = this.selectedDataLayer$.pipe(
+    map((currentLayer: DataLayer | null) => {
+      if (currentLayer) {
+        return extractLegendInfo(currentLayer);
+      } else {
+        return null;
+      }
+    })
+  );
 
   searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
     this.searchTerm$,
@@ -88,17 +95,7 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {
-    this.colorLegendInfo$ = this.selectedDataLayer$.pipe(
-      map((currentLayer: DataLayer | null) => {
-        if (currentLayer) {
-          return extractLegendInfo(currentLayer);
-        } else {
-          return null;
-        }
-      })
-    );
-  }
+  constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
