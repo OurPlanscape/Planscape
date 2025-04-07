@@ -60,7 +60,6 @@
   <app-planning-area-layer> </app-planning-area-layer>
 
   <app-map-project-areas
-    [scenarioId]="scenarioId"
     [mapLibreMap]="mapLibreMap"
     [visible]="(showMapProjectAreas$ | async) || false"
     (selectProjectArea)="selectProjectArea($event)"

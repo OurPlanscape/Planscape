@@ -1,50 +1,54 @@
-<mgl-vector-source
-  id="scenarioProjectAreas"
-  [tiles]="[vectorLayerUrl]"></mgl-vector-source>
+<ng-container *ngIf="vectorLayerUrl$ | async as vectorLayerUrl">
+  <mgl-vector-source
+    id="scenarioProjectAreas"
+    [tiles]="[vectorLayerUrl]"></mgl-vector-source>
 
-<mgl-layer
-  [id]="layers.projectAreasFill.name"
-  type="fill"
-  source="scenarioProjectAreas"
-  (layerClick)="goToProjectArea($event)"
-  (layerMouseEnter)="setCursor()"
-  (layerMouseMove)="setProjectAreaTooltip($event)"
-  (layerMouseLeave)="resetCursorAndTooltip()"
-  [sourceLayer]="layers.projectAreasFill.sourceLayer"
-  [paint]="paint"></mgl-layer>
+  <mgl-layer
+    [id]="layers.projectAreasFill.name"
+    type="fill"
+    source="scenarioProjectAreas"
+    (layerClick)="goToProjectArea($event)"
+    (layerMouseEnter)="setCursor()"
+    (layerMouseMove)="setProjectAreaTooltip($event)"
+    (layerMouseLeave)="resetCursorAndTooltip()"
+    [sourceLayer]="layers.projectAreasFill.sourceLayer"
+    [paint]="paint"></mgl-layer>
 
-<mgl-layer
-  [id]="layers.projectAreasOutline.name"
-  type="line"
-  source="scenarioProjectAreas"
-  [sourceLayer]="layers.projectAreasOutline.sourceLayer"
-  [paint]="{
-    'line-color': visible ? layers.projectAreasOutline.color : 'transparent',
-    'line-width': 4
-  }"></mgl-layer>
+  <mgl-layer
+    [id]="layers.projectAreasOutline.name"
+    type="line"
+    source="scenarioProjectAreas"
+    [sourceLayer]="layers.projectAreasOutline.sourceLayer"
+    [paint]="{
+      'line-color': visible ? layers.projectAreasOutline.color : 'transparent',
+      'line-width': 4
+    }"></mgl-layer>
 
-<mgl-layer
-  *ngIf="showHoveredProjectAreas"
-  [id]="layers.projectAreasHighlight.name"
-  type="line"
-  source="scenarioProjectAreas"
-  [sourceLayer]="layers.projectAreasHighlight.sourceLayer"
-  [filter]="['==', ['get', 'id'], ['literal', hoveredProjectAreaId$ | async]]"
-  [paint]="{
-    'line-color': visible ? layers.projectAreasHighlight.color : 'transparent',
-    'line-width': 4
-  }"></mgl-layer>
+  <mgl-layer
+    *ngIf="showHoveredProjectAreas"
+    [id]="layers.projectAreasHighlight.name"
+    type="line"
+    source="scenarioProjectAreas"
+    [sourceLayer]="layers.projectAreasHighlight.sourceLayer"
+    [filter]="['==', ['get', 'id'], ['literal', hoveredProjectAreaId$ | async]]"
+    [paint]="{
+      'line-color': visible
+        ? layers.projectAreasHighlight.color
+        : 'transparent',
+      'line-width': 4
+    }"></mgl-layer>
 
-<mgl-layer
-  [id]="layers.projectAreaLabels.name"
-  type="symbol"
-  source="scenarioProjectAreas"
-  [sourceLayer]="layers.projectAreaLabels.sourceLayer"
-  [layout]="{
-    visibility: visible ? 'visible' : 'none',
-    'text-field': ['get', 'name'],
-    'text-size': ['interpolate', ['linear'], ['zoom'], 7, 14, 14, 32],
-    'text-anchor': 'center',
-    'text-justify': 'center'
-  }"
-  [paint]="layers.projectAreaLabels.paint"></mgl-layer>
+  <mgl-layer
+    [id]="layers.projectAreaLabels.name"
+    type="symbol"
+    source="scenarioProjectAreas"
+    [sourceLayer]="layers.projectAreaLabels.sourceLayer"
+    [layout]="{
+      visibility: visible ? 'visible' : 'none',
+      'text-field': ['get', 'name'],
+      'text-size': ['interpolate', ['linear'], ['zoom'], 7, 14, 14, 32],
+      'text-anchor': 'center',
+      'text-justify': 'center'
+    }"
+    [paint]="layers.projectAreaLabels.paint"></mgl-layer>
+</ng-container>
