@@ -7,7 +7,6 @@ import { ExploreComponent } from './explore/explore/explore.component';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { planLoaderResolver } from '../resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
-import { scenarioResetResolver } from '../resolvers/scenario-reset.resolver';
 
 const routes: Routes = [
   {
@@ -29,7 +28,7 @@ const routes: Routes = [
           showProjectAreas: false,
         },
         resolve: {
-          scenarioInit: scenarioResetResolver,
+          scenarioInit: scenarioLoaderResolver,
         },
       },
       {
