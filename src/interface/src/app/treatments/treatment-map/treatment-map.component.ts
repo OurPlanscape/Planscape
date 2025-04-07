@@ -55,6 +55,7 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../../plan/plan.state';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
+import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
 
 @UntilDestroy()
 @Component({
@@ -86,6 +87,7 @@ import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-dat
     OpacitySliderComponent,
     FeaturesModule,
     MapBaseDropdownComponent,
+    MapZoomControlComponent,
     MapNavbarComponent,
     PercentPipe,
     DataLayerNameComponent,

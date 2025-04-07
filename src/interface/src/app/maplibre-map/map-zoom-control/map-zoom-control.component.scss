@@ -1,0 +1,65 @@
+@import "colors";
+
+:host {
+    box-sizing: border-box;
+}
+
+.controls {
+    background-color: $color-white;
+    display: flex;
+    flex-direction: column;
+    padding: 1px;
+    width: 30px;
+    height: 60px;
+    border-radius: 4px;
+    border: 1px solid $color-soft-gray;
+    box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25), 0 2px 2px 0 rgba(0, 0, 0, 0.10);
+}
+
+button {
+    border: none;
+    background: white;
+    border-radius: 4px;
+    padding: 3px;
+    height: 30px;
+    width: 30px;
+    cursor: pointer;
+
+    &.zoom-in {
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
+    }
+
+    &.zoom-out {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+
+    &:hover:not(.disabled):not(:disabled) {
+        background: $color-soft-gray;
+    }
+
+    &.active:not(.disabled):not(:disabled),
+    &:active:not(.disabled):not(:disabled) {
+        background: $color-standard-blue;
+        color: $color-white;
+
+        &:hover {
+            background: $color-standard-blue;
+            color: $color-white;
+        }
+    }
+
+    &.disabled,
+    &:disabled {
+        background: $color-soft-gray; // Keep the background grey for disabled state
+        color: $color-dark-gray; // Optional: Change text color for disabled state
+        cursor: not-allowed; // Optional: Change cursor to indicate it's disabled
+    }
+}
+
+mat-icon {
+    &:hover {
+        background: none;
+    }
+}

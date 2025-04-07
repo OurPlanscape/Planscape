@@ -37,10 +37,11 @@
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-data-layer>
 
-  <app-map-controls
-    [userCanEditStands]="userCanEditStands"
-    [extendedControlsEnabled]="(showMapControls$ | async) ?? false"
-    [mapLibreMap]="mapLibreMap"></app-map-controls>
+  <app-map-zoom-control
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"
+    controlsPosition="bottom-right">
+  </app-map-zoom-control>
 
   <app-action-button
     *ngIf="
