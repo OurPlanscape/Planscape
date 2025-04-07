@@ -55,6 +55,7 @@ export class ScenarioState {
   /**
    * This observable filter currentScenarioResource$ to only emit when we have a scenario,
    * and we are not loading.
+   * Use this when you know you should have a scenario. If you might not have a scenario check scenarioId$ first
    */
   public currentScenario$ = this.currentScenarioResource$.pipe(
     filter((d): d is LoadedResult<Scenario> => !d.isLoading && !!d.data),
