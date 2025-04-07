@@ -14,9 +14,7 @@ import {
 import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
-@UntilDestroy()
 @Injectable({
   providedIn: 'root',
 })
@@ -91,19 +89,14 @@ export class DataLayersStateService {
   isBrowsing$ = this._isBrowsing$.asObservable();
 
   constructor(private service: DataLayersService) {
-    this._selectedDataLayer$
-      .pipe(
-        map((currentLayer: DataLayer | null) => {
-          if (currentLayer) {
-            const newLegendInfo = extractLegendInfo(currentLayer);
-            this._colorLegendInfo.next(newLegendInfo);
-          } else {
-            this._colorLegendInfo.next(null);
-          }
-        }),
-        untilDestroyed(this)
-      )
-      .subscribe();
+    this.colorLegendInfo$ = this.selectedDataLayer$.pipe(
+      map((currentLayer: DataLayer | null) => {
+        if (currentLayer) {
+          return extractLegendInfo(currentLayer);
+        } else {
+          return null;
+        }
+      }));
   }
 
   selectDataSet(dataset: DataSet) {
