@@ -118,7 +118,12 @@ export class DataLayersStateService {
   }
 
   selectDataLayer(dataLayer: DataLayer) {
+    this.setDataLayerLoading(true);
     this._selectedDataLayer$.next(dataLayer);
+  }
+
+  setDataLayerLoading(status: boolean) {
+    this.loadingLayer.next(status);
   }
 
   clearDataLayer() {

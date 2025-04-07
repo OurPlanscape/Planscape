@@ -5,6 +5,7 @@ import { DataLayer, DataLayerSearchResult } from '@types';
 import { ButtonComponent, HighlighterDirective } from '@styleguide';
 import { MatRadioModule } from '@angular/material/radio';
 import { DataLayersStateService } from '../data-layers.state.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { map } from 'rxjs';
 
 @Component({
@@ -15,6 +16,7 @@ import { map } from 'rxjs';
     MatIconModule,
     ButtonComponent,
     NgIf,
+    MatProgressSpinnerModule,
     MatRadioModule,
     HighlighterDirective,
     AsyncPipe,
@@ -30,6 +32,8 @@ export class DataSetComponent {
   @Input() searchTerm = '';
 
   @Output() selectDataset = new EventEmitter<void>();
+
+  loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
 
   selectedDataLayerId$ = this.dataLayersStateService.selectedDataLayer$.pipe(
     map((dl) => dl?.id)

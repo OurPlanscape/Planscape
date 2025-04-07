@@ -5,18 +5,19 @@ import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { MockComponents, MockProvider } from 'ng-mocks';
 
 import { NoopAnimationsModule } from '@angular/platform-browser/animations';
-import { AuthService, InvitesService, LegacyPlanStateService } from '@services';
-import { BehaviorSubject, NEVER, of } from 'rxjs';
-import { User } from '@types';
+import { AuthService, InvitesService } from '@services';
+import { BehaviorSubject, of } from 'rxjs';
+import { Plan, User } from '@types';
 import { ChipInputComponent } from '../chip-input/chip-input.component';
 import { SectionLoaderComponent } from '@shared';
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import { FormsModule } from '@angular/forms';
+import { PlanState } from '../../plan/plan.state';
+import { MOCK_PLAN } from '@services/mocks';
 
 describe('SharePlanDialogComponent', () => {
   let component: SharePlanDialogComponent;
   let fixture: ComponentFixture<SharePlanDialogComponent>;
-  const planningAreaId = 12;
   const mockInvite = {
     id: 2,
     inviter: 2,
@@ -38,8 +39,8 @@ describe('SharePlanDialogComponent', () => {
         FormsModule,
       ],
       providers: [
-        MockProvider(LegacyPlanStateService, {
-          getPlan: () => NEVER,
+        MockProvider(PlanState, {
+          currentPlan$: of({} as Plan),
         }),
         MockProvider(MatDialogRef),
         MockProvider(AuthService, {
@@ -55,8 +56,7 @@ describe('SharePlanDialogComponent', () => {
         {
           provide: MAT_DIALOG_DATA,
           useValue: {
-            planningAreaName: 'Plan One',
-            planningAreaId: planningAreaId,
+            plan: MOCK_PLAN,
           },
         },
       ],
@@ -110,7 +110,7 @@ describe('SharePlanDialogComponent', () => {
       expect(service.inviteUsers).toHaveBeenCalledWith(
         component.emails,
         component.selectedRole,
-        12,
+        MOCK_PLAN.id,
         component.message
       );
     });
@@ -149,7 +149,7 @@ describe('SharePlanDialogComponent', () => {
       expect(service.inviteUsers).toHaveBeenCalledWith(
         [mockInvite.email],
         component.selectedRole,
-        planningAreaId
+        MOCK_PLAN.id
       );
     });
   });
