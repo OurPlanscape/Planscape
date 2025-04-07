@@ -16,15 +16,17 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class MapZoomControlComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() controlsPosition: ControlPosition = 'top-left';
-  maxZoom = 0;
-  minZoom = 0;
+  minZoom = 7; // common defaults
+  maxZoom = 17;
   mapZoomLevel$ = this.mapConfigState.zoomLevel$;
 
   constructor(private mapConfigState: MapConfigState) { }
 
   ngOnInit(): void {
-    this.maxZoom = this.mapLibreMap.getMaxZoom();
-    this.minZoom = this.mapLibreMap.getMinZoom();
+    if (this.mapLibreMap) {
+      this.maxZoom = this.mapLibreMap.getMaxZoom();
+      this.minZoom = this.mapLibreMap.getMinZoom();
+    }
   }
 
   zoomIn() {
