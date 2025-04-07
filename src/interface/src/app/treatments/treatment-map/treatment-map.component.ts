@@ -1,4 +1,4 @@
-import { Component, Renderer2 } from '@angular/core';
+import { Component } from '@angular/core';
 import { AsyncPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
 import {
   ControlComponent,
@@ -45,7 +45,6 @@ import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { OpacitySliderComponent } from '@styleguide';
 import { FeaturesModule } from 'src/app/features/features.module';
-import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
@@ -212,9 +211,7 @@ export class TreatmentMapComponent {
     private authService: AuthService,
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
-    private featureService: FeatureService,
     private dataLayersStateService: DataLayersStateService,
-    private renderer: Renderer2,
     private route: ActivatedRoute,
     private router: Router,
     private planState: PlanState
@@ -259,13 +256,6 @@ export class TreatmentMapComponent {
         this.mapLibreMap.moveLayer('map-project-areas-labels');
       }
     });
-
-    // If FF statewide_datalayers is On we want to add a clase to the body to apply some global styles
-    if (this.featureService.isFeatureEnabled('statewide_datalayers')) {
-      this.renderer.addClass(document.body, 'statewide-datalayers');
-    } else {
-      this.renderer.removeClass(document.body, 'statewide-datalayers');
-    }
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
