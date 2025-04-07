@@ -96,7 +96,8 @@ export class DataLayersStateService {
         } else {
           return null;
         }
-      }));
+      })
+    );
   }
 
   selectDataSet(dataset: DataSet) {
