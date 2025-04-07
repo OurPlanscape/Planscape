@@ -5,16 +5,5 @@
     *ngIf="scenario"
     [scenarioId]="scenario.id!"
     [planningArea]="plan$ | async"></app-treatments-tab>
-  <section class="treatment-footer" *ngIf="showTreatmentFooter()">
-    <mat-spinner diameter="24" *ngIf="creatingTreatment"></mat-spinner>
-    <button
-      sg-button
-      variant="primary"
-      icon="add"
-      class="new-treatment"
-      [disabled]="creatingTreatment"
-      (click)="openNewTreatmentDialog()">
-      New Treatment Plan
-    </button>
-  </section>
+  <app-plan-tabs-footer [scenarioId]="scenario?.id!"></app-plan-tabs-footer>
 </div>
