@@ -52,9 +52,9 @@ button {
 
     &.disabled,
     &:disabled {
-        background: $color-soft-gray; // Keep the background grey for disabled state
-        color: $color-dark-gray; // Optional: Change text color for disabled state
-        cursor: not-allowed; // Optional: Change cursor to indicate it's disabled
+        background: $color-soft-gray;
+        color: $color-dark-gray;
+        cursor: not-allowed;
     }
 }
 
