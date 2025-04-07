@@ -190,9 +190,7 @@ export class TreatmentMapComponent {
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
-  get scenarioId() {
-    return this.treatmentsState.getScenarioId();
-  }
+  loadingLayer$ = this.dataLayersStateService.loadingLayer$;
 
   mouseLngLat: LngLat | null = null;
   hoveredProjectAreaId$ = new Subject<number | null>();
