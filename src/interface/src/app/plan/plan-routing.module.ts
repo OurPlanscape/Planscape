@@ -5,6 +5,7 @@ import { AuthGuard } from '@services';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { planLoaderResolver } from '../resolvers/plan-loader.resolver';
+import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
 
 const routes: Routes = [
   {
@@ -21,13 +22,25 @@ const routes: Routes = [
         path: 'config/',
         title: 'Scenario Configuration',
         component: CreateScenariosComponent,
-        data: { showOverview: false },
+        data: {
+          showOverview: false,
+          showProjectAreas: false,
+        },
+        resolve: {
+          scenarioInit: scenarioLoaderResolver,
+        },
       },
       {
         path: 'config/:id',
         title: 'Scenario Configuration',
         component: ScenarioRoutePlaceholderComponent,
-        data: { showOverview: false },
+        resolve: {
+          scenarioInit: scenarioLoaderResolver,
+        },
+        data: {
+          showOverview: false,
+          showProjectAreas: true,
+        },
       },
     ],
   },

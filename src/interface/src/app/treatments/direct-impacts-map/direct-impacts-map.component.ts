@@ -79,10 +79,6 @@ export class DirectImpactsMapComponent {
 
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
 
-  get scenarioId() {
-    return this.treatmentsState.getScenarioId();
-  }
-
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
     this.mapCreated.emit(this.mapLibreMap);
