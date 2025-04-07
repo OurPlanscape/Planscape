@@ -82,6 +82,12 @@ export interface DataLayer {
   public_url: string;
 }
 
+export interface ColorLegendInfo {
+  title: string;
+  type: 'RAMP' | 'INTERVALS' | 'VALUES';
+  entries: LayerStyleEntry[];
+}
+
 export interface SearchResult {
   id: number;
   name: string;
