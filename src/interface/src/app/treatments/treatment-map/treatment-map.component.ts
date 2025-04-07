@@ -1,4 +1,4 @@
-import { Component, Renderer2 } from '@angular/core';
+import { Component } from '@angular/core';
 import { AsyncPipe, NgForOf, NgIf, PercentPipe } from '@angular/common';
 import {
   ControlComponent,
@@ -8,8 +8,8 @@ import {
   LayerComponent,
   MapComponent,
   PopupComponent,
-  VectorSourceComponent,
   RasterSourceComponent,
+  VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   LngLat,
@@ -45,7 +45,6 @@ import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
 import { OpacitySliderComponent } from '@styleguide';
 import { FeaturesModule } from 'src/app/features/features.module';
-import { FeatureService } from 'src/app/features/feature.service';
 import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown/map-base-dropdown.component';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
@@ -55,6 +54,7 @@ import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-l
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../../plan/plan.state';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
+import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 
 @UntilDestroy()
 @Component({
@@ -89,6 +89,7 @@ import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-dat
     MapNavbarComponent,
     PercentPipe,
     DataLayerNameComponent,
+    RxSelectionToggleComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
@@ -210,9 +211,7 @@ export class TreatmentMapComponent {
     private authService: AuthService,
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
-    private featureService: FeatureService,
     private dataLayersStateService: DataLayersStateService,
-    private renderer: Renderer2,
     private route: ActivatedRoute,
     private router: Router,
     private planState: PlanState
@@ -257,13 +256,6 @@ export class TreatmentMapComponent {
         this.mapLibreMap.moveLayer('map-project-areas-labels');
       }
     });
-
-    // If FF statewide_datalayers is On we want to add a clase to the body to apply some global styles
-    if (this.featureService.isFeatureEnabled('statewide_datalayers')) {
-      this.renderer.addClass(document.body, 'statewide-datalayers');
-    } else {
-      this.renderer.removeClass(document.body, 'statewide-datalayers');
-    }
   }
 
   onMapMouseDown(event: MapMouseEvent): void {

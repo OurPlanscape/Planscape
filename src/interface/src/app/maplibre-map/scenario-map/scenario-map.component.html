@@ -18,10 +18,7 @@
   [fitBoundsOptions]="{ padding: 20 }"
   [fitBounds]="bounds"
   (mapLoad)="mapLoaded($event)">
-  <app-map-controls
-    [mapLibreMap]="mapLibreMap"
-    controlsPosition="bottom-right"
-    [extendedControlsEnabled]="false">
+  <app-map-controls [mapLibreMap]="mapLibreMap" controlsPosition="bottom-right">
   </app-map-controls>
 
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
