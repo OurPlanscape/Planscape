@@ -1,14 +1,7 @@
-import {
-  Component,
-  EventEmitter,
-  Input,
-  Output,
-  Renderer2,
-} from '@angular/core';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
-
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
@@ -34,7 +27,6 @@ import { FeaturesModule } from '../../features/features.module';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
-import { FeatureService } from '../../features/feature.service';
 
 @UntilDestroy()
 @Component({
@@ -64,17 +56,8 @@ export class DirectImpactsMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService,
-    private authService: AuthService,
-    private featureService: FeatureService,
-    private renderer: Renderer2
-  ) {
-    // If FF statewide_datalayers is On we want to add a clase to the body to apply some global styles
-    if (this.featureService.isFeatureEnabled('statewide_datalayers')) {
-      this.renderer.addClass(document.body, 'statewide-datalayers');
-    } else {
-      this.renderer.removeClass(document.body, 'statewide-datalayers');
-    }
-  }
+    private authService: AuthService
+  ) {}
 
   readonly labels = YEAR_INTERVAL_LABELS;
 
