@@ -1,4 +1,16 @@
-<app-resource-unavailable
-  resource="scenario"
-  *ngIf="scenarioNotFound"></app-resource-unavailable>
-<ng-container #container></ng-container>
+<ng-container *ngIf="currentScenarioResource$ | async as scenarioResource">
+  <ng-container *ngIf="scenarioResource.error; else scenarioOk">
+    <app-resource-unavailable resource="scenario"></app-resource-unavailable>
+  </ng-container>
+
+  <ng-template #scenarioOk>
+    <app-uploaded-scenario-view
+      [scenario]="scenarioResource.data"
+      *ngIf="scenarioResource.data?.origin === 'USER'; else createScenario">
+    </app-uploaded-scenario-view>
+
+    <ng-template #createScenario>
+      <app-create-scenarios></app-create-scenarios>
+    </ng-template>
+  </ng-template>
+</ng-container>

@@ -17,7 +17,7 @@ import { TreatmentsState } from '../treatments.state';
 
 import { filter } from 'rxjs/operators';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
-import { catchError, map, switchMap } from 'rxjs';
+import { catchError, map, of, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -148,17 +148,14 @@ export class TreatmentConfigComponent {
     this.pdfService.createPDF(this.mapElement.mapLibreMap, mapAttributions);
   }
 
-  canRunTreatment$ = this.planState.currentPlanResource$.pipe(
-    // Skip over loading states
-    filter((resource) => !resource.isLoading),
-
-    // if errors, redirect
-    map((resource) => {
-      if (resource.error) {
-        this.router.navigate(['/']);
-        return false;
-      }
-      return resource.data ? canRunTreatmentAnalysis(resource.data) : false;
+  canRunTreatment$ = this.planState.currentPlan$.pipe(
+    map((plan) => {
+      canRunTreatmentAnalysis(plan);
+    }),
+    catchError(() => {
+      // if errors, redirect
+      this.router.navigate(['/']);
+      return of(false);
     })
   );
 
@@ -172,10 +169,6 @@ export class TreatmentConfigComponent {
     const summary = this.treatmentsState.getCurrentSummary();
     let url = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${planId}`;
     this.router.navigate([url]);
-  }
-
-  toggleShowTreatmentLayers() {
-    this.mapConfig.toggleShowTreatmentStands();
   }
 
   showReviewDialog() {
