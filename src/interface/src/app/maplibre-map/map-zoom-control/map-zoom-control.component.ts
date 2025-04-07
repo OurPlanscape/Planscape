@@ -19,7 +19,7 @@ export class MapZoomControlComponent implements OnInit {
   maxZoom = 17;
   curZoom = 7;
 
-  constructor() { }
+  constructor() {}
 
   ngOnInit(): void {
     if (this.mapLibreMap) {
