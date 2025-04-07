@@ -3,7 +3,6 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
 import { Map as MapLibreMap, ControlPosition } from 'maplibre-gl';
-import { MapConfigState } from '../map-config.state';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
@@ -18,14 +17,18 @@ export class MapZoomControlComponent implements OnInit {
   @Input() controlsPosition: ControlPosition = 'top-left';
   minZoom = 7; // common defaults
   maxZoom = 17;
-  mapZoomLevel$ = this.mapConfigState.zoomLevel$;
+  curZoom = 7;
 
-  constructor(private mapConfigState: MapConfigState) {}
+  constructor() { }
 
   ngOnInit(): void {
     if (this.mapLibreMap) {
       this.maxZoom = this.mapLibreMap.getMaxZoom();
       this.minZoom = this.mapLibreMap.getMinZoom();
+      this.curZoom = this.mapLibreMap.getZoom();
+      this.mapLibreMap.on('zoom', () => {
+        this.curZoom = this.mapLibreMap.getZoom();
+      });
     }
   }
 

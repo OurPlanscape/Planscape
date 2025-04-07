@@ -1,11 +1,11 @@
 <mgl-control [position]="controlsPosition">
-  <div class="controls" *ngIf="mapZoomLevel$ | async as curZoomLevel">
+  <div class="controls">
     <button
       class="zoom-in"
       type="button"
       (click)="zoomIn()"
       matTooltip="Zoom In"
-      [disabled]="curZoomLevel >= maxZoom"
+      [disabled]="curZoom >= maxZoom"
       matTooltipPosition="right">
       <mat-icon class="material-symbols-outlined">add</mat-icon>
     </button>
@@ -15,7 +15,7 @@
       (click)="zoomOut()"
       matTooltip="Zoom Out"
       matTooltipPosition="right"
-      [disabled]="curZoomLevel <= minZoom">
+      [disabled]="curZoom <= minZoom">
       <mat-icon class="material-symbols-outlined">remove</mat-icon>
     </button>
   </div>

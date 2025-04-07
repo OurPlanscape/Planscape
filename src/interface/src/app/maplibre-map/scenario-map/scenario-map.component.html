@@ -18,11 +18,10 @@
   [fitBoundsOptions]="{ padding: 20 }"
   [fitBounds]="bounds"
   (mapLoad)="mapLoaded($event)">
-  <app-map-controls
+  <app-map-zoom-control
+    *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"
-    controlsPosition="bottom-right"
-    [extendedControlsEnabled]="false">
-  </app-map-controls>
+    controlsPosition="bottom-right"></app-map-zoom-control>
 
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
   <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
