@@ -1,8 +1,8 @@
-
 from django import forms
 from django_json_widget.widgets import JSONEditorWidget
 
 from planning.models import TreatmentGoal
+
 
 class TreatmentGoalAdminForm(forms.ModelForm):
     """
