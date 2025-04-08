@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
@@ -28,6 +27,7 @@ import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.c
 import { OpacitySliderComponent } from '@styleguide';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 import { FrontendConstants } from '@types';
+import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
 
 @UntilDestroy()
 @Component({
@@ -36,7 +36,6 @@ import { FrontendConstants } from '@types';
   imports: [
     AsyncPipe,
     MapComponent,
-    MapControlsComponent,
     MapProjectAreasComponent,
     MapRectangleComponent,
     MapStandsComponent,
@@ -49,6 +48,7 @@ import { FrontendConstants } from '@types';
     MapNavbarComponent,
     OpacitySliderComponent,
     RxSelectionToggleComponent,
+    MapZoomControlComponent,
   ],
   templateUrl: './direct-impacts-map.component.html',
   styleUrl: './direct-impacts-map.component.scss',

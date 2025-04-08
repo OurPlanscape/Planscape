@@ -20,9 +20,7 @@ import {
 } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
-import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
-
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
@@ -74,7 +72,6 @@ import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-togg
     MapActionButtonComponent,
     MapStandsComponent,
     MapRectangleComponent,
-    MapControlsComponent,
     MapProjectAreasComponent,
     NgIf,
     AsyncPipe,
