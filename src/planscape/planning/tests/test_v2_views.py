@@ -12,7 +12,12 @@ from impacts.permissions import (
 from rest_framework.test import APITestCase, APITransactionTestCase
 from rest_framework import status
 
-from planning.models import PlanningArea, RegionChoices, ScenarioResult
+from planning.models import (
+    PlanningArea,
+    RegionChoices,
+    ScenarioResult,
+    TreatmentGoalCategory,
+)
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
@@ -981,6 +986,11 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)
 
+        self.first_treatment_goal = TreatmentGoalFactory.create(
+            name="First",
+            description="First treatment goal",
+            category=TreatmentGoalCategory.BIODIVERSITY,
+        )
         self.treatment_goals = TreatmentGoalFactory.create_batch(10)
         self.inactive_treatment_goal = TreatmentGoalFactory.create(active=False)
 
@@ -991,15 +1001,15 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         )
         treatment_goals = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(len(treatment_goals), 10)
+        self.assertEqual(len(treatment_goals), 11)
         first_treatment_goal = treatment_goals[0]
-        self.assertEqual(first_treatment_goal["name"], self.treatment_goals[0].name)
-        self.assertEqual(first_treatment_goal["id"], self.treatment_goals[0].id)
+        self.assertEqual(first_treatment_goal["name"], self.first_treatment_goal.name)
+        self.assertEqual(first_treatment_goal["id"], self.first_treatment_goal.id)
         self.assertEqual(
-            first_treatment_goal["description"], self.treatment_goals[0].description
+            first_treatment_goal["description"], self.first_treatment_goal.description
         )
         self.assertEqual(
-            first_treatment_goal["priorities"], self.treatment_goals[0].priorities
+            first_treatment_goal["priorities"], self.first_treatment_goal.priorities
         )
 
     def test_detail_treatment_goal(self):

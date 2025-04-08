@@ -299,5 +299,5 @@ class TreatmentGoalViewSet(
     serializer_class = TreatmentGoalSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [DjangoFilterBackend, OrderingFilter]
-    ordering_fields = ["name"]
-    ordering = ["name"]
+    ordering_fields = ["category", "name"]
+    ordering = ["category", "name"]
