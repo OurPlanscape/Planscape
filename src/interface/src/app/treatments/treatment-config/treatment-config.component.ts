@@ -149,9 +149,7 @@ export class TreatmentConfigComponent {
   }
 
   canRunTreatment$ = this.planState.currentPlan$.pipe(
-    map((plan) => {
-      canRunTreatmentAnalysis(plan);
-    }),
+    map((plan) => canRunTreatmentAnalysis(plan)),
     catchError(() => {
       // if errors, redirect
       this.router.navigate(['/']);

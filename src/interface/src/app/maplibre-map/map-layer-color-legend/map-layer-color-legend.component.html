@@ -1,0 +1,13 @@
+<div class="layer-color-legend" *ngIf="colorLegendInfo$ | async as legendInfo">
+  <div class="legend-title">
+    {{ legendInfo.title }}
+  </div>
+  <div *ngFor="let entry of legendInfo.entries" class="legend-line">
+    <div
+      class="swatch-box"
+      [ngStyle]="{ 'background-color': entry.colorHex }"></div>
+    <div class="swatch-label">
+      {{ entry.entryLabel }}
+    </div>
+  </div>
+</div>
