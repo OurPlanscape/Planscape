@@ -295,10 +295,9 @@ class TreatmentGoalViewSet(
     A viewset for viewing and editing TreatmentGoal instances.
     """
 
-    queryset = TreatmentGoal.objects.all()
+    queryset = TreatmentGoal.objects.filter(active=True)
     serializer_class = TreatmentGoalSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
-    pagination_class = pagination.LimitOffsetPagination
     filter_backends = [DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["name"]
     ordering = ["name"]

@@ -699,4 +699,4 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentGoal
-        fields = ("id", "name", "description", "priorities")
+        fields = ("id", "name", "description", "priorities", "category")
