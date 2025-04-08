@@ -19,13 +19,12 @@
     width: 80px;
     height: auto;
     text-overflow: ellipsis;
-    overflow-x: hidden;
+    overflow: hidden;
     transition: width 0.8s ease, height 0.8s ease;
     white-space: nowrap;
 
     &:hover {
         width: 100%;
-        overflow-y: scroll;
         text-overflow: ellipsis;
         height: auto;
         max-width: auto;
