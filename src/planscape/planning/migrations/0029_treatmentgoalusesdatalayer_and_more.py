@@ -45,12 +45,8 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "threshold_text",
-                    models.CharField(
-                        help_text="Threashold(s) on text format.",
-                        max_length=32,
-                        null=True,
-                    ),
+                    "thresholds",
+                    models.JSONField(help_text="Threashold list.", null=True),
                 ),
                 (
                     "constraints",
