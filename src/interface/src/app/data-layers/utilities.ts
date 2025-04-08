@@ -1,5 +1,6 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
+import { DataLayer, LayerStyleEntry, ColorLegendInfo } from '@types';
 
 export interface NoData {
   values: number[];
@@ -19,6 +20,18 @@ export interface StyleJson {
   map_type: 'RAMP' | 'INTERVALS' | 'VALUES';
   no_data?: NoData;
   entries: Entry[];
+}
+
+export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
+  const { map_type, entries } = dataLayer.styles[0].data;
+  const sorted = [...entries].sort((a, b) => a.value - b.value);
+  const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => {
+    return {
+      colorHex: e.color ?? '',
+      entryLabel: e.label ?? '',
+    };
+  });
+  return { title: dataLayer.name, type: map_type, entries: colorDetails };
 }
 
 export function makeColorFunction(

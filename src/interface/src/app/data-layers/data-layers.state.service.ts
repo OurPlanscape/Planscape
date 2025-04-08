@@ -13,6 +13,7 @@ import {
 } from 'rxjs';
 import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
+import { extractLegendInfo } from './utilities';
 
 @Injectable({
   providedIn: 'root',
@@ -53,6 +54,16 @@ export class DataLayersStateService {
 
   private _searchTerm$ = new BehaviorSubject<string>('');
   searchTerm$ = this._searchTerm$.asObservable();
+
+  colorLegendInfo$ = this.selectedDataLayer$.pipe(
+    map((currentLayer: DataLayer | null) => {
+      if (currentLayer) {
+        return extractLegendInfo(currentLayer);
+      } else {
+        return null;
+      }
+    })
+  );
 
   searchResults$: Observable<Pagination<SearchResult> | null> = combineLatest([
     this.searchTerm$,

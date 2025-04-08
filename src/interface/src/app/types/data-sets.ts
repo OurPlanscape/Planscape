@@ -57,7 +57,10 @@ export interface Metadata {
   // Add specific fields once we start using this
   [key: string]: any;
 }
-
+export interface LayerStyleEntry {
+  colorHex: string;
+  entryLabel: string;
+}
 export interface Styles {
   id: number;
   data: StyleJson;
@@ -77,6 +80,12 @@ export interface DataLayer {
   styles: Styles[];
   geometry: Geometry;
   public_url: string;
+}
+
+export interface ColorLegendInfo {
+  title: string;
+  type: 'RAMP' | 'INTERVALS' | 'VALUES';
+  entries: LayerStyleEntry[];
 }
 
 export interface SearchResult {
