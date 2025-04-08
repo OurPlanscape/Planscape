@@ -10,6 +10,7 @@ from impacts.permissions import (
     VIEWER_PERMISSIONS,
 )
 from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework import status
 
 from planning.models import PlanningArea, RegionChoices, ScenarioResult
 from planning.tests.factories import (
@@ -981,6 +982,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.client.force_authenticate(self.user)
 
         self.treatment_goals = TreatmentGoalFactory.create_batch(10)
+        self.inactive_treatment_goal = TreatmentGoalFactory.create(active=False)
 
     def test_list_treatment_goals(self):
         response = self.client.get(
@@ -988,12 +990,9 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             content_type="application/json",
         )
         treatment_goals = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
-        self.assertListEqual(
-            list(treatment_goals.keys()), ["count", "next", "previous", "results"]
-        )
-        self.assertEqual(treatment_goals["count"], 10)
-        first_treatment_goal = treatment_goals["results"][0]
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(treatment_goals), 10)
+        first_treatment_goal = treatment_goals[0]
         self.assertEqual(first_treatment_goal["name"], self.treatment_goals[0].name)
         self.assertEqual(first_treatment_goal["id"], self.treatment_goals[0].id)
         self.assertEqual(
@@ -1011,7 +1010,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
             content_type="application/json",
         )
         treatment_goal = json.loads(response.content)
-        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(treatment_goal["name"], self.treatment_goals[0].name)
         self.assertEqual(treatment_goal["id"], self.treatment_goals[0].id)
         self.assertEqual(
@@ -1020,3 +1019,13 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(
             treatment_goal["priorities"], self.treatment_goals[0].priorities
         )
+
+    def test_detail_inactive_treatment_goal(self):
+        response = self.client.get(
+            reverse(
+                "api:planning:treatment-goals-detail", args=[self.inactive_treatment_goal.id]
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
