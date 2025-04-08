@@ -1,7 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
@@ -27,6 +26,8 @@ import { FeaturesModule } from '../../features/features.module';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
+import { FrontendConstants } from '@types';
+import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
 
 @UntilDestroy()
 @Component({
@@ -35,7 +36,6 @@ import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-togg
   imports: [
     AsyncPipe,
     MapComponent,
-    MapControlsComponent,
     MapProjectAreasComponent,
     MapRectangleComponent,
     MapStandsComponent,
@@ -48,6 +48,7 @@ import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-togg
     MapNavbarComponent,
     OpacitySliderComponent,
     RxSelectionToggleComponent,
+    MapZoomControlComponent,
   ],
   templateUrl: './direct-impacts-map.component.html',
   styleUrl: './direct-impacts-map.component.scss',
@@ -79,6 +80,12 @@ export class DirectImpactsMapComponent {
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
+
+  /**
+   * Maplibre defaults
+   */
+  minZoom = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
