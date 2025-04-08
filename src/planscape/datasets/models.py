@@ -14,6 +14,7 @@ from django.core.validators import URLValidator
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
 from treebeard.mp_tree import MP_Node
+from utils.frontend import get_domain
 
 User = get_user_model()
 
@@ -308,8 +309,9 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         download_url = create_download_url(settings.S3_BUCKET, object_name)
         if settings.FEATURE_FLAG_S3_PROXY:
             parsed = urlparse(download_url)
+
             new_url = parsed._replace(
-                netloc=f"{settings.ENV}.planscape.org",
+                netloc=get_domain(settings.ENV),
                 path="/s3" + str(parsed.path),
             )
             download_url = str(new_url.geturl())
