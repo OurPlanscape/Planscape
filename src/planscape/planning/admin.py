@@ -1,8 +1,8 @@
-
 from django.contrib import admin
 
 from planning.models import TreatmentGoal
 from planning.forms import TreatmentGoalAdminForm
+
 
 class TreatmentGoalAdmin(admin.ModelAdmin):
     """
