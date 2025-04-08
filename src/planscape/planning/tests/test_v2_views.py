@@ -10,9 +10,15 @@ from impacts.permissions import (
     VIEWER_PERMISSIONS,
 )
 from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework import status
 
-from planning.models import PlanningArea, RegionChoices, ScenarioResult
-from planning.tests.factories import PlanningAreaFactory, ScenarioFactory, UserFactory
+from planning.models import PlanningArea, RegionChoices, ScenarioResult, Scenario
+from planning.tests.factories import (
+    PlanningAreaFactory,
+    ScenarioFactory,
+    UserFactory,
+    TreatmentGoalFactory,
+)
 from planning.tests.helpers import _load_geojson_fixture
 
 
@@ -966,5 +972,123 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
         self.assertEqual(
             b'{"name":["A scenario with this name already exists."]}',
+            response.content,
+        )
+
+
+class CreateScenarioTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory.create(username="testuser")
+        self.planning_area = PlanningAreaFactory.create(
+            user=self.user,
+            name="test planning area",
+        )
+        self.treatment_goal = TreatmentGoalFactory.create(name="test treatment goal")
+
+    def test_create_without_explicit_treatment_goal(self):
+        # treatment goal set on configuration
+        payload = {
+            "name": "my dear scenario",
+            "planning_area": self.planning_area.pk,
+            "stand_size": "LARGE",
+            "configuration": {
+                "question_id": self.treatment_goal.pk,
+            },
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(1, Scenario.objects.count())
+        scenario = Scenario.objects.get()
+        self.assertEqual(scenario.treatment_goal, self.treatment_goal)
+
+    def test_create_with_explicit_treatment_goal(self):
+        payload = {
+            "name": "my dear scenario",
+            "planning_area": self.planning_area.pk,
+            "stand_size": "LARGE",
+            "treatment_goal": self.treatment_goal.pk,
+            "configuration": {},
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_201_CREATED, response.status_code)
+        self.assertEqual(1, Scenario.objects.count())
+        scenario = Scenario.objects.get()
+        self.assertEqual(scenario.treatment_goal, self.treatment_goal)
+
+    def test_create_with_invalid_treatment_goal(self):
+        # treatment goal set on configuration
+        payload = {
+            "name": "my dear scenario",
+            "planning_area": self.planning_area.pk,
+            "stand_size": "LARGE",
+            "treatment_goal": 123456789,
+            "configuration": {},
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(
+            b'{"treatment_goal":["Invalid pk \\"123456789\\" - object does not exist."]}',
+            response.content,
+        )
+
+    def test_create_with_invalid_treatment_goal_on_configuration(self):
+        # treatment goal set on configuration
+        payload = {
+            "name": "my dear scenario",
+            "planning_area": self.planning_area.pk,
+            "stand_size": "LARGE",
+            "configuration": {
+                "question_id": 123456789,
+            },
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(
+            b'{"global":["Invalid treatment goal id"]}',
+            response.content,
+        )
+
+    def test_create_wihtout_treatment_goal(self):
+        # treatment goal set on configuration
+        payload = {
+            "name": "my dear scenario",
+            "planning_area": self.planning_area.pk,
+            "stand_size": "LARGE",
+            "configuration": {},
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(status.HTTP_400_BAD_REQUEST, response.status_code)
+        self.assertEqual(
+            b'{"global":["You must provide either a treatment goal or a question ID."]}',
             response.content,
         )
