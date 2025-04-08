@@ -77,8 +77,8 @@ class Migration(migrations.Migration):
             model_name="treatmentgoalusesdatalayer",
             constraint=models.UniqueConstraint(
                 condition=models.Q(("deleted_at", None)),
-                fields=("treatment_goal", "data_layer"),
-                name="unique_treatment_goal_data_layer",
+                fields=("treatment_goal", "datalayer"),
+                name="unique_treatment_goal_datalayer",
             ),
         ),
     ]
