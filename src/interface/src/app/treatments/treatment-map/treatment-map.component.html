@@ -33,8 +33,8 @@
   [fitBoundsOptions]="{ padding: 20 }"
   [fitBounds]="bounds"
   [interactive]="true"
-  [maxZoom]="17"
-  [minZoom]="7"
+  [maxZoom]="maxZoom"
+  [minZoom]="minZoom"
   [pitchWithRotate]="false"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest">
@@ -42,7 +42,11 @@
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-data-layer>
 
-  <app-map-controls [mapLibreMap]="mapLibreMap"></app-map-controls>
+  <app-map-zoom-control
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"
+    controlsPosition="bottom-right">
+  </app-map-zoom-control>
 
   <app-action-button
     *ngIf="

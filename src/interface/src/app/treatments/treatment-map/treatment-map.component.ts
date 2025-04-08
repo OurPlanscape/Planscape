@@ -20,9 +20,7 @@ import {
 } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
-import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
-
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MatIconModule } from '@angular/material/icon';
@@ -55,6 +53,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../../plan/plan.state';
 import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
+import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
+import { FrontendConstants } from '@types';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 
 @UntilDestroy()
@@ -73,7 +73,6 @@ import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-togg
     MapActionButtonComponent,
     MapStandsComponent,
     MapRectangleComponent,
-    MapControlsComponent,
     MapProjectAreasComponent,
     MapLayerColorLegendComponent,
     NgIf,
@@ -88,6 +87,7 @@ import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-togg
     OpacitySliderComponent,
     FeaturesModule,
     MapBaseDropdownComponent,
+    MapZoomControlComponent,
     MapNavbarComponent,
     PercentPipe,
     DataLayerNameComponent,
@@ -116,6 +116,12 @@ export class TreatmentMapComponent {
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
+
+  /**
+   * Maplibre defaults
+   */
+  minZoom = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   /**
    * Observable that provides the url to load the selected map base layer
