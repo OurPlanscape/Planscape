@@ -212,8 +212,8 @@ class TreatmentGoalUsesDataLayer(
         related_name="treatment_goal_data_layers",
         on_delete=models.CASCADE,
     )
-    data_layer_id: int
-    data_layer = models.ForeignKey(
+    datalayer_id: int
+    datalayer = models.ForeignKey(
         DataLayer,
         related_name="treatment_goal_data_layers",
         on_delete=models.CASCADE,

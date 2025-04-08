@@ -56,7 +56,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 (
-                    "data_layer",
+                    "datalayer",
                     models.ForeignKey(
                         on_delete=django.db.models.deletion.CASCADE,
                         related_name="treatment_goal_data_layers",
