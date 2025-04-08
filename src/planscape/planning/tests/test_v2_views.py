@@ -16,6 +16,7 @@ from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
     UserFactory,
+    TreatmentGoalFactory,
 )
 from planning.tests.helpers import _load_geojson_fixture
 
@@ -971,4 +972,51 @@ class CreateScenariosFromUpload(APITransactionTestCase):
         self.assertEqual(
             b'{"name":["A scenario with this name already exists."]}',
             response.content,
+        )
+
+
+class TreatmentGoalViewSetTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory.create(username="testuser")
+        self.client.force_authenticate(self.user)
+
+        self.treatment_goals = TreatmentGoalFactory.create_batch(10)
+
+    def test_list_treatment_goals(self):
+        response = self.client.get(
+            reverse("api:planning:treatment-goals-list"),
+            content_type="application/json",
+        )
+        treatment_goals = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertListEqual(
+            list(treatment_goals.keys()), ["count", "next", "previous", "results"]
+        )
+        self.assertEqual(treatment_goals["count"], 10)
+        first_treatment_goal = treatment_goals["results"][0]
+        self.assertEqual(first_treatment_goal["name"], self.treatment_goals[0].name)
+        self.assertEqual(first_treatment_goal["id"], self.treatment_goals[0].id)
+        self.assertEqual(
+            first_treatment_goal["description"], self.treatment_goals[0].description
+        )
+        self.assertEqual(
+            first_treatment_goal["priorities"], self.treatment_goals[0].priorities
+        )
+
+    def test_detail_treatment_goal(self):
+        response = self.client.get(
+            reverse(
+                "api:planning:treatment-goals-detail", args=[self.treatment_goals[0].id]
+            ),
+            content_type="application/json",
+        )
+        treatment_goal = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(treatment_goal["name"], self.treatment_goals[0].name)
+        self.assertEqual(treatment_goal["id"], self.treatment_goals[0].id)
+        self.assertEqual(
+            treatment_goal["description"], self.treatment_goals[0].description
+        )
+        self.assertEqual(
+            treatment_goal["priorities"], self.treatment_goals[0].priorities
         )

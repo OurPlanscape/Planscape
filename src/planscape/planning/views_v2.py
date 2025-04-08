@@ -16,7 +16,7 @@ from planning.filters import (
     ScenarioFilter,
     ScenarioOrderingFilter,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario
+from planning.models import PlanningArea, ProjectArea, Scenario, TreatmentGoal
 from planning.permissions import (
     PlanningAreaViewPermission,
     ScenarioViewPermission,
@@ -31,6 +31,7 @@ from planning.serializers import (
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
     ScenarioSerializer,
+    TreatmentGoalSerializer,
     UploadedScenarioDataSerializer,
 )
 from planning.services import (
@@ -281,3 +282,23 @@ class ProjectAreaViewSet(mixins.RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_classes = {
         "retrieve": ProjectAreaSerializer,
     }
+
+
+@extend_schema_view(
+    list=extend_schema(description="List Treatment Goals."),
+    retrieve=extend_schema(description="Detail Treatment Goal."),
+)
+class TreatmentGoalViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
+    """
+    A viewset for viewing and editing TreatmentGoal instances.
+    """
+
+    queryset = TreatmentGoal.objects.all()
+    serializer_class = TreatmentGoalSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    pagination_class = pagination.LimitOffsetPagination
+    filter_backends = [DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["name"]
+    ordering = ["name"]
