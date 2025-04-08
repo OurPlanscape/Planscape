@@ -10,14 +10,12 @@ from impacts.permissions import (
     VIEWER_PERMISSIONS,
 )
 from rest_framework.test import APITestCase, APITransactionTestCase
-from rest_framework import status
 
-from planning.models import PlanningArea, RegionChoices, ScenarioResult, Scenario
+from planning.models import PlanningArea, RegionChoices, ScenarioResult
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
     UserFactory,
-    TreatmentGoalFactory,
 )
 from planning.tests.helpers import _load_geojson_fixture
 
