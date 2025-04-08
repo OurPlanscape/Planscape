@@ -12,10 +12,11 @@ import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area
 import { map, of, switchMap } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
-import { MapControlsComponent } from '../map-controls/map-controls.component';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { PlanState } from '../../plan/plan.state';
 import { ScenarioState } from '../scenario.state';
+import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.component';
+import { FrontendConstants } from '@types';
 
 @Component({
   selector: 'app-scenario-map',
@@ -24,10 +25,10 @@ import { ScenarioState } from '../scenario.state';
     CommonModule,
     MapComponent,
     MapNavbarComponent,
-    MapControlsComponent,
     OpacitySliderComponent,
     PlanningAreaLayerComponent,
     MapProjectAreasComponent,
+    MapZoomControlComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -46,6 +47,12 @@ export class ScenarioMapComponent {
   mapLibreMap!: MapLibreMap;
 
   scenarioId$ = this.scenarioState.currentScenarioId$;
+
+  /**
+   * Maplibre defaults
+   */
+  minZoom = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   /**
    * Observable that provides the url to load the selected map base layer

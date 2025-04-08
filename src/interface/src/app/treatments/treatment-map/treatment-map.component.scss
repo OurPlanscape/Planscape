@@ -23,13 +23,6 @@ mgl-map {
   height: 100%;
 }
 
-app-map-controls {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 20;
-}
-
 .controls {
   background-color: $color-white;
   display: flex;

@@ -12,14 +12,16 @@
   *ngIf="bounds$ | async as bounds"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest"
-  [maxZoom]="17"
-  [minZoom]="7"
+  [maxZoom]="maxZoom"
+  [minZoom]="minZoom"
   [dragRotate]="false"
   [fitBoundsOptions]="{ padding: 20 }"
   [fitBounds]="bounds"
   (mapLoad)="mapLoaded($event)">
-  <app-map-controls [mapLibreMap]="mapLibreMap" controlsPosition="bottom-right">
-  </app-map-controls>
+  <app-map-zoom-control
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"
+    controlsPosition="bottom-right"></app-map-zoom-control>
 
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
   <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
