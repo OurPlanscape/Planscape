@@ -11,18 +11,14 @@ import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { LegacyPlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
 import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
-import { TreatmentsService } from '@services/treatments.service';
 import { canAddTreatmentPlan } from '../permissions';
-import { MatDialog } from '@angular/material/dialog';
-import { CreateTreatmentDialogComponent } from './create-treatment-dialog/create-treatment-dialog.component';
-import { AnalyticsService } from '@services/analytics.service';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 
 enum ScenarioTabs {
@@ -66,19 +62,13 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(ConstraintsPanelComponent, { static: true })
   constraintsPanelComponent!: ConstraintsPanelComponent;
 
-  creatingTreatment = false;
-
   constructor(
     private fb: FormBuilder,
     private LegacyPlanStateService: LegacyPlanStateService,
     private scenarioService: ScenarioService,
     private router: Router,
-    private route: ActivatedRoute,
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
-    private treatmentsService: TreatmentsService,
-    private dialog: MatDialog,
-    private analyticsService: AnalyticsService,
     private scenarioStateService: ScenarioState
   ) {}
 
@@ -331,53 +321,6 @@ export class CreateScenariosComponent implements OnInit {
     const plan = this.plan$.value;
     // if feature is on, the scenario is done, and I have permissions to create new one
     return this.showTreatmentsTab && !!plan && canAddTreatmentPlan(plan);
-  }
-
-  openTreatmentDialog() {
-    this.analyticsService.emitEvent(
-      'new_treatment_plan',
-      'scenario_view_page',
-      'New Treatment Plan'
-    );
-    this.dialog
-      .open(CreateTreatmentDialogComponent)
-      .afterClosed()
-      .pipe(take(1))
-      .subscribe((name) => {
-        if (name) {
-          this.createTreatment(name);
-        }
-      });
-  }
-
-  createTreatment(name: string) {
-    this.creatingTreatment = true;
-    const scenarioId = this.scenarioId;
-    if (!scenarioId) {
-      return;
-    }
-
-    this.treatmentsService
-      .createTreatmentPlan(Number(scenarioId), name)
-      .subscribe({
-        next: (result) => {
-          this.goToTreatment(result.id);
-        },
-        error: () => {
-          this.creatingTreatment = false;
-          this.matSnackBar.open(
-            '[Error] Cannot create a new treatment plan',
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-        },
-      });
-  }
-
-  goToTreatment(id: number) {
-    this.router.navigate(['treatment', id], {
-      relativeTo: this.route,
-    });
   }
 
   goToScenario() {

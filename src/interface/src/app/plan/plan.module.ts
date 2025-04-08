@@ -52,6 +52,7 @@ import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/
 import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
+import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -114,6 +115,7 @@ import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.
     OpacityControlComponent,
     MatTabsModule,
     ScenarioMapComponent,
+    PlanTabsFooterComponent,
   ],
 })
 export class PlanModule {}
