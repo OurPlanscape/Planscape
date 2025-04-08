@@ -1023,7 +1023,8 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
     def test_detail_inactive_treatment_goal(self):
         response = self.client.get(
             reverse(
-                "api:planning:treatment-goals-detail", args=[self.inactive_treatment_goal.id]
+                "api:planning:treatment-goals-detail",
+                args=[self.inactive_treatment_goal.id],
             ),
             content_type="application/json",
         )
