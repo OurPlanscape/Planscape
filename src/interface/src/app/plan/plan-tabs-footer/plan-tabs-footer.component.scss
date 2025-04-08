@@ -2,10 +2,11 @@
 @import "mixins";
 
 :host {
-
   background-color: $color-white;
+  border-top: 1px solid $color-soft-gray;
   padding: 16px 8px;
   box-sizing: border-box;
+  position: sticky;
   bottom: 0;
   width: 100%;
   text-align: right;
@@ -13,9 +14,7 @@
   justify-content: flex-end;
   align-items: center;
   flex-grow: 0;
-  position: sticky;
   z-index: 500;
-  border-top: 1px solid $color-soft-gray;
 }
 
 .new-treatment {

@@ -1,9 +1,10 @@
 import { Component, Input } from '@angular/core';
 import { Scenario } from '@types';
 import { LegacyPlanStateService } from '@services';
-import { take } from 'rxjs';
+import { map, take } from 'rxjs';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { PlanState } from '../plan.state';
+import { canAddTreatmentPlan } from '../permissions';
 
 @UntilDestroy()
 @Component({
@@ -20,6 +21,10 @@ export class UploadedScenarioViewComponent {
   @Input() scenario?: Scenario;
 
   plan$ = this.planState.currentPlan$;
+
+  showTreatmentFooter$ = this.plan$.pipe(
+    map((plan) => canAddTreatmentPlan(plan))
+  );
 
   ngOnInit() {
     if (this.scenario) {
