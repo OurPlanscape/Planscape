@@ -308,7 +308,10 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         download_url = create_download_url(settings.S3_BUCKET, object_name)
         if settings.FEATURE_FLAG_S3_PROXY:
             parsed = urlparse(download_url)
-            new_url = parsed._replace(netloc="", path="/s3" + str(parsed.path))
+            new_url = parsed._replace(
+                netloc=f"{settings.ENV}.planscape.org",
+                path="/s3" + str(parsed.path),
+            )
             download_url = str(new_url.geturl())
         return download_url
 
