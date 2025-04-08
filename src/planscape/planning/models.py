@@ -235,8 +235,8 @@ class TreatmentGoalUsesDataLayer(
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["treatment_goal", "data_layer"],
-                name="unique_treatment_goal_data_layer",
+                fields=["treatment_goal", "datalayer"],
+                name="unique_treatment_goal_datalayer",
                 condition=Q(deleted_at=None),
             )
         ]
