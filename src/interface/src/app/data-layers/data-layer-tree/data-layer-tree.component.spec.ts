@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { DataLayerTreeComponent } from './data-layer-tree.component';
 import { MockProvider } from 'ng-mocks';
 import { DataLayersStateService } from '../data-layers.state.service';
@@ -15,6 +14,7 @@ describe('DataLayerTreeComponent', () => {
       providers: [
         MockProvider(DataLayersStateService, {
           dataTree$: of(null),
+          selectedDataLayer$: of(null),
           paths$: of([]),
         }),
       ],

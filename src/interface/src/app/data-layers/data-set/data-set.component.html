@@ -29,7 +29,12 @@
       (change)="selectDataLayer(layer.data)">
       <span [sgHighlighter]="searchTerm" [sgHighlighterText]="layer.name"></span
     ></mat-radio-button>
-
+    <mat-spinner
+      diameter="20"
+      *ngIf="
+        (selectedDataLayerId$ | async) === layer.id &&
+        (loadingDataLayer$ | async)
+      "></mat-spinner>
     <button
       sg-button
       variant="icon-only"

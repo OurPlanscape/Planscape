@@ -14,25 +14,5 @@
       matTooltipPosition="right">
       <mat-icon class="material-symbols-outlined">remove</mat-icon>
     </button>
-    <button
-      type="button"
-      *ngIf="userCanEditStands && extendedControlsEnabled"
-      [ngClass]="{
-        active: (standSelectionEnabled$ | async)
-      }"
-      (click)="toggleRxSelection()"
-      matTooltip="RX Selection Tool"
-      matTooltipPosition="right">
-      <mat-icon class="material-symbols-outlined">arrow_selector_tool</mat-icon>
-    </button>
-    <button
-      *ngIf="extendedControlsEnabled"
-      type="button"
-      (click)="togglePan()"
-      [ngClass]="{ active: (standSelectionEnabled$ | async) === false }"
-      matTooltip="Pan"
-      matTooltipPosition="right">
-      <mat-icon class="material-symbols-outlined">pan_tool</mat-icon>
-    </button>
   </div>
 </mgl-control>
