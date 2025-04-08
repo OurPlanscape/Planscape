@@ -1,5 +1,4 @@
 import json
-import logging
 from typing import List, Optional
 from numpy import require
 from rest_framework import serializers
@@ -22,8 +21,6 @@ from planning.models import (
 from planning.services import get_acreage, planning_area_covers, union_geojson
 from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices
-
-log = logging.getLogger(__name__)
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
