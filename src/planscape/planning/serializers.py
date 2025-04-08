@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import List, Optional
 from numpy import require
 from rest_framework import serializers
@@ -21,6 +22,8 @@ from planning.models import (
 from planning.services import get_acreage, planning_area_covers, union_geojson
 from planscape.exceptions import InvalidGeometry
 from stands.models import StandSizeChoices
+
+log = logging.getLogger(__name__)
 
 
 class ListPlanningAreaSerializer(serializers.ModelSerializer):
@@ -412,6 +415,11 @@ class ListScenarioSerializer(serializers.ModelSerializer):
 
 class CreateScenarioSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    treatment_goal = serializers.PrimaryKeyRelatedField(
+        queryset=TreatmentGoal.objects.all(),
+        required=False,
+        help_text="Treatment goal of the scenario.",
+    )
 
     class Meta:
         model = Scenario
@@ -422,7 +430,23 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
             "origin",
             "notes",
             "configuration",
+            "treatment_goal",
         )
+
+    def validate(self, attrs):
+        treatment_goal = attrs.get("treatment_goal")
+        question_id = attrs.get("configuration", {}).get("question_id")
+        if not any([question_id, treatment_goal]):
+            raise serializers.ValidationError(
+                "You must provide either a treatment goal or a question ID."
+            )
+        if question_id and not treatment_goal:
+            try:
+                tg = TreatmentGoal.objects.get(id=question_id)
+                attrs["treatment_goal"] = tg
+            except TreatmentGoal.DoesNotExist:
+                raise serializers.ValidationError("Invalid treatment goal id")
+        return super().validate(attrs)
 
 
 class UploadedConfigurationSerializer(serializers.Serializer):
