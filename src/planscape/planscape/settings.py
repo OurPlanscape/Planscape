@@ -471,12 +471,7 @@ OPENPANEL_CLIENT_SECRET = config("OPENPANEL_CLIENT_SECRET", None)
 MARTOR_TOOLBAR_BUTTONS = [
     "bold",
     "italic",
-    "horizontal",
     "heading",
-    "pre-code",
-    "blockquote",
-    "unordered-list",
-    "ordered-list",
     "link",
     "toggle-maximize",
     "help",
