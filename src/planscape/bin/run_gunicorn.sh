@@ -4,6 +4,7 @@ set -o pipefail
 
 NPROC=$(nproc)
 CORN_WORKERS=4
+OTEL_PYTHON_LOGGING_AUTO_INSTRUMENTATION_ENABLED=true
 
 app_name="planscape"
 
@@ -15,7 +16,12 @@ echo "migrated"
 echo "Starting gunicorn for production"
 if [[ "$ENV" == "production" ]]; then
   echo "Starting gunicorn for production"
-  gunicorn planscape.wsgi:application \
+  opentelemetry-instrument \
+    --traces_exporter console \
+    --metrics_exporter console \
+    --logs_exporter console \
+    --service_name planscape \
+    gunicorn planscape.wsgi:application \
     -n "$app_name" \
     --bind 0.0.0.0:8000 \
     --workers "$CORN_WORKERS" \
@@ -24,7 +30,12 @@ if [[ "$ENV" == "production" ]]; then
 
 else
   echo "Starting gunicorn locally"
-  gunicorn planscape.wsgi:application \
+  opentelemetry-instrument \
+    --traces_exporter console \
+    --metrics_exporter console \
+    --logs_exporter console \
+    --service_name planscape \
+    gunicorn planscape.wsgi:application \
     -n "$app_name" \
     --bind 0.0.0.0:8000 \
     --workers "$CORN_WORKERS" \

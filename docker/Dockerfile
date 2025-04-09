@@ -29,16 +29,16 @@ WORKDIR /usr/src/app
 
 # R dependencies
 COPY install.R /usr/src/app/
-RUN Rscript install.R
+# RUN Rscript install.R
 
 # Python dependencies
-RUN pip install -U pip poetry setuptools
+RUN pip install -U pip poetry setuptools opentelemetry-distro
+RUN opentelemetry-bootstrap -a install
 COPY pyproject.toml poetry.lock /usr/src/app/
 
 RUN poetry config virtualenvs.create false && \
     poetry config installer.max-workers 10 && \
     poetry install --no-interaction
-
 COPY . /usr/src/app
 
 EXPOSE 8000
