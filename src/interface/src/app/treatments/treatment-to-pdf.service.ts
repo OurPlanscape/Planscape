@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
-import autoTable from 'jspdf-autotable';
 import {
   descriptionsForAction,
   PrescriptionAction,
@@ -155,7 +154,7 @@ export class TreatmentToPDFService {
     return points;
   }
 
-  drawTreatmentLegend(
+  async drawTreatmentLegend(
     startX: number,
     startY: number,
     treatmentsUsed: Set<string>
@@ -164,6 +163,7 @@ export class TreatmentToPDFService {
       name: descriptionsForAction(t),
       icon: treatmentIcons[t as PrescriptionAction],
     }));
+    const { default: autoTable } = await import('jspdf-autotable');
     autoTable(this.pdfDoc, {
       styles: {
         fillColor: [255, 255, 255],
@@ -234,12 +234,13 @@ export class TreatmentToPDFService {
     return tableRows;
   }
 
-  addProjectAreaTable(
+  async addProjectAreaTable(
     bodyData: string[][],
     startX: number,
     startY: number,
     tableWidth: number
   ) {
+    const { default: autoTable } = await import('jspdf-autotable');
     autoTable(this.pdfDoc, {
       styles: { fillColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [255, 255, 255] },
