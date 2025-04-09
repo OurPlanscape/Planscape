@@ -4,6 +4,7 @@ from pathlib import Path
 from typing import Optional
 
 from collaboration.models import UserObjectRole
+from datasets.models import DataLayer
 from core.models import (
     AliveObjectsManager,
     CreatedAtMixin,
@@ -192,6 +193,53 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
     active = models.BooleanField(
         default=True, help_text="Treatment Goal active status."
     )
+
+
+class TreatmentGoalUsageType(models.TextChoices):
+    PRIORITY = "PRIORITY", "Priority"
+    SECONDARY_METRIC = "SECONDARY_METRIC", "Secondary Metric"
+    THRESHOLD = "THRESHOLD", "Threshold"
+    EXCLUSION_ZONE = "EXCLUSION_ZONE", "Exclusion Zone"
+
+
+class TreatmentGoalUsesDataLayer(
+    CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
+):
+    id: int
+    treatment_goal_id: int
+    treatment_goal = models.ForeignKey(
+        TreatmentGoal,
+        related_name="treatment_goal_data_layers",
+        on_delete=models.CASCADE,
+    )
+    datalayer_id: int
+    datalayer = models.ForeignKey(
+        DataLayer,
+        related_name="treatment_goal_data_layers",
+        on_delete=models.CASCADE,
+    )
+    usage_type = models.CharField(
+        max_length=32,
+        choices=TreatmentGoalUsageType.choices,
+        help_text="The type of usage for the data layer.",
+    )
+    thresholds = models.JSONField(
+        null=True,
+        help_text="Threashold list.",
+    )
+    constraints = models.JSONField(
+        null=True,
+        help_text="Constraints of the relation between Tx Goal and DataLayer.",
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["treatment_goal", "datalayer"],
+                name="unique_treatment_goal_datalayer",
+                condition=Q(deleted_at=None),
+            )
+        ]
 
 
 class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):

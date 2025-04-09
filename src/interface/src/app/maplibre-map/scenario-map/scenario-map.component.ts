@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { AuthService, ScenarioService } from '@services';
+import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import {
   addRequestHeaders,
@@ -9,13 +9,14 @@ import {
 } from 'src/app/maplibre-map/maplibre.helper';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
-import { filter, map } from 'rxjs';
+import { map, of, switchMap } from 'rxjs';
 import { MapNavbarComponent } from '../map-nav-bar/map-nav-bar.component';
 import { OpacitySliderComponent } from '@styleguide';
-import { MapControlsComponent } from '../map-controls/map-controls.component';
-import { ActivatedRoute } from '@angular/router';
 import { MapProjectAreasComponent } from '../map-project-areas/map-project-areas.component';
 import { PlanState } from '../../plan/plan.state';
+import { ScenarioState } from '../scenario.state';
+import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.component';
+import { FrontendConstants } from '@types';
 
 @Component({
   selector: 'app-scenario-map',
@@ -24,10 +25,10 @@ import { PlanState } from '../../plan/plan.state';
     CommonModule,
     MapComponent,
     MapNavbarComponent,
-    MapControlsComponent,
     OpacitySliderComponent,
     PlanningAreaLayerComponent,
     MapProjectAreasComponent,
+    MapZoomControlComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -37,8 +38,7 @@ export class ScenarioMapComponent {
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private planState: PlanState,
-    private route: ActivatedRoute,
-    private scenarioService: ScenarioService
+    private scenarioState: ScenarioState
   ) {}
 
   /**
@@ -46,8 +46,13 @@ export class ScenarioMapComponent {
    */
   mapLibreMap!: MapLibreMap;
 
-  // TODO update this with state
-  scenarioId = this.route.children[0]?.snapshot.params['id'];
+  scenarioId$ = this.scenarioState.currentScenarioId$;
+
+  /**
+   * Maplibre defaults
+   */
+  minZoom = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   /**
    * Observable that provides the url to load the selected map base layer
@@ -62,11 +67,22 @@ export class ScenarioMapComponent {
 
   projectAreasOpacity$ = this.mapConfigState.projectAreasOpacity$;
 
-  // TODO: Get the count from the currentScenario in scenarioState once we create it.
-  projectAreaCount$ = this.scenarioService.getScenario(this.scenarioId).pipe(
-    filter((scenario) => !!scenario),
+  projectAreaCount$ = this.scenarioState.currentScenario$.pipe(
     map((scenario) => {
       return scenario.scenario_result?.result?.features.length;
+    })
+  );
+
+  showProjectAreas$ = this.scenarioState.currentScenarioId$.pipe(
+    switchMap((scenarioId) => {
+      if (!scenarioId) {
+        return of(false);
+      }
+      return this.scenarioState.currentScenario$.pipe(
+        map((scenario) => {
+          return scenario.scenario_result?.status === 'SUCCESS';
+        })
+      );
     })
   );
 
