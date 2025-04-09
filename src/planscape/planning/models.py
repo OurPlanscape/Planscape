@@ -251,6 +251,14 @@ class TreatmentGoalUsesDataLayer(
         help_text="Constraints of the relation between Tx Goal and DataLayer.",
     )
 
+    @property
+    def treatment_goal_name(self):
+        return self.treatment_goal.name
+
+    @property
+    def datalayer_name(self):
+        return self.datalayer.name
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
