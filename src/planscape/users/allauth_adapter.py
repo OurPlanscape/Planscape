@@ -1,7 +1,6 @@
 from urllib.parse import urljoin
 
 from allauth.account.adapter import DefaultAccountAdapter
-from django.conf import settings
 
 from users.services import identify_user_in_op
 
@@ -20,6 +19,5 @@ class CustomAllauthAdapter(DefaultAccountAdapter):
 
     def save_user(self, request, user, form, commit=True):
         user = super().save_user(request, user, form, commit=commit)
-        op = settings.op
-        identify_user_in_op(op, user)
+        identify_user_in_op(user)
         return user
