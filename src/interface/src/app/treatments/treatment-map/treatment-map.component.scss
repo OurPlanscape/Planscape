@@ -4,18 +4,23 @@
   width: 100%;
   height: 100%;
   position: relative;
+
+  ::ng-deep {
+    .maplibregl-ctrl-top-left {
+      top: 70px;
+      z-index: 0;
+    }
+
+    .maplibregl-ctrl-top-right {
+      margin-top: 70px;
+      z-index: 0;
+    }
+  }
 }
 
 mgl-map {
   width: 100%;
   height: 100%;
-}
-
-app-map-controls {
-  position: absolute;
-  top: 10px;
-  left: 10px;
-  z-index: 20;
 }
 
 .controls {
@@ -26,9 +31,8 @@ app-map-controls {
   padding: 10px 14px;
   border-radius: 4px;
   border: 1px solid $color-soft-gray;
-  box-shadow:
-    0 4px 4px 0 rgba(0, 0, 0, 0.25),
-    0 2px 2px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25),
+  0 2px 2px 0 rgba(0, 0, 0, 0.1);
   font-family: 'Public Sans';
   font-size: 14px;
   font-style: normal;
@@ -36,18 +40,5 @@ app-map-controls {
   line-height: 22px;
 }
 
-.navbar-slider {
-  ::ng-deep.slider-card {
-    height: 40px;
-  }
-}
 
-::ng-deep .statewide-datalayers .maplibregl-ctrl-top-left {
-  top: 70px;
-  z-index: 0;
-}
 
-::ng-deep .statewide-datalayers .maplibregl-ctrl-top-right {
-  margin-top: 70px;
-  z-index: 0;
-}

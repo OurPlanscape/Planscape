@@ -12,22 +12,26 @@
   *ngIf="bounds$ | async as bounds"
   [style]="(baseLayerUrl$ | async) || ''"
   [transformRequest]="transformRequest"
-  [maxZoom]="17"
-  [minZoom]="7"
+  [maxZoom]="maxZoom"
+  [minZoom]="minZoom"
   [dragRotate]="false"
   [fitBoundsOptions]="{ padding: 20 }"
   [fitBounds]="bounds"
   (mapLoad)="mapLoaded($event)">
-  <app-map-controls
+  <app-map-zoom-control
+    *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"
-    controlsPosition="bottom-right"
-    [extendedControlsEnabled]="false">
-  </app-map-controls>
-  <app-planning-area-layer></app-planning-area-layer>
-  <app-map-project-areas
-    *ngIf="projectAreaCount$ | async as projectAreaCount"
-    [projectAreasCount]="projectAreaCount"
-    [scenarioId]="scenarioId"
-    [showHoveredProjectAreas]="false"
-    [mapLibreMap]="mapLibreMap"></app-map-project-areas>
+    controlsPosition="bottom-right"></app-map-zoom-control>
+
+  <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
+  <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
+
+  <ng-container *ngIf="showProjectAreas$ | async">
+    <app-map-project-areas
+      *ngIf="projectAreaCount$ | async as projectAreasCount"
+      [projectAreasCount]="projectAreasCount"
+      [showHoveredProjectAreas]="false"
+      [mapLibreMap]="mapLibreMap">
+    </app-map-project-areas>
+  </ng-container>
 </mgl-map>

@@ -9,6 +9,7 @@ import {
   RasterLayerSpecification,
   RasterSourceSpecification,
 } from 'maplibre-gl';
+import { FrontendConstants } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -19,11 +20,11 @@ import {
 })
 export class MapDataLayerComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
-  opacity = 0.75;
-  tileSize = 512;
+  opacity: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
+  tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
-  constructor(dataLayersStateService: DataLayersStateService) {
+  constructor(private dataLayersStateService: DataLayersStateService) {
     dataLayersStateService.selectedDataLayer$
       .pipe(untilDestroyed(this))
       .subscribe((dataLayer: DataLayer | null) => {
@@ -31,7 +32,9 @@ export class MapDataLayerComponent implements OnInit {
           this.cogUrl = `cog://${dataLayer?.public_url}`;
           const colorFn = makeColorFunction(dataLayer?.styles[0].data);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
-          this.tileSize = dataLayer.info.blockxsize ?? 512;
+          this.tileSize =
+            dataLayer.info.blockxsize ??
+            FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
           this.addRasterLayer();
         } else {
           this.cogUrl = null;
@@ -41,14 +44,24 @@ export class MapDataLayerComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.listenForBaseLayerChange();
+    this.addListeners();
   }
 
-  listenForBaseLayerChange() {
+  addListeners() {
     this.mapLibreMap.on('styledata', () => {
       // if the style change caused the other layers to be removed, then we need to re-add them.
       if (!this.mapLibreMap.getSource('rasterImage')) {
         this.addRasterLayer();
+      }
+    });
+
+    this.mapLibreMap.on('data', (event: any) => {
+      if (
+        this.mapLibreMap.getSource('rasterImage') &&
+        event.sourceId === 'rasterImage' &&
+        event.isSourceLoaded
+      ) {
+        this.dataLayersStateService.setDataLayerLoading(false);
       }
     });
   }

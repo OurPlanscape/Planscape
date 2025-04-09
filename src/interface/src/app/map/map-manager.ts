@@ -63,7 +63,7 @@ export class MapManager {
   polygonsCreated$ = new BehaviorSubject<boolean>(false);
   drawingLayer = new L.FeatureGroup();
   isInDrawingMode: boolean = false;
-  defaultOpacity: number = FrontendConstants.MAP_DATA_LAYER_OPACITY;
+  defaultOpacity: number = FrontendConstants.LEAFLET_MAP_DATA_LAYER_OPACITY;
   selectedRegion$ = new BehaviorSubject<Region | null>(Region.SIERRA_NEVADA);
   edits$ = new BehaviorSubject(false);
 
@@ -100,9 +100,9 @@ export class MapManager {
 
     map.instance = L.map(mapId, {
       center: [...regionMapCenters(this.selectedRegion$.getValue()!)],
-      zoom: FrontendConstants.MAP_INITIAL_ZOOM,
-      minZoom: FrontendConstants.MAP_MIN_ZOOM,
-      maxZoom: FrontendConstants.MAP_MAX_ZOOM,
+      zoom: FrontendConstants.LEAFLET_MAP_INITIAL_ZOOM,
+      minZoom: FrontendConstants.LEAFLET_MAP_MIN_ZOOM,
+      maxZoom: FrontendConstants.LEAFLET_MAP_MAX_ZOOM,
       layers: [map.baseLayerRef],
       preferCanvas: false, // This needs to be set to false for boundary Tooltip to function
       zoomSnap: 0.5,
@@ -567,8 +567,8 @@ export class MapManager {
       environment.tile_endpoint + region + '/wms?',
       {
         layers: region + layer,
-        minZoom: FrontendConstants.MAP_MIN_ZOOM,
-        maxZoom: FrontendConstants.MAP_MAX_ZOOM,
+        minZoom: FrontendConstants.LEAFLET_MAP_MIN_ZOOM,
+        maxZoom: FrontendConstants.LEAFLET_MAP_MAX_ZOOM,
         format: 'image/png',
         transparent: true,
         opacity:

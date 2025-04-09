@@ -33,6 +33,7 @@ from planning.models import (
     ScenarioResult,
     ScenarioResultStatus,
     ScenarioStatus,
+    TreatmentGoal,
 )
 from planning.tasks import async_forsys_run, async_calculate_stand_metrics
 from planscape.exceptions import InvalidGeometry
@@ -97,14 +98,39 @@ def delete_planning_area(
     return (True, "deleted")
 
 
+def get_treatment_goal_from_configuration(
+    configuration: Dict[str, Any],
+) -> Optional[TreatmentGoal]:
+    """Get the treatment goal from the configuration."""
+    question_id = configuration.get("question_id")
+    if not question_id:
+        return None
+
+    try:
+        treatment_goal = TreatmentGoal.objects.get(id=question_id)
+    except TreatmentGoal.DoesNotExist:
+        treatment_goal = None
+        logger.warning(
+            "Create-Scenario: Treatment goal with id %s does not exist.", question_id
+        )
+    return treatment_goal
+
+
 @transaction.atomic()
 def create_scenario(user: TUser, **kwargs) -> Scenario:
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
+    treatment_goal = kwargs.pop("treatment_goal", None)
+    if not treatment_goal:
+        treatment_goal = get_treatment_goal_from_configuration(
+            kwargs.get("configuration", {})
+        )
+
     data = {
         "user": user,
         "origin": ScenarioOrigin.SYSTEM,
         "result_status": ScenarioResultStatus.PENDING,
+        "treatment_goal": treatment_goal,
         **kwargs,
     }
     scenario = Scenario.objects.create(**data)

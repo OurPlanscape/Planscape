@@ -63,10 +63,10 @@
 
 app-apply-treatment {
   position: absolute;
-  top: 10px;
   right: 10px;
   width: 460px;
-  height: calc(100% - 100px);
+  top: 70px;
+  height: calc(100% - 154px);
   z-index: 1000;
 }
 
@@ -74,7 +74,3 @@ app-apply-treatment {
   margin-left: auto;
 }
 
-::ng-deep .statewide-datalayers app-apply-treatment {
-  top: 70px;
-  height: calc(100% - 154px);
-}

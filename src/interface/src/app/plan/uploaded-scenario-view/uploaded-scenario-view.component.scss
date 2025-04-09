@@ -8,7 +8,6 @@
   height: 100%;
   width: 100%;
   background-color: $color-soft-purple;
-  display: flex;
   align-items: center;
   z-index: 5;
   top: 0;
@@ -32,21 +31,6 @@
   background-color: $color-soft-purple;
 }
 
-.treatment-footer {
-  background-color: $color-white;
-  padding: 16px 8px;
-  box-sizing: border-box;
-  bottom: 0;
-  width: 100%;
-  text-align: right;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  flex-grow: 0;
-  position: sticky;
-  z-index: 500;
-  border-top: 1px solid $color-soft-gray;
-}
 
 .title {
   @include h4();

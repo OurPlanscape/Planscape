@@ -144,9 +144,9 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
     if (this.map != undefined) this.map.remove();
     this.map = L.map(this.mapId ? this.mapId : 'map', {
       center: [...regionMapCenters(this.selectedRegion$.getValue()!)],
-      zoom: FrontendConstants.MAP_INITIAL_ZOOM,
-      minZoom: FrontendConstants.MAP_MIN_ZOOM,
-      maxZoom: FrontendConstants.MAP_MAX_ZOOM,
+      zoom: FrontendConstants.LEAFLET_MAP_INITIAL_ZOOM,
+      minZoom: FrontendConstants.LEAFLET_MAP_MIN_ZOOM,
+      maxZoom: FrontendConstants.LEAFLET_MAP_MAX_ZOOM,
       layers: [this.stadiaAlidadeTiles()],
       zoomControl: false,
       pmIgnore: false,
@@ -271,8 +271,8 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
       environment.tile_endpoint + region + '/wms?',
       {
         layers: region + filepath,
-        minZoom: FrontendConstants.MAP_MIN_ZOOM,
-        maxZoom: FrontendConstants.MAP_MAX_ZOOM,
+        minZoom: FrontendConstants.LEAFLET_MAP_MIN_ZOOM,
+        maxZoom: FrontendConstants.LEAFLET_MAP_MAX_ZOOM,
         format: 'image/png',
         transparent: true,
         opacity: 0.7,

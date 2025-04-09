@@ -69,3 +69,8 @@ $stand-progress-height: 48px;
   z-index: 1;
   position: relative;
 }
+
+// temp class to correct height when not using tabs
+.fake-tab {
+  height: calc(100% - 48px);
+}
