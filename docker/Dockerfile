@@ -43,4 +43,4 @@ COPY . /usr/src/app
 
 EXPOSE 8000
 
-CMD ["bin/run_gunicorn.sh"]
+CMD ["bin/run_server.sh"]
