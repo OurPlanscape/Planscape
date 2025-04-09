@@ -38,6 +38,7 @@ export class TreatmentsTabComponent implements OnInit {
 
   ngOnInit(): void {
     this.pollForChanges();
+    console.log(this.planningArea);
   }
 
   private pollForChanges() {
