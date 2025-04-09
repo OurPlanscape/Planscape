@@ -16,7 +16,6 @@ import {
   LegacyPlanStateService,
   PlanningAreaNotesService,
 } from '@services';
-import { PlanMapComponent } from './plan-map/plan-map.component';
 import { PlanOverviewComponent } from './plan-summary/plan-overview/plan-overview.component';
 import { PlanComponent } from './plan.component';
 import { PlanModule } from './plan.module';
@@ -123,7 +122,6 @@ describe('PlanComponent', () => {
       ],
       declarations: [
         PlanComponent,
-        PlanMapComponent,
         PlanOverviewComponent,
         MockComponent(NavBarComponent),
         MockComponent(PlanningAreaTitlebarMenuComponent),
