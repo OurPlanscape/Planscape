@@ -7,8 +7,24 @@
   height: 100%;
   width: 100%;
   justify-content: flex-end;
+
+  ::ng-deep {
+    .maplibregl-ctrl-top-left {
+      top: 70px;
+      z-index: 0;
+    }
+
+    .maplibregl-ctrl-top-right {
+      margin-top: 70px;
+      z-index: 0;
+    }
+  }
+
+
 }
 
 mgl-map {
   flex: 1;
 }
+
+

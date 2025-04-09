@@ -1,6 +1,7 @@
 import logging
 import urllib.parse
 from typing import Any, Dict
+
 from django.conf import settings
 
 
@@ -21,6 +22,11 @@ def get_base_url(env):
             return "https://demo.planscape.org"
         case _:
             return "https://dev.planscape.org"
+
+
+def get_domain(env: str) -> str:
+    url = get_base_url(env)
+    return url.replace("https://", "")
 
 
 def get_frontend_url(url: str, query_params: Dict[str, Any] = None):
