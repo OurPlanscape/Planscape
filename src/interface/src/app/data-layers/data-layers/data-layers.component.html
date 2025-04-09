@@ -5,12 +5,9 @@
     searchPlaceholder="Search by dataset, metric, category, org..."
     [inputHeight]="'regular'"
     (searchString)="search($event)"
+    [showCloseButton]="true"
+    (clearSearch)="clearSearch()"
     [searchValue]="(searchTerm$ | async) || ''"></sg-search-bar>
-  <button
-    sg-button
-    variant="icon-only"
-    icon="close"
-    (click)="clearSearch()"></button>
 </div>
 <div class="scrollable">
   <!--When performing search, show results.-->
