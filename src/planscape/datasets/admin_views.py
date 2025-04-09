@@ -8,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from datasets.filters import DataLayerFilterSet, StyleFilterSet
-from datasets.models import DataLayer, Dataset, Style
+from datasets.models import DataLayer, Dataset, Style, DataLayerStatus
+
 from datasets.serializers import (
     AssociateDataLayerSerializer,
     AssociateStyleSerializer,
@@ -106,6 +107,33 @@ class AdminDataLayerViewSet(
             data=out_serializer.data,
             status=status.HTTP_202_ACCEPTED,
         )
+
+    @action(detail=True, methods=["post"])
+    def change_status(self, request, pk=None):
+        datalayer = self.get_object()
+        desired_status = request.data.get("status", None)
+        if not desired_status:
+            return Response(
+                {"detail": "Missing 'status' in request body."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        if datalayer.status == DataLayerStatus.PENDING:
+            if desired_status not in [DataLayerStatus.READY, DataLayerStatus.FAILED]:
+                return Response(
+                    {"detail": f"Cannot transition from PENDING to {desired_status}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        elif datalayer.status == DataLayerStatus.READY:
+            if desired_status not in [DataLayerStatus.READY, DataLayerStatus.FAILED]:
+                return Response(
+                    {"detail": f"Cannot transition from READY to {desired_status}"},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        datalayer.status = desired_status
+        datalayer.save()
+
+        serializer = DataLayerSerializer(datalayer)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AdminStyleViewSet(
