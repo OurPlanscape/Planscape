@@ -109,3 +109,11 @@ export interface PriorityRow {
   children: PriorityRow[];
   level: number;
 }
+
+export interface ScenarioGoal {
+  id: number;
+  name: string;
+  description: string;
+  priorities: string[];
+  category: string;
+}

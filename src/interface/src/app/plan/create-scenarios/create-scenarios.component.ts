@@ -20,6 +20,8 @@ import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { ScenarioGoalsComponent } from '../scenario-goals/scenario-goals.component';
+import { FeatureService } from '../../features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -59,6 +61,9 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(SetPrioritiesComponent, { static: true })
   prioritiesComponent!: SetPrioritiesComponent;
 
+  @ViewChild(SetPrioritiesComponent, { static: true })
+  scenarioGoals!: ScenarioGoalsComponent;
+
   @ViewChild(ConstraintsPanelComponent, { static: true })
   constraintsPanelComponent!: ConstraintsPanelComponent;
 
@@ -69,7 +74,8 @@ export class CreateScenariosComponent implements OnInit {
     private router: Router,
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
-    private scenarioStateService: ScenarioState
+    private scenarioStateService: ScenarioState,
+    private featureService: FeatureService
   ) {}
 
   createForms() {
@@ -79,13 +85,19 @@ export class CreateScenariosComponent implements OnInit {
         (control: AbstractControl) =>
           scenarioNameMustBeNew(control, this.existingScenarioNames),
       ]),
-      priorities: this.prioritiesComponent.createForm(),
+      priorities: this.isStateWideScenariosEnabled()
+        ? null // todo!
+        : this.prioritiesComponent.createForm(),
       constrains: this.constraintsPanelComponent.createForm(),
       projectAreas: this.fb.group({
         generateAreas: [''],
         uploadedArea: [''],
       }),
     });
+  }
+
+  isStateWideScenariosEnabled() {
+    return this.featureService.isFeatureEnabled('statewide_scenarios');
   }
 
   ngOnInit(): void {
@@ -192,7 +204,10 @@ export class CreateScenariosComponent implements OnInit {
           this.scenarioNameFormField?.setValue(scenario.name);
         }
         // setting treatment question
-        if (scenario.configuration.treatment_question) {
+        if (
+          scenario.configuration.treatment_question &&
+          !this.isStateWideScenariosEnabled()
+        ) {
           this.prioritiesComponent.setFormData(
             scenario.configuration.treatment_question
           );

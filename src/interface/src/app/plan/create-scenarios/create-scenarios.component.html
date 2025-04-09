@@ -35,7 +35,13 @@
         [animationDuration]="tabAnimation">
         <mat-tab label="Configurations">
           <div class="create-scenarios-inner-wrapper">
-            <app-set-priorities></app-set-priorities>
+            <app-set-priorities
+              *appFeatureFlag="
+                'statewide_scenarios';
+                hide: true
+              "></app-set-priorities>
+            <app-scenario-goals
+              *appFeatureFlag="'statewide_scenarios'"></app-scenario-goals>
             <app-constraints-panel
               [planningAreaAcres]="(acres$ | async) || 0"
               [showWarning]="
