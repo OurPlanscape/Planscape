@@ -46,7 +46,6 @@
               "shpjs",
               "geojson-rbush",
               "polylabel",
-              "file-saver",
               "canvg",
               "core-js",
               "raf",

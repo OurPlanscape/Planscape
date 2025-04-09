@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import FileSaver from 'file-saver';
 
 @Injectable({
   providedIn: 'root',
@@ -7,7 +6,8 @@ import FileSaver from 'file-saver';
 export class FileSaverService {
   constructor() {}
 
-  saveAs(data: Blob | string, filename?: string) {
+  async saveAs(data: Blob | string, filename?: string) {
+    const FileSaver = await import('file-saver');
     FileSaver.saveAs(data, filename);
   }
 }
