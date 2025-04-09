@@ -17,6 +17,7 @@ class TreatmentGoalAdminForm(forms.ModelForm):
         }
         fields = (
             "name",
+            "category",
             "description",
             "priorities",
             "stand_thresholds",
