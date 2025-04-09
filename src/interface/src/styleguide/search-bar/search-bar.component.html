@@ -2,7 +2,11 @@
   class="search-bar-container"
   matAutocompleteOrigin
   #origin="matAutocompleteOrigin">
-  <sg-input-field class="search-input" leadingIcon="search" [disabled]="false" [size]="inputHeight">
+  <sg-input-field
+    class="search-input"
+    leadingIcon="search"
+    [disabled]="false"
+    [size]="inputHeight">
     <input
       #inputElement
       sgInput
@@ -27,8 +31,9 @@
       }
     </mat-autocomplete>
   </sg-input-field>
-  <button *ngIf="showCloseButton"
-  class="close-button"
+  <button
+    *ngIf="showCloseButton"
+    class="close-button"
     sg-button
     variant="icon-only"
     icon="close"

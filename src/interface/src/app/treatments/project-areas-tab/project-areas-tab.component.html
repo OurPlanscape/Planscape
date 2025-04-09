@@ -10,8 +10,7 @@
       (searchString)="doSearch($event)"
       [showCloseButton]="true"
       (clearSearch)="clearSearch()"
-      [searchValue]="searchString || ''"
-      ></sg-search-bar>
+      [searchValue]="searchString || ''"></sg-search-bar>
   </div>
   <ng-container *ngIf="!searchString">
     <sg-project-area-expander
