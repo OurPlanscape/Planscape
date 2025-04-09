@@ -2,14 +2,16 @@
   <div class="legend-title">
     {{ legendInfo.title }}
   </div>
-  <div *ngFor="let entry of legendInfo.entries" class="legend-line">
-    <div
-      class="swatch-box"
-      [ngStyle]="{ 'background-color': entry.colorHex }"></div>
-    <div class="swatch-label">
-      {{ entry.entryLabel }}
+  <ng-container *ngIf="mapType !== 'RAMP'">
+    <div *ngFor="let entry of legendInfo.entries" class="legend-line">
+      <div
+        class="swatch-box"
+        [ngStyle]="{ 'background-color': entry.colorHex }"></div>
+      <div class="swatch-label">
+        {{ entry.entryLabel }}
+      </div>
     </div>
-  </div>
+  </ng-container>
 
   <div *ngIf="mapType === 'RAMP'" class="ramp-legend">
     <div
@@ -19,6 +21,6 @@
       <div *ngFor="let label of gradientLabels" class="ramp-label">
         {{ label }}
       </div>
-      </div>
+    </div>
   </div>
 </div>

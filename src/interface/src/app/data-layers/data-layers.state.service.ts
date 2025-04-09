@@ -95,20 +95,7 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {
-    this._selectedDataLayer$
-      .pipe(
-        map((currentLayer: DataLayer | null) => {
-          if (currentLayer) {
-            const newLegendInfo = extractLegendInfo(currentLayer);
-            this._colorLegendInfo.next(newLegendInfo);
-          } else {
-            this._colorLegendInfo.next(null);
-          }
-        })
-      )
-      .subscribe();
-  }
+  constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);

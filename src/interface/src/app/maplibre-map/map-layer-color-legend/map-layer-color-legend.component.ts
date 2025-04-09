@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgFor, NgIf, NgStyle } from '@angular/common';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { ColorLegendInfo, LayerStyleEntry, MapType } from '@types';
+import { tap } from 'rxjs';
 import chroma from 'chroma-js';
 
 @Component({
@@ -13,26 +15,24 @@ import chroma from 'chroma-js';
 export class MapLayerColorLegendComponent {
   constructor(private dataLayerState: DataLayersStateService) {}
 
-  colorLegendInfo$ = this.dataLayerState.colorLegendInfo$;
+  gradientLabels: string[] = [];
+  gradientStyle = '';
+  mapType: MapType = 'RAMP';
 
-  setGradient() {
-    this.gradientLabels = this.colorDetails.map((c) => c.entryLabel);
+  colorLegendInfo$ = this.dataLayerState.colorLegendInfo$.pipe(
+    tap((newColorLegendInfo: ColorLegendInfo | null) => {
+      if (newColorLegendInfo?.entries) {
+        this.setGradient(newColorLegendInfo?.entries);
+      }
+    })
+  );
+
+  setGradient(entries: LayerStyleEntry[]) {
+    this.gradientLabels = entries.map((c) => c.entryLabel);
     const gradient = chroma
-      .scale(this.colorDetails.map((c) => c.colorHex))
+      .scale(entries.map((c) => c.colorHex))
       .mode('lab')
       .colors(10);
     this.gradientStyle = `linear-gradient(to bottom, ${gradient.join(', ')})`;
   }
-
-  // constructor(private dataLayerState: DataLayersStateService) {
-  //   this.dataLayerState.colorLegendInfo$.subscribe((legendInfo: any) => {
-  //     if (legendInfo) {
-  //       this.mapType = legendInfo.type;
-  //       this.colorDetails = legendInfo.entries;
-  //       this.title = legendInfo.title;
-  //       this.setGradient();
-  //     }
-  //   });
-  // }
-
 }

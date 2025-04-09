@@ -82,9 +82,11 @@ export interface DataLayer {
   public_url: string;
 }
 
+export type MapType = 'RAMP' | 'INTERVALS' | 'VALUES';
+
 export interface ColorLegendInfo {
   title: string;
-  type: 'RAMP' | 'INTERVALS' | 'VALUES';
+  type: MapType;
   entries: LayerStyleEntry[];
 }
 
