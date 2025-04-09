@@ -20,7 +20,6 @@ import { LegacyPlanStateService } from '@services';
 import { regionMapCenters } from '../../map/map.helper';
 import { Feature } from 'geojson';
 import { getColorForProjectPosition } from '../plan-helpers';
-import polylabel from 'polylabel';
 import { environment } from '../../../environments/environment';
 import { MapLayerSelectDialogComponent } from '../map-layer-select-dialog/map-layer-select-dialog.component';
 
@@ -372,7 +371,7 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /** Draw geojson shapes on the map, or erase currently drawn shapes. */
-  private drawShapes(shapes: Feature[] | null): void {
+  private drawShapes(shapes: Feature[] | null) {
     this.projectAreasLayer?.remove();
 
     if (!shapes) return;
@@ -384,11 +383,12 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         fillOpacity: 0.4,
         weight: 1.5,
       }),
-      onEachFeature: (feature, layer) => {
+      onEachFeature: async (feature, layer) => {
         if (!feature.properties.treatment_rank) {
           return;
         }
         let center: number[] = [];
+        const { default: polylabel } = await import('polylabel');
         if (feature.geometry.type === 'Polygon') {
           center = polylabel(feature.geometry.coordinates, 0.0005);
           const tooltip = addTooltipAtCenter(

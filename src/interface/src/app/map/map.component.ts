@@ -31,7 +31,6 @@ import {
   take,
 } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import * as shp from 'shpjs';
 
 import {
   AuthService,
@@ -639,6 +638,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         reader.readAsArrayBuffer(file);
       });
       try {
+        const shp = await import('shpjs');
         const geojson = (await shp.parseZip(
           fileAsArrayBuffer
         )) as GeoJSON.GeoJSON;
