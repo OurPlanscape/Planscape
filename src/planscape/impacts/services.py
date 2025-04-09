@@ -17,6 +17,17 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.db import transaction
 from django.db.models import Case, Count, F, Sum, When
 from django.db.models.expressions import RawSQL
+from planning.models import PlanningArea, ProjectArea, Scenario
+from rasterio.session import AWSSession
+from stands.models import (
+    STAND_AREA_ACRES,
+    Stand,
+    StandMetric,
+    StandSizeChoices,
+    pixels_from_size,
+)
+from stands.services import calculate_stand_zonal_stats
+
 from impacts.calculator import calculate_delta, truncate_result
 from impacts.models import (
     AVAILABLE_YEARS,
@@ -32,16 +43,7 @@ from impacts.models import (
     TTreatmentPlanCloneResult,
     get_prescription_type,
 )
-from planning.models import PlanningArea, ProjectArea, Scenario
-from rasterio.session import AWSSession
-from stands.models import (
-    STAND_AREA_ACRES,
-    Stand,
-    StandMetric,
-    StandSizeChoices,
-    pixels_from_size,
-)
-from stands.services import calculate_stand_zonal_stats
+from planscape.openpanel import SingleOpenPanel
 
 log = logging.getLogger(__name__)
 
@@ -62,6 +64,7 @@ def create_treatment_plan(
         status=TreatmentPlanStatus.PENDING,
         name=name,
     )
+    SingleOpenPanel().track("impacts.treatment_plan.create", {"user": created_by.pk})
     actstream_action.send(created_by, verb="created", action_object=treatment_plan)
     return treatment_plan
 
@@ -147,7 +150,7 @@ def clone_treatment_plan(
             treatment_plan.tx_prescriptions.all(),
         )
     )
-
+    SingleOpenPanel().track("impacts.treatment_plan.clone", {"user": user.pk})
     actstream_action.send(
         user,
         verb="cloned",

@@ -1,28 +1,30 @@
 import logging
 from typing import Tuple
 from urllib.parse import urljoin
-from celery import chord, chain
 
-from rasterio.errors import RasterioIOError
+from celery import chain, chord
 from django.conf import settings
-from django.db import transaction
 from django.core.mail import send_mail
+from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
+from rasterio.errors import RasterioIOError
+
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
+    TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescriptionAction,
-    TreatmentPlan,
 )
 from impacts.services import (
     calculate_impacts,
+    calculate_impacts_for_untreated_stands,
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
-    calculate_impacts_for_untreated_stands,
 )
 from planscape.celery import app
+from planscape.openpanel import SingleOpenPanel
 
 log = logging.getLogger(__name__)
 
@@ -144,6 +146,10 @@ def async_set_status(
             setattr(treatment_plan, attr, timezone.now())
             treatment_plan.save()
             log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+            SingleOpenPanel().track(
+                "impacts.treatment_plan.run_finished",
+                {"treatment_plan": treatment_plan_pk, "status": status},
+            )
         except TreatmentPlan.DoesNotExist:
             log.warning(
                 "TreatmentPlan with pk %s does not exist or was deleted. Cannot set status.",
@@ -207,6 +213,12 @@ def async_calculate_persist_impacts_treatment_plan(
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     chord(tasks)(callback)
+    SingleOpenPanel().track(
+        "impacts.treatment_plan.run",
+        {
+            "treatment_plan": treatment_plan_pk,
+        },
+    )
     log.info(f"Calculation of impacts for {treatment_plan} triggered.")
 
 
