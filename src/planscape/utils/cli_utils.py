@@ -5,6 +5,7 @@ from typing import Any, Dict
 
 import toml
 from django.conf import settings
+from opentelemetry import metrics
 
 
 def options_from_file() -> Dict[str, Any]:
@@ -98,3 +99,11 @@ def call_forsys(scenario_id, env=None, check=True, timeout=None):
         check=check,
         timeout=timeout,
     )
+
+
+meter = metrics.get_meter("planscape.meter")
+counter = meter.create_counter("metric_a", description="some metric")
+
+
+def run_metric():
+    counter.add(1, {"env": "my-test-env"})

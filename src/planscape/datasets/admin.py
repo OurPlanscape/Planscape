@@ -2,6 +2,7 @@ from typing import Any, Dict
 
 from django.contrib import admin
 from treebeard.admin import TreeAdmin
+from utils.cli_utils import run_metric
 
 from datasets.forms import (
     CategoryAdminForm,
@@ -39,6 +40,7 @@ class DatasetAdmin(admin.ModelAdmin):
 class DataLayerAdmin(admin.ModelAdmin):
     @admin.display(description="Public URL")
     def public_url(self, instance):
+        run_metric()
         return instance.get_public_url()
 
     form = DataLayerAdminForm
