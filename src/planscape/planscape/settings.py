@@ -10,6 +10,7 @@ import django_stubs_ext
 import sentry_sdk
 from corsheaders.defaults import default_headers
 from decouple import Config, RepositoryEnv
+from openpanel import OpenPanel
 from sentry_sdk.integrations.celery import CeleryIntegration
 from sentry_sdk.integrations.django import DjangoIntegration
 from utils.logging import NotInTestingFilter
@@ -459,3 +460,19 @@ GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
 
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
+
+# OPENPANEL
+OPENPANEL_URL = config("OPENPANEL_URL")
+OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID")
+OPENPANEL_CLIENT_SECRET = config("OPENPANEL_SECRET")
+
+op = OpenPanel(
+    client_id=OPENPANEL_CLIENT_ID,
+    client_secret=OPENPANEL_CLIENT_SECRET,
+    api_url=OPENPANEL_URL,
+)
+op.set_global_properties(
+    {
+        "environment": ENV,
+    }
+)
