@@ -2,26 +2,22 @@
 
 :host {
   box-sizing: border-box;
-}
-
-.controls {
+  padding: 1px;
+  margin-left: auto;
   background-color: $color-white;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 8px;
   border-radius: 4px;
   border: 1px solid $color-soft-gray;
-  box-shadow: 0 4px 4px 0 rgba(0, 0, 0, 0.25), 0 2px 2px 0 rgba(0, 0, 0, 0.10);
+
 }
+
 
 button {
   border: none;
-  background: white;
+  background: $color-white;
   border-radius: 4px;
   padding: 3px;
-  height: 30px;
-  width: 30px;
+  height: 36px;
+  width: 56px;
   cursor: pointer;
 
   &:hover {
@@ -29,11 +25,11 @@ button {
   }
 
   &.active, &:active {
-    background: $color-standard-blue;
+    background: $color-main-blue;
     color: $color-white;
 
     &:hover {
-      background: $color-standard-blue;
+      background: $color-main-blue;
       color: $color-white;
     }
   }

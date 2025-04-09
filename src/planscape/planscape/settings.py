@@ -458,3 +458,4 @@ MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
 
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
+FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)

@@ -1,0 +1,18 @@
+<button
+  type="button"
+  [ngClass]="{
+    active: (standSelectionEnabled$ | async)
+  }"
+  (click)="toggleRxSelection()"
+  matTooltip="RX Selection Tool"
+  matTooltipPosition="below">
+  <mat-icon class="material-symbols-outlined">arrow_selector_tool</mat-icon>
+</button>
+<button
+  type="button"
+  (click)="togglePan()"
+  [ngClass]="{ active: (standSelectionEnabled$ | async) === false }"
+  matTooltip="Pan"
+  matTooltipPosition="below">
+  <mat-icon class="material-symbols-outlined">pan_tool</mat-icon>
+</button>

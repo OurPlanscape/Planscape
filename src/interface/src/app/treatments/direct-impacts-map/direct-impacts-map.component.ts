@@ -1,8 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { MapControlsComponent } from '../../maplibre-map/map-controls/map-controls.component';
-
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
@@ -24,7 +22,12 @@ import { DirectImpactsStateService } from '../direct-impacts.state.service';
 import { MapActionButtonComponent } from '../map-action-button/map-action-button.component';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
-import { TreatmentsState } from '../treatments.state';
+import { FeaturesModule } from '../../features/features.module';
+import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
+import { OpacitySliderComponent } from '@styleguide';
+import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
+import { FrontendConstants } from '@types';
+import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
 
 @UntilDestroy()
 @Component({
@@ -33,7 +36,6 @@ import { TreatmentsState } from '../treatments.state';
   imports: [
     AsyncPipe,
     MapComponent,
-    MapControlsComponent,
     MapProjectAreasComponent,
     MapRectangleComponent,
     MapStandsComponent,
@@ -42,6 +44,11 @@ import { TreatmentsState } from '../treatments.state';
     ControlComponent,
     MapStandsTxResultComponent,
     MapActionButtonComponent,
+    FeaturesModule,
+    MapNavbarComponent,
+    OpacitySliderComponent,
+    RxSelectionToggleComponent,
+    MapZoomControlComponent,
   ],
   templateUrl: './direct-impacts-map.component.html',
   styleUrl: './direct-impacts-map.component.scss',
@@ -50,8 +57,7 @@ export class DirectImpactsMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private directImpactsStateService: DirectImpactsStateService,
-    private authService: AuthService,
-    private treatmentsState: TreatmentsState
+    private authService: AuthService
   ) {}
 
   readonly labels = YEAR_INTERVAL_LABELS;
@@ -75,13 +81,17 @@ export class DirectImpactsMapComponent {
    */
   mapLibreMap!: MapLibreMap;
 
+  /**
+   * Maplibre defaults
+   */
+  minZoom = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
+
   showLegend$ = this.mapConfigState.showTreatmentLegend$;
 
   standSelectionEnabled$ = this.mapConfigState.standSelectionEnabled$;
 
-  get scenarioId() {
-    return this.treatmentsState.getScenarioId();
-  }
+  opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
@@ -128,7 +138,7 @@ export class DirectImpactsMapComponent {
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 
-  getProjectAreaCount(): number {
-    return this.treatmentsState.projectAreaCount();
+  handleOpacityChange(opacity: number) {
+    this.mapConfigState.setTreatedStandsOpacity(opacity);
   }
 }

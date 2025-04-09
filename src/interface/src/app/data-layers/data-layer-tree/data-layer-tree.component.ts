@@ -10,6 +10,7 @@ import { DataLayer } from '@types';
 import { MatRadioModule } from '@angular/material/radio';
 import { FormsModule } from '@angular/forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatMenuModule } from '@angular/material/menu';
 import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
 
@@ -20,6 +21,7 @@ import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tool
   imports: [
     AsyncPipe,
     ButtonComponent,
+    MatProgressSpinnerModule,
     MatTreeModule,
     NgIf,
     NgClass,
@@ -54,8 +56,9 @@ export class DataLayerTreeComponent {
 
   treeData$ = this.dataLayersStateService.dataTree$.pipe(shareReplay(1));
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
-  treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
 
+  loadingDataLayer$ = this.dataLayersStateService.loadingLayer$;
+  treeControl = new NestedTreeControl<TreeNode>((node) => node.children);
   @ViewChild('treeContainer', { static: false }) treeContainer!: ElementRef;
 
   selectDataLayer(dataLayer: DataLayer) {
