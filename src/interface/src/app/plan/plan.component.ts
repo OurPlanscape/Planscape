@@ -1,10 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import {
-  ActivatedRoute,
-  Event as NavigationEvent,
-  NavigationEnd,
-  Router,
-} from '@angular/router';
+import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import {
   BehaviorSubject,
   combineLatest,
@@ -17,20 +12,17 @@ import {
   take,
 } from 'rxjs';
 import { Plan, User } from '@types';
-import {
-  AuthService,
-  LegacyPlanStateService,
-  Note,
-  PlanningAreaNotesService,
-} from '@services';
-import { getPlanPath } from './plan-helpers';
+import { AuthService, Note, PlanningAreaNotesService } from '@services';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { BreadcrumbService } from '@services/breadcrumb.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { BreadcrumbService } from '@services/breadcrumb.service';
+import { ScenarioState } from '../maplibre-map/scenario.state';
+import { getPlanPath } from './plan-helpers';
+import { PlanState } from './plan.state';
 
 @UntilDestroy()
 @Component({
@@ -42,21 +34,20 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 export class PlanComponent implements OnInit {
   constructor(
     private authService: AuthService,
-    private LegacyPlanStateService: LegacyPlanStateService,
     private route: ActivatedRoute,
     private router: Router,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private planState: PlanState,
+    private scenarioState: ScenarioState
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
       return;
     }
-    const plan$ = this.LegacyPlanStateService.getPlan(this.planId).pipe(
-      take(1)
-    );
+    const plan$ = this.planState.currentPlan$.pipe(take(1));
 
     plan$.subscribe({
       next: (plan) => {
@@ -75,42 +66,38 @@ export class PlanComponent implements OnInit {
 
     combineLatest([
       this.currentPlan$.pipe(filter((plan): plan is Plan => !!plan)),
-      this.scenarioName$,
+      this.scenarioState.currentScenario$.pipe(startWith(null)),
+      this.router.events.pipe(
+        filter((event) => event instanceof NavigationEnd)
+      ),
     ])
       .pipe(untilDestroyed(this))
-      .subscribe(([plan, scenarioName]) => {
-        const path = this.getPathFromSnapshot();
-        const scenarioId = this.route.children[0]?.snapshot.params['id'];
+      .subscribe(([plan, scenario, event]) => {
+        const routeChild = this.route.snapshot.firstChild;
+        const path = routeChild?.url[0].path;
+        const id = routeChild?.paramMap.get('id') ?? null;
 
-        const navStateObject = {
-          currentView: '',
-          currentRecordName: '',
-          backLink: '/home',
-        };
-        if (path === 'config' && !scenarioId && !scenarioName) {
-          navStateObject.currentView = 'Scenario';
-          navStateObject.currentRecordName = 'New Scenario';
-          navStateObject.backLink = getPlanPath(plan.id);
-        } else if (scenarioName) {
-          navStateObject.currentView = 'Scenario';
-          navStateObject.currentRecordName = scenarioName;
-          navStateObject.backLink = getPlanPath(plan.id);
-        } else if (path !== 'config' && plan.name && !scenarioName) {
-          navStateObject.currentView = 'Planning Area';
-          navStateObject.currentRecordName = plan.name;
-        }
-
-        if (navStateObject.currentView) {
+        if (!path) {
+          // on plan
           this.breadcrumbService.updateBreadCrumb({
-            label:
-              navStateObject.currentView +
-              ': ' +
-              navStateObject.currentRecordName,
-            backUrl: navStateObject.backLink!,
+            label: 'Planning Area: ' + plan.name,
+            backUrl: '/home',
+          });
+        } else if (id) {
+          // on a specific scenario. Need to have scenario name to populate breadcrumbs.
+          if (scenario && scenario.id.toString() === id) {
+            this.breadcrumbService.updateBreadCrumb({
+              label: 'Scenario: ' + scenario.name,
+              backUrl: getPlanPath(plan.id),
+            });
+          }
+        } else {
+          // creating new scenario
+          this.breadcrumbService.updateBreadCrumb({
+            label: 'Scenario: New Scenario',
+            backUrl: getPlanPath(plan.id),
           });
         }
-
-        return navStateObject;
       });
   }
 
@@ -135,48 +122,8 @@ export class PlanComponent implements OnInit {
     map((show) => (show ? 'SCENARIOS' : 'SCENARIO'))
   );
 
-  scenarioName$ = this.LegacyPlanStateService.planState$.pipe(
-    map((state) => {
-      return state.currentScenarioName;
-    })
-  );
-
   ngOnInit() {
-    this.updatePlanStateFromRoute();
-
-    this.router.events
-      .pipe(filter((event) => event instanceof NavigationEnd))
-      .subscribe((event: NavigationEvent) => {
-        this.updatePlanStateFromRoute();
-      });
     this.loadNotes();
-  }
-
-  private getPathFromSnapshot() {
-    const routeChild = this.route.snapshot.firstChild;
-    return routeChild?.url[0].path;
-  }
-
-  private updatePlanStateFromRoute() {
-    if (this.planId) {
-      this.LegacyPlanStateService.updateStateWithPlan(
-        parseInt(this.planId, 10)
-      );
-    }
-
-    const routeChild = this.route.snapshot.firstChild;
-    const path = routeChild?.url[0].path;
-    const id = routeChild?.paramMap.get('id') ?? null;
-
-    if (path === 'config') {
-      const name =
-        this.LegacyPlanStateService.planState$.value.currentScenarioName;
-      this.LegacyPlanStateService.updateStateWithScenario(id, name);
-      this.LegacyPlanStateService.updateStateWithShapes(null);
-    } else {
-      this.LegacyPlanStateService.updateStateWithScenario(null, null);
-      this.LegacyPlanStateService.updateStateWithShapes(null);
-    }
   }
 
   backToOverview() {
