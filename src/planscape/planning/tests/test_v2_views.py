@@ -986,9 +986,23 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.user = UserFactory.create(username="testuser")
         self.client.force_authenticate(self.user)
 
+        self.markdown_description = (
+            "# This is a h1\n"
+            "## This is a h2\n"
+            "### This is a h3\n"
+            "This is a paragraph with a [link](https://planscape.org)"
+        )
+
+        self.html_description = (
+            "<h1>This is a h1</h1>\n"
+            "<h2>This is a h2</h2>\n"
+            "<h3>This is a h3</h3>\n"
+            '<p>This is a paragraph with a <a href="https://planscape.org">link</a></p>'
+        )
+
         self.first_treatment_goal = TreatmentGoalFactory.create(
             name="First",
-            description="First treatment goal",
+            description=self.markdown_description,
             category=TreatmentGoalCategory.BIODIVERSITY,
         )
         self.treatment_goals = TreatmentGoalFactory.create_batch(10)
@@ -1005,9 +1019,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         first_treatment_goal = treatment_goals[0]
         self.assertEqual(first_treatment_goal["name"], self.first_treatment_goal.name)
         self.assertEqual(first_treatment_goal["id"], self.first_treatment_goal.id)
-        self.assertEqual(
-            first_treatment_goal["description"], self.first_treatment_goal.description
-        )
+        self.assertEqual(first_treatment_goal["description"], self.html_description)
         self.assertEqual(
             first_treatment_goal["priorities"], self.first_treatment_goal.priorities
         )
@@ -1015,19 +1027,18 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
     def test_detail_treatment_goal(self):
         response = self.client.get(
             reverse(
-                "api:planning:treatment-goals-detail", args=[self.treatment_goals[0].id]
+                "api:planning:treatment-goals-detail",
+                args=[self.first_treatment_goal.id],
             ),
             content_type="application/json",
         )
         treatment_goal = json.loads(response.content)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(treatment_goal["name"], self.treatment_goals[0].name)
-        self.assertEqual(treatment_goal["id"], self.treatment_goals[0].id)
+        self.assertEqual(treatment_goal["name"], self.first_treatment_goal.name)
+        self.assertEqual(treatment_goal["id"], self.first_treatment_goal.id)
+        self.assertEqual(treatment_goal["description"], self.html_description)
         self.assertEqual(
-            treatment_goal["description"], self.treatment_goals[0].description
-        )
-        self.assertEqual(
-            treatment_goal["priorities"], self.treatment_goals[0].priorities
+            treatment_goal["priorities"], self.first_treatment_goal.priorities
         )
 
     def test_detail_inactive_treatment_goal(self):
