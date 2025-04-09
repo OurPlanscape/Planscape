@@ -47,7 +47,14 @@
               "geojson-rbush",
               "polylabel",
               "file-saver",
-              "canvg"
+              "canvg",
+              "core-js",
+              "raf",
+              "rgbcolor",
+              "fast-deep-equal",
+              "jspdf-autotable",
+              "maplibre-gl",
+              "@geomatico/maplibre-cog-protocol"
             ]
           },
           "configurations": {
