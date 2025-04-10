@@ -39,6 +39,10 @@
           </div>
 
           <div *ngIf="!isNewScenario">
+            <div class="goal-loader" *ngIf="(goals$ | async) === null">
+              <mat-spinner diameter="24"></mat-spinner>
+            </div>
+
             <ng-container *ngIf="goals$ | async as categorizedScenarioGoals">
               <div
                 *ngFor="let goalCategory of categorizedScenarioGoals | keyvalue"

@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { GoalOverlayService } from './goal-overlay.service';
 import { FeatureService } from '../../../features/feature.service';
 import { map } from 'rxjs';
@@ -11,7 +11,7 @@ import { DomSanitizer } from '@angular/platform-browser';
   templateUrl: './goal-overlay.component.html',
   styleUrls: ['./goal-overlay.component.scss'],
 })
-export class GoalOverlayComponent {
+export class GoalOverlayComponent implements OnDestroy {
   goal$ = this.goalOverlayService.selectedQuestion$;
   stateWideGoal$ = this.goalOverlayService.selectedStateWideGoal$;
 
@@ -43,5 +43,9 @@ export class GoalOverlayComponent {
       /<a /g,
       '<a target="_blank" rel="noopener noreferrer" '
     );
+  }
+
+  ngOnDestroy() {
+    this.close();
   }
 }

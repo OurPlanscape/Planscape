@@ -8,13 +8,15 @@ import {
 } from '@types';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
-import { map, tap } from 'rxjs';
+import { map, of, tap } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
 })
 export class TreatmentGoalsService {
   constructor(private http: HttpClient) {}
+
+  private _cachedStatewideGoals: CategorizedScenarioGoals | null = null;
 
   getLegacyTreatmentGoalsForArea(region: Region) {
     return this.http.get<TreatmentGoalConfig[]>(
@@ -25,6 +27,9 @@ export class TreatmentGoalsService {
   }
 
   getTreatmentGoals() {
+    if (this._cachedStatewideGoals) {
+      return of(this._cachedStatewideGoals);
+    }
     return this.http
       .get<
         ScenarioGoal[]
@@ -40,7 +45,7 @@ export class TreatmentGoalsService {
             return acc;
           }, {})
         ),
-        tap((s) => console.log(s))
+        tap((c) => (this._cachedStatewideGoals = c))
       );
   }
 }

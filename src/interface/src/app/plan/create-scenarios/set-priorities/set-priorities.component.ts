@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { distinctUntilChanged, map, take, tap } from 'rxjs';
+import { distinctUntilChanged, map, shareReplay, take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import {
   LegacyPlanStateService,
@@ -50,7 +50,7 @@ export class SetPrioritiesComponent implements OnInit {
 
   datasource = new MatTableDataSource<PriorityRow>();
 
-  goals$ = this.treatmentGoalsService.getTreatmentGoals();
+  goals$ = this.treatmentGoalsService.getTreatmentGoals().pipe(shareReplay(1));
 
   scenarioGoal$ = this.scenarioState.currentScenario$.pipe(
     map((s) => s.treatment_goal?.name || '')
