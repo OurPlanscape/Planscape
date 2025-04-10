@@ -29,7 +29,7 @@ WORKDIR /usr/src/app
 
 # R dependencies
 COPY install.R /usr/src/app/
-RUN Rscript install.R
+# RUN Rscript install.R
 
 # Python dependencies
 RUN pip install -U pip poetry setuptools
