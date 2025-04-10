@@ -178,6 +178,12 @@ class ScenarioOrigin(models.TextChoices):
     USER = "USER", "User"
 
 
+class TreatmentGoalCategory(models.TextChoices):
+    FIRE_DYNAMICS = "FIRE_DYNAMICS", "Fire Dynamics"
+    BIODIVERSITY = "BIODIVERSITY", "Biodiversity"
+    CARBON_BIOMASS = "CARBON_BIOMASS", "Carbon/Biomass"
+
+
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     name = models.CharField(max_length=120, help_text="Name of the Treatment Goal.")
@@ -192,6 +198,19 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
     )
     active = models.BooleanField(
         default=True, help_text="Treatment Goal active status."
+    )
+    category = models.CharField(
+        max_length=32,
+        choices=TreatmentGoalCategory.choices,
+        help_text="Treatment Goal category.",
+        null=True,
+    )
+    created_by_id: int
+    created_by = models.ForeignKey(
+        User,
+        related_name="created_treatment_goals",
+        on_delete=models.RESTRICT,
+        null=True,
     )
 
 

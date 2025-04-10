@@ -31,6 +31,7 @@ from datasets.serializers import (
     SearchResultsSerializer,
 )
 from datasets.services import find_anything
+from planscape.openpanel import SingleOpenPanel
 
 
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -70,6 +71,12 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             type=serializer.validated_data.get("type"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
+        SingleOpenPanel().track(
+            "datasets.dataset.browse",
+            {
+                "dataset_id": dataset.pk,
+            },
+        )
         return Response(
             serializer.data,
             status=status.HTTP_200_OK,

@@ -694,3 +694,9 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
             geometry=uploaded_geos,
             stand_size=stand_size,
         )
+
+
+class TreatmentGoalSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TreatmentGoal
+        fields = ("id", "name", "description", "priorities", "category")

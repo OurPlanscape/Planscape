@@ -2,6 +2,8 @@ from urllib.parse import urljoin
 
 from allauth.account.adapter import DefaultAccountAdapter
 
+from users.services import identify_user_in_op
+
 
 class CustomAllauthAdapter(DefaultAccountAdapter):
     def get_email_confirmation_url(self, request, emailconfirmation):
@@ -14,3 +16,8 @@ class CustomAllauthAdapter(DefaultAccountAdapter):
         # in the DefaultAccountAdapter provided by django-allauth.
         # Return the email part of `txts`.
         return txts[2]
+
+    def save_user(self, request, user, form, commit=True):
+        user = super().save_user(request, user, form, commit=commit)
+        identify_user_in_op(user)
+        return user

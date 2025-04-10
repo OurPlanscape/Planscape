@@ -2508,6 +2508,22 @@ signals = ["blinker (>=1.4.0)"]
 signedtoken = ["cryptography (>=3.0.0)", "pyjwt (>=2.0.0,<3)"]
 
 [[package]]
+name = "openpanel"
+version = "0.0.1"
+description = "OpenPanel SDK for Python"
+optional = false
+python-versions = ">=3.7"
+groups = ["main"]
+files = [
+    {file = "openpanel-0.0.1-py2-none-any.whl", hash = "sha256:2e3a395c4576c5452101f0d0fd6862fb11fbedc5523726af1b75fa08536e5aa5"},
+    {file = "openpanel-0.0.1-py3-none-any.whl", hash = "sha256:c4d5a31694d4307975bbf70bbb2fa9fae920df0fb4b8ff97fa7b78ee8fe667b2"},
+    {file = "openpanel-0.0.1.tar.gz", hash = "sha256:96a27848d670218c03a75528b95b8e3efbd4898665d57b3ee9c81c4b3c06f922"},
+]
+
+[package.dependencies]
+requests = ">=2.28.1"
+
+[[package]]
 name = "owslib"
 version = "0.32.1"
 description = "OGC Web Service utility library"
@@ -4874,4 +4890,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.1"
 python-versions = "^3.10"
-content-hash = "e4f2b91f3c37e27b284a3840d6588ea7d67fd57edf7587e5d7e1f54924a1e2b1"
+content-hash = "4334b57efb1fa43a5fd33e5f17c5929f2c1ef907f1f1e777618b6f12c4cade8b"
