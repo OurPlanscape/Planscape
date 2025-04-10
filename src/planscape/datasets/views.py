@@ -136,6 +136,15 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             list(search_results),
             many=True,
         )
+        # not inside the service layer because service layer is cached and it's not per user
+        track_openpanel(
+            name="datasets.datalayer.find_anything",
+            properties={
+                "term": term,
+                "type": type,
+            },
+            user_id=request.user.pk,
+        )
         return Response(out_serializer.data, status=status.HTTP_200_OK)
 
     def get_queryset(self):
