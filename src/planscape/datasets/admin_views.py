@@ -8,10 +8,12 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from datasets.filters import DataLayerFilterSet, StyleFilterSet
-from datasets.models import DataLayer, Dataset, Style
+from datasets.models import DataLayer, Dataset, Style, DataLayerStatus
+
 from datasets.serializers import (
     AssociateDataLayerSerializer,
     AssociateStyleSerializer,
+    ChangeDataLayerStatusSerializer,
     CreateDataLayerSerializer,
     CreateDatasetSerializer,
     CreateStyleSerializer,
@@ -106,6 +108,20 @@ class AdminDataLayerViewSet(
             data=out_serializer.data,
             status=status.HTTP_202_ACCEPTED,
         )
+
+    @action(detail=True, methods=["post"])
+    def change_status(self, request, pk=None):
+        datalayer = self.get_object()
+        serializer = ChangeDataLayerStatusSerializer(
+            data=request.data,
+            context={"current_status": datalayer.status},
+        )
+        serializer.is_valid(raise_exception=True)
+        datalayer.status = serializer.validated_data["status"]
+        datalayer.save()
+
+        out_serializer = DataLayerSerializer(datalayer)
+        return Response(out_serializer.data, status=status.HTTP_200_OK)
 
 
 class AdminStyleViewSet(
