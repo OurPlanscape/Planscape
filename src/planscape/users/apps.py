@@ -44,4 +44,3 @@ class UsersConfig(AppConfig):
         self.register_actstream()
         user_login_failed.connect(log_login_failure)
         user_logged_in.connect(handle_user_logged_in)
-        user_logged_in.connect(handle_user_logged_in)
