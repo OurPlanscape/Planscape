@@ -39,19 +39,28 @@
           </div>
 
           <div *ngIf="!isNewScenario">
-            <div
-              *ngFor="let goal of goals$ | async"
-              class="goal-control-container">
-              <mat-expansion-panel expanded="true" [togglePosition]="'before'">
-                <div class="layer-control-container">
-                  <mat-radio-button
-                    [value]="goal.id"
-                    (click)="selectStatewideGoal(goal)">
-                    {{ goal.name }}
-                  </mat-radio-button>
-                </div>
-              </mat-expansion-panel>
-            </div>
+            <ng-container *ngIf="goals$ | async as categorizedScenarioGoals">
+              <div
+                *ngFor="let goalCategory of categorizedScenarioGoals | keyvalue"
+                class="goal-control-container">
+                <mat-expansion-panel
+                  expanded="true"
+                  [togglePosition]="'before'">
+                  <mat-expansion-panel-header class="goal-panel-header">
+                    {{ goalCategory.key }}
+                  </mat-expansion-panel-header>
+                  <div
+                    *ngFor="let goal of goalCategory.value"
+                    class="layer-control-container">
+                    <mat-radio-button
+                      [value]="goal.id"
+                      (click)="selectStatewideGoal(goal)">
+                      {{ goal.name }}
+                    </mat-radio-button>
+                  </div>
+                </mat-expansion-panel>
+              </div>
+            </ng-container>
           </div>
         </ng-template>
       </mat-radio-group>

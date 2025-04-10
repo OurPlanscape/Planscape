@@ -96,7 +96,6 @@ export class SetPrioritiesComponent implements OnInit {
   }
 
   setFormData(question: TreatmentQuestionConfig) {
-    console.log('setting form data');
     if (this._treatmentGoals) {
       // We are losing the object reference somewhere (probably on this.LegacyPlanStateService.treatmentGoalsConfig$)
       // so when we simply `setValue` with `this.selectedTreatmentQuestion`, the object is
@@ -106,8 +105,6 @@ export class SetPrioritiesComponent implements OnInit {
         this._treatmentGoals,
         question
       );
-      console.log('question', question);
-      console.log('selectedQuestion', selectedQuestion);
       if (selectedQuestion) {
         this.goalsForm.get('selectedQuestion')?.setValue(selectedQuestion);
       }
@@ -122,7 +119,9 @@ export class SetPrioritiesComponent implements OnInit {
   }
 
   selectStatewideGoal(goal: ScenarioGoal) {
-    console.log(goal);
+    if (this.goalsForm.enabled) {
+      this.goalOverlayService.setStateWideGoal(goal);
+    }
   }
 
   get isStatewideScenariosEnabled() {
