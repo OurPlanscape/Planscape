@@ -16,7 +16,8 @@ def get_openpanel(user_id: Optional[str] = None) -> Optional[OpenPanel]:
         api_url=settings.OPENPANEL_URL,
     )
     op.set_global_properties({"environment": settings.ENV})
-    op.profile_id = user_id
+    if user_id is not None:
+        op.profile_id = user_id
     return op
 
 
@@ -32,11 +33,11 @@ def track_openpanel(
 
 def identify_openpanel(user: User) -> None:
     profile_id = str(user.pk)
-    op = get_openpanel(user_id=profile_id)
+    op = get_openpanel()
     if op:
         traits = {
-            "first_name": user.first_name,
-            "last_name": user.last_name,
+            "firstName": user.first_name,
+            "lastName": user.last_name,
             "email": user.email,
             "properties": {
                 "organization": None,
