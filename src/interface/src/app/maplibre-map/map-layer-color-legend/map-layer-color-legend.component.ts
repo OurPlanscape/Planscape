@@ -22,6 +22,7 @@ export class MapLayerColorLegendComponent {
   colorLegendInfo$ = this.dataLayerState.colorLegendInfo$.pipe(
     tap((newColorLegendInfo: ColorLegendInfo | null) => {
       if (newColorLegendInfo?.entries) {
+        this.mapType = newColorLegendInfo.type;
         this.setGradient(newColorLegendInfo?.entries);
       }
     })
