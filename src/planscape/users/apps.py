@@ -20,10 +20,11 @@ def log_login_failure(sender, credentials, request, **kwargs):
     )
 
 
-def handle_user_logged_in(_sender, _request, user):
-    from planscape.openpanel import identify_openpanel
+def handle_user_logged_in(sender, request, user, **kwargs):
+    from planscape.openpanel import identify_openpanel, track_openpanel
 
     identify_openpanel(user)
+    track_openpanel("users.log_in", properties=None, user_id=user.pk)
 
 
 class UsersConfig(AppConfig):
