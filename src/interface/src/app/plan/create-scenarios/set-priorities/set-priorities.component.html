@@ -33,18 +33,25 @@
         </ng-container>
 
         <ng-template #statewideGoals>
-          <div
-            *ngFor="let goal of goals$ | async"
-            class="goal-control-container">
-            <mat-expansion-panel expanded="true" [togglePosition]="'before'">
-              <div class="layer-control-container">
-                <mat-radio-button
-                  [value]="goal.id"
-                  (click)="selectStatewideGoal(goal)">
-                  {{ goal.name }}
-                </mat-radio-button>
-              </div>
-            </mat-expansion-panel>
+          <!--          If scenario is not pending show the goal-->
+          <div *ngIf="isNewScenario">
+            {{ scenarioGoal$ | async }}
+          </div>
+
+          <div *ngIf="!isNewScenario">
+            <div
+              *ngFor="let goal of goals$ | async"
+              class="goal-control-container">
+              <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+                <div class="layer-control-container">
+                  <mat-radio-button
+                    [value]="goal.id"
+                    (click)="selectStatewideGoal(goal)">
+                    {{ goal.name }}
+                  </mat-radio-button>
+                </div>
+              </mat-expansion-panel>
+            </div>
           </div>
         </ng-template>
       </mat-radio-group>

@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { distinctUntilChanged, take, tap } from 'rxjs';
+import { distinctUntilChanged, map, take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import {
   LegacyPlanStateService,
@@ -21,6 +21,7 @@ import {
 } from '../../plan-helpers';
 import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
 import { FeatureService } from '../../../features/feature.service';
+import { ScenarioState } from '../../../maplibre-map/scenario.state';
 
 @Component({
   selector: 'app-set-priorities',
@@ -28,6 +29,7 @@ import { FeatureService } from '../../../features/feature.service';
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
+  @Input() scenarioStatus = '';
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
   treatmentGoals$ = this.LegacyPlanStateService.treatmentGoalsConfig$.pipe(
     distinctUntilChanged(),
@@ -50,13 +52,18 @@ export class SetPrioritiesComponent implements OnInit {
 
   goals$ = this.treatmentGoalsService.getTreatmentGoals();
 
+  scenarioGoal$ = this.scenarioState.currentScenario$.pipe(
+    map((s) => s.treatment_goal?.name || '')
+  );
+
   constructor(
     private mapService: MapService,
     private fb: FormBuilder,
     private LegacyPlanStateService: LegacyPlanStateService,
     private goalOverlayService: GoalOverlayService,
     private featureService: FeatureService,
-    private treatmentGoalsService: TreatmentGoalsService
+    private treatmentGoalsService: TreatmentGoalsService,
+    private scenarioState: ScenarioState
   ) {}
 
   createForm() {
@@ -89,6 +96,7 @@ export class SetPrioritiesComponent implements OnInit {
   }
 
   setFormData(question: TreatmentQuestionConfig) {
+    console.log('setting form data');
     if (this._treatmentGoals) {
       // We are losing the object reference somewhere (probably on this.LegacyPlanStateService.treatmentGoalsConfig$)
       // so when we simply `setValue` with `this.selectedTreatmentQuestion`, the object is
@@ -98,6 +106,8 @@ export class SetPrioritiesComponent implements OnInit {
         this._treatmentGoals,
         question
       );
+      console.log('question', question);
+      console.log('selectedQuestion', selectedQuestion);
       if (selectedQuestion) {
         this.goalsForm.get('selectedQuestion')?.setValue(selectedQuestion);
       }
@@ -117,5 +127,9 @@ export class SetPrioritiesComponent implements OnInit {
 
   get isStatewideScenariosEnabled() {
     return this.featureService.isFeatureEnabled('statewide_scenarios');
+  }
+
+  get isNewScenario() {
+    return this.scenarioStatus != 'NOT_STARTED';
   }
 }
