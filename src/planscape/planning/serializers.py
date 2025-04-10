@@ -14,6 +14,7 @@ from planning.models import (
     ScenarioResult,
     SharedLink,
     TreatmentGoal,
+    TreatmentGoalCategory,
     PlanningAreaNote,
     User,
     UserPrefs,
@@ -324,15 +325,26 @@ class ConfigurationSerializer(serializers.Serializer):
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
-    description = serializers.SerializerMethodField()
+    description = serializers.SerializerMethodField(
+        help_text="Description of the Treatment Goal on HTML format.",
+    )
+    category_text = serializers.SerializerMethodField(
+        help_text="Text format of Treatment Goal Category.",
+    )
 
     class Meta:
         model = TreatmentGoal
-        fields = ("id", "name", "description", "category")
+        fields = ("id", "name", "description", "category", "category_text")
 
     def get_description(self, instance):
         if instance.description:
             return markdown.markdown(instance.description)
+        return None
+
+    def get_category_text(self, instance):
+        if instance.category:
+            category = TreatmentGoalCategory(instance.category)
+            return category.label
         return None
 
 
