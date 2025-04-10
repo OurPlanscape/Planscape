@@ -1,6 +1,5 @@
 import json
 from typing import List, Optional
-from numpy import require
 import markdown
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
@@ -324,7 +323,19 @@ class ConfigurationSerializer(serializers.Serializer):
         return attrs
 
 
-class TreatmentGoalSerialiser(serializers.ModelSerializer):
+class TreatmentGoalSerializer(serializers.ModelSerializer):
+    description = serializers.SerializerMethodField()
+    class Meta:
+        model = TreatmentGoal
+        fields = ("id", "name", "description", "category")
+
+    def get_description(self, instance):
+        if instance.description:
+            return markdown.markdown(instance.description)
+        return None
+
+
+class TreatmentGoalSimpleSerializer(serializers.ModelSerializer):
     class Meta:
         model = TreatmentGoal
         fields = ("id", "name")
@@ -344,7 +355,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         help_text="Name of the creator of the Scenario.",
     )
     tx_plan_count = serializers.SerializerMethodField(help_text="Number of treatments.")
-    treatment_goal = TreatmentGoalSerialiser(
+    treatment_goal = TreatmentGoalSimpleSerializer(
         read_only=True,
         help_text="Treatment goal of the scenario.",
     )
@@ -695,16 +706,3 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
             geometry=uploaded_geos,
             stand_size=stand_size,
         )
-
-
-class TreatmentGoalSerializer(serializers.ModelSerializer):
-    description = serializers.SerializerMethodField()
-
-    class Meta:
-        model = TreatmentGoal
-        fields = ("id", "name", "description", "priorities", "category")
-
-    def get_description(self, instance):
-        if instance.description:
-            return markdown.markdown(instance.description)
-        return None
