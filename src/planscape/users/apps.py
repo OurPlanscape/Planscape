@@ -1,6 +1,8 @@
 import logging
+
 from django.apps import AppConfig
-from django.contrib.auth import user_login_failed, get_user_model
+from django.contrib.auth import get_user_model
+from django.contrib.auth.signals import user_logged_in, user_login_failed
 
 log = logging.getLogger(__name__)
 
@@ -16,6 +18,12 @@ def log_login_failure(sender, credentials, request, **kwargs):
         login_user_identifier,
         request,
     )
+
+
+def handle_user_logged_in(_sender, _request, user):
+    from planscape.openpanel import identify_openpanel
+
+    identify_openpanel(user)
 
 
 class UsersConfig(AppConfig):
@@ -35,3 +43,4 @@ class UsersConfig(AppConfig):
     def ready(self):
         self.register_actstream()
         user_login_failed.connect(log_login_failure)
+        user_logged_in.connect(handle_user_logged_in)
