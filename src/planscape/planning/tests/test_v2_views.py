@@ -1021,7 +1021,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(first_treatment_goal["id"], self.first_treatment_goal.id)
         self.assertEqual(first_treatment_goal["description"], self.html_description)
         self.assertEqual(
-            first_treatment_goal["priorities"], self.first_treatment_goal.priorities
+            first_treatment_goal["category"], self.first_treatment_goal.category
         )
 
     def test_detail_treatment_goal(self):
@@ -1037,9 +1037,7 @@ class TreatmentGoalViewSetTest(APITransactionTestCase):
         self.assertEqual(treatment_goal["name"], self.first_treatment_goal.name)
         self.assertEqual(treatment_goal["id"], self.first_treatment_goal.id)
         self.assertEqual(treatment_goal["description"], self.html_description)
-        self.assertEqual(
-            treatment_goal["priorities"], self.first_treatment_goal.priorities
-        )
+        self.assertEqual(treatment_goal["category"], self.first_treatment_goal.category)
 
     def test_detail_inactive_treatment_goal(self):
         response = self.client.get(
