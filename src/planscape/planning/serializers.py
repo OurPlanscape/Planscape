@@ -325,6 +325,7 @@ class ConfigurationSerializer(serializers.Serializer):
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField()
+
     class Meta:
         model = TreatmentGoal
         fields = ("id", "name", "description", "category")
