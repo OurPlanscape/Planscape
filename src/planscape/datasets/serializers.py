@@ -3,9 +3,16 @@ from typing import Any, Collection, Dict
 
 from core.loaders import get_python_object
 from organizations.models import Organization
-from rest_framework import serializers, DataLayerStatus
+from rest_framework import serializers
 
-from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerType,
+    DataLayerStatus,
+    Dataset,
+    Style,
+)
 from datasets.styles import (
     get_default_raster_style,
     get_default_vector_style,
