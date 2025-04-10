@@ -1,6 +1,7 @@
 import json
 from typing import List, Optional
 from numpy import require
+import markdown
 from rest_framework import serializers
 from rest_framework_gis import serializers as gis_serializers
 from django.conf import settings
@@ -697,6 +698,13 @@ class UploadedScenarioDataSerializer(serializers.Serializer):
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
+    description = serializers.SerializerMethodField()
+
     class Meta:
         model = TreatmentGoal
         fields = ("id", "name", "description", "priorities", "category")
+
+    def get_description(self, instance):
+        if instance.description:
+            return markdown.markdown(instance.description)
+        return None
