@@ -37,7 +37,7 @@ export class TreatmentGoalsService {
       .pipe(
         map((goals) =>
           goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
-            const category = goal.category;
+            const category = goal.category_text;
             if (!acc[category]) {
               acc[category] = [];
             }

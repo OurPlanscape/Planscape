@@ -10,14 +10,20 @@ import { SharedModule } from '@shared';
 import {
   ColormapConfig,
   ConditionsConfig,
+  Scenario,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from '@types';
 
-import { MapService, LegacyPlanStateService } from '@services';
+import {
+  LegacyPlanStateService,
+  MapService,
+  TreatmentGoalsService,
+} from '@services';
 import { SetPrioritiesComponent } from './set-priorities.component';
 import { Component } from '@angular/core';
 import { MockProvider } from 'ng-mocks';
+import { ScenarioState } from '../../../maplibre-map/scenario.state';
 
 @Component({ selector: 'app-scenario-tooltip', template: '' })
 class ScenarioTooltipMockComponent {}
@@ -110,6 +116,12 @@ describe('SetPrioritiesComponent', () => {
         },
         MockProvider(LegacyPlanStateService, {
           treatmentGoalsConfig$: treatmentGoals$,
+        }),
+        MockProvider(TreatmentGoalsService, {
+          getTreatmentGoals: () => of({}),
+        }),
+        MockProvider(ScenarioState, {
+          currentScenario$: of({} as Scenario),
         }),
       ],
     }).compileComponents();
