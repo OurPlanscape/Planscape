@@ -13,6 +13,7 @@ class SingleOpenPanel(metaclass=Singleton):
 
     def __init__(self):
         if settings.TESTING_MODE:
+            self.op = None
             return
         if settings.OPENPANEL_URL:
             self.op = OpenPanel(
