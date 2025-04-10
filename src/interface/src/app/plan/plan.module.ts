@@ -49,7 +49,6 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
 import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.component';
-import { ScenarioGoalsComponent } from './scenario-goals/scenario-goals.component';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -78,7 +77,6 @@ import { ScenarioGoalsComponent } from './scenario-goals/scenario-goals.componen
     SetPrioritiesComponent,
     TreatmentsTabComponent,
     UploadedScenarioViewComponent,
-    ScenarioGoalsComponent,
   ],
   providers: [WINDOW_PROVIDERS, MapConfigState],
   imports: [

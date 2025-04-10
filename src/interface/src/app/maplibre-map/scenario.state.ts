@@ -81,4 +81,8 @@ export class ScenarioState {
   reloadScenario() {
     this._reloadScenario$.next();
   }
+
+  currentId() {
+    return this._currentScenarioId$.value;
+  }
 }
