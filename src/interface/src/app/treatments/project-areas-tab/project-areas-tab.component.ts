@@ -83,7 +83,6 @@ export class ProjectAreasTabComponent {
   }
 
   clearSearch() {
-    this.searchString = '';
     this.doSearch('');
   }
 

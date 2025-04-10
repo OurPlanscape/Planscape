@@ -108,8 +108,7 @@ export class ProjectAreaTreatmentsTabComponent {
   }
 
   clearSearch() {
-    this.searchString = '';
-    this.setSearchString(this.searchString);
+    this.setSearchString('');
   }
 
   highlightPrescriptions(tx: Prescription) {
