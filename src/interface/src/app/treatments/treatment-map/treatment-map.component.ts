@@ -47,15 +47,15 @@ import { MapBaseDropdownComponent } from 'src/app/maplibre-map/map-base-dropdown
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { MapProjectAreasComponent } from '../../maplibre-map/map-project-areas/map-project-areas.component';
-import { TreatmentProjectArea } from '@types';
+import { FrontendConstants, TreatmentProjectArea } from '@types';
 import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { PlanState } from '../../plan/plan.state';
 import { MapLayerColorLegendComponent } from 'src/app/maplibre-map/map-layer-color-legend/map-layer-color-legend.component';
 import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-data-layer.component';
 import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
-import { FrontendConstants } from '@types';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @UntilDestroy()
 @Component({
@@ -92,6 +92,7 @@ import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-togg
     PercentPipe,
     DataLayerNameComponent,
     RxSelectionToggleComponent,
+    MatTooltipModule,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
