@@ -9,6 +9,7 @@ import {
   TreatmentGoalsService,
 } from '@services';
 import {
+  CategorizedScenarioGoals,
   PriorityRow,
   ScenarioConfig,
   ScenarioGoal,
@@ -50,7 +51,21 @@ export class SetPrioritiesComponent implements OnInit {
 
   datasource = new MatTableDataSource<PriorityRow>();
 
-  goals$ = this.treatmentGoalsService.getTreatmentGoals().pipe(shareReplay(1));
+  categorizedStatewideGoals$ = this.treatmentGoalsService
+    .getTreatmentGoals()
+    .pipe(
+      map((goals) =>
+        goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
+          const category = goal.category_text;
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(goal);
+          return acc;
+        }, {})
+      ),
+      shareReplay(1)
+    );
 
   scenarioGoal$ = this.scenarioState.currentScenario$.pipe(
     map((s) => s.treatment_goal?.name || '')

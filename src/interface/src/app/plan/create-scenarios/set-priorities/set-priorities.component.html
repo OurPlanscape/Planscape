@@ -33,17 +33,22 @@
         </ng-container>
 
         <ng-template #statewideGoals>
-          <!--          If scenario is not pending show the goal-->
-          <div *ngIf="isNewScenario">
+          <!-- If scenario is not pending show the goal-->
+          <div *ngIf="isNewScenario" class="scenario-goal">
             {{ scenarioGoal$ | async }}
           </div>
 
           <div *ngIf="!isNewScenario">
-            <div class="goal-loader" *ngIf="(goals$ | async) === null">
+            <div
+              class="goal-loader"
+              *ngIf="(categorizedStatewideGoals$ | async) === null">
               <mat-spinner diameter="24"></mat-spinner>
             </div>
 
-            <ng-container *ngIf="goals$ | async as categorizedScenarioGoals">
+            <ng-container
+              *ngIf="
+                categorizedStatewideGoals$ | async as categorizedScenarioGoals
+              ">
               <div
                 *ngFor="let goalCategory of categorizedScenarioGoals | keyvalue"
                 class="goal-control-container">

@@ -118,7 +118,7 @@ describe('SetPrioritiesComponent', () => {
           treatmentGoalsConfig$: treatmentGoals$,
         }),
         MockProvider(TreatmentGoalsService, {
-          getTreatmentGoals: () => of({}),
+          getTreatmentGoals: () => of([]),
         }),
         MockProvider(ScenarioState, {
           currentScenario$: of({} as Scenario),
