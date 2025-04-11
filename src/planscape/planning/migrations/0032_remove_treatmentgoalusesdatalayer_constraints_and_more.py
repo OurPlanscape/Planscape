@@ -22,11 +22,7 @@ class Migration(migrations.Migration):
             model_name="treatmentgoalusesdatalayer",
             name="threshold",
             field=models.CharField(
-                blank=True,
-                default=None,
-                help_text="Threshold for the data layer.",
-                max_length=32,
-                null=True,
+                help_text="Threshold for the data layer.", max_length=256, null=True
             ),
         ),
     ]
