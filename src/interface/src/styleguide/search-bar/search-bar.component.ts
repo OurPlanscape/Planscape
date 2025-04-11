@@ -87,9 +87,15 @@ export class SearchBarComponent implements OnInit, OnDestroy {
    */
   @Input() inputHeight: 'small' | 'regular' = 'small';
   /**
+   * Determines if we should show a close button
+   */
+  @Input() showCloseButton = false;
+  /**
    *
    */
   @Output() searchString = new EventEmitter<string>();
+  @Output() clearSearch = new EventEmitter<boolean>();
+
   searchInput = new Subject<string>();
   displayedHistory: string[] = [];
 
@@ -126,5 +132,9 @@ export class SearchBarComponent implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.searchInput.complete();
+  }
+
+  handleClear() {
+    this.clearSearch.emit();
   }
 }

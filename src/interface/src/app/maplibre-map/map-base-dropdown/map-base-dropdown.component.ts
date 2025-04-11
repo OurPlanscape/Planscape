@@ -9,6 +9,7 @@ import {
   BaseLayerType,
 } from 'src/app/maplibre-map/map-base-layers';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-map-base-dropdown',
@@ -21,6 +22,7 @@ import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
     MatIconModule,
     ButtonComponent,
     ClickOutsideDirective,
+    MatTooltipModule,
   ],
   templateUrl: './map-base-dropdown.component.html',
   styleUrl: './map-base-dropdown.component.scss',

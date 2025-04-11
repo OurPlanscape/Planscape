@@ -82,6 +82,10 @@ export class ProjectAreasTabComponent {
     }
   }
 
+  clearSearch() {
+    this.doSearch('');
+  }
+
   setActiveProjectArea(projectAreaId: number) {
     this.router.navigate(['project-area', projectAreaId], {
       relativeTo: this.route,

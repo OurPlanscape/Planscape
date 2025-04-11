@@ -1,10 +1,12 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { MatCardModule } from '@angular/material/card';
-import { MatSliderModule, MatSliderDragEvent } from '@angular/material/slider';
+import { MatSliderDragEvent, MatSliderModule } from '@angular/material/slider';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { NgIf } from '@angular/common';
+import { MatTooltipModule } from '@angular/material/tooltip';
+
 /**
  * Opacity Slider
  * A component containing a slider and a label
@@ -19,6 +21,7 @@ import { NgIf } from '@angular/common';
     MatInputModule,
     FormsModule,
     NgIf,
+    MatTooltipModule,
   ],
   templateUrl: './opacity-slider.component.html',
   styleUrl: './opacity-slider.component.scss',
@@ -45,6 +48,8 @@ export class OpacitySliderComponent {
    * Initial value
    */
   @Input() sliderValue = 50;
+
+  @Input() tooltip = 'Opacity';
   /**
    * Bubbles up the live value of the slider
    */

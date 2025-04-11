@@ -1,5 +1,7 @@
 <!-- Selected layer icon -->
 <img
+  matTooltip="Base Map"
+  matTooltipPosition="below"
   (click)="openOverlay($event)"
   class="base-layer-icon"
   *ngIf="selectedLayer$ | async as selectedLayer"

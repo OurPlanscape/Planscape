@@ -28,7 +28,10 @@
         [debounceInterval]="160"
         searchPlaceholder="Search treatment prescriptions"
         [inputHeight]="'regular'"
-        (searchString)="setSearchString($event)"></sg-search-bar>
+        (searchString)="setSearchString($event)"
+        [showCloseButton]="true"
+        (clearSearch)="clearSearch()"
+        [searchValue]="searchString"></sg-search-bar>
     </div>
     <app-left-loading-overlay
       *ngIf="reloadingSummary$ | async"></app-left-loading-overlay>

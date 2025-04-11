@@ -107,6 +107,10 @@ export class ProjectAreaTreatmentsTabComponent {
     }
   }
 
+  clearSearch() {
+    this.setSearchString('');
+  }
+
   highlightPrescriptions(tx: Prescription) {
     this.selectedStandsState.updateSelectedStands(tx.stand_ids);
   }
