@@ -40,11 +40,19 @@ class TreatmentGoalUsesDataLayerAdmin(admin.ModelAdmin):
 
     list_display = ("id", "usage_type", "treatment_goal", "datalayer", "threshold")
     list_display_links = ("id", "usage_type")
-    form = TreatmentGoalUsesDataLayerAdminForm
     search_fields = ["usage_type", "treatment_goal__name", "datalayer__name"]
     list_filter = ["usage_type", "treatment_goal__name", "datalayer__name"]
     ordering = ["usage_type", "treatment_goal__name", "datalayer__name"]
     raw_id_fields = ["treatment_goal", "datalayer"]
+
+    def has_add_permission(self, request, obj=None):
+        return False
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+    def has_change_permission(self, request, obj=...):
+        return False
 
 
 admin.site.register(TreatmentGoal, TreatmentGoalAdmin)
