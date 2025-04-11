@@ -245,13 +245,10 @@ class TreatmentGoalUsesDataLayer(
         choices=TreatmentGoalUsageType.choices,
         help_text="The type of usage for the data layer.",
     )
-    thresholds = models.JSONField(
+    threshold = models.CharField(
+        max_length=256,
         null=True,
-        help_text="Threashold list.",
-    )
-    constraints = models.JSONField(
-        null=True,
-        help_text="Constraints of the relation between Tx Goal and DataLayer.",
+        help_text="Threshold for the data layer.",
     )
 
     @property
