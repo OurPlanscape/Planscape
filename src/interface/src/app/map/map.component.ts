@@ -55,7 +55,7 @@ import { PlanCreateDialogComponent } from './plan-create-dialog/plan-create-dial
 import { ProjectCardComponent } from './project-card/project-card.component';
 import { SignInDialogComponent } from './sign-in-dialog/sign-in-dialog.component';
 import { AreaCreationAction, LEGEND } from './map.constants';
-import { NavState, SNACK_ERROR_CONFIG } from '@shared';
+import { SNACK_ERROR_CONFIG } from '@shared';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import {
   addGeoJSONToMap,
@@ -79,6 +79,7 @@ import { Location } from '@angular/common';
 import { MatDialog } from '@angular/material/dialog';
 import { AnalyticsService } from '@services/analytics.service';
 import { PlanState } from '../plan/plan.state';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @UntilDestroy()
 @Component({
@@ -141,11 +142,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
   ]).pipe(map(([selectedMap]) => !!selectedMap?.config.dataLayerConfig.layer));
 
   showConfirmAreaButton$ = new BehaviorSubject(false);
-  navState$ = new BehaviorSubject<NavState>({
-    currentRecordName: '', // set to blank until we know there is no plan, to avoid showing inaccurate name
-    currentView: 'Explore',
-    backLink: '/',
-  });
 
   totalArea$ = this.showConfirmAreaButton$.asObservable().pipe(
     switchMap((show) => {
@@ -193,7 +189,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
     private shareMapService: ShareMapService,
     private location: Location,
     private analyticsService: AnalyticsService,
-    private planState: PlanState
+    private planState: PlanState,
+    private breadcrumbService: BreadcrumbService
   ) {
     this.sessionService.mapViewOptions$
       .pipe(take(1))
@@ -294,10 +291,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           }
 
           this.drawPlanningArea(plan);
-          this.navState$.next({
-            currentRecordName: plan.name,
-            backLink: getPlanPath(plan.id),
-            currentView: 'Explore',
+          this.breadcrumbService.updateBreadCrumb({
+            label: 'Explore: ' + plan.name,
+            backUrl: getPlanPath(plan.id),
           });
         },
         error: () => {
@@ -305,10 +301,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         },
       });
     } else {
-      this.navState$.next({
-        currentRecordName: 'New Plan',
-        currentView: 'Explore',
-        backLink: '/',
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Explore: New Plan',
+        backUrl: '/',
       });
     }
   }

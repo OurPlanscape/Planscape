@@ -9,7 +9,11 @@ import {
 import { interval, take } from 'rxjs';
 import { Plan, Scenario } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { isValidTotalArea, POLLING_INTERVAL } from '../../plan-helpers';
+import {
+  getPlanPath,
+  isValidTotalArea,
+  POLLING_INTERVAL,
+} from '../../plan-helpers';
 import { MatDialog } from '@angular/material/dialog';
 
 import { canAddScenario } from '../../permissions';
@@ -18,6 +22,7 @@ import { MatTab } from '@angular/material/tabs';
 import { UploadProjectAreasModalComponent } from '../../upload-project-areas-modal/upload-project-areas-modal.component';
 import { ScenarioCreateConfirmationComponent } from '../../scenario-create-confirmation/scenario-create-confirmation.component';
 import { TreatmentsService } from '@services/treatments.service';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 export interface ScenarioRow extends Scenario {
   selected?: boolean;
@@ -52,7 +57,8 @@ export class SavedScenariosComponent implements OnInit {
     private scenarioService: ScenarioService,
     private dialog: MatDialog,
     private LegacyPlanStateService: LegacyPlanStateService,
-    private treatmentsService: TreatmentsService
+    private treatmentsService: TreatmentsService,
+    private breadcrumbService: BreadcrumbService
   ) {}
 
   ngOnInit(): void {
@@ -124,6 +130,11 @@ export class SavedScenariosComponent implements OnInit {
       clickedScenario.id,
       clickedScenario.name
     );
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Scenario :' + clickedScenario.name,
+      backUrl: getPlanPath(clickedScenario.planning_area),
+    });
+
     this.router.navigate(['config', clickedScenario.id], {
       relativeTo: this.route,
     });
