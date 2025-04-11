@@ -1,12 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { MatLegacyTableDataSource as MatTableDataSource } from '@angular/material/legacy-table';
-import { distinctUntilChanged, take, tap } from 'rxjs';
+import { distinctUntilChanged, map, shareReplay, take, tap } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import { MapService, LegacyPlanStateService } from '@services';
 import {
+  LegacyPlanStateService,
+  MapService,
+  TreatmentGoalsService,
+} from '@services';
+import {
+  CategorizedScenarioGoals,
   PriorityRow,
   ScenarioConfig,
+  ScenarioGoal,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from '@types';
@@ -15,6 +21,8 @@ import {
   findQuestionOnTreatmentGoalsConfig,
 } from '../../plan-helpers';
 import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
+import { FeatureService } from '../../../features/feature.service';
+import { ScenarioState } from '../../../maplibre-map/scenario.state';
 
 @Component({
   selector: 'app-set-priorities',
@@ -22,6 +30,7 @@ import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
+  @Input() scenarioStatus = '';
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
   treatmentGoals$ = this.LegacyPlanStateService.treatmentGoalsConfig$.pipe(
     distinctUntilChanged(),
@@ -29,6 +38,7 @@ export class SetPrioritiesComponent implements OnInit {
       this._treatmentGoals = s;
       // if we got new treatment goals we'll need to find the item again and set it as selected
       const value = this.goalsForm.get('selectedQuestion')?.value;
+
       if (value) {
         this.setFormData(value);
       }
@@ -41,11 +51,34 @@ export class SetPrioritiesComponent implements OnInit {
 
   datasource = new MatTableDataSource<PriorityRow>();
 
+  categorizedStatewideGoals$ = this.treatmentGoalsService
+    .getTreatmentGoals()
+    .pipe(
+      map((goals) =>
+        goals.reduce<CategorizedScenarioGoals>((acc, goal) => {
+          const category = goal.category_text;
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(goal);
+          return acc;
+        }, {})
+      ),
+      shareReplay(1)
+    );
+
+  scenarioGoal$ = this.scenarioState.currentScenario$.pipe(
+    map((s) => s.treatment_goal?.name || '')
+  );
+
   constructor(
     private mapService: MapService,
     private fb: FormBuilder,
     private LegacyPlanStateService: LegacyPlanStateService,
-    private goalOverlayService: GoalOverlayService
+    private goalOverlayService: GoalOverlayService,
+    private featureService: FeatureService,
+    private treatmentGoalsService: TreatmentGoalsService,
+    private scenarioState: ScenarioState
   ) {}
 
   createForm() {
@@ -98,5 +131,19 @@ export class SetPrioritiesComponent implements OnInit {
     if (this.goalsForm.enabled) {
       this.goalOverlayService.setQuestion(goal);
     }
+  }
+
+  selectStatewideGoal(goal: ScenarioGoal) {
+    if (this.goalsForm.enabled) {
+      this.goalOverlayService.setStateWideGoal(goal);
+    }
+  }
+
+  get isStatewideScenariosEnabled() {
+    return this.featureService.isFeatureEnabled('statewide_scenarios');
+  }
+
+  get isNewScenario() {
+    return this.scenarioStatus != 'NOT_STARTED';
   }
 }

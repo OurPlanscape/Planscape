@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { TreatmentQuestionConfig } from '@types';
-import { map, Subject } from 'rxjs';
+import { ScenarioGoal, TreatmentQuestionConfig } from '@types';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -11,14 +11,24 @@ export class GoalOverlayService {
   private selectedQuestionSubject =
     new Subject<TreatmentQuestionConfig | null>();
 
-  selectedQuestion$ = this.selectedQuestionSubject.asObservable();
-  showOverlay$ = this.selectedQuestion$.pipe(map((q) => !!q));
+  selectedQuestion$: Observable<TreatmentQuestionConfig | null> =
+    this.selectedQuestionSubject.asObservable();
+
+  private _selectedStateWideGoal$ = new BehaviorSubject<ScenarioGoal | null>(
+    null
+  );
+  selectedStateWideGoal$ = this._selectedStateWideGoal$.asObservable();
 
   setQuestion(question: TreatmentQuestionConfig) {
     this.selectedQuestionSubject.next(question);
   }
 
+  setStateWideGoal(goal: ScenarioGoal) {
+    this._selectedStateWideGoal$.next(goal);
+  }
+
   close() {
     this.selectedQuestionSubject.next(null);
+    this._selectedStateWideGoal$.next(null);
   }
 }

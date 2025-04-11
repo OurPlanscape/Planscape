@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 import { Scenario } from '@types';
 import { LegacyPlanStateService } from '@services';
 import { map, take } from 'rxjs';
@@ -12,7 +12,7 @@ import { canAddTreatmentPlan } from '../permissions';
   templateUrl: './uploaded-scenario-view.component.html',
   styleUrl: './uploaded-scenario-view.component.scss',
 })
-export class UploadedScenarioViewComponent {
+export class UploadedScenarioViewComponent implements OnInit {
   constructor(
     private LegacyPlanStateService: LegacyPlanStateService,
     private planState: PlanState

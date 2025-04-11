@@ -31,6 +31,7 @@ export interface LegacyPlanState {
   mapShapes: Feature[] | null;
   legendUnits: string | null;
 }
+
 /**
  * @deprecated This is going to be removed in the future.
  * Use PlanState if you can or see if you can move what you need to that service.
@@ -61,7 +62,7 @@ export class LegacyPlanStateService {
     private treatmentGoalsService: TreatmentGoalsService
   ) {
     this.treatmentGoalsService
-      .getTreatmentGoalsForArea(this.planRegion$.getValue())
+      .getLegacyTreatmentGoalsForArea(this.planRegion$.getValue())
       .subscribe((config: TreatmentGoalConfig[]) => {
         this.treatmentGoalsConfig$.next(config);
       });
@@ -173,7 +174,7 @@ export class LegacyPlanStateService {
     if (Object.values(Region).includes(value)) {
       this.planRegion$.next(value);
       this.treatmentGoalsService
-        .getTreatmentGoalsForArea(this.planRegion$.getValue())
+        .getLegacyTreatmentGoalsForArea(this.planRegion$.getValue())
         .subscribe((config: TreatmentGoalConfig[]) => {
           this.treatmentGoalsConfig$.next(config);
         });
