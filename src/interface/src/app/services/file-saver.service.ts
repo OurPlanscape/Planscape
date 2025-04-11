@@ -4,10 +4,13 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class FileSaverService {
-  constructor() {}
+  async loadFileSaver() {
+    const { default: saveAs } = await import('file-saver');
+    return saveAs;
+  }
 
   async saveAs(data: Blob | string, filename?: string) {
-    const { default: saveAs } = await import('file-saver');
+    const saveAs = await this.loadFileSaver();
     saveAs(data, filename);
   }
 }
