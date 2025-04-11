@@ -13,6 +13,7 @@ import { interval, take } from 'rxjs';
 import { MatDialog, MatDialogRef } from '@angular/material/dialog';
 import { POLLING_INTERVAL } from '../../plan-helpers';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @UntilDestroy()
 @Component({
@@ -33,12 +34,12 @@ export class TreatmentsTabComponent implements OnInit {
     private route: ActivatedRoute,
     private treatmentsService: TreatmentsService,
     private matSnackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private breadcrumbService: BreadcrumbService
   ) {}
 
   ngOnInit(): void {
     this.pollForChanges();
-    console.log(this.planningArea);
   }
 
   private pollForChanges() {
@@ -58,12 +59,21 @@ export class TreatmentsTabComponent implements OnInit {
       });
   }
 
-  goToTreatment(id: number, status: TreatmentStatus) {
-    const route = ['treatment', id];
+  goToTreatment(treatment: TreatmentPlan, status: TreatmentStatus) {
+    const route = ['treatment', treatment.id];
+
     if (status === 'SUCCESS') {
       route.push('impacts');
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Direct Treatment Impacts: ' + treatment.name,
+        backUrl: this.router.url,
+      });
+    } else {
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Treatment Plan: ' + treatment.name,
+        backUrl: this.router.url,
+      });
     }
-
     this.router.navigate(route, { relativeTo: this.route });
   }
 

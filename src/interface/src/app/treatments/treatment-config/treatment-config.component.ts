@@ -137,11 +137,10 @@ export class TreatmentConfigComponent {
 
     this.treatmentsState.breadcrumb$
       .pipe(untilDestroyed(this))
-      .subscribe((state) => {
-        this.breadcrumbService.updateBreadCrumb({
-          label: state.currentView + state.currentRecordName,
-          backUrl: state.backLink,
-        });
+      .subscribe((breadcrumb) => {
+        if (breadcrumb) {
+          this.breadcrumbService.updateBreadCrumb(breadcrumb);
+        }
       });
   }
 

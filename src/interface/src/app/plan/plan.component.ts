@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, NavigationEnd, Router } from '@angular/router';
 import {
-  BehaviorSubject,
   combineLatest,
   concatMap,
   filter,
@@ -12,7 +11,12 @@ import {
   take,
 } from 'rxjs';
 import { Plan, User } from '@types';
-import { AuthService, Note, PlanningAreaNotesService } from '@services';
+import {
+  AuthService,
+  LegacyPlanStateService,
+  Note,
+  PlanningAreaNotesService,
+} from '@services';
 import { NotesSidebarState } from 'src/styleguide/notes-sidebar/notes-sidebar.component';
 import { DeleteNoteDialogComponent } from './delete-note-dialog/delete-note-dialog.component';
 import { SNACK_ERROR_CONFIG, SNACK_NOTICE_CONFIG } from '@shared';
@@ -36,23 +40,23 @@ export class PlanComponent implements OnInit {
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
+    private LegacyPlanStateService: LegacyPlanStateService,
     private notesService: PlanningAreaNotesService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
     private breadcrumbService: BreadcrumbService,
-    private planState: PlanState,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private planState: PlanState
   ) {
     if (this.planId === null) {
       this.planNotFound = true;
       return;
     }
-    const plan$ = this.planState.currentPlan$.pipe(take(1));
+    const plan$ = this.LegacyPlanStateService.getPlan(this.planId).pipe(
+      take(1)
+    );
 
     plan$.subscribe({
-      next: (plan) => {
-        this.currentPlan$.next(plan);
-      },
       error: (error) => {
         this.planNotFound = true;
       },
@@ -72,7 +76,7 @@ export class PlanComponent implements OnInit {
       ),
     ])
       .pipe(untilDestroyed(this))
-      .subscribe(([plan, scenario, event]) => {
+      .subscribe(([plan, scenario]) => {
         const routeChild = this.route.snapshot.firstChild;
         const path = routeChild?.url[0].path;
         const id = routeChild?.paramMap.get('id') ?? null;
@@ -98,10 +102,24 @@ export class PlanComponent implements OnInit {
             backUrl: getPlanPath(plan.id),
           });
         }
+
+        // this is required still to maintain LegacyPlanStateService usage on create-scenarios.
+        // We can remove this after refactor.
+        if (path === 'config') {
+          this.LegacyPlanStateService.updateStateWithScenario(
+            id,
+            scenario?.name || ''
+          );
+          this.LegacyPlanStateService.updateStateWithShapes(null);
+        } else {
+          this.LegacyPlanStateService.updateStateWithScenario(null, null);
+          this.LegacyPlanStateService.updateStateWithShapes(null);
+        }
+        this.LegacyPlanStateService.updateStateWithPlan(plan.id);
       });
   }
 
-  currentPlan$ = new BehaviorSubject<Plan | null>(null);
+  currentPlan$ = this.planState.currentPlan$;
   planOwner$ = new Observable<User | null>();
 
   planId = this.route.snapshot.paramMap.get('id');
@@ -127,7 +145,7 @@ export class PlanComponent implements OnInit {
   }
 
   backToOverview() {
-    this.router.navigate(['plan', this.currentPlan$.value!.id]);
+    this.router.navigate(['plan', this.planId]);
   }
 
   //notes handling functions

@@ -131,7 +131,7 @@ export class SavedScenariosComponent implements OnInit {
       clickedScenario.name
     );
     this.breadcrumbService.updateBreadCrumb({
-      label: 'Scenario :' + clickedScenario.name,
+      label: 'Scenario: ' + clickedScenario.name,
       backUrl: getPlanPath(clickedScenario.planning_area),
     });
 
