@@ -10,6 +10,12 @@ class TreatmentGoalAdminForm(forms.ModelForm):
     Admin form for TreatmentGoal model.
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["description"].required = False
+        self.fields["priorities"].required = False
+        self.fields["stand_thresholds"].required = False
+
     class Meta:
         model = TreatmentGoal
         widgets = {
