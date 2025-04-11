@@ -90,40 +90,34 @@ export class TreatmentsState {
     map(([projectArea, summary, treatmentPlan]) => {
       const path = this.route.snapshot.routeConfig?.path;
       const navStateObject = {
-        currentView: '',
-        currentRecordName: '',
-        backLink: '',
+        label: '',
+        backUrl: '',
       };
 
       if (!summary) {
-        return navStateObject;
-      }
-      if (path === 'impacts') {
-        navStateObject.currentView = 'Direct Treatment Impacts';
+        return null;
       }
 
       if (projectArea) {
         // if we are currently viewing a Project Area
-        navStateObject.currentView = 'Project Area';
-        navStateObject.currentRecordName = projectArea.project_area_name;
-        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
+        navStateObject.label = `Project Area:  ${projectArea.project_area_name}`;
+        navStateObject.backUrl = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}/treatment/${summary.treatment_plan_id}`;
       } else if (
         !!treatmentPlan &&
         !!treatmentPlan.name &&
         path === 'impacts'
       ) {
         // if we are currently viewing Treatment Impacts
-        navStateObject.currentRecordName = treatmentPlan.name;
-        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+        navStateObject.label = `Direct Treatment Impacts: ${treatmentPlan.name}`;
+        navStateObject.backUrl = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
       } else if (
         // if we are currently viewing a Treatment Plan
         !!treatmentPlan &&
         !!treatmentPlan.name &&
         treatmentPlan.status !== 'SUCCESS'
       ) {
-        navStateObject.currentView = 'Treatment Plan';
-        navStateObject.currentRecordName = treatmentPlan.name;
-        navStateObject.backLink = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
+        navStateObject.label = `Treatment Plan:  ${treatmentPlan.name}`;
+        navStateObject.backUrl = `/plan/${summary.planning_area_id}/config/${summary.scenario_id}`;
       }
       return navStateObject;
     })
