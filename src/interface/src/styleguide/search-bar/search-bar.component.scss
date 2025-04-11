@@ -59,6 +59,8 @@
 }
 
 .close-button {
+  position: relative;
+  right: -8px;
   border: none;
   border-radius: 50%;
   aspect-ratio: 1;
