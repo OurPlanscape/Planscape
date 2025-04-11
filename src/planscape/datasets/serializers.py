@@ -5,7 +5,14 @@ from core.loaders import get_python_object
 from organizations.models import Organization
 from rest_framework import serializers
 
-from datasets.models import Category, DataLayer, DataLayerType, Dataset, Style
+from datasets.models import (
+    Category,
+    DataLayer,
+    DataLayerType,
+    DataLayerStatus,
+    Dataset,
+    Style,
+)
 from datasets.styles import (
     get_default_raster_style,
     get_default_vector_style,
@@ -188,6 +195,29 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "geometry_type",
             "style",
         )
+
+
+class ChangeDataLayerStatusSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(choices=DataLayerStatus.choices)
+
+    def validate(self, attrs):
+        """Enforce the finite-state-machine logic."""
+        desired_status = attrs["status"]
+        current_status = self.context["current_status"]
+
+        if current_status == DataLayerStatus.PENDING:
+            if desired_status not in [DataLayerStatus.READY, DataLayerStatus.FAILED]:
+                raise serializers.ValidationError(
+                    f"Cannot transition from PENDING to {desired_status}"
+                )
+
+        elif current_status == DataLayerStatus.READY:
+            if desired_status not in [DataLayerStatus.READY, DataLayerStatus.FAILED]:
+                raise serializers.ValidationError(
+                    f"Cannot transition from READY to {desired_status}"
+                )
+
+        return attrs
 
 
 class StyleSerializer(serializers.ModelSerializer[Style]):

@@ -34,6 +34,7 @@ urlpatterns = [
         VerifyEmailView.as_view(),
     ),
     path("planscape-backend/v2/", include("planscape.urls_v2")),
+    path("martor/", include("martor.urls")),
 ]
 
 if settings.ENV == "development":

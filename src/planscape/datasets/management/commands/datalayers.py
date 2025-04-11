@@ -384,6 +384,7 @@ class Command(PlanscapeCommand):
                 datalayer=datalayer,
                 upload_to=upload_to,
             )
+            self._change_datalayer_status_request(datalayer["id"], "READY", **kwargs)
         return output_data
 
     def _name_from_input_file(self, input_file: str):
@@ -421,3 +422,22 @@ class Command(PlanscapeCommand):
                 fn,
                 s3_files,
             )
+
+    def _change_datalayer_status_request(
+        self, datalayer_id: int, status: str, **kwargs
+    ):
+        base_url = self.get_base_url(**kwargs)
+        url = f"{base_url}/v2/admin/datalayers/{datalayer_id}/change_status/"
+        headers = self.get_headers(**kwargs)
+        response = requests.post(
+            url,
+            headers=headers,
+            json={"status": status},
+        )
+        if not response.ok:
+            raise Exception(
+                f"Failed to set datalayer {datalayer_id} to {status}. "
+                f"Response: {response.status_code} => {response.text}"
+            )
+        data = response.json()
+        return data

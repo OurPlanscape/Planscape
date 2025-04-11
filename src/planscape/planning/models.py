@@ -213,6 +213,9 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
+    def __str__(self):
+        return f"{self.name} - {self.category}"
+
 
 class TreatmentGoalUsageType(models.TextChoices):
     PRIORITY = "PRIORITY", "Priority"
@@ -251,11 +254,22 @@ class TreatmentGoalUsesDataLayer(
         help_text="Constraints of the relation between Tx Goal and DataLayer.",
     )
 
+    @property
+    def treatment_goal_name(self):
+        return self.treatment_goal.name
+
+    @property
+    def datalayer_name(self):
+        return self.datalayer.name
+
+    def __str__(self):
+        return f"{self.usage_type} ({self.treatment_goal} - {self.datalayer})"
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["treatment_goal", "datalayer"],
-                name="unique_treatment_goal_datalayer",
+                fields=["treatment_goal", "datalayer", "usage_type"],
+                name="unique_treatment_goal_datalayer_usage_type",
                 condition=Q(deleted_at=None),
             )
         ]
