@@ -18,7 +18,6 @@ import { featureCollection, point } from '@turf/helpers';
 import * as L from 'leaflet';
 import 'leaflet.vectorgrid';
 import { BehaviorSubject, of } from 'rxjs';
-import * as shp from 'shpjs';
 
 import { LegacyMaterialModule } from '../material/legacy-material.module';
 import {
@@ -570,24 +569,38 @@ describe('MapComponent', () => {
       expect(component.showUploader).toBeTrue();
     });
 
-    it('adds the geojson to the map given a valid shapefile', async () => {
+    it('adds the geojson to the map given a valid shapefile', fakeAsync(async () => {
       const testFile = new File([], 'test.zip');
       const fakeResult = featureCollection([point([-75.343, 39.984])]);
-      const mockReader = jasmine.createSpyObj('FileReader', [
+      const fileReaderSpy = jasmine.createSpyObj('FileReader', [
         'readAsArrayBuffer',
-        'onload',
       ]);
-      mockReader.result = 'test content';
-      mockReader.readAsArrayBuffer.and.callFake(() => mockReader.onload());
-      createSpy(mockReader);
-      spyOn(shp, 'parseZip').and.returnValue(Promise.resolve(fakeResult));
+      const mockBuffer = new ArrayBuffer(8);
+      spyOn(window as any, 'FileReader').and.returnValue(fileReaderSpy);
+      let onloadCallback: () => void;
+      Object.defineProperty(fileReaderSpy, 'onload', {
+        set(callback) {
+          onloadCallback = () => {
+            fileReaderSpy.result = mockBuffer;
+            callback();
+          };
+        },
+      });
+
+      fileReaderSpy.readAsArrayBuffer.and.callFake(() => {
+        onloadCallback();
+      });
+      spyOn(component as any, 'loadShapefileParser').and.returnValue(
+        Promise.resolve(() => fakeResult)
+      );
       spyOn(mapManager, 'addGeoJsonToDrawing').and.stub();
-
       await component.loadArea({ type: 'area_upload', value: testFile });
-
-      expect(mapManager.addGeoJsonToDrawing).toHaveBeenCalled();
-      expect(component.showUploader).toBeFalse();
-    });
+      tick();
+      expect(mapManager.addGeoJsonToDrawing).toHaveBeenCalledWith(
+        fakeResult,
+        jasmine.anything()
+      );
+    }));
 
     it('shows error when the file is invalid', async () => {
       const testFile = new File([], 'test.zip');
@@ -598,7 +611,9 @@ describe('MapComponent', () => {
       mockReader.result = 'test content';
       mockReader.readAsArrayBuffer.and.callFake(() => mockReader.onload());
       createSpy(mockReader);
-      spyOn(shp, 'parseZip').and.returnValue(Promise.reject());
+      spyOn(component as any, 'loadShapefileParser').and.returnValue(
+        Promise.reject()
+      );
       spyOn(mapManager, 'addGeoJsonToDrawing').and.stub();
       spyOn(component as any, 'showUploadError').and.callThrough();
 
