@@ -634,7 +634,7 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         reader.readAsArrayBuffer(file);
       });
       try {
-        const { default: parseZip } = await import('shpjs');
+        const parseZip = await this.loadShapefileParser();
         const geojson = (await parseZip(fileAsArrayBuffer)) as GeoJSON.GeoJSON;
         if (geojson.type == 'FeatureCollection') {
           this.addFeaturesToMapIfValid(geojson);
@@ -819,5 +819,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           Math.floor(index / 2)
         );
     }
+  }
+
+  async loadShapefileParser() {
+    const { default: parseZip } = await import('shpjs');
+    return parseZip;
   }
 }
