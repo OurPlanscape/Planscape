@@ -48,6 +48,8 @@ export class OpacitySliderComponent {
    * Initial value
    */
   @Input() sliderValue = 50;
+
+  @Input() tooltip = 'Opacity';
   /**
    * Bubbles up the live value of the slider
    */
