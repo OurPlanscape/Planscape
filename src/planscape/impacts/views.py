@@ -214,7 +214,8 @@ class TreatmentPlanViewSet(
         treatment_plan.save()
 
         async_calculate_persist_impacts_treatment_plan.delay(
-            treatment_plan_pk=treatment_plan.pk
+            treatment_plan_pk=treatment_plan.pk,
+            user_id=request.user.pk,
         )
 
         treatment_plan.refresh_from_db()

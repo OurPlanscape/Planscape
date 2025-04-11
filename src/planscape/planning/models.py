@@ -178,6 +178,12 @@ class ScenarioOrigin(models.TextChoices):
     USER = "USER", "User"
 
 
+class TreatmentGoalCategory(models.TextChoices):
+    FIRE_DYNAMICS = "FIRE_DYNAMICS", "Fire Dynamics"
+    BIODIVERSITY = "BIODIVERSITY", "Biodiversity"
+    CARBON_BIOMASS = "CARBON_BIOMASS", "Carbon/Biomass"
+
+
 class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
     name = models.CharField(max_length=120, help_text="Name of the Treatment Goal.")
@@ -193,6 +199,22 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
     active = models.BooleanField(
         default=True, help_text="Treatment Goal active status."
     )
+    category = models.CharField(
+        max_length=32,
+        choices=TreatmentGoalCategory.choices,
+        help_text="Treatment Goal category.",
+        null=True,
+    )
+    created_by_id: int
+    created_by = models.ForeignKey(
+        User,
+        related_name="created_treatment_goals",
+        on_delete=models.RESTRICT,
+        null=True,
+    )
+
+    def __str__(self):
+        return f"{self.name} - {self.category}"
 
 
 class TreatmentGoalUsageType(models.TextChoices):
@@ -232,11 +254,22 @@ class TreatmentGoalUsesDataLayer(
         help_text="Constraints of the relation between Tx Goal and DataLayer.",
     )
 
+    @property
+    def treatment_goal_name(self):
+        return self.treatment_goal.name
+
+    @property
+    def datalayer_name(self):
+        return self.datalayer.name
+
+    def __str__(self):
+        return f"{self.usage_type} ({self.treatment_goal} - {self.datalayer})"
+
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["treatment_goal", "datalayer"],
-                name="unique_treatment_goal_datalayer",
+                fields=["treatment_goal", "datalayer", "usage_type"],
+                name="unique_treatment_goal_datalayer_usage_type",
                 condition=Q(deleted_at=None),
             )
         ]

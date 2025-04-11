@@ -1,10 +1,8 @@
-import enum
 import json
 import logging
 import math
 import os
 import zipfile
-from celery import chord
 from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
@@ -12,6 +10,7 @@ from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 
 import fiona
 from actstream import action
+from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -20,10 +19,6 @@ from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils import geometry
-from utils.geometry import to_multi
-
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -35,8 +30,12 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import async_forsys_run, async_calculate_stand_metrics
+from planning.tasks import async_calculate_stand_metrics, async_forsys_run
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planscape.exceptions import InvalidGeometry
+from planscape.openpanel import track_openpanel
 from planscape.typing import TLooseGeom, TUser
 
 User = get_user_model()
@@ -67,6 +66,11 @@ def create_planning_area(
         geometry=geometry,
         notes=notes,
     )
+    track_openpanel(
+        name="planning.planning_area.created",
+        properties={"region": region_name},
+        user_id=user.pk,
+    )
     action.send(user, verb="created", action_object=planning_area)
     return planning_area
 
@@ -94,6 +98,11 @@ def delete_planning_area(
     )
     ProjectArea.objects.filter(scenario__planning_area__pk=planning_area.pk).update(
         deleted_at=right_now
+    )
+    track_openpanel(
+        name="planning.planning_area.deleted",
+        properties={"soft": True},
+        user_id=user.pk,
     )
     return (True, "deleted")
 
@@ -151,6 +160,18 @@ def create_scenario(user: TUser, **kwargs) -> Scenario:
         )
         for datalayer_name in datalayer_names
     ]
+    track_openpanel(
+        name="planning.scenario.created",
+        properties={
+            "origin": scenario.origin,
+            "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
+            "treatment_goal_category": treatment_goal.category
+            if treatment_goal
+            else None,
+            "treatment_goal_name": treatment_goal.name if treatment_goal else None,
+        },
+        user_id=user.pk,
+    )
     transaction.on_commit(
         lambda: chord(tasks)(async_forsys_run.si(scenario_id=scenario.pk))
     )
@@ -268,7 +289,16 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
         result=result,
         status="SUCCESS",
     )
-
+    track_openpanel(
+        name="planning.scenario.created",
+        properties={
+            "origin": ScenarioOrigin.USER,
+            "treatment_goal_id": None,
+            "treatment_goal_category": None,
+            "treatment_goal_name": None,
+        },
+        user_id=user.pk,
+    )
     return scenario
 
 
@@ -294,6 +324,13 @@ def delete_scenario(
     scenario.delete()
     ScenarioResult.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
     ProjectArea.objects.filter(scenario__pk=scenario.pk).update(deleted_at=right_now)
+    track_openpanel(
+        name="planning.scenario.deleted",
+        properties={
+            "soft": True,
+        },
+        user_id=user.pk,
+    )
     return (True, "deleted")
 
 

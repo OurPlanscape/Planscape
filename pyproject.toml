@@ -72,6 +72,8 @@ multipledispatch = "^1.0.0"
 pygeometa = "^0.16.1"
 python-magic = "^0.4.27"
 django-cacheops = "^7.1"
+openpanel = "^0.0.1"
+martor = "^1.6.45"
 
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"

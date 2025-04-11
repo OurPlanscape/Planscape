@@ -2,17 +2,6 @@ from typing import Any, Dict, Optional
 
 from cacheops import cached
 from core.serializers import MultiSerializerMixin
-from django.conf import settings
-from django.contrib.postgres.search import SearchQuery, SearchVector
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
-
 from datasets.filters import DataLayerFilterSet
 from datasets.models import (
     DataLayer,
@@ -31,6 +20,18 @@ from datasets.serializers import (
     SearchResultsSerializer,
 )
 from datasets.services import find_anything
+from django.conf import settings
+from django.contrib.postgres.search import SearchQuery, SearchVector
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
+from planscape.openpanel import track_openpanel
 
 
 class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
@@ -70,6 +71,13 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
             type=serializer.validated_data.get("type"),
         )
         serializer = BrowseDataLayerSerializer(results, many=True)
+        track_openpanel(
+            name="datasets.dataset.browse",
+            properties={
+                "dataset_id": dataset.pk,
+            },
+            user_id=request.user.pk,
+        )
         return Response(
             serializer.data,
             status=status.HTTP_200_OK,
@@ -127,6 +135,15 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         out_serializer = SearchResultsSerializer(
             list(search_results),
             many=True,
+        )
+        # not inside the service layer because service layer is cached and it's not per user
+        track_openpanel(
+            name="datasets.datalayer.find_anything",
+            properties={
+                "term": term,
+                "type": type,
+            },
+            user_id=request.user.pk,
         )
         return Response(out_serializer.data, status=status.HTTP_200_OK)
 

@@ -1,5 +1,6 @@
 import factory
 from django.contrib.gis.geos import Polygon, MultiPolygon
+import factory.fuzzy
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -9,6 +10,7 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalCategory,
 )
 from collaboration.models import Role
 from collaboration.tests.factories import UserObjectRoleFactory
@@ -79,6 +81,11 @@ class TreatmentGoalFactory(factory.django.DjangoModelFactory):
         model = TreatmentGoal
 
     name = factory.Sequence(lambda x: "treatment goal %s" % x)
+    description = factory.Faker("text")
+    active = True
+    priorities = ["foo", "bar", "baz"]
+    category = factory.fuzzy.FuzzyChoice(TreatmentGoalCategory.values)
+    created_by = factory.SubFactory(UserFactory)
 
 
 class ScenarioFactory(factory.django.DjangoModelFactory):
@@ -130,16 +137,3 @@ class ProjectAreaFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = ProjectArea
-
-
-class TreatmentGoalFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = TreatmentGoal
-
-    name = factory.Sequence(lambda x: "treatment goal %s" % x)
-    description = factory.Sequence(lambda x: "description %s" % x)
-    active = True
-    priorities = {
-        "scenario_priorities": ["priority 1", "priority 2"],
-        "scenario_output_fields": ["output field 1", "output field 2"],
-    }

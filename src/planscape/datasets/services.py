@@ -10,12 +10,6 @@ import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
 from core.s3 import create_upload_url, is_s3_file, s3_filename
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import transaction
-from organizations.models import Organization
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -34,6 +28,13 @@ from datasets.search import (
     dataset_to_search_result,
     organization_to_search_result,
 )
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import transaction
+from organizations.models import Organization
+
+from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -131,6 +132,15 @@ def create_dataset(
         version=version,
     )
     invalidate_model(Dataset)
+    track_openpanel(
+        name="datasets.dataset.created",
+        properties={
+            "organization_id": organization.pk,
+            "organization_name": organization.name,
+            "visibility": visibility,
+        },
+        user_id=created_by.pk,
+    )
     return dataset
 
 
@@ -158,7 +168,15 @@ def create_style(
         data_hash=data_hash,
     )
     action.send(created_by, verb="created", action_object=style)
-
+    track_openpanel(
+        name="datasets.style.created",
+        properties={
+            "organization_id": organization.pk,
+            "organization_name": organization.name,
+            "type": type,
+        },
+        user_id=created_by.pk,
+    )
     if datalayers:
         for datalayer in datalayers:
             assign_style(created_by=created_by, style=style, datalayer=datalayer)
@@ -196,6 +214,17 @@ def assign_style(
         target=style,
     )
     invalidate_model(DataLayer)
+    track_openpanel(
+        name="datasets.style.assigned",
+        properties={
+            "organization_id": style.organization.id,
+            "organization_name": style.organization.name,
+            "datalayer_id": datalayer.pk,
+            "datalayer_name": datalayer.name,
+            "dataset_id": datalayer.dataset.pk,
+        },
+        user_id=created_by.pk,
+    )
     return datalayer_has_style
 
 
@@ -261,6 +290,16 @@ def create_datalayer(
 
     action.send(created_by, verb="created", action_object=datalayer)
     invalidate_model(DataLayer)
+    track_openpanel(
+        name="datasets.datalayer.created",
+        properties={
+            "organization_id": organization.pk,
+            "organization_name": organization.name,
+            "dataset_id": dataset.pk,
+            "dataset_name": dataset.name,
+        },
+        user_id=created_by.pk,
+    )
     return {
         "datalayer": datalayer,
         "upload_to": upload_to,
@@ -268,7 +307,10 @@ def create_datalayer(
 
 
 @cached(timeout=settings.FIND_ANYTHING_TTL)
-def find_anything(term: str, type: Optional[str] = None) -> Dict[str, SearchResult]:
+def find_anything(
+    term: str,
+    type: Optional[str] = None,
+) -> Dict[str, SearchResult]:
     datalayer_filter = {
         "name__icontains": term,
         "dataset__visibility": VisibilityOptions.PUBLIC,

@@ -77,6 +77,7 @@ INSTALLED_APPS = [
     "rest_framework.authtoken",
     "drf_spectacular",
     "treebeard",
+    "martor",
 ] + PLANSCAPE_APPS
 
 # Middleware order matters because of layering dependencies
@@ -459,3 +460,19 @@ GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
 
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
+
+# OPENPANEL config
+OPENPANEL_URL = config("OPENPANEL_URL", None)
+OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", None)
+OPENPANEL_CLIENT_SECRET = config("OPENPANEL_CLIENT_SECRET", None)
+
+# MARTOR (ADMIN MARKDOWN EDITOR)
+
+MARTOR_TOOLBAR_BUTTONS = [
+    "bold",
+    "italic",
+    "heading",
+    "link",
+    "toggle-maximize",
+    "help",
+]

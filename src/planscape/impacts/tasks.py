@@ -1,28 +1,30 @@
 import logging
-from typing import Tuple
+from typing import Optional, Tuple
 from urllib.parse import urljoin
-from celery import chord, chain
 
-from rasterio.errors import RasterioIOError
+from celery import chain, chord
 from django.conf import settings
-from django.db import transaction
 from django.core.mail import send_mail
+from django.db import transaction
 from django.template.loader import render_to_string
 from django.utils import timezone
 from impacts.models import (
     AVAILABLE_YEARS,
     ImpactVariable,
+    TreatmentPlan,
     TreatmentPlanStatus,
     TreatmentPrescriptionAction,
-    TreatmentPlan,
 )
 from impacts.services import (
     calculate_impacts,
+    calculate_impacts_for_untreated_stands,
     get_calculation_matrix,
     get_calculation_matrix_wo_action,
-    calculate_impacts_for_untreated_stands,
 )
+from rasterio.errors import RasterioIOError
+
 from planscape.celery import app
+from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
 
@@ -130,6 +132,7 @@ def async_set_status(
     treatment_plan_pk: int,
     status: TreatmentPlanStatus = TreatmentPlanStatus.FAILURE,
     start: bool = False,
+    user_id: Optional[int] = None,
 ) -> Tuple[bool, int]:
     """sets the status of a treatment plan async.
     this is used as a callback in celery canvas.
@@ -144,6 +147,11 @@ def async_set_status(
             setattr(treatment_plan, attr, timezone.now())
             treatment_plan.save()
             log.info(f"Treatment plan {treatment_plan_pk} changed status to {status}.")
+            track_openpanel(
+                name="impacts.treatment_plan.status_changed",
+                properties={"treatment_plan": treatment_plan_pk, "status": status},
+                user_id=user_id,
+            )
         except TreatmentPlan.DoesNotExist:
             log.warning(
                 "TreatmentPlan with pk %s does not exist or was deleted. Cannot set status.",
@@ -157,12 +165,14 @@ def async_set_status(
 @app.task()
 def async_calculate_persist_impacts_treatment_plan(
     treatment_plan_pk: int,
+    user_id: int,
 ) -> None:
     # calling it this way will not be async
     async_set_status(
         treatment_plan_pk=treatment_plan_pk,
         status=TreatmentPlanStatus.RUNNING,
         start=True,
+        user_id=user_id,
     )
 
     treatment_plan = TreatmentPlan.objects.get(pk=treatment_plan_pk)
@@ -179,6 +189,7 @@ def async_calculate_persist_impacts_treatment_plan(
             treatment_plan_pk=treatment_plan_pk,
             status=TreatmentPlanStatus.SUCCESS,
             start=False,
+            user_id=user_id,
         ),
         async_send_email_process_finished.si(treatment_plan_pk=treatment_plan_pk),
     ).on_error(
@@ -186,6 +197,7 @@ def async_calculate_persist_impacts_treatment_plan(
             treatment_plan_pk=treatment_plan_pk,
             status=TreatmentPlanStatus.FAILURE,
             start=False,
+            user_id=user_id,
         )
     )
     tasks = [
@@ -207,6 +219,13 @@ def async_calculate_persist_impacts_treatment_plan(
     ]
     log.info(f"Firing {len(tasks)} tasks to calculate impacts!")
     chord(tasks)(callback)
+    track_openpanel(
+        name="impacts.treatment_plan.run",
+        properties={
+            "treatment_plan": treatment_plan_pk,
+        },
+        user_id=user_id,
+    )
     log.info(f"Calculation of impacts for {treatment_plan} triggered.")
 
 

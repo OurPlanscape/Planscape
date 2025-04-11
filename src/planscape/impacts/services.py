@@ -43,6 +43,8 @@ from stands.models import (
 )
 from stands.services import calculate_stand_zonal_stats
 
+from planscape.openpanel import track_openpanel
+
 log = logging.getLogger(__name__)
 
 
@@ -61,6 +63,10 @@ def create_treatment_plan(
         scenario=scenario,
         status=TreatmentPlanStatus.PENDING,
         name=name,
+    )
+    track_openpanel(
+        name="impacts.treatment_plan.create",
+        user_id=created_by.pk,
     )
     actstream_action.send(created_by, verb="created", action_object=treatment_plan)
     return treatment_plan
@@ -147,7 +153,10 @@ def clone_treatment_plan(
             treatment_plan.tx_prescriptions.all(),
         )
     )
-
+    track_openpanel(
+        name="impacts.treatment_plan.clone",
+        user_id=user.pk,
+    )
     actstream_action.send(
         user,
         verb="cloned",

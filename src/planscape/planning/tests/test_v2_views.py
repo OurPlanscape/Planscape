@@ -10,12 +10,19 @@ from impacts.permissions import (
     VIEWER_PERMISSIONS,
 )
 from rest_framework.test import APITestCase, APITransactionTestCase
+from rest_framework import status
 
-from planning.models import PlanningArea, RegionChoices, ScenarioResult
+from planning.models import (
+    PlanningArea,
+    RegionChoices,
+    ScenarioResult,
+    TreatmentGoalCategory,
+)
 from planning.tests.factories import (
     PlanningAreaFactory,
     ScenarioFactory,
     UserFactory,
+    TreatmentGoalFactory,
 )
 from planning.tests.helpers import _load_geojson_fixture
 
@@ -972,3 +979,80 @@ class CreateScenariosFromUpload(APITransactionTestCase):
             b'{"name":["A scenario with this name already exists."]}',
             response.content,
         )
+
+
+class TreatmentGoalViewSetTest(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory.create(username="testuser")
+        self.client.force_authenticate(self.user)
+
+        self.markdown_description = (
+            "# This is a h1\n"
+            "## This is a h2\n"
+            "### This is a h3\n"
+            "This is a paragraph with a [link](https://planscape.org)"
+        )
+
+        self.html_description = (
+            "<h1>This is a h1</h1>\n"
+            "<h2>This is a h2</h2>\n"
+            "<h3>This is a h3</h3>\n"
+            '<p>This is a paragraph with a <a href="https://planscape.org">link</a></p>'
+        )
+
+        self.first_treatment_goal = TreatmentGoalFactory.create(
+            name="First",
+            description=self.markdown_description,
+            category=TreatmentGoalCategory.BIODIVERSITY,
+        )
+        self.treatment_goals = TreatmentGoalFactory.create_batch(10)
+        self.inactive_treatment_goal = TreatmentGoalFactory.create(active=False)
+
+    def test_list_treatment_goals(self):
+        response = self.client.get(
+            reverse("api:planning:treatment-goals-list"),
+            content_type="application/json",
+        )
+        treatment_goals = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(treatment_goals), 11)
+        first_treatment_goal = treatment_goals[0]
+        self.assertEqual(first_treatment_goal["name"], self.first_treatment_goal.name)
+        self.assertEqual(first_treatment_goal["id"], self.first_treatment_goal.id)
+        self.assertEqual(first_treatment_goal["description"], self.html_description)
+        self.assertEqual(
+            first_treatment_goal["category"], self.first_treatment_goal.category
+        )
+        self.assertEqual(
+            first_treatment_goal["category_text"],
+            self.first_treatment_goal.category.label,
+        )
+
+    def test_detail_treatment_goal(self):
+        response = self.client.get(
+            reverse(
+                "api:planning:treatment-goals-detail",
+                args=[self.first_treatment_goal.id],
+            ),
+            content_type="application/json",
+        )
+        treatment_goal = json.loads(response.content)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(treatment_goal["name"], self.first_treatment_goal.name)
+        self.assertEqual(treatment_goal["id"], self.first_treatment_goal.id)
+        self.assertEqual(treatment_goal["description"], self.html_description)
+        self.assertEqual(treatment_goal["category"], self.first_treatment_goal.category)
+        self.assertEqual(
+            treatment_goal["category_text"], self.first_treatment_goal.category.label
+        )
+
+    def test_detail_inactive_treatment_goal(self):
+        response = self.client.get(
+            reverse(
+                "api:planning:treatment-goals-detail",
+                args=[self.inactive_treatment_goal.id],
+            ),
+            content_type="application/json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
