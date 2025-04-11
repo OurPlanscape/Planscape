@@ -634,10 +634,9 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         reader.readAsArrayBuffer(file);
       });
       try {
-        const shp = await import('shpjs');
-        const geojson = (await shp.parseZip(
-          fileAsArrayBuffer
-        )) as GeoJSON.GeoJSON;
+        console.log('SHAPEEE');
+        const { default: parseZip } = await import('shpjs');
+        const geojson = (await parseZip(fileAsArrayBuffer)) as GeoJSON.GeoJSON;
         if (geojson.type == 'FeatureCollection') {
           this.addFeaturesToMapIfValid(geojson);
         } else {
