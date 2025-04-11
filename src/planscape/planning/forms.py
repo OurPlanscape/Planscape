@@ -1,5 +1,4 @@
 from django import forms
-from django_json_widget.widgets import JSONEditorWidget
 from martor.widgets import AdminMartorWidget
 
 from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
