@@ -13,22 +13,17 @@ class TreatmentGoalAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["description"].required = False
-        self.fields["priorities"].required = False
-        self.fields["stand_thresholds"].required = False
+        self.fields["created_by"].required = False
 
     class Meta:
         model = TreatmentGoal
         widgets = {
             "description": AdminMartorWidget,
-            "priorities": JSONEditorWidget,
-            "stand_thresholds": JSONEditorWidget,
         }
         fields = (
             "name",
             "category",
             "description",
-            "priorities",
-            "stand_thresholds",
             "active",
             "created_by",
         )
