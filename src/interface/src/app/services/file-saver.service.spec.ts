@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { FileSaverService } from './file-saver.service';
 
-fdescribe('FileSaverService', () => {
+describe('FileSaverService', () => {
   let service: FileSaverService;
 
   beforeEach(() => {
