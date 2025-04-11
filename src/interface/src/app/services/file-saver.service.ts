@@ -7,7 +7,7 @@ export class FileSaverService {
   constructor() {}
 
   async saveAs(data: Blob | string, filename?: string) {
-    const FileSaver = await import('file-saver');
-    FileSaver.saveAs(data, filename);
+    const { default: saveAs } = await import('file-saver');
+    saveAs(data, filename);
   }
 }
