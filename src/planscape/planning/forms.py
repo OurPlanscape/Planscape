@@ -35,14 +35,9 @@ class TreatmentGoalUsesDataLayerAdminForm(forms.ModelForm):
 
     class Meta:
         model = TreatmentGoalUsesDataLayer
-        widgets = {
-            "thresholds": JSONEditorWidget,
-            "constraints": JSONEditorWidget,
-        }
         fields = (
             "usage_type",
             "treatment_goal",
             "datalayer",
-            "thresholds",
-            "constraints",
+            "threshold",
         )
