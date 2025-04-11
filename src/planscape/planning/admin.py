@@ -17,6 +17,7 @@ class TreatmentGoalAdmin(admin.ModelAdmin):
     search_fields = ["name"]
     list_filter = ["priorities"]
     ordering = ["name"]
+    raw_id_fields = ["created_by"]
 
     def get_changeform_initial_data(self, request) -> Dict[str, Any]:
         return {"created_by": request.user}
@@ -32,6 +33,7 @@ class TreatmentGoalUsesDataLayerAdmin(admin.ModelAdmin):
     form = TreatmentGoalUsesDataLayerAdminForm
     search_fields = ["usage_type", "treatment_goal__name", "datalayer__name"]
     ordering = ["usage_type", "treatment_goal__name", "datalayer__name"]
+    raw_id_fields = ["treatment_goal", "datalayer"]
 
 
 admin.site.register(TreatmentGoal, TreatmentGoalAdmin)
