@@ -1,6 +1,8 @@
 <mat-card class="slider-card">
   <div class="slider-label" *ngIf="title">{{ title }}</div>
   <mat-slider
+    matTooltip="Opacity"
+    matTooltipPosition="below"
     class="slider-control"
     [min]="minValue"
     [max]="maxValue"
