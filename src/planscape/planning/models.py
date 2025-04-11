@@ -246,10 +246,8 @@ class TreatmentGoalUsesDataLayer(
         help_text="The type of usage for the data layer.",
     )
     threshold = models.CharField(
-        max_length=32,
+        max_length=256,
         null=True,
-        blank=True,
-        default=None,
         help_text="Threshold for the data layer.",
     )
 
