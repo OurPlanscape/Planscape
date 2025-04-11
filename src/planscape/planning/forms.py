@@ -33,16 +33,15 @@ class TreatmentGoalUsesDataLayerAdminForm(forms.ModelForm):
     Admin form for TreatmentGoalUsesDataLayer model.
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["threshold"].required = False
+
     class Meta:
         model = TreatmentGoalUsesDataLayer
-        widgets = {
-            "thresholds": JSONEditorWidget,
-            "constraints": JSONEditorWidget,
-        }
         fields = (
             "usage_type",
             "treatment_goal",
             "datalayer",
-            "thresholds",
-            "constraints",
+            "threshold",
         )
