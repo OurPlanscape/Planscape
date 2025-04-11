@@ -371,10 +371,12 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   /** Draw geojson shapes on the map, or erase currently drawn shapes. */
-  private drawShapes(shapes: Feature[] | null) {
+  private async drawShapes(shapes: Feature[] | null) {
     this.projectAreasLayer?.remove();
 
     if (!shapes) return;
+
+    const { default: polylabel } = await import('polylabel');
 
     this.projectAreasLayer = L.geoJSON(shapes, {
       style: (shape) => ({
@@ -383,12 +385,11 @@ export class PlanMapComponent implements OnInit, AfterViewInit, OnDestroy {
         fillOpacity: 0.4,
         weight: 1.5,
       }),
-      onEachFeature: async (feature, layer) => {
+      onEachFeature: (feature, layer) => {
         if (!feature.properties.treatment_rank) {
           return;
         }
         let center: number[] = [];
-        const { default: polylabel } = await import('polylabel');
         if (feature.geometry.type === 'Polygon') {
           center = polylabel(feature.geometry.coordinates, 0.0005);
           const tooltip = addTooltipAtCenter(
