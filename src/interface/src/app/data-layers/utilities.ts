@@ -1,6 +1,6 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
-import { DataLayer, LayerStyleEntry, ColorLegendInfo } from '@types';
+import { DataLayer, LayerStyleEntry, ColorLegendInfo, MapType } from '@types';
 
 export interface NoData {
   values: number[];
@@ -17,7 +17,7 @@ export interface Entry {
 }
 
 export interface StyleJson {
-  map_type: 'RAMP' | 'INTERVALS' | 'VALUES';
+  map_type: MapType;
   no_data?: NoData;
   entries: Entry[];
 }
