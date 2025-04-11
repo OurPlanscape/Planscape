@@ -56,6 +56,11 @@ export class TreatmentToPDFService {
   rightMargin = 190;
   bottomMargin = 280;
 
+  async loadAutoTable() {
+    const { default: autoTable } = await import('jspdf-autotable');
+    return autoTable;
+  }
+
   async createPDF(map: MapLibreMap, attributions: string) {
     this.activeMap = map;
     this.pdfDoc = new jsPDF();
@@ -101,8 +106,8 @@ export class TreatmentToPDFService {
     // If we are showing the treatment stands, we change what's being rendered
     if (this.mapConfigState.isTreatmentStandsVisible()) {
       const nextY = 132;
-      this.drawTreatmentLegend(130, nextY, treatmentsUsedSet);
-      this.addProjectAreaTable(
+      await this.drawTreatmentLegend(130, nextY, treatmentsUsedSet);
+      await this.addProjectAreaTable(
         this.tableRowsFromSummary(curSummary),
         this.leftMargin + 10,
         nextY,
@@ -111,7 +116,7 @@ export class TreatmentToPDFService {
     } else {
       const projectAreasX = this.leftMargin + 10;
       const projectAreasY = 132;
-      this.addProjectAreaTable(
+      await this.addProjectAreaTable(
         this.tableRowsFromSummary(curSummary),
         projectAreasX,
         projectAreasY,
@@ -163,7 +168,7 @@ export class TreatmentToPDFService {
       name: descriptionsForAction(t),
       icon: treatmentIcons[t as PrescriptionAction],
     }));
-    const { default: autoTable } = await import('jspdf-autotable');
+    const autoTable = await this.loadAutoTable();
     autoTable(this.pdfDoc, {
       styles: {
         fillColor: [255, 255, 255],
@@ -240,7 +245,7 @@ export class TreatmentToPDFService {
     startY: number,
     tableWidth: number
   ) {
-    const { default: autoTable } = await import('jspdf-autotable');
+    const autoTable = await this.loadAutoTable();
     autoTable(this.pdfDoc, {
       styles: { fillColor: [255, 255, 255] },
       alternateRowStyles: { fillColor: [255, 255, 255] },
