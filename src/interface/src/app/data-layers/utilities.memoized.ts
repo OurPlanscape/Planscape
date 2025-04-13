@@ -1,10 +1,8 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
-import { DataLayer, ColorLegendInfo, LayerStyleEntry, Entry, NoData, StyleJson } from '@types';
+import { DataLayer, LayerStyleEntry, Entry, StyleJson, ColorLegendInfo } from '@types';
+import memoizerific from 'memoizerific';
 
-/**
- * RGBA color representation.
- */
 export interface RGBA {
   r: number;
   g: number;
@@ -12,18 +10,17 @@ export interface RGBA {
   a: number;
 }
 
-/**
- * Transparent black color constant.
- */
 const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
 
 export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
   const { map_type, entries } = dataLayer.styles[0].data;
-  const sorted = entries.slice().sort((a, b) => a.value - b.value);
-  const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => ({
-    colorHex: e.color ?? '',
-    entryLabel: e.label ?? '',
-  }));
+  const sorted = [...entries].sort((a, b) => a.value - b.value);
+  const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => {
+    return {
+      colorHex: e.color ?? '',
+      entryLabel: e.label ?? '',
+    };
+  });
   return { title: dataLayer.name, type: map_type, entries: colorDetails };
 }
 
@@ -51,24 +48,6 @@ function writeColorToBuffer(rgbaData: Uint8ClampedArray, color: RGBA): void {
   rgbaData.set([color.r, color.g, color.b, a]);
 }
 
-/**
- * Creates a set of no-data values for fast lookup.
- */
-function createNoDataSet(no_data?: NoData): Set<number> {
-  return new Set(no_data?.values || []);
-}
-
-/**
- * Sorts entries by value in ascending order.
- */
-function sortEntriesByValue(entries: Entry[]): Entry[] {
-  return [...entries].sort((a, b) => a.value - b.value);
-}
-
-/**
- * Pre-computes and caches all colors for the given entries.
- * This avoids repeated parsing of color strings during pixel processing.
- */
 function prebufferColors(entries: Entry[]): Map<number, RGBA> {
   const colorCache = new Map<number, RGBA>();
 
@@ -93,10 +72,10 @@ function prebufferIntervalColors(sortedEntries: Entry[]): [number, RGBA][] {
 /**
  * Pre-computes scales for RAMP mapping to avoid rebuilding them for each pixel.
  */
-function prebufferRampScales(sortedEntries: Entry[]): {
+const prebufferRampScales = memoizerific(1000)((sortedEntries: Entry[]): {
   colorScale: ReturnType<typeof scaleLinear<string>>;
   opacityScale: ReturnType<typeof scaleLinear<number>>;
-} {
+} => {
   const domain = sortedEntries.map((entry) => entry.value);
   const colorRange = sortedEntries.map((entry) => entry.color);
   const opacityRange = sortedEntries.map((entry) => entry.opacity ?? 1.0);
@@ -105,7 +84,7 @@ function prebufferRampScales(sortedEntries: Entry[]): {
   const opacityScale = scaleLinear<number>().domain(domain).range(opacityRange).clamp(true);
 
   return { colorScale, opacityScale };
-}
+});
 
 /**
  * Creates a function that returns a color based on VALUE mapping.
@@ -166,46 +145,12 @@ function createSingleEntryMapper(entry: Entry): (value: number) => RGBA {
 }
 
 /**
- * Cache for pre-buffered data based on StyleJson.
+ * Creates a color mapper with memoization.
  */
-interface StyleCache {
-  noDataSet: Set<number>;
-  colorMapper: (value: number) => RGBA;
-  lastUsed: number;
-}
-
-/**
- * Global cache for styleJson to pre-buffered data.
- */
-const styleCache = new Map<StyleJson, StyleCache>();
-const MAX_CACHE_SIZE = 1000;
-
-/**
- * Evicts the least recently used item from the cache.
- */
-function evictLeastRecentlyUsed(): void {
-  let oldestKey: StyleJson | null = null;
-  let oldestTimestamp = Infinity;
-
-  for (const [key, value] of styleCache.entries()) {
-    if (value.lastUsed < oldestTimestamp) {
-      oldestTimestamp = value.lastUsed;
-      oldestKey = key;
-    }
-  }
-
-  if (oldestKey) {
-    styleCache.delete(oldestKey);
-  }
-}
-
-/**
- * Creates a color mapper with caching and LRU eviction.
- */
-function createCachedColorMapper(styleJson: StyleJson): StyleCache {
+const createColorMapper = (styleJson: StyleJson) => {
   const { map_type, no_data, entries } = styleJson;
 
-  const noDataSet = createNoDataSet(no_data);
+  const noDataSet = new Set(no_data?.values || []);
   let colorMapper: (value: number) => RGBA;
 
   if (entries.length === 0) {
@@ -218,11 +163,11 @@ function createCachedColorMapper(styleJson: StyleJson): StyleCache {
         colorMapper = createValuesColorMapper(entries);
         break;
       case 'INTERVALS':
-        const sortedEntries = sortEntriesByValue(entries);
+        const sortedEntries = [...entries].sort((a, b) => a.value - b.value);
         colorMapper = createIntervalsColorMapper(sortedEntries);
         break;
       case 'RAMP':
-        const sortedRampEntries = sortEntriesByValue(entries);
+        const sortedRampEntries = [...entries].sort((a, b) => a.value - b.value);
         colorMapper = createRampColorMapper(sortedRampEntries);
         break;
       default:
@@ -230,28 +175,19 @@ function createCachedColorMapper(styleJson: StyleJson): StyleCache {
     }
   }
 
-  return { noDataSet, colorMapper, lastUsed: Date.now() };
-}
+  return { noDataSet, colorMapper };
+};
 
 /**
  * Main function that creates a pixel coloring function based on style configuration.
  */
 export function makeColorFunction(
-  styleJson: StyleJson
+  styleJson: StyleJson,
+  clearCache = false
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
-  let cachedData = styleCache.get(styleJson);
 
-  if (!cachedData) {
-    if (styleCache.size >= MAX_CACHE_SIZE) {
-      evictLeastRecentlyUsed();
-    }
-    cachedData = createCachedColorMapper(styleJson);
-    styleCache.set(styleJson, cachedData);
-  } else {
-    cachedData.lastUsed = Date.now();
-  }
 
-  const { noDataSet, colorMapper } = cachedData;
+  const { noDataSet, colorMapper } = createColorMapper(styleJson);
 
   return (pixel: number[], rgba: Uint8ClampedArray) => {
     const value = pixel[0];
