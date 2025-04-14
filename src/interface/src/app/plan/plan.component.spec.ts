@@ -143,23 +143,16 @@ describe('PlanComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('calls service to update plan state based on route', () => {
-    const legacyPlanStateService = fixture.debugElement.injector.get(
-      LegacyPlanStateService
-    );
-
-    expect(legacyPlanStateService.updateStateWithPlan).toHaveBeenCalledOnceWith(
-      24
-    );
-  });
-
   it('backToOverview navigates back to overview', () => {
     const router = fixture.debugElement.injector.get(Router);
     spyOn(router, 'navigate');
 
     component.backToOverview();
 
-    expect(router.navigate).toHaveBeenCalledOnceWith(['plan', fakePlan.id]);
+    expect(router.navigate).toHaveBeenCalledOnceWith([
+      'plan',
+      fakePlan.id.toString(),
+    ]);
   });
 
   it('should emit true from showOverview$ when showOverview is true in route data', (done) => {

@@ -57,7 +57,7 @@ describe('ScenarioService', () => {
         id: '1',
         name: 'name',
         notes: undefined,
-        planning_area: '1',
+        planning_area: 1,
         configuration: scenarioConfig,
         scenario_result: undefined,
         status: 'ACTIVE',
@@ -98,7 +98,7 @@ describe('ScenarioService', () => {
       const scenario: Scenario = {
         id: '1',
         name: 'name',
-        planning_area: '1',
+        planning_area: 1,
         configuration: scenarioConfig,
         status: 'ACTIVE',
       };
@@ -130,7 +130,7 @@ describe('ScenarioService', () => {
       expect(req.request.body).toEqual({
         id: '1',
         name: 'name',
-        planning_area: '1',
+        planning_area: 1,
         configuration: backendConfig,
         status: 'ACTIVE',
       });
