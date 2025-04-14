@@ -7,7 +7,15 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  interval,
+  map,
+  NEVER,
+  take,
+} from 'rxjs';
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
@@ -20,6 +28,7 @@ import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { PlanState } from '../plan.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -69,7 +78,8 @@ export class CreateScenariosComponent implements OnInit {
     private router: Router,
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
-    private scenarioStateService: ScenarioState
+    private scenarioStateService: ScenarioState,
+    private planState: PlanState
   ) {}
 
   createForms() {
@@ -91,18 +101,19 @@ export class CreateScenariosComponent implements OnInit {
   ngOnInit(): void {
     this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
-    this.LegacyPlanStateService.planState$
-      .pipe(untilDestroyed(this), take(1))
-      .subscribe((planState) => {
-        this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.scenarioId = planState.currentScenarioId;
-        this.planId = planState.currentPlanId;
-        if (this.plan$.getValue()?.region_name) {
-          this.LegacyPlanStateService.setPlanRegion(
-            this.plan$.getValue()?.region_name!
-          );
-        }
-      });
+    combineLatest([
+      this.planState.currentPlan$,
+      this.scenarioStateService.currentScenarioId$,
+    ]).subscribe(([plan, scenarioId]) => {
+      this.plan$.next(plan);
+      this.scenarioId = scenarioId ? scenarioId.toString() : null;
+      this.planId = plan.id;
+      if (plan?.region_name) {
+        this.LegacyPlanStateService.setPlanRegion(
+          this.plan$.getValue()?.region_name!
+        );
+      }
+    });
 
     if (this.scenarioId) {
       // Has to be outside service subscription or else will cause infinite loop
@@ -155,7 +166,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   loadConfig(): void {
-    this.LegacyPlanStateService.getScenario(this.scenarioId!).subscribe({
+    this.scenarioService.getScenario(this.scenarioId!).subscribe({
       next: (scenario: Scenario) => {
         // if we have the same state do nothing.
         if (this.scenarioState === scenario.scenario_result?.status) {
@@ -228,7 +239,8 @@ export class CreateScenariosComponent implements OnInit {
     }
     this.generatingScenario = true;
     this.goalOverlayService.close();
-    this.LegacyPlanStateService.createScenario(this.formValueToScenario())
+    this.scenarioService
+      .createScenario(this.formValueToScenario())
       .pipe(
         catchError((error) => {
           this.generatingScenario = false;
