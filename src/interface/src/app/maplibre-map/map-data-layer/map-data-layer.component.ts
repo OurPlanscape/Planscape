@@ -64,6 +64,17 @@ export class MapDataLayerComponent implements OnInit {
         this.dataLayersStateService.setDataLayerLoading(false);
       }
     });
+
+    this.mapLibreMap.on('error', (event: any) => {
+      if (
+        this.mapLibreMap.getSource('rasterImage') &&
+        event.sourceId === 'rasterImage' &&
+        !event.isSourceLoaded
+      ) {
+        //TODO: show message to user -- MatSnackBar? 
+        this.dataLayersStateService.setDataLayerLoading(false);
+      }
+    });
   }
 
   addRasterLayer(): void {
