@@ -42,12 +42,19 @@
             },
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "leaflet",
-              "shpjs",
-              "geojson-rbush",
-              "polylabel",
               "file-saver",
-              "canvg"
+              "jspdf-autotable",
+              "shpjs",
+              "polylabel",
+              "maplibre-gl",
+              "@geomatico/maplibre-cog-protocol",
+              "fast-deep-equal",
+              "leaflet",
+              "geojson-rbush",
+              "canvg",
+              "core-js",
+              "raf",
+              "rgbcolor"
             ]
           },
           "configurations": {
