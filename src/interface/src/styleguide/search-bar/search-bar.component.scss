@@ -7,12 +7,22 @@
 
 .search-bar-container {
   width: 100%;
+  flex-direction: row;
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.search-input {
+  flex-grow: 1;
+  flex-basis: 0;
 }
 
 .autocomplete-spacer {
   width: 100%;
   height: 1px;
 }
+
 .autocomplete-panel {
   width: 300px;
 }
@@ -46,4 +56,15 @@
   width: 20px;
   font-size: 20px;
   margin-right: 0px;
+}
+
+.close-button {
+  position: relative;
+  right: -8px;
+  border: none;
+  border-radius: 50%;
+  aspect-ratio: 1;
+  justify-content: center;
+  height: 36px;
+  width: 36px;
 }

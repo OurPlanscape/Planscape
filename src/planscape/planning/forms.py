@@ -1,5 +1,4 @@
 from django import forms
-from django_json_widget.widgets import JSONEditorWidget
 from martor.widgets import AdminMartorWidget
 
 from planning.models import TreatmentGoal, TreatmentGoalUsesDataLayer
@@ -10,19 +9,20 @@ class TreatmentGoalAdminForm(forms.ModelForm):
     Admin form for TreatmentGoal model.
     """
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["description"].required = False
+        self.fields["created_by"].required = False
+
     class Meta:
         model = TreatmentGoal
         widgets = {
             "description": AdminMartorWidget,
-            "priorities": JSONEditorWidget,
-            "stand_thresholds": JSONEditorWidget,
         }
         fields = (
             "name",
             "category",
             "description",
-            "priorities",
-            "stand_thresholds",
             "active",
             "created_by",
         )
