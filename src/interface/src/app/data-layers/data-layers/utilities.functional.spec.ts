@@ -92,15 +92,17 @@ describe('Color Function Test For RAMP type', () => {
   it('should interpolate color for a value between two entries', () => {
     const rgba = new Uint8ClampedArray(4);
     colorFunction([0.015], rgba); // Between 0.008 and 0.019
-
-    // Calculate expected color based on interpolation between #F5CC00 and #F57A00
-    // #F5CC00 (245, 204, 0) and #F57A00 (245, 122, 0)
+    // Expected color is an interpolation between #F5CC00 and #F57A00
     const expectedRed = 245; // Red component remains the same
+    const expectedGreenMin = 122;
+    const expectedGreenMax = 204;
+    const expectedBlue = 0;
     const expectedAlpha = 255; // Full opacity
-
-    expect(rgba[0]).toBe(expectedRed); // Red component
-    // expect(rgba[2]).toBe(expectedBlue); // Blue component
-    expect(rgba[3]).toBe(expectedAlpha); // Full opacity
+    expect(rgba[0]).toBe(expectedRed);
+    expect(rgba[1]).toBeGreaterThan(expectedGreenMin);
+    expect(rgba[1]).toBeLessThan(expectedGreenMax);
+    expect(rgba[2]).toBe(expectedBlue);
+    expect(rgba[3]).toBe(expectedAlpha);
   });
 
   it('should set pixel color to transparent for unknown values', () => {
