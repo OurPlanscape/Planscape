@@ -13,12 +13,15 @@ from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.db import transaction
 from django.utils.timezone import now
 from fiona.crs import from_epsg
+from stands.models import Stand, StandSizeChoices, area_from_size
+from utils.geometry import to_multi
+
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -31,24 +34,18 @@ from planning.models import (
     TreatmentGoal,
 )
 from planning.tasks import async_calculate_stand_metrics, async_forsys_run
-from stands.models import Stand, StandSizeChoices, area_from_size
-from utils.geometry import to_multi
-
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
-from planscape.typing import TLooseGeom, TUser
-
-User = get_user_model()
 
 logger = logging.getLogger(__name__)
 
 
 @transaction.atomic()
 def create_planning_area(
-    user: TUser,
+    user: User,
     name: str,
     region_name: str,
-    geometry: TLooseGeom = None,
+    geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
     """Canonical method to create a new planning area."""
@@ -77,7 +74,7 @@ def create_planning_area(
 
 @transaction.atomic
 def delete_planning_area(
-    user: TUser,
+    user: User,
     planning_area: PlanningArea,
 ):
     if not PlanningAreaPermission.can_remove(user, planning_area):
@@ -126,7 +123,7 @@ def get_treatment_goal_from_configuration(
 
 
 @transaction.atomic()
-def create_scenario(user: TUser, **kwargs) -> Scenario:
+def create_scenario(user: User, **kwargs) -> Scenario:
     # precedence here to the `kwargs`. if you supply `origin` here
     # your origin will be used instead of this default one.
     treatment_goal = kwargs.pop("treatment_goal", None)
@@ -304,7 +301,7 @@ def create_scenario_from_upload(validated_data, user) -> Scenario:
 
 @transaction.atomic
 def delete_scenario(
-    user: TUser,
+    user: User,
     scenario: Type[Scenario],
 ):
     if not ScenarioPermission.can_remove(user, scenario):
@@ -477,7 +474,7 @@ def export_to_shapefile(scenario: Scenario) -> Path:
 
 
 @transaction.atomic()
-def toggle_scenario_status(scenario: Scenario, user: TUser) -> Scenario:
+def toggle_scenario_status(scenario: Scenario, user: User) -> Scenario:
     new_status = (
         ScenarioStatus.ACTIVE
         if scenario.status == ScenarioStatus.ARCHIVED
