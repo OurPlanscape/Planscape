@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import os
 import re
 import subprocess
 from collections import defaultdict
@@ -22,10 +21,10 @@ MATTERMOST_CHANNEL: str = config(
 CELERY_CMD = ["celery", "-A", "planscape", "inspect", "active"]
 
 EXPECTED_COUNTS = {
-    "celery": os.environ.get("EXPECTED_CELERY_WORKERS", 2),
-    "forsys": os.environ.get("EXPECTED_FORSYS_WORKERS", 12),
-    "impacts": os.environ.get("EXPECTED_IMPACTS_WORKERS", 18),
-    "other": os.environ.get("EXPECTED_OTHER_WORKERS", 0),
+    "celery": config("EXPECTED_CELERY_WORKERS", 2, cast=int),
+    "forsys": config("EXPECTED_FORSYS_WORKERS", 12, cast=int),
+    "impacts": config("EXPECTED_IMPACTS_WORKERS", 18, cast=int),
+    "other": config("EXPECTED_OTHER_WORKERS", 0, cast=int),
 }
 
 
