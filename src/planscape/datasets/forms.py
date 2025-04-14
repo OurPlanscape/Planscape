@@ -53,6 +53,8 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["url"].disabled = True
         self.fields["mimetype"].disabled = True
         self.fields["geometry"].disabled = True
+        self.fields["info"].required = False
+        self.fields["metadata"].required = False
 
     class Meta:
         model = DataLayer
