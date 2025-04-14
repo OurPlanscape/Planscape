@@ -1,4 +1,9 @@
-import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { ProjectAreasComponent } from './project-areas.component';
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CurrencyInKPipe } from '@shared';
@@ -51,18 +56,20 @@ describe('ProjectAreasComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show `acres` as a number without decimals', fakeAsync (() => {
+  it('should show `acres` as a number without decimals', fakeAsync(() => {
     tick();
     fixture.detectChanges();
-    
-    const queryElement = fixture.debugElement.query(By.css('[data-id="acres"]'));
+
+    const queryElement = fixture.debugElement.query(
+      By.css('[data-id="acres"]')
+    );
     expect(queryElement).toBeTruthy();
     if (queryElement) {
       expect(queryElement.nativeElement.innerHTML).toBe('120');
     }
   }));
 
-  it('should display `percentTotal` with two decimal points and as percentage', fakeAsync (() => {
+  it('should display `percentTotal` with two decimal points and as percentage', fakeAsync(() => {
     tick();
     fixture.detectChanges();
     const queryElement = fixture.debugElement.query(
@@ -71,7 +78,7 @@ describe('ProjectAreasComponent', () => {
     expect(queryElement.innerHTML).toBe('22.34%');
   }));
 
-  it('should show `estimatedCost` in K with 2 decimals', fakeAsync (() => {
+  it('should show `estimatedCost` in K with 2 decimals', fakeAsync(() => {
     tick();
     fixture.detectChanges();
     const queryElement = fixture.debugElement.query(
@@ -80,7 +87,7 @@ describe('ProjectAreasComponent', () => {
     expect(queryElement.innerHTML).toBe('$1.23K');
   }));
 
-  it('should show `score` as number with two decimals', fakeAsync (() => {
+  it('should show `score` as number with two decimals', fakeAsync(() => {
     tick();
     fixture.detectChanges();
     const queryElement = fixture.debugElement.query(
@@ -89,7 +96,7 @@ describe('ProjectAreasComponent', () => {
     expect(queryElement.innerHTML).toBe('2.12');
   }));
 
-  it('should calculate totals based on provided areas', fakeAsync (() => {
+  it('should calculate totals based on provided areas', fakeAsync(() => {
     tick();
     fixture.detectChanges();
     component.areas = [
