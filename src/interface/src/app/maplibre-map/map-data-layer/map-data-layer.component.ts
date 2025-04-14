@@ -24,9 +24,6 @@ export class MapDataLayerComponent implements OnInit {
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
-  processingStart = 0;
-  processingEnd = 0;
-
   constructor(private dataLayersStateService: DataLayersStateService) {
     dataLayersStateService.selectedDataLayer$
       .pipe(untilDestroyed(this))
