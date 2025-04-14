@@ -55,7 +55,7 @@ describe('SavedScenariosComponent', () => {
           {
             id: '1',
             name: 'name',
-            planning_area: '1',
+            planning_area: 1,
             createdTimestamp: 100,
             configuration: {
               id: 1,
