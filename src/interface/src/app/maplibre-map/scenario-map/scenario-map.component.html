@@ -5,7 +5,8 @@
     [maxValue]="1"
     [step]="0.01"
     [sliderValue]="(projectAreasOpacity$ | async) ?? 0.5"
-    (valueChange)="handleOpacityChange($event)"></sg-opacity-slider>
+    (valueChange)="handleOpacityChange($event)"
+    tooltip="Project Area Opacity"></sg-opacity-slider>
 </app-map-nav-bar>
 
 <mgl-map
