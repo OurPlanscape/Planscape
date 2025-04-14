@@ -33,7 +33,7 @@ export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
   return { title: dataLayer.name, type: map_type, entries: colorDetails };
 }
 
-// maps hexcolor string to an RGB object
+// maps hexcolor string to an RGB object with integer values
 function parseColor(hexColor: string, opacity = 1.0): RGBA {
   const c = d3Color(hexColor);
   if (!c) return TRANSPARENT;
@@ -71,21 +71,21 @@ function createValuesColorMapper(entries: Entry[]): (value: number) => RGBA {
   };
 }
 
-// precalculates colors for INTERVAL map type
-function prebufferIntervalColors(sortedEntries: Entry[]): [number, RGBA][] {
+// precalculates colors for INTERVALS map type
+function prebufferIntervalsColors(sortedEntries: Entry[]): [number, RGBA][] {
   return sortedEntries.map((entry) => [
     entry.value,
     parseColor(entry.color, entry.opacity ?? 1.0),
   ]);
 }
-// returns a function for INTERVAL map type
+// returns a function for INTERVALS map type
 function createIntervalsColorMapper(
   sortedEntries: Entry[]
 ): (value: number) => RGBA {
   if (sortedEntries.length === 0) {
     return () => TRANSPARENT;
   }
-  const thresholds = prebufferIntervalColors(sortedEntries);
+  const thresholds = prebufferIntervalsColors(sortedEntries);
   return (value: number) => {
     if (value <= thresholds[0][0]) {
       return thresholds[0][1];
@@ -175,12 +175,12 @@ function writeColorToBuffer(rgbaData: Uint8ClampedArray, color: RGBA): void {
 export function generateColorFunction(
   styleJson: StyleJson
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
-  const noDataValues = new Set(styleJson.no_data?.values || []);
+  const knownNoDataValues = new Set(styleJson.no_data?.values || []);
   const colorMapper = determineColorFunction(styleJson);
   return (pixel: number[], rgba: Uint8ClampedArray) => {
     const value = pixel[0];
 
-    if (noDataValues.has(value)) {
+    if (knownNoDataValues.has(value)) {
       writeColorToBuffer(rgba, TRANSPARENT);
       return;
     }
