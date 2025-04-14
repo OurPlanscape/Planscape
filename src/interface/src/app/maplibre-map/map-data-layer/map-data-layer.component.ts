@@ -71,7 +71,6 @@ export class MapDataLayerComponent implements OnInit {
         event.sourceId === 'rasterImage' &&
         !event.isSourceLoaded
       ) {
-        //TODO: show message to user -- MatSnackBar? 
         this.dataLayersStateService.setDataLayerLoading(false);
       }
     });
