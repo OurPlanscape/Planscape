@@ -31,7 +31,6 @@ import {
   take,
 } from 'rxjs';
 import { filter } from 'rxjs/operators';
-import * as shp from 'shpjs';
 
 import {
   AuthService,
@@ -635,9 +634,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         reader.readAsArrayBuffer(file);
       });
       try {
-        const geojson = (await shp.parseZip(
-          fileAsArrayBuffer
-        )) as GeoJSON.GeoJSON;
+        const parseZip = await this.loadShapefileParser();
+        const geojson = (await parseZip(fileAsArrayBuffer)) as GeoJSON.GeoJSON;
         if (geojson.type == 'FeatureCollection') {
           this.addFeaturesToMapIfValid(geojson);
         } else {
@@ -821,5 +819,10 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           Math.floor(index / 2)
         );
     }
+  }
+
+  async loadShapefileParser() {
+    const { default: parseZip } = await import('shpjs');
+    return parseZip;
   }
 }
