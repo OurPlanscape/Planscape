@@ -1,4 +1,4 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ProjectAreasComponent } from './project-areas.component';
 import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CurrencyInKPipe } from '@shared';
@@ -51,35 +51,47 @@ describe('ProjectAreasComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should show `acres` as a number without decimals', () => {
-    const queryElement = fixture.debugElement.query(
-      By.css('[data-id="acres"]')
-    ).nativeElement;
-    expect(queryElement.innerHTML).toBe('120');
-  });
+  it('should show `acres` as a number without decimals', fakeAsync (() => {
+    tick();
+    fixture.detectChanges();
+    
+    const queryElement = fixture.debugElement.query(By.css('[data-id="acres"]'));
+    expect(queryElement).toBeTruthy();
+    if (queryElement) {
+      expect(queryElement.nativeElement.innerHTML).toBe('120');
+    }
+  }));
 
-  it('should display `percentTotal` with two decimal points and as percentage', () => {
+  it('should display `percentTotal` with two decimal points and as percentage', fakeAsync (() => {
+    tick();
+    fixture.detectChanges();
     const queryElement = fixture.debugElement.query(
       By.css('[data-id="percentTotal"]')
     ).nativeElement;
     expect(queryElement.innerHTML).toBe('22.34%');
-  });
+  }));
 
-  it('should show `estimatedCost` in K with 2 decimals', () => {
+  it('should show `estimatedCost` in K with 2 decimals', fakeAsync (() => {
+    tick();
+    fixture.detectChanges();
     const queryElement = fixture.debugElement.query(
       By.css('[data-id="estimatedCost"]')
     ).nativeElement;
     expect(queryElement.innerHTML).toBe('$1.23K');
-  });
+  }));
 
-  it('should show `score` as number with two decimals', () => {
+  it('should show `score` as number with two decimals', fakeAsync (() => {
+    tick();
+    fixture.detectChanges();
     const queryElement = fixture.debugElement.query(
       By.css('[data-id="score"]')
     ).nativeElement;
     expect(queryElement.innerHTML).toBe('2.12');
-  });
+  }));
 
-  it('should calculate totals based on provided areas', () => {
+  it('should calculate totals based on provided areas', fakeAsync (() => {
+    tick();
+    fixture.detectChanges();
     component.areas = [
       {
         rank: 1,
@@ -118,5 +130,5 @@ describe('ProjectAreasComponent', () => {
       By.css('[data-id="total-estimatedCost"]')
     ).nativeElement;
     expect(estimatedCost.innerHTML.trim()).toBe('$0.4K');
-  });
+  }));
 });
