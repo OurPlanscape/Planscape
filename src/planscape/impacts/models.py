@@ -17,8 +17,6 @@ from planning.models import ProjectArea, Scenario
 from stands.models import Stand
 from typing_extensions import Self
 
-from planscape.typing import TUser
-
 User = get_user_model()
 
 
@@ -31,7 +29,7 @@ class TreatmentPlanStatus(models.TextChoices):
 
 
 class TreatmentPlanManager(AliveObjectsManager):
-    def list_by_user(self, user: Optional[TUser]):
+    def list_by_user(self, user: Optional[User]):
         if not user:
             return self.get_queryset().none()
         # this will become super slow when the database get's bigger

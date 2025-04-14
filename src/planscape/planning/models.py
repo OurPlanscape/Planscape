@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Optional
 
 from collaboration.models import UserObjectRole
-from datasets.models import DataLayer
 from core.models import (
     AliveObjectsManager,
     CreatedAtMixin,
@@ -12,8 +11,9 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
+from datasets.models import DataLayer
 from django.conf import settings
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.gis.db import models
 from django.contrib.gis.db.models import Union as UnionOp
@@ -22,16 +22,12 @@ from django.db.models import Count, Max, Q, QuerySet
 from django.db.models.functions import Coalesce
 from django.utils.functional import cached_property
 from django_stubs_ext.db.models import TypedModelMeta
-from stands.models import StandSizeChoices, Stand
+from stands.models import Stand, StandSizeChoices
 from utils.uuid_utils import generate_short_uuid
-
-from planscape.typing import TUser
-
-User = get_user_model()
 
 
 class PlanningAreaManager(AliveObjectsManager):
-    def list_by_user(self, user: TUser) -> QuerySet:
+    def list_by_user(self, user: User) -> QuerySet:
         content_type_pk = ContentType.objects.get(model="planningarea").pk
         qs = super().get_queryset()
         filtered_qs = qs.filter(
@@ -44,7 +40,7 @@ class PlanningAreaManager(AliveObjectsManager):
         )
         return filtered_qs
 
-    def list_for_api(self, user: TUser) -> QuerySet:
+    def list_for_api(self, user: User) -> QuerySet:
         queryset = PlanningArea.objects.list_by_user(user)
         return (
             queryset.annotate(scenario_count=Count("scenarios", distinct=True))
@@ -161,7 +157,7 @@ class ScenarioResultStatus(models.TextChoices):
 
 
 class ScenarioManager(AliveObjectsManager):
-    def list_by_user(self, user: Optional[TUser]):
+    def list_by_user(self, user: Optional[User]):
         if not user:
             return self.get_queryset().none()
         # this will become super slow when the database get's bigger
