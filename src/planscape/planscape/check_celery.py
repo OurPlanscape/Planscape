@@ -23,8 +23,8 @@ CELERY_CMD = ["celery", "-A", "planscape", "inspect", "active"]
 
 EXPECTED_COUNTS = {
     "celery": os.environ.get("EXPECTED_CELERY_WORKERS", 2),
-    "forsys": os.environ.get("EXPECTED_FORSYS_WORKERS", 10),
-    "impacts": os.environ.get("EXPECTED_IMPACTS_WORKERS", 10),
+    "forsys": os.environ.get("EXPECTED_FORSYS_WORKERS", 12),
+    "impacts": os.environ.get("EXPECTED_IMPACTS_WORKERS", 18),
     "other": os.environ.get("EXPECTED_OTHER_WORKERS", 0),
 }
 
