@@ -1,6 +1,12 @@
 import { scaleLinear } from 'd3-scale';
 import { color as d3Color } from 'd3-color';
-import { DataLayer, LayerStyleEntry, Entry, StyleJson, ColorLegendInfo } from '@types';
+import {
+  DataLayer,
+  LayerStyleEntry,
+  Entry,
+  StyleJson,
+  ColorLegendInfo,
+} from '@types';
 import memoizerific from 'memoizerific';
 
 export interface RGBA {
@@ -43,14 +49,12 @@ function parseColor(hexColor: string, opacity = 1.0): RGBA {
 
 // generates a color mapping function for single entry maps
 function createSingleEntryMapper(entry: Entry): (value: number) => RGBA {
-  console.log('creating singly entry map');
   const color = parseColor(entry.color, entry.opacity ?? 1.0);
   return () => color;
 }
 
 // for VALUES maps, parses the colors in advance
 function prebufferValuesColors(entries: Entry[]): Map<number, RGBA> {
-  console.log('creating values  map');
   const parsedColors = new Map<number, RGBA>();
 
   for (const entry of entries) {
@@ -67,17 +71,17 @@ function createValuesColorMapper(entries: Entry[]): (value: number) => RGBA {
   };
 }
 
-
 // precalculates colors for INTERVAL map type
 function prebufferIntervalColors(sortedEntries: Entry[]): [number, RGBA][] {
-  console.log('creating intervals map');
   return sortedEntries.map((entry) => [
     entry.value,
     parseColor(entry.color, entry.opacity ?? 1.0),
   ]);
 }
 // returns a function for INTERVAL map type
-function createIntervalsColorMapper(sortedEntries: Entry[]): (value: number) => RGBA {
+function createIntervalsColorMapper(
+  sortedEntries: Entry[]
+): (value: number) => RGBA {
   if (sortedEntries.length === 0) {
     return () => TRANSPARENT;
   }
@@ -95,24 +99,32 @@ function createIntervalsColorMapper(sortedEntries: Entry[]): (value: number) => 
   };
 }
 
-
 // calculates scales in advance for RAMP map type
-const prebufferRampScales = (sortedEntries: Entry[]): {
+const prebufferRampScales = (
+  sortedEntries: Entry[]
+): {
   colorScale: ReturnType<typeof scaleLinear<string>>;
   opacityScale: ReturnType<typeof scaleLinear<number>>;
 } => {
-  console.log('creating ramps map');
   const domain = sortedEntries.map((entry) => entry.value);
   const colorRange = sortedEntries.map((entry) => entry.color);
   const opacityRange = sortedEntries.map((entry) => entry.opacity ?? 1.0);
 
-  const colorScale = scaleLinear<string>().domain(domain).range(colorRange).clamp(true);
-  const opacityScale = scaleLinear<number>().domain(domain).range(opacityRange).clamp(true);
+  const colorScale = scaleLinear<string>()
+    .domain(domain)
+    .range(colorRange)
+    .clamp(true);
+  const opacityScale = scaleLinear<number>()
+    .domain(domain)
+    .range(opacityRange)
+    .clamp(true);
 
   return { colorScale, opacityScale };
 };
 // returns color map for RAMP types
-function createRampColorMapper(sortedEntries: Entry[]): (value: number) => RGBA {
+function createRampColorMapper(
+  sortedEntries: Entry[]
+): (value: number) => RGBA {
   const { colorScale, opacityScale } = prebufferRampScales(sortedEntries);
 
   return (value: number) => {
@@ -123,10 +135,14 @@ function createRampColorMapper(sortedEntries: Entry[]): (value: number) => RGBA 
   };
 }
 
-const determineColorFunction = (styleJson: StyleJson): (value: number) => RGBA => {
+const determineColorFunction = (
+  styleJson: StyleJson
+): ((value: number) => RGBA) => {
   const { map_type, entries } = styleJson;
   //memoize as the styleJson is changed
-  const memoizedRampFunction = memoizerific(MEMOIZE_EVICTION)(createRampColorMapper);
+  const memoizedRampFunction = memoizerific(MEMOIZE_EVICTION)(
+    createRampColorMapper
+  );
 
   if (entries.length === 0) {
     return () => TRANSPARENT;
@@ -140,8 +156,10 @@ const determineColorFunction = (styleJson: StyleJson): (value: number) => RGBA =
         const sortedEntries = [...entries].sort((a, b) => a.value - b.value);
         return createIntervalsColorMapper(sortedEntries);
       case 'RAMP':
-        const sortedRampEntries = [...entries].sort((a, b) => a.value - b.value);
-       return memoizedRampFunction(sortedRampEntries);
+        const sortedRampEntries = [...entries].sort(
+          (a, b) => a.value - b.value
+        );
+        return memoizedRampFunction(sortedRampEntries);
       default:
         return () => TRANSPARENT;
     }
@@ -154,9 +172,9 @@ function writeColorToBuffer(rgbaData: Uint8ClampedArray, color: RGBA): void {
   rgbaData.set([color.r, color.g, color.b, a]);
 }
 
-
-export function generateColorFunction(styleJson: StyleJson): 
-(pixel: number[], rgba: Uint8ClampedArray) => void {
+export function generateColorFunction(
+  styleJson: StyleJson
+): (pixel: number[], rgba: Uint8ClampedArray) => void {
   const noDataValues = new Set(styleJson.no_data?.values || []);
   const colorMapper = determineColorFunction(styleJson);
   return (pixel: number[], rgba: Uint8ClampedArray) => {

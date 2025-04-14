@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { DataLayer } from '@types';
-import { generateColorFunction } from '../../data-layers/utilities'
+import { generateColorFunction } from '../../data-layers/utilities';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
   Map as MapLibreMap,
@@ -38,8 +38,6 @@ export class MapDataLayerComponent implements OnInit {
           this.tileSize =
             dataLayer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
-          this.processingStart = performance.now();
-          console.log('started processing', this.processingStart);
           this.addRasterLayer();
         } else {
           this.cogUrl = null;
@@ -67,9 +65,6 @@ export class MapDataLayerComponent implements OnInit {
         event.isSourceLoaded
       ) {
         this.dataLayersStateService.setDataLayerLoading(false);
-        this.processingEnd = performance.now()
-        console.log('finished process at:', this.processingEnd);
-        console.log('processing time:', (this.processingEnd - this.processingStart), 'ms');
       }
     });
   }

@@ -1,5 +1,7 @@
 import { Geometry } from 'geojson';
 
+export type MapType = 'RAMP' | 'INTERVALS' | 'VALUES';
+
 export interface DataSet {
   id: number;
   created_at: string;
@@ -61,7 +63,6 @@ export interface LayerStyleEntry {
   entryLabel: string;
 }
 
-
 export interface NoData {
   values: number[];
   color?: string;
@@ -76,13 +77,11 @@ export interface Entry {
   label?: string | null;
 }
 
-
 export interface StyleJson {
-  map_type: 'RAMP' | 'INTERVALS' | 'VALUES';
+  map_type: MapType;
   no_data?: NoData;
   entries: Entry[];
 }
-
 
 export interface Styles {
   id: number;
@@ -107,7 +106,7 @@ export interface DataLayer {
 
 export interface ColorLegendInfo {
   title: string;
-  type: 'RAMP' | 'INTERVALS' | 'VALUES';
+  type: MapType;
   entries: LayerStyleEntry[];
 }
 
