@@ -1,6 +1,6 @@
 
 import { TestBed } from '@angular/core/testing';
-import { makeColorFunction } from '../utilities';
+import { generateColorFunction } from '../utilities';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { testValues } from '../../../fixtures/samplevalues';
 import { StyleJson } from '@types';
@@ -62,14 +62,14 @@ describe('Color Function Test For RAMP sPerformance', () => {
             imports: [HttpClientTestingModule],
         });
 
-        colorFunction = makeColorFunction(rampStyle);
+        colorFunction = generateColorFunction(rampStyle);
     });
 
     it('processes several values in a reasonable time', () => {
         const rgba = new Uint8ClampedArray(4);
         const times = [];
         let startTime = 0;
-        for (let a = 0; a < 100; a++) {
+        for (let a = 0; a < 300; a++) {
             startTime = performance.now();
             for (let i in testValues) {
                 colorFunction([i], rgba);

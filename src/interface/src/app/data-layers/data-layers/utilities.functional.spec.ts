@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { StyleJson } from '@types';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-import { makeColorFunction } from '../utilities';
+import { generateColorFunction } from '../utilities';
 
 describe('Color Function Test For RAMP type', () => {
     let colorFunction: any;
@@ -58,7 +58,7 @@ describe('Color Function Test For RAMP type', () => {
             imports: [HttpClientTestingModule],
         });
 
-        colorFunction = makeColorFunction(rampStyle);
+        colorFunction = generateColorFunction(rampStyle);
     });
 
     it('should create a color function', () => {
@@ -158,7 +158,7 @@ describe('Color Function Test For INTERVALS type', () => {
             imports: [HttpClientTestingModule],
         });
 
-        colorFunction = makeColorFunction(intervalsStyle);
+        colorFunction = generateColorFunction(intervalsStyle);
     });
 
     it('should create a color function', () => {
@@ -263,7 +263,7 @@ describe('Color Function Test For VALUES type', () => {
             imports: [HttpClientTestingModule],
         });
 
-        colorFunction = makeColorFunction(valuesStyles);
+        colorFunction = generateColorFunction(valuesStyles);
     });
 
     it('should create a color function', () => {
@@ -364,7 +364,7 @@ describe('Color Function Test For INTERVALS type', () => {
             imports: [HttpClientTestingModule],
         });
 
-        colorFunction = makeColorFunction(intervalsStyle);
+        colorFunction = generateColorFunction(intervalsStyle);
     });
 
     it('should create a color function', () => {

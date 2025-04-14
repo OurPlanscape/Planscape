@@ -214,7 +214,7 @@ function createCachedColorMapper(styleJson: StyleJson): StyleCache {
 /**
  * Main function that creates a pixel coloring function based on style configuration.
  */
-export function makeColorFunction(
+export function generateColorFunction(
   styleJson: StyleJson
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
   let cachedData = styleCache.get(styleJson);

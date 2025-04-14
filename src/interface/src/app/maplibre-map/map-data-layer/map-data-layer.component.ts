@@ -2,7 +2,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { DataLayer } from '@types';
-import { makeColorFunction } from '../../data-layers/utilities'
+import { generateColorFunction } from '../../data-layers/utilities'
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
   Map as MapLibreMap,
@@ -33,7 +33,7 @@ export class MapDataLayerComponent implements OnInit {
       .subscribe((dataLayer: DataLayer | null) => {
         if (dataLayer?.public_url) {
           this.cogUrl = `cog://${dataLayer?.public_url}`;
-          const colorFn = makeColorFunction(dataLayer?.styles[0].data);
+          const colorFn = generateColorFunction(dataLayer?.styles[0].data);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
           this.tileSize =
             dataLayer.info.blockxsize ??
