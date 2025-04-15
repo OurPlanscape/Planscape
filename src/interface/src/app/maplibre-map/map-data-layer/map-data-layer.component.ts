@@ -78,7 +78,7 @@ export class MapDataLayerComponent implements OnInit {
       ) {
         this.dataLayersStateService.setDataLayerLoading(false);
         this.matSnackBar.open(
-          '[Error] Unable to load data layer due to a backend error.',
+          '[Error] Unable to load data layer.',
           'Dismiss',
           SNACK_ERROR_CONFIG
         );
