@@ -36,6 +36,7 @@
         <mat-tab label="Configurations">
           <div class="create-scenarios-inner-wrapper">
             <app-set-priorities
+              *ngIf="scenarioState$ | async as scenarioState"
               [scenarioStatus]="scenarioState"></app-set-priorities>
             <app-constraints-panel
               [planningAreaAcres]="(acres$ | async) || 0"
