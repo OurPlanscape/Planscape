@@ -232,6 +232,23 @@ h5 {
   color: #8e918f;
 }
 
+.goal-loader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  margin-left: -10px;
+  margin-bottom: 30px;
+}
+
+.scenario-goal {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding-bottom: 10px;
+  padding-left: 4px;
+  gap: 4px;
+}
 
 
 

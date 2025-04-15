@@ -43,6 +43,7 @@ import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnalyticsService } from '@services/analytics.service';
 import { PlanState } from '../../plan/plan.state';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @UntilDestroy()
 @Component({
@@ -90,7 +91,6 @@ export class TreatmentConfigComponent {
 
   showTreatmentLegend$ = this.mapConfig.showTreatmentLegend$;
   @ViewChild(TreatmentMapComponent) mapElement: any;
-  navState$ = this.treatmentsState.navState$;
 
   $navBarArea$ = this.projectAreaId$.pipe(
     map((id) => (id ? 'TREATMENTS_PROJECT_AREA' : 'TREATMENTS'))
@@ -107,7 +107,8 @@ export class TreatmentConfigComponent {
     private pdfService: TreatmentToPDFService,
     private injector: Injector, // Angular's injector for passing shared services
     private analiticsService: AnalyticsService,
-    private planState: PlanState
+    private planState: PlanState,
+    private breadcrumbService: BreadcrumbService
   ) {
     this.router.events
       .pipe(
@@ -132,6 +133,14 @@ export class TreatmentConfigComponent {
             })
           )
           .subscribe((_) => (this.loading = false));
+      });
+
+    this.treatmentsState.breadcrumb$
+      .pipe(untilDestroyed(this))
+      .subscribe((breadcrumb) => {
+        if (breadcrumb) {
+          this.breadcrumbService.updateBreadCrumb(breadcrumb);
+        }
       });
   }
 

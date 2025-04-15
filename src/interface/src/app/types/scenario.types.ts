@@ -6,7 +6,7 @@ export interface Scenario {
   name: string;
   notes?: string;
   creator?: string;
-  planning_area: string;
+  planning_area: number;
   configuration: ScenarioConfig;
   scenario_result?: ScenarioResult;
   status: SCENARIO_STATUS;
@@ -16,6 +16,10 @@ export interface Scenario {
   max_budget?: number;
   tx_plan_count?: number | undefined;
   origin?: ORIGIN_TYPE;
+  treatment_goal?: {
+    id: string;
+    name: string;
+  };
 }
 
 /**
@@ -108,4 +112,17 @@ export interface PriorityRow {
   filepath: string;
   children: PriorityRow[];
   level: number;
+}
+
+export interface ScenarioGoal {
+  id: number;
+  name: string;
+  description: string;
+  priorities: string[];
+  category: string;
+  category_text: string;
+}
+
+export interface CategorizedScenarioGoals {
+  [key: string]: ScenarioGoal[];
 }

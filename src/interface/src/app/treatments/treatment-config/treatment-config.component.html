@@ -1,8 +1,6 @@
 <sg-overlay-loader *ngIf="loading" [offsetTop]="48"></sg-overlay-loader>
 
-<app-nav-bar
-  [navState]="(navState$ | async) || null"
-  [area]="($navBarArea$ | async) || 'TREATMENTS'">
+<app-nav-bar [area]="($navBarArea$ | async) || 'TREATMENTS'">
   <app-treatment-navbar-menu
     [treatmentPlanName]="(treatmentPlanName$ | async) || ''"
     (treatmentPlanDeleted)="redirectToScenario()"
@@ -15,7 +13,7 @@
     <router-outlet></router-outlet>
   </div>
   <div class="right-side">
-    <app-treatment-map> </app-treatment-map>
+    <app-treatment-map></app-treatment-map>
     <section class="right-side-footer">
       <ng-container *ngIf="projectAreaId$ | async; else treatment">
         <a sg-button variant="primary" class="back-btn" routerLink="./">

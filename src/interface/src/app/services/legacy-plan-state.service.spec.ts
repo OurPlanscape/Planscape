@@ -16,7 +16,7 @@ describe('LegacyPlanStateService', () => {
         { provide: ScenarioService, useValue: {} },
         {
           provide: TreatmentGoalsService,
-          useValue: { getTreatmentGoalsForArea: () => of([]) },
+          useValue: { getLegacyTreatmentGoalsForArea: () => of([]) },
         },
       ],
     });

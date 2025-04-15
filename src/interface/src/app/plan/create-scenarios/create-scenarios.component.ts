@@ -221,7 +221,7 @@ export class CreateScenariosComponent implements OnInit {
     return {
       id: '',
       name: this.scenarioNameFormField?.value,
-      planning_area: this.planId ? this.planId.toString() : '', // nope I should have planID
+      planning_area: this.planId!,
       status: 'ACTIVE',
       configuration: {
         ...this.constraintsPanelComponent.getFormData(),

@@ -2,7 +2,6 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import boto3
-import boto3.s3
 import requests
 from boto3.session import Session
 from botocore.exceptions import ClientError
