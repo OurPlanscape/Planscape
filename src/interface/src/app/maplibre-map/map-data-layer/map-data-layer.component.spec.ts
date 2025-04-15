@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapDataLayerComponent } from './map-data-layer.component';
 import { Map as MapLibreMap } from 'maplibre-gl';
+import { MatSnackBarModule } from '@angular/material/snack-bar';
 
 describe('MapDataLayerComponent', () => {
   let component: MapDataLayerComponent;
@@ -16,7 +17,11 @@ describe('MapDataLayerComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [MapDataLayerComponent, HttpClientTestingModule],
+      imports: [
+        MapDataLayerComponent,
+        HttpClientTestingModule,
+        MatSnackBarModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapDataLayerComponent);
