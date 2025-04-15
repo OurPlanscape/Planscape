@@ -17,7 +17,11 @@ describe('MapDataLayerComponent', () => {
     });
 
     await TestBed.configureTestingModule({
-      imports: [MapDataLayerComponent, HttpClientTestingModule, MatSnackBarModule],
+      imports: [
+        MapDataLayerComponent,
+        HttpClientTestingModule,
+        MatSnackBarModule,
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapDataLayerComponent);
