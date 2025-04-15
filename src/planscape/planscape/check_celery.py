@@ -61,7 +61,7 @@ def parse_worker_output(output: str) -> Tuple[Dict[str, int], int]:
 
 
 def format_mattermost_message(worker_counts: Dict[str, int], total: int) -> str:
-    lines = [f"### Celery Workers {ENV}"]
+    lines = [f"#### Celery Workers {ENV}"]
     lines.append(f"**Total Workers Detected:** {total}\n")
 
     for prefix in sorted(EXPECTED_COUNTS.keys()):
