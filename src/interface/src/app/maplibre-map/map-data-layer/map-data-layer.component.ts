@@ -10,6 +10,8 @@ import {
   RasterSourceSpecification,
 } from 'maplibre-gl';
 import { FrontendConstants } from '@types';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@shared';
 
 @UntilDestroy()
 @Component({
@@ -24,7 +26,9 @@ export class MapDataLayerComponent implements OnInit {
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
+  constructor(private dataLayersStateService: DataLayersStateService,
+    private matSnackBar: MatSnackBar
+  ) {
     dataLayersStateService.selectedDataLayer$
       .pipe(untilDestroyed(this))
       .subscribe((dataLayer: DataLayer | null) => {
@@ -72,6 +76,11 @@ export class MapDataLayerComponent implements OnInit {
         !event.isSourceLoaded
       ) {
         this.dataLayersStateService.setDataLayerLoading(false);
+        this.matSnackBar.open(
+          '[Error] Unable to load data layer due to a backend error.',
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
       }
     });
   }
