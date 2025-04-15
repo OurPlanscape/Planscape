@@ -1,7 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { DataLayer } from '@types';
+import { DataLayer, FrontendConstants } from '@types';
 import { makeColorFunction } from '../../data-layers/utilities';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
@@ -9,7 +9,6 @@ import {
   RasterLayerSpecification,
   RasterSourceSpecification,
 } from 'maplibre-gl';
-import { FrontendConstants } from '@types';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 
