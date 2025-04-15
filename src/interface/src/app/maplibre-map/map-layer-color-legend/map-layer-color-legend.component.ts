@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgFor, NgIf, NgStyle } from '@angular/common';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { ColorLegendInfo, LayerStyleEntry, MapType } from '@types';
+import { ColorLegendInfo, LayerStyleEntry, RasterColorType } from '@types';
 import { tap } from 'rxjs';
 import { scaleLinear } from 'd3-scale';
 
@@ -17,12 +17,12 @@ export class MapLayerColorLegendComponent {
 
   gradientLabels: string[] = [];
   gradientStyle = '';
-  mapType: MapType = 'RAMP';
+  colorType: RasterColorType = 'RAMP';
 
   colorLegendInfo$ = this.dataLayerState.colorLegendInfo$.pipe(
     tap((newColorLegendInfo: ColorLegendInfo | null) => {
       if (newColorLegendInfo?.entries) {
-        this.mapType = newColorLegendInfo.type;
+        this.colorType = newColorLegendInfo.type;
         this.setGradient(newColorLegendInfo?.entries);
       }
     })

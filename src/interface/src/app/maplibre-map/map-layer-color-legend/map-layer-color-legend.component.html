@@ -2,7 +2,7 @@
   <div class="legend-title">
     {{ legendInfo.title }}
   </div>
-  <ng-container *ngIf="mapType !== 'RAMP'">
+  <ng-container *ngIf="colorType !== 'RAMP'">
     <div *ngFor="let entry of legendInfo.entries" class="legend-line">
       <div
         class="swatch-box"
@@ -13,7 +13,7 @@
     </div>
   </ng-container>
 
-  <div *ngIf="mapType === 'RAMP'" class="ramp-legend">
+  <div *ngIf="colorType === 'RAMP'" class="ramp-legend">
     <div
       class="swatch-gradient"
       [ngStyle]="{ background: gradientStyle }"></div>
