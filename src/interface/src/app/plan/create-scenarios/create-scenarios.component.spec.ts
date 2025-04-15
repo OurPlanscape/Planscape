@@ -55,7 +55,7 @@ describe('CreateScenariosComponent', () => {
   let fakeScenario: Scenario = {
     id: '1',
     name: 'name',
-    planning_area: '1',
+    planning_area: 1,
     configuration: {},
     status: 'ACTIVE',
     scenario_result: {
@@ -98,7 +98,7 @@ describe('CreateScenariosComponent', () => {
     const demoScenario: Scenario = {
         id: '1',
         name: 'name',
-        planning_area: '1',
+        planning_area: 1,
         configuration: {
           max_budget: 200,
         },

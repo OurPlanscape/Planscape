@@ -11,7 +11,7 @@ describe('ScenarioState', () => {
   const mockScenario: Scenario = {
     id: '1',
     name: 'Test Scenario',
-    planning_area: 'Area 51',
+    planning_area: 1,
     configuration: {
       est_cost: 1000,
       max_budget: 5000,

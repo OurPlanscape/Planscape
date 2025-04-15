@@ -5,7 +5,7 @@ from django.urls import reverse
 from rest_framework.test import APITestCase, APITransactionTestCase
 from rest_framework import status
 
-from planning.models import Scenario, ScenarioResult
+from planning.models import Scenario, ScenarioResult, ScenarioVersion
 from planning.tests.factories import (
     PlanningAreaFactory,
     ProjectAreaFactory,
@@ -494,3 +494,36 @@ class ListScenariosForPlanningAreaTest(APITestCase):
         self.assertIn(s2.name, names)
         self.assertNotIn(s3.name, names)
         self.assertNotIn(s4.name, names)
+
+    def test_scenario_version(self):
+        self.client.force_authenticate(self.owner_user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("version"), ScenarioVersion.V1)
+
+        configuration = self.scenario.configuration.copy()
+        configuration.pop("question_id")
+        self.scenario.configuration = configuration
+        self.scenario.save()
+
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("version"), ScenarioVersion.V2)

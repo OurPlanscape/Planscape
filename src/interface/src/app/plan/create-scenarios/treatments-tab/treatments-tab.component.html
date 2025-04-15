@@ -10,7 +10,7 @@
     [creator]="treatment.creator_name"
     [userCanDelete]="userCanDelete()"
     [userCanDuplicate]="userCanDuplicate()"
-    (view)="goToTreatment(treatment.id, treatment.status)"
+    (view)="goToTreatment(treatment, treatment.status)"
     (delete)="openDeleteDialog(treatment)"
     (duplicate)="duplicateTreatment(treatment)"
     *ngFor="let treatment of treatments"></sg-treatment-card>
