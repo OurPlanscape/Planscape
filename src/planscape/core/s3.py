@@ -2,10 +2,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import boto3
-import boto3.s3
 import requests
 from boto3.session import Session
 from botocore.exceptions import ClientError
+from cacheops import cached
 from django.conf import settings
 
 
@@ -17,6 +17,7 @@ def get_aws_session() -> Session:
     )
 
 
+@cached(timeout=settings.S3_PUBLIC_URL_TTL)
 def create_download_url(
     bucket_name: str,
     object_name: str,
