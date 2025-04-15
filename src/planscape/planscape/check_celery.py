@@ -5,7 +5,9 @@ from collections import defaultdict
 from typing import Dict, Optional, Tuple
 
 import requests
-from decouple import config
+from decouple import Config, RepositoryEnv
+
+config = Config(RepositoryEnv("../../.env"))
 
 # === Configuration ===
 MATTERMOST_WEBHOOK_URL: Optional[str] = config(
@@ -18,7 +20,14 @@ MATTERMOST_CHANNEL: str = config(
     "#planscape-alerts-dev",
     cast=str,
 )  # type: ignore
-CELERY_CMD = ["celery", "-A", "planscape", "inspect", "active"]
+
+CELERY_CMD = [
+    "/home/planscape/.local/bin/celery",
+    "-A",
+    "planscape",
+    "inspect",
+    "active",
+]
 
 EXPECTED_COUNTS = {
     "celery": config("EXPECTED_CELERY_WORKERS", 2, cast=int),
