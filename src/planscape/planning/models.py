@@ -174,6 +174,13 @@ class ScenarioOrigin(models.TextChoices):
     USER = "USER", "User"
 
 
+class ScenarioVersion(models.TextChoices):
+    # Legacy version (v1) treatment goals are stored in the configuration field.
+    V1 = "V1", "Version 1"
+    # New version (v2) treatment goals are stored in the TreatmentGoal model.
+    V2 = "V2", "Version 2"
+
+
 class TreatmentGoalCategory(models.TextChoices):
     FIRE_DYNAMICS = "FIRE_DYNAMICS", "Fire Dynamics"
     BIODIVERSITY = "BIODIVERSITY", "Biodiversity"
@@ -323,6 +330,12 @@ class Scenario(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
         help_text="Treatment Goal of the Scenario.",
     )
+
+    @cached_property
+    def version(self):
+        if self.configuration and self.configuration.get("question_id") is not None:
+            return ScenarioVersion.V1
+        return ScenarioVersion.V2
 
     def creator_name(self) -> str:
         return self.user.get_full_name()
