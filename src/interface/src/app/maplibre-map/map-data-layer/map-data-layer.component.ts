@@ -26,7 +26,8 @@ export class MapDataLayerComponent implements OnInit {
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
-  constructor(private dataLayersStateService: DataLayersStateService,
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
     private matSnackBar: MatSnackBar
   ) {
     dataLayersStateService.selectedDataLayer$
