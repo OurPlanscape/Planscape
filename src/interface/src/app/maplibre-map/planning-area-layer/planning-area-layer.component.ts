@@ -3,10 +3,13 @@ import {
   FeatureComponent,
   GeoJSONSourceComponent,
   LayerComponent,
+  VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { BASE_COLORS } from '../../treatments/map.styles';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { PlanState } from '../../plan/plan.state';
+import { map } from 'rxjs';
+import { MARTIN_SOURCES } from '../../treatments/map.sources';
 
 @Component({
   selector: 'app-planning-area-layer',
@@ -17,14 +20,19 @@ import { PlanState } from '../../plan/plan.state';
     FeatureComponent,
     GeoJSONSourceComponent,
     LayerComponent,
+    VectorSourceComponent,
   ],
   templateUrl: './planning-area-layer.component.html',
 })
 export class PlanningAreaLayerComponent {
   constructor(private planState: PlanState) {}
 
-  polygonGeometry$ = this.planState.planningAreaGeometry$;
+  vectorLayerUrl$ = this.planState.currentPlanId$.pipe(
+    map((id) => {
+      return MARTIN_SOURCES.planningArea.tilesUrl + `?id=${id}`;
+    })
+  );
 
-  readonly sourceName = 'treatment-planing-area';
+  readonly sourceName = MARTIN_SOURCES.planningArea.sources.planningArea;
   readonly COLORS = BASE_COLORS;
 }

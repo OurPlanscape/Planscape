@@ -1,11 +1,12 @@
-<ng-container *ngIf="polygonGeometry$ | async as polygonGeometry">
-  <mgl-geojson-source [id]="sourceName">
-    <mgl-feature [geometry]="polygonGeometry"></mgl-feature>
-  </mgl-geojson-source>
+<ng-container *ngIf="vectorLayerUrl$ | async as vectorLayerUrl">
+  <mgl-vector-source
+    [id]="sourceName"
+    [tiles]="[vectorLayerUrl]"></mgl-vector-source>
   <mgl-layer
     id="treatment-area-polygon"
     type="line"
     [source]="sourceName"
+    [sourceLayer]="sourceName"
     [paint]="{
       'line-color': COLORS.md_gray,
       'line-width': 2
@@ -15,6 +16,7 @@
     id="treatment-area-fill"
     type="fill"
     [source]="sourceName"
+    [sourceLayer]="sourceName"
     [paint]="{
       'fill-color': COLORS.white_light_blue,
       'fill-opacity': 0.4
