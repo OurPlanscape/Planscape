@@ -16,7 +16,7 @@ import { FrontendConstants } from '@types';
 export class MapZoomControlComponent implements OnInit {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() controlsPosition: ControlPosition = 'top-left';
-  minZoom: number = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  minZoom: number = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom: number = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
   curZoom: number = FrontendConstants.MAPLIBRE_MAP_INITIAL_ZOOM;
 

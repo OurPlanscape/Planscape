@@ -5,8 +5,10 @@ from collections import defaultdict
 from typing import Dict, Optional, Tuple
 
 import requests
-from decouple import config
+from decouple import Config, RepositoryEnv
 
+config = Config(RepositoryEnv("../../.env"))
+ENV = config("ENV")
 # === Configuration ===
 MATTERMOST_WEBHOOK_URL: Optional[str] = config(
     "MATTERMOST_WEBHOOK_URL",
@@ -18,7 +20,14 @@ MATTERMOST_CHANNEL: str = config(
     "#planscape-alerts-dev",
     cast=str,
 )  # type: ignore
-CELERY_CMD = ["celery", "-A", "planscape", "inspect", "active"]
+
+CELERY_CMD = [
+    "/home/planscape/.local/bin/celery",
+    "-A",
+    "planscape",
+    "inspect",
+    "active",
+]
 
 EXPECTED_COUNTS = {
     "celery": config("EXPECTED_CELERY_WORKERS", 2, cast=int),
@@ -52,7 +61,7 @@ def parse_worker_output(output: str) -> Tuple[Dict[str, int], int]:
 
 
 def format_mattermost_message(worker_counts: Dict[str, int], total: int) -> str:
-    lines = ["### Celery Active Workers Check"]
+    lines = [f"#### Celery Workers {ENV}"]
     lines.append(f"**Total Workers Detected:** {total}\n")
 
     for prefix in sorted(EXPECTED_COUNTS.keys()):
