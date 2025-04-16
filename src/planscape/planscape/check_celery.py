@@ -8,7 +8,7 @@ import requests
 from decouple import Config, RepositoryEnv
 
 config = Config(RepositoryEnv("../../.env"))
-
+ENV = config("ENV")
 # === Configuration ===
 MATTERMOST_WEBHOOK_URL: Optional[str] = config(
     "MATTERMOST_WEBHOOK_URL",
@@ -61,7 +61,7 @@ def parse_worker_output(output: str) -> Tuple[Dict[str, int], int]:
 
 
 def format_mattermost_message(worker_counts: Dict[str, int], total: int) -> str:
-    lines = ["### Celery Active Workers Check"]
+    lines = [f"#### Celery Workers {ENV}"]
     lines.append(f"**Total Workers Detected:** {total}\n")
 
     for prefix in sorted(EXPECTED_COUNTS.keys()):
