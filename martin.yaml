@@ -75,6 +75,7 @@ postgres:
       id_column: id
       minzoom: 0
       maxzoom: 20
+      bounds: [ -180.0, -90.0, 180.0, 90.0 ]
       geometry_type: POLYGON
       properties:
         id: int8
