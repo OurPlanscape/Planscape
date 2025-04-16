@@ -91,6 +91,8 @@ export class MapDataLayerComponent implements OnInit {
         type: 'raster',
         url: this.cogUrl,
         tileSize: this.tileSize,
+        minzoom: FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM,
+        maxzoom: FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM,
       };
 
       const rasterLayer: RasterLayerSpecification = {
