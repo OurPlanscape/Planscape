@@ -55,7 +55,6 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["geometry"].disabled = True
         self.fields["info"].required = False
         self.fields["metadata"].required = False
-        self.fields["url"].required = False
 
     class Meta:
         model = DataLayer

@@ -279,7 +279,6 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     url = models.CharField(
         max_length=1024,
-        validators=[URLValidator(schemes=SUPPORTED_SCHEMES)],
         null=True,
     )
 
