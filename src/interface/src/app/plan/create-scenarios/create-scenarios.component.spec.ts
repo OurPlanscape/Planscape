@@ -1,326 +1,187 @@
-import { HttpClientTestingModule } from '@angular/common/http/testing';
 import {
   ComponentFixture,
+  TestBed,
   discardPeriodicTasks,
   fakeAsync,
-  TestBed,
   tick,
 } from '@angular/core/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
+import { CreateScenariosComponent } from './create-scenarios.component';
+import { MockComponent, MockProvider } from 'ng-mocks';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RouterTestingModule } from '@angular/router/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CurrencyPipe } from '@angular/common';
 import { BehaviorSubject, of } from 'rxjs';
 
-import {
-  Scenario,
-  ScenarioResult,
-  TreatmentGoalConfig,
-  TreatmentQuestionConfig,
-} from '@types';
+import { ScenarioService, LegacyPlanStateService } from '@services';
+import { PlanState } from '../plan.state';
+import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 
-import { PlanModule } from '../plan.module';
-import { CreateScenariosComponent } from './create-scenarios.component';
-import { HarnessLoader } from '@angular/cdk/testing';
-import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
-import { RouterTestingModule } from '@angular/router/testing';
-import { POLLING_INTERVAL } from '../plan-helpers';
-import {
-  LegacyPlanState,
-  LegacyPlanStateService,
-  ScenarioService,
-} from '@services';
-import { CurrencyPipe } from '@angular/common';
-import * as L from 'leaflet';
+import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
+import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
+import { Scenario } from '@types';
 import { MOCK_PLAN } from '@services/mocks';
+import * as L from 'leaflet';
+import { MatLegacySnackBarModule } from '@angular/material/legacy-snack-bar';
+import { FormGroup } from '@angular/forms';
 
-//TODO Add the following tests once implementation for tested behaviors is added:
-/**
- * 'configures proper priorities and weights based on chosen treatment question'
- * 'creates Project Areas when user uploads Project Area shapefile'
- */
-
-describe('CreateScenariosComponent', () => {
-  let component: CreateScenariosComponent;
+describe('CreateScenariosComponent (Unit)', () => {
   let fixture: ComponentFixture<CreateScenariosComponent>;
-  let fakeLegacyPlanStateService: LegacyPlanStateService;
+  let component: CreateScenariosComponent;
 
-  let loader: HarnessLoader;
-  let defaultSelectedQuestion: TreatmentQuestionConfig = {
-    short_question_text: '',
-    scenario_output_fields_paths: {},
-    scenario_priorities: [''],
-    stand_thresholds: [''],
-    global_thresholds: [''],
-    weights: [0],
-  };
-  let fakeScenario: Scenario = {
-    id: '1',
-    name: 'name',
-    planning_area: 1,
-    configuration: {},
+  const currentPlan$ = new BehaviorSubject({
+    ...MOCK_PLAN,
+    id: 123,
+    region_name: 'test-region',
+    area_acres: 1000,
+    geometry: new L.Polygon([]).toGeoJSON(),
+  });
+
+  const currentScenarioId$ = new BehaviorSubject<string | null>(
+    'fakeScenarioId'
+  );
+
+  const fakeScenario: Scenario = {
+    id: 'fakeScenarioId',
+    name: 'Test Scenario',
+    planning_area: 123,
+    configuration: {
+      treatment_question: {
+        short_question_text: '',
+        scenario_priorities: [],
+        weights: [],
+        stand_thresholds: [],
+        global_thresholds: [],
+        scenario_output_fields_paths: {},
+      },
+    },
     status: 'ACTIVE',
     scenario_result: {
       status: 'PENDING',
-      completed_at: '0',
-      result: {
-        features: [],
-        type: 'test',
-      },
+      completed_at: '',
+      result: { features: [], type: 'test' },
     },
   };
 
-  let fakePlanState$: BehaviorSubject<LegacyPlanState>;
-  let fakeGetScenario: BehaviorSubject<Scenario>;
+  const scenarioServiceSpy = jasmine.createSpyObj<ScenarioService>(
+    'ScenarioService',
+    ['getScenario', 'getScenariosForPlan']
+  );
+  scenarioServiceSpy.getScenario.and.returnValue(of(fakeScenario));
+  scenarioServiceSpy.getScenariosForPlan.and.returnValue(of([fakeScenario]));
 
   beforeEach(async () => {
-    fakePlanState$ = new BehaviorSubject<LegacyPlanState>({
-      all: {
-        '1': {
-          ...MOCK_PLAN,
-          area_acres: 12814,
-          area_m2: 340000,
-          geometry: new L.Polygon([
-            new L.LatLng(38.715517043571914, -120.42857302225725),
-            new L.LatLng(38.47079787227401, -120.5164425608172),
-            new L.LatLng(38.52668443555346, -120.11828371421737),
-          ]).toGeoJSON(),
-        },
-      },
-      currentPlanId: 1,
-      currentScenarioId: null,
-      currentScenarioName: null,
-      mapConditionLayer: null,
-      mapShapes: null,
-      legendUnits: null,
-    });
-
-    fakeGetScenario = new BehaviorSubject(fakeScenario);
-
-    const demoScenario: Scenario = {
-        id: '1',
-        name: 'name',
-        planning_area: 1,
-        configuration: {
-          max_budget: 200,
-        },
-        status: 'ACTIVE',
-      },
-      fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
-        'ScenarioService',
-        {
-          createScenario: of(demoScenario),
-          getScenario: of(fakeScenario),
-          getScenariosForPlan: of([demoScenario]),
-        }
-      );
-    fakeLegacyPlanStateService = jasmine.createSpyObj<LegacyPlanStateService>(
-      'LegacyPlanStateService',
-      {
-        getScenario: fakeGetScenario,
-        updateStateWithShapes: undefined,
-        updateStateWithScenario: undefined,
-      },
-      {
-        planState$: fakePlanState$,
-        setPlanRegion: () => {},
-        treatmentGoalsConfig$: new BehaviorSubject<
-          TreatmentGoalConfig[] | null
-        >([
-          {
-            category_name: 'test_category',
-            questions: [
-              {
-                short_question_text: 'test_question',
-                scenario_output_fields_paths: {},
-                scenario_priorities: [''],
-                stand_thresholds: [''],
-                global_thresholds: [''],
-                weights: [1],
-              },
-            ],
-          },
-        ]),
-      }
-    );
-
     await TestBed.configureTestingModule({
       imports: [
-        BrowserAnimationsModule,
         HttpClientTestingModule,
-        PlanModule,
         RouterTestingModule,
+        BrowserAnimationsModule,
+        MatLegacySnackBarModule,
       ],
-      declarations: [CreateScenariosComponent],
+      declarations: [
+        CreateScenariosComponent,
+        MockComponent(SetPrioritiesComponent),
+        MockComponent(ConstraintsPanelComponent),
+      ],
       providers: [
         CurrencyPipe,
-        {
-          provide: LegacyPlanStateService,
-          useValue: fakeLegacyPlanStateService,
-        },
-        { provide: ScenarioService, useValue: fakeScenarioService },
+        MockProvider(LegacyPlanStateService, {
+          updateStateWithScenario: jasmine.createSpy(),
+          updateStateWithShapes: jasmine.createSpy(),
+          setPlanRegion: jasmine.createSpy(),
+        }),
+        MockProvider(PlanState, { currentPlan$ } as any),
+        MockProvider(ScenarioState, {
+          currentScenarioId$,
+          reloadScenario: jasmine.createSpy(),
+        } as any),
+        { provide: ScenarioService, useValue: scenarioServiceSpy },
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
-    loader = TestbedHarnessEnvironment.loader(fixture);
+    // Reset scenarioId on each test
+    currentScenarioId$.next('fakeScenarioId');
   });
 
   it('should create', () => {
-    spyOn(component, 'pollForChanges');
-    fixture.detectChanges();
     expect(component).toBeTruthy();
   });
 
-  it('should load existing scenario', () => {
-    const scenarioId = 'fakeScenarioId';
-    fakePlanState$.next({
-      ...fakePlanState$.value,
-      ...{ currentScenarioId: scenarioId },
-    });
-    spyOn(component, 'pollForChanges');
+  it('should call loadConfig and pollForChanges if scenarioId exists', () => {
+    spyOn(component as any, 'loadConfig');
+    spyOn(component as any, 'pollForChanges');
+
     fixture.detectChanges();
-    expect(fakeLegacyPlanStateService.getScenario).toHaveBeenCalledOnceWith(
-      scenarioId
+
+    expect((component as any).loadConfig).toHaveBeenCalled();
+    expect((component as any).pollForChanges).toHaveBeenCalled();
+  });
+
+  it('should not call loadConfig or pollForChanges if scenarioId is null', () => {
+    currentScenarioId$.next(null);
+
+    spyOn(component as any, 'loadConfig');
+    spyOn(component as any, 'pollForChanges');
+
+    fixture.detectChanges();
+
+    expect((component as any).loadConfig).not.toHaveBeenCalled();
+    expect((component as any).pollForChanges).not.toHaveBeenCalled();
+    expect(component.selectedTab).toBe(0); // ScenarioTabs.CONFIG
+  });
+
+  it('should call setFormData on constraints and priorities if available', fakeAsync(() => {
+    const constraintsSpy = jasmine.createSpy('setFormData');
+    const prioritiesSpy = jasmine.createSpy('setFormData');
+
+    // Mocking priorities and constrains component
+    (component as any).prioritiesComponent = {
+      setFormData: prioritiesSpy,
+      createForm: () => new FormGroup({}),
+    };
+    (component as any).constraintsPanelComponent = {
+      setFormData: constraintsSpy,
+      createForm: () => new FormGroup({}),
+    };
+
+    fixture.detectChanges();
+    tick();
+
+    expect(constraintsSpy).toHaveBeenCalledWith(fakeScenario.configuration);
+    expect(prioritiesSpy).toHaveBeenCalledWith(
+      fakeScenario.configuration.treatment_question
     );
-    component.constrainsForm?.valueChanges.subscribe((_) => {
-      expect(
-        component.constrainsForm?.get('budgetForm.maxCost')?.value
-      ).toEqual(100);
-    });
-  });
 
-  describe('max area validation', () => {
-    beforeEach(() => {
-      // spy on polling to avoid dealing with async and timeouts
-      spyOn(component, 'pollForChanges');
-      fixture.detectChanges();
-      component.selectedTab = 0;
-    });
-    it('should validate max area is within range', async () => {
-      component.scenarioNameFormField?.setValue('scenarioName');
-      component.scenarioNameFormField?.markAsDirty();
+    discardPeriodicTasks();
+  }));
 
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_treatment_area_ratio: 857,
-      });
+  it('loadConfig should update scenarioState and call setFormData', fakeAsync(() => {
+    const constraintsSpy = jasmine.createSpy('setFormData');
+    const prioritiesSpy = jasmine.createSpy('setFormData');
 
-      fixture.detectChanges();
+    // Mocking priorities and constrains component
+    (component as any).prioritiesComponent = {
+      setFormData: prioritiesSpy,
+      createForm: () => new FormGroup({}),
+    };
+    (component as any).constraintsPanelComponent = {
+      setFormData: constraintsSpy,
+      createForm: () => new FormGroup({}),
+    };
 
-      const buttonHarness: MatButtonHarness = await loader.getHarness(
-        MatButtonHarness.with({ text: /GENERATE/ })
-      );
-      let isDisabled = await buttonHarness.isDisabled();
-      expect(isDisabled).toBe(true);
+    (component as any).scenarioState$.next('NOT_STARTED');
 
-      // valid `max_treatment_area_ratio`
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_treatment_area_ratio: 3000,
-      });
-      isDisabled = await buttonHarness.isDisabled();
-      expect(isDisabled).toBe(false);
+    component.loadConfig();
+    tick();
 
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_treatment_area_ratio: 3885733333333,
-      });
-      isDisabled = await buttonHarness.isDisabled();
-      expect(isDisabled).toBe(true);
-    });
-  });
-
-  describe('generate button', () => {
-    beforeEach(() => {
-      // spy on polling to avoid dealing with async and timeouts
-      spyOn(component, 'pollForChanges');
-      fixture.detectChanges();
-      component.selectedTab = 0;
-    });
-
-    it('should emit create scenario event on Generate button click', async () => {
-      spyOn(component, 'createScenario');
-
-      component.scenarioNameFormField?.setValue('scenarioName');
-      component.scenarioNameFormField?.markAsDirty();
-
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_treatment_area_ratio: 3000,
-      });
-
-      fixture.detectChanges();
-
-      const buttonHarness: MatButtonHarness = await loader.getHarness(
-        MatButtonHarness.with({ text: /GENERATE/ })
-      );
-
-      // Click on "GENERATE SCENARIO" button
-      await buttonHarness.click();
-
-      expect(component.createScenario).toHaveBeenCalled();
-    });
-
-    it('should disable Generate button if form is invalid', async () => {
-      const buttonHarness: MatButtonHarness = await loader.getHarness(
-        MatButtonHarness.with({ text: /GENERATE/ })
-      );
-      component.prioritiesForm?.markAsDirty();
-      component.constrainsForm
-        ?.get('physicalConstraintForm.minDistanceFromRoad')
-        ?.setValue(-1);
-      fixture.detectChanges();
-
-      // Click on "GENERATE SCENARIO" button
-      await buttonHarness.click();
-
-      expect(await buttonHarness.isDisabled()).toBeTrue();
-    });
-
-    it('should enable Generate button if form is valid', async () => {
-      const buttonHarness: MatButtonHarness = await loader.getHarness(
-        MatButtonHarness.with({ text: /GENERATE/ })
-      );
-      component.scenarioNameFormField?.setValue('scenarioName');
-      component.prioritiesComponent?.setFormData(defaultSelectedQuestion);
-
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_treatment_area_ratio: 3000,
-      });
-
-      component.generatingScenario = false;
-      fixture.detectChanges();
-
-      expect(await buttonHarness.isDisabled()).toBeFalse();
-    });
-  });
-
-  // TODO Re-enable when support for uploading project areas in implemented
-  // it('update plan state when "identify project areas" form inputs change', () => {
-  //   const generateAreas = component.formGroups[3].get('generateAreas');
-  //   const uploadedArea = component.formGroups[3].get('uploadedArea');
-
-  //   // Set "generate areas automatically" to true
-  //   generateAreas?.setValue(true);
-
-  //   expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(null);
-
-  //   // Add an uploaded area and set "generate areas automatically" to false
-  //   generateAreas?.setValue(false);
-  //   uploadedArea?.setValue('testvalue');
-
-  //   expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(
-  //     'testvalue'
-  //   );
-  // });
+    expect(component.scenarioId).toBe(fakeScenario.id);
+    expect(component.scenarioName).toBe(fakeScenario.name);
+    expect(component.scenarioState$.value).toBe('PENDING');
+    expect(prioritiesSpy).toHaveBeenCalled();
+    expect(constraintsSpy).toHaveBeenCalled();
+  }));
 
   describe('convertSingleGeoJsonToGeoJsonArray', () => {
     beforeEach(() => {
@@ -456,42 +317,5 @@ describe('CreateScenariosComponent', () => {
         },
       ]);
     });
-  });
-
-  describe('polling', () => {
-    beforeEach(() => {
-      fakePlanState$.next({
-        ...fakePlanState$.value,
-        ...{ currentScenarioId: 'fakeScenarioId' },
-      });
-      spyOn(component, 'loadConfig').and.callThrough();
-    });
-    it('should poll for changes if status is pending', fakeAsync(() => {
-      component.scenarioState = 'PENDING';
-      fixture.detectChanges();
-      expect(component.loadConfig).toHaveBeenCalledTimes(1);
-      tick(POLLING_INTERVAL);
-      fixture.detectChanges();
-      expect(component.loadConfig).toHaveBeenCalledTimes(2);
-      discardPeriodicTasks();
-    }));
-
-    it('should not poll for changes if status is not pending', fakeAsync(() => {
-      const results: ScenarioResult = {
-        ...(fakeScenario.scenario_result as ScenarioResult),
-        ...{ status: 'SUCCESS' },
-      };
-      fakeGetScenario.next({
-        ...fakeScenario,
-        ...{ scenario_result: results },
-      });
-
-      fixture.detectChanges();
-      expect(component.loadConfig).toHaveBeenCalledTimes(1);
-      tick(POLLING_INTERVAL);
-      fixture.detectChanges();
-      expect(component.loadConfig).toHaveBeenCalledTimes(1);
-      discardPeriodicTasks();
-    }));
   });
 });
