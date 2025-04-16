@@ -29,11 +29,13 @@ export class DataLayerTooltipComponent {
   }
 
   getUnits() {
-    const units = this.layer.info?.units?.filter((unit) => !!unit);
+    const units = this.layer.metadata?.['metadata']?.[
+      'identification'
+    ]?.keywords?.units?.keywords?.filter((unit: any) => !!unit);
 
     if (!units || units.length === 0) {
       return '--';
     }
-    return this.layer.info.units.join(', ');
+    return units.join(', ');
   }
 }

@@ -51,7 +51,7 @@ export class ScenarioMapComponent {
   /**
    * Maplibre defaults
    */
-  minZoom = FrontendConstants.MAPLIBIRE_MAP_MIN_ZOOM;
+  minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
   /**
