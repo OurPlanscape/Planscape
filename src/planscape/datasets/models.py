@@ -279,6 +279,12 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
     url = models.CharField(
         max_length=1024,
+        validators=[
+            URLValidator(
+                schemes=SUPPORTED_SCHEMES,
+                regex=r"^(s3:\/\/[^\/]+\/.+)|((http|https|ftp|ftps):\/\/[^\s\/$.?#].[^\s]*)$",
+            )
+        ],
         null=True,
     )
 
