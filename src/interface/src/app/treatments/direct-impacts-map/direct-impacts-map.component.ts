@@ -28,6 +28,7 @@ import { OpacitySliderComponent } from '@styleguide';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 import { FrontendConstants } from '@types';
 import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
+import { BehaviorSubject } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -93,6 +94,14 @@ export class DirectImpactsMapComponent {
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
+  standsReady$ = new BehaviorSubject(false);
+
+  setStandsReady() {
+    setTimeout(() => {
+      this.standsReady$.next(true);
+    }, 10);
+  }
+
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
     this.mapCreated.emit(this.mapLibreMap);
@@ -122,13 +131,13 @@ export class DirectImpactsMapComponent {
 
   // Move layers so the hover and selected stand layer sit at the top
   private moveLayers() {
-    this.mapLibreMap.moveLayer('map-project-areas-line');
-    this.mapLibreMap.moveLayer('standHover');
-    this.mapLibreMap.moveLayer('standSelected');
-
-    if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
-      this.mapLibreMap.moveLayer('map-project-areas-labels');
-    }
+    // this.mapLibreMap.moveLayer('map-project-areas-line');
+    // this.mapLibreMap.moveLayer('standHover');
+    // this.mapLibreMap.moveLayer('standSelected');
+    //
+    // if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
+    //   this.mapLibreMap.moveLayer('map-project-areas-labels');
+    // }
   }
 
   openTreatmentLegend() {

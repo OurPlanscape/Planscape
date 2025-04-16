@@ -1,8 +1,10 @@
 import {
   Component,
+  EventEmitter,
   Input,
   OnChanges,
   OnInit,
+  Output,
   SimpleChange,
   SimpleChanges,
 } from '@angular/core';
@@ -103,6 +105,15 @@ export class MapStandsComponent implements OnChanges, OnInit {
       this.patternLoaded['stripes-red']
     );
   }
+
+  setPatternLoaded(patternName: PatternName) {
+    this.patternLoaded[patternName] = true;
+    if (this.allPatternsLoaded()) {
+      this.patternsLoaded.emit();
+    }
+  }
+
+  @Output() patternsLoaded = new EventEmitter();
 
   /**
    * Reference to the selected stands before the user starts dragging for stand selection

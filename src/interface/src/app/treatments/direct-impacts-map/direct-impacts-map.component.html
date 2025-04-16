@@ -37,13 +37,17 @@
     sourceId="stands"
     [mapLibreMap]="mapLibreMap"
     [selectStart]="null"
-    [selectEnd]="null"></app-map-stands>
-
-  <app-map-project-areas [mapLibreMap]="mapLibreMap"></app-map-project-areas>
+    [selectEnd]="null"
+    (patternsLoaded)="setStandsReady()"></app-map-stands>
 
   <app-map-stands-tx-result
+    *ngIf="standsReady$ | async"
     [mapLibreMap]="mapLibreMap"
     [propertyName]="variables[year]"></app-map-stands-tx-result>
+
+  <app-map-project-areas
+    *ngIf="standsReady$ | async"
+    [mapLibreMap]="mapLibreMap"></app-map-project-areas>
 
   <app-action-button
     *ngIf="(showLegend$ | async) === false"

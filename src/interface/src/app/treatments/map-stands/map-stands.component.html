@@ -3,7 +3,7 @@
   *ngFor="let patternName of patternNames"
   [id]="patternName"
   [url]="'/assets/png/patterns/' + patternName + '.png'"
-  (imageLoaded)="patternLoaded[patternName] = true"></mgl-image>
+  (imageLoaded)="setPatternLoaded(patternName)"></mgl-image>
 
 <mgl-vector-source
   [id]="sourceId"
