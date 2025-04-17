@@ -7,8 +7,17 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
-import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
+import {
+  BehaviorSubject,
+  catchError,
+  combineLatest,
+  firstValueFrom,
+  interval,
+  map,
+  NEVER,
+  take,
+} from 'rxjs';
+import { Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
 import { Router } from '@angular/router';
@@ -20,6 +29,7 @@ import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { PlanState } from '../plan.state';
 
 enum ScenarioTabs {
   CONFIG,
@@ -39,12 +49,14 @@ export class CreateScenariosComponent implements OnInit {
   scenarioId: string | null = null;
   scenarioName: string | null = null;
   planId?: number | null;
-  plan$ = new BehaviorSubject<Plan | null>(null);
+  plan$ = this.planState.currentPlan$;
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   existingScenarioNames: string[] = [];
   forms: FormGroup = this.fb.group({});
   // this value gets updated once we load the scenario result.
-  scenarioState: ScenarioResultStatus = 'NOT_STARTED';
+  scenarioState$: BehaviorSubject<ScenarioResultStatus> = new BehaviorSubject(
+    'NOT_STARTED' as ScenarioResultStatus
+  );
   scenarioResults: ScenarioResult | null = null;
   priorities: string[] = [];
   tabAnimationOptions: Record<'on' | 'off', string> = {
@@ -69,7 +81,8 @@ export class CreateScenariosComponent implements OnInit {
     private router: Router,
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
-    private scenarioStateService: ScenarioState
+    private scenarioStateService: ScenarioState,
+    private planState: PlanState
   ) {}
 
   createForms() {
@@ -91,22 +104,20 @@ export class CreateScenariosComponent implements OnInit {
   ngOnInit(): void {
     this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
-    this.LegacyPlanStateService.planState$
-      .pipe(untilDestroyed(this), take(1))
-      .subscribe((planState) => {
-        this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.scenarioId = planState.currentScenarioId;
-        this.planId = planState.currentPlanId;
-        if (this.plan$.getValue()?.region_name) {
-          this.LegacyPlanStateService.setPlanRegion(
-            this.plan$.getValue()?.region_name!
-          );
-        }
-      });
+    combineLatest([
+      this.planState.currentPlan$,
+      this.scenarioStateService.currentScenarioId$,
+    ]).subscribe(([plan, scenarioId]) => {
+      this.scenarioId = scenarioId ? scenarioId.toString() : null;
+      this.planId = plan.id;
+      if (plan?.region_name) {
+        this.LegacyPlanStateService.setPlanRegion(plan?.region_name!);
+      }
+    });
 
     if (this.scenarioId) {
       // Has to be outside service subscription or else will cause infinite loop
-      this.scenarioState = 'LOADING';
+      this.scenarioState$.next('LOADING');
       this.loadConfig();
       this.pollForChanges();
       // if we have an id go to the results tab.
@@ -145,20 +156,19 @@ export class CreateScenariosComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe(() => {
         // only poll when scenario is pending or running
-        if (
-          this.scenarioState === 'PENDING' ||
-          this.scenarioState === 'RUNNING'
-        ) {
+        const scenarioStatus = this.scenarioState$.value;
+        if (scenarioStatus === 'PENDING' || scenarioStatus === 'RUNNING') {
           this.loadConfig();
         }
       });
   }
 
   loadConfig(): void {
-    this.LegacyPlanStateService.getScenario(this.scenarioId!).subscribe({
-      next: (scenario: Scenario) => {
+    this.scenarioService.getScenario(this.scenarioId!).subscribe({
+      next: async (scenario: Scenario) => {
         // if we have the same state do nothing.
-        if (this.scenarioState === scenario.scenario_result?.status) {
+        const scenarioStatus = this.scenarioState$.value;
+        if (scenarioStatus === scenario.scenario_result?.status) {
           return;
         }
 
@@ -173,14 +183,15 @@ export class CreateScenariosComponent implements OnInit {
         this.disableForms();
         if (scenario.scenario_result) {
           this.scenarioResults = scenario.scenario_result;
-          this.scenarioState = scenario.scenario_result?.status;
+          this.scenarioState$.next(scenario.scenario_result?.status);
           this.priorities =
             scenario.configuration.treatment_question?.scenario_priorities ||
             [];
 
           this.selectedTab = ScenarioTabs.RESULTS;
-          if (this.scenarioState == 'SUCCESS') {
-            this.processScenarioResults(scenario);
+          if (scenario.scenario_result?.status == 'SUCCESS') {
+            // Using await since we need to run this in order
+            await this.processScenarioResults(scenario);
             this.scenarioStateService.reloadScenario();
           }
           // enable animation
@@ -228,7 +239,8 @@ export class CreateScenariosComponent implements OnInit {
     }
     this.generatingScenario = true;
     this.goalOverlayService.close();
-    this.LegacyPlanStateService.createScenario(this.formValueToScenario())
+    this.scenarioService
+      .createScenario(this.formValueToScenario())
       .pipe(
         catchError((error) => {
           this.generatingScenario = false;
@@ -241,7 +253,7 @@ export class CreateScenariosComponent implements OnInit {
         this.scenarioId = newScenario.id;
         this.scenarioName = newScenario.name;
         this.matSnackBar.dismiss();
-        this.scenarioState = 'PENDING';
+        this.scenarioState$.next('PENDING');
         this.disableForms();
         this.selectedTab = ScenarioTabs.RESULTS;
         this.pollForChanges();
@@ -258,8 +270,9 @@ export class CreateScenariosComponent implements OnInit {
   /**
    * Processes Scenario Results into ChartData format and updates PlanService State with Project Area shapes
    */
-  processScenarioResults(scenario: Scenario) {
-    let plan = this.plan$.getValue();
+  async processScenarioResults(scenario: Scenario): Promise<void> {
+    const plan = await firstValueFrom(this.plan$);
+
     if (scenario && this.scenarioResults && plan) {
       this.LegacyPlanStateService.updateStateWithShapes(
         this.scenarioResults?.result.features
@@ -293,8 +306,9 @@ export class CreateScenariosComponent implements OnInit {
     this.LegacyPlanStateService.updateStateWithShapes(shapes);
   }
 
-  goToConfig() {
-    this.router.navigate(['plan', this.plan$.value?.id, 'config']);
+  async goToConfig() {
+    const plan = await firstValueFrom(this.plan$);
+    this.router.navigate(['plan', plan?.id, 'config']);
   }
 
   get projectAreasForm(): FormGroup {
@@ -313,15 +327,16 @@ export class CreateScenariosComponent implements OnInit {
     return this.forms.get('constrains');
   }
 
-  get showTreatmentsTab() {
-    return this.scenarioState === 'SUCCESS';
-  }
+  showTreatmentsTab$ = this.scenarioState$.pipe(
+    map((state) => state === 'SUCCESS')
+  );
 
-  showTreatmentFooter() {
-    const plan = this.plan$.value;
-    // if feature is on, the scenario is done, and I have permissions to create new one
-    return this.showTreatmentsTab && !!plan && canAddTreatmentPlan(plan);
-  }
+  showTreatmentFooter$ = combineLatest([
+    this.plan$,
+    this.showTreatmentsTab$,
+  ]).pipe(
+    map(([plan, showTab]) => showTab && !!plan && canAddTreatmentPlan(plan))
+  );
 
   goToScenario() {
     // Updating breadcrums so when we navigate we can see it
