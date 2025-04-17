@@ -122,23 +122,23 @@ class AdminDataLayerViewSet(
         organization = serializer.validated_data.get("organnization")
         user = request.user
 
-        result, datalayer = change_datalayer_status(
-            organization,
-            user,
-            datalayer,
-            target_status,
-        )
+        try:
+            datalayer = change_datalayer_status(
+                organization,
+                user,
+                datalayer,
+                target_status,
+            )
 
-        if result:
             out_serializer = DataLayerSerializer(datalayer)
             return Response(out_serializer.data, status=status.HTTP_200_OK)
-
-        return Response(
-            {
-                "message": f"Something went wrong changing status of {datalayer.pk}",
-            },
-            status=status.HTTP_500_INTERNAL_SERVER_ERROR,
-        )
+        except Exception:
+            return Response(
+                {
+                    "message": f"Something went wrong changing status of {datalayer.pk}",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class AdminStyleViewSet(
