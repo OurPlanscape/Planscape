@@ -21,13 +21,29 @@ const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
 export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
   const { map_type, entries } = dataLayer.styles[0].data;
   const sorted = [...entries].sort((a, b) => a.value - b.value);
+  const title = unitsTitleFromLayer(dataLayer);
   const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => {
     return {
       colorHex: e.color ?? '',
       entryLabel: e.label ?? '',
     };
   });
-  return { title: dataLayer.name, type: map_type, entries: colorDetails };
+  return { title: title, type: map_type, entries: colorDetails };
+}
+
+function unitsTitleFromLayer(dataLayer: DataLayer): string {
+  const defaultTitle = 'Legend';
+  let units = dataLayer.metadata?.['metadata']?.[
+    'identification'
+  ]?.keywords?.units?.keywords?.filter((unit: any) => !!unit);
+  if (!units || units.length === 0) {
+    return defaultTitle;
+  }
+  const title = units.join(', ');
+  if (title === '0-1') {
+    return defaultTitle;
+  }
+  return title;
 }
 
 // maps hexcolor string to an RGB object with integer values
