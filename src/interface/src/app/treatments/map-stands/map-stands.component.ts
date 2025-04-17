@@ -76,15 +76,14 @@ export class MapStandsComponent implements OnChanges, OnInit {
    */
   @Input() selectEnd!: Point | null;
 
-  /**
-   * The id to be applied on the source vector layer
-   */
-  @Input() sourceId = 'stands';
+  sourceId = 'stands';
 
   /**
    * Whether or not the user can edit stands on the map
    */
   @Input() userCanEditStands = false;
+
+  @Input() before = '';
 
   treatedStands$ = this.treatedStandsState.treatedStands$;
   sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
@@ -106,14 +105,7 @@ export class MapStandsComponent implements OnChanges, OnInit {
     );
   }
 
-  setPatternLoaded(patternName: PatternName) {
-    this.patternLoaded[patternName] = true;
-    if (this.allPatternsLoaded()) {
-      this.patternsLoaded.emit();
-    }
-  }
-
-  @Output() patternsLoaded = new EventEmitter();
+  @Output() standsLoaded = new EventEmitter();
 
   /**
    * Reference to the selected stands before the user starts dragging for stand selection
@@ -232,11 +224,18 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   ngOnInit(): void {
     this.selectedStandsState.reset();
+    this.mapLibreMap.on('data', (event: any) => {
+      if (
+        event.sourceId === 'stands' &&
+        event.isSourceLoaded &&
+        !event.sourceDataType
+      ) {
+        this.standsLoaded.emit();
+      }
+    });
   }
 
   get vectorLayerUrl() {
-    // TODO bring back  projectAreaId ? `&project_area_id=${projectAreaId}` : ''
-    //  const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
       MARTIN_SOURCES.standsByTxPlan.tilesUrl +
       `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}`

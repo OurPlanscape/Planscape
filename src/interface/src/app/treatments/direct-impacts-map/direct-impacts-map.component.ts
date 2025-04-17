@@ -28,7 +28,6 @@ import { OpacitySliderComponent } from '@styleguide';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 import { FrontendConstants } from '@types';
 import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
-import { BehaviorSubject } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -94,13 +93,7 @@ export class DirectImpactsMapComponent {
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
-  standsReady$ = new BehaviorSubject(false);
-
-  setStandsReady() {
-    setTimeout(() => {
-      this.standsReady$.next(true);
-    }, 10);
-  }
+  standsLoaded = false;
 
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;

@@ -165,9 +165,7 @@ export class TreatmentsState {
     this.mapConfigState.updateShowProjectAreas(
       data.showMapProjectAreas || false
     );
-    this.mapConfigState.updateShowTreatmentStands(
-      data.showTreatmentStands || false
-    );
+
     this.mapConfigState.setStandSelectionEnabled(
       data.standSelectionEnabled || false
     );
@@ -323,7 +321,6 @@ export class TreatmentsState {
     }
 
     this._projectAreaId$.next(projectAreaId);
-    this.mapConfigState.updateShowTreatmentStands(true);
     this.mapConfigState.updateMapCenter(projectArea?.extent);
     if (setStands) {
       this.setTreatedStandsFromSummary([projectArea]);

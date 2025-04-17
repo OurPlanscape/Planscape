@@ -3,23 +3,25 @@
     [id]="sourceName"
     [tiles]="[vectorLayerUrl]"></mgl-vector-source>
   <mgl-layer
-    id="treatment-area-polygon"
+    id="planning-area-polygon"
     type="line"
     [source]="sourceName"
     [sourceLayer]="sourceName"
     [paint]="{
       'line-color': COLORS.md_gray,
       'line-width': 2
-    }">
+    }"
+    before="middle-layer">
   </mgl-layer>
   <mgl-layer
-    id="treatment-area-fill"
+    id="planning-area-fill"
     type="fill"
     [source]="sourceName"
     [sourceLayer]="sourceName"
     [paint]="{
       'fill-color': COLORS.white_light_blue,
       'fill-opacity': 0.4
-    }">
+    }"
+    before="planning-area-polygon">
   </mgl-layer>
 </ng-container>

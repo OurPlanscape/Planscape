@@ -3,7 +3,7 @@
   *ngFor="let patternName of patternNames"
   [id]="patternName"
   [url]="'/assets/png/patterns/' + patternName + '.png'"
-  (imageLoaded)="setPatternLoaded(patternName)"></mgl-image>
+  (imageLoaded)="patternLoaded[patternName] = true"></mgl-image>
 
 <mgl-vector-source
   [id]="sourceId"
@@ -27,7 +27,8 @@
     (layerMouseEnter)="setCursor()"
     (layerMouseLeave)="resetCursor()"
     [filter]="projectAreaFilter$ | async"
-    [sourceLayer]="layers.stands.sourceLayer"></mgl-layer>
+    [sourceLayer]="layers.stands.sourceLayer"
+    [before]="layers.sequenceStands.name"></mgl-layer>
 
   <mgl-layer
     [id]="layers.sequenceStands.name"
@@ -35,7 +36,8 @@
     source="stands"
     [paint]="layers.sequenceStands.paint"
     [filter]="combinedFilter$ | async"
-    [sourceLayer]="layers.sequenceStands.sourceLayer"></mgl-layer>
+    [sourceLayer]="layers.sequenceStands.sourceLayer"
+    [before]="layers.standsOutline.name"></mgl-layer>
 
   <mgl-layer
     [id]="layers.standsOutline.name"
@@ -43,7 +45,8 @@
     source="stands"
     [filter]="projectAreaFilter$ | async"
     [paint]="layers.standsOutline.paint"
-    [sourceLayer]="layers.standsOutline.sourceLayer"></mgl-layer>
+    [sourceLayer]="layers.standsOutline.sourceLayer"
+    [before]="before"></mgl-layer>
 
   <mgl-layer
     [id]="layers.selectedStands.name"

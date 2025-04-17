@@ -2,16 +2,15 @@ import { Injectable } from '@angular/core';
 import jsPDF from 'jspdf';
 import {
   descriptionsForAction,
+  PATTERN_NAMES,
   PrescriptionAction,
+  PRESCRIPTIONS,
   PrescriptionSequenceAction,
   PrescriptionSingleAction,
-  PRESCRIPTIONS,
-  PATTERN_NAMES,
 } from './prescriptions';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { logoImg } from '../../assets/base64/icons';
 import { Prescription, TreatmentProjectArea, TreatmentSummary } from '@types';
-import { MapConfigState } from '../maplibre-map/map-config.state';
 
 import { TreatmentsState } from './treatments.state';
 import { TreatedStandsState } from './treatment-map/treated-stands.state';
@@ -44,7 +43,6 @@ export class TreatmentToPDFService {
   constructor(
     private treatmentsState: TreatmentsState,
     private treatedStandsState: TreatedStandsState,
-    private mapConfigState: MapConfigState,
     private authService: AuthService
   ) {}
 
@@ -103,26 +101,14 @@ export class TreatmentToPDFService {
 
     this.addAttributions(attributions, mapX + mapWidth, mapHeight + mapY - 2);
 
-    // If we are showing the treatment stands, we change what's being rendered
-    if (this.mapConfigState.isTreatmentStandsVisible()) {
-      const nextY = 132;
-      await this.drawTreatmentLegend(130, nextY, treatmentsUsedSet);
-      await this.addProjectAreaTable(
-        this.tableRowsFromSummary(curSummary),
-        this.leftMargin + 10,
-        nextY,
-        80
-      );
-    } else {
-      const projectAreasX = this.leftMargin + 10;
-      const projectAreasY = 132;
-      await this.addProjectAreaTable(
-        this.tableRowsFromSummary(curSummary),
-        projectAreasX,
-        projectAreasY,
-        140
-      );
-    }
+    const nextY = 132;
+    await this.drawTreatmentLegend(130, nextY, treatmentsUsedSet);
+    await this.addProjectAreaTable(
+      this.tableRowsFromSummary(curSummary),
+      this.leftMargin + 10,
+      nextY,
+      80
+    );
 
     document.body.removeChild(mapContainer);
     const pdfName = `planscape-${encodeURI(treatmentPlanName.split(' ').join('_'))}.pdf`;

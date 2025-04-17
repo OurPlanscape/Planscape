@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import {
   FeatureComponent,
   GeoJSONSourceComponent,
@@ -25,6 +25,8 @@ import { MARTIN_SOURCES } from '../../treatments/map.sources';
   templateUrl: './planning-area-layer.component.html',
 })
 export class PlanningAreaLayerComponent {
+  @Input() before = '';
+
   constructor(private planState: PlanState) {}
 
   vectorLayerUrl$ = this.planState.currentPlanId$.pipe(
