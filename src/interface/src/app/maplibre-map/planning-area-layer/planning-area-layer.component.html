@@ -1,7 +1,5 @@
-<ng-container *ngIf="vectorLayerUrl$ | async as vectorLayerUrl">
-  <mgl-vector-source
-    [id]="sourceName"
-    [tiles]="[vectorLayerUrl]"></mgl-vector-source>
+<ng-container *ngIf="tilesUrl$ | async as tilesUrl">
+  <mgl-vector-source [id]="sourceName" [tiles]="[tilesUrl]"></mgl-vector-source>
   <mgl-layer
     id="planning-area-polygon"
     type="line"

@@ -29,7 +29,7 @@ export class PlanningAreaLayerComponent {
 
   constructor(private planState: PlanState) {}
 
-  vectorLayerUrl$ = this.planState.currentPlanId$.pipe(
+  tilesUrl$ = this.planState.currentPlanId$.pipe(
     map((id) => {
       return MARTIN_SOURCES.planningArea.tilesUrl + `?id=${id}`;
     })

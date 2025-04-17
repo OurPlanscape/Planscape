@@ -6,6 +6,7 @@ import { MockDeclarations, MockProvider } from 'ng-mocks';
 import {
   ImageComponent,
   LayerComponent,
+  MapComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { TreatmentsState } from '../treatments.state';
@@ -31,19 +32,23 @@ describe('MapStandsComponent', () => {
           treatedStands$: of([]),
         }),
         MockProvider(MapConfigState, {
-          showTreatmentStandsLayer$: of(false),
           treatedStandsOpacity$: of(1),
         }),
       ],
       declarations: MockDeclarations(
         VectorSourceComponent,
         LayerComponent,
-        ImageComponent
+        ImageComponent,
+        MapComponent
       ),
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapStandsComponent);
     component = fixture.componentInstance;
+    component.mapLibreMap = {
+      on: () => {},
+      off: () => {},
+    } as any;
     fixture.detectChanges();
   });
 

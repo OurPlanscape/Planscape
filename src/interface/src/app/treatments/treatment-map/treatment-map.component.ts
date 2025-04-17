@@ -209,11 +209,8 @@ export class TreatmentMapComponent {
     });
   }
 
-  standsLoaded = false;
-
   afterStandsLoaded() {
     this.selectedStandsState.restoreSelectedStands();
-    this.standsLoaded = true;
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
