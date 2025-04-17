@@ -1,4 +1,4 @@
-repos <- "http://cran.us.r-project.org"
+repos <- "http://cran.rstudio.com/"
 if (!require("remotes")) install.packages("remotes", repos=repos)
 if (!require("pacman")) install.packages("pacman", repos=repos)
 library(remotes)
@@ -23,7 +23,8 @@ packages <- c(
   "logger",
   "tidyr",
   "checkmate",
-  "uuid"
+  "uuid",
+  "plumber"
 )
 
 github_packages <- c(
@@ -38,6 +39,7 @@ if (!require("forsys")) {
   # pacman is throwing errors to install from github :/
   remotes::install_github("forsys-sp/forsysr")
   remotes::install_github("forsys-sp/patchmax")
+  remotes::install_github("milesmcbain/friendlyeval")
 }
 
 print("INSTALLATION DONE")
