@@ -1,6 +1,6 @@
 import logging
 from functools import lru_cache
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import fiona
 import rasterio
@@ -67,9 +67,9 @@ def fetch_geometry_type(
 
 
 @lru_cache
-def get_layer_info(input_file: str) -> Dict[str, Any]:
+def get_layer_info(input_file: str) -> Tuple[DataLayerType, Dict[str, Any]]:
     from gis.info import info_raster, info_vector
 
     layer_type = fetch_datalayer_type(input_file)
     fn = info_raster if layer_type == DataLayerType.RASTER else info_vector
-    return fn(input_file=input_file)
+    return layer_type, fn(input_file=input_file)

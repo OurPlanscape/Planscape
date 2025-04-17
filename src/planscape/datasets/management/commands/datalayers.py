@@ -14,8 +14,9 @@ from core.s3 import is_s3_file, list_files, upload_file
 from django.core.management.base import CommandParser
 from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
 from gis.io import detect_mimetype
-from gis.rasters import to_planscape
+from gis.rasters import to_planscape as to_planscape_raster
 
+from datasets.models import DataLayerType
 from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
@@ -344,10 +345,14 @@ class Command(PlanscapeCommand):
         s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
         layer_type = fetch_datalayer_type(input_file=input_file)
-        rasters = to_planscape(
-            input_file=input_file,
-        )
-        layer_info = get_layer_info(input_file=rasters[0])
+        if layer_type == DataLayerType.RASTER:
+            processed_files = to_planscape_raster(
+                input_file=input_file,
+            )
+        else:
+            # implement vector
+            processed_files = []
+        layer_info = get_layer_info(input_file=processed_files[0])
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         mimetype = detect_mimetype(input_file=input_file)
         metadata = kwargs.pop("metadata", None)
@@ -380,7 +385,7 @@ class Command(PlanscapeCommand):
         upload_to = output_data.get("upload_to", {}) or {}
         if len(upload_to.keys()) > 0:
             self._upload_file(
-                rasters,
+                processed_files,
                 datalayer=datalayer,
                 upload_to=upload_to,
             )
@@ -424,7 +429,11 @@ class Command(PlanscapeCommand):
             )
 
     def _change_datalayer_status_request(
-        self, datalayer_id: int, status: str, **kwargs
+        self,
+        org: int,
+        datalayer_id: int,
+        status: str,
+        **kwargs,
     ):
         base_url = self.get_base_url(**kwargs)
         url = f"{base_url}/v2/admin/datalayers/{datalayer_id}/change_status/"
@@ -432,7 +441,10 @@ class Command(PlanscapeCommand):
         response = requests.post(
             url,
             headers=headers,
-            json={"status": status},
+            json={
+                "organization": org,
+                "status": status,
+            },
         )
         if not response.ok:
             raise Exception(

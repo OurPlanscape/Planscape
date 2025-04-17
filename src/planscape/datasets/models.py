@@ -316,7 +316,7 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     hash = models.CharField(
         null=True,
         max_length=256,
-        help_text="SHA256 hash of the original file. Calculated after upload is done.",
+        help_text="SHA256 hash of the original file. Calculated before upload is done, but after any transformations.",
     )
 
     # right now we have the following metadata fields for rasters, which can be different
