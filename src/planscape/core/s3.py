@@ -37,6 +37,48 @@ def create_download_url(
     return response
 
 
+@cached(timeout=settings.S3_PUBLIC_URL_TTL)
+def get_head(
+    bucket_name: str,
+    object_name: str,
+) -> Optional[Dict[str, Any]]:
+    s3_client = boto3.client("s3")
+    try:
+        response = s3_client.head_object(
+            Bucket=bucket_name,
+            Key=object_name,
+            ChecksumMode="ENABLED",
+        )
+    except ClientError as e:
+        logging.error(e)
+        return None
+
+    return response
+
+
+def get_s3_hash(
+    s3_url: str,
+    bucket: str,
+    checksum_type: str = "ChecksumSHA256",
+) -> Optional[str]:
+    """Returns a particular hash from a head request to s3.
+    This is going to be used to understand collisions, duplicate uploads
+    and doing bulk operations on datalayers that belongs to the same file.
+
+    :param datalayer: _description_
+    :type datalayer: DataLayer
+    :param checksum_type: _description_, defaults to "ChecksumSHA256"
+    :type checksum_type: str, optional
+    :return: _description_
+    :rtype: Optional[str]
+    """
+    object_name = s3_url.replace(f"s3://{bucket}/", "")
+    head_response = get_head(bucket, object_name)
+    if head_response:
+        return head_response[checksum_type]
+    return None
+
+
 def create_upload_url(
     bucket_name: str,
     object_name: str,

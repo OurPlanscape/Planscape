@@ -50,7 +50,7 @@ def get_random_output_file(input_file: str, output_folder: str = "/tmp") -> str:
 
 def to_planscape(input_file: str) -> List[str]:
     log.info("Converting raster to planscape format.")
-    layer_info = get_layer_info(input_file=input_file)
+    layer_type, layer_info = get_layer_info(input_file=input_file)
     layer_crs = layer_info.get("crs")
     if layer_crs is None:
         raise ValueError(

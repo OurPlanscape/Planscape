@@ -8,8 +8,8 @@ from rest_framework import serializers
 from datasets.models import (
     Category,
     DataLayer,
-    DataLayerType,
     DataLayerStatus,
+    DataLayerType,
     Dataset,
     Style,
 )
@@ -198,6 +198,10 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
 
 
 class ChangeDataLayerStatusSerializer(serializers.Serializer):
+    organization = serializers.PrimaryKeyRelatedField(
+        queryset=Organization.objects.all(),
+        required=False,
+    )
     status = serializers.ChoiceField(choices=DataLayerStatus.choices)
 
     def validate(self, attrs):

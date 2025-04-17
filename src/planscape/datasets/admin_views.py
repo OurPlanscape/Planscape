@@ -8,8 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from datasets.filters import DataLayerFilterSet, StyleFilterSet
-from datasets.models import DataLayer, Dataset, Style, DataLayerStatus
-
+from datasets.models import DataLayer, Dataset, Style
 from datasets.serializers import (
     AssociateDataLayerSerializer,
     AssociateStyleSerializer,
@@ -26,6 +25,7 @@ from datasets.serializers import (
 )
 from datasets.services import (
     assign_style,
+    change_datalayer_status,
     create_datalayer,
     create_dataset,
     create_style,
@@ -117,11 +117,28 @@ class AdminDataLayerViewSet(
             context={"current_status": datalayer.status},
         )
         serializer.is_valid(raise_exception=True)
-        datalayer.status = serializer.validated_data["status"]
-        datalayer.save()
 
-        out_serializer = DataLayerSerializer(datalayer)
-        return Response(out_serializer.data, status=status.HTTP_200_OK)
+        target_status = serializer.validated_data.get("status")
+        organization = serializer.validated_data.get("organnization")
+        user = request.user
+
+        try:
+            datalayer = change_datalayer_status(
+                organization,
+                user,
+                datalayer,
+                target_status,
+            )
+
+            out_serializer = DataLayerSerializer(datalayer)
+            return Response(out_serializer.data, status=status.HTTP_200_OK)
+        except Exception:
+            return Response(
+                {
+                    "message": f"Something went wrong changing status of {datalayer.pk}",
+                },
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class AdminStyleViewSet(

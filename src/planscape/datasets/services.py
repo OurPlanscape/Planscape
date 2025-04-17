@@ -10,6 +10,12 @@ import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
 from core.s3 import create_upload_url, is_s3_file, s3_filename
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.contrib.gis.geos import GEOSGeometry, Polygon
+from django.db import transaction
+from organizations.models import Organization
+
 from datasets.models import (
     Category,
     DataLayer,
@@ -19,6 +25,7 @@ from datasets.models import (
     Dataset,
     GeometryType,
     SearchResult,
+    StorageTypeChoices,
     Style,
     VisibilityOptions,
 )
@@ -28,12 +35,7 @@ from datasets.search import (
     dataset_to_search_result,
     organization_to_search_result,
 )
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.contrib.gis.geos import GEOSGeometry, Polygon
-from django.db import transaction
-from organizations.models import Organization
-
+from datasets.tasks import datalayer_uploaded
 from planscape.openpanel import track_openpanel
 
 log = logging.getLogger(__name__)
@@ -151,7 +153,7 @@ def create_style(
     created_by: User,
     type: DataLayerType,
     data: Dict[str, Any],
-    datalayers: Optional[Collection[int]] = None,
+    datalayers: Optional[Collection[DataLayer]] = None,
     **kwargs,
 ) -> Dict[str, Any]:
     data_hash = mmh3.hash_bytes(json.dumps(data)).hex()
@@ -228,6 +230,51 @@ def assign_style(
     return datalayer_has_style
 
 
+DATALAYER_TRANSITIONS = {
+    DataLayerStatus.PENDING: [DataLayerStatus.FAILED, DataLayerStatus.READY],
+    DataLayerStatus.READY: [DataLayerStatus.READY],
+    DataLayerStatus.FAILED: [DataLayerStatus.PENDING, DataLayerStatus.READY],
+}
+
+
+@transaction.atomic()
+def change_datalayer_status(
+    organization: Organization,
+    user: User,
+    datalayer: DataLayer,
+    target_status: DataLayerStatus,
+) -> DataLayer:
+    possible = DATALAYER_TRANSITIONS[datalayer.status]
+    if target_status not in possible:
+        raise ValueError(
+            f"Cannot transition from {datalayer.status} to {target_status}."
+        )
+
+    if target_status == DataLayerStatus.READY:
+        # the status will be changed to READY after
+        # datalayer uploaded is done
+        datalayer_uploaded.delay(datalayer.pk, status=target_status)
+    else:
+        datalayer.status = target_status
+        datalayer.save()
+
+    action.send(user, verb="changed status", action_object=datalayer)
+    invalidate_model(DataLayer)
+    track_openpanel(
+        name="datasets.datalayer.changed_status",
+        properties={
+            "organization_id": organization.pk,
+            "organization_name": organization.name,
+            "dataset_id": datalayer.dataset.pk,
+            "dataset_name": datalayer.dataset.name,
+        },
+        user_id=user.pk,
+    )
+
+    datalayer.refresh_from_db()
+    return datalayer
+
+
 @transaction.atomic()
 def create_datalayer(
     name: str,
@@ -245,6 +292,7 @@ def create_datalayer(
     metadata = kwargs.pop("metadata", None) or None
     style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
+
     storage_url = get_storage_url(
         organization_id=organization.pk,
         uuid=uuid,
@@ -252,11 +300,20 @@ def create_datalayer(
         mimetype=mimetype,
     )
     geometry = geometry_from_info(info)
+
     if is_s3_file(original_name):
         # process this
         original_file_name = s3_filename(original_name)
     else:
         original_file_name = original_name
+
+    match type:
+        case DataLayerType.VECTOR:
+            storage_type = StorageTypeChoices.DATABASE
+        case _:
+            # s3 is also filesystem
+            storage_type = StorageTypeChoices.FILESYSTEM
+
     datalayer = DataLayer.objects.create(
         name=name,
         uuid=uuid,
@@ -267,6 +324,7 @@ def create_datalayer(
         url=storage_url,
         metadata=metadata,
         type=type,
+        storage_type=storage_type,
         geometry_type=geometry_type,
         geometry=geometry,
         info=info,

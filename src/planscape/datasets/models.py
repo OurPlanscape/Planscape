@@ -10,7 +10,7 @@ from core.schemes import SUPPORTED_SCHEMES
 from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.contrib.gis.db import models
-from django.core.validators import URLValidator
+from django.core.validators import RegexValidator, URLValidator
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
 from treebeard.mp_tree import MP_Node
@@ -207,6 +207,11 @@ class Style(
         ]
 
 
+class StorageTypeChoices(models.TextChoices):
+    DATABASE = "DATABASE", "Database"
+    FILESYSTEM = "FILE_SYSTEM", "File System"
+
+
 class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     id: int
 
@@ -251,6 +256,12 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
     )
 
+    storage_type = models.CharField(
+        max_length=64,
+        choices=StorageTypeChoices.choices,
+        default=StorageTypeChoices.FILESYSTEM,
+    )
+
     geometry_type = models.CharField(
         choices=GeometryType.choices,
         null=True,
@@ -288,10 +299,24 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         null=True,
     )
 
+    table = models.CharField(
+        max_length=256,
+        null=True,
+        validators=[
+            RegexValidator(r"^(?<schema>\w+)\.(?<table>\w+)$"),
+        ],
+    )
+
     geometry = models.PolygonField(
         srid=settings.DEFAULT_CRS,
         help_text="Represents the polygon that encompasses the datalayer. It can be null.",
         null=True,
+    )
+
+    hash = models.CharField(
+        null=True,
+        max_length=256,
+        help_text="SHA256 hash of the original file. Calculated before upload is done, but after any transformations.",
     )
 
     # right now we have the following metadata fields for rasters, which can be different
