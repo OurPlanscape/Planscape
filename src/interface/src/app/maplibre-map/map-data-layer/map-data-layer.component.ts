@@ -1,15 +1,16 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { DataLayer } from '@types';
 import { generateColorFunction } from '../../data-layers/utilities';
+import { DataLayer, FrontendConstants } from '@types';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
   Map as MapLibreMap,
   RasterLayerSpecification,
   RasterSourceSpecification,
 } from 'maplibre-gl';
-import { FrontendConstants } from '@types';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@shared';
 
 @UntilDestroy()
 @Component({
@@ -24,7 +25,10 @@ export class MapDataLayerComponent implements OnInit {
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private matSnackBar: MatSnackBar
+  ) {
     dataLayersStateService.selectedDataLayer$
       .pipe(untilDestroyed(this))
       .subscribe((dataLayer: DataLayer | null) => {
@@ -64,6 +68,21 @@ export class MapDataLayerComponent implements OnInit {
         this.dataLayersStateService.setDataLayerLoading(false);
       }
     });
+
+    this.mapLibreMap.on('error', (event: any) => {
+      if (
+        this.mapLibreMap.getSource('rasterImage') &&
+        event.sourceId === 'rasterImage' &&
+        !event.isSourceLoaded
+      ) {
+        this.dataLayersStateService.setDataLayerLoading(false);
+        this.matSnackBar.open(
+          '[Error] Unable to load data layer.',
+          'Dismiss',
+          SNACK_ERROR_CONFIG
+        );
+      }
+    });
   }
 
   addRasterLayer(): void {
@@ -72,6 +91,8 @@ export class MapDataLayerComponent implements OnInit {
         type: 'raster',
         url: this.cogUrl,
         tileSize: this.tileSize,
+        minzoom: FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM,
+        maxzoom: FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM,
       };
 
       const rasterLayer: RasterLayerSpecification = {

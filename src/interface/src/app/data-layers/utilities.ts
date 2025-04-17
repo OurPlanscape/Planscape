@@ -7,7 +7,6 @@ import {
   StyleJson,
   ColorLegendInfo,
 } from '@types';
-import memoizerific from 'memoizerific';
 
 export interface RGBA {
   r: number;
@@ -17,8 +16,6 @@ export interface RGBA {
 }
 
 const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
-
-const MEMOIZE_EVICTION = 100;
 
 // Determines the legend format based on the datalayer
 export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
@@ -139,10 +136,6 @@ const determineColorFunction = (
   styleJson: StyleJson
 ): ((value: number) => RGBA) => {
   const { map_type, entries } = styleJson;
-  //memoize as the styleJson is changed
-  const memoizedRampFunction = memoizerific(MEMOIZE_EVICTION)(
-    createRampColorMapper
-  );
 
   if (entries.length === 0) {
     return () => TRANSPARENT;
@@ -159,7 +152,7 @@ const determineColorFunction = (
         const sortedRampEntries = [...entries].sort(
           (a, b) => a.value - b.value
         );
-        return memoizedRampFunction(sortedRampEntries);
+        return createRampColorMapper(sortedRampEntries);
       default:
         return () => TRANSPARENT;
     }

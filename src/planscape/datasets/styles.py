@@ -36,7 +36,7 @@ def get_default_raster_style(
     steps = 7
     delta = max - min
     interval = delta / (steps - 1)
-    breakpoints = list([(i * interval) + min for i in range(steps + 1)])
+    breakpoints = list([round((i * interval) + min, 2) for i in range(steps + 1)])
     colors = [
         "#7a0403",
         "#d93807",

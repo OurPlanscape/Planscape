@@ -8,6 +8,8 @@
   <mat-tab label="Data Layers" *appFeatureFlag="'statewide_datalayers'">
     <app-data-layers></app-data-layers>
   </mat-tab>
+  <mat-tab label="Base Layers" *appFeatureFlag="'statewide_baselayers'">
+  </mat-tab>
   <mat-tab label="Notes" *appFeatureFlag="'statewide_datalayers'; hide: true">
     <app-treatment-plan-notes></app-treatment-plan-notes>
   </mat-tab>

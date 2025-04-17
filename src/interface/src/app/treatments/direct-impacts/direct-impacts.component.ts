@@ -11,7 +11,7 @@ import {
 import { SharedModule } from '@shared';
 import { TreatmentsState } from '../treatments.state';
 import { ActivatedRoute, Router } from '@angular/router';
-import { catchError, map, Observable, switchMap } from 'rxjs';
+import { catchError, map, switchMap } from 'rxjs';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
@@ -55,7 +55,10 @@ import { MetricSelectorComponent } from '../metric-selector/metric-selector.comp
 import { TreatmentFilterComponent } from '../treatment-filter/treatment-filter.component';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
+@UntilDestroy()
 @Component({
   selector: 'app-direct-impacts',
   standalone: true,
@@ -126,7 +129,8 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
     private fileSaverService: FileSaverService,
     private dialog: MatDialog,
     private injector: Injector, // Angular's injector for passing shared services
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private breadcrumbService: BreadcrumbService
   ) {
     const data = getMergedRouteData(this.route.snapshot);
     this.loading = true;
@@ -152,9 +156,16 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
       .subscribe(() => {
         this.loading = false;
       });
+
+    this.treatmentsState.breadcrumb$
+      .pipe(untilDestroyed(this))
+      .subscribe((breadcrumb) => {
+        if (breadcrumb) {
+          this.breadcrumbService.updateBreadCrumb(breadcrumb);
+        }
+      });
   }
 
-  navState$ = this.treatmentsState.navState$;
   treatmentPlan$ = this.treatmentsState.treatmentPlan$;
   activeStand$ = this.directImpactsStateService.activeStand$;
 
@@ -199,9 +210,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
   filterOptions$ = this.directImpactsStateService.reportMetrics$.pipe(
     map((metrics) => Object.values(metrics).map((metric) => metric.id))
   );
-
-  treatmentTypeOptions$: Observable<any> =
-    this.treatmentsState.treatmentTypeOptions$;
 
   updateReportMetric(data: ImpactsMetric) {
     this.directImpactsStateService.updateReportMetric(data);
