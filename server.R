@@ -1,6 +1,8 @@
 library(plumber)
 
-# source("src/planscape/rscripts/forsys.R")
+readRenviron(".env")
+source("src/planscape/rscripts/base_forsys.R")
+
 
 # server.R
 
@@ -11,14 +13,13 @@ function(msg="") {
   list(msg = paste0("The message is: '", msg, "'"))
 }
 
-if (FALSE){
-  #* Execute Forsys
-  #* @param scenario_id Scenario ID
-  #* @get /run_forsys2
-  function(scenario_id=0) {
-    if(scenario_id == 0) {
-      stop("You need to specify the scenario_id.")
-    }
-    main(scenario_id)
+#* Execute Forsys
+#* @param scenario_id Scenario ID
+#* @get /run_forsys
+function(scenario_id=0) {
+  if(scenario_id == 0) {
+    list("You need to specify the scenario_id.")
+    400
   }
+  main(scenario_id)
 }
