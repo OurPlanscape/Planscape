@@ -2,7 +2,6 @@ import { Geometry } from 'geojson';
 
 export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
 
-export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
 export interface DataSet {
   id: number;
   created_at: string;
