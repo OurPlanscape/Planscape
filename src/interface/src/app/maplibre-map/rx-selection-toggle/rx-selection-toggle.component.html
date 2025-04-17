@@ -1,7 +1,7 @@
 <button
   type="button"
   [ngClass]="{
-    active: (standSelectionEnabled$ | async)
+    active: (standSelectionEnabled$ | async),
   }"
   (click)="toggleRxSelection()"
   matTooltip="RX Selection Tool"
