@@ -16,7 +16,8 @@
     "cypress:open": "cypress open",
     "cypress:run": "cypress run",
     "storybook": "ng run interface:storybook",
-    "build-storybook": "ng run interface:build-storybook"
+    "build-storybook": "ng run interface:build-storybook",
+    "postinstall": "patch-package"
   },
   "private": true,
   "dependencies": {
@@ -35,6 +36,7 @@
     "@geomatico/maplibre-cog-protocol": "^0.4.0",
     "@maplibre/ngx-maplibre-gl": "^17.4.3",
     "@ngneat/until-destroy": "^10.0.0",
+    "@openpanel/web": "^1.0.1",
     "@turf/area": "^6.5.0",
     "@turf/boolean-intersects": "^6.5.0",
     "@turf/boolean-within": "^6.5.0",
@@ -112,6 +114,7 @@
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.0.0",
+    "patch-package": "^8.0.0",
     "prettier": "^3.0.2",
     "prettier-eslint": "^15.0.1",
     "storybook": "^8.0.5",

@@ -1,0 +1,13 @@
+diff --git a/node_modules/@openpanel/web/dist/index.d.ts b/node_modules/@openpanel/web/dist/index.d.ts
+index 5c4d1ec..17a3cfc 100644
+--- a/node_modules/@openpanel/web/dist/index.d.ts
++++ b/node_modules/@openpanel/web/dist/index.d.ts
+@@ -41,7 +41,7 @@ type OpenPanelMethodNames = ExposedMethodsNames | 'init' | 'screenView';
+ type OpenPanelMethods =
+   | ExposedMethods
+   | ['init', OpenPanelOptions]
+-  | ['screenView', string | TrackProperties, TrackProperties];
++  | ['screenView', string | TrackProperties$1, TrackProperties$1];
+
+ declare global {
+   interface Window {
