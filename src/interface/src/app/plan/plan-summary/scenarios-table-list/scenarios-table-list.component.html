@@ -86,7 +86,7 @@
     mat-row
     [ngClass]="{
       'scenario-row': highlightedScenarioRow?.id !== row.id,
-      highlight: highlightedScenarioRow?.id === row.id
+      highlight: highlightedScenarioRow?.id === row.id,
     }"
     *matRowDef="let row; columns: displayedColumns"
     (click)="highlightScenario(row)"

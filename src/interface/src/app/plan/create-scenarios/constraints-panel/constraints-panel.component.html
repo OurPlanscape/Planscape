@@ -60,7 +60,7 @@
             *ngIf="focusedSelection === 'maxCost'"
             [ngClass]="{
               error:
-                constraintsForm.hasError('notEnoughBudget') && maxCost?.touched
+                constraintsForm.hasError('notEnoughBudget') && maxCost?.touched,
             }">
             Budget needs to be at least
             {{ calculateMinBudget() | currency: 'USD' : 'symbol' : '1.0-0' }}

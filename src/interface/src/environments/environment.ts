@@ -10,6 +10,8 @@ export const environment = {
   download_endpoint: '', // Replace with actual URL
   martin_server: 'https://dev.planscape.org/tiles/',
   mapbox_key: '',
+  open_panel_key: '',
+  open_panel_enabled: false,
 };
 
 /*
