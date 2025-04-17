@@ -35,7 +35,8 @@
           class="draw-area-button"
           [ngClass]="{
             selected: selectedAreaCreationAction === AreaCreationAction.DRAW,
-            deselected: selectedAreaCreationAction === AreaCreationAction.UPLOAD
+            deselected:
+              selectedAreaCreationAction === AreaCreationAction.UPLOAD,
           }"
           (click)="onAreaCreationActionChange(AreaCreationAction.DRAW)">
           <mat-icon>draw</mat-icon>
@@ -52,7 +53,8 @@
             [ngClass]="{
               selected:
                 selectedAreaCreationAction === AreaCreationAction.UPLOAD,
-              deselected: selectedAreaCreationAction === AreaCreationAction.DRAW
+              deselected:
+                selectedAreaCreationAction === AreaCreationAction.DRAW,
             }"
             (click)="onAreaCreationActionChange(AreaCreationAction.UPLOAD)">
             <mat-icon>upload_file</mat-icon>
@@ -101,12 +103,12 @@
     <div
       class="map-grid"
       [ngClass]="{
-        'one-column': mapViewOptions$.getValue().numVisibleMaps === 1
+        'one-column': mapViewOptions$.getValue().numVisibleMaps === 1,
       }">
       <div
         class="map-box"
         [ngClass]="{
-          selected: (mapViewOptions$ | async)?.selectedMapIndex === 0
+          selected: (mapViewOptions$ | async)?.selectedMapIndex === 0,
         }"
         [hidden]="!isMapVisible(0)"
         data-testid="map1">
@@ -119,7 +121,7 @@
       <div
         class="map-box"
         [ngClass]="{
-          selected: (mapViewOptions$ | async)?.selectedMapIndex === 1
+          selected: (mapViewOptions$ | async)?.selectedMapIndex === 1,
         }"
         [hidden]="!isMapVisible(1)"
         data-testid="map2">
@@ -133,7 +135,7 @@
       <div
         class="map-box"
         [ngClass]="{
-          selected: (mapViewOptions$ | async)?.selectedMapIndex === 2
+          selected: (mapViewOptions$ | async)?.selectedMapIndex === 2,
         }"
         [hidden]="!isMapVisible(2)"
         data-testid="map3">
@@ -146,7 +148,7 @@
       <div
         class="map-box"
         [ngClass]="{
-          selected: (mapViewOptions$ | async)?.selectedMapIndex === 3
+          selected: (mapViewOptions$ | async)?.selectedMapIndex === 3,
         }"
         [hidden]="!isMapVisible(3)"
         data-testid="map4">
