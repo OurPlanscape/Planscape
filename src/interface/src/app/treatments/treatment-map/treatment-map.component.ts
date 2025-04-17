@@ -212,7 +212,6 @@ export class TreatmentMapComponent {
   standsLoaded = false;
 
   afterStandsLoaded() {
-    console.log('after stands are loaded');
     this.selectedStandsState.restoreSelectedStands();
     this.standsLoaded = true;
   }

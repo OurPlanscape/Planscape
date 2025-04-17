@@ -38,16 +38,19 @@
     [mapLibreMap]="mapLibreMap"
     [selectStart]="null"
     [selectEnd]="null"
-    (standsLoaded)="standsLoaded = true"></app-map-stands>
+    before="middle-layer"></app-map-stands>
+
+  <mgl-layer
+    type="background"
+    id="middle-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
 
   <app-map-stands-tx-result
-    *ngIf="standsLoaded"
     [mapLibreMap]="mapLibreMap"
     [propertyName]="variables[year]"></app-map-stands-tx-result>
 
-  <app-map-project-areas
-    *ngIf="standsLoaded"
-    [mapLibreMap]="mapLibreMap"></app-map-project-areas>
+  <app-map-project-areas [mapLibreMap]="mapLibreMap"></app-map-project-areas>
 
   <app-action-button
     *ngIf="(showLegend$ | async) === false"

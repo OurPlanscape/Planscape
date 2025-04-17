@@ -18,17 +18,13 @@
 
 <ng-container *ngIf="allPatternsLoaded()">
   <mgl-layer
-    [id]="layers.stands.name"
-    type="fill"
+    [id]="layers.standsOutline.name"
+    type="line"
     source="stands"
-    [paint]="layers.stands.paint"
-    (layerMouseDown)="clickOnStand($event)"
-    (layerClick)="layerClick()"
-    (layerMouseEnter)="setCursor()"
-    (layerMouseLeave)="resetCursor()"
     [filter]="projectAreaFilter$ | async"
-    [sourceLayer]="layers.stands.sourceLayer"
-    [before]="layers.sequenceStands.name"></mgl-layer>
+    [paint]="layers.standsOutline.paint"
+    [sourceLayer]="layers.standsOutline.sourceLayer"
+    [before]="before"></mgl-layer>
 
   <mgl-layer
     [id]="layers.sequenceStands.name"
@@ -40,13 +36,17 @@
     [before]="layers.standsOutline.name"></mgl-layer>
 
   <mgl-layer
-    [id]="layers.standsOutline.name"
-    type="line"
+    [id]="layers.stands.name"
+    type="fill"
     source="stands"
+    [paint]="layers.stands.paint"
+    (layerMouseDown)="clickOnStand($event)"
+    (layerClick)="layerClick()"
+    (layerMouseEnter)="setCursor()"
+    (layerMouseLeave)="resetCursor()"
     [filter]="projectAreaFilter$ | async"
-    [paint]="layers.standsOutline.paint"
-    [sourceLayer]="layers.standsOutline.sourceLayer"
-    [before]="before"></mgl-layer>
+    [sourceLayer]="layers.stands.sourceLayer"
+    [before]="layers.sequenceStands.name"></mgl-layer>
 
   <mgl-layer
     [id]="layers.selectedStands.name"

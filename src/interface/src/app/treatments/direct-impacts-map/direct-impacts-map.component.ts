@@ -1,6 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
-import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
+import {
+  ControlComponent,
+  LayerComponent,
+  MapComponent,
+} from '@maplibre/ngx-maplibre-gl';
 import { MapRectangleComponent } from '../map-rectangle/map-rectangle.component';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
 import { MapTooltipComponent } from '../map-tooltip/map-tooltip.component';
@@ -49,6 +53,7 @@ import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map
     OpacitySliderComponent,
     RxSelectionToggleComponent,
     MapZoomControlComponent,
+    LayerComponent,
   ],
   templateUrl: './direct-impacts-map.component.html',
   styleUrl: './direct-impacts-map.component.scss',
@@ -93,8 +98,6 @@ export class DirectImpactsMapComponent {
 
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
 
-  standsLoaded = false;
-
   mapLoaded(event: MapLibreMap) {
     this.mapLibreMap = event;
     this.mapCreated.emit(this.mapLibreMap);
@@ -118,19 +121,7 @@ export class DirectImpactsMapComponent {
       !event.sourceDataType
     ) {
       this.directImpactsStateService.setStandsTxSourceLoaded(true);
-      this.moveLayers();
     }
-  }
-
-  // Move layers so the hover and selected stand layer sit at the top
-  private moveLayers() {
-    // this.mapLibreMap.moveLayer('map-project-areas-line');
-    // this.mapLibreMap.moveLayer('standHover');
-    // this.mapLibreMap.moveLayer('standSelected');
-    //
-    // if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
-    //   this.mapLibreMap.moveLayer('map-project-areas-labels');
-    // }
   }
 
   openTreatmentLegend() {
