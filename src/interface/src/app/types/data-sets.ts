@@ -1,7 +1,7 @@
 import { Geometry } from 'geojson';
-import { StyleJson } from '../data-layers/utilities';
 
 export type RasterColorType = 'RAMP' | 'INTERVALS' | 'VALUES';
+
 export interface DataSet {
   id: number;
   created_at: string;
@@ -62,6 +62,27 @@ export interface LayerStyleEntry {
   colorHex: string;
   entryLabel: string;
 }
+
+export interface NoData {
+  values: number[];
+  color?: string;
+  opacity?: number;
+  label?: string;
+}
+
+export interface Entry {
+  value: number;
+  color: string;
+  opacity?: number;
+  label?: string | null;
+}
+
+export interface StyleJson {
+  map_type: RasterColorType;
+  no_data?: NoData;
+  entries: Entry[];
+}
+
 export interface Styles {
   id: number;
   data: StyleJson;

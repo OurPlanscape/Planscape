@@ -3,30 +3,21 @@ import { color as d3Color } from 'd3-color';
 import {
   DataLayer,
   LayerStyleEntry,
+  Entry,
+  StyleJson,
   ColorLegendInfo,
-  RasterColorType,
 } from '@types';
 
-export interface NoData {
-  values: number[];
-  color?: string;
-  opacity?: number;
-  label?: string;
+export interface RGBA {
+  r: number;
+  g: number;
+  b: number;
+  a: number;
 }
 
-export interface Entry {
-  value: number;
-  color: string;
-  opacity?: number;
-  label?: string | null;
-}
+const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
 
-export interface StyleJson {
-  map_type: RasterColorType;
-  no_data?: NoData;
-  entries: Entry[];
-}
-
+// Determines the legend format based on the datalayer
 export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
   const { map_type, entries } = dataLayer.styles[0].data;
   const sorted = [...entries].sort((a, b) => a.value - b.value);
@@ -39,103 +30,155 @@ export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
   return { title: dataLayer.name, type: map_type, entries: colorDetails };
 }
 
-export function makeColorFunction(
+// maps hexcolor string to an RGB object with integer values
+function parseColor(hexColor: string, opacity = 1.0): RGBA {
+  const c = d3Color(hexColor);
+  if (!c) return TRANSPARENT;
+
+  const rgbObj = c.rgb();
+  return {
+    r: rgbObj.r,
+    g: rgbObj.g,
+    b: rgbObj.b,
+    a: opacity,
+  };
+}
+
+// generates a color mapping function for single entry maps
+function createSingleEntryMapper(entry: Entry): (value: number) => RGBA {
+  const color = parseColor(entry.color, entry.opacity ?? 1.0);
+  return () => color;
+}
+
+// for VALUES maps, parses the colors in advance
+function prebufferValuesColors(entries: Entry[]): Map<number, RGBA> {
+  const parsedColors = new Map<number, RGBA>();
+
+  for (const entry of entries) {
+    const rgba = parseColor(entry.color, entry.opacity ?? 1.0);
+    parsedColors.set(entry.value, rgba);
+  }
+  return parsedColors;
+}
+// color function just for VALUES mapping.
+function createValuesColorMapper(entries: Entry[]): (value: number) => RGBA {
+  const valueMap = prebufferValuesColors(entries);
+  return (value: number) => {
+    return valueMap.get(value) || TRANSPARENT;
+  };
+}
+
+// precalculates colors for INTERVALS map type
+function prebufferIntervalsColors(sortedEntries: Entry[]): [number, RGBA][] {
+  return sortedEntries.map((entry) => [
+    entry.value,
+    parseColor(entry.color, entry.opacity ?? 1.0),
+  ]);
+}
+// returns a function for INTERVALS map type
+function createIntervalsColorMapper(
+  sortedEntries: Entry[]
+): (value: number) => RGBA {
+  if (sortedEntries.length === 0) {
+    return () => TRANSPARENT;
+  }
+  const thresholds = prebufferIntervalsColors(sortedEntries);
+  return (value: number) => {
+    if (value <= thresholds[0][0]) {
+      return thresholds[0][1];
+    }
+    for (let i = 1; i < thresholds.length; i++) {
+      if (value <= thresholds[i][0]) {
+        return thresholds[i][1];
+      }
+    }
+    return thresholds[thresholds.length - 1][1];
+  };
+}
+
+// calculates scales in advance for RAMP map type
+const prebufferRampScales = (
+  sortedEntries: Entry[]
+): {
+  colorScale: ReturnType<typeof scaleLinear<string>>;
+  opacityScale: ReturnType<typeof scaleLinear<number>>;
+} => {
+  const domain = sortedEntries.map((entry) => entry.value);
+  const colorRange = sortedEntries.map((entry) => entry.color);
+  const opacityRange = sortedEntries.map((entry) => entry.opacity ?? 1.0);
+
+  const colorScale = scaleLinear<string>()
+    .domain(domain)
+    .range(colorRange)
+    .clamp(true);
+  const opacityScale = scaleLinear<number>()
+    .domain(domain)
+    .range(opacityRange)
+    .clamp(true);
+
+  return { colorScale, opacityScale };
+};
+// returns color map for RAMP types
+function createRampColorMapper(
+  sortedEntries: Entry[]
+): (value: number) => RGBA {
+  const { colorScale, opacityScale } = prebufferRampScales(sortedEntries);
+
+  return (value: number) => {
+    const interpolatedColor = colorScale(value);
+    const interpolatedOpacity = opacityScale(value);
+
+    return parseColor(interpolatedColor, interpolatedOpacity);
+  };
+}
+
+const determineColorFunction = (
+  styleJson: StyleJson
+): ((value: number) => RGBA) => {
+  const { map_type, entries } = styleJson;
+
+  if (entries.length === 0) {
+    return () => TRANSPARENT;
+  } else if (entries.length === 1) {
+    return createSingleEntryMapper(entries[0]);
+  } else {
+    switch (map_type) {
+      case 'VALUES':
+        return createValuesColorMapper(entries);
+      case 'INTERVALS':
+        const sortedEntries = [...entries].sort((a, b) => a.value - b.value);
+        return createIntervalsColorMapper(sortedEntries);
+      case 'RAMP':
+        const sortedRampEntries = [...entries].sort(
+          (a, b) => a.value - b.value
+        );
+        return createRampColorMapper(sortedRampEntries);
+      default:
+        return () => TRANSPARENT;
+    }
+  }
+};
+
+//  sets rgbaData and rounds alpha value to passed arg
+function writeColorToBuffer(rgbaData: Uint8ClampedArray, color: RGBA): void {
+  const a = Math.round(color.a * 255);
+  rgbaData.set([color.r, color.g, color.b, a]);
+}
+
+export function generateColorFunction(
   styleJson: StyleJson
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
-  const { map_type, no_data, entries } = styleJson;
-  const sorted = [...entries].sort((a, b) => a.value - b.value);
+  const knownNoDataValues = new Set(styleJson.no_data?.values || []);
+  const colorMapper = determineColorFunction(styleJson);
+  return (pixel: number[], rgba: Uint8ClampedArray) => {
+    const value = pixel[0];
 
-  // For a RAMP, build a scale
-  let rampColorFn: ((val: number) => [number, number, number, number]) | null =
-    null;
-  if (map_type === 'RAMP' && sorted.length >= 2) {
-    const domain = sorted.map((e) => e.value);
-    const colorStrings = sorted.map((e) => e.color);
-    const colorScale = scaleLinear<string>()
-      .domain(domain)
-      .range(colorStrings)
-      .clamp(true);
-    const alphaValues = sorted.map((e) => e.opacity ?? 1.0);
-    const alphaScale = scaleLinear<number>()
-      .domain(domain)
-      .range(alphaValues)
-      .clamp(true);
-
-    rampColorFn = (val: number) => {
-      const c = d3Color(colorScale(val));
-      if (!c) return [0, 0, 0, 0];
-      const rgbObj = c.rgb();
-      const a = alphaScale(val);
-      return [rgbObj.r, rgbObj.g, rgbObj.b, a];
-    };
-  }
-
-  function setPixelColor(
-    rgbaData: Uint8ClampedArray,
-    hex: string,
-    opacity = 1.0
-  ) {
-    const c = d3Color(hex);
-    if (!c) {
-      rgbaData.set([0, 0, 0, 0]);
-      return;
-    }
-    const rgbObj = c.rgb();
-    const a = Math.round(opacity * 255);
-    rgbaData.set([rgbObj.r, rgbObj.g, rgbObj.b, a]);
-  }
-
-  const colorFunction = (pixel: number[], rgba: Uint8ClampedArray) => {
-    const val = pixel[0];
-
-    if (no_data?.values?.includes(val)) {
-      rgba.set([0, 0, 0, 0]);
+    if (knownNoDataValues.has(value)) {
+      writeColorToBuffer(rgba, TRANSPARENT);
       return;
     }
 
-    switch (map_type) {
-      case 'VALUES': {
-        const entry = sorted.find((e) => e.value === val);
-        if (entry) {
-          setPixelColor(rgba, entry.color, entry.opacity ?? 1.0);
-        } else {
-          rgba.set([0, 0, 0, 0]);
-        }
-        return;
-      }
-
-      case 'INTERVALS': {
-        if (val <= sorted[0].value) {
-          const first = sorted[0];
-          setPixelColor(rgba, first.color, first.opacity ?? 1.0);
-          return;
-        }
-        let chosen = sorted[sorted.length - 1];
-        for (let i = 0; i < sorted.length; i++) {
-          if (val <= sorted[i].value) {
-            chosen = sorted[i];
-            break;
-          }
-        }
-        setPixelColor(rgba, chosen.color, chosen.opacity ?? 1.0);
-        return;
-      }
-
-      case 'RAMP':
-      default: {
-        if (rampColorFn && sorted.length >= 2) {
-          const [r, g, b, aFloat] = rampColorFn(val);
-          const a = Math.round(aFloat * 255);
-          rgba.set([r, g, b, a]);
-        } else if (sorted.length === 1) {
-          const only = sorted[0];
-          setPixelColor(rgba, only.color, only.opacity ?? 1.0);
-        } else {
-          rgba.set([0, 0, 0, 0]);
-        }
-        return;
-      }
-    }
+    const color = colorMapper(value);
+    writeColorToBuffer(rgba, color);
   };
-  return colorFunction;
 }
