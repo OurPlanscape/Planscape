@@ -92,8 +92,8 @@ export class CreateScenariosComponent implements OnInit {
         (control: AbstractControl) =>
           scenarioNameMustBeNew(control, this.existingScenarioNames),
       ]),
-      priorities: this.prioritiesComponent?.createForm(),
-      constrains: this.constraintsPanelComponent?.createForm(),
+      priorities: this.prioritiesComponent.createForm(),
+      constrains: this.constraintsPanelComponent.createForm(),
       projectAreas: this.fb.group({
         generateAreas: [''],
         uploadedArea: [''],
