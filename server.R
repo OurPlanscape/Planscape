@@ -16,10 +16,19 @@ function(msg="") {
 #* Execute Forsys
 #* @param scenario_id Scenario ID
 #* @get /run_forsys
-function(scenario_id=0) {
-  if(scenario_id == 0) {
+function(scenario_id=NULL) {
+  if(is.null(scenario_id) || scenario_id == "") {
     list("You need to specify the scenario_id.")
-    400
   }
-  main(scenario_id)
+  tryCatch({
+    scenario_id <- as.integer(scenario_id)
+  }, error = function(e) {
+    list("Scenario ID must be an integer.")
+  })
+  tryCatch({
+    main(scenario_id)
+    list("Forsys run completed.")
+  }, error = function(e) {
+    list("Forsys run failed.", error = e$message)
+  })
 }
