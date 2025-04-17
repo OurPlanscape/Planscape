@@ -1,7 +1,5 @@
 import logging
-from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
-from uuid import uuid4
 
 import rasterio
 from django.conf import settings
@@ -9,7 +7,7 @@ from rasterio.warp import Resampling, calculate_default_transform, reproject
 from rio_cogeo.cogeo import cog_translate, cog_validate
 from rio_cogeo.profiles import cog_profiles
 
-from gis.core import get_layer_info
+from gis.core import get_layer_info, get_random_output_file
 from gis.info import get_gdal_env
 
 log = logging.getLogger(__name__)
@@ -37,15 +35,6 @@ def get_profile(
         "width": width,
         "height": height,
     }
-
-
-def get_random_output_file(input_file: str, output_folder: str = "/tmp") -> str:
-    """Returns a random outputfile with the same
-    extension as the input.
-    """
-    input_path = Path(input_file)
-    output_path = Path(output_folder) / str(uuid4())
-    return str(output_path.with_suffix(input_path.suffix))
 
 
 def to_planscape(input_file: str) -> List[str]:
