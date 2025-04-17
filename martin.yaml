@@ -65,6 +65,17 @@ postgres:
       maxzoom: 20
       bounds: [ -180.0, -90.0, 180.0, 90.0 ]
       id_column: id
+    # dynamic layer that can serve ANY table as tiles
+    # parameters:
+    # - layer: string  (full table name, e.g. public.my_table) 
+    dynamic_layer:
+      schema: public                 
+      function: martin_dynamic_layer 
+      minzoom: 0
+      maxzoom: 20
+      bounds: [ -180.0, -90.0, 180.0, 90.0 ]
+      id_column: id                  
+      query_params: [ layer ]    
   tables:
     stands:
       layer_id: stands
