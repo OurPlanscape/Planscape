@@ -1,8 +1,11 @@
 import {
   Component,
+  EventEmitter,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
+  Output,
   SimpleChange,
   SimpleChanges,
 } from '@angular/core';
@@ -57,7 +60,7 @@ type MapLayerData = {
   ],
   templateUrl: './map-stands.component.html',
 })
-export class MapStandsComponent implements OnChanges, OnInit {
+export class MapStandsComponent implements OnChanges, OnInit, OnDestroy {
   /**
    * The instance of mapLibreMap used with this component.
    * Must be provided while using this component.
@@ -74,15 +77,14 @@ export class MapStandsComponent implements OnChanges, OnInit {
    */
   @Input() selectEnd!: Point | null;
 
-  /**
-   * The id to be applied on the source vector layer
-   */
-  @Input() sourceId = 'stands';
+  sourceId = 'stands';
 
   /**
    * Whether or not the user can edit stands on the map
    */
   @Input() userCanEditStands = false;
+
+  @Input() before = '';
 
   treatedStands$ = this.treatedStandsState.treatedStands$;
   sequenceStandsIds$ = this.treatedStandsState.sequenceStandsIds$;
@@ -103,6 +105,8 @@ export class MapStandsComponent implements OnChanges, OnInit {
       this.patternLoaded['stripes-red']
     );
   }
+
+  @Output() standsLoaded = new EventEmitter();
 
   /**
    * Reference to the selected stands before the user starts dragging for stand selection
@@ -221,11 +225,20 @@ export class MapStandsComponent implements OnChanges, OnInit {
 
   ngOnInit(): void {
     this.selectedStandsState.reset();
+    this.mapLibreMap.on('data', this.onDataListener);
   }
 
+  private onDataListener = (event: any) => {
+    if (
+      event.sourceId === 'stands' &&
+      event.isSourceLoaded &&
+      !event.sourceDataType
+    ) {
+      this.standsLoaded.emit();
+    }
+  };
+
   get vectorLayerUrl() {
-    // TODO bring back  projectAreaId ? `&project_area_id=${projectAreaId}` : ''
-    //  const projectAreaId = this.treatmentsState.getProjectAreaId();
     return (
       MARTIN_SOURCES.standsByTxPlan.tilesUrl +
       `?treatment_plan_id=${this.treatmentsState.getTreatmentPlanId()}`
@@ -312,8 +325,6 @@ export class MapStandsComponent implements OnChanges, OnInit {
     return features.map((feature) => feature.properties['id']);
   }
 
-  stands: number[] = [];
-
   private selectStandsWithinRectangle(): void {
     if (!this.selectStart || !this.selectEnd) {
       return;
@@ -359,5 +370,9 @@ export class MapStandsComponent implements OnChanges, OnInit {
       },
       { selected: true }
     );
+  }
+
+  ngOnDestroy(): void {
+    this.mapLibreMap.off('data', this.onDataListener);
   }
 }

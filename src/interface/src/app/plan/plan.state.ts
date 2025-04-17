@@ -23,6 +23,7 @@ export class PlanState {
 
   // The ID of the current plan
   private _currentPlanId$ = new BehaviorSubject<number | null>(null);
+  public currentPlanId$ = this._currentPlanId$.asObservable();
 
   // Listen to ID changes and trigger network calls, returning typed results.
   private currentPlanResource$: Observable<Resource<Plan>> =

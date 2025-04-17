@@ -144,7 +144,6 @@ export class DirectImpactsComponent implements OnInit, OnDestroy {
             this.router.navigate(['../'], { relativeTo: this.route });
           }
           this.mapConfigState.setShowFillProjectAreas(false);
-          this.mapConfigState.updateShowTreatmentStands(true);
           this.mapConfigState.updateShowProjectAreas(true);
         }),
         catchError((error) => {

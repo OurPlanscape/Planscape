@@ -33,17 +33,24 @@
   </app-map-zoom-control>
 
   <app-map-stands
+    *ngIf="mapLibreMap"
     [userCanEditStands]="false"
-    sourceId="stands"
     [mapLibreMap]="mapLibreMap"
     [selectStart]="null"
-    [selectEnd]="null"></app-map-stands>
+    [selectEnd]="null"
+    before="middle-layer"></app-map-stands>
 
-  <app-map-project-areas [mapLibreMap]="mapLibreMap"></app-map-project-areas>
+  <mgl-layer
+    type="background"
+    id="middle-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
 
   <app-map-stands-tx-result
     [mapLibreMap]="mapLibreMap"
     [propertyName]="variables[year]"></app-map-stands-tx-result>
+
+  <app-map-project-areas [mapLibreMap]="mapLibreMap"></app-map-project-areas>
 
   <app-action-button
     *ngIf="(showLegend$ | async) === false"

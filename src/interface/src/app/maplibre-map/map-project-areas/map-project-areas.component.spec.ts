@@ -7,7 +7,7 @@ import {
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import { RouterTestingModule } from '@angular/router/testing';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
+import { MapConfigState } from '../map-config.state';
 import { BehaviorSubject, of } from 'rxjs';
 import { TreatmentsState } from 'src/app/treatments/treatments.state';
 import { ScenarioState } from '../scenario.state';
@@ -22,7 +22,6 @@ describe('MapProjectAreasComponent', () => {
       providers: [
         MockProvider(TreatmentsState),
         MockProvider(MapConfigState, {
-          showTreatmentStandsLayer$: of(false),
           projectAreasOpacity$: of(0.5),
           zoomLevel$: new BehaviorSubject<number>(7),
         }),

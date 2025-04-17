@@ -1,11 +1,6 @@
 <app-map-nav-bar>
   <sg-opacity-slider
     class="navbar-slider"
-    *ngIf="
-      (standSelectionEnabled$ | async) === true ||
-      (showTreatmentStands$ | async) === true ||
-      (showLegend$ | async) === true
-    "
     [minValue]="0"
     [maxValue]="1"
     [step]="0.01"
@@ -26,7 +21,6 @@
   (mapMouseMove)="onMapMouseMove($event)"
   (mapMouseOut)="onMapMouseOut()"
   (mapMouseUp)="onMapMouseUp()"
-  (sourceData)="onSourceData($event)"
   [boxZoom]="false"
   [doubleClickZoom]="(standSelectionEnabled$ | async) === false"
   [dragPan]="(standSelectionEnabled$ | async) === false"
@@ -63,7 +57,22 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  <app-planning-area-layer></app-planning-area-layer>
+  <app-planning-area-layer before="middle-layer"></app-planning-area-layer>
+
+  <app-map-stands
+    *ngIf="mapLibreMap"
+    [userCanEditStands]="userCanEditStands"
+    [mapLibreMap]="mapLibreMap"
+    [selectStart]="mouseStart ? mouseStart.point : null"
+    [selectEnd]="mouseEnd ? mouseEnd.point : null"
+    (standsLoaded)="afterStandsLoaded()"
+    before="middle-layer"></app-map-stands>
+
+  <mgl-layer
+    type="background"
+    id="middle-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
 
   <app-map-project-areas
     [mapLibreMap]="mapLibreMap"
@@ -85,14 +94,6 @@
       Treated
     </app-map-tooltip>
   </ng-container>
-
-  <app-map-stands
-    *ngIf="showTreatmentStands$ | async"
-    [userCanEditStands]="userCanEditStands"
-    [sourceId]="standsSourceLayerId"
-    [mapLibreMap]="mapLibreMap"
-    [selectStart]="mouseStart ? mouseStart.point : null"
-    [selectEnd]="mouseEnd ? mouseEnd.point : null"></app-map-stands>
 
   <app-map-rectangle
     [mapLibreMap]="mapLibreMap"

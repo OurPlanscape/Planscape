@@ -19,7 +19,6 @@ const routes: Routes = [
         component: TreatmentOverviewComponent,
         data: {
           showMapProjectAreas: true,
-          showTreatmentStands: true,
         },
       },
       { path: 'project-area', redirectTo: '', pathMatch: 'full' },
@@ -32,7 +31,6 @@ const routes: Routes = [
         },
         data: {
           showMapProjectAreas: false,
-          showTreatmentStands: true,
           showMapControls: true,
           standSelectionEnabled: true,
         },

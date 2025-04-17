@@ -22,10 +22,6 @@ export class MapConfigState {
   private _showProjectAreasLayer$ = new BehaviorSubject(true);
   public showProjectAreasLayer$ = this._showProjectAreasLayer$.asObservable();
 
-  private _showTreatmentStandsLayer$ = new BehaviorSubject(false);
-  public showTreatmentStandsLayer$ =
-    this._showTreatmentStandsLayer$.asObservable();
-
   private _showFillProjectAreas$ = new BehaviorSubject(true);
   public showFillProjectAreas$ = this._showFillProjectAreas$.asObservable();
 
@@ -72,26 +68,8 @@ export class MapConfigState {
     this._showProjectAreasLayer$.next(value);
   }
 
-  updateShowTreatmentStands(value: boolean) {
-    this.setTreatedStandsOpacity(this.defaultStandsOpacity);
-    this._showTreatmentStandsLayer$.next(value);
-  }
-
   setShowFillProjectAreas(value: boolean) {
     this._showFillProjectAreas$.next(value);
-  }
-
-  toggleShowTreatmentStands() {
-    const treatmentsVisible = this.isTreatmentStandsVisible();
-
-    this.setShowFillProjectAreas(treatmentsVisible);
-    this.setTreatedStandsOpacity(treatmentsVisible ? 0 : 1);
-    this._showTreatmentStandsLayer$.next(!treatmentsVisible);
-    this._showTreatmentLegend$.next(!treatmentsVisible);
-  }
-
-  isTreatmentStandsVisible() {
-    return this._showTreatmentStandsLayer$.value;
   }
 
   setStandSelectionEnabled(value: boolean) {

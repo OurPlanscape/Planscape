@@ -15,7 +15,6 @@ import {
   LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
-  MapSourceDataEvent,
   RequestTransformFunction,
 } from 'maplibre-gl';
 import { MapStandsComponent } from '../map-stands/map-stands.component';
@@ -29,15 +28,8 @@ import { AuthService } from '@services';
 import { TreatmentsState } from '../treatments.state';
 import { addRequestHeaders } from '../../maplibre-map/maplibre.helper';
 import { PlanningAreaLayerComponent } from '../../maplibre-map/planning-area-layer/planning-area-layer.component';
-import {
-  combineLatest,
-  map,
-  Observable,
-  startWith,
-  Subject,
-  withLatestFrom,
-} from 'rxjs';
-import { distinctUntilChanged, filter } from 'rxjs/operators';
+import { combineLatest, map, Observable, Subject } from 'rxjs';
+import { distinctUntilChanged } from 'rxjs/operators';
 import { SelectedStandsState } from './selected-stands.state';
 import { canEditTreatmentPlan } from 'src/app/plan/permissions';
 import { MatLegacySlideToggleModule } from '@angular/material/legacy-slide-toggle';
@@ -147,40 +139,8 @@ export class TreatmentMapComponent {
 
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
-  /**
-   * The name of the source layer used to load stands, and later check if loaded
-   */
-  standsSourceLayerId = 'stands';
+  showMapProjectAreas$ = this.mapConfigState.showProjectAreasLayer$;
 
-  private sourceLoaded$ = new Subject<MapSourceDataEvent>();
-
-  private standsSourceLoaded$ = this.sourceLoaded$.pipe(
-    filter(
-      (source) =>
-        source.sourceId === this.standsSourceLayerId && !source.sourceDataType
-    )
-  );
-
-  /**
-   * Observable to determine if we show the map project area layer.
-   * It uses the `standsSourceLoaded$` as the trigger to re-check the value provided on
-   * `mapConfigState`.
-   * We could be using mapConfigState.showProjectAreasLayer$ directly, but we want to animate
-   * properly when we show and hide this layer, when the user moves between treatment overview and
-   * project area.
-   */
-  showMapProjectAreas$ = combineLatest([
-    this.standsSourceLoaded$.pipe(startWith(null)),
-    this.mapConfigState.showProjectAreasLayer$,
-  ]).pipe(
-    map(([bounds, showAreas]) => {
-      return showAreas;
-    })
-  );
-  /**
-   * Observable to determine if we show the treatment stands layer
-   */
-  showTreatmentStands$ = this.mapConfigState.showTreatmentStandsLayer$;
   /**
    * Observable to determine if we show the map controls
    */
@@ -197,8 +157,6 @@ export class TreatmentMapComponent {
    */
   userCanEditStands: boolean = false;
   opacity$ = this.mapConfigState.treatedStandsOpacity$;
-
-  loadingLayer$ = this.dataLayersStateService.loadingLayer$;
 
   mouseLngLat: LngLat | null = null;
   hoveredProjectAreaId$ = new Subject<number | null>();
@@ -246,25 +204,13 @@ export class TreatmentMapComponent {
         }
       });
 
-    this.mapConfigState.baseLayer$
-      .pipe(
-        untilDestroyed(this),
-        withLatestFrom(this.showTreatmentStands$),
-        filter(([_, showTreatmentStands]) => showTreatmentStands) // Only pass through if showTreatmentStands is true
-      )
-      .subscribe(() => {
-        this.selectedStandsState.backUpAndClearSelectedStands();
-      });
-
-    this.standsSourceLoaded$.pipe(untilDestroyed(this)).subscribe((s) => {
-      this.selectedStandsState.restoreSelectedStands();
-      // move the layer up
-      this.mapLibreMap.moveLayer('map-project-areas-line');
-      this.mapLibreMap.moveLayer('map-project-areas-highlight');
-      if (this.mapLibreMap.getLayer('map-project-areas-labels')) {
-        this.mapLibreMap.moveLayer('map-project-areas-labels');
-      }
+    this.mapConfigState.baseLayer$.pipe(untilDestroyed(this)).subscribe(() => {
+      this.selectedStandsState.backUpAndClearSelectedStands();
     });
+  }
+
+  afterStandsLoaded() {
+    this.selectedStandsState.restoreSelectedStands();
   }
 
   onMapMouseDown(event: MapMouseEvent): void {
@@ -319,12 +265,6 @@ export class TreatmentMapComponent {
 
   onMapMouseOut() {
     this.treatmentTooltipLngLat = null;
-  }
-
-  onSourceData(event: MapSourceDataEvent) {
-    if (event.isSourceLoaded) {
-      this.sourceLoaded$.next(event);
-    }
   }
 
   openTreatmentLegend() {
