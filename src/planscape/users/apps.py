@@ -24,7 +24,7 @@ def handle_user_logged_in(sender, request, user, **kwargs):
     from planscape.openpanel import identify_openpanel, track_openpanel
 
     identify_openpanel(user)
-    track_openpanel("users.log_in", properties=None, user_id=user.pk)
+    track_openpanel("users.logged_in", properties=None, user_id=user.pk)
 
 
 class UsersConfig(AppConfig):
