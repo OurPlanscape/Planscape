@@ -85,6 +85,19 @@ services:
     command: --config /usr/src/app/martin.yaml 
     volumes:
       - .:/usr/src/app
+  forsys:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.forsys
+    ports:
+      - "5000:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - .:/usr/src/app
 volumes:
   postgres: null
   cache:
