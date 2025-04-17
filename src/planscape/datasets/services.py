@@ -3,7 +3,7 @@ import json
 import logging
 import mimetypes
 from pathlib import Path
-from typing import Any, Collection, Dict, Optional, Tuple
+from typing import Any, Collection, Dict, Optional
 from uuid import uuid4
 
 import mmh3
@@ -243,7 +243,7 @@ def change_datalayer_status(
     user: User,
     datalayer: DataLayer,
     target_status: DataLayerStatus,
-) -> Tuple[bool, DataLayer]:
+) -> DataLayer:
     possible = DATALAYER_TRANSITIONS[datalayer.status]
     if target_status not in possible:
         raise ValueError(
@@ -272,7 +272,7 @@ def change_datalayer_status(
     )
 
     datalayer.refresh_from_db()
-    return True, datalayer
+    return datalayer
 
 
 @transaction.atomic()
