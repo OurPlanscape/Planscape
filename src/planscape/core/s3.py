@@ -121,7 +121,6 @@ def upload_file(
             files=files,
         )
         logger.info(f"Uploaded {object_name} done.")
-        breakpoint()
         return response
 
 
