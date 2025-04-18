@@ -12,7 +12,12 @@ from core.base_commands import PlanscapeCommand
 from core.pprint import pprint
 from core.s3 import is_s3_file, list_files, upload_file
 from django.core.management.base import CommandParser
-from gis.core import fetch_datalayer_type, fetch_geometry_type, get_layer_info
+from gis.core import (
+    fetch_datalayer_type,
+    fetch_geometry_type,
+    get_layer_info,
+    with_vsi_prefix,
+)
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
 
@@ -246,12 +251,12 @@ class Command(PlanscapeCommand):
         except Exception as ex:
             self.stderr.write(f"ERROR: {kwargs =}\nEXCEPTION: {ex =}")
 
-    def _upload_file(self, rasters, datalayer, upload_to) -> requests.Response:
+    def _upload_file(self, input_files, datalayer, upload_to) -> requests.Response:
         upload_url_path = Path(datalayer.get("url"))
         object_name = "/".join(upload_url_path.parts[2:])
         return upload_file(
             object_name=object_name,
-            input_file=rasters[0],
+            input_file=input_files[0],
             upload_to=upload_to,
         )
 
@@ -344,21 +349,22 @@ class Command(PlanscapeCommand):
 
         s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
-        if s3_file:
-            input_file = f"/vsis3/{input_file}"
-        if input_file.endswith(".zip"):
-            input_file = f"/vsizip/{input_file}"
-        layer_type = fetch_datalayer_type(input_file=input_file)
-        if layer_type == DataLayerType.RASTER:
-            processed_files = to_planscape_raster(
-                input_file=input_file,
-            )
-        else:
-            # vector processing is done on the server?
-            processed_files = [input_file]
-        layer_type, layer_info = get_layer_info(input_file=processed_files[0])
+        vsi_input_file = with_vsi_prefix(input_file)
+
+        layer_type = fetch_datalayer_type(input_file=vsi_input_file)
+        layer_type, layer_info = get_layer_info(input_file=vsi_input_file)
+        mimetype = detect_mimetype(input_file=vsi_input_file)
+
+        match layer_type:
+            case DataLayerType.RASTER:
+                processed_files = to_planscape_raster(
+                    input_file=input_file,
+                )
+            case _:
+                # vector processing is done on the server?
+                processed_files = [input_file]
+
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
-        mimetype = detect_mimetype(input_file=input_file)
         metadata = kwargs.pop("metadata", None)
         if s3_file:
             original_name = input_file
@@ -393,7 +399,12 @@ class Command(PlanscapeCommand):
                 datalayer=datalayer,
                 upload_to=upload_to,
             )
-            self._change_datalayer_status_request(datalayer["id"], "READY", **kwargs)
+            self._change_datalayer_status_request(
+                org=org,
+                datalayer_id=datalayer["id"],
+                status="READY",
+                **kwargs,
+            )
         return output_data
 
     def _name_from_input_file(self, input_file: str):
