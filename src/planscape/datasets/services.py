@@ -102,12 +102,13 @@ def geometry_from_info(
     match datalayer_type:
         case DataLayerType.RASTER:
             bounds = info.get("bounds", [])
+            _epsg, srid = info.get("crs", "").split(":")
         case _:
             first_layer = list(info.keys())[0]
             bounds = info.get(first_layer, {}).get("bounds", [])
+            _epsg, srid = info.get(first_layer, {}).get("crs", "").split(":")
 
     x0, y0, x1, y1 = bounds
-    _epsg, srid = info.get("crs", "").split(":")
     return GEOSGeometry(
         Polygon(((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0))),
         srid=int(srid),
