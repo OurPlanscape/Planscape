@@ -25,10 +25,6 @@ export class MapDataLayerComponent implements OnInit {
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
-  startLoading = 0;
-  endLoading = 0;
-
-
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private matSnackBar: MatSnackBar
@@ -37,17 +33,12 @@ export class MapDataLayerComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((dataLayer: DataLayer | null) => {
         if (dataLayer?.public_url) {
-          //decaching
-          const timestamp = new Date().getTime();
-          this.cogUrl = `cog://${dataLayer?.public_url}&v=${timestamp}`;
+          this.cogUrl = `cog://${dataLayer?.public_url}`;
           const colorFn = generateColorFunction(dataLayer?.styles[0].data);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
-          
           this.tileSize =
             dataLayer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
-          console.log('Loading Layer:', dataLayer.name);
-          this.startLoading = performance.now();
           this.addRasterLayer();
         } else {
           this.cogUrl = null;
@@ -74,8 +65,6 @@ export class MapDataLayerComponent implements OnInit {
         event.sourceId === 'rasterImage' &&
         event.isSourceLoaded
       ) {
-        this.endLoading = performance.now();
-        console.log('Time taken: ', (this.endLoading - this.startLoading) / 1000, 'seconds');
         this.dataLayersStateService.setDataLayerLoading(false);
       }
     });

@@ -50,7 +50,6 @@ function unitsTitleFromLayer(dataLayer: DataLayer): string {
 
 // maps hexcolor string to an RGB object with integer values
 function parseColor(hexColor: string, opacity = 1.0): RGBA {
-  console.log('called parseColor ');
   const c = d3Color(hexColor);
   if (!c) return TRANSPARENT;
 
@@ -122,7 +121,6 @@ const prebufferRampScales = (
   colorScale: ReturnType<typeof scaleLinear<string>>;
   opacityScale: ReturnType<typeof scaleLinear<number>>;
 } => {
-  const startTime = performance.now();
   const domain = sortedEntries.map((entry) => entry.value);
   const colorRange = sortedEntries.map((entry) => entry.color);
   const opacityRange = sortedEntries.map((entry) => entry.opacity ?? 1.0);
@@ -136,8 +134,6 @@ const prebufferRampScales = (
     .range(opacityRange)
     .clamp(true);
 
-  const endTime = performance.now();
-  console.log('Ramp Prebuffer time: ', (endTime - startTime));
   return { colorScale, opacityScale };
 };
 // returns color map for RAMP types
@@ -145,11 +141,11 @@ function createRampColorMapper(
   sortedEntries: Entry[]
 ): (value: number) => RGBA {
   const { colorScale, opacityScale } = prebufferRampScales(sortedEntries);
+
   return (value: number) => {
-    console.log('what is happening here?');
     const interpolatedColor = colorScale(value);
     const interpolatedOpacity = opacityScale(value);
-    console.log('here we go...');
+
     return parseColor(interpolatedColor, interpolatedOpacity);
   };
 }
