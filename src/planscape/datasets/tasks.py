@@ -20,7 +20,7 @@ def datalayer_uploaded(
         datalayer.hash = get_s3_hash(datalayer.url, bucket=settings.S3_BUCKET)
         datalayer.status = status
         if datalayer.type == DataLayerType.VECTOR:
-            ogr2ogr(datalayer.url, datalayer.organization)
+            datalayer.table = ogr2ogr(datalayer.url)
         datalayer.save()
     except DataLayer.DoesNotExist:
         logger.warning("Datalayer %s does not exist", datalayer_id)

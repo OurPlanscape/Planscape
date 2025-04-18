@@ -1,7 +1,7 @@
 import logging
 import os
 import subprocess
-from typing import Collection, Optional, Tuple
+from typing import Collection, Tuple
 from uuid import uuid4
 
 from django.conf import settings
@@ -17,7 +17,7 @@ def vector_validate(input_file: str) -> Tuple[bool, Collection[str], Collection[
     return True, [], []
 
 
-def ogr2ogr(input_file: str, organization_id: Optional[int] = None):
+def ogr2ogr(input_file: str) -> True:
     environment = os.environ.copy()
     # fix this
     table_name = str(uuid4()).replace("-", "")
@@ -26,12 +26,13 @@ def ogr2ogr(input_file: str, organization_id: Optional[int] = None):
         "datastore",
         table_name=table_name,
     )
-    return subprocess.run(
+    _execution = subprocess.run(
         ogr2ogr_call,  # type: ignore
         check=True,
         env=environment,
         timeout=settings.OGR2OGR_TIMEOUT,
     )
+    return table_name
 
 
 def to_planscape(input_file: str) -> Collection[str]:

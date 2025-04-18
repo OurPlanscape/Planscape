@@ -48,6 +48,7 @@ class DataLayerAdmin(admin.ModelAdmin):
         "dataset__name__icontains",
         "created_by__username__icontains",
         "name",
+        "table",
     ]
     autocomplete_fields = ["organization", "created_by", "dataset", "category"]
     list_display = (
@@ -68,6 +69,7 @@ class DataLayerAdmin(admin.ModelAdmin):
         "geometry_type",
     )
     readonly_fields = [
+        "table",
         "public_url",
     ]
 
