@@ -17,7 +17,7 @@ def vector_validate(input_file: str) -> Tuple[bool, Collection[str], Collection[
     return True, [], []
 
 
-def ogr2ogr(input_file: str) -> True:
+def ogr2ogr(input_file: str) -> str:
     environment = os.environ.copy()
     # fix this
     table_name = str(uuid4()).replace("-", "")
