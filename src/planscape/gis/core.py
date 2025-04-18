@@ -6,6 +6,7 @@ from uuid import uuid4
 
 import fiona
 import rasterio
+from core.s3 import is_s3_file
 from datasets.models import DataLayerType, GeometryType
 from fiona.errors import DriverError
 from rasterio.errors import RasterioIOError
@@ -14,6 +15,15 @@ from gis.errors import InvalidFileFormat, InvalidGeometryType
 from gis.info import get_gdal_env
 
 log = logging.getLogger(__name__)
+
+
+def with_vsi_prefix(input_file: str) -> str:
+    s3_file = is_s3_file(input_file)
+    if s3_file:
+        input_file = f"/vsis3/{input_file}"
+    if input_file.endswith(".zip"):
+        input_file = f"/vsizip/{input_file}"
+    return input_file
 
 
 def get_random_output_file(input_file: str, output_folder: str = "/tmp") -> str:

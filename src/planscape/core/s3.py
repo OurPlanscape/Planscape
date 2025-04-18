@@ -8,6 +8,8 @@ from botocore.exceptions import ClientError
 from cacheops import cached
 from django.conf import settings
 
+logger = logging.getLogger(__name__)
+
 
 def get_aws_session() -> Session:
     return Session(
@@ -31,7 +33,7 @@ def create_download_url(
             ExpiresIn=expiration,
         )
     except ClientError as e:
-        logging.error(e)
+        logger.error(e)
         return None
 
     return response
@@ -50,7 +52,7 @@ def get_head(
             ChecksumMode="ENABLED",
         )
     except ClientError as e:
-        logging.error(e)
+        logger.error(e)
         return None
 
     return response
@@ -59,7 +61,7 @@ def get_head(
 def get_s3_hash(
     s3_url: str,
     bucket: str,
-    checksum_type: str = "ChecksumSHA256",
+    checksum_type: str = "ChecksumCRC64NVME",
 ) -> Optional[str]:
     """Returns a particular hash from a head request to s3.
     This is going to be used to understand collisions, duplicate uploads
@@ -67,7 +69,7 @@ def get_s3_hash(
 
     :param datalayer: _description_
     :type datalayer: DataLayer
-    :param checksum_type: _description_, defaults to "ChecksumSHA256"
+    :param checksum_type: _description_, defaults to "ChecksumCRC64NVME"
     :type checksum_type: str, optional
     :return: _description_
     :rtype: Optional[str]
@@ -96,7 +98,7 @@ def create_upload_url(
             ExpiresIn=expiration,
         )
     except ClientError as e:
-        logging.error(e)
+        logger.error(e)
         return None
 
     # The response contains the presigned URL and required fields
@@ -106,6 +108,7 @@ def create_upload_url(
 def upload_file(
     object_name: str, input_file: str, upload_to: Dict[str, Any]
 ) -> requests.Response:
+    logger.info(f"Uploading file {object_name}.")
     with open(input_file, "rb") as f:
         files = {"file": (object_name, f)}
         response = requests.post(
@@ -113,6 +116,8 @@ def upload_file(
             data=upload_to["fields"],
             files=files,
         )
+        logger.info(f"Uploaded {object_name} done.")
+        breakpoint()
         return response
 
 
