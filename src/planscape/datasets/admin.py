@@ -69,6 +69,13 @@ class DataLayerAdmin(admin.ModelAdmin):
         "geometry_type",
     )
     readonly_fields = [
+        "created_by",
+        "status",
+        "geometry_type",
+        "type",
+        "storage_type",
+        "original_name",
+        "mimetype",
         "table",
         "public_url",
     ]
