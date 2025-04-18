@@ -40,6 +40,7 @@ function unitsTitleFromLayer(dataLayer: DataLayer): string {
     return defaultTitle;
   }
   const title = units.join(', ');
+  // Until further notice, we're substituting this title
   if (title === '0-1') {
     return defaultTitle;
   }
