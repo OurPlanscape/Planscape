@@ -5,6 +5,7 @@ from typing import Any, Collection, Dict, Optional
 
 import toml
 from django.conf import settings
+from gis.core import with_vsi_prefix
 
 
 def ogr2ogr_cli(
@@ -14,7 +15,7 @@ def ogr2ogr_cli(
     input_layer_name: Optional[str] = None,
     output_layer_name: Optional[str] = None,
     destination_srs: str = "EPSG:4269",
-    database: Optional[Dict[str, Any]] = None,
+    database: Optional[Dict[str, Any]] = None,  # type: ignore
 ) -> Collection[str]:
     if database is None:
         database: Dict[str, Any] = settings.DATABASES["default"]
@@ -26,11 +27,7 @@ def ogr2ogr_cli(
     port = database.get("PORT")
     conn = f"PG:host={host} user={user} dbname={dbname} password={password} port={port}"
 
-    if input_file.startswith("s3"):
-        input_file = f"/vsis3/{input_file}"
-
-    if input_file.endswith(".zip"):
-        input_file = f"/vsizip/{input_file}"
+    input_file = with_vsi_prefix(input_file)
 
     args = [
         "ogr2ogr",
