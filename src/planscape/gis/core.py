@@ -28,8 +28,9 @@ def get_random_output_file(input_file: str, output_folder: str = "/tmp") -> str:
 @lru_cache
 def is_vector(input_file: str) -> bool:
     try:
-        with fiona.open(input_file):
-            return True
+        with fiona.Env(**get_gdal_env()):
+            with fiona.open(input_file):
+                return True
     except DriverError:
         return False
 

@@ -26,6 +26,9 @@ def ogr2ogr_cli(
     port = database.get("PORT")
     conn = f"PG:host={host} user={user} dbname={dbname} password={password} port={port}"
 
+    if input_file.startswith("s3"):
+        input_file = f"/vsis3/{input_file}"
+
     if input_file.endswith(".zip"):
         input_file = f"/vsizip/{input_file}"
 
