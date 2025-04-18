@@ -363,9 +363,6 @@ class Command(PlanscapeCommand):
             case _:
                 # vector processing is done on the server?
                 processed_files = [input_file]
-                # gets first layer layer info
-                first = list(layer_info.keys())[0]
-                layer_info = layer_info[first]
 
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         metadata = kwargs.pop("metadata", None)
