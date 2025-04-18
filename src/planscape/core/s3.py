@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Dict, List, Optional
+from typing import Any, Collection, Dict, List, Optional
 
 import boto3
 import requests
@@ -56,6 +56,10 @@ def get_head(
         return None
 
     return response
+
+
+def get_bucket_and_key(s3_url: str) -> Collection[str]:
+    return s3_url.replace("s3://", "").split("/", 1)
 
 
 def get_s3_hash(

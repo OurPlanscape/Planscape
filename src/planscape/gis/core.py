@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import fiona
 import rasterio
-from core.s3 import is_s3_file
+from core.s3 import get_bucket_and_key, is_s3_file
 from datasets.models import DataLayerType, GeometryType
 from fiona.errors import DriverError
 from rasterio.errors import RasterioIOError
@@ -20,7 +20,8 @@ log = logging.getLogger(__name__)
 def with_vsi_prefix(input_file: str) -> str:
     s3_file = is_s3_file(input_file)
     if s3_file:
-        input_file = f"/vsis3/{input_file}"
+        bucket, key = get_bucket_and_key(input_file)
+        input_file = f"/vsis3/{bucket}/{key}"
     if input_file.endswith(".zip"):
         input_file = f"/vsizip/{input_file}"
     return input_file
