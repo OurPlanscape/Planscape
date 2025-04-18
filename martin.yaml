@@ -65,10 +65,10 @@ postgres:
       maxzoom: 20
       bounds: [ -180.0, -90.0, 180.0, 90.0 ]
       id_column: id
-    # dynamic layer that can serve ANY table as tiles
+    # dynamic endpoint for any imported DataLayer by ID
     # parameters:
-    # - layer: string  (full table name, e.g. public.my_table) 
-    dynamic_layer:
+    # - layer: integer  (DataLayer id) 
+    dynamic:
       schema: public                 
       function: martin_dynamic_layer 
       minzoom: 0
