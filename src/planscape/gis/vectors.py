@@ -32,7 +32,7 @@ def ogr2ogr(input_file: str) -> str:
         env=environment,
         timeout=settings.OGR2OGR_TIMEOUT,
     )
-    return table_name
+    return f"datastore.{table_name}"
 
 
 def to_planscape(input_file: str) -> Collection[str]:
