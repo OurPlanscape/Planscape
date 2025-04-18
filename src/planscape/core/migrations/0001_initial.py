@@ -41,6 +41,7 @@ RELOAD = "SELECT * FROM pg_reload_conf();"
 
 
 class Migration(migrations.Migration):
+    atomic = False
     dependencies = []
 
     operations = [migrations.RunSQL(ALTER_SYSTEM), migrations.RunSQL(RELOAD)]
