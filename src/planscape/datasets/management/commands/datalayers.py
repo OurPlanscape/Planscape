@@ -344,15 +344,19 @@ class Command(PlanscapeCommand):
 
         s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
+        if s3_file:
+            input_file = f"/vsis3/{input_file}"
+        if input_file.endswith(".zip"):
+            input_file = f"/vsizip/{input_file}"
         layer_type = fetch_datalayer_type(input_file=input_file)
         if layer_type == DataLayerType.RASTER:
             processed_files = to_planscape_raster(
                 input_file=input_file,
             )
         else:
-            # implement vector
-            processed_files = []
-        layer_info = get_layer_info(input_file=processed_files[0])
+            # vector processing is done on the server?
+            processed_files = [input_file]
+        layer_type, layer_info = get_layer_info(input_file=processed_files[0])
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         mimetype = detect_mimetype(input_file=input_file)
         metadata = kwargs.pop("metadata", None)

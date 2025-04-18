@@ -1,6 +1,8 @@
 import logging
 from functools import lru_cache
+from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
+from uuid import uuid4
 
 import fiona
 import rasterio
@@ -14,11 +16,21 @@ from gis.info import get_gdal_env
 log = logging.getLogger(__name__)
 
 
+def get_random_output_file(input_file: str, output_folder: str = "/tmp") -> str:
+    """Returns a random outputfile with the same
+    extension as the input.
+    """
+    input_path = Path(input_file)
+    output_path = Path(output_folder) / str(uuid4())
+    return str(output_path.with_suffix(input_path.suffix))
+
+
 @lru_cache
 def is_vector(input_file: str) -> bool:
     try:
-        with fiona.open(input_file):
-            return True
+        with fiona.Env(**get_gdal_env()):
+            with fiona.open(input_file):
+                return True
     except DriverError:
         return False
 
