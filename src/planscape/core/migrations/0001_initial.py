@@ -37,8 +37,10 @@ ALTER SYSTEM SET
  max_parallel_maintenance_workers = '4';
 """
 
+RELOAD = "SELECT * FROM pg_reload_conf();"
+
 
 class Migration(migrations.Migration):
     dependencies = []
 
-    operations = [migrations.RunSQL(ALTER_SYSTEM)]
+    operations = [migrations.RunSQL(ALTER_SYSTEM), migrations.RunSQL(RELOAD)]
