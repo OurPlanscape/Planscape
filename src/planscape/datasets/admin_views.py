@@ -123,7 +123,7 @@ class AdminDataLayerViewSet(
         serializer.is_valid(raise_exception=True)
 
         target_status = serializer.validated_data.get("status")
-        organization = serializer.validated_data.get("organnization")
+        organization = serializer.validated_data.get("organization")
         user = request.user
 
         try:
