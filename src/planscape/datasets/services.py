@@ -101,18 +101,21 @@ def geometry_from_info(
         return None
     match datalayer_type:
         case DataLayerType.RASTER:
-            x0, y0, x1, y1 = info.get("bounds", [])
+            bounds = info.get("bounds", [])
             _epsg, srid = info.get("crs", "").split(":")
-            return GEOSGeometry(
-                Polygon(((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0))),
-                srid=int(srid),
-            ).transform(
-                settings.CRS_INTERNAL_REPRESENTATION,
-                clone=True,
-            )  # type: ignore
         case _:
-            log.warning("Not yet implemented for vectors.")
-            return None
+            first_layer = list(info.keys())[0]
+            bounds = info.get(first_layer, {}).get("bounds", [])
+            _epsg, srid = info.get(first_layer, {}).get("crs", "").split(":")
+
+    x0, y0, x1, y1 = bounds
+    return GEOSGeometry(
+        Polygon(((x0, y0), (x0, y1), (x1, y1), (x1, y0), (x0, y0))),
+        srid=int(srid),
+    ).transform(
+        settings.CRS_INTERNAL_REPRESENTATION,
+        clone=True,
+    )  # type: ignore
 
 
 @transaction.atomic()
@@ -299,7 +302,7 @@ def create_datalayer(
         original_name=original_name,
         mimetype=mimetype,
     )
-    geometry = geometry_from_info(info)
+    geometry = geometry_from_info(info, datalayer_type=type)
 
     if is_s3_file(original_name):
         # process this

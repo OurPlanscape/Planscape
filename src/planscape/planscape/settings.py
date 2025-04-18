@@ -255,10 +255,8 @@ SIMPLE_JWT = {
 }
 
 AUTHENTICATION_BACKENDS = [
-    # Needed to login by username in Django admin, regardless of `allauth`
     "django.contrib.auth.backends.ModelBackend",
-    # `allauth` specific authentication methods, such as login by e-mail
-    "allauth.account.auth_backends.AuthenticationBackend",
+    "users.backends.PlanscapeAuthBackend",
 ]
 
 # allauth
@@ -298,8 +296,9 @@ SESSION_EXPIRE_AT_BROWSER_CLOSE = False
 # Coordinate Reference System (CRS).  The values below are those for the
 # Regional Resource Kits: the CRS code used for the rasters, and the proj4
 # representation of that coordinate system.
+DEFAULT_CRS = 4269
 CRS_FOR_RASTERS = 3857
-CRS_INTERNAL_REPRESENTATION = 4269
+CRS_INTERNAL_REPRESENTATION = DEFAULT_CRS
 CRS_9822_PROJ4 = (
     "+proj=aea +lat_0=23 +lon_0=-96 +lat_1=29.5 +lat_2=45.5 +x_0=0 +y_0=0 "
     "+datum=WGS84 +units=m +no_defs"
@@ -310,7 +309,6 @@ CRS_9822_SCALE = (300, -300)  # a raster transform has origin, scale, and skew.
 RASTER_PIXEL_AREA = 0.300 * 0.300
 
 # This is the default CRS used when a geometry is missing one.
-DEFAULT_CRS = 4269
 
 # Caching; this improves loading times especially for the boundary app.
 CACHES = {
@@ -457,7 +455,7 @@ boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
-
+OGR2OGR_TIMEOUT = config("OGR2OGR_TIMEOUT", 600)  # 10m
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
 FEATURE_FLAG_S3_PROXY = config("FEATURE_FLAG_S3_PROXY", False, cast=bool)
 
@@ -467,7 +465,6 @@ OPENPANEL_CLIENT_ID = config("OPENPANEL_CLIENT_ID", None)
 OPENPANEL_CLIENT_SECRET = config("OPENPANEL_CLIENT_SECRET", None)
 
 # MARTOR (ADMIN MARKDOWN EDITOR)
-
 MARTOR_TOOLBAR_BUTTONS = [
     "bold",
     "italic",

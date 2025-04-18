@@ -73,7 +73,7 @@ export class DataLayerTreeComponent {
     };
 
     const selectedButton = this.treeContainer.nativeElement.querySelector(
-      '.mat-mdc-radio-checked'
+      '.data-layer-input.selected'
     );
 
     if (selectedButton) {
