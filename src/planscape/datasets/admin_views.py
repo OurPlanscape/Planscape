@@ -1,3 +1,5 @@
+import logging
+
 from core.serializers import MultiSerializerMixin
 from rest_framework import status
 from rest_framework.decorators import action
@@ -30,6 +32,8 @@ from datasets.services import (
     create_dataset,
     create_style,
 )
+
+logger = logging.getLogger(__name__)
 
 
 class AdminDatasetViewSet(
@@ -133,6 +137,7 @@ class AdminDataLayerViewSet(
             out_serializer = DataLayerSerializer(datalayer)
             return Response(out_serializer.data, status=status.HTTP_200_OK)
         except Exception:
+            logger.exception("Something blew up while loading datalayer")
             return Response(
                 {
                     "message": f"Something went wrong changing status of {datalayer.pk}",
