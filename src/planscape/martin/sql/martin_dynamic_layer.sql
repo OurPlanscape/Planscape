@@ -15,10 +15,6 @@ BEGIN
         INTO dyn_table
         FROM public.datasets_datalayer
     WHERE id = layer_id;
-    
-    IF dyn_table IS NULL THEN    
-        RAISE EXCEPTION 'Datalayer with id % not found or has no table defined', layer_id;
-    END IF;
 
     EXECUTE format($f$
         WITH
@@ -42,18 +38,6 @@ BEGIN
     INTO tile
     USING z, x, y;
     RETURN tile;
-
-EXCEPTION WHEN OTHERS THEN
-    RAISE NOTICE 'martin_dynamic_layer(%): %', layer_id, SQLERRM;
-
-    RETURN (
-      WITH empty AS (
-        SELECT NULL::integer AS id, NULL::geometry AS geom
-        WHERE FALSE
-      )
-      SELECT ST_AsMVT(empty, format('dynamic_%s', layer_id), 4096, 'geom')
-      FROM empty
-    );
 
 END; 
 
