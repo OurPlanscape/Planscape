@@ -41,6 +41,14 @@ class DataLayerAdmin(admin.ModelAdmin):
     def public_url(self, instance):
         return instance.get_public_url()
 
+    @admin.display(description="Storage Type")
+    def storage_type(self, instance):
+        return instance.storage_type
+
+    @admin.display(description="Table")
+    def table_name(self, instance):
+        return instance.table
+
     form = DataLayerAdminForm
 
     search_fields = [
@@ -69,6 +77,13 @@ class DataLayerAdmin(admin.ModelAdmin):
         "geometry_type",
     )
     readonly_fields = [
+        "created_by",
+        "status",
+        "geometry_type",
+        "type",
+        "storage_type",
+        "original_name",
+        "mimetype",
         "table",
         "public_url",
     ]
