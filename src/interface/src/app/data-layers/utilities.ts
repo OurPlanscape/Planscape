@@ -20,7 +20,8 @@ const TRANSPARENT: RGBA = { r: 0, g: 0, b: 0, a: 0 };
 // Determines the legend format based on the datalayer
 export function extractLegendInfo(dataLayer: DataLayer): ColorLegendInfo {
   const { map_type, entries } = dataLayer.styles[0].data;
-  const sorted = [...entries].sort((a, b) => a.value - b.value);
+  // Note that this sort inverts the values from high to low
+  const sorted = [...entries].sort((a, b) => b.value - a.value);
   const title = unitsTitleFromLayer(dataLayer);
   const colorDetails: LayerStyleEntry[] = sorted.map((e: Entry) => {
     return {
