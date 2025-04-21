@@ -191,6 +191,9 @@ class Style(
 
     data = models.JSONField()
 
+    def __str__(self):
+        return f"{self.name} [{self.type}]"
+
     class Meta(TypedModelMeta):
         ordering = ("organization", "id")
         verbose_name = "Style"

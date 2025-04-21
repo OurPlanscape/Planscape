@@ -61,6 +61,7 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["info"].required = False
         self.fields["category"].required = False
         self.fields["metadata"].required = False
+        self.fields["geometry"].required = False
 
     def save(self, commit=True):
         invalidate_model(DataLayer)
@@ -105,4 +106,17 @@ class StyleAdminForm(forms.ModelForm):
             "name",
             "type",
             "data",
+        )
+
+
+class DataLayerHasStyleAdminForm(forms.ModelForm):
+    """
+    Admin form for TreatmentGoalUsesDataLayer model.
+    """
+
+    class Meta:
+        model = DataLayerHasStyle
+        fields = (
+            "style",
+            "datalayer",
         )
