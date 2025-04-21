@@ -6,10 +6,11 @@ from treebeard.admin import TreeAdmin
 from datasets.forms import (
     CategoryAdminForm,
     DataLayerAdminForm,
+    DataLayerHasStyleAdminForm,
     DatasetAdminForm,
     StyleAdminForm,
 )
-from datasets.models import Category, DataLayer, Dataset, Style
+from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
 
 
 class CategoryAdmin(TreeAdmin):
@@ -34,6 +35,12 @@ class DatasetAdmin(admin.ModelAdmin):
 
     def get_changeform_initial_data(self, request) -> Dict[str, Any]:
         return {"created_by": request.user}
+
+
+class DataLayerHasStyleAdmin(admin.TabularInline):
+    model = DataLayerHasStyle
+    form = DataLayerHasStyleAdminForm
+    raw_id_fields = ["style"]
 
 
 class DataLayerAdmin(admin.ModelAdmin):
@@ -79,6 +86,15 @@ class DataLayerAdmin(admin.ModelAdmin):
         "table",
         "public_url",
     ]
+    inlines = [DataLayerHasStyleAdmin]
+
+
+class AssociateStyleWithDataLayer(admin.TabularInline):
+    model = DataLayerHasStyle
+    form = DataLayerHasStyleAdminForm
+    raw_id_fields = ["datalayer"]
+    min_num = 1
+    max_num = 1
 
 
 class StyleAdmin(admin.ModelAdmin):
@@ -104,6 +120,12 @@ class StyleAdmin(admin.ModelAdmin):
         "type",
         "data_hash",
     )
+    readonly_fields = ["data_hash"]
+    inlines = [AssociateStyleWithDataLayer]
+
+    def save_model(self, request, obj, form, change):
+        obj.created_by = request.user
+        return super().save_model(request, obj, form, change)
 
 
 admin.site.register(Dataset, DatasetAdmin)
