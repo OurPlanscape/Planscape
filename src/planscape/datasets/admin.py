@@ -104,6 +104,7 @@ class StyleAdmin(admin.ModelAdmin):
         "type",
         "data_hash",
     )
+    readonly_fields = ["data_hash"]
 
 
 admin.site.register(Dataset, DatasetAdmin)

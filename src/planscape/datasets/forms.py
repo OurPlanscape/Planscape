@@ -1,11 +1,12 @@
 import json
 
 import mmh3
+from cacheops import invalidate_model
 from django import forms
 from django_json_widget.widgets import JSONEditorWidget
 from treebeard.forms import movenodeform_factory
 
-from datasets.models import Category, DataLayer, Dataset, Style
+from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
 
 
 class DatasetAdminForm(forms.ModelForm):
@@ -15,6 +16,10 @@ class DatasetAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["created_by"].disabled = False
+
+    def save(self, commit=True):
+        invalidate_model(Dataset)
+        return super().save(commit)
 
     class Meta:
         model = Dataset
@@ -35,6 +40,10 @@ class CategoryAdminForm(movenodeform_factory(Category)):
         super().__init__(*args, **kwargs)
         self.fields["created_by"].disabled = False
 
+    def save(self, commit=True):
+        invalidate_model(Category)
+        return super().save(commit)
+
     class Meta:
         model = Category
         fields = (
@@ -52,6 +61,10 @@ class DataLayerAdminForm(forms.ModelForm):
         self.fields["info"].required = False
         self.fields["category"].required = False
         self.fields["metadata"].required = False
+
+    def save(self, commit=True):
+        invalidate_model(DataLayer)
+        return super().save(commit)
 
     class Meta:
         model = DataLayer
@@ -74,11 +87,12 @@ class DataLayerAdminForm(forms.ModelForm):
 class StyleAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields["data_hash"].disabled = True
 
     def save(self, commit=True):
         form_data = self.cleaned_data
         self.instance.data_hash = mmh3.hash_bytes(json.dumps(form_data["data"])).hex()
+        invalidate_model(Style)
+        invalidate_model(DataLayerHasStyle)
         return super().save(commit)
 
     class Meta:
@@ -91,5 +105,4 @@ class StyleAdminForm(forms.ModelForm):
             "name",
             "type",
             "data",
-            "data_hash",
         )
