@@ -9,16 +9,9 @@ import {
   RasterLayerSpecification,
   RasterSourceSpecification,
 } from 'maplibre-gl';
-import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
-import { SNACK_ERROR_CONFIG } from '@shared';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG, SNACK_DEBUG_CONFIG } from '@shared';
 import { environment } from 'src/environments/environment';
-
-//TODO: remove this if not debugging
-const DEBUG_SNACKBAR_CONFIG: MatSnackBarConfig<any> = {
-  duration: 30000,
-  panelClass: ['snackbar-debug-error'],
-  verticalPosition: 'top',
-};
 
 @UntilDestroy()
 @Component({
@@ -32,8 +25,6 @@ export class MapDataLayerComponent implements OnInit {
   opacity: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
-
-  detailedDebugging = !environment.production;
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
@@ -85,8 +76,9 @@ export class MapDataLayerComponent implements OnInit {
         event.sourceId === 'rasterImage' &&
         !event.isSourceLoaded
       ) {
-        //TODO: REVERT this if not debugging
-        if (this.detailedDebugging) {
+        this.dataLayersStateService.setDataLayerLoading(false);
+
+        if (environment.debug_layers) {
           console.error('MapLibre Error:', event);
           console.error('Error:', event.error);
           console.error('Error type:', event.error.name);
@@ -109,10 +101,9 @@ export class MapDataLayerComponent implements OnInit {
           this.matSnackBar.open(
             snackDebugMessage,
             'Dismiss',
-            DEBUG_SNACKBAR_CONFIG
+            SNACK_DEBUG_CONFIG
           );
         } else {
-          this.dataLayersStateService.setDataLayerLoading(false);
           this.matSnackBar.open(
             '[Error] Unable to load data layer.',
             'Dismiss',
