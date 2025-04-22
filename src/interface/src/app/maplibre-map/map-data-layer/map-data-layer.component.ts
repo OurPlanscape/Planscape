@@ -43,7 +43,7 @@ export class MapDataLayerComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((dataLayer: DataLayer | null) => {
         if (dataLayer?.public_url) {
-          this.cogUrl = `cog://badurl-${dataLayer?.public_url}`;
+          this.cogUrl = `cog://${dataLayer?.public_url}`;
           const colorFn = generateColorFunction(dataLayer?.styles[0].data);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
           this.tileSize =
