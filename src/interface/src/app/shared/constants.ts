@@ -25,6 +25,12 @@ export const SNACK_ERROR_CONFIG: MatSnackBarConfig<any> = {
   verticalPosition: 'top',
 };
 
+export const SNACK_DEBUG_CONFIG: MatSnackBarConfig<any> = {
+  duration: 30000,
+  panelClass: ['snackbar-debug-error'],
+  verticalPosition: 'top',
+};
+
 const blue = [
   '#D1E0EF',
   '#ADCCE6',

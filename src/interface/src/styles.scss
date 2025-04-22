@@ -59,6 +59,11 @@ body.no-scroll-bounce {
   button {
     color: $color-white;
   }
+  
+}
+
+.snackbar-debug-error {
+  white-space: pre-line;
 }
 
 .snackbar-notice {
