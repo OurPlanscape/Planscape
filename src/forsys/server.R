@@ -1,7 +1,8 @@
+library("logger")
 library(plumber)
 
 readRenviron(".env")
-source("src/planscape/rscripts/base_forsys.R")
+source("../planscape/rscripts/base_forsys.R")
 
 
 # server.R
@@ -15,20 +16,24 @@ function(msg="") {
 
 #* Execute Forsys
 #* @param scenario_id Scenario ID
-#* @get /run_forsys
-function(scenario_id=NULL) {
+#* @post /run_forsys
+function(res, req, scenario_id=NULL) {
+  log_info("Run forsys {scenario_id}")
   if(is.null(scenario_id) || scenario_id == "") {
-    list("You need to specify the scenario_id.")
+    res$status <- 400
+    return(list(error = "You need to specify the scenario_id."))
   }
   tryCatch({
     scenario_id <- as.integer(scenario_id)
   }, error = function(e) {
-    list("Scenario ID must be an integer.")
+    res$status <- 400
+    return(list(error = "Scenario ID must be an integer."))
   })
   tryCatch({
     main(scenario_id)
-    list("Forsys run completed.")
+    return(list("Forsys run completed."))
   }, error = function(e) {
-    list("Forsys run failed.", error = e$message)
+    res$status <- 500
+    return(list("Forsys run failed.", error = e$message))
   })
 }
