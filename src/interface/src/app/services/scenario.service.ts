@@ -58,6 +58,27 @@ export class ScenarioService {
       );
   }
 
+  /** Creates a scenario in the backend. Returns scenario ID. */
+  createScenarioLegacy(scenarioParameters: any): Observable<Scenario> {
+    scenarioParameters['configuration'] = this.convertConfigToScenario(
+      scenarioParameters['configuration']
+    );
+    return this.http
+      .post<Scenario>(this.v2Path, scenarioParameters, {
+        withCredentials: true,
+      })
+      .pipe(
+        catchError((error) => {
+          const message =
+            error.error?.global?.[0] ||
+            'Please change your settings and try again.';
+          throw new CreateScenarioError(
+            'Your scenario config is invalid. ' + message
+          );
+        })
+      );
+  }
+
   toggleScenarioStatus(scenarioId: number) {
     const url = this.v2Path + scenarioId + '/toggle_status/';
     return this.http.post<number>(url, {
