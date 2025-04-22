@@ -14,6 +14,7 @@ export const environment = {
   open_panel_enabled: false,
   debug_layers: false,
   sentry_dsn_url: '',
+  sentry_env: '',
 };
 
 /*

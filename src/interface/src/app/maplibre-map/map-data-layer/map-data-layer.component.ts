@@ -10,8 +10,10 @@ import {
   RasterSourceSpecification,
 } from 'maplibre-gl';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SNACK_ERROR_CONFIG } from '@shared';
+import { SNACK_ERROR_CONFIG, SNACK_DEBUG_CONFIG } from '@shared';
+import { environment } from 'src/environments/environment';
 import * as Sentry from '@sentry/browser';
+
 @UntilDestroy()
 @Component({
   selector: 'app-map-data-layer',
@@ -76,12 +78,41 @@ export class MapDataLayerComponent implements OnInit {
         !event.isSourceLoaded
       ) {
         this.dataLayersStateService.setDataLayerLoading(false);
-        this.matSnackBar.open(
-          '[Error] Unable to load data layer.',
-          'Dismiss',
-          SNACK_ERROR_CONFIG
-        );
 
+        if (environment.debug_layers) {
+          console.error('MapLibre Error:', event);
+          console.error('Error:', event.error);
+          console.error('Error type:', event.error.name);
+          console.error('Error message:', event.error.message);
+          console.error('Error details:', event.error.errors.join(','));
+          console.error('Source url:', event.source.url);
+          console.error(
+            'source details:',
+            this.mapLibreMap.getSource('rasterImage')
+          );
+          this.dataLayersStateService.setDataLayerLoading(false);
+
+          const snackDebugMessage =
+            `[Error] Unable to load data layer:\n` +
+            `${event.error.name}\n` +
+            `${event.error.message}\n` +
+            `${event.error.errors.join(',')}\n` +
+            `${event.source.url.split(/[&?]/).join('\n')},\n` +
+            `${event.error.errors.join(',')}`;
+          this.matSnackBar.open(
+            snackDebugMessage,
+            'Dismiss',
+            SNACK_DEBUG_CONFIG
+          );
+        } else {
+          this.matSnackBar.open(
+            '[Error] Unable to load data layer.',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        }
+
+        //explictly log Sentry details
         const debugDetails =
           `Unable to load data layer:\n` +
           `${event.error.name}\n` +
