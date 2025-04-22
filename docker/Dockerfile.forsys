@@ -1,0 +1,25 @@
+FROM rstudio/plumber:v1.2.0
+
+RUN apt-get update && \
+    apt-get -y install \
+    g++ binutils \
+    openssh-client \
+    libc6-dev libsqlite3-dev \
+    libpng-dev libtiff-dev libjpeg-dev \
+    libgdal-dev libproj-dev libgeos-dev gdal-bin \
+    libpq-dev libfreetype-dev libfontconfig1-dev libxml2-dev  \
+    libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
+    libcurl4-openssl-dev libssl-dev \
+    postgresql-client
+
+RUN mkdir -p /usr/src/app
+WORKDIR /usr/src/app
+
+COPY install.R /usr/src/app/
+RUN Rscript install.R
+
+COPY .env /usr/src/app/
+COPY src/forsys/server.R /usr/src/app/
+COPY src/planscape/rscripts/* /usr/src/app/
+
+CMD [ "Rscript", "src/forsys/server.R" ]
