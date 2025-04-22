@@ -21,7 +21,7 @@ export class DataLayersService {
 
   listDataLayers(dataSetId: number) {
     return this.http.get<DataLayer[]>(
-      environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse',
+      environment.backend_endpoint + '/v2/datasets/' + dataSetId + '/browse/',
       {
         withCredentials: true,
         params: { type: 'RASTER' },
@@ -31,7 +31,7 @@ export class DataLayersService {
 
   search(term: string, limit: number, offset?: number) {
     return this.http.get<Pagination<SearchResult>>(
-      environment.backend_endpoint + '/v2/datalayers/find_anything',
+      environment.backend_endpoint + '/v2/datalayers/find_anything/',
       {
         withCredentials: true,
         params: {
