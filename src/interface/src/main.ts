@@ -3,8 +3,6 @@ import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import * as Sentry from '@sentry/angular';
 import { AppModule } from './app/app.module';
 import { environment } from './environments/environment';
-import { AppComponent } from './app/app.component';
-import { bootstrapApplication } from '@angular/platform-browser';
 
 if (environment.production) {
   enableProdMode();
@@ -23,10 +21,6 @@ if (environment.sentry_dsn_url !== undefined) {
     replaysOnErrorSampleRate: 1.0,
   });
 }
-
-bootstrapApplication(AppComponent).catch((err) => {
-  Sentry.captureException(err);
-});
 
 platformBrowserDynamic()
   .bootstrapModule(AppModule)
