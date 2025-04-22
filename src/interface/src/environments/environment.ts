@@ -12,6 +12,7 @@ export const environment = {
   mapbox_key: '',
   open_panel_key: '',
   open_panel_enabled: false,
+  sentry_dsn_url: '',
 };
 
 /*
