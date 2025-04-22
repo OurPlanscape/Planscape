@@ -12,6 +12,7 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG, SNACK_DEBUG_CONFIG } from '@shared';
 import { environment } from 'src/environments/environment';
+import * as Sentry from '@sentry/browser';
 
 @UntilDestroy()
 @Component({
@@ -110,6 +111,15 @@ export class MapDataLayerComponent implements OnInit {
             SNACK_ERROR_CONFIG
           );
         }
+
+        //explictly log Sentry details
+        const debugDetails =
+          `Unable to load data layer:\n` +
+          `${event.error.name}\n` +
+          `${event.error.message}\n` +
+          `${event.error.errors.join(',')}\n` +
+          `${event.source.url},\n${event.error.errors.join(',')}`;
+        Sentry.captureException(debugDetails);
       }
     });
   }
