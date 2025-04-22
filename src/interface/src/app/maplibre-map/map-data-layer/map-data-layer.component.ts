@@ -10,10 +10,12 @@ import {
   RasterSourceSpecification,
 } from 'maplibre-gl';
 import { MatSnackBar, MatSnackBarConfig } from '@angular/material/snack-bar';
+import { SNACK_ERROR_CONFIG } from '@shared';
+import { environment } from 'src/environments/environment';
 
 //TODO: remove this if not debugging
 const DEBUG_SNACKBAR_CONFIG: MatSnackBarConfig<any> = {
-  duration: 10000,
+  duration: 30000,
   panelClass: ['snackbar-debug-error'],
   verticalPosition: 'top',
 };
@@ -31,6 +33,8 @@ export class MapDataLayerComponent implements OnInit {
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
+  detailedDebugging = !environment.production;
+
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private matSnackBar: MatSnackBar
@@ -39,7 +43,7 @@ export class MapDataLayerComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((dataLayer: DataLayer | null) => {
         if (dataLayer?.public_url) {
-          this.cogUrl = `cog://${dataLayer?.public_url}`;
+          this.cogUrl = `cog://badurl-${dataLayer?.public_url}`;
           const colorFn = generateColorFunction(dataLayer?.styles[0].data);
           setColorFunction(dataLayer?.public_url ?? '', colorFn);
           this.tileSize =
@@ -82,37 +86,39 @@ export class MapDataLayerComponent implements OnInit {
         !event.isSourceLoaded
       ) {
         //TODO: REVERT this if not debugging
-        console.error('MapLibre Error:', event);
-        console.error('Error:', event.error);
-        console.error('Error type:', event.error.name);
-        console.error('Error message:', event.error.message);
-        console.error('Error details:', event.error.errors.join(','));
-        console.error('Source url:', event.source.url);
-        console.error(
-          'source details:',
-          this.mapLibreMap.getSource('rasterImage')
-        );
-        this.dataLayersStateService.setDataLayerLoading(false);
+        if (this.detailedDebugging) {
+          console.error('MapLibre Error:', event);
+          console.error('Error:', event.error);
+          console.error('Error type:', event.error.name);
+          console.error('Error message:', event.error.message);
+          console.error('Error details:', event.error.errors.join(','));
+          console.error('Source url:', event.source.url);
+          console.error(
+            'source details:',
+            this.mapLibreMap.getSource('rasterImage')
+          );
+          this.dataLayersStateService.setDataLayerLoading(false);
 
-        const snackDebugMessage =
-          `[Error] Unable to load data layer:\n` +
-          `${event.error.name}\n` +
-          `${event.error.message}\n` +
-          `${event.error.errors.join(',')}\n` +
-          `${event.source.url},\n${event.error.errors.join(',')}`;
-        this.matSnackBar.open(
-          snackDebugMessage,
-          'Dismiss',
-          DEBUG_SNACKBAR_CONFIG
-        );
-
-        //
-        // this.dataLayersStateService.setDataLayerLoading(false);
-        // this.matSnackBar.open(
-        //   '[Error] Unable to load data layer.',
-        //   'Dismiss',
-        //   SNACK_ERROR_CONFIG
-        // );
+          const snackDebugMessage =
+            `[Error] Unable to load data layer:\n` +
+            `${event.error.name}\n` +
+            `${event.error.message}\n` +
+            `${event.error.errors.join(',')}\n` +
+            `${event.source.url.split(/[&?]/).join('\n')},\n` +
+            `${event.error.errors.join(',')}`;
+          this.matSnackBar.open(
+            snackDebugMessage,
+            'Dismiss',
+            DEBUG_SNACKBAR_CONFIG
+          );
+        } else {
+          this.dataLayersStateService.setDataLayerLoading(false);
+          this.matSnackBar.open(
+            '[Error] Unable to load data layer.',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        }
       }
     });
   }
