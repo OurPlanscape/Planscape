@@ -19,7 +19,7 @@ COPY install.R /usr/src/app/
 RUN Rscript install.R
 
 COPY .env /usr/src/app/
-COPY server.R /usr/src/app/
+COPY src/forsys/server.R /usr/src/app/
 COPY src/planscape/rscripts/* /usr/src/app/
 
-CMD [ "Rscript", "server.R" ]
+CMD [ "Rscript", "src/forsys/server.R" ]
