@@ -10,7 +10,7 @@ if (environment.production) {
 if (environment.sentry_dsn_url !== undefined) {
   Sentry.init({
     dsn: environment.sentry_dsn_url,
-    environment: environment.sentry_env,
+    environment: environment.environment,
     integrations: [
       Sentry.browserTracingIntegration(),
       Sentry.replayIntegration(),
