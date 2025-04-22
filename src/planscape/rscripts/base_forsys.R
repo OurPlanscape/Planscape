@@ -797,7 +797,9 @@ delete_project_areas <- function(
     scenario_id=scenario$id,
     .con=connection
   )
-  dbExecute(connection, query, immediate = TRUE)
+  deletions = dbExecute(connection, query, immediate = TRUE)
+  log_info(glue("Deleted {deletions} project areas for scenario {scenario$id}"))
+  return(deletions)
 }
 
 upsert_project_area <- function(
