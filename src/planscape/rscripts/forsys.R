@@ -8,7 +8,7 @@ library("optparse")
 # do not use spherical geometries
 sf_use_s2(FALSE)
 readRenviron("../../.env")
-source("base_forsys.R")
+source("./rscripts/base_forsys.R")
 
 options <- list(
   make_option(
