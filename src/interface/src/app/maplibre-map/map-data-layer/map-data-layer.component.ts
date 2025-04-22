@@ -1,7 +1,10 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { generateColorFunction } from '../../data-layers/utilities';
+import {
+  justPurpleColorFunction,
+  generateColorFunction,
+} from '../../data-layers/utilities';
 import { DataLayer, FrontendConstants } from '@types';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
@@ -25,6 +28,11 @@ export class MapDataLayerComponent implements OnInit {
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
+  //profiling
+  startTime = 0;
+  endTime = 0;
+  usePurpleFunction = true;
+
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private matSnackBar: MatSnackBar
@@ -33,9 +41,25 @@ export class MapDataLayerComponent implements OnInit {
       .pipe(untilDestroyed(this))
       .subscribe((dataLayer: DataLayer | null) => {
         if (dataLayer?.public_url) {
-          this.cogUrl = `cog://${dataLayer?.public_url}`;
-          const colorFn = generateColorFunction(dataLayer?.styles[0].data);
-          setColorFunction(dataLayer?.public_url ?? '', colorFn);
+          this.startTime = 0;
+          this.endTime = 0;
+          this.startTime = performance.now();
+          this.cogUrl = `cog://${dataLayer?.public_url}&time=startTime`;
+          if (this.usePurpleFunction) {
+            const purpleFn = justPurpleColorFunction(dataLayer?.styles[0].data);
+            console.log(
+              'Just PURPLE color function. Loading layer: ',
+              dataLayer.name
+            );
+            setColorFunction(dataLayer?.public_url ?? '', purpleFn);
+          } else {
+            const colorFn = generateColorFunction(dataLayer?.styles[0].data);
+            console.log(
+              'Regular color function. Loading layer: ',
+              dataLayer.name
+            );
+            setColorFunction(dataLayer?.public_url ?? '', colorFn);
+          }
           this.tileSize =
             dataLayer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
@@ -66,6 +90,14 @@ export class MapDataLayerComponent implements OnInit {
         event.isSourceLoaded
       ) {
         this.dataLayersStateService.setDataLayerLoading(false);
+        this.endTime = performance.now();
+        console.log(
+          'loading time was:',
+          (this.endTime - this.startTime) / 1000,
+          ' seconds.'
+        );
+        this.endTime = 0;
+        this.startTime = 0;
       }
     });
 

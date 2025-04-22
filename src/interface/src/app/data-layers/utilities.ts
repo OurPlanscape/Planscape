@@ -200,3 +200,22 @@ export function generateColorFunction(
     writeColorToBuffer(rgba, color);
   };
 }
+
+export function justPurpleColorFunction(
+  styleJson: StyleJson
+): (pixel: number[], rgba: Uint8ClampedArray) => void {
+  const knownNoDataValues = new Set(styleJson.no_data?.values || []);
+  const PURPLE: RGBA = { r: 100, g: 0, b: 200, a: 255 };
+
+  return (pixel: number[], rgba: Uint8ClampedArray) => {
+    const value = pixel[0];
+
+    if (knownNoDataValues.has(value)) {
+      writeColorToBuffer(rgba, TRANSPARENT);
+      return;
+    }
+
+    const color = PURPLE;
+    writeColorToBuffer(rgba, color);
+  };
+}

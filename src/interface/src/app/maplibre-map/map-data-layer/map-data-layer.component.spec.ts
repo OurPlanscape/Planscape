@@ -14,6 +14,7 @@ describe('MapDataLayerComponent', () => {
       container: document.createElement('div'),
       center: [0, 0],
       zoom: 1,
+      maxTileCacheSize: 0,
     });
 
     await TestBed.configureTestingModule({
