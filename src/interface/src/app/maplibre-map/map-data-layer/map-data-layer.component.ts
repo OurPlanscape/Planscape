@@ -92,18 +92,20 @@ export class MapDataLayerComponent implements OnInit {
           'source details:',
           this.mapLibreMap.getSource('rasterImage')
         );
+        this.dataLayersStateService.setDataLayerLoading(false);
+
         const snackDebugMessage =
           `[Error] Unable to load data layer:\n` +
           `${event.error.name}\n` +
           `${event.error.message}\n` +
           `${event.error.errors.join(',')}\n` +
           `${event.source.url},\n${event.error.errors.join(',')}`;
-        this.dataLayersStateService.setDataLayerLoading(false);
         this.matSnackBar.open(
           snackDebugMessage,
           'Dismiss',
           DEBUG_SNACKBAR_CONFIG
         );
+
         //
         // this.dataLayersStateService.setDataLayerLoading(false);
         // this.matSnackBar.open(
