@@ -6,10 +6,11 @@ from treebeard.admin import TreeAdmin
 from datasets.forms import (
     CategoryAdminForm,
     DataLayerAdminForm,
+    DataLayerHasStyleAdminForm,
     DatasetAdminForm,
     StyleAdminForm,
 )
-from datasets.models import Category, DataLayer, Dataset, Style
+from datasets.models import Category, DataLayer, DataLayerHasStyle, Dataset, Style
 
 
 class CategoryAdmin(TreeAdmin):
@@ -36,6 +37,12 @@ class DatasetAdmin(admin.ModelAdmin):
         return {"created_by": request.user}
 
 
+class DataLayerHasStyleAdmin(admin.TabularInline):
+    model = DataLayerHasStyle
+    form = DataLayerHasStyleAdminForm
+    raw_id_fields = ["style"]
+
+
 class DataLayerAdmin(admin.ModelAdmin):
     @admin.display(description="Public URL")
     def public_url(self, instance):
@@ -48,6 +55,7 @@ class DataLayerAdmin(admin.ModelAdmin):
         "dataset__name__icontains",
         "created_by__username__icontains",
         "name",
+        "table",
     ]
     autocomplete_fields = ["organization", "created_by", "dataset", "category"]
     list_display = (
@@ -68,8 +76,25 @@ class DataLayerAdmin(admin.ModelAdmin):
         "geometry_type",
     )
     readonly_fields = [
+        "created_by",
+        "status",
+        "geometry_type",
+        "type",
+        "storage_type",
+        "original_name",
+        "mimetype",
+        "table",
         "public_url",
     ]
+    inlines = [DataLayerHasStyleAdmin]
+
+
+class AssociateStyleWithDataLayer(admin.TabularInline):
+    model = DataLayerHasStyle
+    form = DataLayerHasStyleAdminForm
+    raw_id_fields = ["datalayer"]
+    min_num = 1
+    max_num = 1
 
 
 class StyleAdmin(admin.ModelAdmin):
@@ -95,6 +120,12 @@ class StyleAdmin(admin.ModelAdmin):
         "type",
         "data_hash",
     )
+    readonly_fields = ["data_hash"]
+    inlines = [AssociateStyleWithDataLayer]
+
+    def save_model(self, request, obj, form, change):
+        obj.created_by = request.user
+        return super().save_model(request, obj, form, change)
 
 
 admin.site.register(Dataset, DatasetAdmin)

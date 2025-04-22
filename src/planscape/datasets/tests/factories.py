@@ -1,16 +1,18 @@
 import factory
+from organizations.tests.factories import OrganizationFactory
+
 from datasets.models import (
-    Dataset,
-    DataLayer,
     Category,
+    DataLayer,
     DataLayerHasStyle,
     DataLayerStatus,
     DataLayerType,
-    VisibilityOptions,
+    Dataset,
     GeometryType,
+    StorageTypeChoices,
     Style,
+    VisibilityOptions,
 )
-from organizations.tests.factories import OrganizationFactory
 from planscape.tests.factories import UserFactory
 
 
@@ -52,8 +54,10 @@ class DataLayerFactory(factory.django.DjangoModelFactory):
     organization = factory.SelfAttribute("dataset.organization")
     created_by = factory.SelfAttribute("dataset.created_by")
     name = factory.Faker("name")
+    storage_type = factory.Iterator(StorageTypeChoices.values)
     type = factory.Iterator(DataLayerType.values)
     geometry_type = factory.Iterator(GeometryType.values)
+    table = None
     status = DataLayerStatus.READY
     metadata = {}
     url = None
