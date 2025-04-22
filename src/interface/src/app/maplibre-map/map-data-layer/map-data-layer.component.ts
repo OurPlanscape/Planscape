@@ -12,7 +12,6 @@ import {
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import * as Sentry from '@sentry/browser';
-
 @UntilDestroy()
 @Component({
   selector: 'app-map-data-layer',
