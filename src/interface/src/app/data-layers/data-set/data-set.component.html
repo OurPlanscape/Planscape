@@ -40,6 +40,14 @@
       variant="icon-only"
       icon="info"
       class="info-icon"
-      [outlined]="true"></button>
+      [outlined]="true"
+      [matMenuTriggerFor]="popoverMenu"
+      (menuOpened)="displayTooltipLayer = true"
+      (menuClosed)="displayTooltipLayer = false"></button>
+    <mat-menu #popoverMenu="matMenu" class="datalayer-tooltip-panel">
+      <app-data-layer-tooltip
+        [layer]="layer.data"
+        *ngIf="displayTooltipLayer"></app-data-layer-tooltip>
+    </mat-menu>
   </div>
 </div>

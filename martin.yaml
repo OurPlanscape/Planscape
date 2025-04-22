@@ -65,6 +65,17 @@ postgres:
       maxzoom: 20
       bounds: [ -180.0, -90.0, 180.0, 90.0 ]
       id_column: id
+    # dynamic endpoint for any imported DataLayer by ID
+    # parameters:
+    # - layer: integer  (DataLayer id) 
+    dynamic:
+      schema: public                 
+      function: martin_dynamic_layer 
+      minzoom: 0
+      maxzoom: 20
+      bounds: [ -180.0, -90.0, 180.0, 90.0 ]
+      id_column: id                  
+      query_params: [ layer ]    
   tables:
     stands:
       layer_id: stands

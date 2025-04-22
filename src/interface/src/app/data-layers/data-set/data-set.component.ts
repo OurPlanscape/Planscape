@@ -7,6 +7,8 @@ import { MatRadioModule } from '@angular/material/radio';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { map } from 'rxjs';
+import { MatMenuModule } from '@angular/material/menu';
+import { DataLayerTooltipComponent } from '../data-layer-tooltip/data-layer-tooltip.component';
 
 @Component({
   selector: 'app-data-set',
@@ -20,6 +22,8 @@ import { map } from 'rxjs';
     MatRadioModule,
     HighlighterDirective,
     AsyncPipe,
+    MatMenuModule,
+    DataLayerTooltipComponent,
   ],
   templateUrl: './data-set.component.html',
   styleUrl: './data-set.component.scss',
@@ -38,6 +42,8 @@ export class DataSetComponent {
   selectedDataLayerId$ = this.dataLayersStateService.selectedDataLayer$.pipe(
     map((dl) => dl?.id)
   );
+
+  displayTooltipLayer = false;
 
   constructor(private dataLayersStateService: DataLayersStateService) {}
 
