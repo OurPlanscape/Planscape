@@ -1,10 +1,6 @@
-from django.contrib.auth.models import User
-from django.test import TestCase
-from impacts.models import ImpactVariable, TreatmentPrescriptionAction
-from rest_framework.test import APIRequestFactory
-
-from datasets.models import Category, DataLayerType
+from datasets.models import Category, DataLayerType, StorageTypeChoices
 from datasets.serializers import (
+    BrowseDataLayerSerializer,
     CategoryEmbbedSerializer,
     CategorySerializer,
     CreateDataLayerSerializer,
@@ -18,6 +14,12 @@ from datasets.tests.factories import (
     DatasetFactory,
     OrganizationFactory,
 )
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.test import TestCase
+from impacts.models import ImpactVariable, TreatmentPrescriptionAction
+from rest_framework.test import APIRequestFactory
+from utils.frontend import get_base_url, get_domain
 
 
 class CategorySerializerTest(TestCase):
@@ -82,6 +84,8 @@ class DataLayerSerializerTest(TestCase):
         self.assertEqual(data["geometry_type"], data_layer.geometry_type)
         self.assertEqual(data["type"], data_layer.type)
         self.assertIn("category", data)
+        self.assertIn("public_url", data)
+        self.assertIn("map_url", data)
 
     def test_create_data_layer_serializer(self):
         data_layer = DataLayerFactory()
@@ -203,3 +207,33 @@ class TestCreateStyleSerializer(TestCase):
         )
         self.assertFalse(serializer.is_valid())
         self.assertEqual(set(serializer.errors.keys()), set(["global"]))
+
+
+class MapURLTests(TestCase):
+    def _expected_dynamic_url(self, layer):
+        base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
+        return f"{base}/tiles/dynamic?layer={layer.id}"
+
+    def test_get_map_url_logic(self):
+        raster = DataLayerFactory(type=DataLayerType.RASTER)
+        self.assertEqual(raster.get_map_url(), raster.get_public_url())
+
+        vector = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            storage_type=StorageTypeChoices.DATABASE,
+            table="datastore.foo_bar",
+        )
+        self.assertEqual(vector.get_map_url(), self._expected_dynamic_url(vector))
+
+    def test_map_url_present_in_serializers(self):
+        vector = DataLayerFactory(
+            type=DataLayerType.VECTOR,
+            storage_type=StorageTypeChoices.DATABASE,
+            table="datastore.foo_bar",
+        )
+        for Serializer in (DataLayerSerializer, BrowseDataLayerSerializer):
+            self.assertIn("map_url", Serializer(vector).data)
+
+    def test_map_url_none_when_no_table(self):
+        layer = DataLayerFactory(type=DataLayerType.VECTOR, table=None)
+        self.assertIsNone(layer.get_map_url())
