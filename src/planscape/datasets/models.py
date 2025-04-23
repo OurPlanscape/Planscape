@@ -356,7 +356,7 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         if self.table and self.storage_type == StorageTypeChoices.DATABASE:
             base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
             return f"{base}/tiles/dynamic?layer={self.id}"
-        return self.get_public_url()
+        return None
 
     def get_assigned_style(self) -> Optional[Style]:
         return self.styles.all().first()

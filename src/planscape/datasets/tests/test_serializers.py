@@ -233,3 +233,7 @@ class MapURLTests(TestCase):
         )
         for Serializer in (DataLayerSerializer, BrowseDataLayerSerializer):
             self.assertIn("map_url", Serializer(vector).data)
+
+    def test_map_url_none_when_no_table(self):
+        layer = DataLayerFactory(type=DataLayerType.VECTOR, table=None)
+        self.assertIsNone(layer.get_map_url())
