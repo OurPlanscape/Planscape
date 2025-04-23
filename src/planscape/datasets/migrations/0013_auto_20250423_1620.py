@@ -4,6 +4,7 @@ from django.db import migrations
 
 def create_vector_dataset(apps, schema_editor):
     Dataset = apps.get_model("datasets", "Dataset")
+    Category = apps.get_model("datasets", "Category")
     User = apps.get_model("auth", "User")
     Organization = apps.get_model("organizations", "Organization")
     user = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
@@ -18,12 +19,38 @@ def create_vector_dataset(apps, schema_editor):
             "version": "2025",
         },
     )
+    _ = Category.add_root(
+        id=996,
+        name="Boundaries",
+        created_by=user,
+        organization=org,
+        dataset=vector_dataset,
+        order=0,
+    )
+    _ = Category.add_root(
+        id=997,
+        name="Ownership",
+        created_by=user,
+        organization=org,
+        dataset=vector_dataset,
+        order=0,
+    )
+    _ = Category.add_root(
+        id=998,
+        name="Disturbances",
+        created_by=user,
+        organization=org,
+        dataset=vector_dataset,
+        order=0,
+    )
 
 
 def delete_vector_dataset(apps, schema_editor):
     Dataset = apps.get_model("datasets", "Dataset")
+    Category = apps.get_model("datasets", "Category")
     try:
         Dataset.objects.get(pk=10).delete()
+        Category.objects.get(pk__in=[996, 997, 998]).delete()
     except Dataset.DoesNotExist:
         pass
 
