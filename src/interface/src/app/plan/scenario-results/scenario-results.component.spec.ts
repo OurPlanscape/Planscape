@@ -63,7 +63,7 @@ describe('ScenarioResultsComponent', () => {
       expect(scenarioService.downloadCsvData).toHaveBeenCalledWith('1234');
       expect(fileSaverService.saveAs).toHaveBeenCalledWith(
         jasmine.any(Blob),
-        'A_great_scenario_result_csv.zip'
+        'a_great_scenario_result_csv.zip'
       );
     });
     it('should download shapefile file with scenario name', () => {
@@ -74,7 +74,7 @@ describe('ScenarioResultsComponent', () => {
       expect(scenarioService.downloadShapeFiles).toHaveBeenCalledWith('1234');
       expect(fileSaverService.saveAs).toHaveBeenCalledWith(
         jasmine.any(Blob),
-        'A_great_scenario_result_shp.zip'
+        'a_great_scenario_result_shp.zip'
       );
     });
   });
