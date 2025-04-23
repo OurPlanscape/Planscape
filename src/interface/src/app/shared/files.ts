@@ -8,5 +8,5 @@ export function getSafeFileName(name: string) {
     .toLowerCase()
     .trim()
     .replace(/\s+/g, '_') // spaces to underscores
-    .replace(/[^\w\-]/g, ''); // remove special characters except underscore and dash
+    .replace(/[^\w\-]/g, '_'); //  special characters to underscores
 }
