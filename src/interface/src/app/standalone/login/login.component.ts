@@ -21,7 +21,6 @@ import { MatCardModule } from '@angular/material/card';
 import { CommonModule } from '@angular/common';
 import { LegacyMaterialModule } from '../../material/legacy-material.module';
 import { AboutComponent } from '../about/about.component';
-import { SentryExampleComponent } from 'src/app/sentry-example.component';
 
 @Component({
   selector: 'app-login',
@@ -35,7 +34,6 @@ import { SentryExampleComponent } from 'src/app/sentry-example.component';
     LegacyMaterialModule,
     ReactiveFormsModule,
     RouterModule,
-    SentryExampleComponent,
     SharedModule,
   ],
 })

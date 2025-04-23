@@ -73,6 +73,14 @@ const routes: Routes = [
           ),
       },
       {
+        path: 'sentrytest',
+        title: 'Testing Sentry',
+        loadComponent: () =>
+          import(
+            './standalone/sentry-error-test/sentry-error-test.component'
+          ).then((m) => m.SentryErrorTestComponent),
+      },
+      {
         path: 'validate/:token',
         title: 'Account E-mail Validation',
         loadComponent: () =>
