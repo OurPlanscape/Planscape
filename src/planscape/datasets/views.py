@@ -47,14 +47,13 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: afterwards we need to implement the filtering
         # by organization visibility too, so we return the public ones
         # PLUS all the datasets accessible by the organization
-        return (
-            Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
-            .exclude(pk=settings.DEFAULT_BASELAYERS_DATASET_ID)
-            .select_related(
-                "organization",
-                "created_by",
-            )
-        )
+        match self.action:
+            case "browse":
+                qs = Dataset.objects.all()
+            case _:
+                qs = Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+
+        return qs.select_related("organization", "created_by")
 
     @extend_schema(
         description="Returns all datalayers inside this dataset",
