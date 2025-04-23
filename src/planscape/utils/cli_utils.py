@@ -6,6 +6,7 @@ from typing import Any, Collection, Dict, Optional
 import toml
 from django.conf import settings
 from gis.core import with_vsi_prefix
+import requests
 
 
 def ogr2ogr_cli(
@@ -141,7 +142,13 @@ def get_forsys_call(scenario_id):
     ]
 
 
-def call_forsys(scenario_id, env=None, check=True, timeout=None):
+def _call_forsys_via_command_line(
+    scenario_id: int,
+    env: Optional[Dict[str, str]] = None,
+    check: bool = True,
+    timeout: Optional[int] = None,
+) -> subprocess.CompletedProcess:
+    """Call the forsys command line tool."""
     environment = os.environ.copy()
     if env:
         environment = {**environment, **env}
@@ -152,3 +159,23 @@ def call_forsys(scenario_id, env=None, check=True, timeout=None):
         check=check,
         timeout=timeout,
     )
+
+
+def _call_forsys_via_api(
+    scenario_id: int,
+    timeout: Optional[int] = None,
+):
+    """Call the forsys API."""
+    response = requests.post(
+        f"{settings.FORSYS_PLUMBER_URL}/run_forsys",
+        json={"scenario_id": scenario_id},
+        timeout=timeout or settings.FORSYS_PLUMBER_TIMEOUT,
+    )
+    response.raise_for_status()
+    return response.json()
+
+
+def call_forsys(scenario_id, env=None, check=True, timeout=None):
+    if settings.FORSYS_VIA_API:
+        return _call_forsys_via_api(scenario_id, timeout)
+    return _call_forsys_via_command_line(scenario_id, env, check, timeout)

@@ -970,7 +970,7 @@ main <- function(scenario_id) {
         "FAILURE",
         list(type = "FeatureCollection", features = list())
       )
-      
+      stop(e)
     },
     finally = {
       log_info(paste("[DONE] Forsys execution finished."))
