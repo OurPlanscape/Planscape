@@ -26,7 +26,6 @@ def create_vector_dataset(apps, schema_editor):
         created_by_id=user.pk,
         organization_id=org.pk,
         dataset_id=vector_dataset.pk,
-        order=0,
     )
     _ = Category.add_root(
         id=997,
@@ -34,7 +33,6 @@ def create_vector_dataset(apps, schema_editor):
         created_by_id=user.pk,
         organization_id=org.pk,
         dataset_id=vector_dataset.pk,
-        order=0,
     )
     _ = Category.add_root(
         id=998,
@@ -42,7 +40,6 @@ def create_vector_dataset(apps, schema_editor):
         created_by_id=user.pk,
         organization_id=org.pk,
         dataset_id=vector_dataset.pk,
-        order=0,
     )
 
 
