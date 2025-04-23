@@ -473,3 +473,6 @@ MARTOR_TOOLBAR_BUTTONS = [
     "toggle-maximize",
     "help",
 ]
+
+DEFAULT_ORGANIZATION_NAME = "Spatial Informatics Group"
+DEFAULT_ADMIN_EMAIL = "admin@planscape.org"

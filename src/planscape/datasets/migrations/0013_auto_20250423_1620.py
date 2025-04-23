@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.db import migrations
 
 
@@ -5,8 +6,8 @@ def create_vector_dataset(apps, schema_editor):
     Dataset = apps.get_model("datasets", "Dataset")
     User = apps.get_model("auth", "User")
     Organization = apps.get_model("organizations", "Organization")
-    user = User.objects.get(email="admin@planscape.org")
-    org = Organization.objects.get(name="Spatial Inforamtics Group")
+    user = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
+    org = Organization.objects.get(name=settings.DEFAULT_ORGANIZATION_NAME)
     vector_dataset, created = Dataset.objects.get_or_create(
         id=10,
         defaults={
