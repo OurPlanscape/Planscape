@@ -45,3 +45,6 @@ Thumbs.db
 # Storybook
 *storybook.log
 /storybook-static
+
+# Sentry Config File
+.sentryclirc

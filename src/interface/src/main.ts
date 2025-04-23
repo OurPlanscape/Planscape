@@ -7,7 +7,7 @@ import { environment } from './environments/environment';
 if (environment.production) {
   enableProdMode();
 }
-if (environment.sentry_dsn_url !== undefined) {
+if (environment.sentry_dsn_url !== undefined && environment.sentry_dsn_url) {
   Sentry.init({
     dsn: environment.sentry_dsn_url,
     environment: environment.environment,
