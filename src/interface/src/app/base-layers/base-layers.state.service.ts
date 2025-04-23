@@ -28,6 +28,7 @@ export class BaseLayersStateService {
 
     const currentCategory = current[0].category;
 
+    // if the layer allows multi select
     if (bl.multi) {
       if (bl.category === currentCategory) {
         // Add only if not already selected
