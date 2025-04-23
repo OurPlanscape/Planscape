@@ -49,11 +49,13 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # PLUS all the datasets accessible by the organization
         match self.action:
             case "browse":
-                qs = Dataset.objects.all()
+                filters = {}
             case _:
-                qs = Dataset.objects.filter(visibility=VisibilityOptions.PUBLIC)
+                filters = {"visibility": VisibilityOptions.PUBLIC}
 
-        return qs.select_related("organization", "created_by")
+        return Dataset.objects.filter(**filters).select_related(
+            "organization", "created_by"
+        )
 
     @extend_schema(
         description="Returns all datalayers inside this dataset",
