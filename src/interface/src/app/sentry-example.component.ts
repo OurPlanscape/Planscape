@@ -179,7 +179,7 @@ export class SentryExampleComponent implements OnInit {
   async ngOnInit(): Promise<void> {
     const res = await Sentry.diagnoseSdkConnectivity();
     this.isConnected = res !== 'sentry-unreachable';
-    console.error({ res });
+    console.error(res);
   }
 
   throwError() {
