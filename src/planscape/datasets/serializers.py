@@ -94,6 +94,10 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         source="get_public_url",
         read_only=True,
     )
+    map_url = serializers.CharField(
+        source="get_map_url",
+        read_only=True,
+    )
     styles = serializers.SerializerMethodField()
     original_name = serializers.CharField(read_only=True)
 
@@ -137,6 +141,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "styles",
             "url",
             "public_url",
+            "map_url",
             "info",
             "metadata",
             "original_name",
@@ -457,6 +462,10 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         source="get_public_url",
         read_only=True,
     )
+    map_url = serializers.CharField(
+        source="get_map_url",
+        read_only=True,
+    )
     styles = serializers.SerializerMethodField()
 
     def _default_raster_style(self, instance):
@@ -495,6 +504,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "dataset",
             "path",
             "public_url",
+            "map_url",
             "name",
             "type",
             "geometry_type",
