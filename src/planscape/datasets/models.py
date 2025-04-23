@@ -14,7 +14,7 @@ from django.core.validators import RegexValidator, URLValidator
 from django_stubs_ext.db.models import TypedModelMeta
 from organizations.models import Organization
 from treebeard.mp_tree import MP_Node
-from utils.frontend import get_domain
+from utils.frontend import get_base_url, get_domain
 
 User = get_user_model()
 
@@ -349,6 +349,14 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
             )
             download_url = str(new_url.geturl())
         return download_url
+
+    def get_map_url(self) -> Optional[str]:
+        if self.type == DataLayerType.RASTER:
+            return self.get_public_url()
+        if self.table and self.storage_type == StorageTypeChoices.DATABASE:
+            base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
+            return f"{base}/tiles/dynamic?layer={self.id}"
+        return self.get_public_url()
 
     def get_assigned_style(self) -> Optional[Style]:
         return self.styles.all().first()
