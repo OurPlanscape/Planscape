@@ -387,7 +387,7 @@ FORSYS_VIA_API = config("FORSYS_VIA_API", False, cast=bool)
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = BASE_DIR / "output"
 
-DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
+DEFAULT_ESTIMATED_COST = config("DEFAULT_ESTIMATED_COST", 2470, cast=float)
 # CACHEOPS
 CACHEOPS_REDIS = config("CACHEOPS_REDIS", "redis://localhost:6379/1")
 DEFAULT_CACHE_TTL = config("DEFAULT_CACHE_TTL", 5 * 60, cast=int)  # 5 minutes default
