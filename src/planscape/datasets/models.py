@@ -65,7 +65,7 @@ class Dataset(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         verbose_name_plural = "Datasets"
 
 
-class Category(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, MP_Node):
+class Category(CreatedAtMixin, UpdatedAtMixin, MP_Node):
     id: int
 
     created_by_id: int
