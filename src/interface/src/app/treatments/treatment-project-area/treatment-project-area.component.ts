@@ -13,6 +13,7 @@ import { AcresTreatedComponent } from '../acres-treated/acres-treated.component'
 import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
+import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
 
 @Component({
   selector: 'app-project-area',
@@ -30,6 +31,7 @@ import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.c
     LeftLoadingOverlayComponent,
     FeaturesModule,
     DataLayersComponent,
+    BaseLayersComponent,
   ],
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
