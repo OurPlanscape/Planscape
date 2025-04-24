@@ -1,11 +1,10 @@
-import { Component, OnDestroy } from '@angular/core';
+import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
 import { SharedModule } from '@shared';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
-import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
@@ -13,7 +12,11 @@ import { AcresTreatedComponent } from '../acres-treated/acres-treated.component'
 import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { skip } from 'rxjs';
 
+@UntilDestroy()
 @Component({
   selector: 'app-project-area',
   standalone: true,
@@ -35,20 +38,23 @@ import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.c
   styleUrl: './treatment-project-area.component.scss',
 })
 export class TreatmentProjectAreaComponent implements OnDestroy {
+  @ViewChild('tabGroup') tabGroup!: MatTabGroup;
+
   constructor(
-    private mapConfigState: MapConfigState,
     private selectedStandsState: SelectedStandsState,
-    private treatmentsState: TreatmentsState
-  ) {}
-
-  opacity = this.mapConfigState.treatedStandsOpacity$;
-  activeProjectArea$ = this.treatmentsState.activeProjectArea$;
-  projectAreaId?: number;
-  refreshing$ = this.treatmentsState.reloadingSummary$;
-
-  changeValue(num: number) {
-    this.mapConfigState.setTreatedStandsOpacity(num);
+    private treatmentsState: TreatmentsState,
+    private dataLayersStateService: DataLayersStateService
+  ) {
+    this.dataLayersStateService.paths$
+      .pipe(untilDestroyed(this), skip(1))
+      .subscribe((path) => {
+        if (path.length > 0) {
+          this.tabGroup.selectedIndex = 2;
+        }
+      });
   }
+
+  projectAreaId?: number;
 
   ngOnDestroy(): void {
     this.selectedStandsState.clearStands();
