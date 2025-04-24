@@ -10,6 +10,7 @@ import { HomeComponent } from './home/home.component';
 import { MapComponent } from './map/map.component';
 import {
   AuthGuard,
+  DevelopmentRouteGuard,
   passwordResetTokenResolver,
   RedirectGuard,
   redirectResolver,
@@ -71,6 +72,15 @@ const routes: Routes = [
           import('./standalone/thank-you/thank-you.component').then(
             (m) => m.ThankYouComponent
           ),
+      },
+      {
+        path: 'sentrytest',
+        title: 'Testing Sentry',
+        canActivate: [DevelopmentRouteGuard],
+        loadComponent: () =>
+          import(
+            './standalone/sentry-error-test/sentry-error-test.component'
+          ).then((m) => m.SentryErrorTestComponent),
       },
       {
         path: 'validate/:token',
