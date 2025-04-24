@@ -112,6 +112,11 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
     }
     filterset_class = DataLayerFilterSet
 
+    @action(detail=True, methods=["get"])
+    def urls(self, request, pk=None):
+        datalayer = self.get_object()
+        return Response({"layer_url": datalayer.get_map_url()})
+
     @extend_schema(
         parameters=[FindAnythingSerializer],
         responses={200: SearchResultsSerializer(many=True)},
