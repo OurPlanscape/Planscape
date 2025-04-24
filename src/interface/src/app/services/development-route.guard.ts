@@ -10,10 +10,11 @@ export class DevelopmentRouteGuard {
   constructor(private router: Router) {}
 
   canActivate(): Observable<boolean | UrlTree> {
-    const isLocalhost = window.location.hostname === 'localhost'; 
+    const isLocalhost = window.location.hostname === 'localhost';
     const isDevelopment = environment.environment === 'development';
 
-    return of((isLocalhost || isDevelopment) ? true : this.router.parseUrl('/home'));
+    return of(
+      isLocalhost || isDevelopment ? true : this.router.parseUrl('/home')
+    );
   }
-
 }
