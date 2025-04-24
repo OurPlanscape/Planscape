@@ -5,7 +5,8 @@ import {
   HttpClientModule,
   HttpClientXsrfModule,
 } from '@angular/common/http';
-import { NgModule } from '@angular/core';
+import { NgModule, APP_INITIALIZER, ErrorHandler } from '@angular/core';
+import { Router } from '@angular/router';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -37,6 +38,7 @@ import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.
 import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { OverlayLoaderComponent } from '../styleguide/overlay-loader/overlay-loader.component';
+import * as Sentry from '@sentry/angular';
 
 @NgModule({
   declarations: [
@@ -79,6 +81,20 @@ import { OverlayLoaderComponent } from '../styleguide/overlay-loader/overlay-loa
     {
       provide: HTTP_INTERCEPTORS,
       useClass: JwtInterceptor,
+      multi: true,
+    },
+    {
+      provide: ErrorHandler,
+      useValue: Sentry.createErrorHandler(),
+    },
+    {
+      provide: Sentry.TraceService,
+      deps: [Router],
+    },
+    {
+      provide: APP_INITIALIZER,
+      useFactory: () => () => {},
+      deps: [Sentry.TraceService],
       multi: true,
     },
   ],
