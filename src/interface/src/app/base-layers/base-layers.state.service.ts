@@ -1,18 +1,30 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
-
-interface BaseLayer {
-  id: number;
-  name: string;
-  category: string;
-  multi: boolean;
-}
+import { BehaviorSubject, map, shareReplay } from 'rxjs';
+import { DataLayersService } from '@services/data-layers.service';
+import { BaseLayer } from '@types';
 
 @Injectable({
   providedIn: 'root',
 })
 export class BaseLayersStateService {
-  constructor() {}
+  constructor(private dataLayersService: DataLayersService) {}
+
+  // gets all base layers
+  baseLayers$ = this.dataLayersService.listBaseLayers().pipe(shareReplay(1));
+
+  // base layers grouped by category (one level)
+  categorizedBaseLayers$ = this.baseLayers$.pipe(
+    map((layers) =>
+      layers.reduce<Record<string, BaseLayer[]>>((acc, layer) => {
+        const category = layer.path[0]; // since path is size 1
+        if (!acc[category]) {
+          acc[category] = [];
+        }
+        acc[category].push(layer);
+        return acc;
+      }, {})
+    )
+  );
 
   private _selectedBaseLayer$ = new BehaviorSubject<BaseLayer[] | null>(null);
   selectedBaseLayer$ = this._selectedBaseLayer$.asObservable();
@@ -26,11 +38,11 @@ export class BaseLayersStateService {
       return;
     }
 
-    const currentCategory = current[0].category;
+    const currentCategory = current[0].path[0];
 
     // if the layer allows multi select
     if (bl.multi) {
-      if (bl.category === currentCategory) {
+      if (bl.path[0] === currentCategory) {
         // Add only if not already selected
         const alreadySelected = current.some((layer) => layer.id === bl.id);
         if (!alreadySelected) {

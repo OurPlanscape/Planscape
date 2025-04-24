@@ -1,6 +1,10 @@
 import { TestBed } from '@angular/core/testing';
 import { take } from 'rxjs/operators';
 import { BaseLayersStateService } from './base-layers.state.service';
+import { MockProvider } from 'ng-mocks';
+import { DataLayersService } from '@services/data-layers.service';
+import { of } from 'rxjs';
+import { BaseLayer } from '@types';
 
 describe('BaseLayersStateService', () => {
   let service: BaseLayersStateService;
@@ -12,12 +16,38 @@ describe('BaseLayersStateService', () => {
   ): any => ({
     id,
     name: `Layer ${id}`,
-    category,
+    path: [category],
     multi,
   });
 
+  const mockLayers = [
+    {
+      id: 1,
+      name: 'Layer 1',
+      path: ['Elevation'],
+    },
+    {
+      id: 2,
+      name: 'Layer 2',
+      path: ['Elevation'],
+    },
+    {
+      id: 3,
+      name: 'Layer 3',
+      path: ['Landcover'],
+    },
+  ] as BaseLayer[];
+
   beforeEach(() => {
-    TestBed.configureTestingModule({});
+    TestBed.configureTestingModule({
+      providers: [
+        BaseLayersStateService,
+        MockProvider(DataLayersService, {
+          listBaseLayers: () => of(mockLayers),
+        }),
+      ],
+    });
+
     service = TestBed.inject(BaseLayersStateService);
   });
 
@@ -97,6 +127,17 @@ describe('BaseLayersStateService', () => {
 
     service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toBeNull();
+      done();
+    });
+  });
+
+  it('should group base layers by category using path[0]', (done) => {
+    service.categorizedBaseLayers$.pipe(take(1)).subscribe((grouped) => {
+      expect(Object.keys(grouped)).toEqual(['Elevation', 'Landcover']);
+      expect(grouped['Elevation'].length).toBe(2);
+      expect(grouped['Landcover'].length).toBe(1);
+      expect(grouped['Elevation'][0].name).toBe('Layer 1');
+      expect(grouped['Landcover'][0].name).toBe('Layer 3');
       done();
     });
   });
