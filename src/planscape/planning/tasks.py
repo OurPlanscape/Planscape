@@ -1,8 +1,7 @@
 import rasterio
 
 from core.s3 import get_aws_session
-from subprocess import CalledProcessError, TimeoutExpired
-from requests.exceptions import RequestException, HTTPError, Timeout
+from planscape.exceptions import ForsysTimeoutException, ForsysException
 from datasets.models import DataLayer, DataLayerType
 from planning.models import Scenario, ScenarioResultStatus
 from stands.models import Stand
@@ -31,22 +30,24 @@ def async_forsys_run(scenario_id: int) -> None:
 
         scenario.result_status = ScenarioResultStatus.SUCCESS
         scenario.save()
-    except TimeoutExpired or Timeout:
+    except ForsysTimeoutException:
         # this case should not happen as is, as the default parameter
         # for call_forsys timeout is None.
         scenario.result_status = ScenarioResultStatus.TIMED_OUT
         scenario.save()
-        scenario.results.status = ScenarioResultStatus.TIMED_OUT
-        scenario.results.save()
+        if hasattr(scenario, "results"):
+            scenario.results.status = ScenarioResultStatus.TIMED_OUT
+            scenario.results.save()
         # this error WILL be reported by default to Sentry
         log.error(
             f"Running forsys for scenario {scenario_id} timed-out. Might be too big."
         )
-    except CalledProcessError or RequestException or HTTPError:
+    except ForsysException:
         scenario.result_status = ScenarioResultStatus.PANIC
         scenario.save()
-        scenario.results.status = ScenarioResultStatus.PANIC
-        scenario.results.save()
+        if hasattr(scenario, "results"):
+            scenario.results.status = ScenarioResultStatus.PANIC
+            scenario.results.save()
         # this error WILL be reported by default to Sentry
         log.error(
             f"A panic error happened while trying to call forsys for {scenario_id}"
