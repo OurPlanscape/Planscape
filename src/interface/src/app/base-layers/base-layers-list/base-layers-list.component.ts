@@ -14,7 +14,7 @@ export class BaseLayersListComponent {
     category: {
       name: 'Boundaries',
       key: 'boundaries',
-      isMulti: true,
+      isMulti: false,
     },
     layers: [
       {

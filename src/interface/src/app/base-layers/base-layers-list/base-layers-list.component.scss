@@ -1,27 +1,24 @@
+@import 'mixins';
+@import 'colors';
+
 .list-header {
   padding: 16px;
   display: flex;
   justify-content: space-between;
-  border-bottom: 1px solid var(--Neutral-Soft-gray, #e1e1e1);
+  border-bottom: 1px solid $color-soft-gray;
   cursor: pointer;
 
   .label {
-    color: var(--Neutral-Black, #000);
-    /* Standard Input Label/Small */
-    font-family: 'Public Sans';
-    font-size: 14px;
-    font-style: normal;
-    font-weight: 500;
-    line-height: 22px; /* 157.143% */
+    @include standard-input-label();
   }
 }
 
 .list-header.expanded {
-  background: var(--Primary-Soft-purple, #e6e8f3);
+  background: $color-soft-purple;
 }
 
 .list-header:hover {
-  background: var(--Neutral-Light-gray, #f6f6f6);
+  background: $color-lighter-gray;
 }
 
 .list-content {
@@ -32,7 +29,7 @@
   gap: 16px;
   align-self: stretch;
   padding: 16px;
-  background: #f7f8fc;
+  background: $color-soft-purple-light;
 }
 
 .radio-label {
