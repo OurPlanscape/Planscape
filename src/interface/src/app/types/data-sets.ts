@@ -105,11 +105,18 @@ export interface DataLayer {
   public_url: string;
 }
 
-// TODO placeholder, we need to know if we can multi or single select a BaseLayer
 export interface BaseLayer extends DataLayer {
-  multi: boolean;
   // base layers have only one path/category.
   path: [string];
+}
+
+export interface CategorizedBaseLayers {
+  category: {
+    id: number;
+    name: string;
+    isMultiSelect: boolean;
+  };
+  layers: BaseLayer[];
 }
 
 export interface ColorLegendInfo {

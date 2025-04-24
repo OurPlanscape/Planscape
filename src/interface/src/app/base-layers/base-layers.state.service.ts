@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, shareReplay } from 'rxjs';
 import { DataLayersService } from '@services/data-layers.service';
-import { BaseLayer } from '@types';
+import { BaseLayer, CategorizedBaseLayers } from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -14,22 +14,43 @@ export class BaseLayersStateService {
 
   // base layers grouped by category (one level)
   categorizedBaseLayers$ = this.baseLayers$.pipe(
-    map((layers) =>
-      layers.reduce<Record<string, BaseLayer[]>>((acc, layer) => {
-        const category = layer.path[0]; // since path is size 1
-        if (!acc[category]) {
-          acc[category] = [];
+    map((layers) => {
+      const grouped = layers.reduce<Record<string, BaseLayer[]>>(
+        (acc, layer) => {
+          const category = layer.path[0];
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(layer);
+          return acc;
+        },
+        {}
+      );
+
+      const result: CategorizedBaseLayers[] = Object.entries(grouped).map(
+        ([categoryName, categoryLayers]) => {
+          const id = categoryLayers[0].id; // assuming all layers in category share same `id` and `multi`
+          // TODO figure out how to set isMulti just to organization
+          const isMulti = false;
+          return {
+            category: {
+              id,
+              name: categoryName,
+              isMultiSelect: isMulti,
+            },
+            layers: categoryLayers,
+          };
         }
-        acc[category].push(layer);
-        return acc;
-      }, {})
-    )
+      );
+
+      return result;
+    })
   );
 
   private _selectedBaseLayer$ = new BehaviorSubject<BaseLayer[] | null>(null);
   selectedBaseLayer$ = this._selectedBaseLayer$.asObservable();
 
-  selectBaseLayer(bl: BaseLayer) {
+  selectBaseLayer(bl: BaseLayer, isMulti: boolean) {
     const current = this._selectedBaseLayer$.value ?? [];
 
     // If no layers selected, just set the new one
@@ -41,7 +62,7 @@ export class BaseLayersStateService {
     const currentCategory = current[0].path[0];
 
     // if the layer allows multi select
-    if (bl.multi) {
+    if (isMulti) {
       if (bl.path[0] === currentCategory) {
         // Add only if not already selected
         const alreadySelected = current.some((layer) => layer.id === bl.id);

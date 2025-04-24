@@ -9,15 +9,10 @@ import { BaseLayer } from '@types';
 describe('BaseLayersStateService', () => {
   let service: BaseLayersStateService;
 
-  const makeLayer = (
-    id: number,
-    category: string,
-    multi: boolean = false
-  ): any => ({
+  const makeLayer = (id: number, category: string): any => ({
     id,
     name: `Layer ${id}`,
     path: [category],
-    multi,
   });
 
   const mockLayers = [
@@ -59,8 +54,8 @@ describe('BaseLayersStateService', () => {
   });
 
   it('should select a single base layer if none is selected', (done) => {
-    const layer = makeLayer(1, 'catA', false);
-    service.selectBaseLayer(layer);
+    const layer = makeLayer(1, 'catA');
+    service.selectBaseLayer(layer, false);
 
     service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer]);
@@ -69,11 +64,11 @@ describe('BaseLayersStateService', () => {
   });
 
   it('should replace selection with a non-multi layer of same category', (done) => {
-    const layer1 = makeLayer(1, 'catA', true);
-    const layer2 = makeLayer(2, 'catA', false);
+    const layer1 = makeLayer(1, 'catA');
+    const layer2 = makeLayer(2, 'catA');
 
-    service.selectBaseLayer(layer1);
-    service.selectBaseLayer(layer2);
+    service.selectBaseLayer(layer1, true);
+    service.selectBaseLayer(layer2, false);
 
     service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer2]);
@@ -82,11 +77,11 @@ describe('BaseLayersStateService', () => {
   });
 
   it('should add to selection if same category and multi is true', (done) => {
-    const layer1 = makeLayer(1, 'catA', true);
-    const layer2 = makeLayer(2, 'catA', true);
+    const layer1 = makeLayer(1, 'catA');
+    const layer2 = makeLayer(2, 'catA');
 
-    service.selectBaseLayer(layer1);
-    service.selectBaseLayer(layer2);
+    service.selectBaseLayer(layer1, true);
+    service.selectBaseLayer(layer2, true);
 
     service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer1, layer2]);
@@ -95,10 +90,10 @@ describe('BaseLayersStateService', () => {
   });
 
   it('should ignore if already selected multi layer is selected again', (done) => {
-    const layer = makeLayer(1, 'catA', true);
+    const layer = makeLayer(1, 'catA');
 
-    service.selectBaseLayer(layer);
-    service.selectBaseLayer(layer); // selecting the same one again
+    service.selectBaseLayer(layer, true);
+    service.selectBaseLayer(layer, true); // selecting the same one again
 
     service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer]);
@@ -107,11 +102,11 @@ describe('BaseLayersStateService', () => {
   });
 
   it('should replace selection when multi=true but category differs', (done) => {
-    const layer1 = makeLayer(1, 'catA', true);
-    const layer2 = makeLayer(2, 'catB', true);
+    const layer1 = makeLayer(1, 'catA');
+    const layer2 = makeLayer(2, 'catB');
 
-    service.selectBaseLayer(layer1);
-    service.selectBaseLayer(layer2);
+    service.selectBaseLayer(layer1, true);
+    service.selectBaseLayer(layer2, true);
 
     service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer2]);
@@ -121,7 +116,7 @@ describe('BaseLayersStateService', () => {
 
   it('should clear the selection', (done) => {
     const layer = makeLayer(1, 'catA');
-    service.selectBaseLayer(layer);
+    service.selectBaseLayer(layer, true);
 
     service.clearBaseLayer();
 
@@ -132,12 +127,29 @@ describe('BaseLayersStateService', () => {
   });
 
   it('should group base layers by category using path[0]', (done) => {
-    service.categorizedBaseLayers$.pipe(take(1)).subscribe((grouped) => {
-      expect(Object.keys(grouped)).toEqual(['Elevation', 'Landcover']);
-      expect(grouped['Elevation'].length).toBe(2);
-      expect(grouped['Landcover'].length).toBe(1);
-      expect(grouped['Elevation'][0].name).toBe('Layer 1');
-      expect(grouped['Landcover'][0].name).toBe('Layer 3');
+    service.categorizedBaseLayers$.pipe(take(1)).subscribe((groups) => {
+      expect(groups.length).toBe(2);
+
+      const elevationGroup = groups.find(
+        (g) => g.category.name === 'Elevation'
+      );
+      const landcoverGroup = groups.find(
+        (g) => g.category.name === 'Landcover'
+      );
+
+      expect(elevationGroup).toBeDefined();
+      expect(landcoverGroup).toBeDefined();
+
+      expect(elevationGroup?.layers.length).toBe(2);
+      expect(landcoverGroup?.layers.length).toBe(1);
+
+      expect(elevationGroup?.layers[0].name).toBe('Layer 1');
+      expect(landcoverGroup?.layers[0].name).toBe('Layer 3');
+
+      // Optional: check category metadata
+      expect(typeof elevationGroup?.category.id).toBe('number');
+      expect(typeof elevationGroup?.category.isMultiSelect).toBe('boolean');
+
       done();
     });
   });

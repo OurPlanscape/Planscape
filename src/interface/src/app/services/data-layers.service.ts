@@ -8,7 +8,6 @@ import {
   Pagination,
   SearchResult,
 } from '@types';
-import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -52,21 +51,12 @@ export class DataLayersService {
   }
 
   listBaseLayers() {
-    return this.http
-      .get<DataLayer[]>(
-        environment.backend_endpoint + '/v2/datasets/999/browse',
-        {
-          withCredentials: true,
-          params: { type: 'VECTOR' },
-        }
-      )
-      .pipe(
-        map((layers) =>
-          // TODO need to figure out how we set some to multi
-          layers.map((layer) => {
-            return { ...layer, multi: true } as BaseLayer;
-          })
-        )
-      );
+    return this.http.get<BaseLayer[]>(
+      environment.backend_endpoint + '/v2/datasets/999/browse',
+      {
+        withCredentials: true,
+        params: { type: 'VECTOR' },
+      }
+    );
   }
 }
