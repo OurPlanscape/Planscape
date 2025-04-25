@@ -5,8 +5,10 @@ import {
   HttpClientModule,
   HttpClientXsrfModule,
 } from '@angular/common/http';
-import { NgModule, APP_INITIALIZER, ErrorHandler } from '@angular/core';
-import { Router } from '@angular/router';
+import {
+  NgModule,
+  ErrorHandler
+} from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -87,17 +89,7 @@ import * as Sentry from '@sentry/angular';
       provide: ErrorHandler,
       useValue: Sentry.createErrorHandler(),
     },
-    {
-      provide: Sentry.TraceService,
-      deps: [Router],
-    },
-    {
-      provide: APP_INITIALIZER,
-      useFactory: () => () => {},
-      deps: [Sentry.TraceService],
-      multi: true,
-    },
   ],
   bootstrap: [AppComponent],
 })
-export class AppModule {}
+export class AppModule { }
