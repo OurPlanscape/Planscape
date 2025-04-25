@@ -33,7 +33,6 @@ export class DataLayersStateService {
       if (!layer) {
         return of(null);
       }
-
       return this.service
         .getPublicUrl(layer.id)
         .pipe(map((url) => ({ layer, url })));
