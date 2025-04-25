@@ -379,10 +379,15 @@ GDAL_NUM_THREADS = config(
 
 FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 
+# FORSYS API
+FORSYS_PLUMBER_URL = config("FORSYS_PLUMBER_URL", "http://forsys:8000/")
+FORSYS_PLUMBER_TIMEOUT = config("FORSYS_PLUMBER_TIMEOUT", 600)  # 10m
+FORSYS_VIA_API = config("FORSYS_VIA_API", False, cast=bool)
+
 # TODO: Move this to a conf file that R can read?
 OUTPUT_DIR = BASE_DIR / "output"
 
-DEFAULT_EST_COST_PER_ACRE = config("DEFAULT_EST_COST_PER_ACRE", 2470, cast=float)
+DEFAULT_ESTIMATED_COST = config("DEFAULT_ESTIMATED_COST", 2470, cast=float)
 # CACHEOPS
 CACHEOPS_REDIS = config("CACHEOPS_REDIS", "redis://localhost:6379/1")
 DEFAULT_CACHE_TTL = config("DEFAULT_CACHE_TTL", 5 * 60, cast=int)  # 5 minutes default
@@ -477,3 +482,6 @@ MARTOR_TOOLBAR_BUTTONS = [
 DEFAULT_ORGANIZATION_NAME = "Spatial Informatics Group"
 DEFAULT_ADMIN_EMAIL = "admin@planscape.org"
 DEFAULT_BASELAYERS_DATASET_ID = 999
+
+
+USE_SCENARIO_V2 = config("USE_SCENARIO_V2", default=False, cast=bool)

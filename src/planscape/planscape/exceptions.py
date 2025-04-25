@@ -4,3 +4,11 @@ class InvalidOwnership(Exception):
 
 class InvalidGeometry(Exception):
     pass
+
+
+class ForsysException(Exception):
+    pass
+
+
+class ForsysTimeoutException(ForsysException):
+    pass
