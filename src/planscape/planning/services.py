@@ -167,7 +167,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
             async_calculate_stand_metrics_v2.si(
                 scenario_id=scenario.pk, datalayer_id=d.pk
             )
-            for datalayer in datalayers
+            for d in datalayers
         ]
     else:
         datalayer_names = scenario.configuration.get(
