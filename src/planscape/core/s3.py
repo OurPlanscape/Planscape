@@ -19,7 +19,6 @@ def get_aws_session() -> Session:
     )
 
 
-@cached(timeout=settings.S3_PUBLIC_URL_TTL)
 def create_download_url(
     bucket_name: str,
     object_name: str,
