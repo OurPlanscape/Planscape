@@ -1,7 +1,13 @@
 import { Injectable } from '@angular/core';
 import { environment } from '../../environments/environment';
 import { HttpClient } from '@angular/common/http';
-import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
+import {
+  BaseLayer,
+  DataLayer,
+  DataSet,
+  Pagination,
+  SearchResult,
+} from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -40,6 +46,16 @@ export class DataLayersService {
           limit: limit,
           ...(offset ? { offset } : {}),
         },
+      }
+    );
+  }
+
+  listBaseLayers() {
+    return this.http.get<BaseLayer[]>(
+      environment.backend_endpoint + '/v2/datasets/999/browse',
+      {
+        withCredentials: true,
+        params: { type: 'VECTOR' },
       }
     );
   }
