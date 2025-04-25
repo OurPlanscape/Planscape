@@ -1,6 +1,4 @@
 import { Component } from '@angular/core';
-// import { SentryExampleComponent } from 'src/app/sentry-example.component';
-// import * as Sentry from '@sentry/browser';
 
 @Component({
   selector: 'app-sentry-error-test',
