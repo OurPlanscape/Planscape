@@ -3,7 +3,7 @@ from typing import List, Optional
 
 import markdown
 from collaboration.services import get_permissions, get_role
-from datasets.models import DataLayer, DataLayerType
+from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from rest_framework import serializers
@@ -371,7 +371,10 @@ class ConfigurationV2Serializer(serializers.Serializer):
 
     excluded_areas = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(
-            DataLayer.objects.filter(type=DataLayerType.VECTOR)
+            queryset=DataLayer.objects.filter(
+                type=DataLayerType.VECTOR,
+                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+            ),
         ),
         allow_empty=True,
         min_length=0,
