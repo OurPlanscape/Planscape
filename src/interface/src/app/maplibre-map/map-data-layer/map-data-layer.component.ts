@@ -165,7 +165,6 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     console.error('Error details:', event.error.errors.join(','));
     console.error('Source url:', event.source.url);
     console.error('source details:', this.mapLibreMap.getSource('rasterImage'));
-    this.dataLayersStateService.setDataLayerLoading(false);
 
     const snackDebugMessage =
       `[Error] Unable to load data layer:\n` +
