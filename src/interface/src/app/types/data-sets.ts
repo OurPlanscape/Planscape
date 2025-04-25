@@ -112,7 +112,6 @@ export interface BaseLayer extends DataLayer {
 
 export interface CategorizedBaseLayers {
   category: {
-    id: number;
     name: string;
     isMultiSelect: boolean;
   };

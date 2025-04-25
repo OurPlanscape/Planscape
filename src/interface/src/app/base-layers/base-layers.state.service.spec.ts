@@ -146,10 +146,6 @@ describe('BaseLayersStateService', () => {
       expect(elevationGroup?.layers[0].name).toBe('Layer 1');
       expect(landcoverGroup?.layers[0].name).toBe('Layer 3');
 
-      // Optional: check category metadata
-      expect(typeof elevationGroup?.category.id).toBe('number');
-      expect(typeof elevationGroup?.category.isMultiSelect).toBe('boolean');
-
       done();
     });
   });

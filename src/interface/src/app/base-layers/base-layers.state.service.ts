@@ -29,12 +29,9 @@ export class BaseLayersStateService {
 
       const result: CategorizedBaseLayers[] = Object.entries(grouped).map(
         ([categoryName, categoryLayers]) => {
-          const id = categoryLayers[0].id; // assuming all layers in category share same `id` and `multi`
-          // TODO figure out how to set isMulti just to organization
-          const isMulti = false;
+          const isMulti = categoryName === 'Organization';
           return {
             category: {
-              id,
               name: categoryName,
               isMultiSelect: isMulti,
             },
