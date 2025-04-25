@@ -33,6 +33,7 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalUsageType,
 )
 from planning.tasks import (
     async_calculate_stand_metrics,
@@ -154,7 +155,14 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         target=scenario.planning_area,
     )
     if settings.USE_SCENARIO_V2:
-        datalayers = treatment_goal.datalayers.filter(type=DataLayerType.RASTER)
+        usages = treatment_goal.datalayer_usages.exclude(
+            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
+        ).select_related("datalayer")
+        datalayers = [
+            usage.datalayer
+            for usage in usages
+            if usage.datalayer.type == DataLayerType.RASTER
+        ]
         tasks = [
             async_calculate_stand_metrics_v2.si(
                 scenario_id=scenario.pk, datalayer_id=d.pk
