@@ -216,6 +216,17 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
+    datalayers: models.ManyToManyField[
+        DataLayer, models.Model
+    ] = models.ManyToManyField(
+        to=DataLayer,
+        through="TreatmentGoalUsesDataLayer",
+        through_fields=(
+            "treatment_goal",
+            "datalayer",
+        ),
+    )
+
     def __str__(self):
         return f"{self.name} - {self.category}"
 
@@ -234,13 +245,13 @@ class TreatmentGoalUsesDataLayer(
     treatment_goal_id: int
     treatment_goal = models.ForeignKey(
         TreatmentGoal,
-        related_name="treatment_goal_data_layers",
+        related_name="datalayer_usages",
         on_delete=models.CASCADE,
     )
     datalayer_id: int
     datalayer = models.ForeignKey(
         DataLayer,
-        related_name="treatment_goal_data_layers",
+        related_name="used_by_treatment_goals",
         on_delete=models.CASCADE,
     )
     usage_type = models.CharField(

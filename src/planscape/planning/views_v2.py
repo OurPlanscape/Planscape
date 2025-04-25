@@ -1,5 +1,6 @@
 import logging
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
@@ -17,13 +18,11 @@ from planning.filters import (
     ScenarioOrderingFilter,
 )
 from planning.models import PlanningArea, ProjectArea, Scenario, TreatmentGoal
-from planning.permissions import (
-    PlanningAreaViewPermission,
-    ScenarioViewPermission,
-)
+from planning.permissions import PlanningAreaViewPermission, ScenarioViewPermission
 from planning.serializers import (
     CreatePlanningAreaSerializer,
     CreateScenarioSerializer,
+    CreateScenarioV2Serializer,
     ListCreatorSerializer,
     ListPlanningAreaSerializer,
     ListScenarioSerializer,
@@ -201,7 +200,10 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     @extend_schema(description="Create a Scenario.")
     def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+        if settings.USE_SCENARIO_V2:
+            serializer = CreateScenarioV2Serializer(data=request.data)
+        else:
+            serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(
             **serializer.validated_data,
