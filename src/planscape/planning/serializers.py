@@ -500,6 +500,24 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         model = Scenario
 
 
+class CreateScenarioV2Serializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+
+    configuration = ConfigurationV2Serializer()
+
+    class Meta:
+        model = Scenario
+        fields = (
+            "user",
+            "planning_area",
+            "name",
+            "origin",
+            "notes",
+            "configuration",
+            "treatment_goal",
+        )
+
+
 class CreateScenarioSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     treatment_goal = serializers.PrimaryKeyRelatedField(

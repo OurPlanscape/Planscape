@@ -482,3 +482,6 @@ MARTOR_TOOLBAR_BUTTONS = [
 DEFAULT_ORGANIZATION_NAME = "Spatial Informatics Group"
 DEFAULT_ADMIN_EMAIL = "admin@planscape.org"
 DEFAULT_BASELAYERS_DATASET_ID = 999
+
+
+USE_SCENARIO_V2 = config("USE_SCENARIO_V2", default=False, cast=bool)

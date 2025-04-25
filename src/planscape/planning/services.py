@@ -12,6 +12,7 @@ import fiona
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from datasets.models import DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -33,7 +34,11 @@ from planning.models import (
     ScenarioStatus,
     TreatmentGoal,
 )
-from planning.tasks import async_calculate_stand_metrics, async_forsys_run
+from planning.tasks import (
+    async_calculate_stand_metrics,
+    async_calculate_stand_metrics_v2,
+    async_forsys_run,
+)
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -148,15 +153,24 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    datalayer_names = scenario.configuration.get(
-        "scenario_priorities", []
-    ) + scenario.configuration.get("scenario_output_fields", [])
-    tasks = [
-        async_calculate_stand_metrics.si(
-            scenario_id=scenario.pk, datalayer_name=datalayer_name
-        )
-        for datalayer_name in datalayer_names
-    ]
+    if settings.USE_SCENARIO_V2:
+        datalayers = treatment_goal.datalayers.filter(type=DataLayerType.RASTER)
+        tasks = [
+            async_calculate_stand_metrics_v2.si(
+                scenario_id=scenario.pk, datalayer_id=d.pk
+            )
+            for datalayer in datalayers
+        ]
+    else:
+        datalayer_names = scenario.configuration.get(
+            "scenario_priorities", []
+        ) + scenario.configuration.get("scenario_output_fields", [])
+        tasks = [
+            async_calculate_stand_metrics.si(
+                scenario_id=scenario.pk, datalayer_name=datalayer_name
+            )
+            for datalayer_name in datalayer_names
+        ]
     track_openpanel(
         name="planning.scenario.created",
         properties={
