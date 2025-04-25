@@ -8,6 +8,7 @@ import {
   Pagination,
   SearchResult,
 } from '@types';
+import { map } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -58,5 +59,16 @@ export class DataLayersService {
         params: { type: 'VECTOR' },
       }
     );
+  }
+
+  getPublicUrl(id: number) {
+    return this.http
+      .get<{ layer_url: string }>(
+        environment.backend_endpoint + `/v2/datalayers/${id}/urls/`,
+        {
+          withCredentials: true,
+        }
+      )
+      .pipe(map((data) => data.layer_url));
   }
 }
