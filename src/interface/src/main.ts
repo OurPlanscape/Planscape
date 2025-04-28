@@ -11,14 +11,9 @@ if (environment.sentry_dsn_url !== undefined) {
   Sentry.init({
     dsn: environment.sentry_dsn_url,
     environment: environment.environment,
-    integrations: [
-      Sentry.browserTracingIntegration(),
-      Sentry.replayIntegration(),
-    ],
+    integrations: [Sentry.browserTracingIntegration()],
     // Tracing
     tracesSampleRate: 0.2,
-    replaysSessionSampleRate: 0.1,
-    replaysOnErrorSampleRate: 1.0,
   });
 }
 
