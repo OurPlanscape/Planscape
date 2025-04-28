@@ -303,7 +303,8 @@ def create_datalayer(
         mimetype=mimetype,
     )
     geometry = geometry_from_info(info, datalayer_type=type)
-
+    if not mimetype:
+        mimetype, _encoding = mimetypes.guess_type(original_name)
     if is_s3_file(original_name):
         # process this
         original_file_name = s3_filename(original_name)
