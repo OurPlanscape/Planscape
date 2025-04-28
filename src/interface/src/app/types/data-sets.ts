@@ -58,6 +58,7 @@ export interface Metadata {
   // Add specific fields once we start using this
   [key: string]: any;
 }
+
 export interface LayerStyleEntry {
   colorHex: string;
   entryLabel: string;
@@ -102,6 +103,19 @@ export interface DataLayer {
   styles: Styles[];
   geometry: Geometry;
   public_url: string;
+}
+
+export interface BaseLayer extends DataLayer {
+  // base layers have only one path/category.
+  path: [string];
+}
+
+export interface CategorizedBaseLayers {
+  category: {
+    name: string;
+    isMultiSelect: boolean;
+  };
+  layers: BaseLayer[];
 }
 
 export interface ColorLegendInfo {

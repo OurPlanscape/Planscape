@@ -1,8 +1,8 @@
-import { Component, Input, OnInit } from '@angular/core';
-import { untilDestroyed, UntilDestroy } from '@ngneat/until-destroy';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { generateColorFunction } from '../../data-layers/utilities';
-import { DataLayer, FrontendConstants } from '@types';
+import { FrontendConstants } from '@types';
 import { setColorFunction } from '@geomatico/maplibre-cog-protocol';
 import {
   Map as MapLibreMap,
@@ -10,9 +10,10 @@ import {
   RasterSourceSpecification,
 } from 'maplibre-gl';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { SNACK_ERROR_CONFIG, SNACK_DEBUG_CONFIG } from '@shared';
+import { SNACK_DEBUG_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { environment } from 'src/environments/environment';
 import * as Sentry from '@sentry/browser';
+import { EventData } from '@maplibre/ngx-maplibre-gl';
 
 @UntilDestroy()
 @Component({
@@ -21,25 +22,27 @@ import * as Sentry from '@sentry/browser';
   imports: [],
   template: '',
 })
-export class MapDataLayerComponent implements OnInit {
+export class MapDataLayerComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
   opacity: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
+  errorCount = 0;
+
   constructor(
     private dataLayersStateService: DataLayersStateService,
     private matSnackBar: MatSnackBar
   ) {
-    dataLayersStateService.selectedDataLayer$
+    dataLayersStateService.dataLayerWithUrl$
       .pipe(untilDestroyed(this))
-      .subscribe((dataLayer: DataLayer | null) => {
-        if (dataLayer?.public_url) {
-          this.cogUrl = `cog://${dataLayer?.public_url}`;
-          const colorFn = generateColorFunction(dataLayer?.styles[0].data);
-          setColorFunction(dataLayer?.public_url ?? '', colorFn);
+      .subscribe((data) => {
+        if (data) {
+          this.cogUrl = `cog://${data.url}`;
+          const colorFn = generateColorFunction(data.layer?.styles[0].data);
+          setColorFunction(data.url, colorFn);
           this.tileSize =
-            dataLayer.info.blockxsize ??
+            data.layer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
           this.addRasterLayer();
         } else {
@@ -54,74 +57,9 @@ export class MapDataLayerComponent implements OnInit {
   }
 
   addListeners() {
-    this.mapLibreMap.on('styledata', () => {
-      // if the style change caused the other layers to be removed, then we need to re-add them.
-      if (!this.mapLibreMap.getSource('rasterImage')) {
-        this.addRasterLayer();
-      }
-    });
-
-    this.mapLibreMap.on('data', (event: any) => {
-      if (
-        this.mapLibreMap.getSource('rasterImage') &&
-        event.sourceId === 'rasterImage' &&
-        event.isSourceLoaded
-      ) {
-        this.dataLayersStateService.setDataLayerLoading(false);
-      }
-    });
-
-    this.mapLibreMap.on('error', (event: any) => {
-      if (
-        this.mapLibreMap.getSource('rasterImage') &&
-        event.sourceId === 'rasterImage' &&
-        !event.isSourceLoaded
-      ) {
-        this.dataLayersStateService.setDataLayerLoading(false);
-
-        if (environment.debug_layers) {
-          console.error('MapLibre Error:', event);
-          console.error('Error:', event.error);
-          console.error('Error type:', event.error.name);
-          console.error('Error message:', event.error.message);
-          console.error('Error details:', event.error.errors.join(','));
-          console.error('Source url:', event.source.url);
-          console.error(
-            'source details:',
-            this.mapLibreMap.getSource('rasterImage')
-          );
-          this.dataLayersStateService.setDataLayerLoading(false);
-
-          const snackDebugMessage =
-            `[Error] Unable to load data layer:\n` +
-            `${event.error.name}\n` +
-            `${event.error.message}\n` +
-            `${event.error.errors.join(',')}\n` +
-            `${event.source.url.split(/[&?]/).join('\n')},\n` +
-            `${event.error.errors.join(',')}`;
-          this.matSnackBar.open(
-            snackDebugMessage,
-            'Dismiss',
-            SNACK_DEBUG_CONFIG
-          );
-        } else {
-          this.matSnackBar.open(
-            '[Error] Unable to load data layer.',
-            'Dismiss',
-            SNACK_ERROR_CONFIG
-          );
-        }
-
-        //explictly log Sentry details
-        const debugDetails =
-          `Unable to load data layer:\n` +
-          `${event.error.name}\n` +
-          `${event.error.message}\n` +
-          `${event.error.errors.join(',')}\n` +
-          `${event.source.url},\n${event.error.errors.join(',')}`;
-        Sentry.captureException(debugDetails);
-      }
-    });
+    this.mapLibreMap.on('styledata', this.onStyleDataListener);
+    this.mapLibreMap.on('data', this.onDataListener);
+    this.mapLibreMap.on('error', this.onErrorListener);
   }
 
   addRasterLayer(): void {
@@ -158,5 +96,83 @@ export class MapDataLayerComponent implements OnInit {
         this.mapLibreMap.removeSource('rasterImage');
       }
     }
+  }
+
+  ngOnDestroy(): void {
+    // remove listeners
+    this.mapLibreMap.off('styledata', this.onStyleDataListener);
+    this.mapLibreMap.off('data', this.onDataListener);
+    this.mapLibreMap.off('error', this.onErrorListener);
+  }
+
+  private onStyleDataListener = () => {
+    // if the style change caused the other layers to be removed, then we need to re-add them.
+    if (!this.mapLibreMap.getSource('rasterImage')) {
+      this.addRasterLayer();
+    }
+  };
+
+  private onDataListener = (event: any) => {
+    if (
+      this.mapLibreMap.getSource('rasterImage') &&
+      event.sourceId === 'rasterImage' &&
+      event.isSourceLoaded
+    ) {
+      this.errorCount = 0;
+      this.dataLayersStateService.setDataLayerLoading(false);
+    }
+  };
+
+  private onErrorListener = (event: ErrorEvent & EventData) => {
+    if (
+      this.mapLibreMap.getSource('rasterImage') &&
+      event['sourceId'] === 'rasterImage' &&
+      !event['isSourceLoaded']
+    ) {
+      if (this.errorCount < 2) {
+        this.dataLayersStateService.reloadDataLayerUrl();
+        this.errorCount++;
+      } else {
+        this.dataLayersStateService.setDataLayerLoading(false);
+
+        if (environment.debug_layers) {
+          this.debugErrors(event);
+        } else {
+          this.matSnackBar.open(
+            '[Error] Unable to load data layer.',
+            'Dismiss',
+            SNACK_ERROR_CONFIG
+          );
+        }
+
+        //explictly log Sentry details
+        const debugDetails =
+          `Unable to load data layer:\n` +
+          `${event.error.name}\n` +
+          `${event.error.message}\n` +
+          `${event.error.errors.join(',')}\n` +
+          `${event['source'].url},\n${event.error.errors.join(',')}`;
+        Sentry.captureException(debugDetails);
+      }
+    }
+  };
+
+  private debugErrors(event: any) {
+    console.error('MapLibre Error:', event);
+    console.error('Error:', event.error);
+    console.error('Error type:', event.error.name);
+    console.error('Error message:', event.error.message);
+    console.error('Error details:', event.error.errors.join(','));
+    console.error('Source url:', event.source.url);
+    console.error('source details:', this.mapLibreMap.getSource('rasterImage'));
+
+    const snackDebugMessage =
+      `[Error] Unable to load data layer:\n` +
+      `${event.error.name}\n` +
+      `${event.error.message}\n` +
+      `${event.error.errors.join(',')}\n` +
+      `${event.source.url.split(/[&?]/).join('\n')},\n` +
+      `${event.error.errors.join(',')}`;
+    this.matSnackBar.open(snackDebugMessage, 'Dismiss', SNACK_DEBUG_CONFIG);
   }
 }

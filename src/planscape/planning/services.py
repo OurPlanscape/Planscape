@@ -12,6 +12,7 @@ import fiona
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from datasets.models import DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -32,8 +33,13 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
+    TreatmentGoalUsageType,
 )
-from planning.tasks import async_calculate_stand_metrics, async_forsys_run
+from planning.tasks import (
+    async_calculate_stand_metrics,
+    async_calculate_stand_metrics_v2,
+    async_forsys_run,
+)
 from planscape.exceptions import InvalidGeometry
 from planscape.openpanel import track_openpanel
 
@@ -148,15 +154,31 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    datalayer_names = scenario.configuration.get(
-        "scenario_priorities", []
-    ) + scenario.configuration.get("scenario_output_fields", [])
-    tasks = [
-        async_calculate_stand_metrics.si(
-            scenario_id=scenario.pk, datalayer_name=datalayer_name
-        )
-        for datalayer_name in datalayer_names
-    ]
+    if settings.USE_SCENARIO_V2:
+        usages = treatment_goal.datalayer_usages.exclude(
+            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
+        ).select_related("datalayer")
+        datalayers = [
+            usage.datalayer
+            for usage in usages
+            if usage.datalayer.type == DataLayerType.RASTER
+        ]
+        tasks = [
+            async_calculate_stand_metrics_v2.si(
+                scenario_id=scenario.pk, datalayer_id=d.pk
+            )
+            for d in datalayers
+        ]
+    else:
+        datalayer_names = scenario.configuration.get(
+            "scenario_priorities", []
+        ) + scenario.configuration.get("scenario_output_fields", [])
+        tasks = [
+            async_calculate_stand_metrics.si(
+                scenario_id=scenario.pk, datalayer_name=datalayer_name
+            )
+            for datalayer_name in datalayer_names
+        ]
     track_openpanel(
         name="planning.scenario.created",
         properties={
@@ -345,7 +367,7 @@ def zip_directory(file_obj, source_dir):
 
 def get_max_treatable_area(configuration: Dict[str, Any]) -> float:
     max_budget = configuration.get("max_budget") or None
-    cost_per_acre = configuration.get("est_cost") or settings.DEFAULT_EST_COST_PER_ACRE
+    cost_per_acre = configuration.get("est_cost") or settings.DEFAULT_ESTIMATED_COST
     if max_budget:
         return max_budget / cost_per_acre
 

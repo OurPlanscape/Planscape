@@ -22,4 +22,6 @@ COPY .env /usr/src/app/
 COPY src/forsys/server.R /usr/src/app/
 COPY src/planscape/rscripts/* /usr/src/app/
 
+EXPOSE 8000
+
 CMD [ "Rscript", "src/forsys/server.R" ]

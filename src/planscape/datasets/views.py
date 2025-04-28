@@ -2,6 +2,17 @@ from typing import Any, Dict, Optional
 
 from cacheops import cached
 from core.serializers import MultiSerializerMixin
+from django.conf import settings
+from django.contrib.postgres.search import SearchQuery, SearchVector
+from drf_spectacular.utils import extend_schema
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.mixins import ListModelMixin
+from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
+
 from datasets.filters import DataLayerFilterSet
 from datasets.models import (
     DataLayer,
@@ -20,17 +31,6 @@ from datasets.serializers import (
     SearchResultsSerializer,
 )
 from datasets.services import find_anything
-from django.conf import settings
-from django.contrib.postgres.search import SearchQuery, SearchVector
-from drf_spectacular.utils import extend_schema
-from rest_framework import status
-from rest_framework.decorators import action
-from rest_framework.mixins import ListModelMixin
-from rest_framework.pagination import LimitOffsetPagination
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
-
 from planscape.openpanel import track_openpanel
 
 
@@ -47,11 +47,14 @@ class DatasetViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         # TODO: afterwards we need to implement the filtering
         # by organization visibility too, so we return the public ones
         # PLUS all the datasets accessible by the organization
-        return Dataset.objects.filter(
-            visibility=VisibilityOptions.PUBLIC
-        ).select_related(
-            "organization",
-            "created_by",
+        match self.action:
+            case "browse":
+                filters = {}
+            case _:
+                filters = {"visibility": VisibilityOptions.PUBLIC}
+
+        return Dataset.objects.filter(**filters).select_related(
+            "organization", "created_by"
         )
 
     @extend_schema(
@@ -108,6 +111,11 @@ class DataLayerViewSet(ListModelMixin, MultiSerializerMixin, GenericViewSet):
         "list": DataLayerSerializer,
     }
     filterset_class = DataLayerFilterSet
+
+    @action(detail=True, methods=["get"])
+    def urls(self, request, pk=None):
+        datalayer = self.get_object()
+        return Response({"layer_url": datalayer.get_map_url()})
 
     @extend_schema(
         parameters=[FindAnythingSerializer],

@@ -28,6 +28,17 @@ export class DataLayersStateService {
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
 
+  dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
+    switchMap((layer) => {
+      if (!layer) {
+        return of(null);
+      }
+      return this.service
+        .getPublicUrl(layer.id)
+        .pipe(map((url) => ({ layer, url })));
+    })
+  );
+
   dataTree$ = this.selectedDataSet$.pipe(
     switchMap((dataset) => {
       if (!dataset) {
@@ -122,6 +133,11 @@ export class DataLayersStateService {
 
   clearDataLayer() {
     this._selectedDataLayer$.next(null);
+  }
+
+  reloadDataLayerUrl() {
+    const currentLayer = this._selectedDataLayer$.value;
+    this._selectedDataLayer$.next(currentLayer);
   }
 
   search(term: string) {

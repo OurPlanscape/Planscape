@@ -6,6 +6,9 @@ from typing import Any, Collection, Dict, Optional
 import toml
 from django.conf import settings
 from gis.core import with_vsi_prefix
+import requests
+from requests.exceptions import RequestException, HTTPError, Timeout
+from planscape.exceptions import ForsysTimeoutException, ForsysException
 
 
 def ogr2ogr_cli(
@@ -141,14 +144,54 @@ def get_forsys_call(scenario_id):
     ]
 
 
-def call_forsys(scenario_id, env=None, check=True, timeout=None):
+def _call_forsys_via_command_line(
+    scenario_id: int,
+    env: Optional[Dict[str, str]] = None,
+    check: bool = True,
+    timeout: Optional[int] = None,
+) -> subprocess.CompletedProcess:
+    """Call the forsys command line tool."""
     environment = os.environ.copy()
     if env:
         environment = {**environment, **env}
     forsys_call = get_forsys_call(scenario_id)
-    return subprocess.run(
-        forsys_call,
-        env=env,
-        check=check,
-        timeout=timeout,
-    )
+    try:
+        return subprocess.run(
+            forsys_call,
+            env=env,
+            check=check,
+            timeout=timeout,
+        )
+    except subprocess.TimeoutExpired as e:
+        raise ForsysTimeoutException(
+            f"Forsys command line call timed out after {timeout} seconds."
+        ) from e
+    except subprocess.CalledProcessError or OSError as e:
+        raise ForsysException(f"Forsys command line call failed: {e}") from e
+
+
+def _call_forsys_via_api(
+    scenario_id: int,
+    timeout: Optional[int] = None,
+):
+    """Call the forsys API."""
+    try:
+        response = requests.post(
+            f"{settings.FORSYS_PLUMBER_URL}/run_forsys",
+            json={"scenario_id": scenario_id},
+            timeout=timeout or settings.FORSYS_PLUMBER_TIMEOUT,
+        )
+        response.raise_for_status()
+        return response.json()
+    except Timeout as e:
+        raise ForsysTimeoutException(
+            f"Forsys API call timed out after {timeout} seconds."
+        ) from e
+    except HTTPError or RequestException as e:
+        raise ForsysException(f"Forsys API call failed: {e}") from e
+
+
+def call_forsys(scenario_id, env=None, check=True, timeout=None):
+    if settings.FORSYS_VIA_API:
+        return _call_forsys_via_api(scenario_id, timeout)
+    return _call_forsys_via_command_line(scenario_id, env, check, timeout)
