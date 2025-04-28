@@ -37,9 +37,10 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     dataLayersStateService.dataLayerWithUrl$
       .pipe(untilDestroyed(this))
       .subscribe((data) => {
+        let colorFn = null;
         if (data) {
+          colorFn = generateColorFunction(data.layer?.styles[0].data);
           this.cogUrl = `cog://${data.url}`;
-          const colorFn = generateColorFunction(data.layer?.styles[0].data);
           setColorFunction(data.url, colorFn);
           this.tileSize =
             data.layer.info.blockxsize ??
@@ -103,6 +104,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.off('styledata', this.onStyleDataListener);
     this.mapLibreMap.off('data', this.onDataListener);
     this.mapLibreMap.off('error', this.onErrorListener);
+    console.log('now we destroy this?');
   }
 
   private onStyleDataListener = () => {

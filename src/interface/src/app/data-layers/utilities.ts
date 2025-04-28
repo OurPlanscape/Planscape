@@ -121,9 +121,11 @@ const prebufferRampScales = (
   colorScale: ReturnType<typeof scaleLinear<string>>;
   opacityScale: ReturnType<typeof scaleLinear<number>>;
 } => {
-  const domain = sortedEntries.map((entry) => entry.value);
-  const colorRange = sortedEntries.map((entry) => entry.color);
-  const opacityRange = sortedEntries.map((entry) => entry.opacity ?? 1.0);
+  let domain: number[] | null = sortedEntries.map((entry) => entry.value);
+  let colorRange: string[] | null = sortedEntries.map((entry) => entry.color);
+  let opacityRange: number[] | null = sortedEntries.map(
+    (entry) => entry.opacity ?? 1.0
+  );
 
   const colorScale = scaleLinear<string>()
     .domain(domain)
@@ -134,6 +136,9 @@ const prebufferRampScales = (
     .range(opacityRange)
     .clamp(true);
 
+  domain = null;
+  colorRange = null;
+  opacityRange = null;
   return { colorScale, opacityScale };
 };
 // returns color map for RAMP types
@@ -187,7 +192,7 @@ export function generateColorFunction(
   styleJson: StyleJson
 ): (pixel: number[], rgba: Uint8ClampedArray) => void {
   const knownNoDataValues = new Set(styleJson.no_data?.values || []);
-  const colorMapper = determineColorFunction(styleJson);
+  let colorMapper: Function | null = determineColorFunction(styleJson);
   return (pixel: number[], rgba: Uint8ClampedArray) => {
     const value = pixel[0];
 
@@ -195,8 +200,11 @@ export function generateColorFunction(
       writeColorToBuffer(rgba, TRANSPARENT);
       return;
     }
-
-    const color = colorMapper(value);
-    writeColorToBuffer(rgba, color);
+    if (colorMapper) {
+      const color = colorMapper(value);
+      writeColorToBuffer(rgba, color);
+    }
+    knownNoDataValues.clear();
+    //colorMapper = null;
   };
 }
