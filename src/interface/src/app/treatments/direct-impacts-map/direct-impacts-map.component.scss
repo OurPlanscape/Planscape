@@ -1,5 +1,6 @@
 @import "colors";
 @import "mixins";
+@import "variables";
 
 :host {
   display: flex;
@@ -10,12 +11,12 @@
 
   ::ng-deep {
     .maplibregl-ctrl-top-left {
-      top: 70px;
+      top: $map-nav-bar-height;
       z-index: 0;
     }
 
     .maplibregl-ctrl-top-right {
-      margin-top: 70px;
+      margin-top: $map-nav-bar-height;
       z-index: 0;
     }
   }
