@@ -2,7 +2,16 @@ CREATE OR REPLACE FUNCTION martin_project_areas_by_scenario(z integer, x integer
 RETURNS bytea AS $$
 DECLARE
   p_mvt bytea;
+  p_scenario_result_status varchar DEFAULT NULL;
 BEGIN
+  SELECT INTO p_scenario_result_status (
+    SELECT sc.result_status 
+    FROM planning_scenario sc
+    WHERE sc.id = (query_params->>'scenario_id')::int);
+
+  IF p_scenario_result_status <> 'SUCCESS' OR p_scenario_result_status IS NULL THEN
+    RAISE EXCEPTION 'Scenario result status is not SUCCESS. Cannot generate MVT.';
+  END IF;
 
   WITH base AS (
     SELECT
