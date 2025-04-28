@@ -46,6 +46,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
             data.layer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
           this.addRasterLayer();
+          colorFn = null;
         } else {
           this.cogUrl = null;
           this.removeRasterLayer();

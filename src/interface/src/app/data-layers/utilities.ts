@@ -205,6 +205,5 @@ export function generateColorFunction(
       writeColorToBuffer(rgba, color);
     }
     knownNoDataValues.clear();
-    //colorMapper = null;
   };
 }
