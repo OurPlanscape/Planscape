@@ -32,7 +32,7 @@ export class TreatmentPlanTabsComponent {
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {
         if (path.length > 0) {
-          this.tabGroup.selectedIndex = 2;
+          this.tabGroup.selectedIndex = 1;
         }
       });
   }
