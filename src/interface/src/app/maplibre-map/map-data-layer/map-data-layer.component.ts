@@ -14,6 +14,7 @@ import { SNACK_DEBUG_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { environment } from 'src/environments/environment';
 import * as Sentry from '@sentry/browser';
 import { EventData } from '@maplibre/ngx-maplibre-gl';
+import { ColorFunction } from '@geomatico/maplibre-cog-protocol/dist/types';
 
 @UntilDestroy()
 @Component({
@@ -29,6 +30,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
   cogUrl: string | null = null;
 
   errorCount = 0;
+  colorFn: ColorFunction | null = null;
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
@@ -37,20 +39,22 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     dataLayersStateService.dataLayerWithUrl$
       .pipe(untilDestroyed(this))
       .subscribe((data) => {
-        let colorFn = null;
+        this.colorFn = null;
         if (data) {
-          colorFn = generateColorFunction(data.layer?.styles[0].data);
+          this.colorFn = generateColorFunction(data.layer?.styles[0].data);
           this.cogUrl = `cog://${data.url}`;
-          setColorFunction(data.url, colorFn);
+          setColorFunction(data.url, this.colorFn);
           this.tileSize =
             data.layer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
           this.addRasterLayer();
-          colorFn = null;
+          this.colorFn = null;
         } else {
           this.cogUrl = null;
           this.removeRasterLayer();
         }
+        this.colorFn = null;
+
       });
   }
 
@@ -105,7 +109,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.off('styledata', this.onStyleDataListener);
     this.mapLibreMap.off('data', this.onDataListener);
     this.mapLibreMap.off('error', this.onErrorListener);
-    console.log('now we destroy this?');
+    this.colorFn = null;
   }
 
   private onStyleDataListener = () => {

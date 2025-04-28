@@ -150,7 +150,6 @@ function createRampColorMapper(
   return (value: number) => {
     const interpolatedColor = colorScale(value);
     const interpolatedOpacity = opacityScale(value);
-
     return parseColor(interpolatedColor, interpolatedOpacity);
   };
 }
@@ -204,6 +203,5 @@ export function generateColorFunction(
       const color = colorMapper(value);
       writeColorToBuffer(rgba, color);
     }
-    knownNoDataValues.clear();
   };
 }
