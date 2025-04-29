@@ -8,10 +8,9 @@ describe('BaseLayersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [BaseLayersComponent]
-    })
-    .compileComponents();
-    
+      imports: [BaseLayersComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(BaseLayersComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
