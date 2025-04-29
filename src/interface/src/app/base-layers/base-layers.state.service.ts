@@ -48,27 +48,29 @@ export class BaseLayersStateService {
   selectedBaseLayers$ = this._selectedBaseLayers$.asObservable();
 
   updateBaseLayers(bl: BaseLayer, isMulti: boolean) {
-    const current = this._selectedBaseLayers$.value ?? [];
+    const currentLayers = this._selectedBaseLayers$.value ?? [];
 
     // If no layers selected, just set the new one
-    if (current.length === 0) {
+    if (currentLayers.length === 0) {
       this._selectedBaseLayers$.next([bl]);
       return;
     }
 
-    const currentCategory = current[0].path[0];
+    const currentCategory = currentLayers[0].path[0];
 
     // if the layer allows multi select
     if (isMulti) {
       if (bl.path[0] === currentCategory) {
-        const alreadySelected = current.some((layer) => layer.id === bl.id);
+        const alreadySelected = currentLayers.some(
+          (layer) => layer.id === bl.id
+        );
         if (alreadySelected) {
           // Remove if already selected
-          const updated = current.filter((layer) => layer.id !== bl.id);
+          const updated = currentLayers.filter((layer) => layer.id !== bl.id);
           this._selectedBaseLayers$.next(updated);
         } else {
           // Add if not already selected
-          this._selectedBaseLayers$.next([...current, bl]);
+          this._selectedBaseLayers$.next([...currentLayers, bl]);
         }
       } else {
         // Different category, start new selection
