@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { BaseLayersListComponent } from './base-layers-list.component';
+import { BaseLayer } from '@types';
 
 describe('BaseLayersListComponent', () => {
   let component: BaseLayersListComponent;
@@ -12,56 +13,35 @@ describe('BaseLayersListComponent', () => {
 
     fixture = TestBed.createComponent(BaseLayersListComponent);
     component = fixture.componentInstance;
+    component.categorizedBaseLayer = {
+      category: {
+        name: 'Demo Category',
+        isMultiSelect: false,
+      },
+      layers: [
+        {
+          id: 1,
+          name: 'Watersheds (HUC-12)',
+          path: ['DEMO multi'],
+        },
+      ] as BaseLayer[],
+    };
     fixture.detectChanges();
   });
 
   it('should emit layerSelected when a radio is selected', () => {
-    const mockLayer = component.categorizedBaseLayer.layers[0];
+    const mockLayer = {
+      id: 1,
+      name: 'Watersheds (HUC-12)',
+      path: ['DEMO multi'],
+    } as BaseLayer;
     spyOn(component.layerSelected, 'emit');
 
-    component.onLayerChange(mockLayer);
+    component.onLayerChange(mockLayer, false);
 
-    expect(component.layerSelected.emit).toHaveBeenCalledWith(mockLayer);
-  });
-
-  it('should emit layersSelected with layer added when checkbox is checked', () => {
-    const mockLayer = component.categorizedBaseLayer.layers[1];
-    spyOn(component.layersSelected, 'emit');
-
-    const mockEvent = { target: { checked: true } };
-    component.onCheckboxChange(mockLayer, mockEvent);
-
-    expect(component.selectedLayers).toContain(mockLayer);
-    expect(component.layersSelected.emit).toHaveBeenCalledWith([mockLayer]);
-  });
-
-  it('should emit layersSelected with layer removed when checkbox is unchecked', () => {
-    const mockLayer = component.categorizedBaseLayer.layers[2];
-    component.selectedLayers = [mockLayer];
-    spyOn(component.layersSelected, 'emit');
-
-    const mockEvent = { target: { checked: false } };
-    component.onCheckboxChange(mockLayer, mockEvent);
-
-    expect(component.selectedLayers).not.toContain(mockLayer);
-    expect(component.layersSelected.emit).toHaveBeenCalledWith([]);
-  });
-
-  it('isLayerSelected should return true if layer is in selectedLayers', () => {
-    const mockLayer = component.categorizedBaseLayer.layers[0];
-    component.selectedLayers = [mockLayer];
-
-    const result = component.isLayerSelected(mockLayer);
-
-    expect(result).toBeTrue();
-  });
-
-  it('isLayerSelected should return false if layer is not in selectedLayers', () => {
-    const mockLayer = component.categorizedBaseLayer.layers[1];
-    component.selectedLayers = [];
-
-    const result = component.isLayerSelected(mockLayer);
-
-    expect(result).toBeFalse();
+    expect(component.layerSelected.emit).toHaveBeenCalledWith({
+      layer: mockLayer,
+      isMulti: false,
+    });
   });
 });

@@ -1,1 +1,11 @@
-<app-base-layers-list></app-base-layers-list>
+<app-base-layers-list
+  *ngFor="let categorizedBaseLayer of categorizedBaseLayers$ | async"
+  [categorizedBaseLayer]="categorizedBaseLayer"
+  [selectedLayersId]="(selectedLayersId$ | async) || []"
+  (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
+
+<!--DEMO remove before turning flag on-->
+<div>
+  Selected layers:
+  <span *ngFor="let layer of selectedLayers$ | async">{{ layer.name }} </span>
+</div>

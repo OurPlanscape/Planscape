@@ -47,7 +47,7 @@ describe('BaseLayersStateService', () => {
   });
 
   it('should start with null selection', (done) => {
-    service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
+    service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toBeNull();
       done();
     });
@@ -55,9 +55,9 @@ describe('BaseLayersStateService', () => {
 
   it('should select a single base layer if none is selected', (done) => {
     const layer = makeLayer(1, 'catA');
-    service.selectBaseLayer(layer, false);
+    service.updateBaseLayers(layer, false);
 
-    service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
+    service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer]);
       done();
     });
@@ -67,10 +67,10 @@ describe('BaseLayersStateService', () => {
     const layer1 = makeLayer(1, 'catA');
     const layer2 = makeLayer(2, 'catA');
 
-    service.selectBaseLayer(layer1, true);
-    service.selectBaseLayer(layer2, false);
+    service.updateBaseLayers(layer1, true);
+    service.updateBaseLayers(layer2, false);
 
-    service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
+    service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer2]);
       done();
     });
@@ -80,23 +80,23 @@ describe('BaseLayersStateService', () => {
     const layer1 = makeLayer(1, 'catA');
     const layer2 = makeLayer(2, 'catA');
 
-    service.selectBaseLayer(layer1, true);
-    service.selectBaseLayer(layer2, true);
+    service.updateBaseLayers(layer1, true);
+    service.updateBaseLayers(layer2, true);
 
-    service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
+    service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer1, layer2]);
       done();
     });
   });
 
-  it('should ignore if already selected multi layer is selected again', (done) => {
+  it('should remove if already selected multi layer is selected again', (done) => {
     const layer = makeLayer(1, 'catA');
 
-    service.selectBaseLayer(layer, true);
-    service.selectBaseLayer(layer, true); // selecting the same one again
+    service.updateBaseLayers(layer, true);
+    service.updateBaseLayers(layer, true); // selecting the same one again
 
-    service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
-      expect(layers).toEqual([layer]);
+    service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
+      expect(layers).toEqual([]);
       done();
     });
   });
@@ -105,10 +105,10 @@ describe('BaseLayersStateService', () => {
     const layer1 = makeLayer(1, 'catA');
     const layer2 = makeLayer(2, 'catB');
 
-    service.selectBaseLayer(layer1, true);
-    service.selectBaseLayer(layer2, true);
+    service.updateBaseLayers(layer1, true);
+    service.updateBaseLayers(layer2, true);
 
-    service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
+    service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toEqual([layer2]);
       done();
     });
@@ -116,11 +116,11 @@ describe('BaseLayersStateService', () => {
 
   it('should clear the selection', (done) => {
     const layer = makeLayer(1, 'catA');
-    service.selectBaseLayer(layer, true);
+    service.updateBaseLayers(layer, true);
 
     service.clearBaseLayer();
 
-    service.selectedBaseLayer$.pipe(take(1)).subscribe((layers) => {
+    service.selectedBaseLayers$.pipe(take(1)).subscribe((layers) => {
       expect(layers).toBeNull();
       done();
     });

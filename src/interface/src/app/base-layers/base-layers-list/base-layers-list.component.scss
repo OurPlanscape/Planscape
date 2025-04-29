@@ -28,24 +28,11 @@
   align-items: flex-start;
   gap: 16px;
   align-self: stretch;
-  padding: 16px;
   background: $color-soft-purple-light;
 }
 
-.radio-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
 
-.radio-option {
-  display: flex;
-}
 
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
+
+
+

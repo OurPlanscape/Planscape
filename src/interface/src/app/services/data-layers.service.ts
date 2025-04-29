@@ -10,6 +10,24 @@ import {
 } from '@types';
 import { map } from 'rxjs';
 
+const MOCKED_MULTI = [
+  {
+    id: 1,
+    name: 'Watersheds (HUC-12)',
+    path: ['DEMO multi'],
+  },
+  {
+    id: 2,
+    name: 'PODs',
+    path: ['DEMO multi'],
+  },
+  {
+    id: 3,
+    name: 'Subfireshreds',
+    path: ['DEMO multi'],
+  },
+] as BaseLayer[];
+
 @Injectable({
   providedIn: 'root',
 })
@@ -52,12 +70,17 @@ export class DataLayersService {
   }
 
   listBaseLayers() {
-    return this.http.get<BaseLayer[]>(
-      environment.backend_endpoint + '/v2/datasets/999/browse',
-      {
-        withCredentials: true,
-        params: { type: 'VECTOR' },
-      }
+    return (
+      this.http
+        .get<BaseLayer[]>(
+          environment.backend_endpoint + '/v2/datasets/999/browse',
+          {
+            withCredentials: true,
+            params: { type: 'VECTOR' },
+          }
+        )
+        // TODO - remove once we got more layers from API
+        .pipe(map((s) => [...s, ...MOCKED_MULTI]))
     );
   }
 
