@@ -87,6 +87,6 @@ export class BaseLayersStateService {
   }
 
   private isCategoryMultiSelect(path: string) {
-    return path == 'DEMO multi' || path == 'Organization';
+    return path == 'Ownership';
   }
 }
