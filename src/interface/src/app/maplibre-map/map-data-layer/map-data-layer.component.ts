@@ -37,6 +37,11 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     dataLayersStateService.dataLayerWithUrl$
       .pipe(untilDestroyed(this))
       .subscribe((data) => {
+
+        const memoryDetails = this.inspectMapMemory();
+        console.log('Memory details so far:', memoryDetails);
+        const cogDetails = this.inspectCOGSources();
+        console.log('cog memory details on data layer change:', cogDetails);
         if (data) {
           this.cogUrl = `cog://${data.url}`;
           const colorFn = generateColorFunction(data.layer?.styles[0].data);
@@ -45,11 +50,73 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
             data.layer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
           this.addRasterLayer();
+          const memoryDetails = this.inspectMapMemory();
+          console.log('Memory details after add:', memoryDetails);
+          const cogDetails = this.inspectCOGSources();
+          console.log('cog memory details after layer add:', cogDetails);
+
         } else {
           this.cogUrl = null;
           this.removeRasterLayer();
         }
       });
+  }
+
+  // Specifically for monitoring COG sources
+  private inspectCOGSources() {
+    if (!this.mapLibreMap) {
+      return {};
+    }
+
+    type cogTileDetails = {
+      coord: any,
+      textureSize: string,
+      state: any,
+      memoryEstimate: string
+    }
+
+    const map = this.mapLibreMap;
+    let cogReport = {};
+
+    const cogDetails: cogTileDetails[] = [];
+
+
+    Object.keys(map.style.sourceCaches || {}).forEach(sourceId => {
+      const source = map.getSource(sourceId);
+
+      // Check if it's likely a COG source (based on common properties)
+      if (source && source.type === 'raster') {
+        const sourceCache = map.style.sourceCaches[sourceId];
+        const tiles = sourceCache._tiles || {};
+
+        cogReport = {
+          id: source.tileID,
+          tileCount: Object.keys(tiles).length,
+          visibleTiles: sourceCache.getVisibleCoordinates?.() || [],
+          tileSize: source.tileSize,
+          tiles: {},
+        };
+
+        // Get details for each COG tile
+        Object.keys(tiles).forEach(tileId => {
+          const tile = tiles[tileId];
+          if (tile && tile.texture) {
+            cogDetails.push({
+              coord: `${tile.tileID.canonical.z}/${tile.tileID.canonical.x}/${tile.tileID.canonical.y}`,
+              textureSize: tile.texture.width ? `${tile.texture.width}x${tile.texture.height}` : 'unknown',
+              state: tile.state,
+              memoryEstimate: tile.texture.width ?
+                (tile.texture.width * tile.texture.height * 4 / (1024 * 1024)).toFixed(2) + ' MB' :
+                'unknown'
+            });
+          }
+        });
+      }
+    });
+    console.log('cogDetails:', cogDetails);
+
+    console.log('cogReport:', cogReport);
+    return cogReport;
   }
 
   ngOnInit(): void {
@@ -121,7 +188,108 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
       this.errorCount = 0;
       this.dataLayersStateService.setDataLayerLoading(false);
     }
+
+    const afterLoadMemory = this.inspectMapMemory();
+    console.log('Memory details after loaded:', afterLoadMemory);
+    const cogLaterDetails = this.inspectCOGSources();
+    console.log('cog memory details after raster image loaded:', cogLaterDetails);
   };
+
+
+  // inspect memory usage
+  private inspectMapMemory() {
+    const map = this.mapLibreMap;
+    if (!map) {
+      return {};
+    }
+
+    type tileDetails = {
+      type: string,
+      tileCount: number,
+      tiles: {},
+    };
+
+    const memoryReport = {
+      knownSources: [],
+      sources: {},
+      layers: [],
+      textureCount: 0,
+      tileCount: 0,
+      estimatedTextureMemory: 0,
+      sourceCount: 0,
+    };
+
+    const knownSources: tileDetails[] = [];
+
+    // Inspect sources
+    const sourceIds = Object.keys(map.style.sourceCaches || {});
+    memoryReport.sourceCount = sourceIds.length;
+
+    sourceIds.forEach((sourceId: string) => {
+      const sourceCache = map.style.sourceCaches[sourceId];
+      if (sourceCache) {
+        const tiles = sourceCache._tiles || {};
+        const tileIds = Object.keys(tiles);
+
+        const tileDetails = {
+          type: map.getSource(sourceId)?.type ?? 'unknown',
+          tileCount: tileIds.length,
+          tiles: {}
+        };
+
+        knownSources.push(tileDetails);
+
+        // Count total tiles
+        memoryReport.tileCount += tileIds.length;
+
+
+        // Inspect individual tiles
+        tileIds.forEach(tileId => {
+          const tile = tiles[tileId];
+          if (tile && tile.texture) {
+            memoryReport.textureCount++;
+
+            // // Rough texture memory estimate (if dimensions are available)
+            if (tile.texture.width && tile.texture.height) {
+              // Assuming 4 bytes per pixel (RGBA)
+              const textureMem = tile.texture.width * tile.texture.height * 4;
+              memoryReport.estimatedTextureMemory += textureMem;
+
+              console.log(
+                `coord: ${tile.tileID.canonical.z}/${tile.tileID.canonical.x}/${tile.tileID.canonical.y}`,
+                `size: ${tile.texture.width}x${tile.texture.height}`,
+                'memoryBytes: ', textureMem
+              );
+            }
+          }
+        });
+
+      }
+    });
+    console.log('knownSources:', knownSources);
+    //Inspect WebGL context memory
+    const gl = map.painter.context.gl;
+    if (gl && gl.getParameter) {
+      try {
+
+        console.log('GL texture image units: ', gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS));
+        // Try to fetch memory info if available (Chrome only)
+        console.log('GL debug renger info: ',gl.getExtension('WEBGL_debug_renderer_info'));
+        // if (performanceExt && gl.getParameter(performanceExt.GPU_MEMORY_INFO_CURRENT_AVAILABLE_MEMORY_NVX)) {
+        //   memoryReport.availableGpuMemory = gl.getParameter(performanceExt.GPU_MEMORY_INFO_CURRENT_AVAILABLE_MEMORY_NVX);
+        // }
+      } catch (e : any) {
+        console.log('error fetching GL memory:', e.message);
+      }
+    }
+
+
+    // // Format memory values for readability
+    // memoryReport.estimatedTextureMemoryMB = (memoryReport.estimatedTextureMemory / (1024 * 1024)).toFixed(2) + ' MB';
+
+    return memoryReport;
+  }
+
 
   private onErrorListener = (event: ErrorEvent & EventData) => {
     if (
