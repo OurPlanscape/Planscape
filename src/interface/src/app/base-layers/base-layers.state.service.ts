@@ -29,7 +29,7 @@ export class BaseLayersStateService {
 
       const result: CategorizedBaseLayers[] = Object.entries(grouped).map(
         ([categoryName, categoryLayers]) => {
-          const isMulti = categoryName === 'Organization';
+          const isMulti = this.isCategoryMultiSelect(categoryName);
           return {
             category: {
               name: categoryName,
@@ -44,15 +44,15 @@ export class BaseLayersStateService {
     })
   );
 
-  private _selectedBaseLayer$ = new BehaviorSubject<BaseLayer[] | null>(null);
-  selectedBaseLayer$ = this._selectedBaseLayer$.asObservable();
+  private _selectedBaseLayers$ = new BehaviorSubject<BaseLayer[] | null>(null);
+  selectedBaseLayers$ = this._selectedBaseLayers$.asObservable();
 
-  selectBaseLayer(bl: BaseLayer, isMulti: boolean) {
-    const current = this._selectedBaseLayer$.value ?? [];
+  updateBaseLayers(bl: BaseLayer, isMulti: boolean) {
+    const current = this._selectedBaseLayers$.value ?? [];
 
     // If no layers selected, just set the new one
     if (current.length === 0) {
-      this._selectedBaseLayer$.next([bl]);
+      this._selectedBaseLayers$.next([bl]);
       return;
     }
 
@@ -61,22 +61,30 @@ export class BaseLayersStateService {
     // if the layer allows multi select
     if (isMulti) {
       if (bl.path[0] === currentCategory) {
-        // Add only if not already selected
         const alreadySelected = current.some((layer) => layer.id === bl.id);
-        if (!alreadySelected) {
-          this._selectedBaseLayer$.next([...current, bl]);
+        if (alreadySelected) {
+          // Remove if already selected
+          const updated = current.filter((layer) => layer.id !== bl.id);
+          this._selectedBaseLayers$.next(updated);
+        } else {
+          // Add if not already selected
+          this._selectedBaseLayers$.next([...current, bl]);
         }
       } else {
         // Different category, start new selection
-        this._selectedBaseLayer$.next([bl]);
+        this._selectedBaseLayers$.next([bl]);
       }
     } else {
       // Replace with only this layer regardless of current state
-      this._selectedBaseLayer$.next([bl]);
+      this._selectedBaseLayers$.next([bl]);
     }
   }
 
   clearBaseLayer() {
-    this._selectedBaseLayer$.next(null);
+    this._selectedBaseLayers$.next(null);
+  }
+
+  private isCategoryMultiSelect(path: string) {
+    return path == 'DEMO multi' || path == 'Organization';
   }
 }

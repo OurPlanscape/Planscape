@@ -1,64 +1,28 @@
-import { NgFor, NgIf } from '@angular/common';
+import { AsyncPipe, NgFor, NgIf } from '@angular/common';
 import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { BaseLayer, CategorizedBaseLayers } from '@types';
+import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 
 @Component({
   selector: 'app-base-layers-list',
   standalone: true,
-  imports: [NgIf, NgFor],
+  imports: [NgIf, NgFor, AsyncPipe, MatRadioModule, MatCheckboxModule],
   templateUrl: './base-layers-list.component.html',
   styleUrl: './base-layers-list.component.scss',
 })
 export class BaseLayersListComponent {
-  // TODO change any for categorizedBaseLayers and remove default mocked value
-  @Input() categorizedBaseLayer: any = {
-    category: {
-      name: 'Boundaries',
-      key: 'boundaries',
-      isMulti: false,
-    },
-    layers: [
-      {
-        id: 1,
-        name: 'Watersheds (HUC-12)',
-        category: '',
-      },
-      {
-        id: 2,
-        name: 'PODs',
-        category: '',
-      },
-      {
-        id: 3,
-        name: 'Subfireshreds',
-        category: '',
-      },
-    ],
-  };
-  // TODO: change any for baseLayer
-  @Output() layerSelected = new EventEmitter<any>();
-  // TODO: change any for BaseLayer[]
-  @Output() layersSelected = new EventEmitter<any[]>();
+  @Input() categorizedBaseLayer!: CategorizedBaseLayers;
+  @Input() selectedLayersId: number[] = [];
 
-  selectedLayers: any[] = [];
+  @Output() layerSelected = new EventEmitter<{
+    layer: BaseLayer;
+    isMulti: boolean;
+  }>();
+
   expanded = false;
 
-  onLayerChange(layer: any): void {
-    this.layerSelected.emit(layer);
-  }
-
-  isLayerSelected(layer: any): boolean {
-    return this.selectedLayers.some((l) => l.id === layer.id);
-  }
-
-  onCheckboxChange(layer: any, event: any): void {
-    if (event?.target?.checked) {
-      this.selectedLayers.push(layer);
-    } else {
-      this.selectedLayers = this.selectedLayers.filter(
-        (l) => l.id !== layer.id
-      );
-    }
-
-    this.layersSelected.emit(this.selectedLayers);
+  onLayerChange(layer: any, isMulti: boolean): void {
+    this.layerSelected.emit({ layer, isMulti });
   }
 }

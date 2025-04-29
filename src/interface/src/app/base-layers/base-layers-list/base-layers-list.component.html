@@ -14,30 +14,27 @@
 </div>
 <div class="list-content" *ngIf="expanded">
   <ng-container
-    *ngIf="categorizedBaseLayer?.category.isMulti; else singleSelect">
+    *ngIf="categorizedBaseLayer.category.isMultiSelect; else singleSelect">
     <div
       *ngFor="let layer of categorizedBaseLayer.layers"
       class="checkbox-option">
-      <label class="checkbox-label">
-        <input
-          type="checkbox"
-          [value]="layer.id"
-          [checked]="isLayerSelected(layer)"
-          (change)="onCheckboxChange(layer, $event)" />
-        <span>{{ layer.name }}</span>
-      </label>
+      <mat-checkbox
+        [value]="layer.id.toString()"
+        [checked]="selectedLayersId.includes(layer.id)"
+        class="data-layer-input"
+        (change)="onLayerChange(layer, true)"
+        >{{ layer.name }}
+      </mat-checkbox>
     </div>
   </ng-container>
   <ng-template #singleSelect>
-    <div *ngFor="let layer of categorizedBaseLayer.layers" class="radio-option">
-      <label class="radio-label">
-        <input
-          type="radio"
-          name="baseLayer"
-          [value]="layer.id"
-          (change)="onLayerChange(layer)" />
-        <span>{{ layer.name }}</span>
-      </label>
-    </div>
+    <mat-radio-button
+      *ngFor="let layer of categorizedBaseLayer.layers"
+      [value]="layer.id"
+      [checked]="selectedLayersId.includes(layer.id)"
+      class="data-layer-input"
+      (change)="onLayerChange(layer, false)"
+      >{{ layer.name }}
+    </mat-radio-button>
   </ng-template>
 </div>
