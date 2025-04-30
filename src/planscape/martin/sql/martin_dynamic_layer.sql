@@ -16,7 +16,7 @@ BEGIN
         FROM public.datasets_datalayer
     WHERE id = layer_id;
 
-    EXECUTE format('
+    EXECUTE format($f$
         WITH
         bbox AS (
           SELECT ST_TileEnvelope($1, $2, $3, margin => (64.0/4096)) AS geom
@@ -29,12 +29,12 @@ BEGIN
               ST_TileEnvelope($1, $2, $3),
               4096, 64, true
             ) AS geom
-          FROM %I AS t, bbox
+          FROM %1$s AS t, bbox
           WHERE t.geometry && ST_Transform(bbox.geom, ST_SRID(t.geometry))
         )
-        SELECT ST_AsMVT(mvtgeom.*, %L, 4096, 'geom')
+        SELECT ST_AsMVT(mvtgeom.*, %2$s, 4096, 'geom')
         FROM mvtgeom;
-    ', dyn_table, format('dynamic_%s', layer_id))
+    $f$, dyn_table, format('dynamic_%s', layer_id))
     INTO tile
     USING z, x, y;
     RETURN tile;
