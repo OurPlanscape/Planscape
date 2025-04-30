@@ -53,7 +53,7 @@ export class DataLayersService {
 
   listBaseLayers() {
     return this.http.get<BaseLayer[]>(
-      environment.backend_endpoint + '/v2/datasets/999/browse',
+      environment.backend_endpoint + '/v2/datasets/999/browse/',
       {
         withCredentials: true,
         params: { type: 'VECTOR' },

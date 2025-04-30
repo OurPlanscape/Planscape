@@ -1,0 +1,16 @@
+<div *ngFor="let layer of selectedLayers$ | async">
+  <mgl-vector-source
+    [id]="layer.id.toString()"
+    [tiles]="[layer.map_url]"
+    [promoteId]="'id'"></mgl-vector-source>
+  <mgl-layer
+    [source]="layer.id.toString()"
+    type="fill"
+    [paint]="{
+      'fill-color': 'red',
+      'fill-opacity': 0.75,
+    }"></mgl-layer>
+  <mgl-control position="bottom-left">
+    <div class="controls">Hi there this should show up?</div>
+  </mgl-control>
+</div>

@@ -48,6 +48,9 @@ import { MapDataLayerComponent } from '../../maplibre-map/map-data-layer/map-dat
 import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map-zoom-control.component';
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
+import { MapBaseLayersComponent } from '../../maplibre-map/map-base-layers/map-base-layers.component';
 
 @UntilDestroy()
 @Component({
@@ -85,6 +88,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     DataLayerNameComponent,
     RxSelectionToggleComponent,
     MatTooltipModule,
+    BaseLayersComponent,
+    MapBaseLayerComponent,
+    MapBaseLayersComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',
