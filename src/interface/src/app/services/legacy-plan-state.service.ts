@@ -158,7 +158,7 @@ export class LegacyPlanStateService {
   }
 
   createScenario(scenarioParameters: any) {
-    return this.scenarioService.createScenarioLegacy(scenarioParameters).pipe(
+    return this.scenarioService.createScenario(scenarioParameters).pipe(
       tap((result) => {
         if (result.id) {
           this.updateStateWithScenario(result.id.toString(), result.name);

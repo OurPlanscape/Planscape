@@ -209,6 +209,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   private formValueToScenario(): Scenario {
+    const prioritiesData = this.prioritiesComponent.getFormData();
     return {
       id: '',
       name: this.scenarioNameFormField?.value,
@@ -216,8 +217,9 @@ export class CreateScenariosComponent implements OnInit {
       status: 'ACTIVE',
       configuration: {
         ...this.constraintsPanelComponent.getFormData(),
-        ...this.prioritiesComponent.getFormData(),
+        ...prioritiesData,
       },
+      treatment_goal: prioritiesData.treatment_question as any,
     };
   }
 
