@@ -11,11 +11,7 @@
     Selected layers:
     <span *ngFor="let layer of selectedLayers$ | async">{{ layer.name }} </span>
   </div>
-  <button
-    sg-button
-    (click)="clearBaseLayer()"
-    variant="text"
-    class="clear-btn">
+  <button sg-button (click)="clearBaseLayer()" variant="text" class="clear-btn">
     Clear
   </button>
 </div>
