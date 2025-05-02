@@ -1,3 +1,10 @@
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.test import TestCase
+from impacts.models import ImpactVariable, TreatmentPrescriptionAction
+from rest_framework.test import APIRequestFactory
+from utils.frontend import get_base_url, get_domain
+
 from datasets.models import Category, DataLayerType, StorageTypeChoices
 from datasets.serializers import (
     BrowseDataLayerSerializer,
@@ -14,12 +21,6 @@ from datasets.tests.factories import (
     DatasetFactory,
     OrganizationFactory,
 )
-from django.conf import settings
-from django.contrib.auth.models import User
-from django.test import TestCase
-from impacts.models import ImpactVariable, TreatmentPrescriptionAction
-from rest_framework.test import APIRequestFactory
-from utils.frontend import get_base_url, get_domain
 
 
 class CategorySerializerTest(TestCase):
@@ -212,7 +213,7 @@ class TestCreateStyleSerializer(TestCase):
 class MapURLTests(TestCase):
     def _expected_dynamic_url(self, layer):
         base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
-        return f"{base}/tiles/dynamic?layer={layer.id}"
+        return base + "/tiles/dynamic/{z}/{x}/{y}/?layer=" + str(layer.id)
 
     def test_get_map_url_logic(self):
         raster = DataLayerFactory(type=DataLayerType.RASTER)
