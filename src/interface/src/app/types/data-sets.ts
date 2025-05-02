@@ -105,9 +105,16 @@ export interface DataLayer {
   public_url: string;
 }
 
-export interface BaseLayer extends DataLayer {
+export interface BaseLayer extends Omit<DataLayer, 'styles'> {
   // base layers have only one path/category.
   path: [string];
+  styles: {
+    data: {
+      paint: {
+        [key: string]: string;
+      };
+    };
+  };
 }
 
 export interface CategorizedBaseLayers {
