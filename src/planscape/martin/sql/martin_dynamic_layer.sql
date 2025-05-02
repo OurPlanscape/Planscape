@@ -32,7 +32,7 @@ BEGIN
             FROM %I.%I AS t, bbox
             WHERE t.geometry && ST_Transform(bbox.geom, ST_SRID(t.geometry))
         )
-        SELECT ST_AsMVT(mvtgeom.*, %I, 4096, 'geom')
+        SELECT ST_AsMVT(mvtgeom.*, %L, 4096, 'geom')
         FROM mvtgeom;
     $f$,
         split_part(dyn_table, '.', 1),
