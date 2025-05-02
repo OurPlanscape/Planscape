@@ -111,6 +111,11 @@ export const EXCLUDED_AREAS = [
   { label: 'Wilderness Area', key: 'WILDERNESS_AREA' },
 ];
 
+export const BASE_LAYERS_DEFAULT = {
+  COLOR: '#789',
+  OPACITY: 1,
+};
+
 /**
  * @desc This RegEx matches the built-in email validation regex used by Django's
  * built-in validation.
