@@ -109,7 +109,11 @@ export interface BaseLayer extends Omit<DataLayer, 'styles'> {
   // base layers have only one path/category.
   path: [string];
   styles: {
-    data: any;
+    data: {
+      paint: {
+        [key: string]: string;
+      };
+    };
   };
 }
 
