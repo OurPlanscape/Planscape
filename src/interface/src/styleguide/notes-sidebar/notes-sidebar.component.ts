@@ -1,11 +1,11 @@
 import {
   Component,
-  Input,
-  Output,
-  HostBinding,
   EventEmitter,
-  SimpleChanges,
+  HostBinding,
+  Input,
   OnChanges,
+  Output,
+  SimpleChanges,
 } from '@angular/core';
 import { Note } from '@services';
 import { MatMenuModule } from '@angular/material/menu';
@@ -35,12 +35,14 @@ export type NotesSidebarState = 'SAVING' | 'READY';
 })
 export class NotesSidebarComponent implements OnChanges {
   constructor() {}
+
   @Input() showHeader = false;
   @Input() notesState: NotesSidebarState = 'READY';
   @Input() notes: Note[] = [];
   @Input() noNotesTitleText = 'No Notes Yet';
   @Input() noNotesDetailText =
     'Start adding notes to help your team learn more about this section.';
+  @Input() canAddNotes = true;
   @Output() createNote = new EventEmitter<string>();
   @Output() deleteNote = new EventEmitter<Note>();
 

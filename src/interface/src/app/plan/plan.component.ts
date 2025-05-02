@@ -27,6 +27,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { ScenarioState } from '../maplibre-map/scenario.state';
 import { getPlanPath } from './plan-helpers';
 import { PlanState } from './plan.state';
+import { canAddScenario } from './permissions';
 
 @UntilDestroy()
 @Component({
@@ -204,6 +205,10 @@ export class PlanComponent implements OnInit {
         this.sidebarNotes = notes;
       });
     }
+  }
+
+  canAddScenario(plan: Plan) {
+    return canAddScenario(plan) || false;
   }
 
   private getDeepestChild(route: ActivatedRoute): ActivatedRoute {
