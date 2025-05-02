@@ -22,6 +22,10 @@ import { tap } from 'rxjs';
   styleUrl: './map-base-layers.component.scss',
 })
 export class MapBaseLayersComponent {
+  layer = {
+    id: 2930,
+    map_url: 'https://dev.planscape.org/tiles/dynamic/{z}/{x}/{y}/?layer=2930',
+  };
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$.pipe(
     tap((s) => console.log(s))
   );

@@ -1,16 +1,20 @@
 <div *ngFor="let layer of selectedLayers$ | async">
   <mgl-vector-source
-    [id]="layer.id.toString()"
+    [id]="'source_' + layer.id.toString()"
     [tiles]="[layer.map_url]"
     [promoteId]="'id'"></mgl-vector-source>
   <mgl-layer
-    [source]="layer.id.toString()"
+    [id]="'layer_' + layer.id.toString()"
+    [source]="'source_' + layer.id.toString()"
+    [sourceLayer]="'dynamic_' + layer.id"
     type="fill"
     [paint]="{
       'fill-color': 'red',
       'fill-opacity': 0.75,
     }"></mgl-layer>
   <mgl-control position="bottom-left">
-    <div class="controls">Hi there this should show up?</div>
+    <div class="controls">
+      Hi there this should show up? {{ layer.map_url }}
+    </div>
   </mgl-control>
 </div>
