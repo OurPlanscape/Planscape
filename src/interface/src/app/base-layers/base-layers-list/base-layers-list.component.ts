@@ -25,4 +25,8 @@ export class BaseLayersListComponent {
   onLayerChange(layer: any, isMulti: boolean): void {
     this.layerSelected.emit({ layer, isMulti });
   }
+
+  isSelectedLayer(id: number): boolean {
+    return this.selectedLayersId.includes(id);
+  }
 }

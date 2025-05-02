@@ -31,8 +31,27 @@
   background: $color-soft-purple-light;
 }
 
+.checkbox-option {
+  width: 100%;
+}
 
+.data-layer-input {
+  width: 100%;
 
+  ::ng-deep .mdc-form-field {
+    width: 100%;
+  }
 
+  ::ng-deep .mdc-label {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+  }
+}
 
-
+.base-layer-legend {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  display: inline-flex;
+}

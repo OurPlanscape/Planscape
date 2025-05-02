@@ -24,6 +24,15 @@
         class="data-layer-input"
         (change)="onLayerChange(layer, true)"
         >{{ layer.name }}
+        <span
+          class="base-layer-legend"
+          *ngIf="isSelectedLayer(layer.id)"
+          [style.backgroundColor]="
+            layer.styles.data?.paint?.['fill-color'] || '#789'
+          "
+          [style.opacity]="
+            layer.styles.data?.paint?.['fill-opacity'] || 1
+          "></span>
       </mat-checkbox>
     </div>
   </ng-container>
