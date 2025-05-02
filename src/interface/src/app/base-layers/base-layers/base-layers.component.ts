@@ -15,7 +15,12 @@ import { map } from 'rxjs';
 export class BaseLayersComponent {
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
   selectedLayersId$ = this.selectedLayers$.pipe(
-    map((layers) => (layers ? layers.map((l) => l.id) : []))
+    map((layers) => {
+      if (layers && layers.length) {
+        return layers.map((l) => l.id);
+      }
+      return [];
+    })
   );
   categorizedBaseLayers$ = this.baseLayersStateService.categorizedBaseLayers$;
 
