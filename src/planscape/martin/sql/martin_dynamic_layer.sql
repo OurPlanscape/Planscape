@@ -29,17 +29,17 @@ BEGIN
               ST_TileEnvelope($1, $2, $3),
               4096, 64, true
             ) AS geom
-          FROM %I AS t, bbox
+          FROM %1$s AS t, bbox
           WHERE t.geometry && ST_Transform(bbox.geom, ST_SRID(t.geometry))
         )
-        SELECT ST_AsMVT(mvtgeom.*, %L, 4096, 'geom')
+        SELECT ST_AsMVT(mvtgeom.*, %2$s, 4096, 'geom')
         FROM mvtgeom;
-    $f$, dyn_table, format('dynamic_%s', layer_id))
+    $f$, dyn_table, quote_literal(format('dynamic_%s', layer_id)))
     INTO tile
     USING z, x, y;
-    RETURN tile;
 
-END; 
+    RETURN tile;
+END;
 
 $$ LANGUAGE plpgsql
 IMMUTABLE
