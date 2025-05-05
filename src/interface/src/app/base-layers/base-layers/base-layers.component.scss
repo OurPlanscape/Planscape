@@ -1,0 +1,23 @@
+:host {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.scrollable {
+    overflow-y: scroll;
+    flex: 1;
+    padding-bottom: 10px;
+}
+
+.footer {
+    border-top: 1px solid #e1e1e1;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.clear-btn {
+    margin-left: auto;
+}
