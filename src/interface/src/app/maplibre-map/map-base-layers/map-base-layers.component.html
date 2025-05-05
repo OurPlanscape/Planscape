@@ -10,7 +10,8 @@
     (layerMouseMove)="hoverOnLayer($event, 'layer_fill_' + layer.id)"
     (layerMouseOut)="hoverOutLayer()"
     type="fill"
-    [paint]="fillLayerPaint(layer)"></mgl-layer>
+    [paint]="fillLayerPaint(layer)"
+    [before]="before"></mgl-layer>
 
   <mgl-layer
     [id]="'layer_outline_' + layer.id"
@@ -19,5 +20,6 @@
     (layerMouseMove)="hoverOnLayer($event, 'layer_outline_' + layer.id)"
     (layerMouseOut)="hoverOutLayer()"
     type="line"
-    [paint]="lineLayerPaint(layer)"></mgl-layer>
+    [paint]="lineLayerPaint(layer)"
+    [before]="'layer_fill_' + layer.id"></mgl-layer>
 </div>

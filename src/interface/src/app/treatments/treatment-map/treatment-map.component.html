@@ -37,6 +37,10 @@
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-data-layer>
 
+  <app-map-base-layers
+    [mapLibreMap]="mapLibreMap"
+    before="planning-area-polygon"></app-map-base-layers>
+
   <app-map-zoom-control
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"
@@ -56,8 +60,6 @@
     id="bottom-layer"
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
-
-  <app-map-base-layers [mapLibreMap]="mapLibreMap"></app-map-base-layers>
 
   <app-planning-area-layer before="middle-layer"></app-planning-area-layer>
 
