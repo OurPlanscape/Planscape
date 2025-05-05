@@ -79,7 +79,7 @@ def _hash(data: dict) -> str:
 
 
 def add_styles(apps, schema_editor):
-    Style = apps.get_model("styles", "Style")               # ← change app label if needed
+    Style = apps.get_model("datasets", "Style")               # ← change app label if needed
     User = apps.get_model("auth", "User")
     Organization = apps.get_model("organizations", "Organization")
 
@@ -89,7 +89,7 @@ def add_styles(apps, schema_editor):
     existing = {
         (s.name, s.type)
         for s in Style.objects.filter(
-            organization=org, name__in=STYLES.keys()
+            organization=org, name__in=STYLES.keys(), type="RASTER"
         ).only("name", "type")
     }
 
@@ -116,7 +116,7 @@ def add_styles(apps, schema_editor):
 
 
 def remove_styles(apps, schema_editor):
-    Style = apps.get_model("styles", "Style")
+    Style = apps.get_model("datasets", "Style")
     Organization = apps.get_model("organizations", "Organization")
 
     org = Organization.objects.get(name=settings.DEFAULT_ORGANIZATION_NAME)
@@ -126,7 +126,7 @@ def remove_styles(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("styles", "0014_remove_category_deleted_at"),  # ← update to your latest migration
+        ("datasets", "0014_remove_category_deleted_at"),  # ← update to your latest migration
     ]
 
     operations = [
