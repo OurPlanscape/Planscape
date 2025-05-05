@@ -28,6 +28,7 @@
       sg-button
       icon="drive_folder_upload"
       [outlined]="true"
+      *ngIf="canAddScenarioForPlan"
       (click)="openUploadDialog()">
       Upload Scenario
     </button>
