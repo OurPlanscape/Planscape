@@ -1,20 +1,23 @@
 <div *ngFor="let layer of selectedLayers$ | async">
   <mgl-vector-source
-    [id]="'source_' + layer.id.toString()"
+    [id]="'source_' + layer.id"
     [tiles]="[layer.map_url]"
     [promoteId]="'id'"></mgl-vector-source>
   <mgl-layer
-    [id]="'layer_' + layer.id.toString()"
-    [source]="'source_' + layer.id.toString()"
+    [id]="'layer_fill_' + layer.id"
+    [source]="'source_' + layer.id"
     [sourceLayer]="'dynamic_' + layer.id"
+    (layerMouseMove)="hoverOnLayer($event, 'layer_fill_' + layer.id)"
+    (layerMouseOut)="hoverOutLayer()"
     type="fill"
-    [paint]="{
-      'fill-color': 'red',
-      'fill-opacity': 0.75,
-    }"></mgl-layer>
-  <mgl-control position="bottom-left">
-    <div class="controls">
-      Hi there this should show up? {{ layer.map_url }}
-    </div>
-  </mgl-control>
+    [paint]="fillLayerPaint(layer)"></mgl-layer>
+
+  <mgl-layer
+    [id]="'layer_outline_' + layer.id"
+    [source]="'source_' + layer.id"
+    [sourceLayer]="'dynamic_' + layer.id"
+    (layerMouseMove)="hoverOnLayer($event, 'layer_outline_' + layer.id)"
+    (layerMouseOut)="hoverOutLayer()"
+    type="line"
+    [paint]="lineLayerPaint(layer)"></mgl-layer>
 </div>

@@ -105,9 +105,10 @@ export interface DataLayer {
   public_url: string;
 }
 
-export interface BaseLayer extends Omit<DataLayer, 'styles'> {
+export interface BaseLayer extends Omit<DataLayer, 'public_url' | 'styles'> {
   // base layers have only one path/category.
   path: [string];
+  map_url: string;
   styles: {
     data: {
       paint: {
