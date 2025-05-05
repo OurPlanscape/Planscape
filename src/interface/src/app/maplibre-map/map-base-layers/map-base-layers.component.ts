@@ -12,6 +12,7 @@ import {
   MapMouseEvent,
 } from 'maplibre-gl';
 import { BaseLayer } from '@types';
+import { BASE_LAYERS_DEFAULT } from '@shared';
 
 @Component({
   selector: 'app-map-base-layers',
@@ -39,7 +40,9 @@ export class MapBaseLayersComponent {
 
   lineLayerPaint(layer: BaseLayer) {
     return {
-      'line-color': layer.styles.data.paint['fill-outline-color'],
+      'line-color':
+        layer.styles.data.paint['fill-outline-color'] ||
+        BASE_LAYERS_DEFAULT.COLOR,
       'line-width': [
         'case',
         ['boolean', ['feature-state', 'hover'], false],
@@ -51,7 +54,8 @@ export class MapBaseLayersComponent {
 
   fillLayerPaint(layer: BaseLayer) {
     return {
-      'fill-color': layer.styles.data.paint['fill-color'],
+      'fill-color':
+        layer.styles.data.paint['fill-color'] || BASE_LAYERS_DEFAULT.COLOR,
 
       'fill-opacity': [
         'case',
