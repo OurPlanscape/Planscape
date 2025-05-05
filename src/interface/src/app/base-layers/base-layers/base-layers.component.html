@@ -6,11 +6,6 @@
     (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
 </div>
 <div class="footer" *ngIf="selectedLayers$ | async">
-  <!--DEMO - TODO remove this debug line before turning flag on-->
-  <div>
-    Selected layers:
-    <span *ngFor="let layer of selectedLayers$ | async">{{ layer.name }} </span>
-  </div>
   <button sg-button (click)="clearBaseLayer()" variant="text" class="clear-btn">
     Clear
   </button>

@@ -29,7 +29,7 @@ import { BaseLayer } from '@types';
 })
 export class MapBaseLayersComponent {
   @Input() mapLibreMap!: MapLibreMap;
-  // only one hovered stand?
+  // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
 
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
