@@ -89,7 +89,7 @@ def add_styles(apps, schema_editor):
     existing = {
         (s.name, s.type)
         for s in Style.objects.filter(
-            organization=org, name__in=STYLES.keys(), type="RASTER"
+            organization=org, name__in=STYLES.keys()
         ).only("name", "type")
     }
 
