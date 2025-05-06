@@ -2,14 +2,17 @@
 from __future__ import annotations
 
 
-from typing import Any, Dict
+from typing import Dict
 
 from django.conf import settings
 from django.db import IntegrityError, migrations
+from django.contrib.auth import get_user_model
 
 from datasets.services import create_style
 from datasets.models import DataLayerType  # noqa
+from organizations.models import Organization
 
+User = get_user_model()
 
 STYLES: Dict[str, Dict[str, str]] = {
     "steel-blue": {"fill-color": "#778899", "fill-outline-color": "#778899"},
@@ -34,9 +37,6 @@ def add_styles(apps, schema_editor):
     """
     Seed default vector‑fill styles using the high‑level service helper.
     """
-    User = apps.get_model("auth", "User")
-    Organization = apps.get_model("organizations", "Organization")
-    Style = apps.get_model("datasets", "Style")  # for the reverse migration
 
     user = User.objects.get(email=settings.DEFAULT_ADMIN_EMAIL)
     org = Organization.objects.get(name=settings.DEFAULT_ORGANIZATION_NAME)
@@ -46,7 +46,7 @@ def add_styles(apps, schema_editor):
             create_style(
                 name=style_name,
                 organization=org,
-                created_by=user,
+                created_by=user,  # type: ignore
                 type=DataLayerType.VECTOR,
                 data=style_data,
                 datalayers=None,
