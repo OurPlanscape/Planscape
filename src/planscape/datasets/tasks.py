@@ -5,6 +5,7 @@ from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from django.conf import settings
 from gis.vectors import ogr2ogr
 from utils.frontend import get_base_url
+from datasets.services import get_storage_url
 
 from planscape.celery import app
 
@@ -23,10 +24,16 @@ def datalayer_uploaded(
         return
 
     try:
-        datalayer.hash = get_s3_hash(datalayer.url, bucket=settings.S3_BUCKET)
+        storage_url = get_storage_url(
+            organization_id=datalayer.organization_id,
+            uuid=datalayer.uuid,
+            original_name=datalayer.original_name,
+            mimetype=datalayer.mimetype,
+        )
+        datalayer.hash = get_s3_hash(storage_url, bucket=settings.S3_BUCKET)
         datalayer.status = status
         if datalayer.type == DataLayerType.VECTOR:
-            datalayer.table = ogr2ogr(datalayer.url)
+            datalayer.table = ogr2ogr(storage_url, datalayer.uuid)
             datalayer.url = (
                 f"{get_base_url(settings.ENV)}/tiles/dynamic?layer={datalayer.id}"
             )
