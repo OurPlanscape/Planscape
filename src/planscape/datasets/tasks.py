@@ -1,11 +1,11 @@
 import logging
 
 from core.s3 import get_s3_hash
+from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from django.conf import settings
 from gis.vectors import ogr2ogr
 from utils.frontend import get_base_url
 
-from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from planscape.celery import app
 
 logger = logging.getLogger(__name__)
@@ -18,6 +18,11 @@ def datalayer_uploaded(
 ):
     try:
         datalayer = DataLayer.objects.get(pk=datalayer_id)
+    except DataLayer.DoesNotExist:
+        logger.warning("Datalayer %s does not exist", datalayer_id)
+        return
+
+    try:
         datalayer.hash = get_s3_hash(datalayer.url, bucket=settings.S3_BUCKET)
         datalayer.status = status
         if datalayer.type == DataLayerType.VECTOR:
@@ -25,7 +30,11 @@ def datalayer_uploaded(
             datalayer.url = (
                 f"{get_base_url(settings.ENV)}/tiles/dynamic?layer={datalayer.id}"
             )
+    except Exception:
+        logger.exception(
+            "Something went wrong while ingesting and processing datalayer %s",
+            datalayer_id,
+        )
+        datalayer.status = DataLayerStatus.FAILED
+    finally:
         datalayer.save()
-    except DataLayer.DoesNotExist:
-        logger.warning("Datalayer %s does not exist", datalayer_id)
-    pass

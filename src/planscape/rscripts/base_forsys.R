@@ -36,6 +36,8 @@ STAND_AREAS_ACRES <- list(
   LARGE = 494.2
 )
 
+FORSYS_V2 <- as.logical(Sys.getenv("FORSYS_V2", "False"))
+
 average_per_stand <- function(value, stand_count, stand_size = NA, metric = NA) {
   return(round(value / stand_count, digits = 2))
 }
@@ -391,8 +393,13 @@ rename_col <- function(name) {
 }
 
 get_cost_per_acre <- function(scenario) {
+  if (FORSYS_V2) {
+    cost_field <- "estimated_cost"
+  } else {
+    cost_field <- "est_cost"
+  }
   configuration <- get_configuration(scenario)
-  user_defined_cost <- configuration[["est_cost"]]
+  user_defined_cost <- configuration[[cost_field]]
   if (is.null(user_defined_cost)) {
     return(DEFAULT_COST_PER_ACRE)
   } else {
@@ -516,6 +523,10 @@ get_priorities <- function(
   return(data.table::rbindlist(priorities))
 }
 
+get_stand_data_v2 <- function(connection, scenario, configuration, conditions) {
+
+}
+
 get_stand_data <- function(connection, scenario, configuration, conditions) {
   stand_size <- get_stand_size(configuration)
 
@@ -575,6 +586,7 @@ get_stand_size <- function(configuration) {
 }
 
 get_weights <- function(priorities, configuration) {
+  # no v2 changes
   condition_count <- length(priorities$condition_name)
   weight_count <- length(configuration$weights)
 
@@ -606,6 +618,7 @@ get_number_of_projects <- function(scenario) {
 }
 
 get_min_project_area <- function(scenario) {
+  # no v2 changes
   configuration <- get_configuration(scenario)
   stand_size <- configuration$stand_size
   min_area <- 500
@@ -630,6 +643,7 @@ get_min_project_area <- function(scenario) {
 }
 
 get_max_treatment_area <- function(scenario) {
+  # no v2 changes
   configuration <- get_configuration(scenario)
   budget <- configuration$max_budget
   cost_per_acre <- get_cost_per_acre(scenario)
@@ -672,16 +686,19 @@ get_stand_thresholds <- function(scenario) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
+  # no changes for v2
   if (!is.null(configuration$max_slope)) {
     max_slope <- get_max_slope(configuration)
     all_thresholds <- c(all_thresholds, max_slope)
   }
 
+  # no changes for v2
   if (!is.null(configuration$min_distance_from_road)) {
     distance_to_roads <- get_distance_to_roads(configuration)
     all_thresholds <- c(all_thresholds, distance_to_roads)
   }
-
+  
+  # no changes for v2
   if (length(configuration$stand_thresholds) > 0) {
     all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
   }
@@ -723,12 +740,21 @@ call_forsys <- function(
   # so front-end can show data from priorities as well
   forsys_inputs <- remove_duplicates(forsys_inputs)
 
-  stand_data <- get_stand_data(
-    connection,
-    scenario,
-    configuration,
-    forsys_inputs
-  )
+  if (FORSYS_V2) {
+    stand_data <- get_stand_data_v2(
+      connection,
+      scenario,
+      configuration,
+      forsys_inputs
+    )
+  } else {
+    stand_data <- get_stand_data(
+      connection,
+      scenario,
+      configuration,
+      forsys_inputs
+    )
+  }
 
   if (length(priorities$condition_name) > 1) {
     weights <- get_weights(priorities, configuration)
