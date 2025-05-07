@@ -30,7 +30,7 @@ import { ScenarioState } from '../../../maplibre-map/scenario.state';
   styleUrls: ['./set-priorities.component.scss'],
 })
 export class SetPrioritiesComponent implements OnInit {
-  @Input() scenarioStatus = '';
+  @Input() scenarioStatus: string | null = '';
   private _treatmentGoals: TreatmentGoalConfig[] | null = [];
   treatmentGoals$ = this.LegacyPlanStateService.treatmentGoalsConfig$.pipe(
     distinctUntilChanged(),
