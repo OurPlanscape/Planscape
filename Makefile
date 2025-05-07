@@ -136,7 +136,7 @@ docker-hard-clean: docker-clean
 	docker image prune -f
 
 docker-build:
-	docker compose build
+	ARCH=$(shell uname -m) docker compose build
 
 docker-test:
 	./src/planscape/bin/run.sh python manage.py test $(TEST)
