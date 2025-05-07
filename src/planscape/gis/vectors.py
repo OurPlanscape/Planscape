@@ -1,8 +1,8 @@
 import logging
 import os
 import subprocess
-from typing import Collection, Tuple, Optional
-from uuid import uuid4, UUID
+from typing import Collection, Tuple
+from uuid import uuid4
 
 from django.conf import settings
 from utils.cli_utils import ogr2ogr_cli
@@ -17,10 +17,10 @@ def vector_validate(input_file: str) -> Tuple[bool, Collection[str], Collection[
     return True, [], []
 
 
-def ogr2ogr(input_file: str, uuid: Optional[UUID] = uuid4()) -> str:
+def ogr2ogr(input_file: str) -> str:
     environment = os.environ.copy()
     # fix this
-    table_name = str(uuid).replace("-", "")
+    table_name = str(uuid4()).replace("-", "")
     ogr2ogr_call = ogr2ogr_cli(
         input_file,
         "datastore",
