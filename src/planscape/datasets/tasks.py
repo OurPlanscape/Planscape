@@ -27,9 +27,6 @@ def datalayer_uploaded(
         datalayer.status = status
         if datalayer.type == DataLayerType.VECTOR:
             datalayer.table = ogr2ogr(datalayer.url)
-            datalayer.url = (
-                f"{get_base_url(settings.ENV)}/tiles/dynamic?layer={datalayer.id}"
-            )
     except Exception:
         logger.exception(
             "Something went wrong while ingesting and processing datalayer %s",
