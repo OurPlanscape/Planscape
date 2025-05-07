@@ -13,7 +13,10 @@ import {
 } from 'maplibre-gl';
 import { BaseLayer } from '@types';
 import { BASE_LAYERS_DEFAULT } from '@shared';
+import FeatureService from 'mapbox-gl-arcgis-featureserver';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-map-base-layers',
   standalone: true,
@@ -31,12 +34,27 @@ import { BASE_LAYERS_DEFAULT } from '@shared';
 export class MapBaseLayersComponent {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() before = '';
+
+  private arcGisService: FeatureService | null = null;
   // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
 
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
 
-  constructor(private baseLayersStateService: BaseLayersStateService) {}
+  constructor(private baseLayersStateService: BaseLayersStateService) {
+    this.selectedLayers$.pipe(untilDestroyed(this)).subscribe((layers) => {
+      console.log(layers);
+      if (this.arcGisService) {
+        const layerId = 'layerID'; // TODO
+        this.mapLibreMap.removeLayer(layerId);
+        this.arcGisService.destroySource();
+      }
+      if (layers?.length) {
+        // if the layer is arcGis one...
+        this.addArcgisLayer();
+      }
+    });
+  }
 
   lineLayerPaint(layer: BaseLayer) {
     return {
@@ -110,5 +128,12 @@ export class MapBaseLayersComponent {
       });
       this.hoveredFeature = null;
     }
+  }
+
+  private addArcgisLayer() {
+    const srcId = 'fs-src';
+    this.arcGisService = new FeatureService(srcId, this.mapLibreMap, {
+      url: 'https://portal.spatial.nsw.gov.au/server/rest/services/NSW_Administrative_Boundaries_Theme/FeatureServer/6',
+    });
   }
 }
