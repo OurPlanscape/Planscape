@@ -112,9 +112,7 @@ export interface BaseLayer extends Omit<DataLayer, 'public_url' | 'styles'> {
   styles: [
     {
       data: {
-        paint: {
-          [key: string]: string;
-        };
+        [key: string]: string;
       };
     },
   ];
