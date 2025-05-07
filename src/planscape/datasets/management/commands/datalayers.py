@@ -18,6 +18,7 @@ from gis.core import (
     get_layer_info,
     with_vsi_prefix,
 )
+from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
 
@@ -234,10 +235,12 @@ class Command(PlanscapeCommand):
         filters = self._list_filters(**kwargs)
         if filters:
             list_url = f"{list_url}?{filters}"
-        return requests.get(
+        response = requests.get(
             list_url,
             headers=headers,
         )
+        response.raise_for_status()
+        return response
 
     def list(self, token, **kwargs):
         response = self._list_request(token, **kwargs)
@@ -319,6 +322,7 @@ class Command(PlanscapeCommand):
     def _datalayer_exists(self, token, **kwargs) -> bool:
         response = self._list_request(token, **kwargs)
         data = response.json()
+
         return data.get("count") > 0
 
     def _skip_existing(self, **kwargs):
@@ -354,13 +358,17 @@ class Command(PlanscapeCommand):
         layer_type = fetch_datalayer_type(input_file=vsi_input_file)
         layer_type, layer_info = get_layer_info(input_file=vsi_input_file)
         mimetype = detect_mimetype(input_file=vsi_input_file)
-
         match layer_type:
             case DataLayerType.RASTER:
                 processed_files = to_planscape_raster(
                     input_file=input_file,
                 )
             case _:
+                if len(layer_info.keys()) > 1:
+                    raise InvalidFileFormat(
+                        "This particular file contains more than one datalayer.\n"
+                        "Split it in multiple files before processing."
+                    )
                 # vector processing is done on the server?
                 processed_files = [input_file]
 

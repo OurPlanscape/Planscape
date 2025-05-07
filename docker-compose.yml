@@ -18,6 +18,7 @@ services:
     depends_on:
       - db
       - redis
+      - forsys
     working_dir: /usr/src/app/src/planscape
     command: bin/run_gunicorn.sh
     volumes:
@@ -84,6 +85,19 @@ services:
       - DATABASE_URL=postgresql://postgres:postgres@db/postgres
     command: --config /usr/src/app/martin.yaml 
     volumes:
+      - .:/usr/src/app
+  forsys:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.forsys
+    ports:
+      - "8001:8000"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
       - .:/usr/src/app
 volumes:
   postgres: null

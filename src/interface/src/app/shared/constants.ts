@@ -25,6 +25,12 @@ export const SNACK_ERROR_CONFIG: MatSnackBarConfig<any> = {
   verticalPosition: 'top',
 };
 
+export const SNACK_DEBUG_CONFIG: MatSnackBarConfig<any> = {
+  duration: 30000,
+  panelClass: ['snackbar-debug-error'],
+  verticalPosition: 'top',
+};
+
 const blue = [
   '#D1E0EF',
   '#ADCCE6',
@@ -104,6 +110,11 @@ export const EXCLUDED_AREAS = [
   { label: 'Tribal Lands', key: 'TRIBAL_LANDS', id: 5 },
   { label: 'Wilderness Area', key: 'WILDERNESS_AREA', id: 6 },
 ];
+
+export const BASE_LAYERS_DEFAULT = {
+  COLOR: '#789',
+  OPACITY: 1,
+};
 
 /**
  * @desc This RegEx matches the built-in email validation regex used by Django's

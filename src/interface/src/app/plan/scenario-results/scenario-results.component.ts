@@ -3,6 +3,7 @@ import { ProjectAreaReport } from '../project-areas/project-areas.component';
 import { ScenarioResult } from '@types';
 import { parseResultsToProjectAreas } from '../plan-helpers';
 import { FileSaverService, ScenarioService } from '@services';
+import { getSafeFileName } from '../../shared/files';
 
 @Component({
   selector: 'app-scenario-results',
@@ -30,7 +31,7 @@ export class ScenarioResultsComponent implements OnChanges {
   }
 
   downloadCsv() {
-    const filename = this.scenarioName.replace(/[\s./\\]/g, '_') + '_csv.zip';
+    const filename = getSafeFileName(this.scenarioName) + '_csv.zip';
     if (this.scenarioId) {
       this.scenarioService
         .downloadCsvData(this.scenarioId)
@@ -44,7 +45,7 @@ export class ScenarioResultsComponent implements OnChanges {
   }
 
   downloadShapeFiles() {
-    const filename = this.scenarioName.replace(/[\s./\\/]/g, '_') + '_shp.zip';
+    const filename = getSafeFileName(this.scenarioName) + '_shp.zip';
     if (this.scenarioId) {
       this.scenarioService
         .downloadShapeFiles(this.scenarioId)

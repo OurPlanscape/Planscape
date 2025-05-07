@@ -1,6 +1,7 @@
 <app-acres-treated></app-acres-treated>
 <ng-container *appFeatureFlag="'statewide_datalayers'">
   <mat-tab-group
+    #tabGroup
     class="summary-tab-group"
     mat-align-tabs="start"
     disablePagination="true">
@@ -11,6 +12,7 @@
       <app-data-layers></app-data-layers>
     </mat-tab>
     <mat-tab label="Base Layers" *appFeatureFlag="'statewide_baselayers'">
+      <app-base-layers></app-base-layers>
     </mat-tab>
   </mat-tab-group>
 </ng-container>

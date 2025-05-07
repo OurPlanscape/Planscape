@@ -1,8 +1,8 @@
 import {
-  Meta,
-  StoryObj,
-  moduleMetadata,
   argsToTemplate,
+  Meta,
+  moduleMetadata,
+  StoryObj,
 } from '@storybook/angular';
 import { NotesSidebarComponent } from './notes-sidebar.component';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -29,7 +29,7 @@ const meta: Meta<NotesSidebarComponent> = {
   ],
   render: ({ ...args }) => ({
     props: args,
-    template: `<div style="width:400px;height:700px;border:1px black solid;"><sg-notes-sidebar ${argsToTemplate(args)}>
+    template: `<div style='width:400px;height:700px;border:1px black solid;'><sg-notes-sidebar ${argsToTemplate(args)}>
             </sg-notes-sidebar></div>`,
   }),
 };
@@ -121,6 +121,26 @@ export const OneNote: Story = {
 export const WithHeader: Story = {
   args: {
     showHeader: true,
+    notes: [
+      {
+        id: 2,
+        user_id: 11,
+        user_name: 'Just a Commenter',
+        content: 'Here is some content',
+        created_at: '2024-02-01',
+        can_delete: true,
+      },
+    ],
+    noNotesTitleText: 'No Notes Yet',
+    noNotesDetailText:
+      'Start adding notes to help your team learn more about this section.',
+  },
+};
+
+export const DisabledAddNote: Story = {
+  args: {
+    showHeader: true,
+    canAddNotes: false,
     notes: [
       {
         id: 2,

@@ -2,8 +2,8 @@
 <div *ngIf="!hasNotes()" class="no-notes-view">
   <div class="no-notes-blurb">
     <mat-icon class="add-notes-icon material-symbols-outlined"
-      >add_notes</mat-icon
-    >
+      >add_notes
+    </mat-icon>
     <div class="no-notes-header">{{ noNotesTitleText }}</div>
     <div class="no-notes-text">
       {{ noNotesDetailText }}
@@ -42,11 +42,8 @@
     </div>
   </div>
 </div>
-<div class="add-note-box">
-  <mat-form-field
-    appearance="outline"
-    class="add-note-field"
-    appearance="outline">
+<div class="add-note-box" *ngIf="canAddNotes">
+  <mat-form-field appearance="outline" class="add-note-field">
     <textarea
       class="add-note-textarea"
       (keydown.enter)="addNote($event)"

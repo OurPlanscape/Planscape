@@ -3,6 +3,7 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
+  environment: '',
   production: false,
   backend_endpoint: 'http://localhost:8000/planscape-backend',
   google_analytics_id: '', // Replace with actual ID.
@@ -12,6 +13,8 @@ export const environment = {
   mapbox_key: '',
   open_panel_key: '',
   open_panel_enabled: false,
+  debug_layers: false,
+  sentry_dsn_url: '',
 };
 
 /*

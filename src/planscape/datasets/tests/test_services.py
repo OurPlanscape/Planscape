@@ -101,7 +101,9 @@ class TestSearch(TransactionTestCase):
     def test_end_to_end(self):
         organization = OrganizationFactory.create(name="my cool fire org")
         dataset = DatasetFactory(
-            organization=organization, name="my awesome fire dataset"
+            organization=organization,
+            name="my awesome fire dataset",
+            visibility="PUBLIC",
         )
         category1 = Category.add_root(
             created_by=organization.created_by,

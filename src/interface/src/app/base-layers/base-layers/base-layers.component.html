@@ -1,0 +1,12 @@
+<div class="scrollable">
+  <app-base-layers-list
+    *ngFor="let categorizedBaseLayer of categorizedBaseLayers$ | async"
+    [categorizedBaseLayer]="categorizedBaseLayer"
+    [selectedLayersId]="(selectedLayersId$ | async) || []"
+    (layerSelected)="updateSelectedLayer($event)"></app-base-layers-list>
+</div>
+<div class="footer" *ngIf="selectedLayers$ | async">
+  <button sg-button (click)="clearBaseLayer()" variant="text" class="clear-btn">
+    Clear
+  </button>
+</div>
