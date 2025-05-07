@@ -6,9 +6,12 @@ from datasets.models import DataLayer, Style
 def get_default_vector_style(**kwargs) -> Dict[str, Any]:
     # for now uses maplibre default stuff
     return {
-        "fill-color": "#0096FF",
-        "fill-outline-color": "#0000FF",
-        "fill-opacity": 0.4,
+        "id": 0,
+        "data": {
+            "fill-color": "#0096FF",
+            "fill-outline-color": "#0000FF",
+            "fill-opacity": 0.4,
+        },
     }
 
 
