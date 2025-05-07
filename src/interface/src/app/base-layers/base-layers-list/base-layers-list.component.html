@@ -28,12 +28,11 @@
           class="base-layer-legend"
           *ngIf="isSelectedLayer(layer.id)"
           [style.backgroundColor]="
-            layer.styles[0].data.paint['fill-color'] ||
-            BASE_LAYERS_DEFAULT.COLOR
+            layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
           "
-          [style.opacity]="
-            layer.styles[0].data.paint['fill-opacity'] ||
-            BASE_LAYERS_DEFAULT.OPACITY
+          [style.border-color]="
+            layer.styles[0].data['fill-outline-color'] ||
+            BASE_LAYERS_DEFAULT.COLOR
           "></span>
       </mat-checkbox>
     </div>
