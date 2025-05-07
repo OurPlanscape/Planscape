@@ -19,9 +19,17 @@ import { extractLegendInfo } from './utilities';
   providedIn: 'root',
 })
 export class DataLayersStateService {
-  readonly limit = 20;
+  readonly limit = 2;
 
-  dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
+  private _datasetsOffset = new BehaviorSubject(0);
+
+  dataSets$ = this._datasetsOffset.pipe(
+    switchMap((offset) => {
+      this.loadingSubject.next(false);
+      return this.service.listDataSets(this.limit, offset);
+    }),
+    shareReplay(1)
+  );
   private _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
@@ -150,6 +158,10 @@ export class DataLayersStateService {
 
   changePage(page: number) {
     this._offset.next((page - 1) * this.limit);
+  }
+
+  changeDatasetsPage(page: number) {
+    this._datasetsOffset.next((page - 1) * this.limit);
   }
 
   clearSearch() {

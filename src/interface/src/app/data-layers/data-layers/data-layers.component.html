@@ -68,7 +68,16 @@
     diameter="20"
     class="loader"></mat-spinner>
 </div>
+
 <div class="footer" *ngIf="showFooter$ | async">
+  <!-- Base datasets pagination-->
+  <ng-container *ngIf="datasetPages">
+    <sg-paginator
+      [compact]="true"
+      [pageCount]="datasetPages"
+      (pageChanged)="showDatasetsPage($event)"></sg-paginator>
+  </ng-container>
+  <!-- Search pagination -->
   <ng-container *ngIf="pages && (isBrowsing$ | async) === false">
     <sg-paginator
       [compact]="true"
