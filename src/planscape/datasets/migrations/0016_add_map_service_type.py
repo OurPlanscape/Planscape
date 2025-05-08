@@ -8,10 +8,8 @@ def backfill_map_service_type(apps, schema_editor):
     Backfills existing datalayers with their map service types.
     """
     DataLayer = apps.get_model("datasets", "DataLayer")
-
-    for dl in DataLayer.objects.all():
-        dl.map_service_type = "VECTORTILES" if dl.type == "VECTOR" else "COG"
-        dl.save(update_fields=["map_service_type"])
+    DataLayer.objects.filter(type="VECTOR").update(map_service_type="VECTORTILES")
+    DataLayer.objects.exclude(type="VECTOR").update(map_service_type="COG")
 
 
 class Migration(migrations.Migration):
