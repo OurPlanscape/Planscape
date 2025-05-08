@@ -43,10 +43,10 @@ def datalayer_uploaded(
 def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
     """
     Check if the datastore table exists in the database,
-    and if it has the correct number of shapes.
+    and if it has the correct number of features.
     :param datastore_table_name: The name of the datastore table to check.
     :param: Datalayer object to check against.
-    :raises ValueError: If the datastore table does not exist or has the wrong number of shapes.
+    :raises ValueError: If the datastore table does not exist or has the wrong number of features.
     """
     expected_count = datalayer.info[datalayer.info.keys()[0]].get("count")  # type: ignore
     with connection.cursor() as cursor:
@@ -57,13 +57,13 @@ def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
         actual_count = cursor.fetchone()[0]  # type: ignore
     if expected_count != actual_count:
         logger.error(
-            "Datastore table %s has %s shapes, but expected %s.",
+            "Datastore table %s has %s features, but expected %s.",
             datastore_table_name,
             actual_count,
             expected_count,
         )
         raise ValueError(
-            "Datastore table %s has %s shapes, but expected %s.",
+            "Datastore table %s has %s features, but expected %s.",
             datastore_table_name,
             actual_count,
             expected_count,
