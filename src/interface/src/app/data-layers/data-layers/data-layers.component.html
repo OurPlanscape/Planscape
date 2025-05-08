@@ -71,7 +71,7 @@
 
 <div class="footer" *ngIf="showFooter$ | async">
   <!-- Base datasets pagination-->
-  <ng-container *ngIf="datasetPages">
+  <ng-container *ngIf="datasetPages && (isBrowsing$ | async) === true">
     <sg-paginator
       [compact]="true"
       [pageCount]="datasetPages"
