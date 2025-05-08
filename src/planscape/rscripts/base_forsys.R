@@ -14,6 +14,8 @@ library("tidyr")
 library("friendlyeval")
 library("uuid")
 
+import::from(queries.R, .all=TRUE)
+
 DEFAULT_COST_PER_ACRE <- 2470
 SHORT_TONS_ACRE_TO_SHORT_TONS_CELL <- 0.2224
 MGC_HA_TO_MGC_CELL <- 0.09
@@ -229,6 +231,36 @@ priority_to_condition <- function(connection, scenario, priority) {
   return(tibble(head(result, 1)))
 }
 
+get_restriction_v2 <- function(connection, scenario_id, datalayer_table_name) {
+  statement <- "
+    WITH plan_scenario AS (
+      SELECT
+        pp.id AS \"planning_area_id\",
+        ps.id AS \"scenario_id\",
+        pp.geometry
+    FROM planning_planningarea pp
+    LEFT JOIN planning_scenario ps ON (ps.planning_area_id = pp.id)
+    WHERE
+        ps.id = {scenario_id}
+    )
+    SELECT
+      ST_Transform(ST_Union(ST_Buffer(rr.geometry, 0)), 5070) as \"geometry\"
+    FROM {datalayer_table_name} rr, plan_scenario
+    WHERE
+      rr.geometry && plan_scenario.geometry AND
+      ST_Intersects(rr.geometry, plan_scenario.geometry)"
+  restrictions_statement <- glue_sql(statement, scenario_id = scenario_id, datalayer_table_name = datalayer_table_name, .con = connection)
+  crs <- st_crs(5070)
+  restriction_data <- st_read(
+    dsn = connection,
+    layer = NULL,
+    query = restrictions_statement,
+    geometry_column = "geometry",
+    crs = crs
+  )
+  return(restriction_data)
+}
+
 get_restrictions <- function(connection, scenario_id, restrictions) {
   statement <- "
     WITH plan_scenario AS (
@@ -296,8 +328,16 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
 
   if (length(restrictions) > 0) {
     log_info("Restrictions found!")
-    restriction_data <- get_restrictions(connection, scenario_id, restrictions)
-    stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
+    if (FORSYS_V2) {
+      for(datalayer_id in seq_along(restrictions)) {
+        restriction <- get_datalayer_by_id(datalayer_id)
+        restriction_data <- get_restriction_v2(connection, scenario_id, restriction)
+        stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
+      }
+    } else {
+      restriction_data <- get_restrictions(connection, scenario_id, restrictions)
+      stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
+    }
   }
   return(stands)
 }
