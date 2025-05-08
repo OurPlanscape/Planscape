@@ -28,7 +28,7 @@ def datalayer_uploaded(
         datalayer.status = status
         if datalayer.type == DataLayerType.VECTOR:
             datastore_table = ogr2ogr(datalayer.url)
-            check_datastore_table(datastore_table)
+            validate_datastore_table(datastore_table, datalayer.info)
             datalayer.table = datastore_table
     except Exception:
         logger.exception(
@@ -40,25 +40,30 @@ def datalayer_uploaded(
         datalayer.save()
 
 
-def check_datastore_table(datastore_table_name: str) -> bool:
+def validate_datastore_table(datastore_table_name: str, info: dict):
     """
-    Check if the datastore table exists in the database.
+    Check if the datastore table exists in the database,
+    and if it has the correct number of shapes.
     :param datastore_table_name: The name of the datastore table to check.
-    :return: True if the table exists, False otherwise.
+    :param info: Datalayer's info field.
     """
-    table_schema = datastore_table_name.split(".")[0]
-    table_name = datastore_table_name.split(".")[1]
+    expected_count = info[info.keys()[0]].get("count")  # type: ignore
     with connection.cursor() as cursor:
         cursor.execute(
-            "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_schema = %s AND table_name = %s)",
-            [table_schema, table_name],
+            "SELECT count(*) FROM %s",
+            [datastore_table_name],
         )
-        exists = cursor.fetchone()[0]
-    if not exists:
-        logger.exception(
-            "Datastore table %s does not exist in the database.", datastore_table_name
+        actual_count = cursor.fetchone()[0]  # type: ignore
+    if expected_count != actual_count:
+        logger.error(
+            "Datastore table %s has %s shapes, but expected %s.",
+            datastore_table_name,
+            actual_count,
+            expected_count,
         )
         raise ValueError(
-            f"Datastore table {datastore_table_name} does not exist in the database."
+            "Datastore table %s has %s shapes, but expected %s.",
+            datastore_table_name,
+            actual_count,
+            expected_count,
         )
-    return exists
