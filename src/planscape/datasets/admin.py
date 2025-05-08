@@ -81,6 +81,7 @@ class DataLayerAdmin(admin.ModelAdmin):
         "geometry_type",
         "type",
         "storage_type",
+        "map_service_type",
         "original_name",
         "mimetype",
         "table",
