@@ -16,16 +16,19 @@ export const environment = {
   debug_layers: false,
   sentry: {
     dsn_url: '',
-    enable_profiling: true,
-    enable_profiling_sample_rate: 0.1, // this is a percentage
-    enable_context_lines: false,
+    // See Sentry javascript integrations for details
     enable_extra_error_data: true,
     enable_httpclient: true,
     enable_browser_reporting: true,
     enable_interventions_reporting: true,
-    enable_deprecations_reporting: false,
     enable_crash_reporting: true,
-    tracesSampleRate: 0.3, // percentage
+
+    // items that we should disable for production
+    enable_profiling: false,
+    traces_sample_rate: 0.0, // percentage
+    profiling_sample_rate: 0.0, // percentage
+    enable_context_lines: false,
+    enable_deprecations_reporting: false,
   },
 };
 
