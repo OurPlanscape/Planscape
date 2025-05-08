@@ -50,9 +50,7 @@ def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
     """
     expected_count = datalayer.info[list(datalayer.info.keys())[0]].get("count")  # type: ignore
     with connection.cursor() as cursor:
-        cursor.execute(
-            f"SELECT count(*) FROM {datastore_table_name}"
-        )
+        cursor.execute(f"SELECT count(*) FROM {datastore_table_name}")
         actual_count = cursor.fetchone()[0]  # type: ignore
     if expected_count != actual_count:
         logger.error(
