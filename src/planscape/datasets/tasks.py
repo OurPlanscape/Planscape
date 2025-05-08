@@ -48,7 +48,7 @@ def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
     :param: Datalayer object to check against.
     :raises ValueError: If the datastore table does not exist or has the wrong number of features.
     """
-    expected_count = datalayer.info[datalayer.info.keys()[0]].get("count")  # type: ignore
+    expected_count = datalayer.info[list(datalayer.info.keys())[0]].get("count")  # type: ignore
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT count(*) FROM %s",
