@@ -14,7 +14,19 @@ export const environment = {
   open_panel_key: '',
   open_panel_enabled: false,
   debug_layers: false,
-  sentry_dsn_url: '',
+  sentry: {
+    dsn_url: '',
+    enable_profiling: true,
+    enable_profiling_sample_rate: 0.1, // this is a percentage
+    enable_context_lines: false,
+    enable_extra_error_data: true,
+    enable_httpclient: true,
+    enable_browser_reporting: true,
+    enable_interventions_reporting: true,
+    enable_deprecations_reporting: false,
+    enable_crash_reporting: true,
+    tracesSampleRate: 0.3, // percentage
+  },
 };
 
 /*
