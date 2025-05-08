@@ -1,6 +1,7 @@
 repos <- "http://cran.rstudio.com/"
 if (!require("remotes")) install.packages("remotes", repos=repos)
 if (!require("pacman")) install.packages("pacman", repos=repos)
+if (!require("import")) install.packages("import", repos=repos)
 library(remotes)
 library(pacman)
 packages <- c(
