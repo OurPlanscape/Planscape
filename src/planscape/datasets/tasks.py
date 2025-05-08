@@ -28,7 +28,7 @@ def datalayer_uploaded(
         datalayer.status = status
         if datalayer.type == DataLayerType.VECTOR:
             datastore_table = ogr2ogr(datalayer.url)
-            validate_datastore_table(datastore_table, datalayer.info)
+            validate_datastore_table(datastore_table, datalayer)
             datalayer.table = datastore_table
     except Exception:
         logger.exception(
@@ -40,14 +40,15 @@ def datalayer_uploaded(
         datalayer.save()
 
 
-def validate_datastore_table(datastore_table_name: str, info: dict):
+def validate_datastore_table(datastore_table_name: str, datalayer: DataLayer):
     """
     Check if the datastore table exists in the database,
     and if it has the correct number of shapes.
     :param datastore_table_name: The name of the datastore table to check.
-    :param info: Datalayer's info field.
+    :param: Datalayer object to check against.
+    :raises ValueError: If the datastore table does not exist or has the wrong number of shapes.
     """
-    expected_count = info[info.keys()[0]].get("count")  # type: ignore
+    expected_count = datalayer.info[datalayer.info.keys()[0]].get("count")  # type: ignore
     with connection.cursor() as cursor:
         cursor.execute(
             "SELECT count(*) FROM %s",
