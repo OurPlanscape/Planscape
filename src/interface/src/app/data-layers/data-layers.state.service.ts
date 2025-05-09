@@ -25,13 +25,11 @@ export class DataLayersStateService {
   private _datasetsCurrentPage$ = new BehaviorSubject(1);
   datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();
 
-  private _datasetsOffset$ = new BehaviorSubject(0);
-  datasetsOffset$ = this._datasetsOffset$.asObservable();
-
-  dataSets$ = this._datasetsOffset$.pipe(
+  dataSets$ = this._datasetsCurrentPage$.pipe(
     distinctUntilChanged(),
     tap(() => this.loadingSubject.next(true)),
-    switchMap((offset) => {
+    switchMap((currentPage) => {
+      const offset = (currentPage - 1) * this.limit;
       return this.service.listDataSets(this.limit, offset);
     }),
     tap(() => {
@@ -171,7 +169,6 @@ export class DataLayersStateService {
 
   changeDatasetsPage(page: number) {
     this._datasetsCurrentPage$.next(page);
-    this._datasetsOffset$.next((page - 1) * this.limit);
   }
 
   clearSearch() {
