@@ -109,13 +109,13 @@ export interface BaseLayer extends Omit<DataLayer, 'public_url' | 'styles'> {
   // base layers have only one path/category.
   path: [string];
   map_url: string;
-  styles: {
-    data: {
-      paint: {
+  styles: [
+    {
+      data: {
         [key: string]: string;
       };
-    };
-  };
+    },
+  ];
 }
 
 export interface CategorizedBaseLayers {

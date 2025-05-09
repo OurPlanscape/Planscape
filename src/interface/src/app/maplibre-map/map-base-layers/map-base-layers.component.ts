@@ -41,8 +41,7 @@ export class MapBaseLayersComponent {
   lineLayerPaint(layer: BaseLayer) {
     return {
       'line-color':
-        layer.styles.data.paint['fill-outline-color'] ||
-        BASE_LAYERS_DEFAULT.COLOR,
+        layer.styles[0].data['fill-outline-color'] || BASE_LAYERS_DEFAULT.COLOR,
       'line-width': [
         'case',
         ['boolean', ['feature-state', 'hover'], false],
@@ -55,7 +54,7 @@ export class MapBaseLayersComponent {
   fillLayerPaint(layer: BaseLayer) {
     return {
       'fill-color':
-        layer.styles.data.paint['fill-color'] || BASE_LAYERS_DEFAULT.COLOR,
+        layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR,
 
       'fill-opacity': [
         'case',
