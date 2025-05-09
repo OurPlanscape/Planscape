@@ -75,6 +75,8 @@ export class DataLayersComponent {
 
   searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
     tap(() => {
+      // reset datasetPagination
+      this.dataLayersStateService.resetDatasetsPagination();
       // reset count when the search term changes
       this.resultCount = 0;
     })
@@ -113,6 +115,22 @@ export class DataLayersComponent {
     )
   );
 
+  showDatasets$ = combineLatest([this.dataSets$, this.loading$]).pipe(
+    map(([dataSets, loading]) => {
+      console.log('loading: ', loading, dataSets);
+      return dataSets?.results.length > 0 && !loading;
+    })
+  );
+
+  showDatasetPagination$ = combineLatest([
+    this.selectedDataSet$,
+    this.isBrowsing$,
+  ]).pipe(
+    map(([selectedDataSet, isBrowsing]) => {
+      return !selectedDataSet && isBrowsing;
+    })
+  );
+
   get pages() {
     return this.resultCount
       ? Math.ceil(this.resultCount / this.dataLayersStateService.limit)
@@ -143,10 +161,12 @@ export class DataLayersComponent {
   }
 
   goBack() {
+    this.dataLayersStateService.resetDatasetsPagination();
     this.dataLayersStateService.goBackToSearchResults();
   }
 
   clearSearch() {
+    this.dataLayersStateService.resetDatasetsPagination();
     this.dataLayersStateService.clearSearch();
   }
 

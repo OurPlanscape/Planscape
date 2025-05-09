@@ -3,6 +3,7 @@ import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
   combineLatest,
+  distinctUntilChanged,
   map,
   Observable,
   of,
@@ -22,11 +23,16 @@ export class DataLayersStateService {
   readonly limit = 2;
 
   private _datasetsOffset = new BehaviorSubject(0);
+  datasetsOffset$ = this._datasetsOffset.asObservable();
 
   dataSets$ = this._datasetsOffset.pipe(
+    distinctUntilChanged(),
+    tap(() => this.loadingSubject.next(true)),
     switchMap((offset) => {
-      this.loadingSubject.next(false);
       return this.service.listDataSets(this.limit, offset);
+    }),
+    tap(() => {
+      this.loadingSubject.next(false);
     }),
     shareReplay(1)
   );
@@ -190,6 +196,10 @@ export class DataLayersStateService {
       this.selectDataSet(dataSet as DataSet);
     }
     this._paths$.next(layer.path);
+  }
+
+  resetDatasetsPagination() {
+    this._datasetsOffset.next(0);
   }
 
   resetPath() {
