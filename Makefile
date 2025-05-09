@@ -53,9 +53,13 @@ compile-angular:
 build-storybook:
 	cd src/interface && npm run build-storybook
 
-deploy-frontend: install-dependencies-frontend compile-angular
-	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
+remove-sourcemaps:
+	rm -rf ./src/interface/dist/out/**.js.map
 
+
+deploy-frontend: install-dependencies-frontend compile-angular remove-sourcemaps
+	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
+	
 deploy-storybook: install-dependencies-frontend build-storybook
 	cp -r ./src/interface/storybook-static/** ${STORYBOOK_WWW_DIR}
 
