@@ -35,7 +35,10 @@ import { environment } from 'src/environments/environment';
 import { DeleteDialogComponent } from './standalone/delete-dialog/delete-dialog.component';
 
 import { PlanningAreasComponent } from './standalone/planning-areas/planning-areas.component';
-import { MatDialogModule } from '@angular/material/dialog';
+import {
+  MAT_DIALOG_DEFAULT_OPTIONS,
+  MatDialogModule,
+} from '@angular/material/dialog';
 import { OverlayLoaderComponent } from '../styleguide/overlay-loader/overlay-loader.component';
 import * as Sentry from '@sentry/angular';
 
@@ -85,6 +88,13 @@ import * as Sentry from '@sentry/angular';
     {
       provide: ErrorHandler,
       useValue: Sentry.createErrorHandler(),
+    },
+    {
+      provide: MAT_DIALOG_DEFAULT_OPTIONS,
+      useValue: {
+        autoFocus: false,
+        delayFocusTrap: false,
+      },
     },
   ],
   bootstrap: [AppComponent],
