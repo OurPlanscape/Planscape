@@ -115,7 +115,6 @@ export class DataLayersComponent {
 
   showDatasets$ = combineLatest([this.dataSets$, this.loading$]).pipe(
     map(([dataSets, loading]) => {
-      console.log('loading: ', loading, dataSets);
       return dataSets?.results.length > 0 && !loading;
     })
   );
@@ -139,6 +138,12 @@ export class DataLayersComponent {
     return this.datasetCount
       ? Math.ceil(this.datasetCount / this.dataLayersStateService.limit)
       : 0;
+  }
+
+  get datasetOffset() {
+    return this.dataLayersStateService.datasetsOffset$.pipe(
+      map((offset) => (offset === 0 ? 1 : offset))
+    );
   }
 
   search(term: string) {

@@ -22,10 +22,10 @@ import { extractLegendInfo } from './utilities';
 export class DataLayersStateService {
   readonly limit = 2;
 
-  private _datasetsOffset = new BehaviorSubject(0);
-  datasetsOffset$ = this._datasetsOffset.asObservable();
+  private _datasetsOffset$ = new BehaviorSubject(0);
+  datasetsOffset$ = this._datasetsOffset$.asObservable();
 
-  dataSets$ = this._datasetsOffset.pipe(
+  dataSets$ = this._datasetsOffset$.pipe(
     distinctUntilChanged(),
     tap(() => this.loadingSubject.next(true)),
     switchMap((offset) => {
@@ -167,7 +167,7 @@ export class DataLayersStateService {
   }
 
   changeDatasetsPage(page: number) {
-    this._datasetsOffset.next((page - 1) * this.limit);
+    this._datasetsOffset$.next((page - 1) * this.limit);
   }
 
   clearSearch() {
