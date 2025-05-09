@@ -204,7 +204,7 @@ describe('CreateScenariosComponent', () => {
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 857,
+        max_area: 857,
       });
 
       fixture.detectChanges();
@@ -215,11 +215,11 @@ describe('CreateScenariosComponent', () => {
       let isDisabled = await buttonHarness.isDisabled();
       expect(isDisabled).toBe(true);
 
-      // valid `max_treatment_area_ratio`
+      // valid `max_area`
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 3000,
+        max_area: 3000,
       });
       isDisabled = await buttonHarness.isDisabled();
       expect(isDisabled).toBe(false);
@@ -227,7 +227,7 @@ describe('CreateScenariosComponent', () => {
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 3885733333333,
+        max_area: 3885733333333,
       });
       isDisabled = await buttonHarness.isDisabled();
       expect(isDisabled).toBe(true);
@@ -252,7 +252,7 @@ describe('CreateScenariosComponent', () => {
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 3000,
+        max_area: 3000,
       });
 
       fixture.detectChanges();
@@ -293,7 +293,7 @@ describe('CreateScenariosComponent', () => {
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_treatment_area_ratio: 3000,
+        max_area: 3000,
       });
 
       component.generatingScenario = false;

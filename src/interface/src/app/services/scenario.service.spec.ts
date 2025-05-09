@@ -43,11 +43,11 @@ describe('ScenarioService', () => {
   describe('getScenario', () => {
     it('should make HTTP request to backend', fakeAsync(() => {
       const scenarioConfig: ScenarioConfig = {
-        est_cost: undefined,
+        estimated_cost: undefined,
         max_budget: undefined,
         min_distance_from_road: undefined,
         max_slope: undefined,
-        max_treatment_area_ratio: undefined,
+        max_area: undefined,
         treatment_question: null,
         project_areas: [],
         excluded_areas: undefined,
@@ -86,10 +86,10 @@ describe('ScenarioService', () => {
     };
     it('should make HTTP request to backend', fakeAsync(() => {
       const scenarioConfig: ScenarioConfig = {
-        est_cost: 1,
+        estimated_cost: 1,
         min_distance_from_road: 1,
         max_slope: 1,
-        max_treatment_area_ratio: 1,
+        max_area: 1,
         excluded_areas: undefined,
         max_budget: 200,
         treatment_question: defaultSelectedQuestion,
@@ -104,10 +104,10 @@ describe('ScenarioService', () => {
       };
 
       const backendConfig = {
-        est_cost: 1,
+        estimated_cost: 1,
         min_distance_from_road: 1,
         max_slope: 1,
-        max_treatment_area_ratio: 1,
+        max_area: 1,
         excluded_areas: undefined,
         max_budget: 200,
         scenario_output_fields: [''],

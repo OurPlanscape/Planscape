@@ -26,25 +26,27 @@ export interface Scenario {
  * TODO this type is used for the backend payload
  * as well as the frontend interface before saving the scenario.
  * This is bad, as the types are not the same.
- * For example, `treatment_question` only exists on the FE but does not exists on
+ * For example, `treatment_goal` only exists on the FE but does not exists on
  * the backend payload.
  * Similarly, `question_id` only exists on the backend payload, while on the FE side
- * this is part of `treatment_question`.
+ * this is part of `treatment_goal`.
  */
 export interface ScenarioConfig {
-  est_cost?: number;
+  estimated_cost?: number;
   max_budget?: number;
+  max_area?: number | null;
+  max_project_count?: number;
   max_slope?: number;
-  max_treatment_area_ratio?: number;
   min_distance_from_road?: number;
   // TODO is this even being used??
   project_areas?: ProjectArea[];
   treatment_question?: TreatmentQuestionConfig | null;
-  excluded_areas?: string[];
-  stand_size?: string;
+  excluded_areas?: number[];
+  stand_size?: 'SMALL' | 'MEDIUM' | 'LARGE';
   scenario_priorities?: string[];
   question_id?: number;
   scenario_output_fields?: string[]; // this value comes from saved scenarios
+  seed?: number | null;
 }
 
 export interface ScenarioResult {
