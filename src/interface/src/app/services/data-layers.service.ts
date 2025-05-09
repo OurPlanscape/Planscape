@@ -16,12 +16,12 @@ import { map } from 'rxjs';
 export class DataLayersService {
   constructor(private http: HttpClient) {}
 
-  listDataSets() {
+  listDataSets(limit: number, offset?: number) {
     return this.http.get<Pagination<DataSet>>(
       environment.backend_endpoint + '/v2/datasets/',
       {
         withCredentials: true,
-        params: {},
+        params: { limit: limit, ...(offset ? { offset } : {}) },
       }
     );
   }
