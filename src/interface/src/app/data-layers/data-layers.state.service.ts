@@ -20,7 +20,7 @@ import { extractLegendInfo } from './utilities';
   providedIn: 'root',
 })
 export class DataLayersStateService {
-  readonly limit = 2;
+  readonly limit = 20;
 
   private _datasetsOffset$ = new BehaviorSubject(0);
   datasetsOffset$ = this._datasetsOffset$.asObservable();
