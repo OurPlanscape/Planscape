@@ -58,6 +58,8 @@ def ogr2ogr_cli(
         "FID=id",
         "-lco",
         "FID64=TRUE",
+        "-lco",
+        "precision=NO",
         conn,
         input_file,
     ]
