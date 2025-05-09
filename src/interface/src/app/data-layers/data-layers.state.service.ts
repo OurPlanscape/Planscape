@@ -3,6 +3,7 @@ import { DataLayersService } from '@services/data-layers.service';
 import {
   BehaviorSubject,
   combineLatest,
+  distinctUntilChanged,
   map,
   Observable,
   of,
@@ -21,7 +22,21 @@ import { extractLegendInfo } from './utilities';
 export class DataLayersStateService {
   readonly limit = 20;
 
-  dataSets$ = this.service.listDataSets().pipe(shareReplay(1));
+  private _datasetsCurrentPage$ = new BehaviorSubject(1);
+  datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();
+
+  dataSets$ = this._datasetsCurrentPage$.pipe(
+    distinctUntilChanged(),
+    tap(() => this.loadingSubject.next(true)),
+    switchMap((currentPage) => {
+      const offset = (currentPage - 1) * this.limit;
+      return this.service.listDataSets(this.limit, offset);
+    }),
+    tap(() => {
+      this.loadingSubject.next(false);
+    }),
+    shareReplay(1)
+  );
   private _selectedDataSet$ = new BehaviorSubject<DataSet | null>(null);
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
@@ -150,6 +165,10 @@ export class DataLayersStateService {
 
   changePage(page: number) {
     this._offset.next((page - 1) * this.limit);
+  }
+
+  changeDatasetsPage(page: number) {
+    this._datasetsCurrentPage$.next(page);
   }
 
   clearSearch() {
