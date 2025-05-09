@@ -14,7 +14,22 @@ export const environment = {
   open_panel_key: '',
   open_panel_enabled: false,
   debug_layers: false,
-  sentry_dsn_url: '',
+  sentry: {
+    dsn_url: '',
+    // See Sentry javascript integrations for details
+    enable_extra_error_data: true,
+    enable_httpclient: true,
+    enable_browser_reporting: true,
+    enable_interventions_reporting: true,
+    enable_crash_reporting: true,
+
+    // items that we should disable for production
+    enable_profiling: false,
+    traces_sample_rate: 0.0, // percentage
+    profiling_sample_rate: 0.0, // percentage
+    enable_context_lines: false,
+    enable_deprecations_reporting: false,
+  },
 };
 
 /*
