@@ -140,11 +140,7 @@ export class DataLayersComponent {
       : 0;
   }
 
-  get datasetOffset() {
-    return this.dataLayersStateService.datasetsOffset$.pipe(
-      map((offset) => (offset === 0 ? 1 : offset))
-    );
-  }
+  datasetCurrentPage$ = this.dataLayersStateService.datasetsCurrentPage$;
 
   search(term: string) {
     this.dataLayersStateService.search(term);

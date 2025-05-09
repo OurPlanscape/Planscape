@@ -76,8 +76,8 @@
   <ng-container
     *ngIf="datasetPages && (showDatasetPagination$ | async) === true">
     <sg-paginator
-      *ngIf="datasetOffset | async as offset"
-      [currentPage]="offset"
+      *ngIf="datasetCurrentPage$ | async as currentPage"
+      [currentPage]="currentPage"
       [compact]="true"
       [pageCount]="datasetPages"
       (pageChanged)="showDatasetsPage($event)"></sg-paginator>

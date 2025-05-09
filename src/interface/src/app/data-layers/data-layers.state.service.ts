@@ -22,6 +22,9 @@ import { extractLegendInfo } from './utilities';
 export class DataLayersStateService {
   readonly limit = 20;
 
+  private _datasetsCurrentPage$ = new BehaviorSubject(1);
+  datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();
+
   private _datasetsOffset$ = new BehaviorSubject(0);
   datasetsOffset$ = this._datasetsOffset$.asObservable();
 
@@ -167,6 +170,7 @@ export class DataLayersStateService {
   }
 
   changeDatasetsPage(page: number) {
+    this._datasetsCurrentPage$.next(page);
     this._datasetsOffset$.next((page - 1) * this.limit);
   }
 
