@@ -198,10 +198,6 @@ export class DataLayersStateService {
     this._paths$.next(layer.path);
   }
 
-  resetDatasetsPagination() {
-    this._datasetsOffset.next(0);
-  }
-
   resetPath() {
     this._paths$.next([]);
   }

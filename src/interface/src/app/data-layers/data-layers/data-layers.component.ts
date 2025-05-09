@@ -75,8 +75,6 @@ export class DataLayersComponent {
 
   searchTerm$ = this.dataLayersStateService.searchTerm$.pipe(
     tap(() => {
-      // reset datasetPagination
-      this.dataLayersStateService.resetDatasetsPagination();
       // reset count when the search term changes
       this.resultCount = 0;
     })
@@ -161,12 +159,10 @@ export class DataLayersComponent {
   }
 
   goBack() {
-    this.dataLayersStateService.resetDatasetsPagination();
     this.dataLayersStateService.goBackToSearchResults();
   }
 
   clearSearch() {
-    this.dataLayersStateService.resetDatasetsPagination();
     this.dataLayersStateService.clearSearch();
   }
 
