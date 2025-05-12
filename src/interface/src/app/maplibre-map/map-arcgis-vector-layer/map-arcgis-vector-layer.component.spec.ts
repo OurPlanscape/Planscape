@@ -8,10 +8,9 @@ describe('MapArcgisVectorLayerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapArcgisVectorLayerComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapArcgisVectorLayerComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapArcgisVectorLayerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

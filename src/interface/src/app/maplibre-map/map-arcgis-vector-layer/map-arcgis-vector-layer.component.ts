@@ -1,6 +1,7 @@
-import { Component, Input, OnDestroy } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
 import { Map as MapLibreMap } from 'maplibre-gl';
+import { BaseLayer } from '@types';
 
 @Component({
   selector: 'app-map-arcgis-vector-layer',
@@ -9,17 +10,38 @@ import { Map as MapLibreMap } from 'maplibre-gl';
   templateUrl: './map-arcgis-vector-layer.component.html',
   styleUrl: './map-arcgis-vector-layer.component.scss',
 })
-export class MapArcgisVectorLayerComponent implements OnDestroy {
+export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
-  @Input() layerId!: string;
+  @Input() layer!: BaseLayer;
 
-  private arcGisService = new FeatureService(this.layerId, this.mapLibreMap, {
-    url: 'https://portal.spatial.nsw.gov.au/server/rest/services/NSW_Administrative_Boundaries_Theme/FeatureServer/6',
-  });
+  get layerId() {
+    return 'arcgis_layer' + this.layer.id;
+  }
+
+  get sourceId() {
+    return 'arcgis_source_' + this.layer.id;
+  }
+
+  private arcGisService: FeatureService | null = null;
 
   ngOnDestroy(): void {
-    const layerId = 'layerID'; // TODO
-    this.mapLibreMap.removeLayer(layerId);
-    this.arcGisService.destroySource();
+    this.mapLibreMap.removeLayer(this.layerId);
+    if (this.arcGisService) {
+      this.arcGisService.destroySource();
+    }
+  }
+
+  ngOnInit(): void {
+    this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
+      url: this.layer.map_url,
+      setAttributionFromService: false,
+    });
+
+    this.mapLibreMap.addLayer({
+      id: this.layerId,
+      source: this.sourceId,
+      type: 'fill',
+      paint: this.layer.styles[0].data,
+    });
   }
 }

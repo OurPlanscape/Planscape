@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
-import { AsyncPipe, NgForOf } from '@angular/common';
+import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
   LayerComponent,
@@ -14,6 +14,7 @@ import {
 import { BaseLayer } from '@types';
 import { BASE_LAYERS_DEFAULT } from '@shared';
 import { UntilDestroy } from '@ngneat/until-destroy';
+import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 
 @UntilDestroy()
 @Component({
@@ -25,6 +26,8 @@ import { UntilDestroy } from '@ngneat/until-destroy';
     VectorSourceComponent,
     LayerComponent,
     ControlComponent,
+    NgIf,
+    MapArcgisVectorLayerComponent,
   ],
   templateUrl: './map-base-layers.component.html',
   styleUrl: './map-base-layers.component.scss',

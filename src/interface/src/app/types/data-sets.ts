@@ -103,6 +103,8 @@ export interface DataLayer {
   styles: Styles[];
   geometry: Geometry;
   public_url: string;
+
+  map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
 }
 
 export interface BaseLayer extends Omit<DataLayer, 'public_url' | 'styles'> {

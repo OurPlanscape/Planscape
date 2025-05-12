@@ -6,11 +6,7 @@ declare module 'mapbox-gl-arcgis-featureserver' {
   }
 
   export class FeatureService {
-    constructor(
-      sourceId: string,
-      map: any,
-      geojsonSourceOptions: Record<string, any>
-    );
+    constructor(sourceId: string, map: any, arcgisOptions: Record<string, any>);
 
     /**
      * Fetches a feature from the Feature Service.
