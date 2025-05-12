@@ -56,8 +56,18 @@ build-storybook:
 remove-sourcemaps:
 	rm -rf ./src/interface/dist/out/**.js.map
 
+# tells sentry about a new tagged release
+# uses context in src/interface/.sentryclirc
+declare-sentry-release:
+	cd src/interface &&
+	if [ -n "$TAG" ] && [ "$TAG" != "main" ]; then
+		echo "TAG is a tagged release. Informing Sentry of release" &&
+		sentry-cli releases new "$TAG"
+	else
+		echo "TAG is 'main'. No action taken."
+	fi
 
-deploy-frontend: install-dependencies-frontend compile-angular remove-sourcemaps
+deploy-frontend: install-dependencies-frontend declare-sentry-release compile-angular remove-sourcemaps
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 	
 deploy-storybook: install-dependencies-frontend build-storybook
