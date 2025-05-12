@@ -64,7 +64,12 @@ export class DataLayersComponent {
 
   loading$ = this.dataLayersStateService.loading$;
 
-  dataSets$ = this.dataLayersStateService.dataSets$;
+  dataSets$ = this.dataLayersStateService.dataSets$.pipe(
+    map((dataset) => {
+      this.datasetCount = dataset.count;
+      return dataset;
+    })
+  );
   selectedDataSet$ = this.dataLayersStateService.selectedDataSet$;
   selectedDataLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
@@ -75,6 +80,7 @@ export class DataLayersComponent {
     })
   );
   resultCount: number | null = null;
+  datasetCount: number | null = null;
 
   results$: Observable<Results | null> =
     this.dataLayersStateService.searchResults$.pipe(
@@ -96,8 +102,30 @@ export class DataLayersComponent {
   hasNoData$ = this.dataLayersStateService.hasNoTreeData$;
   isBrowsing$ = this.dataLayersStateService.isBrowsing$;
 
-  showFooter$ = combineLatest([this.results$, this.selectedDataLayer$]).pipe(
-    map(([results, selectedLayer]) => this.pages > 1 || selectedLayer)
+  showFooter$ = combineLatest([
+    this.results$,
+    this.selectedDataLayer$,
+    this.dataSets$,
+  ]).pipe(
+    map(
+      ([results, selectedLayer, datasets]) =>
+        this.pages > 1 || selectedLayer || this.datasetPages > 1
+    )
+  );
+
+  showDatasets$ = combineLatest([this.dataSets$, this.loading$]).pipe(
+    map(([dataSets, loading]) => {
+      return dataSets?.results.length > 0 && !loading;
+    })
+  );
+
+  showDatasetPagination$ = combineLatest([
+    this.selectedDataSet$,
+    this.isBrowsing$,
+  ]).pipe(
+    map(([selectedDataSet, isBrowsing]) => {
+      return !selectedDataSet && isBrowsing;
+    })
   );
 
   get pages() {
@@ -106,12 +134,24 @@ export class DataLayersComponent {
       : 0;
   }
 
+  get datasetPages() {
+    return this.datasetCount
+      ? Math.ceil(this.datasetCount / this.dataLayersStateService.limit)
+      : 0;
+  }
+
+  datasetCurrentPage$ = this.dataLayersStateService.datasetsCurrentPage$;
+
   search(term: string) {
     this.dataLayersStateService.search(term);
   }
 
   showPage(page: number) {
     this.dataLayersStateService.changePage(page);
+  }
+
+  showDatasetsPage(page: number) {
+    this.dataLayersStateService.changeDatasetsPage(page);
   }
 
   viewDatasetCategories(dataSet: DataSet) {

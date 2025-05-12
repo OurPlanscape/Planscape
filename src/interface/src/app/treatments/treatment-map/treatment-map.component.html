@@ -25,7 +25,7 @@
   [doubleClickZoom]="(standSelectionEnabled$ | async) === false"
   [dragPan]="(standSelectionEnabled$ | async) === false"
   [dragRotate]="false"
-  [fitBoundsOptions]="{ padding: 20 }"
+  [fitBoundsOptions]="{ padding: { top: 80, bottom: 60, left: 20, right: 20 } }"
   [fitBounds]="bounds"
   [interactive]="true"
   [maxZoom]="maxZoom"
@@ -36,6 +36,10 @@
   <app-map-data-layer
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
+  <app-map-base-layers
+    [mapLibreMap]="mapLibreMap"
+    before="planning-area-polygon"></app-map-base-layers>
 
   <app-map-zoom-control
     *ngIf="mapLibreMap"

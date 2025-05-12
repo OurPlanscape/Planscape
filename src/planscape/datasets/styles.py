@@ -1,18 +1,16 @@
-from typing import Any, Collection, Dict, Optional
+from typing import Any, Dict, Optional
 
 from datasets.models import DataLayer, Style
 
 
-def get_default_vector_style(**kwargs):
+def get_default_vector_style(**kwargs) -> Dict[str, Any]:
     # for now uses maplibre default stuff
     return {
         "id": 0,
         "data": {
-            "paint": {
-                "fill-color": "#0096FF",
-                "fill-outline-color": "#0000FF",
-                "fill-opacity": 0.4,
-            }
+            "fill-color": "#0096FF",
+            "fill-outline-color": "#0000FF",
+            "fill-opacity": 0.4,
         },
     }
 
@@ -32,7 +30,7 @@ def get_default_raster_style(
     max: float,
     nodata: Optional[float] = None,
     **kwargs,
-) -> Collection[Dict[str, Any]]:
+) -> Dict[str, Any]:
     steps = 7
     delta = max - min
     interval = delta / (steps - 1)
@@ -63,13 +61,11 @@ def get_default_raster_style(
     if nodata:
         nodata_dict["values"].append(nodata)
 
-    return [
-        {
-            "id": 0,
-            "data": {
-                "map_type": "RAMP",
-                "no_data": nodata_dict,
-                "entries": entries,
-            },
-        }
-    ]
+    return {
+        "id": 0,
+        "data": {
+            "map_type": "RAMP",
+            "no_data": nodata_dict,
+            "entries": entries,
+        },
+    }

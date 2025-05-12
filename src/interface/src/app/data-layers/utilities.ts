@@ -7,6 +7,7 @@ import {
   StyleJson,
   ColorLegendInfo,
 } from '@types';
+import { TypedArray } from '@geomatico/maplibre-cog-protocol/dist/types';
 
 export interface RGBA {
   r: number;
@@ -185,10 +186,10 @@ function writeColorToBuffer(rgbaData: Uint8ClampedArray, color: RGBA): void {
 
 export function generateColorFunction(
   styleJson: StyleJson
-): (pixel: number[], rgba: Uint8ClampedArray) => void {
+): (pixel: TypedArray, rgba: Uint8ClampedArray) => void {
   const knownNoDataValues = new Set(styleJson.no_data?.values || []);
   const colorMapper = determineColorFunction(styleJson);
-  return (pixel: number[], rgba: Uint8ClampedArray) => {
+  return (pixel: TypedArray, rgba: Uint8ClampedArray) => {
     const value = pixel[0];
 
     if (knownNoDataValues.has(value)) {

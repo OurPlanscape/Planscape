@@ -1,0 +1,25 @@
+<div *ngFor="let layer of selectedLayers$ | async">
+  <mgl-vector-source
+    [id]="'source_' + layer.id"
+    [tiles]="[layer.map_url]"
+    [promoteId]="'id'"></mgl-vector-source>
+  <mgl-layer
+    [id]="'layer_fill_' + layer.id"
+    [source]="'source_' + layer.id"
+    [sourceLayer]="'dynamic_' + layer.id"
+    (layerMouseMove)="hoverOnLayer($event, 'layer_fill_' + layer.id)"
+    (layerMouseOut)="hoverOutLayer()"
+    type="fill"
+    [paint]="fillLayerPaint(layer)"
+    [before]="before"></mgl-layer>
+
+  <mgl-layer
+    [id]="'layer_outline_' + layer.id"
+    [source]="'source_' + layer.id"
+    [sourceLayer]="'dynamic_' + layer.id"
+    (layerMouseMove)="hoverOnLayer($event, 'layer_outline_' + layer.id)"
+    (layerMouseOut)="hoverOutLayer()"
+    type="line"
+    [paint]="lineLayerPaint(layer)"
+    [before]="'layer_fill_' + layer.id"></mgl-layer>
+</div>

@@ -2,19 +2,17 @@ import { enableProdMode } from '@angular/core';
 import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
 import * as Sentry from '@sentry/angular';
 import { AppModule } from './app/app.module';
+import { createSentryConfig } from './sentry.config';
 import { environment } from './environments/environment';
 
 if (environment.production) {
   enableProdMode();
 }
-if (environment.sentry_dsn_url !== undefined) {
-  Sentry.init({
-    dsn: environment.sentry_dsn_url,
-    environment: environment.environment,
-    integrations: [Sentry.browserTracingIntegration()],
-    // Tracing
-    tracesSampleRate: 0.2,
-  });
+
+const sentryConfig = createSentryConfig();
+
+if (environment.sentry.dsn_url !== undefined) {
+  Sentry.init(sentryConfig);
 }
 
 platformBrowserDynamic()

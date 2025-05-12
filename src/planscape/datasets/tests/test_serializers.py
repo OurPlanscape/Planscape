@@ -213,7 +213,7 @@ class TestCreateStyleSerializer(TestCase):
 class MapURLTests(TestCase):
     def _expected_dynamic_url(self, layer):
         base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
-        return base + "/tiles/dynamic/{z}/{x}/{y}/?layer=" + str(layer.id)
+        return base + "/tiles/dynamic/{z}/{x}/{y}?layer=" + str(layer.id)
 
     def test_get_map_url_logic(self):
         raster = DataLayerFactory(type=DataLayerType.RASTER)

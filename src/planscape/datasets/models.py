@@ -144,6 +144,14 @@ class GeometryType(models.TextChoices):
     MULTIPOLYGON = "MULTIPOLYGON", "MultiPolygon"
 
 
+class MapServiceChoices(models.TextChoices):
+    VECTORTILES = "VECTORTILES", "Vector Tiles"
+    COG = "COG", "Cog"
+    ESRI_GEOJSON = "ESRI_GEOJSON", "ESRI GeoJSON"
+    ESRI_VECTORTILES = "ESRI_VECTORTILES", "ESRI Vector Tiles"
+    GEOJSON = "GEOJSON", "GeoJSON"
+
+
 class DataLayerManager(models.Manager):
     def by_module(self, module: str) -> "QuerySet[DataLayer]":
         return self.get_queryset().filter(metadata__modules__has_key=module)
@@ -213,6 +221,7 @@ class Style(
 class StorageTypeChoices(models.TextChoices):
     DATABASE = "DATABASE", "Database"
     FILESYSTEM = "FILE_SYSTEM", "File System"
+    EXTERNAL_SERVICE = "EXTERNAL_SERVICE", "External Service"
 
 
 class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
@@ -263,6 +272,12 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         max_length=64,
         choices=StorageTypeChoices.choices,
         default=StorageTypeChoices.FILESYSTEM,
+    )
+
+    map_service_type = models.CharField(
+        max_length=64,
+        choices=MapServiceChoices.choices,
+        null=True,
     )
 
     geometry_type = models.CharField(
@@ -351,11 +366,13 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         return download_url
 
     def get_map_url(self) -> Optional[str]:
+        if self.storage_type == StorageTypeChoices.EXTERNAL_SERVICE:
+            return self.url
         if self.type == DataLayerType.RASTER:
             return self.get_public_url()
         if self.table and self.storage_type == StorageTypeChoices.DATABASE:
             base = get_base_url(settings.ENV) or f"https://{get_domain(settings.ENV)}"
-            return base + "/tiles/dynamic/{z}/{x}/{y}/?layer=" + str(self.id)
+            return base + "/tiles/dynamic/{z}/{x}/{y}?layer=" + str(self.id)
 
         return None
 

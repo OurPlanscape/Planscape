@@ -95,6 +95,12 @@ stop-celery:
 status-celery:
 	${SYS_CTL} status celery-* --all
 
+stop-martin:
+	${SYS_CTL} stop martin.service
+
+start-martin:
+	${SYS_CTL} start martin.service
+
 start:
 	${SYS_CTL} start ${SERVICE}
 
@@ -107,7 +113,7 @@ status:
 reload:
 	${SYS_CTL} daemon-reload
 
-restart: reload stop stop-celery start start-celery
+restart: reload stop stop-celery start start-celery stop-martin start-martin
 
 nginx-restart:
 	sudo service nginx restart

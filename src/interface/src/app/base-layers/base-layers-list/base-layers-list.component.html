@@ -24,6 +24,16 @@
         class="data-layer-input"
         (change)="onLayerChange(layer, true)"
         >{{ layer.name }}
+        <span
+          class="base-layer-legend"
+          *ngIf="isSelectedLayer(layer.id)"
+          [style.backgroundColor]="
+            layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
+          "
+          [style.border-color]="
+            layer.styles[0].data['fill-outline-color'] ||
+            BASE_LAYERS_DEFAULT.COLOR
+          "></span>
       </mat-checkbox>
     </div>
   </ng-container>

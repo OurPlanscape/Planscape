@@ -2,9 +2,6 @@ import re
 from typing import Any, Collection, Dict
 
 from core.loaders import get_python_object
-from organizations.models import Organization
-from rest_framework import serializers
-
 from datasets.models import (
     Category,
     DataLayer,
@@ -18,6 +15,8 @@ from datasets.styles import (
     get_default_vector_style,
     get_raster_style,
 )
+from organizations.models import Organization
+from rest_framework import serializers
 
 
 class OrganizationSimpleSerializer(serializers.ModelSerializer["Organization"]):
@@ -143,6 +142,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "map_url",
             "info",
             "metadata",
+            "map_service_type",
             "original_name",
         )
 
@@ -471,10 +471,11 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         stats = instance.info.get("stats")[0]
         return get_default_raster_style(**stats)
 
-    def get_styles(self, instance):
+    def get_styles(self, instance) -> Collection[Dict[str, Any]]:
         if instance.styles.all().exists():
             style = instance.styles.all().first()
             return [get_raster_style(datalayer=instance, style=style)]
+
         match instance.type:
             case DataLayerType.RASTER:
                 stats = (
@@ -485,9 +486,9 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
                 nodata = instance.info.get("nodata") if instance.info else None
                 if nodata:
                     stats["nodata"] = nodata
-                return get_default_raster_style(**stats)
+                return [get_default_raster_style(**stats)]
             case _:
-                return get_default_vector_style()
+                return [get_default_vector_style()]
 
     def get_path(self, instance) -> Collection[str]:
         if instance.category:
@@ -510,6 +511,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "status",
             "info",
             "metadata",
+            "map_service_type",
             "styles",
         )
 
