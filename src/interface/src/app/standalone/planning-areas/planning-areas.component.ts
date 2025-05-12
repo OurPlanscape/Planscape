@@ -99,12 +99,17 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     // adding 'region_name' just if the FF is not enabled
     ...(this.featureService.isFeatureEnabled('maplibre_on_explore')
       ? []
-      : [{ key: 'region_name', label: 'Region' }]),
+      : [
+          { key: 'region_name', label: 'Region' } as {
+            key: keyof PreviewPlan | 'menu';
+            label: string;
+          },
+        ]),
     { key: 'area_acres', label: 'Total Acres' },
     { key: 'scenario_count', label: '# of Scenarios' },
     { key: 'latest_updated', label: 'Date last modified' },
     { key: 'menu', label: '' },
-  ] as { key: keyof PreviewPlan | 'menu'; label: string }[];
+  ];
 
   constructor(
     private router: Router,
