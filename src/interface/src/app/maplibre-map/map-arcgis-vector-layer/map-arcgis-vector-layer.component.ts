@@ -7,8 +7,7 @@ import { BaseLayer } from '@types';
   selector: 'app-map-arcgis-vector-layer',
   standalone: true,
   imports: [],
-  templateUrl: './map-arcgis-vector-layer.component.html',
-  styleUrl: './map-arcgis-vector-layer.component.scss',
+  template: '',
 })
 export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
