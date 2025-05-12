@@ -15,28 +15,7 @@ library("friendlyeval")
 library("uuid")
 
 import::from(queries.R, .all=TRUE)
-
-DEFAULT_COST_PER_ACRE <- 2470
-SHORT_TONS_ACRE_TO_SHORT_TONS_CELL <- 0.2224
-MGC_HA_TO_MGC_CELL <- 0.09
-PREPROCESSING_MULTIPLIERS <- list(
-  total_fuel_exposed_to_fire = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  dead_and_down_fuels = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  standing_dead_and_ladder_fuels = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  available_standing_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  sawtimber_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  costs_of_potential_treatment_moving_biomass = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  costs_of_potential_treatment_moving_sawlogs = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  heavy_fuel_load = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  live_tree_density_30in_dbh = SHORT_TONS_ACRE_TO_SHORT_TONS_CELL,
-  aboveground_live_tree_carbon = MGC_HA_TO_MGC_CELL
-)
-
-STAND_AREAS_ACRES <- list(
-  SMALL = 9.884,
-  MEDIUM = 98.84,
-  LARGE = 494.2
-)
+import::from(constants.R, .all=TRUE)
 
 FORSYS_V2 <- as.logical(Sys.getenv("FORSYS_V2", "False"))
 
@@ -58,104 +37,6 @@ total_acres_per_project <- function(value, stand_count, stand_size, metric = NA)
   return(round(value * stand_size_in_acres, digits = 2))
 }
 
-CATEGORIES_PER_METRIC <- list(
-  potential_total_smoke = c(0.12, 0.25, 0.35),
-  american_indian_alaska_native_concentration = seq(0, 8),
-  asian_concentration = seq(0, 8),
-  black_african_concentration = seq(0, 8),
-  damage_potential_wui = seq(0, 5),
-  hispanic_black_indigenous_concentration = seq(0, 6),
-  hispano_latino_concentration = seq(0, 7),
-  low_income_population = seq(0, 9),
-  structure_exposure = seq(1, 10),
-  structure_exposure_score = seq(1, 10),
-  wetland_diversity = seq(1, 8),
-  wui_damage_potential = seq(0, 5),
-  wildland_urban_interface = seq(0, 2)
-)
-
-POSTPROCESSING_FUNCTIONS <- list(
-  aboveground_carbon_turnover_time = average_per_stand,
-  aboveground_live_tree_carbon = average_per_stand,
-  american_indian_alaska_native_concentration = average_and_clamp,
-  american_indian_lands = total_acres_per_project,
-  american_pacific_marten_habitat = total_acres_per_project,
-  annual_burn_probability = average_per_stand,
-  aquatic_species_richness = average_per_stand,
-  asian_concentration = average_and_clamp,
-  available_standing_biomass = total_acres_per_project,
-  band_tailed_pigeon_habitat = total_acres_per_project,
-  basal_area = average_per_stand,
-  black_african_concentration = average_and_clamp,
-  california_red_legged_frog = total_acres_per_project,
-  california_spotted_owl_habitat = total_acres_per_project,
-  california_spotted_owl_territory = total_acres_per_project,
-  cavity_nesters_excavators_species_richness = average_per_stand,
-  chinook_salmon_critical_habitat = total_acres_per_project,
-  coastal_california_gnatcatcher = average_per_stand,
-  coho_salmon_critical_habitat = total_acres_per_project,
-  cost_of_potential_treatments = average_per_stand,
-  damage_potential_wui = average_and_clamp,
-  dead_and_down_carbon = average_per_stand,
-  dead_and_down_fuels = average_per_stand,
-  ember_load_index = average_per_stand,
-  endangered_vertebrate = average_per_stand,
-  giant_sequoia_stands = total_acres_per_project,
-  heavy_fuel_load = average_per_stand,
-  hermes_copper_butterfly = total_acres_per_project,
-  hispanic_black_indigenous_concentration = average_and_clamp,
-  hispano_latino_concentration = average_and_clamp,
-  housing_burden_percentile = average_per_stand,
-  housing_unit_density = average_per_stand,
-  hummingbirds_species_richness = average_per_stand,
-  joshua_tree = total_acres_per_project,
-  least_bells_virio_habitat = total_acres_per_project,
-  live_tree_density_30in_dbh = average_per_stand,
-  loggerhead_shrike_habitat = total_acres_per_project,
-  low_income_population = average_and_clamp,
-  mean_percent_fire_return_interval_departure_condition_class = average_per_stand,
-  mountain_lion = total_acres_per_project,
-  mountain_yellow_legged_frog = total_acres_per_project,
-  nothern_goshawk_habitat = total_acres_per_project,
-  nuttails_woodpecker_habitat = total_acres_per_project,
-  open_habitat_raptors_species_richness = average_per_stand,
-  pacific_fisher = total_acres_per_project,
-  percent_impervious_surface = average_per_stand,
-  potential_total_smoke = average_and_clamp,
-  poverty_percentile = average_per_stand,
-  predicted_ignition_probability_human_caused = average_per_stand,
-  predicted_ignition_probability_lightning_caused = average_per_stand,
-  probability_of_fire_severity_high = average_per_stand,
-  probability_of_fire_severity_moderate = average_per_stand,
-  ringtail_cat_habitat = total_acres_per_project,
-  riparian_habitat = total_acres_per_project,
-  sawtimber_biomass = total_acres_per_project,
-  standing_dead_and_ladder_fuels = average_per_stand,
-  steelhead_critical_habitat = total_acres_per_project,
-  structure_exposure = average_and_clamp,
-  structure_exposure_score = average_and_clamp,
-  threatened_endangered_vertebrate_species_richness = average_per_stand,
-  time_since_last_disturbance = average_per_stand,
-  total_aboveground_carbon = average_per_stand,
-  total_fuel_exposed_to_fire = average_per_stand,
-  unemployment_percentile = average_per_stand,
-  wetland_diversity = average_and_clamp,
-  wildlife_species_richness = average_per_stand,
-  wildland_urban_interface = average_and_clamp,
-  wui_damage_potential = average_and_clamp
-)
-
-METRIC_COLUMNS <- list(
-  distance_to_roads = "min",
-  slope = "max",
-  low_income_population_proportional = "sum",
-  wui = "majority",
-  mean_percent_fire_return_interval_departure_condition_class = "majority",
-  f3veg100 = "majority",
-  wildland_urban_interface = "majority"
-)
-
-
 get_sdw <- function() {
   return(as.numeric(Sys.getenv("FORSYS_SDW", "0.5")))
 }
@@ -172,7 +53,6 @@ get_sample_frac <- function() {
   return(as.numeric(Sys.getenv("FORSYS_SAMPLE_FRAC", "0.1")))
 }
 
-
 get_connection <- function() {
   connection <- dbConnect(RPostgres::Postgres(),
     host = Sys.getenv("PLANSCAPE_DATABASE_HOST"),
@@ -188,23 +68,7 @@ get_output_dir <- function(scenario) {
   return(paste0(getwd(), "/output/", scenario$uuid))
 }
 
-get_scenario_data <- function(connection, scenario_id) {
-  query <- "SELECT
-              s.id,
-              s.user_id as \"created_by_id\",
-              s.name,
-              s.uuid,
-              s.configuration,
-              pa.region_name as \"region_name\",
-              pa.name as \"planning_area_name\",
-              ST_Area(pa.geometry::geography, TRUE) / 4047 as \"planning_area_acres\"
-            FROM
-              planning_scenario s
-            LEFT JOIN planning_planningarea pa ON (pa.id = s.planning_area_id)
-            WHERE s.id = $1;"
-  result <- dbGetQuery(connection, query, params = list(scenario_id))
-  return(head(result, 1))
-}
+
 
 priority_to_condition <- function(connection, scenario, priority) {
   region_name <- scenario$region_name
@@ -368,28 +232,7 @@ get_metric_column <- function(condition_name) {
   return("avg")
 }
 
-get_stand_metrics <- function(
-    connection,
-    condition_id,
-    condition_name,
-    stand_ids) {
-  metric_column <- get_metric_column(condition_name)
-  query <- glue_sql(
-    "SELECT
-      stand_id,
-      COALESCE({`metric_column`}, 0) AS {`condition_name`}
-     FROM stands_standmetric
-     WHERE
-       condition_id = {condition_id} AND
-       stand_id IN ({stand_ids*})",
-    condition_id = condition_id,
-    condition_name = condition_name,
-    stand_ids = stand_ids,
-    .con = connection
-  )
-  result <- dbGetQuery(connection, query) %>% preprocess_metrics(condition_name)
-  return(result)
-}
+
 
 get_project_geometry <- function(connection, stand_ids) {
   query <- glue_sql("SELECT
@@ -550,6 +393,14 @@ now_utc <- function() {
   strftime(as.POSIXlt(Sys.time(), "UTC"), "%Y-%m-%dT%H:%M:%S")
 }
 
+get_priorities_v2 <- function(connection, scenario) {
+
+  priorities <- list()
+
+  priorities <- lapply()
+
+}
+
 get_priorities <- function(
     connection,
     scenario,
@@ -563,9 +414,50 @@ get_priorities <- function(
   return(data.table::rbindlist(priorities))
 }
 
-get_stand_data_v2 <- function(connection, scenario, configuration, conditions) {
+get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
+  stand_size <- get_stand_size(configuration)
+  stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas))
+  for (row in seq_len(nrow(datalayers))) {
+    datalayer_id <- datalayers[row, "id"]$id
+    datalayer_name <- datalayers[row, "name"]$name
+    
+    metric <- get_stand_metrics_v2(
+      connection,
+      datalayer_id,
+      datalayer_name,
+      stands$stand_id
+    )
 
+    if (nrow(metric) <= 0) {
+      log_warn(
+        paste(
+          "DATALAYER",
+          datalayer_name,
+          "with id",
+          datalayer_id,
+          "yielded an empty result. check underlying data!"
+        )
+      )
+
+      if (any(is.na(metric[, datalayer_name]))) {
+        log_warn(
+          paste(
+            "DATALAYER",
+            datalayer_name,
+            "contains NA/NULL values."
+          )
+        )
+      }
+
+      metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
+      names(metric) <- c("stand_id", datalayer_name)
+    }
+    stands <- merge_data(stands, metric)
+  }
+  stands <- stands %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
+  return(stands)
 }
+
 
 get_stand_data <- function(connection, scenario, configuration, conditions) {
   stand_size <- get_stand_size(configuration)
@@ -652,8 +544,10 @@ get_weights <- function(priorities, configuration) {
 }
 
 get_number_of_projects <- function(scenario) {
-  # this is hardcoded for now. in the future it
-  # might come from the configuration JSON
+  if (FORSYS_V2) {
+    configuration <- get_configuration(scenario)
+    return(configuration$max_project_count)
+  }
   return(10)
 }
 
@@ -700,8 +594,13 @@ get_max_treatment_area <- function(scenario) {
     )
     return(max_acres)
   }
+  if (FORSYS_V2) {
+    max_area_field <- "max_area"
+  } else {
+    max_area_field <- "max_treatment_area_ration"
+  }
 
-  if (!is.null(configuration$max_treatment_area_ratio)) {
+  if (!is.null(configuration[max_area_field])) {
     log_info("Budget is null, using max acres with area {configuration$max_treatment_area_ratio}")
     return(configuration$max_treatment_area_ratio)
   }
@@ -721,7 +620,33 @@ get_max_slope <- function(configuration) {
   max_slope <- configuration$max_slope
   return(glue("slope <= {max_slope}"))
 }
+get_stand_thresholds_v2 <- function(scenario, datalayers) {
+  
+  all_thresholds <- c()
+  configuration <- get_configuration(scenario)
 
+  # no changes for v2
+  if (!is.null(configuration$max_slope)) {
+    max_slope <- get_max_slope(configuration)
+    all_thresholds <- c(all_thresholds, max_slope)
+  }
+
+  # no changes for v2
+  if (!is.null(configuration$min_distance_from_road)) {
+    distance_to_roads <- get_distance_to_roads(configuration)
+    all_thresholds <- c(all_thresholds, distance_to_roads)
+  }
+  
+  text_thresholds = datalayers["threshold"] %>% drop_na()
+  if (length(text_thresholds) > 0) {
+    all_thresholds <- c(all_thresholds, text_thresholds)
+  }
+
+  if (length(all_thresholds) > 0) {
+    return(paste(all_thresholds, collapse = " & "))
+  }
+  return(NULL)
+}
 get_stand_thresholds <- function(scenario) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
@@ -738,7 +663,6 @@ get_stand_thresholds <- function(scenario) {
     all_thresholds <- c(all_thresholds, distance_to_roads)
   }
   
-  # no changes for v2
   if (length(configuration$stand_thresholds) > 0) {
     all_thresholds <- c(all_thresholds, configuration$stand_thresholds)
   }
@@ -787,6 +711,7 @@ call_forsys <- function(
       configuration,
       forsys_inputs
     )
+
   } else {
     stand_data <- get_stand_data(
       connection,
@@ -796,22 +721,46 @@ call_forsys <- function(
     )
   }
 
-  if (length(priorities$condition_name) > 1) {
-    weights <- get_weights(priorities, configuration)
-    log_info("combining priorities")
-    stand_data <- stand_data %>%
-      forsys::calculate_spm(fields = priorities$condition_name) %>%
-      forsys::calculate_pcp(fields = priorities$condition_name) %>%
-      forsys::combine_priorities(
-        fields = paste0(priorities$condition_name, "_SPM"),
-        weights = weights,
-        new_field = "priority"
-      )
-    scenario_priorities <- c("priority")
+  if (FORSYS_V2) {
+
+    if (length(priorities$name) > 1) {
+      weights <- get_weights(priorities, configuration)
+      log_info("combining priorities")
+      stand_data <- stand_data %>%
+        forsys::calculate_spm(fields = priorities$name) %>%
+        forsys::calculate_pcp(fields = priorities$name) %>%
+        forsys::combine_priorities(
+          fields = paste0(priorities$name, "_SPM"),
+          weights = weights,
+          new_field = "priority"
+        )
+      scenario_priorities <- c("priority")
+    } else {
+      log_info("running with single priority")
+      scenario_priorities <- first(priorities$name)
+    }
+
   } else {
-    log_info("running with single priority")
-    scenario_priorities <- first(priorities$condition_name)
+
+    if (length(priorities$condition_name) > 1) {
+      weights <- get_weights(priorities, configuration)
+      log_info("combining priorities")
+      stand_data <- stand_data %>%
+        forsys::calculate_spm(fields = priorities$condition_name) %>%
+        forsys::calculate_pcp(fields = priorities$condition_name) %>%
+        forsys::combine_priorities(
+          fields = paste0(priorities$condition_name, "_SPM"),
+          weights = weights,
+          new_field = "priority"
+        )
+      scenario_priorities <- c("priority")
+    } else {
+      log_info("running with single priority")
+      scenario_priorities <- first(priorities$condition_name)
+    }
+
   }
+
   # this might be configurable in the future. if it's the case, it will come in
   # the configuration variable. This also might change due the course of the
   # project as we're not sure on how many projects we will have at the beginning
@@ -961,10 +910,88 @@ upsert_scenario_result <- function(
   dbExecute(connection, query, immediate = TRUE)
 }
 
+main_v2 <- function(scenario_id) {
+  now <- now_utc()
+  connection <- get_connection()
+  scenario <- get_scenario_by_id(connection, scenario_id)
+  configuration <- get_configuration(scenario)
+  if (!is.null(configuration$seed)) {
+    log_info(glue("Using user-provided RNG seed: {configuration$seed}"))
+    set.seed(configuration$seed)
+  }
+  treatment_goal <- get_treatment_goal_by_scenario_id(connection, scenario$id)
+  datalayers <- get_treatment_goal_datalayers(connection, treatment_goal$id)
+  priorities <- filter(datalayers, type == "RASTER", usage_type == "PRIORITY")
+  secondary_metrics <- filter(datalayers, type == "RASTER", usage_type == "SECONDARY_METRIC")
+  thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
+  exclusion_zones <- filter(datalayers, usage_type == "EXCLUSION_ZONE" & geometry_type == "POLYGON" | geometry_type == "MULTIPOLYGON")
+  new_column_for_postprocessing <- Sys.getenv(
+    "NEW_COLUMN_FOR_POSTPROCESSING",
+    FALSE
+  )
+
+  tryCatch(
+    expr = {
+      
+      forsys_output <- call_forsys(
+        connection,
+        scenario,
+        configuration,
+        priorities,
+        secondary_metrics,
+        thresholds
+      )
+
+      completed_at <- now_utc()
+
+      result <- to_projects(
+        connection,
+        scenario,
+        forsys_output,
+        new_column_for_postprocessing = new_column_for_postprocessing
+      )
+      upsert_scenario_result(
+        connection,
+        now,
+        started_at = now,
+        completed_at = completed_at,
+        scenario_id,
+        "SUCCESS",
+        result
+      )
+
+      delete_project_areas(connection, scenario)
+      
+      project_areas <- lapply(result$features, function(project)  {
+        return(upsert_project_area(connection, now, scenario, project))
+      })
+      
+      log_info(paste("[OK] Forsys succeeeded for scenario", scenario_id))
+    },
+    error = function(e) {
+      log_error(paste("[FAIL] Forsys failed.", e))
+      completed_at <- now_utc()
+      upsert_scenario_result(
+        connection,
+        now,
+        started_at = now,
+        completed_at = completed_at,
+        scenario_id,
+        "FAILURE",
+        list(type = "FeatureCollection", features = list())
+      )
+      stop(e)
+    },
+    finally = {
+      log_info(paste("[DONE] Forsys execution finished."))
+    }
+  )
+}
+
 main <- function(scenario_id) {
   now <- now_utc()
   connection <- get_connection()
-  scenario <- get_scenario_data(connection, scenario_id)
+  scenario <- get_scenario_by_id(connection, scenario_id)
   configuration <- get_configuration(scenario)
   if (!is.null(configuration$seed)) {
     log_info(glue("Using user-provided RNG seed: {configuration$seed}"))
