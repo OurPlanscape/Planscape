@@ -58,6 +58,7 @@
     [menuItems]="(creators$ | async) || []"></sg-filter-dropdown>
 
   <sg-filter-dropdown
+    *appFeatureFlag="'maplibre_on_explore'; hide: true"
     menuLabel="Region"
     [hasSearch]="false"
     (confirmedSelection)="selectRegion($event)"

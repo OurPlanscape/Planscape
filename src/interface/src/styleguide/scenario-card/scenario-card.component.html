@@ -8,14 +8,14 @@
     <mat-icon class="error-icon">error</mat-icon>
     Create a new scenario to proceed to treatment plan
   </div>
-  <div class="controls-section" *ngIf="!hasFailed()">
+  <div class="controls-section">
     <button
       sg-button
       icon="add"
       class="new-treatment-btn"
       [disabled]="!isDone()"
       type="button"
-      *ngIf="userCanCreateTreatmentPlans"
+      *ngIf="!hasFailed() && userCanCreateTreatmentPlans"
       (click)="openNewTreatment.emit($event)">
       New Treatment Plan
     </button>
@@ -30,6 +30,7 @@
     </button>
     <mat-menu class="scenario-more-menu" #menu="matMenu">
       <button
+        *ngIf="!hasFailed()"
         class="more-menu-item"
         mat-menu-item
         (click)="openScenario.emit()">
