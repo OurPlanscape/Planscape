@@ -25,7 +25,7 @@
   [doubleClickZoom]="(standSelectionEnabled$ | async) === false"
   [dragPan]="(standSelectionEnabled$ | async) === false"
   [dragRotate]="false"
-  [fitBoundsOptions]="{ padding: 20 }"
+  [fitBoundsOptions]="{ padding: { top: 80, bottom: 60, left: 20, right: 20 } }"
   [fitBounds]="bounds"
   [interactive]="true"
   [maxZoom]="maxZoom"
