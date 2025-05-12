@@ -57,13 +57,15 @@
     [selectedItems]="(selectedCreators$ | async) || []"
     [menuItems]="(creators$ | async) || []"></sg-filter-dropdown>
 
-  <sg-filter-dropdown
-    menuLabel="Region"
-    [hasSearch]="false"
-    (confirmedSelection)="selectRegion($event)"
-    [selectedItems]="selectedRegions"
-    displayField="name"
-    [menuItems]="regions"></sg-filter-dropdown>
+  <ng-container *appFeatureFlag="'maplibre_on_explore'; hide: true">
+    <sg-filter-dropdown
+      menuLabel="Region"
+      [hasSearch]="false"
+      (confirmedSelection)="selectRegion($event)"
+      [selectedItems]="selectedRegions"
+      displayField="name"
+      [menuItems]="regions"></sg-filter-dropdown>
+  </ng-container>
 </div>
 <!--Initial load spinner-->
 <mat-spinner

@@ -38,6 +38,8 @@ import { FormsModule } from '@angular/forms';
 import { combineLatest, map } from 'rxjs';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { FeaturesModule } from 'src/app/features/features.module';
+import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-planning-areas',
@@ -68,6 +70,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
     FilterDropdownComponent,
     PaginatorComponent,
     OverlayLoaderComponent,
+    FeaturesModule,
   ],
   templateUrl: './planning-areas.component.html',
   styleUrl: './planning-areas.component.scss',
@@ -93,17 +96,21 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   readonly columns: { key: keyof PreviewPlan | 'menu'; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'creator', label: 'Creator' },
-    { key: 'region_name', label: 'Region' },
+    // adding 'region_name' just if the FF is not enabled
+    ...(this.featureService.isFeatureEnabled('maplibre_on_explore')
+      ? []
+      : [{ key: 'region_name', label: 'Region' }]),
     { key: 'area_acres', label: 'Total Acres' },
     { key: 'scenario_count', label: '# of Scenarios' },
     { key: 'latest_updated', label: 'Date last modified' },
     { key: 'menu', label: '' },
-  ];
+  ] as { key: keyof PreviewPlan | 'menu'; label: string }[];
 
   constructor(
     private router: Router,
     public dataSource: PlanningAreasDataSource,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private featureService: FeatureService
   ) {}
 
   sortOptions = this.dataSource.sortOptions;
