@@ -1,5 +1,5 @@
 import re
-from typing import Any, Collection, Dict
+from typing import Any, Collection, Dict, Optional
 
 from core.loaders import get_python_object
 from datasets.models import (
@@ -466,6 +466,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
         read_only=True,
     )
     styles = serializers.SerializerMethodField()
+    abstract = serializers.SerializerMethodField()
 
     def _default_raster_style(self, instance):
         stats = instance.info.get("stats")[0]
@@ -496,6 +497,12 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
 
         return []
 
+    def get_abstract(self, instance) -> Optional[str]:
+        try:
+            return instance.metadata["metadata"]["metadata"]["abstract"]
+        except KeyError:
+            return None
+
     class Meta:
         model = DataLayer
         fields = (
@@ -513,6 +520,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "metadata",
             "map_service_type",
             "styles",
+            "abstract",
         )
 
 
