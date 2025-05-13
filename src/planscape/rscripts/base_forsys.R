@@ -17,7 +17,7 @@ library("uuid")
 import::from(queries.R, .all=TRUE)
 import::from(constants.R, .all=TRUE)
 
-FORSYS_V2 <- as.logical(Sys.getenv("FORSYS_V2", "False"))
+FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
 
 average_per_stand <- function(value, stand_count, stand_size = NA, metric = NA) {
   return(round(value / stand_count, digits = 2))
