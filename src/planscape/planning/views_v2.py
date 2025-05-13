@@ -5,6 +5,12 @@ from django.contrib.auth import get_user_model
 from django.db.models.expressions import RawSQL
 from django_filters.rest_framework import DjangoFilterBackend
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import mixins, pagination, permissions, status, viewsets
+from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter
+from rest_framework.response import Response
+from rest_framework.viewsets import ReadOnlyModelViewSet
+
 from planning.filters import (
     PlanningAreaFilter,
     PlanningAreaOrderingFilter,
@@ -35,12 +41,6 @@ from planning.services import (
     delete_scenario,
     toggle_scenario_status,
 )
-from rest_framework import mixins, pagination, permissions, status, viewsets
-from rest_framework.decorators import action
-from rest_framework.filters import OrderingFilter
-from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
-
 from planscape.serializers import BaseErrorMessageSerializer
 
 User = get_user_model()
