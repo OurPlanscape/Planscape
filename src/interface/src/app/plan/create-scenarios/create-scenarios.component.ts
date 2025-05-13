@@ -219,7 +219,7 @@ export class CreateScenariosComponent implements OnInit {
         ...this.constraintsPanelComponent.getFormData(),
         ...prioritiesData,
       },
-      treatment_goal: prioritiesData.treatment_question as any,
+      treatment_goal: (prioritiesData.treatment_question as any).id,
     };
   }
 
