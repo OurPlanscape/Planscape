@@ -1,6 +1,8 @@
 import factory
-from django.contrib.gis.geos import Polygon, MultiPolygon
 import factory.fuzzy
+from collaboration.models import Role
+from collaboration.tests.factories import UserObjectRoleFactory
+from django.contrib.gis.geos import MultiPolygon, Polygon
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -12,8 +14,7 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
 )
-from collaboration.models import Role
-from collaboration.tests.factories import UserObjectRoleFactory
+
 from planscape.tests.factories import UserFactory
 
 
