@@ -1,5 +1,5 @@
 import { Component, ViewChild } from '@angular/core';
-import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
@@ -28,6 +28,12 @@ import { skip } from 'rxjs';
 })
 export class TreatmentPlanTabsComponent {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
+
+  handleTabChange(tabEvent: MatTabChangeEvent) {
+    if (tabEvent.tab) {
+      this.dataLayersStateService.setSelectedTab(tabEvent.tab)
+    }
+  }
 
   constructor(private dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$

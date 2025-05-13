@@ -3,7 +3,7 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
 import { SharedModule } from '@shared';
 import { MatDialogModule } from '@angular/material/dialog';
-import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
+import { MatTabChangeEvent, MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
@@ -55,6 +55,13 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
         }
       });
   }
+
+  handleTabChange(selectedTab: MatTabChangeEvent) {
+    if (selectedTab) {
+      this.dataLayersStateService.setSelectedTab(selectedTab.tab);
+    }
+  }
+
 
   projectAreaId?: number;
 
