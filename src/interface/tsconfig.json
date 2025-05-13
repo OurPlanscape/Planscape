@@ -44,7 +44,12 @@
     ],
     "useDefineForClassFields": false,
     "typeRoots": [
-      "src/typings"
+      "src/typings",
+      "node_modules/@types"
+    ],
+    "types": [
+      "jasmine",
+      "node"
     ]
   },
   "exclude": [
