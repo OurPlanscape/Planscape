@@ -7,6 +7,7 @@ import { environment } from '../../environments/environment';
 import { Feature, Geometry } from 'geojson';
 import bbox from '@turf/bbox';
 import { Extent } from '@types';
+import { BASE_LAYERS_DEFAULT } from '@shared';
 
 export function getBoundingBox(
   startPoint: Point,
@@ -119,4 +120,29 @@ export function syncMaps(...maps: MapLibreMap[]) {
     fns = [];
     maps = [];
   };
+}
+
+export function defaultBaseLayerFill(fillColor?: string) {
+  return {
+    'fill-color': fillColor || BASE_LAYERS_DEFAULT.COLOR,
+
+    'fill-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false],
+      0.5,
+      0,
+    ],
+  } as any;
+}
+
+export function defaultBaseLayerLine(lineColor?: string) {
+  return {
+    'line-color': lineColor || BASE_LAYERS_DEFAULT.COLOR,
+    'line-width': [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false],
+      3,
+      1,
+    ],
+  } as any;
 }

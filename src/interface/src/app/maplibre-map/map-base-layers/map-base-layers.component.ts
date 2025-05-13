@@ -12,9 +12,9 @@ import {
   MapMouseEvent,
 } from 'maplibre-gl';
 import { BaseLayer } from '@types';
-import { BASE_LAYERS_DEFAULT } from '@shared';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
+import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
 
 @UntilDestroy()
 @Component({
@@ -45,30 +45,11 @@ export class MapBaseLayersComponent {
   constructor(private baseLayersStateService: BaseLayersStateService) {}
 
   lineLayerPaint(layer: BaseLayer) {
-    return {
-      'line-color':
-        layer.styles[0].data['fill-outline-color'] || BASE_LAYERS_DEFAULT.COLOR,
-      'line-width': [
-        'case',
-        ['boolean', ['feature-state', 'hover'], false],
-        3,
-        1,
-      ],
-    } as any;
+    return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
   }
 
   fillLayerPaint(layer: BaseLayer) {
-    return {
-      'fill-color':
-        layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR,
-
-      'fill-opacity': [
-        'case',
-        ['boolean', ['feature-state', 'hover'], false],
-        0.5,
-        0,
-      ],
-    } as any;
+    return defaultBaseLayerFill(layer.styles[0].data['fill-color']);
   }
 
   hoverOnLayer(event: MapMouseEvent, layerName: string) {

@@ -57,6 +57,10 @@ export interface Info {
 export interface Metadata {
   // Add specific fields once we start using this
   [key: string]: any;
+
+  map?: {
+    arcgis?: any;
+  };
 }
 
 export interface LayerStyleEntry {
