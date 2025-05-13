@@ -68,8 +68,6 @@ get_output_dir <- function(scenario) {
   return(paste0(getwd(), "/output/", scenario$uuid))
 }
 
-
-
 priority_to_condition <- function(connection, scenario, priority) {
   region_name <- scenario$region_name
   # given a scenario and it's configuration, return

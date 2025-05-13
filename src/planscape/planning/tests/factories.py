@@ -1,6 +1,8 @@
 import factory
-from django.contrib.gis.geos import Polygon, MultiPolygon
 import factory.fuzzy
+from collaboration.models import Role
+from collaboration.tests.factories import UserObjectRoleFactory
+from django.contrib.gis.geos import MultiPolygon, Polygon
 from planning.models import (
     PlanningArea,
     ProjectArea,
@@ -12,8 +14,7 @@ from planning.models import (
     TreatmentGoal,
     TreatmentGoalCategory,
 )
-from collaboration.models import Role
-from collaboration.tests.factories import UserObjectRoleFactory
+
 from planscape.tests.factories import UserFactory
 
 
@@ -136,4 +137,5 @@ class ProjectAreaFactory(factory.django.DjangoModelFactory):
     geometry = MultiPolygon(Polygon(((1, 1), (1, 2), (2, 2), (1, 1))))
 
     class Meta:
+        model = ProjectArea
         model = ProjectArea
