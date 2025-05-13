@@ -4,6 +4,7 @@ import { catchError, Observable } from 'rxjs';
 import { Scenario, ScenarioConfig } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
+import { FeatureService } from '../features/feature.service';
 
 @Injectable({
   providedIn: 'root',
@@ -11,7 +12,10 @@ import { environment } from '../../environments/environment';
 export class ScenarioService {
   readonly v2Path = environment.backend_endpoint + '/v2/scenarios/';
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private featureService: FeatureService
+  ) {}
 
   /** Fetches the scenarios for a plan from the backend.
    *  Includes an optional ordering param
@@ -39,9 +43,15 @@ export class ScenarioService {
 
   /** Creates a scenario in the backend. Returns scenario ID. */
   createScenario(scenarioParameters: any): Observable<Scenario> {
-    scenarioParameters['configuration'] = this.convertConfigToScenario(
-      scenarioParameters['configuration']
-    );
+    if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+      scenarioParameters['configuration'] = this.convertConfigToScenario(
+        scenarioParameters['configuration']
+      );
+    } else {
+      scenarioParameters['configuration'] = this.convertConfigToScenarioLegacy(
+        scenarioParameters['configuration']
+      );
+    }
     return this.http
       .post<Scenario>(this.v2Path, scenarioParameters, {
         withCredentials: true,
@@ -87,8 +97,26 @@ export class ScenarioService {
     );
   }
 
+  private convertConfigToScenarioLegacy(config: any): any {
+    return {
+      question_id: config.treatment_question!.id,
+      est_cost: config.est_cost,
+      max_budget: config.max_budget,
+      min_distance_from_road: config.min_distance_from_road,
+      max_slope: config.max_slope,
+      max_treatment_area_ratio: config.max_treatment_area_ratio,
+      scenario_priorities: config.treatment_question!['scenario_priorities'],
+      scenario_output_fields:
+        config.treatment_question!['scenario_output_fields_paths']!['metrics'],
+      stand_thresholds: config.treatment_question!['stand_thresholds'],
+      global_thresholds: config.treatment_question!['global_thresholds'],
+      weights: config.treatment_question!['weights'],
+      excluded_areas: config.excluded_areas,
+      stand_size: config.stand_size,
+    };
+  }
+
   private convertConfigToScenario(config: ScenarioConfig): ScenarioConfig {
-    console.log('Config: ', config);
     return {
       stand_size: config.stand_size,
       estimated_cost: config.estimated_cost,
