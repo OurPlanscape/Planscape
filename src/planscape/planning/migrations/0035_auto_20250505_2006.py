@@ -29,7 +29,7 @@ def backfill_scenario_configuration(apps, schema_editor):
             logger.warning(f"Treatment goal with ID {question_id} does not exist")
             continue
         scenario.treatment_goal = treatment_goal
-        scenario.save()
+        scenario.save(update_fields=["treatment_goal"])
 
 
 def backfill_excluded_areas(apps, schema_editor):
@@ -57,7 +57,7 @@ def backfill_excluded_areas(apps, schema_editor):
             lookup_dict.get(area) for area in legacy_excluded_areas
         ]
         scenario.configuration["excluded_areas"] = new_excluded_areas
-        scenario.save()
+        scenario.save(update_fields=["configuration"])
 
 
 class Migration(migrations.Migration):
