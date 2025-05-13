@@ -191,14 +191,14 @@ export class ConstraintsPanelComponent implements OnChanges {
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.valid &&
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.value
       ) {
-        scenarioConfig.excluded_areas?.push(area.key);
+        scenarioConfig.excluded_areas?.push(area.id);
       }
     });
     if (estimatedCost?.valid)
-      scenarioConfig.est_cost = parseFloat(estimatedCost.value);
+      scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
     if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid) {
-      scenarioConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
+      scenarioConfig.max_area = parseFloat(maxArea.value);
     }
     if (minDistanceFromRoad?.valid) {
       scenarioConfig.min_distance_from_road = parseFloat(
@@ -214,7 +214,7 @@ export class ConstraintsPanelComponent implements OnChanges {
     EXCLUDED_AREAS.forEach((area) => {
       if (
         config.excluded_areas &&
-        config.excluded_areas.indexOf(area.key) > -1
+        config.excluded_areas.indexOf(Number(area.key)) > -1
       ) {
         this.constraintsForm
           .get('excludedAreasForm.' + area.key)
@@ -226,20 +226,20 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     });
 
-    if (config.est_cost) {
+    if (config.estimated_cost) {
       this.constraintsForm
         .get('budgetForm.estimatedCost')
-        ?.setValue(config.est_cost);
+        ?.setValue(config.estimated_cost);
     }
     if (config.max_budget) {
       this.constraintsForm
         .get('budgetForm.maxCost')
         ?.setValue(config.max_budget);
     }
-    if (config.max_treatment_area_ratio) {
+    if (config.max_area) {
       this.constraintsForm
         .get('physicalConstraintForm.maxArea')
-        ?.setValue(config.max_treatment_area_ratio);
+        ?.setValue(config.max_area);
     }
     if (config.min_distance_from_road) {
       this.constraintsForm
