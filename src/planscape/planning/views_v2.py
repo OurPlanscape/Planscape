@@ -203,9 +203,8 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         if settings.USE_SCENARIO_V2:
             # need to inform context because this is not created throu
             # the original get_serializer method.
-            serializer = CreateScenarioV2Serializer(
-                data=request.data, context={"request": request}
-            )
+            kwargs.setdefault("context", self.get_serializer_context())
+            serializer = CreateScenarioV2Serializer(data=request.data, **kwargs)
         else:
             serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
