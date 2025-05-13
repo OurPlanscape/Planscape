@@ -720,7 +720,6 @@ call_forsys <- function(
   }
 
   if (FORSYS_V2) {
-
     if (length(priorities$name) > 1) {
       weights <- get_weights(priorities, configuration)
       log_info("combining priorities")
@@ -767,7 +766,11 @@ call_forsys <- function(
   min_area_project <- get_min_project_area(scenario)
   max_area_project <- max_treatment_area / number_of_projects
 
-  stand_thresholds <- get_stand_thresholds(scenario)
+  if (FORSYS_V2) {
+    stand_thresholds <- get_stand_thresholds_v2(scenario, restrictions)
+  } else {
+    stand_thresholds <- get_stand_thresholds(scenario)
+  }
 
   log_info(paste("Thresholds configured:", stand_thresholds))
 
