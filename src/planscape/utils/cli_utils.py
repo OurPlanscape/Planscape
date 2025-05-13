@@ -42,6 +42,8 @@ def ogr2ogr_cli(
         "PROMOTE_TO_MULTI",
         "-nlt",
         "CONVERT_TO_LINEAR",
+        "-dim",
+        "XY",
         "-t_srs",
         destination_srs,
         "-unsetFid",
