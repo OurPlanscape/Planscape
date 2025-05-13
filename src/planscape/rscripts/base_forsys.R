@@ -391,13 +391,6 @@ now_utc <- function() {
   strftime(as.POSIXlt(Sys.time(), "UTC"), "%Y-%m-%dT%H:%M:%S")
 }
 
-get_priorities_v2 <- function(connection, scenario) {
-
-  priorities <- list()
-
-  priorities <- lapply()
-
-}
 
 get_priorities <- function(
     connection,
