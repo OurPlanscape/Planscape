@@ -107,7 +107,7 @@ get_restriction_v2 <- function(connection, scenario_id, datalayer_table_name) {
     )
     SELECT
       ST_Transform(ST_Union(ST_Buffer(rr.geometry, 0)), 5070) as \"geometry\"
-    FROM {datalayer_table_name} rr, plan_scenario
+    FROM {`datalayer_table_name`} rr, plan_scenario
     WHERE
       rr.geometry && plan_scenario.geometry AND
       ST_Intersects(rr.geometry, plan_scenario.geometry)"

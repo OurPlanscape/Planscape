@@ -63,7 +63,7 @@ get_stand_metrics_v2 <- function(connection, datalayer_id, datalayer_name, stand
   query <- glue_sql(
     "SELECT
       stand_id,
-      COALESCE(avg, 0) AS {`datalayer_name``}
+      COALESCE(avg, 0) AS {`datalayer_name`}
      FROM stands_standmetric
      WHERE
        datalayer_id = {datalayer_id} AND
