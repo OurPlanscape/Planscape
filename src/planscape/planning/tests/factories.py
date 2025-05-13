@@ -138,4 +138,3 @@ class ProjectAreaFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = ProjectArea
-        model = ProjectArea
