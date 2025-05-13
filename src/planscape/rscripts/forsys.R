@@ -8,8 +8,8 @@ library("optparse")
 # do not use spherical geometries
 sf_use_s2(FALSE)
 readRenviron("../../.env")
-source("./rscripts/base_forsys.R")
-
+import::from(base_forsys.R)
+FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
 options <- list(
   make_option(
     c("-s", "--scenario",
@@ -26,5 +26,9 @@ if (is.null(scenario_id)) {
   stop("You need to specify one scenario id.")
 }
 
+if (FORSYS_V2) {
+  main_v2(scenario_id)
+} else {
+  main(scenario_id)
+}
 
-main(scenario_id)
