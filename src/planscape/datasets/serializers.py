@@ -142,6 +142,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "map_url",
             "info",
             "metadata",
+            "map_service_type",
             "original_name",
         )
 
@@ -510,6 +511,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "status",
             "info",
             "metadata",
+            "map_service_type",
             "styles",
         )
 
