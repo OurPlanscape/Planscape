@@ -23,7 +23,7 @@ BEGIN
         ),
         mvtgeom AS (
             SELECT
-                t.id AS id,
+                t.*,
                 ST_AsMVTGeom(
                     ST_Transform(t.geometry, 3857),
                     ST_TileEnvelope($1, $2, $3),
