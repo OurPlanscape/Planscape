@@ -9,22 +9,22 @@ RETURNS bytea AS $$
 DECLARE
     layer_id integer := (query_params->>'layer')::int;
     dyn_table text;
-    info jsonb;
+    info_value jsonb;
     datalayer_key text;
     properties text;
     tile bytea;
 BEGIN
     SELECT "table", "info"
-        INTO dyn_table, info
+        INTO dyn_table, info_value
         FROM public.datasets_datalayer
     WHERE id = layer_id;
 
-    SELECT jsonb_object_keys(info)
+    SELECT jsonb_object_keys(info_value)
         INTO datalayer_key
     LIMIT 1;
 	
     WITH prop_keys_table AS (
-        SELECT jsonb_object_keys(info->datalayer_key->'schema'->'properties') as keys
+        SELECT jsonb_object_keys(info_value->datalayer_key->'schema'->'properties') as keys
     )
     SELECT string_agg(lower(prop_keys_table.keys), ', ') INTO properties FROM prop_keys_table;
 
