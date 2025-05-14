@@ -22,10 +22,10 @@ sf_use_s2(FALSE)
 
 readRenviron("../../.env")
 
-import::from("rscripts/io_processing", .all=TRUE)
+import::from("rscripts/io_processing.R", .all=TRUE)
 import::from("rscripts/queries.R", .all=TRUE)
 import::from("rscripts/constants.R", .all=TRUE)
-import::from("rscripts/base_forsys.R")
+import::from("rscripts/base_forsys.R", .all=TRUE)
 
 FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
 options <- list(
