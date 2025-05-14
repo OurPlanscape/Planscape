@@ -1,8 +1,6 @@
 
 FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
 
-
-
 get_sdw <- function() {
   return(as.numeric(Sys.getenv("FORSYS_SDW", "0.5")))
 }
