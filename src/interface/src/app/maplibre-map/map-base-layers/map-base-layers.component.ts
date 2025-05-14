@@ -4,6 +4,7 @@ import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
   LayerComponent,
+  PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
@@ -12,7 +13,6 @@ import {
   MapMouseEvent,
   LngLat,
 } from 'maplibre-gl';
-import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
 import { BaseLayer } from '@types';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
@@ -28,7 +28,7 @@ import { MatTab } from '@angular/material/tabs';
     NgForOf,
     AsyncPipe,
     VectorSourceComponent,
-    MapTooltipComponent,
+    PopupComponent,
     LayerComponent,
     ControlComponent,
     NgIf,

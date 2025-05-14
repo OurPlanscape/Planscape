@@ -31,9 +31,18 @@
   </ng-container>
 </div>
 <ng-container *ngIf="selectedTab$ | async as tab">
-  <app-map-tooltip
-    [lngLat]="vectorTooltipLngLat"
-    *ngIf="onBaseLayerTab(tab) && vectorTooltipLngLat">
+  <mgl-popup
+  [lngLat]="vectorTooltipLngLat"
+  [closeButton]="false"
+  [closeOnClick]="false"
+  [anchor]="'left'"
+  [offset]="20"
+  maxWidth="none"
+  className="vector-tooltip"
+  *ngIf="onBaseLayerTab(tab) && vectorTooltipLngLat">
+  <div class="tooltip-content no-select">
     {{ baseLayerTooltipContent }}
-  </app-map-tooltip>
+  </div>
+</mgl-popup>
+
 </ng-container>
