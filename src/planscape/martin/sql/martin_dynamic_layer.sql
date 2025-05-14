@@ -9,12 +9,24 @@ RETURNS bytea AS $$
 DECLARE
     layer_id integer := (query_params->>'layer')::int;
     dyn_table text;
+    info jsonb;
+    datalayer_key text;
+    properties text;
     tile bytea;
 BEGIN
-    SELECT "table"
-        INTO dyn_table
+    SELECT "table", "info"
+        INTO dyn_table, info
         FROM public.datasets_datalayer
     WHERE id = layer_id;
+
+    SELECT jsonb_object_keys(info)
+        INTO datalayer_key
+    LIMIT 1;
+	
+    WITH prop_keys_table AS (
+        SELECT jsonb_object_keys(info->datalayer_key->'schema'->'properties') as keys
+    )
+    SELECT string_agg(lower(prop_keys_table.keys), ', ') INTO properties FROM prop_keys_table;
 
     EXECUTE format($f$
         WITH
@@ -23,7 +35,8 @@ BEGIN
         ),
         mvtgeom AS (
             SELECT
-                t.*,
+                t.id as id,
+                %s,
                 ST_AsMVTGeom(
                     ST_Transform(t.geometry, 3857),
                     ST_TileEnvelope($1, $2, $3),
@@ -35,6 +48,7 @@ BEGIN
         SELECT ST_AsMVT(mvtgeom.*, %L, 4096, 'geom')
         FROM mvtgeom;
     $f$,
+        properties,
         split_part(dyn_table, '.', 1),
         split_part(dyn_table, '.', 2),
         format('dynamic_%s', layer_id)
