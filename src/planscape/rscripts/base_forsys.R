@@ -872,7 +872,7 @@ main_v2 <- function(scenario_id) {
   connection <- get_connection()
   scenario <- get_scenario_by_id(connection, scenario_id)
   configuration <- get_configuration(scenario)
-  if (!is.null(configuration$seed)) {
+  if ("seed" %in% names(configuration)) {
     log_info(glue("Using user-provided RNG seed: {configuration$seed}"))
     set.seed(configuration$seed)
   }
