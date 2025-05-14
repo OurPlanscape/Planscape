@@ -50,7 +50,7 @@ export class MapBaseLayersComponent {
   constructor(
     private baseLayersStateService: BaseLayersStateService,
     private dataLayersStateService: DataLayersStateService
-  ) {}
+  ) { }
 
   lineLayerPaint(layer: BaseLayer) {
     return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
