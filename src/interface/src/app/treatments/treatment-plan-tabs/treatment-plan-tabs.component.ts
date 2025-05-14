@@ -1,5 +1,9 @@
 import { Component, ViewChild } from '@angular/core';
-import { MatTabChangeEvent, MatTabGroup, MatTabsModule } from '@angular/material/tabs';
+import {
+  MatTabChangeEvent,
+  MatTabGroup,
+  MatTabsModule,
+} from '@angular/material/tabs';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
@@ -31,7 +35,7 @@ export class TreatmentPlanTabsComponent {
 
   handleTabChange(tabEvent: MatTabChangeEvent) {
     if (tabEvent.tab) {
-      this.dataLayersStateService.setSelectedTab(tabEvent.tab)
+      this.dataLayersStateService.setSelectedTab(tabEvent.tab);
     }
   }
 

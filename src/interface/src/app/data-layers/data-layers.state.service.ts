@@ -44,8 +44,8 @@ export class DataLayersStateService {
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
 
-  private _selelectedLayerTab$ = new BehaviorSubject<MatTab | null>(null);
-  selectedLayerTab$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
+  private _selectedLayerTab$ = new BehaviorSubject<MatTab | null>(null);
+  selectedLayerTab$ = this._selectedLayerTab$.asObservable();
 
   dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
     switchMap((layer) => {
@@ -125,7 +125,7 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) { }
+  constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
@@ -160,7 +160,8 @@ export class DataLayersStateService {
   }
 
   setSelectedTab(currentTab: MatTab) {
-    this._selelectedLayerTab$.next(currentTab)
+    this._selectedLayerTab$.next(currentTab);
+    console.log('selected tab is:', currentTab.textLabel);
   }
 
   search(term: string) {

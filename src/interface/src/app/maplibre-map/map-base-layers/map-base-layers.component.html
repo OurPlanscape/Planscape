@@ -30,3 +30,10 @@
       [before]="'layer_fill_' + layer.id"></mgl-layer>
   </ng-container>
 </div>
+<ng-container *ngIf="selectedTab$ | async as tab">
+  <app-map-tooltip
+    [lngLat]="vectorTooltipLngLat"
+    *ngIf="onBaseLayerTab(tab) && vectorTooltipLngLat">
+    {{ baseLayerTooltipContent }}
+  </app-map-tooltip>
+</ng-container>
