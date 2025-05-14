@@ -2,9 +2,21 @@
 ## From the planscape repo root, do:
 ## Rscript rscripts/forsys.R --scenario <scenario_id>
 ## Replace `<scenario_id>` with an integer, corresponding with the scenario id
-library("sf")
+library("DBI")
+library("dplyr")
+library("forsys")
+library("friendlyeval")
+library("glue")
+library("import")
+library("logger")
 library("optparse")
-
+library("purrr")
+library("rjson")
+library("RPostgreSQL")
+library("sf")
+library("stringi")
+library("tidyr")
+library("uuid")
 # do not use spherical geometries
 sf_use_s2(FALSE)
 readRenviron("../../.env")
