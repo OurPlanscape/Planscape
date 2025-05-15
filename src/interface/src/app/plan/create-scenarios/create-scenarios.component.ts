@@ -74,7 +74,13 @@ export class CreateScenariosComponent implements OnInit {
     private featureService: FeatureService
   ) {}
 
-  createForms() {
+  async createForms() {
+    const excludedAreas =
+      await this.constraintsPanelComponent.loadExcludedAreas();
+    console.log('Excluded areas: ', excludedAreas);
+    console.log('Form after excluded areas: ', this.forms);
+    const constrainsForm = await this.constraintsPanelComponent.createForm();
+    console.log('ConstrainForm after excluded areas: ', constrainsForm);
     this.forms = this.fb.group({
       scenarioName: new FormControl('', [
         Validators.required,
@@ -82,16 +88,17 @@ export class CreateScenariosComponent implements OnInit {
           scenarioNameMustBeNew(control, this.existingScenarioNames),
       ]),
       priorities: this.prioritiesComponent.createForm(),
-      constrains: this.constraintsPanelComponent.createForm(),
+      constrains: constrainsForm,
       projectAreas: this.fb.group({
         generateAreas: [''],
         uploadedArea: [''],
       }),
     });
+    this.forms.valueChanges.subscribe((form) => console.log('Form: ', form));
   }
 
-  ngOnInit(): void {
-    this.createForms();
+  async ngOnInit() {
+    await this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.LegacyPlanStateService.planState$
       .pipe(untilDestroyed(this), take(1))
