@@ -10,6 +10,8 @@
       [maxZoom]="maxZoom"
       [minZoom]="minZoom"
       [pitchWithRotate]="false"
+      [fitBounds]="bounds"
+      [fitBoundsOptions]="boundOptions"
       [style]="(baseLayerUrl$ | async) || ''"
       [transformRequest]="transformRequest">
     </mgl-map>

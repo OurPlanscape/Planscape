@@ -25,6 +25,14 @@ export class ExploreComponent {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
+  bounds = FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS as [
+    number,
+    number,
+    number,
+    number,
+  ];
+  boundOptions = FrontendConstants.MAPLIBRE_BOUND_OPTIONS;
+
   /**
    * Observable that provides the url to load the selected map base layer
    */
