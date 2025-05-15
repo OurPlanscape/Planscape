@@ -51,6 +51,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { MapBaseLayersComponent } from '../../maplibre-map/map-base-layers/map-base-layers.component';
+import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 
 @UntilDestroy()
 @Component({
@@ -91,6 +92,7 @@ import { MapBaseLayersComponent } from '../../maplibre-map/map-base-layers/map-b
     BaseLayersComponent,
     MapBaseLayerComponent,
     MapBaseLayersComponent,
+    MultiMapControlComponent,
   ],
   templateUrl: './treatment-map.component.html',
   styleUrl: './treatment-map.component.scss',

@@ -1,0 +1,32 @@
+<ng-container *ngIf="views$ | async as views">
+  <button
+    type="button"
+    [ngClass]="{ active: views === 1 }"
+    (click)="setView(1)">
+    <span class="wrapper">
+      <span class="square"></span>
+    </span>
+  </button>
+  <button
+    type="button"
+    [ngClass]="{ active: views === 2 }"
+    (click)="setView(2)">
+    <span class="wrapper">
+      <span class="square"></span>
+      <span class="square"></span>
+    </span>
+  </button>
+  <button
+    type="button"
+    [ngClass]="{ active: views === 4 }"
+    (click)="setView(4)">
+    <span class="wrapper">
+      <span class="square"></span>
+      <span class="square"></span>
+    </span>
+    <span class="wrapper">
+      <span class="square"></span>
+      <span class="square"></span>
+    </span>
+  </button>
+</ng-container>
