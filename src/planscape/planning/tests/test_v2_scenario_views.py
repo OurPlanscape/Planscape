@@ -180,6 +180,35 @@ class CreateScenarioTest(APITransactionTestCase):
         scenario = Scenario.objects.get()
         self.assertEqual(scenario.planning_area, self.planning_area)
 
+    @override_settings(USE_SCENARIO_V2=True)
+    def test_create_v2_serializer__invalid_excluded_area(self):
+        invalid_excluded_areas = DataLayerFactory.create_batch(
+            2, type=DataLayerType.RASTER, geometry_type=GeometryType.RASTER
+        )
+        invalid_excluded_areas = [
+            invalid_excluded_areas[0].pk,
+            invalid_excluded_areas[1].pk,
+        ]
+        # treatment goal set on configuration
+        payload = {
+            "name": "V2 scenario",
+            "planning_area": self.planning_area.pk,
+            "treatment_goal": self.treatment_goal.pk,
+            "configuration": {
+                "stand_size": "LARGE",
+                "est_cost": 2000,
+                "excluded_areas": invalid_excluded_areas,
+            },
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
 
 class ListScenariosForPlanningAreaTest(APITestCase):
     def setUp(self):
