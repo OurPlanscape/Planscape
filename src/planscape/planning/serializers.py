@@ -387,12 +387,8 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
-    def to_internal_value(self, data):
-        data = super().to_internal_value(data)
-        excluded_areas = data.pop("excluded_areas", [])
-        excluded_areas = [excluded_area.pk for excluded_area in excluded_areas]
-        data["excluded_areas"] = excluded_areas
-        return data
+    def validate_excluded_areas(self, excluded_areas):
+        return [excluded_area.pk for excluded_area in excluded_areas]
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
