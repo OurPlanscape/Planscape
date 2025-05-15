@@ -60,23 +60,38 @@ export class MapBaseLayersComponent {
     return defaultBaseLayerFill(layer.styles[0].data['fill-color']);
   }
 
-  hoverOnLayer(event: MapMouseEvent, layerName: string) {
+  hoverOnLayer(event: MapMouseEvent, layer: BaseLayer, layerType: string) {
+    const layerName = layerType + layer.id;
     const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
       layers: [layerName],
     });
-    this.baseLayerTooltipContent = `Feature! ${layerName}`;
-
     if (features.length > 0) {
       this.vectorTooltipLngLat = event.lngLat;
-      this.setTooltipContent(features[0]);
+      this.setTooltipContent(layer, features[0]);
       this.paintHover(features[0]);
     }
   }
 
-  private setTooltipContent(feature: MapGeoJSONFeature) {
-    // TODO: extract the tooltip content from the layer
-    this.baseLayerTooltipContent = `Feature!`;
+  private getTooltipTemplate(layer: BaseLayer): string | null {
+    return layer.metadata?.modules?.map?.tooltip_format ?? null;
   }
+
+  private setTooltipContent(layer: BaseLayer, feature: MapGeoJSONFeature) {
+    //TODO: This works where the template and fields match, but there are situations that might 
+    // be fragile. We might need to reconcile these on the backend somehow
+    const tooltipTemplate = this.getTooltipTemplate(layer);
+    if (!tooltipTemplate) {
+      this.baseLayerTooltipContent = null;
+      return;
+    }else {
+    const tooltipString = tooltipTemplate.replace(/{(.*?)}/g, (match, key: string) => {
+      const trimmedKey = key.toLowerCase().trim();
+      return feature.properties[trimmedKey] !== undefined ? feature.properties[trimmedKey] : match;
+    });
+    if (tooltipString != '') {
+      this.baseLayerTooltipContent = tooltipString;
+    }
+  }}
 
   hoverOutLayer() {
     this.baseLayerTooltipContent = null;
@@ -89,7 +104,6 @@ export class MapBaseLayersComponent {
   vectorTooltipLngLat: LngLat | null = null;
 
   onBaseLayerTab(tab: MatTab): boolean {
-    console.log('what tab are we on?', tab);
     return tab && tab.textLabel === 'Base Layers';
   }
 

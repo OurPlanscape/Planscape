@@ -161,7 +161,6 @@ export class DataLayersStateService {
 
   setSelectedTab(currentTab: MatTab) {
     this._selectedLayerTab$.next(currentTab);
-    console.log('selected tab is:', currentTab.textLabel);
   }
 
   search(term: string) {

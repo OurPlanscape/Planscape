@@ -13,7 +13,7 @@
       [id]="'layer_fill_' + layer.id"
       [source]="'source_' + layer.id"
       [sourceLayer]="'dynamic_' + layer.id"
-      (layerMouseMove)="hoverOnLayer($event, 'layer_fill_' + layer.id)"
+      (layerMouseMove)="hoverOnLayer($event, layer, 'layer_fill_')"
       (layerMouseOut)="hoverOutLayer()"
       type="fill"
       [paint]="fillLayerPaint(layer)"
@@ -23,7 +23,7 @@
       [id]="'layer_outline_' + layer.id"
       [source]="'source_' + layer.id"
       [sourceLayer]="'dynamic_' + layer.id"
-      (layerMouseMove)="hoverOnLayer($event, 'layer_outline_' + layer.id)"
+      (layerMouseMove)="hoverOnLayer($event, layer, 'layer_outline_')"
       (layerMouseOut)="hoverOutLayer()"
       type="line"
       [paint]="lineLayerPaint(layer)"
@@ -39,7 +39,7 @@
   [offset]="20"
   maxWidth="none"
   className="vector-tooltip"
-  *ngIf="onBaseLayerTab(tab) && vectorTooltipLngLat">
+  *ngIf="onBaseLayerTab(tab) && baseLayerTooltipContent && vectorTooltipLngLat">
   <div class="tooltip-content no-select">
     {{ baseLayerTooltipContent }}
   </div>
