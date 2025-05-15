@@ -77,8 +77,7 @@ export class MapBaseLayersComponent {
   }
 
   private setTooltipContent(layer: BaseLayer, feature: MapGeoJSONFeature) {
-    //TODO: This works where the template and fields match, but there are situations that might 
-    // be fragile. We might need to reconcile these on the backend somehow
+    //TODO: consider edge cases where templates or fields introduce fragility
     const tooltipTemplate = this.getTooltipTemplate(layer);
     if (!tooltipTemplate) {
       this.baseLayerTooltipContent = null;
