@@ -270,19 +270,23 @@ to_properties <- function(
 
   # post process
   print("Postprocessing results.")
-  for (column in names(project_data)) {
-    if (column %in% names(POSTPROCESSING_FUNCTIONS)) {
-      postprocess_fn <- POSTPROCESSING_FUNCTIONS[[column]]
-      if (new_column_for_postprocessing) {
-        new_column <- glue("p_{column}")
-      } else {
-        new_column <- column
+  if (FORSYS_V2) {
+    print("No postprocessing here")
+  } else {
+    for (column in names(project_data)) {
+      if (column %in% names(POSTPROCESSING_FUNCTIONS)) {
+        postprocess_fn <- POSTPROCESSING_FUNCTIONS[[column]]
+        if (new_column_for_postprocessing) {
+          new_column <- glue("p_{column}")
+        } else {
+          new_column <- column
+        }
+        print("Post processing {column} to {new_column}.")
+        project_data <- project_data %>%
+          mutate(
+            !!treat_string_as_col(new_column) := postprocess_fn(!!treat_string_as_col(column), project_stand_count, stand_size, column)
+          )
       }
-      print("Post processing {column} to {new_column}.")
-      project_data <- project_data %>%
-        mutate(
-          !!treat_string_as_col(new_column) := postprocess_fn(!!treat_string_as_col(column), project_stand_count, stand_size, column)
-        )
     }
   }
 
@@ -369,21 +373,23 @@ get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
   stand_size <- get_stand_size(configuration)
   stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas))
   for (row in seq_len(nrow(datalayers))) {
-    datalayer_id <- datalayers[row, "id"]$id
-    print(datalayers)
-    datalayer_name <- datalayers[row, "name"]$name
+    datalayer <- datalayers[row, ]
+    datalayer_id <- datalayer$id
+    datalayer_name <- datalayer$name
+    field_name <- paste0("datalayer_", datalayer_id)
 
     metric <- get_stand_metrics_v2(
       connection,
       datalayer_id,
       datalayer_name,
       stands$stand_id
-    )
+    ) %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
+    metric[[field_name]][metric[[field_name]] == -Inf] <- 0
 
     if (nrow(metric) <= 0) {
       print(paste("DATALAYER", datalayer_name, "with id", datalayer_id, "yielded empty. check data."))
 
-      if (any(is.na(metric[, datalayer_name]))) {
+      if (any(is.na(metric[, field_name]))) {
         print(paste("DATALAYER", datalayer_name, "contains NA/NULL values."))
       }
 
@@ -393,7 +399,7 @@ get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
 
     stands <- merge_data(stands, metric)
   }
-  stands <- stands %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
+
   return(stands)
 }
 
@@ -675,7 +681,7 @@ call_forsys <- function(
         )
       scenario_priorities <- c("priority")
     } else {
-      scenario_priorities <- first(priorities$name)
+      scenario_priorities <- paste0("datalayer_", first(priorities$id))
     }
   } else {
     if (length(priorities$condition_name) > 1) {
@@ -706,9 +712,9 @@ call_forsys <- function(
 
   if (FORSYS_V2) {
     stand_thresholds <- get_stand_thresholds_v2(scenario, restrictions)
-    output_tmp <- forsys_inputs %>%
+    output_tmp <- paste0("datalayer_", forsys_inputs %>%
       remove_duplicates_v2() %>%
-      select(name)
+      select(id))
     output_fields <- c(output_tmp$name, "area_acres")
   } else {
     stand_thresholds <- get_stand_thresholds(scenario)
