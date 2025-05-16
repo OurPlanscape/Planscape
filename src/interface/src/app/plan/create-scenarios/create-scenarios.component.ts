@@ -90,7 +90,6 @@ export class CreateScenariosComponent implements OnInit {
         uploadedArea: [''],
       }),
     });
-    this.forms.valueChanges.subscribe((form) => console.log('Form: ', form));
   }
 
   async ngOnInit() {
