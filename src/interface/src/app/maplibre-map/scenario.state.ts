@@ -28,6 +28,9 @@ export class ScenarioState {
   // BehaviorSubject that we are going to use to manually reload the scenario
   private _reloadScenario$ = new BehaviorSubject<void>(undefined);
 
+  // Observable that we are going to use to get the excluded_areas
+  excludedAreas$ = this.scenarioService.getExcludedAreas().pipe(shareReplay(1));
+
   // Listen to ID changes and trigger network calls, returning typed results.
   currentScenarioResource$: Observable<Resource<Scenario>> = combineLatest([
     this._currentScenarioId$.pipe(

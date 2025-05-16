@@ -56,7 +56,9 @@ describe('CreateScenariosComponent', () => {
     id: '1',
     name: 'name',
     planning_area: 1,
-    configuration: {},
+    configuration: {
+      max_budget: 100,
+    },
     status: 'ACTIVE',
     scenario_result: {
       status: 'PENDING',
@@ -110,6 +112,7 @@ describe('CreateScenariosComponent', () => {
           createScenario: of(demoScenario),
           getScenario: of(fakeScenario),
           getScenariosForPlan: of([demoScenario]),
+          getExcludedAreas: new BehaviorSubject([]),
         }
       );
     fakeLegacyPlanStateService = jasmine.createSpyObj<LegacyPlanStateService>(
@@ -162,6 +165,7 @@ describe('CreateScenariosComponent', () => {
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
+    await component.constraintsPanelComponent.createForm();
     loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
@@ -171,22 +175,23 @@ describe('CreateScenariosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load existing scenario', () => {
+  it('should load existing scenario', async () => {
     const scenarioId = 'fakeScenarioId';
     fakePlanState$.next({
       ...fakePlanState$.value,
       ...{ currentScenarioId: scenarioId },
     });
+
     spyOn(component, 'pollForChanges');
     fixture.detectChanges();
+    await fixture.whenStable();
+
     expect(fakeLegacyPlanStateService.getScenario).toHaveBeenCalledOnceWith(
       scenarioId
     );
-    component.constrainsForm?.valueChanges.subscribe((_) => {
-      expect(
-        component.constrainsForm?.get('budgetForm.maxCost')?.value
-      ).toEqual(100);
-    });
+
+    const value = component.constrainsForm?.get('budgetForm.maxCost')?.value;
+    expect(value).toEqual(100);
   });
 
   describe('max area validation', () => {
@@ -245,23 +250,29 @@ describe('CreateScenariosComponent', () => {
     it('should emit create scenario event on Generate button click', async () => {
       spyOn(component, 'createScenario');
 
+      fixture.detectChanges();
+      await fixture.whenStable();
+
       component.scenarioNameFormField?.setValue('scenarioName');
       component.scenarioNameFormField?.markAsDirty();
 
       component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_area: 3000,
       });
 
+      component.forms.updateValueAndValidity();
       fixture.detectChanges();
 
-      const buttonHarness: MatButtonHarness = await loader.getHarness(
+      const buttonHarness = await loader.getHarness(
         MatButtonHarness.with({ text: /GENERATE/ })
       );
 
-      // Click on "GENERATE SCENARIO" button
+      expect(await buttonHarness.isDisabled()).toBeFalse();
+
       await buttonHarness.click();
 
       expect(component.createScenario).toHaveBeenCalled();
@@ -476,7 +487,7 @@ describe('CreateScenariosComponent', () => {
       discardPeriodicTasks();
     }));
 
-    it('should not poll for changes if status is not pending', fakeAsync(() => {
+    it('should not poll for changes if status is not pending', async () => {
       const results: ScenarioResult = {
         ...(fakeScenario.scenario_result as ScenarioResult),
         ...{ status: 'SUCCESS' },
@@ -486,12 +497,19 @@ describe('CreateScenariosComponent', () => {
         ...{ scenario_result: results },
       });
 
+      component.scenarioId = 'fakeScenarioId';
+      spyOn(component, 'loadConfig').and.callThrough();
+
       fixture.detectChanges();
+      await fixture.whenStable();
+
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
       tick(POLLING_INTERVAL);
       fixture.detectChanges();
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
       discardPeriodicTasks();
-    }));
+    });
   });
 });

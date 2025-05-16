@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { catchError, Observable } from 'rxjs';
+import { catchError, map, Observable } from 'rxjs';
 import { Scenario, ScenarioConfig } from '@types';
 import { CreateScenarioError } from './errors';
 import { environment } from '../../environments/environment';
@@ -94,6 +94,23 @@ export class ScenarioService {
         withCredentials: true,
         responseType: 'arraybuffer',
       }
+    );
+  }
+
+  getExcludedAreas(): Observable<{ key: number; label: string; id: number }[]> {
+    const url = environment.backend_endpoint + '/v2/datasets/998/browse';
+    return this.http.get(url).pipe(
+      map((areas: any) => {
+        const excludedAreas: { key: number; label: string; id: number }[] = [];
+        areas.forEach((area: any) => {
+          excludedAreas.push({
+            key: area.id,
+            label: area.name,
+            id: area.id,
+          });
+        });
+        return excludedAreas;
+      })
     );
   }
 
