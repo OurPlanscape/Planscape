@@ -271,7 +271,7 @@ to_properties <- function(
   # post process
   print("Postprocessing results.")
   if (FORSYS_V2) {
-    print("No postprocessing here")
+    print("No postprocessing for v2")
   } else {
     for (column in names(project_data)) {
       if (column %in% names(POSTPROCESSING_FUNCTIONS)) {
