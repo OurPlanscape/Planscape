@@ -706,8 +706,13 @@ call_forsys <- function(
 
   if (FORSYS_V2) {
     stand_thresholds <- get_stand_thresholds_v2(scenario, restrictions)
+    output_tmp <- forsys_inputs %>%
+      remove_duplicates_v2() %>%
+      select(name)
+    output_fields <- c(output_tmp$name, "area_acres")
   } else {
     stand_thresholds <- get_stand_thresholds(scenario)
+    output_fields <- c(outputs$condition_name, "area_areas")
   }
 
   export_input(scenario, stand_data)
@@ -722,7 +727,7 @@ call_forsys <- function(
     write_outputs = TRUE,
     overwrite_output = FALSE,
     scenario_name = scenario$uuid, # using UUID here instead of name
-    scenario_output_fields = c(outputs$condition_name, "area_acres"),
+    scenario_output_fields = output_fields,
     scenario_priorities = scenario_priorities,
     stand_data = stand_data,
     stand_area_field = "area_acres",
