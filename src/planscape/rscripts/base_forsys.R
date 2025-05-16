@@ -579,7 +579,7 @@ get_stand_thresholds_v2 <- function(scenario, datalayers) {
     if (is.null(datalayer$threshold)) {
       next
     }
-    curr_threshold <- gsub("value", paste("datalayer_", datalayer$id), datalayer$threshold)
+    curr_threshold <- gsub("value", paste0("datalayer_", datalayer$id), datalayer$threshold)
     all_thresholds <- c(all_thresholds, curr_threshold)
   }
 
@@ -672,10 +672,10 @@ call_forsys <- function(
     if (length(priorities$name) > 1) {
       weights <- get_weights(priorities, configuration)
       stand_data <- stand_data %>%
-        forsys::calculate_spm(fields = priorities$name) %>%
-        forsys::calculate_pcp(fields = priorities$name) %>%
+        forsys::calculate_spm(fields = paste0("datalayer_", priorities$id)) %>%
+        forsys::calculate_pcp(fields = paste0("datalayer_", priorities$id)) %>%
         forsys::combine_priorities(
-          fields = paste0(priorities$name, "_SPM"),
+          fields = paste0("datalayer_", priorities$id, "_SPM"),
           weights = weights,
           new_field = "priority"
         )
@@ -712,10 +712,11 @@ call_forsys <- function(
 
   if (FORSYS_V2) {
     stand_thresholds <- get_stand_thresholds_v2(scenario, restrictions)
-    output_tmp <- paste0("datalayer_", forsys_inputs %>%
+    output_tmp <- forsys_inputs %>%
       remove_duplicates_v2() %>%
-      select(id))
-    output_fields <- c(output_tmp$name, "area_acres")
+      select(id)
+    output_tmp <- paste0("datalayer_", output_tmp$id)
+    output_fields <- c(output_tmp, "area_acres")
   } else {
     stand_thresholds <- get_stand_thresholds(scenario)
     output_fields <- c(outputs$condition_name, "area_areas")
