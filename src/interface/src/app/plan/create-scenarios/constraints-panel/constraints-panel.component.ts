@@ -47,7 +47,7 @@ export class ConstraintsPanelComponent implements OnChanges {
   excludedAreas$ = this.scenarioState.excludedAreas$.pipe(
     tap((areas) => (this.excludedAreas = areas))
   );
-  excludedAreas: { key: string; label: string; id: number }[] = [];
+  excludedAreas: { key: number; label: string; id: number }[] = [];
 
   constructor(
     private fb: FormBuilder,
@@ -284,6 +284,8 @@ export class ConstraintsPanelComponent implements OnChanges {
   ): ValidationErrors | null {
     const maxCost = constraintsForm.get('budgetForm.maxCost');
     const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
+    console.log('Max Cost_: ', maxCost?.value);
+    console.log('Max Area_: ', maxArea?.value);
     const valid = !!maxCost?.value || !!maxArea?.value;
     return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
   }

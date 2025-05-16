@@ -97,11 +97,11 @@ export class ScenarioService {
     );
   }
 
-  getExcludedAreas(): Observable<{ key: string; label: string; id: number }[]> {
+  getExcludedAreas(): Observable<{ key: number; label: string; id: number }[]> {
     const url = environment.backend_endpoint + '/v2/datasets/998/browse';
     return this.http.get(url).pipe(
       map((areas: any) => {
-        const excludedAreas: { key: string; label: string; id: number }[] = [];
+        const excludedAreas: { key: number; label: string; id: number }[] = [];
         areas.forEach((area: any) => {
           excludedAreas.push({
             key: area.id,
