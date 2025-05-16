@@ -3,15 +3,23 @@ import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
 
 import { FeatureService } from './feature.service';
 
+interface FeatureGuardOptions {
+  featureName: string;
+  fallback?: string;
+  inverted?: boolean;
+}
+
 /** Guard for a route based on whether a feature flag is enabled. */
 export const createFeatureGuard: (
-  featureName: string
-) => CanMatchFn | CanActivateFn = (featureName: string) => () => {
+  options: FeatureGuardOptions
+) => CanMatchFn | CanActivateFn = (options) => () => {
   const featureService = inject(FeatureService);
   const router = inject(Router);
 
-  if (featureService.isFeatureEnabled(featureName)) return true;
+  const enabled = featureService.isFeatureEnabled(options.featureName);
 
-  // Redirect to the default page.
-  return router.parseUrl('');
+  // if inverted, flip the flag; otherwise, leave it as‐is
+  const shouldActivate = options.inverted ? !enabled : enabled;
+
+  return shouldActivate ? true : router.parseUrl(options.fallback || '');
 };

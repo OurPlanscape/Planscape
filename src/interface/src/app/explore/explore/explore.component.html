@@ -1,0 +1,19 @@
+<app-nav-bar area="EXPLORE"></app-nav-bar>
+<section>
+  <div class="side-panel">Side menu</div>
+  <div class="main">
+    <app-map-nav-bar></app-map-nav-bar>
+    <mgl-map
+      [boxZoom]="false"
+      [dragRotate]="false"
+      [interactive]="true"
+      [maxZoom]="maxZoom"
+      [minZoom]="minZoom"
+      [pitchWithRotate]="false"
+      [fitBounds]="bounds"
+      [fitBoundsOptions]="boundOptions"
+      [style]="(baseLayerUrl$ | async) || ''"
+      [transformRequest]="transformRequest">
+    </mgl-map>
+  </div>
+</section>
