@@ -1,0 +1,24 @@
+:host {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+section {
+  display: flex;
+  height: 100%;
+}
+
+.side-panel {
+  width: 200px; // placeholder
+}
+
+.main {
+  flex: 1;
+  position: relative;
+}
+
+mgl-map {
+  width: 100%;
+  height: 100%;
+}

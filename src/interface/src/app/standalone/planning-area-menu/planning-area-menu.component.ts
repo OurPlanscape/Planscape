@@ -19,6 +19,7 @@ import {
 } from '@angular/material/dialog';
 import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-planning-area.component';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { BreadcrumbService } from '@services/breadcrumb.service';
 
 @Component({
   selector: 'app-planning-area-menu',
@@ -41,7 +42,8 @@ export class PlanningAreaMenuComponent {
     private authService: AuthService,
     private dialog: MatDialog,
     private snackbar: MatSnackBar,
-    private planService: PlanService
+    private planService: PlanService,
+    private breadcrumbService: BreadcrumbService
   ) {}
 
   get shareEnabled() {
@@ -93,5 +95,12 @@ export class PlanningAreaMenuComponent {
           });
         }
       });
+  }
+
+  saveBreadcrumbs() {
+    this.breadcrumbService.updateBreadCrumb({
+      label: 'Explore: ' + this.plan.name,
+      backUrl: '/',
+    });
   }
 }

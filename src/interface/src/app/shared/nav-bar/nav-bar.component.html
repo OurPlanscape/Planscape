@@ -121,15 +121,17 @@
       Print
     </button>
 
-    <button
-      sg-button
-      variant="text"
-      icon="share"
-      (click)="share()"
-      data-id="share"
-      *ngIf="area === 'EXPLORE'">
-      Share
-    </button>
+    <ng-container *appFeatureFlag="'maplibre_on_explore'; hide: true">
+      <button
+        sg-button
+        variant="text"
+        icon="share"
+        (click)="share()"
+        data-id="share"
+        *ngIf="area === 'EXPLORE'">
+        Share
+      </button>
+    </ng-container>
 
     <button
       sg-button
