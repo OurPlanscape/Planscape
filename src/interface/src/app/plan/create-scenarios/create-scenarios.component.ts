@@ -75,12 +75,8 @@ export class CreateScenariosComponent implements OnInit {
   ) {}
 
   async createForms() {
-    const excludedAreas =
-      await this.constraintsPanelComponent.loadExcludedAreas();
-    console.log('Excluded areas: ', excludedAreas);
-    console.log('Form after excluded areas: ', this.forms);
+    await this.constraintsPanelComponent.loadExcludedAreas();
     const constrainsForm = await this.constraintsPanelComponent.createForm();
-    console.log('ConstrainForm after excluded areas: ', constrainsForm);
     this.forms = this.fb.group({
       scenarioName: new FormControl('', [
         Validators.required,

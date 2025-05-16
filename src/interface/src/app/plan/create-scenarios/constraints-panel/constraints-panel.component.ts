@@ -89,7 +89,6 @@ export class ConstraintsPanelComponent implements OnChanges {
   }
 
   async loadExcludedAreas() {
-    console.log('LoadExcluded was called');
     const excludedAreas = await firstValueFrom(this.excludedAreas$);
     this.excludedAreas = excludedAreas;
     this.constraintsForm = await this.createForm();
