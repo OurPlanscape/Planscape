@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ExploreComponent } from './explore.component';
+import { ExploreLegacyComponent } from './explore-legacy.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { Component, Input } from '@angular/core';
 
@@ -9,16 +9,16 @@ class MapMockComponent {
 }
 
 describe('ExploreComponent', () => {
-  let component: ExploreComponent;
-  let fixture: ComponentFixture<ExploreComponent>;
+  let component: ExploreLegacyComponent;
+  let fixture: ComponentFixture<ExploreLegacyComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ExploreComponent, MapMockComponent],
+      declarations: [ExploreLegacyComponent, MapMockComponent],
       imports: [RouterTestingModule],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ExploreComponent);
+    fixture = TestBed.createComponent(ExploreLegacyComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

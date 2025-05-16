@@ -81,6 +81,8 @@ export class DirectImpactsMapComponent {
    */
   mapExtent$ = this.mapConfigState.mapExtent$;
 
+  boundOptions = FrontendConstants.MAPLIBRE_BOUND_OPTIONS;
+
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */

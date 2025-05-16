@@ -60,16 +60,18 @@ get_treatment_goal_datalayers <- function(connection, treatment_goal_id) {
 
 
 get_stand_metrics_v2 <- function(connection, datalayer_id, datalayer_name, stand_ids) {
+  field_name <- paste("datalayer_", datalayer_id)
   query <- glue_sql(
     "SELECT
       stand_id,
-      COALESCE(avg, 0) AS {`datalayer_name`}
+      COALESCE(avg, 0) AS {`field_name`}
      FROM stands_standmetric
      WHERE
        datalayer_id = {datalayer_id} AND
        stand_id IN ({stand_ids*})",
     datalayer_id = datalayer_id,
     datalayer_name = datalayer_name,
+    field_name = field_name,
     stand_ids = stand_ids,
     .con = connection
   )
