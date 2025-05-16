@@ -14,14 +14,12 @@ import {
   RedirectGuard,
   redirectResolver,
 } from '@services';
-import { ExploreLegacyComponent } from './plan/explore/explore/explore-legacy.component';
 import { numberResolver } from './resolvers/number.resolver';
 import { planLoaderResolver } from './resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
-
-import { ExploreComponent } from './explore/explore/explore.component';
 import { MapComponent } from './map/map.component';
 import { createFeatureGuard } from './features/feature.guard';
+import { ExploreLegacyComponent } from './plan/explore/explore/explore-legacy.component';
 
 const routes: Routes = [
   {
@@ -110,7 +108,10 @@ const routes: Routes = [
       {
         path: 'explore',
         title: 'Explore',
-        component: ExploreComponent,
+        loadComponent: () =>
+          import('./explore/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
         canActivate: [
           createFeatureGuard({
             featureName: 'maplibre_on_explore',
@@ -121,11 +122,37 @@ const routes: Routes = [
       {
         path: 'explore/:id',
         title: 'Explore',
-        component: ExploreLegacyComponent,
-        canActivate: [AuthGuard],
+        loadComponent: () =>
+          import('./explore/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
+
         resolve: {
           planInit: planLoaderResolver,
         },
+        canActivate: [
+          AuthGuard,
+          createFeatureGuard({
+            featureName: 'maplibre_on_explore',
+            fallback: '/explore-plan/:id',
+          }),
+        ],
+      },
+      {
+        path: 'explore-plan/:id',
+        title: 'Explore',
+        component: ExploreLegacyComponent,
+        resolve: {
+          planInit: planLoaderResolver,
+        },
+        canActivate: [
+          AuthGuard,
+          createFeatureGuard({
+            featureName: 'maplibre_on_explore',
+            fallback: '/plan/:id',
+            inverted: true,
+          }),
+        ],
       },
 
       {
