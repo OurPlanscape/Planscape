@@ -57,6 +57,8 @@ export function getBoundsFromGeometry(geometry: Geometry) {
   return bbox(geoFeature) as Extent;
 }
 
+export type Cleanup = () => void;
+
 /**
  * This snippet is taken from:
  * https://github.com/mapbox/mapbox-gl-sync-move/issues/14
@@ -72,7 +74,7 @@ export function getBoundsFromGeometry(geometry: Geometry) {
  * - prematurely halts prolonged movements like
  *   double-click zooming, box-zooming, and flying
  */
-export function syncMaps(...maps: MapLibreMap[]) {
+export function syncMaps(...maps: MapLibreMap[]): Cleanup {
   // Create all the movement functions, because if they're created every time
   // they wouldn't be the same and couldn't be removed.
   let fns: Parameters<MapLibreMap['on']>[1][] = [];

@@ -44,7 +44,6 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { AnalyticsService } from '@services/analytics.service';
 import { PlanState } from '../../plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 
 @UntilDestroy()
 @Component({
@@ -76,11 +75,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
     TreatmentsState,
     SelectedStandsState,
     TreatedStandsState,
-    // 1. Create a single instance of the subclass
-    { provide: MapConfigState, useClass: MultiMapConfigState },
-
-    // 2. Alias its own type to that same instance
-    { provide: MultiMapConfigState, useExisting: MapConfigState },
+    MapConfigState,
     TreatmentToPDFService,
   ],
   templateUrl: './treatment-config.component.html',
