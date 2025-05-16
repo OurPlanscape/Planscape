@@ -170,10 +170,6 @@ export class TreatmentsState {
       data.standSelectionEnabled || false
     );
 
-    this.mapConfigState.setShowFillProjectAreas(
-      data.showMapProjectAreas || false
-    );
-
     this.mapConfigState.setTreatmentLegendVisible(false);
     this.mapConfigState.setShowMapControls(data.showMapControls || false);
   }
@@ -341,11 +337,6 @@ export class TreatmentsState {
 
   runTreatmentPlan() {
     return this.treatmentsService.runTreatmentPlan(this.getTreatmentPlanId());
-  }
-
-  projectAreaCount() {
-    const d = this._summary$.value;
-    return d ? d.project_areas.length : 0;
   }
 
   getAcresForProjectArea(name: string) {
