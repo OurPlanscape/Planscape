@@ -1,25 +1,42 @@
 import { inject } from '@angular/core';
-import { CanActivateFn, CanMatchFn, Router } from '@angular/router';
-
+import {
+  ActivatedRouteSnapshot,
+  CanActivateFn,
+  Router,
+  RouterStateSnapshot,
+} from '@angular/router';
 import { FeatureService } from './feature.service';
 
 interface FeatureGuardOptions {
   featureName: string;
+  /** either a literal path with `:param` placeholders… */
   fallback?: string;
+  /** …or a function that can build it from the snapshot */
+  fallbackFn?: (
+    route: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot
+  ) => string;
   inverted?: boolean;
 }
 
-/** Guard for a route based on whether a feature flag is enabled. */
-export const createFeatureGuard: (
-  options: FeatureGuardOptions
-) => CanMatchFn | CanActivateFn = (options) => () => {
-  const featureService = inject(FeatureService);
-  const router = inject(Router);
+export const createFeatureGuard =
+  (opts: FeatureGuardOptions): CanActivateFn =>
+  (route, state) => {
+    const featureService = inject(FeatureService);
+    const router = inject(Router);
 
-  const enabled = featureService.isFeatureEnabled(options.featureName);
+    const enabled = featureService.isFeatureEnabled(opts.featureName);
+    const allow = opts.inverted ? !enabled : enabled;
+    if (allow) return true;
 
-  // if inverted, flip the flag; otherwise, leave it as‐is
-  const shouldActivate = options.inverted ? !enabled : enabled;
+    // 1) If they passed a builder fn, use it…
+    let url =
+      opts.fallbackFn?.(route, state) ??
+      // 2) …otherwise do simple ":param" → actual-param replacement
+      (opts.fallback || '').replace(
+        /:([^/]+)/g,
+        (_, key) => route.paramMap.get(key) ?? ''
+      );
 
-  return shouldActivate ? true : router.parseUrl(options.fallback || '');
-};
+    return router.parseUrl(url || '/');
+  };
