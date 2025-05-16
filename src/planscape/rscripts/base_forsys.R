@@ -370,6 +370,7 @@ get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
   stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas))
   for (row in seq_len(nrow(datalayers))) {
     datalayer_id <- datalayers[row, "id"]$id
+    print(datalayers)
     datalayer_name <- datalayers[row, "name"]$name
 
     metric <- get_stand_metrics_v2(
@@ -380,15 +381,16 @@ get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
     )
 
     if (nrow(metric) <= 0) {
-      print((paste("DATALAYER", datalayer_name, "with id", datalayer_id, "yielded empty. check data."))
+      print(paste("DATALAYER", datalayer_name, "with id", datalayer_id, "yielded empty. check data."))
 
       if (any(is.na(metric[, datalayer_name]))) {
-        print(paste("DATALAYER",datalayer_name,"contains NA/NULL values."))
+        print(paste("DATALAYER", datalayer_name, "contains NA/NULL values."))
       }
 
       metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
       names(metric) <- c("stand_id", datalayer_name)
     }
+
     stands <- merge_data(stands, metric)
   }
   stands <- stands %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
@@ -549,6 +551,7 @@ get_max_slope <- function(configuration) {
   max_slope <- configuration$max_slope
   return(glue("slope <= {max_slope}"))
 }
+
 get_stand_thresholds_v2 <- function(scenario, datalayers) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
@@ -565,9 +568,13 @@ get_stand_thresholds_v2 <- function(scenario, datalayers) {
     all_thresholds <- c(all_thresholds, distance_to_roads)
   }
 
-  text_thresholds <- datalayers["threshold"] %>% drop_na()
-  if (length(text_thresholds) > 0) {
-    all_thresholds <- c(all_thresholds, text_thresholds)
+  for (i in seq_len(nrow(datalayers))) {
+    datalayer <- datalayers[i, ]
+    if (is.null(datalayer$threshold)) {
+      next
+    }
+    curr_threshold <- gsub("value", paste("datalayer_", datalayer$id), datalayer$threshold)
+    all_thresholds <- c(all_thresholds, curr_threshold)
   }
 
   if (length(all_thresholds) > 0) {
@@ -602,7 +609,7 @@ get_stand_thresholds <- function(scenario) {
 }
 
 remove_duplicates_v2 <- function(dataframe) {
-  return(distinct(dataframe, pick(c("id"))))
+  return(dataframe %>% distinct(id, .keep_all = TRUE))
 }
 
 remove_duplicates <- function(dataframe) {
@@ -639,7 +646,6 @@ call_forsys <- function(
   } else {
     forsys_inputs <- remove_duplicates(forsys_inputs)
   }
-
   if (FORSYS_V2) {
     stand_data <- get_stand_data_v2(
       connection,
@@ -854,7 +860,10 @@ main_v2 <- function(scenario_id) {
   priorities <- filter(datalayers, type == "RASTER", usage_type == "PRIORITY")
   secondary_metrics <- filter(datalayers, type == "RASTER", usage_type == "SECONDARY_METRIC")
   thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
-  exclusion_zones <- filter(datalayers, usage_type == "EXCLUSION_ZONE" & geometry_type == "POLYGON" | geometry_type == "MULTIPOLYGON")
+  exclusion_zones <- filter(
+    datalayers,
+    usage_type == "EXCLUSION_ZONE" & (geometry_type == "POLYGON" | geometry_type == "MULTIPOLYGON")
+  )
   new_column_for_postprocessing <- Sys.getenv(
     "NEW_COLUMN_FOR_POSTPROCESSING",
     FALSE
