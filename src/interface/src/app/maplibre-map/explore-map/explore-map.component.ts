@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
-import { MapComponent } from '@maplibre/ngx-maplibre-gl';
+import { AsyncPipe, NgIf } from '@angular/common';
+import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { FrontendConstants } from '../../map/map.constants';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { MapConfigState } from '../map-config.state';
@@ -10,7 +10,7 @@ import { addRequestHeaders } from '../maplibre.helper';
 @Component({
   selector: 'app-explore-map',
   standalone: true,
-  imports: [AsyncPipe, MapComponent],
+  imports: [AsyncPipe, MapComponent, ControlComponent, NgIf],
   templateUrl: './explore-map.component.html',
   styleUrl: './explore-map.component.scss',
 })
@@ -34,11 +34,14 @@ export class ExploreMapComponent {
    */
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
 
+  @Input() showMapNumber = true;
+
   @Output() mapCreated = new EventEmitter<{
     map: MapLibreMap;
     mapNumber: number;
   }>();
   @Input() mapNumber = 1;
+  @Input() showAttribution = false;
 
   constructor(
     private mapConfigState: MapConfigState,

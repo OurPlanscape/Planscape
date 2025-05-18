@@ -1,6 +1,7 @@
 <app-explore-map
   [mapNumber]="1"
-  (mapCreated)="mapCreated($event)"></app-explore-map>
+  (mapCreated)="mapCreated($event)"
+  [showMapNumber]="views !== 1"></app-explore-map>
 <app-explore-map
   *ngIf="views > 1"
   [mapNumber]="2"
