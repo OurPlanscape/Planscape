@@ -1,17 +1,15 @@
-<ng-container *ngIf="views$ | async as views">
-  <app-explore-map
-    [mapNumber]="1"
-    (mapCreated)="mapCreated($event)"></app-explore-map>
-  <app-explore-map
-    *ngIf="views > 1"
-    [mapNumber]="2"
-    (mapCreated)="mapCreated($event)"></app-explore-map>
-  <app-explore-map
-    [mapNumber]="3"
-    *ngIf="views === 4"
-    (mapCreated)="mapCreated($event)"></app-explore-map>
-  <app-explore-map
-    [mapNumber]="4"
-    *ngIf="views === 4"
-    (mapCreated)="mapCreated($event)"></app-explore-map>
-</ng-container>
+<app-explore-map
+  [mapNumber]="1"
+  (mapCreated)="mapCreated($event)"></app-explore-map>
+<app-explore-map
+  *ngIf="views > 1"
+  [mapNumber]="2"
+  (mapCreated)="mapCreated($event)"></app-explore-map>
+<app-explore-map
+  [mapNumber]="3"
+  *ngIf="views === 4"
+  (mapCreated)="mapCreated($event)"></app-explore-map>
+<app-explore-map
+  [mapNumber]="4"
+  *ngIf="views === 4"
+  (mapCreated)="mapCreated($event)"></app-explore-map>
