@@ -250,7 +250,6 @@ export class ConstraintsPanelComponent implements OnChanges {
           .get('excludedAreasForm.' + area.key)
           ?.setValue(false);
       }
-      console.log('ConstrainForm: ', this.constraintsForm);
     });
 
     if (config.estimated_cost) {
