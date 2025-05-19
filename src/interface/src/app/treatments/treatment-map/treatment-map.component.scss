@@ -10,6 +10,13 @@
     .maplibregl-ctrl-top-left {
       top: $map-nav-bar-height;
       z-index: 0;
+      bottom: 60px;
+      height: 100%;
+      .maplibregl-ctrl {
+        max-height: calc(100% - ($map-nav-bar-height + $map-bottom-layer-name-height));
+        margin: 10px;
+        height: calc(100% - ($map-nav-bar-height + $map-bottom-layer-name-height));
+      }
     }
 
     .maplibregl-ctrl-top-right {
