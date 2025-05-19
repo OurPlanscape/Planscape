@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { ScenarioState } from './scenario.state';
 import { ScenarioService } from '@services';
 import { Scenario } from '@types';
-import { of, throwError } from 'rxjs';
+import { BehaviorSubject, of, throwError } from 'rxjs';
 
 describe('ScenarioState', () => {
   let scenarioState: ScenarioState;
@@ -43,7 +43,12 @@ describe('ScenarioState', () => {
   };
 
   beforeEach(() => {
-    const spy = jasmine.createSpyObj('ScenarioService', ['getScenario']);
+    const spy = jasmine.createSpyObj('ScenarioService', [
+      'getScenario',
+      'getExcludedAreas',
+    ]);
+
+    spy.getExcludedAreas.and.returnValue(new BehaviorSubject([1, 2, 3]));
 
     TestBed.configureTestingModule({
       providers: [ScenarioState, { provide: ScenarioService, useValue: spy }],
