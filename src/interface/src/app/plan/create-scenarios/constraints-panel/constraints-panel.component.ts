@@ -21,6 +21,7 @@ import {
 } from '../../../validators/scenarios';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 import { firstValueFrom, tap } from 'rxjs';
+import { FeatureService } from 'src/app/features/feature.service';
 
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   {
@@ -51,7 +52,8 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   constructor(
     private fb: FormBuilder,
-    private scenarioState: ScenarioState
+    private scenarioState: ScenarioState,
+    private featureService: FeatureService
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -206,7 +208,11 @@ export class ConstraintsPanelComponent implements OnChanges {
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.valid &&
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.value
       ) {
-        scenarioConfig.excluded_areas?.push(area.id);
+        if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+          scenarioConfig.excluded_areas?.push(Number(area.id));
+        } else {
+          scenarioConfig.excluded_areas?.push(area.label as any);
+        }
       }
     });
     if (estimatedCost?.valid)
