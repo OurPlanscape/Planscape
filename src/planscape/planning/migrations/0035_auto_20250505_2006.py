@@ -24,7 +24,7 @@ def backfill_scenario_configuration(apps, schema_editor):
             logger.warning(f"Skipping scenario {scenario.id} as it has no question ID")
             continue
         try:
-            treatment_goal = TreatmentGoal.dead_or_alive.get(id=question_id)
+            treatment_goal = TreatmentGoal.objects.get(id=question_id)
         except TreatmentGoal.DoesNotExist:
             logger.warning(f"Treatment goal with ID {question_id} does not exist")
             continue
