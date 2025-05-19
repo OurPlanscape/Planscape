@@ -13,7 +13,7 @@ import { BehaviorSubject, of } from 'rxjs';
 
 import {
   Scenario,
-  ScenarioResult,
+  ScenarioResultStatus,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from '@types';
@@ -516,45 +516,60 @@ describe('CreateScenariosComponent', () => {
 
   describe('polling', () => {
     beforeEach(() => {
-      fakePlanState$.next({
-        ...fakePlanState$.value,
-        ...{ currentScenarioId: 'fakeScenarioId' },
-      });
       spyOn(component, 'loadConfig').and.callThrough();
     });
+
     it('should poll for changes if status is pending', fakeAsync(() => {
-      component.scenarioState = 'PENDING';
+      setupPollingScenario(component, 'PENDING');
+
       fixture.detectChanges();
+      tick();
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
+
       tick(POLLING_INTERVAL);
       fixture.detectChanges();
+
       expect(component.loadConfig).toHaveBeenCalledTimes(2);
+
       discardPeriodicTasks();
+      fixture.destroy();
     }));
 
-    it('should not poll for changes if status is not pending', async () => {
-      const results: ScenarioResult = {
-        ...(fakeScenario.scenario_result as ScenarioResult),
-        ...{ status: 'SUCCESS' },
-      };
-      fakeGetScenario.next({
-        ...fakeScenario,
-        ...{ scenario_result: results },
-      });
-
-      component.scenarioId = 'fakeScenarioId';
-      spyOn(component, 'loadConfig').and.callThrough();
+    it('should not poll for changes if status is not pending', fakeAsync(() => {
+      setupPollingScenario(component, 'SUCCESS');
 
       fixture.detectChanges();
-      await fixture.whenStable();
+      tick();
 
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
 
       tick(POLLING_INTERVAL);
       fixture.detectChanges();
+
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
 
       discardPeriodicTasks();
-    });
+      fixture.destroy();
+    }));
   });
+
+  function setupPollingScenario(
+    component: CreateScenariosComponent,
+    status: ScenarioResultStatus
+  ) {
+    fakePlanState$.next({
+      ...fakePlanState$.value,
+      currentScenarioId: 'fakeScenarioId',
+    });
+
+    fakeGetScenario.next({
+      ...fakeScenario,
+      scenario_result: {
+        ...fakeScenario.scenario_result!,
+        status,
+      },
+    });
+
+    component.scenarioId = 'fakeScenarioId';
+  }
 });
