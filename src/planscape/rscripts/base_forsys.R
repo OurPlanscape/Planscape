@@ -164,7 +164,7 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
       for (i in seq_along(restrictions)) {
         datalayer_id <- restrictions[i]
         restriction <- get_datalayer_by_id(connection, datalayer_id)
-        restriction_data <- get_restriction_v2(connection, scenario_id, restriction)
+        restriction_data <- get_restriction_v2(connection, scenario_id, restriction$table)
         stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
       }
     } else {
