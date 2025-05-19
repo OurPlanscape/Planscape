@@ -370,12 +370,7 @@ class ConfigurationV2Serializer(serializers.Serializer):
     )
 
     excluded_areas = serializers.ListField(
-        child=serializers.PrimaryKeyRelatedField(
-            queryset=DataLayer.objects.filter(
-                type=DataLayerType.VECTOR,
-                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
-            ),
-        ),
+        child=serializers.IntegerField(),
         allow_empty=True,
         min_length=0,
         required=False,
@@ -385,6 +380,20 @@ class ConfigurationV2Serializer(serializers.Serializer):
         required=False,
         allow_null=True,
         help_text="Optional seed for reproducible randomization.",
+    )
+
+
+class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
+    excluded_areas = serializers.ListField(
+        child=serializers.PrimaryKeyRelatedField(
+            queryset=DataLayer.objects.filter(
+                type=DataLayerType.VECTOR,
+                geometry_type__in=[GeometryType.POLYGON, GeometryType.MULTIPOLYGON],
+            ),
+        ),
+        allow_empty=True,
+        min_length=0,
+        required=False,
     )
 
     def validate_excluded_areas(self, excluded_areas):
@@ -503,7 +512,7 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         model = Scenario
 
 
-class CreateScenarioV2Serializer(serializers.ModelSerializer):
+class ScenarioV2Serializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
     treatment_goal = serializers.PrimaryKeyRelatedField(
         queryset=TreatmentGoal.objects.all(),
@@ -511,6 +520,29 @@ class CreateScenarioV2Serializer(serializers.ModelSerializer):
         help_text="Treatment goal of the scenario.",
     )
     configuration = ConfigurationV2Serializer()
+
+    class Meta:
+        model = Scenario
+        fields = (
+            "id",
+            "user",
+            "planning_area",
+            "name",
+            "origin",
+            "notes",
+            "configuration",
+            "treatment_goal",
+        )
+
+
+class CreateScenarioV2Serializer(serializers.ModelSerializer):
+    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    treatment_goal = serializers.PrimaryKeyRelatedField(
+        queryset=TreatmentGoal.objects.all(),
+        required=True,
+        help_text="Treatment goal of the scenario.",
+    )
+    configuration = CreateConfigurationV2Serializer()
 
     class Meta:
         model = Scenario
