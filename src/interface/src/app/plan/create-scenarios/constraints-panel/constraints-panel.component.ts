@@ -233,10 +233,15 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   setFormData(config: ScenarioConfig) {
     this.excludedAreas.forEach((area) => {
-      if (
-        config.excluded_areas &&
-        config.excluded_areas.indexOf(Number(area.key)) > -1
-      ) {
+      const isAreaSelected = this.featureService.isFeatureEnabled(
+        'statewide_scenarios'
+      )
+        ? config.excluded_areas &&
+          config.excluded_areas.includes(area.key.toString() as any)
+        : config.excluded_areas &&
+          config.excluded_areas.indexOf(Number(area.key)) > -1;
+
+      if (isAreaSelected) {
         this.constraintsForm
           .get('excludedAreasForm.' + area.key)
           ?.setValue(true);
@@ -245,6 +250,7 @@ export class ConstraintsPanelComponent implements OnChanges {
           .get('excludedAreasForm.' + area.key)
           ?.setValue(false);
       }
+      console.log('ConstrainForm: ', this.constraintsForm);
     });
 
     if (config.estimated_cost) {
