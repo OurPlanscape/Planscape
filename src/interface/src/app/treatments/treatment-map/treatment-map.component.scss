@@ -13,9 +13,9 @@
       bottom: 60px;
       height: 100%;
       .maplibregl-ctrl {
-        max-height: calc(100% - ($map-nav-bar-height + $map-bottom-layer-name-height));
+        max-height: calc(100% - ($map-nav-bar-height + $map-bottom-name-height));
         margin: 10px;
-        height: calc(100% - ($map-nav-bar-height + $map-bottom-layer-name-height));
+        height: calc(100% - ($map-nav-bar-height + $map-bottom-name-height));
       }
     }
 
