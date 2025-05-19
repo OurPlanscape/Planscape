@@ -2,6 +2,7 @@
   <ng-container *ngIf="layer.map_service_type === 'ESRI_GEOJSON'">
     <app-map-arcgis-vector-layer
       [layer]="layer"
+      [before]="before"
       [mapLibreMap]="mapLibreMap"></app-map-arcgis-vector-layer>
   </ng-container>
   <ng-container *ngIf="layer.map_service_type === 'VECTORTILES'">

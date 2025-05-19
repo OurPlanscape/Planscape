@@ -31,7 +31,7 @@ get_treatment_goal_by_scenario_id <- function(connection, scenario_id) {
     LEFT JOIN planning_scenario s ON (s.treatment_goal_id = t.id)
     WHERE s.id = {scenario_id}
   "
-  query <- glue_sql(query_text, scenario_id=scenario_id, .con=connection)
+  query <- glue_sql(query_text, scenario_id = scenario_id, .con = connection)
   result <- dbGetQuery(connection, query)
   return(tibble(head(result, 1)))
 }
@@ -45,31 +45,33 @@ get_treatment_goal_datalayers <- function(connection, treatment_goal_id) {
       d.geometry_type,
       udt.usage_type AS \"usage_type\",
       udt.threshold AS \"threshold\"
-    FROM 
+    FROM
       datasets_datalayer d
-    LEFT JOIN 
+    LEFT JOIN
       planning_treatmentgoalusesdatalayer udt ON (udt.datalayer_id = d.id)
-    WHERE 
+    WHERE
       udt.treatment_goal_id = {treatment_goal_id}
   "
 
-  query <- glue_sql(query_text, treatment_goal_id=treatment_goal_id, .con=connection)
+  query <- glue_sql(query_text, treatment_goal_id = treatment_goal_id, .con = connection)
   result <- dbGetQuery(connection, query)
   return(result)
 }
 
 
 get_stand_metrics_v2 <- function(connection, datalayer_id, datalayer_name, stand_ids) {
+  field_name <- paste0("datalayer_", datalayer_id)
   query <- glue_sql(
     "SELECT
       stand_id,
-      COALESCE(avg, 0) AS {`datalayer_name`}
+      COALESCE(avg, 0) AS {`field_name`}
      FROM stands_standmetric
      WHERE
        datalayer_id = {datalayer_id} AND
        stand_id IN ({stand_ids*})",
-    datalayer_id = condition_id,    
+    datalayer_id = datalayer_id,
     datalayer_name = datalayer_name,
+    field_name = field_name,
     stand_ids = stand_ids,
     .con = connection
   )

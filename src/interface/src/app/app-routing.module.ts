@@ -7,7 +7,6 @@ import {
   TitleStrategy,
 } from '@angular/router';
 import { HomeComponent } from './home/home.component';
-import { MapComponent } from './map/map.component';
 import {
   AuthGuard,
   DevelopmentRouteGuard,
@@ -15,10 +14,12 @@ import {
   RedirectGuard,
   redirectResolver,
 } from '@services';
-import { ExploreComponent } from './plan/explore/explore/explore.component';
 import { numberResolver } from './resolvers/number.resolver';
 import { planLoaderResolver } from './resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
+import { MapComponent } from './map/map.component';
+import { createFeatureGuard } from './features/feature.guard';
+import { ExploreLegacyComponent } from './plan/explore/explore/explore-legacy.component';
 
 const routes: Routes = [
   {
@@ -90,20 +91,70 @@ const routes: Routes = [
             './standalone/account-validation/account-validation.component'
           ).then((m) => m.AccountValidationComponent),
       },
+      // old map
       {
         path: 'map',
         title: 'Explore',
         component: MapComponent,
+        canActivate: [
+          createFeatureGuard({
+            featureName: 'maplibre_on_explore',
+            fallback: '/explore',
+            inverted: true,
+          }),
+        ],
+      },
+      // new map
+      {
+        path: 'explore',
+        title: 'Explore',
+        loadComponent: () =>
+          import('./explore/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
+        canActivate: [
+          createFeatureGuard({
+            featureName: 'maplibre_on_explore',
+            fallback: '/map',
+          }),
+        ],
       },
       {
         path: 'explore/:id',
-        title: 'Explore Plan',
-        component: ExploreComponent,
-        canActivate: [AuthGuard],
+        title: 'Explore',
+        loadComponent: () =>
+          import('./explore/explore/explore.component').then(
+            (m) => m.ExploreComponent
+          ),
+
         resolve: {
           planInit: planLoaderResolver,
         },
+        canActivate: [
+          AuthGuard,
+          createFeatureGuard({
+            featureName: 'maplibre_on_explore',
+            fallback: '/explore-plan/:id',
+          }),
+        ],
       },
+      {
+        path: 'explore-plan/:id',
+        title: 'Explore',
+        component: ExploreLegacyComponent,
+        resolve: {
+          planInit: planLoaderResolver,
+        },
+        canActivate: [
+          AuthGuard,
+          createFeatureGuard({
+            featureName: 'maplibre_on_explore',
+            fallback: '/plan/:id',
+            inverted: true,
+          }),
+        ],
+      },
+
       {
         path: 'feedback',
         canActivate: [RedirectGuard],

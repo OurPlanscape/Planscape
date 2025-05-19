@@ -3,6 +3,7 @@ from unittest import mock
 
 from django.urls import reverse
 from rest_framework.test import APITestCase, APITransactionTestCase
+from django.test import override_settings
 from rest_framework import status
 
 from planning.models import Scenario, ScenarioResult, ScenarioVersion
@@ -14,6 +15,8 @@ from planning.tests.factories import (
     TreatmentGoalFactory,
 )
 from planscape.tests.factories import UserFactory
+from datasets.tests.factories import DataLayerFactory
+from datasets.models import DataLayerType, GeometryType
 
 
 class CreateScenarioTest(APITransactionTestCase):
@@ -146,6 +149,65 @@ class CreateScenarioTest(APITransactionTestCase):
             b'{"global":["You must provide either a treatment goal or a question ID."]}',
             response.content,
         )
+
+    @override_settings(USE_SCENARIO_V2=True)
+    def test_create_v2_serializer(self):
+        excluded_areas = DataLayerFactory.create_batch(
+            2, type=DataLayerType.VECTOR, geometry_type=GeometryType.POLYGON
+        )
+        excluded_areas = [excluded_areas[0].pk, excluded_areas[1].pk]
+        # treatment goal set on configuration
+        payload = {
+            "name": "V2 scenario",
+            "planning_area": self.planning_area.pk,
+            "treatment_goal": self.treatment_goal.pk,
+            "configuration": {
+                "stand_size": "LARGE",
+                "est_cost": 2000,
+                "excluded_areas": excluded_areas,
+            },
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertIsNotNone(response.json().get("id"))
+        self.assertEqual(1, Scenario.objects.count())
+        scenario = Scenario.objects.get()
+        self.assertEqual(scenario.planning_area, self.planning_area)
+
+    @override_settings(USE_SCENARIO_V2=True)
+    def test_create_v2_serializer__invalid_excluded_area(self):
+        invalid_excluded_areas = DataLayerFactory.create_batch(
+            2, type=DataLayerType.RASTER, geometry_type=GeometryType.RASTER
+        )
+        invalid_excluded_areas = [
+            invalid_excluded_areas[0].pk,
+            invalid_excluded_areas[1].pk,
+        ]
+        # treatment goal set on configuration
+        payload = {
+            "name": "V2 scenario",
+            "planning_area": self.planning_area.pk,
+            "treatment_goal": self.treatment_goal.pk,
+            "configuration": {
+                "stand_size": "LARGE",
+                "est_cost": 2000,
+                "excluded_areas": invalid_excluded_areas,
+            },
+        }
+        self.client.force_authenticate(self.user)
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"),
+            payload,
+            format="json",
+        )
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
 class ListScenariosForPlanningAreaTest(APITestCase):

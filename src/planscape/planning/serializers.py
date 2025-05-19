@@ -387,6 +387,9 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
+    def validate_excluded_areas(self, excluded_areas):
+        return [excluded_area.pk for excluded_area in excluded_areas]
+
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
     description = serializers.SerializerMethodField(

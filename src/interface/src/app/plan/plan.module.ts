@@ -2,7 +2,7 @@ import { AreaNotesComponent } from './area-notes/area-notes.component';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
 import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
-import { ExploreComponent } from './explore/explore/explore.component';
+import { ExploreLegacyComponent } from './explore/explore/explore-legacy.component';
 import { FeaturesModule } from '../features/features.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientXsrfModule } from '@angular/common/http';
@@ -57,7 +57,7 @@ import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.com
     ConstraintsPanelComponent,
     CreateScenariosComponent,
     DeleteNoteDialogComponent,
-    ExploreComponent,
+    ExploreLegacyComponent,
     GoalOverlayComponent,
     IdentifyProjectAreasComponent,
     PlanComponent,

@@ -19,4 +19,12 @@ export class BreadcrumbService {
   updateBreadCrumb(breadcrumb: BreadCrumb) {
     this._breadcrumb$.next(breadcrumb);
   }
+
+  updateBreadcrumbIfChanged(breadcrumb: BreadCrumb) {
+    const current = this._breadcrumb$.value;
+    if (current?.label === breadcrumb.label) {
+      return;
+    }
+    this._breadcrumb$.next(breadcrumb);
+  }
 }
