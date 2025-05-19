@@ -512,27 +512,27 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         model = Scenario
 
 
-class ScenarioV2Serializer(serializers.ModelSerializer):
-    user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    treatment_goal = serializers.PrimaryKeyRelatedField(
-        queryset=TreatmentGoal.objects.all(),
-        required=True,
-        help_text="Treatment goal of the scenario.",
-    )
+class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
     configuration = ConfigurationV2Serializer()
 
     class Meta:
-        model = Scenario
         fields = (
             "id",
-            "user",
+            "updated_at",
+            "created_at",
             "planning_area",
             "name",
             "origin",
             "notes",
             "configuration",
             "treatment_goal",
+            "scenario_result",
+            "user",
+            "creator",
+            "status",
+            "version",
         )
+        model = Scenario
 
 
 class CreateScenarioV2Serializer(serializers.ModelSerializer):
