@@ -50,7 +50,7 @@ export class MapBaseLayersComponent {
   constructor(
     private baseLayersStateService: BaseLayersStateService,
     private dataLayersStateService: DataLayersStateService
-  ) { }
+  ) {}
 
   lineLayerPaint(layer: BaseLayer) {
     return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
@@ -82,15 +82,21 @@ export class MapBaseLayersComponent {
     if (!tooltipTemplate) {
       this.baseLayerTooltipContent = null;
       return;
-    }else {
-    const tooltipString = tooltipTemplate.replace(/{(.*?)}/g, (match, key: string) => {
-      const trimmedKey = key.toLowerCase().trim();
-      return feature.properties[trimmedKey] !== undefined ? feature.properties[trimmedKey] : match;
-    });
-    if (tooltipString != '') {
-      this.baseLayerTooltipContent = tooltipString;
+    } else {
+      const tooltipString = tooltipTemplate.replace(
+        /{(.*?)}/g,
+        (match, key: string) => {
+          const trimmedKey = key.toLowerCase().trim();
+          return feature.properties[trimmedKey] !== undefined
+            ? feature.properties[trimmedKey]
+            : match;
+        }
+      );
+      if (tooltipString != '') {
+        this.baseLayerTooltipContent = tooltipString;
+      }
     }
-  }}
+  }
 
   hoverOutLayer() {
     this.baseLayerTooltipContent = null;

@@ -15,7 +15,7 @@ import {
 import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
-import { MatTab } from '@angular/material/tabs';
+import type { MatTab } from '@angular/material/tabs';
 
 @Injectable({
   providedIn: 'root',

@@ -57,7 +57,7 @@ export interface Info {
 export interface Metadata {
   // Add specific fields once we start using this
   [key: string]: any;
-  modules?: { map? : any },
+  modules?: { map?: any };
   map?: {
     arcgis?: any;
   };

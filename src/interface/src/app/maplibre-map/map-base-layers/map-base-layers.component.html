@@ -32,17 +32,18 @@
 </div>
 <ng-container *ngIf="selectedTab$ | async as tab">
   <mgl-popup
-  [lngLat]="vectorTooltipLngLat"
-  [closeButton]="false"
-  [closeOnClick]="false"
-  [anchor]="'left'"
-  [offset]="20"
-  maxWidth="none"
-  className="vector-tooltip"
-  *ngIf="onBaseLayerTab(tab) && baseLayerTooltipContent && vectorTooltipLngLat">
-  <div class="tooltip-content no-select">
-    {{ baseLayerTooltipContent }}
-  </div>
-</mgl-popup>
-
+    [lngLat]="vectorTooltipLngLat"
+    [closeButton]="false"
+    [closeOnClick]="false"
+    [anchor]="'left'"
+    [offset]="20"
+    maxWidth="none"
+    className="vector-tooltip"
+    *ngIf="
+      onBaseLayerTab(tab) && baseLayerTooltipContent && vectorTooltipLngLat
+    ">
+    <div class="tooltip-content no-select">
+      {{ baseLayerTooltipContent }}
+    </div>
+  </mgl-popup>
 </ng-container>
