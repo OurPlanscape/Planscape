@@ -3,6 +3,7 @@ import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
+  flush,
   TestBed,
   tick,
 } from '@angular/core/testing';
@@ -194,49 +195,93 @@ describe('CreateScenariosComponent', () => {
     expect(value).toEqual(100);
   });
 
-  describe('max area validation', () => {
-    beforeEach(() => {
-      // spy on polling to avoid dealing with async and timeouts
+  describe('max area constraint validation', () => {
+    beforeEach(fakeAsync(() => {
       spyOn(component, 'pollForChanges');
-      fixture.detectChanges();
-      component.selectedTab = 0;
-    });
-    it('should validate max area is within range', async () => {
-      component.scenarioNameFormField?.setValue('scenarioName');
-      component.scenarioNameFormField?.markAsDirty();
+    }));
 
+    it('should mark the form invalid if max_area is too small', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      component.scenarioNameFormField?.setValue('Test Scenario');
       component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+
+      // Small area
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_area: 857,
+        max_area: 10,
+      });
+
+      component.forms.updateValueAndValidity();
+      expect(component.forms.valid).toBeFalse();
+
+      // Cleaning timeouts and subscriptions
+      flush();
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
+
+    it('should mark the form invalid if max_area is too big', fakeAsync(() => {
+      fixture.detectChanges();
+      tick();
+
+      component.scenarioNameFormField?.setValue('Test Scenario');
+      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+
+      // Big area
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_area: 9999999999,
+      });
+
+      component.forms.updateValueAndValidity();
+      expect(component.forms.valid).toBeFalse();
+
+      // Cleaning timeouts and subscriptions
+      flush();
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
+
+    it('should mark the form valid if max_area is within allowed range', fakeAsync(async () => {
+      component.constraintsPanelComponent.planningAreaAcres = 12814;
+
+      await component.constraintsPanelComponent.loadExcludedAreas();
+
+      component.constraintsPanelComponent.ngOnChanges({
+        planningAreaAcres: {
+          previousValue: 0,
+          currentValue: 12814,
+          firstChange: true,
+          isFirstChange: () => true,
+        },
       });
 
       fixture.detectChanges();
+      tick();
 
-      const buttonHarness: MatButtonHarness = await loader.getHarness(
-        MatButtonHarness.with({ text: /GENERATE/ })
-      );
-      let isDisabled = await buttonHarness.isDisabled();
-      expect(isDisabled).toBe(true);
+      component.scenarioNameFormField?.setValue('Test Scenario');
+      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
 
-      // valid `max_area`
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_area: 3000,
       });
-      isDisabled = await buttonHarness.isDisabled();
-      expect(isDisabled).toBe(false);
 
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_area: 3885733333333,
-      });
-      isDisabled = await buttonHarness.isDisabled();
-      expect(isDisabled).toBe(true);
-    });
+      component.forms.updateValueAndValidity();
+      fixture.detectChanges();
+
+      expect(component.forms.valid).toBeTrue();
+
+      // Cleaning timeouts and subscriptions
+      flush();
+      discardPeriodicTasks();
+      fixture.destroy();
+    }));
   });
 
   describe('generate button', () => {

@@ -284,8 +284,6 @@ export class ConstraintsPanelComponent implements OnChanges {
   ): ValidationErrors | null {
     const maxCost = constraintsForm.get('budgetForm.maxCost');
     const maxArea = constraintsForm.get('physicalConstraintForm.maxArea');
-    console.log('Max Cost_: ', maxCost?.value);
-    console.log('Max Area_: ', maxArea?.value);
     const valid = !!maxCost?.value || !!maxArea?.value;
     return valid ? null : { [customErrors.budgetOrAreaRequired]: true };
   }
