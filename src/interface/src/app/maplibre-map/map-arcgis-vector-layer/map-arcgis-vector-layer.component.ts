@@ -12,44 +12,20 @@ import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
 export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() layer!: BaseLayer;
+  @Input() before = '';
 
   private hoveredId: number | null = null;
 
   private arcGisService: FeatureService | null = null;
 
   ngOnInit(): void {
-    this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
-      url: this.layer.map_url,
-      setAttributionFromService: false,
-      // add options provided on metadata
-      ...(this.layer.metadata?.['map']?.['arcgis'] ?? {}),
-    });
-
-    this.mapLibreMap.addLayer({
-      id: this.layerFillId,
-      source: this.sourceId,
-      type: 'fill',
-      paint: defaultBaseLayerFill(
-        this.layer.styles[0].data['fill-outline-color']
-      ),
-    });
-
-    this.mapLibreMap.addLayer({
-      id: this.layerLineId,
-      source: this.sourceId,
-      type: 'line',
-      paint: defaultBaseLayerLine(
-        this.layer.styles[0].data['fill-outline-color']
-      ),
-    });
-
-    this.mapLibreMap.on('mousemove', this.layerFillId, this.onMouseMove);
-    this.mapLibreMap.on('mouseleave', this.layerFillId, this.onMouseLeave);
+    this.addArcgisLayers();
   }
 
   ngOnDestroy(): void {
     this.mapLibreMap.off('mousemove', this.layerFillId, this.onMouseMove);
     this.mapLibreMap.off('mouseleave', this.layerFillId, this.onMouseLeave);
+    this.mapLibreMap.off('styledata', this.onStyleDataListener);
     this.clearHover();
 
     this.mapLibreMap.removeLayer(this.layerFillId);
@@ -98,4 +74,47 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   };
 
   private onMouseLeave = () => this.clearHover();
+
+  private addArcgisLayers() {
+    this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
+      url: this.layer.map_url,
+      setAttributionFromService: false,
+      // add options provided on metadata
+      ...(this.layer.metadata?.['map']?.['arcgis'] ?? {}),
+    });
+
+    this.mapLibreMap.addLayer(
+      {
+        id: this.layerLineId,
+        source: this.sourceId,
+        type: 'line',
+        paint: defaultBaseLayerLine(
+          this.layer.styles[0].data['fill-outline-color']
+        ),
+      },
+      this.before
+    );
+
+    this.mapLibreMap.addLayer(
+      {
+        id: this.layerFillId,
+        source: this.sourceId,
+        type: 'fill',
+        paint: defaultBaseLayerFill(
+          this.layer.styles[0].data['fill-outline-color']
+        ),
+      },
+      this.layerLineId
+    );
+
+    this.mapLibreMap.on('mousemove', this.layerFillId, this.onMouseMove);
+    this.mapLibreMap.on('mouseleave', this.layerFillId, this.onMouseLeave);
+    this.mapLibreMap.on('styledata', this.onStyleDataListener);
+  }
+
+  private onStyleDataListener = () => {
+    if (this.mapLibreMap && !this.mapLibreMap.getSource(this.sourceId)) {
+      this.addArcgisLayers();
+    }
+  };
 }
