@@ -60,7 +60,7 @@ get_treatment_goal_datalayers <- function(connection, treatment_goal_id) {
 
 
 get_stand_metrics_v2 <- function(connection, datalayer_id, datalayer_name, stand_ids) {
-  field_name <- paste("datalayer_", datalayer_id)
+  field_name <- paste0("datalayer_", datalayer_id)
   query <- glue_sql(
     "SELECT
       stand_id,
