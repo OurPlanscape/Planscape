@@ -210,6 +210,82 @@ class CreateScenarioTest(APITransactionTestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
 
+class RetrieveScenarioTest(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.planning_area = PlanningAreaFactory(user=self.user)
+        self.treatment_goal = TreatmentGoalFactory.create()
+        self.configuration_v1 = {
+            "question_id": self.treatment_goal.pk,
+            "weights": [],
+            "est_cost": 2000,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "stand_thresholds": [],
+            "global_thresholds": [],
+            "scenario_priorities": ["prio1"],
+            "scenario_output_fields": ["out1"],
+            "max_treatment_area_ratio": 40000,
+        }
+        self.scenario_v1 = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            name="Hello Scenario V1!",
+            configuration=self.configuration_v1,
+        )
+        self.configuration_v2 = {
+            "weights": [],
+            "estimated_cost": 2001,
+            "max_budget": None,
+            "max_slope": None,
+            "min_distance_from_road": None,
+            "stand_size": "LARGE",
+            "excluded_areas": [],
+            "max_area": 40001,
+            "seed": None,
+        }
+        self.scenario_v2 = ScenarioFactory.create(
+            planning_area=self.planning_area,
+            name="Hello Scenario V2!",
+            configuration=self.configuration_v2,
+        )
+
+    @override_settings(USE_SCENARIO_V2=True)
+    def test_retrieve_scenarios(self):
+        self.client.force_authenticate(self.user)
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario_v1.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("id"), self.scenario_v1.pk)
+        self.assertEqual(data.get("configuration").get("estimated_cost"), 2000)
+        self.assertEqual(data.get("configuration").get("max_area"), 40000)
+
+        response = self.client.get(
+            reverse(
+                "api:planning:scenarios-detail",
+                kwargs={
+                    "pk": self.scenario_v2.pk,
+                },
+            ),
+            content_type="application/json",
+        )
+        data = response.json()
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(data.get("id"), self.scenario_v2.pk)
+        self.assertEqual(data.get("configuration").get("estimated_cost"), 2001)
+        self.assertEqual(data.get("configuration").get("max_area"), 40001)
+
+
 class ListScenariosForPlanningAreaTest(APITestCase):
     def setUp(self):
         self.owner_user = UserFactory.create()
