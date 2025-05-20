@@ -11,6 +11,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
+import { EXCLUDED_AREAS } from '@shared';
 import { ScenarioConfig } from '@types';
 import { ErrorStateMatcher } from '@angular/material/core';
 import {
@@ -19,9 +20,6 @@ import {
   calculateMinBudget,
   hasEnoughBudget,
 } from '../../../validators/scenarios';
-import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
-import { firstValueFrom, tap } from 'rxjs';
-import { FeatureService } from 'src/app/features/feature.service';
 
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   {
@@ -35,7 +33,8 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   styleUrls: ['./constraints-panel.component.scss'],
 })
 export class ConstraintsPanelComponent implements OnChanges {
-  constraintsForm!: FormGroup;
+  constraintsForm: FormGroup = this.createForm();
+  readonly excludedAreasOptions = EXCLUDED_AREAS;
   readonly standSizeOptions = Object.keys(STAND_SIZES);
 
   @Input() showWarning = false;
@@ -45,20 +44,11 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   focusedSelection = ''; // string to identify which selection is focused
 
-  excludedAreas$ = this.scenarioState.excludedAreas$.pipe(
-    tap((areas) => (this.excludedAreas = areas))
-  );
-  excludedAreas: { key: number; label: string; id: number }[] = [];
-
-  constructor(
-    private fb: FormBuilder,
-    private scenarioState: ScenarioState,
-    private featureService: FeatureService
-  ) {}
+  constructor(private fb: FormBuilder) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     // update the form when the planningAreaAcres is updated
-    if (changes['planningAreaAcres'] && this.constraintsForm) {
+    if (changes['planningAreaAcres']) {
       const maxArea = this.maxArea as FormControl;
       maxArea.clearValidators();
       maxArea.addValidators([
@@ -90,16 +80,9 @@ export class ConstraintsPanelComponent implements OnChanges {
     return 'LARGE';
   }
 
-  async loadExcludedAreas() {
-    const excludedAreas = await firstValueFrom(this.excludedAreas$);
-    this.excludedAreas = excludedAreas;
-    this.constraintsForm = await this.createForm();
-    return excludedAreas;
-  }
-
-  async createForm() {
+  createForm() {
     let excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
-    this.excludedAreas.forEach((area) => {
+    EXCLUDED_AREAS.forEach((area) => {
       excludedAreasChosen[area.key] = [false, Validators.required];
     });
     this.constraintsForm = this.fb.group(
@@ -203,16 +186,12 @@ export class ConstraintsPanelComponent implements OnChanges {
       'physicalConstraintForm.standSize'
     )?.value;
     scenarioConfig.excluded_areas = [];
-    this.excludedAreas.forEach((area) => {
+    EXCLUDED_AREAS.forEach((area) => {
       if (
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.valid &&
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.value
       ) {
-        if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
-          scenarioConfig.excluded_areas?.push(Number(area.id));
-        } else {
-          scenarioConfig.excluded_areas?.push(area.label as any);
-        }
+        scenarioConfig.excluded_areas?.push(area.id);
       }
     });
     if (estimatedCost?.valid)
@@ -232,16 +211,11 @@ export class ConstraintsPanelComponent implements OnChanges {
   }
 
   setFormData(config: ScenarioConfig) {
-    this.excludedAreas.forEach((area) => {
-      const isAreaSelected = this.featureService.isFeatureEnabled(
-        'statewide_scenarios'
-      )
-        ? config.excluded_areas &&
-          config.excluded_areas.includes(area.key.toString() as any)
-        : config.excluded_areas &&
-          config.excluded_areas.indexOf(Number(area.key)) > -1;
-
-      if (isAreaSelected) {
+    EXCLUDED_AREAS.forEach((area) => {
+      if (
+        config.excluded_areas &&
+        config.excluded_areas.indexOf(Number(area.key)) > -1
+      ) {
         this.constraintsForm
           .get('excludedAreasForm.' + area.key)
           ?.setValue(true);
