@@ -1,0 +1,11 @@
+:host {
+  display: grid;
+  height: 100%;
+  box-sizing: border-box;
+  grid-template-columns: 1fr 1fr;
+  gap: 2px;
+
+  &.single-view {
+    grid-template-columns: 1fr;
+  }
+}
