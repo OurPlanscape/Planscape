@@ -117,11 +117,12 @@ export class ScenarioService {
   private convertConfigToScenarioLegacy(config: any): any {
     return {
       question_id: config.treatment_question!.id,
-      est_cost: config.est_cost,
+      est_cost: config.estimated_cost || config.est_cost,
       max_budget: config.max_budget,
       min_distance_from_road: config.min_distance_from_road,
       max_slope: config.max_slope,
-      max_treatment_area_ratio: config.max_treatment_area_ratio,
+      max_treatment_area_ratio:
+        config.max_treatment_area_ratio || config.max_area,
       scenario_priorities: config.treatment_question!['scenario_priorities'],
       scenario_output_fields:
         config.treatment_question!['scenario_output_fields_paths']!['metrics'],
