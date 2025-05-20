@@ -44,19 +44,20 @@
             },
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "file-saver",
-              "jspdf-autotable",
-              "shpjs",
-              "polylabel",
-              "maplibre-gl",
               "@geomatico/maplibre-cog-protocol",
-              "fast-deep-equal",
-              "leaflet",
-              "geojson-rbush",
               "canvg",
               "core-js",
+              "fast-deep-equal",
+              "file-saver",
+              "geojson-rbush",
+              "jspdf-autotable",
+              "leaflet",
+              "mapbox-gl-arcgis-featureserver",
+              "maplibre-gl",
+              "polylabel",
               "raf",
               "rgbcolor"
+              "shpjs",
             ]
           },
           "configurations": {
