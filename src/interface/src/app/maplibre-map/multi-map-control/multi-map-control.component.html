@@ -1,8 +1,8 @@
-<ng-container *ngIf="views$ | async as views">
+<ng-container *ngIf="layoutMode$ | async as views">
   <button
     type="button"
     [ngClass]="{ active: views === 1 }"
-    (click)="setView(1)">
+    (click)="setLayoutMode(1)">
     <span class="wrapper">
       <span class="square"></span>
     </span>
@@ -10,7 +10,7 @@
   <button
     type="button"
     [ngClass]="{ active: views === 2 }"
-    (click)="setView(2)">
+    (click)="setLayoutMode(2)">
     <span class="wrapper">
       <span class="square"></span>
       <span class="square"></span>
@@ -19,7 +19,7 @@
   <button
     type="button"
     [ngClass]="{ active: views === 4 }"
-    (click)="setView(4)">
+    (click)="setLayoutMode(4)">
     <span class="wrapper">
       <span class="square"></span>
       <span class="square"></span>

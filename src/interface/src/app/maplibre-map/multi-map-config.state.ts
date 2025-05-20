@@ -2,15 +2,15 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { MapConfigState } from './map-config.state';
 
-type AvailableViews = 1 | 2 | 4;
+type layoutOption = 1 | 2 | 4;
 
 @Injectable()
 export class MultiMapConfigState extends MapConfigState {
   // adds additional logic and config for multi map view.
-  private _views$ = new BehaviorSubject<AvailableViews>(1);
-  public views$ = this._views$.asObservable();
+  private _layoutMode$ = new BehaviorSubject<layoutOption>(1);
+  public layoutMode$ = this._layoutMode$.asObservable();
 
-  setViews(views: AvailableViews) {
-    this._views$.next(views);
+  setLayoutMode(views: layoutOption) {
+    this._layoutMode$.next(views);
   }
 }

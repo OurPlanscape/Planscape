@@ -10,11 +10,11 @@ import { AsyncPipe, NgClass, NgIf } from '@angular/common';
   styleUrl: './multi-map-control.component.scss',
 })
 export class MultiMapControlComponent {
-  views$ = this.multiMapConfigState.views$;
+  layoutMode$ = this.multiMapConfigState.layoutMode$;
 
   constructor(private multiMapConfigState: MultiMapConfigState) {}
 
-  setView(view: 1 | 2 | 4) {
-    this.multiMapConfigState.setViews(view);
+  setLayoutMode(view: 1 | 2 | 4) {
+    this.multiMapConfigState.setLayoutMode(view);
   }
 }

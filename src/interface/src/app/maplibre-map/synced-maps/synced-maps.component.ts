@@ -18,18 +18,18 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 export class SyncedMapsComponent {
   private maps = new Map<number, MapLibreMap>();
 
-  views = 1;
+  layoutMode = 1;
   cleanupFn: Cleanup | null = null;
 
   @HostBinding('class.single-view')
   get showSingleView() {
-    return this.views === 1;
+    return this.layoutMode === 1;
   }
 
   constructor(private multiMapConfigState: MultiMapConfigState) {
-    this.multiMapConfigState.views$
+    this.multiMapConfigState.layoutMode$
       .pipe(untilDestroyed(this))
-      .subscribe((views) => (this.views = views));
+      .subscribe((layoutOption) => (this.layoutMode = layoutOption));
   }
 
   async mapCreated(event: { map: MapLibreMap; mapNumber: number }) {

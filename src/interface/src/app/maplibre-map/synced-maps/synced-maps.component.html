@@ -1,16 +1,16 @@
 <app-explore-map
   [mapNumber]="1"
   (mapCreated)="mapCreated($event)"
-  [showMapNumber]="views !== 1"></app-explore-map>
+  [showMapNumber]="layoutMode !== 1"></app-explore-map>
 <app-explore-map
-  *ngIf="views > 1"
+  *ngIf="layoutMode > 1"
   [mapNumber]="2"
   (mapCreated)="mapCreated($event)"></app-explore-map>
 <app-explore-map
   [mapNumber]="3"
-  *ngIf="views === 4"
+  *ngIf="layoutMode === 4"
   (mapCreated)="mapCreated($event)"></app-explore-map>
 <app-explore-map
   [mapNumber]="4"
-  *ngIf="views === 4"
+  *ngIf="layoutMode === 4"
   (mapCreated)="mapCreated($event)"></app-explore-map>

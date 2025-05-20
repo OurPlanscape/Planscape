@@ -14,7 +14,7 @@ describe('SyncedMapsComponent', () => {
       imports: [SyncedMapsComponent],
       providers: [
         MockProvider(MultiMapConfigState, {
-          views$: of(1 as any),
+          layoutMode$: of(1 as any),
         }),
       ],
       declarations: [MockDeclaration(ExploreMapComponent)],
