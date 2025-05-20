@@ -1,4 +1,11 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
 import { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl';
 import { BaseLayer } from '@types';
@@ -13,6 +20,9 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() layer!: BaseLayer;
   @Input() before = '';
+
+  // it doesn't appear that we can use onMouseMove in the template, so refiring something to trigger tooltips
+  @Output() mouseHover = new EventEmitter<MapLayerMouseEvent>();
 
   private hoveredId: number | null = null;
 
@@ -71,6 +81,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
         { hover: true }
       );
     }
+    this.mouseHover.emit(e);
   };
 
   private onMouseLeave = () => this.clearHover();

@@ -1,5 +1,6 @@
-import { Component, ViewChild } from '@angular/core';
+import { Component, ViewChild, AfterViewInit } from '@angular/core';
 import {
+  MatTab,
   MatTabChangeEvent,
   MatTabGroup,
   MatTabsModule,
@@ -30,13 +31,23 @@ import { skip } from 'rxjs';
   templateUrl: './treatment-plan-tabs.component.html',
   styleUrl: './treatment-plan-tabs.component.scss',
 })
-export class TreatmentPlanTabsComponent {
+export class TreatmentPlanTabsComponent implements AfterViewInit {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   handleTabChange(tabEvent: MatTabChangeEvent) {
     if (tabEvent.tab) {
       this.dataLayersStateService.setSelectedTab(tabEvent.tab);
     }
+  }
+
+  ngAfterViewInit() {
+    this.setSelectedTab();
+  }
+
+  setSelectedTab() {
+    const currentTab: MatTab =
+      this.tabGroup._tabs.toArray()[this.tabGroup.selectedIndex ?? 1];
+    this.dataLayersStateService.setSelectedTab(currentTab);
   }
 
   constructor(private dataLayersStateService: DataLayersStateService) {

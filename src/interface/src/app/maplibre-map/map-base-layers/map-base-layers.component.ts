@@ -11,6 +11,7 @@ import {
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapMouseEvent,
+  MapLayerMouseEvent,
   LngLat,
 } from 'maplibre-gl';
 import { BaseLayer } from '@types';
@@ -62,6 +63,14 @@ export class MapBaseLayersComponent {
     return defaultBaseLayerFill(layer.styles[0].data['fill-color']);
   }
 
+  hoverOnArcLayer(event: MapLayerMouseEvent, layer: BaseLayer) {
+    const features = event.features?.[0];
+    if (features) {
+      this.vectorTooltipLngLat = event.lngLat;
+      this.setTooltipContent(layer, features);
+    }
+  }
+
   hoverOnLayer(event: MapMouseEvent, layer: BaseLayer, layerType: string) {
     const layerName = layerType + layer.id;
     const features = this.mapLibreMap.queryRenderedFeatures(event.point, {
@@ -91,7 +100,7 @@ export class MapBaseLayersComponent {
           const trimmedKey = key.toLowerCase().trim();
           return feature.properties[trimmedKey] !== undefined
             ? feature.properties[trimmedKey]
-            : match;
+            : '--';
         }
       );
       if (tooltipString != '') {

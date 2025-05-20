@@ -4,7 +4,10 @@
       <app-map-arcgis-vector-layer
         [layer]="layer"
         [before]="before"
-        [mapLibreMap]="mapLibreMap"></app-map-arcgis-vector-layer>
+        [mapLibreMap]="mapLibreMap"
+        (mouseHover)="
+          onBaseLayerTab(tab) ? hoverOnArcLayer($event, layer) : null
+        "></app-map-arcgis-vector-layer>
     </ng-container>
     <ng-container *ngIf="layer.map_service_type === 'VECTORTILES'">
       <mgl-vector-source
