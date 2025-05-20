@@ -44,8 +44,10 @@ export class MapBaseLayersComponent {
 
   // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
-
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
+  selectedTab$ = this.dataLayersStateService.selectedLayerTab$;
+  baseLayerTooltipContent: string | null = null;
+  vectorTooltipLngLat: LngLat | null = null;
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
@@ -103,10 +105,6 @@ export class MapBaseLayersComponent {
     this.vectorTooltipLngLat = null;
     this.removeHover();
   }
-
-  selectedTab$ = this.dataLayersStateService.selectedLayerTab$;
-  baseLayerTooltipContent: string | null = null;
-  vectorTooltipLngLat: LngLat | null = null;
 
   onBaseLayerTab(tab: MatTab): boolean {
     return tab && tab.textLabel === 'Base Layers';
