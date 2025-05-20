@@ -333,18 +333,13 @@ class ConfigurationV2Serializer(serializers.Serializer):
         default=StandSizeChoices.LARGE,
         required=False,
     )
-    estimated_cost = serializers.FloatField(
-        min_value=1,
-        default=settings.DEFAULT_ESTIMATED_COST,
-    )
+    estimated_cost = serializers.SerializerMethodField()
     max_budget = serializers.FloatField(
         allow_null=True,
         required=False,
         help_text="Maximum budget, in USD, that can be used for calculating possible treatments. Either max_budget or max_area needs to be specified.",
     )
-    max_area = serializers.FloatField(
-        allow_null=True,
-        required=False,
+    max_area = serializers.SerializerMethodField(
         help_text="Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.",
     )
 
@@ -382,8 +377,29 @@ class ConfigurationV2Serializer(serializers.Serializer):
         help_text="Optional seed for reproducible randomization.",
     )
 
+    def get_estimated_cost(self, obj):
+        est_cost = obj.get("est_cost")
+        if est_cost:
+            return est_cost
+        return obj.get("estimated_cost")
+
+    def get_max_area(self, obj):
+        max_area = obj.get("max_treatment_area_ratio")
+        if max_area:
+            return max_area
+        return obj.get("max_area")
+
 
 class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
+    estimated_cost = serializers.FloatField(
+        min_value=1,
+        default=settings.DEFAULT_ESTIMATED_COST,
+    )
+    max_area = serializers.FloatField(
+        allow_null=True,
+        required=False,
+        help_text="Maximum area, in acres that can be treated for the entire scenario. Either max_budget or max_area needs to be specified.",
+    )
     excluded_areas = serializers.ListField(
         child=serializers.PrimaryKeyRelatedField(
             queryset=DataLayer.objects.filter(
