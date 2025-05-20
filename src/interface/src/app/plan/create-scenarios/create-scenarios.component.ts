@@ -221,11 +221,7 @@ export class CreateScenariosComponent implements OnInit {
         ...this.constraintsPanelComponent.getFormData(),
         ...prioritiesData,
       },
-      treatment_goal: this.featureService.isFeatureEnabled(
-        'statewide_scenarios'
-      )
-        ? prioritiesData.treatment_question
-        : (prioritiesData.treatment_question as any).id,
+      treatment_goal: (prioritiesData.treatment_question as any).id,
     };
   }
 
