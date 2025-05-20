@@ -21,5 +21,3 @@ class OrganizationAdmin(admin.ModelAdmin):
 
 
 admin.site.register(Organization, OrganizationAdmin)
-
-admin.site.register(Organization, OrganizationAdmin)
