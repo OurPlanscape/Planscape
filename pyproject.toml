@@ -74,6 +74,7 @@ python-magic = "^0.4.27"
 django-cacheops = "^7.1"
 openpanel = "^0.0.1"
 martor = "^1.6.45"
+django-redis = ">=5.4,<6"
 
 [tool.poetry.group.dev.dependencies]
 colorama = "^0.4.6"
