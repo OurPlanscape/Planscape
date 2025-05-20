@@ -216,10 +216,22 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     });
     if (estimatedCost?.valid)
-      scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
+      if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+        scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
+      } else {
+        // We should use any until we remove the FF.
+        (scenarioConfig as any).est_cost = parseFloat(estimatedCost.value);
+      }
     if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid) {
-      scenarioConfig.max_area = parseFloat(maxArea.value);
+      if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+        scenarioConfig.max_area = parseFloat(maxArea.value);
+      } else {
+        // We should use any until we remove the FF.
+        (scenarioConfig as any).max_treatment_area_ratio = parseFloat(
+          maxArea.value
+        );
+      }
     }
     if (minDistanceFromRoad?.valid) {
       scenarioConfig.min_distance_from_road = parseFloat(
