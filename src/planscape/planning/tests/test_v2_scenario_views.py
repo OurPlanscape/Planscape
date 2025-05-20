@@ -199,7 +199,9 @@ class CreateScenarioTest(APITransactionTestCase):
         scenario = Scenario.objects.get()
         self.assertEqual(scenario.planning_area, self.planning_area)
         self.assertEqual(scenario.configuration["excluded_areas_ids"], excluded_areas)
-        self.assertEqual(response_data.get("configuration").get("excluded_areas"), excluded_areas)
+        self.assertEqual(
+            response_data.get("configuration").get("excluded_areas"), excluded_areas
+        )
 
     @override_settings(USE_SCENARIO_V2=True)
     def test_create_v2_serializer__invalid_excluded_area(self):
