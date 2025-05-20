@@ -48,7 +48,7 @@ def backfill_scenario_excluded_areas(apps, schema_editor):
         legacy_areas = [
             lookup_dict.get(area) for area in excluded_areas
         ]
-        configuration["excluded_areas_v2"] = excluded_areas
+        configuration["excluded_areas_ids"] = excluded_areas
         configuration["excluded_areas"] = legacy_areas
         scenario.configuration = configuration
         scenario.save(update_fields=["configuration"])
@@ -59,4 +59,7 @@ class Migration(migrations.Migration):
         ("planning", "0036_auto_20250520_1535"),
     ]
 
-    operations = []
+    operations = [
+        migrations.RunPython(backfill_scenario_configuration_keys),
+        migrations.RunPython(backfill_scenario_excluded_areas)
+    ]
