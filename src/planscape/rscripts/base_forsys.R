@@ -553,7 +553,7 @@ get_max_treatment_area <- function(scenario) {
     return(configuration[[max_area_field]])
   }
 
-  max_acres <- get_min_project_area(configuration$stand_size) * get_number_of_projects(scenario)
+  max_acres <- get_min_project_area(scenario) * get_number_of_projects(scenario)
   print("There is no information to properly calculate max area, using {max_acres}.")
   return(max_acres)
 }
@@ -730,7 +730,7 @@ call_forsys <- function(
     output_fields <- c(output_tmp, "area_acres")
   } else {
     stand_thresholds <- get_stand_thresholds(scenario)
-    output_fields <- c(outputs$condition_name, "area_areas")
+    output_fields <- c(outputs$condition_name, "area_acres")
   }
 
   export_input(scenario, stand_data)
