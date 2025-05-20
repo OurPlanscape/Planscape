@@ -1,9 +1,6 @@
 <div class="constraints-panel">
   <!-- Form -->
-  <form
-    class="constraints-form"
-    *ngIf="constraintsForm"
-    [formGroup]="constraintsForm!">
+  <form class="constraints-form" [formGroup]="constraintsForm!">
     <div class="constraints-content">
       <app-scenario-tooltip
         area="CONSTRAINTS"
@@ -156,9 +153,9 @@
           <div class="checkbox-column">
             <mat-checkbox
               [color]="'primary'"
-              *ngFor="let item of excludedAreas$ | async"
+              *ngFor="let item of excludedAreasOptions"
               [formControlName]="item.key"
-              [value]="item.key.toString()">
+              [value]="item.key">
               {{ item.label }}
             </mat-checkbox>
           </div>

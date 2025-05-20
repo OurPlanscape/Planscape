@@ -7,7 +7,7 @@
   [ngClass]="{ hidden: scenarioNotFound }">
   <div class="create-scenarios-panel-content">
     <div class="scenario-name">
-      <form *ngIf="forms.get('scenarioName')" [formGroup]="forms!">
+      <form [formGroup]="forms!">
         <mat-form-field class="scenario-name-input">
           <input
             formControlName="scenarioName"

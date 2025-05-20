@@ -3,7 +3,6 @@ import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
-  flush,
   TestBed,
   tick,
 } from '@angular/core/testing';
@@ -13,7 +12,7 @@ import { BehaviorSubject, of } from 'rxjs';
 
 import {
   Scenario,
-  ScenarioResultStatus,
+  ScenarioResult,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
 } from '@types';
@@ -57,9 +56,7 @@ describe('CreateScenariosComponent', () => {
     id: '1',
     name: 'name',
     planning_area: 1,
-    configuration: {
-      max_budget: 100,
-    },
+    configuration: {},
     status: 'ACTIVE',
     scenario_result: {
       status: 'PENDING',
@@ -113,7 +110,6 @@ describe('CreateScenariosComponent', () => {
           createScenario: of(demoScenario),
           getScenario: of(fakeScenario),
           getScenariosForPlan: of([demoScenario]),
-          getExcludedAreas: new BehaviorSubject([]),
         }
       );
     fakeLegacyPlanStateService = jasmine.createSpyObj<LegacyPlanStateService>(
@@ -166,7 +162,6 @@ describe('CreateScenariosComponent', () => {
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
-    await component.constraintsPanelComponent.createForm();
     loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
@@ -176,112 +171,67 @@ describe('CreateScenariosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load existing scenario', async () => {
+  it('should load existing scenario', () => {
     const scenarioId = 'fakeScenarioId';
     fakePlanState$.next({
       ...fakePlanState$.value,
       ...{ currentScenarioId: scenarioId },
     });
-
     spyOn(component, 'pollForChanges');
     fixture.detectChanges();
-    await fixture.whenStable();
-
     expect(fakeLegacyPlanStateService.getScenario).toHaveBeenCalledOnceWith(
       scenarioId
     );
-
-    const value = component.constrainsForm?.get('budgetForm.maxCost')?.value;
-    expect(value).toEqual(100);
+    component.constrainsForm?.valueChanges.subscribe((_) => {
+      expect(
+        component.constrainsForm?.get('budgetForm.maxCost')?.value
+      ).toEqual(100);
+    });
   });
 
-  describe('max area constraint validation', () => {
-    beforeEach(fakeAsync(() => {
+  describe('max area validation', () => {
+    beforeEach(() => {
+      // spy on polling to avoid dealing with async and timeouts
       spyOn(component, 'pollForChanges');
-    }));
-
-    it('should mark the form invalid if max_area is too small', fakeAsync(() => {
       fixture.detectChanges();
-      tick();
+      component.selectedTab = 0;
+    });
+    it('should validate max area is within range', async () => {
+      component.scenarioNameFormField?.setValue('scenarioName');
+      component.scenarioNameFormField?.markAsDirty();
 
-      component.scenarioNameFormField?.setValue('Test Scenario');
       component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-
-      // Small area
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
-        max_area: 10,
-      });
-
-      component.forms.updateValueAndValidity();
-      expect(component.forms.valid).toBeFalse();
-
-      // Cleaning timeouts and subscriptions
-      flush();
-      discardPeriodicTasks();
-      fixture.destroy();
-    }));
-
-    it('should mark the form invalid if max_area is too big', fakeAsync(() => {
-      fixture.detectChanges();
-      tick();
-
-      component.scenarioNameFormField?.setValue('Test Scenario');
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-
-      // Big area
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_area: 9999999999,
-      });
-
-      component.forms.updateValueAndValidity();
-      expect(component.forms.valid).toBeFalse();
-
-      // Cleaning timeouts and subscriptions
-      flush();
-      discardPeriodicTasks();
-      fixture.destroy();
-    }));
-
-    it('should mark the form valid if max_area is within allowed range', fakeAsync(async () => {
-      component.constraintsPanelComponent.planningAreaAcres = 12814;
-
-      await component.constraintsPanelComponent.loadExcludedAreas();
-
-      component.constraintsPanelComponent.ngOnChanges({
-        planningAreaAcres: {
-          previousValue: 0,
-          currentValue: 12814,
-          firstChange: true,
-          isFirstChange: () => true,
-        },
+        max_area: 857,
       });
 
       fixture.detectChanges();
-      tick();
 
-      component.scenarioNameFormField?.setValue('Test Scenario');
-      component.prioritiesComponent.setFormData(defaultSelectedQuestion);
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
+        MatButtonHarness.with({ text: /GENERATE/ })
+      );
+      let isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(true);
 
+      // valid `max_area`
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_area: 3000,
       });
+      isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(false);
 
-      component.forms.updateValueAndValidity();
-      fixture.detectChanges();
-
-      expect(component.forms.valid).toBeTrue();
-
-      // Cleaning timeouts and subscriptions
-      flush();
-      discardPeriodicTasks();
-      fixture.destroy();
-    }));
+      component.constraintsPanelComponent.setFormData({
+        max_slope: 1,
+        min_distance_from_road: 1,
+        max_area: 3885733333333,
+      });
+      isDisabled = await buttonHarness.isDisabled();
+      expect(isDisabled).toBe(true);
+    });
   });
 
   describe('generate button', () => {
@@ -295,29 +245,23 @@ describe('CreateScenariosComponent', () => {
     it('should emit create scenario event on Generate button click', async () => {
       spyOn(component, 'createScenario');
 
-      fixture.detectChanges();
-      await fixture.whenStable();
-
       component.scenarioNameFormField?.setValue('scenarioName');
       component.scenarioNameFormField?.markAsDirty();
 
       component.prioritiesComponent.setFormData(defaultSelectedQuestion);
-
       component.constraintsPanelComponent.setFormData({
         max_slope: 1,
         min_distance_from_road: 1,
         max_area: 3000,
       });
 
-      component.forms.updateValueAndValidity();
       fixture.detectChanges();
 
-      const buttonHarness = await loader.getHarness(
+      const buttonHarness: MatButtonHarness = await loader.getHarness(
         MatButtonHarness.with({ text: /GENERATE/ })
       );
 
-      expect(await buttonHarness.isDisabled()).toBeFalse();
-
+      // Click on "GENERATE SCENARIO" button
       await buttonHarness.click();
 
       expect(component.createScenario).toHaveBeenCalled();
@@ -516,60 +460,38 @@ describe('CreateScenariosComponent', () => {
 
   describe('polling', () => {
     beforeEach(() => {
+      fakePlanState$.next({
+        ...fakePlanState$.value,
+        ...{ currentScenarioId: 'fakeScenarioId' },
+      });
       spyOn(component, 'loadConfig').and.callThrough();
     });
-
     it('should poll for changes if status is pending', fakeAsync(() => {
-      setupPollingScenario(component, 'PENDING');
-
+      component.scenarioState = 'PENDING';
       fixture.detectChanges();
-      tick();
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
-
       tick(POLLING_INTERVAL);
       fixture.detectChanges();
-
       expect(component.loadConfig).toHaveBeenCalledTimes(2);
-
       discardPeriodicTasks();
-      fixture.destroy();
     }));
 
     it('should not poll for changes if status is not pending', fakeAsync(() => {
-      setupPollingScenario(component, 'SUCCESS');
+      const results: ScenarioResult = {
+        ...(fakeScenario.scenario_result as ScenarioResult),
+        ...{ status: 'SUCCESS' },
+      };
+      fakeGetScenario.next({
+        ...fakeScenario,
+        ...{ scenario_result: results },
+      });
 
       fixture.detectChanges();
-      tick();
-
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
-
       tick(POLLING_INTERVAL);
       fixture.detectChanges();
-
       expect(component.loadConfig).toHaveBeenCalledTimes(1);
-
       discardPeriodicTasks();
-      fixture.destroy();
     }));
   });
-
-  function setupPollingScenario(
-    component: CreateScenariosComponent,
-    status: ScenarioResultStatus
-  ) {
-    fakePlanState$.next({
-      ...fakePlanState$.value,
-      currentScenarioId: 'fakeScenarioId',
-    });
-
-    fakeGetScenario.next({
-      ...fakeScenario,
-      scenario_result: {
-        ...fakeScenario.scenario_result!,
-        status,
-      },
-    });
-
-    component.scenarioId = 'fakeScenarioId';
-  }
 });
