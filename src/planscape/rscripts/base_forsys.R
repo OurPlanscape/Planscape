@@ -382,7 +382,7 @@ get_priorities <- function(
 
 get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
   stand_size <- get_stand_size(configuration)
-  stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas))
+  stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas_ids))
   for (row in seq_len(nrow(datalayers))) {
     datalayer <- datalayers[row, ]
     datalayer_id <- datalayer$id
