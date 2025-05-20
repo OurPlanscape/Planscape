@@ -211,7 +211,7 @@ export class ConstraintsPanelComponent implements OnChanges {
         if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
           scenarioConfig.excluded_areas?.push(Number(area.id));
         } else {
-          scenarioConfig.excluded_areas?.push(area.label as any);
+          scenarioConfig.excluded_areas?.push(area.key as any);
         }
       }
     });
