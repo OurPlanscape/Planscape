@@ -1,5 +1,5 @@
-import { Component, HostBinding } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { Component } from '@angular/core';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { Cleanup, syncMaps } from '../maplibre.helper';
@@ -11,7 +11,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 @Component({
   selector: 'app-synced-maps',
   standalone: true,
-  imports: [AsyncPipe, MapComponent, ExploreMapComponent, NgIf],
+  imports: [AsyncPipe, MapComponent, ExploreMapComponent, NgIf, NgClass],
   templateUrl: './synced-maps.component.html',
   styleUrl: './synced-maps.component.scss',
 })
@@ -20,11 +20,6 @@ export class SyncedMapsComponent {
 
   layoutMode = 1;
   cleanupFn: Cleanup | null = null;
-
-  @HostBinding('class.single-view')
-  get showSingleView() {
-    return this.layoutMode === 1;
-  }
 
   constructor(private multiMapConfigState: MultiMapConfigState) {
     this.multiMapConfigState.layoutMode$

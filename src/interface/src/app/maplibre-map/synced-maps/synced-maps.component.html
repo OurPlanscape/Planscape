@@ -1,16 +1,28 @@
-<app-explore-map
-  [mapNumber]="1"
-  (mapCreated)="mapCreated($event)"
-  [showMapNumber]="layoutMode !== 1"></app-explore-map>
-<app-explore-map
-  *ngIf="layoutMode > 1"
-  [mapNumber]="2"
-  (mapCreated)="mapCreated($event)"></app-explore-map>
-<app-explore-map
-  [mapNumber]="3"
-  *ngIf="layoutMode === 4"
-  (mapCreated)="mapCreated($event)"></app-explore-map>
-<app-explore-map
-  [mapNumber]="4"
-  *ngIf="layoutMode === 4"
-  (mapCreated)="mapCreated($event)"></app-explore-map>
+<section class="maps" [ngClass]="{ 'single-view': layoutMode === 1 }">
+  <app-explore-map
+    [mapNumber]="1"
+    (mapCreated)="mapCreated($event)"
+    [showMapNumber]="layoutMode !== 1"></app-explore-map>
+  <app-explore-map
+    *ngIf="layoutMode > 1"
+    [mapNumber]="2"
+    (mapCreated)="mapCreated($event)"></app-explore-map>
+  <app-explore-map
+    [mapNumber]="3"
+    *ngIf="layoutMode === 4"
+    (mapCreated)="mapCreated($event)"></app-explore-map>
+  <app-explore-map
+    [mapNumber]="4"
+    *ngIf="layoutMode === 4"
+    (mapCreated)="mapCreated($event)"></app-explore-map>
+</section>
+
+<div class="attribution">
+  <a href="https://maplibre.org/" target="_blank">MapLibre</a> |
+  <a href="https://www.esri.com/" target="_blank">Esri</a> |
+  <a href="https://www.mapbox.com/about/maps" target="_blank">© Mapbox</a
+  >&nbsp;<a href="https://www.openstreetmap.org/about/" target="_blank"
+    >© OpenStreetMap</a
+  >&nbsp;
+  <a href="https://www.maxar.com/" target="_blank">© Maxar</a>
+</div>
