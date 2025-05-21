@@ -89,7 +89,7 @@ export class MapBaseLayersComponent {
 
   private setTooltipContent(layer: BaseLayer, feature: MapGeoJSONFeature) {
     //TODO: consider edge cases where templates or fields introduce fragility
-    const tooltipTemplate = this.getTooltipTemplate(layer);
+    const tooltipTemplate = this.getTooltipTemplate(layer)?.trim();
     if (!tooltipTemplate) {
       this.baseLayerTooltipContent = null;
       return;

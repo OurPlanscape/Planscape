@@ -8,7 +8,6 @@
       color: white;
       padding: 8px 12px;
       border-radius: 8px;
-
       @include small-paragraph();
       font-size: 12px;
     }
@@ -19,6 +18,17 @@
 
     &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
       border-right-color: black;
+    }
+
+    .tooltip-content {
+      display: flex;
+      align-items: center;
+      white-space: pre-wrap;
+      line-height: 16px;
+    }
+
+    .no-select {
+      user-select: none;
     }
   }
 }
