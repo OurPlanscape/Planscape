@@ -20,6 +20,7 @@
       New Treatment Plan
     </button>
     <button
+      [hidden]="!userCanArchiveScenario && hasFailed"
       [disabled]="isRunning()"
       [matMenuTriggerFor]="menu"
       aria-label="More scenario options"
