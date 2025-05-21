@@ -22,15 +22,8 @@ export class MapConfigState {
   private _showProjectAreasLayer$ = new BehaviorSubject(true);
   public showProjectAreasLayer$ = this._showProjectAreasLayer$.asObservable();
 
-  private _showFillProjectAreas$ = new BehaviorSubject(true);
-  public showFillProjectAreas$ = this._showFillProjectAreas$.asObservable();
-
   private _standSelectionEnabled$ = new BehaviorSubject(false);
   public standSelectionEnabled$ = this._standSelectionEnabled$.asObservable();
-
-  private _showTreatmentLayersToggle$ = new BehaviorSubject(false);
-  public showTreatmentLayersToggle$ =
-    this._showTreatmentLayersToggle$.asObservable();
 
   private _cursor$ = new BehaviorSubject('');
   public cursor$ = this._cursor$.asObservable();
@@ -68,10 +61,6 @@ export class MapConfigState {
     this._showProjectAreasLayer$.next(value);
   }
 
-  setShowFillProjectAreas(value: boolean) {
-    this._showFillProjectAreas$.next(value);
-  }
-
   setStandSelectionEnabled(value: boolean) {
     this._standSelectionEnabled$.next(value);
     this.resetCursor();
@@ -103,9 +92,5 @@ export class MapConfigState {
 
   setProjectAreasOpacity(value: number) {
     this._projectAreasOpacity.next(value);
-  }
-
-  setShowTreatmentLayersToggle(value: boolean) {
-    this._showTreatmentLayersToggle$.next(value);
   }
 }

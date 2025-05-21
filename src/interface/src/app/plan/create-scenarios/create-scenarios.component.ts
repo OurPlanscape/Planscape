@@ -20,6 +20,7 @@ import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { FeatureService } from 'src/app/features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -69,10 +70,13 @@ export class CreateScenariosComponent implements OnInit {
     private router: Router,
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
-    private scenarioStateService: ScenarioState
+    private scenarioStateService: ScenarioState,
+    private featureService: FeatureService
   ) {}
 
-  createForms() {
+  async createForms() {
+    await this.constraintsPanelComponent.loadExcludedAreas();
+    const constrainsForm = await this.constraintsPanelComponent.createForm();
     this.forms = this.fb.group({
       scenarioName: new FormControl('', [
         Validators.required,
@@ -80,7 +84,7 @@ export class CreateScenariosComponent implements OnInit {
           scenarioNameMustBeNew(control, this.existingScenarioNames),
       ]),
       priorities: this.prioritiesComponent.createForm(),
-      constrains: this.constraintsPanelComponent.createForm(),
+      constrains: constrainsForm,
       projectAreas: this.fb.group({
         generateAreas: [''],
         uploadedArea: [''],
@@ -88,8 +92,8 @@ export class CreateScenariosComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    this.createForms();
+  async ngOnInit() {
+    await this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.LegacyPlanStateService.planState$
       .pipe(untilDestroyed(this), take(1))
@@ -207,6 +211,7 @@ export class CreateScenariosComponent implements OnInit {
   }
 
   private formValueToScenario(): Scenario {
+    const prioritiesData = this.prioritiesComponent.getFormData();
     return {
       id: '',
       name: this.scenarioNameFormField?.value,
@@ -214,8 +219,13 @@ export class CreateScenariosComponent implements OnInit {
       status: 'ACTIVE',
       configuration: {
         ...this.constraintsPanelComponent.getFormData(),
-        ...this.prioritiesComponent.getFormData(),
+        ...prioritiesData,
       },
+      treatment_goal: this.featureService.isFeatureEnabled(
+        'statewide_scenarios'
+      )
+        ? prioritiesData.treatment_question
+        : (prioritiesData.treatment_question as any).id,
     };
   }
 
@@ -228,25 +238,49 @@ export class CreateScenariosComponent implements OnInit {
     }
     this.generatingScenario = true;
     this.goalOverlayService.close();
-    this.LegacyPlanStateService.createScenario(this.formValueToScenario())
-      .pipe(
-        catchError((error) => {
-          this.generatingScenario = false;
-          this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
-          return NEVER;
-        })
-      )
-      .subscribe((newScenario) => {
-        // Setting the new scenario id
-        this.scenarioId = newScenario.id;
-        this.scenarioName = newScenario.name;
-        this.matSnackBar.dismiss();
-        this.scenarioState = 'PENDING';
-        this.disableForms();
-        this.selectedTab = ScenarioTabs.RESULTS;
-        this.pollForChanges();
-        this.goToScenario();
-      });
+
+    if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+      this.scenarioService
+        .createScenario(this.formValueToScenario())
+        .pipe(
+          catchError((error) => {
+            this.generatingScenario = false;
+            this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
+            return NEVER;
+          })
+        )
+        .subscribe((newScenario) => {
+          // Setting the new scenario id
+          this.scenarioId = newScenario.id;
+          this.scenarioName = newScenario.name;
+          this.matSnackBar.dismiss();
+          this.scenarioState = 'PENDING';
+          this.disableForms();
+          this.selectedTab = ScenarioTabs.RESULTS;
+          this.pollForChanges();
+          this.goToScenario();
+        });
+    } else {
+      this.LegacyPlanStateService.createScenario(this.formValueToScenario())
+        .pipe(
+          catchError((error) => {
+            this.generatingScenario = false;
+            this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
+            return NEVER;
+          })
+        )
+        .subscribe((newScenario) => {
+          // Setting the new scenario id
+          this.scenarioId = newScenario.id;
+          this.scenarioName = newScenario.name;
+          this.matSnackBar.dismiss();
+          this.scenarioState = 'PENDING';
+          this.disableForms();
+          this.selectedTab = ScenarioTabs.RESULTS;
+          this.pollForChanges();
+          this.goToScenario();
+        });
+    }
   }
 
   disableForms() {

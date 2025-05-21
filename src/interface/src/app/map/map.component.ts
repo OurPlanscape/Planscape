@@ -232,6 +232,13 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           this.maps.map((map: Map) => map.config)
         );
       });
+
+    if (!this.planId) {
+      this.breadcrumbService.updateBreadCrumb({
+        label: 'Explore: New Plan',
+        backUrl: '/',
+      });
+    }
   }
 
   ngDoCheck(): void {
@@ -290,7 +297,8 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
           }
 
           this.drawPlanningArea(plan);
-          this.breadcrumbService.updateBreadCrumb({
+
+          this.breadcrumbService.updateBreadcrumbIfChanged({
             label: 'Explore: ' + plan.name,
             backUrl: getPlanPath(plan.id),
           });
@@ -300,10 +308,6 @@ export class MapComponent implements AfterViewInit, OnDestroy, OnInit, DoCheck {
         },
       });
     } else {
-      this.breadcrumbService.updateBreadCrumb({
-        label: 'Explore: New Plan',
-        backUrl: '/',
-      });
     }
   }
 

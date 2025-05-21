@@ -1,0 +1,18 @@
+<mgl-map
+  [id]="'map_' + mapNumber"
+  [boxZoom]="false"
+  [dragRotate]="false"
+  [interactive]="true"
+  [maxZoom]="maxZoom"
+  [minZoom]="minZoom"
+  [pitchWithRotate]="false"
+  [fitBounds]="bounds"
+  [fitBoundsOptions]="boundOptions"
+  (mapLoad)="mapCreated.emit({ map: $event, mapNumber: mapNumber })"
+  [style]="(baseLayerUrl$ | async) || ''"
+  [attributionControl]="false"
+  [transformRequest]="transformRequest">
+  <mgl-control position="bottom-left" *ngIf="showMapNumber">
+    <div class="label">Map {{ mapNumber }}</div>
+  </mgl-control>
+</mgl-map>
