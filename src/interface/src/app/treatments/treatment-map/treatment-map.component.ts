@@ -137,6 +137,8 @@ export class TreatmentMapComponent {
    */
   mapExtent$ = this.mapConfigState.mapExtent$;
 
+  boundOptions = FrontendConstants.MAPLIBRE_BOUND_OPTIONS;
+
   /**
    * Observable (boolean) for whether the treatment legend should be visible
    *  If not, and if we are showing treatments, we show the action button, instead.
