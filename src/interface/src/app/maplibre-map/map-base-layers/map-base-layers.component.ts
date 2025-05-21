@@ -100,8 +100,9 @@ export class MapBaseLayersComponent {
           // note: we don't have control over external props being lower/uppercase
           const propValue =
             feature.properties[trimmedKey.toLowerCase()] ??
-            feature.properties[trimmedKey.toUpperCase()];
-          return propValue !== undefined ? propValue : '--';
+            feature.properties[trimmedKey.toUpperCase()] ??
+            '--';
+          return propValue;
         }
       );
       if (tooltipString != '') {
