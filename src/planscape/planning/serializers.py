@@ -370,6 +370,7 @@ class ConfigurationV2Serializer(serializers.Serializer):
     )
 
     excluded_areas = serializers.ListField(
+        source="excluded_areas_ids",
         child=serializers.IntegerField(),
         allow_empty=True,
         min_length=0,
@@ -385,6 +386,7 @@ class ConfigurationV2Serializer(serializers.Serializer):
 
 class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
     excluded_areas = serializers.ListField(
+        source="excluded_areas_ids",
         child=serializers.PrimaryKeyRelatedField(
             queryset=DataLayer.objects.filter(
                 type=DataLayerType.VECTOR,
