@@ -142,8 +142,13 @@ docker-hard-clean: docker-clean
 	docker image prune -f
 
 docker-build:
-	ARCH=$(shell uname -m) docker compose build
-
+	if [ "$(shell uname -m)" = "arm64" ]; then \
+		echo "Building with arm64" ; \
+		DOCKERFILE=Dockerfile.arm64 docker compose build ; \
+	else \
+		echo "Building on x86" ; \
+		docker compose build ; \
+	fi
 docker-test:
 	./src/planscape/bin/run.sh python manage.py test $(TEST)
 

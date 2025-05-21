@@ -6,7 +6,7 @@ services:
     command: ["echo", "build done"]
     build:
       context: .
-      dockerfile: docker/Dockerfile.${ARCH}
+      dockerfile: docker/${DOCKERFILE:-Dockerfile}
   web:
     image: planscape
     extends:
