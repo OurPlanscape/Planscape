@@ -249,9 +249,9 @@ export class ConstraintsPanelComponent implements OnChanges {
         'statewide_scenarios'
       )
         ? config.excluded_areas &&
-          config.excluded_areas.includes(area.key.toString() as any)
+          config.excluded_areas.indexOf(Number(area.key)) > -1
         : config.excluded_areas &&
-          config.excluded_areas.indexOf(Number(area.key)) > -1;
+          config.excluded_areas.includes(area.key.toString() as any);
 
       if (isAreaSelected) {
         this.constraintsForm
@@ -264,20 +264,22 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     });
 
-    if (config.estimated_cost) {
+    // TODO: remove est_cost when 'statewide_scenarios' be approved
+    if (config.estimated_cost || (config as any).est_cost) {
       this.constraintsForm
         .get('budgetForm.estimatedCost')
-        ?.setValue(config.estimated_cost);
+        ?.setValue(config.estimated_cost || (config as any).est_cost);
     }
     if (config.max_budget) {
       this.constraintsForm
         .get('budgetForm.maxCost')
         ?.setValue(config.max_budget);
     }
-    if (config.max_area) {
+    // TODO: remove max_treatment_area_ratio when 'statewide_scenarios' be approved
+    if (config.max_area || (config as any).max_treatment_area_ratio) {
       this.constraintsForm
         .get('physicalConstraintForm.maxArea')
-        ?.setValue(config.max_area);
+        ?.setValue(config.max_area || (config as any).max_treatment_area_ratio);
     }
     if (config.min_distance_from_road) {
       this.constraintsForm
