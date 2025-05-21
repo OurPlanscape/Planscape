@@ -88,7 +88,6 @@ export class MapBaseLayersComponent {
   }
 
   private setTooltipContent(layer: BaseLayer, feature: MapGeoJSONFeature) {
-    //TODO: consider edge cases where templates or fields introduce fragility
     const tooltipTemplate = this.getTooltipTemplate(layer)?.trim();
     if (!tooltipTemplate) {
       this.baseLayerTooltipContent = null;
@@ -97,10 +96,12 @@ export class MapBaseLayersComponent {
       const tooltipString = tooltipTemplate.replace(
         /{(.*?)}/g,
         (match, key: string) => {
-          const trimmedKey = key.toLowerCase().trim();
-          return feature.properties[trimmedKey] !== undefined
-            ? feature.properties[trimmedKey]
-            : '--';
+          const trimmedKey = key.trim();
+          // note: we don't have control over external props being lower/uppercase
+          const propValue =
+            feature.properties[trimmedKey.toLowerCase()] ??
+            feature.properties[trimmedKey.toUpperCase()];
+          return propValue !== undefined ? propValue : '--';
         }
       );
       if (tooltipString != '') {
