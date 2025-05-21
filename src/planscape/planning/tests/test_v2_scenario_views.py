@@ -91,7 +91,9 @@ class CreateScenarioTest(APITransactionTestCase):
             "planning_area": self.planning_area.pk,
             "stand_size": "LARGE",
             "treatment_goal": 123456789,
-            "configuration": {},
+            "configuration": {
+                "max_budget": 2000,
+            },
         }
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -114,6 +116,7 @@ class CreateScenarioTest(APITransactionTestCase):
             "stand_size": "LARGE",
             "configuration": {
                 "question_id": 123456789,
+                "max_budget": 2000,
             },
         }
         self.client.force_authenticate(self.user)
@@ -135,7 +138,9 @@ class CreateScenarioTest(APITransactionTestCase):
             "name": "my dear scenario",
             "planning_area": self.planning_area.pk,
             "stand_size": "LARGE",
-            "configuration": {},
+            "configuration": {
+                "max_budget": 2000,
+            },
         }
         self.client.force_authenticate(self.user)
         response = self.client.post(
@@ -149,6 +154,19 @@ class CreateScenarioTest(APITransactionTestCase):
             b'{"global":["You must provide either a treatment goal or a question ID."]}',
             response.content,
         )
+
+    def test_create_without_max_budged_or_area(self):
+        self.client.force_authenticate(self.user)
+        data = {
+            "planning_area": self.planning_area.pk,
+            "name": "Hello Scenario!",
+            "origin": "SYSTEM",
+            "configuration": {},
+        }
+        response = self.client.post(
+            reverse("api:planning:scenarios-list"), data, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     @override_settings(USE_SCENARIO_V2=True)
     def test_create_v2_serializer(self):
