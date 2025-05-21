@@ -564,6 +564,7 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
         required=False,
         help_text="Treatment goal of the scenario.",
     )
+    configuration = ConfigurationSerializer()
 
     class Meta:
         model = Scenario
