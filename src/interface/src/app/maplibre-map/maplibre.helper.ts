@@ -57,6 +57,17 @@ export function getBoundsFromGeometry(geometry: Geometry) {
   return bbox(geoFeature) as Extent;
 }
 
+export type Cleanup = () => void;
+
+function getCamera(map: MapLibreMap) {
+  return {
+    center: map.getCenter(),
+    zoom: map.getZoom(),
+    bearing: map.getBearing(),
+    pitch: map.getPitch(),
+  };
+}
+
 /**
  * This snippet is taken from:
  * https://github.com/mapbox/mapbox-gl-sync-move/issues/14
@@ -72,29 +83,23 @@ export function getBoundsFromGeometry(geometry: Geometry) {
  * - prematurely halts prolonged movements like
  *   double-click zooming, box-zooming, and flying
  */
-export function syncMaps(...maps: MapLibreMap[]) {
+export function syncMaps(...maps: MapLibreMap[]): Cleanup {
   // Create all the movement functions, because if they're created every time
   // they wouldn't be the same and couldn't be removed.
   let fns: Parameters<MapLibreMap['on']>[1][] = [];
+  const startingCamera = getCamera(maps[0]);
   maps.forEach((map, index) => {
+    // sync initial zoom and bounds
+    if (index !== 0) map.jumpTo(startingCamera);
     // When one map moves, we turn off the movement listeners
     // on all the maps, move it, then turn the listeners on again
     fns[index] = () => {
       off();
 
-      const center = map.getCenter();
-      const zoom = map.getZoom();
-      const bearing = map.getBearing();
-      const pitch = map.getPitch();
-
+      const camera = getCamera(map);
       const clones = maps.filter((o, i) => i !== index);
       clones.forEach((clone) => {
-        clone.jumpTo({
-          center: center,
-          zoom: zoom,
-          bearing: bearing,
-          pitch: pitch,
-        });
+        clone.jumpTo(camera);
       });
 
       on();

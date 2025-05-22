@@ -30,6 +30,7 @@ from planning.serializers import (
     ProjectAreaSerializer,
     ScenarioAndProjectAreasSerializer,
     ScenarioSerializer,
+    ScenarioV2Serializer,
     TreatmentGoalSerializer,
     UploadedScenarioDataSerializer,
 )
@@ -186,6 +187,17 @@ class ScenarioViewSet(viewsets.ModelViewSet):
         ScenarioOrderingFilter,
     ]
 
+    def get_serializer(self, *args, **kwargs):
+        if settings.USE_SCENARIO_V2:
+            # need to inform context because this is not created through
+            # the original get_serializer method.
+            kwargs.setdefault("context", self.get_serializer_context())
+            if self.action == "create":
+                return CreateScenarioV2Serializer(*args, **kwargs)
+            if self.action == "retrieve":
+                return ScenarioV2Serializer(*args, **kwargs)
+        return super().get_serializer(*args, **kwargs)
+
     def get_queryset(self):
         user = self.request.user
         qs = (
@@ -200,18 +212,15 @@ class ScenarioViewSet(viewsets.ModelViewSet):
 
     @extend_schema(description="Create a Scenario.")
     def create(self, request, *args, **kwargs):
-        if settings.USE_SCENARIO_V2:
-            # need to inform context because this is not created throu
-            # the original get_serializer method.
-            kwargs.setdefault("context", self.get_serializer_context())
-            serializer = CreateScenarioV2Serializer(data=request.data, **kwargs)
-        else:
-            serializer = self.get_serializer(data=request.data)
+        serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         scenario = create_scenario(
             **serializer.validated_data,
         )
-        out_serializer = ScenarioSerializer(instance=scenario)
+        if settings.USE_SCENARIO_V2:
+            out_serializer = ScenarioV2Serializer(instance=scenario)
+        else:
+            out_serializer = ScenarioSerializer(instance=scenario)
         headers = self.get_success_headers(out_serializer.data)
         return Response(
             out_serializer.data,

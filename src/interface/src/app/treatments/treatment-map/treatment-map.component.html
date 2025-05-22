@@ -7,7 +7,6 @@
     [sliderValue]="(opacity$ | async) || 0"
     (valueChange)="handleOpacityChange($event)"
     tooltip="Treated Area Opacity"></sg-opacity-slider>
-
   <app-rx-selection-toggle
     *ngIf="
       (showMapControls$ | async) && userCanEditStands

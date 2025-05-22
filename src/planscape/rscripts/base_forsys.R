@@ -57,6 +57,9 @@ priority_to_condition <- function(connection, scenario, priority) {
 }
 
 get_restriction_v2 <- function(connection, scenario_id, datalayer_table_name) {
+  schema_table <- strsplit(datalayer_table_name, split = ".", fixed = TRUE)
+  schema <- schema_table[[1]][1]
+  table <- schema_table[[1]][2]
   statement <- "
     WITH plan_scenario AS (
       SELECT
@@ -70,12 +73,19 @@ get_restriction_v2 <- function(connection, scenario_id, datalayer_table_name) {
     )
     SELECT
       ST_Transform(ST_Union(ST_Buffer(rr.geometry, 0)), 5070) as \"geometry\"
-    FROM {`datalayer_table_name`} rr, plan_scenario
+    FROM {`schema`}.{`table`} rr, plan_scenario
     WHERE
       rr.geometry && plan_scenario.geometry AND
       ST_Intersects(rr.geometry, plan_scenario.geometry)"
-  restrictions_statement <- glue_sql(statement, scenario_id = scenario_id, datalayer_table_name = datalayer_table_name, .con = connection)
+  restrictions_statement <- glue_sql(
+    statement,
+    scenario_id = scenario_id,
+    schema = schema,
+    table = table,
+    .con = connection
+  )
   crs <- st_crs(5070)
+
   restriction_data <- st_read(
     dsn = connection,
     layer = NULL,
@@ -151,9 +161,10 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
   if (length(restrictions) > 0) {
     print("Restrictions found!")
     if (FORSYS_V2) {
-      for (datalayer_id in seq_along(restrictions)) {
-        restriction <- get_datalayer_by_id(datalayer_id)
-        restriction_data <- get_restriction_v2(connection, scenario_id, restriction)
+      for (i in seq_along(restrictions)) {
+        datalayer_id <- restrictions[i]
+        restriction <- get_datalayer_by_id(connection, datalayer_id)
+        restriction_data <- get_restriction_v2(connection, scenario_id, restriction$table)
         stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
       }
     } else {
@@ -371,7 +382,7 @@ get_priorities <- function(
 
 get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
   stand_size <- get_stand_size(configuration)
-  stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas))
+  stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas_ids))
   for (row in seq_len(nrow(datalayers))) {
     datalayer <- datalayers[row, ]
     datalayer_id <- datalayer$id
@@ -542,7 +553,7 @@ get_max_treatment_area <- function(scenario) {
     return(configuration[[max_area_field]])
   }
 
-  max_acres <- get_min_project_area(configuration$stand_size) * get_number_of_projects(scenario)
+  max_acres <- get_min_project_area(scenario) * get_number_of_projects(scenario)
   print("There is no information to properly calculate max area, using {max_acres}.")
   return(max_acres)
 }
@@ -719,7 +730,7 @@ call_forsys <- function(
     output_fields <- c(output_tmp, "area_acres")
   } else {
     stand_thresholds <- get_stand_thresholds(scenario)
-    output_fields <- c(outputs$condition_name, "area_areas")
+    output_fields <- c(outputs$condition_name, "area_acres")
   }
 
   export_input(scenario, stand_data)

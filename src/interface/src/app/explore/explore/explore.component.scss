@@ -11,11 +11,13 @@ section {
 
 .side-panel {
   width: 200px; // placeholder
+  flex-shrink: 0;
 }
 
 .main {
   flex: 1;
   position: relative;
+  overflow: hidden;
 }
 
 mgl-map {

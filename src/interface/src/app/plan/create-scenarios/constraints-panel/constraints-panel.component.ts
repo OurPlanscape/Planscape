@@ -211,15 +211,27 @@ export class ConstraintsPanelComponent implements OnChanges {
         if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
           scenarioConfig.excluded_areas?.push(Number(area.id));
         } else {
-          scenarioConfig.excluded_areas?.push(area.label as any);
+          scenarioConfig.excluded_areas?.push(area.key as any);
         }
       }
     });
     if (estimatedCost?.valid)
-      scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
+      if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+        scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
+      } else {
+        // We should use any until we remove the FF.
+        (scenarioConfig as any).est_cost = parseFloat(estimatedCost.value);
+      }
     if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid) {
-      scenarioConfig.max_area = parseFloat(maxArea.value);
+      if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+        scenarioConfig.max_area = parseFloat(maxArea.value);
+      } else {
+        // We should use any until we remove the FF.
+        (scenarioConfig as any).max_treatment_area_ratio = parseFloat(
+          maxArea.value
+        );
+      }
     }
     if (minDistanceFromRoad?.valid) {
       scenarioConfig.min_distance_from_road = parseFloat(
@@ -237,9 +249,9 @@ export class ConstraintsPanelComponent implements OnChanges {
         'statewide_scenarios'
       )
         ? config.excluded_areas &&
-          config.excluded_areas.includes(area.key.toString() as any)
+          config.excluded_areas.indexOf(Number(area.key)) > -1
         : config.excluded_areas &&
-          config.excluded_areas.indexOf(Number(area.key)) > -1;
+          config.excluded_areas.includes(area.key.toString() as any);
 
       if (isAreaSelected) {
         this.constraintsForm
@@ -252,20 +264,22 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     });
 
-    if (config.estimated_cost) {
+    // TODO: remove est_cost when 'statewide_scenarios' be approved
+    if (config.estimated_cost || (config as any).est_cost) {
       this.constraintsForm
         .get('budgetForm.estimatedCost')
-        ?.setValue(config.estimated_cost);
+        ?.setValue(config.estimated_cost || (config as any).est_cost);
     }
     if (config.max_budget) {
       this.constraintsForm
         .get('budgetForm.maxCost')
         ?.setValue(config.max_budget);
     }
-    if (config.max_area) {
+    // TODO: remove max_treatment_area_ratio when 'statewide_scenarios' be approved
+    if (config.max_area || (config as any).max_treatment_area_ratio) {
       this.constraintsForm
         .get('physicalConstraintForm.maxArea')
-        ?.setValue(config.max_area);
+        ?.setValue(config.max_area || (config as any).max_treatment_area_ratio);
     }
     if (config.min_distance_from_road) {
       this.constraintsForm
