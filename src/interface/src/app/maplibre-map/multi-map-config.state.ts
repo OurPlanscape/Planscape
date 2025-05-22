@@ -28,12 +28,12 @@ export class MultiMapConfigState extends MapConfigState {
     this._layoutMode$.next(views);
   }
 
+  /** Saves:
+   * The current map zoom and position
+   * The current base map layer style (satellite/road/terrain)
+   * The number of visible maps
+   */
   saveStateToLocalStorage(bounds: LngLatBoundsLike) {
-    /**
-     * The current map zoom and position
-     * The current base map layer style (satellite/road/terrain)
-     * The number of visible maps
-     */
     const options = {
       layoutMode: this._layoutMode$.value,
       baseLayer: this._baseLayer$.value,
