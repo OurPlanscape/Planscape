@@ -16,6 +16,7 @@ import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 import type { MatTab } from '@angular/material/tabs';
+import { BaseLayerTooltipData } from '../maplibre-map/map-base-layer-tooltip/map-base-layer-tooltip.component';
 
 @Injectable({
   providedIn: 'root',
@@ -46,6 +47,12 @@ export class DataLayersStateService {
 
   private _selectedLayerTab$ = new BehaviorSubject<MatTab | null>(null);
   selectedLayerTab$ = this._selectedLayerTab$.asObservable();
+
+  private _showBaselayerTooltip$ = new BehaviorSubject<boolean>(false);
+  baseLayerTooltip$ = this._showBaselayerTooltip$.asObservable();
+
+  private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(null);
+  tooltipInfo$ = this._tooltipInfo$.asObservable();
 
   dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
     switchMap((layer) => {
@@ -125,7 +132,7 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {}
+  constructor(private service: DataLayersService) { }
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
@@ -161,6 +168,10 @@ export class DataLayersStateService {
 
   setSelectedTab(currentTab: MatTab) {
     this._selectedLayerTab$.next(currentTab);
+  }
+
+  setTooltipData(tooltipInfo: BaseLayerTooltipData | null) {
+    this._tooltipInfo$.next(tooltipInfo);
   }
 
   search(term: string) {

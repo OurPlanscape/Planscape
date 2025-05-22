@@ -5,9 +5,7 @@
         [layer]="layer"
         [before]="before"
         [mapLibreMap]="mapLibreMap"
-        (mouseHover)="
-          onBaseLayerTab(tab) ? hoverOnArcLayer($event, layer) : null
-        "></app-map-arcgis-vector-layer>
+        ></app-map-arcgis-vector-layer>
     </ng-container>
     <ng-container *ngIf="layer.map_service_type === 'VECTORTILES'">
       <mgl-vector-source
@@ -18,11 +16,7 @@
         [id]="'layer_fill_' + layer.id"
         [source]="'source_' + layer.id"
         [sourceLayer]="'dynamic_' + layer.id"
-        (layerMouseMove)="
-          onBaseLayerTab(tab)
-            ? hoverOnLayer($event, layer, 'layer_fill_')
-            : null
-        "
+        (layerMouseMove)="hoverOnLayer($event, layer, 'layer_fill_')"
         (layerMouseOut)="hoverOutLayer()"
         type="fill"
         [paint]="fillLayerPaint(layer)"
@@ -33,9 +27,8 @@
         [source]="'source_' + layer.id"
         [sourceLayer]="'dynamic_' + layer.id"
         (layerMouseMove)="
-          onBaseLayerTab(tab)
-            ? hoverOnLayer($event, layer, 'layer_outline_')
-            : null
+          hoverOnLayer($event, layer, 'layer_outline_')
+           
         "
         (layerMouseOut)="hoverOutLayer()"
         type="line"
@@ -44,7 +37,10 @@
     </ng-container>
   </div>
 
-  <mgl-popup
+<app-map-base-layer-tooltip>
+</app-map-base-layer-tooltip>
+
+  <!-- <mgl-popup
     [lngLat]="vectorTooltipLngLat"
     [closeButton]="false"
     [closeOnClick]="false"
@@ -56,5 +52,5 @@
       onBaseLayerTab(tab) && baseLayerTooltipContent && vectorTooltipLngLat
     ">
     <div class="tooltip-content no-select">{{ baseLayerTooltipContent }}</div>
-  </mgl-popup>
+  </mgl-popup> -->
 </ng-container>

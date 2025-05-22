@@ -4,16 +4,15 @@ import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
   ControlComponent,
   LayerComponent,
-  PopupComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
 import {
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapMouseEvent,
-  MapLayerMouseEvent,
   LngLat,
 } from 'maplibre-gl';
+import { MapBaseLayerTooltipComponent, BaseLayerTooltipData } from '../map-base-layer-tooltip/map-base-layer-tooltip.component';
 import { BaseLayer } from '@types';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
@@ -29,7 +28,7 @@ import { MatTab } from '@angular/material/tabs';
     NgForOf,
     AsyncPipe,
     VectorSourceComponent,
-    PopupComponent,
+    MapBaseLayerTooltipComponent,
     LayerComponent,
     ControlComponent,
     NgIf,
@@ -47,13 +46,14 @@ export class MapBaseLayersComponent {
   hoveredFeature: MapGeoJSONFeature | null = null;
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
   selectedTab$ = this.dataLayersStateService.selectedLayerTab$;
+  currentTooltipInfo$ = this.dataLayersStateService.tooltipInfo$;
   baseLayerTooltipContent: string | null = null;
   vectorTooltipLngLat: LngLat | null = null;
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
     private dataLayersStateService: DataLayersStateService
-  ) {}
+  ) { }
 
   lineLayerPaint(layer: BaseLayer) {
     return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
@@ -63,13 +63,13 @@ export class MapBaseLayersComponent {
     return defaultBaseLayerFill(layer.styles[0].data['fill-color']);
   }
 
-  hoverOnArcLayer(event: MapLayerMouseEvent, layer: BaseLayer) {
-    const features = event.features?.[0];
-    if (features) {
-      this.vectorTooltipLngLat = event.lngLat;
-      this.setTooltipContent(layer, features);
-    }
-  }
+  // hoverOnArcLayer(event: MapLayerMouseEvent, layer: BaseLayer) {
+  //   const features = event.features?.[0];
+  //   if (features) {
+  //     this.vectorTooltipLngLat = event.lngLat;
+  //     this.setTooltipContent(layer, features);
+  //   }
+  // }
 
   hoverOnLayer(event: MapMouseEvent, layer: BaseLayer, layerType: string) {
     const layerName = layerType + layer.id;
@@ -78,42 +78,20 @@ export class MapBaseLayersComponent {
     });
     if (features.length > 0) {
       this.vectorTooltipLngLat = event.lngLat;
-      this.setTooltipContent(layer, features[0]);
+      const tooltipInfo: BaseLayerTooltipData = {
+        feature: features[0],
+        layer: layer,
+        template: '',
+        longLat: event.lngLat,
+      };
+      this.dataLayersStateService.setTooltipData(tooltipInfo);
       this.paintHover(features[0]);
-    }
-  }
-
-  private getTooltipTemplate(layer: BaseLayer): string | null {
-    return layer.metadata?.modules?.map?.tooltip_format ?? null;
-  }
-
-  private setTooltipContent(layer: BaseLayer, feature: MapGeoJSONFeature) {
-    const tooltipTemplate = this.getTooltipTemplate(layer)?.trim();
-    if (!tooltipTemplate) {
-      this.baseLayerTooltipContent = null;
-      return;
-    } else {
-      const tooltipString = tooltipTemplate.replace(
-        /{(.*?)}/g,
-        (match, key: string) => {
-          const trimmedKey = key.trim();
-          // note: we don't have control over external props being lower/uppercase
-          const propValue =
-            feature.properties[trimmedKey.toLowerCase()] ??
-            feature.properties[trimmedKey.toUpperCase()] ??
-            '--';
-          return propValue;
-        }
-      );
-      if (tooltipString != '') {
-        this.baseLayerTooltipContent = tooltipString;
-      }
     }
   }
 
   hoverOutLayer() {
     this.baseLayerTooltipContent = null;
-    this.vectorTooltipLngLat = null;
+    this.dataLayersStateService.setTooltipData(null);
     this.removeHover();
   }
 

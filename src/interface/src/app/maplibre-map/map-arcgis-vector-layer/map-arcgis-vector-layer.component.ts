@@ -1,15 +1,15 @@
 import {
   Component,
-  EventEmitter,
   Input,
   OnDestroy,
   OnInit,
-  Output,
 } from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
-import { Map as MapLibreMap, MapLayerMouseEvent } from 'maplibre-gl';
+import { Map as MapLibreMap, MapLayerMouseEvent, LngLat, MapGeoJSONFeature } from 'maplibre-gl';
 import { BaseLayer } from '@types';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
+import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { BaseLayerTooltipData } from '../map-base-layer-tooltip/map-base-layer-tooltip.component';
 
 @Component({
   selector: 'app-map-arcgis-vector-layer',
@@ -21,12 +21,13 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   @Input() layer!: BaseLayer;
   @Input() before = '';
 
-  // it doesn't appear that we can use onMouseMove in the template, so refiring something to trigger tooltips
-  @Output() mouseHover = new EventEmitter<MapLayerMouseEvent>();
-
   private hoveredId: number | null = null;
 
   private arcGisService: FeatureService | null = null;
+
+  constructor(private dataLayersStateService: DataLayersStateService
+  ) { }
+
 
   ngOnInit(): void {
     this.addArcgisLayers();
@@ -63,6 +64,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
         { hover: false }
       );
       this.hoveredId = null;
+      this.clearTooltip();
     }
   };
 
@@ -80,9 +82,26 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
         { source: this.sourceId, id },
         { hover: true }
       );
+      this.setTooltipInfo(e.lngLat, f);
     }
-    this.mouseHover.emit(e);
+
   };
+
+  private clearTooltip() {
+    console.log('we want to clear the tooltip?');
+    //this.dataLayersStateService.setTooltipData(null);
+  }
+
+  private setTooltipInfo(longLat: LngLat, f: MapGeoJSONFeature,) {
+    const tooltipInfo: BaseLayerTooltipData = {
+      feature: f,
+      layer: this.layer,
+      template: '',
+      longLat: longLat,
+    };
+    console.log('are we setting anything?', tooltipInfo);
+    this.dataLayersStateService.setTooltipData(tooltipInfo);
+  }
 
   private onMouseLeave = () => this.clearHover();
 
