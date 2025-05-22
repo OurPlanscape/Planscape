@@ -1,12 +1,9 @@
 import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
-import {
-  baseLayerStyles,
-  BaseLayerType,
-  DEFAULT_BASE_MAP,
-} from './map-base-layers';
+import { baseLayerStyles } from './map-base-layers';
 import { Extent } from '@types';
 import { filter } from 'rxjs/operators';
+import { BaseLayerType, DEFAULT_BASE_MAP } from '../types/maplibre.map.types';
 
 @Injectable()
 export class MapConfigState {

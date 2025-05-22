@@ -2,14 +2,21 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { MapConfigState } from './map-config.state';
 import { ExploreOptionsStorageService } from '@services/local-storage.service';
+import { FrontendConstants } from '../map/map.constants';
+import { LngLatBoundsLike } from 'maplibre-gl';
 
-type layoutOption = 1 | 2 | 4;
+type LayoutOption = 1 | 2 | 4;
 
 @Injectable()
 export class MultiMapConfigState extends MapConfigState {
   // adds additional logic and config for multi map view.
-  private _layoutMode$ = new BehaviorSubject<layoutOption>(1);
+  private _layoutMode$ = new BehaviorSubject<LayoutOption>(1);
   public layoutMode$ = this._layoutMode$.asObservable();
+  private _bounds$ = new BehaviorSubject(
+    FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS
+  );
+
+  public bounds$ = this._bounds$.asObservable();
 
   constructor(
     private exploreOptionsStorageService: ExploreOptionsStorageService
@@ -17,11 +24,11 @@ export class MultiMapConfigState extends MapConfigState {
     super();
   }
 
-  setLayoutMode(views: layoutOption) {
+  setLayoutMode(views: LayoutOption) {
     this._layoutMode$.next(views);
   }
 
-  saveStateToLocalStorage(extent: any) {
+  saveStateToLocalStorage(bounds: LngLatBoundsLike) {
     /**
      * The current map zoom and position
      * The current base map layer style (satellite/road/terrain)
@@ -29,8 +36,8 @@ export class MultiMapConfigState extends MapConfigState {
      */
     const options = {
       layoutMode: this._layoutMode$.value,
-      baseMap: this._baseLayer$.value,
-      extent: extent,
+      baseLayer: this._baseLayer$.value,
+      bounds: bounds as [number, number, number, number],
     };
     this.exploreOptionsStorageService.setItem(options);
   }
@@ -38,7 +45,9 @@ export class MultiMapConfigState extends MapConfigState {
   loadStateFromLocalStorage() {
     const options = this.exploreOptionsStorageService.getItem();
     if (options) {
-      this._layoutMode$.next(options);
+      this._layoutMode$.next(options.layoutMode);
+      this._baseLayer$.next(options.baseLayer);
+      this._bounds$.next(options.bounds);
     }
   }
 }

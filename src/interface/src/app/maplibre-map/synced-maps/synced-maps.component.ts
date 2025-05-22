@@ -1,7 +1,7 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { LngLatLike, Map as MapLibreMap } from 'maplibre-gl';
 import { Cleanup, syncMaps } from '../maplibre.helper';
 import { ExploreMapComponent } from '../explore-map/explore-map.component';
 import { MultiMapConfigState } from '../multi-map-config.state';
@@ -49,6 +49,11 @@ export class SyncedMapsComponent implements OnDestroy {
   }
 
   saveState() {
-    this.multiMapConfigState.saveStateToLocalStorage({});
+    const map1 = this.maps.get(1);
+    if (!map1) {
+      return;
+    }
+    const bounds = map1.getBounds().toArray() as [LngLatLike, LngLatLike];
+    this.multiMapConfigState.saveStateToLocalStorage(bounds);
   }
 }
