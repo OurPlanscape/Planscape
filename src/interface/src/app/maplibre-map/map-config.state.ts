@@ -11,7 +11,7 @@ export class MapConfigState {
   baseLayer$ = this._baseLayer$.asObservable();
   baseLayerUrl$ = this.baseLayer$.pipe(map((b) => baseLayerStyles[b]));
 
-  private _mapExtent$ = new BehaviorSubject<Extent | null>(null);
+  protected _mapExtent$ = new BehaviorSubject<Extent | null>(null);
   mapExtent$ = this._mapExtent$
     .asObservable()
     .pipe(filter((m): m is Extent => !!m));

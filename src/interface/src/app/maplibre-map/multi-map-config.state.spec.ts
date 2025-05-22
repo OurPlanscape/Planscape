@@ -43,7 +43,7 @@ describe('MultiMapConfigState', () => {
   });
 
   it('should default bounds to FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS', () => {
-    expect((service as any)._bounds$.getValue()).toEqual(
+    expect((service as any)._mapExtent$.getValue()).toEqual(
       FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS
     );
   });
@@ -72,7 +72,7 @@ describe('MultiMapConfigState', () => {
     expect((service as any)._baseLayer$.getValue()).toBe(
       (service as any)._baseLayer$.getValue() /* whatever default is */
     );
-    expect((service as any)._bounds$.getValue()).toEqual(
+    expect((service as any)._mapExtent$.getValue()).toEqual(
       FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS
     );
   });
@@ -89,6 +89,6 @@ describe('MultiMapConfigState', () => {
 
     expect((service as any)._layoutMode$.getValue()).toBe(2);
     expect((service as any)._baseLayer$.getValue()).toBe('satellite');
-    expect((service as any)._bounds$.getValue()).toEqual([5, 6, 7, 8]);
+    expect((service as any)._mapExtent$.getValue()).toEqual([5, 6, 7, 8]);
   });
 });

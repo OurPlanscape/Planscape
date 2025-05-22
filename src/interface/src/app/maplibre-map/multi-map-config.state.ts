@@ -12,16 +12,12 @@ export class MultiMapConfigState extends MapConfigState {
   // adds additional logic and config for multi map view.
   private _layoutMode$ = new BehaviorSubject<LayoutOption>(1);
   public layoutMode$ = this._layoutMode$.asObservable();
-  private _bounds$ = new BehaviorSubject(
-    FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS
-  );
-
-  public bounds$ = this._bounds$.asObservable();
 
   constructor(
     private exploreOptionsStorageService: ExploreOptionsStorageService
   ) {
     super();
+    this._mapExtent$.next(FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS);
   }
 
   setLayoutMode(views: LayoutOption) {
@@ -47,7 +43,7 @@ export class MultiMapConfigState extends MapConfigState {
     if (options) {
       this._layoutMode$.next(options.layoutMode);
       this._baseLayer$.next(options.baseLayer);
-      this._bounds$.next(options.bounds);
+      this._mapExtent$.next(options.bounds);
     }
   }
 }

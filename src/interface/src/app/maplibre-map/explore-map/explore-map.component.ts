@@ -5,7 +5,7 @@ import { FrontendConstants } from '../../map/map.constants';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { AuthService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
-import { MultiMapConfigState } from '../multi-map-config.state';
+import { MapConfigState } from '../map-config.state';
 
 @Component({
   selector: 'app-explore-map',
@@ -21,7 +21,7 @@ export class ExploreMapComponent {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  bounds$ = this.mapConfigState.bounds$;
+  bounds$ = this.mapConfigState.mapExtent$;
   boundOptions = FrontendConstants.MAPLIBRE_BOUND_OPTIONS;
 
   /**
@@ -39,7 +39,7 @@ export class ExploreMapComponent {
   @Input() showAttribution = false;
 
   constructor(
-    private mapConfigState: MultiMapConfigState,
+    private mapConfigState: MapConfigState,
     private authService: AuthService
   ) {}
 
