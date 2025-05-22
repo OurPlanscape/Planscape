@@ -10,7 +10,7 @@ import { filter } from 'rxjs/operators';
 
 @Injectable()
 export class MapConfigState {
-  private _baseLayer$ = new BehaviorSubject<BaseLayerType>(DEFAULT_BASE_MAP);
+  protected _baseLayer$ = new BehaviorSubject<BaseLayerType>(DEFAULT_BASE_MAP);
   baseLayer$ = this._baseLayer$.asObservable();
   baseLayerUrl$ = this.baseLayer$.pipe(map((b) => baseLayerStyles[b]));
 

@@ -79,3 +79,13 @@ export class MapConfigsStorageService extends BaseLocalStorageService<Record<
     super('mapConfigs');
   }
 }
+
+// Explore 2.0 storage
+@Injectable({
+  providedIn: 'root',
+})
+export class ExploreOptionsStorageService extends BaseLocalStorageService<any> {
+  constructor() {
+    super('exploreOptions');
+  }
+}
