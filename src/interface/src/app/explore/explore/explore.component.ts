@@ -8,6 +8,8 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
+import { OpacitySliderComponent } from '@styleguide';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'app-explore',
@@ -19,6 +21,7 @@ import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/m
     SharedModule,
     SyncedMapsComponent,
     MultiMapControlComponent,
+    OpacitySliderComponent,
   ],
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.scss',
@@ -31,10 +34,17 @@ import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/m
   ],
 })
 export class ExploreComponent {
+  // TODO: Replace the behavior subject with the value that is coming from the state
+  projectAreasOpacity$ = new BehaviorSubject(0.5);
   constructor(private breadcrumbService: BreadcrumbService) {
     this.breadcrumbService.updateBreadCrumb({
       label: ' New Plan',
       backUrl: '/',
     });
+  }
+
+  handleOpacityChange(opacity: number) {
+    // TODO: update the opacity directly on the state
+    this.projectAreasOpacity$.next(opacity);
   }
 }
