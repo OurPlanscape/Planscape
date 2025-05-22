@@ -311,13 +311,16 @@ RASTER_PIXEL_AREA = 0.300 * 0.300
 # This is the default CRS used when a geometry is missing one.
 
 # Caching; this improves loading times especially for the boundary app.
+REDIS_URL = config(
+    "REDIS_URL", default=config("CACHEOPS_REDIS", "redis://localhost:6379/1")
+)
+
 CACHES = {
     "default": {
-        "BACKEND": config(
-            "PLANSCAPE_CACHE_BACKEND",
-            default="django.core.cache.backends.locmem.LocMemCache",
-        ),
-        "LOCATION": config("PLANSCAPE_CACHE_LOCATION", "planscape-cache"),
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": REDIS_URL,
+        "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
+        "TIMEOUT": None,
     }
 }
 

@@ -249,9 +249,9 @@ export class ConstraintsPanelComponent implements OnChanges {
         'statewide_scenarios'
       )
         ? config.excluded_areas &&
-          config.excluded_areas.includes(area.key.toString() as any)
+          config.excluded_areas.indexOf(Number(area.key)) > -1
         : config.excluded_areas &&
-          config.excluded_areas.indexOf(Number(area.key)) > -1;
+          config.excluded_areas.includes(area.key.toString() as any);
 
       if (isAreaSelected) {
         this.constraintsForm

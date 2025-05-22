@@ -10,6 +10,7 @@
   [fitBoundsOptions]="boundOptions"
   (mapLoad)="mapCreated.emit({ map: $event, mapNumber: mapNumber })"
   [style]="(baseLayerUrl$ | async) || ''"
+  [attributionControl]="false"
   [transformRequest]="transformRequest">
   <mgl-control position="bottom-left" *ngIf="showMapNumber">
     <div class="label">Map {{ mapNumber }}</div>
