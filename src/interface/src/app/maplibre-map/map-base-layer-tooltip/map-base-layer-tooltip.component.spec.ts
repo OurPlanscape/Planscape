@@ -8,10 +8,9 @@ describe('MapBaseLayerTooltipComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapBaseLayerTooltipComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapBaseLayerTooltipComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapBaseLayerTooltipComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
