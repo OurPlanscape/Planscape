@@ -3,7 +3,7 @@ import { BehaviorSubject } from 'rxjs';
 import { MapConfigState } from './map-config.state';
 import { ExploreOptionsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '../map/map.constants';
-import { LngLatBoundsLike } from 'maplibre-gl';
+import { Extent } from '@types';
 
 type LayoutOption = 1 | 2 | 4;
 
@@ -29,11 +29,11 @@ export class MultiMapConfigState extends MapConfigState {
    * The current base map layer style (satellite/road/terrain)
    * The number of visible maps
    */
-  saveStateToLocalStorage(bounds: LngLatBoundsLike) {
+  saveStateToLocalStorage(extent: Extent) {
     const options = {
       layoutMode: this._layoutMode$.value,
       baseLayer: this._baseLayer$.value,
-      bounds: bounds as [number, number, number, number],
+      extent: extent,
     };
     this.exploreOptionsStorageService.setItem(options);
   }
@@ -43,7 +43,7 @@ export class MultiMapConfigState extends MapConfigState {
     if (options) {
       this._layoutMode$.next(options.layoutMode);
       this._baseLayer$.next(options.baseLayer);
-      this._mapExtent$.next(options.bounds);
+      this._mapExtent$.next(options.extent);
     }
   }
 }

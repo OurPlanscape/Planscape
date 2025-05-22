@@ -88,10 +88,7 @@ describe('SyncedMapsComponent', () => {
       component['maps'].set(1, mapMock);
 
       component.saveState();
-      expect(state.saveStateToLocalStorage).toHaveBeenCalledWith([
-        [0, 1],
-        [2, 3],
-      ]);
+      expect(state.saveStateToLocalStorage).toHaveBeenCalledWith([0, 1, 2, 3]);
     });
   });
 

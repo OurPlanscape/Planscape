@@ -3,6 +3,7 @@ import { MultiMapConfigState } from './multi-map-config.state';
 import { ExploreOptionsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '../map/map.constants';
 import { BaseLayerType } from '../types/maplibre.map.types';
+import { Extent } from '@types';
 
 describe('MultiMapConfigState', () => {
   let service: MultiMapConfigState;
@@ -52,14 +53,14 @@ describe('MultiMapConfigState', () => {
     // grab the current private values
     const layout = (service as any)._layoutMode$.getValue();
     const baseLayer = (service as any)._baseLayer$.getValue();
-    const bounds = [0, 1, 2, 3] as [number, number, number, number];
+    const extent = [0, 1, 2, 3] as Extent;
 
-    service.saveStateToLocalStorage(bounds);
+    service.saveStateToLocalStorage(extent);
 
     expect(storage.setItem).toHaveBeenCalledWith({
       layoutMode: layout,
       baseLayer: baseLayer,
-      bounds: bounds,
+      extent: extent,
     });
   });
 
@@ -81,7 +82,7 @@ describe('MultiMapConfigState', () => {
     const saved = {
       layoutMode: 2 as any,
       baseLayer: 'satellite' as BaseLayerType,
-      bounds: [5, 6, 7, 8] as [number, number, number, number],
+      extent: [5, 6, 7, 8] as Extent,
     };
     storage.getItem.and.returnValue(saved);
 
