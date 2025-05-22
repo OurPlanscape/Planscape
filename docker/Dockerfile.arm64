@@ -1,20 +1,37 @@
-FROM python:3.10-slim-bullseye
-
+FROM arm64v8/python:3.10-slim-bullseye
 ENV DEBIAN_FRONTEND=noninteractive
 ENV PYTHONUNBUFFERED=1
+ENV GDAL_VERSION=3.10.3
+ENV LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
 
 RUN apt-get update && \
     apt-get -y install \
+    cmake \
+    wget \
     g++ binutils \
     openssh-client \
     libc6-dev libsqlite3-dev \
     libpng-dev libtiff-dev libjpeg-dev \
-    libgdal-dev libproj-dev libgeos-dev gdal-bin \
+    libproj-dev libgeos-dev \
     libpq-dev libfreetype-dev libfontconfig1-dev libxml2-dev  \
     libgit2-dev libharfbuzz-dev libfribidi-dev libudunits2-dev \
     libcurl4-openssl-dev libssl-dev \
     postgresql-client \
-    python3-pip
+    python3-pip \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install numpy
+
+# Download and compile GDAL
+RUN wget https://github.com/OSGeo/gdal/archive/refs/tags/v${GDAL_VERSION}.tar.gz && \
+    tar -xzf v${GDAL_VERSION}.tar.gz && \
+    cd gdal-${GDAL_VERSION} && \
+    cmake . && \
+    cmake --build . && \
+    cmake --build . --target install && \
+    rm -rf gdal-${GDAL_VERSION} v${GDAL_VERSION}.tar.gz
+
 
 RUN mkdir -p /usr/src/app
 WORKDIR /usr/src/app
