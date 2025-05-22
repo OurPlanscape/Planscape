@@ -35,19 +35,21 @@ export class TreatmentPlanTabsComponent implements AfterViewInit {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   handleTabChange(tabEvent: MatTabChangeEvent) {
-    if (tabEvent.tab) {
-      this.dataLayersStateService.setSelectedTab(tabEvent.tab);
-    }
+    this.setBaseLayerPainting();
   }
 
   ngAfterViewInit() {
-    this.setSelectedTab();
+    this.setBaseLayerPainting();
   }
 
-  setSelectedTab() {
+  setBaseLayerPainting() {
     const currentTab: MatTab =
       this.tabGroup._tabs.toArray()[this.tabGroup.selectedIndex ?? 1];
-    this.dataLayersStateService.setSelectedTab(currentTab);
+    if (currentTab && currentTab.textLabel === 'Base Layers') {
+      this.dataLayersStateService.enableBaseLayerPaint(true);
+    } else {
+      this.dataLayersStateService.enableBaseLayerPaint(false);
+    }
   }
 
   constructor(private dataLayersStateService: DataLayersStateService) {

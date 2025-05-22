@@ -15,7 +15,6 @@ import {
 import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
-import type { MatTab } from '@angular/material/tabs';
 import { BaseLayerTooltipData } from '../maplibre-map/map-base-layer-tooltip/map-base-layer-tooltip.component';
 
 @Injectable({
@@ -45,13 +44,12 @@ export class DataLayersStateService {
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
 
-  private _selectedLayerTab$ = new BehaviorSubject<MatTab | null>(null);
-  selectedLayerTab$ = this._selectedLayerTab$.asObservable();
+  private _enableBaseLayerPaint$ = new BehaviorSubject<boolean>(false);
+  enableBaseLayerPaint$ = this._enableBaseLayerPaint$.asObservable();
 
-  private _showBaselayerTooltip$ = new BehaviorSubject<boolean>(false);
-  baseLayerTooltip$ = this._showBaselayerTooltip$.asObservable();
-
-  private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(null);
+  private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
+    null
+  );
   tooltipInfo$ = this._tooltipInfo$.asObservable();
 
   dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
@@ -132,7 +130,7 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) { }
+  constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
@@ -166,8 +164,8 @@ export class DataLayersStateService {
     this._selectedDataLayer$.next(currentLayer);
   }
 
-  setSelectedTab(currentTab: MatTab) {
-    this._selectedLayerTab$.next(currentTab);
+  enableBaseLayerPaint(value: boolean) {
+    this._enableBaseLayerPaint$.next(value);
   }
 
   setTooltipData(tooltipInfo: BaseLayerTooltipData | null) {

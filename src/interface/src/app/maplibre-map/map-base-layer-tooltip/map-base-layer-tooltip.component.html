@@ -1,12 +1,11 @@
-
-<mgl-popup *ngIf="tooltipLongLat"
-    [lngLat]="tooltipLongLat"
-    [closeButton]="false"
-    [closeOnClick]="false"
-    [anchor]="'left'"
-    [offset]="20"
-    maxWidth="none"
-    className="vector-tooltip"
-    >
-    <div class="tooltip-content no-select">{{ baseLayerTooltipContent }}</div>
+<mgl-popup
+  *ngIf="lngLat && content"
+  [lngLat]="lngLat"
+  [closeButton]="false"
+  [closeOnClick]="false"
+  [anchor]="'left'"
+  [offset]="20"
+  maxWidth="none"
+  className="vector-tooltip">
+  <div class="tooltip-content no-select">{{ content }}</div>
 </mgl-popup>
