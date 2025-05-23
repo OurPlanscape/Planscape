@@ -46,9 +46,9 @@ export class TreatmentPlanTabsComponent implements AfterViewInit {
     const currentTab: MatTab =
       this.tabGroup._tabs.toArray()[this.tabGroup.selectedIndex ?? 1];
     if (currentTab && currentTab.textLabel === 'Base Layers') {
-      this.dataLayersStateService.enableBaseLayerPaint(true);
+      this.dataLayersStateService.enableBaseLayerHover(true);
     } else {
-      this.dataLayersStateService.enableBaseLayerPaint(false);
+      this.dataLayersStateService.enableBaseLayerHover(false);
     }
   }
 

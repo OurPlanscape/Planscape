@@ -49,8 +49,8 @@ export class DataLayersStateService {
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
 
-  private _enableBaseLayerPaint$ = new BehaviorSubject<boolean>(false);
-  enableBaseLayerPaint$ = this._enableBaseLayerPaint$.asObservable();
+  private _enableBaseLayerHover$ = new BehaviorSubject<boolean>(false);
+  enableBaseLayerHover$ = this._enableBaseLayerHover$.asObservable();
 
   private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
     null
@@ -135,7 +135,7 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {}
+  constructor(private service: DataLayersService) { }
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
@@ -169,8 +169,8 @@ export class DataLayersStateService {
     this._selectedDataLayer$.next(currentLayer);
   }
 
-  enableBaseLayerPaint(value: boolean) {
-    this._enableBaseLayerPaint$.next(value);
+  enableBaseLayerHover(value: boolean) {
+    this._enableBaseLayerHover$.next(value);
   }
 
   setTooltipData(tooltipInfo: BaseLayerTooltipData | null) {

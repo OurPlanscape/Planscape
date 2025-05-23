@@ -42,13 +42,13 @@ export class MapBaseLayersComponent {
   // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
-  enableBaseLayerPaint$ = this.dataLayersStateService.enableBaseLayerPaint$;
+  enableBaseLayerHover$ = this.dataLayersStateService.enableBaseLayerHover$;
   currentTooltipInfo$ = this.dataLayersStateService.tooltipInfo$;
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
     private dataLayersStateService: DataLayersStateService
-  ) {}
+  ) { }
 
   lineLayerPaint(layer: BaseLayer) {
     return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
@@ -59,7 +59,7 @@ export class MapBaseLayersComponent {
   }
 
   hoverOnLayer(event: MapMouseEvent, layer: BaseLayer, layerType: string) {
-    this.enableBaseLayerPaint$.pipe(take(1)).subscribe((paintingEnabled) => {
+    this.enableBaseLayerHover$.pipe(take(1)).subscribe((paintingEnabled) => {
       if (paintingEnabled) {
         const layerName = layerType + layer.id;
         const features = this.mapLibreMap.queryRenderedFeatures(event.point, {

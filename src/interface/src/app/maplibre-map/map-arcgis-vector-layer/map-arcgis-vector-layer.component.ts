@@ -25,13 +25,13 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
 
   private arcGisService: FeatureService | null = null;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(private dataLayersStateService: DataLayersStateService) { }
 
   ngOnInit(): void {
     this.addArcgisLayers();
   }
 
-  enableBaseLayerPaint$ = this.dataLayersStateService.enableBaseLayerPaint$;
+  enableBaseLayerHover$ = this.dataLayersStateService.enableBaseLayerHover$;
 
   ngOnDestroy(): void {
     this.mapLibreMap.off('mousemove', this.layerFillId, this.onMouseMove);
@@ -69,7 +69,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   };
 
   private onMouseMove = (e: MapLayerMouseEvent) => {
-    this.enableBaseLayerPaint$.pipe(take(1)).subscribe((paintingEnabled) => {
+    this.enableBaseLayerHover$.pipe(take(1)).subscribe((paintingEnabled) => {
       if (paintingEnabled) {
         const f = e.features?.[0];
         if (!f) {

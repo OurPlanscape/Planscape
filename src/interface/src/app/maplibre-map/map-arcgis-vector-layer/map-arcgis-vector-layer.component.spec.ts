@@ -48,7 +48,7 @@ describe('MapArcgisVectorLayerComponent', () => {
     TestBed.configureTestingModule({
       providers: [
         MockProvider(DataLayersStateService, {
-          enableBaseLayerPaint$: of(true),
+          enableBaseLayerHover$: of(true),
         }),
       ],
     });
@@ -72,8 +72,8 @@ describe('MapArcgisVectorLayerComponent', () => {
     const moveCb = map.on.calls
       .all()
       .find((c: any) => c.args[0] === 'mousemove')!.args[2] as (
-      e: MapLayerMouseEvent
-    ) => void;
+        e: MapLayerMouseEvent
+      ) => void;
     const leaveCb = map.on.calls
       .all()
       .find((c: any) => c.args[0] === 'mouseleave')!.args[2] as () => void;

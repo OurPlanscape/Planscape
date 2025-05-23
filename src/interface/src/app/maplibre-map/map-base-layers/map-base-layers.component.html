@@ -32,6 +32,6 @@
   </ng-container>
 </div>
 <app-map-base-layer-tooltip
-  *ngIf="enableBaseLayerPaint$ && (currentTooltipInfo$ | async) as toolTipInfo"
+  *ngIf="enableBaseLayerHover$ && (currentTooltipInfo$ | async) as toolTipInfo"
   [content]="toolTipInfo.content"
   [lngLat]="toolTipInfo.longLat"></app-map-base-layer-tooltip>

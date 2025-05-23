@@ -62,9 +62,9 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
 
   handleTabChange(selectedTab: MatTabChangeEvent) {
     if (selectedTab && selectedTab.tab.textLabel === 'Base Layers') {
-      this.dataLayersStateService.enableBaseLayerPaint(true);
+      this.dataLayersStateService.enableBaseLayerHover(true);
     } else {
-      this.dataLayersStateService.enableBaseLayerPaint(false);
+      this.dataLayersStateService.enableBaseLayerHover(false);
     }
   }
 
