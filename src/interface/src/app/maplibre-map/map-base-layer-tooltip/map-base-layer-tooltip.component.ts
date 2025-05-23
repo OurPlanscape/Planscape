@@ -3,11 +3,6 @@ import { PopupComponent } from '@maplibre/ngx-maplibre-gl';
 import { NgIf } from '@angular/common';
 import { LngLat } from 'maplibre-gl';
 
-export interface BaseLayerTooltipData {
-  content: string;
-  longLat: LngLat;
-}
-
 @Component({
   selector: 'app-map-base-layer-tooltip',
   standalone: true,

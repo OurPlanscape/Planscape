@@ -10,11 +10,8 @@ import {
   MapGeoJSONFeature,
   MapMouseEvent,
 } from 'maplibre-gl';
-import {
-  MapBaseLayerTooltipComponent,
-  BaseLayerTooltipData,
-} from '../map-base-layer-tooltip/map-base-layer-tooltip.component';
-import { BaseLayer } from '@types';
+import { MapBaseLayerTooltipComponent } from '../map-base-layer-tooltip/map-base-layer-tooltip.component';
+import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';

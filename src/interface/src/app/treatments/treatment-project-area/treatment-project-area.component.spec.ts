@@ -12,6 +12,7 @@ import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.componen
 import { of } from 'rxjs';
 import { Geometry } from 'geojson';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
+import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 
 describe('TreatmentProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -38,7 +39,12 @@ describe('TreatmentProjectAreaComponent', () => {
         BrowserAnimationsModule,
       ],
       providers: [
-        MockProviders(MapConfigState, SelectedStandsState, TreatmentsState),
+        MockProviders(
+          MapConfigState,
+          SelectedStandsState,
+          TreatmentsState,
+          DataLayersStateService
+        ),
         {
           provide: TreatmentsState,
           useValue: {
@@ -50,6 +56,12 @@ describe('TreatmentProjectAreaComponent', () => {
               geometry: mockGeometry,
               prescriptions: [],
             }),
+          },
+        },
+        {
+          provide: DataLayersStateService,
+          useValue: {
+            paths$: of([]),
           },
         },
       ],

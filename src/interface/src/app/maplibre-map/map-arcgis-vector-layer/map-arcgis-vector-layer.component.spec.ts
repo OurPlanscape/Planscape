@@ -1,6 +1,14 @@
-import { MockBuilder, MockedComponentFixture, MockRender } from 'ng-mocks';
+import { TestBed } from '@angular/core/testing';
+import {
+  MockBuilder,
+  MockedComponentFixture,
+  MockProvider,
+  MockRender,
+} from 'ng-mocks';
 import { MapArcgisVectorLayerComponent } from './map-arcgis-vector-layer.component';
 import { MapLayerMouseEvent } from 'maplibre-gl';
+import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { of } from 'rxjs';
 
 function createMapSpy() {
   return jasmine.createSpyObj('MapLibreMap', [
@@ -37,6 +45,13 @@ describe('MapArcgisVectorLayerComponent', () => {
 
   beforeEach(() => {
     map = createMapSpy();
+    TestBed.configureTestingModule({
+      providers: [
+        MockProvider(DataLayersStateService, {
+          enableBaseLayerPaint$: of(true),
+        }),
+      ],
+    });
     fixture = MockRender(MapArcgisVectorLayerComponent, {
       mapLibreMap: map,
       layer: makeLayer(),

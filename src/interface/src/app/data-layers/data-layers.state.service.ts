@@ -12,10 +12,15 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
+import {
+  DataLayer,
+  DataSet,
+  Pagination,
+  SearchResult,
+  BaseLayerTooltipData,
+} from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
-import { BaseLayerTooltipData } from '../maplibre-map/map-base-layer-tooltip/map-base-layer-tooltip.component';
 
 @Injectable({
   providedIn: 'root',

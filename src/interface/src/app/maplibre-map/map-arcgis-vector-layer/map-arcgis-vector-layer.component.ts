@@ -6,10 +6,9 @@ import {
   LngLat,
   MapGeoJSONFeature,
 } from 'maplibre-gl';
-import { BaseLayer } from '@types';
+import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { BaseLayerTooltipData } from '../map-base-layer-tooltip/map-base-layer-tooltip.component';
 import { take } from 'rxjs';
 
 @Component({
