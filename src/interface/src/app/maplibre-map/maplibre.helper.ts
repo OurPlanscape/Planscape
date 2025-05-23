@@ -1,4 +1,9 @@
-import { Map as MapLibreMap, Point, ResourceType } from 'maplibre-gl';
+import {
+  LngLatBounds,
+  Map as MapLibreMap,
+  Point,
+  ResourceType,
+} from 'maplibre-gl';
 import {
   isMapboxURL,
   transformMapboxUrl,
@@ -55,6 +60,15 @@ export function addRequestHeaders(
 export function getBoundsFromGeometry(geometry: Geometry) {
   const geoFeature: Feature = { type: 'Feature', geometry, properties: {} };
   return bbox(geoFeature) as Extent;
+}
+
+export function getExtentFromLngLatBounds(bounds: LngLatBounds): Extent {
+  return [
+    bounds.getWest(), // west  (min longitude)
+    bounds.getSouth(), // south (min latitude)
+    bounds.getEast(), // east  (max longitude)
+    bounds.getNorth(), // north (max latitude)
+  ];
 }
 
 export type Cleanup = () => void;
