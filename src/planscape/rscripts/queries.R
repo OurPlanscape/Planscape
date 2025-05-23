@@ -5,6 +5,27 @@ get_datalayer_by_id <- function(connection, datalayer_id) {
   return(tibble(head(result, 1)))
 }
 
+get_datalayer_by_forsys_attribute <- function(connection, attribute, value) {
+  query_text <- "SELECT
+                  *
+                 FROM
+                  datasets_datalayer dl
+                 WHERE
+                  dl.metadata @> '{\"modules\": {\"forsys\": {\"{attribute}\": \"{value}\"}}}'"
+  query <- glue_sql(
+    query_text,
+    attribute = attribute,
+    value = value,
+    .con = connection
+  )
+  result <- dbGetQuery(connection, query)
+  return(tibble(head(result, 1)))
+}
+
+get_datalayer_by_forsys_name <- function(connection, attribute, datalayer_name) {
+  return(get_datalayer_by_forsys_attribute(connection, "name", datalayer_name))
+}
+
 get_scenario_by_id <- function(connection, scenario_id) {
   query <- "SELECT
               s.id,
@@ -101,3 +122,5 @@ get_stand_metrics <- function(
   result <- dbGetQuery(connection, query) %>% preprocess_metrics(condition_name)
   return(result)
 }
+
+get_
