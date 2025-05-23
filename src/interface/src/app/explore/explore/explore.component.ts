@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { AsyncPipe } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
@@ -8,8 +8,9 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
 import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
-import { OpacitySliderComponent } from '@styleguide';
+import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
+import { MatTabsModule } from '@angular/material/tabs';
 
 @Component({
   selector: 'app-explore',
@@ -22,6 +23,10 @@ import { BehaviorSubject } from 'rxjs';
     SyncedMapsComponent,
     MultiMapControlComponent,
     OpacitySliderComponent,
+    NgClass,
+    ButtonComponent,
+    NgIf,
+    MatTabsModule,
   ],
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.scss',
@@ -36,6 +41,8 @@ import { BehaviorSubject } from 'rxjs';
 export class ExploreComponent {
   // TODO: Replace the behavior subject with the value that is coming from the state
   projectAreasOpacity$ = new BehaviorSubject(0.5);
+  panelExpanded = true;
+
   constructor(private breadcrumbService: BreadcrumbService) {
     this.breadcrumbService.updateBreadCrumb({
       label: ' New Plan',
