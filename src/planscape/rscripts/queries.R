@@ -11,7 +11,7 @@ get_datalayer_by_forsys_attribute <- function(connection, attribute, value) {
                  FROM
                   datasets_datalayer dl
                  WHERE
-                  dl.metadata @> '{\"modules\": {\"forsys\": {\"{attribute}\": \"{value}\"}}}'"
+                  dl.metadata @> '{{\"modules\": {{\"forsys\": {{{`attribute`}: {`value`} }}}}}}'"
   query <- glue_sql(
     query_text,
     attribute = attribute,
@@ -122,5 +122,3 @@ get_stand_metrics <- function(
   result <- dbGetQuery(connection, query) %>% preprocess_metrics(condition_name)
   return(result)
 }
-
-get_
