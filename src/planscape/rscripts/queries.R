@@ -22,7 +22,7 @@ get_datalayer_by_forsys_attribute <- function(connection, attribute, value) {
   return(tibble(head(result, 1)))
 }
 
-get_datalayer_by_forsys_name <- function(connection, attribute, datalayer_name) {
+get_datalayer_by_forsys_name <- function(connection, datalayer_name) {
   return(get_datalayer_by_forsys_attribute(connection, "name", datalayer_name))
 }
 
