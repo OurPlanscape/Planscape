@@ -33,5 +33,6 @@
 </div>
 <app-map-base-layer-tooltip
   *ngIf="enableBaseLayerHover$ && (currentTooltipInfo$ | async) as toolTipInfo"
+  [mapContainer]="mapLibreMap"
   [content]="toolTipInfo.content"
   [lngLat]="toolTipInfo.longLat"></app-map-base-layer-tooltip>
