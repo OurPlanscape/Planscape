@@ -7,10 +7,11 @@
         sg-button
         variant="icon-only"
         [icon]="panelExpanded ? 'close_fullscreen' : 'open_in_full'"
-        (click)="panelExpanded = !panelExpanded"></button>
+        (click)="togglePanelExpanded()"></button>
       <h4 *ngIf="!panelExpanded" class="expanded-label">Map Control Panel</h4>
       <mat-tab-group
         class="side-tabs"
+        [(selectedIndex)]="tabIndex"
         *ngIf="panelExpanded"
         mat-stretch-tabs="false"
         mat-align-tabs="start">

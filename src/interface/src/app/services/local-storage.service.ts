@@ -85,12 +85,24 @@ export class MapConfigsStorageService extends BaseLocalStorageService<Record<
 @Injectable({
   providedIn: 'root',
 })
-export class ExploreOptionsStorageService extends BaseLocalStorageService<{
+export class MultiMapsStorageService extends BaseLocalStorageService<{
   layoutMode: 1 | 2 | 4;
   baseLayer: BaseLayerType;
   extent: Extent;
 }> {
   constructor() {
-    super('exploreOptions');
+    super('multiMapsOptions');
+  }
+}
+
+@Injectable({
+  providedIn: 'root',
+})
+export class ExploreStorageService extends BaseLocalStorageService<{
+  tabIndex: number;
+  isPanelExpanded: boolean;
+}> {
+  constructor() {
+    super('exploreViewOptions');
   }
 }
