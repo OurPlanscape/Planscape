@@ -12,7 +12,7 @@ import fiona
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from datasets.models import DataLayerType
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -158,11 +158,21 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         usages = treatment_goal.datalayer_usages.exclude(
             usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
         ).select_related("datalayer")
-        datalayers = [
-            usage.datalayer
-            for usage in usages
-            if usage.datalayer.type == DataLayerType.RASTER
-        ]
+        datalayers = list(
+            [
+                usage.datalayer
+                for usage in usages
+                if usage.datalayer.type == DataLayerType.RASTER
+            ]
+        )
+        # adds the operational layers
+        for name in ["slope", "distance_from_roads"]:
+            query = {"modules": {"forsys": {"name": name}}}
+            datalayer = DataLayer.objects.get(
+                type=DataLayerType.RASTER,
+                metadata__contains=query,
+            )
+            datalayers.append(datalayer)
         tasks = [
             async_calculate_stand_metrics_v2.si(
                 scenario_id=scenario.pk, datalayer_id=d.pk
