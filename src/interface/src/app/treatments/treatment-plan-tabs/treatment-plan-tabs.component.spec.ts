@@ -8,7 +8,8 @@ import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
+import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 
 describe('TreatmentPlanTabsComponent', () => {
   let component: TreatmentPlanTabsComponent;
@@ -29,6 +30,9 @@ describe('TreatmentPlanTabsComponent', () => {
       providers: [
         MockProvider(TreatmentsState, {
           treatmentPlan$: new BehaviorSubject(null),
+        }),
+        MockProvider(DataLayersStateService, {
+          paths$: of([]),
         }),
       ],
     }).compileComponents();

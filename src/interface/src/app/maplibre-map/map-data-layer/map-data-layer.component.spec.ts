@@ -3,6 +3,9 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapDataLayerComponent } from './map-data-layer.component';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
+import { MockProvider } from 'ng-mocks';
+import { of } from 'rxjs';
+import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 
 describe('MapDataLayerComponent', () => {
   let component: MapDataLayerComponent;
@@ -21,6 +24,11 @@ describe('MapDataLayerComponent', () => {
         MapDataLayerComponent,
         HttpClientTestingModule,
         MatSnackBarModule,
+      ],
+      providers: [
+        MockProvider(DataLayersStateService, {
+          dataLayerWithUrl$: of(null),
+        }),
       ],
     }).compileComponents();
 

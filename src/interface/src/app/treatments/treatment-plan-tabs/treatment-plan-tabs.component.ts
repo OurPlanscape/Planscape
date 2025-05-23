@@ -1,5 +1,10 @@
-import { Component, ViewChild } from '@angular/core';
-import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
+import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import {
+  MatTab,
+  MatTabChangeEvent,
+  MatTabGroup,
+  MatTabsModule,
+} from '@angular/material/tabs';
 import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
@@ -26,8 +31,26 @@ import { skip } from 'rxjs';
   templateUrl: './treatment-plan-tabs.component.html',
   styleUrl: './treatment-plan-tabs.component.scss',
 })
-export class TreatmentPlanTabsComponent {
+export class TreatmentPlanTabsComponent implements AfterViewInit {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
+
+  handleTabChange(tabEvent: MatTabChangeEvent) {
+    this.setBaseLayerPainting();
+  }
+
+  ngAfterViewInit() {
+    this.setBaseLayerPainting();
+  }
+
+  setBaseLayerPainting() {
+    const currentTab: MatTab =
+      this.tabGroup._tabs.toArray()[this.tabGroup.selectedIndex ?? 1];
+    if (currentTab && currentTab.textLabel === 'Base Layers') {
+      this.dataLayersStateService.enableBaseLayerHover(true);
+    } else {
+      this.dataLayersStateService.enableBaseLayerHover(false);
+    }
+  }
 
   constructor(private dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$

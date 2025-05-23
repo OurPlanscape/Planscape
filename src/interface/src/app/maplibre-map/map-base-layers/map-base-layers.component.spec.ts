@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 
 import { MapBaseLayersComponent } from './map-base-layers.component';
 import { MockProvider } from 'ng-mocks';
@@ -11,7 +12,7 @@ describe('MapBaseLayersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapBaseLayersComponent],
+      imports: [HttpClientTestingModule, MapBaseLayersComponent],
       providers: [
         MockProvider(BaseLayersStateService, {
           selectedBaseLayers$: of([]),
