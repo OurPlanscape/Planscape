@@ -1,4 +1,9 @@
-import { Map as MapLibreMap, Point, ResourceType } from 'maplibre-gl';
+import {
+  LngLatBounds,
+  Map as MapLibreMap,
+  Point,
+  ResourceType,
+} from 'maplibre-gl';
 import {
   isMapboxURL,
   transformMapboxUrl,
@@ -7,6 +12,7 @@ import { environment } from '../../environments/environment';
 import { Feature, Geometry } from 'geojson';
 import bbox from '@turf/bbox';
 import { Extent } from '@types';
+import { BASE_LAYERS_DEFAULT } from '@shared';
 
 export function getBoundingBox(
   startPoint: Point,
@@ -56,6 +62,26 @@ export function getBoundsFromGeometry(geometry: Geometry) {
   return bbox(geoFeature) as Extent;
 }
 
+export function getExtentFromLngLatBounds(bounds: LngLatBounds): Extent {
+  return [
+    bounds.getWest(), // west  (min longitude)
+    bounds.getSouth(), // south (min latitude)
+    bounds.getEast(), // east  (max longitude)
+    bounds.getNorth(), // north (max latitude)
+  ];
+}
+
+export type Cleanup = () => void;
+
+function getCamera(map: MapLibreMap) {
+  return {
+    center: map.getCenter(),
+    zoom: map.getZoom(),
+    bearing: map.getBearing(),
+    pitch: map.getPitch(),
+  };
+}
+
 /**
  * This snippet is taken from:
  * https://github.com/mapbox/mapbox-gl-sync-move/issues/14
@@ -71,29 +97,23 @@ export function getBoundsFromGeometry(geometry: Geometry) {
  * - prematurely halts prolonged movements like
  *   double-click zooming, box-zooming, and flying
  */
-export function syncMaps(...maps: MapLibreMap[]) {
+export function syncMaps(...maps: MapLibreMap[]): Cleanup {
   // Create all the movement functions, because if they're created every time
   // they wouldn't be the same and couldn't be removed.
   let fns: Parameters<MapLibreMap['on']>[1][] = [];
+  const startingCamera = getCamera(maps[0]);
   maps.forEach((map, index) => {
+    // sync initial zoom and bounds
+    if (index !== 0) map.jumpTo(startingCamera);
     // When one map moves, we turn off the movement listeners
     // on all the maps, move it, then turn the listeners on again
     fns[index] = () => {
       off();
 
-      const center = map.getCenter();
-      const zoom = map.getZoom();
-      const bearing = map.getBearing();
-      const pitch = map.getPitch();
-
+      const camera = getCamera(map);
       const clones = maps.filter((o, i) => i !== index);
       clones.forEach((clone) => {
-        clone.jumpTo({
-          center: center,
-          zoom: zoom,
-          bearing: bearing,
-          pitch: pitch,
-        });
+        clone.jumpTo(camera);
       });
 
       on();
@@ -119,4 +139,29 @@ export function syncMaps(...maps: MapLibreMap[]) {
     fns = [];
     maps = [];
   };
+}
+
+export function defaultBaseLayerFill(fillColor?: string) {
+  return {
+    'fill-color': fillColor || BASE_LAYERS_DEFAULT.COLOR,
+
+    'fill-opacity': [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false],
+      0.5,
+      0,
+    ],
+  } as any;
+}
+
+export function defaultBaseLayerLine(lineColor?: string) {
+  return {
+    'line-color': lineColor || BASE_LAYERS_DEFAULT.COLOR,
+    'line-width': [
+      'case',
+      ['boolean', ['feature-state', 'hover'], false],
+      3,
+      1,
+    ],
+  } as any;
 }

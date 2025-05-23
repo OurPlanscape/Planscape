@@ -18,17 +18,17 @@ describe('BaseLayersStateService', () => {
   const mockLayers = [
     {
       id: 1,
-      name: 'Layer 1',
+      name: 'State',
       path: ['Elevation'],
     },
     {
       id: 2,
-      name: 'Layer 2',
+      name: 'Department of Defense',
       path: ['Elevation'],
     },
     {
       id: 3,
-      name: 'Layer 3',
+      name: 'County',
       path: ['Landcover'],
     },
   ] as BaseLayer[];
@@ -126,7 +126,7 @@ describe('BaseLayersStateService', () => {
     });
   });
 
-  it('should group base layers by category using path[0]', (done) => {
+  it('should group base layers by category using path[0], sorted', (done) => {
     service.categorizedBaseLayers$.pipe(take(1)).subscribe((groups) => {
       expect(groups.length).toBe(2);
 
@@ -143,8 +143,9 @@ describe('BaseLayersStateService', () => {
       expect(elevationGroup?.layers.length).toBe(2);
       expect(landcoverGroup?.layers.length).toBe(1);
 
-      expect(elevationGroup?.layers[0].name).toBe('Layer 1');
-      expect(landcoverGroup?.layers[0].name).toBe('Layer 3');
+      expect(elevationGroup?.layers[0].name).toBe('Department of Defense');
+      expect(elevationGroup?.layers[1].name).toBe('State');
+      expect(landcoverGroup?.layers[0].name).toBe('County');
 
       done();
     });

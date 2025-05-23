@@ -2,14 +2,32 @@
 ## From the planscape repo root, do:
 ## Rscript rscripts/forsys.R --scenario <scenario_id>
 ## Replace `<scenario_id>` with an integer, corresponding with the scenario id
-library("sf")
+library("DBI")
+library("dplyr")
+library("forsys")
+library("friendlyeval")
+library("glue")
+library("import")
+library("logger")
 library("optparse")
-
+library("purrr")
+library("rjson")
+library("RPostgreSQL")
+library("sf")
+library("stringi")
+library("tidyr")
+library("uuid")
 # do not use spherical geometries
 sf_use_s2(FALSE)
-readRenviron("../../.env")
-source("./rscripts/base_forsys.R")
 
+readRenviron("../../.env")
+
+import::from("rscripts/io_processing.R", .all = TRUE)
+import::from("rscripts/queries.R", .all = TRUE)
+import::from("rscripts/constants.R", .all = TRUE)
+import::from("rscripts/base_forsys.R", .all = TRUE)
+
+FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
 options <- list(
   make_option(
     c("-s", "--scenario",
@@ -26,5 +44,8 @@ if (is.null(scenario_id)) {
   stop("You need to specify one scenario id.")
 }
 
-
-main(scenario_id)
+if (FORSYS_V2) {
+  main_v2(scenario_id)
+} else {
+  main(scenario_id)
+}

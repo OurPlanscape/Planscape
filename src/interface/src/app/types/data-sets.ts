@@ -57,6 +57,10 @@ export interface Info {
 export interface Metadata {
   // Add specific fields once we start using this
   [key: string]: any;
+  modules?: { map?: any };
+  map?: {
+    arcgis?: any;
+  };
 }
 
 export interface LayerStyleEntry {
@@ -103,6 +107,8 @@ export interface DataLayer {
   styles: Styles[];
   geometry: Geometry;
   public_url: string;
+
+  map_service_type: 'VECTORTILES' | 'COG' | 'ESRI_GEOJSON';
 }
 
 export interface BaseLayer extends Omit<DataLayer, 'public_url' | 'styles'> {

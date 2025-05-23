@@ -6,6 +6,9 @@ import { LegacyMaterialModule } from '../../../material/legacy-material.module';
 import { ConstraintsPanelComponent } from './constraints-panel.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FeaturesModule } from '../../../features/features.module';
+import { MockProvider } from 'ng-mocks';
+import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { BehaviorSubject } from 'rxjs';
 //TODO Add the following tests once implementation for tested behaviors is added/desired behavior is confirmed:
 /**
  * 'marks maxCost as not required input if maxArea is provided'
@@ -27,7 +30,12 @@ describe('ConstraintsPanelComponent', () => {
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
       declarations: [ConstraintsPanelComponent],
-      providers: [FormBuilder],
+      providers: [
+        FormBuilder,
+        MockProvider(ScenarioState, {
+          excludedAreas$: new BehaviorSubject([1, 2, 3] as any),
+        }),
+      ],
     }).compileComponents();
     fixture = TestBed.createComponent(ConstraintsPanelComponent);
     component = fixture.componentInstance;

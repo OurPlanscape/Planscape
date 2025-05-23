@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, shareReplay } from 'rxjs';
 import { DataLayersService } from '@services/data-layers.service';
-import { BaseLayer, CategorizedBaseLayers } from '@types';
+import { BaseLayer } from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -18,29 +18,21 @@ export class BaseLayersStateService {
       const grouped = layers.reduce<Record<string, BaseLayer[]>>(
         (acc, layer) => {
           const category = layer.path[0];
-          if (!acc[category]) {
-            acc[category] = [];
-          }
-          acc[category].push(layer);
+          (acc[category] ??= []).push(layer);
           return acc;
         },
         {}
       );
 
-      const result: CategorizedBaseLayers[] = Object.entries(grouped).map(
-        ([categoryName, categoryLayers]) => {
-          const isMulti = this.isCategoryMultiSelect(categoryName);
-          return {
-            category: {
-              name: categoryName,
-              isMultiSelect: isMulti,
-            },
-            layers: categoryLayers,
-          };
-        }
-      );
-
-      return result;
+      return Object.entries(grouped).map(([categoryName, categoryLayers]) => ({
+        category: {
+          name: categoryName,
+          isMultiSelect: this.isCategoryMultiSelect(categoryName),
+        },
+        layers: [...categoryLayers].sort((a, b) =>
+          a.name.localeCompare(b.name)
+        ),
+      }));
     })
   );
 

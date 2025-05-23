@@ -11,7 +11,10 @@
     <mat-icon class="material-symbols-outlined">folder_open</mat-icon>
     <span>Open</span>
   </a>
-  <a mat-menu-item [routerLink]="['/explore', plan.id]">
+  <a
+    mat-menu-item
+    [routerLink]="['/explore', plan.id]"
+    (click)="saveBreadcrumbs()">
     <mat-icon class="material-symbols-outlined">map</mat-icon>
     <span>View Map</span>
   </a>

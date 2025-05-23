@@ -7,7 +7,6 @@
     [sliderValue]="(opacity$ | async) || 0"
     (valueChange)="handleOpacityChange($event)"
     tooltip="Treated Area Opacity"></sg-opacity-slider>
-
   <app-rx-selection-toggle
     *ngIf="
       (showMapControls$ | async) && userCanEditStands
@@ -25,7 +24,7 @@
   [doubleClickZoom]="(standSelectionEnabled$ | async) === false"
   [dragPan]="(standSelectionEnabled$ | async) === false"
   [dragRotate]="false"
-  [fitBoundsOptions]="{ padding: { top: 80, bottom: 60, left: 20, right: 20 } }"
+  [fitBoundsOptions]="boundOptions"
   [fitBounds]="bounds"
   [interactive]="true"
   [maxZoom]="maxZoom"

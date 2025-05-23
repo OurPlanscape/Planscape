@@ -1,10 +1,5 @@
 import { MapOptions } from 'maplibre-gl';
-
-type StadiaBaseMap = 'road';
-type ArcgisRest = 'terrain' | 'satellite';
-
-export const DEFAULT_BASE_MAP: StadiaBaseMap = 'road';
-export type BaseLayerType = StadiaBaseMap | ArcgisRest;
+import { BaseLayerType } from '../types/maplibre.map.types';
 
 export const baseLayerStyles: Record<BaseLayerType, MapOptions['style']> = {
   road: 'mapbox://styles/mapbox/light-v10',

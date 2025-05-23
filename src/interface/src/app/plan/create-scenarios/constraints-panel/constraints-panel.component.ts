@@ -11,7 +11,6 @@ import {
   Validators,
 } from '@angular/forms';
 import { STAND_SIZES } from '../../plan-helpers';
-import { EXCLUDED_AREAS } from '@shared';
 import { ScenarioConfig } from '@types';
 import { ErrorStateMatcher } from '@angular/material/core';
 import {
@@ -20,6 +19,9 @@ import {
   calculateMinBudget,
   hasEnoughBudget,
 } from '../../../validators/scenarios';
+import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { firstValueFrom, tap } from 'rxjs';
+import { FeatureService } from 'src/app/features/feature.service';
 
 const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   {
@@ -33,8 +35,7 @@ const customErrors: Record<'notEnoughBudget' | 'budgetOrAreaRequired', string> =
   styleUrls: ['./constraints-panel.component.scss'],
 })
 export class ConstraintsPanelComponent implements OnChanges {
-  constraintsForm: FormGroup = this.createForm();
-  readonly excludedAreasOptions = EXCLUDED_AREAS;
+  constraintsForm!: FormGroup;
   readonly standSizeOptions = Object.keys(STAND_SIZES);
 
   @Input() showWarning = false;
@@ -44,11 +45,20 @@ export class ConstraintsPanelComponent implements OnChanges {
 
   focusedSelection = ''; // string to identify which selection is focused
 
-  constructor(private fb: FormBuilder) {}
+  excludedAreas$ = this.scenarioState.excludedAreas$.pipe(
+    tap((areas) => (this.excludedAreas = areas))
+  );
+  excludedAreas: { key: number; label: string; id: number }[] = [];
+
+  constructor(
+    private fb: FormBuilder,
+    private scenarioState: ScenarioState,
+    private featureService: FeatureService
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     // update the form when the planningAreaAcres is updated
-    if (changes['planningAreaAcres']) {
+    if (changes['planningAreaAcres'] && this.constraintsForm) {
       const maxArea = this.maxArea as FormControl;
       maxArea.clearValidators();
       maxArea.addValidators([
@@ -80,9 +90,16 @@ export class ConstraintsPanelComponent implements OnChanges {
     return 'LARGE';
   }
 
-  createForm() {
+  async loadExcludedAreas() {
+    const excludedAreas = await firstValueFrom(this.excludedAreas$);
+    this.excludedAreas = excludedAreas;
+    this.constraintsForm = await this.createForm();
+    return excludedAreas;
+  }
+
+  async createForm() {
     let excludedAreasChosen: { [key: string]: (boolean | Validators)[] } = {};
-    EXCLUDED_AREAS.forEach((area) => {
+    this.excludedAreas.forEach((area) => {
       excludedAreasChosen[area.key] = [false, Validators.required];
     });
     this.constraintsForm = this.fb.group(
@@ -186,19 +203,35 @@ export class ConstraintsPanelComponent implements OnChanges {
       'physicalConstraintForm.standSize'
     )?.value;
     scenarioConfig.excluded_areas = [];
-    EXCLUDED_AREAS.forEach((area) => {
+    this.excludedAreas.forEach((area) => {
       if (
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.valid &&
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.value
       ) {
-        scenarioConfig.excluded_areas?.push(area.key);
+        if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+          scenarioConfig.excluded_areas?.push(Number(area.id));
+        } else {
+          scenarioConfig.excluded_areas?.push(area.key as any);
+        }
       }
     });
     if (estimatedCost?.valid)
-      scenarioConfig.est_cost = parseFloat(estimatedCost.value);
+      if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+        scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
+      } else {
+        // We should use any until we remove the FF.
+        (scenarioConfig as any).est_cost = parseFloat(estimatedCost.value);
+      }
     if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid) {
-      scenarioConfig.max_treatment_area_ratio = parseFloat(maxArea.value);
+      if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+        scenarioConfig.max_area = parseFloat(maxArea.value);
+      } else {
+        // We should use any until we remove the FF.
+        (scenarioConfig as any).max_treatment_area_ratio = parseFloat(
+          maxArea.value
+        );
+      }
     }
     if (minDistanceFromRoad?.valid) {
       scenarioConfig.min_distance_from_road = parseFloat(
@@ -211,11 +244,16 @@ export class ConstraintsPanelComponent implements OnChanges {
   }
 
   setFormData(config: ScenarioConfig) {
-    EXCLUDED_AREAS.forEach((area) => {
-      if (
-        config.excluded_areas &&
-        config.excluded_areas.indexOf(area.key) > -1
-      ) {
+    this.excludedAreas.forEach((area) => {
+      const isAreaSelected = this.featureService.isFeatureEnabled(
+        'statewide_scenarios'
+      )
+        ? config.excluded_areas &&
+          config.excluded_areas.indexOf(Number(area.key)) > -1
+        : config.excluded_areas &&
+          config.excluded_areas.includes(area.key.toString() as any);
+
+      if (isAreaSelected) {
         this.constraintsForm
           .get('excludedAreasForm.' + area.key)
           ?.setValue(true);
@@ -226,20 +264,22 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     });
 
-    if (config.est_cost) {
+    // TODO: remove est_cost when 'statewide_scenarios' be approved
+    if (config.estimated_cost || (config as any).est_cost) {
       this.constraintsForm
         .get('budgetForm.estimatedCost')
-        ?.setValue(config.est_cost);
+        ?.setValue(config.estimated_cost || (config as any).est_cost);
     }
     if (config.max_budget) {
       this.constraintsForm
         .get('budgetForm.maxCost')
         ?.setValue(config.max_budget);
     }
-    if (config.max_treatment_area_ratio) {
+    // TODO: remove max_treatment_area_ratio when 'statewide_scenarios' be approved
+    if (config.max_area || (config as any).max_treatment_area_ratio) {
       this.constraintsForm
         .get('physicalConstraintForm.maxArea')
-        ?.setValue(config.max_treatment_area_ratio);
+        ?.setValue(config.max_area || (config as any).max_treatment_area_ratio);
     }
     if (config.min_distance_from_road) {
       this.constraintsForm

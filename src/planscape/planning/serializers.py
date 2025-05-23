@@ -6,10 +6,6 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from rest_framework import serializers
-from rest_framework_gis import serializers as gis_serializers
-from stands.models import StandSizeChoices
-
 from planning.geometry import coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -24,6 +20,10 @@ from planning.models import (
     UserPrefs,
 )
 from planning.services import get_acreage, planning_area_covers, union_geojson
+from rest_framework import serializers
+from rest_framework_gis import serializers as gis_serializers
+from stands.models import StandSizeChoices
+
 from planscape.exceptions import InvalidGeometry
 
 
@@ -370,6 +370,23 @@ class ConfigurationV2Serializer(serializers.Serializer):
     )
 
     excluded_areas = serializers.ListField(
+        source="excluded_areas_ids",
+        child=serializers.IntegerField(),
+        allow_empty=True,
+        min_length=0,
+        required=False,
+    )
+
+    seed = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+        help_text="Optional seed for reproducible randomization.",
+    )
+
+
+class CreateConfigurationV2Serializer(ConfigurationV2Serializer):
+    excluded_areas = serializers.ListField(
+        source="excluded_areas_ids",
         child=serializers.PrimaryKeyRelatedField(
             queryset=DataLayer.objects.filter(
                 type=DataLayerType.VECTOR,
@@ -381,11 +398,8 @@ class ConfigurationV2Serializer(serializers.Serializer):
         required=False,
     )
 
-    seed = serializers.IntegerField(
-        required=False,
-        allow_null=True,
-        help_text="Optional seed for reproducible randomization.",
-    )
+    def validate_excluded_areas(self, excluded_areas):
+        return [excluded_area.pk for excluded_area in excluded_areas]
 
 
 class TreatmentGoalSerializer(serializers.ModelSerializer):
@@ -500,10 +514,37 @@ class ListScenarioSerializer(serializers.ModelSerializer):
         model = Scenario
 
 
+class ScenarioV2Serializer(ListScenarioSerializer, serializers.ModelSerializer):
+    configuration = ConfigurationV2Serializer()
+
+    class Meta:
+        fields = (
+            "id",
+            "updated_at",
+            "created_at",
+            "planning_area",
+            "name",
+            "origin",
+            "notes",
+            "configuration",
+            "treatment_goal",
+            "scenario_result",
+            "user",
+            "creator",
+            "status",
+            "version",
+        )
+        model = Scenario
+
+
 class CreateScenarioV2Serializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
-    configuration = ConfigurationV2Serializer()
+    treatment_goal = serializers.PrimaryKeyRelatedField(
+        queryset=TreatmentGoal.objects.all(),
+        required=True,
+        help_text="Treatment goal of the scenario.",
+    )
+    configuration = CreateConfigurationV2Serializer()
 
     class Meta:
         model = Scenario
@@ -525,6 +566,7 @@ class CreateScenarioSerializer(serializers.ModelSerializer):
         required=False,
         help_text="Treatment goal of the scenario.",
     )
+    configuration = ConfigurationSerializer()
 
     class Meta:
         model = Scenario
