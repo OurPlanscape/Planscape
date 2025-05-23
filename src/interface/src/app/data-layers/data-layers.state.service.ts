@@ -135,7 +135,7 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) { }
+  constructor(private service: DataLayersService) {}
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);

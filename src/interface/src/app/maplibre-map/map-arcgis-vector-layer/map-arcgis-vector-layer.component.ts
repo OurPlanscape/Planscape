@@ -25,7 +25,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
 
   private arcGisService: FeatureService | null = null;
 
-  constructor(private dataLayersStateService: DataLayersStateService) { }
+  constructor(private dataLayersStateService: DataLayersStateService) {}
 
   ngOnInit(): void {
     this.addArcgisLayers();
