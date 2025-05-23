@@ -11,7 +11,7 @@ get_datalayer_by_forsys_attribute <- function(connection, attribute, value) {
                  FROM
                   datasets_datalayer dl
                  WHERE
-                  dl.metadata @> '{\"modules\": {\"forsys\": {\"{attribute}\": \"{value}\"}}}'"
+                  dl.metadata @> '{{\"modules\": {{\"forsys\": {{{`attribute`}: {`value`} }}}}}}'"
   query <- glue_sql(
     query_text,
     attribute = attribute,
