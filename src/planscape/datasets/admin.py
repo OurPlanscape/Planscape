@@ -86,6 +86,7 @@ class DataLayerAdmin(admin.ModelAdmin):
         "mimetype",
         "table",
         "public_url",
+        "info",
     ]
     inlines = [DataLayerHasStyleAdmin]
 
