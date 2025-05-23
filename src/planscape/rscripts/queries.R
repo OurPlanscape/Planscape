@@ -122,5 +122,3 @@ get_stand_metrics <- function(
   result <- dbGetQuery(connection, query) %>% preprocess_metrics(condition_name)
   return(result)
 }
-
-get_
