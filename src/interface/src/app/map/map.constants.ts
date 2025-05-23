@@ -1,4 +1,5 @@
 import * as L from 'leaflet';
+import { Extent } from '../types';
 
 export enum AreaCreationAction {
   NONE = 0,
@@ -77,7 +78,7 @@ export const FrontendConstants = {
     32.534156, // minLat (south)
     -114.131211, // maxLng (east)
     42.009518, // maxLat (north)
-  ],
+  ] as Extent,
   MAPLIBRE_BOUND_OPTIONS: {
     padding: { top: 80, bottom: 60, left: 20, right: 20 },
   },

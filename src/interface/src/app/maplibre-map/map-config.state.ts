@@ -1,20 +1,17 @@
 import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
-import {
-  baseLayerStyles,
-  BaseLayerType,
-  DEFAULT_BASE_MAP,
-} from './map-base-layers';
+import { baseLayerStyles } from './map-base-layers';
 import { Extent } from '@types';
 import { filter } from 'rxjs/operators';
+import { BaseLayerType, DEFAULT_BASE_MAP } from '../types/maplibre.map.types';
 
 @Injectable()
 export class MapConfigState {
-  private _baseLayer$ = new BehaviorSubject<BaseLayerType>(DEFAULT_BASE_MAP);
+  protected _baseLayer$ = new BehaviorSubject<BaseLayerType>(DEFAULT_BASE_MAP);
   baseLayer$ = this._baseLayer$.asObservable();
   baseLayerUrl$ = this.baseLayer$.pipe(map((b) => baseLayerStyles[b]));
 
-  private _mapExtent$ = new BehaviorSubject<Extent | null>(null);
+  protected _mapExtent$ = new BehaviorSubject<Extent | null>(null);
   mapExtent$ = this._mapExtent$
     .asObservable()
     .pipe(filter((m): m is Extent => !!m));
