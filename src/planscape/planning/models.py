@@ -230,17 +230,18 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
     def get_raster_datalayers(self) -> Collection[DataLayer]:
         datalayers = list(
             self.datalayers.exclude(
-                usage__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
-            ).filter(datalayer__type=DataLayerType.RASTER)
+                used_by_treatment_goals__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
+            ).filter(type=DataLayerType.RASTER)
         )
 
         for name in ["slope", "distance_from_roads"]:
             query = {"modules": {"forsys": {"name": name}}}
-            datalayer = DataLayer.objects.get(
+            datalayer = DataLayer.objects.filter(
                 type=DataLayerType.RASTER,
                 metadata__contains=query,
-            )
-            datalayers.append(datalayer)
+            ).first()
+            if datalayer:
+                datalayers.append(datalayer)
         return datalayers
 
     def __str__(self):
