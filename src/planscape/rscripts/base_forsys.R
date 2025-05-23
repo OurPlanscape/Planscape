@@ -401,7 +401,8 @@ get_metric_data <- function(connection, stands, datalayer) {
     }
 
     metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
-    names(metric) <- c("stand_id", datalayer_name)
+    # handle cases where we don´t  have data and it's all zeros.
+    names(metric) <- c("stand_id", field_name)
   }
 
   metric

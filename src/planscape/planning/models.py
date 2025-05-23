@@ -1,7 +1,7 @@
 import json
 import uuid
 from pathlib import Path
-from typing import Optional
+from typing import Collection, Optional
 
 from collaboration.models import UserObjectRole
 from core.models import (
@@ -11,7 +11,7 @@ from core.models import (
     UpdatedAtMixin,
     UUIDMixin,
 )
-from datasets.models import DataLayer
+from datasets.models import DataLayer, DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.contenttypes.models import ContentType
@@ -226,6 +226,23 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
             "datalayer",
         ),
     )
+
+    def get_raster_datalayers(self) -> Collection[DataLayer]:
+        datalayers = list(
+            self.datalayers.exclude(
+                used_by_treatment_goals__usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
+            ).filter(type=DataLayerType.RASTER)
+        )
+
+        for name in ["slope", "distance_from_roads"]:
+            query = {"modules": {"forsys": {"name": name}}}
+            datalayer = DataLayer.objects.filter(
+                type=DataLayerType.RASTER,
+                metadata__contains=query,
+            ).first()
+            if datalayer:
+                datalayers.append(datalayer)
+        return datalayers
 
     def __str__(self):
         return f"{self.name} - {self.category}"
