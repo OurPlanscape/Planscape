@@ -1,10 +1,35 @@
-<app-nav-bar area="EXPLORE"> </app-nav-bar>
+<app-nav-bar area="EXPLORE"></app-nav-bar>
 <section>
-  <div class="side-panel">Side menu</div>
   <div class="main">
+    <div class="side-panel" [ngClass]="{ expanded: panelExpanded }">
+      <button
+        class="expander"
+        sg-button
+        variant="icon-only"
+        [icon]="panelExpanded ? 'close_fullscreen' : 'open_in_full'"
+        (click)="togglePanelExpanded()"></button>
+      <h4 *ngIf="!panelExpanded" class="expanded-label">Map Control Panel</h4>
+      <mat-tab-group
+        class="side-tabs"
+        [(selectedIndex)]="tabIndex"
+        *ngIf="panelExpanded"
+        mat-stretch-tabs="false"
+        mat-align-tabs="start">
+        <mat-tab label="Data Layers">Data Layers</mat-tab>
+        <mat-tab label="Base Layers">Base Layers</mat-tab>
+      </mat-tab-group>
+    </div>
     <app-map-nav-bar>
       <app-multi-map-control></app-multi-map-control>
+      <sg-opacity-slider
+        class="navbar-slider"
+        [minValue]="0"
+        [maxValue]="1"
+        [step]="0.01"
+        [sliderValue]="(projectAreasOpacity$ | async) ?? 0.5"
+        (valueChange)="handleOpacityChange($event)"
+        tooltip="Layer Opacity"></sg-opacity-slider>
     </app-map-nav-bar>
-    <app-synced-maps></app-synced-maps>
+    <app-synced-maps [ngClass]="{ withPanel: panelExpanded }"></app-synced-maps>
   </div>
 </section>

@@ -1,3 +1,4 @@
+import type { LngLat } from 'maplibre-gl';
 import { NONE_COLORMAP } from './legend.types';
 
 export interface BoundaryConfig {
@@ -106,4 +107,9 @@ export interface Resource<T> {
 export interface LoadedResult<T> extends Omit<Resource<T>, 'error'> {
   data: T;
   isLoading: false;
+}
+
+export interface BaseLayerTooltipData {
+  content: string;
+  longLat: LngLat;
 }

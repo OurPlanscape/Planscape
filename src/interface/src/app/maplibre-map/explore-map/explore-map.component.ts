@@ -3,9 +3,9 @@ import { AsyncPipe, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { FrontendConstants } from '../../map/map.constants';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
-import { MapConfigState } from '../map-config.state';
 import { AuthService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
+import { MapConfigState } from '../map-config.state';
 
 @Component({
   selector: 'app-explore-map',
@@ -21,12 +21,7 @@ export class ExploreMapComponent {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  bounds = FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS as [
-    number,
-    number,
-    number,
-    number,
-  ];
+  bounds$ = this.mapConfigState.mapExtent$;
   boundOptions = FrontendConstants.MAPLIBRE_BOUND_OPTIONS;
 
   /**

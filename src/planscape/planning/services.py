@@ -12,7 +12,6 @@ import fiona
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
-from datasets.models import DataLayerType
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -33,7 +32,6 @@ from planning.models import (
     ScenarioResultStatus,
     ScenarioStatus,
     TreatmentGoal,
-    TreatmentGoalUsageType,
 )
 from planning.tasks import (
     async_calculate_stand_metrics,
@@ -155,14 +153,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         target=scenario.planning_area,
     )
     if settings.USE_SCENARIO_V2:
-        usages = treatment_goal.datalayer_usages.exclude(
-            usage_type=TreatmentGoalUsageType.EXCLUSION_ZONE
-        ).select_related("datalayer")
-        datalayers = [
-            usage.datalayer
-            for usage in usages
-            if usage.datalayer.type == DataLayerType.RASTER
-        ]
+        datalayers = treatment_goal.get_raster_datalayers()
         tasks = [
             async_calculate_stand_metrics_v2.si(
                 scenario_id=scenario.pk, datalayer_id=d.pk

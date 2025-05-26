@@ -380,38 +380,53 @@ get_priorities <- function(
   return(data.table::rbindlist(priorities))
 }
 
+get_metric_data <- function(connection, stands, datalayer) {
+  datalayer_id <- datalayer$id
+  datalayer_name <- datalayer$name
+  field_name <- paste0("datalayer_", datalayer_id)
+
+  metric <- get_stand_metrics_v2(
+    connection,
+    datalayer_id,
+    datalayer_name,
+    stands$stand_id
+  ) %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
+  metric[[field_name]][metric[[field_name]] == -Inf] <- 0
+
+  if (nrow(metric) <= 0) {
+    print(paste("DATALAYER", datalayer_name, "with id", datalayer_id, "yielded empty. check data."))
+
+    if (any(is.na(metric[, field_name]))) {
+      print(paste("DATALAYER", datalayer_name, "contains NA/NULL values."))
+    }
+
+    metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
+    # handle cases where we don´t  have data and it's all zeros.
+    names(metric) <- c("stand_id", field_name)
+  }
+
+  metric
+}
+
 get_stand_data_v2 <- function(connection, scenario, configuration, datalayers) {
   stand_size <- get_stand_size(configuration)
   stands <- get_stands(connection, scenario$id, stand_size, as.vector(configuration$excluded_areas_ids))
-  for (row in seq_len(nrow(datalayers))) {
-    datalayer <- datalayers[row, ]
-    datalayer_id <- datalayer$id
-    datalayer_name <- datalayer$name
-    field_name <- paste0("datalayer_", datalayer_id)
-
-    metric <- get_stand_metrics_v2(
-      connection,
-      datalayer_id,
-      datalayer_name,
-      stands$stand_id
-    ) %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
-    metric[[field_name]][metric[[field_name]] == -Inf] <- 0
-
-    if (nrow(metric) <= 0) {
-      print(paste("DATALAYER", datalayer_name, "with id", datalayer_id, "yielded empty. check data."))
-
-      if (any(is.na(metric[, field_name]))) {
-        print(paste("DATALAYER", datalayer_name, "contains NA/NULL values."))
-      }
-
-      metric <- data.frame(stand_id = stands$stand_id, rep(0, nrow(stands)))
-      names(metric) <- c("stand_id", datalayer_name)
-    }
-
+  if (!is.null(configuration$max_slope)) {
+    datalayer <- get_datalayer_by_forsys_name(connection, "slope")
+    metric <- get_metric_data(connection, stands, datalayer)
     stands <- merge_data(stands, metric)
   }
-
-  return(stands)
+  if (!is.null(configuration$min_distance_from_road)) {
+    datalayer <- get_datalayer_by_forsys_name(connection, "distance_from_roads")
+    metric <- get_metric_data(connection, stands, datalayer)
+    stands <- merge_data(stands, metric)
+  }
+  for (row in seq_len(nrow(datalayers))) {
+    datalayer <- datalayers[row, ]
+    metric <- get_metric_data(connection, stands, datalayer)
+    stands <- merge_data(stands, metric)
+  }
+  stands
 }
 
 
@@ -558,30 +573,40 @@ get_max_treatment_area <- function(scenario) {
   return(max_acres)
 }
 
-get_distance_to_roads <- function(configuration) {
+get_distance_to_roads <- function(configuration, datalayer) {
   # converts specified distance to roads in yards to meters
   distance_in_meters <- configuration$min_distance_from_road / 1.094
-  return(glue("distance_to_roads <= {distance_in_meters}"))
+  if (FORSYS_V2) {
+    glue("datalayer_{datalayer$id} <= {distance_in_meters}")
+  } else {
+    glue("distance_to_roads <= {distance_in_meters}")
+  }
 }
 
-get_max_slope <- function(configuration) {
+get_max_slope <- function(configuration, datalayer) {
   max_slope <- configuration$max_slope
-  return(glue("slope <= {max_slope}"))
+  if (FORSYS_V2) {
+    glue("datalayer_{datalayer$id} <= {max_slope}")
+  } else {
+    glue("slope <= {max_slope}")
+  }
 }
 
-get_stand_thresholds_v2 <- function(scenario, datalayers) {
+get_stand_thresholds_v2 <- function(connection, scenario, datalayers) {
   all_thresholds <- c()
   configuration <- get_configuration(scenario)
 
   # no changes for v2
   if (!is.null(configuration$max_slope)) {
-    max_slope <- get_max_slope(configuration)
+    slope_layer <- get_datalayer_by_forsys_name(connection, "slope")
+    max_slope <- get_max_slope(configuration, slope_layer)
     all_thresholds <- c(all_thresholds, max_slope)
   }
 
   # no changes for v2
   if (!is.null(configuration$min_distance_from_road)) {
-    distance_to_roads <- get_distance_to_roads(configuration)
+    distance_from_roads_layer <- get_datalayer_by_forsys_name(connection, "distance_from_roads")
+    distance_to_roads <- get_distance_to_roads(configuration, distance_from_roads_layer)
     all_thresholds <- c(all_thresholds, distance_to_roads)
   }
 
@@ -722,7 +747,7 @@ call_forsys <- function(
   max_area_project <- max_treatment_area / number_of_projects
 
   if (FORSYS_V2) {
-    stand_thresholds <- get_stand_thresholds_v2(scenario, restrictions)
+    stand_thresholds <- get_stand_thresholds_v2(connection, scenario, restrictions)
     output_tmp <- forsys_inputs %>%
       remove_duplicates_v2() %>%
       select(id)
@@ -883,10 +908,7 @@ main_v2 <- function(scenario_id) {
   priorities <- filter(datalayers, type == "RASTER", usage_type == "PRIORITY")
   secondary_metrics <- filter(datalayers, type == "RASTER", usage_type == "SECONDARY_METRIC")
   thresholds <- filter(datalayers, type == "RASTER", usage_type == "THRESHOLD")
-  exclusion_zones <- filter(
-    datalayers,
-    usage_type == "EXCLUSION_ZONE" & (geometry_type == "POLYGON" | geometry_type == "MULTIPOLYGON")
-  )
+
   new_column_for_postprocessing <- Sys.getenv(
     "NEW_COLUMN_FOR_POSTPROCESSING",
     FALSE

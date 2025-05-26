@@ -14,7 +14,7 @@
       [id]="'layer_fill_' + layer.id"
       [source]="'source_' + layer.id"
       [sourceLayer]="'dynamic_' + layer.id"
-      (layerMouseMove)="hoverOnLayer($event, 'layer_fill_' + layer.id)"
+      (layerMouseMove)="hoverOnLayer($event, layer, 'layer_fill_')"
       (layerMouseOut)="hoverOutLayer()"
       type="fill"
       [paint]="fillLayerPaint(layer)"
@@ -24,10 +24,14 @@
       [id]="'layer_outline_' + layer.id"
       [source]="'source_' + layer.id"
       [sourceLayer]="'dynamic_' + layer.id"
-      (layerMouseMove)="hoverOnLayer($event, 'layer_outline_' + layer.id)"
+      (layerMouseMove)="hoverOnLayer($event, layer, 'layer_outline_')"
       (layerMouseOut)="hoverOutLayer()"
       type="line"
       [paint]="lineLayerPaint(layer)"
       [before]="'layer_fill_' + layer.id"></mgl-layer>
   </ng-container>
 </div>
+<app-map-base-layer-tooltip
+  *ngIf="enableBaseLayerHover$ && (currentTooltipInfo$ | async) as toolTipInfo"
+  [content]="toolTipInfo.content"
+  [lngLat]="toolTipInfo.longLat"></app-map-base-layer-tooltip>
