@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 import { MultiMapConfigState } from './multi-map-config.state';
-import { ExploreOptionsStorageService } from '@services/local-storage.service';
+import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '../map/map.constants';
 import { BaseLayerType } from '../types/maplibre.map.types';
 import { Extent } from '@types';
 
 describe('MultiMapConfigState', () => {
   let service: MultiMapConfigState;
-  let storage: jasmine.SpyObj<ExploreOptionsStorageService>;
+  let storage: jasmine.SpyObj<MultiMapsStorageService>;
 
   beforeEach(() => {
     storage = jasmine.createSpyObj('ExploreOptionsStorageService', [
@@ -18,7 +18,7 @@ describe('MultiMapConfigState', () => {
     TestBed.configureTestingModule({
       providers: [
         MultiMapConfigState,
-        { provide: ExploreOptionsStorageService, useValue: storage },
+        { provide: MultiMapsStorageService, useValue: storage },
       ],
     });
 

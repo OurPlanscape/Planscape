@@ -59,6 +59,7 @@ class DataLayerAdminForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields["info"].required = False
+        self.fields["info"].disabled = True
         self.fields["category"].required = False
         self.fields["metadata"].required = False
         self.fields["geometry"].required = False

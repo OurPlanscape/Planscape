@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { MapConfigState } from './map-config.state';
-import { ExploreOptionsStorageService } from '@services/local-storage.service';
+import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '../map/map.constants';
 import { Extent } from '@types';
 
@@ -13,9 +13,7 @@ export class MultiMapConfigState extends MapConfigState {
   private _layoutMode$ = new BehaviorSubject<LayoutOption>(1);
   public layoutMode$ = this._layoutMode$.asObservable();
 
-  constructor(
-    private exploreOptionsStorageService: ExploreOptionsStorageService
-  ) {
+  constructor(private multiMapsStorageService: MultiMapsStorageService) {
     super();
     this._mapExtent$.next(FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS);
   }
@@ -35,11 +33,11 @@ export class MultiMapConfigState extends MapConfigState {
       baseLayer: this._baseLayer$.value,
       extent: extent,
     };
-    this.exploreOptionsStorageService.setItem(options);
+    this.multiMapsStorageService.setItem(options);
   }
 
   loadStateFromLocalStorage() {
-    const options = this.exploreOptionsStorageService.getItem();
+    const options = this.multiMapsStorageService.getItem();
     if (options) {
       this._layoutMode$.next(options.layoutMode);
       this._baseLayer$.next(options.baseLayer);
