@@ -21,6 +21,14 @@ section {
   height: $map-nav-bar-height;
 
 
+  .mat-mdc-tab-group {
+    height: 100%;
+  }
+
+  ::ng-deep .mat-mdc-tab-body-wrapper {
+    height: 100%;
+  }
+
   ::ng-deep .mat-mdc-tab-header {
     --mdc-secondary-navigation-tab-container-height: calc(#{$map-nav-bar-height} - 2px);
     --mat-tab-header-label-text-size: 18px;
@@ -46,6 +54,7 @@ section {
     line-height: 32px;
     padding: 15px 15px 15px 24px;
   }
+  
 }
 
 .main {
