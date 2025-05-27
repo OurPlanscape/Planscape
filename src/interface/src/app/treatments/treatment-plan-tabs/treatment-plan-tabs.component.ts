@@ -1,4 +1,4 @@
-import { Component, ViewChild, AfterViewInit } from '@angular/core';
+import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import {
   MatTab,
   MatTabChangeEvent,
@@ -14,6 +14,7 @@ import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { skip } from 'rxjs';
+import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 
 @UntilDestroy()
 @Component({
@@ -46,13 +47,16 @@ export class TreatmentPlanTabsComponent implements AfterViewInit {
     const currentTab: MatTab =
       this.tabGroup._tabs.toArray()[this.tabGroup.selectedIndex ?? 1];
     if (currentTab && currentTab.textLabel === 'Base Layers') {
-      this.dataLayersStateService.enableBaseLayerHover(true);
+      this.baseLayersStateService.enableBaseLayerHover(true);
     } else {
-      this.dataLayersStateService.enableBaseLayerHover(false);
+      this.baseLayersStateService.enableBaseLayerHover(false);
     }
   }
 
-  constructor(private dataLayersStateService: DataLayersStateService) {
+  constructor(
+    private dataLayersStateService: DataLayersStateService,
+    private baseLayersStateService: BaseLayersStateService
+  ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {

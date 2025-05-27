@@ -7,8 +7,8 @@ import {
 } from 'ng-mocks';
 import { MapArcgisVectorLayerComponent } from './map-arcgis-vector-layer.component';
 import { MapLayerMouseEvent } from 'maplibre-gl';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { of } from 'rxjs';
+import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 
 function createMapSpy() {
   return jasmine.createSpyObj('MapLibreMap', [
@@ -47,7 +47,7 @@ describe('MapArcgisVectorLayerComponent', () => {
     map = createMapSpy();
     TestBed.configureTestingModule({
       providers: [
-        MockProvider(DataLayersStateService, {
+        MockProvider(BaseLayersStateService, {
           enableBaseLayerHover$: of(true),
         }),
       ],

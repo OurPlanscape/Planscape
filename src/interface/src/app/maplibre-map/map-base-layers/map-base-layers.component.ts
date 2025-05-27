@@ -15,7 +15,6 @@ import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { take } from 'rxjs';
 
 @UntilDestroy()
@@ -42,13 +41,10 @@ export class MapBaseLayersComponent {
   // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
-  enableBaseLayerHover$ = this.dataLayersStateService.enableBaseLayerHover$;
-  currentTooltipInfo$ = this.dataLayersStateService.tooltipInfo$;
+  enableBaseLayerHover$ = this.baseLayersStateService.enableBaseLayerHover$;
+  currentTooltipInfo$ = this.baseLayersStateService.tooltipInfo$;
 
-  constructor(
-    private baseLayersStateService: BaseLayersStateService,
-    private dataLayersStateService: DataLayersStateService
-  ) {}
+  constructor(private baseLayersStateService: BaseLayersStateService) {}
 
   lineLayerPaint(layer: BaseLayer) {
     return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
@@ -70,7 +66,7 @@ export class MapBaseLayersComponent {
             content: this.createTooltipContent(layer, features[0]) ?? '',
             longLat: event.lngLat,
           };
-          this.dataLayersStateService.setTooltipData(tooltipInfo);
+          this.baseLayersStateService.setTooltipData(tooltipInfo);
           this.paintHover(features[0]);
         }
       }
@@ -78,7 +74,7 @@ export class MapBaseLayersComponent {
   }
 
   hoverOutLayer() {
-    this.dataLayersStateService.setTooltipData(null);
+    this.baseLayersStateService.setTooltipData(null);
     this.removeHover();
   }
 

@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, map, shareReplay } from 'rxjs';
 import { DataLayersService } from '@services/data-layers.service';
-import { BaseLayer } from '@types';
+import { BaseLayer, BaseLayerTooltipData } from '@types';
 
 @Injectable({
   providedIn: 'root',
@@ -35,6 +35,14 @@ export class BaseLayersStateService {
       }));
     })
   );
+
+  private _enableBaseLayerHover$ = new BehaviorSubject<boolean>(false);
+  enableBaseLayerHover$ = this._enableBaseLayerHover$.asObservable();
+
+  private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
+    null
+  );
+  tooltipInfo$ = this._tooltipInfo$.asObservable();
 
   private _selectedBaseLayers$ = new BehaviorSubject<BaseLayer[] | null>(null);
   selectedBaseLayers$ = this._selectedBaseLayers$.asObservable();
@@ -76,6 +84,14 @@ export class BaseLayersStateService {
 
   clearBaseLayer() {
     this._selectedBaseLayers$.next(null);
+  }
+
+  enableBaseLayerHover(value: boolean) {
+    this._enableBaseLayerHover$.next(value);
+  }
+
+  setTooltipData(tooltipInfo: BaseLayerTooltipData | null) {
+    this._tooltipInfo$.next(tooltipInfo);
   }
 
   private isCategoryMultiSelect(path: string) {
