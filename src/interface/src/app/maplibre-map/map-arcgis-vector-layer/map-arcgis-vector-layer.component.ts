@@ -1,10 +1,10 @@
 import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
 import {
-  Map as MapLibreMap,
-  MapLayerMouseEvent,
   LngLat,
+  Map as MapLibreMap,
   MapGeoJSONFeature,
+  MapLayerMouseEvent,
 } from 'maplibre-gl';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
@@ -109,7 +109,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
       url: this.layer.map_url,
       setAttributionFromService: false,
       // add options provided on metadata
-      ...(this.layer.metadata?.['map']?.['arcgis'] ?? {}),
+      ...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
     });
 
     this.mapLibreMap.addLayer(
