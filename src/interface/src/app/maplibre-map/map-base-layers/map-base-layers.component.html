@@ -1,9 +1,13 @@
 <div *ngFor="let layer of selectedLayers$ | async">
   <ng-container *ngIf="layer.map_service_type === 'ESRI_GEOJSON'">
     <app-map-arcgis-vector-layer
+      *ngIf="mapLibreMap"
       [layer]="layer"
       [before]="before"
-      [mapLibreMap]="mapLibreMap"></app-map-arcgis-vector-layer>
+      [mapLibreMap]="mapLibreMap"
+      (updateTooltipData)="
+        setTooltipData($event)
+      "></app-map-arcgis-vector-layer>
   </ng-container>
   <ng-container *ngIf="layer.map_service_type === 'VECTORTILES'">
     <mgl-vector-source

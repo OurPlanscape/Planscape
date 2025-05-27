@@ -1,4 +1,11 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
 import {
   LngLat,
@@ -21,6 +28,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   @Input() layer!: BaseLayer;
   @Input() before = '';
 
+  @Output() updateTooltipData = new EventEmitter<BaseLayerTooltipData | null>();
   private hoveredId: number | null = null;
 
   private arcGisService: FeatureService | null = null;
@@ -91,7 +99,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   };
 
   private clearTooltip() {
-    this.baseLayersStateService.setTooltipData(null);
+    this.updateTooltipData.emit(null);
   }
 
   private setTooltipInfo(longLat: LngLat, f: MapGeoJSONFeature) {
@@ -99,18 +107,24 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
       content: this.createTooltipContent(this.layer, f) ?? '',
       longLat: longLat,
     };
-    this.baseLayersStateService.setTooltipData(tooltipInfo);
+    this.updateTooltipData.emit(tooltipInfo);
   }
 
   private onMouseLeave = () => this.clearHover();
 
   private addArcgisLayers() {
-    this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
-      url: this.layer.map_url,
-      setAttributionFromService: false,
-      // add options provided on metadata
-      ...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
-    });
+    try {
+      this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
+        url: this.layer.map_url,
+        setAttributionFromService: false,
+        // add options provided on metadata
+        ...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
+      });
+    } catch (e) {
+      console.log(e);
+      console.log(this.sourceId);
+      console.log(this.mapLibreMap);
+    }
 
     this.mapLibreMap.addLayer(
       {
