@@ -254,13 +254,12 @@ class Command(PlanscapeCommand):
         except Exception as ex:
             self.stderr.write(f"ERROR: {kwargs =}\nEXCEPTION: {ex =}")
 
-    def _upload_file(self, input_files, datalayer, upload_to) -> requests.Response:
+    def _upload_file(self, input_files, datalayer) -> requests.Response:
         upload_url_path = Path(datalayer.get("url"))
         object_name = "/".join(upload_url_path.parts[2:])
         return upload_file(
             object_name=object_name,
             input_file=input_files[0],
-            upload_to=upload_to,
         )
 
     def _apply_style_request(
@@ -405,7 +404,6 @@ class Command(PlanscapeCommand):
             self._upload_file(
                 processed_files,
                 datalayer=datalayer,
-                upload_to=upload_to,
             )
             self._change_datalayer_status_request(
                 org=org,

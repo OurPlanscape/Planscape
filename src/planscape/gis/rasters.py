@@ -34,6 +34,7 @@ def get_profile(
         "tiled": True,
         "width": width,
         "height": height,
+        "bigtiff": "IF_SAFER",
     }
 
 
@@ -47,9 +48,8 @@ def to_planscape(input_file: str) -> List[str]:
         )
     log.info("Raster info available")
     _epsg, srid = layer_crs.split(":")
+    warped_output = get_random_output_file(input_file=input_file)
     if int(srid) != settings.CRS_FOR_RASTERS:
-        warped_output = get_random_output_file(input_file=input_file)
-
         warped_raster = warp(
             input_file=input_file,
             output_file=warped_output,
