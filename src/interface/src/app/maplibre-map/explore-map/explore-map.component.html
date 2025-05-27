@@ -7,7 +7,6 @@
   [minZoom]="minZoom"
   [pitchWithRotate]="false"
   [fitBounds]="(bounds$ | async) || undefined"
-  [fitBoundsOptions]="boundOptions"
   (mapLoad)="mapCreated.emit({ map: $event, mapNumber: mapNumber })"
   [style]="(baseLayerUrl$ | async) || ''"
   [attributionControl]="false"
