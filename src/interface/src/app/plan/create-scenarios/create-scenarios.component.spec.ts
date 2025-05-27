@@ -19,7 +19,7 @@ import {
 } from '@types';
 
 import { PlanModule } from '../plan.module';
-import { CreateScenariosComponent } from './create-scenarios.component';
+import { CreateScenariosLegacyComponent } from './create-scenarios.component';
 import { HarnessLoader } from '@angular/cdk/testing';
 import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -39,9 +39,9 @@ import { MOCK_PLAN } from '@services/mocks';
  * 'creates Project Areas when user uploads Project Area shapefile'
  */
 
-describe('CreateScenariosComponent', () => {
-  let component: CreateScenariosComponent;
-  let fixture: ComponentFixture<CreateScenariosComponent>;
+describe('CreateScenariosLegacyComponent', () => {
+  let component: CreateScenariosLegacyComponent;
+  let fixture: ComponentFixture<CreateScenariosLegacyComponent>;
   let fakeLegacyPlanStateService: LegacyPlanStateService;
 
   let loader: HarnessLoader;
@@ -153,7 +153,7 @@ describe('CreateScenariosComponent', () => {
         PlanModule,
         RouterTestingModule,
       ],
-      declarations: [CreateScenariosComponent],
+      declarations: [CreateScenariosLegacyComponent],
       providers: [
         CurrencyPipe,
         {
@@ -164,7 +164,7 @@ describe('CreateScenariosComponent', () => {
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CreateScenariosComponent);
+    fixture = TestBed.createComponent(CreateScenariosLegacyComponent);
     component = fixture.componentInstance;
     await component.constraintsPanelComponent.createForm();
     loader = TestbedHarnessEnvironment.loader(fixture);
@@ -554,7 +554,7 @@ describe('CreateScenariosComponent', () => {
   });
 
   function setupPollingScenario(
-    component: CreateScenariosComponent,
+    component: CreateScenariosLegacyComponent,
     status: ScenarioResultStatus
   ) {
     fakePlanState$.next({

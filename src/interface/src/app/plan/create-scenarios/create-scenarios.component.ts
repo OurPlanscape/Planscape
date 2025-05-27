@@ -33,7 +33,7 @@ enum ScenarioTabs {
   templateUrl: './create-scenarios.component.html',
   styleUrls: ['./create-scenarios.component.scss'],
 })
-export class CreateScenariosComponent implements OnInit {
+export class CreateScenariosLegacyComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;

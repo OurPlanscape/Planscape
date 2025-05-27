@@ -2,10 +2,12 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { PlanComponent } from './plan.component';
 import { AuthGuard } from '@services';
-import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
+import { CreateScenariosLegacyComponent } from './create-scenarios/create-scenarios.component';
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { planLoaderResolver } from '../resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
+import { NewCreateScenariosComponent } from './new-create-scenarios/new-create-scenarios.component';
+import { NewScenarioDetailsComponent } from './new-scenario-details/new-scenario-details.component';
 
 const routes: Routes = [
   {
@@ -21,7 +23,23 @@ const routes: Routes = [
       {
         path: 'config/',
         title: 'Scenario Configuration',
-        component: CreateScenariosComponent,
+        component: NewCreateScenariosComponent,
+        resolve: {
+          scenarioInit: scenarioLoaderResolver,
+        },
+      },
+      {
+        path: 'config/:id',
+        title: 'Scenario Configuration',
+        component: NewScenarioDetailsComponent,
+        resolve: {
+          scenarioInit: scenarioLoaderResolver,
+        },
+      },
+      {
+        path: 'lalala/',
+        title: 'Scenario Configuration',
+        component: CreateScenariosLegacyComponent,
         data: {
           showOverview: false,
           showProjectAreas: false,
@@ -31,7 +49,7 @@ const routes: Routes = [
         },
       },
       {
-        path: 'config/:id',
+        path: 'lalala/:id',
         title: 'Scenario Configuration',
         component: ScenarioRoutePlaceholderComponent,
         resolve: {

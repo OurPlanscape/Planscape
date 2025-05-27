@@ -1,7 +1,7 @@
 import { AreaNotesComponent } from './area-notes/area-notes.component';
 import { CommonModule } from '@angular/common';
 import { ConstraintsPanelComponent } from './create-scenarios/constraints-panel/constraints-panel.component';
-import { CreateScenariosComponent } from './create-scenarios/create-scenarios.component';
+import { CreateScenariosLegacyComponent } from './create-scenarios/create-scenarios.component';
 import { ExploreLegacyComponent } from './explore/explore/explore-legacy.component';
 import { FeaturesModule } from '../features/features.module';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -55,7 +55,7 @@ import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.com
   declarations: [
     AreaNotesComponent,
     ConstraintsPanelComponent,
-    CreateScenariosComponent,
+    CreateScenariosLegacyComponent,
     DeleteNoteDialogComponent,
     ExploreLegacyComponent,
     GoalOverlayComponent,
