@@ -6,11 +6,18 @@ import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { AuthService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
 import { MapConfigState } from '../map-config.state';
+import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 
 @Component({
   selector: 'app-explore-map',
   standalone: true,
-  imports: [AsyncPipe, MapComponent, ControlComponent, NgIf],
+  imports: [
+    AsyncPipe,
+    MapComponent,
+    ControlComponent,
+    NgIf,
+    MapBaseLayersComponent,
+  ],
   templateUrl: './explore-map.component.html',
   styleUrl: './explore-map.component.scss',
 })
@@ -29,6 +36,11 @@ export class ExploreMapComponent {
    */
   baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
 
+  /**
+   * The mapLibreMap instance, set by the map `mapLoad` event.
+   */
+  mapLibreMap!: MapLibreMap;
+
   @Input() showMapNumber = true;
 
   @Output() mapCreated = new EventEmitter<{
@@ -42,6 +54,11 @@ export class ExploreMapComponent {
     private mapConfigState: MapConfigState,
     private authService: AuthService
   ) {}
+
+  mapLoaded(map: MapLibreMap) {
+    this.mapLibreMap = map;
+    this.mapCreated.emit({ map: map, mapNumber: this.mapNumber });
+  }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());

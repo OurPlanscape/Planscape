@@ -7,6 +7,8 @@ import { NavBarComponent, SharedModule } from '@shared';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MatTabsModule } from '@angular/material/tabs';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ExploreStorageService } from '@services/local-storage.service';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 
 describe('ExploreComponent', () => {
   let component: ExploreComponent;
@@ -20,8 +22,14 @@ describe('ExploreComponent', () => {
         MatTabsModule,
         BrowserAnimationsModule,
       ],
-      providers: [MockProviders(BreadcrumbService)],
-      declarations: [MockDeclarations(SyncedMapsComponent, NavBarComponent)],
+      providers: [MockProviders(BreadcrumbService, ExploreStorageService)],
+      declarations: [
+        MockDeclarations(
+          SyncedMapsComponent,
+          NavBarComponent,
+          BaseLayersComponent
+        ),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ExploreComponent);

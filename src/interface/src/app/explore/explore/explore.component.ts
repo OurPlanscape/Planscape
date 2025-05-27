@@ -12,6 +12,7 @@ import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
 import { BehaviorSubject } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
+import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 
 @Component({
   selector: 'app-explore',
@@ -28,6 +29,7 @@ import { ExploreStorageService } from '@services/local-storage.service';
     ButtonComponent,
     NgIf,
     MatTabsModule,
+    BaseLayersComponent,
   ],
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.scss',
