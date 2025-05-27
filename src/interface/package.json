@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build && npm run sentry:sourcemaps",
+    "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
     "lint": "ng lint",
@@ -17,8 +17,7 @@
     "cypress:run": "cypress run",
     "storybook": "ng run interface:storybook",
     "build-storybook": "ng run interface:build-storybook",
-    "postinstall": "patch-package",
-    "sentry:sourcemaps": "sentry-cli sourcemaps inject ./dist && sentry-cli sourcemaps upload ./dist"
+    "postinstall": "patch-package"
   },
   "private": true,
   "dependencies": {

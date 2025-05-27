@@ -53,21 +53,38 @@ compile-angular:
 build-storybook:
 	cd src/interface && npm run build-storybook
 
-remove-sourcemaps:
+
+upload-sourcemaps:
+	@if [ ! -f .sentryclirc ]; then \
+		echo 'Notice: .sentryclirc file not found. Skipping Sentry sourcemaps upload.'; \
+	else \
+		sentry-cli sourcemaps inject ./dist || echo 'Error: Failed to inject sourcemaps.'; \
+		sentry-cli sourcemaps upload ./dist || echo 'Error: Failed to upload sourcemaps.'; \
+	fi
+
+remove-local-sourcemaps:
+	echo "Removing Sourcemaps from build"; \
 	rm -rf ./src/interface/dist/out/**.js.map
 
 # tells sentry about a new tagged release
 # uses context in src/interface/.sentryclirc
 declare-sentry-release:
-	cd src/interface &&
-	if [ -n "$TAG" ] && [ "$TAG" != "main" ]; then
-		echo "TAG is a tagged release. Informing Sentry of release" &&
-		sentry-cli releases new "$TAG"
-	else
-		echo "TAG is 'main'. No action taken."
+	@if [ ! -f ".sentryclirc" ]; then \
+		echo "Notice: .sentryclirc file not found. Skipping Sentry release notification."; \
+		true; \
+	else \
+		if [ -n "$TAG" ] && [ "$TAG" != "main" ]; then \
+			echo "TAG is a tagged release. Informing Sentry of release" && \
+			sentry-cli releases new "$TAG"; \
+		else \
+			echo "TAG is 'main'. No action taken."; \
+		fi; \
 	fi
 
-deploy-frontend: install-dependencies-frontend declare-sentry-release compile-angular remove-sourcemaps
+handle-sentry-uploads: declare-sentry-release upload-sourcemaps remove-local-sourcemaps
+
+deploy-frontend: install-dependencies-frontend compile-angular handle-sentry-uploads
+	@echo "Copying build to web directory..."; \
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 	
 deploy-storybook: install-dependencies-frontend build-storybook
