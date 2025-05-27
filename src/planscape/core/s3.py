@@ -64,23 +64,26 @@ def get_bucket_and_key(s3_url: str) -> Collection[str]:
 def get_s3_hash(
     s3_url: str,
     bucket: str,
-    checksum_type: str = "ChecksumCRC64NVME",
 ) -> Optional[str]:
     """Returns a particular hash from a head request to s3.
     This is going to be used to understand collisions, duplicate uploads
     and doing bulk operations on datalayers that belongs to the same file.
 
-    :param datalayer: _description_
-    :type datalayer: DataLayer
-    :param checksum_type: _description_, defaults to "ChecksumCRC64NVME"
-    :type checksum_type: str, optional
+    :param s3_url: _description_ S3 URL of the object.
+    :type s3_url: str
+    :param bucket: _description_ S3 bucket name.
+    :type bucket: str
     :return: _description_
     :rtype: Optional[str]
     """
     object_name = s3_url.replace(f"s3://{bucket}/", "")
     head_response = get_head(bucket, object_name)
     if head_response:
-        return head_response[checksum_type]
+        checksum_type = head_response.get("ChecksumType")
+        if checksum_type == "FULL_OBJECT":
+            return head_response["ChecksumCRC64NVME"]
+        else:
+            return head_response["ChecksumCRC32"]
     return None
 
 
@@ -108,19 +111,17 @@ def create_upload_url(
     return response
 
 
-def upload_file(
-    object_name: str, input_file: str, upload_to: Dict[str, Any]
-) -> requests.Response:
+def upload_file(object_name: str, input_file: str) -> requests.Response:
     logger.info(f"Uploading file {object_name}.")
-    with open(input_file, "rb") as f:
-        files = {"file": (object_name, f)}
-        response = requests.post(
-            upload_to["url"],
-            data=upload_to["fields"],
-            files=files,
-        )
+
+    s3_client = boto3.client("s3")
+    try:
+        response = s3_client.upload_file(input_file, settings.S3_BUCKET, object_name)
         logger.info(f"Uploaded {object_name} done.")
         return response
+    except ClientError as e:
+        logger.error(f"Upload {object_name} falied: {e}")
+        raise e
 
 
 def is_s3_file(input_file: Optional[str]) -> bool:
