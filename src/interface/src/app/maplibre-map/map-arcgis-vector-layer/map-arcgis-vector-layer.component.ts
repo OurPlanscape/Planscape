@@ -113,18 +113,12 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   private onMouseLeave = () => this.clearHover();
 
   private addArcgisLayers() {
-    try {
-      this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
-        url: this.layer.map_url,
-        setAttributionFromService: false,
-        // add options provided on metadata
-        ...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
-      });
-    } catch (e) {
-      console.log(e);
-      console.log(this.sourceId);
-      console.log(this.mapLibreMap);
-    }
+    this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
+      url: this.layer.map_url,
+      setAttributionFromService: false,
+      // add options provided on metadata
+      ...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
+    });
 
     this.mapLibreMap.addLayer(
       {
