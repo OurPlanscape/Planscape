@@ -20,6 +20,7 @@ import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { skip } from 'rxjs';
+import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 
 @UntilDestroy()
 @Component({
@@ -49,7 +50,8 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   constructor(
     private selectedStandsState: SelectedStandsState,
     private treatmentsState: TreatmentsState,
-    private dataLayersStateService: DataLayersStateService
+    private dataLayersStateService: DataLayersStateService,
+    private baseLayersStateService: BaseLayersStateService
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
@@ -62,9 +64,9 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
 
   handleTabChange(selectedTab: MatTabChangeEvent) {
     if (selectedTab && selectedTab.tab.textLabel === 'Base Layers') {
-      this.dataLayersStateService.enableBaseLayerHover(true);
+      this.baseLayersStateService.enableBaseLayerHover(true);
     } else {
-      this.dataLayersStateService.enableBaseLayerHover(false);
+      this.baseLayersStateService.enableBaseLayerHover(false);
     }
   }
 

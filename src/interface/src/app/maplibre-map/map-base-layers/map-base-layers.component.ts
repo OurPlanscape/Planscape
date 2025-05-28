@@ -1,4 +1,10 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  NgZone,
+} from '@angular/core';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
@@ -15,8 +21,7 @@ import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { take } from 'rxjs';
+import { BehaviorSubject, take } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -42,12 +47,17 @@ export class MapBaseLayersComponent {
   // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
-  enableBaseLayerHover$ = this.dataLayersStateService.enableBaseLayerHover$;
-  currentTooltipInfo$ = this.dataLayersStateService.tooltipInfo$;
+  enableBaseLayerHover$ = this.baseLayersStateService.enableBaseLayerHover$;
+
+  private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
+    null
+  );
+  currentTooltipInfo$ = this._tooltipInfo$.asObservable();
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
-    private dataLayersStateService: DataLayersStateService
+    private changeDetectorRef: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
 
   lineLayerPaint(layer: BaseLayer) {
@@ -70,7 +80,7 @@ export class MapBaseLayersComponent {
             content: this.createTooltipContent(layer, features[0]) ?? '',
             longLat: event.lngLat,
           };
-          this.dataLayersStateService.setTooltipData(tooltipInfo);
+          this.setTooltipData(tooltipInfo);
           this.paintHover(features[0]);
         }
       }
@@ -78,7 +88,7 @@ export class MapBaseLayersComponent {
   }
 
   hoverOutLayer() {
-    this.dataLayersStateService.setTooltipData(null);
+    this.setTooltipData(null);
     this.removeHover();
   }
 
@@ -126,6 +136,13 @@ export class MapBaseLayersComponent {
       );
       return tooltipString ?? '';
     }
+  }
+
+  setTooltipData(tooltipInfo: BaseLayerTooltipData | null) {
+    this.zone.run(() => {
+      this._tooltipInfo$.next(tooltipInfo);
+      this.changeDetectorRef.markForCheck();
+    });
   }
 
   private removeHover() {

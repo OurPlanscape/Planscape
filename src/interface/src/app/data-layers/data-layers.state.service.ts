@@ -12,13 +12,7 @@ import {
   switchMap,
   tap,
 } from 'rxjs';
-import {
-  DataLayer,
-  DataSet,
-  Pagination,
-  SearchResult,
-  BaseLayerTooltipData,
-} from '@types';
+import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 
@@ -48,14 +42,6 @@ export class DataLayersStateService {
 
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
   selectedDataLayer$ = this._selectedDataLayer$.asObservable();
-
-  private _enableBaseLayerHover$ = new BehaviorSubject<boolean>(false);
-  enableBaseLayerHover$ = this._enableBaseLayerHover$.asObservable();
-
-  private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
-    null
-  );
-  tooltipInfo$ = this._tooltipInfo$.asObservable();
 
   dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
     switchMap((layer) => {
@@ -167,14 +153,6 @@ export class DataLayersStateService {
   reloadDataLayerUrl() {
     const currentLayer = this._selectedDataLayer$.value;
     this._selectedDataLayer$.next(currentLayer);
-  }
-
-  enableBaseLayerHover(value: boolean) {
-    this._enableBaseLayerHover$.next(value);
-  }
-
-  setTooltipData(tooltipInfo: BaseLayerTooltipData | null) {
-    this._tooltipInfo$.next(tooltipInfo);
   }
 
   search(term: string) {

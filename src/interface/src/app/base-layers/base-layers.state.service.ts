@@ -36,6 +36,9 @@ export class BaseLayersStateService {
     })
   );
 
+  private _enableBaseLayerHover$ = new BehaviorSubject<boolean>(false);
+  enableBaseLayerHover$ = this._enableBaseLayerHover$.asObservable();
+
   private _selectedBaseLayers$ = new BehaviorSubject<BaseLayer[] | null>(null);
   selectedBaseLayers$ = this._selectedBaseLayers$.asObservable();
 
@@ -76,6 +79,10 @@ export class BaseLayersStateService {
 
   clearBaseLayer() {
     this._selectedBaseLayers$.next(null);
+  }
+
+  enableBaseLayerHover(value: boolean) {
+    this._enableBaseLayerHover$.next(value);
   }
 
   private isCategoryMultiSelect(path: string) {

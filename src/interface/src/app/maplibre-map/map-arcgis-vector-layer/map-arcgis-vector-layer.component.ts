@@ -1,4 +1,11 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
 import {
   LngLat,
@@ -8,8 +15,8 @@ import {
 } from 'maplibre-gl';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { take } from 'rxjs';
+import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-map-arcgis-vector-layer',
@@ -21,17 +28,18 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   @Input() layer!: BaseLayer;
   @Input() before = '';
 
+  @Output() updateTooltipData = new EventEmitter<BaseLayerTooltipData | null>();
   private hoveredId: number | null = null;
 
   private arcGisService: FeatureService | null = null;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(private baseLayersStateService: BaseLayersStateService) {}
 
   ngOnInit(): void {
     this.addArcgisLayers();
   }
 
-  enableBaseLayerHover$ = this.dataLayersStateService.enableBaseLayerHover$;
+  enableBaseLayerHover$ = this.baseLayersStateService.enableBaseLayerHover$;
 
   ngOnDestroy(): void {
     this.mapLibreMap.off('mousemove', this.layerFillId, this.onMouseMove);
@@ -91,7 +99,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   };
 
   private clearTooltip() {
-    this.dataLayersStateService.setTooltipData(null);
+    this.updateTooltipData.emit(null);
   }
 
   private setTooltipInfo(longLat: LngLat, f: MapGeoJSONFeature) {
@@ -99,7 +107,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
       content: this.createTooltipContent(this.layer, f) ?? '',
       longLat: longLat,
     };
-    this.dataLayersStateService.setTooltipData(tooltipInfo);
+    this.updateTooltipData.emit(tooltipInfo);
   }
 
   private onMouseLeave = () => this.clearHover();

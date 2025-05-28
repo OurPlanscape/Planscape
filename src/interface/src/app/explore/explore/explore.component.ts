@@ -13,6 +13,7 @@ import { BehaviorSubject } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
+import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-explore',
@@ -54,13 +55,15 @@ export class ExploreComponent implements OnDestroy {
 
   constructor(
     private breadcrumbService: BreadcrumbService,
-    private exploreStorageService: ExploreStorageService
+    private exploreStorageService: ExploreStorageService,
+    private baseLayersStateService: BaseLayersStateService
   ) {
     this.loadStateFromLocalStorage();
     this.breadcrumbService.updateBreadCrumb({
       label: ' New Plan',
       backUrl: '/',
     });
+    this.baseLayersStateService.enableBaseLayerHover(true);
   }
 
   handleOpacityChange(opacity: number) {
