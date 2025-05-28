@@ -22,7 +22,7 @@ from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
 
-from datasets.models import DataLayerType
+from datasets.models import DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
@@ -67,7 +67,13 @@ def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
     }
 
 
-def get_create_call(name, input_file, dataset, metadata) -> List[str]:
+def get_create_call(
+    name,
+    input_file,
+    dataset,
+    metadata,
+    map_service_type,
+) -> List[str]:
     return [
         "python3",
         "manage.py",
@@ -81,13 +87,21 @@ def get_create_call(name, input_file, dataset, metadata) -> List[str]:
         "--metadata",
         metadata,
         "--skip-existing",
+        "--map-service-type",
+        map_service_type,
     ]
 
 
-def create_for_import(input_file: str, dataset: int) -> None:
+def create_for_import(
+    input_file: str,
+    dataset: int,
+    map_service_type: str,
+) -> None:
     name = name_from_input_file(input_file)
     metadata = get_impacts_metadata(input_file=input_file)
-    command = get_create_call(name, input_file, dataset, json.dumps(metadata))
+    command = get_create_call(
+        name, input_file, dataset, json.dumps(metadata), map_service_type
+    )
     subprocess.run(command)
 
 
@@ -146,6 +160,14 @@ class Command(PlanscapeCommand):
             required=False,
         )
         create_parser.add_argument(
+            "--map-service-type",
+            type=str,
+            required=True,
+            dest="map_service_type",
+            choices=[c.name for c in MapServiceChoices],
+            help=f"REQUIRED. One of: {[c.name for c in MapServiceChoices]}",
+        )
+        create_parser.add_argument(
             "--input-file",
             required=True,
             type=str,
@@ -195,6 +217,14 @@ class Command(PlanscapeCommand):
             required=False,
             type=int,
             default=4,
+        )
+        import_parser.add_argument(
+            "--map-service-type",
+            required=True,
+            type=str,
+            dest="map_service_type",
+            choices=[c.name for c in MapServiceChoices],
+            help="REQUIRED. Applied to every layer created during the import run.",
         )
 
         list_parser.set_defaults(func=self.list)
@@ -298,6 +328,7 @@ class Command(PlanscapeCommand):
         category = kwargs.get("category")
         metadata = metadata or {}
         style = kwargs.get("style", None) or None
+        map_service_type = kwargs.get("map_service_type")
         input_data = {
             "organization": org,
             "name": name,
@@ -310,6 +341,7 @@ class Command(PlanscapeCommand):
             "mimetype": mimetype,
             "geometry_type": geometry_type,
             "style": style,
+            "map_service_type": map_service_type,
         }
         response = requests.post(
             url,
@@ -442,7 +474,11 @@ class Command(PlanscapeCommand):
             for f in s3_files:
                 pprint(f)
             return
-        fn = partial(create_for_import, dataset=dataset)
+        fn = partial(
+            create_for_import,
+            dataset=dataset,
+            map_service_type=kwargs["map_service_type"],
+        )
         with multiprocessing.Pool(process_count) as pool:
             _ = pool.map(
                 fn,
