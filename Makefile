@@ -55,8 +55,9 @@ build-storybook:
 	cd src/interface && npm run build-storybook
 
 remove-local-sourcemaps:
-	@echo "Removing Sourcemaps from build"; \
-	rm -rf ./src/interface/dist/out/**.map
+	@echo "Removing Sourcemaps from build" ; \
+	rm -rf ./src/interface/dist/out/**.map ; \
+	rm -rf ./src/interface/dist/interface/**.map
 
 # This command uploads sourcemaps to Sentry and injects a sourceId reference. 
 # if we have a tagged release, we associate it with the sourcemaps,
