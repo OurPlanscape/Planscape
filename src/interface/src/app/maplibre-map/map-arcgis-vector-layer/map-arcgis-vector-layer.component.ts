@@ -2,10 +2,10 @@ import {
   Component,
   EventEmitter,
   Input,
+  NgZone,
   OnDestroy,
   OnInit,
   Output,
-  NgZone,
 } from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
 import {
@@ -60,6 +60,9 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
 
     this.mapLibreMap?.off('data', this.onDataListener);
     this.mapLibreMap?.off('error', this.onErrorListener);
+
+    this.arcGisService?.disableRequests();
+
     this.arcGisService?.destroySource();
   }
 
@@ -162,12 +165,8 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
     this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
       url: this.layer.map_url,
       setAttributionFromService: false,
-      simplifyFactor: 1,
-      precision: 4,
-      maxRecordCountFactor: 1,
-      outFields: ['OBJECTID'],
       // add options provided on metadata
-      //...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
+      ...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
     });
 
     this.mapLibreMap.addLayer(

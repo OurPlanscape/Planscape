@@ -50,6 +50,7 @@ export function addRequestHeaders(
   if (isMapboxURL(url) && resourceType) {
     return transformMapboxUrl(url, resourceType, environment.mapbox_key);
   }
+
   return addAuthHeaders(url, resourceType, cookie);
 }
 
@@ -82,63 +83,53 @@ function getCamera(map: MapLibreMap) {
   };
 }
 
-/**
- * This snippet is taken from:
- * https://github.com/mapbox/mapbox-gl-sync-move/issues/14
- *
- *
- * Sync movements of two maps.
- *
- * All interactions that result in movement end up firing
- * a "move" event. The trick here, though, is to
- * ensure that movements don't cycle from one map
- * to the other and back again, because such a cycle
- * - could cause an infinite loop
- * - prematurely halts prolonged movements like
- *   double-click zooming, box-zooming, and flying
- */
 export function syncMaps(...maps: MapLibreMap[]): Cleanup {
-  // 1) continuous, frame-by-frame mirroring
+  // 0) initial sync on load
+  const leaderCam = getCamera(maps[0]);
+  maps.slice(1).forEach((m) => {
+    if (m.loaded()) {
+      m.jumpTo(leaderCam);
+    } else {
+      m.once('load', () => m.jumpTo(leaderCam));
+    }
+  });
+
+  // 1) continuous sync
   const onMove = (e: any) => {
-    if (!e.originalEvent) return; // only user drags/zooms
+    if (!e.originalEvent) return;
     const cam = getCamera(e.target as MapLibreMap);
     maps.forEach((m) => {
       if (m !== e.target) m.jumpTo(cam);
     });
   };
 
-  // 2) broadcast start/end once per gesture
-  const onUserStart = (e: any) => {
-    if (!e.originalEvent) return; // only the *real* user start
+  // 2) broadcast start/end
+  const onStart = (e: any) => {
+    if (!e.originalEvent) return;
     maps.forEach((m) => {
-      if (m !== e.target) {
-        // fire a synthetic movestart on each *other* map
-        m.fire('movestart', { broadcast: true });
-      }
+      if (m !== e.target) m.fire('movestart', { broadcast: true });
     });
   };
-  const onUserEnd = (e: any) => {
-    if (!e.originalEvent) return; // only the *real* user end
+  const onEnd = (e: any) => {
+    if (!e.originalEvent) return;
     maps.forEach((m) => {
-      if (m !== e.target) {
-        m.fire('moveend', { broadcast: true });
-      }
+      if (m !== e.target) m.fire('moveend', { broadcast: true });
     });
   };
 
-  // 3) hook them all up
+  // 3) wire up
   maps.forEach((m) => {
     m.on('move', onMove);
-    m.on('movestart', onUserStart);
-    m.on('moveend', onUserEnd);
+    m.on('movestart', onStart);
+    m.on('moveend', onEnd);
   });
 
-  // 4) cleanup
+  // 4) cleanup fn
   return () => {
     maps.forEach((m) => {
       m.off('move', onMove);
-      m.off('movestart', onUserStart);
-      m.off('moveend', onUserEnd);
+      m.off('movestart', onStart);
+      m.off('moveend', onEnd);
     });
   };
 }

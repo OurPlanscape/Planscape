@@ -19,6 +19,10 @@ export class DummyMaplibreMap {
 
   jumpTo() {}
 
+  loaded() {}
+
+  once() {}
+
   on(event: string, fn: Function) {
     (this.listeners[event] ||= []).push(fn);
   }
