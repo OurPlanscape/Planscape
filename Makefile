@@ -61,8 +61,7 @@ remove-local-sourcemaps:
 # tells sentry about a new tagged release
 # uses context in src/interface/.sentryclirc
 upload-sentry-sourcemaps:
-	@cd src/interface && \
-	if [ ! -f ".sentryclirc" ]; then \
+	@if [ ! -f ".sentryclirc" ]; then \
 		echo "Notice: .sentryclirc file not found. Skipping Sentry release notification."; \
 		true; \
 	elif [ -n "${TAG}" ] && [ "${TAG}" != "main" ]; then \
