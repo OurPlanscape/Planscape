@@ -18,6 +18,7 @@ SYS_CTL=systemctl --user
 TAG=main
 VERSION="$$(date '+%Y.%m.%d')-$$(git log --abbrev=10 --format=%h | head -1)"
 E2E_IMPACTS=impacts_e2e_config.json
+GIT_COMMIT_SHA=$(shell git rev-parse HEAD)
 
 help:
 	@echo 'Available commands:'
@@ -53,35 +54,31 @@ compile-angular:
 build-storybook:
 	cd src/interface && npm run build-storybook
 
-
-upload-sourcemaps:
-	@if [ ! -f .sentryclirc ]; then \
-		echo 'Notice: .sentryclirc file not found. Skipping Sentry sourcemaps upload.'; \
-	else \
-		sentry-cli sourcemaps inject ./dist || echo 'Error: Failed to inject sourcemaps.'; \
-		sentry-cli sourcemaps upload ./dist || echo 'Error: Failed to upload sourcemaps.'; \
-	fi
-
 remove-local-sourcemaps:
-	echo "Removing Sourcemaps from build"; \
-	rm -rf ./src/interface/dist/out/**.js.map
+	@echo "Removing Sourcemaps from build"; \
+	rm -rf ./src/interface/dist/out/**.map
 
-# tells sentry about a new tagged release
-# uses context in src/interface/.sentryclirc
-declare-sentry-release:
+# This command uploads sourcemaps to Sentry and injects a sourceId reference. 
+# if we have a tagged release, we associate it with the sourcemaps,
+# otherwise we use the SHA as the 'release' for dev builds.
+# Note that this relies on .sentryclirc for Sentry configs
+# and this make command is ignored without that file.
+upload-sentry-sourcemaps:
 	@if [ ! -f ".sentryclirc" ]; then \
-		echo "Notice: .sentryclirc file not found. Skipping Sentry release notification."; \
+		echo "Notice: .sentryclirc file not found. Skipping Sentry sourcemap uploads."; \
 		true; \
+	elif [ -n "${TAG}" ] && [ "${TAG}" != "main" ]; then \
+		echo "${TAG} is a tagged release. Informing Sentry of release"; \
+		sentry-cli releases new "${TAG}" \
+		sentry-cli sourcemaps inject ./src/interface/dist --release "${TAG}" && \
+		sentry-cli sourcemaps upload --release "${TAG}" ./src/interface/dist ;  \
 	else \
-		if [ -n "$TAG" ] && [ "$TAG" != "main" ]; then \
-			echo "TAG is a tagged release. Informing Sentry of release" && \
-			sentry-cli releases new "$TAG"; \
-		else \
-			echo "TAG is 'main'. No action taken."; \
-		fi; \
+		sentry-cli releases new "${GIT_COMMIT_SHA}" && \
+		sentry-cli sourcemaps inject ./src/interface/dist --release "${GIT_COMMIT_SHA}" && \
+		sentry-cli sourcemaps upload --release "${GIT_COMMIT_SHA}" ./src/interface/dist ; \
 	fi
 
-handle-sentry-uploads: declare-sentry-release upload-sourcemaps remove-local-sourcemaps
+handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
 
 deploy-frontend: install-dependencies-frontend compile-angular handle-sentry-uploads
 	@echo "Copying build to web directory..."; \
