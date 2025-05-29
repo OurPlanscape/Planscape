@@ -68,11 +68,11 @@ upload-sentry-sourcemaps:
 		echo "${TAG} is a tagged release. Informing Sentry of release"; \
 		sentry-cli releases new "${TAG}" \
 		sentry-cli sourcemaps inject ./src/interface/dist --release "${TAG}" && \
-		sentry-cli sourcemaps upload ./src/interface/dist --release "${TAG}" \
+		sentry-cli sourcemaps upload --release "${TAG}" ./src/interface/dist ;  \
 	else \
 		sentry-cli releases new "${GIT_COMMIT_SHA}" && \
 		sentry-cli sourcemaps inject ./src/interface/dist --release "${GIT_COMMIT_SHA}" && \
-		sentry-cli sourcemaps upload ./src/interface/dist --release "${GIT_COMMIT_SHA}" \
+		sentry-cli sourcemaps upload --release "${GIT_COMMIT_SHA}" ./src/interface/dist ; \
 	fi
 
 handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
