@@ -18,6 +18,7 @@ SYS_CTL=systemctl --user
 TAG=main
 VERSION="$$(date '+%Y.%m.%d')-$$(git log --abbrev=10 --format=%h | head -1)"
 E2E_IMPACTS=impacts_e2e_config.json
+GIT_COMMIT_SHA=$(shell git rev-parse HEAD)
 
 help:
 	@echo 'Available commands:'
@@ -53,35 +54,27 @@ compile-angular:
 build-storybook:
 	cd src/interface && npm run build-storybook
 
-
-upload-sourcemaps:
-	@if [ ! -f .sentryclirc ]; then \
-		echo 'Notice: .sentryclirc file not found. Skipping Sentry sourcemaps upload.'; \
-	else \
-		sentry-cli sourcemaps inject ./dist || echo 'Error: Failed to inject sourcemaps.'; \
-		sentry-cli sourcemaps upload ./dist || echo 'Error: Failed to upload sourcemaps.'; \
-	fi
-
 remove-local-sourcemaps:
-	echo "Removing Sourcemaps from build"; \
+	@echo "Removing Sourcemaps from build"; \
 	rm -rf ./src/interface/dist/out/**.js.map
 
 # tells sentry about a new tagged release
 # uses context in src/interface/.sentryclirc
-declare-sentry-release:
-	@if [ ! -f ".sentryclirc" ]; then \
+upload-sentry-sourcemaps:
+	@cd src/interface && \
+	if [ ! -f ".sentryclirc" ]; then \
 		echo "Notice: .sentryclirc file not found. Skipping Sentry release notification."; \
 		true; \
+	elif [ -n "${TAG}" ] && [ "${TAG}" != "main" ]; then \
+		echo "${TAG} is a tagged release. Informing Sentry of release"; \
+		sentry-cli releases new "${TAG}" \
+		sentry-cli releases files "${TAG}" upload-sourcemaps ./dist; \
 	else \
-		if [ -n "$TAG" ] && [ "$TAG" != "main" ]; then \
-			echo "TAG is a tagged release. Informing Sentry of release" && \
-			sentry-cli releases new "$TAG"; \
-		else \
-			echo "TAG is 'main'. No action taken."; \
-		fi; \
+		sentry-cli releases new "${GIT_COMMIT_SHA}" && \
+		sentry-cli sourcemaps upload ./dist --release "${GIT_COMMIT_SHA}"; \
 	fi
 
-handle-sentry-uploads: declare-sentry-release upload-sourcemaps remove-local-sourcemaps
+handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
 
 deploy-frontend: install-dependencies-frontend compile-angular handle-sentry-uploads
 	@echo "Copying build to web directory..."; \
