@@ -56,7 +56,7 @@ build-storybook:
 
 remove-local-sourcemaps:
 	@echo "Removing Sourcemaps from build"; \
-	rm -rf ./src/interface/dist/out/**.js.map
+	rm -rf ./src/interface/dist/out/**.map
 
 # tells sentry about a new tagged release
 # uses context in src/interface/.sentryclirc
@@ -67,10 +67,12 @@ upload-sentry-sourcemaps:
 	elif [ -n "${TAG}" ] && [ "${TAG}" != "main" ]; then \
 		echo "${TAG} is a tagged release. Informing Sentry of release"; \
 		sentry-cli releases new "${TAG}" \
-		sentry-cli releases files "${TAG}" upload-sourcemaps ./dist; \
+		sentry-cli sourcemaps inject ./src/interface/dist --release "${TAG}" && \
+		sentry-cli sourcemaps upload ./src/interface/dist --release "${TAG}" \
 	else \
 		sentry-cli releases new "${GIT_COMMIT_SHA}" && \
-		sentry-cli sourcemaps upload ./dist --release "${GIT_COMMIT_SHA}"; \
+		sentry-cli sourcemaps inject ./src/interface/dist --release "${GIT_COMMIT_SHA}" && \
+		sentry-cli sourcemaps upload ./src/interface/dist --release "${GIT_COMMIT_SHA}" \
 	fi
 
 handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
