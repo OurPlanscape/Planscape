@@ -58,11 +58,11 @@ remove-local-sourcemaps:
 	@echo "Removing Sourcemaps from build"; \
 	rm -rf ./src/interface/dist/out/**.map
 
-# This command uploads sourcemaps to Sentry and inects a sourceId reference. 
+# This command uploads sourcemaps to Sentry and injects a sourceId reference. 
 # if we have a tagged release, we associate it with the sourcemaps,
-# otherwise we use the SHA as the 'release' for dev builds
+# otherwise we use the SHA as the 'release' for dev builds.
 # Note that this relies on .sentryclirc for Sentry configs
-# and this make command is ignored without that file
+# and this make command is ignored without that file.
 upload-sentry-sourcemaps:
 	@if [ ! -f ".sentryclirc" ]; then \
 		echo "Notice: .sentryclirc file not found. Skipping Sentry sourcemap uploads."; \
