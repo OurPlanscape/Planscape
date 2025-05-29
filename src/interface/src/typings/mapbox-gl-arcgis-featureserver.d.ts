@@ -24,6 +24,10 @@ declare module 'mapbox-gl-arcgis-featureserver' {
     getLayerSchema(layerId: string): Promise<any>;
 
     destroySource(): void;
+
+    disableRequests(): void;
+
+    enableRequests(): void;
   }
 
   export default FeatureService;
