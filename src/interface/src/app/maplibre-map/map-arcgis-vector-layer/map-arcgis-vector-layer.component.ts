@@ -53,6 +53,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.removeLayer(this.layerFillId);
     this.mapLibreMap.removeLayer(this.layerLineId);
 
+    this.arcGisService?.disableRequests();
     this.arcGisService?.destroySource();
   }
 
@@ -119,12 +120,8 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
     this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
       url: this.layer.map_url,
       setAttributionFromService: false,
-      simplifyFactor: 1,
-      precision: 4,
-      maxRecordCountFactor: 1,
-      outFields: ['OBJECTID'],
       // add options provided on metadata
-      //...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
+      ...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
     });
 
     this.mapLibreMap.addLayer(
