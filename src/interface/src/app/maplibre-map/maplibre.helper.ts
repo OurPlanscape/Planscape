@@ -98,46 +98,48 @@ function getCamera(map: MapLibreMap) {
  *   double-click zooming, box-zooming, and flying
  */
 export function syncMaps(...maps: MapLibreMap[]): Cleanup {
-  // Create all the movement functions, because if they're created every time
-  // they wouldn't be the same and couldn't be removed.
-  let fns: Parameters<MapLibreMap['on']>[1][] = [];
-  const startingCamera = getCamera(maps[0]);
-  maps.forEach((map, index) => {
-    // sync initial zoom and bounds
-    if (index !== 0) map.jumpTo(startingCamera);
-    // When one map moves, we turn off the movement listeners
-    // on all the maps, move it, then turn the listeners on again
-    fns[index] = () => {
-      off();
+  // 1) continuous, frame-by-frame mirroring
+  const onMove = (e: any) => {
+    if (!e.originalEvent) return; // only user drags/zooms
+    const cam = getCamera(e.target as MapLibreMap);
+    maps.forEach((m) => {
+      if (m !== e.target) m.jumpTo(cam);
+    });
+  };
 
-      const camera = getCamera(map);
-      const clones = maps.filter((o, i) => i !== index);
-      clones.forEach((clone) => {
-        clone.jumpTo(camera);
-      });
+  // 2) broadcast start/end once per gesture
+  const onUserStart = (e: any) => {
+    if (!e.originalEvent) return; // only the *real* user start
+    maps.forEach((m) => {
+      if (m !== e.target) {
+        // fire a synthetic movestart on each *other* map
+        m.fire('movestart', { broadcast: true });
+      }
+    });
+  };
+  const onUserEnd = (e: any) => {
+    if (!e.originalEvent) return; // only the *real* user end
+    maps.forEach((m) => {
+      if (m !== e.target) {
+        m.fire('moveend', { broadcast: true });
+      }
+    });
+  };
 
-      on();
-    };
+  // 3) hook them all up
+  maps.forEach((m) => {
+    m.on('move', onMove);
+    m.on('movestart', onUserStart);
+    m.on('moveend', onUserEnd);
   });
 
-  const on = () => {
-    maps.forEach((map, index) => {
-      map.on('move', fns[index]);
-    });
-  };
-
-  const off = () => {
-    maps.forEach((map, index) => {
-      map.off('move', fns[index]);
-    });
-  };
-
-  on();
-
+  // 4) cleanup
   return () => {
-    off();
-    fns = [];
-    maps = [];
+    maps.forEach((m) => {
+      m.off('move', onMove);
+      m.off('movestart', onUserStart);
+      m.off('moveend', onUserEnd);
+    });
   };
 }
 
