@@ -290,12 +290,10 @@ def create_datalayer(
     geometry_type: Optional[GeometryType] = None,
     info: Optional[Dict[str, Any]] = None,
     mimetype: Optional[str] = None,
-    map_service_type: Optional[str] = None,
     **kwargs,
 ) -> Dict[str, Any]:
     metadata = kwargs.pop("metadata", None) or None
     style = kwargs.pop("style", None) or None
-    map_service_type = kwargs.pop("map_service_type", map_service_type)
     uuid = str(uuid4())
 
     storage_url = get_storage_url(
@@ -336,7 +334,6 @@ def create_datalayer(
         info=info,
         original_name=original_file_name,
         mimetype=mimetype,
-        map_service_type=map_service_type,
         **kwargs,
     )
     upload_to = create_upload_url_for_org(

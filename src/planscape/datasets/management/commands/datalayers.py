@@ -72,7 +72,6 @@ def get_create_call(
     input_file,
     dataset,
     metadata,
-    map_service_type,
 ) -> List[str]:
     return [
         "python3",
@@ -87,20 +86,20 @@ def get_create_call(
         "--metadata",
         metadata,
         "--skip-existing",
-        "--map-service-type",
-        map_service_type,
     ]
 
 
 def create_for_import(
     input_file: str,
     dataset: int,
-    map_service_type: str,
 ) -> None:
     name = name_from_input_file(input_file)
     metadata = get_impacts_metadata(input_file=input_file)
     command = get_create_call(
-        name, input_file, dataset, json.dumps(metadata), map_service_type
+        name,
+        input_file,
+        dataset,
+        json.dumps(metadata),
     )
     subprocess.run(command)
 
@@ -218,14 +217,6 @@ class Command(PlanscapeCommand):
             type=int,
             default=4,
         )
-        import_parser.add_argument(
-            "--map-service-type",
-            required=True,
-            type=str,
-            dest="map_service_type",
-            choices=[c.name for c in MapServiceChoices],
-            help="REQUIRED. Applied to every layer created during the import run.",
-        )
 
         list_parser.set_defaults(func=self.list)
         create_parser.set_defaults(func=self.create)
@@ -318,6 +309,7 @@ class Command(PlanscapeCommand):
         geometry_type: str,
         layer_info: Dict[str, Any],
         metadata: Optional[Dict[str, Any]] = None,
+        map_service_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
         base_url = self.get_base_url(**kwargs)
@@ -328,7 +320,6 @@ class Command(PlanscapeCommand):
         category = kwargs.get("category")
         metadata = metadata or {}
         style = kwargs.get("style", None) or None
-        map_service_type = kwargs.get("map_service_type")
         input_data = {
             "organization": org,
             "name": name,
@@ -343,6 +334,7 @@ class Command(PlanscapeCommand):
             "style": style,
             "map_service_type": map_service_type,
         }
+
         response = requests.post(
             url,
             headers=headers,
@@ -382,6 +374,7 @@ class Command(PlanscapeCommand):
         except DataLayerAlreadyExists as datalayer_exists:
             return {"info": str(datalayer_exists)}
 
+        map_service_type = kwargs.pop("map_service_type", None)
         s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
         vsi_input_file = with_vsi_prefix(input_file)
@@ -426,6 +419,7 @@ class Command(PlanscapeCommand):
             mimetype=mimetype,
             original_name=original_name,
             metadata=metadata,
+            map_service_type=map_service_type,
             **kwargs,
         )
         if not output_data:
@@ -477,7 +471,6 @@ class Command(PlanscapeCommand):
         fn = partial(
             create_for_import,
             dataset=dataset,
-            map_service_type=kwargs["map_service_type"],
         )
         with multiprocessing.Pool(process_count) as pool:
             _ = pool.map(

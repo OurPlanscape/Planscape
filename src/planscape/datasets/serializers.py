@@ -9,7 +9,6 @@ from datasets.models import (
     DataLayerType,
     Dataset,
     Style,
-    MapServiceChoices,
 )
 from datasets.styles import (
     get_default_raster_style,
@@ -100,10 +99,6 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     styles = serializers.SerializerMethodField()
     original_name = serializers.CharField(read_only=True)
 
-    map_service_type = serializers.ChoiceField(
-        choices=MapServiceChoices.choices, required=False
-    )
-
     def _default_raster_style(self, instance):
         stats = instance.info.get("stats")[0]
         return get_default_raster_style(**stats)
@@ -186,12 +181,6 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
         allow_null=True,
     )  # type: ignore
 
-    map_service_type = serializers.ChoiceField(
-        choices=MapServiceChoices.choices,
-        required=False,
-        allow_null=True,
-    )
-
     class Meta:
         model = DataLayer
         fields = (
@@ -209,7 +198,6 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "geometry",
             "geometry_type",
             "style",
-            "map_service_type",
         )
 
 
