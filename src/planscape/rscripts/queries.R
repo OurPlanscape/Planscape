@@ -80,7 +80,11 @@ get_treatment_goal_datalayers <- function(connection, treatment_goal_id) {
 }
 
 get_datalayer_module_name <- function(datalayer) {
-  datalayer_module_name <- datalayer$metadata$modules$forsys$name
+  if (is.null(datalayer$metadata)) {
+    return(NULL)
+  }
+  metadata <- fromJSON(datalayer$metadata)
+  datalayer_module_name <- metadata$modules$forsys$name
   datalayer_module_name
 }
 
