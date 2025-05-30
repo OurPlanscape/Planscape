@@ -88,11 +88,22 @@ get_datalayer_module_name <- function(datalayer) {
   datalayer_module_name
 }
 
+get_datalayer_metric <- function(datalayer) {
+  if (is.null(datalayer$metadata)) {
+    return("avg")
+  }
+  metadata <- fromJSON(datalayer$metadata)
+  metric <- metadata$modules$forsys$metric
+  if (is.null(metric)) {
+    return("avg")
+  }
+  metric
+}
+
 get_stand_metrics_v2 <- function(connection, datalayer, stand_ids) {
   datalayer_id <- datalayer$id
   datalayer_name <- datalayer$name
-  datalayer_module_name <- get_datalayer_module_name(datalayer)
-  metric_column <- get_metric_column(datalayer_module_name)
+  metric_column <- get_datalayer_metric(datalayer)
   field_name <- paste0("datalayer_", datalayer_id)
   query <- glue_sql(
     "SELECT
