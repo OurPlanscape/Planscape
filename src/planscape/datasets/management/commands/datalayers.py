@@ -22,7 +22,7 @@ from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
 
-from datasets.models import DataLayerType
+from datasets.models import DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
 
 TREATMENT_METADATA_REGEX = re.compile(
@@ -67,7 +67,12 @@ def get_impacts_metadata(input_file: str) -> Optional[Dict[str, Any]]:
     }
 
 
-def get_create_call(name, input_file, dataset, metadata) -> List[str]:
+def get_create_call(
+    name,
+    input_file,
+    dataset,
+    metadata,
+) -> List[str]:
     return [
         "python3",
         "manage.py",
@@ -84,10 +89,18 @@ def get_create_call(name, input_file, dataset, metadata) -> List[str]:
     ]
 
 
-def create_for_import(input_file: str, dataset: int) -> None:
+def create_for_import(
+    input_file: str,
+    dataset: int,
+) -> None:
     name = name_from_input_file(input_file)
     metadata = get_impacts_metadata(input_file=input_file)
-    command = get_create_call(name, input_file, dataset, json.dumps(metadata))
+    command = get_create_call(
+        name,
+        input_file,
+        dataset,
+        json.dumps(metadata),
+    )
     subprocess.run(command)
 
 
@@ -144,6 +157,14 @@ class Command(PlanscapeCommand):
             "--style",
             type=int,
             required=False,
+        )
+        create_parser.add_argument(
+            "--map-service-type",
+            type=str,
+            required=True,
+            dest="map_service_type",
+            choices=[c.name for c in MapServiceChoices],
+            help=f"REQUIRED. One of: {[c.name for c in MapServiceChoices]}",
         )
         create_parser.add_argument(
             "--input-file",
@@ -288,6 +309,7 @@ class Command(PlanscapeCommand):
         geometry_type: str,
         layer_info: Dict[str, Any],
         metadata: Optional[Dict[str, Any]] = None,
+        map_service_type: Optional[str] = None,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
         base_url = self.get_base_url(**kwargs)
@@ -310,7 +332,9 @@ class Command(PlanscapeCommand):
             "mimetype": mimetype,
             "geometry_type": geometry_type,
             "style": style,
+            "map_service_type": map_service_type,
         }
+
         response = requests.post(
             url,
             headers=headers,
@@ -350,6 +374,7 @@ class Command(PlanscapeCommand):
         except DataLayerAlreadyExists as datalayer_exists:
             return {"info": str(datalayer_exists)}
 
+        map_service_type = kwargs.pop("map_service_type", None)
         s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
         vsi_input_file = with_vsi_prefix(input_file)
@@ -394,6 +419,7 @@ class Command(PlanscapeCommand):
             mimetype=mimetype,
             original_name=original_name,
             metadata=metadata,
+            map_service_type=map_service_type,
             **kwargs,
         )
         if not output_data:
@@ -442,7 +468,10 @@ class Command(PlanscapeCommand):
             for f in s3_files:
                 pprint(f)
             return
-        fn = partial(create_for_import, dataset=dataset)
+        fn = partial(
+            create_for_import,
+            dataset=dataset,
+        )
         with multiprocessing.Pool(process_count) as pool:
             _ = pool.map(
                 fn,
