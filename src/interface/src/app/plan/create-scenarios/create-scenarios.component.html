@@ -2,9 +2,14 @@
   resource="scenario"
   *ngIf="scenarioNotFound"></app-resource-unavailable>
 
+<!-- Loading state -->
+<div *ngIf="isLoading$ | async" class="spinner-row">
+  <mat-spinner diameter="24" class="loader"></mat-spinner>
+</div>
+
 <div
   class="create-scenarios-panel mat-elevation-z2"
-  [ngClass]="{ hidden: scenarioNotFound }">
+  [ngClass]="{ hidden: scenarioNotFound || (isLoading$ | async) === true }">
   <div class="create-scenarios-panel-content">
     <div class="scenario-name">
       <form *ngIf="forms.get('scenarioName')" [formGroup]="forms!">
