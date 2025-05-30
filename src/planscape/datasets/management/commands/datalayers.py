@@ -21,6 +21,7 @@ from gis.core import (
 from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
+from gis.vectors import to_planscape as to_planscape_vector
 
 from datasets.models import DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
@@ -411,14 +412,13 @@ class Command(PlanscapeCommand):
                 processed_files = to_planscape_raster(
                     input_file=input_file,
                 )
-            case _:
-                if len(layer_info.keys()) > 1:
-                    raise InvalidFileFormat(
-                        "This particular file contains more than one datalayer.\n"
-                        "Split it in multiple files before processing."
-                    )
-                # vector processing is done on the server?
-                processed_files = [input_file]
+            case DataLayerType.VECTOR:
+                layers = kwargs.get("layers", "")
+                layers = layers.split(",") if layers else None
+                processed_files = to_planscape_vector(
+                    input_file=input_file,
+                    target_layers=layers,
+                )
 
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         metadata = kwargs.pop("metadata", None)
