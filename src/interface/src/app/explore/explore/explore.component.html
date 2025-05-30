@@ -21,7 +21,7 @@
         </mat-tab>
       </mat-tab-group>
     </div>
-    <app-map-nav-bar>
+    <app-map-nav-bar class="explore-nav-bar">
       <app-multi-map-control></app-multi-map-control>
       <sg-opacity-slider
         class="navbar-slider"
@@ -31,6 +31,7 @@
         [sliderValue]="(projectAreasOpacity$ | async) ?? 0.5"
         (valueChange)="handleOpacityChange($event)"
         tooltip="Layer Opacity"></sg-opacity-slider>
+      <app-explore-modes-selection-toggle></app-explore-modes-selection-toggle>
     </app-map-nav-bar>
     <app-synced-maps [ngClass]="{ withPanel: panelExpanded }"></app-synced-maps>
   </div>

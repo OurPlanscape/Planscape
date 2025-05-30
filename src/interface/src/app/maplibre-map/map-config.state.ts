@@ -46,6 +46,9 @@ export class MapConfigState {
   private defaultZoomLevel = 7;
   public zoomLevel$ = new BehaviorSubject<number>(this.defaultZoomLevel);
 
+  private _drawingModeEnabled$ = new BehaviorSubject(false);
+  public drawingModeEnabled$ = this._drawingModeEnabled$.asObservable();
+
   updateBaseLayer(layer: BaseLayerType) {
     this._baseLayer$.next(layer);
   }
@@ -89,5 +92,9 @@ export class MapConfigState {
 
   setProjectAreasOpacity(value: number) {
     this._projectAreasOpacity.next(value);
+  }
+
+  toggleDrawingMode() {
+    this._drawingModeEnabled$.next(!this._drawingModeEnabled$.getValue());
   }
 }

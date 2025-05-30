@@ -75,3 +75,8 @@ app-map-nav-bar {
 app-synced-maps.withPanel {
   margin-left: $side-panel-width;
 }
+
+/* TODO: solve this a different way */
+.explore-nav-bar {
+    width: calc(100% - 360px);
+}
