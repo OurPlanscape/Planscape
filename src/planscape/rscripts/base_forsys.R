@@ -392,8 +392,7 @@ get_metric_data <- function(connection, stands, datalayer) {
 
   metric <- get_stand_metrics_v2(
     connection,
-    datalayer_id,
-    datalayer_name,
+    datalayer,
     stands$stand_id
   ) %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
   metric[[field_name]][metric[[field_name]] == -Inf] <- 0
