@@ -194,10 +194,15 @@ preprocess_metrics <- function(metrics, condition_name) {
   return(metrics)
 }
 
-get_metric_column <- function(condition_name) {
-  if (exists(condition_name, METRIC_COLUMNS)) {
-    return(METRIC_COLUMNS[[condition_name]])
+get_metric_column <- function(name) {
+  if (is.null(name)) {
+    return("avg")
   }
+
+  if (exists(name, METRIC_COLUMNS)) {
+    return(METRIC_COLUMNS[[name]])
+  }
+
   return("avg")
 }
 
