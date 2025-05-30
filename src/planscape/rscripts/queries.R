@@ -93,7 +93,7 @@ get_datalayer_metric <- function(datalayer) {
     return("avg")
   }
   metadata <- fromJSON(datalayer$metadata)
-  metric <- metadata$modules$forsys$metric
+  metric <- metadata$modules$forsys$metric_column
   if (is.null(metric)) {
     return("avg")
   }
