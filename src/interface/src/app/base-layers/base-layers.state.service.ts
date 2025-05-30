@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, shareReplay } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, map, shareReplay } from 'rxjs';
 import { DataLayersService } from '@services/data-layers.service';
 import { BaseLayer } from '@types';
 
@@ -11,6 +11,11 @@ export class BaseLayersStateService {
 
   // gets all base layers
   baseLayers$ = this.dataLayersService.listBaseLayers().pipe(shareReplay(1));
+
+  private _loadingLayers$ = new BehaviorSubject<string[]>([]);
+  public loadingLayers$ = this._loadingLayers$
+    .asObservable()
+    .pipe(distinctUntilChanged());
 
   // base layers grouped by category (one level)
   categorizedBaseLayers$ = this.baseLayers$.pipe(
@@ -43,6 +48,10 @@ export class BaseLayersStateService {
   selectedBaseLayers$ = this._selectedBaseLayers$.asObservable();
 
   updateBaseLayers(bl: BaseLayer, isMulti: boolean) {
+    this._loadingLayers$.next([
+      ...this._loadingLayers$.value,
+      'source_' + bl.id.toString(),
+    ]);
     const currentLayers = this._selectedBaseLayers$.value ?? [];
 
     // If no layers selected, just set the new one
@@ -83,6 +92,21 @@ export class BaseLayersStateService {
 
   enableBaseLayerHover(value: boolean) {
     this._enableBaseLayerHover$.next(value);
+  }
+
+  addLoadingSourceId(id: string) {
+    this._loadingLayers$.next([...this._loadingLayers$.value, id]);
+  }
+
+  removeLoadingSourceId(id: string) {
+    let currentValues = this._loadingLayers$.value.slice(
+      this._loadingLayers$.value.indexOf(id) + 1
+    );
+    this._loadingLayers$.next([...currentValues]);
+  }
+
+  resetSourceIds() {
+    this._loadingLayers$.next([]);
   }
 
   private isCategoryMultiSelect(path: string) {

@@ -10,6 +10,11 @@ describe('MapBaseLayersComponent', () => {
   let component: MapBaseLayersComponent;
   let fixture: ComponentFixture<MapBaseLayersComponent>;
 
+  let mockMapLibreMap = {
+    on: jasmine.createSpy('on'),
+    off: jasmine.createSpy('off'),
+  };
+
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [HttpClientTestingModule, MapBaseLayersComponent],
@@ -22,6 +27,7 @@ describe('MapBaseLayersComponent', () => {
 
     fixture = TestBed.createComponent(MapBaseLayersComponent);
     component = fixture.componentInstance;
+    component.mapLibreMap = mockMapLibreMap as any;
     fixture.detectChanges();
   });
 
