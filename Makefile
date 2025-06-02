@@ -85,7 +85,7 @@ deploy-frontend-with-sentry: install-dependencies-frontend compile-angular handl
 	@echo "Copying build to web directory..."; \
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 
-deploy-frontend: install-dependencies-frontend compile-angular
+deploy-frontend: install-dependencies-frontend compile-angular remove-local-sourcemaps
 	@echo "Copying build to web directory..."; \
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 	
