@@ -93,7 +93,22 @@ export class ExploreMapComponent {
   enablePolygonDrawingMode() {
     this.terraDraw?.start();
     this.terraDraw?.setMode('polygon');
+    this.terraDraw?.on("finish", (id: any, context: any) => {
+      console.log('id?', id);
+      console.log('type?', context);
+      console.log('we drew a polygon...', context);
+      // TODO: keep a reference to this polygon, in order to save it as a feature
+      // this.cancelDrawingMode();
+      const feature = this.terraDraw?.getSnapshotFeature(id);
+      console.log('here is the feature we drew:', feature);
+      console.log('can we get the geometry?...', feature?.geometry);
+    });
   }
+
+  cancelDrawingMode() {
+    this.terraDraw?.stop();
+  }
+
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
