@@ -70,18 +70,22 @@ upload-sentry-sourcemaps:
 		true; \
 	elif [ -n "${TAG}" ] && [ "${TAG}" != "main" ]; then \
 		echo "${TAG} is a tagged release. Informing Sentry of release"; \
-		sentry-cli releases new "${TAG}" \
-		sentry-cli sourcemaps inject ./src/interface/dist --release "${TAG}" && \
-		sentry-cli sourcemaps upload --release "${TAG}" ./src/interface/dist ;  \
+		sentry-cli releases new "${TAG}" &&  \
+		sentry-cli sourcemaps inject ./src/interface/dist --release "${TAG}" || true ; \
+		sentry-cli sourcemaps upload --release "${TAG}" ./src/interface/dist || true ;  \
 	else \
 		sentry-cli releases new "${GIT_COMMIT_SHA}" && \
-		sentry-cli sourcemaps inject ./src/interface/dist --release "${GIT_COMMIT_SHA}" && \
-		sentry-cli sourcemaps upload --release "${GIT_COMMIT_SHA}" ./src/interface/dist ; \
+		sentry-cli sourcemaps inject ./src/interface/dist --release "${GIT_COMMIT_SHA}" || true ; \
+		sentry-cli sourcemaps upload --release "${GIT_COMMIT_SHA}" ./src/interface/dist || true  ; \
 	fi
 
 handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
 
-deploy-frontend: install-dependencies-frontend compile-angular handle-sentry-uploads
+deploy-frontend-with-sentry: install-dependencies-frontend compile-angular handle-sentry-uploads
+	@echo "Copying build to web directory..."; \
+	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
+
+deploy-frontend: install-dependencies-frontend compile-angular
 	@echo "Copying build to web directory..."; \
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 	
