@@ -37,6 +37,7 @@
     [mapLibreMap]="mapLibreMap"></app-map-data-layer>
 
   <app-map-base-layers
+    *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"
     before="planning-area-polygon"></app-map-base-layers>
 
