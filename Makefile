@@ -64,7 +64,7 @@ remove-local-sourcemaps:
 # Note that this relies on .sentryclirc for Sentry configs
 # and this make command is ignored without that file.
 upload-sentry-sourcemaps:
-	@./upload_sentry_sourcemaps.sh || \
+	@$(SHELL) ./upload_sentry_sourcemaps.sh || \
 	echo "NOTICE: Failed to upload sentry sourcemaps. Continuing to next build step."
 
 handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
