@@ -284,7 +284,9 @@ def create_datalayer(
     dataset: Dataset,
     organization: Organization,
     created_by: User,
-    original_name: str,
+    original_name: Optional[str] = None,
+    url: Optional[str] = None,
+    storage_type: Optional[str] = None,
     category: Optional[Category] = None,
     type: Optional[DataLayerType] = None,
     geometry_type: Optional[GeometryType] = None,
@@ -295,28 +297,43 @@ def create_datalayer(
     metadata = kwargs.pop("metadata", None) or None
     style = kwargs.pop("style", None) or None
     uuid = str(uuid4())
-
-    storage_url = get_storage_url(
-        organization_id=organization.pk,
-        uuid=uuid,
-        original_name=original_name,
-        mimetype=mimetype,
-    )
     geometry = geometry_from_info(info, datalayer_type=type)
-    if not mimetype:
-        mimetype, _encoding = mimetypes.guess_type(original_name)
-    if is_s3_file(original_name):
-        # process this
-        original_file_name = s3_filename(original_name)
-    else:
-        original_file_name = original_name
 
-    match type:
-        case DataLayerType.VECTOR:
-            storage_type = StorageTypeChoices.DATABASE
-        case _:
-            # s3 is also filesystem
-            storage_type = StorageTypeChoices.FILESYSTEM
+    if url:
+        storage_url = url
+        storage_type = StorageTypeChoices.EXTERNAL_SERVICE
+        original_file_name = None
+        upload_to = {}
+    else:
+        if original_name is None:
+            raise ValueError("original_name is required when url is not given")
+        storage_url = get_storage_url(
+            organization_id=organization.pk,
+            uuid=uuid,
+            original_name=original_name,
+            mimetype=mimetype,
+        )
+
+        if not mimetype:
+            mimetype, _encoding = mimetypes.guess_type(original_name)
+        if is_s3_file(original_name):
+            original_file_name = s3_filename(original_name)
+        else:
+            original_file_name = original_name
+
+        if storage_type is None:
+            storage_type = (
+                StorageTypeChoices.DATABASE
+                if type == DataLayerType.VECTOR
+                else StorageTypeChoices.FILESYSTEM
+            )
+
+        upload_to = create_upload_url_for_org(
+            organization_id=organization.pk,
+            uuid=uuid,
+            original_name=original_name,
+            mimetype=mimetype,
+        )
 
     datalayer = DataLayer.objects.create(
         name=name,
@@ -335,12 +352,6 @@ def create_datalayer(
         original_name=original_file_name,
         mimetype=mimetype,
         **kwargs,
-    )
-    upload_to = create_upload_url_for_org(
-        organization_id=organization.pk,
-        uuid=uuid,
-        original_name=original_name,
-        mimetype=mimetype,
     )
 
     if style:
