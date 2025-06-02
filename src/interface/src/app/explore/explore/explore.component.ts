@@ -15,6 +15,7 @@ import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
+import { MapSelectorComponent } from '../map-selector/map-selector.component';
 
 @Component({
   selector: 'app-explore',
@@ -33,6 +34,7 @@ import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-to
     NgIf,
     MatTabsModule,
     BaseLayersComponent,
+    MapSelectorComponent,
   ],
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.scss',
