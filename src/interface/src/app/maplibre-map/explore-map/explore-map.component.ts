@@ -7,6 +7,12 @@ import { AuthService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
 import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
+import {
+  TerraDrawPolygonMode,
+  // TerraDrawSelectMode, // TODO: some features might actually be useful to us...
+  TerraDraw
+} from 'terra-draw';
+import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 
 @Component({
   selector: 'app-explore-map',
@@ -50,16 +56,46 @@ export class ExploreMapComponent {
   @Input() mapNumber = 1;
   @Input() showAttribution = false;
 
+  terraDraw: TerraDraw | null = null;
+
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService
-  ) {}
+  ) { }
 
   mapLoaded(map: MapLibreMap) {
     this.mapLibreMap = map;
     this.mapCreated.emit({ map: map, mapNumber: this.mapNumber });
+    this.initDrawingModes();
+    this.enablePolygonDrawingMode();
+  }
+  initDrawingModes() {
+    const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({ map: this.mapLibreMap });
+    const polygonMode = new TerraDrawPolygonMode({
+      //TODO: pull styles from elsewhere...
+      styles: {
+        fillColor: '#aaeeaa',
+        fillOpacity: 0.7,
+        outlineColor: '#00ff00',
+        outlineWidth: 2,
+        closingPointColor: '#00ff00',
+        closingPointWidth: 5,
+        closingPointOutlineColor: '#00ffee',
+        closingPointOutlineWidth: 2
+      }
+    });
+    this.terraDraw = new TerraDraw({
+      adapter: mapLibreAdapter,
+      modes: [polygonMode]
+    });
+  }
+
+  enablePolygonDrawingMode() {
+    this.terraDraw?.start();
+    this.terraDraw?.setMode('polygon');
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
+
 }
