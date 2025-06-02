@@ -4,6 +4,8 @@ import {
   Component,
   Input,
   NgZone,
+  OnDestroy,
+  OnInit,
 } from '@angular/core';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
@@ -40,7 +42,7 @@ import { BehaviorSubject, take } from 'rxjs';
   styleUrl: './map-base-layers.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MapBaseLayersComponent {
+export class MapBaseLayersComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() before = '';
 
@@ -59,6 +61,37 @@ export class MapBaseLayersComponent {
     private changeDetectorRef: ChangeDetectorRef,
     private zone: NgZone
   ) {}
+
+  ngOnInit(): void {
+    this.setupMapListeners();
+  }
+
+  private setupMapListeners() {
+    this.mapLibreMap.on('data', this.onDataListener);
+    this.mapLibreMap.on('error', this.onErrorListener);
+  }
+
+  private onDataListener = (event: any) => {
+    if (event.sourceId?.startsWith('source_') && event.isSourceLoaded) {
+      // Using ngZone since otherwise the loading spinner will be displayed forever.
+      this.zone.run(() => {
+        this.baseLayersStateService.removeLoadingSourceId(event.sourceId);
+      });
+    }
+  };
+
+  private onErrorListener = (event: any) => {
+    if (event.sourceId?.startsWith('source_') && !event.isSourceLoaded) {
+      this.zone.run(() => {
+        this.baseLayersStateService.removeLoadingSourceId(event.sourceId);
+      });
+    }
+  };
+
+  ngOnDestroy(): void {
+    this.mapLibreMap?.off('data', this.onDataListener);
+    this.mapLibreMap?.off('error', this.onErrorListener);
+  }
 
   lineLayerPaint(layer: BaseLayer) {
     return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
