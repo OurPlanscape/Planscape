@@ -63,6 +63,8 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(ConstraintsPanelComponent, { static: true })
   constraintsPanelComponent!: ConstraintsPanelComponent;
 
+  isLoading$ = new BehaviorSubject(true);
+
   constructor(
     private fb: FormBuilder,
     private LegacyPlanStateService: LegacyPlanStateService,
@@ -92,7 +94,12 @@ export class CreateScenariosComponent implements OnInit {
     });
   }
 
-  async ngOnInit() {
+  ngOnInit() {
+    this.isLoading$.next(true);
+    this.initScenario();
+  }
+
+  async initScenario() {
     await this.createForms();
     // Get plan details and current config ID from plan state, then load the config.
     this.LegacyPlanStateService.planState$
@@ -118,6 +125,7 @@ export class CreateScenariosComponent implements OnInit {
     } else {
       // enable animation
       this.tabAnimation = this.tabAnimationOptions.on;
+      this.isLoading$.next(false);
     }
 
     // When an area is uploaded, issue an event to draw it on the map.
@@ -203,9 +211,11 @@ export class CreateScenariosComponent implements OnInit {
         }
         // setting constraints
         this.constraintsPanelComponent.setFormData(scenario.configuration);
+        this.isLoading$.next(false);
       },
       error: () => {
         this.scenarioNotFound = true;
+        this.isLoading$.next(false);
       },
     });
   }
