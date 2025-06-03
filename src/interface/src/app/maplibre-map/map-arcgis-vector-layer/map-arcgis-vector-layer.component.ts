@@ -2,10 +2,10 @@ import {
   Component,
   EventEmitter,
   Input,
+  NgZone,
   OnDestroy,
   OnInit,
   Output,
-  NgZone,
 } from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
 import {
@@ -13,6 +13,7 @@ import {
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapLayerMouseEvent,
+  MapLibreEvent,
 } from 'maplibre-gl';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
@@ -50,6 +51,8 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.off('mousemove', this.layerFillId, this.onMouseMove);
     this.mapLibreMap.off('mouseleave', this.layerFillId, this.onMouseLeave);
     this.mapLibreMap.off('styledata', this.onStyleDataListener);
+    this.mapLibreMap.off('movestart', this.moveStart);
+    this.mapLibreMap.off('moveend', this.moveEnd);
     this.clearHover();
 
     this.mapLibreMap.removeLayer(this.layerFillId);
@@ -57,6 +60,9 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
 
     this.mapLibreMap?.off('data', this.onDataListener);
     this.mapLibreMap?.off('error', this.onErrorListener);
+
+    this.arcGisService?.disableRequests();
+
     this.arcGisService?.destroySource();
   }
 
@@ -190,7 +196,22 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.on('mousemove', this.layerFillId, this.onMouseMove);
     this.mapLibreMap.on('mouseleave', this.layerFillId, this.onMouseLeave);
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
+
+    this.mapLibreMap.on('movestart', this.moveStart);
+    this.mapLibreMap.on('moveend', this.moveEnd);
   }
+
+  private moveEnd = (e: MapLibreEvent<UIEvent> & { broadcast?: boolean }) => {
+    if (!e.originalEvent && !e.broadcast) return;
+    this.arcGisService?.enableRequests();
+    // fire a last moveend to sync after enabling requests
+    this.mapLibreMap.fire('moveend');
+  };
+
+  private moveStart = (e: MapLibreEvent<UIEvent> & { broadcast?: boolean }) => {
+    if (!e.originalEvent && !e.broadcast) return;
+    this.arcGisService?.disableRequests();
+  };
 
   private getTooltipTemplate(layer: BaseLayer): string | null {
     return layer.metadata?.modules?.map?.tooltip_format ?? null;
