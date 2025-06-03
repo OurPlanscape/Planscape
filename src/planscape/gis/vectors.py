@@ -57,6 +57,7 @@ def merge_layers(
 
     schema = {}
     crs = None
+    driver = None
     for layer in layer_info.values():
         layer_schema = layer.get("schema", {})
 
@@ -85,6 +86,13 @@ def merge_layers(
                 "Cannot filter layers with different CRS in the same file."
             )
 
+        if driver is None:
+            driver = layer.get("driver")
+        elif driver != layer.get("driver"):
+            raise VectorError(
+                "Cannot filter layers with different drivers in the same file."
+            )
+
     print(f"Schema: {schema}")
     print(f"CRS: {crs}")
 
@@ -93,7 +101,7 @@ def merge_layers(
         with fiona.open(
             output_file,
             "w",
-            driver="ESRI Shapefile",
+            driver=driver,
             schema=schema,
             crs=crs,
         ) as sink:
