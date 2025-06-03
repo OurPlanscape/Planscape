@@ -26,7 +26,7 @@ export class ExploreModesToggleComponent {
   @Output() scenarioUpload = new EventEmitter<void>();
   drawModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
 
-  constructor(private mapConfigState: MapConfigState) { }
+  constructor(private mapConfigState: MapConfigState) {}
 
   toggleDrawing() {
     this.toggleDrawingMode.emit();

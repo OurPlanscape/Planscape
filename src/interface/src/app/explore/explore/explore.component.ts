@@ -100,6 +100,7 @@ export class ExploreComponent implements OnDestroy {
   }
 
   toggleDrawingMode() {
+    //TODO: confirm: if not on single-pane view, switch to it?
     this.mapConfigState.toggleDrawingMode();
   }
 
@@ -110,6 +111,4 @@ export class ExploreComponent implements OnDestroy {
   saveDrawing() {
     //TODO: save drawing
   }
-
-
 }
