@@ -164,6 +164,18 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
       for (i in seq_along(restrictions)) {
         datalayer_id <- restrictions[i]
         restriction <- get_datalayer_by_id(connection, datalayer_id)
+        if (!(restriction$geometry_type %in% ALLOWED_RESTRICTION_TYPES)) {
+          print(
+            glue(
+              "Restriction",
+              restriction$id,
+              "with name",
+              restriction$name,
+              "cannot be used because its not a polygon."
+            )
+          )
+          next
+        }
         restriction_data <- get_restriction_v2(connection, scenario_id, restriction$table)
         stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
       }
