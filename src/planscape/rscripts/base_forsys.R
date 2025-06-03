@@ -530,9 +530,8 @@ get_weights <- function(priorities, configuration) {
     print("trimming weights")
     return(configuration$weights[1:target_count])
   }
-
-  print("using configured weights")
-  return(configuration$weights)
+  # just return configured weights
+  configuration$weights
 }
 
 get_number_of_projects <- function(scenario) {
@@ -729,11 +728,12 @@ call_forsys <- function(
     if (length(priorities$name) > 1) {
       weights <- get_weights(priorities, configuration)
       fields <- paste0("datalayer_", priorities[["id"]])
+      spm_fields <- paste0(fields, "_SPM")
       stand_data <- stand_data %>%
-        forsys::calculate_spm(fields = paste0("datalayer_", priorities$id)) %>%
-        forsys::calculate_pcp(fields = paste0("datalayer_", priorities$id)) %>%
+        forsys::calculate_spm(fields = fields) %>%
+        forsys::calculate_pcp(fields = fields) %>%
         forsys::combine_priorities(
-          fields = paste0("datalayer_", priorities$id, "_SPM"),
+          fields = spm_fields,
           weights = weights,
           new_field = "priority"
         )
