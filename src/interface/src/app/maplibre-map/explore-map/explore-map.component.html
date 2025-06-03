@@ -10,12 +10,17 @@
   (mapLoad)="mapLoaded($event)"
   [style]="(baseLayerUrl$ | async) || ''"
   [attributionControl]="false"
-  [transformRequest]="transformRequest">
+  [transformRequest]="transformRequest"
+  [ngClass]="{
+    'highlighted-map': showMapNumber && (isSelected$ | async) === true,
+  }">
   <app-map-base-layers
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-base-layers>
 
   <mgl-control position="bottom-left" *ngIf="showMapNumber">
-    <div class="label">Map {{ mapNumber }}</div>
+    <div class="label" [class.selected-map]="(isSelected$ | async) === true">
+      Map {{ mapNumber }}
+    </div>
   </mgl-control>
 </mgl-map>
