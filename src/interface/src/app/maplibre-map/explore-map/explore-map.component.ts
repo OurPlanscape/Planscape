@@ -10,10 +10,11 @@ import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.compo
 import {
   TerraDrawPolygonMode,
   // TerraDrawSelectMode, // TODO: some features might actually be useful to us...
-  TerraDraw
+  TerraDraw,
+  GeoJSONStoreFeatures,
 } from 'terra-draw';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
-
+import * as turf from '@turf/turf';
 @Component({
   selector: 'app-explore-map',
   standalone: true,
@@ -61,7 +62,7 @@ export class ExploreMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService
-  ) { }
+  ) {}
 
   mapLoaded(map: MapLibreMap) {
     this.mapLibreMap = map;
@@ -70,7 +71,9 @@ export class ExploreMapComponent {
     this.enablePolygonDrawingMode();
   }
   initDrawingModes() {
-    const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({ map: this.mapLibreMap });
+    const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
+      map: this.mapLibreMap,
+    });
     const polygonMode = new TerraDrawPolygonMode({
       //TODO: pull styles from elsewhere...
       styles: {
@@ -81,36 +84,44 @@ export class ExploreMapComponent {
         closingPointColor: '#00ff00',
         closingPointWidth: 5,
         closingPointOutlineColor: '#00ffee',
-        closingPointOutlineWidth: 2
-      }
+        closingPointOutlineWidth: 2,
+      },
     });
     this.terraDraw = new TerraDraw({
       adapter: mapLibreAdapter,
-      modes: [polygonMode]
+      modes: [polygonMode],
     });
   }
 
   enablePolygonDrawingMode() {
     this.terraDraw?.start();
     this.terraDraw?.setMode('polygon');
-    this.terraDraw?.on("finish", (id: any, context: any) => {
-      console.log('id?', id);
-      console.log('type?', context);
-      console.log('we drew a polygon...', context);
+    this.terraDraw?.on('finish', (id: any, context: any) => {
       // TODO: keep a reference to this polygon, in order to save it as a feature
       // this.cancelDrawingMode();
       const feature = this.terraDraw?.getSnapshotFeature(id);
-      console.log('here is the feature we drew:', feature);
-      console.log('can we get the geometry?...', feature?.geometry);
+      if (feature) {
+        this.calculateAcreage(feature);
+      }
     });
+  }
+
+  //TODO: complete this PoC to match our backend acreage measurement
+  calculateAcreage(polygon: GeoJSONStoreFeatures) {
+    if (!turf.booleanValid(polygon)) {
+      console.log('not a valid polygon');
+      return;
+    }
+    const CONVERSION_SQM_ACRES = 4046.8564213562374;
+    const areaInSquareMeters = turf.area(polygon);
+    const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
+    console.log(`Area: ${areaInAcres} acres`);
   }
 
   cancelDrawingMode() {
     this.terraDraw?.stop();
   }
 
-
   transformRequest: RequestTransformFunction = (url, resourceType) =>
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
-
 }
