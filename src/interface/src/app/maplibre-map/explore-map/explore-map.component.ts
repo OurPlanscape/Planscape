@@ -9,7 +9,7 @@ import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 import {
   TerraDrawPolygonMode,
-  // TerraDrawSelectMode, // TODO: some features might actually be useful to us...
+  TerraDrawSelectMode, // TODO: some features might actually be useful to us...
   TerraDraw,
   GeoJSONStoreFeatures,
 } from 'terra-draw';
@@ -77,39 +77,59 @@ export class ExploreMapComponent {
     const polygonMode = new TerraDrawPolygonMode({
       //TODO: pull styles from elsewhere...
       styles: {
-        fillColor: '#aaeeaa',
-        fillOpacity: 0.7,
-        outlineColor: '#00ff00',
+        fillColor: '#A5C8D7',
+        fillOpacity: 0.5,
+        outlineColor: '#000000',
         outlineWidth: 2,
-        closingPointColor: '#00ff00',
-        closingPointWidth: 5,
-        closingPointOutlineColor: '#00ffee',
+        closingPointColor: '#ffffff',
+        closingPointWidth: 6,
+        closingPointOutlineColor: '#0000ee',
         closingPointOutlineWidth: 2,
+      },
+    });
+    // with this config, we just use 'select mode' as a mode that disallows new polygons,
+    // but we disable the polygon edit features -- TODO: though we may actually want these?
+    const selectMode = new TerraDrawSelectMode({
+      flags: {
+        polygon: {
+          feature: {
+            draggable: false,
+            coordinates: {
+              midpoints: {
+                draggable: false,
+              },
+              draggable: false,
+              snappable: false,
+              deletable: false,
+            },
+          },
+        },
       },
     });
     this.terraDraw = new TerraDraw({
       adapter: mapLibreAdapter,
-      modes: [polygonMode],
+      modes: [polygonMode, selectMode],
     });
   }
 
   enablePolygonDrawingMode() {
     this.terraDraw?.start();
     this.terraDraw?.setMode('polygon');
+
     this.terraDraw?.on('finish', (id: any, context: any) => {
-      // TODO: keep a reference to this polygon, in order to save it as a feature
-      // this.cancelDrawingMode();
       const feature = this.terraDraw?.getSnapshotFeature(id);
       if (feature) {
         this.calculateAcreage(feature);
       }
+      // TODO: end drawing mode, but support cancel and save options
+      this.terraDraw?.setMode('select');
+      // TODO: and on save, open dialog, send feature and form data to createPlan()
     });
   }
 
   //TODO: complete this PoC to match our backend acreage measurement
   calculateAcreage(polygon: GeoJSONStoreFeatures) {
     if (!turf.booleanValid(polygon)) {
-      console.log('not a valid polygon');
       return;
     }
     const CONVERSION_SQM_ACRES = 4046.8564213562374;
