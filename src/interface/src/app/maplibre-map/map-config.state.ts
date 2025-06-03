@@ -1,15 +1,15 @@
 import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { baseLayerStyles } from './map-base-layers';
+import { baseMapStyles } from './map-base-layers';
 import { Extent } from '@types';
 import { filter } from 'rxjs/operators';
-import { BaseLayerType, DEFAULT_BASE_MAP } from '../types/maplibre.map.types';
+import { BaseMapType, DEFAULT_BASE_MAP } from '../types/maplibre.map.types';
 
 @Injectable()
 export class MapConfigState {
-  protected _baseLayer$ = new BehaviorSubject<BaseLayerType>(DEFAULT_BASE_MAP);
-  baseLayer$ = this._baseLayer$.asObservable();
-  baseLayerUrl$ = this.baseLayer$.pipe(map((b) => baseLayerStyles[b]));
+  protected _baseMap$ = new BehaviorSubject<BaseMapType>(DEFAULT_BASE_MAP);
+  baseMap$ = this._baseMap$.asObservable();
+  baseMapUrl$ = this.baseMap$.pipe(map((b) => baseMapStyles[b]));
 
   protected _mapExtent$ = new BehaviorSubject<Extent | null>(null);
   mapExtent$ = this._mapExtent$
@@ -46,8 +46,8 @@ export class MapConfigState {
   private defaultZoomLevel = 7;
   public zoomLevel$ = new BehaviorSubject<number>(this.defaultZoomLevel);
 
-  updateBaseLayer(layer: BaseLayerType) {
-    this._baseLayer$.next(layer);
+  updateBaseMap(layer: BaseMapType) {
+    this._baseMap$.next(layer);
   }
 
   updateMapCenter(pos: any) {
