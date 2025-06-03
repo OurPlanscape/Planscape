@@ -63,6 +63,7 @@ class DataLayerAdmin(admin.ModelAdmin):
         "name",
         "status",
         "type",
+        "map_service_type",
         "geometry_type",
         "dataset",
         "category",

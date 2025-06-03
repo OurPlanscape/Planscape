@@ -1,4 +1,12 @@
-import { ChangeDetectionStrategy, Component, Input } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  Input,
+  NgZone,
+  OnDestroy,
+  OnInit,
+} from '@angular/core';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import {
@@ -15,8 +23,7 @@ import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
-import { take } from 'rxjs';
+import { BehaviorSubject, take } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -35,20 +42,56 @@ import { take } from 'rxjs';
   styleUrl: './map-base-layers.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class MapBaseLayersComponent {
+export class MapBaseLayersComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
   @Input() before = '';
 
   // only one hovered stand
   hoveredFeature: MapGeoJSONFeature | null = null;
   selectedLayers$ = this.baseLayersStateService.selectedBaseLayers$;
-  enableBaseLayerHover$ = this.dataLayersStateService.enableBaseLayerHover$;
-  currentTooltipInfo$ = this.dataLayersStateService.tooltipInfo$;
+  enableBaseLayerHover$ = this.baseLayersStateService.enableBaseLayerHover$;
+
+  private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
+    null
+  );
+  currentTooltipInfo$ = this._tooltipInfo$.asObservable();
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
-    private dataLayersStateService: DataLayersStateService
+    private changeDetectorRef: ChangeDetectorRef,
+    private zone: NgZone
   ) {}
+
+  ngOnInit(): void {
+    this.setupMapListeners();
+  }
+
+  private setupMapListeners() {
+    this.mapLibreMap.on('data', this.onDataListener);
+    this.mapLibreMap.on('error', this.onErrorListener);
+  }
+
+  private onDataListener = (event: any) => {
+    if (event.sourceId?.startsWith('source_') && event.isSourceLoaded) {
+      // Using ngZone since otherwise the loading spinner will be displayed forever.
+      this.zone.run(() => {
+        this.baseLayersStateService.removeLoadingSourceId(event.sourceId);
+      });
+    }
+  };
+
+  private onErrorListener = (event: any) => {
+    if (event.sourceId?.startsWith('source_') && !event.isSourceLoaded) {
+      this.zone.run(() => {
+        this.baseLayersStateService.removeLoadingSourceId(event.sourceId);
+      });
+    }
+  };
+
+  ngOnDestroy(): void {
+    this.mapLibreMap?.off('data', this.onDataListener);
+    this.mapLibreMap?.off('error', this.onErrorListener);
+  }
 
   lineLayerPaint(layer: BaseLayer) {
     return defaultBaseLayerLine(layer.styles[0].data['fill-outline-color']);
@@ -70,7 +113,7 @@ export class MapBaseLayersComponent {
             content: this.createTooltipContent(layer, features[0]) ?? '',
             longLat: event.lngLat,
           };
-          this.dataLayersStateService.setTooltipData(tooltipInfo);
+          this.setTooltipData(tooltipInfo);
           this.paintHover(features[0]);
         }
       }
@@ -78,7 +121,7 @@ export class MapBaseLayersComponent {
   }
 
   hoverOutLayer() {
-    this.dataLayersStateService.setTooltipData(null);
+    this.setTooltipData(null);
     this.removeHover();
   }
 
@@ -126,6 +169,13 @@ export class MapBaseLayersComponent {
       );
       return tooltipString ?? '';
     }
+  }
+
+  setTooltipData(tooltipInfo: BaseLayerTooltipData | null) {
+    this.zone.run(() => {
+      this._tooltipInfo$.next(tooltipInfo);
+      this.changeDetectorRef.markForCheck();
+    });
   }
 
   private removeHover() {

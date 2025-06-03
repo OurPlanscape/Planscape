@@ -58,3 +58,10 @@
   box-sizing: border-box;
   border: 1px solid transparent;
 }
+
+.right-items {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+}

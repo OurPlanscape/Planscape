@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, map, shareReplay } from 'rxjs';
+import { BehaviorSubject, distinctUntilChanged, map, shareReplay } from 'rxjs';
 import { DataLayersService } from '@services/data-layers.service';
 import { BaseLayer } from '@types';
 
@@ -11,6 +11,11 @@ export class BaseLayersStateService {
 
   // gets all base layers
   baseLayers$ = this.dataLayersService.listBaseLayers().pipe(shareReplay(1));
+
+  private _loadingLayers$ = new BehaviorSubject<string[]>([]);
+  public loadingLayers$ = this._loadingLayers$
+    .asObservable()
+    .pipe(distinctUntilChanged());
 
   // base layers grouped by category (one level)
   categorizedBaseLayers$ = this.baseLayers$.pipe(
@@ -36,6 +41,9 @@ export class BaseLayersStateService {
     })
   );
 
+  private _enableBaseLayerHover$ = new BehaviorSubject<boolean>(false);
+  enableBaseLayerHover$ = this._enableBaseLayerHover$.asObservable();
+
   private _selectedBaseLayers$ = new BehaviorSubject<BaseLayer[] | null>(null);
   selectedBaseLayers$ = this._selectedBaseLayers$.asObservable();
 
@@ -45,6 +53,7 @@ export class BaseLayersStateService {
     // If no layers selected, just set the new one
     if (currentLayers.length === 0) {
       this._selectedBaseLayers$.next([bl]);
+      this.addLoadingSourceId('source_' + bl.id);
       return;
     }
 
@@ -59,23 +68,47 @@ export class BaseLayersStateService {
         if (alreadySelected) {
           // Remove if already selected
           const updated = currentLayers.filter((layer) => layer.id !== bl.id);
+          // If it's already selected and it's checkbox we want to remove loading
+          this.removeLoadingSourceId('source_' + bl.id);
           this._selectedBaseLayers$.next(updated);
         } else {
           // Add if not already selected
+          this.addLoadingSourceId('source_' + bl.id);
           this._selectedBaseLayers$.next([...currentLayers, bl]);
         }
       } else {
         // Different category, start new selection
+        this.resetSourceIds();
+        this.addLoadingSourceId('source_' + bl.id);
         this._selectedBaseLayers$.next([bl]);
       }
     } else {
       // Replace with only this layer regardless of current state
+      this.resetSourceIds();
+      this.addLoadingSourceId('source_' + bl.id);
       this._selectedBaseLayers$.next([bl]);
     }
   }
 
   clearBaseLayer() {
     this._selectedBaseLayers$.next(null);
+  }
+
+  enableBaseLayerHover(value: boolean) {
+    this._enableBaseLayerHover$.next(value);
+  }
+
+  addLoadingSourceId(id: string) {
+    this._loadingLayers$.next([...this._loadingLayers$.value, id]);
+  }
+
+  removeLoadingSourceId(id: string) {
+    let currentValues = this._loadingLayers$.value.filter((l) => l !== id);
+    this._loadingLayers$.next([...currentValues]);
+  }
+
+  resetSourceIds() {
+    this._loadingLayers$.next([]);
   }
 
   private isCategoryMultiSelect(path: string) {

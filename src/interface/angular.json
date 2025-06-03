@@ -56,12 +56,13 @@
               "maplibre-gl",
               "polylabel",
               "raf",
-              "rgbcolor"
-              "shpjs",
+              "rgbcolor",
+              "shpjs"
             ]
           },
           "configurations": {
             "production": {
+              "sourceMap": true,
               "budgets": [
                 {
                   "type": "initial",

@@ -109,6 +109,8 @@ POSTPROCESSING_FUNCTIONS <- list(
 
 METRIC_COLUMNS <- list(
   distance_to_roads = "min",
+  # not duplicate, because the legacy name is distance to roads, but the correct is distance from roads
+  distance_from_roads = "min",
   slope = "max",
   low_income_population_proportional = "sum",
   wui = "majority",
@@ -116,4 +118,3 @@ METRIC_COLUMNS <- list(
   f3veg100 = "majority",
   wildland_urban_interface = "majority"
 )
-

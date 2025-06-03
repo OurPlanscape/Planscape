@@ -1,4 +1,12 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+  NgZone,
+} from '@angular/core';
 import FeatureService from 'mapbox-gl-arcgis-featureserver';
 import {
   LngLat,
@@ -8,8 +16,8 @@ import {
 } from 'maplibre-gl';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
-import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { take } from 'rxjs';
+import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-map-arcgis-vector-layer',
@@ -21,17 +29,22 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   @Input() layer!: BaseLayer;
   @Input() before = '';
 
+  @Output() updateTooltipData = new EventEmitter<BaseLayerTooltipData | null>();
   private hoveredId: number | null = null;
 
   private arcGisService: FeatureService | null = null;
 
-  constructor(private dataLayersStateService: DataLayersStateService) {}
+  constructor(
+    private zone: NgZone,
+    private baseLayersStateService: BaseLayersStateService
+  ) {}
 
   ngOnInit(): void {
     this.addArcgisLayers();
+    this.setupMapListeners();
   }
 
-  enableBaseLayerHover$ = this.dataLayersStateService.enableBaseLayerHover$;
+  enableBaseLayerHover$ = this.baseLayersStateService.enableBaseLayerHover$;
 
   ngOnDestroy(): void {
     this.mapLibreMap.off('mousemove', this.layerFillId, this.onMouseMove);
@@ -42,8 +55,46 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.removeLayer(this.layerFillId);
     this.mapLibreMap.removeLayer(this.layerLineId);
 
+    this.mapLibreMap?.off('data', this.onDataListener);
+    this.mapLibreMap?.off('error', this.onErrorListener);
     this.arcGisService?.destroySource();
   }
+
+  private setupMapListeners() {
+    this.mapLibreMap.on('data', this.onDataListener);
+    this.mapLibreMap.on('error', this.onErrorListener);
+  }
+
+  private onDataListener = (event: any) => {
+    // We check for features explicitly because `isSourceLoaded` can be true even if no data is available yet
+    const hasFeatures =
+      event.source?.data?.features?.length > 0 ||
+      this.mapLibreMap.querySourceFeatures(this.sourceId).length > 0;
+
+    if (
+      this.sourceId.startsWith('arcgis_source_') &&
+      event.isSourceLoaded &&
+      hasFeatures
+    ) {
+      // Using ngZone since otherwise the loading spinner will be displayed forever.
+      this.zone.run(() => {
+        this.baseLayersStateService.removeLoadingSourceId(
+          event.sourceId.replace('arcgis_source_', 'source_')
+        );
+      });
+    }
+  };
+
+  private onErrorListener = (event: any) => {
+    if (this.sourceId.startsWith('arcgis_source_') && !event.isSourceLoaded) {
+      // Using ngZone since otherwise the loading spinner will be displayed forever.
+      this.zone.run(() => {
+        this.baseLayersStateService.removeLoadingSourceId(
+          event.sourceId.replace('arcgis_source_', 'source_')
+        );
+      });
+    }
+  };
 
   private get layerFillId() {
     return 'arcgis_layer_fill_' + this.layer.id;
@@ -91,7 +142,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   };
 
   private clearTooltip() {
-    this.dataLayersStateService.setTooltipData(null);
+    this.updateTooltipData.emit(null);
   }
 
   private setTooltipInfo(longLat: LngLat, f: MapGeoJSONFeature) {
@@ -99,7 +150,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
       content: this.createTooltipContent(this.layer, f) ?? '',
       longLat: longLat,
     };
-    this.dataLayersStateService.setTooltipData(tooltipInfo);
+    this.updateTooltipData.emit(tooltipInfo);
   }
 
   private onMouseLeave = () => this.clearHover();

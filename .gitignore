@@ -187,3 +187,6 @@ static/
 compiled-static/
 
 .planconfig
+
+# local Sentry config file
+.sentryclirc

@@ -53,37 +53,27 @@ compile-angular:
 build-storybook:
 	cd src/interface && npm run build-storybook
 
-
-upload-sourcemaps:
-	@if [ ! -f .sentryclirc ]; then \
-		echo 'Notice: .sentryclirc file not found. Skipping Sentry sourcemaps upload.'; \
-	else \
-		sentry-cli sourcemaps inject ./dist || echo 'Error: Failed to inject sourcemaps.'; \
-		sentry-cli sourcemaps upload ./dist || echo 'Error: Failed to upload sourcemaps.'; \
-	fi
-
 remove-local-sourcemaps:
-	echo "Removing Sourcemaps from build"; \
-	rm -rf ./src/interface/dist/out/**.js.map
+	@echo "Removing Sourcemaps from build" ; \
+	rm -rf ./src/interface/dist/out/**.map ; \
+	rm -rf ./src/interface/dist/interface/**.map
 
-# tells sentry about a new tagged release
-# uses context in src/interface/.sentryclirc
-declare-sentry-release:
-	@if [ ! -f ".sentryclirc" ]; then \
-		echo "Notice: .sentryclirc file not found. Skipping Sentry release notification."; \
-		true; \
-	else \
-		if [ -n "$TAG" ] && [ "$TAG" != "main" ]; then \
-			echo "TAG is a tagged release. Informing Sentry of release" && \
-			sentry-cli releases new "$TAG"; \
-		else \
-			echo "TAG is 'main'. No action taken."; \
-		fi; \
-	fi
+# This command uploads sourcemaps to Sentry and injects a sourceId reference. 
+# if we have a tagged release, we associate it with the sourcemaps,
+# otherwise we use the SHA as the 'release' for dev builds.
+# Note that this relies on .sentryclirc for Sentry configs
+# and this make command is ignored without that file.
+upload-sentry-sourcemaps:
+	@$(SHELL) ./upload_sentry_sourcemaps.sh || \
+	echo "NOTICE: Failed to upload sentry sourcemaps. Continuing to next build step."
 
-handle-sentry-uploads: declare-sentry-release upload-sourcemaps remove-local-sourcemaps
+handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
 
-deploy-frontend: install-dependencies-frontend compile-angular handle-sentry-uploads
+deploy-frontend-with-sentry: install-dependencies-frontend compile-angular handle-sentry-uploads
+	@echo "Copying build to web directory..."; \
+	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
+
+deploy-frontend: install-dependencies-frontend compile-angular remove-local-sourcemaps
 	@echo "Copying build to web directory..."; \
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 	

@@ -79,19 +79,43 @@ get_treatment_goal_datalayers <- function(connection, treatment_goal_id) {
   return(result)
 }
 
+get_datalayer_module_name <- function(datalayer) {
+  if (is.null(datalayer$metadata)) {
+    return(NULL)
+  }
+  metadata <- fromJSON(datalayer$metadata)
+  datalayer_module_name <- metadata$modules$forsys$name
+  datalayer_module_name
+}
 
-get_stand_metrics_v2 <- function(connection, datalayer_id, datalayer_name, stand_ids) {
+get_datalayer_metric <- function(datalayer) {
+  if (is.null(datalayer$metadata)) {
+    return("avg")
+  }
+  metadata <- fromJSON(datalayer$metadata)
+  metric <- metadata$modules$forsys$metric_column
+  if (is.null(metric)) {
+    return("avg")
+  }
+  metric
+}
+
+get_stand_metrics_v2 <- function(connection, datalayer, stand_ids) {
+  datalayer_id <- datalayer$id
+  datalayer_name <- datalayer$name
+  metric_column <- get_datalayer_metric(datalayer)
   field_name <- paste0("datalayer_", datalayer_id)
   query <- glue_sql(
     "SELECT
       stand_id,
-      COALESCE(avg, 0) AS {`field_name`}
+      COALESCE({`metric_column`}, 0) AS {`field_name`}
      FROM stands_standmetric
      WHERE
        datalayer_id = {datalayer_id} AND
        stand_id IN ({stand_ids*})",
     datalayer_id = datalayer_id,
     datalayer_name = datalayer_name,
+    metric_column = metric_column,
     field_name = field_name,
     stand_ids = stand_ids,
     .con = connection

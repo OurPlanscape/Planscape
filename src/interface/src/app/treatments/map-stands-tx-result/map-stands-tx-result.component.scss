@@ -12,72 +12,6 @@ $tooltip-background: #000000D9;
     line-height: 22px;
 
 
-    .maplibregl-popup-content {
-      background-color: $tooltip-background;
-      color: $color-white;
-      padding: 8px 12px;
-      border-radius: 8px;
-    }
-
-    // overriding tip colors for each corner
-
-    &.maplibregl-popup-anchor-right .maplibregl-popup-tip {
-      border-left-color: $tooltip-background;
-    }
-
-    &.maplibregl-popup-anchor-left .maplibregl-popup-tip {
-      border-right-color: $tooltip-background;
-    }
-
-    &.maplibregl-popup-anchor-top .maplibregl-popup-tip {
-      border-bottom-color: $tooltip-background;
-    }
-
-    &.maplibregl-popup-anchor-bottom .maplibregl-popup-tip {
-      border-top-color: $tooltip-background;
-    }
-
-    // overriding tip color for diagonals
-    &.maplibregl-popup-anchor-bottom-right {
-      .maplibregl-popup-tip {
-        border-top-color: $tooltip-background;
-      }
-
-      .maplibregl-popup-content {
-        border-bottom-right-radius: 0;
-      }
-    }
-
-    &.maplibregl-popup-anchor-bottom-left {
-      .maplibregl-popup-tip {
-        border-top-color: $tooltip-background;
-      }
-
-      .maplibregl-popup-content {
-        border-bottom-left-radius: 0;
-      }
-    }
-
-    &.maplibregl-popup-anchor-top-left {
-      .maplibregl-popup-tip {
-        border-bottom-color: $tooltip-background;
-      }
-
-      .maplibregl-popup-content {
-        border-top-left-radius: 0;
-      }
-    }
-
-    &.maplibregl-popup-anchor-top-right {
-      .maplibregl-popup-tip {
-        border-bottom-color: $tooltip-background;
-      }
-
-      .maplibregl-popup-content {
-        border-top-right-radius: 0;
-      }
-    }
-
     .tooltip-title {
       color: $color-soft-gray;
       font-weight: 600;
@@ -90,7 +24,5 @@ $tooltip-background: #000000D9;
       grid-template-columns: 120px 1fr;
       gap: 8px 0;
     }
-
-
   }
 }

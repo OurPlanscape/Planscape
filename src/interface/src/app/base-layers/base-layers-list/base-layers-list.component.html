@@ -24,16 +24,22 @@
         class="data-layer-input"
         (change)="onLayerChange(layer, true)"
         >{{ layer.name }}
-        <span
-          class="base-layer-legend"
-          *ngIf="isSelectedLayer(layer.id)"
-          [style.backgroundColor]="
-            layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
-          "
-          [style.border-color]="
-            layer.styles[0].data['fill-outline-color'] ||
-            BASE_LAYERS_DEFAULT.COLOR
-          "></span>
+        <div class="right-items">
+          <mat-spinner
+            diameter="20"
+            *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
+          </mat-spinner>
+          <span
+            class="base-layer-legend"
+            *ngIf="isSelectedLayer(layer.id)"
+            [style.backgroundColor]="
+              layer.styles[0].data['fill-color'] || BASE_LAYERS_DEFAULT.COLOR
+            "
+            [style.border-color]="
+              layer.styles[0].data['fill-outline-color'] ||
+              BASE_LAYERS_DEFAULT.COLOR
+            "></span>
+        </div>
       </mat-checkbox>
     </div>
   </ng-container>
@@ -45,6 +51,10 @@
       class="data-layer-input"
       (change)="onLayerChange(layer, false)"
       >{{ layer.name }}
+      <mat-spinner
+        diameter="20"
+        *ngIf="(loadingLayers$ | async)?.includes('source_' + layer.id)">
+      </mat-spinner>
     </mat-radio-button>
   </ng-template>
 </div>

@@ -15,7 +15,9 @@
         *ngIf="panelExpanded"
         mat-stretch-tabs="false"
         mat-align-tabs="start">
-        <mat-tab label="Data Layers">Data Layers</mat-tab>
+        <mat-tab label="Data Layers">
+          <app-map-selector></app-map-selector>
+        </mat-tab>
         <mat-tab label="Base Layers">
           <app-base-layers></app-base-layers>
         </mat-tab>

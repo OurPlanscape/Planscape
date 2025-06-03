@@ -194,10 +194,15 @@ preprocess_metrics <- function(metrics, condition_name) {
   return(metrics)
 }
 
-get_metric_column <- function(condition_name) {
-  if (exists(condition_name, METRIC_COLUMNS)) {
-    return(METRIC_COLUMNS[[condition_name]])
+get_metric_column <- function(name) {
+  if (is.null(name)) {
+    return("avg")
   }
+
+  if (exists(name, METRIC_COLUMNS)) {
+    return(METRIC_COLUMNS[[name]])
+  }
+
   return("avg")
 }
 
@@ -387,8 +392,7 @@ get_metric_data <- function(connection, stands, datalayer) {
 
   metric <- get_stand_metrics_v2(
     connection,
-    datalayer_id,
-    datalayer_name,
+    datalayer,
     stands$stand_id
   ) %>% mutate(across(where(is.numeric), ~ replace_na(.x, 0)))
   metric[[field_name]][metric[[field_name]] == -Inf] <- 0

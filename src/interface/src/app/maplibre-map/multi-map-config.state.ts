@@ -5,7 +5,7 @@ import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '../map/map.constants';
 import { Extent } from '@types';
 
-type LayoutOption = 1 | 2 | 4;
+export type LayoutOption = 1 | 2 | 4;
 
 @Injectable()
 export class MultiMapConfigState extends MapConfigState {
@@ -13,12 +13,18 @@ export class MultiMapConfigState extends MapConfigState {
   private _layoutMode$ = new BehaviorSubject<LayoutOption>(1);
   public layoutMode$ = this._layoutMode$.asObservable();
 
+  private _selectedMapId$ = new BehaviorSubject<number>(1);
+  public selectedMapId$ = this._selectedMapId$.asObservable();
+
   constructor(private multiMapsStorageService: MultiMapsStorageService) {
     super();
     this._mapExtent$.next(FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS);
   }
 
   setLayoutMode(views: LayoutOption) {
+    if (views < this._selectedMapId$.value) {
+      this.setSelectedMap(1);
+    }
     this._layoutMode$.next(views);
   }
 
@@ -43,5 +49,9 @@ export class MultiMapConfigState extends MapConfigState {
       this._baseLayer$.next(options.baseLayer);
       this._mapExtent$.next(options.extent);
     }
+  }
+
+  setSelectedMap(id: number) {
+    this._selectedMapId$.next(id);
   }
 }

@@ -1,0 +1,12 @@
+<ng-container *ngIf="layoutMode$ | async as layoutMode">
+  <div class="map-selector" *ngIf="layoutMode > 1">
+    <button
+      sg-button
+      *ngFor="let mapId of mapsArray$ | async"
+      [variant]="(selectedMapId$ | async) === mapId ? 'primary' : 'link'"
+      (click)="setSelectedMap(mapId)"
+      class="map-btn">
+      Map {{ mapId }}
+    </button>
+  </div>
+</ng-container>

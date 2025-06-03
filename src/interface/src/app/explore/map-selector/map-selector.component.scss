@@ -1,0 +1,19 @@
+@import 'colors';
+
+.map-selector {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 14px 16px;
+  justify-content: flex-start;
+  gap: 8px;
+}
+
+.map-btn {
+  background: $color-main-blue;
+}
+
+.link-button {
+  background: transparent;
+  color: $color-md-gray;
+}

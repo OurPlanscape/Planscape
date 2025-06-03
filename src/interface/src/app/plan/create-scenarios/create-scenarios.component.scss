@@ -130,13 +130,11 @@
   padding: 0 20px 10px;
 }
 
-
 .create-scenarios-tab-group {
   height: 100%;
 }
 
 .create-scenarios-tab-group ::ng-deep {
-
   .mat-mdc-tab-body-wrapper {
     height: 100%;
   }
@@ -156,4 +154,12 @@
   .mdc-tab-indicator--active {
     border-bottom: 2px solid $color-standard-blue;
   }
+}
+
+.spinner-row {
+  display: flex;
+  width: 100%;
+  flex-direction: row;
+  justify-content: center;
+  margin-top: 48px;
 }
