@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
@@ -20,15 +20,19 @@ import { MapConfigState } from '../map-config.state';
   styleUrl: './explore-modes-toggle.component.scss',
 })
 export class ExploreModesToggleComponent {
-  constructor(private mapConfigState: MapConfigState) {}
-
+  @Output() saveDrawing = new EventEmitter<void>();
+  @Output() cancelDrawing = new EventEmitter<void>();
+  @Output() toggleDrawingMode = new EventEmitter<void>();
+  @Output() scenarioUpload = new EventEmitter<void>();
   drawModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
 
+  constructor(private mapConfigState: MapConfigState) { }
+
   toggleDrawing() {
-    this.mapConfigState.toggleDrawingMode();
+    this.toggleDrawingMode.emit();
   }
 
-  clickUpload() {
-    //TODO: enable upload
+  clickedUpload() {
+    this.scenarioUpload.emit();
   }
 }
