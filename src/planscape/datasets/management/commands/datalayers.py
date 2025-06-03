@@ -187,6 +187,11 @@ class Command(PlanscapeCommand):
             action="store_true",
             default=True,
         )
+        create_parser.add_argument(
+            "--layers",
+            required=False,
+            type=str,
+        )
         import_parser.add_argument(
             "--dataset",
             type=int,
@@ -415,7 +420,8 @@ class Command(PlanscapeCommand):
             case DataLayerType.VECTOR:
                 layers = kwargs.get("layers", "")
                 layers = layers.split(",") if layers else None
-                processed_files = to_planscape_vector(
+                print(f"layers {layers}")
+                processed_files, layer_info = to_planscape_vector(
                     input_file=input_file,
                     target_layers=layers,
                 )

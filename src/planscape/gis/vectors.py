@@ -40,43 +40,10 @@ def ogr2ogr(input_file: str) -> str:
     return f"datastore.{table_name}"
 
 
-def warp(input_file: str, output_file: str, in_crs: str, out_crs: str) -> str:
-    """Reprojects a vector file from one CRS to another using Fiona and pyproj.
-
-    :param input_file: Path to the input vector file.
-    :param output_file: Path to the output vector file.
-    :param in_crs: EPSG code of the input CRS (e.g., "4326").
-    :param out_crs: EPSG code of the output CRS (e.g., "3857").
-    :return: Path to the reprojected output file.
-    :raises VectorError: If the input file cannot be opened or if the CRS transformation fails.
-    """
-    source_crs = CRS.from_epsg(in_crs)
-    target_crs = CRS.from_epsg(out_crs)
-
-    with fiona.open(input_file, "r") as source:
-        output_schema = source.schema.copy()
-        with fiona.open(
-            output_file,
-            "w",
-            driver=source.driver,
-            schema=output_schema,
-            crs=target_crs.to_wkt(),
-        ) as sink:
-            for feature in source:
-                reprojected_geometry = transform_geom(
-                    source_crs, target_crs, shape(feature["geometry"])
-                )
-                sink.write(
-                    {
-                        "properties": feature["properties"],
-                        "geometry": mapping(reprojected_geometry),
-                    }
-                )
-    return output_file
-
-
-def filter_layers(
-    input_file: str, output_file: str, target_layers: Optional[list] = None
+def merge_layers(
+    input_file: str,
+    layer_info: dict,
+    target_layers: Optional[list] = None,
 ) -> str:
     """Converts GeoPackage to a Shapefile and filter the input file to only include the target layers.
 
@@ -88,33 +55,69 @@ def filter_layers(
     if not target_layers:
         return input_file
 
-    for layer in target_layers:
-        try:
-            with fiona.open(input_file, "r", layer=layer) as source:
-                # Get the schema (data structure) of the source
-                schema = source.schema.copy()  # type: ignore
+    schema = {}
+    crs = None
+    for layer in layer_info.values():
+        layer_schema = layer.get("schema", {})
 
-                # Open the output shapefile with the same schema and driver
-                with fiona.open(
-                    output_file,
-                    "w",
-                    driver="ESRI Shapefile",
-                    schema=schema,
-                    crs=source.crs,
-                ) as sink:
+        if schema.get("properties") is None:
+            schema["properties"] = layer_schema.get("properties")
+        else:
+            geometry = {**schema["properties"], **layer_schema.get("properties", {})}
+            schema["properties"] = geometry
+
+        if schema.get("geometry") is None:
+            schema["geometry"] = layer_schema.get("geometry")
+        elif schema.get("geometry") is not None and schema.get(
+            "geometry"
+        ) != layer_schema.get("geometry"):
+            print(
+                f"Schema geometry: {schema.get('geometry')}, Layer geometry: {layer_schema.get('geometry')}"
+            )
+            raise VectorError(
+                "Cannot merge layers with different geometry types in the same file."
+            )
+
+        if crs is None:
+            crs = layer.get("crs")
+        elif crs != layer.get("crs"):
+            raise VectorError(
+                "Cannot filter layers with different CRS in the same file."
+            )
+
+    print(f"Schema: {schema}")
+    print(f"CRS: {crs}")
+
+    output_file = get_random_output_file(input_file=input_file)
+    try:
+        with fiona.open(
+            output_file,
+            "w",
+            driver="ESRI Shapefile",
+            schema=schema,
+            crs=crs,
+        ) as sink:
+            # Open the output shapefile with the same schema and driver
+
+            for layer in target_layers:
+                with fiona.open(input_file, "r", layer=layer) as source:
+                    # Get the schema (data structure) of the source
+                    print(f"Processing layer: {layer}")
+
                     # Write each feature from source to the sink shapefile
+                    print(f"Writing features to {output_file}")
                     for feature in source:
                         sink.write(feature)
-        except DriverError as e:
-            log.error(f"Error processing input file {input_file}: {e}")
-            raise VectorError(f"Failed to filter layers: {e}") from e
+    except DriverError as e:
+        log.error(f"Error processing input file {input_file}: {e}")
+        raise VectorError(f"Failed to filter layers: {e}") from e
 
     return output_file
 
 
 def to_planscape(
     input_file: str, target_layers: Optional[list] = None
-) -> Collection[str]:
+) -> Tuple[Collection[str], dict]:
     """Given a input_file, process it and
     turn it into a list of processed files that meet
     planscape's needs.
@@ -124,44 +127,55 @@ def to_planscape(
     :param target_layers: _description_, defaults to None
     :type target_layers: Optional[list]
     :return: _description_
-    :rtype: Collection[str]
+    :rtype: Tuple[Collection[str], dict]
     """
+
     log.info("Converting vector to planscape format.")
+
     layer_type, layer_info = get_layer_info(input_file=input_file)
-    layer_crs = layer_info.get("crs")
-    if layer_crs is None:
-        raise ValueError(
-            "Cannot convert to planscape format if raster file does not have CRS information."
-        )
-    log.info("Raster info available")
-    _epsg, srid = layer_crs.split(":")
-    if int(srid) != settings.DEFAULT_CRS:
-        warped_vector = get_random_output_file(input_file=input_file)
-        warped_vector = warp(
-            input_file=input_file,
-            output_file=warped_vector,
-            in_crs=srid,
-            out_crs=settings.DEFAULT_CRS,
-        )
+
+    is_multi_layer = isinstance(layer_info, dict) and len(layer_info.keys()) > 1
+
+    if is_multi_layer:
+        for layer_name, layer in layer_info.items():
+            layer_crs = layer.get("crs")
+            if layer_crs is None:
+                raise ValueError(
+                    f"Cannot convert to planscape format if raster file does not have CRS information on layer {layer_name}."
+                )
     else:
-        log.info("Raster DataLayer already has EPSG:3857 projection.")
-        warped_vector = input_file
-    is_valid, errors, _warnings = vector_validate(warped_vector)
+        layer_crs = layer_info.get("crs")
+        if layer_crs is None:
+            raise ValueError(
+                "Cannot convert to planscape format if raster file does not have CRS information."
+            )
+    log.info("Raster info available")
+
+    is_valid, errors, _warnings = vector_validate(input_file=input_file)
     if not is_valid:
         raise VectorError(
             "Vector file is not valid. Errors: %s" % errors,
         )
 
-    if target_layers:
-        if not target_layers in layer_info.get("layers", []):
+    merged_vector = input_file
+    if is_multi_layer:
+        target_layers = target_layers if target_layers else list(layer_info.keys())
+        if not target_layers:
+            raise VectorError(
+                "Cannot convert multi-layer vector file without specifying target layers."
+            )
+        print(f"Merging layers: {target_layers}")
+        if not set(target_layers).issubset(set(layer_info.keys())):
             raise VectorError(
                 f"Target layers {target_layers} not found in the input file {input_file}."
             )
-        filtered_vector = get_random_output_file(input_file=warped_vector)
-        warped_vector = filter_layers(
-            input_file=warped_vector,
-            output_file=filtered_vector,
+        merged_vector = merge_layers(
+            input_file=input_file,
+            layer_info=layer_info,
             target_layers=target_layers,
         )
 
-    return [warped_vector]
+    layer_type, layer_info = get_layer_info(input_file=merged_vector)
+    print(f"Layer info: {layer_info}")
+
+    return [merged_vector], layer_info
