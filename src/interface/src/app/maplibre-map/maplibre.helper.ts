@@ -50,6 +50,7 @@ export function addRequestHeaders(
   if (isMapboxURL(url) && resourceType) {
     return transformMapboxUrl(url, resourceType, environment.mapbox_key);
   }
+
   return addAuthHeaders(url, resourceType, cookie);
 }
 
@@ -82,62 +83,54 @@ function getCamera(map: MapLibreMap) {
   };
 }
 
-/**
- * This snippet is taken from:
- * https://github.com/mapbox/mapbox-gl-sync-move/issues/14
- *
- *
- * Sync movements of two maps.
- *
- * All interactions that result in movement end up firing
- * a "move" event. The trick here, though, is to
- * ensure that movements don't cycle from one map
- * to the other and back again, because such a cycle
- * - could cause an infinite loop
- * - prematurely halts prolonged movements like
- *   double-click zooming, box-zooming, and flying
- */
 export function syncMaps(...maps: MapLibreMap[]): Cleanup {
-  // Create all the movement functions, because if they're created every time
-  // they wouldn't be the same and couldn't be removed.
-  let fns: Parameters<MapLibreMap['on']>[1][] = [];
-  const startingCamera = getCamera(maps[0]);
-  maps.forEach((map, index) => {
-    // sync initial zoom and bounds
-    if (index !== 0) map.jumpTo(startingCamera);
-    // When one map moves, we turn off the movement listeners
-    // on all the maps, move it, then turn the listeners on again
-    fns[index] = () => {
-      off();
-
-      const camera = getCamera(map);
-      const clones = maps.filter((o, i) => i !== index);
-      clones.forEach((clone) => {
-        clone.jumpTo(camera);
-      });
-
-      on();
-    };
+  // 0) initial sync on load
+  const leaderCam = getCamera(maps[0]);
+  maps.slice(1).forEach((m) => {
+    if (m.loaded()) {
+      m.jumpTo(leaderCam);
+    } else {
+      m.once('load', () => m.jumpTo(leaderCam));
+    }
   });
 
-  const on = () => {
-    maps.forEach((map, index) => {
-      map.on('move', fns[index]);
+  // 1) continuous sync
+  const onMove = (e: any) => {
+    if (!e.originalEvent) return;
+    const cam = getCamera(e.target as MapLibreMap);
+    maps.forEach((m) => {
+      if (m !== e.target) m.jumpTo(cam);
     });
   };
 
-  const off = () => {
-    maps.forEach((map, index) => {
-      map.off('move', fns[index]);
+  // 2) broadcast start/end
+  const onStart = (e: any) => {
+    if (!e.originalEvent) return;
+    maps.forEach((m) => {
+      if (m !== e.target) m.fire('movestart', { broadcast: true });
+    });
+  };
+  const onEnd = (e: any) => {
+    if (!e.originalEvent) return;
+    maps.forEach((m) => {
+      if (m !== e.target) m.fire('moveend', { broadcast: true });
     });
   };
 
-  on();
+  // 3) wire up
+  maps.forEach((m) => {
+    m.on('move', onMove);
+    m.on('movestart', onStart);
+    m.on('moveend', onEnd);
+  });
 
+  // 4) cleanup fn
   return () => {
-    off();
-    fns = [];
-    maps = [];
+    maps.forEach((m) => {
+      m.off('move', onMove);
+      m.off('movestart', onStart);
+      m.off('moveend', onEnd);
+    });
   };
 }
 
