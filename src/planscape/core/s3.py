@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 
 CHECKSUM_ALGORITHMS = ["CRC64NVME", "CRC32", "CRC32C", "SHA1", "SHA256"]
 
+
 def get_aws_session() -> Session:
     return Session(
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
