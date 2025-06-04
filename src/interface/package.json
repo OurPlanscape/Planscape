@@ -43,6 +43,7 @@
     "@turf/boolean-intersects": "^6.5.0",
     "@turf/boolean-within": "^6.5.0",
     "@turf/helpers": "^6.5.0",
+    "@turf/turf": "^7.2.0",
     "@types/file-saver": "^2.0.5",
     "chart.js": "^3.6.0",
     "chartjs-plugin-datalabels": "^2.2.0",
@@ -70,6 +71,8 @@
     "ngx-mask": "^14.3.2",
     "rxjs": "~7.8.1",
     "shpjs": "^4.0.4",
+    "terra-draw": "^1.6.3",
+    "terra-draw-maplibre-gl-adapter": "^1.1.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.4"
   },
