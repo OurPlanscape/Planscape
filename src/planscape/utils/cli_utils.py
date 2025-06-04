@@ -68,6 +68,31 @@ def ogr2ogr_cli(
     return args
 
 
+def ogr2ogr_extract_layer_from_gpkg_to_shp(
+    input_file: str,
+    output_file: str,
+    layer: str,
+) -> Collection[str]:
+    """Transforms the input file to the target CRS using ogr2ogr.
+
+    :param input_file: Path to the input file.
+    :param output_file: Path to the output file.
+    :param layer: Layer name to extract.
+    :return: OGR2OGR command as a list of strings.
+    """
+    input_file = with_vsi_prefix(input_file)
+    args = [
+        "ogr2ogr",
+        "-sql",
+        f"SELECT * FROM {layer}",
+        # "-of",
+        # "'ESRI Shapefile'",
+        output_file,
+        input_file,
+    ]
+    return args
+
+
 def options_from_file() -> Dict[str, Any]:
     """This method reads from a standard .planconfig file
     located at the root of the project to gather details

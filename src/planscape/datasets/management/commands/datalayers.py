@@ -21,7 +21,7 @@ from gis.core import (
 from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
-from gis.vectors import to_planscape as to_planscape_vector
+from gis.vectors import to_planscape_multi_layer
 
 from datasets.models import DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
@@ -72,9 +72,10 @@ def get_create_call(
     name,
     input_file,
     dataset,
-    metadata,
+    metadata: Optional[str] = None,
+    map_service_type: Optional[str] = None,
 ) -> List[str]:
-    return [
+    command = [
         "python3",
         "manage.py",
         "datalayers",
@@ -84,10 +85,13 @@ def get_create_call(
         input_file,
         "--dataset",
         str(dataset),
-        "--metadata",
-        metadata,
         "--skip-existing",
+        "--map-service-type",
+        map_service_type if map_service_type else MapServiceChoices.COG,
     ]
+    if metadata:
+        command.extend(["--metadata", metadata])
+    return command
 
 
 def create_for_import(
@@ -186,6 +190,12 @@ class Command(PlanscapeCommand):
             required=False,
             action="store_true",
             default=True,
+        )
+        create_parser.add_argument(
+            "--all-layers",
+            required=False,
+            action="store_true",
+            default=False,
         )
         create_parser.add_argument(
             "--layers",
@@ -418,13 +428,29 @@ class Command(PlanscapeCommand):
                     input_file=input_file,
                 )
             case DataLayerType.VECTOR:
-                layers = kwargs.get("layers", "")
-                layers = layers.split(",") if layers else None
-                print(f"layers {layers}")
-                processed_files, layer_info = to_planscape_vector(
-                    input_file=input_file,
-                    target_layers=layers,
-                )
+                if len(layer_info.keys()) > 1:
+                    # multi-layer vector file
+                    all_layers = kwargs.get("all_layers", False)
+                    layers = kwargs.get("layers", "")
+                    layers = layers.split(",") if layers else None
+                    processed_files = to_planscape_multi_layer(
+                        input_file=input_file,
+                        all_layers=all_layers,
+                        target_layers=layers,
+                    )
+                    for layer_name, layer_file in processed_files:
+                        command = get_create_call(
+                            name=layer_name,
+                            input_file=layer_file,
+                            dataset=dataset,
+                            metadata=kwargs.get("metadata", None),
+                            map_service_type=map_service_type,
+                        )
+                        subprocess.run(command)
+                    return None
+                else:
+                    # single-layer vector file
+                    processed_files = [input_file]
 
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         metadata = kwargs.pop("metadata", None)
