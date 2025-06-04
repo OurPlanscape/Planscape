@@ -118,3 +118,5 @@ METRIC_COLUMNS <- list(
   f3veg100 = "majority",
   wildland_urban_interface = "majority"
 )
+
+ALLOWED_RESTRICTION_TYPES <- c("POLYGON", "MULTIPOLYGON")

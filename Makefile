@@ -18,7 +18,6 @@ SYS_CTL=systemctl --user
 TAG=main
 VERSION="$$(date '+%Y.%m.%d')-$$(git log --abbrev=10 --format=%h | head -1)"
 E2E_IMPACTS=impacts_e2e_config.json
-GIT_COMMIT_SHA=$(shell git rev-parse HEAD)
 
 help:
 	@echo 'Available commands:'
@@ -65,23 +64,16 @@ remove-local-sourcemaps:
 # Note that this relies on .sentryclirc for Sentry configs
 # and this make command is ignored without that file.
 upload-sentry-sourcemaps:
-	@if [ ! -f ".sentryclirc" ]; then \
-		echo "Notice: .sentryclirc file not found. Skipping Sentry sourcemap uploads."; \
-		true; \
-	elif [ -n "${TAG}" ] && [ "${TAG}" != "main" ]; then \
-		echo "${TAG} is a tagged release. Informing Sentry of release"; \
-		sentry-cli releases new "${TAG}" \
-		sentry-cli sourcemaps inject ./src/interface/dist --release "${TAG}" && \
-		sentry-cli sourcemaps upload --release "${TAG}" ./src/interface/dist ;  \
-	else \
-		sentry-cli releases new "${GIT_COMMIT_SHA}" && \
-		sentry-cli sourcemaps inject ./src/interface/dist --release "${GIT_COMMIT_SHA}" && \
-		sentry-cli sourcemaps upload --release "${GIT_COMMIT_SHA}" ./src/interface/dist ; \
-	fi
+	@$(SHELL) ./upload_sentry_sourcemaps.sh || \
+	echo "NOTICE: Failed to upload sentry sourcemaps. Continuing to next build step."
 
 handle-sentry-uploads: upload-sentry-sourcemaps remove-local-sourcemaps
 
-deploy-frontend: install-dependencies-frontend compile-angular handle-sentry-uploads
+deploy-frontend-with-sentry: install-dependencies-frontend compile-angular handle-sentry-uploads
+	@echo "Copying build to web directory..."; \
+	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
+
+deploy-frontend: install-dependencies-frontend compile-angular remove-local-sourcemaps
 	@echo "Copying build to web directory..."; \
 	cp -r ./src/interface/dist/out/** ${PUBLIC_WWW_DIR}
 	

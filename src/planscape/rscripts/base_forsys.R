@@ -164,6 +164,18 @@ get_stands <- function(connection, scenario_id, stand_size, restrictions) {
       for (i in seq_along(restrictions)) {
         datalayer_id <- restrictions[i]
         restriction <- get_datalayer_by_id(connection, datalayer_id)
+        if (!(restriction$geometry_type %in% ALLOWED_RESTRICTION_TYPES)) {
+          print(
+            glue(
+              "Restriction",
+              restriction$id,
+              "with name",
+              restriction$name,
+              "cannot be used because its not a polygon."
+            )
+          )
+          next
+        }
         restriction_data <- get_restriction_v2(connection, scenario_id, restriction$table)
         stands <- st_filter(stands, restriction_data, .predicate = st_disjoint)
       }
@@ -494,28 +506,32 @@ get_stand_size <- function(configuration) {
 
 get_weights <- function(priorities, configuration) {
   # no v2 changes
-  condition_count <- length(priorities$condition_name)
   weight_count <- length(configuration$weights)
+
+  if (FORSYS_V2) {
+    target_count <- nrow(remove_duplicates_v2(priorities))
+  } else {
+    target_count <- length(priorities$condition_name)
+  }
 
   if (weight_count == 0) {
     print("generating weights")
-    return(rep(1, length(priorities$condition_name)))
+    return(rep(1, target_count))
   }
 
-  if (weight_count < condition_count) {
+  if (weight_count < target_count) {
     print("padding weights")
     return(
-      c(configuration$weights, rep(1, condition_count - weight_count))
+      c(configuration$weights, rep(1, target_count - weight_count))
     )
   }
 
-  if (weight_count > condition_count) {
+  if (weight_count > target_count) {
     print("trimming weights")
-    return(configuration$weights[1:condition_count])
+    return(configuration$weights[1:target_count])
   }
-
-  print("using configured weights")
-  return(configuration$weights)
+  # just return configured weights
+  configuration$weights
 }
 
 get_number_of_projects <- function(scenario) {
@@ -711,11 +727,13 @@ call_forsys <- function(
   if (FORSYS_V2) {
     if (length(priorities$name) > 1) {
       weights <- get_weights(priorities, configuration)
+      fields <- paste0("datalayer_", priorities[["id"]])
+      spm_fields <- paste0(fields, "_SPM")
       stand_data <- stand_data %>%
-        forsys::calculate_spm(fields = paste0("datalayer_", priorities$id)) %>%
-        forsys::calculate_pcp(fields = paste0("datalayer_", priorities$id)) %>%
+        forsys::calculate_spm(fields = fields) %>%
+        forsys::calculate_pcp(fields = fields) %>%
         forsys::combine_priorities(
-          fields = paste0("datalayer_", priorities$id, "_SPM"),
+          fields = spm_fields,
           weights = weights,
           new_field = "priority"
         )

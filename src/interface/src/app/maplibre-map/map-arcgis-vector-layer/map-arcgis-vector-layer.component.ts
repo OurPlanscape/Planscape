@@ -2,6 +2,7 @@ import {
   Component,
   EventEmitter,
   Input,
+  NgZone,
   OnDestroy,
   OnInit,
   Output,
@@ -12,11 +13,12 @@ import {
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapLayerMouseEvent,
+  MapLibreEvent,
 } from 'maplibre-gl';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
 import { take } from 'rxjs';
-import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { BaseLayersStateService } from 'src/app/base-layers/base-layers.state.service';
 
 @Component({
   selector: 'app-map-arcgis-vector-layer',
@@ -33,10 +35,14 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
 
   private arcGisService: FeatureService | null = null;
 
-  constructor(private baseLayersStateService: BaseLayersStateService) {}
+  constructor(
+    private zone: NgZone,
+    private baseLayersStateService: BaseLayersStateService
+  ) {}
 
   ngOnInit(): void {
     this.addArcgisLayers();
+    this.setupMapListeners();
   }
 
   enableBaseLayerHover$ = this.baseLayersStateService.enableBaseLayerHover$;
@@ -45,13 +51,56 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.off('mousemove', this.layerFillId, this.onMouseMove);
     this.mapLibreMap.off('mouseleave', this.layerFillId, this.onMouseLeave);
     this.mapLibreMap.off('styledata', this.onStyleDataListener);
+    this.mapLibreMap.off('movestart', this.moveStart);
+    this.mapLibreMap.off('moveend', this.moveEnd);
     this.clearHover();
 
     this.mapLibreMap.removeLayer(this.layerFillId);
     this.mapLibreMap.removeLayer(this.layerLineId);
 
+    this.mapLibreMap?.off('data', this.onDataListener);
+    this.mapLibreMap?.off('error', this.onErrorListener);
+
+    this.arcGisService?.disableRequests();
+
     this.arcGisService?.destroySource();
   }
+
+  private setupMapListeners() {
+    this.mapLibreMap.on('data', this.onDataListener);
+    this.mapLibreMap.on('error', this.onErrorListener);
+  }
+
+  private onDataListener = (event: any) => {
+    // We check for features explicitly because `isSourceLoaded` can be true even if no data is available yet
+    const hasFeatures =
+      event.source?.data?.features?.length > 0 ||
+      this.mapLibreMap.querySourceFeatures(this.sourceId).length > 0;
+
+    if (
+      this.sourceId.startsWith('arcgis_source_') &&
+      event.isSourceLoaded &&
+      hasFeatures
+    ) {
+      // Using ngZone since otherwise the loading spinner will be displayed forever.
+      this.zone.run(() => {
+        this.baseLayersStateService.removeLoadingSourceId(
+          event.sourceId.replace('arcgis_source_', 'source_')
+        );
+      });
+    }
+  };
+
+  private onErrorListener = (event: any) => {
+    if (this.sourceId.startsWith('arcgis_source_') && !event.isSourceLoaded) {
+      // Using ngZone since otherwise the loading spinner will be displayed forever.
+      this.zone.run(() => {
+        this.baseLayersStateService.removeLoadingSourceId(
+          event.sourceId.replace('arcgis_source_', 'source_')
+        );
+      });
+    }
+  };
 
   private get layerFillId() {
     return 'arcgis_layer_fill_' + this.layer.id;
@@ -147,7 +196,22 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.on('mousemove', this.layerFillId, this.onMouseMove);
     this.mapLibreMap.on('mouseleave', this.layerFillId, this.onMouseLeave);
     this.mapLibreMap.on('styledata', this.onStyleDataListener);
+
+    this.mapLibreMap.on('movestart', this.moveStart);
+    this.mapLibreMap.on('moveend', this.moveEnd);
   }
+
+  private moveEnd = (e: MapLibreEvent<UIEvent> & { broadcast?: boolean }) => {
+    if (!e.originalEvent && !e.broadcast) return;
+    this.arcGisService?.enableRequests();
+    // fire a last moveend to sync after enabling requests
+    this.mapLibreMap.fire('moveend');
+  };
+
+  private moveStart = (e: MapLibreEvent<UIEvent> & { broadcast?: boolean }) => {
+    if (!e.originalEvent && !e.broadcast) return;
+    this.arcGisService?.disableRequests();
+  };
 
   private getTooltipTemplate(layer: BaseLayer): string | null {
     return layer.metadata?.modules?.map?.tooltip_format ?? null;

@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { FrontendConstants } from '../../map/map.constants';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
@@ -7,11 +7,14 @@ import { AuthService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
 import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
+import { MultiMapConfigState } from '../multi-map-config.state';
+import { map } from 'rxjs';
 
 @Component({
   selector: 'app-explore-map',
   standalone: true,
   imports: [
+    NgClass,
     AsyncPipe,
     MapComponent,
     ControlComponent,
@@ -50,8 +53,13 @@ export class ExploreMapComponent {
   @Input() mapNumber = 1;
   @Input() showAttribution = false;
 
+  isSelected$ = this.multiMapConfigState.selectedMapId$.pipe(
+    map((mapId) => this.mapNumber === mapId)
+  );
+
   constructor(
     private mapConfigState: MapConfigState,
+    private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService
   ) {}
 
