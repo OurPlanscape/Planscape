@@ -228,8 +228,6 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
                 "Provide either 'url' or 'original_name' (uploaded file), but not both."
             )
 
-        if url:
-            attrs["storage_type"] = StorageTypeChoices.EXTERNAL_SERVICE
         return attrs
 
 

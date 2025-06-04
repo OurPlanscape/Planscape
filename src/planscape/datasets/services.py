@@ -299,14 +299,18 @@ def create_datalayer(
     uuid = str(uuid4())
     geometry = geometry_from_info(info, datalayer_type=type)
 
+    if bool(url) == bool(original_name):
+        raise ValueError(
+            "Must provide exactly one of `url` (external) or `original_name` (file upload)."
+        )
+
     if url:
         storage_url = url
         storage_type = StorageTypeChoices.EXTERNAL_SERVICE
         original_file_name = None
         upload_to = {}
-    else:
-        if original_name is None:
-            raise ValueError("original_name is required when url is not given")
+
+    if original_name:
         storage_url = get_storage_url(
             organization_id=organization.pk,
             uuid=uuid,
