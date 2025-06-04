@@ -12,9 +12,10 @@
   </button>
   <button
     type="button"
-    (click)="toggleDrawing()"
+    (click)="handleDrawingButton()"
     class="right-option"
     [ngClass]="{ active: (drawModeEnabled$ | async) === true }"
+    [disabled]="(drawModeEnabled$ | async) === true"
     matTooltip="Draw Planning Area"
     matTooltipPosition="below">
     <mat-icon class="material-symbols-outlined">draw</mat-icon>
@@ -26,7 +27,7 @@
   <button
     type="button"
     class="drawing-mode-button"
-    (click)="cancelDrawing()"
+    (click)="handleCancelButton()"
     matTooltip="Cancel"
     matTooltipPosition="below">
     <mat-icon class="material-symbols-outlined">close</mat-icon>
@@ -34,7 +35,7 @@
   <button
     type="button"
     class="drawing-mode-button check-button"
-    (click)="saveDrawing()"
+    (click)="handleSaveButton()"
     matTooltip="Save"
     matTooltipPosition="below">
     <mat-icon class="material-symbols-outlined">check</mat-icon>

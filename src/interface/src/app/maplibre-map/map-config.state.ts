@@ -94,7 +94,11 @@ export class MapConfigState {
     this._projectAreasOpacity.next(value);
   }
 
-  toggleDrawingMode() {
-    this._drawingModeEnabled$.next(!this._drawingModeEnabled$.getValue());
+  enterDrawingMode() {
+    this._drawingModeEnabled$.next(true);
+  }
+
+  exitDrawingMode() {
+    this._drawingModeEnabled$.next(false);
   }
 }

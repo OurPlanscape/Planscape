@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { MockProvider } from 'ng-mocks';
 import { ExploreModesToggleComponent } from './explore-modes-toggle.component';
 import { MapConfigState } from '../map-config.state';
+import { MultiMapConfigState } from '../multi-map-config.state';
 
 describe('ExploreModesToggleComponent', () => {
   let component: ExploreModesToggleComponent;
@@ -10,7 +11,10 @@ describe('ExploreModesToggleComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ExploreModesToggleComponent],
-      providers: [MockProvider(MapConfigState)],
+      providers: [
+        MockProvider(MapConfigState),
+        MockProvider(MultiMapConfigState),
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ExploreModesToggleComponent);
