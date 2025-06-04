@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { MultiMapConfigState } from './multi-map-config.state';
 import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '../map/map.constants';
-import { BaseLayerType } from '../types/maplibre.map.types';
+import { BaseMapType } from '../types/maplibre.map.types';
 import { Extent } from '@types';
 
 describe('MultiMapConfigState', () => {
@@ -52,14 +52,14 @@ describe('MultiMapConfigState', () => {
   it('saveStateToLocalStorage calls storage.setItem with correct payload', () => {
     // grab the current private values
     const layout = (service as any)._layoutMode$.getValue();
-    const baseLayer = (service as any)._baseLayer$.getValue();
+    const baseMap = (service as any)._baseMap$.getValue();
     const extent = [0, 1, 2, 3] as Extent;
 
     service.saveStateToLocalStorage(extent);
 
     expect(storage.setItem).toHaveBeenCalledWith({
       layoutMode: layout,
-      baseLayer: baseLayer,
+      baseMap: baseMap,
       extent: extent,
     });
   });
@@ -70,8 +70,8 @@ describe('MultiMapConfigState', () => {
 
     // subjects remain at their default values
     expect((service as any)._layoutMode$.getValue()).toBe(1);
-    expect((service as any)._baseLayer$.getValue()).toBe(
-      (service as any)._baseLayer$.getValue() /* whatever default is */
+    expect((service as any)._baseMap$.getValue()).toBe(
+      (service as any)._baseMap$.getValue() /* whatever default is */
     );
     expect((service as any)._mapExtent$.getValue()).toEqual(
       FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS
@@ -81,7 +81,7 @@ describe('MultiMapConfigState', () => {
   it('loadStateFromLocalStorage updates subjects when storage has data', () => {
     const saved = {
       layoutMode: 2 as any,
-      baseLayer: 'satellite' as BaseLayerType,
+      baseMap: 'satellite' as BaseMapType,
       extent: [5, 6, 7, 8] as Extent,
     };
     storage.getItem.and.returnValue(saved);
@@ -89,7 +89,7 @@ describe('MultiMapConfigState', () => {
     service.loadStateFromLocalStorage();
 
     expect((service as any)._layoutMode$.getValue()).toBe(2);
-    expect((service as any)._baseLayer$.getValue()).toBe('satellite');
+    expect((service as any)._baseMap$.getValue()).toBe('satellite');
     expect((service as any)._mapExtent$.getValue()).toEqual([5, 6, 7, 8]);
   });
 });

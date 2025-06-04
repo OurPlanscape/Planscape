@@ -1,15 +1,15 @@
-<!-- Selected layer icon -->
+<!-- Selected base map icon -->
 <img
   matTooltip="Base Map"
   matTooltipPosition="below"
   (click)="openOverlay($event)"
-  class="base-layer-icon"
-  *ngIf="selectedLayer$ | async as selectedLayer"
-  [src]="'assets/png/baseMaps/' + selectedLayer + '.png'" />
+  class="base-map-icon"
+  *ngIf="selectedBaseMap$ | async as selectedBaseMap"
+  [src]="'assets/png/baseMaps/' + selectedBaseMap + '.png'" />
 
-<!-- Base Map Layers Overlay -->
+<!-- Base Map Overlay -->
 <mat-card
-  class="base-layer-overlay"
+  class="base-map-overlay"
   *ngIf="displayed"
   appClickOutside
   (clickOutside)="closeOverlay()">
@@ -25,17 +25,17 @@
   </header>
   <section>
     <p
-      *ngFor="let baseLayer of baseLayers"
-      class="base-layer-option"
-      (click)="updateBaseMapLayer(baseLayer)"
-      [class.selected]="(selectedLayer$ | async) === baseLayer">
+      *ngFor="let baseMap of baseMaps"
+      class="base-map-option"
+      (click)="updateBaseMap(baseMap)"
+      [class.selected]="(selectedBaseMap$ | async) === baseMap">
       <img
-        (click)="updateBaseMapLayer(baseLayer)"
-        class="base-layer-icon"
-        *ngIf="selectedLayer$ | async as selectedLayer"
-        [src]="'assets/png/baseMaps/' + baseLayer + '.png'" />
-      <span class="base-layer-label">
-        {{ baseLayer }}
+        (click)="updateBaseMap(baseMap)"
+        class="base-map-icon"
+        *ngIf="selectedBaseMap$ | async as selectedLayer"
+        [src]="'assets/png/baseMaps/' + baseMap + '.png'" />
+      <span class="base-map-label">
+        {{ baseMap }}
       </span>
     </p>
   </section>
