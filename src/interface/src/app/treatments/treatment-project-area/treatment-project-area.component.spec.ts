@@ -8,7 +8,6 @@ import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { of } from 'rxjs';
 import { Geometry } from 'geojson';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
@@ -66,11 +65,7 @@ describe('TreatmentProjectAreaComponent', () => {
         },
       ],
       declarations: [
-        MockDeclarations(
-          TreatmentMapComponent,
-          MapBaseLayerComponent,
-          AcresTreatedComponent
-        ),
+        MockDeclarations(TreatmentMapComponent, AcresTreatedComponent),
       ],
     }).compileComponents();
 
