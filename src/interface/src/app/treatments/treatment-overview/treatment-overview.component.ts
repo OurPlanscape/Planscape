@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, DecimalPipe, NgIf } from '@angular/common';
 import { TreatmentMapComponent } from '../treatment-map/treatment-map.component';
-import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 import {
   ButtonComponent,
@@ -29,7 +28,6 @@ import { PlanState } from '../../plan/plan.state';
     MatCheckboxModule,
     TreatmentPlanTabsComponent,
     ButtonComponent,
-    MapBaseLayerComponent,
     DebounceInputComponent,
     NgIf,
     FeaturesModule,

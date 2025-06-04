@@ -75,7 +75,7 @@ export class DirectImpactsMapComponent {
   /**
    * Observable that provides the url to load the selected map base layer
    */
-  baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
+  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
   /**
    * Observable that provides the map extent (bounds) for the treatment plan or project area
    */

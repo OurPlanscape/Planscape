@@ -1,5 +1,5 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { FrontendConstants } from '../../map/map.constants';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
@@ -16,12 +16,15 @@ import {
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import * as turf from '@turf/turf';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { MultiMapConfigState } from '../multi-map-config.state';
+import { map } from 'rxjs';
 
 @UntilDestroy()
 @Component({
   selector: 'app-explore-map',
   standalone: true,
   imports: [
+    NgClass,
     AsyncPipe,
     MapComponent,
     ControlComponent,
@@ -44,7 +47,7 @@ export class ExploreMapComponent {
   /**
    * Observable that provides the url to load the selected map base layer
    */
-  baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
+  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
@@ -62,8 +65,13 @@ export class ExploreMapComponent {
 
   terraDraw: TerraDraw | null = null;
 
+  isSelected$ = this.multiMapConfigState.selectedMapId$.pipe(
+    map((mapId) => this.mapNumber === mapId)
+  );
+
   constructor(
     private mapConfigState: MapConfigState,
+    private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService
   ) {
     mapConfigState.drawingModeEnabled$

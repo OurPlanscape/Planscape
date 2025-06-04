@@ -4,10 +4,10 @@ import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
 import { ButtonComponent } from '@styleguide';
 import { ClickOutsideDirective } from 'src/app/standalone/click-outside-directive/click-outside.directive';
-import { baseLayerStyles } from 'src/app/maplibre-map/map-base-layers';
+import { baseMapStyles } from 'src/app/maplibre-map/map-base-layers';
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { BaseLayerType } from '../../types/maplibre.map.types';
+import { BaseMapType } from '../../types/maplibre.map.types';
 
 @Component({
   selector: 'app-map-base-dropdown',
@@ -27,13 +27,13 @@ import { BaseLayerType } from '../../types/maplibre.map.types';
 })
 export class MapBaseDropdownComponent {
   displayed = false;
-  selectedLayer$ = this.mapConfigState.baseLayer$;
-  baseLayers = Object.keys(baseLayerStyles) as BaseLayerType[];
+  selectedBaseMap$ = this.mapConfigState.baseMap$;
+  baseMaps = Object.keys(baseMapStyles) as BaseMapType[];
 
   constructor(private mapConfigState: MapConfigState) {}
 
-  updateBaseMapLayer(baseLayer: BaseLayerType) {
-    this.mapConfigState.updateBaseLayer(baseLayer);
+  updateBaseMap(baseLayer: BaseMapType) {
+    this.mapConfigState.updateBaseMap(baseLayer);
     this.closeOverlay();
   }
 

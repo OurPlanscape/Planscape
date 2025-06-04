@@ -5,7 +5,6 @@ import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
-import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { BehaviorSubject, of } from 'rxjs';
@@ -24,9 +23,7 @@ describe('TreatmentPlanTabsComponent', () => {
         TreatmentPlanTabsComponent,
         BrowserAnimationsModule,
       ],
-      declarations: [
-        MockDeclarations(ProjectAreasTabComponent, MapBaseLayerComponent),
-      ],
+      declarations: [MockDeclarations(ProjectAreasTabComponent)],
       providers: [
         MockProvider(TreatmentsState, {
           treatmentPlan$: new BehaviorSubject(null),

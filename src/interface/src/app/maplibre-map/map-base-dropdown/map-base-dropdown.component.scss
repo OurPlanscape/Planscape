@@ -5,7 +5,7 @@
   display: flex;
 }
 
-.base-layer {
+.base-map {
   &-icon {
     height: 38px;
     width: 38px;
@@ -30,6 +30,7 @@
       justify-content: space-between;
       padding: 14px;
       border-bottom: 1px solid $color-soft-gray;
+
       h4 {
         @include h5();
         margin: 0;
@@ -49,6 +50,7 @@
     padding: 14px;
     margin: 0;
   }
+
   &-label::first-letter {
     text-transform: uppercase;
   }

@@ -11,7 +11,6 @@ import {
 import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
-import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 import { FeaturesModule } from 'src/app/features/features.module';
@@ -28,7 +27,6 @@ import { BaseLayersStateService } from '../../base-layers/base-layers.state.serv
   standalone: true,
   imports: [
     AsyncPipe,
-    MapBaseLayerComponent,
     MatDialogModule,
     MatDividerModule,
     MatTabsModule,

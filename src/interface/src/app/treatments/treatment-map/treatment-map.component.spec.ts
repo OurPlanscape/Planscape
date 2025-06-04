@@ -47,7 +47,7 @@ describe('TreatmentMapComponent', () => {
         ),
         MockProvider(MapConfigState, {
           cursor$: of(''),
-          baseLayer$: of(DEFAULT_BASE_MAP),
+          baseMap$: of(DEFAULT_BASE_MAP),
         }),
         {
           provide: TreatmentsState,

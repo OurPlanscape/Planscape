@@ -57,7 +57,7 @@ export class ScenarioMapComponent {
   /**
    * Observable that provides the url to load the selected map base layer
    */
-  baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
+  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   bounds$ = this.planState.planningAreaGeometry$.pipe(
     map((geometry) => {

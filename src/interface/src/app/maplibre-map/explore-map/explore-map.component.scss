@@ -1,5 +1,5 @@
-@import "colors";
-@import "mixins";
+@import 'colors';
+@import 'mixins';
 
 :host {
   display: block;
@@ -22,4 +22,17 @@ mgl-map {
   // remove the mgl-controls margin
   bottom: -10px;
   left: -10px;
+}
+
+.highlighted-map {
+  box-sizing: border-box;
+  ::ng-deep canvas {
+    outline: 6px solid $color-active-blue;
+    outline-offset: -5px;
+  }
+}
+
+.selected-map {
+  background-color: $color-active-blue;
+  color: $color-white;
 }
