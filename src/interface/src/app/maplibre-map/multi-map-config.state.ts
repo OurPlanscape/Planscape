@@ -13,7 +13,7 @@ export class MultiMapConfigState extends MapConfigState {
   private _layoutMode$ = new BehaviorSubject<LayoutOption>(1);
   public layoutMode$ = this._layoutMode$.asObservable();
 
-  private _selectedMapId$ = new BehaviorSubject<number>(1);
+  private _selectedMapId$ = new BehaviorSubject<number | null>(1);
   public selectedMapId$ = this._selectedMapId$.asObservable();
 
   constructor(private multiMapsStorageService: MultiMapsStorageService) {
@@ -22,8 +22,9 @@ export class MultiMapConfigState extends MapConfigState {
   }
 
   setLayoutMode(views: LayoutOption) {
-    if (views < this._selectedMapId$.value) {
-      this.setSelectedMap(1);
+    const selectedMapId = this._selectedMapId$.value;
+    if (!selectedMapId || views < selectedMapId) {
+      this.setSelectedMap(!selectedMapId ? selectedMapId : 1);
     }
     this._layoutMode$.next(views);
   }
@@ -55,7 +56,7 @@ export class MultiMapConfigState extends MapConfigState {
     }
   }
 
-  setSelectedMap(id: number) {
+  setSelectedMap(id: number | null) {
     this._selectedMapId$.next(id);
   }
 }

@@ -54,7 +54,8 @@ export class ExploreMapComponent {
   @Input() showAttribution = false;
 
   isSelected$ = this.multiMapConfigState.selectedMapId$.pipe(
-    map((mapId) => this.mapNumber === mapId)
+    // If mapId is null means we are in other tab and we dont want to display highlighted Maps
+    map((mapId) => mapId && this.mapNumber === mapId)
   );
 
   constructor(

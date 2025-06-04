@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { DataLayersComponent } from './data-layers.component';
 import { MockProvider } from 'ng-mocks';
-import { of } from 'rxjs';
+import { BehaviorSubject, of } from 'rxjs';
 import { DataLayersStateService } from '../data-layers.state.service';
 import { DataSet, Pagination } from '@types';
 
@@ -20,6 +20,7 @@ describe('DataLayersComponent', () => {
           selectedDataSet$: of(null),
           dataTree$: of(null),
           searchResults$: of(null),
+          loading$: new BehaviorSubject(false),
         }),
       ],
     }).compileComponents();
