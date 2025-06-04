@@ -142,6 +142,15 @@ class Command(PlanscapeCommand):
             required=False,
             default=None,
         )
+        create_mutex = create_parser.add_mutually_exclusive_group(required=True)
+        create_mutex.add_argument(
+            "--input-file",
+            type=str,
+            help="Local path or s3://... to upload into Planscape",
+        )
+        create_mutex.add_argument(
+            "--url", type=str, help="HTTP/HTTPS service URL for an external data source"
+        )
         create_parser.add_argument("name", type=str)
         create_parser.add_argument(
             "--dataset",
@@ -165,11 +174,6 @@ class Command(PlanscapeCommand):
             dest="map_service_type",
             choices=[c.name for c in MapServiceChoices],
             help=f"REQUIRED. One of: {[c.name for c in MapServiceChoices]}",
-        )
-        create_parser.add_argument(
-            "--input-file",
-            required=True,
-            type=str,
         )
         create_parser.add_argument(
             "--metadata",
@@ -310,10 +314,11 @@ class Command(PlanscapeCommand):
         layer_info: Dict[str, Any],
         metadata: Optional[Dict[str, Any]] = None,
         map_service_type: Optional[str] = None,
+        url: str | None = None,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
         base_url = self.get_base_url(**kwargs)
-        url = base_url + "/v2/admin/datalayers/"
+        request_url = base_url + "/v2/admin/datalayers/"
         headers = self.get_headers(**kwargs)
         mimetype = kwargs.get("mimetype")
         original_name = kwargs.get("original_name")
@@ -333,10 +338,11 @@ class Command(PlanscapeCommand):
             "geometry_type": geometry_type,
             "style": style,
             "map_service_type": map_service_type,
+            "url": url,
         }
 
         response = requests.post(
-            url,
+            request_url,
             headers=headers,
             json=input_data,
         )
@@ -358,8 +364,9 @@ class Command(PlanscapeCommand):
         name: str,
         dataset: int,
         org: int,
-        input_file: str,
+        input_file: str | None,
         skip_existing: bool,
+        url: str | None = None,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
         try:
@@ -373,6 +380,23 @@ class Command(PlanscapeCommand):
                 self._skip_existing(**check_existing_args)
         except DataLayerAlreadyExists as datalayer_exists:
             return {"info": str(datalayer_exists)}
+
+        if url:
+            payload = self._create_datalayer_request(
+                name=name,
+                dataset=dataset,
+                org=org,
+                layer_type=kwargs.get("layer_type") or "RASTER",
+                geometry_type="NO_GEOM",
+                layer_info={},
+                metadata=kwargs.get("metadata"),
+                map_service_type=kwargs.get("map_service_type"),
+                url=url,
+                mimetype=None,
+                original_name=None,
+                **kwargs,
+            )
+            return payload
 
         map_service_type = kwargs.pop("map_service_type", None)
         s3_file = is_s3_file(input_file)
@@ -420,12 +444,17 @@ class Command(PlanscapeCommand):
             original_name=original_name,
             metadata=metadata,
             map_service_type=map_service_type,
+            url=url,
             **kwargs,
         )
         if not output_data:
             raise ValueError("request failed.")
         datalayer = output_data.get("datalayer")
         upload_to = output_data.get("upload_to", {}) or {}
+
+        if url or len(upload_to) == 0:
+            return output_data
+
         if len(upload_to.keys()) > 0:
             self._upload_file(
                 processed_files,
