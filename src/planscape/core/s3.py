@@ -11,6 +11,9 @@ from django.conf import settings
 logger = logging.getLogger(__name__)
 
 
+CHECKSUM_ALGORITHMS = ["CRC64NVME", "CRC32", "CRC32C", "SHA1", "SHA256"]
+
+
 def get_aws_session() -> Session:
     return Session(
         aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
@@ -79,11 +82,10 @@ def get_s3_hash(
     object_name = s3_url.replace(f"s3://{bucket}/", "")
     head_response = get_head(bucket, object_name)
     if head_response:
-        checksum_type = head_response.get("ChecksumType")
-        if checksum_type == "FULL_OBJECT":
-            return head_response["ChecksumCRC64NVME"]
-        else:
-            return head_response["ChecksumCRC32"]
+        for checksum_algorithm in CHECKSUM_ALGORITHMS:
+            checksum_key = f"Checksum{checksum_algorithm}"
+            if checksum_key in head_response:
+                return head_response[checksum_key]
     return None
 
 

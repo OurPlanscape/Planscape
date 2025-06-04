@@ -49,7 +49,6 @@ import { MapZoomControlComponent } from '../../maplibre-map/map-zoom-control/map
 import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-toggle/rx-selection-toggle.component';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
-import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { MapBaseLayersComponent } from '../../maplibre-map/map-base-layers/map-base-layers.component';
 
 @UntilDestroy()
@@ -89,7 +88,6 @@ import { MapBaseLayersComponent } from '../../maplibre-map/map-base-layers/map-b
     RxSelectionToggleComponent,
     MatTooltipModule,
     BaseLayersComponent,
-    MapBaseLayerComponent,
     MapBaseLayersComponent,
   ],
   templateUrl: './treatment-map.component.html',
@@ -125,7 +123,7 @@ export class TreatmentMapComponent {
   /**
    * Observable that provides the url to load the selected map base layer
    */
-  baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
+  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   /**
    * Observable that provides if stand selection is enabled
@@ -212,7 +210,7 @@ export class TreatmentMapComponent {
         }
       });
 
-    this.mapConfigState.baseLayer$.pipe(untilDestroyed(this)).subscribe(() => {
+    this.mapConfigState.baseMap$.pipe(untilDestroyed(this)).subscribe(() => {
       this.selectedStandsState.backUpAndClearSelectedStands();
     });
   }
