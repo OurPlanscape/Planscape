@@ -53,8 +53,7 @@ def extract_layer(
     """
     environment = os.environ.copy()
     output_file = get_random_output_file(input_file=input_file)
-    output_suffix = Path(output_file).suffix
-    output_file = output_file.replace(output_suffix, ".shp")
+    output_file = str(Path(output_file).with_suffix(".shp"))
 
     ogr2ogr_call = ogr2ogr_extract_layer_from_gpkg_to_shp(
         input_file,
@@ -76,20 +75,18 @@ def zip_shapefile(input_file: str) -> str:
     :param input_file: Path to the input file.
     :return: Path to the zipped shapefile.
     """
-    input_file_name = Path(input_file).stem
-
     files_to_compress = [
-        Path(input_file).with_suffix(suffix)
+        str(Path(input_file).with_suffix(suffix))
         for suffix in [".shp", ".shx", ".dbf", ".prj"]
     ]
-    output_file = Path(input_file).with_suffix(".zip")
+    output_file = str(Path(input_file).with_suffix(".zip"))
 
     subprocess.run(
-        ["zip", "-j", str(output_file), *(str(file) for file in files_to_compress)],
+        ["zip", "-j", output_file, *(file for file in files_to_compress)],
         check=True,
         timeout=settings.ZIP_TIMEOUT,
     )
-    return str(output_file)
+    return output_file
 
 
 def to_planscape(input_file: str) -> Collection[str]:
