@@ -12,6 +12,7 @@
 .left-option {
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;
+    border-right: 1px $color-text-gray solid;
 }
 
 .right-option {
@@ -27,6 +28,7 @@ button {
     height: 40px;
     width: 56px;
     cursor: pointer;
+    color: $color-standard-blue;
 
     &:hover {
         background: $color-soft-gray;

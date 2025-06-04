@@ -4,6 +4,7 @@ import { MatDividerModule } from '@angular/material/divider';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MapConfigState } from '../map-config.state';
+import { MultiMapConfigState } from '../multi-map-config.state';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -23,18 +24,24 @@ export class ExploreModesToggleComponent {
   @Output() scenarioUpload = new EventEmitter<void>();
   drawModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
 
-  constructor(private mapConfigState: MapConfigState) {}
+  constructor(
+    private mapConfigState: MapConfigState,
+    private multiMapConfigState: MultiMapConfigState
+  ) {}
 
-  toggleDrawing() {
-    this.mapConfigState.toggleDrawingMode();
+  handleDrawingButton() {
+    // first, ensure we're only on single map view
+    this.multiMapConfigState.setLayoutMode(1);
+    this.mapConfigState.enterDrawingMode();
   }
 
-  cancelDrawing() {
-    // TODO: handle this with mapconfigstate
+  handleCancelButton() {
+    this.mapConfigState.exitDrawingMode();
   }
 
-  saveDrawing() {
-    // TODO: handle this with mapconfigstate
+  handleSaveButton() {
+    // TODO: if user has finished a polygon, show an upload dialog
+    // (proposed) if user hasn't drawn a polygon, a notice should appear
   }
 
   clickedUpload() {
