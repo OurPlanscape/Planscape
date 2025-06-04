@@ -15,6 +15,9 @@ import {
 } from 'terra-draw';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import * as turf from '@turf/turf';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+
+@UntilDestroy()
 @Component({
   selector: 'app-explore-map',
   standalone: true,
@@ -62,14 +65,25 @@ export class ExploreMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private authService: AuthService
-  ) {}
+  ) {
+    mapConfigState.drawingModeEnabled$
+      .pipe(untilDestroyed(this))
+      .subscribe((drawingModeStatus) => {
+        console.log('drawing mode is what?', drawingModeStatus);
+        if (drawingModeStatus) {
+          this.enablePolygonDrawingMode();
+        } else {
+          this.cancelDrawingMode();
+        }
+      });
+  }
 
   mapLoaded(map: MapLibreMap) {
     this.mapLibreMap = map;
     this.mapCreated.emit({ map: map, mapNumber: this.mapNumber });
     this.initDrawingModes();
-    this.enablePolygonDrawingMode();
   }
+
   initDrawingModes() {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: this.mapLibreMap,
