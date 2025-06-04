@@ -12,6 +12,7 @@
       <mat-tab-group
         class="side-tabs"
         [(selectedIndex)]="tabIndex"
+        (selectedIndexChange)="onTabIndexChange($event)"
         *ngIf="panelExpanded"
         mat-stretch-tabs="false"
         mat-align-tabs="start">

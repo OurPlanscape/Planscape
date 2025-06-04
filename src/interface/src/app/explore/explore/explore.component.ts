@@ -60,7 +60,8 @@ export class ExploreComponent implements OnDestroy {
   constructor(
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private multiMapConfigState: MultiMapConfigState
   ) {
     this.loadStateFromLocalStorage();
     this.breadcrumbService.updateBreadCrumb({
@@ -95,6 +96,15 @@ export class ExploreComponent implements OnDestroy {
     if (options) {
       this.panelExpanded = options.isPanelExpanded || false;
       this.tabIndex = options.tabIndex || 0;
+      this.onTabIndexChange(this.tabIndex);
+    }
+  }
+
+  onTabIndexChange(index: number) {
+    if (index !== 0) {
+      this.multiMapConfigState.setSelectedMap(null);
+    } else {
+      this.multiMapConfigState.setSelectedMap(1); // Default map
     }
   }
 }
