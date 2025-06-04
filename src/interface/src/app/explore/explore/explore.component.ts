@@ -60,8 +60,7 @@ export class ExploreComponent implements OnDestroy {
   constructor(
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
-    private baseLayersStateService: BaseLayersStateService,
-    private mapConfigState: MapConfigState
+    private baseLayersStateService: BaseLayersStateService
   ) {
     this.loadStateFromLocalStorage();
     this.breadcrumbService.updateBreadCrumb({
@@ -97,18 +96,5 @@ export class ExploreComponent implements OnDestroy {
       this.panelExpanded = options.isPanelExpanded || false;
       this.tabIndex = options.tabIndex || 0;
     }
-  }
-
-  toggleDrawingMode() {
-    //TODO: confirm: if not on single-pane view, switch to it?
-    this.mapConfigState.toggleDrawingMode();
-  }
-
-  cancelDrawing() {
-    //TODO: end and remove current drawing, do not stop drawing mode
-  }
-
-  saveDrawing() {
-    //TODO: save drawing
   }
 }

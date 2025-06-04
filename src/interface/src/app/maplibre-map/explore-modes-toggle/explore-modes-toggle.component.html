@@ -26,6 +26,7 @@
   <button
     type="button"
     class="drawing-mode-button"
+    (click)="cancelDrawing()"
     matTooltip="Cancel"
     matTooltipPosition="below">
     <mat-icon class="material-symbols-outlined">close</mat-icon>
@@ -33,6 +34,7 @@
   <button
     type="button"
     class="drawing-mode-button check-button"
+    (click)="saveDrawing()"
     matTooltip="Save"
     matTooltipPosition="below">
     <mat-icon class="material-symbols-outlined">check</mat-icon>

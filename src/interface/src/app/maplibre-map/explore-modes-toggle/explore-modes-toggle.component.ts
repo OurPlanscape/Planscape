@@ -20,16 +20,21 @@ import { MapConfigState } from '../map-config.state';
   styleUrl: './explore-modes-toggle.component.scss',
 })
 export class ExploreModesToggleComponent {
-  @Output() saveDrawing = new EventEmitter<void>();
-  @Output() cancelDrawing = new EventEmitter<void>();
-  @Output() toggleDrawingMode = new EventEmitter<void>();
   @Output() scenarioUpload = new EventEmitter<void>();
   drawModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
 
   constructor(private mapConfigState: MapConfigState) {}
 
   toggleDrawing() {
-    this.toggleDrawingMode.emit();
+    this.mapConfigState.toggleDrawingMode();
+  }
+
+  cancelDrawing() {
+    // TODO: handle this with mapconfigstate
+  }
+
+  saveDrawing() {
+    // TODO: handle this with mapconfigstate
   }
 
   clickedUpload() {
