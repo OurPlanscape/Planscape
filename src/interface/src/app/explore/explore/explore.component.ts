@@ -14,6 +14,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
 
 @Component({
@@ -21,6 +22,7 @@ import { MapSelectorComponent } from '../map-selector/map-selector.component';
   standalone: true,
   imports: [
     AsyncPipe,
+    ExploreModesToggleComponent,
     MapNavbarComponent,
     MapComponent,
     SharedModule,
@@ -58,7 +60,8 @@ export class ExploreComponent implements OnDestroy {
   constructor(
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private mapConfigState: MapConfigState
   ) {
     this.loadStateFromLocalStorage();
     this.breadcrumbService.updateBreadCrumb({
@@ -94,5 +97,18 @@ export class ExploreComponent implements OnDestroy {
       this.panelExpanded = options.isPanelExpanded || false;
       this.tabIndex = options.tabIndex || 0;
     }
+  }
+
+  toggleDrawingMode() {
+    //TODO: confirm: if not on single-pane view, switch to it?
+    this.mapConfigState.toggleDrawingMode();
+  }
+
+  cancelDrawing() {
+    //TODO: end and remove current drawing, do not stop drawing mode
+  }
+
+  saveDrawing() {
+    //TODO: save drawing
   }
 }

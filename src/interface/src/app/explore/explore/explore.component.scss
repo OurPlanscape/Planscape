@@ -70,8 +70,10 @@ mgl-map {
 
 app-map-nav-bar {
   left: $side-panel-width;
+  width: calc(100% - $side-panel-width);
 }
 
 app-synced-maps.withPanel {
   margin-left: $side-panel-width;
 }
+
