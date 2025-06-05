@@ -21,6 +21,7 @@ from gis.core import (
 from gis.errors import InvalidFileFormat
 from gis.io import detect_mimetype
 from gis.rasters import to_planscape as to_planscape_raster
+from gis.vectors import to_planscape_multi_layer
 
 from datasets.models import DataLayerType, MapServiceChoices
 from datasets.parsers import get_and_parse_datalayer_file_metadata
@@ -71,9 +72,10 @@ def get_create_call(
     name,
     input_file,
     dataset,
-    metadata,
+    metadata: Optional[str] = None,
+    map_service_type: Optional[str] = None,
 ) -> List[str]:
-    return [
+    command = [
         "python3",
         "manage.py",
         "datalayers",
@@ -83,10 +85,13 @@ def get_create_call(
         input_file,
         "--dataset",
         str(dataset),
-        "--metadata",
-        metadata,
         "--skip-existing",
     ]
+    if metadata:
+        command.extend(["--metadata", metadata])
+    if map_service_type:
+        command.extend(["--map-service-type", map_service_type])
+    return command
 
 
 def create_for_import(
@@ -185,6 +190,11 @@ class Command(PlanscapeCommand):
             required=False,
             action="store_true",
             default=True,
+        )
+        create_parser.add_argument(
+            "--layers",
+            required=False,
+            type=str,
         )
         import_parser.add_argument(
             "--dataset",
@@ -413,12 +423,26 @@ class Command(PlanscapeCommand):
                 )
             case _:
                 if len(layer_info.keys()) > 1:
-                    raise InvalidFileFormat(
-                        "This particular file contains more than one datalayer.\n"
-                        "Split it in multiple files before processing."
+                    # multi-layer vector file
+                    layers = kwargs.get("layers", "")
+                    layers = layers.split(",") if layers else None
+                    processed_files = to_planscape_multi_layer(
+                        input_file=input_file,
+                        target_layers=layers,
                     )
-                # vector processing is done on the server?
-                processed_files = [input_file]
+                    for layer_name, layer_file in processed_files:
+                        command = get_create_call(
+                            name=layer_name,
+                            input_file=layer_file,
+                            dataset=dataset,
+                            metadata=kwargs.get("metadata", None),
+                            map_service_type=map_service_type,
+                        )
+                        subprocess.run(command)
+                    return None
+                else:
+                    # single-layer vector file
+                    processed_files = [input_file]
 
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
         metadata = kwargs.pop("metadata", None)
