@@ -1,5 +1,4 @@
 {
-  "statewide_scenarios": false,
-  "statewide_baselayers": false,
-  "maplibre_on_explore": false
+  "STATEWIDE_SCENARIOS": true,
+  "STATEWIDE_BASELAYERS": false
 }
