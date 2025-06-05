@@ -134,7 +134,17 @@ export function syncMaps(...maps: MapLibreMap[]): Cleanup {
   };
 }
 
-export function defaultBaseLayerFill(fillColor?: string) {
+function convertOpacityToNumber(opacity: string): number | null {
+  const num = Number(opacity);
+  return isNaN(num) ? null : num;
+}
+
+export function defaultBaseLayerFill(fillColor?: string, fillOpacity?: string) {
+  let opacity = BASE_LAYERS_DEFAULT.OPACITY;
+  if (fillOpacity) {
+    opacity =
+      convertOpacityToNumber(fillOpacity) ?? BASE_LAYERS_DEFAULT.OPACITY;
+  }
   return {
     'fill-color': fillColor || BASE_LAYERS_DEFAULT.COLOR,
 
@@ -142,7 +152,7 @@ export function defaultBaseLayerFill(fillColor?: string) {
       'case',
       ['boolean', ['feature-state', 'hover'], false],
       0.5,
-      0,
+      opacity,
     ],
   } as any;
 }

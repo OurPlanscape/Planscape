@@ -113,7 +113,7 @@ export const EXCLUDED_AREAS = [
 
 export const BASE_LAYERS_DEFAULT = {
   COLOR: '#789',
-  OPACITY: 1,
+  OPACITY: 0,
 };
 
 /**
