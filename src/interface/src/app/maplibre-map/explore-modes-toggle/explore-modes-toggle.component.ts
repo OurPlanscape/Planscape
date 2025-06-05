@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MapConfigState } from '../map-config.state';
 import { MultiMapConfigState } from '../multi-map-config.state';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -36,12 +37,32 @@ export class ExploreModesToggleComponent {
   }
 
   handleCancelButton() {
-    this.mapConfigState.exitDrawingMode();
+    //TODO: if there are features on the map... we show a dialog
+    // otherwise...
+    //TODO: possible to actively query terradraw?
+    this.mapConfigState.hasDrawnFeature$
+      .pipe(take(1))
+      .subscribe((hasFeature) => {
+        if (hasFeature === true) {
+          console.log('we have a feature!');
+        } else {
+          this.mapConfigState.exitDrawingMode();
+        }
+      });
   }
 
   handleSaveButton() {
     // TODO: if user has finished a polygon, show an upload dialog
     // (proposed) if user hasn't drawn a polygon, a notice should appear
+    this.mapConfigState.hasDrawnFeature$
+      .pipe(take(1))
+      .subscribe((hasFeature) => {
+        if (hasFeature === true) {
+          console.log('we have a feature');
+        } else {
+          console.log('we dont have a feautre!');
+        }
+      });
   }
 
   clickedUpload() {

@@ -19,6 +19,11 @@ button {
   width: 56px;
   cursor: pointer;
 
+  &:disabled, &:disabled.active  {
+    background: $color-soft-gray;
+    pointer-events: none; 
+  }
+
   &:hover {
     background: $color-soft-gray;
   }

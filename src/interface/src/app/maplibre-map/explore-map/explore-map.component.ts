@@ -11,7 +11,6 @@ import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.compo
 import {
   TerraDrawPolygonMode,
   TerraDrawSelectMode,
-  TerraDrawLineStringMode,
   TerraDraw,
   GeoJSONStoreFeatures,
 } from 'terra-draw';
@@ -19,9 +18,11 @@ import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import * as turf from '@turf/turf';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { map } from 'rxjs';
-import { MatDialog } from '@angular/material/dialog';
-import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
+import { BehaviorSubject, map } from 'rxjs';
+// import { MatDialog } from '@angular/material/dialog';
+// import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
+
+type DrawState = 'none' | 'polygon' | 'select';
 
 @UntilDestroy()
 @Component({
@@ -75,18 +76,18 @@ export class ExploreMapComponent {
   );
 
   //TODO: this is a placeholder for drawing state -- move to service?
-  drawState: 'started' | 'finished' | 'none' = 'none';
+  drawState$ = new BehaviorSubject<DrawState>('none');
 
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
-    private authService: AuthService,
-    private dialog: MatDialog,
+    private authService: AuthService
+    // private dialog: MatDialog
   ) {
     mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
       .subscribe((drawingModeStatus) => {
-        if (drawingModeStatus) {
+        if (drawingModeStatus === true) {
           this.enablePolygonDrawingMode();
         } else {
           this.cancelDrawingMode();
@@ -105,8 +106,6 @@ export class ExploreMapComponent {
       map: this.mapLibreMap,
     });
 
-    // TODO: may not use this...
-    const lineStringMode = new TerraDrawLineStringMode();
     const polygonMode = new TerraDrawPolygonMode({
       //TODO: pull styles from elsewhere...
       styles: {
@@ -124,16 +123,6 @@ export class ExploreMapComponent {
     // but we disable the polygon edit features -- TODO: though we may actually want these?
     const selectMode = new TerraDrawSelectMode({
       flags: {
-        linestring: {
-          feature: {
-            draggable: true,
-            coordinates: {
-              midpoints: true,
-              draggable: true,
-              deletable: true,
-            },
-          },
-        },
         polygon: {
           feature: {
             draggable: true,
@@ -151,18 +140,7 @@ export class ExploreMapComponent {
     });
     this.terraDraw = new TerraDraw({
       adapter: mapLibreAdapter,
-      modes: [lineStringMode, polygonMode, selectMode],
-    });
-  }
-
-
-  private openPlanCreateDialog(area: number) {
-    return this.dialog.open(PlanCreateDialogComponent, {
-      maxWidth: '560px',
-      data: {
-        shape: {},
-        totalArea: area,
-      },
+      modes: [polygonMode, selectMode],
     });
   }
 
@@ -171,20 +149,25 @@ export class ExploreMapComponent {
       this.terraDraw?.start();
     }
     this.terraDraw?.setMode('polygon');
+    this.drawState$.next(this.terraDraw?.getMode() as DrawState);
 
     this.terraDraw?.on('finish', (id: any, context: any) => {
+      this.mapConfigState.setDrawnFeatures();
       const feature = this.terraDraw?.getSnapshotFeature(id);
       let acreage = 0;
       if (feature) {
         acreage = this.calculateAcreage(feature);
       }
+      console.log('acreage is:', acreage);
       // enable saveable state
       // TODO: end drawing mode, but support cancel and save options
       this.terraDraw?.setMode('select');
+      this.drawState$.next(this.terraDraw?.getMode() as DrawState);
+      this.terraDraw?.selectFeature(id);
 
       // TODO: move this to after save button -- open dialog, send feature and form data to createPlan()
 
-      this.openPlanCreateDialog(acreage);
+      //this.openPlanCreateDialog(acreage);
     });
   }
 
@@ -196,26 +179,28 @@ export class ExploreMapComponent {
     const CONVERSION_SQM_ACRES = 4046.8564213562374;
     const areaInSquareMeters = turf.area(polygon);
     const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
-    console.log(`Area: ${areaInAcres} acres`);
     return areaInAcres;
   }
 
-
   cancelDrawingMode() {
+    this.terraDraw?.setMode('select');
     this.terraDraw?.stop();
   }
 
   //handle draw controls
   handlePolygonButton() {
     this.terraDraw?.setMode('polygon');
+    this.drawState$.next(this.terraDraw?.getMode() as DrawState);
   }
 
   handleSelectButton() {
     this.terraDraw?.setMode('select');
+    this.drawState$.next(this.terraDraw?.getMode() as DrawState);
   }
 
   handleTrashButton() {
     this.terraDraw?.clear();
+    this.mapConfigState.clearedDrawnFeatures();
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
