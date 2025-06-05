@@ -72,6 +72,9 @@ export class ExploreMapComponent {
     map((mapId) => this.mapNumber === mapId)
   );
 
+  //TODO: this is a placeholder for drawing state -- move to service?
+  drawState: 'started' | 'finished' | 'none' = 'none';
+
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
@@ -173,9 +176,12 @@ export class ExploreMapComponent {
       if (feature) {
         acreage = this.calculateAcreage(feature);
       }
+      // enable saveable state
       // TODO: end drawing mode, but support cancel and save options
       this.terraDraw?.setMode('select');
-      // TODO: and on save, open dialog, send feature and form data to createPlan()
+
+      // TODO: move this to after save button -- open dialog, send feature and form data to createPlan()
+
       this.openPlanCreateDialog(acreage);
     });
   }
@@ -191,6 +197,7 @@ export class ExploreMapComponent {
     console.log(`Area: ${areaInAcres} acres`);
     return areaInAcres;
   }
+
 
   cancelDrawingMode() {
     this.terraDraw?.stop();
