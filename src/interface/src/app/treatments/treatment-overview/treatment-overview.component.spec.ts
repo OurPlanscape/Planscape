@@ -11,7 +11,6 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { TreatmentsState } from '../treatments.state';
 import { TreatedStandsState } from '../treatment-map/treated-stands.state';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
-import { MapBaseLayerComponent } from '../map-base-layer/map-base-layer.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
@@ -34,7 +33,6 @@ describe('TreatmentOverviewComponent', () => {
       declarations: [
         MockDeclarations(
           ProjectAreasTabComponent,
-          MapBaseLayerComponent,
           TreatmentPlanTabsComponent,
           AcresTreatedComponent
         ),
