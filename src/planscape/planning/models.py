@@ -75,6 +75,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         max_length=120,
         choices=RegionChoices.choices,
         help_text="Region choice name of the Planning Area.",
+        null=True,
     )
 
     name = models.CharField(max_length=120, help_text="Name of the Planning Area.")
@@ -216,15 +217,15 @@ class TreatmentGoal(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model
         null=True,
     )
 
-    datalayers: models.ManyToManyField[
-        DataLayer, models.Model
-    ] = models.ManyToManyField(
-        to=DataLayer,
-        through="TreatmentGoalUsesDataLayer",
-        through_fields=(
-            "treatment_goal",
-            "datalayer",
-        ),
+    datalayers: models.ManyToManyField[DataLayer, models.Model] = (
+        models.ManyToManyField(
+            to=DataLayer,
+            through="TreatmentGoalUsesDataLayer",
+            through_fields=(
+                "treatment_goal",
+                "datalayer",
+            ),
+        )
     )
 
     def get_raster_datalayers(self) -> Collection[DataLayer]:
