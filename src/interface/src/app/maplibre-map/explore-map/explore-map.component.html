@@ -27,8 +27,18 @@
   <mgl-control
     position="bottom-right"
     *ngIf="(drawingModeEnabled$ | async) === true">
-    <button (click)="handlePolygonButton()">Draw</button>
-    <button (click)="handleSelectButton()">Select</button>
-    <button (click)="handleTrashButton()">Clear</button>
+    <div class="drawing-toolbox">
+      <button (click)="handlePolygonButton()">
+        <mat-icon class="material-symbols-outlined">polyline</mat-icon>
+      </button>
+      <button (click)="handleSelectButton()">
+        <mat-icon class="material-symbols-outlined"
+          >arrow_selector_tool</mat-icon
+        >
+      </button>
+      <button (click)="handleTrashButton()">
+        <mat-icon class="material-symbols-outlined">delete</mat-icon>
+      </button>
+    </div>
   </mgl-control>
 </mgl-map>

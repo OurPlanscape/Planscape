@@ -5,6 +5,7 @@ import { FrontendConstants } from '../../map/map.constants';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { AuthService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
+import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 import {
@@ -28,6 +29,7 @@ import { map } from 'rxjs';
     NgClass,
     AsyncPipe,
     MapComponent,
+    MatIconModule,
     ControlComponent,
     NgIf,
     MapBaseLayersComponent,
