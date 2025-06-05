@@ -80,15 +80,14 @@ def ogr2ogr_extract_layer_from_gpkg_to_shp(
     :param layer: Layer name to extract.
     :return: OGR2OGR command as a list of strings.
     """
-    input_file = with_vsi_prefix(input_file)
     args = [
         "ogr2ogr",
-        "-sql",
-        f"SELECT * FROM {layer}",
-        # "-of",
-        # "'ESRI Shapefile'",
+        "-of",
+        "ESRI Shapefile",
+        "-overwrite",
         output_file,
         input_file,
+        layer,
     ]
     return args
 

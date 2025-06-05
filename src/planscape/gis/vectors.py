@@ -8,7 +8,7 @@ from uuid import uuid4
 from django.conf import settings
 from utils.cli_utils import ogr2ogr_cli, ogr2ogr_extract_layer_from_gpkg_to_shp
 
-from gis.core import get_layer_info, get_random_output_file
+from gis.core import get_layer_info, get_random_output_file, with_vsi_prefix
 from gis.exceptions import VectorError
 from pyproj import CRS
 import fiona
@@ -53,7 +53,7 @@ def extract_layer(
     """
     environment = os.environ.copy()
     output_file = get_random_output_file(input_file=input_file)
-    output_file = str(Path(output_file).with_suffix(".shp"))
+    output_file = str(Path(output_file).with_suffix(".shp.zip"))
 
     ogr2ogr_call = ogr2ogr_extract_layer_from_gpkg_to_shp(
         input_file,
@@ -65,26 +65,6 @@ def extract_layer(
         check=True,
         env=environment,
         timeout=settings.OGR2OGR_TIMEOUT,
-    )
-    return output_file
-
-
-def zip_shapefile(input_file: str) -> str:
-    """Zips the shapefile and returns the path to the zip file.
-
-    :param input_file: Path to the input file.
-    :return: Path to the zipped shapefile.
-    """
-    files_to_compress = [
-        str(Path(input_file).with_suffix(suffix))
-        for suffix in [".shp", ".shx", ".dbf", ".prj"]
-    ]
-    output_file = str(Path(input_file).with_suffix(".zip"))
-
-    subprocess.run(
-        ["zip", "-j", output_file, *(file for file in files_to_compress)],
-        check=True,
-        timeout=settings.ZIP_TIMEOUT,
     )
     return output_file
 
@@ -126,7 +106,6 @@ def to_planscape(input_file: str) -> Collection[str]:
 
 def to_planscape_multi_layer(
     input_file: str,
-    all_layers: Optional[bool] = False,
     target_layers: Optional[list] = None,
 ) -> Collection[Tuple[str, str]]:
     """Given a input_file, process it and
@@ -147,25 +126,17 @@ def to_planscape_multi_layer(
             "Input file is not a multi-layer vector file. Use to_planscape instead."
         )
 
-    if all((all_layers, target_layers)) or not any((all_layers, target_layers)):
-        raise ValueError(
-            "Cannot specify both or none all_layers and target_layers. Please choose one."
-        )
-
-    if all_layers:
-        # If all_layers is True, we will use all layers from the input file
+    if not target_layers:
+        # If no specific layers are requested, use all available layers
         target_layers = list(layer_info.keys())
 
     output_files = []
 
-    print(f"Alll layers: {all_layers}")
-    print(f"Target layers: {target_layers}")
     for layer in target_layers:
         output_file = extract_layer(
             input_file=input_file,
             layer=layer,
         )
-        output_file = zip_shapefile(output_file)
         output_files.append((layer, output_file))
 
     return output_files

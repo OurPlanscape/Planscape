@@ -192,12 +192,6 @@ class Command(PlanscapeCommand):
             default=True,
         )
         create_parser.add_argument(
-            "--all-layers",
-            required=False,
-            action="store_true",
-            default=False,
-        )
-        create_parser.add_argument(
             "--layers",
             required=False,
             type=str,
@@ -427,15 +421,13 @@ class Command(PlanscapeCommand):
                 processed_files = to_planscape_raster(
                     input_file=input_file,
                 )
-            case DataLayerType.VECTOR:
+            case _:
                 if len(layer_info.keys()) > 1:
                     # multi-layer vector file
-                    all_layers = kwargs.get("all_layers", False)
                     layers = kwargs.get("layers", "")
                     layers = layers.split(",") if layers else None
                     processed_files = to_planscape_multi_layer(
                         input_file=input_file,
-                        all_layers=all_layers,
                         target_layers=layers,
                     )
                     for layer_name, layer_file in processed_files:
