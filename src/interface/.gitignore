@@ -5,6 +5,8 @@
 /tmp
 /out-tsc
 /bazel-out
+# generated
+/src/app/features/features.generated.json
 
 # Node
 /node_modules
@@ -48,3 +50,4 @@ Thumbs.db
 
 # Sentry Config File
 .sentryclirc
+

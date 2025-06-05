@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { NgModule } from '@angular/core';
 import { FeatureFlagDirective } from './feature-flag.directive';
 import { FeatureService } from './feature.service';
-import config from './features.json';
+import config from './features.generated.json';
 import { FEATURES_JSON } from './features-config';
 
 @NgModule({

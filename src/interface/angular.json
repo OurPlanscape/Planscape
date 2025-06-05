@@ -79,10 +79,6 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
-                },
-                {
-                  "replace": "src/app/features/features.json",
-                  "with": "src/app/features/features.prod.json"
                 }
               ],
               "outputHashing": "all"
@@ -95,10 +91,6 @@
               "sourceMap": true,
               "namedChunks": true,
               "fileReplacements": [
-                {
-                  "replace": "src/app/features/features.json",
-                  "with": "src/app/features/features.dev.json"
-                },
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.dev.ts"

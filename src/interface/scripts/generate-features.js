@@ -1,44 +1,37 @@
-// File: scripts/generate-features.js
 /* eslint-env node, es6 */
+
 const fs = require('fs');
 const path = require('path');
 
+require('dotenv').config({
+  path: path.resolve(__dirname, '../../../.env'), // explicitly load project-root .env
+});
 //
-// 1. Locate ".features.env" at the repo root.
+// 1. Read feature flags from an ENV variable called FEATURE_FLAGS
+//    (comma‐separated list). E.g.:
+//    FEATURE_FLAGS="STATEWIDE_SCENARIOS,NEW_DASHBOARD"
 //
-const envPath = path.resolve(__dirname, '../../../.features.env');
-if (!fs.existsSync(envPath)) {
-  console.error(`✖ .features.env not found at ${envPath}`);
-  process.exit(1);
-}
+const rawList = process.env.FEATURE_FLAGS || '';
+const keys = rawList
+  .split(',')
+  .map((k) => k.trim())
+  .filter((k) => k.length > 0);
 
 //
-// 2. Read & split into lines, ignoring blank lines and comments.
-//
-const lines = fs
-  .readFileSync(envPath, 'utf-8')
-  .split(/\r?\n/)
-  .filter((line) => {
-    const trimmed = line.trim();
-    return trimmed && !trimmed.startsWith('#');
-  });
-
-//
-// 3. Parse each "KEY=VALUE" into an object of booleans.
+// 2. Build an object where each listed flag is true.
+//    Any flag not in FEATURE_FLAGS will simply be absent (treated as false).
 //
 const entries = {};
-lines.forEach((line) => {
-  const [rawKey, ...rest] = line.split('=');
-  if (!rawKey) return;
-  const key = rawKey.trim();
-  const rawValue = rest.join('=').trim().toLowerCase();
-  const value = rawValue === 'true';
-  entries[key] = value;
+keys.forEach((key) => {
+  entries[key] = true;
 });
 
 //
-// 4. Write JSON to "src/assets/features.json"
+// 3. Write JSON to "src/app/features/features.json"
 //
-const outPath = path.resolve(__dirname, '../src/app/features/features.json');
+const outPath = path.resolve(
+  __dirname,
+  '../src/app/features/features.generated.json'
+);
 fs.writeFileSync(outPath, JSON.stringify(entries, null, 2), 'utf-8');
 console.log(`✔  Generated ${path.relative(process.cwd(), outPath)}`);
