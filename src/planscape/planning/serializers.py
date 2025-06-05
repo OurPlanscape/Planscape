@@ -101,6 +101,12 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
 class CreatePlanningAreaSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
 
+    region_name = serializers.ChoiceField(
+        choices=PlanningArea._meta.get_field("region_name").choices,
+        required=False,
+        allow_null=True,
+    )
+
     def validate_geometry(self, geometry):
         if not isinstance(geometry, GEOSGeometry):
             geometry = GEOSGeometry(
