@@ -5,7 +5,6 @@ import {
   MatTabGroup,
   MatTabsModule,
 } from '@angular/material/tabs';
-import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
@@ -21,7 +20,6 @@ import { BaseLayersStateService } from '../../base-layers/base-layers.state.serv
   standalone: true,
   imports: [
     MatTabsModule,
-    TreatmentPlanNotesComponent,
     ProjectAreasTabComponent,
     FeaturesModule,
     DataLayersComponent,
