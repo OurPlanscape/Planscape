@@ -7,13 +7,13 @@
 # Note that this relies on .sentryclirc for Sentry configs
 # and this make command is ignored without that file.
 
-if ! command -v git &> /dev/null
-then
-    echo "Git is not installed or not in the PATH."
+GIT_BIN="/usr/bin/git"
+if [ ! -x "$GIT_BIN" ]; then
+    echo "Git is not installed or not executable at $GIT_BIN."
     exit 1
 fi
 
-GIT_COMMIT_SHA=$(git rev-parse HEAD)
+GIT_COMMIT_SHA=$("$GIT_BIN" rev-parse HEAD)
 TAG=main
 
 if [ ! -f ".sentryclirc" ]; then
@@ -25,7 +25,7 @@ elif [ -n "${TAG}" ] && [ "${TAG}" != "main" ]; then
     sentry-cli sourcemaps inject ./src/interface/dist --release "${TAG}" && \
     sentry-cli sourcemaps upload --release "${TAG}" ./src/interface/dist
 else
-    echo
+    echo "Uploading sourcemaps for SHA ${GIT_COMMIT_SHA}"
     sentry-cli releases new "${GIT_COMMIT_SHA}" && \
     sentry-cli sourcemaps inject ./src/interface/dist --release "${GIT_COMMIT_SHA}" && \
     sentry-cli sourcemaps upload --release "${GIT_COMMIT_SHA}" ./src/interface/dist
