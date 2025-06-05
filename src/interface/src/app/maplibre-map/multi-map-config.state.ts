@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, take } from 'rxjs';
 import { MapConfigState } from './map-config.state';
 import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '../map/map.constants';
 import { Extent } from '@types';
+import { BaseLayersStateService } from '../base-layers/base-layers.state.service';
 
 export type LayoutOption = 1 | 2 | 4;
 
@@ -16,7 +17,10 @@ export class MultiMapConfigState extends MapConfigState {
   private _selectedMapId$ = new BehaviorSubject<number>(1);
   public selectedMapId$ = this._selectedMapId$.asObservable();
 
-  constructor(private multiMapsStorageService: MultiMapsStorageService) {
+  constructor(
+    private multiMapsStorageService: MultiMapsStorageService,
+    private baseLayersStateService: BaseLayersStateService
+  ) {
     super();
     this._mapExtent$.next(FrontendConstants.MAPLIBRE_DEFAULT_BOUNDS);
   }
@@ -34,12 +38,16 @@ export class MultiMapConfigState extends MapConfigState {
    * The number of visible maps
    */
   saveStateToLocalStorage(extent: Extent) {
-    const options = {
-      layoutMode: this._layoutMode$.value,
-      baseMap: this._baseMap$.value,
-      extent: extent,
-    };
-    this.multiMapsStorageService.setItem(options);
+    this.baseLayersStateService.selectedBaseLayers$
+      .pipe(take(1))
+      .subscribe((baseLayers) => {
+        this.multiMapsStorageService.setItem({
+          layoutMode: this._layoutMode$.value,
+          baseMap: this._baseMap$.value,
+          extent: extent,
+          baseLayers: baseLayers,
+        });
+      });
   }
 
   loadStateFromLocalStorage() {
@@ -52,6 +60,9 @@ export class MultiMapConfigState extends MapConfigState {
     }
     if (options?.extent) {
       this._mapExtent$.next(options.extent);
+    }
+    if (options?.baseLayers) {
+      this.baseLayersStateService.setBaseLayers(options.baseLayers);
     }
   }
 

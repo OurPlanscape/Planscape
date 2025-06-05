@@ -3,11 +3,15 @@ import { MultiMapConfigState } from './multi-map-config.state';
 import { MultiMapsStorageService } from '@services/local-storage.service';
 import { FrontendConstants } from '../map/map.constants';
 import { BaseMapType } from '../types/maplibre.map.types';
-import { Extent } from '@types';
+import { BaseLayer, Extent } from '@types';
+import { MockProvider } from 'ng-mocks';
+import { BaseLayersStateService } from '../base-layers/base-layers.state.service';
+import { BehaviorSubject } from 'rxjs';
 
 describe('MultiMapConfigState', () => {
   let service: MultiMapConfigState;
   let storage: jasmine.SpyObj<MultiMapsStorageService>;
+  let selectedLayers$ = new BehaviorSubject<BaseLayer[] | null>(null);
 
   beforeEach(() => {
     storage = jasmine.createSpyObj('ExploreOptionsStorageService', [
@@ -19,6 +23,10 @@ describe('MultiMapConfigState', () => {
       providers: [
         MultiMapConfigState,
         { provide: MultiMapsStorageService, useValue: storage },
+        MockProvider(BaseLayersStateService, {
+          selectedBaseLayers$: selectedLayers$,
+          setBaseLayers: (layers) => selectedLayers$.next(layers),
+        }),
       ],
     });
 
@@ -54,6 +62,10 @@ describe('MultiMapConfigState', () => {
     const layout = (service as any)._layoutMode$.getValue();
     const baseMap = (service as any)._baseMap$.getValue();
     const extent = [0, 1, 2, 3] as Extent;
+    const baseLayers = [{ id: 1 } as BaseLayer];
+
+    //set base layers
+    selectedLayers$.next(baseLayers);
 
     service.saveStateToLocalStorage(extent);
 
@@ -61,6 +73,7 @@ describe('MultiMapConfigState', () => {
       layoutMode: layout,
       baseMap: baseMap,
       extent: extent,
+      baseLayers: baseLayers,
     });
   });
 
@@ -83,6 +96,7 @@ describe('MultiMapConfigState', () => {
       layoutMode: 2 as any,
       baseMap: 'satellite' as BaseMapType,
       extent: [5, 6, 7, 8] as Extent,
+      baseLayers: [{ id: 1 } as BaseLayer],
     };
     storage.getItem.and.returnValue(saved);
 
@@ -91,5 +105,6 @@ describe('MultiMapConfigState', () => {
     expect((service as any)._layoutMode$.getValue()).toBe(2);
     expect((service as any)._baseMap$.getValue()).toBe('satellite');
     expect((service as any)._mapExtent$.getValue()).toEqual([5, 6, 7, 8]);
+    expect(selectedLayers$.value).toEqual([{ id: 1 } as BaseLayer]);
   });
 });
