@@ -134,17 +134,12 @@ export function syncMaps(...maps: MapLibreMap[]): Cleanup {
   };
 }
 
-function convertOpacityToNumber(opacity: string): number | null {
+function calcOpacity(opacity: string | undefined): number {
   const num = Number(opacity);
-  return isNaN(num) ? null : num;
+  return isNaN(num) ? BASE_LAYERS_DEFAULT.OPACITY : num;
 }
 
 export function defaultBaseLayerFill(fillColor?: string, fillOpacity?: string) {
-  let opacity = BASE_LAYERS_DEFAULT.OPACITY;
-  if (fillOpacity) {
-    opacity =
-      convertOpacityToNumber(fillOpacity) ?? BASE_LAYERS_DEFAULT.OPACITY;
-  }
   return {
     'fill-color': fillColor || BASE_LAYERS_DEFAULT.COLOR,
 
@@ -152,7 +147,7 @@ export function defaultBaseLayerFill(fillColor?: string, fillOpacity?: string) {
       'case',
       ['boolean', ['feature-state', 'hover'], false],
       0.5,
-      opacity,
+      calcOpacity(fillOpacity),
     ],
   } as any;
 }
