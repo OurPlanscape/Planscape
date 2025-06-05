@@ -7,8 +7,6 @@ By convention, try to name feature flags such that "true" will enable features/s
 should keep new flags
 set to false, and your code should be testing for "true". This also will
 reduce the risk of releasing something unexpected to production.
-The exceptions are for "login" and "top_percent_slider", both of which need to
-be enabled for tests to run properly.
 
 ## Testing
 
