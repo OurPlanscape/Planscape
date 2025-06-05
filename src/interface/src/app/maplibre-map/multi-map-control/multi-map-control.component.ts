@@ -18,8 +18,7 @@ export class MultiMapControlComponent {
     private mapConfigState: MapConfigState
   ) {}
 
-  // TODO: waiting to hear if, when we're in drawing mode, whether we should disable these
-  // layout view buttons, OR perhaps set drawingMode as disabled if someone clicks these.
+  // we disable this control when we're in drawing mode
   $drawingMode = this.mapConfigState.drawingModeEnabled$;
 
   setLayoutMode(view: 1 | 2 | 4) {

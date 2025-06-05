@@ -9,6 +9,12 @@
     gap: 8px;
 }
 
+.mode-buttons {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+}
+
 .left-option {
     border-top-right-radius: 0px;
     border-bottom-right-radius: 0px;

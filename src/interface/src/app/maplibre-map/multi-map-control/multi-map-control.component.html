@@ -2,8 +2,7 @@
   <button
     type="button"
     [ngClass]="{ active: views === 1 }"
-    (click)="setLayoutMode(1)"
-    [disabled]="($drawingMode | async) === true">
+    (click)="setLayoutMode(1)">
     <span class="wrapper">
       <span class="square"></span>
     </span>
