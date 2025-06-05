@@ -37,7 +37,7 @@ export class ExploreMapComponent {
   /**
    * Observable that provides the url to load the selected map base layer
    */
-  baseLayerUrl$ = this.mapConfigState.baseLayerUrl$;
+  baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.

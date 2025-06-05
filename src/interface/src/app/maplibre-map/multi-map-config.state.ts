@@ -36,7 +36,7 @@ export class MultiMapConfigState extends MapConfigState {
   saveStateToLocalStorage(extent: Extent) {
     const options = {
       layoutMode: this._layoutMode$.value,
-      baseLayer: this._baseLayer$.value,
+      baseMap: this._baseMap$.value,
       extent: extent,
     };
     this.multiMapsStorageService.setItem(options);
@@ -44,9 +44,13 @@ export class MultiMapConfigState extends MapConfigState {
 
   loadStateFromLocalStorage() {
     const options = this.multiMapsStorageService.getItem();
-    if (options) {
+    if (options?.layoutMode) {
       this._layoutMode$.next(options.layoutMode);
-      this._baseLayer$.next(options.baseLayer);
+    }
+    if (options?.baseMap) {
+      this._baseMap$.next(options.baseMap);
+    }
+    if (options?.extent) {
       this._mapExtent$.next(options.extent);
     }
   }
