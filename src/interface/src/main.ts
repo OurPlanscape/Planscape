@@ -15,6 +15,8 @@ if (environment.sentry.dsn_url !== undefined) {
   Sentry.init(sentryConfig);
 }
 
+console.log(process.env.S3_BUCKET);
+
 platformBrowserDynamic()
   .bootstrapModule(AppModule)
   .catch((err) => console.error(err));
