@@ -86,11 +86,11 @@ def get_create_call(
         "--dataset",
         str(dataset),
         "--skip-existing",
-        "--map-service-type",
-        map_service_type if map_service_type else MapServiceChoices.COG,
     ]
     if metadata:
         command.extend(["--metadata", metadata])
+    if map_service_type:
+        command.extend(["--map-service-type", map_service_type])
     return command
 
 
