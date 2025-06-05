@@ -9,7 +9,8 @@ import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 import {
   TerraDrawPolygonMode,
-  TerraDrawSelectMode, // TODO: some features might actually be useful to us...
+  TerraDrawSelectMode,
+  TerraDrawLineStringMode,
   TerraDraw,
   GeoJSONStoreFeatures,
 } from 'terra-draw';
@@ -48,7 +49,7 @@ export class ExploreMapComponent {
    * Observable that provides the url to load the selected map base layer
    */
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
-
+  drawingModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
@@ -77,7 +78,6 @@ export class ExploreMapComponent {
     mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
       .subscribe((drawingModeStatus) => {
-        console.log('drawing mode is what?', drawingModeStatus);
         if (drawingModeStatus) {
           this.enablePolygonDrawingMode();
         } else {
@@ -96,6 +96,9 @@ export class ExploreMapComponent {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: this.mapLibreMap,
     });
+
+    // TODO: may not use this...
+    const lineStringMode = new TerraDrawLineStringMode();
     const polygonMode = new TerraDrawPolygonMode({
       //TODO: pull styles from elsewhere...
       styles: {
@@ -113,16 +116,26 @@ export class ExploreMapComponent {
     // but we disable the polygon edit features -- TODO: though we may actually want these?
     const selectMode = new TerraDrawSelectMode({
       flags: {
+        linestring: {
+          feature: {
+            draggable: true,
+            coordinates: {
+              midpoints: true,
+              draggable: true,
+              deletable: true,
+            },
+          },
+        },
         polygon: {
           feature: {
-            draggable: false,
+            draggable: true,
             coordinates: {
               midpoints: {
-                draggable: false,
+                draggable: true,
               },
-              draggable: false,
-              snappable: false,
-              deletable: false,
+              draggable: true,
+              snappable: true,
+              deletable: true,
             },
           },
         },
@@ -130,12 +143,14 @@ export class ExploreMapComponent {
     });
     this.terraDraw = new TerraDraw({
       adapter: mapLibreAdapter,
-      modes: [polygonMode, selectMode],
+      modes: [lineStringMode, polygonMode, selectMode],
     });
   }
 
   enablePolygonDrawingMode() {
-    this.terraDraw?.start();
+    if (this.terraDraw && !this.terraDraw.enabled) {
+      this.terraDraw?.start();
+    }
     this.terraDraw?.setMode('polygon');
 
     this.terraDraw?.on('finish', (id: any, context: any) => {
@@ -143,9 +158,6 @@ export class ExploreMapComponent {
       if (feature) {
         this.calculateAcreage(feature);
       }
-      // TODO: end drawing mode, but support cancel and save options
-      this.terraDraw?.setMode('select');
-      // TODO: and on save, open dialog, send feature and form data to createPlan()
     });
   }
 
@@ -162,6 +174,19 @@ export class ExploreMapComponent {
 
   cancelDrawingMode() {
     this.terraDraw?.stop();
+  }
+
+  //handle draw controls
+  handlePolygonButton() {
+    this.terraDraw?.setMode('polygon');
+  }
+
+  handleSelectButton() {
+    this.terraDraw?.setMode('select');
+  }
+
+  handleTrashButton() {
+    this.terraDraw?.clear();
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

@@ -23,4 +23,12 @@
       Map {{ mapNumber }}
     </div>
   </mgl-control>
+
+  <mgl-control
+    position="bottom-right"
+    *ngIf="(drawingModeEnabled$ | async) === true">
+    <button (click)="handlePolygonButton()">Draw</button>
+    <button (click)="handleSelectButton()">Select</button>
+    <button (click)="handleTrashButton()">Clear</button>
+  </mgl-control>
 </mgl-map>
