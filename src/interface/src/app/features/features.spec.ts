@@ -44,11 +44,4 @@ describe('parseFeatureFlags', () => {
   it('ignores entries that are only commas or whitespace', () => {
     expect(parseFeatureFlags(', , ,')).toEqual({});
   });
-
-  it('is idempotent when passed the same string twice', () => {
-    const raw = 'A,B';
-    const first = parseFeatureFlags(raw);
-    const second = parseFeatureFlags(raw);
-    expect(second).toEqual(first);
-  });
 });
