@@ -20,6 +20,8 @@ import * as turf from '@turf/turf';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { map } from 'rxjs';
+import { MatDialog } from '@angular/material/dialog';
+import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
 
 @UntilDestroy()
 @Component({
@@ -72,10 +74,14 @@ export class ExploreMapComponent {
     map((mapId) => this.mapNumber === mapId)
   );
 
+  //TODO: this is a placeholder for drawing state -- move to service?
+  drawState: 'started' | 'finished' | 'none' = 'none';
+
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
-    private authService: AuthService
+    private authService: AuthService,
+    private dialog: MatDialog,
   ) {
     mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
@@ -149,6 +155,17 @@ export class ExploreMapComponent {
     });
   }
 
+
+  private openPlanCreateDialog(area: number) {
+    return this.dialog.open(PlanCreateDialogComponent, {
+      maxWidth: '560px',
+      data: {
+        shape: {},
+        totalArea: area,
+      },
+    });
+  }
+
   enablePolygonDrawingMode() {
     if (this.terraDraw && !this.terraDraw.enabled) {
       this.terraDraw?.start();
@@ -157,22 +174,32 @@ export class ExploreMapComponent {
 
     this.terraDraw?.on('finish', (id: any, context: any) => {
       const feature = this.terraDraw?.getSnapshotFeature(id);
+      let acreage = 0;
       if (feature) {
-        this.calculateAcreage(feature);
+        acreage = this.calculateAcreage(feature);
       }
+      // enable saveable state
+      // TODO: end drawing mode, but support cancel and save options
+      this.terraDraw?.setMode('select');
+
+      // TODO: move this to after save button -- open dialog, send feature and form data to createPlan()
+
+      this.openPlanCreateDialog(acreage);
     });
   }
 
   //TODO: complete this PoC to match our backend acreage measurement
-  calculateAcreage(polygon: GeoJSONStoreFeatures) {
+  calculateAcreage(polygon: GeoJSONStoreFeatures): number {
     if (!turf.booleanValid(polygon)) {
-      return;
+      return 0;
     }
     const CONVERSION_SQM_ACRES = 4046.8564213562374;
     const areaInSquareMeters = turf.area(polygon);
     const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
     console.log(`Area: ${areaInAcres} acres`);
+    return areaInAcres;
   }
+
 
   cancelDrawingMode() {
     this.terraDraw?.stop();
