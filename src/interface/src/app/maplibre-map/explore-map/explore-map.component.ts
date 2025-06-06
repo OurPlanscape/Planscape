@@ -1,8 +1,17 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
+import {
+  ControlComponent,
+  MapComponent,
+  PopupComponent,
+} from '@maplibre/ngx-maplibre-gl';
 import { FrontendConstants } from '../../map/map.constants';
-import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
+import {
+  LngLat,
+  Map as MapLibreMap,
+  MapMouseEvent,
+  RequestTransformFunction,
+} from 'maplibre-gl';
 import { AuthService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
 import { MatIconModule } from '@angular/material/icon';
@@ -28,6 +37,7 @@ export type DrawState = 'none' | 'polygon' | 'select';
     MapComponent,
     MatIconModule,
     ControlComponent,
+    PopupComponent,
     NgIf,
     MapBaseLayersComponent,
     MapDrawingToolboxComponent,
@@ -45,6 +55,9 @@ export class ExploreMapComponent {
   bounds$ = this.mapConfigState.mapExtent$;
   boundOptions = FrontendConstants.MAPLIBRE_BOUND_OPTIONS;
 
+  mouseLngLat: LngLat | null = null;
+  currentDrawingMode$ = this.drawService.currentDrawingMode$;
+  drawModeTooltipContent: string | null = null;
   /**
    * Observable that provides the url to load the selected map base layer
    */
@@ -135,11 +148,30 @@ export class ExploreMapComponent {
     ]);
   }
 
+  onMapMouseMove(event: MapMouseEvent): void {
+    this.mouseLngLat = event.lngLat;
+  }
+
+  afterFinish(featureId: string) {
+    this.drawModeTooltipContent = null;
+    // TODO: add a stationary size popup relative to the feature
+  }
+
+  whileDrawing(changes: any) {
+    this.drawModeTooltipContent = 'click origin vertex to close.';
+  }
+
   enablePolygonDrawingMode() {
     this.drawService.start();
     this.drawService.setMode('polygon');
     //todo: set actual finish function in this component.
-    this.drawService.registerFinish();
+    this.drawService.registerFinish((featureId: string) =>
+      this.afterFinish(featureId)
+    );
+    this.drawService.registerChangeCallback((context: any) =>
+      this.whileDrawing(context)
+    );
+    this.drawModeTooltipContent = 'Click to place first vertex.';
   }
 
   cancelDrawingMode() {

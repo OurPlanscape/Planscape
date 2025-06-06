@@ -38,10 +38,17 @@ export class DrawService {
     }
   }
 
-  registerFinish() {
-    this._terraDraw?.on('finish', (id: any, context: any) => {
+  registerFinish(finishCallback: Function) {
+    this._terraDraw?.on('finish', (featureId: any, context: any) => {
       this.setMode('select');
-      this.selectFeature(id);
+      this.selectFeature(featureId);
+      finishCallback(featureId);
+    });
+  }
+
+  registerChangeCallback(changeCallback: Function) {
+    this._terraDraw?.on('change', (changes) => {
+      changeCallback(changes);
     });
   }
 

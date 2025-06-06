@@ -10,6 +10,7 @@
   (mapLoad)="mapLoaded($event)"
   [style]="(baseLayerUrl$ | async) || ''"
   [attributionControl]="false"
+  (mapMouseMove)="onMapMouseMove($event)"
   [transformRequest]="transformRequest"
   [ngClass]="{
     'highlighted-map': showMapNumber && (isSelected$ | async) === true,
@@ -23,6 +24,20 @@
       Map {{ mapNumber }}
     </div>
   </mgl-control>
+
+  <mgl-popup
+    *ngIf="
+      (drawingModeEnabled$ | async) === true &&
+      (currentDrawingMode$ | async) !== 'none' &&
+      mouseLngLat &&
+      drawModeTooltipContent
+    "
+    [lngLat]="mouseLngLat"
+    [closeButton]="false"
+    [closeOnClick]="false"
+    [offset]="20"
+    >{{ drawModeTooltipContent }}</mgl-popup
+  >
 
   <app-map-drawing-toolbox></app-map-drawing-toolbox>
 </mgl-map>
