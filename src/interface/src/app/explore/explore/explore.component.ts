@@ -16,7 +16,6 @@ import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.c
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
-import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
 
 @Component({
   selector: 'app-explore',
@@ -97,15 +96,5 @@ export class ExploreComponent implements OnDestroy {
       this.panelExpanded = options.isPanelExpanded || false;
       this.tabIndex = options.tabIndex || 0;
     }
-  }
-
-  private openPlanCreateDialog(area: number) {
-    return this.dialog.open(PlanCreateDialogComponent, {
-      maxWidth: '560px',
-      data: {
-        shape: {},
-        totalArea: area,
-      },
-    });
   }
 }

@@ -6,7 +6,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MapConfigState } from '../map-config.state';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { take } from 'rxjs';
-
+import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
+import { MatDialog } from '@angular/material/dialog';
 @Component({
   selector: 'app-explore-modes-selection-toggle',
   standalone: true,
@@ -23,11 +24,13 @@ import { take } from 'rxjs';
 })
 export class ExploreModesToggleComponent {
   @Output() scenarioUpload = new EventEmitter<void>();
+
   drawModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
 
   constructor(
     private mapConfigState: MapConfigState,
-    private multiMapConfigState: MultiMapConfigState
+    private multiMapConfigState: MultiMapConfigState,
+    private dialog: MatDialog
   ) {}
 
   handleDrawingButton() {
@@ -59,7 +62,8 @@ export class ExploreModesToggleComponent {
       .pipe(take(1))
       .subscribe((hasFeature) => {
         if (hasFeature === true) {
-          console.log('we have a feature');
+          //TODO: grab current features
+          this.openPlanCreateDialog(0);
         } else {
           console.log('we dont have a feautre!');
         }
@@ -68,5 +72,15 @@ export class ExploreModesToggleComponent {
 
   clickedUpload() {
     this.scenarioUpload.emit();
+  }
+
+  private openPlanCreateDialog(area: number) {
+    return this.dialog.open(PlanCreateDialogComponent, {
+      maxWidth: '560px',
+      data: {
+        shape: {},
+        totalArea: area,
+      },
+    });
   }
 }

@@ -24,25 +24,9 @@
     </div>
   </mgl-control>
 
-  <mgl-control
-    position="bottom-right"
-    *ngIf="(drawingModeEnabled$ | async) === true">
-    <div class="drawing-toolbox" *ngIf="drawState$ | async as drawState">
-      <button
-        (click)="handlePolygonButton()"
-        [ngClass]="{ active: drawState === 'polygon' }">
-        <mat-icon class="material-symbols-outlined">polyline</mat-icon>
-      </button>
-      <button
-        (click)="handleSelectButton()"
-        [ngClass]="{ active: drawState === 'select' }">
-        <mat-icon class="material-symbols-outlined"
-          >arrow_selector_tool</mat-icon
-        >
-      </button>
-      <button (click)="handleTrashButton()">
-        <mat-icon class="material-symbols-outlined">delete</mat-icon>
-      </button>
-    </div>
-  </mgl-control>
+  <app-map-drawing-toolbox
+    [drawState$]="drawState$"
+    (setPolygonMode)="handlePolygonButton()"
+    (setSelectMode)="handleSelectButton()"
+    (sendClearRequest)="handleTrashButton()"></app-map-drawing-toolbox>
 </mgl-map>

@@ -19,10 +19,9 @@ import * as turf from '@turf/turf';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { BehaviorSubject, map } from 'rxjs';
-// import { MatDialog } from '@angular/material/dialog';
-// import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
+import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
 
-type DrawState = 'none' | 'polygon' | 'select';
+export type DrawState = 'none' | 'polygon' | 'select';
 
 @UntilDestroy()
 @Component({
@@ -36,6 +35,7 @@ type DrawState = 'none' | 'polygon' | 'select';
     ControlComponent,
     NgIf,
     MapBaseLayersComponent,
+    MapDrawingToolboxComponent,
   ],
   templateUrl: './explore-map.component.html',
   styleUrl: './explore-map.component.scss',
@@ -166,7 +166,6 @@ export class ExploreMapComponent {
       this.terraDraw?.selectFeature(id);
 
       // TODO: move this to after save button -- open dialog, send feature and form data to createPlan()
-
       //this.openPlanCreateDialog(acreage);
     });
   }
