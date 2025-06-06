@@ -16,6 +16,8 @@ import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { TreatmentPlanTabsComponent } from '../treatment-plan-tabs/treatment-plan-tabs.component';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 import { TreatmentSummaryButtonComponent } from '../treatment-summary-button/treatment-summary-button.component';
+import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
+import { TreatmentPlanNotesComponent } from '../treatment-plan-notes/treatment-plan-notes.component';
 
 describe('TreatmentOverviewComponent', () => {
   let component: TreatmentOverviewComponent;
@@ -26,6 +28,7 @@ describe('TreatmentOverviewComponent', () => {
       imports: [
         HttpClientTestingModule,
         TreatmentOverviewComponent,
+
         RouterTestingModule,
         BrowserAnimationsModule,
         MockComponent(TreatmentSummaryButtonComponent),
@@ -34,7 +37,9 @@ describe('TreatmentOverviewComponent', () => {
         MockDeclarations(
           ProjectAreasTabComponent,
           TreatmentPlanTabsComponent,
-          AcresTreatedComponent
+          AcresTreatedComponent,
+          DataLayersComponent,
+          TreatmentPlanNotesComponent
         ),
       ],
       providers: [

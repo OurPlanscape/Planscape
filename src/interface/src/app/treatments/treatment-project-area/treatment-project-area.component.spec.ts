@@ -12,6 +12,7 @@ import { of } from 'rxjs';
 import { Geometry } from 'geojson';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 
 describe('TreatmentProjectAreaComponent', () => {
   let component: TreatmentProjectAreaComponent;
@@ -65,7 +66,11 @@ describe('TreatmentProjectAreaComponent', () => {
         },
       ],
       declarations: [
-        MockDeclarations(TreatmentMapComponent, AcresTreatedComponent),
+        MockDeclarations(
+          TreatmentMapComponent,
+          AcresTreatedComponent,
+          DataLayersComponent
+        ),
       ],
     }).compileComponents();
 
