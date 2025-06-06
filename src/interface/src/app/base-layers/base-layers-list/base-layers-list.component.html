@@ -12,7 +12,7 @@
     expanded ? 'expand_more' : 'chevron_right'
   }}</i>
 </div>
-<div class="list-content" *ngIf="expanded">
+<div class="list-content" *ngIf="expanded" #listContent>
   <ng-container
     *ngIf="categorizedBaseLayer.category.isMultiSelect; else singleSelect">
     <div
@@ -20,7 +20,8 @@
       class="checkbox-option">
       <mat-checkbox
         [value]="layer.id.toString()"
-        [checked]="selectedLayersId.includes(layer.id)"
+        [checked]="allSelectedLayersIds.includes(layer.id)"
+        [attr.selected]="allSelectedLayersIds.includes(layer.id) ? '' : null"
         class="data-layer-input"
         (change)="onLayerChange(layer, true)"
         >{{ layer.name }}
@@ -47,8 +48,9 @@
     <mat-radio-button
       *ngFor="let layer of categorizedBaseLayer.layers"
       [value]="layer.id"
-      [checked]="selectedLayersId.includes(layer.id)"
+      [checked]="allSelectedLayersIds.includes(layer.id)"
       class="data-layer-input"
+      [attr.selected]="allSelectedLayersIds.includes(layer.id) ? '' : null"
       (change)="onLayerChange(layer, false)"
       >{{ layer.name }}
       <mat-spinner

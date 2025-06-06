@@ -111,6 +111,10 @@ export class BaseLayersStateService {
     this._loadingLayers$.next([]);
   }
 
+  setBaseLayers(bs: BaseLayer[]) {
+    this._selectedBaseLayers$.next(bs);
+  }
+
   private isCategoryMultiSelect(path: string) {
     return path == 'Ownership';
   }
