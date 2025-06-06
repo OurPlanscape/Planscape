@@ -1,0 +1,43 @@
+<div class="mode-buttons">
+  <button
+    type="button"
+    [ngClass]="{
+      active: false,
+    }"
+    class="left-option"
+    (click)="clickedUpload()"
+    matTooltip="Upload"
+    matTooltipPosition="below">
+    <mat-icon class="material-symbols-outlined">upload_file</mat-icon>
+  </button>
+  <button
+    type="button"
+    (click)="handleDrawingButton()"
+    class="right-option"
+    [ngClass]="{ active: (drawModeEnabled$ | async) === true }"
+    [disabled]="(drawModeEnabled$ | async) === true"
+    matTooltip="Draw Planning Area"
+    matTooltipPosition="below">
+    <mat-icon class="material-symbols-outlined">draw</mat-icon>
+  </button>
+</div>
+
+<div class="drawing-options" *ngIf="(drawModeEnabled$ | async) === true">
+  <mat-divider class="drawing-divider" [vertical]="true"></mat-divider>
+  <button
+    type="button"
+    class="drawing-mode-button"
+    (click)="handleCancelButton()"
+    matTooltip="Cancel"
+    matTooltipPosition="below">
+    <mat-icon class="material-symbols-outlined">close</mat-icon>
+  </button>
+  <button
+    type="button"
+    class="drawing-mode-button check-button"
+    (click)="handleSaveButton()"
+    matTooltip="Save"
+    matTooltipPosition="below">
+    <mat-icon class="material-symbols-outlined">check</mat-icon>
+  </button>
+</div>

@@ -1,24 +1,23 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-
-import { MultiMapControlComponent } from './multi-map-control.component';
 import { MockProvider } from 'ng-mocks';
+import { ExploreModesToggleComponent } from './explore-modes-toggle.component';
 import { MapConfigState } from '../map-config.state';
 import { MultiMapConfigState } from '../multi-map-config.state';
 
-describe('MultiMapControlComponent', () => {
-  let component: MultiMapControlComponent;
-  let fixture: ComponentFixture<MultiMapControlComponent>;
+describe('ExploreModesToggleComponent', () => {
+  let component: ExploreModesToggleComponent;
+  let fixture: ComponentFixture<ExploreModesToggleComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MultiMapControlComponent],
+      imports: [ExploreModesToggleComponent],
       providers: [
         MockProvider(MapConfigState),
         MockProvider(MultiMapConfigState),
       ],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(MultiMapControlComponent);
+    fixture = TestBed.createComponent(ExploreModesToggleComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
