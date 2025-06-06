@@ -4,8 +4,8 @@ import {
   GeoJSONStoreFeatures
 } from 'terra-draw';
 import * as turf from '@turf/turf';
-
 import { BehaviorSubject, Observable } from 'rxjs';
+import { Geometry } from '@turf/helpers';
 export type DrawMode = 'polygon' | 'select' | 'none';
 
 
@@ -86,6 +86,23 @@ export class DrawService {
 
   getPolygonsSnapshot() {
     return this._terraDraw?.getSnapshot().filter((f) => f.geometry.type === 'Polygon');
+  }
+
+  getGeometry(): Geometry | null {
+    //TODO: terradraw doesn't seem to provide a Multipolygon result,
+    // so we convert it here -- maybe easier w turf?
+    const polygons = this.getPolygonsSnapshot();
+    if (!polygons) {
+      return null;
+    }
+    else if (polygons.length > 1) {
+      return {
+        type: "MultiPolygon",
+        coordinates: polygons.map(p => p.geometry.coordinates) as number[][]
+      };
+    } else {
+      return polygons[0].geometry;
+    }
   }
 
 

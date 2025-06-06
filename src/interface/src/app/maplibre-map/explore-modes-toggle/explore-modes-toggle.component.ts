@@ -6,9 +6,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MapConfigState } from '../map-config.state';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
-// import { take } from 'rxjs';
 import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { Geometry } from '@turf/helpers';
+import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
+import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
+
 @Component({
   selector: 'app-explore-modes-selection-toggle',
   standalone: true,
@@ -42,38 +45,59 @@ export class ExploreModesToggleComponent {
   }
 
   handleCancelButton() {
-    //if there are features on the map... we show a dialog
-    // otherwise...
+    //if there are features on the map... we show a confirm dialog
+    // otherwise just exit
     if (this.drawService.hasPolygonFeatures()) {
-      console.log('we have unsaved features...');
+      this.openConfirmExitDialog();
     } else {
       this.mapConfigState.exitDrawingMode();
     }
   }
 
   handleSaveButton() {
-    // TODO: if user has finished a polygon, show an upload dialog
-    // (proposed) if user hasn't drawn a polygon, a notice should appear
+    // if user has finished a polygon, show an upload dialog
+    // but if user hasn't drawn a polygon, a notice should appear
     if (!this.drawService.hasPolygonFeatures()) {
-      console.log('we dont have any unsaved features...');
+      this.openSaveWarningDialog();
     } else {
       const area = this.drawService.getTotalAcreage();
-      this.openPlanCreateDialog(area);
+      const shape = this.drawService.getGeometry();
+      console.log('geometry is:', shape);
+      console.log('acreage is:', area);
+      console.log('just ignoring this', this.dialog);
+      if (shape) {
+        this.openPlanCreateDialog(area, shape);
+      }
     }
-
   }
 
   clickedUpload() {
     this.scenarioUpload.emit();
   }
 
-  private openPlanCreateDialog(area: number) {
+  private openPlanCreateDialog(area: number, shape: Geometry) {
     return this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
       data: {
-        shape: {},
+        shape: shape,
         totalArea: area,
       },
     });
+  }
+
+  private openConfirmExitDialog(): void {
+    this.dialog
+      .open(ConfirmExitDrawingModalComponent)
+      .afterClosed()
+      .subscribe((modalResponse: any) => {
+        if (modalResponse) {
+          this.mapConfigState.exitDrawingMode();
+        }
+      });
+  }
+
+  private openSaveWarningDialog(): void {
+    this.dialog
+      .open(NoPlanningAreaModalComponent)
   }
 }
