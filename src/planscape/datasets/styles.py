@@ -10,7 +10,7 @@ def get_default_vector_style(**kwargs) -> Dict[str, Any]:
         "data": {
             "fill-color": "#0096FF",
             "fill-outline-color": "#0000FF",
-            "fill-opacity": 0.4,
+            "fill-opacity": 0.0,
         },
     }
 
