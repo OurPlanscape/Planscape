@@ -11,15 +11,13 @@ import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.compo
 import {
   TerraDrawPolygonMode,
   TerraDrawSelectMode,
-  TerraDraw,
-  GeoJSONStoreFeatures,
 } from 'terra-draw';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
-import * as turf from '@turf/turf';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { BehaviorSubject, map } from 'rxjs';
+import { map } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
+import { DrawService } from '../draw.service';
 
 export type DrawState = 'none' | 'polygon' | 'select';
 
@@ -69,19 +67,15 @@ export class ExploreMapComponent {
   @Input() mapNumber = 1;
   @Input() showAttribution = false;
 
-  terraDraw: TerraDraw | null = null;
-
   isSelected$ = this.multiMapConfigState.selectedMapId$.pipe(
     map((mapId) => this.mapNumber === mapId)
   );
 
-  //TODO: this is a placeholder for drawing state -- move to service?
-  drawState$ = new BehaviorSubject<DrawState>('none');
-
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
-    private authService: AuthService
+    private authService: AuthService,
+    private drawService: DrawService,
     // private dialog: MatDialog
   ) {
     mapConfigState.drawingModeEnabled$
@@ -107,7 +101,7 @@ export class ExploreMapComponent {
     });
 
     const polygonMode = new TerraDrawPolygonMode({
-      //TODO: pull styles from elsewhere...
+      //TODO: pull styles from elsewhere...?
       styles: {
         fillColor: '#A5C8D7',
         fillOpacity: 0.5,
@@ -138,68 +132,21 @@ export class ExploreMapComponent {
         },
       },
     });
-    this.terraDraw = new TerraDraw({
-      adapter: mapLibreAdapter,
-      modes: [polygonMode, selectMode],
-    });
+    this.drawService.initializeTerraDraw(mapLibreAdapter,
+      [polygonMode, selectMode]
+    )
   }
 
   enablePolygonDrawingMode() {
-    if (this.terraDraw && !this.terraDraw.enabled) {
-      this.terraDraw?.start();
-    }
-    this.terraDraw?.setMode('polygon');
-    this.drawState$.next(this.terraDraw?.getMode() as DrawState);
-
-    this.terraDraw?.on('finish', (id: any, context: any) => {
-      this.mapConfigState.setDrawnFeatures();
-      const feature = this.terraDraw?.getSnapshotFeature(id);
-      let acreage = 0;
-      if (feature) {
-        acreage = this.calculateAcreage(feature);
-      }
-      console.log('acreage is:', acreage);
-      // enable saveable state
-      // TODO: end drawing mode, but support cancel and save options
-      this.terraDraw?.setMode('select');
-      this.drawState$.next(this.terraDraw?.getMode() as DrawState);
-      this.terraDraw?.selectFeature(id);
-
-      // TODO: move this to after save button -- open dialog, send feature and form data to createPlan()
-      //this.openPlanCreateDialog(acreage);
-    });
-  }
-
-  //TODO: complete this PoC to match our backend acreage measurement
-  calculateAcreage(polygon: GeoJSONStoreFeatures): number {
-    if (!turf.booleanValid(polygon)) {
-      return 0;
-    }
-    const CONVERSION_SQM_ACRES = 4046.8564213562374;
-    const areaInSquareMeters = turf.area(polygon);
-    const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
-    return areaInAcres;
+    this.drawService.start();
+    this.drawService.setMode('polygon');
+    //todo: set actual finish function in this component.
+    this.drawService.registerFinish();
   }
 
   cancelDrawingMode() {
-    this.terraDraw?.setMode('select');
-    this.terraDraw?.stop();
-  }
-
-  //handle draw controls
-  handlePolygonButton() {
-    this.terraDraw?.setMode('polygon');
-    this.drawState$.next(this.terraDraw?.getMode() as DrawState);
-  }
-
-  handleSelectButton() {
-    this.terraDraw?.setMode('select');
-    this.drawState$.next(this.terraDraw?.getMode() as DrawState);
-  }
-
-  handleTrashButton() {
-    this.terraDraw?.clear();
-    this.mapConfigState.clearedDrawnFeatures();
+    this.drawService.setMode('select');
+    this.drawService.stop();
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

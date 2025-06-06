@@ -1,10 +1,9 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
-import { DrawState } from '../explore-map/explore-map.component';
-import { Observable } from 'rxjs';
+import { DrawService } from '../draw.service';
 
 @Component({
   selector: 'app-map-drawing-toolbox',
@@ -14,22 +13,22 @@ import { Observable } from 'rxjs';
   styleUrl: './map-drawing-toolbox.component.scss',
 })
 export class MapDrawingToolboxComponent {
-  constructor(private mapConfigState: MapConfigState) {}
+  constructor(private mapConfigState: MapConfigState,
+    private drawService: DrawService
+  ) { }
 
-  @Output() setPolygonMode = new EventEmitter();
-  @Output() setSelectMode = new EventEmitter();
-  @Output() sendClearRequest = new EventEmitter();
-  @Input() drawState$!: Observable<DrawState>;
-
+  //TODO: do we need this?
   drawingModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
+  currentDrawingMode$ = this.drawService.currentDrawingMode$;
+
 
   handlePolygonButton() {
-    this.setPolygonMode.emit();
+    this.drawService.setMode('polygon');
   }
   handleSelectButton() {
-    this.setSelectMode.emit();
+    this.drawService.setMode('select');
   }
   handleTrashButton() {
-    this.sendClearRequest.emit();
+    this.drawService.clearFeatures();
   }
 }

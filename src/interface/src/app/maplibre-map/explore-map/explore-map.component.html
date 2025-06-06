@@ -24,9 +24,5 @@
     </div>
   </mgl-control>
 
-  <app-map-drawing-toolbox
-    [drawState$]="drawState$"
-    (setPolygonMode)="handlePolygonButton()"
-    (setSelectMode)="handleSelectButton()"
-    (sendClearRequest)="handleTrashButton()"></app-map-drawing-toolbox>
+  <app-map-drawing-toolbox></app-map-drawing-toolbox>
 </mgl-map>
