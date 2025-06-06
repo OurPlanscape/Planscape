@@ -49,6 +49,7 @@ export class ExploreModesToggleComponent {
           this.mapConfigState.exitDrawingMode();
         }
       });
+    this.mapConfigState.exitDrawingMode();
   }
 
   handleSaveButton() {
