@@ -56,6 +56,10 @@ export class DrawService {
     this._terraDraw?.stop();
   }
 
+  getMode() {
+    return this._terraDraw?.getMode();
+  }
+
   setMode(mode: DrawMode) {
     if (this._terraDraw) {
       this._terraDraw.setMode(mode);

@@ -158,7 +158,11 @@ export class ExploreMapComponent {
   }
 
   whileDrawing(changes: any) {
-    this.drawModeTooltipContent = 'click origin vertex to close.';
+    if (this.drawService.getMode() === 'polygon') {
+      this.drawModeTooltipContent = 'click origin vertex to close.';
+    } else {
+      this.drawModeTooltipContent = null;
+    }
   }
 
   enablePolygonDrawingMode() {
