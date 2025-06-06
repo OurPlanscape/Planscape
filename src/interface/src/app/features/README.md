@@ -1,6 +1,6 @@
 # Feature Flags
 
-Edit the `FEATURE_FLAGS` variable under the `.env` located at the root of the project. See `.env.sample` for details.
+Edit the `FEATURE_FLAGS` variable under the `.env` located at the root of the project. See `/feature-flags.md` for details.
 
 ## Testing
 
