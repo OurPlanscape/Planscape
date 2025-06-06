@@ -83,6 +83,7 @@ class DataLayerAdmin(admin.ModelAdmin):
         "type",
         "storage_type",
         "map_service_type",
+        "url",
         "original_name",
         "mimetype",
         "table",

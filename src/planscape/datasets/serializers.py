@@ -8,6 +8,7 @@ from datasets.models import (
     DataLayerStatus,
     DataLayerType,
     Dataset,
+    StorageTypeChoices,
     Style,
     MapServiceChoices,
 )
@@ -139,6 +140,7 @@ class DataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "status",
             "styles",
             "url",
+            "storage_type",
             "public_url",
             "map_url",
             "info",
@@ -166,7 +168,14 @@ class CreateDatasetSerializer(serializers.ModelSerializer[DataLayer]):
 class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
     created_by = serializers.HiddenField(default=serializers.CurrentUserDefault())
     original_name = serializers.CharField(
-        required=True,
+        required=False,
+        allow_null=True,
+    )
+    url = serializers.URLField(required=False, allow_null=True)
+    storage_type = serializers.ChoiceField(
+        choices=StorageTypeChoices.choices,
+        required=False,
+        allow_null=True,
     )
     metadata = serializers.JSONField(
         required=False,
@@ -201,12 +210,25 @@ class CreateDataLayerSerializer(serializers.ModelSerializer[DataLayer]):
             "info",
             "metadata",
             "original_name",
+            "url",
             "mimetype",
             "geometry",
             "geometry_type",
             "style",
             "map_service_type",
+            "storage_type",
         )
+
+    def validate(self, attrs: Dict[str, Any]) -> Dict[str, Any]:
+        url = attrs.get("url")
+        original_name = attrs.get("original_name")
+
+        if bool(url) == bool(original_name):
+            raise serializers.ValidationError(
+                "Provide either 'url' or 'original_name' (uploaded file), but not both."
+            )
+
+        return attrs
 
 
 class ChangeDataLayerStatusSerializer(serializers.Serializer):
@@ -517,6 +539,7 @@ class BrowseDataLayerSerializer(serializers.ModelSerializer["DataLayer"]):
             "type",
             "geometry_type",
             "status",
+            "storage_type",
             "info",
             "metadata",
             "map_service_type",
