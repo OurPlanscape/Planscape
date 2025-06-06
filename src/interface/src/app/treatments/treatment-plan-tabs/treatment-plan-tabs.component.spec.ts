@@ -9,6 +9,7 @@ import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { BehaviorSubject, of } from 'rxjs';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 
 describe('TreatmentPlanTabsComponent', () => {
   let component: TreatmentPlanTabsComponent;
@@ -23,7 +24,9 @@ describe('TreatmentPlanTabsComponent', () => {
         TreatmentPlanTabsComponent,
         BrowserAnimationsModule,
       ],
-      declarations: [MockDeclarations(ProjectAreasTabComponent)],
+      declarations: [
+        MockDeclarations(ProjectAreasTabComponent, DataLayersComponent),
+      ],
       providers: [
         MockProvider(TreatmentsState, {
           treatmentPlan$: new BehaviorSubject(null),
