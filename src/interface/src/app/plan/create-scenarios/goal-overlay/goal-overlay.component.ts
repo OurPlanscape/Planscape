@@ -35,7 +35,7 @@ export class GoalOverlayComponent implements OnDestroy {
   }
 
   get isStatewideScenariosEnabled() {
-    return this.featureService.isFeatureEnabled('statewide_scenarios');
+    return this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS');
   }
 
   sanitizeLinks(html: string): string {

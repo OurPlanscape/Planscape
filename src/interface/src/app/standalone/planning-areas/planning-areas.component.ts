@@ -97,7 +97,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
     { key: 'name', label: 'Name' },
     { key: 'creator', label: 'Creator' },
     // adding 'region_name' just if the FF is not enabled
-    ...(this.featureService.isFeatureEnabled('maplibre_on_explore')
+    ...(this.featureService.isFeatureEnabled('MAPLIBRE_ON_EXPLORE')
       ? []
       : [
           { key: 'region_name', label: 'Region' } as {

@@ -13,6 +13,7 @@
   ],
   "include": [
     "../src/polyfills.ts",
+    "../src/**/*.d.ts",
     "../src/**/*.stories.*",
     "./preview.ts"
   ],

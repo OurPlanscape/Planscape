@@ -140,7 +140,7 @@ export class SetPrioritiesComponent implements OnInit {
   }
 
   get isStatewideScenariosEnabled() {
-    return this.featureService.isFeatureEnabled('statewide_scenarios');
+    return this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS');
   }
 
   get isNewScenario() {
