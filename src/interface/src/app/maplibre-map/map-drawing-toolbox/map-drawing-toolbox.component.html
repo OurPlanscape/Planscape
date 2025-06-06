@@ -4,15 +4,17 @@
   <div class="drawing-toolbox" *ngIf="currentDrawingMode$ | async as drawState">
     <button
       (click)="handlePolygonButton()"
+      matTooltip="Draw Polygons"
       [ngClass]="{ active: drawState === 'polygon' }">
       <mat-icon class="material-symbols-outlined">polyline</mat-icon>
     </button>
     <button
       (click)="handleSelectButton()"
+      matTooltip="Edit Polygons"
       [ngClass]="{ active: drawState === 'select' }">
       <mat-icon class="material-symbols-outlined">arrow_selector_tool</mat-icon>
     </button>
-    <button (click)="handleTrashButton()">
+    <button (click)="handleTrashButton()" matTooltip="Clear Polygons">
       <mat-icon class="material-symbols-outlined">delete</mat-icon>
     </button>
   </div>

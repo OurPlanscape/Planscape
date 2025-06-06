@@ -36,7 +36,7 @@ export class ExploreModesToggleComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dialog: MatDialog,
     private drawService: DrawService
-  ) { }
+  ) {}
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
@@ -90,14 +90,13 @@ export class ExploreModesToggleComponent {
       .open(ConfirmExitDrawingModalComponent)
       .afterClosed()
       .subscribe((modalResponse: any) => {
-        if (modalResponse) {
+        if (modalResponse === true) {
           this.mapConfigState.exitDrawingMode();
         }
       });
   }
 
   private openSaveWarningDialog(): void {
-    this.dialog
-      .open(NoPlanningAreaModalComponent)
+    this.dialog.open(NoPlanningAreaModalComponent);
   }
 }

@@ -8,10 +8,7 @@ import { addRequestHeaders } from '../maplibre.helper';
 import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
-import {
-  TerraDrawPolygonMode,
-  TerraDrawSelectMode,
-} from 'terra-draw';
+import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
@@ -75,7 +72,7 @@ export class ExploreMapComponent {
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService,
-    private drawService: DrawService,
+    private drawService: DrawService
     // private dialog: MatDialog
   ) {
     mapConfigState.drawingModeEnabled$
@@ -132,9 +129,10 @@ export class ExploreMapComponent {
         },
       },
     });
-    this.drawService.initializeTerraDraw(mapLibreAdapter,
-      [polygonMode, selectMode]
-    )
+    this.drawService.initializeTerraDraw(mapLibreAdapter, [
+      polygonMode,
+      selectMode,
+    ]);
   }
 
   enablePolygonDrawingMode() {

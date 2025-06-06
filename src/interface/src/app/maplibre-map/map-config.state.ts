@@ -49,7 +49,6 @@ export class MapConfigState {
   private _drawingModeEnabled$ = new BehaviorSubject(false);
   public drawingModeEnabled$ = this._drawingModeEnabled$.asObservable();
 
-
   updateBaseMap(layer: BaseMapType) {
     this._baseMap$.next(layer);
   }
@@ -102,5 +101,4 @@ export class MapConfigState {
   exitDrawingMode() {
     this._drawingModeEnabled$.next(false);
   }
-
 }

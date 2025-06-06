@@ -8,10 +8,9 @@ describe('ConfirmExitDrawingModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ConfirmExitDrawingModalComponent]
-    })
-    .compileComponents();
-    
+      imports: [ConfirmExitDrawingModalComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ConfirmExitDrawingModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

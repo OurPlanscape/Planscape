@@ -8,10 +8,9 @@ describe('MapDrawingToolboxComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [MapDrawingToolboxComponent]
-    })
-    .compileComponents();
-    
+      imports: [MapDrawingToolboxComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(MapDrawingToolboxComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

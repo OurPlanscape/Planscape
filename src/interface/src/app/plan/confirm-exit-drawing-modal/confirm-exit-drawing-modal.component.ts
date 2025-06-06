@@ -10,7 +10,7 @@ import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
   styleUrl: './confirm-exit-drawing-modal.component.scss',
 })
 export class ConfirmExitDrawingModalComponent {
-  constructor(@Inject(MAT_DIALOG_DATA) public data: any) { }
+  constructor(@Inject(MAT_DIALOG_DATA) public data: any) {}
 
   readonly dialogRef = inject(MatDialogRef<ConfirmExitDrawingModalComponent>);
 
@@ -18,7 +18,7 @@ export class ConfirmExitDrawingModalComponent {
     this.dialogRef.close(false);
   }
 
-  goToTreatmentPlans(): void {
+  confirm(): void {
     this.dialogRef.close(true);
   }
 }

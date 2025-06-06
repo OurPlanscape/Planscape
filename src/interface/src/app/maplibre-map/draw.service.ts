@@ -1,31 +1,27 @@
 import { Injectable } from '@angular/core';
-import {
-  TerraDraw,
-  GeoJSONStoreFeatures
-} from 'terra-draw';
+import { TerraDraw, GeoJSONStoreFeatures } from 'terra-draw';
 import * as turf from '@turf/turf';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Geometry } from '@turf/helpers';
 export type DrawMode = 'polygon' | 'select' | 'none';
 
-
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class DrawService {
-
-  constructor() { }
+  constructor() {}
   private _terraDraw: TerraDraw | null = null;
   private _currentDrawingMode = new BehaviorSubject<string>('');
 
   // Observable that components can subscribe to
-  currentDrawingMode$: Observable<string> = this._currentDrawingMode.asObservable();
+  currentDrawingMode$: Observable<string> =
+    this._currentDrawingMode.asObservable();
 
   initializeTerraDraw(adapter: any, modes: any[]) {
     if (!this._terraDraw) {
       this._terraDraw = new TerraDraw({
         adapter: adapter,
-        modes: modes
+        modes: modes,
       });
       this._terraDraw.start();
     }
@@ -46,7 +42,7 @@ export class DrawService {
     this._terraDraw?.on('finish', (id: any, context: any) => {
       this.setMode('select');
       this.selectFeature(id);
-    })
+    });
   }
 
   stop() {
@@ -68,7 +64,10 @@ export class DrawService {
     if (!this._terraDraw) {
       return false;
     }
-    return this._terraDraw.getSnapshot().filter((f) => f.geometry.type === 'Polygon').length > 0;
+    return (
+      this._terraDraw.getSnapshot().filter((f) => f.geometry.type === 'Polygon')
+        .length > 0
+    );
   }
 
   getTotalAcreage() {
@@ -77,7 +76,7 @@ export class DrawService {
     if (!polygons) {
       return 0;
     }
-    return polygons.reduce((total, p) => total + this.calculateAcreage(p), 0)
+    return polygons.reduce((total, p) => total + this.calculateAcreage(p), 0);
   }
 
   clearFeatures() {
@@ -85,7 +84,9 @@ export class DrawService {
   }
 
   getPolygonsSnapshot() {
-    return this._terraDraw?.getSnapshot().filter((f) => f.geometry.type === 'Polygon');
+    return this._terraDraw
+      ?.getSnapshot()
+      .filter((f) => f.geometry.type === 'Polygon');
   }
 
   getGeometry(): Geometry | null {
@@ -94,17 +95,15 @@ export class DrawService {
     const polygons = this.getPolygonsSnapshot();
     if (!polygons) {
       return null;
-    }
-    else if (polygons.length > 1) {
+    } else if (polygons.length > 1) {
       return {
-        type: "MultiPolygon",
-        coordinates: polygons.map(p => p.geometry.coordinates) as number[][]
+        type: 'MultiPolygon',
+        coordinates: polygons.map((p) => p.geometry.coordinates) as number[][],
       };
     } else {
       return polygons[0].geometry;
     }
   }
-
 
   //TODO: complete this PoC to match our backend acreage measurement
   calculateAcreage(polygon: GeoJSONStoreFeatures): number {
@@ -116,5 +115,4 @@ export class DrawService {
     const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
     return areaInAcres;
   }
-
 }

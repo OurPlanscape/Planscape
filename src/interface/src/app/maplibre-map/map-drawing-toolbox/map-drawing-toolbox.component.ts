@@ -4,23 +4,31 @@ import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { DrawService } from '../draw.service';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-map-drawing-toolbox',
   standalone: true,
-  imports: [AsyncPipe, ControlComponent, MatIconModule, NgClass, NgIf],
+  imports: [
+    AsyncPipe,
+    ControlComponent,
+    MatIconModule,
+    MatTooltipModule,
+    NgClass,
+    NgIf,
+  ],
   templateUrl: './map-drawing-toolbox.component.html',
   styleUrl: './map-drawing-toolbox.component.scss',
 })
 export class MapDrawingToolboxComponent {
-  constructor(private mapConfigState: MapConfigState,
+  constructor(
+    private mapConfigState: MapConfigState,
     private drawService: DrawService
-  ) { }
+  ) {}
 
   //TODO: do we need this?
   drawingModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
   currentDrawingMode$ = this.drawService.currentDrawingMode$;
-
 
   handlePolygonButton() {
     this.drawService.setMode('polygon');

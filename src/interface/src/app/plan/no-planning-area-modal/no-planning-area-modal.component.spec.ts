@@ -8,10 +8,9 @@ describe('NoPlanningAreaModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NoPlanningAreaModalComponent]
-    })
-    .compileComponents();
-    
+      imports: [NoPlanningAreaModalComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(NoPlanningAreaModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
