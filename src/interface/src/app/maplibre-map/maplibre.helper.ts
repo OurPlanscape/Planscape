@@ -134,7 +134,12 @@ export function syncMaps(...maps: MapLibreMap[]): Cleanup {
   };
 }
 
-export function defaultBaseLayerFill(fillColor?: string) {
+function calcOpacity(opacity: string | undefined): number {
+  const num = Number(opacity);
+  return isNaN(num) ? BASE_LAYERS_DEFAULT.OPACITY : num;
+}
+
+export function defaultBaseLayerFill(fillColor?: string, fillOpacity?: string) {
   return {
     'fill-color': fillColor || BASE_LAYERS_DEFAULT.COLOR,
 
@@ -142,7 +147,7 @@ export function defaultBaseLayerFill(fillColor?: string) {
       'case',
       ['boolean', ['feature-state', 'hover'], false],
       0.5,
-      0,
+      calcOpacity(fillOpacity),
     ],
   } as any;
 }

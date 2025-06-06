@@ -98,7 +98,10 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
   }
 
   fillLayerPaint(layer: BaseLayer) {
-    return defaultBaseLayerFill(layer.styles[0].data['fill-color']);
+    return defaultBaseLayerFill(
+      layer.styles[0].data['fill-color'],
+      layer.styles[0].data['fill-opacity']
+    );
   }
 
   hoverOnLayer(event: MapMouseEvent, layer: BaseLayer, layerType: string) {

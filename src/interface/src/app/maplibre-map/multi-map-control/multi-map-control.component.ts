@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
+import { MapConfigState } from '../map-config.state';
 
 @Component({
   selector: 'app-multi-map-control',
@@ -12,7 +13,13 @@ import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 export class MultiMapControlComponent {
   layoutMode$ = this.multiMapConfigState.layoutMode$;
 
-  constructor(private multiMapConfigState: MultiMapConfigState) {}
+  constructor(
+    private multiMapConfigState: MultiMapConfigState,
+    private mapConfigState: MapConfigState
+  ) {}
+
+  // we disable this control when we're in drawing mode
+  $drawingMode = this.mapConfigState.drawingModeEnabled$;
 
   setLayoutMode(view: 1 | 2 | 4) {
     this.multiMapConfigState.setLayoutMode(view);
