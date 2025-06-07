@@ -2,14 +2,14 @@ import { Injectable } from '@angular/core';
 import { TerraDraw, GeoJSONStoreFeatures } from 'terra-draw';
 import * as turf from '@turf/turf';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { Geometry } from '@turf/helpers';
+// import { Geometry } from '@turf/helpers';
 export type DrawMode = 'polygon' | 'select' | 'none';
 
 @Injectable({
   providedIn: 'root',
 })
 export class DrawService {
-  constructor() {}
+  constructor() { }
   private _terraDraw: TerraDraw | null = null;
   private _currentDrawingMode = new BehaviorSubject<string>('');
 
@@ -100,7 +100,7 @@ export class DrawService {
       .filter((f) => f.geometry.type === 'Polygon');
   }
 
-  getGeometry(): Geometry | null {
+  getGeometry(): any | null {
     //TODO: terradraw doesn't seem to provide a Multipolygon result,
     // so we convert it here -- maybe easier w turf?
     const polygons = this.getPolygonsSnapshot();
@@ -126,4 +126,5 @@ export class DrawService {
     const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
     return areaInAcres;
   }
+
 }

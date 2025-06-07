@@ -11,6 +11,10 @@ import { MatDialog } from '@angular/material/dialog';
 import { Geometry } from '@turf/helpers';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
+import { PlanService } from '@services';
+import { GeoJSON } from 'geojson';
+import { take } from 'rxjs';
+import { getTotalAcreage, GeoJSONStoreFeatures } from 'src/app/utils/geoconversions';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -35,8 +39,9 @@ export class ExploreModesToggleComponent {
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
     private dialog: MatDialog,
-    private drawService: DrawService
-  ) {}
+    private drawService: DrawService,
+    private planService: PlanService
+  ) { }
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
@@ -62,9 +67,25 @@ export class ExploreModesToggleComponent {
     } else {
       const area = this.drawService.getTotalAcreage();
       const shape = this.drawService.getGeometry();
-      console.log('geometry is:', shape);
+      const geom = shape.geometry;
+      const snapshot = this.drawService.getPolygonsSnapshot();
+      if (snapshot) {
+        console.log('here is the snapshot:', snapshot[0]);
+        const newerAcres = getTotalAcreage(snapshot[0] as GeoJSONStoreFeatures);
+        console.log('newer acres is:', newerAcres);
+      }
+      console.log('shape is:', shape);
       console.log('acreage is:', area);
-      console.log('just ignoring this', this.dialog);
+      console.log('geom we are sending is:', geom);
+
+      if (shape) {
+        const geoJSONFeature = shape;
+
+        const backendArea = this.planService.getTotalArea(geoJSONFeature as GeoJSON).pipe(take(1)).subscribe(value => {
+          console.log('what is the backend result?: ', value); // This will log the first emitted number
+        });
+        console.log('backend area was:', backendArea);
+      }
       if (shape) {
         this.openPlanCreateDialog(area, shape);
       }
