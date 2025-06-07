@@ -152,9 +152,16 @@ export class ExploreMapComponent {
     // TODO: add a stationary size popup relative to the feature
   }
 
-  whileDrawing(changes: any) {
+  onDrawChange(changes: any) {
     if (this.drawService.getMode() === 'polygon') {
-      this.drawModeTooltipContent = 'Click first marker to finish';
+      const pointCount = this.drawService.getPolygonPointCount(changes[0]);
+      if (pointCount > 3 && pointCount <= 5) {
+        this.drawModeTooltipContent = 'Click to continue drawing';
+      } else if (pointCount > 5) {
+        this.drawModeTooltipContent = 'Click first marker to finish';
+      } else {
+        this.drawModeTooltipContent = null;
+      }
     } else {
       this.drawModeTooltipContent = null;
     }
@@ -168,9 +175,9 @@ export class ExploreMapComponent {
       this.afterFinish(featureId)
     );
     this.drawService.registerChangeCallback((context: any) =>
-      this.whileDrawing(context)
+      this.onDrawChange(context)
     );
-    this.drawModeTooltipContent = 'Click to place first vertex.';
+    this.drawModeTooltipContent = 'Click to place first vertex';
   }
 
   cancelDrawingMode() {

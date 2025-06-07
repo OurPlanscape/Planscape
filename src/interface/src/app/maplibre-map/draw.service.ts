@@ -9,7 +9,7 @@ export type DrawMode = 'polygon' | 'select' | 'none';
   providedIn: 'root',
 })
 export class DrawService {
-  constructor() {}
+  constructor() { }
   private _terraDraw: TerraDraw | null = null;
   private _currentDrawingMode = new BehaviorSubject<string>('');
 
@@ -47,9 +47,17 @@ export class DrawService {
   }
 
   registerChangeCallback(changeCallback: Function) {
-    this._terraDraw?.on('change', (changes) => {
-      changeCallback(changes);
+    this._terraDraw?.on('change', (changedFeatureIds) => {
+      changeCallback(changedFeatureIds);
     });
+  }
+
+  getPolygonPointCount(featureId: string) {
+    const snapshot = this._terraDraw?.getSnapshotFeature(featureId);
+    if (snapshot?.geometry.type === 'Polygon') {
+      return snapshot?.geometry.coordinates[0].length;
+    }
+    return 0;
   }
 
   stop() {
