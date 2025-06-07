@@ -1,10 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import {
-  ControlComponent,
-  MapComponent,
-  PopupComponent,
-} from '@maplibre/ngx-maplibre-gl';
+import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { FrontendConstants } from '../../map/map.constants';
 import {
   LngLat,
@@ -24,8 +20,7 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { map } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
 import { DrawService } from '../draw.service';
-
-export type DrawState = 'none' | 'polygon' | 'select';
+import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
 
 @UntilDestroy()
 @Component({
@@ -37,10 +32,10 @@ export type DrawState = 'none' | 'polygon' | 'select';
     MapComponent,
     MatIconModule,
     ControlComponent,
-    PopupComponent,
     NgIf,
     MapBaseLayersComponent,
     MapDrawingToolboxComponent,
+    MapTooltipComponent,
   ],
   templateUrl: './explore-map.component.html',
   styleUrl: './explore-map.component.scss',
@@ -159,7 +154,7 @@ export class ExploreMapComponent {
 
   whileDrawing(changes: any) {
     if (this.drawService.getMode() === 'polygon') {
-      this.drawModeTooltipContent = 'click origin vertex to close.';
+      this.drawModeTooltipContent = 'Click first marker to finish';
     } else {
       this.drawModeTooltipContent = null;
     }

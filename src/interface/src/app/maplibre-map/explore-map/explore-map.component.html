@@ -25,7 +25,7 @@
     </div>
   </mgl-control>
 
-  <mgl-popup
+  <app-map-tooltip
     *ngIf="
       (drawingModeEnabled$ | async) === true &&
       (currentDrawingMode$ | async) !== 'none' &&
@@ -33,10 +33,7 @@
       drawModeTooltipContent
     "
     [lngLat]="mouseLngLat"
-    [closeButton]="false"
-    [closeOnClick]="false"
-    [offset]="20"
-    >{{ drawModeTooltipContent }}</mgl-popup
+    >{{ drawModeTooltipContent }}</app-map-tooltip
   >
 
   <app-map-drawing-toolbox></app-map-drawing-toolbox>
