@@ -1,6 +1,10 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
+import {
+  ControlComponent,
+  LayerComponent,
+  MapComponent,
+} from '@maplibre/ngx-maplibre-gl';
 import { FrontendConstants } from '../../map/map.constants';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import { AuthService } from '@services';
@@ -9,6 +13,7 @@ import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { map } from 'rxjs';
+import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
 
 @Component({
   selector: 'app-explore-map',
@@ -20,6 +25,8 @@ import { map } from 'rxjs';
     ControlComponent,
     NgIf,
     MapBaseLayersComponent,
+    MapDataLayerComponent,
+    LayerComponent,
   ],
   templateUrl: './explore-map.component.html',
   styleUrl: './explore-map.component.scss',
