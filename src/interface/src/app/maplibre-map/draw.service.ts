@@ -6,8 +6,27 @@ import area from '@turf/area';
 import bbox from '@turf/bbox';
 import { Geometry } from '@turf/helpers';
 import { BehaviorSubject, Observable } from 'rxjs';
-
+import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
+import { Map as MapLibreMap } from 'maplibre-gl';
 export type DrawMode = 'polygon' | 'select' | 'none';
+
+export const DefaultSelectConfig = {
+  flags: {
+    polygon: {
+      feature: {
+        draggable: true,
+        coordinates: {
+          midpoints: {
+            draggable: true,
+          },
+          draggable: true,
+          snappable: true,
+          deletable: true,
+        },
+      },
+    },
+  },
+};
 
 @Injectable()
 export class DrawService {
@@ -22,10 +41,13 @@ export class DrawService {
   selectedFeatureId$: Observable<FeatureId | null> =
     this._selectedFeatureId$.asObservable();
 
-  initializeTerraDraw(adapter: any, modes: any[]) {
+  initializeTerraDraw(map: MapLibreMap, modes: any[]) {
+    const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
+      map: map,
+    });
     if (!this._terraDraw) {
       this._terraDraw = new TerraDraw({
-        adapter: adapter,
+        adapter: mapLibreAdapter,
         modes: modes,
       });
       this._terraDraw.start();

@@ -15,12 +15,11 @@ import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
-import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { map } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
-import { DrawService } from '../draw.service';
+import { DrawService, DefaultSelectConfig } from '../draw.service';
 import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
 import { FeatureId } from 'terra-draw/dist/extend';
 
@@ -103,12 +102,7 @@ export class ExploreMapComponent {
   }
 
   initDrawingModes() {
-    const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
-      map: this.mapLibreMap,
-    });
-
     const polygonMode = new TerraDrawPolygonMode({
-      //TODO: pull styles from elsewhere...?
       styles: {
         fillColor: '#A5C8D7',
         fillOpacity: 0.5,
@@ -120,25 +114,8 @@ export class ExploreMapComponent {
         closingPointOutlineWidth: 2,
       },
     });
-    // TODO: store these configs in the service?
-    const selectMode = new TerraDrawSelectMode({
-      flags: {
-        polygon: {
-          feature: {
-            draggable: true,
-            coordinates: {
-              midpoints: {
-                draggable: true,
-              },
-              draggable: true,
-              snappable: true,
-              deletable: true,
-            },
-          },
-        },
-      },
-    });
-    this.drawService.initializeTerraDraw(mapLibreAdapter, [
+    const selectMode = new TerraDrawSelectMode(DefaultSelectConfig);
+    this.drawService.initializeTerraDraw(this.mapLibreMap, [
       polygonMode,
       selectMode,
     ]);
