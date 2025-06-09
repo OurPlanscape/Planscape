@@ -44,7 +44,7 @@ export class ScenarioService {
 
   /** Creates a scenario in the backend. Returns scenario ID. */
   createScenario(scenarioParameters: any): Observable<Scenario> {
-    if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+    if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
       scenarioParameters['configuration'] = this.convertConfigToScenario(
         scenarioParameters['configuration']
       );
@@ -99,7 +99,7 @@ export class ScenarioService {
   }
 
   getExcludedAreas(): Observable<{ key: number; label: string; id: number }[]> {
-    if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+    if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
       const url = environment.backend_endpoint + '/v2/datasets/998/browse';
       return this.http.get(url).pipe(
         map((areas: any) => {
