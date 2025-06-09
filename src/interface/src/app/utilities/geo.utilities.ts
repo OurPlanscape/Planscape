@@ -3,8 +3,6 @@ import proj4 from 'proj4';
 import { Feature, Position } from 'geojson';
 
 const CONVERSION_SQM_ACRES = 4046.8564213562374;
-
-// Define EPSG:5070 projection (Albers Equal Area Conic for US)
 const epsg5070 = '+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs';
 const epsg4326 = '+proj=longlat +datum=WGS84 +no_defs +type=crs';
 
@@ -15,12 +13,10 @@ function getTotalAcreage(feature: Feature): number {
     }
     try {
         const coords = getOuterRingCoordinates(feature);
-        // Transform to EPSG:5070 using direct proj strings
         const projectedCoords = coords.map(coord =>
             proj4(epsg4326, epsg5070, coord)
         );
 
-        // Calculate area using shoelace formula
         const areaInSquareMeters = calculateArea(projectedCoords);
         const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
         return Math.round(areaInAcres * 100) / 100;
