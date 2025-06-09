@@ -6,7 +6,7 @@ from collaboration.services import get_permissions, get_role
 from datasets.models import DataLayer, DataLayerType, GeometryType
 from django.conf import settings
 from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
-from planning.geometry import coerce_geometry
+from planning.geometry import coerce_geometry, coerce_geojson
 from planning.models import (
     PlanningArea,
     PlanningAreaNote,
@@ -100,31 +100,50 @@ class ListPlanningAreaSerializer(serializers.ModelSerializer):
 
 class CreatePlanningAreaSerializer(serializers.ModelSerializer):
     user = serializers.HiddenField(default=serializers.CurrentUserDefault())
-
+    geometry = serializers.JSONField()
     region_name = serializers.ChoiceField(
         choices=PlanningArea._meta.get_field("region_name").choices,
         required=False,
         allow_null=True,
     )
 
-    def validate_geometry(self, geometry):
-        if not isinstance(geometry, GEOSGeometry):
-            geometry = GEOSGeometry(
-                geometry,
-                srid=settings.CRS_INTERNAL_REPRESENTATION,
+    def validate(self, attrs):
+        region_val = attrs.get("region_name")
+        if PlanningArea.objects.filter(
+            user=attrs["user"],
+            name=attrs["name"],
+            region_name=region_val,
+        ).exists():
+            raise serializers.ValidationError(
+                {"name": "A planning area with this name already exists."}
             )
+        if "region_name" not in self.initial_data:
+            attrs.pop("region_name", None)
+        return attrs
 
-        if geometry.srid != settings.CRS_INTERNAL_REPRESENTATION:
-            geometry = geometry.transform(
-                settings.CRS_INTERNAL_REPRESENTATION, clone=True
-            )
+    def validate_geometry(self, geom):
+        if not isinstance(geom, GEOSGeometry):
+            try:
+                geom = coerce_geojson(geom)
+
+            except InvalidGeometry as exc:
+                if "exactly one feature" in str(exc):
+                    merged = union_geojson(geom)
+
+                    if isinstance(merged, GEOSGeometry):
+                        geom = merged
+                    else:
+                        geom = coerce_geojson(merged)
+                else:
+                    raise
+
+        if geom.srid != settings.CRS_INTERNAL_REPRESENTATION:
+            geom = geom.transform(settings.CRS_INTERNAL_REPRESENTATION, clone=True)
 
         try:
-            geometry = coerce_geometry(geometry)
-        except (InvalidGeometry, ValueError) as valEx:
-            raise serializers.ValidationError(str(valEx))
-
-        return geometry
+            return coerce_geometry(geom)
+        except (InvalidGeometry, ValueError) as exc:
+            raise serializers.ValidationError(str(exc))
 
     class Meta:
         model = PlanningArea
@@ -135,6 +154,7 @@ class CreatePlanningAreaSerializer(serializers.ModelSerializer):
             "geometry",
             "notes",
         )
+        validators = []
 
 
 class PlanningAreaSerializer(
