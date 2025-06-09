@@ -73,7 +73,7 @@ export class DataLayersStateService {
   private loadingLayer = new BehaviorSubject(false);
   loadingLayer$ = this.loadingLayer.asObservable();
 
-  private loadingSubject = new BehaviorSubject(false);
+  private loadingSubject = new BehaviorSubject(true);
   loading$ = this.loadingSubject.asObservable();
 
   private _offset = new BehaviorSubject(0);
