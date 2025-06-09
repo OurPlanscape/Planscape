@@ -18,6 +18,16 @@
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-base-layers>
 
+  <app-map-data-layer
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
   <mgl-control position="bottom-left" *ngIf="showMapNumber">
     <div class="label" [class.selected-map]="(isSelected$ | async) === true">
       Map {{ mapNumber }}

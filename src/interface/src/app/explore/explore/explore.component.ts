@@ -16,6 +16,7 @@ import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.c
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
+import { MapConfigService } from '../../maplibre-map/map-config.service';
 
 @Component({
   selector: 'app-explore',
@@ -44,6 +45,7 @@ import { MapSelectorComponent } from '../map-selector/map-selector.component';
 
     // 2. Alias its own type to that same instance
     { provide: MultiMapConfigState, useExisting: MapConfigState },
+    MapConfigService,
   ],
 })
 export class ExploreComponent implements OnDestroy {
@@ -61,7 +63,8 @@ export class ExploreComponent implements OnDestroy {
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
     private baseLayersStateService: BaseLayersStateService,
-    private multiMapConfigState: MultiMapConfigState
+    private multiMapConfigState: MultiMapConfigState,
+    private mapConfigService: MapConfigService
   ) {
     this.loadStateFromLocalStorage();
     this.breadcrumbService.updateBreadCrumb({
@@ -69,6 +72,8 @@ export class ExploreComponent implements OnDestroy {
       backUrl: '/',
     });
     this.baseLayersStateService.enableBaseLayerHover(true);
+
+    this.mapConfigService.initialize();
   }
 
   handleOpacityChange(opacity: number) {
