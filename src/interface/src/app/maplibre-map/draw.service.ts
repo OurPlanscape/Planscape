@@ -7,11 +7,8 @@ import { FeatureId } from 'terra-draw/dist/extend';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class DrawService {
-  constructor() {}
   private _terraDraw: TerraDraw | null = null;
   private _currentDrawingMode = new BehaviorSubject<string>('');
 

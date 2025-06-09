@@ -36,5 +36,6 @@
     >{{ drawModeTooltipContent }}</app-map-tooltip
   >
 
-  <app-map-drawing-toolbox></app-map-drawing-toolbox>
+  <app-map-drawing-toolbox
+    *ngIf="(drawingModeEnabled$ | async) === true"></app-map-drawing-toolbox>
 </mgl-map>

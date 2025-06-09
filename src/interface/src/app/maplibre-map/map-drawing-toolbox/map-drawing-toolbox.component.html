@@ -1,6 +1,4 @@
-<mgl-control
-  position="bottom-right"
-  *ngIf="(drawingModeEnabled$ | async) === true">
+<mgl-control position="bottom-right">
   <div class="drawing-toolbox" *ngIf="currentDrawingMode$ | async as drawState">
     <button
       (click)="handlePolygonButton()"

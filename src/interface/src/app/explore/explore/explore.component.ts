@@ -16,7 +16,7 @@ import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.c
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
-
+import { DrawService } from 'src/app/maplibre-map/draw.service';
 @Component({
   selector: 'app-explore',
   standalone: true,
@@ -39,6 +39,7 @@ import { MapSelectorComponent } from '../map-selector/map-selector.component';
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.scss',
   providers: [
+    DrawService,
     // 1. Create a single instance of the subclass
     { provide: MapConfigState, useClass: MultiMapConfigState },
 

@@ -1,7 +1,6 @@
 import { Component } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MatIconModule } from '@angular/material/icon';
-import { MapConfigState } from '../map-config.state';
 import { ControlComponent } from '@maplibre/ngx-maplibre-gl';
 import { DrawService } from '../draw.service';
 import { MatTooltipModule } from '@angular/material/tooltip';
@@ -21,13 +20,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
   styleUrl: './map-drawing-toolbox.component.scss',
 })
 export class MapDrawingToolboxComponent {
-  constructor(
-    private mapConfigState: MapConfigState,
-    private drawService: DrawService
-  ) {}
+  constructor(private drawService: DrawService) {}
 
-  //TODO: do we need this?
-  drawingModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
   currentDrawingMode$ = this.drawService.currentDrawingMode$;
   selectedFeatureId$ = this.drawService.selectedFeatureId$;
 
