@@ -14,6 +14,8 @@ import { SNACK_DEBUG_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { environment } from 'src/environments/environment';
 import * as Sentry from '@sentry/browser';
 import { EventData } from '@maplibre/ngx-maplibre-gl';
+import { combineLatest } from 'rxjs';
+import { MultiMapConfigState } from '../multi-map-config.state';
 
 @UntilDestroy()
 @Component({
@@ -24,6 +26,7 @@ import { EventData } from '@maplibre/ngx-maplibre-gl';
 })
 export class MapDataLayerComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
+  @Input() mapNumber!: number; // If it's null means we are going to apply layers for all maps
   opacity: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
@@ -32,12 +35,19 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
+    private multimapStateService: MultiMapConfigState,
     private matSnackBar: MatSnackBar
   ) {
-    dataLayersStateService.dataLayerWithUrl$
+    combineLatest([
+      dataLayersStateService.dataLayerWithUrl$,
+      this.multimapStateService.selectedMapId$,
+    ])
       .pipe(untilDestroyed(this))
-      .subscribe((data) => {
-        if (data) {
+      .subscribe(([data, selectedMap]) => {
+        if (
+          (data && !selectedMap) ||
+          (data && selectedMap === this.mapNumber)
+        ) {
           this.cogUrl = `cog://${data.url}`;
           const colorFn = generateColorFunction(data.layer?.styles[0].data);
           setColorFunction(data.url, colorFn);
@@ -45,7 +55,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
             data.layer.info.blockxsize ??
             FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
           this.addRasterLayer();
-        } else {
+        } else if (!data) {
           this.cogUrl = null;
           this.removeRasterLayer();
         }

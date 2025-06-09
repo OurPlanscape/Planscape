@@ -70,4 +70,8 @@ export class MultiMapConfigState extends MapConfigState {
   setSelectedMap(id: number | null) {
     this._selectedMapId$.next(id);
   }
+
+  getSelectedMap(): number | null {
+    return this._selectedMapId$.value;
+  }
 }

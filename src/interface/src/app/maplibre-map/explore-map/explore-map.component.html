@@ -14,6 +14,17 @@
   [ngClass]="{
     'highlighted-map': showMapNumber && (isSelected$ | async) === true,
   }">
+  <app-map-data-layer
+    *ngIf="mapLibreMap"
+    [mapNumber]="mapNumber"
+    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
   <app-map-base-layers
     *ngIf="mapLibreMap"
     [mapLibreMap]="mapLibreMap"></app-map-base-layers>
