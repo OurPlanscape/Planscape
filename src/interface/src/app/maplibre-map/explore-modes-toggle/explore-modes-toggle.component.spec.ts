@@ -4,6 +4,7 @@ import { ExploreModesToggleComponent } from './explore-modes-toggle.component';
 import { MapConfigState } from '../map-config.state';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { MatDialogModule } from '@angular/material/dialog';
+import { DrawService } from '../draw.service';
 
 describe('ExploreModesToggleComponent', () => {
   let component: ExploreModesToggleComponent;
@@ -15,6 +16,7 @@ describe('ExploreModesToggleComponent', () => {
       providers: [
         MockProvider(MapConfigState),
         MockProvider(MultiMapConfigState),
+        MockProvider(DrawService),
       ],
     }).compileComponents();
 

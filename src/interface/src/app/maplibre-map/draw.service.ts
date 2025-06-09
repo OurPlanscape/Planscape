@@ -1,9 +1,11 @@
 import { Injectable } from '@angular/core';
 import { TerraDraw, GeoJSONStoreFeatures } from 'terra-draw';
-import * as turf from '@turf/turf';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { Geometry } from '@turf/helpers';
 import { FeatureId } from 'terra-draw/dist/extend';
+import booleanValid from '@turf/boolean-valid';
+import area from '@turf/area';
+import bbox from '@turf/bbox';
+import { Geometry } from '@turf/helpers';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -95,7 +97,7 @@ export class DrawService {
   getPolygonBottomCenterCoords(featureId: FeatureId) {
     const featureCopy = this._terraDraw?.getSnapshotFeature(featureId);
     if (featureCopy) {
-      const bboxResult = turf.bbox(featureCopy);
+      const bboxResult = bbox(featureCopy);
       if (!bboxResult) {
         return null;
       }
@@ -162,11 +164,11 @@ export class DrawService {
 
   //TODO: use updated acreage measurement when added
   calculateAcreage(polygon: GeoJSONStoreFeatures): number {
-    if (!turf.booleanValid(polygon)) {
+    if (!booleanValid(polygon)) {
       return 0;
     }
     const CONVERSION_SQM_ACRES = 4046.8564213562374;
-    const areaInSquareMeters = turf.area(polygon);
+    const areaInSquareMeters = area(polygon);
     const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
     return areaInAcres;
   }
