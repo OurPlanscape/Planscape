@@ -1,4 +1,11 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import {
   ControlComponent,
@@ -36,7 +43,7 @@ import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-laye
   templateUrl: './explore-map.component.html',
   styleUrl: './explore-map.component.scss',
 })
-export class ExploreMapComponent {
+export class ExploreMapComponent implements OnInit, OnDestroy {
   /**
    * Maplibre defaults
    */

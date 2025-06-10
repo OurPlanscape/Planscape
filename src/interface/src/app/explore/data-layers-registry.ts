@@ -8,6 +8,8 @@ export class DataLayersRegistryService {
   private _size$ = new BehaviorSubject(0);
   public size$ = this._size$.asObservable();
 
+  constructor() {}
+
   set(mapId: number, instance: DataLayersStateService) {
     this.instances.set(mapId, instance);
     this._size$.next(this.instances.size);
