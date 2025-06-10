@@ -730,15 +730,13 @@ call_forsys <- function(
     # this is needed because we have layers that can be inputs, but are not part
     # of solving our equations - such as slope and distance from roads
     weights <- get_weights(priorities, configuration)
-    fields <- paste0("datalayer_", data_inputs[["id"]])
-    priority_fields <- paste0("datalayer_", priorities[["id"]])
+    fields <- paste0("datalayer_", priorities[["id"]])
     spm_fields <- paste0(fields, "_SPM")
-    pcp_fields <- paste0(fields, "_PCP")
     stand_data <- stand_data %>%
       forsys::calculate_spm(fields=fields) %>% 
       forsys::calculate_pcp(fields=fields) %>% 
       forsys::combine_priorities(
-        fields=prioritiy_fields,
+        fields=spm_fields,
         weights=weights,
         new_field="priority"
       )
