@@ -706,7 +706,6 @@ call_forsys <- function(
   # so front-end can show data from priorities as well
   if (FORSYS_V2) {
     forsys_inputs <- remove_duplicates_v2(forsys_inputs)
-    data_inputs <- data.table::rbindlist(list(priorities, outputs))
   } else {
     forsys_inputs <- remove_duplicates(forsys_inputs)
   }
