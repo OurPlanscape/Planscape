@@ -391,7 +391,10 @@ class Command(PlanscapeCommand):
     ) -> Optional[Dict[str, Any]]:
         map_service_type = kwargs.pop("map_service_type", None)
         metadata = kwargs.pop("metadata", None)
-        layer_type = kwargs.pop("layer_type")
+        layer_type = kwargs.pop("layer_type", None)
+
+        if url and not layer_type:
+            raise ValueError("Missing required layer_type when using url.")
 
         try:
             if skip_existing:
