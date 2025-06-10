@@ -19,7 +19,6 @@ import { extractLegendInfo } from './utilities';
 @Injectable()
 export class DataLayersStateService {
   readonly limit = 20;
-  readonly id = Math.random();
 
   private _datasetsCurrentPage$ = new BehaviorSubject(1);
   datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();

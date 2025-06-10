@@ -78,7 +78,6 @@ export class ExploreMapComponent {
 
   ngOnInit() {
     this.registry.set(this.mapNumber, this.state);
-    console.log('ExploreMap:', this.state.id);
   }
 
   ngOnDestroy() {

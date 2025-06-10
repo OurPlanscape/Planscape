@@ -63,9 +63,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
   }
 
   addRasterLayer(): void {
-    console.log('adding layer');
     if (this.mapLibreMap && this.cogUrl) {
-      console.log('adding raster lrayer');
       const rasterSource: RasterSourceSpecification = {
         type: 'raster',
         url: this.cogUrl,

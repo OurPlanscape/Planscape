@@ -1,7 +1,7 @@
 import {
   Component,
-  ComponentFactoryResolver,
   ComponentRef,
+  inject,
   Injector,
   Input,
   OnDestroy,
@@ -12,48 +12,41 @@ import {
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { DataLayersRegistryService } from '../data-layers-registry';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
-import { NgIf, NgTemplateOutlet } from '@angular/common';
+import { NgIf } from '@angular/common';
 
 @Component({
   selector: 'app-dynamic-data-layers',
   standalone: true,
-  imports: [NgIf, NgTemplateOutlet],
-  template: `
-    <ng-container *ngIf="componentRef">
-      <ng-container [ngTemplateOutlet]="outlet"></ng-container>
-    </ng-container>
-
-    <ng-template #outlet></ng-template>
-  `,
+  imports: [NgIf],
+  template: ` <ng-template #outlet></ng-template>`,
 })
 export class DynamicDataLayersComponent implements OnInit, OnDestroy {
   @Input({ required: true }) mapId!: number;
 
-  componentRef?: ComponentRef<DataLayersComponent>;
-
   @ViewChild('outlet', { read: ViewContainerRef, static: true })
   outlet!: ViewContainerRef;
 
-  constructor(
-    private registry: DataLayersRegistryService,
-    private parentInjector: Injector,
-    private cfr: ComponentFactoryResolver
-  ) {}
+  private componentRef?: ComponentRef<DataLayersComponent>;
 
-  ngOnInit() {
-    const instance = this.registry.get(this.mapId);
-    if (!instance) throw new Error(`No service for map ${this.mapId}`);
+  private readonly registry = inject(DataLayersRegistryService);
+  private readonly parentInjector = inject(Injector);
 
-    const injector = Injector.create({
-      providers: [{ provide: DataLayersStateService, useValue: instance }],
+  ngOnInit(): void {
+    const service = this.registry.get(this.mapId);
+    if (!service)
+      throw new Error(`No DataLayersStateService for map ${this.mapId}`);
+
+    const customInjector = Injector.create({
+      providers: [{ provide: DataLayersStateService, useValue: service }],
       parent: this.parentInjector,
     });
 
-    const factory = this.cfr.resolveComponentFactory(DataLayersComponent);
-    this.componentRef = this.outlet.createComponent(factory, 0, injector);
+    this.componentRef = this.outlet.createComponent(DataLayersComponent, {
+      injector: customInjector,
+    });
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.componentRef?.destroy();
   }
 }
