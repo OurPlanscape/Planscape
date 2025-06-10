@@ -391,6 +391,7 @@ class Command(PlanscapeCommand):
     ) -> Optional[Dict[str, Any]]:
         map_service_type = kwargs.pop("map_service_type", None)
         metadata = kwargs.pop("metadata", None)
+        layer_type = kwargs.pop("layer_type")
 
         try:
             if skip_existing:
@@ -409,7 +410,7 @@ class Command(PlanscapeCommand):
                 name=name,
                 dataset=dataset,
                 org=org,
-                layer_type=kwargs["layer_type"],
+                layer_type=layer_type,
                 geometry_type="NO_GEOM",
                 layer_info={},
                 metadata=metadata,
