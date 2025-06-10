@@ -14,6 +14,8 @@ import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.compo
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { map } from 'rxjs';
 import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { DataLayersRegistryService } from '../../explore/data-layers-registry';
 
 @Component({
   selector: 'app-explore-map',
@@ -28,6 +30,7 @@ import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.componen
     MapDataLayerComponent,
     LayerComponent,
   ],
+  providers: [DataLayersStateService],
   templateUrl: './explore-map.component.html',
   styleUrl: './explore-map.component.scss',
 })
@@ -68,8 +71,19 @@ export class ExploreMapComponent {
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
-    private authService: AuthService
+    private authService: AuthService,
+    private state: DataLayersStateService,
+    private registry: DataLayersRegistryService
   ) {}
+
+  ngOnInit() {
+    this.registry.set(this.mapNumber, this.state);
+    console.log('ExploreMap:', this.state.id);
+  }
+
+  ngOnDestroy() {
+    this.registry.clear(this.mapNumber);
+  }
 
   mapLoaded(map: MapLibreMap) {
     this.mapLibreMap = map;

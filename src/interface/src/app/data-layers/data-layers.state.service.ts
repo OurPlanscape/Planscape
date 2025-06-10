@@ -16,11 +16,10 @@ import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class DataLayersStateService {
   readonly limit = 20;
+  readonly id = Math.random();
 
   private _datasetsCurrentPage$ = new BehaviorSubject(1);
   datasetsCurrentPage$ = this._datasetsCurrentPage$.asObservable();
