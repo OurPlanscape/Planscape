@@ -63,8 +63,10 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
   handleTabChange(selectedTab: MatTabChangeEvent) {
     if (selectedTab && selectedTab.tab.textLabel === 'Base Layers') {
       this.baseLayersStateService.enableBaseLayerHover(true);
+      this.treatmentsState.enableTreatmentTooltips(false);
     } else {
       this.baseLayersStateService.enableBaseLayerHover(false);
+      this.treatmentsState.enableTreatmentTooltips(true);
     }
   }
 

@@ -23,7 +23,6 @@
       type="fill"
       [paint]="fillLayerPaint(layer)"
       [before]="before"></mgl-layer>
-
     <mgl-layer
       [id]="'layer_outline_' + layer.id"
       [source]="'source_' + layer.id"
@@ -36,6 +35,10 @@
   </ng-container>
 </div>
 <app-map-base-layer-tooltip
-  *ngIf="enableBaseLayerHover$ && (currentTooltipInfo$ | async) as toolTipInfo"
+  *ngIf="
+    enableBaseLayerHover$ &&
+    !onOwnershipLayers &&
+    (currentTooltipInfo$ | async) as toolTipInfo
+  "
   [content]="toolTipInfo.content"
   [lngLat]="toolTipInfo.longLat"></app-map-base-layer-tooltip>

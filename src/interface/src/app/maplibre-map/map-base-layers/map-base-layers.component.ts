@@ -20,10 +20,10 @@ import {
 } from 'maplibre-gl';
 import { MapBaseLayerTooltipComponent } from '../map-base-layer-tooltip/map-base-layer-tooltip.component';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
-import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
 import { BehaviorSubject, take } from 'rxjs';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
 @UntilDestroy()
 @Component({
@@ -55,12 +55,25 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     null
   );
   currentTooltipInfo$ = this._tooltipInfo$.asObservable();
+  onOwnershipLayers = false;
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
     private changeDetectorRef: ChangeDetectorRef,
     private zone: NgZone
-  ) {}
+  ) {
+    this.selectedLayers$
+      .pipe(untilDestroyed(this))
+      .subscribe((layers: BaseLayer[] | null) => {
+        if (!layers) {
+          this.onOwnershipLayers = false;
+        } else {
+          this.onOwnershipLayers = layers?.some((layer) =>
+            layer.path.includes('Ownership')
+          );
+        }
+      });
+  }
 
   ngOnInit(): void {
     this.setupMapListeners();
