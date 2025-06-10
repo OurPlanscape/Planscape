@@ -949,12 +949,6 @@ main_v2 <- function(scenario_id) {
         thresholds
       )
 
-      forsys_inputs <- data.table::rbindlist(
-        list(priorities, outputs, restrictions)
-      )
-
-      
-
       completed_at <- now_utc()
 
       result <- to_projects(
