@@ -3,7 +3,7 @@
   class="summary-tab-group"
   mat-align-tabs="start"
   disablePagination="true"
-  (selectedTabChange)="handleTabChange()">
+  (selectedTabChange)="handleSelectedTab($event)">
   <mat-tab label="Project Areas">
     <app-project-areas-tab></app-project-areas-tab>
   </mat-tab>

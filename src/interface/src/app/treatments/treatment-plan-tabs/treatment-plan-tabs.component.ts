@@ -1,5 +1,10 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
-import { MatTab, MatTabGroup, MatTabsModule } from '@angular/material/tabs';
+import {
+  MatTab,
+  MatTabChangeEvent,
+  MatTabGroup,
+  MatTabsModule,
+} from '@angular/material/tabs';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
@@ -28,20 +33,20 @@ export class TreatmentPlanTabsComponent implements AfterViewInit {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   ngAfterViewInit() {
-    this.handleTabChange();
-  }
-
-  handleTabChange() {
     const currentTab: MatTab =
       this.tabGroup._tabs.toArray()[this.tabGroup.selectedIndex ?? 1];
-    if (currentTab && currentTab.textLabel === 'Base Layers') {
+    this.setTabHoverOptions(currentTab);
+  }
+
+  handleSelectedTab(selectedTab: MatTabChangeEvent) {
+    this.setTabHoverOptions(selectedTab.tab);
+  }
+
+  setTabHoverOptions(selectedTab: MatTab) {
+    if (selectedTab && selectedTab.textLabel === 'Base Layers') {
       this.baseLayersStateService.enableBaseLayerHover(true);
       this.treatmentStateService.enableTreatmentTooltips(false);
-    } else if (currentTab && currentTab.textLabel === 'Data Layers') {
-      this.baseLayersStateService.enableBaseLayerHover(false);
-      this.treatmentStateService.enableTreatmentTooltips(true);
     } else {
-      // if any other tab is selected
       this.baseLayersStateService.enableBaseLayerHover(false);
       this.treatmentStateService.enableTreatmentTooltips(true);
     }
