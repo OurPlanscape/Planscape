@@ -22,10 +22,8 @@ import { MapBaseLayerTooltipComponent } from '../map-base-layer-tooltip/map-base
 import { BaseLayer, BaseLayerTooltipData } from '@types';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
-import { BehaviorSubject, take } from 'rxjs';
-import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 
-@UntilDestroy()
 @Component({
   selector: 'app-map-base-layers',
   standalone: true,
@@ -54,25 +52,22 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
   private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
     null
   );
-  currentTooltipInfo$ = this._tooltipInfo$.asObservable();
-  onOwnershipLayers = false;
+
+  currentTooltipInfo$: Observable<BaseLayerTooltipData | null> = combineLatest([this._tooltipInfo$, this.selectedLayers$]).pipe(
+    map(([info, layers]: [BaseLayerTooltipData | null, BaseLayer[] | null]) => {
+      if (!layers || layers?.some((layer) =>
+        layer.path.includes('Ownership'))) {
+        return null;
+      } else {
+        return info;
+      }
+    }));
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
     private changeDetectorRef: ChangeDetectorRef,
     private zone: NgZone
   ) {
-    this.selectedLayers$
-      .pipe(untilDestroyed(this))
-      .subscribe((layers: BaseLayer[] | null) => {
-        if (!layers) {
-          this.onOwnershipLayers = false;
-        } else {
-          this.onOwnershipLayers = layers?.some((layer) =>
-            layer.path.includes('Ownership')
-          );
-        }
-      });
   }
 
   ngOnInit(): void {

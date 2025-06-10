@@ -37,8 +37,7 @@
 <app-map-base-layer-tooltip
   *ngIf="
     enableBaseLayerHover$ &&
-    !onOwnershipLayers &&
     (currentTooltipInfo$ | async) as toolTipInfo
   "
-  [content]="toolTipInfo.content"
-  [lngLat]="toolTipInfo.longLat"></app-map-base-layer-tooltip>
+  [content]="toolTipInfo?.content ?? null"
+  [lngLat]="toolTipInfo?.longLat ?? null"></app-map-base-layer-tooltip>
