@@ -1,7 +1,7 @@
 library("logger")
 library(plumber)
 
-readRenviron("../.env")
+readRenviron("../../.env")
 source("../planscape/rscripts/base_forsys.R")
 
 
