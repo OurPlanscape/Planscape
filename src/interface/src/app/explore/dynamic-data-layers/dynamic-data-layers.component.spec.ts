@@ -8,10 +8,9 @@ describe('DynamicDataLayersComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DynamicDataLayersComponent]
-    })
-    .compileComponents();
-    
+      imports: [DynamicDataLayersComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(DynamicDataLayersComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -16,6 +16,7 @@ import { map } from 'rxjs';
 import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersRegistryService } from '../../explore/data-layers-registry';
+import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
 
 @Component({
   selector: 'app-explore-map',
@@ -29,6 +30,7 @@ import { DataLayersRegistryService } from '../../explore/data-layers-registry';
     MapBaseLayersComponent,
     MapDataLayerComponent,
     LayerComponent,
+    MapLayerColorLegendComponent,
   ],
   providers: [DataLayersStateService],
   templateUrl: './explore-map.component.html',
