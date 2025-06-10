@@ -196,6 +196,14 @@ class Command(PlanscapeCommand):
             required=False,
             type=str,
         )
+        create_parser.add_argument(
+            "--layer-type",
+            type=str,
+            required=False,
+            dest="layer_type",
+            choices=[c.name for c in DataLayerType],
+            help=f"Layer type, required if using --url. One of: {[c.name for c in DataLayerType]}",
+        )
         import_parser.add_argument(
             "--dataset",
             type=int,
@@ -284,6 +292,8 @@ class Command(PlanscapeCommand):
         pprint(data)
 
     def create(self, **kwargs) -> None:
+        if kwargs.get("url") and not kwargs.get("layer_type"):
+            raise ValueError("--layer-type is required when using --url")
         try:
             pprint(self._create_datalayer(**kwargs))
         except Exception as ex:
@@ -379,6 +389,9 @@ class Command(PlanscapeCommand):
         url: str | None = None,
         **kwargs,
     ) -> Optional[Dict[str, Any]]:
+        map_service_type = kwargs.pop("map_service_type", None)
+        metadata = kwargs.pop("metadata", None)
+
         try:
             if skip_existing:
                 check_existing_args = {
@@ -392,23 +405,21 @@ class Command(PlanscapeCommand):
             return {"info": str(datalayer_exists)}
 
         if url:
-            payload = self._create_datalayer_request(
+            return self._create_datalayer_request(
                 name=name,
                 dataset=dataset,
                 org=org,
-                layer_type=kwargs.get("layer_type") or "RASTER",
+                layer_type=kwargs["layer_type"],
                 geometry_type="NO_GEOM",
                 layer_info={},
-                metadata=kwargs.get("metadata"),
-                map_service_type=kwargs.get("map_service_type"),
+                metadata=metadata,
+                map_service_type=map_service_type,
                 url=url,
                 mimetype=None,
                 original_name=None,
                 **kwargs,
             )
-            return payload
 
-        map_service_type = kwargs.pop("map_service_type", None)
         s3_file = is_s3_file(input_file)
         original_file_path = Path(input_file)
         vsi_input_file = with_vsi_prefix(input_file)
@@ -435,7 +446,7 @@ class Command(PlanscapeCommand):
                             name=layer_name,
                             input_file=layer_file,
                             dataset=dataset,
-                            metadata=kwargs.get("metadata", None),
+                            metadata=metadata,
                             map_service_type=map_service_type,
                         )
                         subprocess.run(command)
@@ -445,7 +456,6 @@ class Command(PlanscapeCommand):
                     processed_files = [input_file]
 
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
-        metadata = kwargs.pop("metadata", None)
         if s3_file:
             original_name = input_file
         else:
