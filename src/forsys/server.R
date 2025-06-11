@@ -17,11 +17,11 @@ library("tidyr")
 library("uuid")
 
 readRenviron("../../.env")
-source("../planscape/rscripts/io_processing.R")
-source("../planscape/rscripts/queries.R")
-source("../planscape/rscripts/constants.R")
-source("../planscape/rscripts/base_forsys.R")
-source("../planscape/rscripts/postprocessing.R")
+import::from("../planscape/rscripts/io_processing.R", .all = TRUE)
+import::from("../planscape/rscripts/queries.R", .all = TRUE)
+import::from("../planscape/rscripts/constants.R", .all = TRUE)
+import::from("../planscape/rscripts/base_forsys.R", .all = TRUE)
+import::from("../planscape/rscripts/postprocessing.R", .all = TRUE)
 
 # server.R
 
