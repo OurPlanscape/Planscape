@@ -23,6 +23,7 @@ import {
 import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
 import { FeatureService } from '../../../features/feature.service';
 import { ScenarioState } from '../../../maplibre-map/scenario.state';
+import { KeyValue } from '@angular/common';
 
 @Component({
   selector: 'app-set-priorities',
@@ -145,5 +146,9 @@ export class SetPrioritiesComponent implements OnInit {
 
   get isNewScenario() {
     return this.scenarioStatus != 'NOT_STARTED';
+  }
+
+  reverseAlpha(a: KeyValue<string, any>, b: KeyValue<string, any>): number {
+    return b.key.localeCompare(a.key);
   }
 }
