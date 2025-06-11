@@ -1,8 +1,6 @@
 import { Injectable } from '@angular/core';
-import { TerraDraw, GeoJSONStoreFeatures } from 'terra-draw';
+import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
-import booleanValid from '@turf/boolean-valid';
-import area from '@turf/area';
 import bbox from '@turf/bbox';
 import { Geometry } from '@turf/helpers';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -150,15 +148,6 @@ export class DrawService {
     );
   }
 
-  getTotalAcreage() {
-    // sums acreage of all polygons
-    const polygons = this.getPolygonsSnapshot();
-    if (!polygons) {
-      return 0;
-    }
-    return polygons.reduce((total, p) => total + this.calculateAcreage(p), 0);
-  }
-
   clearFeatures() {
     this._terraDraw?.clear();
   }
@@ -182,16 +171,5 @@ export class DrawService {
     } else {
       return polygons[0].geometry;
     }
-  }
-
-  //TODO: use updated acreage measurement when added
-  calculateAcreage(polygon: GeoJSONStoreFeatures): number {
-    if (!booleanValid(polygon)) {
-      return 0;
-    }
-    const CONVERSION_SQM_ACRES = 4046.8564213562374;
-    const areaInSquareMeters = area(polygon);
-    const areaInAcres = areaInSquareMeters / CONVERSION_SQM_ACRES;
-    return areaInAcres;
   }
 }

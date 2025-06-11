@@ -12,6 +12,9 @@ import { Geometry } from '@turf/helpers';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
 import { Router } from '@angular/router';
+import { PlanService } from '@services';
+import { GeoJSON } from 'geojson';
+import { take } from 'rxjs';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -37,6 +40,7 @@ export class ExploreModesToggleComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dialog: MatDialog,
     private drawService: DrawService,
+    private planService: PlanService,
     private router: Router
   ) {}
 
@@ -62,14 +66,28 @@ export class ExploreModesToggleComponent {
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
     } else {
-      const area = this.drawService.getTotalAcreage();
-      const shape = this.drawService.getGeometry();
-      if (shape) {
-        this.openPlanCreateDialog(area, shape)
-          .afterClosed()
-          .subscribe((id) => {
-            if (id) {
-              this.router.navigate(['plan', id]);
+      const polygons = this.drawService.getPolygonsSnapshot();
+      if (polygons) {
+        const geoJson: GeoJSON = {
+          type: 'FeatureCollection',
+          features: polygons,
+        };
+        // TODO: replace with frontend acreage function when ready
+        this.planService
+          .getTotalArea(geoJson.features[0].geometry)
+          .pipe(take(1))
+          .subscribe((acres: number) => {
+            if (acres && geoJson) {
+              this.openPlanCreateDialog(
+                acres,
+                geoJson.features[0].geometry as Geometry
+              )
+                .afterClosed()
+                .subscribe((id) => {
+                  if (id) {
+                    this.router.navigate(['plan', id]);
+                  }
+                });
             }
           });
       }
