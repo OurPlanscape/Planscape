@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import {
-  MatTab,
   MatTabChangeEvent,
   MatTabGroup,
   MatTabsModule,
@@ -30,20 +29,21 @@ import { TreatmentsState } from '../treatments.state';
   styleUrl: './treatment-plan-tabs.component.scss',
 })
 export class TreatmentPlanTabsComponent implements AfterViewInit {
+  private readonly BASE_LAYER_INDEX = 2;
+
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   ngAfterViewInit() {
-    const currentTab: MatTab =
-      this.tabGroup._tabs.toArray()[this.tabGroup.selectedIndex ?? 1];
-    this.setTabHoverOptions(currentTab);
+    const currentIndex = this.tabGroup.selectedIndex;
+    this.setTabHoverOptions(currentIndex);
   }
 
   handleSelectedTab(selectedTab: MatTabChangeEvent) {
-    this.setTabHoverOptions(selectedTab.tab);
+    this.setTabHoverOptions(selectedTab.index);
   }
 
-  setTabHoverOptions(selectedTab: MatTab) {
-    if (selectedTab && selectedTab.textLabel === 'Base Layers') {
+  setTabHoverOptions(curIndex: number | null) {
+    if (curIndex === this.BASE_LAYER_INDEX) {
       this.baseLayersStateService.enableBaseLayerHover(true);
       this.treatmentStateService.enableTreatmentTooltips(false);
     } else {

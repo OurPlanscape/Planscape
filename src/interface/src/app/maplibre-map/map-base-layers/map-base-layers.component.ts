@@ -53,22 +53,27 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
     null
   );
 
-  currentTooltipInfo$: Observable<BaseLayerTooltipData | null> = combineLatest([this._tooltipInfo$, this.selectedLayers$]).pipe(
+  currentTooltipInfo$: Observable<BaseLayerTooltipData | null> = combineLatest([
+    this._tooltipInfo$,
+    this.selectedLayers$,
+  ]).pipe(
     map(([info, layers]: [BaseLayerTooltipData | null, BaseLayer[] | null]) => {
-      if (!layers || layers?.some((layer) =>
-        layer.path.includes('Ownership'))) {
+      if (
+        !layers ||
+        layers?.some((layer) => layer.path.includes('Ownership'))
+      ) {
         return null;
       } else {
         return info;
       }
-    }));
+    })
+  );
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
     private changeDetectorRef: ChangeDetectorRef,
     private zone: NgZone
-  ) {
-  }
+  ) {}
 
   ngOnInit(): void {
     this.setupMapListeners();
