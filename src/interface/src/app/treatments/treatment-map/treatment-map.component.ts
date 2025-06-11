@@ -167,6 +167,8 @@ export class TreatmentMapComponent {
   mouseLngLat: LngLat | null = null;
   hoveredProjectAreaId$ = new Subject<number | null>();
 
+  treatmentTooltipsEnabled$ = this.treatmentsState.treatmentTooltipsEnabled$;
+
   hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
     combineLatest([
       this.treatmentsState.summary$,

@@ -1,5 +1,4 @@
-import { Component, OnDestroy, ViewChild } from '@angular/core';
-import { AsyncPipe, NgIf } from '@angular/common';
+import { AfterViewInit, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { SharedModule } from '@shared';
 import { MatDialogModule } from '@angular/material/dialog';
@@ -12,7 +11,6 @@ import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
 import { AcresTreatedComponent } from '../acres-treated/acres-treated.component';
-import { LeftLoadingOverlayComponent } from '../left-loading-overlay/left-loading-overlay.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers.component';
@@ -26,15 +24,12 @@ import { BaseLayersStateService } from '../../base-layers/base-layers.state.serv
   selector: 'app-project-area',
   standalone: true,
   imports: [
-    AsyncPipe,
     MatDialogModule,
     MatDividerModule,
     MatTabsModule,
-    NgIf,
     ProjectAreaTreatmentsTabComponent,
     SharedModule,
     AcresTreatedComponent,
-    LeftLoadingOverlayComponent,
     FeaturesModule,
     DataLayersComponent,
     BaseLayersComponent,
@@ -42,7 +37,9 @@ import { BaseLayersStateService } from '../../base-layers/base-layers.state.serv
   templateUrl: './treatment-project-area.component.html',
   styleUrl: './treatment-project-area.component.scss',
 })
-export class TreatmentProjectAreaComponent implements OnDestroy {
+export class TreatmentProjectAreaComponent implements OnDestroy, AfterViewInit {
+  private readonly BASE_LAYER_INDEX = 2;
+
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   constructor(
@@ -60,11 +57,21 @@ export class TreatmentProjectAreaComponent implements OnDestroy {
       });
   }
 
-  handleTabChange(selectedTab: MatTabChangeEvent) {
-    if (selectedTab && selectedTab.tab.textLabel === 'Base Layers') {
+  ngAfterViewInit() {
+    const currentIndex = this.tabGroup.selectedIndex;
+    this.setTabHoverOptions(currentIndex);
+  }
+  handleSelectedTab(selectedTab: MatTabChangeEvent) {
+    this.setTabHoverOptions(selectedTab.index);
+  }
+
+  setTabHoverOptions(curIndex: number | null) {
+    if (curIndex === this.BASE_LAYER_INDEX) {
       this.baseLayersStateService.enableBaseLayerHover(true);
+      this.treatmentsState.enableTreatmentTooltips(false);
     } else {
       this.baseLayersStateService.enableBaseLayerHover(false);
+      this.treatmentsState.enableTreatmentTooltips(true);
     }
   }
 

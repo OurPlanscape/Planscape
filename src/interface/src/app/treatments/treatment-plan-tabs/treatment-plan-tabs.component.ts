@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, ViewChild } from '@angular/core';
 import {
-  MatTab,
   MatTabChangeEvent,
   MatTabGroup,
   MatTabsModule,
@@ -13,6 +12,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { skip } from 'rxjs';
 import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
+import { TreatmentsState } from '../treatments.state';
 
 @UntilDestroy()
 @Component({
@@ -29,29 +29,33 @@ import { BaseLayersStateService } from '../../base-layers/base-layers.state.serv
   styleUrl: './treatment-plan-tabs.component.scss',
 })
 export class TreatmentPlanTabsComponent implements AfterViewInit {
+  private readonly BASE_LAYER_INDEX = 2;
+
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
-  handleTabChange(tabEvent: MatTabChangeEvent) {
-    this.setBaseLayerPainting();
-  }
-
   ngAfterViewInit() {
-    this.setBaseLayerPainting();
+    const currentIndex = this.tabGroup.selectedIndex;
+    this.setTabHoverOptions(currentIndex);
   }
 
-  setBaseLayerPainting() {
-    const currentTab: MatTab =
-      this.tabGroup._tabs.toArray()[this.tabGroup.selectedIndex ?? 1];
-    if (currentTab && currentTab.textLabel === 'Base Layers') {
+  handleSelectedTab(selectedTab: MatTabChangeEvent) {
+    this.setTabHoverOptions(selectedTab.index);
+  }
+
+  setTabHoverOptions(curIndex: number | null) {
+    if (curIndex === this.BASE_LAYER_INDEX) {
       this.baseLayersStateService.enableBaseLayerHover(true);
+      this.treatmentStateService.enableTreatmentTooltips(false);
     } else {
       this.baseLayersStateService.enableBaseLayerHover(false);
+      this.treatmentStateService.enableTreatmentTooltips(true);
     }
   }
 
   constructor(
     private dataLayersStateService: DataLayersStateService,
-    private baseLayersStateService: BaseLayersStateService
+    private baseLayersStateService: BaseLayersStateService,
+    private treatmentStateService: TreatmentsState
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
