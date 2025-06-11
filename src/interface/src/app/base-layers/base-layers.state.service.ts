@@ -34,9 +34,16 @@ export class BaseLayersStateService {
           name: categoryName,
           isMultiSelect: this.isCategoryMultiSelect(categoryName),
         },
-        layers: [...categoryLayers].sort((a, b) =>
-          a.name.localeCompare(b.name)
-        ),
+        layers: [...categoryLayers].sort((a, b) => {
+          // push any “order = -1” item to the very end:
+          const aOrder = a.metadata?.modules?.toc?.order;
+          const bOrder = b.metadata?.modules?.toc?.order;
+
+          if (aOrder === -1 && bOrder !== -1) return 1;
+          if (bOrder === -1 && aOrder !== -1) return -1;
+          // otherwise, alphabetical
+          return a.name.localeCompare(b.name);
+        }),
       }));
     })
   );

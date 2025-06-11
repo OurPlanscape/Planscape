@@ -258,7 +258,7 @@ rename_col <- function(name) {
     "",
     name
   )
-  return(new_name)
+  new_name
 }
 
 get_cost_per_acre <- function(scenario) {
@@ -701,6 +701,7 @@ call_forsys <- function(
   forsys_inputs <- data.table::rbindlist(
     list(priorities, outputs, restrictions)
   )
+  data_inputs <- data.table::rbindlist(list(priorities, outputs))
   # we use this to drop priorities, that are repeated in here - we need those
   # so front-end can show data from priorities as well
   if (FORSYS_V2) {
@@ -725,22 +726,21 @@ call_forsys <- function(
   }
 
   if (FORSYS_V2) {
-    if (length(priorities$name) > 1) {
-      weights <- get_weights(priorities, configuration)
-      fields <- paste0("datalayer_", priorities[["id"]])
-      spm_fields <- paste0(fields, "_SPM")
-      stand_data <- stand_data %>%
-        forsys::calculate_spm(fields = fields) %>%
-        forsys::calculate_pcp(fields = fields) %>%
-        forsys::combine_priorities(
-          fields = spm_fields,
-          weights = weights,
-          new_field = "priority"
-        )
+    # new code will calculate spm and pcp for all inputs, excludind thresholds
+    # this is needed because we have layers that can be inputs, but are not part
+    # of solving our equations - such as slope and distance from roads
+    weights <- get_weights(priorities, configuration)
+    fields <- paste0("datalayer_", priorities[["id"]])
+    spm_fields <- paste0(fields, "_SPM")
+    stand_data <- stand_data %>%
+      forsys::calculate_spm(fields=fields) %>% 
+      forsys::calculate_pcp(fields=fields) %>% 
+      forsys::combine_priorities(
+        fields=spm_fields,
+        weights=weights,
+        new_field="priority"
+      )
       scenario_priorities <- c("priority")
-    } else {
-      scenario_priorities <- paste0("datalayer_", first(priorities$id))
-    }
   } else {
     if (length(priorities$condition_name) > 1) {
       weights <- get_weights(priorities, configuration)
