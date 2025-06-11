@@ -17,8 +17,11 @@ library("tidyr")
 library("uuid")
 
 readRenviron("../../.env")
+source("../planscape/rscripts/io_processing.R")
+source("../planscape/rscripts/queries.R")
+source("../planscape/rscripts/constants.R")
 source("../planscape/rscripts/base_forsys.R")
-
+source("../planscape/rscripts/postprocessing.R")
 
 # server.R
 
