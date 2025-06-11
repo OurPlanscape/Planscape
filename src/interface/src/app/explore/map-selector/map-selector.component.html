@@ -10,12 +10,12 @@
         Map {{ mapId }}
       </button>
     </div>
-
     <!-- We have a datalayers selector for each mapId and we display it or not based on the selectedMapId -->
     <div class="data-layers-wrapper">
       <ng-container *ngFor="let mapId of mapsArray$ | async">
-        <app-data-layers
-          *ngIf="(selectedMapId$ | async) === mapId"></app-data-layers>
+        <app-dynamic-data-layers
+          [mapId]="mapId"
+          *ngIf="(selectedMapId$ | async) === mapId"></app-dynamic-data-layers>
       </ng-container>
     </div>
   </div>

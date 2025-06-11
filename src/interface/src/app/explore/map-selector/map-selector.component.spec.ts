@@ -1,7 +1,15 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import {
+  ComponentFixture,
+  fakeAsync,
+  TestBed,
+  tick,
+} from '@angular/core/testing';
 import { MapSelectorComponent } from './map-selector.component';
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, skip } from 'rxjs';
 import { MultiMapConfigState } from 'src/app/maplibre-map/multi-map-config.state';
+import { DataLayersRegistryService } from '../data-layers-registry';
+import { DynamicDataLayersComponent } from '../dynamic-data-layers/dynamic-data-layers.component';
+import { MockDeclaration } from 'ng-mocks';
 
 describe('MapSelectorComponent', () => {
   let component: MapSelectorComponent;
@@ -9,11 +17,13 @@ describe('MapSelectorComponent', () => {
 
   let layoutModeMock$: BehaviorSubject<number>;
   let selectedMapIdMock$: BehaviorSubject<number>;
+  let sizeMock$: BehaviorSubject<number>;
   let setSelectedMapSpy: jasmine.Spy;
 
   beforeEach(async () => {
     layoutModeMock$ = new BehaviorSubject(4);
     selectedMapIdMock$ = new BehaviorSubject(1);
+    sizeMock$ = new BehaviorSubject(0);
     setSelectedMapSpy = jasmine.createSpy('setSelectedMap');
 
     const multiMapConfigStateMock = {
@@ -26,7 +36,9 @@ describe('MapSelectorComponent', () => {
       imports: [MapSelectorComponent],
       providers: [
         { provide: MultiMapConfigState, useValue: multiMapConfigStateMock },
+        { provide: DataLayersRegistryService, useValue: { size$: sizeMock$ } },
       ],
+      declarations: [MockDeclaration(DynamicDataLayersComponent)],
     }).compileComponents();
 
     fixture = TestBed.createComponent(MapSelectorComponent);
@@ -38,20 +50,16 @@ describe('MapSelectorComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should create an array of map numbers based on layoutMode$', async () => {
-    const result = await firstValueFrom(component.mapsArray$);
-    expect(result).toEqual([1, 2, 3, 4]);
-  });
+  it('should create an array of map numbers based on DataLayersRegistryService', fakeAsync(() => {
+    sizeMock$.next(4);
+    component.mapsArray$.pipe(skip(1)).subscribe((s) => {
+      expect(s).toEqual([1, 2, 3, 4]);
+    });
+    tick();
+  }));
 
   it('should call setSelectedMap with a given id when a map is clicked', () => {
     component.setSelectedMap(3);
     expect(setSelectedMapSpy).toHaveBeenCalledWith(3);
-  });
-
-  it('should update mapsArray$ when layoutMode$ changes', async () => {
-    layoutModeMock$.next(2);
-    fixture.detectChanges();
-    const result = await firstValueFrom(component.mapsArray$);
-    expect(result).toEqual([1, 2]);
   });
 });
