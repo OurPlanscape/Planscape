@@ -1,4 +1,4 @@
-import { AsyncPipe, JsonPipe, NgClass, NgFor, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgFor, NgIf } from '@angular/common';
 import { Component } from '@angular/core';
 import { ButtonComponent } from '@styleguide';
 import { delay, map, startWith } from 'rxjs';
@@ -18,7 +18,6 @@ import { DataLayersRegistryService } from '../data-layers-registry';
     ButtonComponent,
     DataLayersComponent,
     DynamicDataLayersComponent,
-    JsonPipe,
   ],
   templateUrl: './map-selector.component.html',
   styleUrl: './map-selector.component.scss',
