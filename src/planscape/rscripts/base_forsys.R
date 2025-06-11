@@ -808,6 +808,8 @@ call_forsys <- function(
     patchmax_sample_frac = sample_frac,
     patchmax_sample_seed = configuration$seed,
   )
+  summarized_metrics <- summarize_metrics(out, stand_data)
+  print(summarized_metrics)
   return(out)
 }
 
@@ -948,6 +950,9 @@ main_v2 <- function(scenario_id) {
       )
 
       completed_at <- now_utc()
+      forsys_inputs <- data.table::rbindlist(
+        list(priorities, secondary_metrics)
+      )
 
       result <- to_projects(
         connection,
@@ -955,6 +960,7 @@ main_v2 <- function(scenario_id) {
         forsys_output,
         new_column_for_postprocessing = new_column_for_postprocessing
       )
+
       upsert_scenario_result(
         connection,
         now,
