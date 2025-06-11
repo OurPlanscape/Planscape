@@ -1,5 +1,11 @@
 @import 'colors';
 
+.map-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
 .map-selector {
   display: flex;
   flex-direction: row;
@@ -16,4 +22,10 @@
 .link-button {
   background: transparent;
   color: $color-md-gray;
+}
+
+.data-layers-wrapper {
+  height: 100%;
+  flex: 1;
+  overflow-y: auto;
 }

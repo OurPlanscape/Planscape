@@ -1,18 +1,22 @@
 <ng-container *ngIf="layoutMode$ | async as layoutMode">
-  <div class="map-selector" *ngIf="layoutMode > 1">
-    <button
-      sg-button
-      *ngFor="let mapId of mapsArray$ | async"
-      [variant]="(selectedMapId$ | async) === mapId ? 'primary' : 'link'"
-      (click)="setSelectedMap(mapId)"
-      class="map-btn">
-      Map {{ mapId }}
-    </button>
-  </div>
+  <div class="map-container" *ngIf="layoutMode > 1">
+    <div class="map-selector">
+      <button
+        sg-button
+        *ngFor="let mapId of mapsArray$ | async"
+        [variant]="(selectedMapId$ | async) === mapId ? 'primary' : 'link'"
+        (click)="setSelectedMap(mapId)"
+        class="map-btn">
+        Map {{ mapId }}
+      </button>
+    </div>
 
-  <!-- We have a datalayers selector for each mapId and we display it or not based on the selectedMapId -->
-  <ng-container *ngFor="let mapId of mapsArray$ | async">
-    <app-data-layers
-      *ngIf="(selectedMapId$ | async) === mapId"></app-data-layers>
-  </ng-container>
+    <!-- We have a datalayers selector for each mapId and we display it or not based on the selectedMapId -->
+    <div class="data-layers-wrapper">
+      <ng-container *ngFor="let mapId of mapsArray$ | async">
+        <app-data-layers
+          *ngIf="(selectedMapId$ | async) === mapId"></app-data-layers>
+      </ng-container>
+    </div>
+  </div>
 </ng-container>
