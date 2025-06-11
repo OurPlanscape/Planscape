@@ -102,6 +102,7 @@ load-rasters:
 
 install-dependencies-backend:
 	pip install poetry setuptools && python3 -m poetry export -f requirements.txt --with dev --without-hashes --output requirements.txt && pip install -r requirements.txt
+	Rscript install.R
 
 deploy-backend: install-dependencies-backend migrate restart
 
