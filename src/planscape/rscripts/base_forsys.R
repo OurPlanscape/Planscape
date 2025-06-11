@@ -808,7 +808,7 @@ call_forsys <- function(
     patchmax_sample_frac = sample_frac,
     patchmax_sample_seed = configuration$seed,
   )
-  summarized_metrics <- summarize_metrics(out, stand_data)
+  summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
   print(summarized_metrics)
   return(out)
 }
