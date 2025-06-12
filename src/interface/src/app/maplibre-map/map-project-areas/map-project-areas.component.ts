@@ -16,7 +16,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { AsyncPipe, NgIf } from '@angular/common';
 import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
-import { BehaviorSubject, filter, map } from 'rxjs';
+import { filter, map, Subject } from 'rxjs';
 import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
@@ -58,7 +58,7 @@ export class MapProjectAreasComponent implements OnInit {
 
   private readonly martinSource = MARTIN_SOURCES.projectAreasByScenario;
 
-  hoveredProjectAreaId$ = new BehaviorSubject<number | null>(null);
+  hoveredProjectAreaId$ = new Subject<number | null>();
   hoveredProjectAreaFromFeatures: MapGeoJSONFeature | null = null;
   opacity: number = 0.5;
 
