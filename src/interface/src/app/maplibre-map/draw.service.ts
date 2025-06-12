@@ -82,7 +82,6 @@ export class DrawService {
     }
     this._terraDraw.setMode(mode);
     this._currentDrawingMode.next(this._terraDraw.getMode());
-
   }
 
   deleteSelectedFeature() {
