@@ -118,6 +118,9 @@ const routes: Routes = [
             fallback: '/map',
           }),
         ],
+        resolve: {
+          planInit: planLoaderResolver,
+        },
       },
       {
         path: 'explore/:id',

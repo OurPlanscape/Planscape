@@ -80,4 +80,8 @@ export class PlanState {
   setPlanId(id: number) {
     this._currentPlanId$.next(id);
   }
+
+  resetPlanId() {
+    this._currentPlanId$.next(null);
+  }
 }
