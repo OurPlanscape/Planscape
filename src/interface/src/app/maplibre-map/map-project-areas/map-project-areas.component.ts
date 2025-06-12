@@ -3,12 +3,13 @@ import {
   LayerComponent,
   VectorSourceComponent,
 } from '@maplibre/ngx-maplibre-gl';
+import type { ExpressionSpecification } from 'maplibre-gl';
 import {
   LayerSpecification,
+  LngLat,
   Map as MapLibreMap,
   MapGeoJSONFeature,
   MapMouseEvent,
-  LngLat,
   Point,
 } from 'maplibre-gl';
 import { MatIconModule } from '@angular/material/icon';
@@ -17,7 +18,6 @@ import { MARTIN_SOURCES } from '../../treatments/map.sources';
 import { BASE_COLORS, LABEL_PAINT } from '../../treatments/map.styles';
 import { filter, map, Subject } from 'rxjs';
 import { getColorForProjectPosition } from 'src/app/plan/plan-helpers';
-import type { ExpressionSpecification } from 'maplibre-gl';
 import { MapConfigState } from '../map-config.state';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ScenarioState } from '../scenario.state';

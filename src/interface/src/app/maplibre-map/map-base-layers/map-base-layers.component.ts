@@ -132,6 +132,8 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
           this.setTooltipData(tooltipInfo);
           this.paintHover(features[0]);
         }
+      } else {
+        this.hoverOutLayer();
       }
     });
   }

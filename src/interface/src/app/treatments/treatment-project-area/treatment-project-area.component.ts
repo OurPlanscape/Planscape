@@ -2,11 +2,7 @@ import { AfterViewInit, Component, OnDestroy, ViewChild } from '@angular/core';
 import { MatDividerModule } from '@angular/material/divider';
 import { SharedModule } from '@shared';
 import { MatDialogModule } from '@angular/material/dialog';
-import {
-  MatTabChangeEvent,
-  MatTabGroup,
-  MatTabsModule,
-} from '@angular/material/tabs';
+import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { ProjectAreaTreatmentsTabComponent } from '../treatments-tab/treatments-tab.component';
 import { SelectedStandsState } from '../treatment-map/selected-stands.state';
 import { TreatmentsState } from '../treatments.state';
@@ -38,8 +34,6 @@ import { BaseLayersStateService } from '../../base-layers/base-layers.state.serv
   styleUrl: './treatment-project-area.component.scss',
 })
 export class TreatmentProjectAreaComponent implements OnDestroy, AfterViewInit {
-  private readonly BASE_LAYER_INDEX = 2;
-
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
   constructor(
@@ -58,21 +52,7 @@ export class TreatmentProjectAreaComponent implements OnDestroy, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    const currentIndex = this.tabGroup.selectedIndex;
-    this.setTabHoverOptions(currentIndex);
-  }
-  handleSelectedTab(selectedTab: MatTabChangeEvent) {
-    this.setTabHoverOptions(selectedTab.index);
-  }
-
-  setTabHoverOptions(curIndex: number | null) {
-    if (curIndex === this.BASE_LAYER_INDEX) {
-      this.baseLayersStateService.enableBaseLayerHover(true);
-      this.treatmentsState.enableTreatmentTooltips(false);
-    } else {
-      this.baseLayersStateService.enableBaseLayerHover(false);
-      this.treatmentsState.enableTreatmentTooltips(true);
-    }
+    this.baseLayersStateService.enableBaseLayerHover(false);
   }
 
   projectAreaId?: number;
@@ -80,5 +60,6 @@ export class TreatmentProjectAreaComponent implements OnDestroy, AfterViewInit {
   ngOnDestroy(): void {
     this.selectedStandsState.clearStands();
     this.treatmentsState.setShowApplyTreatmentsDialog(false);
+    this.baseLayersStateService.enableBaseLayerHover(true);
   }
 }
