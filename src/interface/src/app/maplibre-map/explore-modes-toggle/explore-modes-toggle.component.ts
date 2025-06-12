@@ -43,7 +43,7 @@ export class ExploreModesToggleComponent {
     private drawService: DrawService,
     private planService: PlanService,
     private router: Router
-  ) { }
+  ) {}
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
