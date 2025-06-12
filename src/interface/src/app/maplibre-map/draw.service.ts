@@ -66,8 +66,10 @@ export class DrawService {
   }
 
   stop() {
-    //stops all drawing
-    this._terraDraw?.stop();
+    if (!this._terraDraw || !this._terraDraw.enabled) {
+      return;
+    }
+    this._terraDraw.stop();
   }
 
   getMode() {
@@ -75,10 +77,11 @@ export class DrawService {
   }
 
   setMode(mode: DrawMode) {
-    if (this._terraDraw) {
-      this._terraDraw.setMode(mode);
-      this._currentDrawingMode.next(this._terraDraw.getMode());
+    if (!this._terraDraw || !this._terraDraw.enabled) {
+      return;
     }
+    this._terraDraw.setMode(mode);
+    this._currentDrawingMode.next(this._terraDraw.getMode());
   }
 
   deleteSelectedFeature() {
