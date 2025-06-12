@@ -6,7 +6,6 @@ library("forsys")
 library("friendlyeval")
 library("glue")
 library("import")
-library("logger")
 library("optparse")
 library("purrr")
 library("rjson")
@@ -48,10 +47,16 @@ function(res, req, scenario_id=NULL) {
     return(list(error = "Scenario ID must be an integer."))
   })
   tryCatch({
-    main(scenario_id)
+    FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
+    if (FORSYS_V2) {
+      main_v2(scenario_id)
+    } else {
+      main(scenario_id)
+    }
     return(list("Forsys run completed."))
   }, error = function(e) {
     res$status <- 500
+    log_error("Forsys run failed: {e}")
     return(list("Forsys run failed.", error = e$message))
   })
 }
