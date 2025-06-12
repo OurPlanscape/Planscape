@@ -28,7 +28,11 @@ get_connection <- function() {
 }
 
 get_output_dir <- function(scenario) {
-  return(paste0(getwd(), "/output/", scenario$uuid))
+  output_dir <- Sys.getenv("FORSYS_OUTPUT_DIR", "")
+  if (output_dir == "") {
+    output_dir <- paste0(getwd(), "/output/")
+  }
+  return(paste0(output_dir, scenario$uuid))
 }
 
 priority_to_condition <- function(connection, scenario, priority) {
