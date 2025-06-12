@@ -48,7 +48,7 @@ export class BaseLayersStateService {
     })
   );
 
-  private _enableBaseLayerHover$ = new BehaviorSubject<boolean>(false);
+  private _enableBaseLayerHover$ = new BehaviorSubject<boolean>(true);
   enableBaseLayerHover$ = this._enableBaseLayerHover$.asObservable();
 
   private _selectedBaseLayers$ = new BehaviorSubject<BaseLayer[] | null>(null);

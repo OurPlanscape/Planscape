@@ -60,17 +60,17 @@ export class TreatmentProjectAreaComponent implements OnDestroy, AfterViewInit {
   ngAfterViewInit() {
     const currentIndex = this.tabGroup.selectedIndex;
     this.setTabHoverOptions(currentIndex);
+    this.baseLayersStateService.enableBaseLayerHover(false);
   }
+
   handleSelectedTab(selectedTab: MatTabChangeEvent) {
     this.setTabHoverOptions(selectedTab.index);
   }
 
   setTabHoverOptions(curIndex: number | null) {
     if (curIndex === this.BASE_LAYER_INDEX) {
-      this.baseLayersStateService.enableBaseLayerHover(true);
       this.treatmentsState.enableTreatmentTooltips(false);
     } else {
-      this.baseLayersStateService.enableBaseLayerHover(false);
       this.treatmentsState.enableTreatmentTooltips(true);
     }
   }

@@ -1,9 +1,5 @@
-import { AfterViewInit, Component, ViewChild } from '@angular/core';
-import {
-  MatTabChangeEvent,
-  MatTabGroup,
-  MatTabsModule,
-} from '@angular/material/tabs';
+import { Component, ViewChild } from '@angular/core';
+import { MatTabGroup, MatTabsModule } from '@angular/material/tabs';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { FeaturesModule } from 'src/app/features/features.module';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
@@ -11,8 +7,6 @@ import { BaseLayersComponent } from 'src/app/base-layers/base-layers/base-layers
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { skip } from 'rxjs';
-import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
-import { TreatmentsState } from '../treatments.state';
 
 @UntilDestroy()
 @Component({
@@ -28,35 +22,10 @@ import { TreatmentsState } from '../treatments.state';
   templateUrl: './treatment-plan-tabs.component.html',
   styleUrl: './treatment-plan-tabs.component.scss',
 })
-export class TreatmentPlanTabsComponent implements AfterViewInit {
-  private readonly BASE_LAYER_INDEX = 2;
-
+export class TreatmentPlanTabsComponent {
   @ViewChild('tabGroup') tabGroup!: MatTabGroup;
 
-  ngAfterViewInit() {
-    const currentIndex = this.tabGroup.selectedIndex;
-    this.setTabHoverOptions(currentIndex);
-  }
-
-  handleSelectedTab(selectedTab: MatTabChangeEvent) {
-    this.setTabHoverOptions(selectedTab.index);
-  }
-
-  setTabHoverOptions(curIndex: number | null) {
-    if (curIndex === this.BASE_LAYER_INDEX) {
-      this.baseLayersStateService.enableBaseLayerHover(true);
-      this.treatmentStateService.enableTreatmentTooltips(false);
-    } else {
-      this.baseLayersStateService.enableBaseLayerHover(false);
-      this.treatmentStateService.enableTreatmentTooltips(true);
-    }
-  }
-
-  constructor(
-    private dataLayersStateService: DataLayersStateService,
-    private baseLayersStateService: BaseLayersStateService,
-    private treatmentStateService: TreatmentsState
-  ) {
+  constructor(private dataLayersStateService: DataLayersStateService) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))
       .subscribe((path) => {
