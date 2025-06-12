@@ -113,6 +113,7 @@ export class ExploreMapComponent {
         closingPointOutlineColor: '#0000ee',
         closingPointOutlineWidth: 2,
       },
+      pointerDistance: 10, // reduce snap distance / auto-finish sensitivity
     });
     const selectMode = new TerraDrawSelectMode(DefaultSelectConfig);
     this.drawService.initializeTerraDraw(this.mapLibreMap, [
