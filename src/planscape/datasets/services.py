@@ -309,6 +309,7 @@ def create_datalayer(
         storage_type = StorageTypeChoices.EXTERNAL_SERVICE
         original_file_name = None
         upload_to = {}
+        kwargs["status"] = DataLayerStatus.READY
 
     if original_name:
         storage_url = get_storage_url(

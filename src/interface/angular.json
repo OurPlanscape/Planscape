@@ -15,13 +15,17 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:browser",
+          "builder": "@ngx-env/builder:browser",
           "options": {
             "outputPath": "dist/interface",
             "index": "src/index.html",
             "main": "src/main.ts",
             "polyfills": "src/polyfills.ts",
             "tsConfig": "tsconfig.app.json",
+            "ngxEnv": {
+              "prefix": "FEATURE_FLAGS",
+              "root": "../../"
+            },
             "assets": [
               "src/favicon.ico",
               "src/assets",
@@ -79,10 +83,6 @@
                 {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.prod.ts"
-                },
-                {
-                  "replace": "src/app/features/features.json",
-                  "with": "src/app/features/features.prod.json"
                 }
               ],
               "outputHashing": "all"
@@ -96,10 +96,6 @@
               "namedChunks": true,
               "fileReplacements": [
                 {
-                  "replace": "src/app/features/features.json",
-                  "with": "src/app/features/features.dev.json"
-                },
-                {
                   "replace": "src/environments/environment.ts",
                   "with": "src/environments/environment.dev.ts"
                 }
@@ -109,7 +105,7 @@
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@ngx-env/builder:dev-server",
           "configurations": {
             "production": {
               "buildTarget": "interface:build:production"
@@ -119,10 +115,11 @@
               "proxyConfig": "proxy.conf.json"
             }
           },
-          "defaultConfiguration": "development"
+          "defaultConfiguration": "development",
+          "options": {}
         },
         "extract-i18n": {
-          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "builder": "@ngx-env/builder:extract-i18n",
           "options": {
             "buildTarget": "interface:build"
           }

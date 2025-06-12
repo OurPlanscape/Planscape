@@ -1,6 +1,17 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import { ControlComponent, MapComponent } from '@maplibre/ngx-maplibre-gl';
+import {
+  ControlComponent,
+  LayerComponent,
+  MapComponent,
+} from '@maplibre/ngx-maplibre-gl';
 import { FrontendConstants } from '../../map/map.constants';
 import {
   LngLat,
@@ -22,6 +33,10 @@ import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-t
 import { DrawService, DefaultSelectConfig } from '../draw.service';
 import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
 import { FeatureId } from 'terra-draw/dist/extend';
+import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { DataLayersRegistryService } from '../../explore/data-layers-registry';
+import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
 
 @UntilDestroy()
 @Component({
@@ -37,11 +52,15 @@ import { FeatureId } from 'terra-draw/dist/extend';
     MapBaseLayersComponent,
     MapDrawingToolboxComponent,
     MapTooltipComponent,
+    MapDataLayerComponent,
+    LayerComponent,
+    MapLayerColorLegendComponent,
   ],
+  providers: [DataLayersStateService],
   templateUrl: './explore-map.component.html',
   styleUrl: './explore-map.component.scss',
 })
-export class ExploreMapComponent {
+export class ExploreMapComponent implements OnInit, OnDestroy {
   /**
    * Maplibre defaults
    */
@@ -74,7 +93,8 @@ export class ExploreMapComponent {
   @Input() showAttribution = false;
 
   isSelected$ = this.multiMapConfigState.selectedMapId$.pipe(
-    map((mapId) => this.mapNumber === mapId)
+    // If mapId is null means we are in other tab and we dont want to display highlighted Maps
+    map((mapId) => mapId && this.mapNumber === mapId)
   );
   selectedFeatureId$ = this.drawService.selectedFeatureId$;
 
@@ -82,7 +102,9 @@ export class ExploreMapComponent {
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService,
-    private drawService: DrawService
+    private drawService: DrawService,
+    private state: DataLayersStateService,
+    private registry: DataLayersRegistryService
   ) {
     mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
@@ -93,6 +115,14 @@ export class ExploreMapComponent {
           this.cancelDrawingMode();
         }
       });
+  }
+
+  ngOnInit() {
+    this.registry.set(this.mapNumber, this.state);
+  }
+
+  ngOnDestroy() {
+    this.registry.clear(this.mapNumber);
   }
 
   mapLoaded(map: MapLibreMap) {

@@ -1,13 +1,12 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { TreatmentPlanTabsComponent } from './treatment-plan-tabs.component';
-import { TreatmentsState } from '../treatments.state';
 import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ProjectAreasTabComponent } from '../project-areas-tab/project-areas-tab.component';
 import { MatDialogModule } from '@angular/material/dialog';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
-import { BehaviorSubject, of } from 'rxjs';
+import { of } from 'rxjs';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 
@@ -28,9 +27,6 @@ describe('TreatmentPlanTabsComponent', () => {
         MockDeclarations(ProjectAreasTabComponent, DataLayersComponent),
       ],
       providers: [
-        MockProvider(TreatmentsState, {
-          treatmentPlan$: new BehaviorSubject(null),
-        }),
         MockProvider(DataLayersStateService, {
           paths$: of([]),
         }),

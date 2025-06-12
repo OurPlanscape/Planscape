@@ -2,15 +2,14 @@
   #tabGroup
   class="summary-tab-group"
   mat-align-tabs="start"
-  disablePagination="true"
-  (selectedTabChange)="handleTabChange($event)">
+  disablePagination="true">
   <mat-tab label="Project Areas">
     <app-project-areas-tab></app-project-areas-tab>
   </mat-tab>
   <mat-tab label="Data Layers">
     <app-data-layers></app-data-layers>
   </mat-tab>
-  <mat-tab label="Base Layers" *appFeatureFlag="'statewide_baselayers'">
+  <mat-tab label="Base Layers" *appFeatureFlag="'STATEWIDE_BASELAYERS'">
     <app-base-layers></app-base-layers>
   </mat-tab>
 </mat-tab-group>

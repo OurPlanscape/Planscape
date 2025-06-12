@@ -1,6 +1,5 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
-import { AsyncPipe, NgClass, NgIf } from '@angular/common';
-import { MapComponent } from '@maplibre/ngx-maplibre-gl';
+import { NgClass, NgIf } from '@angular/common';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import {
   Cleanup,
@@ -15,7 +14,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 @Component({
   selector: 'app-synced-maps',
   standalone: true,
-  imports: [AsyncPipe, MapComponent, ExploreMapComponent, NgIf, NgClass],
+  imports: [ExploreMapComponent, NgIf, NgClass],
   templateUrl: './synced-maps.component.html',
   styleUrl: './synced-maps.component.scss',
 })

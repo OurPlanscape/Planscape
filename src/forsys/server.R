@@ -1,9 +1,27 @@
 library("logger")
 library(plumber)
+library("DBI")
+library("dplyr")
+library("forsys")
+library("friendlyeval")
+library("glue")
+library("import")
+library("logger")
+library("optparse")
+library("purrr")
+library("rjson")
+library("RPostgreSQL")
+library("sf")
+library("stringi")
+library("tidyr")
+library("uuid")
 
-readRenviron("../.env")
-source("../planscape/rscripts/base_forsys.R")
-
+readRenviron("../../.env")
+import::from("../planscape/rscripts/io_processing.R", .all = TRUE)
+import::from("../planscape/rscripts/queries.R", .all = TRUE)
+import::from("../planscape/rscripts/constants.R", .all = TRUE)
+import::from("../planscape/rscripts/base_forsys.R", .all = TRUE)
+import::from("../planscape/rscripts/postprocessing.R", .all = TRUE)
 
 # server.R
 

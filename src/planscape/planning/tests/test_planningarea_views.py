@@ -285,6 +285,54 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertEqual(response.status_code, 400)
 
 
+class CreatePlanningAreaNoRegionV1Test(APITransactionTestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.geometry = {
+            "features": [
+                {
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                    }
+                }
+            ]
+        }
+
+    def test_create_without_region(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {
+                "name": "No-Region Plan",
+                "geometry": self.geometry,
+            }
+        )
+        resp = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 200)
+        pa = PlanningArea.objects.get()
+        self.assertIsNone(pa.region_name)
+
+    def test_reject_unknown_region(self):
+        self.client.force_authenticate(self.user)
+        payload = json.dumps(
+            {
+                "name": "Bad-Region Plan",
+                "region_name": "Batata-Frita",
+                "geometry": self.geometry,
+            }
+        )
+        resp = self.client.post(
+            reverse("planning:create_planning_area"),
+            payload,
+            content_type="application/json",
+        )
+        self.assertEqual(resp.status_code, 400)
+
+
 class DeletePlanningAreaTest(APITransactionTestCase):
     def setUp(self):
         self.owner_user = UserFactory.create(
