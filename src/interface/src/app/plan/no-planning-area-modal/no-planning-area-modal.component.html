@@ -1,0 +1,15 @@
+<sg-modal
+  title="Planning Area Required"
+  [shortHeader]="false"
+  [showBorders]="false"
+  [centerFooter]="false"
+  [padBody]="true"
+  primaryButtonText="Ok"
+  [hasSecondaryButton]="false"
+  (clickedClose)="closeModal()"
+  (clickedPrimary)="closeModal()">
+  <div modalBodyContent class="padded">
+    You must add a planning area before saving. Use the drawing tool or upload a
+    valid shapefile to proceed.
+  </div>
+</sg-modal>

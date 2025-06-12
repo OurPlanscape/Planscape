@@ -15,6 +15,8 @@ import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
+import { DrawService } from 'src/app/maplibre-map/draw.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
 
 @Component({
@@ -23,6 +25,7 @@ import { MapConfigService } from '../../maplibre-map/map-config.service';
   imports: [
     AsyncPipe,
     ExploreModesToggleComponent,
+    HttpClientTestingModule,
     MapNavbarComponent,
     MapComponent,
     SharedModule,
@@ -39,6 +42,7 @@ import { MapConfigService } from '../../maplibre-map/map-config.service';
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.scss',
   providers: [
+    DrawService,
     // 1. Create a single instance of the subclass
     { provide: MapConfigState, useClass: MultiMapConfigState },
 

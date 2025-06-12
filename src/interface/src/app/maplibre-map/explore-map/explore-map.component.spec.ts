@@ -5,6 +5,7 @@ import { MockProvider, MockProviders } from 'ng-mocks';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { MapConfigState } from '../map-config.state';
 import { AuthService } from '@services';
+import { DrawService } from '../draw.service';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 
 describe('ExploreMapComponent', () => {
@@ -15,11 +16,14 @@ describe('ExploreMapComponent', () => {
     await TestBed.configureTestingModule({
       imports: [ExploreMapComponent],
       providers: [
-        MockProviders(MultiMapConfigState, AuthService),
+        MockProviders(MultiMapConfigState, AuthService, DrawService),
         // alias the abstract token
         { provide: MapConfigState, useExisting: MultiMapConfigState },
         MockProvider(MultiMapConfigState, {
           selectedMapId$: new BehaviorSubject(3),
+        }),
+        MockProvider(MapConfigState, {
+          drawingModeEnabled$: new BehaviorSubject(false),
         }),
       ],
     }).compileComponents();
