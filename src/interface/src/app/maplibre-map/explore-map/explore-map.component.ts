@@ -227,8 +227,12 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   }
 
   cancelDrawingMode() {
-    this.drawService.setMode('select');
-    this.drawService.stop();
+    if (!this.mapLibreMap) {
+      return;
+    } else {
+      this.drawService.setMode('select');
+      this.drawService.stop();
+    }
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
