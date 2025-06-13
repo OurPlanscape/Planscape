@@ -15,6 +15,8 @@ export const planLoaderResolver: ResolveFn<boolean> = (
   const planId = route.paramMap.get('id') || route.paramMap.get('planId');
   if (planId) {
     planState.setPlanId(parseInt(planId, 10));
+  } else {
+    planState.resetPlanId();
   }
 
   // Return true so we don't hold up navigation
