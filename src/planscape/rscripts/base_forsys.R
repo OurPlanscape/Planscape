@@ -773,7 +773,8 @@ call_forsys <- function(
   max_area_project <- max_treatment_area / number_of_projects
 
   # this scenario here happens when we don't have enough budget/area
-  # for all the 10 projects
+  # for all the 10 projects. so we recalculate how many projects fits
+  # in this planning area, based on the min_area_project (this is the stand size)
   if (max_area_project < min_area_project) {
     number_of_projects <- floor(max_treatment_area / min_area_project)
     max_area_project <- min_area_project
