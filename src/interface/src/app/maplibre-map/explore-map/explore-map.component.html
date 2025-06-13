@@ -31,7 +31,7 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
+  <app-planning-area-layer *ngIf="mapLibreMap"></app-planning-area-layer>
 
   <mgl-control position="bottom-left" *ngIf="showMapNumber">
     <div class="label" [class.selected-map]="(isSelected$ | async) === true">

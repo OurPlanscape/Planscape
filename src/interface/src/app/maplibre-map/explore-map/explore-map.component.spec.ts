@@ -6,7 +6,8 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { MapConfigState } from '../map-config.state';
 import { AuthService } from '@services';
 import { DrawService } from '../draw.service';
-import { BehaviorSubject, firstValueFrom } from 'rxjs';
+import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
+import { PlanState } from '../../plan/plan.state';
 
 describe('ExploreMapComponent', () => {
   let component: ExploreMapComponent;
@@ -24,6 +25,9 @@ describe('ExploreMapComponent', () => {
         }),
         MockProvider(MapConfigState, {
           drawingModeEnabled$: new BehaviorSubject(false),
+        }),
+        MockProvider(PlanState, {
+          currentPlanId$: of(null),
         }),
       ],
     }).compileComponents();

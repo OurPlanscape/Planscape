@@ -9,7 +9,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { BehaviorSubject, map, switchMap } from 'rxjs';
+import { BehaviorSubject, of, switchMap, take } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -19,6 +19,7 @@ import { DrawService } from 'src/app/maplibre-map/draw.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
 import { PlanState } from '../../plan/plan.state';
+import { getPlanPath } from '../../plan/plan-helpers';
 
 @Component({
   selector: 'app-explore',
@@ -63,19 +64,6 @@ export class ExploreComponent implements OnDestroy {
     this.saveStateToLocalStorage();
   }
 
-  bread$ = this.planState.currentPlanId$.pipe(
-    switchMap((id) => {
-      if (id) {
-        return this.planState.currentPlan$.pipe(
-          map((plan) => {
-            plan.name;
-          })
-        );
-      }
-      return 'nothing';
-    })
-  );
-
   constructor(
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
@@ -84,10 +72,29 @@ export class ExploreComponent implements OnDestroy {
     private planState: PlanState
   ) {
     this.loadStateFromLocalStorage();
-    this.breadcrumbService.updateBreadCrumb({
-      label: ' New Plan',
-      backUrl: '/',
-    });
+
+    this.planState.currentPlanId$
+      .pipe(
+        take(1),
+        switchMap((id) => {
+          if (id) {
+            return this.planState.currentPlan$;
+          }
+          return of(null);
+        })
+      )
+      .subscribe((plan) => {
+        let label = 'New Plan';
+        let backUrl = '/';
+        if (plan) {
+          label = 'Explore: ' + plan.name;
+          backUrl = getPlanPath(plan.id);
+        }
+        this.breadcrumbService.updateBreadCrumb({
+          label,
+          backUrl,
+        });
+      });
 
     this.mapConfigService.initialize();
   }
