@@ -770,16 +770,16 @@ call_forsys <- function(
   max_treatment_area <- get_max_treatment_area(scenario)
   number_of_projects <- get_number_of_projects(scenario)
   min_area_project <- get_min_project_area(scenario)
-  max_area_project <- max_treatment_area / number_of_projects
 
   # this scenario here happens when we don't have enough budget/area
   # for all the 10 projects. so we recalculate how many projects fits
   # in this planning area, based on the min_area_project (this is the stand size)
-  if (max_area_project < min_area_project) {
+  if ((max_area_project / number_of_projects) < min_area_project) {
     number_of_projects <- floor(max_treatment_area / min_area_project)
-    max_area_project <- min_area_project
   }
-
+  
+  max_area_project <- max_treatment_area / number_of_projects
+  
   if (FORSYS_V2) {
     stand_thresholds <- get_stand_thresholds_v2(connection, scenario, restrictions)
     output_tmp <- forsys_inputs %>%
