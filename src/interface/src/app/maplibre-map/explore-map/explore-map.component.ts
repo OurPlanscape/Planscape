@@ -20,7 +20,7 @@ import {
   Popup,
   RequestTransformFunction,
 } from 'maplibre-gl';
-import { AuthService } from '@services';
+import { AuthService, MapService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
 import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
@@ -37,6 +37,7 @@ import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.componen
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersRegistryService } from '../../explore/data-layers-registry';
 import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
+import { MapBoundaryLayerComponent } from '../map-boundary-layer/map-boundary-layer.component';
 
 @UntilDestroy()
 @Component({
@@ -55,6 +56,7 @@ import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-laye
     MapDataLayerComponent,
     LayerComponent,
     MapLayerColorLegendComponent,
+    MapBoundaryLayerComponent,
   ],
   providers: [DataLayersStateService],
   templateUrl: './explore-map.component.html',
@@ -97,8 +99,11 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     map((mapId) => mapId && this.mapNumber === mapId)
   );
   selectedFeatureId$ = this.drawService.selectedFeatureId$;
+  // TODO: maybe store this on mapConfigState?
+  boundaryData$ = this.mapService.getCaliforniaShape();
 
   constructor(
+    private mapService: MapService,
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService,

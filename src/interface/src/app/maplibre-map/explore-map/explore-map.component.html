@@ -35,6 +35,11 @@
     </div>
   </mgl-control>
 
+  <app-map-boundary-layer
+    *ngIf="(drawingModeEnabled$ | async) === true && boundaryData$"
+    [boundaryShape$]="boundaryData$">
+  </app-map-boundary-layer>
+
   <app-map-tooltip
     *ngIf="
       (drawingModeEnabled$ | async) === true &&

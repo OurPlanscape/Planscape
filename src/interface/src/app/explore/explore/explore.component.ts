@@ -1,7 +1,6 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf } from '@angular/common';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
-import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { SharedModule } from '@shared';
 import { BreadcrumbService } from '@services/breadcrumb.service';
@@ -27,7 +26,6 @@ import { MapConfigService } from '../../maplibre-map/map-config.service';
     ExploreModesToggleComponent,
     HttpClientTestingModule,
     MapNavbarComponent,
-    MapComponent,
     SharedModule,
     SyncedMapsComponent,
     MultiMapControlComponent,

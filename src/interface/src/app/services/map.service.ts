@@ -12,6 +12,7 @@ import {
   regionToString,
 } from '@types';
 import { environment } from '../../environments/environment';
+import { GeoJSON } from 'geojson';
 
 /** A map of Region to static assets for that region. */
 const regionToGeojsonMap: Record<Region, Record<string, string>> = {
@@ -110,6 +111,12 @@ export class MapService {
         this.conditionsConfig$.next(config);
         this.populateConditionNameMap(config);
       });
+  }
+
+  //TODO: any reason to manage tShis from the backend?
+  getCaliforniaShape() {
+    const boundaryPath = 'assets/geojson/ca_state.geojson';
+    return this.http.get<GeoJSON>(boundaryPath);
   }
 
   /** Get shapes for a boundary from assets, if possible.  Fall back to the
