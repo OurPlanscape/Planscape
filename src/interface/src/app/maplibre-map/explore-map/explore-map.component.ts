@@ -39,6 +39,7 @@ import { DataLayersRegistryService } from '../../explore/data-layers-registry';
 import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../../plan/plan.state';
+import { DataLayer } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -114,6 +115,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     map((mapId) => mapId && this.mapNumber === mapId)
   );
   selectedFeatureId$ = this.drawService.selectedFeatureId$;
+
+  selectedLayer$ = this.state.selectedDataLayer$;
 
   constructor(
     private mapConfigState: MapConfigState,
@@ -233,6 +236,11 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       this.drawService.setMode('select');
       this.drawService.stop();
     }
+  }
+
+  goToSelectedLayer(layer: DataLayer) {
+    this.multiMapConfigState.setSelectedMap(this.mapNumber);
+    this.state.goToSelectedLayer(layer);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
