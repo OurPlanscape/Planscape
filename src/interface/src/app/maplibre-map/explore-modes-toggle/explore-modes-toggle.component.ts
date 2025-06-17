@@ -15,6 +15,7 @@ import { Router } from '@angular/router';
 import { PlanService } from '@services';
 import { Feature, MultiPolygon, Polygon } from 'geojson';
 import { take } from 'rxjs';
+import { OutsideRegionDialogComponent } from 'src/app/map/outside-region-dialog/outside-region-dialog.component';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -67,7 +68,7 @@ export class ExploreModesToggleComponent {
       this.openSaveWarningDialog();
     } else {
       if (!this.drawService.isDrawingWithinBoundary()) {
-        console.log('cant save - outside boundary');
+        this.dialog.open(OutsideRegionDialogComponent, { maxWidth: '560px' });
         return;
       }
       const polygons = this.drawService.getPolygonsSnapshot();
