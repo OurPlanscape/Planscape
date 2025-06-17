@@ -6,6 +6,7 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MockProvider } from 'ng-mocks';
 import { of } from 'rxjs';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
+import { MapConfigState } from '../map-config.state';
 
 describe('MapDataLayerComponent', () => {
   let component: MapDataLayerComponent;
@@ -28,6 +29,9 @@ describe('MapDataLayerComponent', () => {
       providers: [
         MockProvider(DataLayersStateService, {
           dataLayerWithUrl$: of(null),
+        }),
+        MockProvider(MapConfigState, {
+          dataLayersOpacity$: of(0.75),
         }),
       ],
     }).compileComponents();
