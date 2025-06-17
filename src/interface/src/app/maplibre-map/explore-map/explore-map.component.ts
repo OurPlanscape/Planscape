@@ -20,7 +20,7 @@ import {
   Popup,
   RequestTransformFunction,
 } from 'maplibre-gl';
-import { AuthService, MapService } from '@services';
+import { AuthService } from '@services';
 import { addRequestHeaders } from '../maplibre.helper';
 import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
@@ -75,6 +75,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   mouseLngLat: LngLat | null = null;
   currentDrawingMode$ = this.drawService.currentDrawingMode$;
   drawModeTooltipContent: string | null = null;
+  // TODO: maybe store this Observable on mapConfigState? drawService?
+  boundaryShape$ = this.drawService.boundaryShape$;
   /**
    * Observable that provides the url to load the selected map base layer
    */
@@ -99,11 +101,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     map((mapId) => mapId && this.mapNumber === mapId)
   );
   selectedFeatureId$ = this.drawService.selectedFeatureId$;
-  // TODO: maybe store this Observable on mapConfigState? drawService?
-  boundaryData$ = this.mapService.getBoundaryShape();
 
   constructor(
-    private mapService: MapService,
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService,
@@ -155,7 +154,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       polygonMode,
       selectMode,
     ]);
-    this.drawService.setBoundaryShape(this.boundaryData$);
   }
 
   onMapMouseMove(event: MapMouseEvent): void {

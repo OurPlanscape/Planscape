@@ -3,12 +3,13 @@ import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
 import { Geometry, feature } from '@turf/helpers';
-import { BehaviorSubject, Observable, take, of } from 'rxjs';
+import { BehaviorSubject, Observable, take } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
 export type DrawMode = 'polygon' | 'select' | 'none';
 import { Feature, MultiPolygon, Polygon, GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
+import { MapService } from '@services';
 
 export const DefaultSelectConfig = {
   flags: {
@@ -30,6 +31,15 @@ export const DefaultSelectConfig = {
 
 @Injectable()
 export class DrawService {
+  constructor(mapService: MapService) {
+    mapService
+      .getBoundaryShape()
+      .pipe(take(1))
+      .subscribe((shape: GeoJSON) => {
+        this._boundaryShape$.next(shape);
+      });
+  }
+
   private _terraDraw: TerraDraw | null = null;
   private _currentDrawingMode = new BehaviorSubject<string>('');
 
@@ -41,7 +51,9 @@ export class DrawService {
   selectedFeatureId$: Observable<FeatureId | null> =
     this._selectedFeatureId$.asObservable();
 
-  private boundaryShape$: Observable<GeoJSON | null> = of(null);
+  private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
+  boundaryShape$: Observable<GeoJSON | null> =
+    this._boundaryShape$.asObservable();
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -159,23 +171,15 @@ export class DrawService {
     this._terraDraw?.clear();
   }
 
-  //TODO: decide where to store this.
-  setBoundaryShape(shape: Observable<GeoJSON>) {
-    this.boundaryShape$ = shape;
-  }
-
   isDrawingWithinBoundary(): boolean {
     const polygons = this.getPolygonsSnapshot();
-    this.boundaryShape$.pipe(take(1)).subscribe((shape: GeoJSON | null) => {
-      if (shape && shape.type === 'FeatureCollection') {
-        const result = polygons?.every((p) => {
-          const isWithin = booleanWithin(p.geometry, shape.features[0]);
-          return isWithin;
-        });
-        return result;
-      }
-      return false;
-    });
+    const shape = this._boundaryShape$.value;
+    if (polygons && shape?.type === 'FeatureCollection' && shape.features) {
+      const result = polygons.every((p) => {
+        return booleanWithin(p.geometry, shape.features[0]);
+      });
+      return result;
+    }
     return false;
   }
 
