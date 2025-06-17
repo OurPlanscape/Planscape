@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
-import { Geometry } from '@turf/helpers';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
 export type DrawMode = 'polygon' | 'select' | 'none';
+import { featureToAcres, getTotalAcreage } from '../utilities/geo.utilities';
+import { Feature, MultiPolygon, Polygon } from 'geojson';
 
 export const DefaultSelectConfig = {
   flags: {
@@ -91,6 +92,11 @@ export class DrawService {
     }
   }
 
+  calculateFeatureAcres(feature: Feature<Polygon | MultiPolygon>) {
+    console.log('new way:', featureToAcres(feature));
+    console.log('old way:', getTotalAcreage(feature));
+  }
+
   getTerraDraw(): TerraDraw | null {
     return this._terraDraw;
   }
@@ -155,24 +161,10 @@ export class DrawService {
     this._terraDraw?.clear();
   }
 
-  getPolygonsSnapshot() {
+  getPolygonsSnapshot(): Feature<Polygon>[] | undefined {
     return this._terraDraw
       ?.getSnapshot()
-      .filter((f) => f.geometry.type === 'Polygon');
+      .filter((f) => f.geometry.type === 'Polygon') as Feature<Polygon>[];
   }
 
-  getGeometry(): Geometry | null {
-    // TODO : use updated acreage calculation
-    const polygons = this.getPolygonsSnapshot();
-    if (!polygons) {
-      return null;
-    } else if (polygons.length > 1) {
-      return {
-        type: 'MultiPolygon',
-        coordinates: polygons.map((p) => p.geometry.coordinates) as number[][],
-      };
-    } else {
-      return polygons[0].geometry;
-    }
-  }
 }

@@ -40,6 +40,7 @@ import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-laye
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
+import { Feature, Polygon, MultiPolygon } from 'geojson';
 
 @UntilDestroy()
 @Component({
@@ -197,6 +198,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   afterFinish(featureId: string) {
     // clears the hover tooltip
     this.drawModeTooltipContent = null;
+    const polygons: Feature<Polygon | MultiPolygon>[] | undefined = this.drawService.getPolygonsSnapshot();
+    polygons?.map(p => this.drawService.calculateFeatureAcres(p));
 
     // TODO: add this when we have new acreage calculated
     // this.drawAcreageTooltip(featureId);

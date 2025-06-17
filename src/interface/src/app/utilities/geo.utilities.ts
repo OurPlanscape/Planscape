@@ -8,20 +8,6 @@ const epsg5070 =
   '+proj=aea +lat_1=29.5 +lat_2=45.5 +lat_0=23 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs +type=crs';
 const epsg4326 = '+proj=longlat +datum=WGS84 +no_defs +type=crs';
 
-const exampleFeature: Feature<Polygon> = {
-  type: 'Feature',
-  properties: {},
-  geometry: {
-    type: 'Polygon',
-    coordinates: [[
-      [-74.0059, 40.7128],
-      [-74.0059, 40.7228],
-      [-73.9959, 40.7228],
-      [-73.9959, 40.7128],
-      [-74.0059, 40.7128]
-    ]]
-  }
-};
 
 /**
  * Convert a polygon or multipolygon feature to acres
@@ -36,15 +22,12 @@ export function featureToAcres(feature: Feature<Polygon | MultiPolygon>): number
 }
 
 
-console.log('here is the result:', featureToAcres(exampleFeature));
-console.log('here is the old result:', getTotalAcreage(exampleFeature));
-
 
 // --- previous version
 
 
 // accepts polygon and multipolygon features
-function getTotalAcreage(feature: Feature): number {
+export function getTotalAcreage(feature: Feature): number {
   if (!turf.booleanValid(feature)) {
     return 0;
   }
@@ -83,4 +66,3 @@ function calculateArea(coordinates: Position[]): number {
   return Math.abs(area) / 2;
 }
 
-export { getTotalAcreage };
