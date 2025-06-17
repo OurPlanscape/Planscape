@@ -166,25 +166,15 @@ export class DrawService {
 
   isDrawingWithinBoundary(): boolean {
     const polygons = this.getPolygonsSnapshot();
-    console.log('are we in the boundary?');
-    this.boundaryShape$.pipe(take(1)).subscribe((shape) => {
-      const boundaryFeature = feature(shape);
-      if (boundaryFeature && boundaryFeature.geometry !== null) {
+    this.boundaryShape$.pipe(take(1)).subscribe((shape: GeoJSON | null) => {
+      if (shape && shape.type === 'FeatureCollection') {
         const result = polygons?.every((p) => {
-          if (boundaryFeature.geometry) {
-            return booleanWithin(p.geometry, boundaryFeature.geometry);
-          } else {
-            return false;
-          }
+          const isWithin = booleanWithin(p.geometry, shape.features[0]);
+          return isWithin;
         });
-        // do some other stuff...
-
-        console.log('are we in the boundary?', result);
         return result;
-      } else {
-        console.log('no boundary feature');
-        return false;
       }
+      return false;
     });
     return false;
   }
