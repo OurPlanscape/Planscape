@@ -99,8 +99,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     map((mapId) => mapId && this.mapNumber === mapId)
   );
   selectedFeatureId$ = this.drawService.selectedFeatureId$;
-  // TODO: maybe store this on mapConfigState?
-  boundaryData$ = this.mapService.getCaliforniaShape();
+  // TODO: maybe store this Observable on mapConfigState? drawService?
+  boundaryData$ = this.mapService.getBoundaryShape();
 
   constructor(
     private mapService: MapService,
@@ -155,6 +155,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       polygonMode,
       selectMode,
     ]);
+    this.drawService.setBoundaryShape(this.boundaryData$);
   }
 
   onMapMouseMove(event: MapMouseEvent): void {

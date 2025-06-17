@@ -114,7 +114,7 @@ export class MapService {
   }
 
   //TODO: any reason to manage tShis from the backend?
-  getCaliforniaShape() {
+  getBoundaryShape() {
     const boundaryPath = 'assets/geojson/ca_state.geojson';
     return this.http.get<GeoJSON>(boundaryPath);
   }

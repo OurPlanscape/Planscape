@@ -2,11 +2,13 @@ import { Injectable } from '@angular/core';
 import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
-import { Geometry } from '@turf/helpers';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Geometry, feature } from '@turf/helpers';
+import { BehaviorSubject, Observable, take, of } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
 export type DrawMode = 'polygon' | 'select' | 'none';
+import { Feature, MultiPolygon, Polygon, GeoJSON } from 'geojson';
+import booleanWithin from '@turf/boolean-within';
 
 export const DefaultSelectConfig = {
   flags: {
@@ -38,6 +40,8 @@ export class DrawService {
   private _selectedFeatureId$ = new BehaviorSubject<FeatureId | null>(null);
   selectedFeatureId$: Observable<FeatureId | null> =
     this._selectedFeatureId$.asObservable();
+
+  private boundaryShape$: Observable<GeoJSON | null> = of(null);
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -153,6 +157,48 @@ export class DrawService {
 
   clearFeatures() {
     this._terraDraw?.clear();
+  }
+
+  //TODO: decide where to store this.
+  setBoundaryShape(shape: Observable<GeoJSON>) {
+    this.boundaryShape$ = shape;
+  }
+
+  isDrawingWithinBoundary(): boolean {
+    const polygons = this.getPolygonsSnapshot();
+    console.log('are we in the boundary?');
+    this.boundaryShape$.pipe(take(1)).subscribe((shape) => {
+      const boundaryFeature = feature(shape);
+      if (boundaryFeature && boundaryFeature.geometry !== null) {
+        const result = polygons?.every((p) => {
+          if (boundaryFeature.geometry) {
+            return booleanWithin(p.geometry, boundaryFeature.geometry);
+          } else {
+            return false;
+          }
+        });
+        // do some other stuff...
+
+        console.log('are we in the boundary?', result);
+        return result;
+      } else {
+        console.log('no boundary feature');
+        return false;
+      }
+    });
+    return false;
+  }
+
+  getCombinedFeatureFromDrawing() {
+    const polygonFeatures = this.getPolygonsSnapshot() as Feature<Polygon>[];
+    const coordinates = polygonFeatures.map(
+      (feature) => feature.geometry.coordinates
+    );
+    const combinedGeometry: MultiPolygon = {
+      type: 'MultiPolygon',
+      coordinates,
+    };
+    return feature(combinedGeometry);
   }
 
   getPolygonsSnapshot() {
