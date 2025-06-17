@@ -70,6 +70,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   bounds$ = this.mapConfigState.mapExtent$;
   boundOptions = FrontendConstants.MAPLIBRE_BOUND_OPTIONS;
 
+  layoutMode$ = this.multiMapConfigState.layoutMode$;
+
   mouseLngLat: LngLat | null = null;
   currentDrawingMode$ = this.drawService.currentDrawingMode$;
   drawModeTooltipContent: string | null = null;

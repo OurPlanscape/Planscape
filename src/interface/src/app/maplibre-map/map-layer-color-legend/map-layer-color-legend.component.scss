@@ -71,7 +71,6 @@
   font-size: 12px;
   color: $color-white;
   text-overflow: ellipsis;
-  overflow: hidden;
   white-space: nowrap;
 }
 
@@ -85,6 +84,11 @@
 }
 
 .ramp-legend {
+  height: 100%;
+  width: 100%;
+}
+
+.ramp-legend-box {
   display: flex;
   flex-direction: row;
   gap: 8px;
@@ -104,4 +108,18 @@
   width: 14px;
   min-height: 160px;
   flex-shrink: 0;
+}
+
+.compact {
+  .ramp-legend {
+    overflow-y: auto;
+  }
+  .swatch-gradient {
+    width: 14px;
+    min-height: unset;
+  }
+  .ramp-label-box {
+    min-height: unset;
+    flex: 1;
+  }
 }
