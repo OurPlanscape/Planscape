@@ -26,6 +26,7 @@ import::from("rscripts/io_processing.R", .all = TRUE)
 import::from("rscripts/queries.R", .all = TRUE)
 import::from("rscripts/constants.R", .all = TRUE)
 import::from("rscripts/base_forsys.R", .all = TRUE)
+import::from("rscripts/postprocessing.R", .all = TRUE)
 
 FORSYS_V2 <- as.logical(Sys.getenv("USE_SCENARIO_V2", "False"))
 options <- list(

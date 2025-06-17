@@ -164,7 +164,7 @@ export class MapArcgisVectorLayerComponent implements OnInit, OnDestroy {
   private addArcgisLayers() {
     this.arcGisService = new FeatureService(this.sourceId, this.mapLibreMap, {
       url: this.layer.map_url,
-      setAttributionFromService: false,
+      setAttributionFromService: true,
       // add options provided on metadata
       ...(this.layer.metadata?.['modules']?.['map']?.['arcgis'] ?? {}),
     });

@@ -98,7 +98,7 @@ const routes: Routes = [
         component: MapComponent,
         canActivate: [
           createFeatureGuard({
-            featureName: 'maplibre_on_explore',
+            featureName: 'MAPLIBRE_ON_EXPLORE',
             fallback: '/explore',
             inverted: true,
           }),
@@ -114,10 +114,13 @@ const routes: Routes = [
           ),
         canActivate: [
           createFeatureGuard({
-            featureName: 'maplibre_on_explore',
+            featureName: 'MAPLIBRE_ON_EXPLORE',
             fallback: '/map',
           }),
         ],
+        resolve: {
+          planInit: planLoaderResolver,
+        },
       },
       {
         path: 'explore/:id',
@@ -133,7 +136,7 @@ const routes: Routes = [
         canActivate: [
           AuthGuard,
           createFeatureGuard({
-            featureName: 'maplibre_on_explore',
+            featureName: 'MAPLIBRE_ON_EXPLORE',
             fallback: '/explore-plan/:id',
           }),
         ],
@@ -148,7 +151,7 @@ const routes: Routes = [
         canActivate: [
           AuthGuard,
           createFeatureGuard({
-            featureName: 'maplibre_on_explore',
+            featureName: 'MAPLIBRE_ON_EXPLORE',
             fallback: '/plan/:id',
             inverted: true,
           }),

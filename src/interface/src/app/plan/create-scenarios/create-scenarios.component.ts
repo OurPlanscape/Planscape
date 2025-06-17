@@ -232,7 +232,7 @@ export class CreateScenariosComponent implements OnInit {
         ...prioritiesData,
       },
       treatment_goal: this.featureService.isFeatureEnabled(
-        'statewide_scenarios'
+        'STATEWIDE_SCENARIOS'
       )
         ? prioritiesData.treatment_question
         : (prioritiesData.treatment_question as any).id,
@@ -249,7 +249,7 @@ export class CreateScenariosComponent implements OnInit {
     this.generatingScenario = true;
     this.goalOverlayService.close();
 
-    if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+    if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
       this.scenarioService
         .createScenario(this.formValueToScenario())
         .pipe(

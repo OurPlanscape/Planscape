@@ -20,12 +20,10 @@ import {
 } from 'maplibre-gl';
 import { MapBaseLayerTooltipComponent } from '../map-base-layer-tooltip/map-base-layer-tooltip.component';
 import { BaseLayer, BaseLayerTooltipData } from '@types';
-import { UntilDestroy } from '@ngneat/until-destroy';
 import { MapArcgisVectorLayerComponent } from '../map-arcgis-vector-layer/map-arcgis-vector-layer.component';
 import { defaultBaseLayerFill, defaultBaseLayerLine } from '../maplibre.helper';
-import { BehaviorSubject, take } from 'rxjs';
+import { BehaviorSubject, combineLatest, map, Observable, take } from 'rxjs';
 
-@UntilDestroy()
 @Component({
   selector: 'app-map-base-layers',
   standalone: true,
@@ -54,7 +52,22 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
   private _tooltipInfo$ = new BehaviorSubject<BaseLayerTooltipData | null>(
     null
   );
-  currentTooltipInfo$ = this._tooltipInfo$.asObservable();
+
+  currentTooltipInfo$: Observable<BaseLayerTooltipData | null> = combineLatest([
+    this._tooltipInfo$,
+    this.selectedLayers$,
+  ]).pipe(
+    map(([info, layers]: [BaseLayerTooltipData | null, BaseLayer[] | null]) => {
+      if (
+        !layers ||
+        layers?.some((layer) => layer.path.includes('Ownership'))
+      ) {
+        return null;
+      } else {
+        return info;
+      }
+    })
+  );
 
   constructor(
     private baseLayersStateService: BaseLayersStateService,
@@ -119,6 +132,8 @@ export class MapBaseLayersComponent implements OnInit, OnDestroy {
           this.setTooltipData(tooltipInfo);
           this.paintHover(features[0]);
         }
+      } else {
+        this.hoverOutLayer();
       }
     });
   }

@@ -50,6 +50,7 @@ import { RxSelectionToggleComponent } from '../../maplibre-map/rx-selection-togg
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { MapBaseLayersComponent } from '../../maplibre-map/map-base-layers/map-base-layers.component';
+import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 
 @UntilDestroy()
 @Component({
@@ -167,6 +168,8 @@ export class TreatmentMapComponent {
   mouseLngLat: LngLat | null = null;
   hoveredProjectAreaId$ = new Subject<number | null>();
 
+  treatmentTooltipsEnabled$ = this.treatmentsState.treatmentTooltipsEnabled$;
+
   hoveredProjectArea$: Observable<TreatmentProjectArea | undefined> =
     combineLatest([
       this.treatmentsState.summary$,
@@ -185,6 +188,7 @@ export class TreatmentMapComponent {
     private treatmentsState: TreatmentsState,
     private selectedStandsState: SelectedStandsState,
     private dataLayersStateService: DataLayersStateService,
+    private baseLayersStateService: BaseLayersStateService,
     private route: ActivatedRoute,
     private router: Router,
     private planState: PlanState
@@ -285,6 +289,7 @@ export class TreatmentMapComponent {
     addRequestHeaders(url, resourceType, this.authService.getAuthCookie());
 
   setHoveredProjectAreaId(value: number | null) {
+    this.baseLayersStateService.enableBaseLayerHover(!value);
     this.hoveredProjectAreaId$.next(value);
   }
 

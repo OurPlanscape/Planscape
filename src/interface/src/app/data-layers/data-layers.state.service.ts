@@ -16,9 +16,7 @@ import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
 
-@Injectable({
-  providedIn: 'root',
-})
+@Injectable()
 export class DataLayersStateService {
   readonly limit = 20;
 
@@ -73,7 +71,7 @@ export class DataLayersStateService {
   private loadingLayer = new BehaviorSubject(false);
   loadingLayer$ = this.loadingLayer.asObservable();
 
-  private loadingSubject = new BehaviorSubject(false);
+  private loadingSubject = new BehaviorSubject(true);
   loading$ = this.loadingSubject.asObservable();
 
   private _offset = new BehaviorSubject(0);

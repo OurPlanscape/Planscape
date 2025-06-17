@@ -15,6 +15,7 @@ import { TreatmentsState } from '../treatments.state';
 import { MapProjectAreasComponent } from 'src/app/maplibre-map/map-project-areas/map-project-areas.component';
 import { ActivatedRoute } from '@angular/router';
 import { DEFAULT_BASE_MAP } from '../../types/maplibre.map.types';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 
 describe('TreatmentMapComponent', () => {
   let component: TreatmentMapComponent;
@@ -43,7 +44,8 @@ describe('TreatmentMapComponent', () => {
           AuthService,
           TreatmentsState,
           PlanService,
-          ActivatedRoute
+          ActivatedRoute,
+          DataLayersStateService
         ),
         MockProvider(MapConfigState, {
           cursor$: of(''),

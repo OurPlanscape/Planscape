@@ -87,10 +87,11 @@
       setHoveredProjectAreaId($event)
     "></app-map-project-areas>
 
-  <ng-container *ngIf="mouseLngLat">
+  <ng-container
+    *ngIf="mouseLngLat && (treatmentTooltipsEnabled$ | async) === true">
     <app-map-tooltip
       [lngLat]="mouseLngLat"
-      *ngIf="hoveredProjectArea$ | async; let curProjectArea">
+      *ngIf="hoveredProjectArea$ | async as curProjectArea">
       {{
         curProjectArea.total_treated_area_acres /
           curProjectArea.total_area_acres | percent: '1.0-1'
@@ -106,7 +107,9 @@
 
   <app-map-tooltip
     [lngLat]="treatmentTooltipLngLat"
-    *ngIf="treatmentTooltipLngLat">
+    *ngIf="
+      (treatmentTooltipsEnabled$ | async) === true && treatmentTooltipLngLat
+    ">
     click to apply treatment on single stand or drag to apply on multiple stands
   </app-map-tooltip>
 

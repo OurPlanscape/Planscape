@@ -752,6 +752,36 @@ class CreatePlanningAreaTest(APITransactionTestCase):
         self.assertIsNotNone(data.get("id"))
 
 
+class CreatePlanningAreaNoRegionV2Test(APITestCase):
+    def setUp(self):
+        self.user = UserFactory()
+        self.geometry = {
+            "features": [
+                {
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [[[0, 0], [0, 1], [1, 1], [1, 0], [0, 0]]],
+                    }
+                }
+            ]
+        }
+
+    def test_create_without_region(self):
+        self.client.force_authenticate(self.user)
+        resp = self.client.post(
+            reverse("api:planning:planningareas-list"),
+            {
+                "name": "V2 No-Region Plan",
+                "geometry": self.geometry,
+            },
+            format="json",
+        )
+        self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
+        self.assertIsNone(resp.data["region_name"])
+        pa = PlanningArea.objects.get()
+        self.assertIsNone(pa.region_name)
+
+
 class ListPlanningAreasWithPermissionsTest(APITestCase):
     def setUp(self):
         self.creator_user = UserFactory.create(

@@ -384,11 +384,11 @@ FORSYS_PATCHMAX_SCRIPT = BASE_DIR / "rscripts" / "forsys.R"
 
 # FORSYS API
 FORSYS_PLUMBER_URL = config("FORSYS_PLUMBER_URL", "http://forsys:8000/")
-FORSYS_PLUMBER_TIMEOUT = config("FORSYS_PLUMBER_TIMEOUT", 600)  # 10m
+FORSYS_PLUMBER_TIMEOUT = config("FORSYS_PLUMBER_TIMEOUT", 600, cast=int)  # 10m
 FORSYS_VIA_API = config("FORSYS_VIA_API", False, cast=bool)
 
 # TODO: Move this to a conf file that R can read?
-OUTPUT_DIR = BASE_DIR / "output"
+OUTPUT_DIR = config("FORSYS_OUTPUT_DIR", default=BASE_DIR / "output")
 
 DEFAULT_ESTIMATED_COST = config("DEFAULT_ESTIMATED_COST", 2470, cast=float)
 # CACHEOPS

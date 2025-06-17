@@ -50,7 +50,10 @@
                 categorizedStatewideGoals$ | async as categorizedScenarioGoals
               ">
               <div
-                *ngFor="let goalCategory of categorizedScenarioGoals | keyvalue"
+                *ngFor="
+                  let goalCategory of categorizedScenarioGoals
+                    | keyvalue: reverseAlpha
+                "
                 class="goal-control-container">
                 <mat-expansion-panel
                   expanded="true"

@@ -28,7 +28,11 @@ get_connection <- function() {
 }
 
 get_output_dir <- function(scenario) {
-  return(paste0(getwd(), "/output/", scenario$uuid))
+  output_dir <- Sys.getenv("FORSYS_OUTPUT_DIR", "")
+  if (output_dir == "") {
+    output_dir <- paste0(getwd(), "/output/")
+  }
+  return(paste0(output_dir, scenario$uuid))
 }
 
 priority_to_condition <- function(connection, scenario, priority) {
@@ -258,7 +262,7 @@ rename_col <- function(name) {
     "",
     name
   )
-  return(new_name)
+  new_name
 }
 
 get_cost_per_acre <- function(scenario) {
@@ -701,6 +705,7 @@ call_forsys <- function(
   forsys_inputs <- data.table::rbindlist(
     list(priorities, outputs, restrictions)
   )
+  data_inputs <- data.table::rbindlist(list(priorities, outputs))
   # we use this to drop priorities, that are repeated in here - we need those
   # so front-end can show data from priorities as well
   if (FORSYS_V2) {
@@ -725,22 +730,21 @@ call_forsys <- function(
   }
 
   if (FORSYS_V2) {
-    if (length(priorities$name) > 1) {
-      weights <- get_weights(priorities, configuration)
-      fields <- paste0("datalayer_", priorities[["id"]])
-      spm_fields <- paste0(fields, "_SPM")
-      stand_data <- stand_data %>%
-        forsys::calculate_spm(fields = fields) %>%
-        forsys::calculate_pcp(fields = fields) %>%
-        forsys::combine_priorities(
-          fields = spm_fields,
-          weights = weights,
-          new_field = "priority"
-        )
+    # new code will calculate spm and pcp for all inputs, excludind thresholds
+    # this is needed because we have layers that can be inputs, but are not part
+    # of solving our equations - such as slope and distance from roads
+    weights <- get_weights(priorities, configuration)
+    fields <- paste0("datalayer_", priorities[["id"]])
+    spm_fields <- paste0(fields, "_SPM")
+    stand_data <- stand_data %>%
+      forsys::calculate_spm(fields=fields) %>% 
+      forsys::calculate_pcp(fields=fields) %>% 
+      forsys::combine_priorities(
+        fields=spm_fields,
+        weights=weights,
+        new_field="priority"
+      )
       scenario_priorities <- c("priority")
-    } else {
-      scenario_priorities <- paste0("datalayer_", first(priorities$id))
-    }
   } else {
     if (length(priorities$condition_name) > 1) {
       weights <- get_weights(priorities, configuration)
@@ -766,8 +770,16 @@ call_forsys <- function(
   max_treatment_area <- get_max_treatment_area(scenario)
   number_of_projects <- get_number_of_projects(scenario)
   min_area_project <- get_min_project_area(scenario)
-  max_area_project <- max_treatment_area / number_of_projects
 
+  # this scenario here happens when we don't have enough budget/area
+  # for all the 10 projects. so we recalculate how many projects fits
+  # in this planning area, based on the min_area_project (this is the stand size)
+  if ((max_treatment_area / number_of_projects) < min_area_project) {
+    number_of_projects <- floor(max_treatment_area / min_area_project)
+  }
+  
+  max_area_project <- max_treatment_area / number_of_projects
+  
   if (FORSYS_V2) {
     stand_thresholds <- get_stand_thresholds_v2(connection, scenario, restrictions)
     output_tmp <- forsys_inputs %>%
@@ -808,6 +820,8 @@ call_forsys <- function(
     patchmax_sample_frac = sample_frac,
     patchmax_sample_seed = configuration$seed,
   )
+  summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
+  print(summarized_metrics)
   return(out)
 }
 
@@ -948,6 +962,9 @@ main_v2 <- function(scenario_id) {
       )
 
       completed_at <- now_utc()
+      forsys_inputs <- data.table::rbindlist(
+        list(priorities, secondary_metrics)
+      )
 
       result <- to_projects(
         connection,
@@ -955,6 +972,7 @@ main_v2 <- function(scenario_id) {
         forsys_output,
         new_column_for_postprocessing = new_column_for_postprocessing
       )
+
       upsert_scenario_result(
         connection,
         now,

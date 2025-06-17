@@ -75,6 +75,7 @@ class PlanningArea(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model)
         max_length=120,
         choices=RegionChoices.choices,
         help_text="Region choice name of the Planning Area.",
+        null=True,
     )
 
     name = models.CharField(max_length=120, help_text="Name of the Planning Area.")
@@ -160,7 +161,7 @@ class ScenarioManager(AliveObjectsManager):
     def list_by_user(self, user: Optional[User]):
         if not user:
             return self.get_queryset().none()
-        # this will become super slow when the database get's bigger
+        # this will become super slow when the database gets bigger
         planning_areas = PlanningArea.objects.list_by_user(user).values_list(
             "id", flat=True
         )

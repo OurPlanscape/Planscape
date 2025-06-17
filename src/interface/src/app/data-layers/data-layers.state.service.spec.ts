@@ -15,6 +15,7 @@ describe('DataLayersStateService', () => {
         MockProvider(DataLayersService, {
           listDataSets: () => of({} as Pagination<DataSet>),
         }),
+        DataLayersStateService,
       ],
     });
     service = TestBed.inject(DataLayersStateService);

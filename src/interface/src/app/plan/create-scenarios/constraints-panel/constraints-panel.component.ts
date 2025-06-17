@@ -208,7 +208,7 @@ export class ConstraintsPanelComponent implements OnChanges {
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.valid &&
         this.constraintsForm.get('excludedAreasForm.' + area.key)?.value
       ) {
-        if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+        if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
           scenarioConfig.excluded_areas?.push(Number(area.id));
         } else {
           scenarioConfig.excluded_areas?.push(area.key as any);
@@ -216,7 +216,7 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     });
     if (estimatedCost?.valid)
-      if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+      if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
         scenarioConfig.estimated_cost = parseFloat(estimatedCost.value);
       } else {
         // We should use any until we remove the FF.
@@ -224,7 +224,7 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     if (maxCost?.valid) scenarioConfig.max_budget = parseFloat(maxCost.value);
     if (maxArea?.valid) {
-      if (this.featureService.isFeatureEnabled('statewide_scenarios')) {
+      if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
         scenarioConfig.max_area = parseFloat(maxArea.value);
       } else {
         // We should use any until we remove the FF.
@@ -246,7 +246,7 @@ export class ConstraintsPanelComponent implements OnChanges {
   setFormData(config: ScenarioConfig) {
     this.excludedAreas.forEach((area) => {
       const isAreaSelected = this.featureService.isFeatureEnabled(
-        'statewide_scenarios'
+        'STATEWIDE_SCENARIOS'
       )
         ? config.excluded_areas &&
           config.excluded_areas.indexOf(Number(area.key)) > -1
@@ -264,7 +264,7 @@ export class ConstraintsPanelComponent implements OnChanges {
       }
     });
 
-    // TODO: remove est_cost when 'statewide_scenarios' be approved
+    // TODO: remove est_cost when 'STATEWIDE_SCENARIOS' be approved
     if (config.estimated_cost || (config as any).est_cost) {
       this.constraintsForm
         .get('budgetForm.estimatedCost')
@@ -275,7 +275,7 @@ export class ConstraintsPanelComponent implements OnChanges {
         .get('budgetForm.maxCost')
         ?.setValue(config.max_budget);
     }
-    // TODO: remove max_treatment_area_ratio when 'statewide_scenarios' be approved
+    // TODO: remove max_treatment_area_ratio when 'STATEWIDE_SCENARIOS' be approved
     if (config.max_area || (config as any).max_treatment_area_ratio) {
       this.constraintsForm
         .get('physicalConstraintForm.maxArea')

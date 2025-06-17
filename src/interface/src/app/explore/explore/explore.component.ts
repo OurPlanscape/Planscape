@@ -9,13 +9,17 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, map, of, switchMap, take } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
-import { BaseLayersStateService } from '../../base-layers/base-layers.state.service';
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
+import { DrawService } from 'src/app/maplibre-map/draw.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { MapConfigService } from '../../maplibre-map/map-config.service';
+import { PlanState } from '../../plan/plan.state';
+import { getPlanPath } from '../../plan/plan-helpers';
 
 @Component({
   selector: 'app-explore',
@@ -23,6 +27,7 @@ import { MapSelectorComponent } from '../map-selector/map-selector.component';
   imports: [
     AsyncPipe,
     ExploreModesToggleComponent,
+    HttpClientTestingModule,
     MapNavbarComponent,
     MapComponent,
     SharedModule,
@@ -39,11 +44,13 @@ import { MapSelectorComponent } from '../map-selector/map-selector.component';
   templateUrl: './explore.component.html',
   styleUrl: './explore.component.scss',
   providers: [
+    DrawService,
     // 1. Create a single instance of the subclass
     { provide: MapConfigState, useClass: MultiMapConfigState },
 
     // 2. Alias its own type to that same instance
     { provide: MultiMapConfigState, useExisting: MapConfigState },
+    MapConfigService,
   ],
 })
 export class ExploreComponent implements OnDestroy {
@@ -51,6 +58,8 @@ export class ExploreComponent implements OnDestroy {
   projectAreasOpacity$ = new BehaviorSubject(0.5);
   panelExpanded = true;
   tabIndex = 0;
+
+  showSelectionToggle$ = this.planState.currentPlanId$.pipe(map((id) => !id));
 
   @HostListener('window:beforeunload')
   beforeUnload() {
@@ -60,14 +69,36 @@ export class ExploreComponent implements OnDestroy {
   constructor(
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
-    private baseLayersStateService: BaseLayersStateService
+    private multiMapConfigState: MultiMapConfigState,
+    private mapConfigService: MapConfigService,
+    private planState: PlanState
   ) {
     this.loadStateFromLocalStorage();
-    this.breadcrumbService.updateBreadCrumb({
-      label: ' New Plan',
-      backUrl: '/',
-    });
-    this.baseLayersStateService.enableBaseLayerHover(true);
+
+    this.planState.currentPlanId$
+      .pipe(
+        take(1),
+        switchMap((id) => {
+          if (id) {
+            return this.planState.currentPlan$;
+          }
+          return of(null);
+        })
+      )
+      .subscribe((plan) => {
+        let label = 'New Plan';
+        let backUrl = '/';
+        if (plan) {
+          label = 'Explore: ' + plan.name;
+          backUrl = getPlanPath(plan.id);
+        }
+        this.breadcrumbService.updateBreadCrumb({
+          label,
+          backUrl,
+        });
+      });
+
+    this.mapConfigService.initialize();
   }
 
   handleOpacityChange(opacity: number) {
@@ -95,6 +126,15 @@ export class ExploreComponent implements OnDestroy {
     if (options) {
       this.panelExpanded = options.isPanelExpanded || false;
       this.tabIndex = options.tabIndex || 0;
+      this.onTabIndexChange(this.tabIndex);
+    }
+  }
+
+  onTabIndexChange(index: number) {
+    if (index !== 0) {
+      this.multiMapConfigState.setSelectedMap(null);
+    } else {
+      this.multiMapConfigState.setSelectedMap(1); // Default map
     }
   }
 }

@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 def create_planning_area(
     user: User,
     name: str,
-    region_name: str,
+    region_name: Optional[str] = None,
     geometry: Any = None,
     notes: Optional[str] = None,
 ) -> PlanningArea:
@@ -175,9 +175,9 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         properties={
             "origin": scenario.origin,
             "treatment_goal_id": treatment_goal.pk if treatment_goal else None,
-            "treatment_goal_category": treatment_goal.category
-            if treatment_goal
-            else None,
+            "treatment_goal_category": (
+                treatment_goal.category if treatment_goal else None
+            ),
             "treatment_goal_name": treatment_goal.name if treatment_goal else None,
         },
         user_id=user.pk,
@@ -436,7 +436,7 @@ def map_property(key_value_pair):
 
 
 def get_schema(
-    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]]
+    geojson: Union[Collection[Dict[str, Any]], Dict[str, Any]],
 ) -> Dict[str, Any]:
     feature = {}
     match geojson:
