@@ -28,6 +28,7 @@ mgl-map {
 
 .highlighted-map {
   box-sizing: border-box;
+
   ::ng-deep canvas {
     outline: 6px solid $color-active-blue;
     outline-offset: -5px;
@@ -59,6 +60,6 @@ mgl-map {
 
   .material-symbols-outlined {
     font-size: 20px;
-    vertical-align: middle;
+    vertical-align: top;
   }
 }

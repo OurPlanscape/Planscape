@@ -9,7 +9,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { BehaviorSubject, of, switchMap, take } from 'rxjs';
+import { BehaviorSubject, map, of, switchMap, take } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -58,6 +58,8 @@ export class ExploreComponent implements OnDestroy {
   projectAreasOpacity$ = new BehaviorSubject(0.5);
   panelExpanded = true;
   tabIndex = 0;
+
+  showSelectionToggle$ = this.planState.currentPlanId$.pipe(map((id) => !id));
 
   @HostListener('window:beforeunload')
   beforeUnload() {
