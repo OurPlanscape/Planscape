@@ -34,7 +34,10 @@
         [sliderValue]="(projectAreasOpacity$ | async) ?? 0.5"
         (valueChange)="handleOpacityChange($event)"
         tooltip="Layer Opacity"></sg-opacity-slider>
-      <app-explore-modes-selection-toggle></app-explore-modes-selection-toggle>
+      <app-explore-modes-selection-toggle
+        *ngIf="
+          showSelectionToggle$ | async
+        "></app-explore-modes-selection-toggle>
     </app-map-nav-bar>
     <app-synced-maps [ngClass]="{ withPanel: panelExpanded }"></app-synced-maps>
   </div>
