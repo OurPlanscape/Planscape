@@ -2,12 +2,12 @@ import { Injectable } from '@angular/core';
 import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
-import { Geometry, feature } from '@turf/helpers';
+import { Geometry } from '@turf/helpers';
 import { BehaviorSubject, Observable, take } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
 export type DrawMode = 'polygon' | 'select' | 'none';
-import { Feature, MultiPolygon, Polygon, GeoJSON } from 'geojson';
+import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { MapService } from '@services';
 
@@ -181,18 +181,6 @@ export class DrawService {
       return result;
     }
     return false;
-  }
-
-  getCombinedFeatureFromDrawing() {
-    const polygonFeatures = this.getPolygonsSnapshot() as Feature<Polygon>[];
-    const coordinates = polygonFeatures.map(
-      (feature) => feature.geometry.coordinates
-    );
-    const combinedGeometry: MultiPolygon = {
-      type: 'MultiPolygon',
-      coordinates,
-    };
-    return feature(combinedGeometry);
   }
 
   getPolygonsSnapshot() {
