@@ -104,12 +104,12 @@ export class DrawService {
   }
 
   registerChangeCallback(changeCallback: Function) {
-    this._terraDraw?.on('change', (changedFeatureIds) => {
-      changeCallback(changedFeatureIds);
+    this._terraDraw?.on('change', (changedFeatureIds, type, context) => {
+      changeCallback(changedFeatureIds, type, context);
     });
   }
 
-  getPolygonPointCount(featureId: string) {
+  getPolygonPointCount(featureId: FeatureId) {
     const snapshot = this._terraDraw?.getSnapshotFeature(featureId);
     if (snapshot?.geometry.type === 'Polygon') {
       return snapshot?.geometry.coordinates[0].length;
