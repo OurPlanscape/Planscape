@@ -8,7 +8,7 @@ from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 import fiona
 import rasterio
 from actstream import action as actstream_action
-from core.static_storage import get_storage_session
+from gis.core import get_storage_session
 from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
