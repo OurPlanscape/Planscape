@@ -8,7 +8,7 @@ from typing import Any, Collection, Dict, Iterable, List, Optional, Tuple, Union
 import fiona
 import rasterio
 from actstream import action as actstream_action
-from core.s3 import get_aws_session
+from core.static_storage import get_storage_session
 from datasets.models import DataLayer
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
@@ -422,8 +422,7 @@ def calculate_impacts(
     stand_ids = prescriptions.values_list("stand_id", flat=True)
     stands = Stand.objects.filter(id__in=stand_ids).with_webmercator()
     stand_size = treatment_plan.scenario.get_stand_size()
-    aws_session = AWSSession(get_aws_session())
-    with rasterio.Env(aws_session):
+    with rasterio.Env(get_storage_session()):
         baseline_layer = ImpactVariable.get_datalayer(
             impact_variable=variable,
             action=None,
@@ -554,8 +553,7 @@ def calculate_impacts_for_untreated_stands(
         .with_webmercator()
     )
 
-    aws_session = AWSSession(get_aws_session())
-    with rasterio.Env(aws_session):
+    with rasterio.Env(get_storage_session()):
         baseline_layer = ImpactVariable.get_datalayer(
             impact_variable=variable,
             action=None,

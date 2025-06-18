@@ -353,6 +353,7 @@ LOGGING = {
 
 
 ENV = config("ENV", "dev")
+PROVIDER = config("PROVIDER", "aws", cast=str).lower()
 SENTRY_DSN = config("SENTRY_DSN", None)
 if SENTRY_DSN is not None:
     sentry_sdk.init(
@@ -454,9 +455,14 @@ AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
-os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
+GOOGLE_APPLICATION_CREDENTIALS_FILE = config("GOOGLE_APPLICATION_CREDENTIALS_FILE")
+if PROVIDER == "aws":
+    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
+    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
+    os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
+elif PROVIDER == "gcp":
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS_FILE
+
 
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 

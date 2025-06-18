@@ -1,4 +1,5 @@
 import logging
+from django.conf import settings
 from functools import lru_cache
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple
@@ -6,9 +7,15 @@ from uuid import uuid4
 
 import fiona
 import rasterio
-from core.s3 import get_bucket_and_key, is_s3_file
+from core.s3 import get_bucket_and_key, is_s3_file, get_aws_session
+from core.gcs import (
+    is_gcs_file,
+    get_bucket_and_key as get_gcs_bucket_and_key,
+    get_gcs_session,
+)
 from datasets.models import DataLayerType, GeometryType
 from fiona.errors import DriverError
+from rasterio.session import Session, AWSSession
 from rasterio.errors import RasterioIOError
 
 from gis.errors import InvalidFileFormat, InvalidGeometryType
@@ -18,10 +25,12 @@ log = logging.getLogger(__name__)
 
 
 def with_vsi_prefix(input_file: str) -> str:
-    s3_file = is_s3_file(input_file)
-    if s3_file:
+    if is_s3_file(input_file):
         bucket, key = get_bucket_and_key(input_file)
         input_file = f"/vsis3/{bucket}/{key}"
+    elif is_gcs_file(input_file):
+        bucket, key = get_gcs_bucket_and_key(input_file)
+        input_file = f"/vsigs/{bucket}/{key}"
     if input_file.endswith(".zip"):
         input_file = f"/vsizip/{input_file}"
     return input_file
@@ -39,6 +48,10 @@ def get_random_output_file(input_file: str, output_folder: str = "/tmp") -> str:
 @lru_cache
 def is_vector(input_file: str) -> bool:
     try:
+        if settings.PROVIDER == "gcp":
+            with fiona.open(input_file):
+                return True
+
         with fiona.Env(**get_gdal_env()):
             with fiona.open(input_file):
                 return True
@@ -49,6 +62,10 @@ def is_vector(input_file: str) -> bool:
 @lru_cache
 def is_raster(input_file: str) -> bool:
     try:
+        if settings.PROVIDER == "gcp":
+            with rasterio.open(input_file):
+                return True
+
         with rasterio.Env(**get_gdal_env()):
             with rasterio.open(input_file):
                 return True
@@ -96,3 +113,20 @@ def get_layer_info(input_file: str) -> Tuple[DataLayerType, Dict[str, Any]]:
     layer_type = fetch_datalayer_type(input_file)
     fn = info_raster if layer_type == DataLayerType.RASTER else info_vector
     return layer_type, fn(input_file=input_file)
+
+
+def get_storage_session() -> Session:
+    """
+    Returns a rasterio session configured for the storage backend.
+    This session is used for reading and writing raster data.
+
+    Returns:
+        Session: A rasterio session for the configured storage backend.
+    """
+    match settings.PROVIDER:
+        case "aws":
+            return AWSSession(get_aws_session())
+        case "gcp":
+            return get_gcs_session()
+        case _:
+            raise ValueError(f"Unsupported storage provider: {settings.PROVIDER}")
