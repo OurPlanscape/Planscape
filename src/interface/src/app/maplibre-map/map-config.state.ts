@@ -1,7 +1,7 @@
 import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { baseMapStyles } from './map-base-layers';
-import { Extent } from '@types';
+import { Extent, FrontendConstants } from '@types';
 import { filter } from 'rxjs/operators';
 import { BaseMapType, DEFAULT_BASE_MAP } from '../types/maplibre.map.types';
 
@@ -10,6 +10,12 @@ export class MapConfigState {
   protected _baseMap$ = new BehaviorSubject<BaseMapType>(DEFAULT_BASE_MAP);
   baseMap$ = this._baseMap$.asObservable();
   baseMapUrl$ = this.baseMap$.pipe(map((b) => baseMapStyles[b]));
+
+  // Data layers opacity, it will be common for all maps
+  private _dataLayersOpacity$ = new BehaviorSubject<number>(
+    FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY
+  );
+  public dataLayersOpacity$ = this._dataLayersOpacity$.asObservable();
 
   protected _mapExtent$ = new BehaviorSubject<Extent | null>(null);
   mapExtent$ = this._mapExtent$
@@ -100,5 +106,9 @@ export class MapConfigState {
 
   exitDrawingMode() {
     this._drawingModeEnabled$.next(false);
+  }
+
+  updateDataLayersOpacity(opacity: number) {
+    this._dataLayersOpacity$.next(opacity);
   }
 }
