@@ -459,11 +459,13 @@ GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
     "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None
 )
 if PROVIDER == "aws":
-    os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-    os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-    os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
+    os.environ["AWS_ACCESS_KEY_ID"] = str(AWS_ACCESS_KEY_ID)
+    os.environ["AWS_SECRET_ACCESS_KEY"] = str(AWS_SECRET_ACCESS_KEY)
+    os.environ["AWS_DEFAULT_REGION"] = str(AWS_DEFAULT_REGION)
 elif PROVIDER == "gcp":
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = GOOGLE_APPLICATION_CREDENTIALS_FILE
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
+        GOOGLE_APPLICATION_CREDENTIALS_FILE
+    )
 
 
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
