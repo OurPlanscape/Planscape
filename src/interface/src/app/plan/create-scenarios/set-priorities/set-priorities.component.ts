@@ -21,7 +21,6 @@ import {
   findQuestionOnTreatmentGoalsConfig,
 } from '../../plan-helpers';
 import { GoalOverlayService } from '../goal-overlay/goal-overlay.service';
-import { FeatureService } from '../../../features/feature.service';
 import { ScenarioState } from '../../../maplibre-map/scenario.state';
 import { KeyValue } from '@angular/common';
 
@@ -77,7 +76,6 @@ export class SetPrioritiesComponent implements OnInit {
     private fb: FormBuilder,
     private LegacyPlanStateService: LegacyPlanStateService,
     private goalOverlayService: GoalOverlayService,
-    private featureService: FeatureService,
     private treatmentGoalsService: TreatmentGoalsService,
     private scenarioState: ScenarioState
   ) {}
@@ -128,20 +126,10 @@ export class SetPrioritiesComponent implements OnInit {
     }
   }
 
-  selectGoal(goal: TreatmentQuestionConfig) {
-    if (this.goalsForm.enabled) {
-      this.goalOverlayService.setQuestion(goal);
-    }
-  }
-
   selectStatewideGoal(goal: ScenarioGoal) {
     if (this.goalsForm.enabled) {
       this.goalOverlayService.setStateWideGoal(goal);
     }
-  }
-
-  get isStatewideScenariosEnabled() {
-    return this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS');
   }
 
   get isNewScenario() {
