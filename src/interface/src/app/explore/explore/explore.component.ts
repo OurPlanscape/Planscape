@@ -9,7 +9,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { map, of, skip, switchMap, take } from 'rxjs';
+import { firstValueFrom, map, of, switchMap, take, skip } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -123,10 +123,12 @@ export class ExploreComponent implements OnDestroy {
     this.saveStateToLocalStorage();
   }
 
-  private saveStateToLocalStorage() {
+  private async saveStateToLocalStorage() {
+    const opacity = await firstValueFrom(this.dataLayerOpacity$);
     this.exploreStorageService.setItem({
       tabIndex: this.tabIndex,
       isPanelExpanded: this.panelExpanded,
+      opacity: opacity,
     });
   }
 
@@ -135,6 +137,9 @@ export class ExploreComponent implements OnDestroy {
     if (options) {
       this.panelExpanded = options.isPanelExpanded || false;
       this.tabIndex = options.tabIndex || 0;
+      this.multiMapConfigState.updateDataLayersOpacity(
+        options.opacity || FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY
+      );
       this.onTabIndexChange(this.tabIndex);
     }
   }

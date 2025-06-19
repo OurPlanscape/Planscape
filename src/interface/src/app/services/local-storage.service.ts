@@ -102,6 +102,7 @@ export class MultiMapsStorageService extends BaseLocalStorageService<{
 export class ExploreStorageService extends BaseLocalStorageService<{
   tabIndex: number;
   isPanelExpanded: boolean;
+  opacity: number;
 }> {
   constructor() {
     super('exploreViewOptions');
