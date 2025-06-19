@@ -473,6 +473,7 @@ boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
+CPL_DEBUG = config("CPL_DEBUG", False, cast=bool)
 OGR2OGR_TIMEOUT = config("OGR2OGR_TIMEOUT", 600)  # 10m
 ZIP_TIMEOUT = config("ZIP_TIMEOUT", 600)  # 10m
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")
