@@ -5,7 +5,8 @@ from uuid import uuid4
 
 from cacheops import cached
 from core.models import CreatedAtMixin, DeletedAtMixin, UpdatedAtMixin
-from core.s3 import create_download_url
+from core.s3 import create_download_url as create_s3_download_url, is_s3_file
+from core.gcs import create_download_url as create_gcs_download_url, is_gcs_file
 from core.schemes import SUPPORTED_SCHEMES
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -353,16 +354,24 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
     def get_public_url(self) -> Optional[str]:
         if not self.url:
             return None
-        object_name = self.url.replace(f"s3://{settings.S3_BUCKET}/", "")
-        download_url = create_download_url(settings.S3_BUCKET, object_name)
-        if settings.FEATURE_FLAG_S3_PROXY:
-            parsed = urlparse(download_url)
 
-            new_url = parsed._replace(
-                netloc=get_domain(settings.ENV),
-                path="/s3" + str(parsed.path),
-            )
-            download_url = str(new_url.geturl())
+        if is_s3_file(self.url):
+            object_name = self.url.replace(f"s3://{settings.S3_BUCKET}/", "")
+            download_url = create_s3_download_url(settings.S3_BUCKET, object_name)
+            if settings.FEATURE_FLAG_S3_PROXY:
+                parsed = urlparse(download_url)
+
+                new_url = parsed._replace(
+                    netloc=get_domain(settings.ENV),
+                    path="/s3" + str(parsed.path),
+                )
+                download_url = str(new_url.geturl())
+
+        elif is_gcs_file(self.url):
+            download_url = create_gcs_download_url(self.url)
+        else:
+            download_url = None
+
         return download_url
 
     def get_map_url(self) -> Optional[str]:
