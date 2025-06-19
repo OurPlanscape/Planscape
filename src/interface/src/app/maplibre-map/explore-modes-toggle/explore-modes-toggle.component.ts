@@ -15,8 +15,7 @@ import { Router } from '@angular/router';
 import { PlanService } from '@services';
 import { Feature, MultiPolygon, Polygon } from 'geojson';
 import { take } from 'rxjs';
-import { OutsideRegionDialogComponent } from 'src/app/map/outside-region-dialog/outside-region-dialog.component';
-
+import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
 @Component({
   selector: 'app-explore-modes-selection-toggle',
   standalone: true,
@@ -68,7 +67,9 @@ export class ExploreModesToggleComponent {
       this.openSaveWarningDialog();
     } else {
       if (!this.drawService.isDrawingWithinBoundary()) {
-        this.dialog.open(OutsideRegionDialogComponent, { maxWidth: '560px' });
+        this.dialog.open(OutsideStateDialogComponentComponent, {
+          maxWidth: '560px',
+        });
         return;
       }
       const polygons = this.drawService.getPolygonsSnapshot();

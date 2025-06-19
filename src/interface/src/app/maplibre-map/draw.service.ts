@@ -33,7 +33,7 @@ export const DefaultSelectConfig = {
 export class DrawService {
   constructor(mapService: MapService) {
     mapService
-      .getBoundaryShape()
+      .getCaliforniaStateBoundary()
       .pipe(take(1))
       .subscribe((shape: GeoJSON) => {
         this._boundaryShape$.next(shape);
