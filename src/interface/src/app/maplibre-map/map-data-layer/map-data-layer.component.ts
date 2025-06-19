@@ -14,6 +14,8 @@ import { SNACK_DEBUG_CONFIG, SNACK_ERROR_CONFIG } from '@shared';
 import { environment } from 'src/environments/environment';
 import * as Sentry from '@sentry/browser';
 import { EventData } from '@maplibre/ngx-maplibre-gl';
+import { MapConfigState } from '../map-config.state';
+import { filter, firstValueFrom } from 'rxjs';
 
 @UntilDestroy()
 @Component({
@@ -24,13 +26,13 @@ import { EventData } from '@maplibre/ngx-maplibre-gl';
 })
 export class MapDataLayerComponent implements OnInit, OnDestroy {
   @Input() mapLibreMap!: MapLibreMap;
-  opacity: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
   tileSize: number = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_TILESIZE;
   cogUrl: string | null = null;
 
   errorCount = 0;
 
   constructor(
+    private mapConfigState: MapConfigState,
     private dataLayersStateService: DataLayersStateService,
     private matSnackBar: MatSnackBar
   ) {
@@ -54,6 +56,25 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.addListeners();
+
+    this.listenForOpacityChanges();
+  }
+
+  listenForOpacityChanges() {
+    // Listen for opacity changes
+    this.mapConfigState.dataLayersOpacity$
+      .pipe(
+        untilDestroyed(this),
+        filter(() => !!this.mapLibreMap?.getLayer('image-layer')) // Checking if it's already added
+      )
+      .subscribe((newOpacity) => {
+        // Updating raster opacity
+        this.mapLibreMap.setPaintProperty(
+          'image-layer',
+          'raster-opacity',
+          newOpacity
+        );
+      });
   }
 
   addListeners() {
@@ -62,8 +83,11 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
     this.mapLibreMap.on('error', this.onErrorListener);
   }
 
-  addRasterLayer(): void {
+  async addRasterLayer() {
     if (this.mapLibreMap && this.cogUrl) {
+      const currentOpacity: number = await firstValueFrom(
+        this.mapConfigState.dataLayersOpacity$
+      );
       const rasterSource: RasterSourceSpecification = {
         type: 'raster',
         url: this.cogUrl,
@@ -77,7 +101,7 @@ export class MapDataLayerComponent implements OnInit, OnDestroy {
         type: 'raster',
         source: 'rasterImage',
         paint: {
-          'raster-opacity': this.opacity,
+          'raster-opacity': currentOpacity,
           'raster-resampling': 'nearest',
         },
       };

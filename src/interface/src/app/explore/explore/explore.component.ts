@@ -9,7 +9,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { BehaviorSubject } from 'rxjs';
+import { map, of, switchMap, take } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -18,6 +18,9 @@ import { MapSelectorComponent } from '../map-selector/map-selector.component';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
+import { PlanState } from '../../plan/plan.state';
+import { getPlanPath } from '../../plan/plan-helpers';
+import { FrontendConstants } from '@types';
 
 @Component({
   selector: 'app-explore',
@@ -52,10 +55,13 @@ import { MapConfigService } from '../../maplibre-map/map-config.service';
   ],
 })
 export class ExploreComponent implements OnDestroy {
-  // TODO: Replace the behavior subject with the value that is coming from the state
-  projectAreasOpacity$ = new BehaviorSubject(0.5);
+  dataLayerOpacity$ = this.multiMapConfigState.dataLayersOpacity$;
+  defaultDataLayerOpacity = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
+
   panelExpanded = true;
   tabIndex = 0;
+
+  showSelectionToggle$ = this.planState.currentPlanId$.pipe(map((id) => !id));
 
   @HostListener('window:beforeunload')
   beforeUnload() {
@@ -66,20 +72,39 @@ export class ExploreComponent implements OnDestroy {
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
     private multiMapConfigState: MultiMapConfigState,
-    private mapConfigService: MapConfigService
+    private mapConfigService: MapConfigService,
+    private planState: PlanState
   ) {
     this.loadStateFromLocalStorage();
-    this.breadcrumbService.updateBreadCrumb({
-      label: ' New Plan',
-      backUrl: '/',
-    });
+
+    this.planState.currentPlanId$
+      .pipe(
+        take(1),
+        switchMap((id) => {
+          if (id) {
+            return this.planState.currentPlan$;
+          }
+          return of(null);
+        })
+      )
+      .subscribe((plan) => {
+        let label = 'New Plan';
+        let backUrl = '/';
+        if (plan) {
+          label = 'Explore: ' + plan.name;
+          backUrl = getPlanPath(plan.id);
+        }
+        this.breadcrumbService.updateBreadCrumb({
+          label,
+          backUrl,
+        });
+      });
 
     this.mapConfigService.initialize();
   }
 
   handleOpacityChange(opacity: number) {
-    // TODO: update the opacity directly on the state
-    this.projectAreasOpacity$.next(opacity);
+    this.multiMapConfigState.updateDataLayersOpacity(opacity);
   }
 
   togglePanelExpanded() {

@@ -1,4 +1,5 @@
 <mgl-map
+  *ngIf="bounds$ | async as bounds"
   [id]="'map_' + mapNumber"
   [boxZoom]="false"
   [dragRotate]="false"
@@ -6,7 +7,8 @@
   [maxZoom]="maxZoom"
   [minZoom]="minZoom"
   [pitchWithRotate]="false"
-  [fitBounds]="(bounds$ | async) || undefined"
+  [fitBounds]="bounds"
+  [fitBoundsOptions]="(boundOptions$ | async) || undefined"
   (mapLoad)="mapLoaded($event)"
   [style]="(baseLayerUrl$ | async) || ''"
   [attributionControl]="false"
@@ -30,9 +32,25 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  <mgl-control position="bottom-left" *ngIf="showMapNumber">
+  <app-planning-area-layer *ngIf="mapLibreMap"></app-planning-area-layer>
+
+  <mgl-control
+    position="bottom-left"
+    class="map-label-control custom-bottom-left-control"
+    *ngIf="showMapNumber">
     <div class="label" [class.selected-map]="(isSelected$ | async) === true">
-      Map {{ mapNumber }}
+      <span class="map-number"> Map {{ mapNumber }}</span
+      ><span class="map-layer" *ngIf="selectedLayer$ | async as selectedLayer"
+        >:
+        <a
+          sg-button
+          variant="link"
+          class="label-button"
+          (click)="goToSelectedLayer(selectedLayer)">
+          <i class="material-symbols-outlined">arrow_back</i
+          >{{ selectedLayer.name }}
+        </a>
+      </span>
     </div>
   </mgl-control>
 

@@ -21,22 +21,25 @@ import {
   RequestTransformFunction,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
-import { addRequestHeaders } from '../maplibre.helper';
+import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
 import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { map } from 'rxjs';
+import { map, switchMap } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
-import { DrawService, DefaultSelectConfig } from '../draw.service';
+import { DefaultSelectConfig, DrawService } from '../draw.service';
 import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
 import { FeatureId } from 'terra-draw/dist/extend';
 import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersRegistryService } from '../../explore/data-layers-registry';
 import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
+import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
+import { PlanState } from '../../plan/plan.state';
+import { DataLayer } from '@types';
 
 @UntilDestroy()
 @Component({
@@ -55,6 +58,7 @@ import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-laye
     MapDataLayerComponent,
     LayerComponent,
     MapLayerColorLegendComponent,
+    PlanningAreaLayerComponent,
   ],
   providers: [DataLayersStateService],
   templateUrl: './explore-map.component.html',
@@ -67,8 +71,22 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  bounds$ = this.mapConfigState.mapExtent$;
-  boundOptions = FrontendConstants.MAPLIBRE_BOUND_OPTIONS;
+  bounds$ = this.planState.currentPlanId$.pipe(
+    switchMap((id) => {
+      if (id) {
+        return this.planState.planningAreaGeometry$.pipe(
+          map((geometry) => {
+            return getBoundsFromGeometry(geometry);
+          })
+        );
+      }
+      return this.mapConfigState.mapExtent$;
+    })
+  );
+
+  boundOptions$ = this.planState.currentPlanId$.pipe(
+    map((id) => (id ? FrontendConstants.MAPLIBRE_BOUND_OPTIONS : undefined))
+  );
 
   layoutMode$ = this.multiMapConfigState.layoutMode$;
 
@@ -100,13 +118,16 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   );
   selectedFeatureId$ = this.drawService.selectedFeatureId$;
 
+  selectedLayer$ = this.state.selectedDataLayer$;
+
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService,
     private drawService: DrawService,
     private state: DataLayersStateService,
-    private registry: DataLayersRegistryService
+    private registry: DataLayersRegistryService,
+    private planState: PlanState
   ) {
     mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
@@ -217,6 +238,11 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       this.drawService.setMode('select');
       this.drawService.stop();
     }
+  }
+
+  goToSelectedLayer(layer: DataLayer) {
+    this.multiMapConfigState.setSelectedMap(this.mapNumber);
+    this.state.goToSelectedLayer(layer);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
