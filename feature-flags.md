@@ -13,6 +13,4 @@ The name and value of the flag will be shared by frontend and backend.
 
 `STATEWIDE_SCENARIOS` :  Uses Statewide scenarios (also called scenarios v2)
 
-`STATEWIDE_BASELAYERS` : Displays Statewide base layers under treatments
-
 `MAPLIBRE_ON_EXPLORE` : Shows explore page with maplibre (also called explore v2)
