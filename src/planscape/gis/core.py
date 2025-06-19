@@ -48,11 +48,9 @@ def get_random_output_file(input_file: str, output_folder: str = "/tmp") -> str:
 @lru_cache
 def is_vector(input_file: str) -> bool:
     try:
-        if settings.PROVIDER == "gcp":
-            with fiona.open(input_file):
-                return True
-
-        with fiona.Env(**get_gdal_env()):
+        path_file = Path(input_file)
+        extension = path_file.suffix.lower()
+        with fiona.Env(**get_gdal_env(allowed_extensions=extension)):
             with fiona.open(input_file):
                 return True
     except DriverError:
@@ -62,11 +60,9 @@ def is_vector(input_file: str) -> bool:
 @lru_cache
 def is_raster(input_file: str) -> bool:
     try:
-        if settings.PROVIDER == "gcp":
-            with rasterio.open(input_file):
-                return True
-
-        with rasterio.Env(**get_gdal_env()):
+        path_file = Path(input_file)
+        extension = path_file.suffix.lower()
+        with rasterio.Env(**get_gdal_env(allowed_extensions=extension)):
             with rasterio.open(input_file):
                 return True
     except RasterioIOError:
