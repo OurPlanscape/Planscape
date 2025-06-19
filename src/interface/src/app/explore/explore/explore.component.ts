@@ -9,7 +9,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { map, of, switchMap, take } from 'rxjs';
+import { map, of, skip, switchMap, take } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -105,8 +105,8 @@ export class ExploreComponent implements OnDestroy {
     // expand panel automatically when the selected map change
     // (when the user clicks on the data layer name on the map)
     this.multiMapConfigState.selectedMapId$
-      .pipe(untilDestroyed(this))
-      .subscribe(() => (this.panelExpanded = true));
+      .pipe(untilDestroyed(this), skip(1))
+      .subscribe((id) => (this.panelExpanded = true));
 
     this.mapConfigService.initialize();
   }
