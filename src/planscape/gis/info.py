@@ -25,7 +25,7 @@ def get_gdal_env(
         "GDAL_NUM_THREADS": str(num_threads),
         "GDAL_TIFF_INTERNAL_MASK": True,
         "GDAL_TIFF_OVR_BLOCK_SIZE": 128,
-        "CPL_DEBUG": True,
+        "CPL_DEBUG": settings.CPL_DEBUG,
     }
 
     if allowed_extensions:
