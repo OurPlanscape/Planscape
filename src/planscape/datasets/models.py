@@ -311,7 +311,7 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
         validators=[
             URLValidator(
                 schemes=SUPPORTED_SCHEMES,
-                regex=r"^(s3:\/\/[^\/]+\/.+)|((http|https|ftp|ftps):\/\/[^\s\/$.?#].[^\s]*)$",
+                regex=r"^((s3|gs):\/\/[^\/]+\/.+)|((http|https|ftp|ftps):\/\/[^\s\/$.?#].[^\s]*)$",
             )
         ],
         null=True,
