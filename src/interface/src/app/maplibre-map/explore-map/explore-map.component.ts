@@ -25,7 +25,11 @@ import { addRequestHeaders, getBoundsFromGeometry } from '../maplibre.helper';
 import { MatIconModule } from '@angular/material/icon';
 import { MapConfigState } from '../map-config.state';
 import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.component';
-import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
+import {
+  TerraDrawPolygonMode,
+  TerraDrawSelectMode,
+  GeoJSONStoreFeatures,
+} from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { map, switchMap } from 'rxjs';
@@ -177,9 +181,22 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   onMapMouseMove(event: MapMouseEvent): void {
     this.mouseLngLat = event.lngLat;
+    this.enableHoveredTooltips(event);
   }
 
-  drawAcreageTooltip(featureId: FeatureId, acreage: number) {
+  enableHoveredTooltips(event: MapMouseEvent) {
+    const features: GeoJSONStoreFeatures[] =
+      this.drawService.featuresAtMouseEvents(event);
+    this.acreageTooltips.forEach((f) => f.remove());
+    if (features) {
+      features.forEach((f) => {
+        const popupRef = this.acreageTooltips.get(f.id as FeatureId);
+        popupRef?.addTo(this.mapLibreMap);
+      });
+    }
+  }
+
+  createAcreageTooltip(featureId: FeatureId, acreage: number) {
     const coords = this.drawService.getPolygonBottomCenterCoords(featureId);
     if (coords) {
       const newPopup = new Popup({
@@ -191,8 +208,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
         className: 'acreage-popup',
       }) // TODO: plug in acreage when its merged
         .setLngLat([coords[0], coords[1]])
-        .setHTML(`Total acres:\n${acreage}`)
-        .addTo(this.mapLibreMap);
+        .setHTML(`Total acres:\n${acreage}`);
       this.acreageTooltips.set(featureId, newPopup);
     }
   }
@@ -202,7 +218,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     this.drawModeTooltipContent = null;
     // TODO: add this when we have new acreage calculated
     const acreage = 12345;
-    this.drawAcreageTooltip(featureId, acreage);
+    this.createAcreageTooltip(featureId, acreage);
   }
 
   onDrawChange(ids: FeatureId[], type: string, context: any) {

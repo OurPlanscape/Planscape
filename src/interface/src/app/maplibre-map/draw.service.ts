@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { TerraDraw } from 'terra-draw';
+import { GeoJSONStoreFeatures, TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
 import { Geometry } from '@turf/helpers';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
-import { Map as MapLibreMap } from 'maplibre-gl';
+import { Map as MapLibreMap, MapMouseEvent } from 'maplibre-gl';
 export type DrawMode = 'polygon' | 'select' | 'none';
 
 export const DefaultSelectConfig = {
@@ -174,5 +174,14 @@ export class DrawService {
     } else {
       return polygons[0].geometry;
     }
+  }
+
+  featuresAtMouseEvents(e: MapMouseEvent) {
+    let features: GeoJSONStoreFeatures[] = [];
+    if (this._terraDraw?.enabled && this.hasPolygonFeatures()) {
+      const mouseEvent = e.originalEvent;
+      features = this._terraDraw?.getFeaturesAtPointerEvent(mouseEvent);
+    }
+    return features;
   }
 }
