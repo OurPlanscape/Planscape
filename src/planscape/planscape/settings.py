@@ -353,6 +353,7 @@ LOGGING = {
 
 
 ENV = config("ENV", "dev")
+PROVIDER = config("PROVIDER", "aws", cast=str).lower()
 SENTRY_DSN = config("SENTRY_DSN", None)
 if SENTRY_DSN is not None:
     sentry_sdk.init(
@@ -454,15 +455,25 @@ AWS_SECRET_ACCESS_KEY = config("AWS_SECRET_ACCESS_KEY")
 AWS_DEFAULT_REGION = config("AWS_DEFAULT_REGION", "us-west-2")
 UPLOAD_EXPIRATION_TTL = config("UPLOAD_EXPIRATION_TTL", default=3600, cast=int)
 DATALAYERS_FOLDER = "datalayers"
-os.environ["AWS_ACCESS_KEY_ID"] = AWS_ACCESS_KEY_ID
-os.environ["AWS_SECRET_ACCESS_KEY"] = AWS_SECRET_ACCESS_KEY
-os.environ["AWS_DEFAULT_REGION"] = AWS_DEFAULT_REGION
+GOOGLE_APPLICATION_CREDENTIALS_FILE = config(
+    "GOOGLE_APPLICATION_CREDENTIALS_FILE", default=None
+)
+if PROVIDER == "aws":
+    os.environ["AWS_ACCESS_KEY_ID"] = str(AWS_ACCESS_KEY_ID)
+    os.environ["AWS_SECRET_ACCESS_KEY"] = str(AWS_SECRET_ACCESS_KEY)
+    os.environ["AWS_DEFAULT_REGION"] = str(AWS_DEFAULT_REGION)
+elif PROVIDER == "gcp":
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(
+        GOOGLE_APPLICATION_CREDENTIALS_FILE
+    )
+
 
 boto3.set_stream_logger(name="botocore.credentials", level=logging.ERROR)
 
 MAIN_ORG_NAME = config("MAIN_ORG_NAME", default="Spatial Informatics Group")
 
 GDAL_CACHE_MAX = config("GDAL_CACHE_MAX", "15%")
+CPL_DEBUG = config("CPL_DEBUG", False, cast=bool)
 OGR2OGR_TIMEOUT = config("OGR2OGR_TIMEOUT", 600)  # 10m
 ZIP_TIMEOUT = config("ZIP_TIMEOUT", 600)  # 10m
 ADMIN_URL_PREFIX = config("ADMIN_URL_PREFIX", "admin")

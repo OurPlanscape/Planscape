@@ -13,18 +13,37 @@ from rasterio.transform import from_gcps
 logger = logging.getLogger(__name__)
 
 
-def get_gdal_env(num_threads: Union[int, str] = "ALL_CPUS") -> Dict[str, Any]:
-    return {
-        "session": get_aws_session(),
+def get_gdal_env(
+    num_threads: Union[int, str] = "ALL_CPUS",
+    allowed_extensions: Optional[str] = ".tif",
+) -> Dict[str, Any]:
+    gdal_env = {
         "GDAL_DISABLE_READDIR_ON_OPEN": "EMPTY_DIR",
         "CPL_VSIL_USE_TEMP_FILE_FOR_RANDOM_WRITE": "YES",
-        "CPL_VSIL_CURL_ALLOWED_EXTENSIONS": ".tif",
         "GDAL_CACHE_MAX": settings.GDAL_CACHE_MAX,
         "VSI_CACHE": False,
         "GDAL_NUM_THREADS": str(num_threads),
         "GDAL_TIFF_INTERNAL_MASK": True,
         "GDAL_TIFF_OVR_BLOCK_SIZE": 128,
+        "CPL_DEBUG": settings.CPL_DEBUG,
     }
+
+    if allowed_extensions:
+        gdal_env["CPL_VSIL_CURL_ALLOWED_EXTENSIONS"] = allowed_extensions
+
+    match settings.PROVIDER:
+        case "aws":
+            gdal_env["session"] = get_aws_session()
+        case "gcp":
+            gdal_env[
+                "GOOGLE_APPLICATION_CREDENTIALS"
+            ] = settings.GOOGLE_APPLICATION_CREDENTIALS_FILE
+        case _:
+            logger.warning(
+                f"GDAL environment not configured for provider {settings.PROVIDER}. "
+                "Using default GDAL environment."
+            )
+    return gdal_env
 
 
 def info_raster(input_file: str) -> Dict[str, Any]:
