@@ -137,10 +137,6 @@ export class DrawService {
     this._terraDraw?.selectFeature(featureId);
   }
 
-  currentSelectedFeature() {
-    this._terraDraw?.getFeatureId;
-  }
-
   hasPolygonFeatures() {
     if (!this._terraDraw) {
       return false;
@@ -174,6 +170,10 @@ export class DrawService {
     } else {
       return polygons[0].geometry;
     }
+  }
+
+  getShapeForFeature(featureId: FeatureId) {
+    return this._terraDraw?.getSnapshotFeature(featureId);
   }
 
   featuresAtMouseEvents(e: MapMouseEvent) {

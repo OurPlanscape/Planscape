@@ -32,7 +32,7 @@ import {
 } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { map, switchMap } from 'rxjs';
+import { map, switchMap, take } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
 import { DefaultSelectConfig, DrawService } from '../draw.service';
 import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
@@ -44,7 +44,7 @@ import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-laye
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
-
+import { PlanService } from '@services';
 @UntilDestroy()
 @Component({
   selector: 'app-explore-map',
@@ -131,7 +131,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     private drawService: DrawService,
     private state: DataLayersStateService,
     private registry: DataLayersRegistryService,
-    private planState: PlanState
+    private planState: PlanState,
+    private planService: PlanService
   ) {
     mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
@@ -217,8 +218,15 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     // clears the hover tooltip
     this.drawModeTooltipContent = null;
     // TODO: add this when we have new acreage calculated
-    const acreage = 12345;
-    this.createAcreageTooltip(featureId, acreage);
+    const shape = this.drawService.getShapeForFeature(featureId);
+    if (shape) {
+      this.planService
+        .getTotalArea(shape.geometry)
+        .pipe(take(1))
+        .subscribe((acreage) => {
+          this.createAcreageTooltip(featureId, acreage);
+        });
+    }
   }
 
   onDrawChange(ids: FeatureId[], type: string, context: any) {
