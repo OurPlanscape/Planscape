@@ -21,7 +21,9 @@ def get_base_url(env):
         case "demo":
             return "https://demo.planscape.org"
         case _:
-            if settings.PROVIDER == "gcp": # TODO: Remove this after migration to GCP is complete
+            if (
+                settings.PROVIDER == "gcp"
+            ):  # TODO: Remove this after migration to GCP is complete
                 return "https://gdev.planscape.org"
             return "https://dev.planscape.org"
 
