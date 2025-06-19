@@ -21,7 +21,9 @@ import { MapConfigService } from '../../maplibre-map/map-config.service';
 import { PlanState } from '../../plan/plan.state';
 import { getPlanPath } from '../../plan/plan-helpers';
 import { FrontendConstants } from '@types';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-explore',
   standalone: true,
@@ -99,6 +101,12 @@ export class ExploreComponent implements OnDestroy {
           backUrl,
         });
       });
+
+    // expand panel automatically when the selected map change
+    // (when the user clicks on the data layer name on the map)
+    this.multiMapConfigState.selectedMapId$
+      .pipe(untilDestroyed(this))
+      .subscribe(() => (this.panelExpanded = true));
 
     this.mapConfigService.initialize();
   }
