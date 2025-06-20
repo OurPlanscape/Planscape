@@ -207,7 +207,7 @@ export class DrawService {
       .pipe(take(1))
       .subscribe((acres: number) => {
         if (acres && geoJSON) {
-          this._calculatingAcres$.next(true);
+          this._calculatingAcres$.next(false);
           this._totalAcres$.next(acres);
         }
       });

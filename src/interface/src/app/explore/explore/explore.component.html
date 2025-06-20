@@ -35,7 +35,7 @@
         (valueChange)="handleOpacityChange($event)"
         tooltip="Layer Opacity"></sg-opacity-slider>
         <div class="right-controls">
-      <app-navbar-area-acreage [isLoading]="(loadingAcres$ | async) ?? false"
+      <app-navbar-area-acreage [isLoading]="(calculatingDrawAcres$ | async) ?? false"
         [acres]="(drawAcres$ | async)"></app-navbar-area-acreage>
       <app-explore-modes-selection-toggle
         *ngIf="
