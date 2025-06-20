@@ -9,7 +9,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { BehaviorSubject, map, of, switchMap, filter, take, combineLatest } from 'rxjs';
+import { BehaviorSubject, map, of, tap, switchMap, take, combineLatest, Observable } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -21,8 +21,7 @@ import { MapConfigService } from '../../maplibre-map/map-config.service';
 import { PlanState } from '../../plan/plan.state';
 import { getPlanPath } from '../../plan/plan-helpers';
 import { NavbarAreaAcreageComponent } from '../navbar-area-acreage/navbar-area-acreage.component';
-import { Geometry } from 'geojson';
-
+import { Plan } from '@types';
 @Component({
   selector: 'app-explore',
   standalone: true,
@@ -70,8 +69,8 @@ export class ExploreComponent implements OnDestroy {
   }
 
   totalAcres$ = new BehaviorSubject<number | null>(null);
-  drawAcres$ = this.drawService.totalAcres$;
   loadingAcres$ = new BehaviorSubject<boolean>(false);
+  drawAcres$ = this.drawService.totalAcres$;
 
   constructor(
     private breadcrumbService: BreadcrumbService,
@@ -84,19 +83,28 @@ export class ExploreComponent implements OnDestroy {
     this.loadStateFromLocalStorage();
 
     //TODO: just move these to the navbar acres component?
-    //TODO: get actual acreage from plan
-    combineLatest([this.planState.planningAreaGeometry$, this.drawService.totalAcres$]).pipe(
-      filter(([planAcres, drawAcres]: [Geometry, number | null]) => planAcres !== null || drawAcres !== null),
-      map(([planAcres, drawAcres]) => planAcres !== null ? 6000 : drawAcres ?? null)
-    ).subscribe(result => {
-      console.log('a result?', result);
+
+    combineLatest([this.planState.currentPlan$ as Observable<Plan>, this.drawService.totalAcres$ as Observable<number>]).pipe(
+      tap(([plan, drawAcres]: [Plan, number]) => {
+        console.log('Emitted values:', { plan, drawAcres });
+      }),
+      // filter(([plan, drawAcres]: [Plan, number]) => drawAcres !== null || plan.area_acres !== null),
+      map(([plan, drawAcres]: [Plan, number]) => {
+        // console.log('isDrawing:', isDrawing);
+        console.log('plan acres?:', plan.area_acres);
+        console.log('draw acres?:', drawAcres);
+        return 10000;
+        // return isDrawing ? drawAcres ?? null : plan.area_acres ?? null;
+      })
+    ).subscribe((result: number) => {
+      console.log('is there a result?', result);
       this.totalAcres$.next(result);
     });
 
     combineLatest([this.planState.isPlanLoading$, this.drawService.calculatingAcres$]).pipe(
       map(([planLoading, drawLoading]) => planLoading || drawLoading) // Check if either is true
     ).subscribe(isTrue => {
-      this.loadingAcres$.next(isTrue); // Set the variable in the component
+      this.loadingAcres$.next(isTrue);
     });
 
     this.planState.currentPlanId$
