@@ -15,6 +15,7 @@ import {
 } from '@angular/material/dialog';
 import { DeletePlanningAreaComponent } from '../delete-planning-area/delete-planning-area.component';
 import { MatLegacyButtonModule } from '@angular/material/legacy-button';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-planning-area-titlebar-menu',
@@ -25,6 +26,7 @@ import { MatLegacyButtonModule } from '@angular/material/legacy-button';
     MatMenuModule,
     RouterLink,
     MatDialogModule,
+    ButtonComponent,
   ],
   templateUrl: './planning-area-titlebar-menu.component.html',
   styleUrl: './planning-area-titlebar-menu.component.scss',
