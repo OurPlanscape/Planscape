@@ -12,10 +12,6 @@ import { Geometry } from '@turf/helpers';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
 import { Router } from '@angular/router';
-import { PlanService } from '@services';
-import { Feature, MultiPolygon, Polygon } from 'geojson';
-import { feature } from '@turf/helpers';
-import { take } from 'rxjs';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -41,9 +37,8 @@ export class ExploreModesToggleComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dialog: MatDialog,
     private drawService: DrawService,
-    private planService: PlanService,
     private router: Router
-  ) {}
+  ) { }
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
@@ -67,29 +62,13 @@ export class ExploreModesToggleComponent {
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
     } else {
-      const polygons = this.drawService.getPolygonsSnapshot();
-      const polygonFeatures = polygons as Feature<Polygon>[];
-      const coordinates = polygonFeatures.map(
-        (feature) => feature.geometry.coordinates
-      );
-      const combinedGeometry: MultiPolygon = {
-        type: 'MultiPolygon',
-        coordinates,
-      };
-      const geoJSON = feature(combinedGeometry);
-      // TODO: replace with frontend acreage function when ready
-      this.planService
-        .getTotalArea(geoJSON.geometry)
-        .pipe(take(1))
-        .subscribe((acres: number) => {
-          if (acres && geoJSON) {
-            this.openPlanCreateDialog(acres, geoJSON.geometry)
-              .afterClosed()
-              .subscribe((id) => {
-                if (id) {
-                  this.router.navigate(['plan', id]);
-                }
-              });
+      const acres = this.drawService.getCurrentAcreageValue()
+      const geoJSON = this.drawService.getDrawingGeoJSON();
+      this.openPlanCreateDialog(acres, geoJSON.geometry)
+        .afterClosed()
+        .subscribe((id) => {
+          if (id) {
+            this.router.navigate(['plan', id]);
           }
         });
     }

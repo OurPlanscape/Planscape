@@ -34,6 +34,8 @@
         [sliderValue]="(projectAreasOpacity$ | async) ?? 0.5"
         (valueChange)="handleOpacityChange($event)"
         tooltip="Layer Opacity"></sg-opacity-slider>
+      <app-navbar-area-acreage [status]="'READY'"
+        [acres]="(drawAcres$ | async)"></app-navbar-area-acreage>
       <app-explore-modes-selection-toggle
         *ngIf="
           showSelectionToggle$ | async

@@ -1,0 +1,11 @@
+@import 'mixins';
+
+:host {
+   box-sizing: border-box;
+    padding: 1px;
+    margin-left: auto;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    color: $color-white;
+}

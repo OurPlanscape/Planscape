@@ -9,7 +9,7 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { BehaviorSubject, map, of, switchMap, take } from 'rxjs';
+import { BehaviorSubject, map, of, switchMap, filter, take, combineLatest } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
@@ -20,6 +20,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
 import { PlanState } from '../../plan/plan.state';
 import { getPlanPath } from '../../plan/plan-helpers';
+import { NavbarAreaAcreageComponent } from '../navbar-area-acreage/navbar-area-acreage.component';
+import { Geometry } from 'geojson';
 
 @Component({
   selector: 'app-explore',
@@ -38,6 +40,7 @@ import { getPlanPath } from '../../plan/plan-helpers';
     ButtonComponent,
     NgIf,
     MatTabsModule,
+    NavbarAreaAcreageComponent,
     BaseLayersComponent,
     MapSelectorComponent,
   ],
@@ -66,14 +69,28 @@ export class ExploreComponent implements OnDestroy {
     this.saveStateToLocalStorage();
   }
 
+  totalAcres$ = new BehaviorSubject<number | null>(null);
+  drawAcres$ = this.drawService.totalAcres$;
+
   constructor(
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
     private multiMapConfigState: MultiMapConfigState,
     private mapConfigService: MapConfigService,
-    private planState: PlanState
+    private planState: PlanState,
+    private drawService: DrawService,
   ) {
     this.loadStateFromLocalStorage();
+
+
+    //TODO: just move this to the navbar acres component?
+    combineLatest([this.planState.planningAreaGeometry$, this.drawService.totalAcres$]).pipe(
+      filter(([planAcres, drawAcres]: [Geometry, number | null]) => planAcres !== null || drawAcres !== null),
+      map(([planAcres, drawAcres]) => planAcres !== null ? 6000 : drawAcres ?? null)
+    ).subscribe(result => {
+      console.log('a result?', result);
+      this.totalAcres$.next(result);
+    });;
 
     this.planState.currentPlanId$
       .pipe(

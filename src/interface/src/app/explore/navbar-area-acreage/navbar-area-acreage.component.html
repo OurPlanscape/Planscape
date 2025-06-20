@@ -1,0 +1,5 @@
+<div *ngIf="acres">{{ acres | number:'1.0-0' }} acres</div>
+<mat-spinner
+    *ngIf="status === 'LOADING'"
+    diameter="20"
+    class="loader"></mat-spinner>

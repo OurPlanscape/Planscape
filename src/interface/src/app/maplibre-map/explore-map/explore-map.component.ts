@@ -17,7 +17,6 @@ import {
   LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
-  Popup,
   RequestTransformFunction,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
@@ -118,8 +117,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   selectedLayer$ = this.state.selectedDataLayer$;
 
-  acreageTooltips: Map<FeatureId, Popup> = new Map();
-
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
@@ -179,40 +176,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     this.mouseLngLat = event.lngLat;
   }
 
-  drawAcreageTooltip(featureId: FeatureId, acreage: number) {
-    const coords = this.drawService.getPolygonBottomCenterCoords(featureId);
-    if (coords) {
-      const newPopup = new Popup({
-        closeButton: false,
-        closeOnClick: false,
-        closeOnMove: false,
-        anchor: 'top',
-        offset: [0, 2],
-        className: 'acreage-popup',
-      }) // TODO: plug in acreage when its merged
-        .setLngLat([coords[0], coords[1]])
-        .setHTML(`Total acres:\n${acreage}`)
-        .addTo(this.mapLibreMap);
-      this.acreageTooltips.set(featureId, newPopup);
-    }
-  }
-
-  afterFinish(featureId: string) {
-    // clears the hover tooltip
-    this.drawModeTooltipContent = null;
-    // TODO: add this when we have new acreage calculated
-    const acreage = 12345;
-    this.drawAcreageTooltip(featureId, acreage);
-  }
-
   onDrawChange(ids: FeatureId[], type: string, context: any) {
-    if (type === 'delete') {
-      //delete all popups associated with any of the deleted featureids
-      ids.forEach((featureId: FeatureId) => {
-        const popup = this.acreageTooltips.get(featureId);
-        popup?.remove();
-      });
-    }
     if (this.drawService.getMode() === 'polygon') {
       const pointCount = this.drawService.getPolygonPointCount(ids[0]);
       if (pointCount > 3 && pointCount <= 5) {
@@ -230,18 +194,11 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   enablePolygonDrawingMode() {
     this.drawService.start();
     this.drawService.setMode('polygon');
-    this.drawService.registerFinish((featureId: string) =>
-      this.afterFinish(featureId)
-    );
     this.drawService.registerChangeCallback(
       (ids: any, type: any, context: any) =>
         this.onDrawChange(ids, type, context)
     );
     this.drawModeTooltipContent = 'Click to place first vertex';
-  }
-
-  clearTooltips() {
-    this.acreageTooltips.forEach((p) => p.remove());
   }
 
   cancelDrawingMode() {
@@ -250,7 +207,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     } else {
       this.drawService.setMode('select');
       this.drawService.stop();
-      this.clearTooltips();
     }
   }
 

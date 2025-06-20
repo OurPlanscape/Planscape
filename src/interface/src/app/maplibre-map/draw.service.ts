@@ -2,11 +2,15 @@ import { Injectable } from '@angular/core';
 import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
-import { Geometry } from '@turf/helpers';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { feature, Feature, Polygon, MultiPolygon } from '@turf/helpers';
+import { BehaviorSubject, Observable, take } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
+import { PlanService } from '@services';
+
+
 export type DrawMode = 'polygon' | 'select' | 'none';
+
 
 export const DefaultSelectConfig = {
   flags: {
@@ -39,6 +43,12 @@ export class DrawService {
   selectedFeatureId$: Observable<FeatureId | null> =
     this._selectedFeatureId$.asObservable();
 
+  private _totalAcres$ = new BehaviorSubject<number>(0);
+  totalAcres$: Observable<number> =
+    this._totalAcres$.asObservable();
+
+  constructor(private planService: PlanService) { }
+
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: map,
@@ -55,6 +65,11 @@ export class DrawService {
     });
     this._terraDraw?.on('deselect', () => {
       this._selectedFeatureId$.next(null);
+    });
+    this._terraDraw?.on('finish', (featureId: any, context: any) => {
+      this.setMode('select');
+      this.selectFeature(featureId);
+      this.updateTotalAcreage();
     });
   }
 
@@ -99,6 +114,7 @@ export class DrawService {
     this._terraDraw?.on('finish', (featureId: any, context: any) => {
       this.setMode('select');
       this.selectFeature(featureId);
+      this.updateTotalAcreage();
       finishCallback(featureId);
     });
   }
@@ -161,18 +177,33 @@ export class DrawService {
       .filter((f) => f.geometry.type === 'Polygon');
   }
 
-  getGeometry(): Geometry | null {
-    // TODO : use updated acreage calculation
-    const polygons = this.getPolygonsSnapshot();
-    if (!polygons) {
-      return null;
-    } else if (polygons.length > 1) {
-      return {
-        type: 'MultiPolygon',
-        coordinates: polygons.map((p) => p.geometry.coordinates) as number[][],
-      };
-    } else {
-      return polygons[0].geometry;
-    }
+  getCurrentAcreageValue() {
+    return this._totalAcres$.value;
   }
+
+  getDrawingGeoJSON() {
+    const polygons = this.getPolygonsSnapshot();
+    const polygonFeatures = polygons as Feature<Polygon>[];
+    const coordinates = polygonFeatures.map(
+      (feature) => feature.geometry.coordinates
+    );
+    const combinedGeometry: MultiPolygon = {
+      type: 'MultiPolygon',
+      coordinates,
+    };
+    return feature(combinedGeometry);
+  }
+
+  updateTotalAcreage() {
+    const geoJSON = this.getDrawingGeoJSON();
+    this.planService
+      .getTotalArea(geoJSON.geometry)
+      .pipe(take(1))
+      .subscribe((acres: number) => {
+        if (acres && geoJSON) {
+          this._totalAcres$.next(acres);
+        }
+      });
+  }
+
 }
