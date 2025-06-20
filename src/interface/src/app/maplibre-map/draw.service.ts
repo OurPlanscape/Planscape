@@ -8,9 +8,7 @@ import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { PlanService } from '@services';
 
-
 export type DrawMode = 'polygon' | 'select' | 'none';
-
 
 export const DefaultSelectConfig = {
   flags: {
@@ -44,15 +42,13 @@ export class DrawService {
     this._selectedFeatureId$.asObservable();
 
   private _totalAcres$ = new BehaviorSubject<number>(0);
-  totalAcres$: Observable<number> =
-    this._totalAcres$.asObservable();
+  totalAcres$: Observable<number> = this._totalAcres$.asObservable();
 
   private _calculatingAcres$ = new BehaviorSubject<boolean>(false);
   calculatingAcres$: Observable<boolean> =
     this._calculatingAcres$.asObservable();
 
-
-  constructor(private planService: PlanService) { }
+  constructor(private planService: PlanService) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({

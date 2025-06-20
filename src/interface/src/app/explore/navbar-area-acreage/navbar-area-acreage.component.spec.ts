@@ -8,10 +8,9 @@ describe('NavbarAreaAcreageComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [NavbarAreaAcreageComponent]
-    })
-    .compileComponents();
-    
+      imports: [NavbarAreaAcreageComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(NavbarAreaAcreageComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

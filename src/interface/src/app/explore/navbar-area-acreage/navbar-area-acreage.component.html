@@ -1,6 +1,5 @@
-<mat-spinner
-    *ngIf="isLoading"
-    diameter="20"
-    class="loader"></mat-spinner>
+<mat-spinner *ngIf="isLoading" diameter="20" class="loader"></mat-spinner>
 
-<div *ngIf="!isLoading && acres">Total Acres: {{ acres | number:'1.0-0' }}</div>
+<div *ngIf="!isLoading && acres">
+  Total Acres: {{ acres | number: '1.0-0' }}
+</div>

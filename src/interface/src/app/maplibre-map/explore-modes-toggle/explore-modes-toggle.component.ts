@@ -38,7 +38,7 @@ export class ExploreModesToggleComponent {
     private dialog: MatDialog,
     private drawService: DrawService,
     private router: Router
-  ) { }
+  ) {}
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
@@ -62,7 +62,7 @@ export class ExploreModesToggleComponent {
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
     } else {
-      const acres = this.drawService.getCurrentAcreageValue()
+      const acres = this.drawService.getCurrentAcreageValue();
       const geoJSON = this.drawService.getDrawingGeoJSON();
       this.openPlanCreateDialog(acres, geoJSON.geometry)
         .afterClosed()

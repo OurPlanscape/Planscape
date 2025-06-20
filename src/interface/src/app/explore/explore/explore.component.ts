@@ -78,10 +78,9 @@ export class ExploreComponent implements OnDestroy {
     private multiMapConfigState: MultiMapConfigState,
     private mapConfigService: MapConfigService,
     private planState: PlanState,
-    private drawService: DrawService,
+    private drawService: DrawService
   ) {
     this.loadStateFromLocalStorage();
-
 
     this.planState.currentPlanId$
       .pipe(
