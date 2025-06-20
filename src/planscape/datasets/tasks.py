@@ -2,7 +2,8 @@ import logging
 
 from django.db import connection
 
-from core.s3 import get_s3_hash
+from core.s3 import is_s3_file, get_s3_hash
+from core.gcs import is_gcs_file, get_gcs_hash
 from datasets.models import DataLayer, DataLayerStatus, DataLayerType
 from django.conf import settings
 from gis.vectors import ogr2ogr
@@ -24,8 +25,12 @@ def datalayer_uploaded(
         return
 
     try:
-        datalayer.hash = get_s3_hash(datalayer.url, bucket=settings.S3_BUCKET)
+        if is_s3_file(datalayer.url):
+            datalayer.hash = get_s3_hash(datalayer.url, bucket=settings.S3_BUCKET)
+        elif is_gcs_file(datalayer.url):
+            datalayer.hash = get_gcs_hash(datalayer.url)
         datalayer.status = status
+
         if datalayer.type == DataLayerType.VECTOR:
             datastore_table = ogr2ogr(datalayer.url)
             validate_datastore_table(datastore_table, datalayer)

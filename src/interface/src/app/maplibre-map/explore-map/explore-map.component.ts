@@ -118,18 +118,18 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   );
   selectedFeatureId$ = this.drawService.selectedFeatureId$;
 
-  selectedLayer$ = this.state.selectedDataLayer$;
+  selectedLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService,
     private drawService: DrawService,
-    private state: DataLayersStateService,
+    private dataLayersStateService: DataLayersStateService,
     private registry: DataLayersRegistryService,
     private planState: PlanState
   ) {
-    mapConfigState.drawingModeEnabled$
+    this.mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
       .subscribe((drawingModeStatus) => {
         if (drawingModeStatus === true) {
@@ -141,7 +141,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.registry.set(this.mapNumber, this.state);
+    this.registry.set(this.mapNumber, this.dataLayersStateService);
   }
 
   ngOnDestroy() {
@@ -242,7 +242,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   goToSelectedLayer(layer: DataLayer) {
     this.multiMapConfigState.setSelectedMap(this.mapNumber);
-    this.state.goToSelectedLayer(layer);
+    this.dataLayersStateService.goToSelectedLayer(layer);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>
