@@ -90,6 +90,7 @@ export class DrawService {
       return;
     }
     this._terraDraw.stop();
+    this._totalAcres$.next(0);
   }
 
   getMode() {
@@ -109,6 +110,7 @@ export class DrawService {
     if (curSelectedId) {
       this._terraDraw?.removeFeatures([curSelectedId]);
     }
+    this.updateTotalAcreage();
   }
 
   getTerraDraw(): TerraDraw | null {
@@ -174,16 +176,13 @@ export class DrawService {
 
   clearFeatures() {
     this._terraDraw?.clear();
+    this._totalAcres$.next(0);
   }
 
   getPolygonsSnapshot() {
     return this._terraDraw
       ?.getSnapshot()
       .filter((f) => f.geometry.type === 'Polygon');
-  }
-
-  getCurrentAcreageValue() {
-    return this._totalAcres$.value;
   }
 
   getDrawingGeoJSON() {
@@ -199,18 +198,27 @@ export class DrawService {
     return feature(combinedGeometry);
   }
 
+  getCurrentAcreageValue() {
+    return this._totalAcres$.value;
+  }
+
   updateTotalAcreage() {
     this._calculatingAcres$.next(true);
     const geoJSON = this.getDrawingGeoJSON();
-    this.planService
-      .getTotalArea(geoJSON.geometry)
-      .pipe(take(1))
-      .subscribe((acres: number) => {
-        if (acres && geoJSON) {
-          this._calculatingAcres$.next(false);
-          this._totalAcres$.next(acres);
-        }
-      });
+    // if we have no features, set acres to 0
+    if (geoJSON.geometry.coordinates.length > 0) {
+      this.planService
+        .getTotalArea(geoJSON.geometry)
+        .pipe(take(1))
+        .subscribe((acres: number) => {
+          if (acres && geoJSON) {
+            this._calculatingAcres$.next(false);
+            this._totalAcres$.next(acres);
+          }
+        });
+    } else {
+      this._calculatingAcres$.next(false);
+      this._totalAcres$.next(0);
+    }
   }
-
 }

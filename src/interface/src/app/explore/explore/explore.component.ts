@@ -70,6 +70,7 @@ export class ExploreComponent implements OnDestroy {
 
   calculatingDrawAcres$ = this.drawService.calculatingAcres$;
   drawAcres$ = this.drawService.totalAcres$;
+  currentlyDrawing$ = this.multiMapConfigState.drawingModeEnabled$;
 
   constructor(
     private breadcrumbService: BreadcrumbService,
