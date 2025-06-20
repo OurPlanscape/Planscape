@@ -10,6 +10,7 @@ import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PlanState } from 'src/app/plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
+import { FeatureService } from '../../features/feature.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -41,7 +42,8 @@ export class NavBarComponent implements OnInit {
     private dialog: MatDialog,
     private homeParametersStorageService: HomeParametersStorageService,
     private planState: PlanState,
-    private breadcrumbService: BreadcrumbService
+    private breadcrumbService: BreadcrumbService,
+    private featureService: FeatureService
   ) {}
 
   ngOnInit(): void {
@@ -64,5 +66,19 @@ export class NavBarComponent implements OnInit {
       restoreFocus: false,
       panelClass: 'no-padding-dialog',
     });
+  }
+
+  showPrintButton() {
+    if (
+      this.area === 'EXPLORE' &&
+      this.featureService.isFeatureEnabled('MAPLIBRE_ON_EXPLORE')
+    ) {
+      return false;
+    }
+    if (this.area === 'TREATMENTS' || this.area === 'TREATMENTS_PROJECT_AREA') {
+      return false;
+    }
+
+    return true;
   }
 }

@@ -13,11 +13,17 @@ import { AfterDuplicateTreatmentDialogComponent } from '../after-duplicate-treat
 import { TreatmentPlan } from '@types';
 import { ErrorDialogComponent } from '../../../styleguide/dialogs/error-dialog/error-dialog.component';
 import { DialogData } from '../../../styleguide/dialogs/dialogs';
+import { ButtonComponent } from '@styleguide';
 
 @Component({
   selector: 'app-treatment-navbar-menu',
   standalone: true,
-  imports: [MatIconModule, MatLegacyButtonModule, MatMenuModule],
+  imports: [
+    MatIconModule,
+    MatLegacyButtonModule,
+    MatMenuModule,
+    ButtonComponent,
+  ],
   templateUrl: './treatment-navbar-menu.component.html',
   styleUrl: './treatment-navbar-menu.component.scss',
 })
