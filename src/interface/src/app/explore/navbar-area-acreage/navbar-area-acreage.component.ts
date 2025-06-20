@@ -10,10 +10,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
   styleUrl: './navbar-area-acreage.component.scss'
 })
 export class NavbarAreaAcreageComponent {
-  @Input() status: 'LOADING' | 'READY' = 'READY';
+  @Input() isLoading: boolean = false;
   @Input() acres: number | null = null;
-
-
 
 
 }

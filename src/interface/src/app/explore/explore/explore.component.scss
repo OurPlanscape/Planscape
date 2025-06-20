@@ -75,3 +75,10 @@ app-map-nav-bar {
 app-synced-maps.withPanel {
   margin-left: $side-panel-width;
 }
+
+.right-controls {
+  margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}

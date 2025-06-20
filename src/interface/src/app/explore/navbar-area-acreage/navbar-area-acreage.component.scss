@@ -1,11 +1,18 @@
 @import 'mixins';
 
 :host {
-   box-sizing: border-box;
+    @include standard-label();
+    box-sizing: border-box;
     padding: 1px;
     margin-left: auto;
     display: flex;
     flex-direction: row;
-    gap: 8px;
     color: $color-white;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+}
+
+::ng-deep .mat-mdc-progress-spinner  {
+    --mdc-circular-progress-active-indicator-color: white;
 }

@@ -47,6 +47,11 @@ export class DrawService {
   totalAcres$: Observable<number> =
     this._totalAcres$.asObservable();
 
+  private _calculatingAcres$ = new BehaviorSubject<boolean>(false);
+  calculatingAcres$: Observable<boolean> =
+    this._calculatingAcres$.asObservable();
+
+
   constructor(private planService: PlanService) { }
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
@@ -195,12 +200,14 @@ export class DrawService {
   }
 
   updateTotalAcreage() {
+    this._calculatingAcres$.next(true);
     const geoJSON = this.getDrawingGeoJSON();
     this.planService
       .getTotalArea(geoJSON.geometry)
       .pipe(take(1))
       .subscribe((acres: number) => {
         if (acres && geoJSON) {
+          this._calculatingAcres$.next(true);
           this._totalAcres$.next(acres);
         }
       });

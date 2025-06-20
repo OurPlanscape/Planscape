@@ -71,6 +71,7 @@ export class ExploreComponent implements OnDestroy {
 
   totalAcres$ = new BehaviorSubject<number | null>(null);
   drawAcres$ = this.drawService.totalAcres$;
+  loadingAcres$ = new BehaviorSubject<boolean>(false);
 
   constructor(
     private breadcrumbService: BreadcrumbService,
@@ -82,15 +83,21 @@ export class ExploreComponent implements OnDestroy {
   ) {
     this.loadStateFromLocalStorage();
 
-
-    //TODO: just move this to the navbar acres component?
+    //TODO: just move these to the navbar acres component?
+    //TODO: get actual acreage from plan
     combineLatest([this.planState.planningAreaGeometry$, this.drawService.totalAcres$]).pipe(
       filter(([planAcres, drawAcres]: [Geometry, number | null]) => planAcres !== null || drawAcres !== null),
       map(([planAcres, drawAcres]) => planAcres !== null ? 6000 : drawAcres ?? null)
     ).subscribe(result => {
       console.log('a result?', result);
       this.totalAcres$.next(result);
-    });;
+    });
+
+    combineLatest([this.planState.isPlanLoading$, this.drawService.calculatingAcres$]).pipe(
+      map(([planLoading, drawLoading]) => planLoading || drawLoading) // Check if either is true
+    ).subscribe(isTrue => {
+      this.loadingAcres$.next(isTrue); // Set the variable in the component
+    });
 
     this.planState.currentPlanId$
       .pipe(
