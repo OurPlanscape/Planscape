@@ -1,0 +1,16 @@
+<sg-modal
+  class="upload-scenario-modal"
+  title="Upload Area"
+  primaryButtonText="Create"
+  secondaryButtonText="Cancel"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="false">
+  <div modalBodyContent>
+    <form>
+      <sg-file-upload
+        [uploadStatus]="uploadElementStatus"
+        (fileEvent)="handleFileEvent($event)"
+        supportedFileInfo="zip archive must contain DPF, SHP, SPX, CPG, PRJ files." />
+    </form>
+  </div>
+</sg-modal>

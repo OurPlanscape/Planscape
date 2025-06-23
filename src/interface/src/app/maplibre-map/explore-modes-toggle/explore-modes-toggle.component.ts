@@ -16,6 +16,7 @@ import { PlanService } from '@services';
 import { Feature, MultiPolygon, Polygon } from 'geojson';
 import { feature } from '@turf/helpers';
 import { take } from 'rxjs';
+import { UploadPlanningAreaModalComponent } from 'src/app/explore/upload-planning-area-modal/upload-planning-area-modal.component';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -27,6 +28,7 @@ import { take } from 'rxjs';
     MatTooltipModule,
     NgClass,
     NgIf,
+    UploadPlanningAreaModalComponent,
   ],
   templateUrl: './explore-modes-toggle.component.html',
   styleUrl: './explore-modes-toggle.component.scss',
@@ -96,7 +98,7 @@ export class ExploreModesToggleComponent {
   }
 
   clickedUpload() {
-    this.scenarioUpload.emit();
+    this.dialog.open(UploadPlanningAreaModalComponent);
   }
 
   private openPlanCreateDialog(area: number, shape: Geometry) {
