@@ -3,14 +3,13 @@ from urllib.parse import urlencode
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 from organizations.tests.factories import OrganizationFactory
-from rest_framework.test import APITransactionTestCase, APIClient
+from rest_framework.test import APITransactionTestCase
 
 from datasets.models import DataLayerType, VisibilityOptions
 from datasets.tests.factories import DataLayerFactory, DatasetFactory, StyleFactory
 from planscape.tests.factories import UserFactory
 
 User = get_user_model()
-anon = APIClient()
 
 
 class TestDataLayerViewSet(APITransactionTestCase):
@@ -274,7 +273,7 @@ class TestPublicAccess(APITransactionTestCase):
 
     def test_datasets_list_is_public(self):
         url = reverse("api:datasets:datasets-list")
-        resp = anon.get(url)
+        resp = self.client.get(url)
         self.assertEqual(resp.status_code, 200)
 
     def test_all_public_endpoints_are_readable(self):
@@ -285,10 +284,10 @@ class TestPublicAccess(APITransactionTestCase):
         ]
         for url in urls:
             with self.subTest(url=url):
-                resp = anon.get(url)
+                resp = self.client.get(url)
                 self.assertEqual(resp.status_code, 200)
 
     def test_write_still_requires_authentication(self):
         url = reverse("api:datasets:datasets-list")
-        resp = anon.post(url, {})
+        resp = self.client.post(url, {})
         self.assertIn(resp.status_code, (401, 403))
