@@ -112,7 +112,7 @@
 
     <button
       sg-button
-      *ngIf="area !== 'TREATMENTS' && area !== 'TREATMENTS_PROJECT_AREA'"
+      *ngIf="showPrintButton()"
       variant="text"
       icon="print"
       [outlined]="true"
