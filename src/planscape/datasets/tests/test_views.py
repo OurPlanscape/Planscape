@@ -12,6 +12,7 @@ from planscape.tests.factories import UserFactory
 User = get_user_model()
 anon = APIClient()
 
+
 class TestDataLayerViewSet(APITransactionTestCase):
     def setUp(self) -> None:
         self.admin = UserFactory.create(is_staff=True)
