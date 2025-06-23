@@ -1,6 +1,8 @@
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 
+from core.gcs import get_gcs_hash
+
 
 class Command(BaseCommand):
     help = "Transform S3 URLs to Google Cloud Storage (GCS) URLs in dataset files."
@@ -32,6 +34,7 @@ class Command(BaseCommand):
             if layer.url.startswith(s3_prefix):
                 new_url = layer.url.replace(s3_prefix, gs_prefix)
                 layer.url = new_url
+                layer.hash = get_gcs_hash(new_url)
                 layer.save()
 
             self.stdout.write(f"{count} DataLayers updated successfully.")
