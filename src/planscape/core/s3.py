@@ -113,7 +113,7 @@ def create_upload_url(
     return response
 
 
-def upload_file(object_name: str, input_file: str) -> requests.Response:
+def upload_file_via_s3_client(object_name: str, input_file: str) -> requests.Response:
     logger.info(f"Uploading file {object_name}.")
 
     s3_client = boto3.client("s3")
@@ -124,6 +124,34 @@ def upload_file(object_name: str, input_file: str) -> requests.Response:
     except ClientError as e:
         logger.error(f"Upload {object_name} falied: {e}")
         raise e
+
+
+def upload_file_via_api(
+    object_name: str,
+    input_file: str,
+    upload_to: Dict[str, Any],
+    chunk_size: int = settings.S3_UPLOAD_CHUNK_SIZE,
+):
+    logger.info(f"Uploading file {object_name}.")
+    with open(input_file, "rb") as f:
+        logger.info(f"Opened file {input_file} for upload.")
+        while True:
+            chunk = f.read(chunk_size)
+            logger.info(f"Read chunk of size {len(chunk)} from file {input_file}.")
+            if not chunk:
+                break
+
+            files = {"file": (object_name, f)}
+            logger.info(f"Uploading {object_name} chunk of size {len(chunk)}.")
+            response = requests.post(
+                upload_to["url"],
+                data=upload_to["fields"],
+                files=files,
+            )
+            logger.info(f"Response status code: {response.status_code}")
+            response.raise_for_status()
+            logger.info(f"Uploaded {object_name} chunk of size {len(chunk)}.")
+        logger.info(f"Uploaded {object_name} done.")
 
 
 def is_s3_file(input_file: Optional[str]) -> bool:
