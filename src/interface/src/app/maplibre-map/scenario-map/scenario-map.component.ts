@@ -62,8 +62,6 @@ export class ScenarioMapComponent {
    */
   mapLibreMap!: MapLibreMap;
 
-  scenarioId$ = this.scenarioState.currentScenarioId$;
-
   isScenarioSuccessful$ = this.scenarioState.isScenarioSuccessful$;
 
   /**
