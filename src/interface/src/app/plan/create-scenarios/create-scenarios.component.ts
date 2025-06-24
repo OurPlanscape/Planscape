@@ -33,6 +33,8 @@ import { FeatureService } from 'src/app/features/feature.service';
 enum ScenarioTabs {
   CONFIG,
   RESULTS,
+  TREATMENTS,
+  DATA_LAYERS,
 }
 
 @UntilDestroy()
@@ -372,6 +374,9 @@ export class CreateScenariosComponent implements OnInit {
 
   showTreatmentFooter() {
     const plan = this.plan$.value;
+    if (this.selectedTab === ScenarioTabs.DATA_LAYERS) {
+      return false;
+    }
     // if feature is on, the scenario is done, and I have permissions to create new one
     return this.showTreatmentsTab && !!plan && canAddTreatmentPlan(plan);
   }
