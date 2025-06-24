@@ -14,6 +14,7 @@ import {
   interval,
   map,
   NEVER,
+  skip,
   take,
 } from 'rxjs';
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
@@ -29,6 +30,8 @@ import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MatTabGroup } from '@angular/material/tabs';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -75,6 +78,8 @@ export class CreateScenariosComponent implements OnInit {
 
   isLoading$ = new BehaviorSubject(true);
 
+  @ViewChild('tabGroup') tabGroup!: MatTabGroup;
+
   constructor(
     private fb: FormBuilder,
     private LegacyPlanStateService: LegacyPlanStateService,
@@ -83,8 +88,17 @@ export class CreateScenariosComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
     private scenarioStateService: ScenarioState,
-    private featureService: FeatureService
-  ) {}
+    private featureService: FeatureService,
+    private dataLayersStateService: DataLayersStateService
+  ) {
+    this.dataLayersStateService.paths$
+      .pipe(untilDestroyed(this), skip(1))
+      .subscribe((path) => {
+        if (path.length > 0) {
+          this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
+        }
+      });
+  }
 
   async createForms() {
     await this.constraintsPanelComponent.loadExcludedAreas();
