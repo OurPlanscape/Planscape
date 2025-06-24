@@ -16,7 +16,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        from planscape.datasets.models import DataLayer
+        from datasets.models import DataLayer
 
         dry_run = options["dry_run"]
         count = 0
