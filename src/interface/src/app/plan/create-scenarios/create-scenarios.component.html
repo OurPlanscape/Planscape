@@ -2,114 +2,211 @@
   resource="scenario"
   *ngIf="scenarioNotFound"></app-resource-unavailable>
 
-<!-- Loading state -->
+<!--Loading state-->
 <div *ngIf="isLoading$ | async" class="spinner-row">
   <mat-spinner diameter="24" class="loader"></mat-spinner>
 </div>
 
 <div
-  class="create-scenarios-panel mat-elevation-z2"
+  class="scenario-panel"
   [ngClass]="{ hidden: scenarioNotFound || (isLoading$ | async) === true }">
-  <div class="create-scenarios-panel-content">
-    <div class="scenario-name">
-      <form *ngIf="forms.get('scenarioName')" [formGroup]="forms!">
-        <mat-form-field class="scenario-name-input">
-          <input
-            formControlName="scenarioName"
-            matInput
-            placeholder="Scenario Name:" />
-        </mat-form-field>
-      </form>
-      <div
-        *ngIf="
-          scenarioNameFormField?.invalid &&
-          scenarioNameFormField?.touched &&
-          scenarioNameFormField?.errors?.['required']
-        "
-        class="error">
-        Please enter scenario name above
-      </div>
-      <div *ngIf="scenarioNameFormField?.errors?.['duplicate']" class="error">
-        This name is already used by another scenario.
-      </div>
+  <div class="scenario-name">
+    <form *ngIf="forms.get('scenarioName')" [formGroup]="forms!">
+      <mat-form-field class="scenario-name-input">
+        <input
+          formControlName="scenarioName"
+          matInput
+          placeholder="Scenario Name:" />
+      </mat-form-field>
+    </form>
+    <div
+      *ngIf="
+        scenarioNameFormField?.invalid &&
+        scenarioNameFormField?.touched &&
+        scenarioNameFormField?.errors?.['required']
+      "
+      class="error">
+      Please enter scenario name above
     </div>
-    <div class="tab-container">
-      <mat-tab-group
-        [(selectedIndex)]="selectedTab"
-        class="create-scenarios-tab-group"
-        [animationDuration]="tabAnimation">
-        <mat-tab label="Configurations">
-          <div class="create-scenarios-inner-wrapper">
-            <app-set-priorities
-              [scenarioStatus]="scenarioState"></app-set-priorities>
-            <app-constraints-panel
-              [planningAreaAcres]="(acres$ | async) || 0"
-              [showWarning]="
-                scenarioState !== 'SUCCESS'
-              "></app-constraints-panel>
-            <div class="flex-row gap-12" *ngIf="!scenarioResults">
-              <button
-                mat-raised-button
-                color="primary"
-                type="submit"
-                [disabled]="
-                  scenarioNameFormField?.invalid ||
-                  prioritiesForm?.invalid ||
-                  constrainsForm?.invalid ||
-                  generatingScenario
-                "
-                (click)="createScenario()">
-                {{ generatingScenario ? 'GENERATING SCENARIO...' : 'GENERATE' }}
-              </button>
-            </div>
-          </div>
-        </mat-tab>
-        <mat-tab label="Results">
-          <div class="results-container">
-            <ng-container *ngIf="scenarioState === 'LOADING'"></ng-container>
-            <app-scenario-not-started
-              *ngIf="
-                scenarioState === 'NOT_STARTED'
-              "></app-scenario-not-started>
-            <app-scenario-pending
-              *ngIf="scenarioState === 'PENDING'"></app-scenario-pending>
-            <app-scenario-pending
-              *ngIf="scenarioState === 'RUNNING'"></app-scenario-pending>
-            <app-scenario-results
-              *ngIf="scenarioState === 'SUCCESS'"
-              [results]="scenarioResults"
-              [priorities]="priorities"
-              [scenarioName]="scenarioNameFormField?.value"
-              [scenarioId]="scenarioId!">
-            </app-scenario-results>
-            <app-scenario-failure
-              *ngIf="
-                scenarioState === 'FAILURE' ||
-                scenarioState === 'PANIC' ||
-                scenarioState === 'TIMED_OUT'
-              "
-              (tryAgain)="goToConfig()"
-              (goBack)="goToPlan()"
-              [scenarioName]="scenarioNameFormField?.value"
-              [scenarioId]="scenarioId!"
-              [scenarioState]="scenarioState"></app-scenario-failure>
-          </div>
-        </mat-tab>
-        <mat-tab
-          label="Treatment Plans"
-          *ngIf="showTreatmentsTab && scenarioId">
-          <app-treatments-tab
-            [scenarioId]="scenarioId"
-            [planningArea]="plan$ | async"></app-treatments-tab>
-        </mat-tab>
-        <mat-tab label="Data Layers">
-          <app-data-layers class="white-background"></app-data-layers>
-        </mat-tab>
-      </mat-tab-group>
+    <div *ngIf="scenarioNameFormField?.errors?.['duplicate']" class="error">
+      This name is already used by another scenario.
     </div>
-
-    <app-plan-tabs-footer
-      [scenarioId]="scenarioId || ''"
-      *ngIf="showTreatmentFooter()"></app-plan-tabs-footer>
   </div>
+  <mat-tab-group
+    [(selectedIndex)]="selectedTab"
+    class="scenario-tabs"
+    mat-stretch-tabs="false"
+    mat-align-tabs="start">
+    <mat-tab label="Configurations">
+      <div class="create-scenarios-inner-wrapper">
+        <app-set-priorities
+          [scenarioStatus]="scenarioState"></app-set-priorities>
+        <app-constraints-panel
+          [planningAreaAcres]="(acres$ | async) || 0"
+          [showWarning]="scenarioState !== 'SUCCESS'"></app-constraints-panel>
+        <div class="flex-row gap-12" *ngIf="!scenarioResults">
+          <button
+            mat-raised-button
+            color="primary"
+            type="submit"
+            [disabled]="
+              scenarioNameFormField?.invalid ||
+              prioritiesForm?.invalid ||
+              constrainsForm?.invalid ||
+              generatingScenario
+            "
+            (click)="createScenario()">
+            {{ generatingScenario ? 'GENERATING SCENARIO...' : 'GENERATE' }}
+          </button>
+        </div>
+      </div>
+    </mat-tab>
+    <mat-tab label="Results">
+      <div class="results-container">
+        <ng-container *ngIf="scenarioState === 'LOADING'"></ng-container>
+        <app-scenario-not-started
+          *ngIf="scenarioState === 'NOT_STARTED'"></app-scenario-not-started>
+        <app-scenario-pending
+          *ngIf="scenarioState === 'PENDING'"></app-scenario-pending>
+        <app-scenario-pending
+          *ngIf="scenarioState === 'RUNNING'"></app-scenario-pending>
+        <app-scenario-results
+          *ngIf="scenarioState === 'SUCCESS'"
+          [results]="scenarioResults"
+          [priorities]="priorities"
+          [scenarioName]="scenarioNameFormField?.value"
+          [scenarioId]="scenarioId!">
+        </app-scenario-results>
+        <app-scenario-failure
+          *ngIf="
+            scenarioState === 'FAILURE' ||
+            scenarioState === 'PANIC' ||
+            scenarioState === 'TIMED_OUT'
+          "
+          (tryAgain)="goToConfig()"
+          (goBack)="goToPlan()"
+          [scenarioName]="scenarioNameFormField?.value"
+          [scenarioId]="scenarioId!"
+          [scenarioState]="scenarioState"></app-scenario-failure>
+      </div>
+    </mat-tab>
+    <mat-tab label="Treatment Plans" *ngIf="showTreatmentsTab && scenarioId">
+      <app-treatments-tab
+        [scenarioId]="scenarioId"
+        [planningArea]="plan$ | async"></app-treatments-tab>
+    </mat-tab>
+    <mat-tab label="Data Layers">
+      <app-data-layers class="white-background"></app-data-layers>
+    </mat-tab>
+  </mat-tab-group>
+  <app-plan-tabs-footer
+    [scenarioId]="scenarioId || ''"
+    *ngIf="showTreatmentFooter()"></app-plan-tabs-footer>
 </div>
+
+<!--<div-->
+<!--  class="create-scenarios-panel mat-elevation-z2"-->
+<!--  [ngClass]="{ hidden: scenarioNotFound || (isLoading$ | async) === true }">-->
+<!--  <div class="create-scenarios-panel-content">-->
+<!--    <div class="scenario-name">-->
+<!--      <form *ngIf="forms.get('scenarioName')" [formGroup]="forms!">-->
+<!--        <mat-form-field class="scenario-name-input">-->
+<!--          <input-->
+<!--            formControlName="scenarioName"-->
+<!--            matInput-->
+<!--            placeholder="Scenario Name:" />-->
+<!--        </mat-form-field>-->
+<!--      </form>-->
+<!--      <div-->
+<!--        *ngIf="-->
+<!--          scenarioNameFormField?.invalid &&-->
+<!--          scenarioNameFormField?.touched &&-->
+<!--          scenarioNameFormField?.errors?.['required']-->
+<!--        "-->
+<!--        class="error">-->
+<!--        Please enter scenario name above-->
+<!--      </div>-->
+<!--      <div *ngIf="scenarioNameFormField?.errors?.['duplicate']" class="error">-->
+<!--        This name is already used by another scenario.-->
+<!--      </div>-->
+<!--    </div>-->
+<!--    <div class="tab-container">-->
+<!--      <mat-tab-group-->
+<!--        [(selectedIndex)]="selectedTab"-->
+<!--        class="create-scenarios-tab-group"-->
+<!--        [animationDuration]="tabAnimation">-->
+<!--        <mat-tab label="Configurations">-->
+<!--          <div class="create-scenarios-inner-wrapper">-->
+<!--            <app-set-priorities-->
+<!--              [scenarioStatus]="scenarioState"></app-set-priorities>-->
+<!--            <app-constraints-panel-->
+<!--              [planningAreaAcres]="(acres$ | async) || 0"-->
+<!--              [showWarning]="-->
+<!--                scenarioState !== 'SUCCESS'-->
+<!--              "></app-constraints-panel>-->
+<!--            <div class="flex-row gap-12" *ngIf="!scenarioResults">-->
+<!--              <button-->
+<!--                mat-raised-button-->
+<!--                color="primary"-->
+<!--                type="submit"-->
+<!--                [disabled]="-->
+<!--                  scenarioNameFormField?.invalid ||-->
+<!--                  prioritiesForm?.invalid ||-->
+<!--                  constrainsForm?.invalid ||-->
+<!--                  generatingScenario-->
+<!--                "-->
+<!--                (click)="createScenario()">-->
+<!--                {{ generatingScenario ? 'GENERATING SCENARIO...' : 'GENERATE' }}-->
+<!--              </button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </mat-tab>-->
+<!--        <mat-tab label="Results">-->
+<!--          <div class="results-container">-->
+<!--            <ng-container *ngIf="scenarioState === 'LOADING'"></ng-container>-->
+<!--            <app-scenario-not-started-->
+<!--              *ngIf="-->
+<!--                scenarioState === 'NOT_STARTED'-->
+<!--              "></app-scenario-not-started>-->
+<!--            <app-scenario-pending-->
+<!--              *ngIf="scenarioState === 'PENDING'"></app-scenario-pending>-->
+<!--            <app-scenario-pending-->
+<!--              *ngIf="scenarioState === 'RUNNING'"></app-scenario-pending>-->
+<!--            <app-scenario-results-->
+<!--              *ngIf="scenarioState === 'SUCCESS'"-->
+<!--              [results]="scenarioResults"-->
+<!--              [priorities]="priorities"-->
+<!--              [scenarioName]="scenarioNameFormField?.value"-->
+<!--              [scenarioId]="scenarioId!">-->
+<!--            </app-scenario-results>-->
+<!--            <app-scenario-failure-->
+<!--              *ngIf="-->
+<!--                scenarioState === 'FAILURE' ||-->
+<!--                scenarioState === 'PANIC' ||-->
+<!--                scenarioState === 'TIMED_OUT'-->
+<!--              "-->
+<!--              (tryAgain)="goToConfig()"-->
+<!--              (goBack)="goToPlan()"-->
+<!--              [scenarioName]="scenarioNameFormField?.value"-->
+<!--              [scenarioId]="scenarioId!"-->
+<!--              [scenarioState]="scenarioState"></app-scenario-failure>-->
+<!--          </div>-->
+<!--        </mat-tab>-->
+<!--        <mat-tab-->
+<!--          label="Treatment Plans"-->
+<!--          *ngIf="showTreatmentsTab && scenarioId">-->
+<!--          <app-treatments-tab-->
+<!--            [scenarioId]="scenarioId"-->
+<!--            [planningArea]="plan$ | async"></app-treatments-tab>-->
+<!--        </mat-tab>-->
+<!--        <mat-tab label="Data Layers">-->
+<!--          <app-data-layers class="white-background"></app-data-layers>-->
+<!--        </mat-tab>-->
+<!--      </mat-tab-group>-->
+<!--    </div>-->
+
+<!--    <app-plan-tabs-footer-->
+<!--      [scenarioId]="scenarioId || ''"-->
+<!--      *ngIf="showTreatmentFooter()"></app-plan-tabs-footer>-->
+<!--  </div>-->
+<!--</div>-->
