@@ -3,10 +3,10 @@ import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
 import { feature, Feature, Polygon, MultiPolygon } from '@turf/helpers';
-import { BehaviorSubject, Observable, take } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
-import { PlanService } from '@services';
+import { acresForFeature } from '../maplibre-map/maplibre.helper';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -43,12 +43,6 @@ export class DrawService {
 
   private _totalAcres$ = new BehaviorSubject<number>(0);
   totalAcres$: Observable<number> = this._totalAcres$.asObservable();
-
-  private _calculatingAcres$ = new BehaviorSubject<boolean>(false);
-  calculatingAcres$: Observable<boolean> =
-    this._calculatingAcres$.asObservable();
-
-  constructor(private planService: PlanService) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -199,21 +193,12 @@ export class DrawService {
   }
 
   updateTotalAcreage() {
-    this._calculatingAcres$.next(true);
     const geoJSON = this.getDrawingGeoJSON();
     // if we have no features, set acres to 0
     if (geoJSON.geometry.coordinates.length > 0) {
-      this.planService
-        .getTotalArea(geoJSON.geometry)
-        .pipe(take(1))
-        .subscribe((acres: number) => {
-          if (acres && geoJSON) {
-            this._calculatingAcres$.next(false);
-            this._totalAcres$.next(acres);
-          }
-        });
+      const acres = acresForFeature(geoJSON);
+      this._totalAcres$.next(acres);
     } else {
-      this._calculatingAcres$.next(false);
       this._totalAcres$.next(0);
     }
   }

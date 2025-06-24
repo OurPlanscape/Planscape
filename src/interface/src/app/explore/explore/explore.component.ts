@@ -1,5 +1,5 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
-import { AsyncPipe, NgClass, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf, CommonModule } from '@angular/common';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
 import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
@@ -20,7 +20,6 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
 import { PlanState } from '../../plan/plan.state';
 import { getPlanPath } from '../../plan/plan-helpers';
-import { NavbarAreaAcreageComponent } from '../navbar-area-acreage/navbar-area-acreage.component';
 
 @Component({
   selector: 'app-explore',
@@ -39,7 +38,7 @@ import { NavbarAreaAcreageComponent } from '../navbar-area-acreage/navbar-area-a
     ButtonComponent,
     NgIf,
     MatTabsModule,
-    NavbarAreaAcreageComponent,
+    CommonModule,
     BaseLayersComponent,
     MapSelectorComponent,
   ],
@@ -68,9 +67,7 @@ export class ExploreComponent implements OnDestroy {
     this.saveStateToLocalStorage();
   }
 
-  calculatingDrawAcres$ = this.drawService.calculatingAcres$;
-  drawAcres$ = this.drawService.totalAcres$;
-  currentlyDrawing$ = this.multiMapConfigState.drawingModeEnabled$;
+  totalAcres$ = this.drawService.totalAcres$;
 
   constructor(
     private breadcrumbService: BreadcrumbService,
