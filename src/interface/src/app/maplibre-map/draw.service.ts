@@ -67,7 +67,7 @@ export class DrawService {
     this._terraDraw?.on('deselect', () => {
       this._selectedFeatureId$.next(null);
     });
-    this._terraDraw?.on('finish', (featureId: any, context: any) => {
+    this._terraDraw?.on('finish', (featureId: FeatureId) => {
       this.setMode('select');
       this.selectFeature(featureId);
       this.updateTotalAcreage();
@@ -114,7 +114,7 @@ export class DrawService {
   }
 
   registerFinish(finishCallback: Function) {
-    this._terraDraw?.on('finish', (featureId: any, context: any) => {
+    this._terraDraw?.on('finish', (featureId: FeatureId) => {
       this.setMode('select');
       this.selectFeature(featureId);
       this.updateTotalAcreage();
@@ -152,7 +152,7 @@ export class DrawService {
     }
   }
 
-  selectFeature(featureId: number) {
+  selectFeature(featureId: FeatureId) {
     this._terraDraw?.selectFeature(featureId);
   }
 
