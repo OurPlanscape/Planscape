@@ -13,18 +13,23 @@ class NotInTestingFilter(logging.Filter):
 
 
 def get_base_url(env):
-    match env:
-        case "production":
+    output = ""
+    match env, settings.PROVIDER:
+        case "production", "gcp":
+            return "https://gapp.planscape.org"
+        case "production", _:
             return "https://app.planscape.org"
-        case "staging":
+        case "staging", "gcp":
+            return "https://gstaging.planscape.org"
+        case "staging", _:
             return "https://staging.planscape.org"
-        case "demo":
+        case "demo", "gcp":
+            return "https://gdemo.planscape.org"
+        case "demo", _:
             return "https://demo.planscape.org"
-        case _:
-            if (
-                settings.PROVIDER == "gcp"
-            ):  # TODO: Remove this after migration to GCP is complete
-                return "https://gdev.planscape.org"
+        case _, "gcp":
+            return "https://gdev.planscape.org"
+        case _, _:
             return "https://dev.planscape.org"
 
 
