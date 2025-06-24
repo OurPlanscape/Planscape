@@ -176,7 +176,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     this.mouseLngLat = event.lngLat;
   }
 
-  onDrawChange(ids: FeatureId[], type: string, context: any) {
+  onDrawChange(ids: FeatureId[]) {
     if (this.drawService.getMode() === 'polygon') {
       const pointCount = this.drawService.getPolygonPointCount(ids[0]);
       if (pointCount > 3 && pointCount <= 5) {
@@ -194,9 +194,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   enablePolygonDrawingMode() {
     this.drawService.start();
     this.drawService.setMode('polygon');
-    this.drawService.registerChangeCallback(
-      (ids: any, type: any, context: any) =>
-        this.onDrawChange(ids, type, context)
+    this.drawService.registerChangeCallback((ids: FeatureId[]) =>
+      this.onDrawChange(ids)
     );
     this.drawModeTooltipContent = 'Click to place first vertex';
   }

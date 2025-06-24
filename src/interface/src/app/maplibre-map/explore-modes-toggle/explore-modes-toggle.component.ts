@@ -8,7 +8,6 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
 import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Geometry } from '@turf/helpers';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
 import { Router } from '@angular/router';
@@ -62,9 +61,7 @@ export class ExploreModesToggleComponent {
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
     } else {
-      const acres = this.drawService.getCurrentAcreageValue();
-      const geoJSON = this.drawService.getDrawingGeoJSON();
-      this.openPlanCreateDialog(acres, geoJSON.geometry)
+      this.openPlanCreateDialog()
         .afterClosed()
         .subscribe((id) => {
           if (id) {
@@ -78,12 +75,14 @@ export class ExploreModesToggleComponent {
     this.scenarioUpload.emit();
   }
 
-  private openPlanCreateDialog(area: number, shape: Geometry) {
+  private openPlanCreateDialog() {
+    const acres = this.drawService.getCurrentAcreageValue();
+    const geoJSON = this.drawService.getDrawingGeoJSON();
     return this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
       data: {
-        shape: shape,
-        totalArea: area,
+        shape: geoJSON.geometry,
+        totalArea: acres,
       },
     });
   }
