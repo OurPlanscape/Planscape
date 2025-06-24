@@ -4,6 +4,7 @@ import {
   BehaviorSubject,
   combineLatest,
   distinctUntilChanged,
+  firstValueFrom,
   map,
   Observable,
   of,
@@ -15,6 +16,8 @@ import {
 import { DataLayer, DataSet, Pagination, SearchResult } from '@types';
 import { buildPathTree } from './data-layers/tree-node';
 import { extractLegendInfo } from './utilities';
+import { MultiMapsStorageService } from '@services/local-storage.service';
+import { MultiMapConfigState } from '../maplibre-map/multi-map-config.state';
 
 @Injectable()
 export class DataLayersStateService {
@@ -39,7 +42,9 @@ export class DataLayersStateService {
   selectedDataSet$ = this._selectedDataSet$.asObservable().pipe(shareReplay(1));
 
   private _selectedDataLayer$ = new BehaviorSubject<DataLayer | null>(null);
-  selectedDataLayer$ = this._selectedDataLayer$.asObservable();
+  selectedDataLayer$ = this._selectedDataLayer$
+    .asObservable()
+    .pipe(tap((layer) => {}));
 
   dataLayerWithUrl$ = this.selectedDataLayer$.pipe(
     switchMap((layer) => {
@@ -119,7 +124,11 @@ export class DataLayersStateService {
   private _isBrowsing$ = new BehaviorSubject(true);
   isBrowsing$ = this._isBrowsing$.asObservable();
 
-  constructor(private service: DataLayersService) {}
+  constructor(
+    private service: DataLayersService,
+    private multimapStorageService: MultiMapsStorageService,
+    private multimapConfigStateService: MultiMapConfigState
+  ) {}
 
   selectDataSet(dataset: DataSet) {
     this._isBrowsing$.next(true);
@@ -135,8 +144,27 @@ export class DataLayersStateService {
     }
   }
 
-  selectDataLayer(dataLayer: DataLayer) {
+  async selectDataLayer(dataLayer: DataLayer) {
     this.setDataLayerLoading(true);
+    // Getting the current state of the store
+    const currentStorage = this.multimapStorageService.getItem();
+    if (currentStorage) {
+      // TODO: instead of '1' we should use the selectedMapId (Question: How can I get that if I cannot inject MultimapStateService?)
+      const selectedMapId: number =
+        (await firstValueFrom(
+          this.multimapConfigStateService.selectedMapId$
+        )) || 1;
+      // Updating datalayers
+      const dataLayers = {
+        ...currentStorage.dataLayers,
+        [selectedMapId]: dataLayer,
+      };
+      // Storing datalayers
+      this.multimapStorageService.setItem({
+        ...currentStorage,
+        dataLayers,
+      });
+    }
     this._selectedDataLayer$.next(dataLayer);
   }
 
