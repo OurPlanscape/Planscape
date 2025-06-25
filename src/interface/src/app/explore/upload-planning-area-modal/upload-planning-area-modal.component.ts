@@ -3,10 +3,7 @@ import { ModalComponent } from 'src/styleguide/modal/modal.component';
 import { MatButtonModule } from '@angular/material/button';
 import { FileUploadFieldComponent } from '../../../styleguide/file-upload-field/file-upload-field.component';
 import * as shp from 'shpjs';
-import {
-
-  MatDialogRef,
-} from '@angular/material/dialog';
+import { MatDialogRef } from '@angular/material/dialog';
 import {
   FormBuilder,
   FormGroup,
@@ -23,7 +20,10 @@ import {
 @Component({
   selector: 'app-upload-planning-area-modal',
   standalone: true,
-  imports: [FileUploadFieldComponent, ModalComponent, MatButtonModule,
+  imports: [
+    FileUploadFieldComponent,
+    ModalComponent,
+    MatButtonModule,
     ButtonComponent,
     FileUploadFieldComponent,
     InputFieldComponent,
@@ -56,9 +56,7 @@ export class UploadPlanningAreaModalComponent {
   uploadFormError?: string | null = null;
   readonly dialogRef = inject(MatDialogRef<UploadPlanningAreaModalComponent>);
 
-
   constructor(private fb: FormBuilder) {
-
     this.uploadPlanningAreaForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
       standSize: this.fb.control('MEDIUM', [Validators.required]),
@@ -88,7 +86,6 @@ export class UploadPlanningAreaModalComponent {
   closeModal(): void {
     this.dialogRef.close({ confirmed: false });
   }
-
 
   async convertToGeoJson(file: File) {
     const reader = new FileReader();

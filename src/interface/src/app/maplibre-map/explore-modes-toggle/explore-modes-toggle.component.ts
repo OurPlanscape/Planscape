@@ -36,7 +36,7 @@ export class ExploreModesToggleComponent {
   // @ViewChild('dialogContainer', { read: ViewContainerRef }) dialogContainer!: ViewContainerRef;
   @Output() scenarioUpload = new EventEmitter<void>();
 
-  drawModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
+  mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
 
   constructor(
     private mapConfigState: MapConfigState,
@@ -45,7 +45,7 @@ export class ExploreModesToggleComponent {
     private drawService: DrawService,
     private planService: PlanService,
     private router: Router
-  ) { }
+  ) {}
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
@@ -55,11 +55,15 @@ export class ExploreModesToggleComponent {
 
   handleUploadButton() {
     const uploadDialogRef = this.dialog.open(UploadPlanningAreaModalComponent);
-    uploadDialogRef.afterClosed().subscribe(result => {
+    this.mapConfigState.enterUploadMode();
+
+    //config dialog
+    uploadDialogRef.afterClosed().subscribe((result) => {
       if (result?.confirmed) {
-        const geometries = result.geometries;
-        console.log('Received geometries:', geometries);
-        this.drawService.addGeoJSONFeature(geometries);
+        this.mapConfigState.setUploadedShape(result.geometries);
+        // this.drawService.addGeoJSONFeature(geometries);
+      } else {
+        this.mapConfigState.enterViewMode();
       }
     });
   }
@@ -70,7 +74,7 @@ export class ExploreModesToggleComponent {
     if (this.drawService.hasPolygonFeatures()) {
       this.openConfirmExitDialog();
     } else {
-      this.mapConfigState.exitDrawingMode();
+      this.mapConfigState.enterViewMode();
     }
   }
 
@@ -108,7 +112,6 @@ export class ExploreModesToggleComponent {
     }
   }
 
-
   private openPlanCreateDialog(area: number, shape: Geometry) {
     return this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
@@ -125,7 +128,7 @@ export class ExploreModesToggleComponent {
       .afterClosed()
       .subscribe((modalResponse: any) => {
         if (modalResponse === true) {
-          this.mapConfigState.exitDrawingMode();
+          this.mapConfigState.enterViewMode();
         }
       });
   }

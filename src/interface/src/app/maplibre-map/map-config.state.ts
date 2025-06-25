@@ -1,9 +1,12 @@
 import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
+import { GeoJSON } from 'geojson';
 import { baseMapStyles } from './map-base-layers';
 import { Extent, FrontendConstants } from '@types';
 import { filter } from 'rxjs/operators';
 import { BaseMapType, DEFAULT_BASE_MAP } from '../types/maplibre.map.types';
+
+type MapInteractionMode = 'draw' | 'view' | 'upload';
 
 @Injectable()
 export class MapConfigState {
@@ -52,8 +55,13 @@ export class MapConfigState {
   private defaultZoomLevel = 7;
   public zoomLevel$ = new BehaviorSubject<number>(this.defaultZoomLevel);
 
-  private _drawingModeEnabled$ = new BehaviorSubject(false);
-  public drawingModeEnabled$ = this._drawingModeEnabled$.asObservable();
+  private _mapInteractionMode$ = new BehaviorSubject<MapInteractionMode>(
+    'view'
+  );
+  public mapInteractionMode$ = this._mapInteractionMode$.asObservable();
+
+  private _uploadedShapeData$ = new BehaviorSubject<GeoJSON | null>(null);
+  public uploadedShapeData$ = this._uploadedShapeData$.asObservable();
 
   updateBaseMap(layer: BaseMapType) {
     this._baseMap$.next(layer);
@@ -70,6 +78,13 @@ export class MapConfigState {
   setStandSelectionEnabled(value: boolean) {
     this._standSelectionEnabled$.next(value);
     this.resetCursor();
+  }
+
+  setUploadedShape(shape: GeoJSON | null) {
+    this._uploadedShapeData$.next(shape);
+  }
+  removeUploadedShape() {
+    this._uploadedShapeData$.next(null);
   }
 
   isStandSelectionEnabled() {
@@ -101,11 +116,15 @@ export class MapConfigState {
   }
 
   enterDrawingMode() {
-    this._drawingModeEnabled$.next(true);
+    this._mapInteractionMode$.next('draw');
   }
 
-  exitDrawingMode() {
-    this._drawingModeEnabled$.next(false);
+  enterUploadMode() {
+    this._mapInteractionMode$.next('upload');
+  }
+
+  enterViewMode() {
+    this._mapInteractionMode$.next('view');
   }
 
   updateDataLayersOpacity(opacity: number) {

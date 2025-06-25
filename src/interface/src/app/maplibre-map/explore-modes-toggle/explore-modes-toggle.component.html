@@ -5,6 +5,7 @@
       active: false,
     }"
     class="left-option"
+    [ngClass]="{ active: (mapInteractionMode$ | async) === 'upload' }"
     (click)="handleUploadButton()"
     matTooltip="Upload"
     matTooltipPosition="below">
@@ -14,15 +15,15 @@
     type="button"
     (click)="handleDrawingButton()"
     class="right-option"
-    [ngClass]="{ active: (drawModeEnabled$ | async) === true }"
-    [disabled]="(drawModeEnabled$ | async) === true"
+    [ngClass]="{ active: (mapInteractionMode$ | async) === 'draw' }"
+    [disabled]="(mapInteractionMode$ | async) === 'draw'"
     matTooltip="Draw Planning Area"
     matTooltipPosition="below">
     <mat-icon class="material-symbols-outlined">draw</mat-icon>
   </button>
 </div>
 
-<div class="drawing-options" *ngIf="(drawModeEnabled$ | async) === true">
+<div class="drawing-options" *ngIf="(mapInteractionMode$ | async) !== 'view'">
   <mat-divider class="drawing-divider" [vertical]="true"></mat-divider>
   <button
     type="button"
