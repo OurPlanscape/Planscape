@@ -7,7 +7,15 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  firstValueFrom,
+  interval,
+  map,
+  NEVER,
+  take,
+} from 'rxjs';
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
@@ -80,11 +88,7 @@ export class CreateScenariosComponent implements OnInit {
     await this.constraintsPanelComponent.loadExcludedAreas();
     const constrainsForm = await this.constraintsPanelComponent.createForm();
     this.forms = this.fb.group({
-      scenarioName: new FormControl('', [
-        Validators.required,
-        (control: AbstractControl) =>
-          scenarioNameMustBeNew(control, this.existingScenarioNames),
-      ]),
+      scenarioName: new FormControl('', [Validators.required]),
       priorities: this.prioritiesComponent.createForm(),
       constrains: constrainsForm,
       projectAreas: this.fb.group({
@@ -125,7 +129,6 @@ export class CreateScenariosComponent implements OnInit {
     } else {
       // enable animation
       this.tabAnimation = this.tabAnimationOptions.on;
-      this.isLoading$.next(false);
     }
 
     // When an area is uploaded, issue an event to draw it on the map.
@@ -143,13 +146,19 @@ export class CreateScenariosComponent implements OnInit {
     });
 
     if (typeof this.planId === 'number') {
-      this.scenarioService
-        .getScenariosForPlan(this.planId)
-        .pipe(take(1))
-        .subscribe((scenarios) => {
-          this.existingScenarioNames = scenarios.map((s) => s.name);
-        });
+      const existingScenarios = await firstValueFrom(
+        this.scenarioService.getScenariosForPlan(this.planId)
+      );
+      const existingScenarioNames = existingScenarios.map((s) => s.name);
+      this.forms
+        .get('scenarioName')
+        ?.addValidators([
+          (control: AbstractControl) =>
+            scenarioNameMustBeNew(control, existingScenarioNames),
+        ]);
+      this.isLoading$.next(false);
     }
+    this.isLoading$.next(false);
   }
 
   pollForChanges() {
@@ -387,7 +396,7 @@ function scenarioNameMustBeNew(
 ): {
   [key: string]: any;
 } | null {
-  if (existingNames.includes(nameControl.value)) {
+  if (existingNames.includes(nameControl.value?.trim())) {
     return { duplicate: true };
   }
   return null;
