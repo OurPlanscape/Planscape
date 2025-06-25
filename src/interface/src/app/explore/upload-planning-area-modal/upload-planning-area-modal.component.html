@@ -4,9 +4,13 @@
   primaryButtonText="Create"
   secondaryButtonText="Cancel"
   [hasPrimarySpinner]="true"
-  [isInSpinState]="false">
+  [isInSpinState]="false"
+  (clickedPrimary)="saveShape()"
+  (clickedSecondary)="closeModal()"
+  (clickedClose)="closeModal()">
   <div modalBodyContent>
-    <form>
+        <form [formGroup]="uploadPlanningAreaForm!" class="upload-scenario-form">
+
       <sg-file-upload
         [uploadStatus]="uploadElementStatus"
         (fileEvent)="handleFileEvent($event)"

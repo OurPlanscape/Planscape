@@ -175,4 +175,9 @@ export class DrawService {
       return polygons[0].geometry;
     }
   }
+
+  addGeoJSONFeature(shape: GeoJSON.GeoJSON) {
+    console.log('we have this shape', shape);
+    // this._terraDraw?.addFeatures(shape);
+  }
 }

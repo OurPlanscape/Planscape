@@ -28,12 +28,12 @@ import { UploadPlanningAreaModalComponent } from 'src/app/explore/upload-plannin
     MatTooltipModule,
     NgClass,
     NgIf,
-    UploadPlanningAreaModalComponent,
   ],
   templateUrl: './explore-modes-toggle.component.html',
   styleUrl: './explore-modes-toggle.component.scss',
 })
 export class ExploreModesToggleComponent {
+  // @ViewChild('dialogContainer', { read: ViewContainerRef }) dialogContainer!: ViewContainerRef;
   @Output() scenarioUpload = new EventEmitter<void>();
 
   drawModeEnabled$ = this.mapConfigState.drawingModeEnabled$;
@@ -45,12 +45,23 @@ export class ExploreModesToggleComponent {
     private drawService: DrawService,
     private planService: PlanService,
     private router: Router
-  ) {}
+  ) { }
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
     this.multiMapConfigState.setLayoutMode(1);
     this.mapConfigState.enterDrawingMode();
+  }
+
+  handleUploadButton() {
+    const uploadDialogRef = this.dialog.open(UploadPlanningAreaModalComponent);
+    uploadDialogRef.afterClosed().subscribe(result => {
+      if (result?.confirmed) {
+        const geometries = result.geometries;
+        console.log('Received geometries:', geometries);
+        this.drawService.addGeoJSONFeature(geometries);
+      }
+    });
   }
 
   handleCancelButton() {
@@ -97,9 +108,6 @@ export class ExploreModesToggleComponent {
     }
   }
 
-  clickedUpload() {
-    this.dialog.open(UploadPlanningAreaModalComponent);
-  }
 
   private openPlanCreateDialog(area: number, shape: Geometry) {
     return this.dialog.open(PlanCreateDialogComponent, {
