@@ -6,6 +6,7 @@ import { CreateScenariosComponent } from './create-scenarios/create-scenarios.co
 import { ScenarioRoutePlaceholderComponent } from './scenario-route-placeholder/scenario-route-placeholder';
 import { planLoaderResolver } from '../resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
+import { resetDatalayerResolver } from '../resolvers/reset-datalayer.resolver';
 
 const routes: Routes = [
   {
@@ -28,6 +29,7 @@ const routes: Routes = [
         },
         resolve: {
           scenarioInit: scenarioLoaderResolver,
+          dataLayerInit: resetDatalayerResolver,
         },
       },
       {
@@ -36,6 +38,7 @@ const routes: Routes = [
         component: ScenarioRoutePlaceholderComponent,
         resolve: {
           scenarioInit: scenarioLoaderResolver,
+          dataLayerInit: resetDatalayerResolver,
         },
         data: {
           showOverview: false,
