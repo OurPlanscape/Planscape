@@ -71,7 +71,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  bounds$ = this.planState.currentPlanId$.pipe(
+  planId$ = this.planState.currentPlanId$;
+
+  bounds$ = this.planId$.pipe(
     switchMap((id) => {
       if (id) {
         return this.planState.planningAreaGeometry$.pipe(
@@ -113,10 +115,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   @Input() showAttribution = false;
 
   isSelected$ = this.multiMapConfigState.selectedMapId$.pipe(
-    // If mapId is null means we are in other tab and we dont want to display highlighted Maps
+    // If mapId is null means we are in other tab and we don't want to display highlighted Maps
     map((mapId) => mapId && this.mapNumber === mapId)
   );
-  selectedFeatureId$ = this.drawService.selectedFeatureId$;
 
   selectedLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
@@ -132,7 +133,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     this.mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
       .subscribe((drawingModeStatus) => {
-        if (drawingModeStatus === true) {
+        if (drawingModeStatus) {
           this.enablePolygonDrawingMode();
         } else {
           this.cancelDrawingMode();
