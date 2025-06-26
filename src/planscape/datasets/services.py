@@ -9,7 +9,8 @@ from uuid import uuid4
 import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
-from core.s3 import create_upload_url, is_s3_file, s3_filename
+from core.s3 import create_upload_url as create_upload_url_s3, is_s3_file, s3_filename
+from core.gcs import create_upload_url as create_upload_url_gcs
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, Polygon
@@ -82,11 +83,19 @@ def create_upload_url_for_org(
         original_name,
         mimetype,
     )
-    upload_url_response = create_upload_url(
-        bucket_name=settings.S3_BUCKET,
-        object_name=object_name,
-        expiration=settings.UPLOAD_EXPIRATION_TTL,
-    )
+    upload_url_response = None
+    match settings.PROVIDER:
+        case "gcp":
+            upload_url_response = create_upload_url_gcs(
+                object_name=object_name,
+                expiration=settings.UPLOAD_EXPIRATION_TTL,
+            )
+        case _:
+            upload_url_response = create_upload_url_s3(
+                bucket_name=settings.S3_BUCKET,
+                object_name=object_name,
+                expiration=settings.UPLOAD_EXPIRATION_TTL,
+            )
     if not upload_url_response:
         raise ValueError("Could not create upload url.")
 
