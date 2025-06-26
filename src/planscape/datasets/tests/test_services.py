@@ -47,7 +47,7 @@ class TestGetObjectName(TestCase):
 
 class TestCreateUploadURLForOrganization(TestCase):
     @mock.patch(
-        "datasets.services.create_upload_url",
+        "datasets.services.create_upload_url_s3",
         return_value={"url": "foo.pdf"},
     )
     def test_call_create_url_returns_url_with_both(self, create_upload_url_mock):
@@ -63,7 +63,7 @@ class TestCreateUploadURLForOrganization(TestCase):
 
 class TestCreateDataLayer(TransactionTestCase):
     @mock.patch(
-        "datasets.services.create_upload_url",
+        "datasets.services.create_upload_url_s3",
         return_value={"url": "foo"},
     )
     def test_create_datalayer_returns_url_and_datalayer(self, create_upload_url_mock):
@@ -81,7 +81,9 @@ class TestCreateDataLayer(TransactionTestCase):
         self.assertIsNotNone(result["upload_to"])
         self.assertEqual(1, DataLayer.objects.all().count())
 
-    @mock.patch("datasets.services.create_upload_url", side_effect=ValueError("boom"))
+    @mock.patch(
+        "datasets.services.create_upload_url_s3", side_effect=ValueError("boom")
+    )
     def test_create_datalayer_exception_does_not_create_datalayer(
         self, create_upload_url_mock
     ):
