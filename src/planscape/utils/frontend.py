@@ -16,7 +16,7 @@ def get_base_url(env):
     output = ""
     match env, settings.PROVIDER:
         case "production", "gcp":
-            return "https://gapp.planscape.org"
+            return "https://app.planscape.org"
         case "production", _:
             return "https://app.planscape.org"
         case "staging", "gcp":
