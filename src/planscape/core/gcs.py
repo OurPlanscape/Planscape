@@ -2,6 +2,7 @@ import logging
 
 from typing import Optional, Collection
 
+from cacheops import cached
 from django.conf import settings
 from rasterio.session import GSSession
 
@@ -57,6 +58,7 @@ def get_gcs_hash(gs_url: str) -> Optional[str]:
     return blob.crc32c
 
 
+@cached(timeout=settings.GCS_PUBLIC_URL_TTL)
 def create_download_url(
     gs_url: str,
     expiration: int = int(settings.GCS_PUBLIC_URL_TTL),
