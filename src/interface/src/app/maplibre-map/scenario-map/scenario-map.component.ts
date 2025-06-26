@@ -48,6 +48,8 @@ export class ScenarioMapComponent {
 
   scenarioId$ = this.scenarioState.currentScenarioId$;
 
+  isScenarioSuccessful$ = this.scenarioState.isScenarioSuccessful$;
+
   /**
    * Maplibre defaults
    */
