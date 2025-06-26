@@ -4,6 +4,7 @@
 
 :host {
   box-sizing: border-box;
+  pointer-events: all;
 }
 
 .layer-color-legend {
@@ -22,9 +23,8 @@
   max-height: calc(100% - $map-nav-bar-height);
   text-overflow: ellipsis;
   overflow: hidden;
-  transition:
-    width 0.8s ease,
-    height 0.8s ease;
+  transition: width 0.8s ease,
+  height 0.8s ease;
   white-space: nowrap;
 
   &:hover {
@@ -114,10 +114,12 @@
   .ramp-legend {
     overflow-y: auto;
   }
+
   .swatch-gradient {
     width: 14px;
     min-height: unset;
   }
+
   .ramp-label-box {
     min-height: unset;
     flex: 1;
