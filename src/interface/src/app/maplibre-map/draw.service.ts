@@ -3,14 +3,13 @@ import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
 import { Geometry } from '@turf/helpers';
-import { BehaviorSubject, Observable, take } from 'rxjs';
+import { BehaviorSubject, catchError, Observable, of } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
 export type DrawMode = 'polygon' | 'select' | 'none';
 import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
-import { MapService } from '@services';
 
 export const DefaultSelectConfig = {
   flags: {
@@ -32,7 +31,6 @@ export const DefaultSelectConfig = {
 
 @Injectable()
 export class DrawService {
-
   private _terraDraw: TerraDraw | null = null;
   private _currentDrawingMode = new BehaviorSubject<string>('');
 
@@ -45,34 +43,11 @@ export class DrawService {
     this._selectedFeatureId$.asObservable();
 
   private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
-  boundaryShape$: Observable<GeoJSON | null> =
-    this._boundaryShape$.asObservable();
 
-  constructor(private mapService: MapService, private http: HttpClient) {
-    // This doesn't work:
-    this
-      .getCaliforniaStateBoundary()
-      .pipe(take(1))
-      .subscribe((shape: GeoJSON) => {
-        console.log('is there a shape?', shape);
-        this._boundaryShape$.next(shape);
-      });
-
-    // This works:
-    // this.mapService
-    // .getCaliforniaStateBoundary()
-    // .pipe(take(1))
-    // .subscribe((shape: GeoJSON) => {
-    //   console.log('is there a shape?', shape);
-    //   this._boundaryShape$.next(shape);
-    // });
-    console.log('logging mapservice to avoid unused var complaints', this.mapService);
-    console.log('logging http to confirm it exists', this.http);
+  constructor(private http: HttpClient) {
   }
 
-
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
-
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: map,
     });
@@ -221,8 +196,19 @@ export class DrawService {
     }
   }
 
-  getCaliforniaStateBoundary() {
-    const boundaryPath = 'assets/geojson/ca_state.geojson';
-    return this.http.get<GeoJSON>(boundaryPath);
+  getCaliforniaStateBoundary(): Observable<GeoJSON | null> {
+    if (this._boundaryShape$.value === null) {
+      const boundaryPath = 'assets/geojson/ca_state.geojson';
+      this.http.get<GeoJSON>(boundaryPath)
+        .pipe(
+          catchError((error) => {
+            console.error('Failed to load shape:', error);
+            return of(null);
+          })
+        )
+        .subscribe(shape => this._boundaryShape$.next(shape));
+    }
+    return this._boundaryShape$.asObservable();
   }
+
 }

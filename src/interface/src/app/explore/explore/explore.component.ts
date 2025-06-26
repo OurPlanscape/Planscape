@@ -15,7 +15,7 @@ import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.c
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
 
 @Component({
@@ -24,7 +24,7 @@ import { MapConfigService } from '../../maplibre-map/map-config.service';
   imports: [
     AsyncPipe,
     ExploreModesToggleComponent,
-    HttpClientTestingModule,
+    HttpClientModule,
     MapNavbarComponent,
     SharedModule,
     SyncedMapsComponent,

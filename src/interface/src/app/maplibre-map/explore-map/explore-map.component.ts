@@ -76,7 +76,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   currentDrawingMode$ = this.drawService.currentDrawingMode$;
   drawModeTooltipContent: string | null = null;
   // TODO: maybe store this Observable on mapConfigState? drawService?
-  boundaryShape$ = this.drawService.boundaryShape$;
+  boundaryShape$ = this.drawService.getCaliforniaStateBoundary();
   /**
    * Observable that provides the url to load the selected map base layer
    */

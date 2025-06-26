@@ -12,7 +12,6 @@ import {
   regionToString,
 } from '@types';
 import { environment } from '../../environments/environment';
-import { GeoJSON } from 'geojson';
 
 /** A map of Region to static assets for that region. */
 const regionToGeojsonMap: Record<Region, Record<string, string>> = {
@@ -53,8 +52,8 @@ export class MapService {
     this.http
       .get<BoundaryConfig[]>(
         environment.backend_endpoint +
-          '/boundary/config/?region_name=' +
-          `${regionToString(this.selectedRegion$.getValue())}`
+        '/boundary/config/?region_name=' +
+        `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
@@ -63,8 +62,8 @@ export class MapService {
     this.http
       .get<ConditionsConfig>(
         environment.backend_endpoint +
-          '/conditions/config/?region_name=' +
-          `${regionToString(this.selectedRegion$.getValue())}`
+        '/conditions/config/?region_name=' +
+        `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -93,8 +92,8 @@ export class MapService {
     this.http
       .get<BoundaryConfig[]>(
         environment.backend_endpoint +
-          '/boundary/config/?region_name=' +
-          `${regionToString(this.selectedRegion$.getValue())}`
+        '/boundary/config/?region_name=' +
+        `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
@@ -103,8 +102,8 @@ export class MapService {
     this.http
       .get<ConditionsConfig>(
         environment.backend_endpoint +
-          '/conditions/config/?region_name=' +
-          `${regionToString(this.selectedRegion$.getValue())}`
+        '/conditions/config/?region_name=' +
+        `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -113,20 +112,15 @@ export class MapService {
       });
   }
 
-  getCaliforniaStateBoundary() {
-    const boundaryPath = 'assets/geojson/ca_state.geojson';
-    return this.http.get<GeoJSON>(boundaryPath);
-  }
-
   /** Get shapes for a boundary from assets, if possible.  Fall back to the
    *  REST server, clipping the shapes to the region if the region is non-null. */
   getBoundaryShapes(vectorName: string): Observable<L.Layer> {
     var vector: Observable<L.Layer> = of(
       L.vectorGrid.protobuf(
         environment.tile_endpoint +
-          'gwc/service/tms/1.0.0/' +
-          `${vectorName}` +
-          '@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
+        'gwc/service/tms/1.0.0/' +
+        `${vectorName}` +
+        '@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
         {
           vectorTileLayerStyles: {
             [`${vectorName.split(':')[1]}`]: {
