@@ -44,8 +44,7 @@ export class DrawService {
 
   private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
 
-  constructor(private http: HttpClient) {
-  }
+  constructor(private http: HttpClient) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -199,16 +198,16 @@ export class DrawService {
   getCaliforniaStateBoundary(): Observable<GeoJSON | null> {
     if (this._boundaryShape$.value === null) {
       const boundaryPath = 'assets/geojson/ca_state.geojson';
-      this.http.get<GeoJSON>(boundaryPath)
+      this.http
+        .get<GeoJSON>(boundaryPath)
         .pipe(
           catchError((error) => {
             console.error('Failed to load shape:', error);
             return of(null);
           })
         )
-        .subscribe(shape => this._boundaryShape$.next(shape));
+        .subscribe((shape) => this._boundaryShape$.next(shape));
     }
     return this._boundaryShape$.asObservable();
   }
-
 }

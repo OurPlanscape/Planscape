@@ -52,8 +52,8 @@ export class MapService {
     this.http
       .get<BoundaryConfig[]>(
         environment.backend_endpoint +
-        '/boundary/config/?region_name=' +
-        `${regionToString(this.selectedRegion$.getValue())}`
+          '/boundary/config/?region_name=' +
+          `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
@@ -62,8 +62,8 @@ export class MapService {
     this.http
       .get<ConditionsConfig>(
         environment.backend_endpoint +
-        '/conditions/config/?region_name=' +
-        `${regionToString(this.selectedRegion$.getValue())}`
+          '/conditions/config/?region_name=' +
+          `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -92,8 +92,8 @@ export class MapService {
     this.http
       .get<BoundaryConfig[]>(
         environment.backend_endpoint +
-        '/boundary/config/?region_name=' +
-        `${regionToString(this.selectedRegion$.getValue())}`
+          '/boundary/config/?region_name=' +
+          `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: BoundaryConfig[]) => {
@@ -102,8 +102,8 @@ export class MapService {
     this.http
       .get<ConditionsConfig>(
         environment.backend_endpoint +
-        '/conditions/config/?region_name=' +
-        `${regionToString(this.selectedRegion$.getValue())}`
+          '/conditions/config/?region_name=' +
+          `${regionToString(this.selectedRegion$.getValue())}`
       )
       .pipe(take(1))
       .subscribe((config: ConditionsConfig) => {
@@ -118,9 +118,9 @@ export class MapService {
     var vector: Observable<L.Layer> = of(
       L.vectorGrid.protobuf(
         environment.tile_endpoint +
-        'gwc/service/tms/1.0.0/' +
-        `${vectorName}` +
-        '@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
+          'gwc/service/tms/1.0.0/' +
+          `${vectorName}` +
+          '@EPSG%3A3857@pbf/{z}/{x}/{-y}.pbf',
         {
           vectorTileLayerStyles: {
             [`${vectorName.split(':')[1]}`]: {
