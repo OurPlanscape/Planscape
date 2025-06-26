@@ -2,7 +2,7 @@ from unittest import mock
 from uuid import uuid4
 
 from django.conf import settings
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase, TransactionTestCase, override_settings
 from organizations.tests.factories import OrganizationFactory
 
 from datasets.models import Category, DataLayer, DataLayerStatus
@@ -50,12 +50,26 @@ class TestCreateUploadURLForOrganization(TestCase):
         "datasets.services.create_upload_url_s3",
         return_value={"url": "foo.pdf"},
     )
-    def test_call_create_url_returns_url_with_both(self, create_upload_url_mock):
+    def test_call_create_url_on_s3_returns_url_with_both(self, create_upload_url_mock):
         uuid = str(uuid4())
         result = create_upload_url_for_org(1, uuid, "foo.pdf", "application/pdf")
         self.assertEqual(result, {"url": "foo.pdf"})
         create_upload_url_mock.assert_called_with(
             bucket_name=settings.S3_BUCKET,
+            object_name=f"{settings.DATALAYERS_FOLDER}/1/{uuid}.pdf",
+            expiration=settings.UPLOAD_EXPIRATION_TTL,
+        )
+
+    @override_settings(PROVIDER="gcp")
+    @mock.patch(
+        "datasets.services.create_upload_url_gcs",
+        return_value={"url": "foo.pdf"},
+    )
+    def test_call_create_url_on_gcs_returns_url_with_both(self, create_upload_url_mock):
+        uuid = str(uuid4())
+        result = create_upload_url_for_org(1, uuid, "foo.pdf", "application/pdf")
+        self.assertEqual(result, {"url": "foo.pdf"})
+        create_upload_url_mock.assert_called_with(
             object_name=f"{settings.DATALAYERS_FOLDER}/1/{uuid}.pdf",
             expiration=settings.UPLOAD_EXPIRATION_TTL,
         )
