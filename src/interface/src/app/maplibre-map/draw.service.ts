@@ -49,20 +49,30 @@ export class DrawService {
     this._boundaryShape$.asObservable();
 
   constructor(private mapService: MapService, private http: HttpClient) {
-
-    console.log('logging mapservice to avoid unused var complaints', this.mapService);
-    console.log('logging http to confirm it exists', this.http);
-  }
-
-
-  initializeTerraDraw(map: MapLibreMap, modes: any[]) {
-    this.mapService
+    // This doesn't work:
+    this
       .getCaliforniaStateBoundary()
       .pipe(take(1))
       .subscribe((shape: GeoJSON) => {
         console.log('is there a shape?', shape);
         this._boundaryShape$.next(shape);
       });
+
+    // This works:
+    // this.mapService
+    // .getCaliforniaStateBoundary()
+    // .pipe(take(1))
+    // .subscribe((shape: GeoJSON) => {
+    //   console.log('is there a shape?', shape);
+    //   this._boundaryShape$.next(shape);
+    // });
+    console.log('logging mapservice to avoid unused var complaints', this.mapService);
+    console.log('logging http to confirm it exists', this.http);
+  }
+
+
+  initializeTerraDraw(map: MapLibreMap, modes: any[]) {
+
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: map,
     });
