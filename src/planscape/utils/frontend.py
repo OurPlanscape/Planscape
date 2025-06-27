@@ -13,23 +13,14 @@ class NotInTestingFilter(logging.Filter):
 
 
 def get_base_url(env):
-    output = ""
-    match env, settings.PROVIDER:
-        case "production", "gcp":
+    match env:
+        case "production":
             return "https://app.planscape.org"
-        case "production", _:
-            return "https://app.planscape.org"
-        case "staging", "gcp":
-            return "https://gstaging.planscape.org"
-        case "staging", _:
+        case "staging":
             return "https://staging.planscape.org"
-        case "demo", "gcp":
-            return "https://gdemo.planscape.org"
-        case "demo", _:
+        case "demo":
             return "https://demo.planscape.org"
-        case _, "gcp":
-            return "https://gdev.planscape.org"
-        case _, _:
+        case _:
             return "https://dev.planscape.org"
 
 
