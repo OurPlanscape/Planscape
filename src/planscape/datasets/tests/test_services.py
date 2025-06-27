@@ -70,8 +70,7 @@ class TestCreateUploadURLForOrganization(TestCase):
         result = create_upload_url_for_org(1, uuid, "foo.pdf", "application/pdf")
         self.assertEqual(result, {"url": "foo.pdf"})
         create_upload_url_mock.assert_called_with(
-            object_name=f"{settings.DATALAYERS_FOLDER}/1/{uuid}.pdf",
-            expiration=settings.UPLOAD_EXPIRATION_TTL,
+            object_name=f"{settings.DATALAYERS_FOLDER}/1/{uuid}.pdf"
         )
 
 
