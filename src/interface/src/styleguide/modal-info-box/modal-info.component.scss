@@ -27,7 +27,8 @@
       background-color: $color-light-red;
     }
     &.warning {
-    color: $color-dark-red;
+      color: $color-dark-yellow;
+      background-color: $color-brand-soft-yellow;
     }
     &.in-progress {
     color: $color-black;
