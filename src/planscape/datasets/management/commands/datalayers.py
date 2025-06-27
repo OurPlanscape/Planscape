@@ -209,6 +209,15 @@ class Command(PlanscapeCommand):
             choices=[c.name for c in DataLayerType],
             help=f"Layer type, required if using --url. One of: {[c.name for c in DataLayerType]}",
         )
+        create_parser.add_argument(
+            "--chunk-size",
+            type=int,
+            required=False,
+            default=1024 * 1024 * 1024,  # 1 GB
+            dest="chunk_size",
+            metavar="BYTES",
+            help="Chunk size for file uploads in bytes. Default is 1 GB.",
+        )
         import_parser.add_argument(
             "--dataset",
             type=int,
@@ -304,7 +313,7 @@ class Command(PlanscapeCommand):
         except Exception as ex:
             self.stderr.write(f"ERROR: {kwargs =}\nEXCEPTION: {ex =}")
 
-    def _upload_file(self, input_files, datalayer, upload_to):
+    def _upload_file(self, input_files, datalayer, upload_to, chunk_size):
         upload_to_url = upload_to.get("url")
         upload_url_path = Path(datalayer.get("url"))
         object_name = "/".join(upload_url_path.parts[2:])
@@ -313,12 +322,14 @@ class Command(PlanscapeCommand):
                 object_name=object_name,
                 input_file=input_files[0],
                 upload_to=upload_to,
+                chunk_size=chunk_size,
             )
         elif "storage.googleapis.com" in upload_to_url:
             return upload_to_gcs(
                 object_name=object_name,
                 input_file=input_files[0],
                 url=upload_to_url,
+                chunk_size=chunk_size,
             )
 
     def _apply_style_request(
@@ -503,6 +514,7 @@ class Command(PlanscapeCommand):
             raise ValueError("request failed.")
         datalayer = output_data.get("datalayer")
         upload_to = output_data.get("upload_to", {}) or {}
+        chunk_size = kwargs.get("chunk_size", 1024 * 1024 * 1024)  # 1 GB
 
         if url or len(upload_to) == 0:
             return output_data
@@ -512,6 +524,7 @@ class Command(PlanscapeCommand):
                 processed_files,
                 datalayer=datalayer,
                 upload_to=upload_to,
+                chunk_size=chunk_size,
             )
             self._change_datalayer_status_request(
                 org=org,
