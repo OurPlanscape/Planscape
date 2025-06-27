@@ -2,7 +2,7 @@ import logging
 
 from typing import Optional, Collection, Dict, Any
 
-from pathlib import Path
+import subprocess
 from cacheops import cached
 from django.conf import settings
 from rasterio.session import GSSession
@@ -120,24 +120,17 @@ def upload_file_via_api(
     object_name: str,
     input_file: str,
     url: str,
-    chunk_size: int,
 ):
     logger.info(f"Uploading file {object_name}.")
-    file_size = Path(input_file).stat().st_size
-    uploaded_size = 0
+    curl_command = [
+        "curl",
+        "--request",
+        "PUT",
+        url,
+        "--form",
+        f"'{object_name}=@\"{input_file}\"'",
+    ]
 
-    with open(input_file, "rb") as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if not chunk:
-                break
+    subprocess.run(curl_command, check=True)
 
-            files = {"file": (object_name, chunk)}
-            response = requests.put(
-                url,
-                files=files,
-            )
-            response.raise_for_status()
-            uploaded_size += len(chunk)
-            logger.info(f"Upload progress {float(uploaded_size/file_size*100):.2f}%")
-        logger.info(f"Uploaded {object_name} done.")
+    logger.info(f"Uploaded {object_name} done.")
