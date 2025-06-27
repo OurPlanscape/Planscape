@@ -176,8 +176,30 @@ export class DrawService {
     }
   }
 
-  addGeoJSONFeature(shape: GeoJSON.GeoJSON) {
-    console.log('we have this shape', shape);
-    // this._terraDraw?.addFeatures(shape);
+  addGeoJSONFeature(shape: any) {
+    const featuresArray = shape.features.map((feature: any) => ({
+      type: "Feature",
+      geometry: {
+        type: feature.geometry.type,
+        coordinates: roundCoordinates(feature.geometry.coordinates, 6) // 6 decimal places is usually sufficient
+      }, properties: {
+        ...feature.properties,
+        mode: "polygon"
+      }
+    }));
+    this._terraDraw?.setMode('select'); // should be in select mode to add
+    const addedFeatures = this._terraDraw?.addFeatures(featuresArray);
+    // TODO: report any failures to the user
+    console.log('added features:', addedFeatures)
+  }
+}
+
+//TODO: hmm, not sure if this is level of precision is acceptable for our purposes
+// 6 decimal places: ~11 cm (4.3 inches) ?
+function roundCoordinates(coords: any, precision = 10) {
+  if (typeof coords[0] === 'number') {
+    return coords.map((coord: any) => Math.round(coord * Math.pow(10, precision)) / Math.pow(10, precision));
+  } else {
+    return coords.map((coord: any) => roundCoordinates(coord, precision));
   }
 }

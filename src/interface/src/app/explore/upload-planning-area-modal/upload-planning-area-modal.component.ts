@@ -64,7 +64,6 @@ export class UploadPlanningAreaModalComponent {
   }
 
   handleFileEvent(file: File | undefined): void {
-    console.log('do we even have an event?');
     this.uploadElementStatus = 'running';
 
     if (file !== undefined) {
@@ -79,7 +78,6 @@ export class UploadPlanningAreaModalComponent {
   }
 
   saveShape() {
-    console.log('saving geometries', this.geometries);
     this.dialogRef.close({ confirmed: true, geometries: this.geometries });
   }
 

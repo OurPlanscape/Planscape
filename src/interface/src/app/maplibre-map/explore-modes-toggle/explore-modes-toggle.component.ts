@@ -45,7 +45,7 @@ export class ExploreModesToggleComponent {
     private drawService: DrawService,
     private planService: PlanService,
     private router: Router
-  ) {}
+  ) { }
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
@@ -60,8 +60,9 @@ export class ExploreModesToggleComponent {
     //config dialog
     uploadDialogRef.afterClosed().subscribe((result) => {
       if (result?.confirmed) {
-        this.mapConfigState.setUploadedShape(result.geometries);
-        // this.drawService.addGeoJSONFeature(geometries);
+        this.mapConfigState.enterDrawingMode();
+        this.drawService.addGeoJSONFeature(result.geometries);
+        // TODO: display any errors adding the feature on the UI
       } else {
         this.mapConfigState.enterViewMode();
       }
