@@ -3,7 +3,14 @@ import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
 import { Geometry } from '@turf/helpers';
-import { BehaviorSubject, catchError, Observable, of } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  Observable,
+  of,
+  tap,
+  shareReplay,
+} from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
 export type DrawMode = 'polygon' | 'select' | 'none';
@@ -196,18 +203,17 @@ export class DrawService {
   }
 
   getCaliforniaStateBoundary(): Observable<GeoJSON | null> {
-    if (this._boundaryShape$.value === null) {
-      const boundaryPath = 'assets/geojson/ca_state.geojson';
-      this.http
-        .get<GeoJSON>(boundaryPath)
-        .pipe(
-          catchError((error) => {
-            console.error('Failed to load shape:', error);
-            return of(null);
-          })
-        )
-        .subscribe((shape) => this._boundaryShape$.next(shape));
+    if (this._boundaryShape$.value !== null) {
+      return this._boundaryShape$.asObservable();
     }
-    return this._boundaryShape$.asObservable();
+    const boundaryPath = 'assets/geojson/ca_state.geojson';
+    return this.http.get<GeoJSON>(boundaryPath).pipe(
+      catchError((error) => {
+        console.error('Failed to load shape:', error);
+        return of(null); // Return null on error
+      }),
+      tap((shape) => this._boundaryShape$.next(shape)),
+      shareReplay(1)
+    );
   }
 }
