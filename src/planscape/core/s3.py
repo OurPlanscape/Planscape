@@ -3,6 +3,7 @@ from typing import Any, Collection, Dict, List, Optional
 
 import boto3
 import requests
+from pathlib import Path
 from boto3.session import Session
 from botocore.exceptions import ClientError
 from cacheops import cached
@@ -130,27 +131,27 @@ def upload_file_via_api(
     object_name: str,
     input_file: str,
     upload_to: Dict[str, Any],
-    chunk_size: int = settings.S3_UPLOAD_CHUNK_SIZE,
+    chunk_size: int,
 ):
     logger.info(f"Uploading file {object_name}.")
+    file_size = Path(input_file).stat().st_size
+    uploaded_size = 0
+
     with open(input_file, "rb") as f:
-        logger.info(f"Opened file {input_file} for upload.")
         while True:
             chunk = f.read(chunk_size)
-            logger.info(f"Read chunk of size {len(chunk)} from file {input_file}.")
             if not chunk:
                 break
 
-            files = {"file": (object_name, f)}
-            logger.info(f"Uploading {object_name} chunk of size {len(chunk)}.")
+            files = {"file": (object_name, chunk)}
             response = requests.post(
                 upload_to["url"],
                 data=upload_to["fields"],
                 files=files,
             )
-            logger.info(f"Response status code: {response.status_code}")
             response.raise_for_status()
-            logger.info(f"Uploaded {object_name} chunk of size {len(chunk)}.")
+            uploaded_size += len(chunk)
+            logger.info(f"Upload progress {float(uploaded_size/file_size*100):.2f}%")
         logger.info(f"Uploaded {object_name} done.")
 
 
