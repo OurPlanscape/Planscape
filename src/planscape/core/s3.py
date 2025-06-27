@@ -131,28 +131,18 @@ def upload_file_via_api(
     object_name: str,
     input_file: str,
     upload_to: Dict[str, Any],
-    chunk_size: int,
 ):
     logger.info(f"Uploading file {object_name}.")
-    file_size = Path(input_file).stat().st_size
-    uploaded_size = 0
 
     with open(input_file, "rb") as f:
-        while True:
-            chunk = f.read(chunk_size)
-            if not chunk:
-                break
-
-            files = {"file": (object_name, chunk)}
-            response = requests.post(
-                upload_to["url"],
-                data=upload_to["fields"],
-                files=files,
-            )
-            response.raise_for_status()
-            uploaded_size += len(chunk)
-            logger.info(f"Upload progress {float(uploaded_size/file_size*100):.2f}%")
+        files = {"file": (object_name, f)}
+        response = requests.post(
+            upload_to["url"],
+            data=upload_to["fields"],
+            files=files,
+        )
         logger.info(f"Uploaded {object_name} done.")
+        return response
 
 
 def is_s3_file(input_file: Optional[str]) -> bool:

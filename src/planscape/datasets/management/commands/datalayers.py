@@ -209,15 +209,6 @@ class Command(PlanscapeCommand):
             choices=[c.name for c in DataLayerType],
             help=f"Layer type, required if using --url. One of: {[c.name for c in DataLayerType]}",
         )
-        create_parser.add_argument(
-            "--chunk-size",
-            type=int,
-            required=False,
-            default=1024 * 1024 * 1024,  # 1 GB
-            dest="chunk_size",
-            metavar="BYTES",
-            help="Chunk size for file uploads in bytes. Default is 1 GB.",
-        )
         import_parser.add_argument(
             "--dataset",
             type=int,
@@ -322,14 +313,12 @@ class Command(PlanscapeCommand):
                 object_name=object_name,
                 input_file=input_files[0],
                 upload_to=upload_to,
-                chunk_size=chunk_size,
             )
         elif "storage.googleapis.com" in upload_to_url:
             return upload_to_gcs(
                 object_name=object_name,
                 input_file=input_files[0],
                 url=upload_to_url,
-                chunk_size=chunk_size,
             )
 
     def _apply_style_request(

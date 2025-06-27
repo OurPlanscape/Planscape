@@ -88,7 +88,6 @@ def create_upload_url_for_org(
         case "gcp":
             upload_url_response = create_upload_url_gcs(
                 object_name=object_name,
-                expiration=settings.UPLOAD_EXPIRATION_TTL,
             )
         case _:
             upload_url_response = create_upload_url_s3(
