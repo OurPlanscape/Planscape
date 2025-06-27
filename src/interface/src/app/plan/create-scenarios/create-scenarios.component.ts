@@ -28,7 +28,6 @@ import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel
 import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
-import { FeatureService } from 'src/app/features/feature.service';
 
 enum ScenarioTabs {
   CONFIG,
@@ -80,8 +79,7 @@ export class CreateScenariosComponent implements OnInit {
     private router: Router,
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
-    private scenarioStateService: ScenarioState,
-    private featureService: FeatureService
+    private scenarioStateService: ScenarioState
   ) {}
 
   async createForms() {
@@ -240,11 +238,7 @@ export class CreateScenariosComponent implements OnInit {
         ...this.constraintsPanelComponent.getFormData(),
         ...prioritiesData,
       },
-      treatment_goal: this.featureService.isFeatureEnabled(
-        'STATEWIDE_SCENARIOS'
-      )
-        ? prioritiesData.treatment_question
-        : (prioritiesData.treatment_question as any).id,
+      treatment_goal: prioritiesData.treatment_question as any,
     };
   }
 
@@ -258,48 +252,26 @@ export class CreateScenariosComponent implements OnInit {
     this.generatingScenario = true;
     this.goalOverlayService.close();
 
-    if (this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS')) {
-      this.scenarioService
-        .createScenario(this.formValueToScenario())
-        .pipe(
-          catchError((error) => {
-            this.generatingScenario = false;
-            this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
-            return NEVER;
-          })
-        )
-        .subscribe((newScenario) => {
-          // Setting the new scenario id
-          this.scenarioId = newScenario.id;
-          this.scenarioName = newScenario.name;
-          this.matSnackBar.dismiss();
-          this.scenarioState = 'PENDING';
-          this.disableForms();
-          this.selectedTab = ScenarioTabs.RESULTS;
-          this.pollForChanges();
-          this.goToScenario();
-        });
-    } else {
-      this.LegacyPlanStateService.createScenario(this.formValueToScenario())
-        .pipe(
-          catchError((error) => {
-            this.generatingScenario = false;
-            this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
-            return NEVER;
-          })
-        )
-        .subscribe((newScenario) => {
-          // Setting the new scenario id
-          this.scenarioId = newScenario.id;
-          this.scenarioName = newScenario.name;
-          this.matSnackBar.dismiss();
-          this.scenarioState = 'PENDING';
-          this.disableForms();
-          this.selectedTab = ScenarioTabs.RESULTS;
-          this.pollForChanges();
-          this.goToScenario();
-        });
-    }
+    this.scenarioService
+      .createScenario(this.formValueToScenario())
+      .pipe(
+        catchError((error) => {
+          this.generatingScenario = false;
+          this.matSnackBar.open(error.message, 'Dismiss', SNACK_ERROR_CONFIG);
+          return NEVER;
+        })
+      )
+      .subscribe((newScenario) => {
+        // Setting the new scenario id
+        this.scenarioId = newScenario.id;
+        this.scenarioName = newScenario.name;
+        this.matSnackBar.dismiss();
+        this.scenarioState = 'PENDING';
+        this.disableForms();
+        this.selectedTab = ScenarioTabs.RESULTS;
+        this.pollForChanges();
+        this.goToScenario();
+      });
   }
 
   disableForms() {
