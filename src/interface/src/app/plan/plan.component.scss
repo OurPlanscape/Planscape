@@ -65,7 +65,7 @@
 }
 
 .plan-content-panel {
-  overflow: auto;
+  height: 100%;
   width: 45%;
   min-width: 450px;
   max-width: 800px;
@@ -78,20 +78,6 @@
   width: 100%;
 }
 
-:host {
-  ::ng-deep {
-    app-create-scenarios {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      height: 100%;
-    }
-
-    .create-scenarios-panel {
-      flex: 1;
-    }
-  }
-}
 
 @media print {
   app-nav-bar {
