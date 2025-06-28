@@ -13,6 +13,7 @@ import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.c
 import { DataLayersRegistryService } from '../data-layers-registry';
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { NgIf } from '@angular/common';
+import { MultiMapsStorageService } from '@services/local-storage.service';
 
 @Component({
   selector: 'app-dynamic-data-layers',
@@ -29,6 +30,7 @@ export class DynamicDataLayersComponent implements OnInit, OnDestroy {
   private componentRef?: ComponentRef<DataLayersComponent>;
 
   private readonly registry = inject(DataLayersRegistryService);
+  private multimapStorageService = inject(MultiMapsStorageService);
   private readonly parentInjector = inject(Injector);
 
   ngOnInit(): void {
@@ -44,6 +46,13 @@ export class DynamicDataLayersComponent implements OnInit, OnDestroy {
     this.componentRef = this.outlet.createComponent(DataLayersComponent, {
       injector: customInjector,
     });
+
+    // Load initial values from storage
+    const storageValues = this.multimapStorageService.getItem();
+    debugger;
+    if (storageValues?.dataLayers?.[this.mapId] && service) {
+      service.selectDataLayer(storageValues.dataLayers[this.mapId]);
+    }
   }
 
   ngOnDestroy(): void {

@@ -38,11 +38,13 @@ export class MultiMapConfigState extends MapConfigState {
    * The current base map layer style (satellite/road/terrain)
    * The number of visible maps
    */
-  saveStateToLocalStorage(extent: Extent) {
+  async saveStateToLocalStorage(extent: Extent) {
+    const currentStorage = this.multiMapsStorageService.getItem();
     this.baseLayersStateService.selectedBaseLayers$
       .pipe(take(1))
       .subscribe((baseLayers) => {
         this.multiMapsStorageService.setItem({
+          ...currentStorage,
           layoutMode: this._layoutMode$.value,
           baseMap: this._baseMap$.value,
           extent: extent,
