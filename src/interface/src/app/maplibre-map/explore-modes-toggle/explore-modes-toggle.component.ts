@@ -8,14 +8,9 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
 import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Geometry } from '@turf/helpers';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
 import { Router } from '@angular/router';
-import { PlanService } from '@services';
-import { Feature, MultiPolygon, Polygon } from 'geojson';
-import { feature } from '@turf/helpers';
-import { take } from 'rxjs';
 
 @Component({
   selector: 'app-explore-modes-selection-toggle',
@@ -41,7 +36,6 @@ export class ExploreModesToggleComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dialog: MatDialog,
     private drawService: DrawService,
-    private planService: PlanService,
     private router: Router
   ) {}
 
@@ -67,29 +61,11 @@ export class ExploreModesToggleComponent {
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
     } else {
-      const polygons = this.drawService.getPolygonsSnapshot();
-      const polygonFeatures = polygons as Feature<Polygon>[];
-      const coordinates = polygonFeatures.map(
-        (feature) => feature.geometry.coordinates
-      );
-      const combinedGeometry: MultiPolygon = {
-        type: 'MultiPolygon',
-        coordinates,
-      };
-      const geoJSON = feature(combinedGeometry);
-      // TODO: replace with frontend acreage function when ready
-      this.planService
-        .getTotalArea(geoJSON.geometry)
-        .pipe(take(1))
-        .subscribe((acres: number) => {
-          if (acres && geoJSON) {
-            this.openPlanCreateDialog(acres, geoJSON.geometry)
-              .afterClosed()
-              .subscribe((id) => {
-                if (id) {
-                  this.router.navigate(['plan', id]);
-                }
-              });
+      this.openPlanCreateDialog()
+        .afterClosed()
+        .subscribe((id) => {
+          if (id) {
+            this.router.navigate(['plan', id]);
           }
         });
     }
@@ -99,12 +75,14 @@ export class ExploreModesToggleComponent {
     this.scenarioUpload.emit();
   }
 
-  private openPlanCreateDialog(area: number, shape: Geometry) {
+  private openPlanCreateDialog() {
+    const acres = this.drawService.getCurrentAcreageValue();
+    const geoJSON = this.drawService.getDrawingGeoJSON();
     return this.dialog.open(PlanCreateDialogComponent, {
       maxWidth: '560px',
       data: {
-        shape: shape,
-        totalArea: area,
+        shape: geoJSON.geometry,
+        totalArea: acres,
       },
     });
   }

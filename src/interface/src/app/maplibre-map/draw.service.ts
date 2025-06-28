@@ -2,10 +2,12 @@ import { Injectable } from '@angular/core';
 import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
-import { Geometry } from '@turf/helpers';
+import { feature, Feature, Polygon, MultiPolygon } from '@turf/helpers';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
+import { acresForFeature } from '../maplibre-map/maplibre.helper';
+
 export type DrawMode = 'polygon' | 'select' | 'none';
 
 export const DefaultSelectConfig = {
@@ -39,6 +41,9 @@ export class DrawService {
   selectedFeatureId$: Observable<FeatureId | null> =
     this._selectedFeatureId$.asObservable();
 
+  private _totalAcres$ = new BehaviorSubject<number>(0);
+  totalAcres$: Observable<number> = this._totalAcres$.asObservable();
+
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: map,
@@ -56,6 +61,11 @@ export class DrawService {
     this._terraDraw?.on('deselect', () => {
       this._selectedFeatureId$.next(null);
     });
+    this._terraDraw?.on('finish', (featureId: FeatureId) => {
+      this.setMode('select');
+      this.selectFeature(featureId);
+      this.updateTotalAcreage();
+    });
   }
 
   //idempotent - start if not started
@@ -70,6 +80,7 @@ export class DrawService {
       return;
     }
     this._terraDraw.stop();
+    this._totalAcres$.next(0);
   }
 
   getMode() {
@@ -89,6 +100,7 @@ export class DrawService {
     if (curSelectedId) {
       this._terraDraw?.removeFeatures([curSelectedId]);
     }
+    this.updateTotalAcreage();
   }
 
   getTerraDraw(): TerraDraw | null {
@@ -96,20 +108,21 @@ export class DrawService {
   }
 
   registerFinish(finishCallback: Function) {
-    this._terraDraw?.on('finish', (featureId: any, context: any) => {
+    this._terraDraw?.on('finish', (featureId: FeatureId) => {
       this.setMode('select');
       this.selectFeature(featureId);
+      this.updateTotalAcreage();
       finishCallback(featureId);
     });
   }
 
   registerChangeCallback(changeCallback: Function) {
-    this._terraDraw?.on('change', (changedFeatureIds) => {
-      changeCallback(changedFeatureIds);
+    this._terraDraw?.on('change', (changedFeatureIds, type, context) => {
+      changeCallback(changedFeatureIds, type, context);
     });
   }
 
-  getPolygonPointCount(featureId: string) {
+  getPolygonPointCount(featureId: FeatureId) {
     const snapshot = this._terraDraw?.getSnapshotFeature(featureId);
     if (snapshot?.geometry.type === 'Polygon') {
       return snapshot?.geometry.coordinates[0].length;
@@ -133,7 +146,7 @@ export class DrawService {
     }
   }
 
-  selectFeature(featureId: number) {
+  selectFeature(featureId: FeatureId) {
     this._terraDraw?.selectFeature(featureId);
   }
 
@@ -153,6 +166,7 @@ export class DrawService {
 
   clearFeatures() {
     this._terraDraw?.clear();
+    this._totalAcres$.next(0);
   }
 
   getPolygonsSnapshot() {
@@ -161,18 +175,31 @@ export class DrawService {
       .filter((f) => f.geometry.type === 'Polygon');
   }
 
-  getGeometry(): Geometry | null {
-    // TODO : use updated acreage calculation
+  getDrawingGeoJSON() {
     const polygons = this.getPolygonsSnapshot();
-    if (!polygons) {
-      return null;
-    } else if (polygons.length > 1) {
-      return {
-        type: 'MultiPolygon',
-        coordinates: polygons.map((p) => p.geometry.coordinates) as number[][],
-      };
+    const polygonFeatures = polygons as Feature<Polygon>[];
+    const coordinates = polygonFeatures.map(
+      (feature) => feature.geometry.coordinates
+    );
+    const combinedGeometry: MultiPolygon = {
+      type: 'MultiPolygon',
+      coordinates,
+    };
+    return feature(combinedGeometry);
+  }
+
+  getCurrentAcreageValue() {
+    return this._totalAcres$.value;
+  }
+
+  updateTotalAcreage() {
+    const geoJSON = this.getDrawingGeoJSON();
+    // if we have no features, set acres to 0
+    if (geoJSON.geometry.coordinates.length > 0) {
+      const acres = acresForFeature(geoJSON);
+      this._totalAcres$.next(acres);
     } else {
-      return polygons[0].geometry;
+      this._totalAcres$.next(0);
     }
   }
 }

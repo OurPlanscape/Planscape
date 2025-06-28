@@ -9,10 +9,12 @@ import {
   transformMapboxUrl,
 } from 'maplibregl-mapbox-request-transformer';
 import { environment } from '../../environments/environment';
-import { Feature, Geometry } from 'geojson';
+import { Feature, Geometry, Polygon, MultiPolygon } from 'geojson';
 import bbox from '@turf/bbox';
 import { Extent } from '@types';
 import { BASE_LAYERS_DEFAULT } from '@shared';
+import area from '@turf/area';
+import { Decimal } from 'decimal.js';
 
 export function getBoundingBox(
   startPoint: Point,
@@ -162,4 +164,13 @@ export function defaultBaseLayerLine(lineColor?: string) {
       1,
     ],
   } as any;
+}
+
+export function acresForFeature(
+  feature: Feature<Polygon | MultiPolygon>
+): number {
+  const conversionAcresToSqMeters = Decimal('4046.8564213562374');
+  const areaInSquareMeters = Decimal(area(feature));
+  const areaInAcres = areaInSquareMeters.div(conversionAcresToSqMeters);
+  return areaInAcres.toNumber();
 }

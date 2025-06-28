@@ -50,6 +50,7 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "d3-color": "^3.1.0",
     "d3-scale": "^4.0.2",
+    "decimal.js": "^10.5.0",
     "esri-leaflet": "^3.0.12",
     "esri-leaflet-vector": "^4.2.4",
     "fast-deep-equal": "^3.1.3",
