@@ -67,7 +67,6 @@ export class ExplorePlanCreateDialogComponent {
 
   async submitPlan() {
     if (this.planForm.valid) {
-      console.log('here is the planname', this.planForm.get('planName')?.value);
       this.submitting = true;
       const planExists = await firstValueFrom(
         this.planService.planNameExists(
@@ -75,23 +74,16 @@ export class ExplorePlanCreateDialogComponent {
         )
       );
       if (planExists) {
-        console.log('the plan already exists');
         this.planForm.setErrors({ planNameExists: planExists });
         this.submitting = false;
         return;
       }
 
       const planName = this.planForm.get('planName')?.value || '';
-      console.log('creating a plan, I guess...');
       this.createPlan(planName,);
     } else {
-      console.log('could not submit the plan');
     }
   }
-
-  // TODO: finish handling submission,
-  // style the dialog,
-  // ...update the form-info component?
 
   private createPlan(name: string) {
     const shape = this.drawServiceInstance.getDrawingGeoJSON();

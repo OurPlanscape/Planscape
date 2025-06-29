@@ -4,7 +4,8 @@
 :host {
     @include xs-label();
     width: 100%;
-    height: 48px;
+    min-height: 48px;
+    padding: 12px;
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -13,6 +14,7 @@
     border-bottom: 1px;
     box-sizing: border-box;
     justify-content: flex-start;
+    
     &.info {
         color: $color-main-blue;
         background-color: $color-soft-light-blue;
@@ -52,5 +54,6 @@
 }
 
 .message-content {
-  line-height: normal;
+  line-height: 20px;
+  padding: 8px;
 }
