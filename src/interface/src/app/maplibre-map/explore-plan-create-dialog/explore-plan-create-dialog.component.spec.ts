@@ -8,10 +8,9 @@ describe('ExplorePlanCreateDialogComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ExplorePlanCreateDialogComponent]
-    })
-    .compileComponents();
-    
+      imports: [ExplorePlanCreateDialogComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(ExplorePlanCreateDialogComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

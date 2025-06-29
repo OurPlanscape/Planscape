@@ -80,7 +80,7 @@ export class ExplorePlanCreateDialogComponent {
       }
 
       const planName = this.planForm.get('planName')?.value || '';
-      this.createPlan(planName,);
+      this.createPlan(planName);
     } else {
     }
   }
@@ -113,5 +113,4 @@ export class ExplorePlanCreateDialogComponent {
         },
       });
   }
-
 }
