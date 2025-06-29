@@ -19,7 +19,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { SNACK_ERROR_CONFIG } from '@shared';
 import { firstValueFrom } from 'rxjs';
 import { AnalyticsService } from '@services/analytics.service';
-import { Geometry } from 'geojson';
 import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { NgIf } from '@angular/common';
@@ -68,6 +67,7 @@ export class ExplorePlanCreateDialogComponent {
 
   async submitPlan() {
     if (this.planForm.valid) {
+      console.log('here is the planname', this.planForm.get('planName')?.value);
       this.submitting = true;
       const planExists = await firstValueFrom(
         this.planService.planNameExists(
@@ -75,13 +75,17 @@ export class ExplorePlanCreateDialogComponent {
         )
       );
       if (planExists) {
+        console.log('the plan already exists');
         this.planForm.setErrors({ planNameExists: planExists });
         this.submitting = false;
         return;
       }
-      const planName = this.planForm.get('planName')?.value || '';
 
-      this.createPlan(planName, this.data.shape);
+      const planName = this.planForm.get('planName')?.value || '';
+      console.log('creating a plan, I guess...');
+      this.createPlan(planName,);
+    } else {
+      console.log('could not submit the plan');
     }
   }
 
@@ -89,12 +93,12 @@ export class ExplorePlanCreateDialogComponent {
   // style the dialog,
   // ...update the form-info component?
 
-  private createPlan(name: string, geometry: Geometry) {
+  private createPlan(name: string) {
+    const shape = this.drawServiceInstance.getDrawingGeoJSON();
     this.planService
       .createPlan({
         name: name,
-        region_name: '',
-        geometry: geometry,
+        geometry: shape.geometry,
       })
       .subscribe({
         next: (result) => {
@@ -118,12 +122,4 @@ export class ExplorePlanCreateDialogComponent {
       });
   }
 
-  submit(): void {
-    console.log('submitting:', this.drawServiceInstance);
-    console.log('submitting:', this.planService);
-    console.log('submitting:', this.matSnackBar);
-    // console.log('submitting:', this.drawServiceInstance);
-    // console.log('submitting:', this.drawServiceInstance);
-    this.dialogRef.close(true);
-  }
 }
