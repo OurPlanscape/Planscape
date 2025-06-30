@@ -10,7 +10,7 @@ import mmh3
 from actstream import action
 from cacheops import cached, invalidate_model
 from core.s3 import create_upload_url as create_upload_url_s3, is_s3_file, s3_filename
-from core.gcs import create_upload_url as create_upload_url_gcs
+from core.gcs import create_upload_url as create_upload_url_gcs, is_gcs_file
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import GEOSGeometry, Polygon
@@ -42,6 +42,13 @@ from planscape.openpanel import track_openpanel
 log = logging.getLogger(__name__)
 
 
+def get_bucket_url() -> str:
+    """Returns the bucket URL based on the current provider."""
+    if settings.PROVIDER == "gcp":
+        return f"gs://{settings.GCS_BUCKET}"
+    return f"s3://{settings.S3_BUCKET}"
+
+
 def get_object_name(
     organization_id: int,
     uuid: str,
@@ -63,9 +70,9 @@ def get_storage_url(
     original_name: str,
     mimetype: Optional[str] = None,
 ) -> str:
-    if is_s3_file(original_name):
+    if is_s3_file(original_name) or is_gcs_file(original_name):
         return original_name
-    return f"s3://{settings.S3_BUCKET}/{get_object_name(organization_id, uuid, original_name, mimetype)}"
+    return f"{get_bucket_url()}/{get_object_name(organization_id, uuid, original_name, mimetype)}"
 
 
 def create_upload_url_for_org(
