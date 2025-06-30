@@ -46,13 +46,13 @@ export class ExplorePlanCreateDialogComponent {
     private matSnackBar: MatSnackBar,
     private analyticsService: AnalyticsService
   ) {
-    this.drawServiceInstance = data.drawService;
+    this.drawService = data.drawService;
   }
 
   planForm = new FormGroup({
     planName: new FormControl('', Validators.required),
   });
-  drawServiceInstance: DrawService;
+  drawService: DrawService;
   readonly dialogRef = inject(MatDialogRef<ExplorePlanCreateDialogComponent>);
   submitting = false;
 
@@ -61,7 +61,7 @@ export class ExplorePlanCreateDialogComponent {
   }
 
   get isValidTotalArea() {
-    const area = this.drawServiceInstance.getCurrentAcreageValue();
+    const area = this.drawService.getCurrentAcreageValue();
     return isValidTotalArea(area);
   }
 
@@ -86,7 +86,7 @@ export class ExplorePlanCreateDialogComponent {
   }
 
   private createPlan(name: string) {
-    const shape = this.drawServiceInstance.getDrawingGeoJSON();
+    const shape = this.drawService.getDrawingGeoJSON();
     this.planService
       .createPlan({
         name: name,
