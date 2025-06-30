@@ -1,5 +1,9 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
+import {
+  MatDialogModule,
+  MatDialogRef,
+  MAT_DIALOG_DATA,
+} from '@angular/material/dialog';
 import { ExplorePlanCreateDialogComponent } from './explore-plan-create-dialog.component';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
@@ -10,9 +14,10 @@ describe('ExplorePlanCreateDialogComponent', () => {
   let fixture: ComponentFixture<ExplorePlanCreateDialogComponent>;
 
   beforeEach(async () => {
-
     const fakeDrawService = {
-      getCurrentAcreageValue: jasmine.createSpy('getCurrentAcreageValue').and.returnValue(101)
+      getCurrentAcreageValue: jasmine
+        .createSpy('getCurrentAcreageValue')
+        .and.returnValue(101),
     };
     const fakeDialogRef = jasmine.createSpyObj(
       'MatDialogRef',
@@ -23,7 +28,12 @@ describe('ExplorePlanCreateDialogComponent', () => {
     );
 
     await TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule, MatDialogModule, MatSnackBarModule, ExplorePlanCreateDialogComponent],
+      imports: [
+        HttpClientTestingModule,
+        MatDialogModule,
+        MatSnackBarModule,
+        ExplorePlanCreateDialogComponent,
+      ],
       providers: [
         {
           provide: DrawService,
@@ -31,13 +41,13 @@ describe('ExplorePlanCreateDialogComponent', () => {
         },
         {
           provide: MAT_DIALOG_DATA,
-          useValue: { drawService: fakeDrawService }
+          useValue: { drawService: fakeDrawService },
         },
         {
           provide: MatDialogRef<ExplorePlanCreateDialogComponent>,
-          useValue: fakeDialogRef
+          useValue: fakeDialogRef,
         },
-      ]
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ExplorePlanCreateDialogComponent);
