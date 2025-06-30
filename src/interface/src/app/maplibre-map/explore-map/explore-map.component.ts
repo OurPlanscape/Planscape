@@ -148,7 +148,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       .pipe(untilDestroyed(this))
       .subscribe((shape) => {
         if (shape) {
-          console.log('we have a shape?', shape);
           this.displayUploadedShape(shape);
         } else {
           this.removeUploadedShape();

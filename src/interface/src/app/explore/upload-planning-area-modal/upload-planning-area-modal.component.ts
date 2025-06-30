@@ -11,11 +11,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import {
-  ButtonComponent,
-  InputDirective,
-  InputFieldComponent,
-} from '@styleguide';
 
 @Component({
   selector: 'app-upload-planning-area-modal',
@@ -24,24 +19,11 @@ import {
     FileUploadFieldComponent,
     ModalComponent,
     MatButtonModule,
-    ButtonComponent,
     FileUploadFieldComponent,
-    InputFieldComponent,
     ModalComponent,
-    // ModalInfoComponent,
-    // MatFormFieldModule,
-    // MatInputModule,
     FormsModule,
     MatButtonModule,
-    // MatDialogModule,
-    // MatSelectModule,
-    // MatIconModule,
-    // NgIf,
-    // SharedModule,
     ReactiveFormsModule,
-    // MatLegacyButtonModule,
-    // MatLegacyMenuModule,
-    InputDirective,
   ],
   templateUrl: './upload-planning-area-modal.component.html',
   styleUrl: './upload-planning-area-modal.component.scss',
@@ -99,23 +81,19 @@ export class UploadPlanningAreaModalComponent {
       )) as GeoJSON.GeoJSON;
       if (geojson.type == 'FeatureCollection') {
         this.geometries = geojson;
-        console.log('we have geometries?', this.geometries);
       } else if (Array.isArray(geojson)) {
         this.uploadElementStatus = 'failed';
         this.uploadFormError =
           'The upload contains multiple shapefiles and could not be processed.';
-        console.log('we have error??', this.uploadFormError);
       } else {
         //unknown failure
         this.uploadElementStatus = 'failed';
         this.uploadFormError = 'The file cannot be converted to GeoJSON.';
-        console.log('we have error??', this.uploadFormError);
       }
     } catch (e) {
       this.uploadElementStatus = 'failed';
       this.uploadFormError =
         'The zip file does not appear to contain a valid shapefile.';
-      console.log('we have error??', this.uploadFormError);
     }
   }
 }
