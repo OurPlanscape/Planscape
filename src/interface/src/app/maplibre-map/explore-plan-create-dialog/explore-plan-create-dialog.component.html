@@ -9,7 +9,8 @@
   (clickedSecondary)="cancel()"
   (clickedClose)="cancel()"
   (clickedPrimary)="submitPlan()"
-  [hasPrimarySpinner]="true">
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="submitting">
   <div modalBodyContent>
     <sg-modal-info
       infoType="info"
