@@ -369,6 +369,10 @@ class DataLayer(CreatedAtMixin, UpdatedAtMixin, DeletedAtMixin, models.Model):
 
         elif is_gcs_file(self.url):
             download_url = create_gcs_download_url(self.url)
+            if download_url is None:
+                create_gcs_download_url.invalidate(
+                    self.url
+                )  # Invalidate cache if download URL creation fails
         else:
             download_url = None
 
