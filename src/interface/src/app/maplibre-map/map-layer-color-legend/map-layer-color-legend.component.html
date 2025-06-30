@@ -1,4 +1,7 @@
-<div class="layer-color-legend" *ngIf="colorLegendInfo$ | async as legendInfo">
+<div
+  [ngClass]="{ compact: size === 'compact' }"
+  class="layer-color-legend"
+  *ngIf="colorLegendInfo$ | async as legendInfo">
   <div class="legend-title">
     {{ legendInfo.title }}
   </div>
@@ -14,12 +17,14 @@
   </div>
 
   <div *ngIf="colorType === 'RAMP'" class="ramp-legend">
-    <div
-      class="swatch-gradient"
-      [ngStyle]="{ background: gradientStyle }"></div>
-    <div class="ramp-label-box">
-      <div *ngFor="let label of gradientLabels" class="swatch-label">
-        {{ label }}
+    <div class="ramp-legend-box">
+      <div
+        class="swatch-gradient"
+        [ngStyle]="{ background: gradientStyle }"></div>
+      <div class="ramp-label-box">
+        <div *ngFor="let label of gradientLabels" class="swatch-label">
+          {{ label }}
+        </div>
       </div>
     </div>
   </div>

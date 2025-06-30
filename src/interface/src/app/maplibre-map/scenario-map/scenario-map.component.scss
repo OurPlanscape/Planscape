@@ -1,3 +1,6 @@
+@import 'colors';
+@import 'mixins';
+@import 'variables';
 
 :host {
   display: flex;
@@ -5,6 +8,25 @@
   height: 100%;
   width: 100%;
   justify-content: flex-end;
+
+  ::ng-deep {
+    .maplibregl-ctrl-top-left {
+      top: $map-nav-bar-height;
+      z-index: 0;
+      height: 100%;
+
+      .maplibregl-ctrl {
+        max-height: calc(100% - ($map-nav-bar-height + $map-bottom-name-height));
+        margin: 10px;
+        height: calc(100% - ($map-nav-bar-height + $map-bottom-name-height));
+      }
+    }
+
+    .maplibregl-ctrl-top-right {
+      margin-top: $map-nav-bar-height;
+      z-index: 0;
+    }
+  }
 }
 
 mgl-map {

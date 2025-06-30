@@ -70,7 +70,7 @@ class TestAdminDataLayerViewSet(APITransactionTestCase):
         self.assertEqual(0, DataLayer.objects.all().count())
 
     @mock.patch(
-        "datasets.services.create_upload_url",
+        "datasets.services.create_upload_url_s3",
         return_value={"url": "foo"},
     )
     def test_create_by_admin_user_succeeds(self, _create_upload_url):

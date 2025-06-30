@@ -1,8 +1,55 @@
 @import 'colors';
 @import 'mixins';
+@import 'variables';
 
 :host {
   display: block;
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  // Default case - Maps without map navbar
+  ::ng-deep {
+    .maplibregl-ctrl-top-left {
+      top: 0px;
+      z-index: 0;
+      height: 100%;
+
+      .maplibregl-ctrl {
+        max-height: calc(100% - ($map-bottom-name-height));
+        margin: 10px;
+        height: calc(100% - ($map-bottom-name-height));
+        pointer-events: none;
+      }
+    }
+
+    .maplibregl-ctrl-top-right {
+      margin-top: $map-nav-bar-height;
+      z-index: 0;
+    }
+  }
+
+  // Map 1 and map 2 - Maps with the map navbar on top
+  .padded-map ::ng-deep {
+    .maplibregl-ctrl-top-left {
+      top: $map-nav-bar-height;
+      z-index: 0;
+      height: 100%;
+
+      .maplibregl-ctrl {
+        max-height: calc(
+          100% - ($map-nav-bar-height + $map-bottom-name-height)
+        );
+        margin: 10px;
+        height: calc(100% - ($map-nav-bar-height + $map-bottom-name-height));
+      }
+    }
+
+    .maplibregl-ctrl-top-right {
+      margin-top: $map-nav-bar-height;
+      z-index: 0;
+    }
+  }
 }
 
 mgl-map {
@@ -18,22 +65,48 @@ mgl-map {
   border-radius: 0 8px 0 0;
   background: $color-white;
   box-shadow: 2px 2px 4px 0 rgba(0, 0, 0, 0.15);
-  position: relative;
-  // remove the mgl-controls margin
-  bottom: -10px;
-  left: -10px;
+
+  // Text ellipsis if there is no space
+  line-height: inherit;
+  overflow: hidden;
+  text-wrap-mode: nowrap;
+  text-overflow: ellipsis;
 }
 
 .highlighted-map {
   box-sizing: border-box;
+
   ::ng-deep canvas {
     outline: 6px solid $color-active-blue;
     outline-offset: -5px;
   }
 }
 
+:host ::ng-deep .maplibregl-ctrl-bottom-left {
+  display: grid;
+}
+
+:host ::ng-deep .maplibregl-ctrl-bottom-left .maplibregl-ctrl {
+  margin: 0;
+  margin-right: 10px;
+  padding: 0;
+  min-width: 0;
+}
+
 .selected-map {
   background-color: $color-active-blue;
   color: $color-white;
+
+  .label-button {
+    color: $color-white;
+  }
 }
 
+.label-button {
+  cursor: pointer;
+
+  .material-symbols-outlined {
+    font-size: 20px;
+    vertical-align: top;
+  }
+}

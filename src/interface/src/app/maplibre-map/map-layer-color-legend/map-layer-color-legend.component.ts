@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { AsyncPipe, NgFor, NgIf, NgStyle } from '@angular/common';
+import { Component, Input } from '@angular/core';
+import { AsyncPipe, NgClass, NgFor, NgIf, NgStyle } from '@angular/common';
 import { DataLayersStateService } from 'src/app/data-layers/data-layers.state.service';
 import { ColorLegendInfo, LayerStyleEntry, RasterColorType } from '@types';
 import { tap } from 'rxjs';
@@ -8,13 +8,14 @@ import { scaleLinear } from 'd3-scale';
 @Component({
   selector: 'app-map-layer-color-legend',
   standalone: true,
-  imports: [AsyncPipe, NgFor, NgIf, NgStyle],
+  imports: [AsyncPipe, NgClass, NgFor, NgIf, NgStyle],
   templateUrl: './map-layer-color-legend.component.html',
   styleUrl: './map-layer-color-legend.component.scss',
 })
 export class MapLayerColorLegendComponent {
   constructor(private dataLayerState: DataLayersStateService) {}
 
+  @Input() size: 'compact' | 'full' = 'full';
   gradientLabels: string[] = [];
   gradientStyle = '';
   colorType: RasterColorType = 'RAMP';

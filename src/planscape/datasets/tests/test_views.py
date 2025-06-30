@@ -264,3 +264,30 @@ class TestDatasetViewSet(APITransactionTestCase):
         data = response.json()
         self.assertEqual(response.status_code, 200)
         self.assertEqual(datalayer.pk, data[0].get("id"))
+
+
+class TestPublicAccess(APITransactionTestCase):
+    def setUp(self) -> None:
+        self.dataset = DatasetFactory.create(visibility=VisibilityOptions.PUBLIC)
+        self.datalayer = DataLayerFactory.create(dataset=self.dataset)
+
+    def test_datasets_list_is_public(self):
+        url = reverse("api:datasets:datasets-list")
+        resp = self.client.get(url)
+        self.assertEqual(resp.status_code, 200)
+
+    def test_all_public_endpoints_are_readable(self):
+        urls = [
+            reverse("api:datasets:datasets-browse", kwargs={"pk": self.dataset.pk}),
+            f"{reverse('api:datasets:datalayers-find-anything')}?term=x",
+            reverse("api:datasets:datalayers-urls", kwargs={"pk": self.datalayer.pk}),
+        ]
+        for url in urls:
+            with self.subTest(url=url):
+                resp = self.client.get(url)
+                self.assertEqual(resp.status_code, 200)
+
+    def test_write_still_requires_authentication(self):
+        url = reverse("api:datasets:datasets-list")
+        resp = self.client.post(url, {})
+        self.assertIn(resp.status_code, (401, 403))

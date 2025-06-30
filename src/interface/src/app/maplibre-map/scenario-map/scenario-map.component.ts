@@ -1,6 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { MapComponent } from '@maplibre/ngx-maplibre-gl';
+import {
+  ControlComponent,
+  LayerComponent,
+  MapComponent,
+} from '@maplibre/ngx-maplibre-gl';
 import { AuthService } from '@services';
 import { Map as MapLibreMap, RequestTransformFunction } from 'maplibre-gl';
 import {
@@ -17,6 +21,10 @@ import { PlanState } from '../../plan/plan.state';
 import { ScenarioState } from '../scenario.state';
 import { MapZoomControlComponent } from '../map-zoom-control/map-zoom-control.component';
 import { FrontendConstants } from '@types';
+import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.component';
+import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
+import { MapConfigService } from '../map-config.service';
+import { DataLayerNameComponent } from '../../data-layers/data-layer-name/data-layer-name.component';
 
 @Component({
   selector: 'app-scenario-map',
@@ -29,6 +37,11 @@ import { FrontendConstants } from '@types';
     PlanningAreaLayerComponent,
     MapProjectAreasComponent,
     MapZoomControlComponent,
+    LayerComponent,
+    MapDataLayerComponent,
+    ControlComponent,
+    MapLayerColorLegendComponent,
+    DataLayerNameComponent,
   ],
   templateUrl: './scenario-map.component.html',
   styleUrl: './scenario-map.component.scss',
@@ -38,15 +51,18 @@ export class ScenarioMapComponent {
     private mapConfigState: MapConfigState,
     private authService: AuthService,
     private planState: PlanState,
-    private scenarioState: ScenarioState
-  ) {}
+    private scenarioState: ScenarioState,
+    private mapConfigService: MapConfigService
+  ) {
+    this.mapConfigService.initialize();
+  }
 
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
   mapLibreMap!: MapLibreMap;
 
-  scenarioId$ = this.scenarioState.currentScenarioId$;
+  isScenarioSuccessful$ = this.scenarioState.isScenarioSuccessful$;
 
   /**
    * Maplibre defaults
