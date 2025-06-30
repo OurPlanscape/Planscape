@@ -1,0 +1,52 @@
+<p>explore-plan-create-dialog works!</p>
+<sg-modal
+  title="Name your plan"
+  [shortHeader]="false"
+  [showBorders]="false"
+  [centerFooter]="false"
+  primaryButtonText="Create"
+  secondaryButtonText="Cancel"
+  (clickedSecondary)="cancel()"
+  (clickedClose)="cancel()"
+  (clickedPrimary)="submitPlan()"
+  [hasPrimarySpinner]="true"
+  [isInSpinState]="submitting">
+  <div modalBodyContent>
+    <sg-modal-info
+      infoType="info"
+      leadingIcon="info_filled"
+      message="Boundaries cannot be modified after the plan is saved.">
+    </sg-modal-info>
+    <sg-modal-info
+      *ngIf="!isValidTotalArea"
+      infoType="warning"
+      data-id="totalAreaError"
+      leadingIcon="warning_filled"
+      message="Your planning area is less than 100 acres. You will not be able to run
+        treatment scenarios in Plan.">
+    </sg-modal-info>
+    <form [formGroup]="planForm" (ngSubmit)="submitPlan()" class="upload-form">
+      <div class="field-row">
+        <div class="field-label-required">
+          Planning Area Name
+          <div class="required-star">*</div>
+        </div>
+        <sg-input-field
+          [disabled]="false"
+          class="scenario-input"
+          showSupportMessage="on-error">
+          <input
+            sgInput
+            placeholder="Plan Name"
+            name="planName"
+            formControlName="planName"
+            class="name-field" />
+        </sg-input-field>
+      </div>
+
+      <mat-error *ngIf="planForm.hasError('planNameExists')">
+        There is already a planning area with that name.
+      </mat-error>
+    </form>
+  </div>
+</sg-modal>
