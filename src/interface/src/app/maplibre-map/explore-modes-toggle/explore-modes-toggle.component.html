@@ -46,4 +46,5 @@
 </div>
 
 <app-upload-planning-area-box
-  *ngIf="showUploadForm"></app-upload-planning-area-box>
+  *ngIf="showUploadForm"
+  (uploadedShape)="uploadedShape()"></app-upload-planning-area-box>

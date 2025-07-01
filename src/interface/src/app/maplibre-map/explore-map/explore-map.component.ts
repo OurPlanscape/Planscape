@@ -144,6 +144,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       .subscribe((mode) => {
         if (mode === 'draw') {
           this.enablePolygonDrawingMode();
+        } else if (mode === 'upload') {
+          this.drawService.setMode('select');
         } else {
           this.cancelDrawingMode();
         }

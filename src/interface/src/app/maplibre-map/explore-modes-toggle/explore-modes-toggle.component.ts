@@ -39,37 +39,34 @@ export class ExploreModesToggleComponent {
     private dialog: MatDialog,
     private drawService: DrawService,
     private router: Router
-  ) {}
+  ) { }
 
   showUploadForm = false;
 
   handleDrawingButton() {
     // first, ensure we're only on single map view
+    this.showUploadForm = false;
     this.multiMapConfigState.setLayoutMode(1);
     this.mapConfigState.enterDrawingMode();
   }
 
   handleUploadButton() {
     this.showUploadForm = true;
-    this.mapConfigState.enterDrawingMode();
+    this.drawService.setMode('select');
+    this.mapConfigState.enterUploadMode();
+  }
 
-    // //config dialog
-    // uploadDialogRef.afterClosed().subscribe((result) => {
-    //   if (result?.confirmed) {
-    //     this.mapConfigState.enterDrawingMode();
-    //     this.drawService.addGeoJSONFeature(result.geometries);
-    //     // TODO: display any errors adding the feature on the UI
-    //   } else {
-    //     this.mapConfigState.enterViewMode();
-    //   }
-    // });
+  uploadedShape() {
+    this.showUploadForm = false;
+    this.mapConfigState.enterDrawingMode();
+    this.drawService.setMode('select');
   }
 
   handleCancelButton() {
     // this is contextual, so if we are in the upload mode, this will just cancel our upload.
-
     if (this.showUploadForm === true) {
       this.showUploadForm = false;
+      this.mapConfigState.enterViewMode();
     } else {
       //if there are features on the map... we show a confirm dialog
       // otherwise just exit

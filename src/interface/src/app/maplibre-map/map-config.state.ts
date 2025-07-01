@@ -119,6 +119,10 @@ export class MapConfigState {
     this._mapInteractionMode$.next('draw');
   }
 
+  enterUploadMode() {
+    this._mapInteractionMode$.next('upload');
+  }
+
   enterViewMode() {
     this._mapInteractionMode$.next('view');
   }

@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
+import { NgIf } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import * as shp from 'shpjs';
 import {
@@ -11,6 +12,7 @@ import {
 import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
 import { FileUploadFieldComponent } from 'src/styleguide/file-upload-field/file-upload-field.component';
+import { ModalInfoComponent } from 'src/styleguide/modal-info-box/modal-info.component';
 
 @Component({
   selector: 'app-upload-planning-area-box',
@@ -18,6 +20,8 @@ import { FileUploadFieldComponent } from 'src/styleguide/file-upload-field/file-
   imports: [
     FileUploadFieldComponent,
     MatButtonModule,
+    ModalInfoComponent,
+    NgIf,
     FormsModule,
     MatButtonModule,
     ReactiveFormsModule,
@@ -33,6 +37,7 @@ export class UploadPlanningAreaModalComponent {
   file: File | null = null;
   geometries: GeoJSON.GeoJSON | null = null;
   uploadFormError?: string | null = null;
+  @Output() uploadedShape = new EventEmitter();
 
   constructor(
     private fb: FormBuilder,
@@ -49,9 +54,8 @@ export class UploadPlanningAreaModalComponent {
     this.uploadElementStatus = 'running';
 
     if (file !== undefined) {
-      this.uploadElementStatus = 'uploaded';
-      this.file = file;
-      this.convertToGeoJson(this.file);
+      // async:
+      this.convertToGeoJson(file);
     } else {
       // User clicked to remove file
       this.uploadElementStatus = 'default';
@@ -75,7 +79,8 @@ export class UploadPlanningAreaModalComponent {
         this.geometries = geojson;
         this.mapConfigState.enterDrawingMode();
         this.drawService.addGeoJSONFeature(this.geometries);
-        // TODO: close this box
+        this.uploadElementStatus = 'uploaded';
+        this.uploadedShape.emit();
       } else if (Array.isArray(geojson)) {
         this.uploadElementStatus = 'failed';
         this.uploadFormError =
