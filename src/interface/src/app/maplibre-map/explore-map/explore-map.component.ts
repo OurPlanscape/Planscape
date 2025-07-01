@@ -74,6 +74,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   planId$ = this.planState.currentPlanId$;
 
+  // TODO: use something like combineLatest to zoom on a newly
+  // uploaded shape?
   bounds$ = this.planId$.pipe(
     switchMap((id) => {
       if (id) {
