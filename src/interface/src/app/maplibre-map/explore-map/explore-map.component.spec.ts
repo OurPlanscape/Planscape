@@ -3,7 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ExploreMapComponent } from './explore-map.component';
 import { MockProvider, MockProviders } from 'ng-mocks';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { MapConfigState } from '../map-config.state';
+import { MapInteractionMode, MapConfigState } from '../map-config.state';
 import { AuthService } from '@services';
 import { DrawService } from '../draw.service';
 import { BehaviorSubject, firstValueFrom, of } from 'rxjs';
@@ -24,7 +24,7 @@ describe('ExploreMapComponent', () => {
           selectedMapId$: new BehaviorSubject(3),
         }),
         MockProvider(MapConfigState, {
-          drawingModeEnabled$: new BehaviorSubject(false),
+          mapInteractionMode$: new BehaviorSubject<MapInteractionMode>('view'),
         }),
         MockProvider(PlanState, {
           currentPlanId$: of(null),

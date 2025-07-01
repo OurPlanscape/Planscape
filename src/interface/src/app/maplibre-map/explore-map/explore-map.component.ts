@@ -40,7 +40,6 @@ import { MapBoundaryLayerComponent } from '../map-boundary-layer/map-boundary-la
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
-import { GeoJSON } from 'geojson';
 
 @UntilDestroy()
 @Component({
@@ -75,6 +74,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   planId$ = this.planState.currentPlanId$;
 
+  // TODO: use something like combineLatest to zoom on a newly
+  // uploaded shape?
   bounds$ = this.planId$.pipe(
     switchMap((id) => {
       if (id) {
@@ -145,18 +146,10 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       .subscribe((mode) => {
         if (mode === 'draw') {
           this.enablePolygonDrawingMode();
+        } else if (mode === 'upload') {
+          this.drawService.setMode('select');
         } else {
           this.cancelDrawingMode();
-        }
-      });
-
-    this.mapConfigState.uploadedShapeData$
-      .pipe(untilDestroyed(this))
-      .subscribe((shape) => {
-        if (shape) {
-          this.displayUploadedShape(shape);
-        } else {
-          this.removeUploadedShape();
         }
       });
   }
@@ -222,33 +215,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
       this.onDrawChange(ids)
     );
     this.drawModeTooltipContent = 'Click to place first vertex';
-  }
-
-  //TODO : just PoC -- do this differently.
-  displayUploadedShape(geoJsonData: GeoJSON) {
-    const map = this.mapLibreMap;
-    if (map.getSource('uploaded-geojson-source')) {
-      map.removeSource('uploaded-geojson-source');
-    }
-
-    map.addSource('uploaded-geojson-source', {
-      type: 'geojson',
-      data: geoJsonData,
-    });
-
-    if (map.getLayer('uploaded-geojson-layer')) {
-      map.removeLayer('uploaded-geojson-layer');
-    }
-    map.addLayer({
-      id: 'uploaded-geojson-source',
-      type: 'line',
-      source: 'uploaded-geojson-source',
-    });
-  }
-
-  removeUploadedShape() {
-    const map = this.mapLibreMap;
-    map.removeLayer('uploaded-geojson-layer');
   }
 
   cancelDrawingMode() {

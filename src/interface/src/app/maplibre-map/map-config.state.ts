@@ -6,7 +6,7 @@ import { Extent, FrontendConstants } from '@types';
 import { filter } from 'rxjs/operators';
 import { BaseMapType, DEFAULT_BASE_MAP } from '../types/maplibre.map.types';
 
-type MapInteractionMode = 'draw' | 'view' | 'upload';
+export type MapInteractionMode = 'draw' | 'view' | 'upload';
 
 @Injectable()
 export class MapConfigState {

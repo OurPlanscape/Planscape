@@ -5,7 +5,7 @@
       active: false,
     }"
     class="left-option"
-    [ngClass]="{ active: (mapInteractionMode$ | async) === 'upload' }"
+    [ngClass]="{ active: showUploadForm }"
     (click)="handleUploadButton()"
     matTooltip="Upload"
     matTooltipPosition="below">
@@ -15,7 +15,9 @@
     type="button"
     (click)="handleDrawingButton()"
     class="right-option"
-    [ngClass]="{ active: (mapInteractionMode$ | async) === 'draw' }"
+    [ngClass]="{
+      active: (mapInteractionMode$ | async) === 'draw' && !showUploadForm,
+    }"
     [disabled]="(mapInteractionMode$ | async) === 'draw'"
     matTooltip="Draw Planning Area"
     matTooltipPosition="below">
@@ -42,3 +44,7 @@
     <mat-icon class="material-symbols-outlined">check</mat-icon>
   </button>
 </div>
+
+<app-upload-planning-area-box
+  *ngIf="showUploadForm"
+  (uploadedShape)="uploadedShape()"></app-upload-planning-area-box>
