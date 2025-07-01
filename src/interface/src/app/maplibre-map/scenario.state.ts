@@ -72,6 +72,17 @@ export class ScenarioState {
     map((d) => d.isLoading)
   );
 
+  public isScenarioSuccessful$ = this.currentScenarioId$.pipe(
+    switchMap((id) => {
+      if (!id) {
+        return of(false);
+      }
+      return this.currentScenario$.pipe(
+        map((plan) => plan.scenario_result?.status === 'SUCCESS')
+      );
+    })
+  );
+
   setScenarioId(id: number) {
     this._currentScenarioId$.next(id);
   }

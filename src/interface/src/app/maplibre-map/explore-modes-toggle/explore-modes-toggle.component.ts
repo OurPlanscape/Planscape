@@ -6,12 +6,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MapConfigState } from '../map-config.state';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
-import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
+import { Router } from '@angular/router';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
-import { Router } from '@angular/router';
-
+import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
+import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/explore-plan-create-dialog.component';
 @Component({
   selector: 'app-explore-modes-selection-toggle',
   standalone: true,
@@ -60,6 +60,11 @@ export class ExploreModesToggleComponent {
     // but if user hasn't drawn a polygon, a notice should appear
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
+    } else if (!this.drawService.isDrawingWithinBoundary()) {
+      this.dialog.open(OutsideStateDialogComponentComponent, {
+        maxWidth: '560px',
+      });
+      return;
     } else {
       this.openPlanCreateDialog()
         .afterClosed()
@@ -76,13 +81,10 @@ export class ExploreModesToggleComponent {
   }
 
   private openPlanCreateDialog() {
-    const acres = this.drawService.getCurrentAcreageValue();
-    const geoJSON = this.drawService.getDrawingGeoJSON();
-    return this.dialog.open(PlanCreateDialogComponent, {
+    return this.dialog.open(ExplorePlanCreateDialogComponent, {
       maxWidth: '560px',
       data: {
-        shape: geoJSON.geometry,
-        totalArea: acres,
+        drawService: this.drawService,
       },
     });
   }

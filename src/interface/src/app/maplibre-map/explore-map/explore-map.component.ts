@@ -36,6 +36,7 @@ import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.componen
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersRegistryService } from '../../explore/data-layers-registry';
 import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
+import { MapBoundaryLayerComponent } from '../map-boundary-layer/map-boundary-layer.component';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
@@ -57,6 +58,7 @@ import { DataLayer } from '@types';
     MapDataLayerComponent,
     LayerComponent,
     MapLayerColorLegendComponent,
+    MapBoundaryLayerComponent,
     PlanningAreaLayerComponent,
   ],
   providers: [DataLayersStateService],
@@ -70,7 +72,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  bounds$ = this.planState.currentPlanId$.pipe(
+  planId$ = this.planState.currentPlanId$;
+
+  bounds$ = this.planId$.pipe(
     switchMap((id) => {
       if (id) {
         return this.planState.planningAreaGeometry$.pipe(
@@ -86,6 +90,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   boundOptions$ = this.planState.currentPlanId$.pipe(
     map((id) => (id ? FrontendConstants.MAPLIBRE_BOUND_OPTIONS : undefined))
   );
+
+  layoutMode$ = this.multiMapConfigState.layoutMode$;
 
   mouseLngLat: LngLat | null = null;
   currentDrawingMode$ = this.drawService.currentDrawingMode$;
@@ -110,26 +116,25 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   @Input() showAttribution = false;
 
   isSelected$ = this.multiMapConfigState.selectedMapId$.pipe(
-    // If mapId is null means we are in other tab and we dont want to display highlighted Maps
+    // If mapId is null means we are in other tab and we don't want to display highlighted Maps
     map((mapId) => mapId && this.mapNumber === mapId)
   );
-  selectedFeatureId$ = this.drawService.selectedFeatureId$;
 
-  selectedLayer$ = this.state.selectedDataLayer$;
+  selectedLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
   constructor(
     private mapConfigState: MapConfigState,
     private multiMapConfigState: MultiMapConfigState,
     private authService: AuthService,
     private drawService: DrawService,
-    private state: DataLayersStateService,
+    private dataLayersStateService: DataLayersStateService,
     private registry: DataLayersRegistryService,
     private planState: PlanState
   ) {
-    mapConfigState.drawingModeEnabled$
+    this.mapConfigState.drawingModeEnabled$
       .pipe(untilDestroyed(this))
       .subscribe((drawingModeStatus) => {
-        if (drawingModeStatus === true) {
+        if (drawingModeStatus) {
           this.enablePolygonDrawingMode();
         } else {
           this.cancelDrawingMode();
@@ -138,7 +143,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.registry.set(this.mapNumber, this.state);
+    this.registry.set(this.mapNumber, this.dataLayersStateService);
   }
 
   ngOnDestroy() {
@@ -211,7 +216,7 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   goToSelectedLayer(layer: DataLayer) {
     this.multiMapConfigState.setSelectedMap(this.mapNumber);
-    this.state.goToSelectedLayer(layer);
+    this.dataLayersStateService.goToSelectedLayer(layer);
   }
 
   transformRequest: RequestTransformFunction = (url, resourceType) =>

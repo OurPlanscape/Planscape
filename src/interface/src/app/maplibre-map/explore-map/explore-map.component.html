@@ -16,6 +16,7 @@
   [transformRequest]="transformRequest"
   [ngClass]="{
     'highlighted-map': showMapNumber && (isSelected$ | async) === true,
+    'padded-map': mapNumber === 1 || mapNumber === 2,
   }">
   <app-map-base-layers
     *ngIf="mapLibreMap"
@@ -31,7 +32,8 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  <app-planning-area-layer *ngIf="mapLibreMap"></app-planning-area-layer>
+  <app-planning-area-layer
+    *ngIf="mapLibreMap && (planId$ | async)"></app-planning-area-layer>
 
   <mgl-control
     position="bottom-left"
@@ -53,6 +55,9 @@
     </div>
   </mgl-control>
 
+  <app-map-boundary-layer *ngIf="(drawingModeEnabled$ | async) === true">
+  </app-map-boundary-layer>
+
   <app-map-tooltip
     *ngIf="
       (drawingModeEnabled$ | async) === true &&
@@ -67,6 +72,9 @@
   <app-map-drawing-toolbox
     *ngIf="(drawingModeEnabled$ | async) === true"></app-map-drawing-toolbox>
   <mgl-control position="top-left">
-    <app-map-layer-color-legend></app-map-layer-color-legend>
+    <app-map-layer-color-legend
+      [size]="
+        (layoutMode$ | async) === 4 ? 'compact' : 'full'
+      "></app-map-layer-color-legend>
   </mgl-control>
 </mgl-map>

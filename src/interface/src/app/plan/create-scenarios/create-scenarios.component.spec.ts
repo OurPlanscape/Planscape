@@ -32,6 +32,9 @@ import {
 import { CurrencyPipe } from '@angular/common';
 import * as L from 'leaflet';
 import { MOCK_PLAN } from '@services/mocks';
+import { MockDeclaration, MockProvider } from 'ng-mocks';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 
 //TODO Add the following tests once implementation for tested behaviors is added:
 /**
@@ -153,7 +156,10 @@ describe('CreateScenariosComponent', () => {
         PlanModule,
         RouterTestingModule,
       ],
-      declarations: [CreateScenariosComponent],
+      declarations: [
+        CreateScenariosComponent,
+        MockDeclaration(DataLayersComponent),
+      ],
       providers: [
         CurrencyPipe,
         {
@@ -161,6 +167,9 @@ describe('CreateScenariosComponent', () => {
           useValue: fakeLegacyPlanStateService,
         },
         { provide: ScenarioService, useValue: fakeScenarioService },
+        MockProvider(DataLayersStateService, {
+          paths$: of([]),
+        }),
       ],
     }).compileComponents();
 

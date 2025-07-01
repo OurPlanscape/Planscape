@@ -1,7 +1,6 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
 import { AsyncPipe, NgClass, NgIf, CommonModule } from '@angular/common';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
-import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { SharedModule } from '@shared';
 import { BreadcrumbService } from '@services/breadcrumb.service';
@@ -9,27 +8,29 @@ import { MultiMapConfigState } from '../../maplibre-map/multi-map-config.state';
 import { SyncedMapsComponent } from '../../maplibre-map/synced-maps/synced-maps.component';
 import { MultiMapControlComponent } from '../../maplibre-map/multi-map-control/multi-map-control.component';
 import { ButtonComponent, OpacitySliderComponent } from '@styleguide';
-import { BehaviorSubject, map, of, switchMap, take } from 'rxjs';
+import { firstValueFrom, map, of, switchMap, take, skip } from 'rxjs';
 import { MatTabsModule } from '@angular/material/tabs';
 import { ExploreStorageService } from '@services/local-storage.service';
 import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.component';
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
 import { PlanState } from '../../plan/plan.state';
 import { getPlanPath } from '../../plan/plan-helpers';
+import { FrontendConstants } from '@types';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 
+@UntilDestroy()
 @Component({
   selector: 'app-explore',
   standalone: true,
   imports: [
     AsyncPipe,
     ExploreModesToggleComponent,
-    HttpClientTestingModule,
+    HttpClientModule,
     MapNavbarComponent,
-    MapComponent,
     SharedModule,
     SyncedMapsComponent,
     MultiMapControlComponent,
@@ -55,8 +56,9 @@ import { getPlanPath } from '../../plan/plan-helpers';
   ],
 })
 export class ExploreComponent implements OnDestroy {
-  // TODO: Replace the behavior subject with the value that is coming from the state
-  projectAreasOpacity$ = new BehaviorSubject(0.5);
+  dataLayerOpacity$ = this.multiMapConfigState.dataLayersOpacity$;
+  defaultDataLayerOpacity = FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY;
+
   panelExpanded = true;
   tabIndex = 0;
 
@@ -102,12 +104,17 @@ export class ExploreComponent implements OnDestroy {
         });
       });
 
+    // expand panel automatically when the selected map change
+    // (when the user clicks on the data layer name on the map)
+    this.multiMapConfigState.selectedMapId$
+      .pipe(untilDestroyed(this), skip(1))
+      .subscribe((id) => (this.panelExpanded = true));
+
     this.mapConfigService.initialize();
   }
 
   handleOpacityChange(opacity: number) {
-    // TODO: update the opacity directly on the state
-    this.projectAreasOpacity$.next(opacity);
+    this.multiMapConfigState.updateDataLayersOpacity(opacity);
   }
 
   togglePanelExpanded() {
@@ -118,10 +125,12 @@ export class ExploreComponent implements OnDestroy {
     this.saveStateToLocalStorage();
   }
 
-  private saveStateToLocalStorage() {
+  private async saveStateToLocalStorage() {
+    const opacity = await firstValueFrom(this.dataLayerOpacity$);
     this.exploreStorageService.setItem({
       tabIndex: this.tabIndex,
       isPanelExpanded: this.panelExpanded,
+      opacity: opacity,
     });
   }
 
@@ -130,6 +139,9 @@ export class ExploreComponent implements OnDestroy {
     if (options) {
       this.panelExpanded = options.isPanelExpanded || false;
       this.tabIndex = options.tabIndex || 0;
+      this.multiMapConfigState.updateDataLayersOpacity(
+        options.opacity || FrontendConstants.MAPLIBRE_MAP_DATA_LAYER_OPACITY
+      );
       this.onTabIndexChange(this.tabIndex);
     }
   }

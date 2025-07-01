@@ -16,6 +16,7 @@
 
   <div class="actions">
     <button
+      *ngIf="showTooltip()"
       sg-button
       class="help"
       variant="icon-only"
@@ -112,7 +113,7 @@
 
     <button
       sg-button
-      *ngIf="area !== 'TREATMENTS' && area !== 'TREATMENTS_PROJECT_AREA'"
+      *ngIf="showPrintButton()"
       variant="text"
       icon="print"
       [outlined]="true"

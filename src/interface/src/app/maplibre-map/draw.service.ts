@@ -2,11 +2,21 @@ import { Injectable } from '@angular/core';
 import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
-import { feature, Feature, Polygon, MultiPolygon } from '@turf/helpers';
-import { BehaviorSubject, Observable } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
 import { acresForFeature } from '../maplibre-map/maplibre.helper';
+import { Feature, feature, MultiPolygon, Polygon } from '@turf/helpers';
+import {
+  BehaviorSubject,
+  catchError,
+  Observable,
+  of,
+  tap,
+  shareReplay,
+} from 'rxjs';
+import { GeoJSON } from 'geojson';
+import booleanWithin from '@turf/boolean-within';
+import { HttpClient } from '@angular/common/http';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -43,6 +53,10 @@ export class DrawService {
 
   private _totalAcres$ = new BehaviorSubject<number>(0);
   totalAcres$: Observable<number> = this._totalAcres$.asObservable();
+
+  private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
+
+  constructor(private http: HttpClient) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -169,10 +183,48 @@ export class DrawService {
     this._totalAcres$.next(0);
   }
 
+  isDrawingWithinBoundary(): boolean {
+    const polygons = this.getPolygonsSnapshot();
+    const shape = this._boundaryShape$.value;
+    if (polygons && shape?.type === 'FeatureCollection' && shape.features) {
+      const result = polygons.every((p) => {
+        return booleanWithin(p.geometry, shape.features[0]);
+      });
+      return result;
+    }
+    return false;
+  }
+
   getPolygonsSnapshot() {
     return this._terraDraw
       ?.getSnapshot()
       .filter((f) => f.geometry.type === 'Polygon');
+  }
+
+  updateTotalAcreage() {
+    const geoJSON = this.getDrawingGeoJSON();
+    // if we have no features, set acres to 0
+    if (geoJSON.geometry.coordinates.length > 0) {
+      const acres = acresForFeature(geoJSON);
+      this._totalAcres$.next(acres);
+    } else {
+      this._totalAcres$.next(0);
+    }
+  }
+
+  getCaliforniaStateBoundary(): Observable<GeoJSON | null> {
+    if (this._boundaryShape$.value !== null) {
+      return this._boundaryShape$.asObservable();
+    }
+    const boundaryPath = 'assets/geojson/ca_state.geojson';
+    return this.http.get<GeoJSON>(boundaryPath).pipe(
+      catchError((error) => {
+        console.error('Failed to load shape:', error);
+        return of(null); // Return null on error
+      }),
+      tap((shape) => this._boundaryShape$.next(shape)),
+      shareReplay(1)
+    );
   }
 
   getDrawingGeoJSON() {
@@ -190,16 +242,5 @@ export class DrawService {
 
   getCurrentAcreageValue() {
     return this._totalAcres$.value;
-  }
-
-  updateTotalAcreage() {
-    const geoJSON = this.getDrawingGeoJSON();
-    // if we have no features, set acres to 0
-    if (geoJSON.geometry.coordinates.length > 0) {
-      const acres = acresForFeature(geoJSON);
-      this._totalAcres$.next(acres);
-    } else {
-      this._totalAcres$.next(0);
-    }
   }
 }
