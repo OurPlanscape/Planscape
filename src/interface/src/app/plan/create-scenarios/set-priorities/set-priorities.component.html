@@ -11,70 +11,45 @@
           area="TREATMENT_GOALS"
           title="TREATMENT GOALS"></app-scenario-tooltip>
 
-        <ng-container *ngIf="!isStatewideScenariosEnabled; else statewideGoals">
+        <!-- If scenario is not pending show the goal-->
+        <div *ngIf="isNewScenario" class="scenario-goal">
+          {{ scenarioGoal$ | async }}
+        </div>
+
+        <div *ngIf="!isNewScenario">
           <div
-            *ngFor="let treatmentGoal of treatmentGoals$ | async"
-            class="goal-control-container">
-            <mat-expansion-panel expanded="true" [togglePosition]="'before'">
-              <mat-expansion-panel-header class="goal-panel-header">
-                {{ treatmentGoal['category_name'] }}
-              </mat-expansion-panel-header>
-              <div
-                *ngFor="let treatmentQuestion of treatmentGoal['questions']"
-                class="layer-control-container">
-                <mat-radio-button
-                  [value]="treatmentQuestion"
-                  (click)="selectGoal(treatmentQuestion)">
-                  {{ treatmentQuestion.short_question_text }}
-                </mat-radio-button>
-              </div>
-            </mat-expansion-panel>
-          </div>
-        </ng-container>
-
-        <ng-template #statewideGoals>
-          <!-- If scenario is not pending show the goal-->
-          <div *ngIf="isNewScenario" class="scenario-goal">
-            {{ scenarioGoal$ | async }}
+            class="goal-loader"
+            *ngIf="(categorizedStatewideGoals$ | async) === null">
+            <mat-spinner diameter="24"></mat-spinner>
           </div>
 
-          <div *ngIf="!isNewScenario">
+          <ng-container
+            *ngIf="
+              categorizedStatewideGoals$ | async as categorizedScenarioGoals
+            ">
             <div
-              class="goal-loader"
-              *ngIf="(categorizedStatewideGoals$ | async) === null">
-              <mat-spinner diameter="24"></mat-spinner>
+              *ngFor="
+                let goalCategory of categorizedScenarioGoals
+                  | keyvalue: reverseAlpha
+              "
+              class="goal-control-container">
+              <mat-expansion-panel expanded="true" [togglePosition]="'before'">
+                <mat-expansion-panel-header class="goal-panel-header">
+                  {{ goalCategory.key }}
+                </mat-expansion-panel-header>
+                <div
+                  *ngFor="let goal of goalCategory.value"
+                  class="layer-control-container">
+                  <mat-radio-button
+                    [value]="goal.id"
+                    (click)="selectStatewideGoal(goal)">
+                    {{ goal.name }}
+                  </mat-radio-button>
+                </div>
+              </mat-expansion-panel>
             </div>
-
-            <ng-container
-              *ngIf="
-                categorizedStatewideGoals$ | async as categorizedScenarioGoals
-              ">
-              <div
-                *ngFor="
-                  let goalCategory of categorizedScenarioGoals
-                    | keyvalue: reverseAlpha
-                "
-                class="goal-control-container">
-                <mat-expansion-panel
-                  expanded="true"
-                  [togglePosition]="'before'">
-                  <mat-expansion-panel-header class="goal-panel-header">
-                    {{ goalCategory.key }}
-                  </mat-expansion-panel-header>
-                  <div
-                    *ngFor="let goal of goalCategory.value"
-                    class="layer-control-container">
-                    <mat-radio-button
-                      [value]="goal.id"
-                      (click)="selectStatewideGoal(goal)">
-                      {{ goal.name }}
-                    </mat-radio-button>
-                  </div>
-                </mat-expansion-panel>
-              </div>
-            </ng-container>
-          </div>
-        </ng-template>
+          </ng-container>
+        </div>
       </mat-radio-group>
     </div>
   </form>

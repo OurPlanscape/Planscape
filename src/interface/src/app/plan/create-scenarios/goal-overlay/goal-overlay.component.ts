@@ -1,6 +1,5 @@
 import { Component, OnDestroy } from '@angular/core';
 import { GoalOverlayService } from './goal-overlay.service';
-import { FeatureService } from '../../../features/feature.service';
 import { map } from 'rxjs';
 import { ScenarioGoal } from '@types';
 import { filter } from 'rxjs/operators';
@@ -26,16 +25,11 @@ export class GoalOverlayComponent implements OnDestroy {
 
   constructor(
     private goalOverlayService: GoalOverlayService,
-    private featureService: FeatureService,
     private sanitizer: DomSanitizer
   ) {}
 
   close() {
     this.goalOverlayService.close();
-  }
-
-  get isStatewideScenariosEnabled() {
-    return this.featureService.isFeatureEnabled('STATEWIDE_SCENARIOS');
   }
 
   sanitizeLinks(html: string): string {
