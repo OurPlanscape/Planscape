@@ -198,7 +198,6 @@ export class DrawService {
   }
 
   getGeometry(): Geometry | null {
-    // TODO : use updated acreage calculation
     const polygons = this.getPolygonsSnapshot();
     if (!polygons) {
       return null;
