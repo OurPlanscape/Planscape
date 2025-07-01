@@ -1,4 +1,5 @@
-@import "variables";
+@import 'variables';
+@import 'mixins';
 
 $side-panel-width: 360px;
 
@@ -20,7 +21,6 @@ section {
   background-color: white;
   height: $map-nav-bar-height;
 
-
   .mat-mdc-tab-group {
     height: 100%;
   }
@@ -30,7 +30,9 @@ section {
   }
 
   ::ng-deep .mat-mdc-tab-header {
-    --mdc-secondary-navigation-tab-container-height: calc(#{$map-nav-bar-height} - 2px);
+    --mdc-secondary-navigation-tab-container-height: calc(
+      #{$map-nav-bar-height} - 2px
+    );
     --mat-tab-header-label-text-size: 18px;
     --mat-tab-header-label-text-weight: 600;
   }
@@ -54,7 +56,6 @@ section {
     line-height: 32px;
     padding: 15px 15px 15px 24px;
   }
-  
 }
 
 .main {
@@ -76,3 +77,22 @@ app-synced-maps.withPanel {
   margin-left: $side-panel-width;
 }
 
+.right-controls {
+  margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
+}
+
+.total-acres {
+  @include standard-label();
+  box-sizing: border-box;
+  padding: 1px;
+  margin-left: auto;
+  display: flex;
+  flex-direction: row;
+  color: $color-white;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}

@@ -17,7 +17,6 @@ import {
   LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
-  Popup,
   RequestTransformFunction,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
@@ -182,34 +181,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     this.mouseLngLat = event.lngLat;
   }
 
-  drawAcreageTooltip(featureId: FeatureId) {
-    const coords = this.drawService.getPolygonBottomCenterCoords(featureId);
-    if (coords) {
-      new Popup({
-        closeButton: false,
-        closeOnClick: false,
-        closeOnMove: false,
-        anchor: 'top',
-        offset: [0, 10],
-        className: 'acreage-popup',
-      }) // TODO: plug in acreage when its merged
-        .setLngLat([coords[0], coords[1]])
-        .setHTML('here is some acreage')
-        .addTo(this.mapLibreMap);
-    }
-  }
-
-  afterFinish(featureId: string) {
-    // clears the hover tooltip
-    this.drawModeTooltipContent = null;
-
-    // TODO: add this when we have new acreage calculated
-    // this.drawAcreageTooltip(featureId);
-  }
-
-  onDrawChange(changes: any) {
+  onDrawChange(ids: FeatureId[]) {
     if (this.drawService.getMode() === 'polygon') {
-      const pointCount = this.drawService.getPolygonPointCount(changes[0]);
+      const pointCount = this.drawService.getPolygonPointCount(ids[0]);
       if (pointCount > 3 && pointCount <= 5) {
         this.drawModeTooltipContent = 'Click to continue drawing';
       } else if (pointCount > 5) {
@@ -225,11 +199,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   enablePolygonDrawingMode() {
     this.drawService.start();
     this.drawService.setMode('polygon');
-    this.drawService.registerFinish((featureId: string) =>
-      this.afterFinish(featureId)
-    );
-    this.drawService.registerChangeCallback((context: any) =>
-      this.onDrawChange(context)
+    this.drawService.registerChangeCallback((ids: FeatureId[]) =>
+      this.onDrawChange(ids)
     );
     this.drawModeTooltipContent = 'Click to place first vertex';
   }

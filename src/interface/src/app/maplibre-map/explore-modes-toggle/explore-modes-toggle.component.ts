@@ -6,16 +6,12 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MapConfigState } from '../map-config.state';
 import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
-import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Geometry, feature } from '@turf/helpers';
+import { Router } from '@angular/router';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
-import { Router } from '@angular/router';
-import { PlanService } from '@services';
-import { Feature, MultiPolygon, Polygon } from 'geojson';
-import { take } from 'rxjs';
 import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
+import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/explore-plan-create-dialog.component';
 @Component({
   selector: 'app-explore-modes-selection-toggle',
   standalone: true,
@@ -40,7 +36,6 @@ export class ExploreModesToggleComponent {
     private multiMapConfigState: MultiMapConfigState,
     private dialog: MatDialog,
     private drawService: DrawService,
-    private planService: PlanService,
     private router: Router
   ) {}
 
@@ -65,36 +60,17 @@ export class ExploreModesToggleComponent {
     // but if user hasn't drawn a polygon, a notice should appear
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
+    } else if (!this.drawService.isDrawingWithinBoundary()) {
+      this.dialog.open(OutsideStateDialogComponentComponent, {
+        maxWidth: '560px',
+      });
+      return;
     } else {
-      if (!this.drawService.isDrawingWithinBoundary()) {
-        this.dialog.open(OutsideStateDialogComponentComponent, {
-          maxWidth: '560px',
-        });
-        return;
-      }
-      const polygons = this.drawService.getPolygonsSnapshot();
-      const polygonFeatures = polygons as Feature<Polygon>[];
-      const coordinates = polygonFeatures.map(
-        (feature) => feature.geometry.coordinates
-      );
-      const combinedGeometry: MultiPolygon = {
-        type: 'MultiPolygon',
-        coordinates,
-      };
-      const geoJSON = feature(combinedGeometry);
-      // TODO: replace with frontend acreage function when ready
-      this.planService
-        .getTotalArea(geoJSON.geometry)
-        .pipe(take(1))
-        .subscribe((acres: number) => {
-          if (acres && geoJSON) {
-            this.openPlanCreateDialog(acres, geoJSON.geometry)
-              .afterClosed()
-              .subscribe((id) => {
-                if (id) {
-                  this.router.navigate(['plan', id]);
-                }
-              });
+      this.openPlanCreateDialog()
+        .afterClosed()
+        .subscribe((id) => {
+          if (id) {
+            this.router.navigate(['plan', id]);
           }
         });
     }
@@ -104,12 +80,11 @@ export class ExploreModesToggleComponent {
     this.scenarioUpload.emit();
   }
 
-  private openPlanCreateDialog(area: number, shape: Geometry) {
-    return this.dialog.open(PlanCreateDialogComponent, {
+  private openPlanCreateDialog() {
+    return this.dialog.open(ExplorePlanCreateDialogComponent, {
       maxWidth: '560px',
       data: {
-        shape: shape,
-        totalArea: area,
+        drawService: this.drawService,
       },
     });
   }

@@ -52,6 +52,11 @@
   }
 }
 
+::ng-deep .acreage-popup .maplibregl-popup-content {
+      padding: 8px;
+      border-radius: 8px;
+  }
+
 mgl-map {
   width: 100%;
   height: 100%;
