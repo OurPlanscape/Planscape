@@ -2,7 +2,13 @@ import { Injectable } from '@angular/core';
 import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
-import { Geometry } from '@turf/helpers';
+import {
+  Geometry,
+  Feature,
+  feature,
+  MultiPolygon,
+  Polygon,
+} from '@turf/helpers';
 import {
   BehaviorSubject,
   catchError,
@@ -13,10 +19,11 @@ import {
 } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
-export type DrawMode = 'polygon' | 'select' | 'none';
 import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
+
+export type DrawMode = 'polygon' | 'select' | 'none';
 
 export const DefaultSelectConfig = {
   flags: {
@@ -50,6 +57,9 @@ export class DrawService {
     this._selectedFeatureId$.asObservable();
 
   private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
+
+  private _totalAcres$ = new BehaviorSubject<number>(0);
+  totalAcres$: Observable<number> = this._totalAcres$.asObservable();
 
   constructor(private http: HttpClient) {}
 
@@ -215,5 +225,22 @@ export class DrawService {
       tap((shape) => this._boundaryShape$.next(shape)),
       shareReplay(1)
     );
+  }
+
+  getDrawingGeoJSON() {
+    const polygons = this.getPolygonsSnapshot();
+    const polygonFeatures = polygons as Feature<Polygon>[];
+    const coordinates = polygonFeatures.map(
+      (feature) => feature.geometry.coordinates
+    );
+    const combinedGeometry: MultiPolygon = {
+      type: 'MultiPolygon',
+      coordinates,
+    };
+    return feature(combinedGeometry);
+  }
+
+  getCurrentAcreageValue() {
+    return this._totalAcres$.value;
   }
 }
