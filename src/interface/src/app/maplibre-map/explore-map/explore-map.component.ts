@@ -37,6 +37,7 @@ import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.componen
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersRegistryService } from '../../explore/data-layers-registry';
 import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
+import { MapBoundaryLayerComponent } from '../map-boundary-layer/map-boundary-layer.component';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
@@ -58,6 +59,7 @@ import { DataLayer } from '@types';
     MapDataLayerComponent,
     LayerComponent,
     MapLayerColorLegendComponent,
+    MapBoundaryLayerComponent,
     PlanningAreaLayerComponent,
   ],
   providers: [DataLayersStateService],

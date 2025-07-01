@@ -8,15 +8,14 @@ import { MultiMapConfigState } from '../multi-map-config.state';
 import { DrawService } from '../draw.service';
 import { PlanCreateDialogComponent } from '../../map/plan-create-dialog/plan-create-dialog.component';
 import { MatDialog } from '@angular/material/dialog';
-import { Geometry } from '@turf/helpers';
+import { Geometry, feature } from '@turf/helpers';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
 import { Router } from '@angular/router';
 import { PlanService } from '@services';
 import { Feature, MultiPolygon, Polygon } from 'geojson';
-import { feature } from '@turf/helpers';
 import { take } from 'rxjs';
-
+import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
 @Component({
   selector: 'app-explore-modes-selection-toggle',
   standalone: true,
@@ -67,6 +66,12 @@ export class ExploreModesToggleComponent {
     if (!this.drawService.hasPolygonFeatures()) {
       this.openSaveWarningDialog();
     } else {
+      if (!this.drawService.isDrawingWithinBoundary()) {
+        this.dialog.open(OutsideStateDialogComponentComponent, {
+          maxWidth: '560px',
+        });
+        return;
+      }
       const polygons = this.drawService.getPolygonsSnapshot();
       const polygonFeatures = polygons as Feature<Polygon>[];
       const coordinates = polygonFeatures.map(
