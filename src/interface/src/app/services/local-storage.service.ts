@@ -1,7 +1,14 @@
 import { Injectable } from '@angular/core';
 import { Params } from '@angular/router';
 import { RedirectData } from '@services/redirect.service';
-import { BaseLayer, Extent, MapConfig, MapViewOptions, Region } from '@types';
+import {
+  BaseLayer,
+  DataLayer,
+  Extent,
+  MapConfig,
+  MapViewOptions,
+  Region,
+} from '@types';
 import { BaseMapType } from '../types/maplibre.map.types';
 
 export abstract class BaseLocalStorageService<T> {
@@ -86,10 +93,11 @@ export class MapConfigsStorageService extends BaseLocalStorageService<Record<
   providedIn: 'root',
 })
 export class MultiMapsStorageService extends BaseLocalStorageService<{
-  layoutMode: 1 | 2 | 4;
-  baseMap: BaseMapType;
-  extent: Extent;
-  baseLayers: BaseLayer[] | null;
+  layoutMode?: 1 | 2 | 4;
+  baseMap?: BaseMapType;
+  extent?: Extent;
+  baseLayers?: BaseLayer[] | null;
+  dataLayers?: Record<number, DataLayer | null>;
 }> {
   constructor() {
     super('multiMapsOptions');

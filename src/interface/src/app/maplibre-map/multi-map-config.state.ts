@@ -42,7 +42,9 @@ export class MultiMapConfigState extends MapConfigState {
     this.baseLayersStateService.selectedBaseLayers$
       .pipe(take(1))
       .subscribe((baseLayers) => {
+        const existingStorage = this.multiMapsStorageService.getItem();
         this.multiMapsStorageService.setItem({
+          ...existingStorage,
           layoutMode: this._layoutMode$.value,
           baseMap: this._baseMap$.value,
           extent: extent,
