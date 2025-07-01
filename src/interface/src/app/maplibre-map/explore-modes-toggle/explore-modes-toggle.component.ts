@@ -48,7 +48,6 @@ export class ExploreModesToggleComponent {
 
   handleUploadButton() {
     const uploadDialogRef = this.dialog.open(UploadPlanningAreaModalComponent);
-    // this.mapConfigState.enterUploadMode();
 
     //config dialog
     uploadDialogRef.afterClosed().subscribe((result) => {
