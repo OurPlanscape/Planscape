@@ -1,5 +1,7 @@
-<mat-icon *ngIf="leadingIcon">{{ leadingIcon }}</mat-icon>
-{{ message }}
+<div class="leading-icon-box" *ngIf="leadingIcon">
+  <mat-icon class="leading-icon">{{ leadingIcon }}</mat-icon>
+</div>
+<div class="message-content">{{ message }}</div>
 <div class="right-icon">
   <mat-icon *ngIf="infoType === 'complete'">check</mat-icon>
   <mat-spinner

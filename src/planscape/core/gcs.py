@@ -2,7 +2,7 @@ import logging
 
 from typing import Optional, Collection, Dict, Any
 
-import subprocess
+from pathlib import Path
 from cacheops import cached
 from django.conf import settings
 from rasterio.session import GSSession
@@ -120,17 +120,47 @@ def upload_file_via_api(
     object_name: str,
     input_file: str,
     url: str,
+    chunk_size: int = 3 * 1024 * 1024 * 1024,  # 3GB chunk size
 ):
     logger.info(f"Uploading file {object_name}.")
-    curl_command = [
-        "curl",
-        "--request",
-        "PUT",
-        url,
-        "--form",
-        f"'{object_name}=@\"{input_file}\"'",
-    ]
+    file_size = Path(input_file).stat().st_size
 
-    subprocess.run(curl_command, check=True)
+    total_uploaded = 0
+
+    with open(input_file, "rb") as f:
+        if file_size <= chunk_size:
+            # If the file is smaller than the chunk size, upload it in one go
+            response = requests.put(
+                url,
+                data=f,
+            )
+            if response.status_code not in (200, 201):
+                logger.error(f"Failed to upload {object_name}.")
+                raise ValueError(
+                    f"Failed to upload: {response.status_code} {response.text}"
+                )
+        else:
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+
+                response = requests.put(
+                    url,
+                    data=chunk,
+                    headers={
+                        "Content-Range": f"bytes {total_uploaded}-{total_uploaded + len(chunk) - 1}/{file_size}",
+                    },
+                )
+
+                if response.status_code not in (200, 201, 308):
+                    logger.error(f"Failed to upload chunk for {object_name}.")
+                    raise ValueError(
+                        f"Failed to upload chunk: {response.status_code} {response.text}"
+                    )
+                total_uploaded += len(chunk)
+                logger.info(
+                    f"Uploaded {total_uploaded} bytes of {file_size} bytes for {object_name}."
+                )
 
     logger.info(f"Uploaded {object_name} done.")

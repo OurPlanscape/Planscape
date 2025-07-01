@@ -15,7 +15,7 @@ from core.s3 import (
     list_files,
     upload_file_via_api as upload_to_s3,
 )
-from core.gcs import upload_file_via_api as upload_to_gcs
+from core.gcs import is_gcs_file, upload_file_via_api as upload_to_gcs
 from django.core.management.base import CommandParser
 from gis.core import (
     fetch_datalayer_type,
@@ -438,7 +438,7 @@ class Command(PlanscapeCommand):
                 **kwargs,
             )
 
-        s3_file = is_s3_file(input_file)
+        cloud_storage_file = is_s3_file(input_file) or is_gcs_file(input_file)
         original_file_path = Path(input_file)
         vsi_input_file = with_vsi_prefix(input_file)
 
@@ -474,7 +474,7 @@ class Command(PlanscapeCommand):
                     processed_files = [input_file]
 
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
-        if s3_file:
+        if cloud_storage_file:
             original_name = input_file
         else:
             original_name = original_file_path.name

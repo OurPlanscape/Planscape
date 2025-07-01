@@ -65,6 +65,15 @@ export const InfoBox: Story = {
   },
 };
 
+export const WarningBox: Story = {
+  args: {
+    leadingIcon: 'warning',
+    message:
+      'This is a warning, and the text being displayed is going to be a few lines long. The line-height for our font should accomodate this long warning.',
+    infoType: 'warning',
+  },
+};
+
 export const ErrorBox: Story = {
   args: {
     leadingIcon: 'error',
