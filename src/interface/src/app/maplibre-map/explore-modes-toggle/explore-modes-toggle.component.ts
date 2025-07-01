@@ -39,7 +39,7 @@ export class ExploreModesToggleComponent {
     private dialog: MatDialog,
     private drawService: DrawService,
     private router: Router
-  ) { }
+  ) {}
 
   showUploadForm = false;
 
