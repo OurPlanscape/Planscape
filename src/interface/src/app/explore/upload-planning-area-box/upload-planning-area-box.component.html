@@ -5,7 +5,7 @@
   *ngIf="uploadFormError"
   [message]="uploadFormError"></sg-modal-info>
 <div class="upload-form-body">
-  <div>Upload a planning area</div>
+  <div class="upload-form-title">Upload a planning area</div>
   <form [formGroup]="uploadPlanningAreaForm!" class="upload-scenario-form">
     <sg-file-upload
       [uploadStatus]="uploadElementStatus"
