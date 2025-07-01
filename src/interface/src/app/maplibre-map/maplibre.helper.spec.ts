@@ -2,7 +2,7 @@ import { Feature, Polygon } from 'geojson';
 import { acresForFeature } from './maplibre.helper';
 import { MultiPolygon } from '@turf/helpers';
 
-describe('calculateAcres', () => {
+describe('test acresForFeature helper function', () => {
   const standardPolygon: Feature<MultiPolygon> = {
     type: 'Feature',
     properties: {},
