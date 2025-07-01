@@ -1,9 +1,6 @@
-import { Component, inject } from '@angular/core';
-import { ModalComponent } from 'src/styleguide/modal/modal.component';
+import { Component } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { FileUploadFieldComponent } from '../../../styleguide/file-upload-field/file-upload-field.component';
 import * as shp from 'shpjs';
-import { MatDialogRef } from '@angular/material/dialog';
 import {
   FormBuilder,
   FormGroup,
@@ -11,22 +8,22 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
+import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+import { DrawService } from 'src/app/maplibre-map/draw.service';
+import { FileUploadFieldComponent } from 'src/styleguide/file-upload-field/file-upload-field.component';
 
 @Component({
-  selector: 'app-upload-planning-area-modal',
+  selector: 'app-upload-planning-area-box',
   standalone: true,
   imports: [
     FileUploadFieldComponent,
-    ModalComponent,
     MatButtonModule,
-    FileUploadFieldComponent,
-    ModalComponent,
     FormsModule,
     MatButtonModule,
     ReactiveFormsModule,
   ],
-  templateUrl: './upload-planning-area-modal.component.html',
-  styleUrl: './upload-planning-area-modal.component.scss',
+  templateUrl: './upload-planning-area-box.component.html',
+  styleUrl: './upload-planning-area-box.component.scss',
 })
 export class UploadPlanningAreaModalComponent {
   uploadPlanningAreaForm!: FormGroup;
@@ -36,9 +33,12 @@ export class UploadPlanningAreaModalComponent {
   file: File | null = null;
   geometries: GeoJSON.GeoJSON | null = null;
   uploadFormError?: string | null = null;
-  readonly dialogRef = inject(MatDialogRef<UploadPlanningAreaModalComponent>);
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private mapConfigState: MapConfigState,
+    private drawService: DrawService
+  ) {
     this.uploadPlanningAreaForm = this.fb.group({
       scenarioName: this.fb.control('', [Validators.required]),
       standSize: this.fb.control('MEDIUM', [Validators.required]),
@@ -59,14 +59,6 @@ export class UploadPlanningAreaModalComponent {
     }
   }
 
-  saveShape() {
-    this.dialogRef.close({ confirmed: true, geometries: this.geometries });
-  }
-
-  closeModal(): void {
-    this.dialogRef.close({ confirmed: false });
-  }
-
   async convertToGeoJson(file: File) {
     const reader = new FileReader();
     const fileAsArrayBuffer: ArrayBuffer = await new Promise((resolve) => {
@@ -81,6 +73,9 @@ export class UploadPlanningAreaModalComponent {
       )) as GeoJSON.GeoJSON;
       if (geojson.type == 'FeatureCollection') {
         this.geometries = geojson;
+        this.mapConfigState.enterDrawingMode();
+        this.drawService.addGeoJSONFeature(this.geometries);
+        // TODO: close this box
       } else if (Array.isArray(geojson)) {
         this.uploadElementStatus = 'failed';
         this.uploadFormError =

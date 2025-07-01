@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { UploadPlanningAreaModalComponent } from './upload-planning-area-modal.component';
+import { UploadPlanningAreaModalComponent } from './upload-planning-area-box.component';
 
 describe('UploadPlanningAreaModalComponent', () => {
   let component: UploadPlanningAreaModalComponent;
@@ -8,10 +8,9 @@ describe('UploadPlanningAreaModalComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UploadPlanningAreaModalComponent]
-    })
-    .compileComponents();
-    
+      imports: [UploadPlanningAreaModalComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(UploadPlanningAreaModalComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

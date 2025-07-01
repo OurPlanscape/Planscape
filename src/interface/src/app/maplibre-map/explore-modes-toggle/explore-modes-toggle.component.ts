@@ -10,7 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
-import { UploadPlanningAreaModalComponent } from 'src/app/explore/upload-planning-area-modal/upload-planning-area-modal.component';
+import { UploadPlanningAreaModalComponent } from 'src/app/explore/upload-planning-area-box/upload-planning-area-box.component';
 import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
 import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/explore-plan-create-dialog.component';
 @Component({
@@ -23,6 +23,7 @@ import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/
     MatTooltipModule,
     NgClass,
     NgIf,
+    UploadPlanningAreaModalComponent,
   ],
   templateUrl: './explore-modes-toggle.component.html',
   styleUrl: './explore-modes-toggle.component.scss',
@@ -40,6 +41,8 @@ export class ExploreModesToggleComponent {
     private router: Router
   ) {}
 
+  showUploadForm = false;
+
   handleDrawingButton() {
     // first, ensure we're only on single map view
     this.multiMapConfigState.setLayoutMode(1);
@@ -47,27 +50,34 @@ export class ExploreModesToggleComponent {
   }
 
   handleUploadButton() {
-    const uploadDialogRef = this.dialog.open(UploadPlanningAreaModalComponent);
+    this.showUploadForm = true;
+    this.mapConfigState.enterDrawingMode();
 
-    //config dialog
-    uploadDialogRef.afterClosed().subscribe((result) => {
-      if (result?.confirmed) {
-        this.mapConfigState.enterDrawingMode();
-        this.drawService.addGeoJSONFeature(result.geometries);
-        // TODO: display any errors adding the feature on the UI
-      } else {
-        this.mapConfigState.enterViewMode();
-      }
-    });
+    // //config dialog
+    // uploadDialogRef.afterClosed().subscribe((result) => {
+    //   if (result?.confirmed) {
+    //     this.mapConfigState.enterDrawingMode();
+    //     this.drawService.addGeoJSONFeature(result.geometries);
+    //     // TODO: display any errors adding the feature on the UI
+    //   } else {
+    //     this.mapConfigState.enterViewMode();
+    //   }
+    // });
   }
 
   handleCancelButton() {
-    //if there are features on the map... we show a confirm dialog
-    // otherwise just exit
-    if (this.drawService.hasPolygonFeatures()) {
-      this.openConfirmExitDialog();
+    // this is contextual, so if we are in the upload mode, this will just cancel our upload.
+
+    if (this.showUploadForm === true) {
+      this.showUploadForm = false;
     } else {
-      this.mapConfigState.enterViewMode();
+      //if there are features on the map... we show a confirm dialog
+      // otherwise just exit
+      if (this.drawService.hasPolygonFeatures()) {
+        this.openConfirmExitDialog();
+      } else {
+        this.mapConfigState.enterViewMode();
+      }
     }
   }
 

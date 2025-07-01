@@ -257,10 +257,8 @@ export class DrawService {
       },
     }));
     this._terraDraw?.setMode('select'); // should be in select mode to add
-    const addedFeatures = this._terraDraw?.addFeatures(featuresArray);
+    this._terraDraw?.addFeatures(featuresArray);
     this.updateTotalAcreage();
-    // TODO: report any failures to the user
-    console.log('added features:', addedFeatures);
   }
 }
 
