@@ -1,17 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
+import { UploadPlanningAreaBoxComponent } from './upload-planning-area-box.component';
+import { MockProvider } from 'ng-mocks';
+import { DrawService } from 'src/app/maplibre-map/draw.service';
 
-import { UploadPlanningAreaModalComponent } from './upload-planning-area-box.component';
-
-describe('UploadPlanningAreaModalComponent', () => {
-  let component: UploadPlanningAreaModalComponent;
-  let fixture: ComponentFixture<UploadPlanningAreaModalComponent>;
+describe('UploadPlanningAreaBoxComponent', () => {
+  let component: UploadPlanningAreaBoxComponent;
+  let fixture: ComponentFixture<UploadPlanningAreaBoxComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [UploadPlanningAreaModalComponent],
+      imports: [UploadPlanningAreaBoxComponent],
+      providers: [MockProvider(MapConfigState), MockProvider(DrawService)],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(UploadPlanningAreaModalComponent);
+    fixture = TestBed.createComponent(UploadPlanningAreaBoxComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

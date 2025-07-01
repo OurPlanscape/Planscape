@@ -10,7 +10,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { Router } from '@angular/router';
 import { NoPlanningAreaModalComponent } from '../../plan/no-planning-area-modal/no-planning-area-modal.component';
 import { ConfirmExitDrawingModalComponent } from '../../plan/confirm-exit-drawing-modal/confirm-exit-drawing-modal.component';
-import { UploadPlanningAreaModalComponent } from 'src/app/explore/upload-planning-area-box/upload-planning-area-box.component';
+import { UploadPlanningAreaBoxComponent } from 'src/app/explore/upload-planning-area-box/upload-planning-area-box.component';
 import { OutsideStateDialogComponentComponent } from 'src/app/plan/outside-state-dialog-component/outside-state-dialog-component.component';
 import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/explore-plan-create-dialog.component';
 @Component({
@@ -23,7 +23,7 @@ import { ExplorePlanCreateDialogComponent } from '../explore-plan-create-dialog/
     MatTooltipModule,
     NgClass,
     NgIf,
-    UploadPlanningAreaModalComponent,
+    UploadPlanningAreaBoxComponent,
   ],
   templateUrl: './explore-modes-toggle.component.html',
   styleUrl: './explore-modes-toggle.component.scss',

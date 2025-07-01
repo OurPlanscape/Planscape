@@ -29,7 +29,7 @@ import { ModalInfoComponent } from 'src/styleguide/modal-info-box/modal-info.com
   templateUrl: './upload-planning-area-box.component.html',
   styleUrl: './upload-planning-area-box.component.scss',
 })
-export class UploadPlanningAreaModalComponent {
+export class UploadPlanningAreaBoxComponent {
   uploadPlanningAreaForm!: FormGroup;
 
   uploadElementStatus: 'default' | 'failed' | 'running' | 'uploaded' =
