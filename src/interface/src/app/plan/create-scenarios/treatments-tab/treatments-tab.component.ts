@@ -22,7 +22,7 @@ import { BreadcrumbService } from '@services/breadcrumb.service';
   styleUrl: './treatments-tab.component.scss',
 })
 export class TreatmentsTabComponent implements OnInit {
-  @Input() scenarioId!: string;
+  @Input() scenarioId!: number;
   @Input() planningArea: Plan | null = null;
 
   state: 'loading' | 'empty' | 'loaded' = 'loading';

@@ -57,7 +57,7 @@ describe('ScenarioService', () => {
         stand_size: 'MEDIUM',
       };
       const scenario: Scenario = {
-        id: '1',
+        id: 1,
         name: 'name',
         notes: undefined,
         planning_area: 1,
@@ -66,7 +66,7 @@ describe('ScenarioService', () => {
         status: 'ACTIVE',
       };
 
-      service.getScenario('1').subscribe((res) => {
+      service.getScenario(1).subscribe((res) => {
         expect(res).toEqual(scenario);
       });
       tick();
@@ -99,7 +99,7 @@ describe('ScenarioService', () => {
         stand_size: 'LARGE',
       };
       const scenario: Scenario = {
-        id: '1',
+        id: 1,
         name: 'name',
         planning_area: 1,
         configuration: scenarioConfig,

@@ -49,7 +49,7 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
-  scenarioId: string | null = null;
+  scenarioId: number | null = null;
   scenarioName: string | null = null;
   planId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
@@ -246,7 +246,7 @@ export class CreateScenariosComponent implements OnInit {
   private formValueToScenario(): Scenario {
     const prioritiesData = this.prioritiesComponent.getFormData();
     return {
-      id: '',
+      id: null,
       name: this.scenarioNameFormField?.value,
       planning_area: this.planId!,
       status: 'ACTIVE',
