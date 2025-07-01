@@ -7,7 +7,16 @@ import {
   Validators,
 } from '@angular/forms';
 import { MatStepper } from '@angular/material/stepper';
-import { BehaviorSubject, catchError, interval, map, NEVER, take } from 'rxjs';
+import {
+  BehaviorSubject,
+  catchError,
+  firstValueFrom,
+  interval,
+  map,
+  NEVER,
+  skip,
+  take,
+} from 'rxjs';
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
@@ -21,10 +30,14 @@ import { GoalOverlayService } from './goal-overlay/goal-overlay.service';
 import { canAddTreatmentPlan } from '../permissions';
 import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
 import { FeatureService } from 'src/app/features/feature.service';
+import { MatTabGroup } from '@angular/material/tabs';
+import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 
 enum ScenarioTabs {
   CONFIG,
   RESULTS,
+  TREATMENTS,
+  DATA_LAYERS,
 }
 
 @UntilDestroy()
@@ -65,6 +78,8 @@ export class CreateScenariosComponent implements OnInit {
 
   isLoading$ = new BehaviorSubject(true);
 
+  @ViewChild('tabGroup') tabGroup!: MatTabGroup;
+
   constructor(
     private fb: FormBuilder,
     private LegacyPlanStateService: LegacyPlanStateService,
@@ -73,18 +88,23 @@ export class CreateScenariosComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
     private scenarioStateService: ScenarioState,
-    private featureService: FeatureService
-  ) {}
+    private featureService: FeatureService,
+    private dataLayersStateService: DataLayersStateService
+  ) {
+    this.dataLayersStateService.paths$
+      .pipe(untilDestroyed(this), skip(1))
+      .subscribe((path) => {
+        if (path.length > 0) {
+          this.tabGroup.selectedIndex = ScenarioTabs.DATA_LAYERS;
+        }
+      });
+  }
 
   async createForms() {
     await this.constraintsPanelComponent.loadExcludedAreas();
     const constrainsForm = await this.constraintsPanelComponent.createForm();
     this.forms = this.fb.group({
-      scenarioName: new FormControl('', [
-        Validators.required,
-        (control: AbstractControl) =>
-          scenarioNameMustBeNew(control, this.existingScenarioNames),
-      ]),
+      scenarioName: new FormControl('', [Validators.required]),
       priorities: this.prioritiesComponent.createForm(),
       constrains: constrainsForm,
       projectAreas: this.fb.group({
@@ -125,7 +145,6 @@ export class CreateScenariosComponent implements OnInit {
     } else {
       // enable animation
       this.tabAnimation = this.tabAnimationOptions.on;
-      this.isLoading$.next(false);
     }
 
     // When an area is uploaded, issue an event to draw it on the map.
@@ -143,13 +162,19 @@ export class CreateScenariosComponent implements OnInit {
     });
 
     if (typeof this.planId === 'number') {
-      this.scenarioService
-        .getScenariosForPlan(this.planId)
-        .pipe(take(1))
-        .subscribe((scenarios) => {
-          this.existingScenarioNames = scenarios.map((s) => s.name);
-        });
+      const existingScenarios = await firstValueFrom(
+        this.scenarioService.getScenariosForPlan(this.planId)
+      );
+      const existingScenarioNames = existingScenarios.map((s) => s.name);
+      this.forms
+        .get('scenarioName')
+        ?.addValidators([
+          (control: AbstractControl) =>
+            scenarioNameMustBeNew(control, existingScenarioNames),
+        ]);
+      this.isLoading$.next(false);
     }
+    this.isLoading$.next(false);
   }
 
   pollForChanges() {
@@ -363,6 +388,9 @@ export class CreateScenariosComponent implements OnInit {
 
   showTreatmentFooter() {
     const plan = this.plan$.value;
+    if (this.selectedTab === ScenarioTabs.DATA_LAYERS) {
+      return false;
+    }
     // if feature is on, the scenario is done, and I have permissions to create new one
     return this.showTreatmentsTab && !!plan && canAddTreatmentPlan(plan);
   }
@@ -387,7 +415,7 @@ function scenarioNameMustBeNew(
 ): {
   [key: string]: any;
 } | null {
-  if (existingNames.includes(nameControl.value)) {
+  if (existingNames.includes(nameControl.value?.trim())) {
     return { duplicate: true };
   }
   return null;

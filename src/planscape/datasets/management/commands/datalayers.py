@@ -10,7 +10,12 @@ from urllib.parse import urlencode
 import requests
 from core.base_commands import PlanscapeCommand
 from core.pprint import pprint
-from core.s3 import is_s3_file, list_files, upload_file
+from core.s3 import (
+    is_s3_file,
+    list_files,
+    upload_file_via_api as upload_to_s3,
+)
+from core.gcs import is_gcs_file, upload_file_via_api as upload_to_gcs
 from django.core.management.base import CommandParser
 from gis.core import (
     fetch_datalayer_type,
@@ -299,13 +304,22 @@ class Command(PlanscapeCommand):
         except Exception as ex:
             self.stderr.write(f"ERROR: {kwargs =}\nEXCEPTION: {ex =}")
 
-    def _upload_file(self, input_files, datalayer) -> requests.Response:
+    def _upload_file(self, input_files, datalayer, upload_to):
+        upload_to_url = upload_to.get("url")
         upload_url_path = Path(datalayer.get("url"))
         object_name = "/".join(upload_url_path.parts[2:])
-        return upload_file(
-            object_name=object_name,
-            input_file=input_files[0],
-        )
+        if "s3.amazonaws.com" in upload_to_url:
+            return upload_to_s3(
+                object_name=object_name,
+                input_file=input_files[0],
+                upload_to=upload_to,
+            )
+        elif "storage.googleapis.com" in upload_to_url:
+            return upload_to_gcs(
+                object_name=object_name,
+                input_file=input_files[0],
+                url=upload_to_url,
+            )
 
     def _apply_style_request(
         self,
@@ -424,7 +438,7 @@ class Command(PlanscapeCommand):
                 **kwargs,
             )
 
-        s3_file = is_s3_file(input_file)
+        cloud_storage_file = is_s3_file(input_file) or is_gcs_file(input_file)
         original_file_path = Path(input_file)
         vsi_input_file = with_vsi_prefix(input_file)
 
@@ -460,7 +474,7 @@ class Command(PlanscapeCommand):
                     processed_files = [input_file]
 
         geometry_type = fetch_geometry_type(layer_type=layer_type, info=layer_info)
-        if s3_file:
+        if cloud_storage_file:
             original_name = input_file
         else:
             original_name = original_file_path.name
@@ -497,6 +511,7 @@ class Command(PlanscapeCommand):
             self._upload_file(
                 processed_files,
                 datalayer=datalayer,
+                upload_to=upload_to,
             )
             self._change_datalayer_status_request(
                 org=org,

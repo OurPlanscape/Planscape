@@ -1,5 +1,6 @@
 <app-map-nav-bar>
   <sg-opacity-slider
+    *ngIf="isScenarioSuccessful$ | async"
     class="navbar-slider"
     [minValue]="0"
     [maxValue]="1"
@@ -27,6 +28,16 @@
   <!-- This *ngIf="true" is a hack to fix the issue where the planning area was displayed on top of the project areas when moving back and forward. -->
   <app-planning-area-layer *ngIf="true"></app-planning-area-layer>
 
+  <app-map-data-layer
+    *ngIf="mapLibreMap"
+    [mapLibreMap]="mapLibreMap"></app-map-data-layer>
+
+  <mgl-layer
+    type="background"
+    id="bottom-layer"
+    [layout]="{ visibility: 'none' }">
+  </mgl-layer>
+
   <ng-container *ngIf="showProjectAreas$ | async">
     <app-map-project-areas
       *ngIf="projectAreaCount$ | async as projectAreasCount"
@@ -35,4 +46,11 @@
       [mapLibreMap]="mapLibreMap">
     </app-map-project-areas>
   </ng-container>
+  <mgl-control position="bottom-left">
+    <app-data-layer-name></app-data-layer-name>
+  </mgl-control>
+
+  <mgl-control position="top-left">
+    <app-map-layer-color-legend></app-map-layer-color-legend>
+  </mgl-control>
 </mgl-map>

@@ -49,6 +49,9 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MapConfigState } from '../maplibre-map/map-config.state';
 import { ScenarioMapComponent } from '../maplibre-map/scenario-map/scenario-map.component';
 import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.component';
+import { DataLayersComponent } from '../data-layers/data-layers/data-layers.component';
+import { DataLayersStateService } from '../data-layers/data-layers.state.service';
+import { MapConfigService } from '../maplibre-map/map-config.service';
 
 /** Components used in the plan flow. */
 @NgModule({
@@ -78,7 +81,12 @@ import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.com
     TreatmentsTabComponent,
     UploadedScenarioViewComponent,
   ],
-  providers: [WINDOW_PROVIDERS, MapConfigState],
+  providers: [
+    WINDOW_PROVIDERS,
+    MapConfigState,
+    DataLayersStateService,
+    MapConfigService,
+  ],
   imports: [
     CommonModule,
     FormsModule,
@@ -108,6 +116,7 @@ import { PlanTabsFooterComponent } from './plan-tabs-footer/plan-tabs-footer.com
     MatTabsModule,
     ScenarioMapComponent,
     PlanTabsFooterComponent,
+    DataLayersComponent,
   ],
 })
 export class PlanModule {}

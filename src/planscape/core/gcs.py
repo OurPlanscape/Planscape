@@ -1,13 +1,16 @@
 import logging
 
-from typing import Optional, Collection
+from typing import Optional, Collection, Dict, Any
 
+from pathlib import Path
+from cacheops import cached
 from django.conf import settings
 from rasterio.session import GSSession
+import requests
 
 from google.cloud import storage
 
-log = logging.getLogger(__name__)
+logger = logging.getLogger(__name__)
 
 
 def get_gcs_session() -> GSSession:
@@ -57,6 +60,28 @@ def get_gcs_hash(gs_url: str) -> Optional[str]:
     return blob.crc32c
 
 
+def create_upload_url(object_name: str) -> Optional[Dict[str, Any]]:
+    """
+    Creates an upload URL for a Google Cloud Storage file.
+
+    Args:
+        gs_url (str): The GCS URL of the file.
+
+    Returns:
+        str: The upload URL for the file.
+    """
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(settings.GCS_BUCKET)
+
+    blob = bucket.blob(object_name)
+
+    url = blob.create_resumable_upload_session()
+
+    return {"url": url}
+
+
+@cached(timeout=settings.GCS_PUBLIC_URL_TTL)
 def create_download_url(
     gs_url: str,
     expiration: int = int(settings.GCS_PUBLIC_URL_TTL),
@@ -79,7 +104,7 @@ def create_download_url(
     blob_name = gs_url.replace(f"gs://{settings.GCS_BUCKET}/", "")
     blob = bucket.get_blob(blob_name)
     if not blob:
-        log.error(f"Blob not found: {blob_name} in bucket {settings.GCS_BUCKET}")
+        logger.error(f"Blob not found: {blob_name} in bucket {settings.GCS_BUCKET}")
         return None
 
     url = blob.generate_signed_url(
@@ -89,3 +114,53 @@ def create_download_url(
     )
 
     return url
+
+
+def upload_file_via_api(
+    object_name: str,
+    input_file: str,
+    url: str,
+    chunk_size: int = 3 * 1024 * 1024 * 1024,  # 3GB chunk size
+):
+    logger.info(f"Uploading file {object_name}.")
+    file_size = Path(input_file).stat().st_size
+
+    total_uploaded = 0
+
+    with open(input_file, "rb") as f:
+        if file_size <= chunk_size:
+            # If the file is smaller than the chunk size, upload it in one go
+            response = requests.put(
+                url,
+                data=f,
+            )
+            if response.status_code not in (200, 201):
+                logger.error(f"Failed to upload {object_name}.")
+                raise ValueError(
+                    f"Failed to upload: {response.status_code} {response.text}"
+                )
+        else:
+            while True:
+                chunk = f.read(chunk_size)
+                if not chunk:
+                    break
+
+                response = requests.put(
+                    url,
+                    data=chunk,
+                    headers={
+                        "Content-Range": f"bytes {total_uploaded}-{total_uploaded + len(chunk) - 1}/{file_size}",
+                    },
+                )
+
+                if response.status_code not in (200, 201, 308):
+                    logger.error(f"Failed to upload chunk for {object_name}.")
+                    raise ValueError(
+                        f"Failed to upload chunk: {response.status_code} {response.text}"
+                    )
+                total_uploaded += len(chunk)
+                logger.info(
+                    f"Uploaded {total_uploaded} bytes of {file_size} bytes for {object_name}."
+                )
+
+    logger.info(f"Uploaded {object_name} done.")

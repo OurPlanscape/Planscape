@@ -1,0 +1,13 @@
+<ng-container *ngIf="boundaryShape$ | async as boundaryShape">
+  <mgl-geojson-source id="caboundary" [data]="boundaryShape">
+  </mgl-geojson-source>
+  <mgl-layer
+    id="shapefile-layer"
+    source="caboundary"
+    [type]="'line'"
+    [paint]="{
+      'line-color': '#0000ff',
+      'line-width': 2,
+    }">
+  </mgl-layer>
+</ng-container>

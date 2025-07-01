@@ -81,4 +81,15 @@ export class NavBarComponent implements OnInit {
 
     return true;
   }
+
+  showTooltip() {
+    // should hide if its on area explore and flag on
+    if (
+      this.area === 'EXPLORE' &&
+      this.featureService.isFeatureEnabled('MAPLIBRE_ON_EXPLORE')
+    ) {
+      return false;
+    }
+    return true;
+  }
 }

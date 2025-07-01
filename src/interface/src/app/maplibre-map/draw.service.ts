@@ -2,10 +2,22 @@ import { Injectable } from '@angular/core';
 import { TerraDraw } from 'terra-draw';
 import { FeatureId } from 'terra-draw/dist/extend';
 import bbox from '@turf/bbox';
-import { Geometry } from '@turf/helpers';
-import { BehaviorSubject, Observable } from 'rxjs';
 import { TerraDrawMapLibreGLAdapter } from 'terra-draw-maplibre-gl-adapter';
 import { Map as MapLibreMap } from 'maplibre-gl';
+import { acresForFeature } from '../maplibre-map/maplibre.helper';
+import { Feature, feature, MultiPolygon, Polygon } from '@turf/helpers';
+import {
+  BehaviorSubject,
+  catchError,
+  Observable,
+  of,
+  tap,
+  shareReplay,
+} from 'rxjs';
+import { GeoJSON } from 'geojson';
+import booleanWithin from '@turf/boolean-within';
+import { HttpClient } from '@angular/common/http';
+
 export type DrawMode = 'polygon' | 'select' | 'none';
 
 export const DefaultSelectConfig = {
@@ -39,6 +51,13 @@ export class DrawService {
   selectedFeatureId$: Observable<FeatureId | null> =
     this._selectedFeatureId$.asObservable();
 
+  private _totalAcres$ = new BehaviorSubject<number>(0);
+  totalAcres$: Observable<number> = this._totalAcres$.asObservable();
+
+  private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
+
+  constructor(private http: HttpClient) {}
+
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
       map: map,
@@ -56,6 +75,11 @@ export class DrawService {
     this._terraDraw?.on('deselect', () => {
       this._selectedFeatureId$.next(null);
     });
+    this._terraDraw?.on('finish', (featureId: FeatureId) => {
+      this.setMode('select');
+      this.selectFeature(featureId);
+      this.updateTotalAcreage();
+    });
   }
 
   //idempotent - start if not started
@@ -70,6 +94,7 @@ export class DrawService {
       return;
     }
     this._terraDraw.stop();
+    this._totalAcres$.next(0);
   }
 
   getMode() {
@@ -89,6 +114,7 @@ export class DrawService {
     if (curSelectedId) {
       this._terraDraw?.removeFeatures([curSelectedId]);
     }
+    this.updateTotalAcreage();
   }
 
   getTerraDraw(): TerraDraw | null {
@@ -96,20 +122,21 @@ export class DrawService {
   }
 
   registerFinish(finishCallback: Function) {
-    this._terraDraw?.on('finish', (featureId: any, context: any) => {
+    this._terraDraw?.on('finish', (featureId: FeatureId) => {
       this.setMode('select');
       this.selectFeature(featureId);
+      this.updateTotalAcreage();
       finishCallback(featureId);
     });
   }
 
   registerChangeCallback(changeCallback: Function) {
-    this._terraDraw?.on('change', (changedFeatureIds) => {
-      changeCallback(changedFeatureIds);
+    this._terraDraw?.on('change', (changedFeatureIds, type, context) => {
+      changeCallback(changedFeatureIds, type, context);
     });
   }
 
-  getPolygonPointCount(featureId: string) {
+  getPolygonPointCount(featureId: FeatureId) {
     const snapshot = this._terraDraw?.getSnapshotFeature(featureId);
     if (snapshot?.geometry.type === 'Polygon') {
       return snapshot?.geometry.coordinates[0].length;
@@ -133,7 +160,7 @@ export class DrawService {
     }
   }
 
-  selectFeature(featureId: number) {
+  selectFeature(featureId: FeatureId) {
     this._terraDraw?.selectFeature(featureId);
   }
 
@@ -153,6 +180,19 @@ export class DrawService {
 
   clearFeatures() {
     this._terraDraw?.clear();
+    this._totalAcres$.next(0);
+  }
+
+  isDrawingWithinBoundary(): boolean {
+    const polygons = this.getPolygonsSnapshot();
+    const shape = this._boundaryShape$.value;
+    if (polygons && shape?.type === 'FeatureCollection' && shape.features) {
+      const result = polygons.every((p) => {
+        return booleanWithin(p.geometry, shape.features[0]);
+      });
+      return result;
+    }
+    return false;
   }
 
   getPolygonsSnapshot() {
@@ -161,44 +201,77 @@ export class DrawService {
       .filter((f) => f.geometry.type === 'Polygon');
   }
 
-  getGeometry(): Geometry | null {
-    // TODO : use updated acreage calculation
-    const polygons = this.getPolygonsSnapshot();
-    if (!polygons) {
-      return null;
-    } else if (polygons.length > 1) {
-      return {
-        type: 'MultiPolygon',
-        coordinates: polygons.map((p) => p.geometry.coordinates) as number[][],
-      };
+  updateTotalAcreage() {
+    const geoJSON = this.getDrawingGeoJSON();
+    // if we have no features, set acres to 0
+    if (geoJSON.geometry.coordinates.length > 0) {
+      const acres = acresForFeature(geoJSON);
+      this._totalAcres$.next(acres);
     } else {
-      return polygons[0].geometry;
+      this._totalAcres$.next(0);
     }
+  }
+
+  getCaliforniaStateBoundary(): Observable<GeoJSON | null> {
+    if (this._boundaryShape$.value !== null) {
+      return this._boundaryShape$.asObservable();
+    }
+    const boundaryPath = 'assets/geojson/ca_state.geojson';
+    return this.http.get<GeoJSON>(boundaryPath).pipe(
+      catchError((error) => {
+        console.error('Failed to load shape:', error);
+        return of(null); // Return null on error
+      }),
+      tap((shape) => this._boundaryShape$.next(shape)),
+      shareReplay(1)
+    );
+  }
+
+  getDrawingGeoJSON() {
+    const polygons = this.getPolygonsSnapshot();
+    const polygonFeatures = polygons as Feature<Polygon>[];
+    const coordinates = polygonFeatures.map(
+      (feature) => feature.geometry.coordinates
+    );
+    const combinedGeometry: MultiPolygon = {
+      type: 'MultiPolygon',
+      coordinates,
+    };
+    return feature(combinedGeometry);
+  }
+
+  getCurrentAcreageValue() {
+    return this._totalAcres$.value;
   }
 
   addGeoJSONFeature(shape: any) {
     const featuresArray = shape.features.map((feature: any) => ({
-      type: "Feature",
+      type: 'Feature',
       geometry: {
         type: feature.geometry.type,
-        coordinates: roundCoordinates(feature.geometry.coordinates, 6) // 6 decimal places is usually sufficient
-      }, properties: {
+        coordinates: roundCoordinates(feature.geometry.coordinates, 6), // 6 decimal places is usually sufficient
+      },
+      properties: {
         ...feature.properties,
-        mode: "polygon"
-      }
+        mode: 'polygon',
+      },
     }));
     this._terraDraw?.setMode('select'); // should be in select mode to add
     const addedFeatures = this._terraDraw?.addFeatures(featuresArray);
+    this.updateTotalAcreage();
     // TODO: report any failures to the user
-    console.log('added features:', addedFeatures)
+    console.log('added features:', addedFeatures);
   }
 }
 
-//TODO: hmm, not sure if this is level of precision is acceptable for our purposes
-// 6 decimal places: ~11 cm (4.3 inches) ?
+// terra-draw only accepts up to 6 decimal places of precision, so this rounds that
+// Note that 6 decimal places translates to about ~11 cm (4.3 inches)
 function roundCoordinates(coords: any, precision = 10) {
   if (typeof coords[0] === 'number') {
-    return coords.map((coord: any) => Math.round(coord * Math.pow(10, precision)) / Math.pow(10, precision));
+    return coords.map(
+      (coord: any) =>
+        Math.round(coord * Math.pow(10, precision)) / Math.pow(10, precision)
+    );
   } else {
     return coords.map((coord: any) => roundCoordinates(coord, precision));
   }

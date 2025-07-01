@@ -1,7 +1,6 @@
 import { Component, HostListener, OnDestroy } from '@angular/core';
-import { AsyncPipe, NgClass, NgIf } from '@angular/common';
+import { AsyncPipe, NgClass, NgIf, CommonModule } from '@angular/common';
 import { MapNavbarComponent } from '../../maplibre-map/map-nav-bar/map-nav-bar.component';
-import { MapComponent } from '@maplibre/ngx-maplibre-gl';
 import { MapConfigState } from '../../maplibre-map/map-config.state';
 import { SharedModule } from '@shared';
 import { BreadcrumbService } from '@services/breadcrumb.service';
@@ -16,7 +15,7 @@ import { BaseLayersComponent } from '../../base-layers/base-layers/base-layers.c
 import { ExploreModesToggleComponent } from '../../maplibre-map/explore-modes-toggle/explore-modes-toggle.component';
 import { MapSelectorComponent } from '../map-selector/map-selector.component';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { HttpClientModule } from '@angular/common/http';
 import { MapConfigService } from '../../maplibre-map/map-config.service';
 import { PlanState } from '../../plan/plan.state';
 import { getPlanPath } from '../../plan/plan-helpers';
@@ -30,9 +29,8 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   imports: [
     AsyncPipe,
     ExploreModesToggleComponent,
-    HttpClientTestingModule,
+    HttpClientModule,
     MapNavbarComponent,
-    MapComponent,
     SharedModule,
     SyncedMapsComponent,
     MultiMapControlComponent,
@@ -41,6 +39,7 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
     ButtonComponent,
     NgIf,
     MatTabsModule,
+    CommonModule,
     BaseLayersComponent,
     MapSelectorComponent,
   ],
@@ -70,12 +69,15 @@ export class ExploreComponent implements OnDestroy {
     this.saveStateToLocalStorage();
   }
 
+  totalAcres$ = this.drawService.totalAcres$;
+
   constructor(
     private breadcrumbService: BreadcrumbService,
     private exploreStorageService: ExploreStorageService,
     private multiMapConfigState: MultiMapConfigState,
     private mapConfigService: MapConfigService,
-    private planState: PlanState
+    private planState: PlanState,
+    private drawService: DrawService
   ) {
     this.loadStateFromLocalStorage();
 

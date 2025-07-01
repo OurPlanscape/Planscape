@@ -32,7 +32,8 @@
     [layout]="{ visibility: 'none' }">
   </mgl-layer>
 
-  <app-planning-area-layer *ngIf="mapLibreMap"></app-planning-area-layer>
+  <app-planning-area-layer
+    *ngIf="mapLibreMap && (planId$ | async)"></app-planning-area-layer>
 
   <mgl-control
     position="bottom-left"
@@ -53,6 +54,9 @@
       </span>
     </div>
   </mgl-control>
+
+  <app-map-boundary-layer *ngIf="(drawingModeEnabled$ | async) === true">
+  </app-map-boundary-layer>
 
   <app-map-tooltip
     *ngIf="

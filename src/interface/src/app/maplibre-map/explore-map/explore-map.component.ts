@@ -17,7 +17,6 @@ import {
   LngLat,
   Map as MapLibreMap,
   MapMouseEvent,
-  Popup,
   RequestTransformFunction,
 } from 'maplibre-gl';
 import { AuthService } from '@services';
@@ -37,6 +36,7 @@ import { MapDataLayerComponent } from '../map-data-layer/map-data-layer.componen
 import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
 import { DataLayersRegistryService } from '../../explore/data-layers-registry';
 import { MapLayerColorLegendComponent } from '../map-layer-color-legend/map-layer-color-legend.component';
+import { MapBoundaryLayerComponent } from '../map-boundary-layer/map-boundary-layer.component';
 import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area-layer.component';
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
@@ -59,6 +59,7 @@ import { GeoJSON } from 'geojson';
     MapDataLayerComponent,
     LayerComponent,
     MapLayerColorLegendComponent,
+    MapBoundaryLayerComponent,
     PlanningAreaLayerComponent,
   ],
   providers: [DataLayersStateService],
@@ -72,7 +73,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   minZoom = FrontendConstants.MAPLIBRE_MAP_MIN_ZOOM;
   maxZoom = FrontendConstants.MAPLIBRE_MAP_MAX_ZOOM;
 
-  bounds$ = this.planState.currentPlanId$.pipe(
+  planId$ = this.planState.currentPlanId$;
+
+  bounds$ = this.planId$.pipe(
     switchMap((id) => {
       if (id) {
         return this.planState.planningAreaGeometry$.pipe(
@@ -102,6 +105,10 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    * Observable that provides the url to load the selected map base layer
    */
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
+
+  /**
+   * Obserable that descibres what mode
+   */
   mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
@@ -118,10 +125,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   @Input() showAttribution = false;
 
   isSelected$ = this.multiMapConfigState.selectedMapId$.pipe(
-    // If mapId is null means we are in other tab and we dont want to display highlighted Maps
+    // If mapId is null means we are in other tab and we don't want to display highlighted Maps
     map((mapId) => mapId && this.mapNumber === mapId)
   );
-  selectedFeatureId$ = this.drawService.selectedFeatureId$;
 
   selectedLayer$ = this.dataLayersStateService.selectedDataLayer$;
 
@@ -194,34 +200,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
     this.mouseLngLat = event.lngLat;
   }
 
-  drawAcreageTooltip(featureId: FeatureId) {
-    const coords = this.drawService.getPolygonBottomCenterCoords(featureId);
-    if (coords) {
-      new Popup({
-        closeButton: false,
-        closeOnClick: false,
-        closeOnMove: false,
-        anchor: 'top',
-        offset: [0, 10],
-        className: 'acreage-popup',
-      }) // TODO: plug in acreage when its merged
-        .setLngLat([coords[0], coords[1]])
-        .setHTML('here is some acreage')
-        .addTo(this.mapLibreMap);
-    }
-  }
-
-  afterFinish(featureId: string) {
-    // clears the hover tooltip
-    this.drawModeTooltipContent = null;
-
-    // TODO: add this when we have new acreage calculated
-    // this.drawAcreageTooltip(featureId);
-  }
-
-  onDrawChange(changes: any) {
+  onDrawChange(ids: FeatureId[]) {
     if (this.drawService.getMode() === 'polygon') {
-      const pointCount = this.drawService.getPolygonPointCount(changes[0]);
+      const pointCount = this.drawService.getPolygonPointCount(ids[0]);
       if (pointCount > 3 && pointCount <= 5) {
         this.drawModeTooltipContent = 'Click to continue drawing';
       } else if (pointCount > 5) {
@@ -237,11 +218,8 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
   enablePolygonDrawingMode() {
     this.drawService.start();
     this.drawService.setMode('polygon');
-    this.drawService.registerFinish((featureId: string) =>
-      this.afterFinish(featureId)
-    );
-    this.drawService.registerChangeCallback((context: any) =>
-      this.onDrawChange(context)
+    this.drawService.registerChangeCallback((ids: FeatureId[]) =>
+      this.onDrawChange(ids)
     );
     this.drawModeTooltipContent = 'Click to place first vertex';
   }

@@ -3,6 +3,7 @@ from typing import Any, Collection, Dict, List, Optional
 
 import boto3
 import requests
+from pathlib import Path
 from boto3.session import Session
 from botocore.exceptions import ClientError
 from cacheops import cached
@@ -113,7 +114,7 @@ def create_upload_url(
     return response
 
 
-def upload_file(object_name: str, input_file: str) -> requests.Response:
+def upload_file_via_s3_client(object_name: str, input_file: str) -> requests.Response:
     logger.info(f"Uploading file {object_name}.")
 
     s3_client = boto3.client("s3")
@@ -124,6 +125,24 @@ def upload_file(object_name: str, input_file: str) -> requests.Response:
     except ClientError as e:
         logger.error(f"Upload {object_name} falied: {e}")
         raise e
+
+
+def upload_file_via_api(
+    object_name: str,
+    input_file: str,
+    upload_to: Dict[str, Any],
+):
+    logger.info(f"Uploading file {object_name}.")
+
+    with open(input_file, "rb") as f:
+        files = {"file": (object_name, f)}
+        response = requests.post(
+            upload_to["url"],
+            data=upload_to["fields"],
+            files=files,
+        )
+        logger.info(f"Uploaded {object_name} done.")
+        return response
 
 
 def is_s3_file(input_file: Optional[str]) -> bool:

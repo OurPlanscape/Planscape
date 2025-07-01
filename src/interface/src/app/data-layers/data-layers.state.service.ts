@@ -200,4 +200,10 @@ export class DataLayersStateService {
   resetPath() {
     this._paths$.next([]);
   }
+
+  resetAll() {
+    this.resetPath();
+    this.clearDataLayer();
+    this.clearSearch();
+  }
 }
