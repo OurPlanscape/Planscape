@@ -81,7 +81,6 @@ export class ExplorePlanCreateDialogComponent {
 
       const planName = this.planForm.get('planName')?.value || '';
       this.createPlan(planName);
-    } else {
     }
   }
 
