@@ -12,6 +12,7 @@ import fiona
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
+from core.flags import feature_enabled
 from django.conf import settings
 from django.contrib.auth.models import User
 from django.contrib.gis.db.models import Union as UnionOp
@@ -152,7 +153,7 @@ def create_scenario(user: User, **kwargs) -> Scenario:
         action_object=scenario,
         target=scenario.planning_area,
     )
-    if settings.USE_SCENARIO_V2:
+    if feature_enabled("USE_SCENARIO_V2"):
         datalayers = treatment_goal.get_raster_datalayers()
         tasks = [
             async_calculate_stand_metrics_v2.si(
