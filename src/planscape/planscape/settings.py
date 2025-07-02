@@ -503,3 +503,6 @@ DEFAULT_BASELAYERS_DATASET_ID = 999
 
 
 USE_SCENARIO_V2 = config("USE_SCENARIO_V2", default=False, cast=bool)
+FEATURE_FLAGS = config(
+    "FEATURE_FLAGS", default="", cast=lambda x: list(set(x.split(",")))
+)
