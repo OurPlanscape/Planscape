@@ -52,12 +52,10 @@ export class UploadPlanningAreaBoxComponent {
 
   handleFileEvent(file: File | undefined): void {
     this.uploadElementStatus = 'running';
-
     if (file !== undefined) {
       // async:
       this.convertToGeoJson(file);
     } else {
-      // User clicked to remove file
       this.uploadElementStatus = 'default';
       this.file = null;
     }

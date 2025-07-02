@@ -1,6 +1,5 @@
 import { BehaviorSubject, map } from 'rxjs';
 import { Injectable } from '@angular/core';
-import { GeoJSON } from 'geojson';
 import { baseMapStyles } from './map-base-layers';
 import { Extent, FrontendConstants } from '@types';
 import { filter } from 'rxjs/operators';
