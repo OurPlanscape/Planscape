@@ -7,8 +7,8 @@ from datetime import date, datetime, time
 from functools import partial
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
-
 import fiona
+from shapely.geometry import shape
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
@@ -21,7 +21,7 @@ from django.utils.timezone import now
 from fiona.crs import from_epsg
 from stands.models import Stand, StandSizeChoices, area_from_size
 from utils.geometry import to_multi
-
+from pyproj import Geod
 from planning.geometry import coerce_geojson, coerce_geometry
 from planning.models import (
     PlanningArea,
@@ -380,6 +380,50 @@ def get_acreage(geometry: GEOSGeometry) -> float:
         return acres
     except Exception:
         raise InvalidGeometry("Could not reproject geometry")
+
+def get_spherical_acreage(geometry: Any) -> float:
+       if not hasattr(geometry, 'geom_type'):
+        raise ValueError("The input must be a Shapely geometry object.")
+    if not geometry.is_valid:
+        raise ValueError("The geometry is not valid.")
+    
+    geod = Geod(ellps='WGS84')
+    total_area_m2 = 0.0
+    polygons_to_process = []
+
+    if isinstance(geometry, MultiPolygon):
+        polygons_to_process = geometry.geoms
+    elif isinstance(geometry, Polygon):
+        polygons_to_process = [geometry] # Wrap the single polygon in a list
+    else:
+        # Raise an error for unsupported geometry types.
+        raise TypeError(f"Unsupported geometry type: {geometry.geom_type}. "
+                        "Only Polygon and MultiPolygon are supported for spherical area calculation.")
+
+    # Iterate through each polygon (or the single polygon) and calculate its area.
+    for poly in polygons_to_process:
+        # Extract longitude and latitude coordinates from the exterior ring.
+        # zip(*poly.exterior.coords) transposes the list of (lon, lat) tuples
+        # into two lists: one for longitudes and one for latitudes.
+        lons, lats = zip(*poly.exterior.coords)
+
+        # Calculate the area of the exterior ring using geodesic calculation.
+        # geod.polygon_area_perimeter returns a tuple (area, perimeter).
+        # The area is signed (positive for counter-clockwise, negative for clockwise);
+        # we take the absolute value.
+        area_exterior, _ = geod.polygon_area_perimeter(lons, lats)
+        total_area_m2 += abs(area_exterior)
+
+        # Subtract the areas of any interior rings (holes) within the polygon.
+        for interior_ring in poly.interiors:
+            lons_hole, lats_hole = zip(*interior_ring.coords)
+            area_hole, _ = geod.polygon_area_perimeter(lons_hole, lats_hole)
+            total_area_m2 -= abs(area_hole) # Subtract the absolute area of the hole
+
+    # Convert the total area from square meters to acres.
+    total_area_acres = total_area_m2 / settings.CONVERSION_SQM_ACRES
+    print(f'Total Area: {total_area_acres} acres') # As per your original function's print statement
+    return total_area_acres
 
 
 def validate_scenario_treatment_ratio(

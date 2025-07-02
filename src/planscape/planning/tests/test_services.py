@@ -2,8 +2,10 @@ import shutil
 from datetime import date, datetime
 
 import fiona
+import json
 import shapely
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
+from shapely.geometry import shape
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
 from stands.models import StandSizeChoices
@@ -22,6 +24,8 @@ from planning.services import (
     get_schema,
     planning_area_covers,
     validate_scenario_treatment_ratio,
+    get_spherical_acreage,
+    get_acreage
 )
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
@@ -296,3 +300,81 @@ class TestPlanningAreaCovers(TestCase):
                 stand_size=StandSizeChoices.LARGE,
             )
         )
+
+class TestAcreageCalculation(TestCase):
+    def setUp(self):
+        # 2.47 acres
+        self.chicago_block = Polygon([
+                (-87.627834, 41.880834),  # SW corner
+                (-87.626834, 41.880834),  # SE corner  
+                (-87.626834, 41.881834),  # NE corner
+                (-87.627834, 41.881834),  # NW corner
+                (-87.627834, 41.880834)   # Close polygon
+            ], srid=4326)
+        
+            # 776,957 acres
+        self.rhode_island_approx = Polygon([
+                (-71.862, 41.146),   # SW corner (Westerly area)
+                (-71.120, 41.146),   # SE corner (coast near CT border)
+                (-71.120, 41.240),   # East coast (Narragansett Bay entrance)
+                (-71.200, 41.350),   # Newport area
+                (-71.320, 41.500),   # East Bay
+                (-71.422, 41.820),   # Providence area
+                (-71.580, 41.900),   # North Providence
+                (-71.700, 41.950),   # Northern border
+                (-71.862, 41.780),   # Western border (Connecticut River area)
+                (-71.862, 41.500),   # Block Island Sound coastline
+                (-71.862, 41.146)    # Close
+            ], srid=4326)
+            
+    # Lake Tahoe approximation (known area: ~122,000 acres water surface)
+        self.lake_tahoe_approx = Polygon([
+                (-120.097, 39.089),  # South shore
+                (-120.024, 39.089),  # SE corner
+                (-120.024, 39.200),  # East shore
+                (-120.000, 39.270),  # NE area
+                (-120.097, 39.270),  # North shore
+                (-120.170, 39.240),  # NW area  
+                (-120.097, 39.200),  # West shore
+                (-120.097, 39.089)   # Close
+            ], srid=4326)
+        
+        # Known acreage is 77941.31056524477
+        self.known_CA_shape = '{"type": "Feature", "properties": {}, "geometry": {"type": "MultiPolygon", "coordinates": [[[[ -118.299924978, 34.037354049], [-118.30058541, 33.885621511], [-118.10641835, 33.86697866], [-118.10641835, 34.008890602], [-118.244448675, 34.052129382], [-118.299924978, 34.037354049]]]]}}'
+        
+        # Spherical acreage is 373133.46345923113
+        self.around_LA_shape = '''{
+                                    "type": "Feature",
+                                    "properties": {},
+                                    "geometry": {
+                                        "type": "MultiPolygon",
+                                        "coordinates": [[
+                                            [
+                                                [-118.529094944, 34.117219603],
+                                                [-118.467014319, 34.001773248],
+                                                [-118.377195543, 33.852171143],
+                                                [-118.195576694, 33.841200956],
+                                                [-118.017920438, 33.902615854],
+                                                [-117.920176475, 34.009438066],
+                                                [-117.939989441, 34.126514121],
+                                                [-118.251052997, 34.164228438],
+                                                [-118.421444499, 34.1609496],
+                                                [-118.529094944, 34.117219603]
+                                            ]
+                                        ]]
+                                    }
+                                }'''
+        
+    def test_get_spherical_acreage(self): 
+        la_geometry = shape(json.loads(self.around_LA_shape)['geometry'])
+
+        self.assertEquals(
+            get_spherical_acreage(la_geometry), 373133.46345923113
+        )
+        # self.assertEquals(
+        #     get_spherical_acreage(self.rhode_island_approx), 100000
+        # )
+        # self.assertEquals(
+        #     get_spherical_acreage(self.lake_tahoe_approx), 100000
+        # )
+
