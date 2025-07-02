@@ -8,7 +8,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 import fiona
-from shapely.geometry import shape
+from shapely.geometry import Polygon
 from actstream import action
 from celery import chord
 from collaboration.permissions import PlanningAreaPermission, ScenarioPermission
@@ -373,7 +373,7 @@ def get_max_treatable_stand_count(
     return math.floor(max_treatable_area / stand_area)
 
 
-def get_acreage(geometry: GEOSGeometry) -> float:
+def get_planar_acreage(geometry: GEOSGeometry) -> float:
     try:
         epsg_5070_area = geometry.transform(settings.AREA_SRID, clone=True).area
         acres = epsg_5070_area / settings.CONVERSION_SQM_ACRES
@@ -381,49 +381,15 @@ def get_acreage(geometry: GEOSGeometry) -> float:
     except Exception:
         raise InvalidGeometry("Could not reproject geometry")
 
-def get_spherical_acreage(geometry: Any) -> float:
-       if not hasattr(geometry, 'geom_type'):
-        raise ValueError("The input must be a Shapely geometry object.")
-    if not geometry.is_valid:
-        raise ValueError("The geometry is not valid.")
-    
-    geod = Geod(ellps='WGS84')
-    total_area_m2 = 0.0
-    polygons_to_process = []
-
-    if isinstance(geometry, MultiPolygon):
-        polygons_to_process = geometry.geoms
-    elif isinstance(geometry, Polygon):
-        polygons_to_process = [geometry] # Wrap the single polygon in a list
-    else:
-        # Raise an error for unsupported geometry types.
-        raise TypeError(f"Unsupported geometry type: {geometry.geom_type}. "
-                        "Only Polygon and MultiPolygon are supported for spherical area calculation.")
-
-    # Iterate through each polygon (or the single polygon) and calculate its area.
-    for poly in polygons_to_process:
-        # Extract longitude and latitude coordinates from the exterior ring.
-        # zip(*poly.exterior.coords) transposes the list of (lon, lat) tuples
-        # into two lists: one for longitudes and one for latitudes.
-        lons, lats = zip(*poly.exterior.coords)
-
-        # Calculate the area of the exterior ring using geodesic calculation.
-        # geod.polygon_area_perimeter returns a tuple (area, perimeter).
-        # The area is signed (positive for counter-clockwise, negative for clockwise);
-        # we take the absolute value.
-        area_exterior, _ = geod.polygon_area_perimeter(lons, lats)
-        total_area_m2 += abs(area_exterior)
-
-        # Subtract the areas of any interior rings (holes) within the polygon.
-        for interior_ring in poly.interiors:
-            lons_hole, lats_hole = zip(*interior_ring.coords)
-            area_hole, _ = geod.polygon_area_perimeter(lons_hole, lats_hole)
-            total_area_m2 -= abs(area_hole) # Subtract the absolute area of the hole
-
-    # Convert the total area from square meters to acres.
-    total_area_acres = total_area_m2 / settings.CONVERSION_SQM_ACRES
-    print(f'Total Area: {total_area_acres} acres') # As per your original function's print statement
-    return total_area_acres
+def get_acreage(geometry: Any) -> float:
+    try:
+        geod = Geod(ellps="WGS84")
+        area_sq_meters, _ = geod.geometry_area_perimeter(geometry)
+        area_sq_meters = abs(area_sq_meters)
+        acres = area_sq_meters / settings.CONVERSION_SQM_ACRES
+        return acres
+    except Exception:
+        raise InvalidGeometry("Could not reproject geometry")
 
 
 def validate_scenario_treatment_ratio(

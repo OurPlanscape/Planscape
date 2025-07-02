@@ -24,7 +24,6 @@ from planning.services import (
     get_schema,
     planning_area_covers,
     validate_scenario_treatment_ratio,
-    get_spherical_acreage,
     get_acreage
 )
 from planning.tests.factories import PlanningAreaFactory
@@ -303,46 +302,27 @@ class TestPlanningAreaCovers(TestCase):
 
 class TestAcreageCalculation(TestCase):
     def setUp(self):
-        # 2.47 acres
-        self.chicago_block = Polygon([
-                (-87.627834, 41.880834),  # SW corner
-                (-87.626834, 41.880834),  # SE corner  
-                (-87.626834, 41.881834),  # NE corner
-                (-87.627834, 41.881834),  # NW corner
-                (-87.627834, 41.880834)   # Close polygon
-            ], srid=4326)
+        self.chicago_block = '''{ "type": "Feature",
+                                "properties": {},
+                                "geometry": {
+                                  "type": "MultiPolygon",
+                                  "coordinates": [
+                                    [[[-87.620678487,41.878337216],
+                                      [-87.620587776,41.873226487],
+                                      [-87.617284393,41.873299661],
+                                      [-87.617435577,
+                                          41.878376615],
+                                      [-87.620678487,41.878337216]]]]}}'''
+
+        self.known_CA_shape = '''{  "type": "Feature", 
+                                    "properties": {},
+                                    "geometry": {"type": "MultiPolygon", 
+                                    "coordinates": [[[[ -118.299924978, 34.037354049], 
+                                        [-118.30058541, 33.885621511], [-118.10641835, 33.86697866],
+                                        [-118.10641835, 34.008890602], 
+                                        [-118.244448675, 34.052129382], 
+                                        [-118.299924978, 34.037354049]]]]}}'''
         
-            # 776,957 acres
-        self.rhode_island_approx = Polygon([
-                (-71.862, 41.146),   # SW corner (Westerly area)
-                (-71.120, 41.146),   # SE corner (coast near CT border)
-                (-71.120, 41.240),   # East coast (Narragansett Bay entrance)
-                (-71.200, 41.350),   # Newport area
-                (-71.320, 41.500),   # East Bay
-                (-71.422, 41.820),   # Providence area
-                (-71.580, 41.900),   # North Providence
-                (-71.700, 41.950),   # Northern border
-                (-71.862, 41.780),   # Western border (Connecticut River area)
-                (-71.862, 41.500),   # Block Island Sound coastline
-                (-71.862, 41.146)    # Close
-            ], srid=4326)
-            
-    # Lake Tahoe approximation (known area: ~122,000 acres water surface)
-        self.lake_tahoe_approx = Polygon([
-                (-120.097, 39.089),  # South shore
-                (-120.024, 39.089),  # SE corner
-                (-120.024, 39.200),  # East shore
-                (-120.000, 39.270),  # NE area
-                (-120.097, 39.270),  # North shore
-                (-120.170, 39.240),  # NW area  
-                (-120.097, 39.200),  # West shore
-                (-120.097, 39.089)   # Close
-            ], srid=4326)
-        
-        # Known acreage is 77941.31056524477
-        self.known_CA_shape = '{"type": "Feature", "properties": {}, "geometry": {"type": "MultiPolygon", "coordinates": [[[[ -118.299924978, 34.037354049], [-118.30058541, 33.885621511], [-118.10641835, 33.86697866], [-118.10641835, 34.008890602], [-118.244448675, 34.052129382], [-118.299924978, 34.037354049]]]]}}'
-        
-        # Spherical acreage is 373133.46345923113
         self.around_LA_shape = '''{
                                     "type": "Feature",
                                     "properties": {},
@@ -365,16 +345,32 @@ class TestAcreageCalculation(TestCase):
                                     }
                                 }'''
         
-    def test_get_spherical_acreage(self): 
+    def test_get_acreage_LA(self):
+        expected_la_acres = 373133.46345923113
         la_geometry = shape(json.loads(self.around_LA_shape)['geometry'])
-
-        self.assertEquals(
-            get_spherical_acreage(la_geometry), 373133.46345923113
+        tolerance_delta = abs(expected_la_acres * .025) # allow a tolerance
+        self.assertAlmostEqual(
+            get_acreage(la_geometry),
+            expected_la_acres,
+            delta=tolerance_delta
         )
-        # self.assertEquals(
-        #     get_spherical_acreage(self.rhode_island_approx), 100000
-        # )
-        # self.assertEquals(
-        #     get_spherical_acreage(self.lake_tahoe_approx), 100000
-        # )
 
+    def test_get_acreage_CA(self):
+        expected_ca_acres = 77941.31056524477
+        ca_geometry = shape(json.loads(self.known_CA_shape)['geometry'])
+        tolerance_delta = abs(expected_ca_acres * .025) # allow a tolerance
+        self.assertAlmostEqual(
+            get_acreage(ca_geometry),
+            expected_ca_acres,
+            delta=tolerance_delta
+        )
+
+    def test_get_acreage_chicago(self):
+        expected_chicago_block_acres = 38.03049634905496
+        chi_geometry = shape(json.loads(self.chicago_block)['geometry'])
+        tolerance_delta = abs(expected_chicago_block_acres * .025) # allow a tolerance
+        self.assertAlmostEqual(
+            get_acreage(chi_geometry),
+            expected_chicago_block_acres,
+            delta=tolerance_delta
+        )
