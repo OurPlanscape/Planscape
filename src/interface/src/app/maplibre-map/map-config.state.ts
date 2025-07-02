@@ -60,9 +60,6 @@ export class MapConfigState {
   );
   public mapInteractionMode$ = this._mapInteractionMode$.asObservable();
 
-  private _uploadedShapeData$ = new BehaviorSubject<GeoJSON | null>(null);
-  public uploadedShapeData$ = this._uploadedShapeData$.asObservable();
-
   updateBaseMap(layer: BaseMapType) {
     this._baseMap$.next(layer);
   }
@@ -78,13 +75,6 @@ export class MapConfigState {
   setStandSelectionEnabled(value: boolean) {
     this._standSelectionEnabled$.next(value);
     this.resetCursor();
-  }
-
-  setUploadedShape(shape: GeoJSON | null) {
-    this._uploadedShapeData$.next(shape);
-  }
-  removeUploadedShape() {
-    this._uploadedShapeData$.next(null);
   }
 
   isStandSelectionEnabled() {

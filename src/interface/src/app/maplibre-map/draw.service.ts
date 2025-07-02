@@ -41,11 +41,11 @@ export const DefaultSelectConfig = {
 @Injectable()
 export class DrawService {
   private _terraDraw: TerraDraw | null = null;
-  private _currentDrawingMode = new BehaviorSubject<string>('');
+  private _currentDrawingMode$ = new BehaviorSubject<string>('');
 
   // Observable that components can subscribe to
   currentDrawingMode$: Observable<string> =
-    this._currentDrawingMode.asObservable();
+    this._currentDrawingMode$.asObservable();
 
   private _selectedFeatureId$ = new BehaviorSubject<FeatureId | null>(null);
   selectedFeatureId$: Observable<FeatureId | null> =
@@ -106,7 +106,7 @@ export class DrawService {
       return;
     }
     this._terraDraw.setMode(mode);
-    this._currentDrawingMode.next(this._terraDraw.getMode());
+    this._currentDrawingMode$.next(this._terraDraw.getMode());
   }
 
   deleteSelectedFeature() {
@@ -249,7 +249,7 @@ export class DrawService {
       type: 'Feature',
       geometry: {
         type: feature.geometry.type,
-        coordinates: roundCoordinates(feature.geometry.coordinates, 6), // 6 decimal places is usually sufficient
+        coordinates: roundCoordinates(feature.geometry.coordinates, 6),
       },
       properties: {
         ...feature.properties,
@@ -264,7 +264,7 @@ export class DrawService {
 
 // terra-draw only accepts up to 6 decimal places of precision, so this rounds that
 // Note that 6 decimal places translates to about ~11 cm (4.3 inches)
-function roundCoordinates(coords: any, precision = 10) {
+function roundCoordinates(coords: any, precision = 6) {
   if (typeof coords[0] === 'number') {
     return coords.map(
       (coord: any) =>

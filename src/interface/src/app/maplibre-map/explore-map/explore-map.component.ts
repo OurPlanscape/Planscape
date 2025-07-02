@@ -74,8 +74,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   planId$ = this.planState.currentPlanId$;
 
-  // TODO: use something like combineLatest to zoom on a newly
-  // uploaded shape?
   bounds$ = this.planId$.pipe(
     switchMap((id) => {
       if (id) {
@@ -97,18 +95,14 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   mouseLngLat: LngLat | null = null;
   currentDrawingMode$ = this.drawService.currentDrawingMode$;
-
   drawModeTooltipContent: string | null = null;
-
-  uploadedShapeData$ = this.mapConfigState.uploadedShapeData$;
-
   /**
    * Observable that provides the url to load the selected map base layer
    */
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
   /**
-   * Obserable that descibres what mode
+   * Observable that indicates whether the user is in 'draw', 'upload', or 'view' modes
    */
   mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
   /**
