@@ -24,7 +24,7 @@ from planning.services import (
     get_schema,
     planning_area_covers,
     validate_scenario_treatment_ratio,
-    get_acreage
+    get_acreage,
 )
 from planning.tests.factories import PlanningAreaFactory
 from planscape.tests.factories import UserFactory
@@ -301,9 +301,10 @@ class TestPlanningAreaCovers(TestCase):
             )
         )
 
+
 class TestAcreageCalculation(TestCase):
     def setUp(self):
-        self.chicago_block = '''{ "type": "Feature",
+        self.chicago_block = """{ "type": "Feature",
                                 "properties": {},
                                 "geometry": {
                                   "type": "MultiPolygon",
@@ -313,18 +314,18 @@ class TestAcreageCalculation(TestCase):
                                       [-87.617284393,41.873299661],
                                       [-87.617435577,
                                           41.878376615],
-                                      [-87.620678487,41.878337216]]]]}}'''
+                                      [-87.620678487,41.878337216]]]]}}"""
 
-        self.known_CA_shape = '''{  "type": "Feature", 
+        self.known_CA_shape = """{  "type": "Feature", 
                                     "properties": {},
                                     "geometry": {"type": "MultiPolygon", 
                                     "coordinates": [[[[ -118.299924978, 34.037354049], 
                                         [-118.30058541, 33.885621511], [-118.10641835, 33.86697866],
                                         [-118.10641835, 34.008890602], 
                                         [-118.244448675, 34.052129382], 
-                                        [-118.299924978, 34.037354049]]]]}}'''
-        
-        self.around_LA_shape = '''{
+                                        [-118.299924978, 34.037354049]]]]}}"""
+
+        self.around_LA_shape = """{
                                     "type": "Feature",
                                     "properties": {},
                                     "geometry": {
@@ -344,34 +345,30 @@ class TestAcreageCalculation(TestCase):
                                             ]
                                         ]]
                                     }
-                                }'''
-        
+                                }"""
+
     def test_get_acreage_LA(self):
         expected_la_acres = 373133.46345923113
-        la_geometry = shape(json.loads(self.around_LA_shape)['geometry'])
-        tolerance_delta = abs(expected_la_acres * .025) # allow a tolerance
+        la_geometry = shape(json.loads(self.around_LA_shape)["geometry"])
+        tolerance_delta = abs(expected_la_acres * 0.025)  # allow a tolerance
         self.assertAlmostEqual(
-            get_acreage(la_geometry),
-            expected_la_acres,
-            delta=tolerance_delta
+            get_acreage(la_geometry), expected_la_acres, delta=tolerance_delta
         )
 
     def test_get_acreage_CA(self):
         expected_ca_acres = 77941.31056524477
-        ca_geometry = shape(json.loads(self.known_CA_shape)['geometry'])
-        tolerance_delta = abs(expected_ca_acres * .025) # allow a tolerance
+        ca_geometry = shape(json.loads(self.known_CA_shape)["geometry"])
+        tolerance_delta = abs(expected_ca_acres * 0.025)  # allow a tolerance
         self.assertAlmostEqual(
-            get_acreage(ca_geometry),
-            expected_ca_acres,
-            delta=tolerance_delta
+            get_acreage(ca_geometry), expected_ca_acres, delta=tolerance_delta
         )
 
     def test_get_acreage_chicago(self):
         expected_chicago_block_acres = 38.03049634905496
-        chi_geometry = shape(json.loads(self.chicago_block)['geometry'])
-        tolerance_delta = abs(expected_chicago_block_acres * .025) # allow a tolerance
+        chi_geometry = shape(json.loads(self.chicago_block)["geometry"])
+        tolerance_delta = abs(expected_chicago_block_acres * 0.025)  # allow a tolerance
         self.assertAlmostEqual(
             get_acreage(chi_geometry),
             expected_chicago_block_acres,
-            delta=tolerance_delta
+            delta=tolerance_delta,
         )
