@@ -19,7 +19,7 @@ export class MultiMapControlComponent {
   ) {}
 
   // we disable this control when we're in drawing mode
-  $drawingMode = this.mapConfigState.drawingModeEnabled$;
+  mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
 
   setLayoutMode(view: 1 | 2 | 4) {
     this.multiMapConfigState.setLayoutMode(view);

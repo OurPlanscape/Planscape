@@ -1,0 +1,29 @@
+@import 'colors';
+@import 'media';
+@import 'mixins';
+
+:host {
+    border-radius: 4px;
+    box-shadow: 0px 4px 4px 0px $color-drop-shadow;
+    position: absolute;
+    top: 60px;
+    background-color: white;
+    width: 500px;
+    right: 100px;
+    z-index: 100;
+}
+
+.upload-form-heading {
+    @include h4();
+    padding: 16px 24px;
+    border-bottom: 1px $color-soft-gray solid;
+}
+
+.upload-form-body {
+    @include standard-input-label();
+    padding: 24px;
+}
+
+.upload-form-title {
+    padding: 0 0 8px 0;
+}
