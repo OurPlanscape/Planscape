@@ -35,8 +35,8 @@ import { DataLayersStateService } from '../../data-layers/data-layers.state.serv
 enum ScenarioTabs {
   CONFIG,
   RESULTS,
-  TREATMENTS,
   DATA_LAYERS,
+  TREATMENTS,
 }
 
 @UntilDestroy()
