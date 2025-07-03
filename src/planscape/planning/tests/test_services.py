@@ -4,8 +4,7 @@ from datetime import date, datetime
 import fiona
 import json
 import shapely
-from shapely.geometry import shape
-from django.contrib.gis.geos import GEOSGeometry, MultiPolygon, Polygon
+from django.contrib.gis.geos import GEOSGeometry, MultiPolygon
 from django.test import TestCase, TransactionTestCase
 from fiona.crs import to_string
 from stands.models import StandSizeChoices
