@@ -55,7 +55,8 @@ class MaxTreatableAreaTest(TestCase):
 
 class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
     def setUp(self) -> None:
-        # Note: Test Polygon is 12163249.414195888 acres
+        # Test Polygon is 12165389.42118729 spherical acres
+
         self.test_poly = GEOSGeometry("POLYGON ((0 0, 0 2, 2 2, 2 0, 0 0))", srid=4269)
         self.test_area = PlanningArea.objects.create(
             region_name="sierra-nevada",
@@ -74,10 +75,10 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
             "stand_size": StandSizeChoices.LARGE,
         }
 
-    # 20% of acreage should be 2432649.882839178
+    # 20% of spherical acreage is 2433077.8
     def test_validate_acres_just_above_20pct(self):
         conf_just_above_20 = self.get_basic_conf()
-        conf_just_above_20["max_treatment_area_ratio"] = 2432650
+        conf_just_above_20["max_treatment_area_ratio"] = 2433078
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_just_above_20
         )
@@ -93,10 +94,10 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
         self.assertFalse(result)
         self.assertIn("at least", reason)
 
-    # 80% of area is 9730599.531356712
+    # 80% of spherical acreage is 9732311.536949832
     def test_validate_acres_just_below_80pct(self):
         conf_just_below_80 = self.get_basic_conf()
-        conf_just_below_80["max_treatment_area_ratio"] = 9730590
+        conf_just_below_80["max_treatment_area_ratio"] = 9732311
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_just_below_80
         )
@@ -105,7 +106,7 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
 
     def test_validate_acres_just_above_80pct(self):
         conf_acres_above_80 = self.get_basic_conf()
-        conf_acres_above_80["max_treatment_area_ratio"] = 9730600
+        conf_acres_above_80["max_treatment_area_ratio"] = 9732312
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_acres_above_80
         )
@@ -113,8 +114,8 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
         self.assertIn("less than", reason)
         self.assertIn("80%", reason)
 
-    # 20% of acreage should be 2432649.882839178
-    #  so, with cost of 2470/acre, this requires $ 6,008,645,200.61
+    # 20% of spherical acreage is 2433077.8
+    #   at 2470/acre, this would require: $6,009,702,166
     def test_validate_budget_below_20pct(self):
         conf_budget_below_20pct = self.get_basic_conf()
         conf_budget_below_20pct["max_budget"] = 6008641030
@@ -126,18 +127,18 @@ class ValidateScenarioTreatmentRatioTest(TransactionTestCase):
 
     def test_validate_budget_above_20pct(self):
         conf_budget_above_20pct = self.get_basic_conf()
-        conf_budget_above_20pct["max_budget"] = 6008645211
+        conf_budget_above_20pct["max_budget"] = 6009802166
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_budget_above_20pct
         )
         self.assertTrue(result)
         self.assertEqual("Treatment ratio is valid.", reason)
 
-    # 99% of acreage should be 12041616.9200539311
-    #  so, at cost of 2470/acre, this requires $ 29,742,793,792.53
+    # 99% of acreage is 12043735.526975417*
+    #  so, at cost of 2470/acre, this requires $ 29748026751.63
     def test_validate_budget_above_99pct(self):
         conf_budget_above_99 = self.get_basic_conf()
-        conf_budget_above_99["max_budget"] = 29742793793
+        conf_budget_above_99["max_budget"] = 29749026751
         result, reason = validate_scenario_treatment_ratio(
             self.test_area, conf_budget_above_99
         )

@@ -8,6 +8,7 @@ from functools import partial
 from pathlib import Path
 from typing import Any, Collection, Dict, Optional, Tuple, Type, Union
 import fiona
+from shapely import wkt
 from shapely.geometry import Polygon
 from actstream import action
 from celery import chord
@@ -381,16 +382,19 @@ def get_planar_acreage(geometry: GEOSGeometry) -> float:
     except Exception:
         raise InvalidGeometry("Could not reproject geometry")
 
-def get_acreage(geometry: Any) -> float:
+
+def get_acreage(geometry: GEOSGeometry) -> float:
     try:
+        # Convert GEOSGeometry to Shapely geometry
+        shapely_geom = wkt.loads(geometry.wkt)
+        
         geod = Geod(ellps="WGS84")
-        area_sq_meters, _ = geod.geometry_area_perimeter(geometry)
+        area_sq_meters, *_ = geod.geometry_area_perimeter(shapely_geom)
         area_sq_meters = abs(area_sq_meters)
         acres = area_sq_meters / settings.CONVERSION_SQM_ACRES
         return acres
-    except Exception:
-        raise InvalidGeometry("Could not reproject geometry")
-
+    except Exception as e:
+        raise InvalidGeometry("Could not calculate area")
 
 def validate_scenario_treatment_ratio(
     planning_area: PlanningArea,
