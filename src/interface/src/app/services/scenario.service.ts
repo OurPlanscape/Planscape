@@ -31,7 +31,7 @@ export class ScenarioService {
   }
 
   /** Fetches a scenario by its id from the backend. */
-  getScenario(scenarioId: string): Observable<Scenario> {
+  getScenario(scenarioId: number): Observable<Scenario> {
     return this.http.get<Scenario>(this.v2Path + scenarioId + '/', {
       withCredentials: true,
     });
@@ -66,7 +66,7 @@ export class ScenarioService {
     });
   }
 
-  downloadCsvData(scenarioId: string): Observable<any> {
+  downloadCsvData(scenarioId: number): Observable<any> {
     return this.http.get(
       environment.backend_endpoint +
         `/planning/get_scenario_download_by_id?id=${scenarioId}`,
@@ -77,7 +77,7 @@ export class ScenarioService {
     );
   }
 
-  downloadShapeFiles(scenarioId: string): Observable<any> {
+  downloadShapeFiles(scenarioId: number): Observable<any> {
     return this.http.get(
       environment.backend_endpoint +
         `/planning/download_shapefile?id=${scenarioId}`,

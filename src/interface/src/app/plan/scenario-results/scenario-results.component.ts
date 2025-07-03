@@ -11,7 +11,7 @@ import { getSafeFileName } from '../../shared/files';
   styleUrls: ['./scenario-results.component.scss'],
 })
 export class ScenarioResultsComponent implements OnChanges {
-  @Input() scenarioId!: string;
+  @Input() scenarioId!: number;
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
   @Input() priorities: string[] = [];
