@@ -301,10 +301,10 @@ class TestPlanningAreaCovers(TestCase):
             )
         )
 
+
 # compare with known turf.js results
 class TestAcreageCalculation(TestCase):
     def setUp(self):
-
         self.ohare = """{ "type": "Feature",
                         "properties": {},
                         "geometry": {
@@ -336,7 +336,7 @@ class TestAcreageCalculation(TestCase):
                                                 [-121.645284734,40.880564151],
                                                 [-121.944304697,41.250096143],
                                                 [-122.506372297,41.455991654]]]]}}"""
-        
+
         self.ca_shape = """ {"type": "Feature",
                             "properties": {},
                             "geometry": {
@@ -353,9 +353,7 @@ class TestAcreageCalculation(TestCase):
         ohare_geometry = GEOSGeometry(json.dumps(geom_dict))
         tolerance_delta = abs(expected_ohare_acres * 0.001)
         self.assertAlmostEqual(
-            get_acreage(ohare_geometry), 
-            expected_ohare_acres, 
-            delta=tolerance_delta
+            get_acreage(ohare_geometry), expected_ohare_acres, delta=tolerance_delta
         )
 
     def test_get_acreage_shasta(self):
@@ -364,9 +362,7 @@ class TestAcreageCalculation(TestCase):
         shasta_geom = GEOSGeometry(json.dumps(geom_dict))
         tolerance_delta = abs(expected_shasta_acres * 0.001)
         self.assertAlmostEqual(
-            get_acreage(shasta_geom), 
-            expected_shasta_acres, 
-            delta=tolerance_delta
+            get_acreage(shasta_geom), expected_shasta_acres, delta=tolerance_delta
         )
 
     def test_ca_shape(self):
@@ -375,7 +371,5 @@ class TestAcreageCalculation(TestCase):
         ca_geom = GEOSGeometry(json.dumps(geom_dict))
         tolerance_delta = abs(expected_ca_acres * 0.001)
         self.assertAlmostEqual(
-            get_acreage(ca_geom), 
-            expected_ca_acres, 
-            delta=tolerance_delta
+            get_acreage(ca_geom), expected_ca_acres, delta=tolerance_delta
         )
