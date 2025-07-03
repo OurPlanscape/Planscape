@@ -301,74 +301,81 @@ class TestPlanningAreaCovers(TestCase):
             )
         )
 
-
+# compare with known turf.js results
 class TestAcreageCalculation(TestCase):
     def setUp(self):
-        self.chicago_block = """{ "type": "Feature",
-                                "properties": {},
-                                "geometry": {
-                                  "type": "MultiPolygon",
-                                  "coordinates": [
-                                    [[[-87.620678487,41.878337216],
-                                      [-87.620587776,41.873226487],
-                                      [-87.617284393,41.873299661],
-                                      [-87.617435577,
-                                          41.878376615],
-                                      [-87.620678487,41.878337216]]]]}}"""
 
-        self.known_CA_shape = """{  "type": "Feature", 
-                                    "properties": {},
-                                    "geometry": {"type": "MultiPolygon", 
-                                    "coordinates": [[[[ -118.299924978, 34.037354049], 
-                                        [-118.30058541, 33.885621511], [-118.10641835, 33.86697866],
-                                        [-118.10641835, 34.008890602], 
-                                        [-118.244448675, 34.052129382], 
-                                        [-118.299924978, 34.037354049]]]]}}"""
+        self.ohare = """{ "type": "Feature",
+                        "properties": {},
+                        "geometry": {
+                            "type": "MultiPolygon",
+                            "coordinates": [[[[-87.935169366,41.961504895],
+                                                [-87.92028533,41.951378337],
+                                                [-87.907934746,41.948080971],
+                                                [-87.890200575,41.949494149],
+                                                [-87.877216628,41.967156227],
+                                                [-87.873416449,41.988108876],
+                                                [-87.885450351,42.006936833],
+                                                [-87.909834836,42.015172313],
+                                                [-87.926302281,42.009289936],
+                                                [-87.939602909,41.994934654],
+                                                [-87.938336183,41.973513377],
+                                                [-87.935169366,41.961504895]]]]}}"""
 
-        self.around_LA_shape = """{
-                                    "type": "Feature",
-                                    "properties": {},
-                                    "geometry": {
-                                        "type": "MultiPolygon",
-                                        "coordinates": [[
-                                            [
-                                                [-118.529094944, 34.117219603],
-                                                [-118.467014319, 34.001773248],
-                                                [-118.377195543, 33.852171143],
-                                                [-118.195576694, 33.841200956],
-                                                [-118.017920438, 33.902615854],
-                                                [-117.920176475, 34.009438066],
-                                                [-117.939989441, 34.126514121],
-                                                [-118.251052997, 34.164228438],
-                                                [-118.421444499, 34.1609496],
-                                                [-118.529094944, 34.117219603]
-                                            ]
-                                        ]]
-                                    }
-                                }"""
+        self.shasta = """{"type": "Feature",
+                            "properties": {},
+                            "geometry": {
+                                "type": "MultiPolygon",
+                                "coordinates": [[[[-122.506372297,41.455991654],
+                                                [-123.066191627,41.632675159],
+                                                [-123.592286901,41.560377431],
+                                                [-123.844093185,41.140131886],
+                                                [-123.738424477,40.454235364],
+                                                [-122.994246974,40.281226116],
+                                                [-122.025242431,40.553386397],
+                                                [-121.645284734,40.880564151],
+                                                [-121.944304697,41.250096143],
+                                                [-122.506372297,41.455991654]]]]}}"""
+        
+        self.ca_shape = """ {"type": "Feature",
+                            "properties": {},
+                            "geometry": {
+                                "type": "MultiPolygon",
+                                "coordinates": [[[[-119.274539018,36.303191789],
+                                                [-120.345934319,35.860912955],
+                                                [-118.973931704,35.359597814],
+                                                [-118.133772799,36.09793504],
+                                                [-119.274539018,36.303191789]]]]}}"""
 
-    def test_get_acreage_LA(self):
-        expected_la_acres = 373133.46345923113
-        la_geometry = shape(json.loads(self.around_LA_shape)["geometry"])
-        tolerance_delta = abs(expected_la_acres * 0.025)  # allow a tolerance
+    def test_get_acreage_ohare(self):
+        expected_ohare_acres = 7722.191460915323
+        geom_dict = json.loads(self.ohare)["geometry"]
+        ohare_geometry = GEOSGeometry(json.dumps(geom_dict))
+        tolerance_delta = abs(expected_ohare_acres * 0.001)
         self.assertAlmostEqual(
-            get_acreage(la_geometry), expected_la_acres, delta=tolerance_delta
+            get_acreage(ohare_geometry), 
+            expected_ohare_acres, 
+            delta=tolerance_delta
         )
 
-    def test_get_acreage_CA(self):
-        expected_ca_acres = 77941.31056524477
-        ca_geometry = shape(json.loads(self.known_CA_shape)["geometry"])
-        tolerance_delta = abs(expected_ca_acres * 0.025)  # allow a tolerance
+    def test_get_acreage_shasta(self):
+        expected_shasta_acres = 4820350.111878374
+        geom_dict = json.loads(self.shasta)["geometry"]
+        shasta_geom = GEOSGeometry(json.dumps(geom_dict))
+        tolerance_delta = abs(expected_shasta_acres * 0.001)
         self.assertAlmostEqual(
-            get_acreage(ca_geometry), expected_ca_acres, delta=tolerance_delta
+            get_acreage(shasta_geom), 
+            expected_shasta_acres, 
+            delta=tolerance_delta
         )
 
-    def test_get_acreage_chicago(self):
-        expected_chicago_block_acres = 38.03049634905496
-        chi_geometry = shape(json.loads(self.chicago_block)["geometry"])
-        tolerance_delta = abs(expected_chicago_block_acres * 0.025)  # allow a tolerance
+    def test_ca_shape(self):
+        expected_ca_acres = 2669323.5845463574
+        geom_dict = json.loads(self.ca_shape)["geometry"]
+        ca_geom = GEOSGeometry(json.dumps(geom_dict))
+        tolerance_delta = abs(expected_ca_acres * 0.001)
         self.assertAlmostEqual(
-            get_acreage(chi_geometry),
-            expected_chicago_block_acres,
-            delta=tolerance_delta,
+            get_acreage(ca_geom), 
+            expected_ca_acres, 
+            delta=tolerance_delta
         )
