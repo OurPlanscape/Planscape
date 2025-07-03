@@ -375,15 +375,13 @@ def get_max_treatable_stand_count(
 
 def get_acreage(geometry: GEOSGeometry) -> float:
     try:
-        # Convert GEOSGeometry to Shapely geometry
         shapely_geom = wkt.loads(geometry.wkt)
-
         geod = Geod(ellps="WGS84")
         area_sq_meters, *_ = geod.geometry_area_perimeter(shapely_geom)
         area_sq_meters = abs(area_sq_meters)
         acres = area_sq_meters / settings.CONVERSION_SQM_ACRES
         return acres
-    except Exception as e:
+    except Exception:
         raise InvalidGeometry("Could not calculate area")
 
 
