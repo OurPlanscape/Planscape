@@ -9,7 +9,6 @@ import {
   ReactiveFormsModule,
   Validators,
 } from '@angular/forms';
-import { MapConfigState } from 'src/app/maplibre-map/map-config.state';
 import { DrawService } from 'src/app/maplibre-map/draw.service';
 import { FileUploadFieldComponent } from 'src/styleguide/file-upload-field/file-upload-field.component';
 import { ModalInfoComponent } from 'src/styleguide/modal-info-box/modal-info.component';
@@ -41,7 +40,6 @@ export class UploadPlanningAreaBoxComponent {
 
   constructor(
     private fb: FormBuilder,
-    private mapConfigState: MapConfigState,
     private drawService: DrawService
   ) {
     this.uploadPlanningAreaForm = this.fb.group({
@@ -75,7 +73,6 @@ export class UploadPlanningAreaBoxComponent {
       )) as GeoJSON.GeoJSON;
       if (geojson.type == 'FeatureCollection') {
         this.geometries = geojson;
-        this.mapConfigState.enterDrawingMode();
         this.drawService.addGeoJSONFeature(this.geometries);
         this.uploadElementStatus = 'uploaded';
         this.uploadedShape.emit();

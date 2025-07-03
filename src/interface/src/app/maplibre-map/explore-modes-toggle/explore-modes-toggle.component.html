@@ -5,7 +5,7 @@
       active: false,
     }"
     class="left-option"
-    [ngClass]="{ active: showUploadForm }"
+    [ngClass]="{ active: (mapInteractionMode$ | async) === 'upload' }"
     (click)="handleUploadButton()"
     matTooltip="Upload"
     matTooltipPosition="below">

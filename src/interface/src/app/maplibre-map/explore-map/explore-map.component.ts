@@ -27,7 +27,7 @@ import { MapBaseLayersComponent } from '../map-base-layers/map-base-layers.compo
 import { TerraDrawPolygonMode, TerraDrawSelectMode } from 'terra-draw';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { MultiMapConfigState } from '../multi-map-config.state';
-import { map, switchMap } from 'rxjs';
+import { map, switchMap, combineLatest } from 'rxjs';
 import { MapDrawingToolboxComponent } from '../map-drawing-toolbox/map-drawing-toolbox.component';
 import { DefaultSelectConfig, DrawService } from '../draw.service';
 import { MapTooltipComponent } from '../../treatments/map-tooltip/map-tooltip.component';
@@ -74,13 +74,30 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
 
   planId$ = this.planState.currentPlanId$;
 
-  bounds$ = this.planId$.pipe(
-    switchMap((id) => {
-      if (id) {
+  /**
+   * Observable that indicates whether the user is in 'draw', 'upload', or 'view' modes
+   */
+  mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
+
+  bounds$ = combineLatest([
+    this.planId$,
+    this.mapInteractionMode$,
+    this.drawService.drawnBounds$,
+  ]).pipe(
+    switchMap(([id, mode, drawnBounds]) => {
+      if (drawnBounds) {
+        if (mode === 'upload') {
+          this.mapConfigState.updateMapCenter(
+            this.drawService.getDrawingGeoJSON()
+          );
+          return this.drawService.drawnBounds$;
+        } else {
+          return this.mapConfigState.mapExtent$;
+        }
+      } else if (id) {
+        console.log('are we calling this with id?', id);
         return this.planState.planningAreaGeometry$.pipe(
-          map((geometry) => {
-            return getBoundsFromGeometry(geometry);
-          })
+          map((geometry) => getBoundsFromGeometry(geometry))
         );
       }
       return this.mapConfigState.mapExtent$;
@@ -101,10 +118,6 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    */
   baseLayerUrl$ = this.mapConfigState.baseMapUrl$;
 
-  /**
-   * Observable that indicates whether the user is in 'draw', 'upload', or 'view' modes
-   */
-  mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
   /**
    * The mapLibreMap instance, set by the map `mapLoad` event.
    */
