@@ -1,25 +1,3 @@
-<div class="flex-row">
-  <h3 class="title">Project Areas</h3>
-  <button mat-icon-button class="help" [matMenuTriggerFor]="tooltipMenu">
-    <mat-icon class="material-symbols-outlined" color="primary">
-      info_outline
-    </mat-icon>
-    <mat-menu #tooltipMenu="matMenu">
-      <div class="tooltip">
-        <p>
-          Project areas are the land areas defined by your treatment goals and
-          constraints. You can have up to 10 project areas per scenario, and
-          Planscape will rank those project areas according to how well they
-          match your treatment goals. Each project area will show the number of
-          acres in that area, the percent of planning acreage that project
-          defines, the estimated cost of that project, and the ranking of that
-          project area effectiveness relative to other projects, based on the
-          treatment goals.
-        </p>
-      </div>
-    </mat-menu>
-  </button>
-</div>
 <table>
   <thead>
     <tr>
@@ -38,9 +16,13 @@
         {{ area.rank }}
       </td>
       <td data-id="acres">{{ area.acres | number: '1.0-0' }}</td>
-      <td data-id="percentTotal">{{ area.percentTotal | percent: '1.0-2' }}</td>
+      <td data-id="percentTotal">
+        {{ area.percentTotal | percent: '1.0-2' }}
+      </td>
       <td data-id="estimatedCost">{{ area.estimatedCost | currencyInK }}</td>
-      <td data-id="score" class="score">{{ area.score | number: '1.0-2' }}</td>
+      <td data-id="score" class="score">
+        {{ area.score | number: '1.0-2' }}
+      </td>
     </tr>
     <tr class="total-row">
       <td></td>

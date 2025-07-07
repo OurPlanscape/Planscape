@@ -4,6 +4,7 @@ import { ScenarioResult } from '@types';
 import { parseResultsToProjectAreas } from '../plan-helpers';
 import { FileSaverService, ScenarioService } from '@services';
 import { getSafeFileName } from '../../shared/files';
+import { FeatureService } from '../../features/feature.service';
 
 @Component({
   selector: 'app-scenario-results',
@@ -20,7 +21,8 @@ export class ScenarioResultsComponent implements OnChanges {
 
   constructor(
     private scenarioService: ScenarioService,
-    private fileServerService: FileSaverService
+    private fileServerService: FileSaverService,
+    private featureService: FeatureService
   ) {}
 
   ngOnChanges(changes: SimpleChanges) {
@@ -56,5 +58,10 @@ export class ScenarioResultsComponent implements OnChanges {
           this.fileServerService.saveAs(blob, filename);
         });
     }
+  }
+
+  isScenarioImprovementsEnabled() {
+    // need to also be v2 scenarios
+    return this.featureService.isFeatureEnabled('SCENARIO_IMPROVEMENTS');
   }
 }
