@@ -90,7 +90,7 @@ export class PlanComponent implements OnInit {
           });
         } else if (id) {
           // on a specific scenario. Need to have scenario name to populate breadcrumbs.
-          if (scenario && scenario.id.toString() === id) {
+          if (scenario && scenario.id === Number(id)) {
             this.breadcrumbService.updateBreadCrumb({
               label: 'Scenario: ' + scenario.name,
               backUrl: getPlanPath(plan.id),
@@ -108,12 +108,12 @@ export class PlanComponent implements OnInit {
         // We can remove this after refactor.
         if (path === 'config') {
           this.LegacyPlanStateService.updateStateWithScenario(
-            id,
+            Number(id),
             scenario?.name || ''
           );
           this.LegacyPlanStateService.updateStateWithShapes(null);
         } else {
-          this.LegacyPlanStateService.updateStateWithScenario(null, null);
+          this.LegacyPlanStateService.updateStateWithScenario(undefined, null);
           this.LegacyPlanStateService.updateStateWithShapes(null);
         }
         this.LegacyPlanStateService.updateStateWithPlan(plan.id);

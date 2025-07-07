@@ -30,7 +30,7 @@ export class UploadedScenarioViewComponent implements OnInit {
     if (this.scenario) {
       this.plan$.pipe(untilDestroyed(this), take(1)).subscribe((planState) => {
         this.LegacyPlanStateService.updateStateWithScenario(
-          this.scenario?.id ?? null,
+          this.scenario?.id ?? undefined,
           this.scenario?.name ?? null
         );
         this.LegacyPlanStateService.updateStateWithShapes(

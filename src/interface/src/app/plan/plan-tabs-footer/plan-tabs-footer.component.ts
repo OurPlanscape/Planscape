@@ -28,7 +28,7 @@ export class PlanTabsFooterComponent {
     private analyticsService: AnalyticsService
   ) {}
 
-  @Input() scenarioId!: string;
+  @Input() scenarioId!: number | undefined;
 
   creatingTreatment = false;
 

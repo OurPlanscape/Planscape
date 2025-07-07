@@ -82,7 +82,7 @@ export class LegacyPlanStateService {
       .pipe(tap((plan) => this.addPlanToState(plan)));
   }
 
-  getScenario(scenarioId: string) {
+  getScenario(scenarioId: number) {
     return this.scenarioService.getScenario(scenarioId).pipe(
       switchMap((scenario) => {
         // TODO this is pretty bad, why do we need to pull stuff from another endpoint for this?
@@ -161,7 +161,7 @@ export class LegacyPlanStateService {
     return this.scenarioService.createScenario(scenarioParameters).pipe(
       tap((result) => {
         if (result.id) {
-          this.updateStateWithScenario(result.id.toString(), result.name);
+          this.updateStateWithScenario(result.id, result.name);
         }
       })
     );
@@ -209,7 +209,7 @@ export class LegacyPlanStateService {
   }
 
   updateStateWithScenario(
-    scenarioId: string | null,
+    scenarioId: number | undefined,
     scenarioName: string | null
   ) {
     const currentState = Object.freeze(this.planState$.value);
