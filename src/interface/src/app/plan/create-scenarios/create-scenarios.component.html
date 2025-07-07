@@ -73,6 +73,7 @@
           *ngIf="scenarioState === 'RUNNING'"></app-scenario-pending>
         <app-scenario-results
           *ngIf="scenarioState === 'SUCCESS'"
+          [scenarioVersion]="scenarioVersion || ''"
           [results]="scenarioResults"
           [priorities]="priorities"
           [scenarioName]="scenarioNameFormField?.value"

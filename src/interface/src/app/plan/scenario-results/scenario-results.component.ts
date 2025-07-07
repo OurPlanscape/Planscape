@@ -13,6 +13,7 @@ import { FeatureService } from '../../features/feature.service';
 })
 export class ScenarioResultsComponent implements OnChanges {
   @Input() scenarioId!: number;
+  @Input() scenarioVersion!: string;
   @Input() scenarioName = 'scenario_results';
   @Input() results: ScenarioResult | null = null;
   @Input() priorities: string[] = [];
@@ -62,6 +63,10 @@ export class ScenarioResultsComponent implements OnChanges {
 
   isScenarioImprovementsEnabled() {
     // need to also be v2 scenarios
-    return this.featureService.isFeatureEnabled('SCENARIO_IMPROVEMENTS');
+    const isFlagEnabled = this.featureService.isFeatureEnabled(
+      'SCENARIO_IMPROVEMENTS'
+    );
+    const isScenarioV2 = this.scenarioVersion === 'V2';
+    return isFlagEnabled && isScenarioV2;
   }
 }
