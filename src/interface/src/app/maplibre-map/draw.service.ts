@@ -56,7 +56,7 @@ export class DrawService {
 
   private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
