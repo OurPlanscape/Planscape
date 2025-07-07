@@ -61,6 +61,8 @@ export class ExploreModesToggleComponent {
   uploadedShape() {
     this.showUploadForm = false;
     this.drawService.setMode('select');
+    const bbox = this.drawService.getBboxFromDrawingContext();
+    this.mapConfigState.updateMapCenter(bbox);
   }
 
   handleCancelButton() {

@@ -79,23 +79,9 @@ export class ExploreMapComponent implements OnInit, OnDestroy {
    */
   mapInteractionMode$ = this.mapConfigState.mapInteractionMode$;
 
-  bounds$ = combineLatest([
-    this.planId$,
-    this.mapInteractionMode$,
-    this.drawService.drawnBounds$,
-  ]).pipe(
-    switchMap(([id, mode, drawnBounds]) => {
-      if (drawnBounds) {
-        if (mode === 'upload') {
-          this.mapConfigState.updateMapCenter(
-            this.drawService.getDrawingGeoJSON()
-          );
-          return this.drawService.drawnBounds$;
-        } else {
-          return this.mapConfigState.mapExtent$;
-        }
-      } else if (id) {
-        console.log('are we calling this with id?', id);
+  bounds$ = combineLatest([this.planId$, this.mapConfigState.mapExtent$]).pipe(
+    switchMap(([id, _]) => {
+      if (id) {
         return this.planState.planningAreaGeometry$.pipe(
           map((geometry) => getBoundsFromGeometry(geometry))
         );

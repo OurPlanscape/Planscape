@@ -165,6 +165,10 @@ export class DrawService {
     }
   }
 
+  getBboxFromDrawingContext() {
+    return bbox(this.getDrawingGeoJSON());
+  }
+
   selectFeature(featureId: FeatureId) {
     this._terraDraw?.selectFeature(featureId);
   }
