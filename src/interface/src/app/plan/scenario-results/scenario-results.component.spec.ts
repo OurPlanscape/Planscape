@@ -8,6 +8,7 @@ import { FileSaverService, ScenarioService } from '@services';
 import { MockComponent, MockProvider } from 'ng-mocks';
 import { ProjectAreasComponent } from '../project-areas/project-areas.component';
 import { of } from 'rxjs';
+import { FeaturesModule } from '../../features/features.module';
 
 describe('ScenarioResultsComponent', () => {
   let component: ScenarioResultsComponent;
@@ -22,7 +23,7 @@ describe('ScenarioResultsComponent', () => {
         MockComponent(ProjectAreasComponent),
       ],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
-      imports: [HttpClientTestingModule],
+      imports: [HttpClientTestingModule, FeaturesModule],
       providers: [
         MockProvider(ScenarioService, {
           downloadCsvData: () => of(true),

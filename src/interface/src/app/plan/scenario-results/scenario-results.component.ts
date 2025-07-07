@@ -62,7 +62,6 @@ export class ScenarioResultsComponent implements OnChanges {
   }
 
   isScenarioImprovementsEnabled() {
-    // need to also be v2 scenarios
     const isFlagEnabled = this.featureService.isFeatureEnabled(
       'SCENARIO_IMPROVEMENTS'
     );
