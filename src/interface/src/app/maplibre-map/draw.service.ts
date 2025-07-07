@@ -17,8 +17,6 @@ import {
 import { GeoJSON } from 'geojson';
 import booleanWithin from '@turf/boolean-within';
 import { HttpClient } from '@angular/common/http';
-import { Extent } from '@types';
-import { getBoundsFromGeometry } from './maplibre.helper';
 
 export type DrawMode = 'polygon' | 'select' | 'none';
 
@@ -53,15 +51,12 @@ export class DrawService {
   selectedFeatureId$: Observable<FeatureId | null> =
     this._selectedFeatureId$.asObservable();
 
-  private _drawnBounds$ = new BehaviorSubject<Extent | null>(null);
-  drawnBounds$: Observable<Extent | null> = this._drawnBounds$.asObservable();
-
   private _totalAcres$ = new BehaviorSubject<number>(0);
   totalAcres$: Observable<number> = this._totalAcres$.asObservable();
 
   private _boundaryShape$ = new BehaviorSubject<GeoJSON | null>(null);
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   initializeTerraDraw(map: MapLibreMap, modes: any[]) {
     const mapLibreAdapter = new TerraDrawMapLibreGLAdapter({
@@ -83,7 +78,7 @@ export class DrawService {
     this._terraDraw?.on('finish', (featureId: FeatureId) => {
       this.setMode('select');
       this.selectFeature(featureId);
-      this.updateBoundsAndAcreage();
+      this.updateTotalAcreage();
     });
   }
 
@@ -119,7 +114,7 @@ export class DrawService {
     if (curSelectedId) {
       this._terraDraw?.removeFeatures([curSelectedId]);
     }
-    this.updateBoundsAndAcreage();
+    this.updateTotalAcreage();
   }
 
   getTerraDraw(): TerraDraw | null {
@@ -130,7 +125,7 @@ export class DrawService {
     this._terraDraw?.on('finish', (featureId: FeatureId) => {
       this.setMode('select');
       this.selectFeature(featureId);
-      this.updateBoundsAndAcreage();
+      this.updateTotalAcreage();
       finishCallback(featureId);
     });
   }
@@ -210,10 +205,9 @@ export class DrawService {
       .filter((f) => f.geometry.type === 'Polygon');
   }
 
-  updateBoundsAndAcreage() {
+  updateTotalAcreage() {
     const geoJSON = this.getDrawingGeoJSON();
     // if we have no features, set acres to 0
-    this._drawnBounds$.next(getBoundsFromGeometry(geoJSON.geometry));
     if (geoJSON.geometry.coordinates.length > 0) {
       const acres = acresForFeature(geoJSON);
       this._totalAcres$.next(acres);
@@ -267,7 +261,7 @@ export class DrawService {
       },
     }));
     this._terraDraw?.addFeatures(featuresArray);
-    this.updateBoundsAndAcreage();
+    this.updateTotalAcreage();
     this._terraDraw?.setMode('select'); // should be in select mode to add
   }
 }
