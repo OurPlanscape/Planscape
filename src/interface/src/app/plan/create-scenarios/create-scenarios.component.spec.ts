@@ -3,135 +3,42 @@ import {
   ComponentFixture,
   discardPeriodicTasks,
   fakeAsync,
-  flush,
   TestBed,
   tick,
 } from '@angular/core/testing';
-import { TestbedHarnessEnvironment } from '@angular/cdk/testing/testbed';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
-import { BehaviorSubject, of } from 'rxjs';
 
-import { Scenario, ScenarioResultStatus, TreatmentGoalConfig } from '@types';
+import { Region, Scenario, ScenarioResultStatus } from '@types';
 
 import { PlanModule } from '../plan.module';
-import { CreateScenariosComponent } from './create-scenarios.component';
-import { HarnessLoader } from '@angular/cdk/testing';
-import { MatLegacyButtonHarness as MatButtonHarness } from '@angular/material/legacy-button/testing';
+import {
+  CreateScenariosComponent,
+  ScenarioTabs,
+} from './create-scenarios.component';
 import { RouterTestingModule } from '@angular/router/testing';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import {
-  LegacyPlanState,
-  LegacyPlanStateService,
-  ScenarioService,
-} from '@services';
 import { CurrencyPipe } from '@angular/common';
-import * as L from 'leaflet';
-import { MOCK_PLAN } from '@services/mocks';
-import { MockDeclaration, MockProvider } from 'ng-mocks';
-import { DataLayersStateService } from '../../data-layers/data-layers.state.service';
+import { MockDeclarations, MockProvider } from 'ng-mocks';
 import { DataLayersComponent } from '../../data-layers/data-layers/data-layers.component';
 import { ActivatedRoute } from '@angular/router';
+import { ConstraintsPanelComponent } from './constraints-panel/constraints-panel.component';
+import { SetPrioritiesComponent } from './set-priorities/set-priorities.component';
+import { PlanState } from '../plan.state';
+import { BehaviorSubject } from 'rxjs';
+import { MOCK_PLAN, MOCK_SCENARIO } from '@services/mocks';
+import { ScenarioState } from 'src/app/maplibre-map/scenario.state';
+import { LegacyPlanStateService, ScenarioService } from '@services';
+import { FormControl, FormGroup } from '@angular/forms';
 
 describe('CreateScenariosComponent', () => {
   let component: CreateScenariosComponent;
   let fixture: ComponentFixture<CreateScenariosComponent>;
-  let fakeLegacyPlanStateService: LegacyPlanStateService;
 
-  let loader: HarnessLoader;
-
-  let fakeScenario: Scenario = {
-    id: 1,
-    name: 'name',
-    planning_area: 1,
-    configuration: {
-      max_budget: 100,
-    },
-    status: 'ACTIVE',
-    scenario_result: {
-      status: 'PENDING',
-      completed_at: '0',
-      result: {
-        features: [],
-        type: 'test',
-      },
-    },
-  };
-
-  let fakePlanState$: BehaviorSubject<LegacyPlanState>;
-  let fakeGetScenario: BehaviorSubject<Scenario>;
+  let mockPlan$ = new BehaviorSubject(MOCK_PLAN);
+  let mockScenario$ = new BehaviorSubject(MOCK_SCENARIO);
+  let mockScenarioId$ = new BehaviorSubject(1);
 
   beforeEach(async () => {
-    fakePlanState$ = new BehaviorSubject<LegacyPlanState>({
-      all: {
-        '1': {
-          ...MOCK_PLAN,
-          area_acres: 12814,
-          area_m2: 340000,
-          geometry: new L.Polygon([
-            new L.LatLng(38.715517043571914, -120.42857302225725),
-            new L.LatLng(38.47079787227401, -120.5164425608172),
-            new L.LatLng(38.52668443555346, -120.11828371421737),
-          ]).toGeoJSON(),
-        },
-      },
-      currentPlanId: 1,
-      currentScenarioId: null,
-      currentScenarioName: null,
-      mapConditionLayer: null,
-      mapShapes: null,
-      legendUnits: null,
-    });
-
-    fakeGetScenario = new BehaviorSubject(fakeScenario);
-
-    const demoScenario: Scenario = {
-        id: 1,
-        name: 'name',
-        planning_area: 1,
-        configuration: {
-          max_budget: 200,
-        },
-        status: 'ACTIVE',
-      },
-      fakeScenarioService = jasmine.createSpyObj<ScenarioService>(
-        'ScenarioService',
-        {
-          createScenario: of(demoScenario),
-          getScenario: of(fakeScenario),
-          getScenariosForPlan: of([demoScenario]),
-          getExcludedAreas: new BehaviorSubject([]),
-        }
-      );
-    fakeLegacyPlanStateService = jasmine.createSpyObj<LegacyPlanStateService>(
-      'LegacyPlanStateService',
-      {
-        getScenario: fakeGetScenario,
-        updateStateWithShapes: undefined,
-        updateStateWithScenario: undefined,
-      },
-      {
-        planState$: fakePlanState$,
-        setPlanRegion: () => {},
-        treatmentGoalsConfig$: new BehaviorSubject<
-          TreatmentGoalConfig[] | null
-        >([
-          {
-            category_name: 'test_category',
-            questions: [
-              {
-                short_question_text: 'test_question',
-                scenario_output_fields_paths: {},
-                scenario_priorities: [''],
-                stand_thresholds: [''],
-                global_thresholds: [''],
-                weights: [1],
-              },
-            ],
-          },
-        ]),
-      }
-    );
-
     await TestBed.configureTestingModule({
       imports: [
         BrowserAnimationsModule,
@@ -141,7 +48,11 @@ describe('CreateScenariosComponent', () => {
       ],
       declarations: [
         CreateScenariosComponent,
-        MockDeclaration(DataLayersComponent),
+        MockDeclarations(
+          DataLayersComponent,
+          ConstraintsPanelComponent,
+          SetPrioritiesComponent
+        ),
       ],
       providers: [
         CurrencyPipe,
@@ -151,7 +62,7 @@ describe('CreateScenariosComponent', () => {
             parent: {
               snapshot: {
                 data: {
-                  planId: 123,
+                  planId: MOCK_PLAN.id,
                 },
               },
             },
@@ -162,21 +73,26 @@ describe('CreateScenariosComponent', () => {
             },
           },
         },
-        {
-          provide: LegacyPlanStateService,
-          useValue: fakeLegacyPlanStateService,
-        },
-        { provide: ScenarioService, useValue: fakeScenarioService },
-        MockProvider(DataLayersStateService, {
-          paths$: of([]),
+        MockProvider(PlanState, {
+          currentPlan$: mockPlan$,
+        }),
+        MockProvider(ScenarioState, {
+          currentScenarioId$: mockScenarioId$,
+          currentScenario$: mockScenario$,
+        }),
+        MockProvider(ScenarioService, {
+          getScenariosForPlan: () => new BehaviorSubject([]),
+          getScenario: () => mockScenario$,
+          getExcludedAreas: () => new BehaviorSubject([]),
+        }),
+        MockProvider(LegacyPlanStateService, {
+          updateStateWithShapes: () => {},
         }),
       ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(CreateScenariosComponent);
     component = fixture.componentInstance;
-    await component.constraintsPanelComponent.createForm();
-    loader = TestbedHarnessEnvironment.loader(fixture);
   });
 
   it('should create', () => {
@@ -185,254 +101,235 @@ describe('CreateScenariosComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load existing scenario', async () => {
-    const scenarioId = 3001;
-    fakePlanState$.next({
-      ...fakePlanState$.value,
-      ...{ currentScenarioId: scenarioId },
+  it('should initialize scenario  correctly', async () => {
+    spyOn(component, 'createForms').and.returnValue(Promise.resolve());
+    spyOn(component, 'setPlanRegion');
+    spyOn(component, 'setExistingNameValidator');
+    spyOn(component, 'setScenarioMode');
+    spyOn(component, 'listenForProjectAreasChanges');
+
+    // Calling init scenario
+    await component.initScenario();
+
+    // We should call all the methods we need
+    expect(component.createForms).toHaveBeenCalled();
+    expect(component.setPlanRegion).toHaveBeenCalled();
+    expect(component.setExistingNameValidator).toHaveBeenCalled();
+    expect(component.setScenarioMode).toHaveBeenCalled();
+    expect(component.listenForProjectAreasChanges).toHaveBeenCalled();
+  });
+
+  it('should create forms correctly', async () => {
+    // Mocking constraintsPanelComponent
+    component.constraintsPanelComponent = {
+      loadExcludedAreas: jasmine.createSpy().and.returnValue(Promise.resolve()),
+      createForm: jasmine
+        .createSpy()
+        .and.returnValue(Promise.resolve(new FormGroup({}))),
+    } as any;
+
+    // Mocking prioritiesComponent
+    component.prioritiesComponent = {
+      createForm: () => new FormGroup({}),
+    } as any;
+
+    // Executing the create forms
+    await component.createForms();
+
+    // Verify the methods were called
+    expect(
+      component.constraintsPanelComponent.loadExcludedAreas
+    ).toHaveBeenCalled();
+    expect(component.constraintsPanelComponent.createForm).toHaveBeenCalled();
+
+    // Verify the method has all the controls we need
+    expect(component.forms.contains('scenarioName')).toBeTrue();
+    expect(component.forms.contains('priorities')).toBeTrue();
+    expect(component.forms.contains('constrains')).toBeTrue();
+    expect(component.forms.contains('projectAreas')).toBeTrue();
+  });
+
+  it('should set plan region if region_name exists', async () => {
+    mockPlan$.next({
+      ...mockPlan$.value,
+      region_name: Region.SIERRA_NEVADA,
     });
 
+    // Mock LegacyPlanStateService
+    (component as any).LegacyPlanStateService = {
+      setPlanRegion: jasmine.createSpy(),
+      updateStateWithShapes: jasmine.createSpy(),
+    } as any;
+
+    await component.setPlanRegion();
+
+    // Verify the legacy state was called with the correct region
+    expect(
+      (component as any).LegacyPlanStateService.setPlanRegion
+    ).toHaveBeenCalledWith(Region.SIERRA_NEVADA);
+  });
+
+  it('should not set plan region if region_name does not exist', async () => {
+    mockPlan$.next({
+      ...mockPlan$.value,
+      region_name: null as any,
+    });
+
+    // Mock LegacyPlanStateService
+    (component as any).LegacyPlanStateService = {
+      setPlanRegion: jasmine.createSpy(),
+      updateStateWithShapes: jasmine.createSpy(),
+    } as any;
+
+    await component.setPlanRegion();
+
+    // Verify legacyPlanStateService was not called
+    expect(
+      (component as any).LegacyPlanStateService.setPlanRegion
+    ).not.toHaveBeenCalled();
+  });
+
+  it('should add validator with existing scenario names', async () => {
+    // Mocking existing scenarios
+    const mockScenarios = [
+      { ...MOCK_SCENARIO, name: 'Scenario 1' },
+      { ...MOCK_SCENARIO, name: 'Scenario 2' },
+    ];
+
+    // Mock scenarioService
+    (component as any).scenarioService = {
+      getScenariosForPlan: jasmine
+        .createSpy()
+        .and.returnValue(new BehaviorSubject(mockScenarios)),
+    } as any;
+
+    // Setting planId
+    component.planId = 42;
+
+    // Creating form with scenario name control
+    component.forms = new FormGroup({
+      scenarioName: new FormControl(''),
+    });
+
+    await component.setExistingNameValidator();
+
+    // Verify we called getScenariosForPlan with the correct
+    expect(
+      (component as any).scenarioService.getScenariosForPlan
+    ).toHaveBeenCalledWith(42);
+
+    // Check the validator was added
+    const control = component.forms.get('scenarioName') as FormControl;
+    expect(control.validator).toBeTruthy();
+
+    // Verify it's working
+    control.setValue('Scenario 1');
+    const error = control.validator!(control);
+    expect(error).toEqual({ duplicate: true });
+
+    // Testing with a new name
+    control.setValue('New Scenario');
+    const valid = control.validator!(control);
+    expect(valid).toBeNull();
+  });
+
+  it('should set scenario mode with existing scenarioId', () => {
+    const mockScenarioId = 1001;
+    component.scenarioId = mockScenarioId;
+
+    mockScenario$.next({ ...MOCK_SCENARIO, id: mockScenarioId });
+    mockScenarioId$.next(mockScenarioId);
+
+    // Methods
+    spyOn(component, 'loadConfig');
     spyOn(component, 'pollForChanges');
-    fixture.detectChanges();
-    await fixture.whenStable();
 
-    expect(fakeLegacyPlanStateService.getScenario).toHaveBeenCalledOnceWith(
-      scenarioId
-    );
+    // Initializing values
+    component.tabAnimationOptions = { on: 'on', off: 'off' };
+    component.isLoading$ = new BehaviorSubject(true);
 
-    const value = component.constrainsForm?.get('budgetForm.maxCost')?.value;
-    expect(value).toEqual(100);
+    component.setScenarioMode();
+
+    // Checking values
+    expect(component.scenarioId).toBe(mockScenarioId);
+    expect(component.scenarioState).toBe('LOADING');
+    expect(component.loadConfig).toHaveBeenCalled();
+    expect(component.pollForChanges).toHaveBeenCalled();
+    expect(component.selectedTab).toBe(ScenarioTabs.RESULTS);
   });
 
-  describe('max area constraint validation', () => {
-    beforeEach(fakeAsync(() => {
-      spyOn(component, 'pollForChanges');
-    }));
+  it('should enable animation when scenarioId does not exist', () => {
+    // Mocking scenario id to be null
+    mockScenarioId$.next(null as any);
 
-    it('should mark the form invalid if max_area is too small', fakeAsync(() => {
-      fixture.detectChanges();
-      tick();
+    // Initializing values
+    component.tabAnimationOptions = { on: 'on', off: 'off' };
+    component.isLoading$ = new BehaviorSubject(true);
 
-      // Small area
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_area: 10,
-      });
+    spyOn(component.isLoading$, 'next');
 
-      component.forms.updateValueAndValidity();
-      expect(component.forms.valid).toBeFalse();
+    component.setScenarioMode();
 
-      // Cleaning timeouts and subscriptions
-      flush();
-      discardPeriodicTasks();
-      fixture.destroy();
-    }));
-
-    it('should mark the form invalid if max_area is too big', fakeAsync(() => {
-      fixture.detectChanges();
-      tick();
-
-      // Big area
-      component.constraintsPanelComponent.setFormData({
-        max_slope: 1,
-        min_distance_from_road: 1,
-        max_area: 9999999999,
-      });
-
-      component.forms.updateValueAndValidity();
-      expect(component.forms.valid).toBeFalse();
-
-      // Cleaning timeouts and subscriptions
-      flush();
-      discardPeriodicTasks();
-      fixture.destroy();
-    }));
+    expect(component.tabAnimation).toBe('on');
+    expect(component.isLoading$.next).toHaveBeenCalledWith(false);
   });
 
-  describe('generate button', () => {
-    beforeEach(() => {
-      // spy on polling to avoid dealing with async and timeouts
-      spyOn(component, 'pollForChanges');
-      fixture.detectChanges();
-      component.selectedTab = 0;
-    });
+  describe('loadConfig', () => {
+    it('should do nothing if scenario state is the same', () => {
+      (component as any).LegacyPlanStateService = {
+        updateStateWithScenario: jasmine.createSpy(),
+        updateStateWithShapes: jasmine.createSpy(),
+      } as any;
 
-    it('should disable Generate button if form is invalid', async () => {
-      const buttonHarness: MatButtonHarness = await loader.getHarness(
-        MatButtonHarness.with({ text: /GENERATE/ })
-      );
-      component.prioritiesForm?.markAsDirty();
-      component.constrainsForm
-        ?.get('physicalConstraintForm.minDistanceFromRoad')
-        ?.setValue(-1);
-      fixture.detectChanges();
+      component.scenarioState = 'RUNNING';
 
-      // Click on "GENERATE SCENARIO" button
-      await buttonHarness.click();
-
-      expect(await buttonHarness.isDisabled()).toBeTrue();
-    });
-  });
-
-  // TODO Re-enable when support for uploading project areas in implemented
-  // it('update plan state when "identify project areas" form inputs change', () => {
-  //   const generateAreas = component.formGroups[3].get('generateAreas');
-  //   const uploadedArea = component.formGroups[3].get('uploadedArea');
-
-  //   // Set "generate areas automatically" to true
-  //   generateAreas?.setValue(true);
-
-  //   expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(null);
-
-  //   // Add an uploaded area and set "generate areas automatically" to false
-  //   generateAreas?.setValue(false);
-  //   uploadedArea?.setValue('testvalue');
-
-  //   expect(fakePlanService.updateStateWithShapes).toHaveBeenCalledWith(
-  //     'testvalue'
-  //   );
-  // });
-
-  describe('convertSingleGeoJsonToGeoJsonArray', () => {
-    beforeEach(() => {
-      // spy on polling to avoid dealing with async and timeouts
-      spyOn(component, 'pollForChanges');
-      fixture.detectChanges();
-    });
-
-    it('converts a geojson with multiple multipolygons into geojsons', () => {
-      const testMultiGeoJson: GeoJSON.GeoJSON = {
-        type: 'FeatureCollection',
-        features: [
-          {
-            type: 'Feature',
-            geometry: {
-              type: 'MultiPolygon',
-              coordinates: [
-                [
-                  [
-                    [-120.48760442258875, 38.86069261999541],
-                    [-120.25134738486939, 38.63563031791014],
-                    [-120.68265831280989, 38.65924332885403],
-                    [-120.48760442258875, 38.86069261999541],
-                  ],
-                ],
-                [
-                  [
-                    [-120.08926185006236, 38.70429439806091],
-                    [-119.83102710804575, 38.575493119820806],
-                    [-120.02882494064228, 38.56474992770867],
-                    [-120.12497630750148, 38.59268150226389],
-                    [-120.08926185006236, 38.70429439806091],
-                  ],
-                ],
-                [
-                  [
-                    [-120.32277500514876, 38.59483057427002],
-                    [-120.19090826710838, 38.65494898256424],
-                    [-120.1947892445163, 38.584354895060606],
-                    [-120.25934844928075, 38.55964521088927],
-                    [-120.32277500514876, 38.59483057427002],
-                  ],
-                ],
-              ],
-            },
-            properties: {},
-          },
-          {
-            type: 'Feature',
-            properties: {},
-            geometry: {
-              type: 'Polygon',
-              coordinates: [
-                [
-                  [-120.399442, 38.957252],
-                  [-120.646674, 38.631876],
-                  [-120.020352, 38.651183],
-                  [-120.07804, 38.818293],
-                  [-120.306043, 38.79689],
-                  [-120.399442, 38.957252],
-                ],
-              ],
-            },
-          },
-        ],
-      };
-
-      const result =
-        component.convertSingleGeoJsonToGeoJsonArray(testMultiGeoJson);
-
-      expect(result).toEqual([
-        {
-          type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              geometry: {
-                type: 'MultiPolygon',
-                coordinates: [
-                  [
-                    [
-                      [-120.48760442258875, 38.86069261999541],
-                      [-120.25134738486939, 38.63563031791014],
-                      [-120.68265831280989, 38.65924332885403],
-                      [-120.48760442258875, 38.86069261999541],
-                    ],
-                  ],
-                  [
-                    [
-                      [-120.08926185006236, 38.70429439806091],
-                      [-119.83102710804575, 38.575493119820806],
-                      [-120.02882494064228, 38.56474992770867],
-                      [-120.12497630750148, 38.59268150226389],
-                      [-120.08926185006236, 38.70429439806091],
-                    ],
-                  ],
-                  [
-                    [
-                      [-120.32277500514876, 38.59483057427002],
-                      [-120.19090826710838, 38.65494898256424],
-                      [-120.1947892445163, 38.584354895060606],
-                      [-120.25934844928075, 38.55964521088927],
-                      [-120.32277500514876, 38.59483057427002],
-                    ],
-                  ],
-                ],
-              },
-              properties: {},
-            },
-          ],
+      mockScenario$.next({
+        ...MOCK_SCENARIO,
+        scenario_result: {
+          ...MOCK_SCENARIO.scenario_result,
+          status: 'RUNNING',
         },
-        {
-          type: 'FeatureCollection',
-          features: [
-            {
-              type: 'Feature',
-              properties: {},
-              geometry: {
-                type: 'Polygon',
-                coordinates: [
-                  [
-                    [-120.399442, 38.957252],
-                    [-120.646674, 38.631876],
-                    [-120.020352, 38.651183],
-                    [-120.07804, 38.818293],
-                    [-120.306043, 38.79689],
-                    [-120.399442, 38.957252],
-                  ],
-                ],
-              },
-            },
-          ],
+      } as Scenario);
+
+      component.loadConfig();
+
+      expect(
+        (component as any).LegacyPlanStateService.updateStateWithScenario
+      ).not.toHaveBeenCalled();
+    });
+
+    it('should update State with scenario if status is different', () => {
+      (component as any).LegacyPlanStateService = {
+        updateStateWithScenario: jasmine.createSpy(),
+        updateStateWithShapes: jasmine.createSpy(),
+      } as any;
+
+      component.scenarioState = 'RUNNING';
+
+      mockScenario$.next({
+        ...MOCK_SCENARIO,
+        scenario_result: {
+          ...MOCK_SCENARIO.scenario_result,
+          status: 'FAILURE',
         },
-      ]);
+      } as Scenario);
+
+      component.loadConfig();
+
+      expect(
+        (component as any).LegacyPlanStateService.updateStateWithScenario
+      ).toHaveBeenCalledWith(MOCK_SCENARIO.id, MOCK_SCENARIO.name);
     });
   });
 
   describe('polling', () => {
     beforeEach(() => {
       spyOn(component, 'loadConfig').and.callThrough();
+      mockScenario$.next({
+        ...MOCK_SCENARIO,
+        id: 1001,
+      });
+      mockScenarioId$.next(1001);
     });
 
     it('should poll for changes if status is pending', fakeAsync(() => {
@@ -473,19 +370,17 @@ describe('CreateScenariosComponent', () => {
     component: CreateScenariosComponent,
     status: ScenarioResultStatus
   ) {
-    fakePlanState$.next({
-      ...fakePlanState$.value,
-      currentScenarioId: 3001,
+    mockPlan$.next({
+      ...mockPlan$.value,
     });
 
-    fakeGetScenario.next({
-      ...fakeScenario,
+    mockScenario$.next({
+      ...mockScenario$.value,
       scenario_result: {
-        ...fakeScenario.scenario_result!,
+        ...mockScenario$.value.scenario_result!,
         status,
       },
     });
-
     component.scenarioId = 3001;
   }
 });
