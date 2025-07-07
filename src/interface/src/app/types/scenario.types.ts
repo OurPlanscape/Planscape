@@ -2,7 +2,7 @@ export type SCENARIO_STATUS = 'ACTIVE' | 'ARCHIVED';
 export type ORIGIN_TYPE = 'USER' | 'SYSTEM';
 
 export interface Scenario {
-  id: string;
+  id?: number; // undefined when we are creating a new scenario
   name: string;
   notes?: string;
   creator?: string;

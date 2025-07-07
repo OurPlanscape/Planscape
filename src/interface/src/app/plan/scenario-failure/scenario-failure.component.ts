@@ -9,7 +9,7 @@ import { FormMessageType, ScenarioResultStatus } from '@types';
 })
 export class ScenarioFailureComponent {
   @Input() scenarioName = '';
-  @Input() scenarioId = '';
+  @Input() scenarioId: number | undefined = undefined;
   @Input() scenarioState: ScenarioResultStatus = 'FAILURE';
   @Output() goBack = new EventEmitter();
   @Output() tryAgain = new EventEmitter();

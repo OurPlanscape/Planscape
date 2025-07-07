@@ -57,7 +57,7 @@ describe('CreateScenariosComponent', () => {
     weights: [0],
   };
   let fakeScenario: Scenario = {
-    id: '1',
+    id: 1,
     name: 'name',
     planning_area: 1,
     configuration: {
@@ -102,7 +102,7 @@ describe('CreateScenariosComponent', () => {
     fakeGetScenario = new BehaviorSubject(fakeScenario);
 
     const demoScenario: Scenario = {
-        id: '1',
+        id: 1,
         name: 'name',
         planning_area: 1,
         configuration: {
@@ -186,7 +186,7 @@ describe('CreateScenariosComponent', () => {
   });
 
   it('should load existing scenario', async () => {
-    const scenarioId = 'fakeScenarioId';
+    const scenarioId = 3001;
     fakePlanState$.next({
       ...fakePlanState$.value,
       ...{ currentScenarioId: scenarioId },
@@ -568,7 +568,7 @@ describe('CreateScenariosComponent', () => {
   ) {
     fakePlanState$.next({
       ...fakePlanState$.value,
-      currentScenarioId: 'fakeScenarioId',
+      currentScenarioId: 3001,
     });
 
     fakeGetScenario.next({
@@ -579,6 +579,6 @@ describe('CreateScenariosComponent', () => {
       },
     });
 
-    component.scenarioId = 'fakeScenarioId';
+    component.scenarioId = 3001;
   }
 });

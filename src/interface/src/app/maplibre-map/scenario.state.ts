@@ -43,7 +43,7 @@ export class ScenarioState {
       concat(
         // when loading emit object with loading
         of({ isLoading: true }),
-        this.scenarioService.getScenario(id.toString()).pipe(
+        this.scenarioService.getScenario(id).pipe(
           // when done, emit object with loading false and data
           map((data) => ({ data, isLoading: false }) as LoadedResult<Scenario>),
           // when we have errors, emit object with loading false and error
