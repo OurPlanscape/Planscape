@@ -290,16 +290,17 @@ to_properties <- function(
     text_geometry,
     new_column_for_postprocessing = FALSE) {
   scenario_cost_per_acre <- get_cost_per_acre(scenario)
+  attainment <- forsys_project_outputs %>% filter(proj_id == project_id) %>% select(contains("attain_"))
   project_data <- forsys_project_outputs %>%
     filter(proj_id == project_id) %>%
     select(-contains("Pr_1")) %>%
+    select(-contains("attain_")) %>%
     mutate(stand_count = project_stand_count) %>%
     mutate(total_cost = ETrt_area_acres * scenario_cost_per_acre) %>%
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
-    mutate(text_geometry = text_geometry) %>%
+    mutate(attainment = attainment) %>%
     rename_with(.fn = rename_col)
-
   # post process
   print("Postprocessing results.")
   if (FORSYS_V2) {
@@ -821,7 +822,7 @@ call_forsys <- function(
     patchmax_sample_seed = configuration$seed,
   )
   summarized_metrics <- summarize_metrics(out, stand_data, data_inputs)
-  print(summarized_metrics)
+  out$project_output <- out$project_output |> left_join(summarized_metrics, by="proj_id")
   return(out)
 }
 
