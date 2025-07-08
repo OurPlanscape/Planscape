@@ -9,6 +9,12 @@ import { scenarioLoaderResolver } from '../resolvers/scenario-loader.resolver';
 import { resetDatalayerResolver } from '../resolvers/reset-datalayer.resolver';
 
 const routes: Routes = [
+  // the url `/plan/` is not being used and invalid, redirect
+  {
+    path: '',
+    redirectTo: '/',
+    pathMatch: 'full',
+  },
   {
     path: ':id',
     title: 'Plan Details',
