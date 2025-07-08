@@ -15,6 +15,7 @@ library("rjson")
 library("RPostgreSQL")
 library("sf")
 library("stringi")
+library("stringr")
 library("tidyr")
 library("uuid")
 # do not use spherical geometries
