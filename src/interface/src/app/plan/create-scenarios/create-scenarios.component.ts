@@ -35,8 +35,8 @@ import { DataLayersStateService } from '../../data-layers/data-layers.state.serv
 enum ScenarioTabs {
   CONFIG,
   RESULTS,
-  TREATMENTS,
   DATA_LAYERS,
+  TREATMENTS,
 }
 
 @UntilDestroy()
@@ -49,7 +49,7 @@ export class CreateScenariosComponent implements OnInit {
   @ViewChild(MatStepper) stepper: MatStepper | undefined;
   selectedTab = ScenarioTabs.CONFIG;
   generatingScenario: boolean = false;
-  scenarioId: string | null = null;
+  scenarioId: number | undefined = undefined;
   scenarioName: string | null = null;
   planId?: number | null;
   plan$ = new BehaviorSubject<Plan | null>(null);
@@ -124,7 +124,7 @@ export class CreateScenariosComponent implements OnInit {
       .pipe(untilDestroyed(this), take(1))
       .subscribe((planState) => {
         this.plan$.next(planState.all[planState.currentPlanId!]);
-        this.scenarioId = planState.currentScenarioId;
+        this.scenarioId = planState.currentScenarioId!;
         this.planId = planState.currentPlanId;
         if (this.plan$.getValue()?.region_name) {
           this.LegacyPlanStateService.setPlanRegion(
@@ -246,7 +246,7 @@ export class CreateScenariosComponent implements OnInit {
   private formValueToScenario(): Scenario {
     const prioritiesData = this.prioritiesComponent.getFormData();
     return {
-      id: '',
+      id: undefined,
       name: this.scenarioNameFormField?.value,
       planning_area: this.planId!,
       status: 'ACTIVE',

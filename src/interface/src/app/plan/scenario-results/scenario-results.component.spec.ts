@@ -34,7 +34,7 @@ describe('ScenarioResultsComponent', () => {
 
     fixture = TestBed.createComponent(ScenarioResultsComponent);
     component = fixture.componentInstance;
-    component.scenarioId = '1234';
+    component.scenarioId = 1234;
     component.scenarioName = 'A\\great.scenario/result';
 
     scenarioService = TestBed.inject(ScenarioService);
@@ -60,7 +60,7 @@ describe('ScenarioResultsComponent', () => {
       );
       button.nativeElement.click();
 
-      expect(scenarioService.downloadCsvData).toHaveBeenCalledWith('1234');
+      expect(scenarioService.downloadCsvData).toHaveBeenCalledWith(1234);
       expect(fileSaverService.saveAs).toHaveBeenCalledWith(
         jasmine.any(Blob),
         'a_great_scenario_result_csv.zip'
@@ -71,7 +71,7 @@ describe('ScenarioResultsComponent', () => {
         By.css('[data-id="downloadShapeFiles"]')
       );
       button.nativeElement.click();
-      expect(scenarioService.downloadShapeFiles).toHaveBeenCalledWith('1234');
+      expect(scenarioService.downloadShapeFiles).toHaveBeenCalledWith(1234);
       expect(fileSaverService.saveAs).toHaveBeenCalledWith(
         jasmine.any(Blob),
         'a_great_scenario_result_shp.zip'

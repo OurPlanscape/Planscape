@@ -9,7 +9,7 @@ describe('ScenarioState', () => {
   let scenarioServiceSpy: jasmine.SpyObj<ScenarioService>;
 
   const mockScenario: Scenario = {
-    id: '1',
+    id: 1,
     name: 'Test Scenario',
     planning_area: 1,
     configuration: {

@@ -141,7 +141,7 @@ export class ScenariosCardListComponent {
       });
   }
 
-  createTreatmentPlan(scenarioId: string, name: string) {
+  createTreatmentPlan(scenarioId: number, name: string) {
     this.overlayLoaderService.showLoader();
 
     this.treatmentsService
