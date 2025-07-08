@@ -21,8 +21,6 @@
     .mat-expansion-panel-body {
       padding: 0 16px 16px;
     }
-
-
   }
 
   .panel-header {
@@ -31,7 +29,6 @@
     &[aria-disabled=true] {
       padding-left: 16px;
     }
-
 
     ::ng-deep {
       .mat-expansion-indicator {
