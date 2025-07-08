@@ -132,7 +132,7 @@ export class SetPrioritiesComponent implements OnInit {
     }
   }
 
-  get isNewScenario() {
+  get isNotNewScenario() {
     return this.scenarioStatus != 'NOT_STARTED';
   }
 
