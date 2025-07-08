@@ -15,7 +15,7 @@ const routes: Routes = [
     component: PlanComponent,
     canActivate: [AuthGuard],
     resolve: {
-      planInit: planLoaderResolver,
+      planId: planLoaderResolver,
     },
     data: { showOverview: true },
     children: [
