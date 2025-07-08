@@ -300,6 +300,7 @@ to_properties <- function(
     mutate(cost_per_acre = scenario_cost_per_acre) %>%
     mutate(pct_area = ETrt_area_acres / scenario$planning_area_acres) %>%
     mutate(attainment = attainment) %>%
+    mutate(text_geometry = text_geometry) %>%
     rename_with(.fn = rename_col)
   # post process
   print("Postprocessing results.")
@@ -845,6 +846,8 @@ upsert_project_area <- function(
     scenario,
     project) {
   area_name <- glue("Project Area {area_number}", area_number = project$properties$proj_id)
+  geometry <- project$properties$text_geometry
+  properties <- project$properties[names(project$properties) != "text_geometry"]
   query <- glue_sql("INSERT INTO planning_projectarea (
       uuid,
       created_at,
@@ -880,8 +883,8 @@ upsert_project_area <- function(
     created_by_id = scenario$created_by_id,
     scenario_id = scenario$id,
     name = area_name,
-    data = toJSON(project$properties),
-    geometry = project$properties$text_geometry,
+    data = toJSON(properties),
+    geometry = geometry,
     .con = connection
   )
   dbExecute(connection, query, immediate = TRUE)
