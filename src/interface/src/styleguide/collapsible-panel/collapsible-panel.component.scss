@@ -22,13 +22,21 @@
       padding: 0 16px 16px;
     }
 
-    .mat-expansion-indicator {
-      height: 30px;
+
+  }
+
+  .panel-header {
+    padding: 0 10px 0 22px;
+
+    &[aria-disabled=true] {
+      padding-left: 16px;
     }
 
 
-    .mat-expansion-panel-header {
-      padding: 0 10px 0 22px;
+    ::ng-deep {
+      .mat-expansion-indicator {
+        height: 30px;
+      }
 
       .mat-content {
         align-items: center;
