@@ -173,6 +173,11 @@ describe('CreateScenariosComponent', () => {
                 },
               },
             },
+            snapshot: {
+              data: {
+                scenarioId: 456,
+              },
+            },
           },
         },
         {
