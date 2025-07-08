@@ -12,7 +12,7 @@ import {
   LayerComponent,
   MapComponent,
 } from '@maplibre/ngx-maplibre-gl';
-import { FrontendConstants } from '../../map/map.constants';
+
 import {
   LngLat,
   Map as MapLibreMap,
@@ -41,6 +41,7 @@ import { PlanningAreaLayerComponent } from '../planning-area-layer/planning-area
 import { PlanState } from '../../plan/plan.state';
 import { DataLayer } from '@types';
 import { MultiMapsStorageService } from '@services/local-storage.service';
+import { FrontendConstants } from '../../map/map.constants';
 
 @UntilDestroy()
 @Component({
