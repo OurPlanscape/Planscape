@@ -57,26 +57,6 @@ describe('QueryParamsService', () => {
     });
   });
 
-  describe('getInitialRegionParam', () => {
-    it('should return region param from URL if it exists', () => {
-      route.snapshot.queryParams = { region: 'sierra-nevada' };
-
-      const regionParam = service.getInitialRegionParam();
-
-      expect(regionParam).toEqual([
-        { name: 'Sierra Nevada', value: 'sierra-nevada' },
-      ]);
-    });
-
-    it('should return default region param if URL param does not exist', () => {
-      route.snapshot.queryParams = {};
-
-      const regionParam = service.getInitialRegionParam();
-
-      expect(regionParam).toEqual([]);
-    });
-  });
-
   describe('getInitialCreatorsIdParam', () => {
     it('should return creators ID param from URL if it exists', () => {
       route.snapshot.queryParams = { creators: '2,19' };
