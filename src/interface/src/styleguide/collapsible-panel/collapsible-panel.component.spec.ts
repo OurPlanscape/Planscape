@@ -8,10 +8,9 @@ describe('CollapsiblePanelComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CollapsiblePanelComponent]
-    })
-    .compileComponents();
-    
+      imports: [CollapsiblePanelComponent],
+    }).compileComponents();
+
     fixture = TestBed.createComponent(CollapsiblePanelComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
