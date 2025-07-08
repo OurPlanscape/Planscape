@@ -39,7 +39,6 @@ import { combineLatest, map } from 'rxjs';
 import { OverlayLoaderComponent } from '../../../styleguide/overlay-loader/overlay-loader.component';
 import { BreadcrumbService } from '@services/breadcrumb.service';
 import { FeaturesModule } from 'src/app/features/features.module';
-import { FeatureService } from 'src/app/features/feature.service';
 
 @Component({
   selector: 'app-planning-areas',
@@ -96,15 +95,6 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   readonly columns: { key: keyof PreviewPlan | 'menu'; label: string }[] = [
     { key: 'name', label: 'Name' },
     { key: 'creator', label: 'Creator' },
-    // adding 'region_name' just if the FF is not enabled
-    ...(this.featureService.isFeatureEnabled('MAPLIBRE_ON_EXPLORE')
-      ? []
-      : [
-          { key: 'region_name', label: 'Region' } as {
-            key: keyof PreviewPlan | 'menu';
-            label: string;
-          },
-        ]),
     { key: 'area_acres', label: 'Total Acres' },
     { key: 'scenario_count', label: '# of Scenarios' },
     { key: 'latest_updated', label: 'Date last modified' },
@@ -114,8 +104,7 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   constructor(
     private router: Router,
     public dataSource: PlanningAreasDataSource,
-    private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService
+    private breadcrumbService: BreadcrumbService
   ) {}
 
   sortOptions = this.dataSource.sortOptions;
@@ -131,8 +120,6 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
   hasFilters$ = this.dataSource.hasFilters$;
 
   pages$ = this.dataSource.pages$;
-
-  selectedRegions = this.dataSource.selectedRegions;
 
   searchTerm = this.dataSource.searchTerm;
 
@@ -177,10 +164,6 @@ export class PlanningAreasComponent implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.dataSource.destroy();
-  }
-
-  selectRegion(regions: { name: string; value: string }[]) {
-    this.dataSource.filterRegion(regions);
   }
 
   selectCreators(creators: Creator[]) {

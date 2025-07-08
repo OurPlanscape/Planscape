@@ -1,7 +1,6 @@
 import { Component, Inject, Input, OnInit } from '@angular/core';
 import { WINDOW } from '@services';
 
-import { ShareExploreDialogComponent } from '../share-explore-dialog/share-explore-dialog.component';
 import { SharePlanDialogComponent } from '../../home/share-plan-dialog/share-plan-dialog.component';
 import { Params } from '@angular/router';
 import { filter, lastValueFrom, map, take } from 'rxjs';
@@ -10,7 +9,6 @@ import { HomeParametersStorageService } from '@services/local-storage.service';
 import { MatDialog } from '@angular/material/dialog';
 import { PlanState } from 'src/app/plan/plan.state';
 import { BreadcrumbService } from '@services/breadcrumb.service';
-import { FeatureService } from '../../features/feature.service';
 
 @Component({
   selector: 'app-nav-bar',
@@ -42,8 +40,7 @@ export class NavBarComponent implements OnInit {
     private dialog: MatDialog,
     private homeParametersStorageService: HomeParametersStorageService,
     private planState: PlanState,
-    private breadcrumbService: BreadcrumbService,
-    private featureService: FeatureService
+    private breadcrumbService: BreadcrumbService
   ) {}
 
   ngOnInit(): void {
@@ -52,10 +49,6 @@ export class NavBarComponent implements OnInit {
 
   print() {
     this.window.print();
-  }
-
-  share() {
-    this.dialog.open(ShareExploreDialogComponent, { restoreFocus: false });
   }
 
   async sharePlan() {
@@ -69,27 +62,15 @@ export class NavBarComponent implements OnInit {
   }
 
   showPrintButton() {
-    if (
-      this.area === 'EXPLORE' &&
-      this.featureService.isFeatureEnabled('MAPLIBRE_ON_EXPLORE')
-    ) {
-      return false;
-    }
-    if (this.area === 'TREATMENTS' || this.area === 'TREATMENTS_PROJECT_AREA') {
-      return false;
-    }
-
-    return true;
+    return !(
+      this.area === 'TREATMENTS' ||
+      this.area === 'TREATMENTS_PROJECT_AREA' ||
+      this.area === 'EXPLORE'
+    );
   }
 
   showTooltip() {
-    // should hide if its on area explore and flag on
-    if (
-      this.area === 'EXPLORE' &&
-      this.featureService.isFeatureEnabled('MAPLIBRE_ON_EXPLORE')
-    ) {
-      return false;
-    }
-    return true;
+    // should hide if its on area explore
+    return this.area !== 'EXPLORE';
   }
 }
