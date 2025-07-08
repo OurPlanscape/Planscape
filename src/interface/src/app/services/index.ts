@@ -5,7 +5,6 @@ export * from './legacy-plan-state.service';
 export * from './scenario.service';
 export * from './invites.service';
 export * from './redirect.service';
-export * from './share-map.service';
 export * from './treatment-goals.service';
 export * from './password-reset.resolver';
 export * from './redirect.guard';

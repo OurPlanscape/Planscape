@@ -47,6 +47,7 @@ describe('NavBarComponent', () => {
 
     component = fixture.componentInstance;
 
+    component.area = 'SCENARIO';
     fixture.detectChanges();
   });
 

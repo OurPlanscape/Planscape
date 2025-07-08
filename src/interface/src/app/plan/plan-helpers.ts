@@ -1,6 +1,4 @@
 import {
-  ConditionsConfig,
-  PriorityRow,
   ScenarioResult,
   TreatmentGoalConfig,
   TreatmentQuestionConfig,
@@ -78,57 +76,6 @@ export function findQuestionOnTreatmentGoalsConfig(
     return !!selectedQuestion;
   });
   return selectedQuestion;
-}
-
-export function conditionsConfigToPriorityData(
-  config: ConditionsConfig
-): PriorityRow[] {
-  let data: PriorityRow[] = [];
-  config.pillars
-    ?.filter((pillar) => pillar.display)
-    .forEach((pillar) => {
-      let pillarRow: PriorityRow = {
-        conditionName: pillar.pillar_name!,
-        displayName: pillar.display_name,
-        filepath: pillar.filepath! ? pillar.filepath.concat('_normalized') : '',
-        children: [],
-        level: 0,
-        expanded: false,
-      };
-      data.push(pillarRow);
-      pillar.elements
-        ?.filter((element) => element.display)
-        .forEach((element) => {
-          let elementRow: PriorityRow = {
-            conditionName: element.element_name!,
-            displayName: element.display_name,
-            filepath: element.filepath
-              ? element.filepath.concat('_normalized')
-              : '',
-            children: [],
-            level: 1,
-            expanded: false,
-            hidden: true,
-          };
-          data.push(elementRow);
-          pillarRow.children.push(elementRow);
-          element.metrics
-            ?.filter((metric) => !!metric.filepath)
-            .forEach((metric) => {
-              let metricRow: PriorityRow = {
-                conditionName: metric.metric_name!,
-                displayName: metric.display_name,
-                filepath: metric.filepath!.concat('_normalized'),
-                children: [],
-                level: 2,
-                hidden: true,
-              };
-              data.push(metricRow);
-              elementRow.children.push(metricRow);
-            });
-        });
-    });
-  return data;
 }
 
 export function getPlanPath(planId: number) {
