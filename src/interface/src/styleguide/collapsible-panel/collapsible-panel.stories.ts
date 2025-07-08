@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/angular';
 import { argsToTemplate, moduleMetadata } from '@storybook/angular';
 import { CollapsiblePanelComponent } from './collapsible-panel.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { MatExpansionModule } from '@angular/material/expansion';
 
 const meta: Meta<CollapsiblePanelComponent> = {
   title: 'Components/Collapsible Panel',
@@ -9,7 +10,7 @@ const meta: Meta<CollapsiblePanelComponent> = {
   tags: ['autodocs'],
   decorators: [
     moduleMetadata({
-      imports: [BrowserAnimationsModule],
+      imports: [BrowserAnimationsModule, MatExpansionModule],
     }),
   ],
   render: (args) => ({
@@ -34,6 +35,25 @@ export const Default: Story = {
     tooltipContent:
       'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
   },
+};
+
+export const WithMoreContent: Story = {
+  args: {
+    title: 'Project Areas',
+    tooltipContent:
+      'Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.',
+  },
+  render: (args) => ({
+    props: args,
+    template: `<sg-collapsible-panel ${argsToTemplate(args)}>
+<mat-expansion-panel expanded='true' [togglePosition]="'before'">
+                <mat-expansion-panel-header class='goal-panel-header'>
+                  Some title
+                </mat-expansion-panel-header>
+                Some content
+              </mat-expansion-panel>
+</sg-collapsible-panel>`,
+  }),
 };
 
 export const NotCollapsible: Story = {
