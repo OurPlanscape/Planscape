@@ -2,6 +2,7 @@ import { Component, Input } from '@angular/core';
 import { FormBuilder, Validators } from '@angular/forms';
 import { map, shareReplay } from 'rxjs';
 import { TreatmentGoalsService } from '@services';
+
 import {
   CategorizedScenarioGoals,
   ScenarioConfig,
