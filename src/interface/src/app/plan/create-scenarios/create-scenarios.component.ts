@@ -20,7 +20,7 @@ import {
 import { Plan, Scenario, ScenarioResult, ScenarioResultStatus } from '@types';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { POLLING_INTERVAL } from '../plan-helpers';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { MatLegacySnackBar as MatSnackBar } from '@angular/material/legacy-snack-bar';
 import { LegacyPlanStateService, ScenarioService } from '@services';
 import { SNACK_ERROR_CONFIG } from '@shared';
@@ -52,6 +52,8 @@ export class CreateScenariosComponent implements OnInit {
   scenarioId: number | undefined = undefined;
   scenarioName: string | null = null;
   planId?: number | null;
+
+  planIdFromRoute: number = this.route.parent!.snapshot.data['planId'];
   plan$ = new BehaviorSubject<Plan | null>(null);
   acres$ = this.plan$.pipe(map((plan) => (plan ? plan.area_acres : 0)));
   existingScenarioNames: string[] = [];
@@ -87,7 +89,8 @@ export class CreateScenariosComponent implements OnInit {
     private matSnackBar: MatSnackBar,
     private goalOverlayService: GoalOverlayService,
     private scenarioStateService: ScenarioState,
-    private dataLayersStateService: DataLayersStateService
+    private dataLayersStateService: DataLayersStateService,
+    private route: ActivatedRoute
   ) {
     this.dataLayersStateService.paths$
       .pipe(untilDestroyed(this), skip(1))

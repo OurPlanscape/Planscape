@@ -15,7 +15,10 @@ import {
   redirectResolver,
 } from '@services';
 import { numberResolver } from './resolvers/number.resolver';
-import { planLoaderResolver } from './resolvers/plan-loader.resolver';
+import {
+  planLoaderResolver,
+  planResetResolver,
+} from './resolvers/plan-loader.resolver';
 import { scenarioLoaderResolver } from './resolvers/scenario-loader.resolver';
 import { MapComponent } from './map/map.component';
 import { createFeatureGuard } from './features/feature.guard';
@@ -119,7 +122,7 @@ const routes: Routes = [
           }),
         ],
         resolve: {
-          planInit: planLoaderResolver,
+          planInit: planResetResolver,
         },
       },
       {
